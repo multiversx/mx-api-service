@@ -1,0 +1,23 @@
+network: 'testnet'
+profile: true
+csrfSecret: '1nt3rn3tsc@l3'
+cronActive: true
+logApiCalls: true
+urls:
+  elastic:
+    - 'https://testnet-index.elrond.com'
+  gateway:
+    - 'https://testnet-gateway.elrond.com'
+  redis: '192.168.26.111'
+  providers: 'https://delegation.maiarbrowser.com/providers'
+caching:
+  cacheTtl: 6
+  processTtl: 600
+  poolLimit: 10
+contracts:
+  esdt: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u'
+  auction: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l'
+  staking: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7'
+  delegationManager: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6'
+  delegation: 'erd1qqqqqqqqqqqqqpgqxwakt2g7u9atsnr03gqcgmhcv38pt7mkd94q6shuwt'
+  delegationShardId: 2
