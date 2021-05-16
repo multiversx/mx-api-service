@@ -9,7 +9,7 @@ urls:
     - 'https://devnet-index.elrond.com'
   gateway:
     - 'https://devnet-gateway.elrond.com'
-  redis: '192.168.26.111'
+  redis: '127.0.0.1'
   providers: 'https://devnet-delegation.maiarbrowser.com/providers'
 caching:
   cacheTtl: 6
