@@ -3,6 +3,7 @@ profile: true
 csrfSecret: '1nt3rn3tsc@l3'
 cronActive: true
 logApiCalls: true
+metaChainShardId: 4294967295
 urls:
   elastic:
     - 'https://testnet-index.elrond.com'

@@ -3,6 +3,7 @@ import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Constants } from './entities/constants';
 import { Economics } from './entities/economics';
 import { NetworkService } from './network.service';
+import { Stats } from 'src/endpoints/network/entities/stats';
 
 @Controller()
 @ApiTags('network')
@@ -27,7 +28,17 @@ export class NetworkController {
     description: 'The economics details',
     type: Economics
   })
-  async getBlock(): Promise<Economics> {
+  async getEconomics(): Promise<Economics> {
     return await this.networkService.getEconomics();
+  }
+
+  @Get("/stats")
+  @ApiResponse({
+    status: 200,
+    description: 'The network statistics',
+    type: Stats
+  })
+  async getStats(): Promise<Stats> {
+    return await this.networkService.getStats();
   }
 }

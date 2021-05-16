@@ -146,4 +146,13 @@ export class ApiConfigService {
 
     return isLoggingApiCalls;
   }
+
+  getMetaChainShardId(): number {
+    let metaChainShardId = this.configService.get<number>('metaChainShardId');
+    if (metaChainShardId === undefined) {
+      throw new Error('No metaChainShardId present');
+    }
+
+    return metaChainShardId;
+  }
 }

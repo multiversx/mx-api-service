@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
+import { Stats } from 'src/endpoints/network/entities/stats';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { CachingService } from 'src/helpers/caching.service';
+import { ElasticService } from 'src/helpers/elastic.service';
 import { GatewayService } from 'src/helpers/gateway.service';
 import { oneMinute } from 'src/helpers/helpers';
 import { VmQueryService } from '../vm.query/vm.query.service';
@@ -14,7 +16,8 @@ export class NetworkService {
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
-    private readonly vmQueryService: VmQueryService
+    private readonly vmQueryService: VmQueryService,
+    private readonly elasticService: ElasticService
   ) {}
 
   async getConstants(): Promise<Constants> {
@@ -76,5 +79,42 @@ export class NetworkService {
     const circulatingSupply = totalSupply - locked;
 
     return { totalSupply, circulatingSupply, staked };
+  }
+
+  async getStats(): Promise<Stats> {
+    const metaChainShard = this.apiConfigService.getMetaChainShardId();
+    
+    const [
+      {
+        config: { erd_num_shards_without_meta: shards, erd_round_duration: refreshRate },
+      },
+      {
+        status: {
+          erd_epoch_number: epoch,
+          erd_rounds_passed_in_current_epoch: roundsPassed,
+          erd_rounds_per_epoch: roundsPerEpoch,
+        },
+      },
+      blocks,
+      accounts,
+      transactions
+    ] = await Promise.all([
+      this.gatewayService.get('network/config'),
+      this.gatewayService.get(`network/status/${metaChainShard}`),
+      this.elasticService.getCount('blocks'),
+      this.elasticService.getCount('accounts'),
+      this.elasticService.getCount('transactions'),
+    ]);
+
+    return {
+      shards,
+      blocks,
+      accounts,
+      transactions,
+      refreshRate,
+      epoch,
+      roundsPassed,
+      roundsPerEpoch,
+    }
   }
 }
