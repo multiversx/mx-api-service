@@ -5,13 +5,13 @@ import { VmQueryService } from "./vm.query.service";
 import { Response } from 'express';
 
 @Controller()
-@ApiTags('vm-values')
+@ApiTags('query')
 export class VmQueryController {
   constructor(
     private readonly vmQueryService: VmQueryService
   ) {}
 
-  @Post('/vm-values/query')
+  @Post('/query')
   @ApiResponse({
     status: 201,
     description: 'Returns the result of the query',

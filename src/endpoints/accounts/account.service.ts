@@ -4,7 +4,7 @@ import { GatewayService } from '../../helpers/gateway.service';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
 import { ElasticPagination } from 'src/helpers/entities/elastic.pagination';
-import { bech32Decode, mergeObjects, oneDay, oneHour } from 'src/helpers/helpers';
+import { bech32Decode, mergeObjects, oneDay } from 'src/helpers/helpers';
 import { CachingService } from 'src/helpers/caching.service';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -39,15 +39,6 @@ export class AccountService {
   }
 
   async getAccount(address: string): Promise<AccountDetailed> {
-    return await this.cachingService.getOrSetCache(
-      `account:${address}`,
-      async () => await this.getAccountRaw(address),
-      oneHour(),
-      6
-    )
-  }
-
-  async getAccountRaw(address: string): Promise<AccountDetailed> {
     let query = {
       sender: address,
       receiver: address

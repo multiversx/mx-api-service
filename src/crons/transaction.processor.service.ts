@@ -11,7 +11,7 @@ import { ShardTransaction } from "./entities/shard.transaction";
 
 @Injectable()
 export class TransactionProcessorService {
-  isProcessing: boolean = false; // temp
+  isProcessing: boolean = false;
 
   shards: number[] = [ 0, 1, 2, 4294967295 ];
   shardNonces: number[] = [ 0, 0, 0, 0 ];
@@ -54,7 +54,6 @@ export class TransactionProcessorService {
         this.cachingService.tryInvalidateTokens(transaction);
         this.cachingService.tryInvalidateTokensOnAccount(transaction);
         this.cachingService.tryInvalidateTokenBalance(transaction);
-        this.cachingService.tryInvalidateAccount(transaction);
       }
     } finally {
       this.isProcessing = false;
@@ -82,7 +81,7 @@ export class TransactionProcessorService {
     let lastProcessedNonces = await Promise.all(
       this.shards.map(shard => this.getLastProcessedNonce(shard))
     );
-    
+
     let allTransactions: ShardTransaction[] = [];
 
     for (let [index, shardId] of this.shards.entries()) {

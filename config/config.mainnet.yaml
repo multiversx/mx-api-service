@@ -1,7 +1,7 @@
 network: 'mainnet'
 profile: true
 csrfSecret: '1nt3rn3tsc@l3'
-cronActive: false
+cronActive: true
 logApiCalls: true
 urls:
   elastic:

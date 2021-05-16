@@ -340,11 +340,6 @@ export class CachingService {
     }
   }
 
-  async tryInvalidateAccount(transaction: ShardTransaction) {
-    this.deleteInCache(`account:${transaction.sender}`);
-    this.deleteInCache(`account:${transaction.receiver}`);
-  }
-
   private async getInvalidationKeys(transaction: ShardTransaction): Promise<string[]> {
     if (!isSmartContractAddress(transaction.receiver)) {
       return [];
@@ -406,14 +401,14 @@ export class CachingService {
 
   async getCachedFunctions(contract: string): Promise<CachedFunction[] | undefined> {
     let cachedFunctions = this.caching[contract];
-    if (!cachedFunctions) {
-      let accountCodeHash = await this.accountService.getAccountCodeHash(contract);
-      if (!accountCodeHash) {
-        return [];
-      }
+    // if (!cachedFunctions) {
+    //   let accountCodeHash = await this.accountService.getAccountCodeHash(contract);
+    //   if (!accountCodeHash) {
+    //     return [];
+    //   }
 
-      cachedFunctions = this.caching[accountCodeHash];
-    }
+    //   cachedFunctions = this.caching[accountCodeHash];
+    // }
 
     return cachedFunctions;
   }
