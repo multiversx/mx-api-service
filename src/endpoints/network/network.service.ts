@@ -7,7 +7,7 @@ import { ElasticService } from 'src/helpers/elastic.service';
 import { GatewayService } from 'src/helpers/gateway.service';
 import { oneMinute } from 'src/helpers/helpers';
 import { VmQueryService } from '../vm.query/vm.query.service';
-import { Constants } from './entities/constants';
+import { Constants } from './entities/constantsss';
 import { Economics } from './entities/economics';
 
 @Injectable()
