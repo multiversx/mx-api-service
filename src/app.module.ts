@@ -40,8 +40,6 @@ import { DelegationLegacyController } from './endpoints/delegation.legacy/delega
 import { StakeController } from './endpoints/stake/stake.controller';
 import { DelegationController } from './endpoints/delegation/delegation.controller';
 import { DelegationService } from './endpoints/delegation/delegation.service';
-import { EconomicsService } from './endpoints/economics/economics.service';
-import { EconomicsController } from './endpoints/economics/economics.controller';
 import { VmQueryController } from './endpoints/vm.query/vm.query.controller';
 
 @Module({
@@ -56,14 +54,14 @@ import { VmQueryController } from './endpoints/vm.query/vm.query.controller';
     NetworkController, AccountController, TransactionController, TokenController, BlockController, 
     MiniBlockController, RoundController, NodeController, MultisigController, ProviderController,
     AccessController, DelegationLegacyController, StakeController, DelegationController,
-    EconomicsController, VmQueryController
+    VmQueryController
   ],
   providers: [
     NetworkService, ApiConfigService, AccountService, ElasticService, GatewayService, TransactionService, 
     TokenService, BlockService, MiniBlockService, RoundService, NodeService, VmQueryService,
     CachingService, KeybaseService, TransactionProcessorService, EventsGateway, ProviderService,
     StakeService, LoggingInterceptor, ApiService, ProfilerService, AccessService, DelegationLegacyService,
-    DelegationService, EconomicsService
+    DelegationService
   ],
 })
 export class AppModule {}
