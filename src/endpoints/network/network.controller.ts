@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Constants } from './entities/constantsss';
+import { Constants } from './entities/constants';
 import { Economics } from './entities/economics';
 import { NetworkService } from './network.service';
 import { Stats } from 'src/endpoints/network/entities/stats';
