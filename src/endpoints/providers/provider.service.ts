@@ -74,7 +74,7 @@ export class ProviderService {
     providers.forEach((provider) => {
       const found = data.find((element: any) => element !== null && provider.provider === element.contract);
 
-      if (found) {
+      if (found && found.aprValue) {
         provider.apr = parseFloat(found.aprValue.toFixed(2));
       }
     });
