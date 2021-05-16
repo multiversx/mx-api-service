@@ -8,7 +8,7 @@ urls:
     - 'https://index.elrond.com'
   gateway:
     - 'https://gateway.elrond.com'
-  redis: '192.168.26.111'
+  redis: '138.68.110.168'
   providers: 'https://internal-delegation-api.elrond.com/providers'
 caching:
   cacheTtl: 6
