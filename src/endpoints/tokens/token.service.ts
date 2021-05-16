@@ -29,6 +29,11 @@ export class TokenService {
     let allTokens = await this.getAllTokens();
     return allTokens.length;
   }
+  
+  async getTokenCountForAddress(address: string): Promise<number> {
+    let tokens = await this.getTokensForAddress(address);
+    return tokens.length;
+  }
 
   async getTokensForAddress(address: string): Promise<Token[]> {
     return await this.cachingService.getOrSetCache(

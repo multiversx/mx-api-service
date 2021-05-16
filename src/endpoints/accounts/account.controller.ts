@@ -95,6 +95,24 @@ export class AccountController {
     }
   }
 
+  @Get("/accounts/:address/tokens/count")
+  @ApiResponse({
+    status: 200,
+    description: 'The number of tokens available on the blockchain for the given address',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  async getTokenCount(@Param('address') address: string): Promise<number> {
+    try {
+      return await this.tokenService.getTokenCountForAddress(address);
+    } catch (error) {
+      console.error(error);
+      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+    }
+  }
+
   // @Get("/accounts/:address/delegationlegacy")
   // @ApiResponse({
   //   status: 200,
