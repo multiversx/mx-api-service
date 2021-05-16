@@ -1,4 +1,4 @@
-import { CACHE_MANAGER, forwardRef, Inject, Injectable } from "@nestjs/common";
+import { CACHE_MANAGER, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "./api.config.service";
 const { promisify } = require('util');
 import { createClient } from 'redis';
@@ -9,7 +9,6 @@ import { isSmartContractAddress } from "./helpers";
 import { EventsGateway } from "src/websockets/events.gateway";
 import { PerformanceProfiler } from "./performance.profiler";
 import { ShardTransaction } from "src/crons/entities/shard.transaction";
-import { AccountService } from "src/endpoints/accounts/account.service";
 import { Cache } from "cache-manager";
 
 @Injectable()
@@ -93,8 +92,6 @@ export class CachingService {
   constructor(
     private readonly configService: ApiConfigService,
     private readonly eventsGateway: EventsGateway,
-    @Inject(forwardRef(() => AccountService))
-    private readonly accountService: AccountService,
     @Inject(CACHE_MANAGER)
     private readonly cache: Cache
   ) {}
