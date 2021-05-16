@@ -19,6 +19,15 @@ export class TokenController {
     return await this.tokenService.getTokens();
   }
 
+  @Get("/tokens/count")
+  @ApiResponse({
+    status: 200,
+    description: 'The number of tokens available on the blockchain',
+  })
+  async getTokenCount(): Promise<number> {
+    return await this.tokenService.getTokenCount();
+  }
+
   @Get('/tokens/:identifier')
   @ApiResponse({
     status: 200,
