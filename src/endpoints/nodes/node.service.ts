@@ -50,6 +50,11 @@ export class NodeService {
     return allNodes.find(x => x.bls === bls);
   }
 
+  async getNodeCount(): Promise<number> {
+    let allNodes = await this.getAllNodes();
+    return allNodes.length;
+  }
+
   async getNodes(query: NodeQuery): Promise<Node[]> {
     let allNodes = await this.getAllNodes();
 

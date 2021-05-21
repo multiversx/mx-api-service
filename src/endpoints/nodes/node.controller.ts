@@ -47,6 +47,15 @@ export class NodeController {
 		return await this.nodeService.getNodes({ from, size, search, online, type, status, shard, issues, identity, provider, owner });
 	}
 
+	@Get("/nodes/count")
+	@ApiResponse({
+		status: 200,
+		description: 'The number of nodes available on the blockchain',
+	})
+	getBlocksCount(): Promise<number> {
+		return this.nodeService.getNodeCount();
+	}
+
   @Get('/nodes/:bls')
   @ApiResponse({
     status: 200,
