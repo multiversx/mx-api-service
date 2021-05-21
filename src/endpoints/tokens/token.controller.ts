@@ -1,4 +1,4 @@
-import { Controller, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Token } from "./entities/token";
 import { TokenService } from "./token.service";
@@ -15,11 +15,15 @@ export class TokenController {
     type: Token,
     isArray: true
   })
+	@ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+	@ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
 	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
   async getTokens(
+		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('search') search: string | undefined,
   ): Promise<Token[]> {
-    return await this.tokenService.getTokens(search);
+    return await this.tokenService.getTokens(from, size, search);
   }
 
   @Get("/tokens/count")

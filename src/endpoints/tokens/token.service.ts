@@ -21,8 +21,10 @@ export class TokenService {
     return tokens.find(x => x.token === identifier);
   }
 
-  async getTokens(search: string | undefined): Promise<Token[]> {
+  async getTokens(from: number, size: number, search: string | undefined): Promise<Token[]> {
     let tokens = await this.getAllTokens();
+
+    tokens = tokens.slice(from, from + size);
 
     if (search) {
       let searchLower = search.toLowerCase();

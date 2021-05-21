@@ -15,7 +15,7 @@ export class ShardService {
   async getShards(from: number, size: number): Promise<Shard[]> {
     let allShards = await this.getAllShardsRaw();
 
-    return allShards.slice(from, size);
+    return allShards.slice(from, from + size);
   }
 
   async getAllShards(): Promise<Shard[]> {
