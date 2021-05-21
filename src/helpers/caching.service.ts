@@ -139,7 +139,7 @@ export class CachingService {
   }
 
   async getCacheLocal<T>(key: string): Promise<T | undefined> {
-    return this.cache.get<T>(key);
+    return await this.cache.get<T>(key);
   }
 
   public async getCache<T>(key: string): Promise<T | undefined> {
@@ -272,7 +272,7 @@ export class CachingService {
       profiler.stop(`Remote Cache hit for key ${key}`);
 
       // we only set ttl to half because we don't know what the real ttl of the item is and we want it to work good in most scenarios
-      await this.setCacheLocal(key, cached, localTtl);
+      await this.setCacheLocal<T>(key, cached, localTtl);
       return cached;
     }
 
