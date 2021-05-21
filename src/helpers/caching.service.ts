@@ -436,13 +436,10 @@ export class CachingService {
     let genesisTimestamp = await this.getGenesisTimestamp();
     let currentTimestamp = Math.round(Date.now() / 1000);
 
-
     let result = 6 - (currentTimestamp - genesisTimestamp) % 6;
     if (result === 6) {
       result = 0;
     }
-
-    console.log({currentTimestamp, genesisTimestamp, result});
 
     return result;
   }
