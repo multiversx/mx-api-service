@@ -1,4 +1,4 @@
-import { Controller, Get } from "@nestjs/common";
+import { Controller, Post } from "@nestjs/common";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AccessService } from "./access.service";
 
@@ -9,7 +9,7 @@ export class AccessController {
     private readonly accessService: AccessService
   ) {}
 
-  @Get("/access")
+  @Post("/access")
   @ApiResponse({
     status: 200,
   })
