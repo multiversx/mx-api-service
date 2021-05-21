@@ -14,6 +14,7 @@
     "start:debug": "npm run copy-devnet-config & nest start --debug --watch",
     "start:test": "npm run copy-testnet-config & nest start",
     "start:prod": "npm run copy-mainnet-config & nest start",
+    "start:custom": "npm run copy-custom-config & nest start",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -22,7 +23,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "copy-devnet-config": "cp ./config/config.devnet.yaml ./config/config.yaml",
     "copy-testnet-config": "cp ./config/config.testnet.yaml ./config/config.yaml",
-    "copy-mainnet-config": "cp ./config/config.mainnet.yaml ./config/config.yaml"
+    "copy-mainnet-config": "cp ./config/config.mainnet.yaml ./config/config.yaml",
+    "copy-custom-config": "cp ./config/config.custom.yaml ./config/config.yaml"
   },
   "dependencies": {
     "@elrondnetwork/erdjs": "^4.0.3",
