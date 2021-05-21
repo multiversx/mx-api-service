@@ -47,6 +47,15 @@ export class NodeController {
 		return await this.nodeService.getNodes({ from, size, search, online, type, status, shard, issues, identity, provider, owner });
 	}
 
+	@Get("/nodes/versions")
+	@ApiResponse({
+		status: 200,
+		description: 'The node versions available on the blockchain',
+	})
+	async getNodeVersions(): Promise<NodeVersions> {
+		return await this.nodeService.getNodeVersions();
+	}
+
 	@Get("/nodes/count")
 	@ApiResponse({
 		status: 200,

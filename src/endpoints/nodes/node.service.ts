@@ -55,6 +55,34 @@ export class NodeService {
     return allNodes.length;
   }
 
+  async getNodeVersions(): Promise<NodeVersions> {
+    let allNodes = await this.getAllNodes();
+
+    const data = allNodes
+        .filter(({ type }) => type === NodeType.validator)
+        .reduce((accumulator: any, item) => {
+          if (item.version) {
+            if (!accumulator[item.version]) {
+              accumulator[item.version] = 1;
+            } else {
+              accumulator[item.version] += 1;
+            }
+          }
+
+          return accumulator;
+        }, {});
+
+      const sum = Object.keys(data).reduce((accumulator, item) => {
+        return accumulator + data[item];
+      }, 0);
+
+      Object.keys(data).forEach((key) => {
+        data[key] = parseFloat((data[key] / sum).toFixed(2));
+      });
+
+      return { data };
+  }
+
   async getNodes(query: NodeQuery): Promise<Node[]> {
     let allNodes = await this.getAllNodes();
 
