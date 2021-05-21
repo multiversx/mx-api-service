@@ -80,7 +80,7 @@ export class NodeService {
         data[key] = parseFloat((data[key] / sum).toFixed(2));
       });
 
-      return { data };
+      return data;
   }
 
   async getNodes(query: NodeQuery): Promise<Node[]> {
