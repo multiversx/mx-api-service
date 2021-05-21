@@ -114,18 +114,20 @@ export class CachingService {
   pendingGetRemotes: { [key: string]: Promise<any> } = {};
 
   private async getCacheRemote<T>(key: string): Promise<T | undefined> {
+    let response;
+
     let pendingGetRemote = this.pendingGetRemotes[key];
     if (pendingGetRemote) {
-      return await pendingGetRemote;
+      response = await pendingGetRemote;
+    } else {
+      pendingGetRemote = this.asyncGet(`${this.configService.getNetwork()}:${key}`);
+
+      this.pendingGetRemotes[key] = pendingGetRemote;
+
+      response = await pendingGetRemote;
+
+      delete this.pendingGetRemotes[key];
     }
-
-    pendingGetRemote = this.asyncGet(`${this.configService.getNetwork()}:${key}`);
-
-    this.pendingGetRemotes[key] = pendingGetRemote;
-
-    const response = await pendingGetRemote;
-
-    delete this.pendingGetRemotes[key];
 
     if (response === undefined) {
       return undefined;
