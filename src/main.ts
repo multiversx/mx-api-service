@@ -1,4 +1,4 @@
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { readFileSync } from 'fs';
@@ -6,6 +6,7 @@ import { join } from 'path';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { ApiConfigService } from './helpers/api.config.service';
 import { CachingService } from './helpers/caching.service';
+import { CachingInterceptor } from './interceptors/caching.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,8 +14,12 @@ async function bootstrap() {
 
   let apiConfigService = app.get<ApiConfigService>(ApiConfigService);
   let cachingService = app.get<CachingService>(CachingService);
+  let httpAdapterHostService = app.get<HttpAdapterHost>(HttpAdapterHost);
 
-  app.useGlobalInterceptors(new LoggingInterceptor(apiConfigService, cachingService));
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(apiConfigService, cachingService), 
+    new CachingInterceptor(cachingService, httpAdapterHostService)
+  );
   const description = readFileSync(join(__dirname, '..', 'docs', 'swagger.md'), 'utf8');
 
   const config = new DocumentBuilder()

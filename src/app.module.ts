@@ -41,6 +41,8 @@ import { StakeController } from './endpoints/stake/stake.controller';
 import { DelegationController } from './endpoints/delegation/delegation.controller';
 import { DelegationService } from './endpoints/delegation/delegation.service';
 import { VmQueryController } from './endpoints/vm.query/vm.query.controller';
+import { CacheConfigService } from './helpers/cache.config.service';
+import { CachingInterceptor } from './interceptors/caching.interceptor';
 
 @Module({
   imports: [
@@ -61,7 +63,7 @@ import { VmQueryController } from './endpoints/vm.query/vm.query.controller';
     TokenService, BlockService, MiniBlockService, RoundService, NodeService, VmQueryService,
     CachingService, KeybaseService, TransactionProcessorService, EventsGateway, ProviderService,
     StakeService, LoggingInterceptor, ApiService, ProfilerService, AccessService, DelegationLegacyService,
-    DelegationService
+    DelegationService, CacheConfigService, CachingInterceptor
   ],
 })
 export class AppModule {}

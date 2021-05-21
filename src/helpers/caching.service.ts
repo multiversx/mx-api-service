@@ -5,11 +5,12 @@ import { createClient } from 'redis';
 import asyncPool from 'tiny-async-pool';
 import { CachedFunction } from "src/crons/entities/cached.function";
 import { InvalidationFunction } from "src/crons/entities/invalidation.function";
-import { isSmartContractAddress } from "./helpers";
+import { isSmartContractAddress, oneWeek } from "./helpers";
 import { EventsGateway } from "src/websockets/events.gateway";
 import { PerformanceProfiler } from "./performance.profiler";
 import { ShardTransaction } from "src/crons/entities/shard.transaction";
 import { Cache } from "cache-manager";
+import { RoundService } from "src/endpoints/rounds/round.service";
 
 @Injectable()
 export class CachingService {
@@ -26,64 +27,64 @@ export class CachingService {
   };
     
   caching: { [key: string] : CachedFunction[] } = {
-    'erd1qqqqqqqqqqqqqpgqta8u7qyngjttwu9cmh7uvskaentglrqlerms7a3gys': [
-      { 
-        funcName: 'getQuorum', 
-        invalidations: [
-          {
-            funcName: 'performAction',
-            args: []
-          }
-        ]
-      },
-      { 
-        funcName: 'getNumBoardMembers', 
-        invalidations: [
-          {
-            funcName: 'performAction',
-            args: []
-          }
-        ]
-      },
-      { 
-        funcName: 'getNumProposers', 
-        invalidations: [
-          {
-            funcName: 'performAction',
-            args: []
-          }
-        ]
-      },
-      { 
-        funcName: 'userRole', 
-        invalidations: [
-          {
-            funcName: 'performAction',
-            args: [
-              { index: undefined, value: '*' }
-            ]
-          }
-        ]
-      },
-      { 
-        funcName: 'getPendingActionFullInfo', 
-        invalidations: [
-          {
-            funcName: '*',
-            args: []
-          },
-        ]
-      },
-    ],
-    'erd1qqqqqqqqqqqqqpgqjsq7r0vsemjxxyruh4scgut3jgc6dtasermsq7ejx9': [
-      {
-        funcName: 'getMultisigContractName',
-        invalidations: []
-      }
-    ],
-    '/uYNe6O98aIOSpF57HocNxS4JQ7FILx6+N7MEN3oAQY=': [
+    // 'erd1qqqqqqqqqqqqqpgqta8u7qyngjttwu9cmh7uvskaentglrqlerms7a3gys': [
+    //   { 
+    //     funcName: 'getQuorum', 
+    //     invalidations: [
+    //       {
+    //         funcName: 'performAction',
+    //         args: []
+    //       }
+    //     ]
+    //   },
+    //   { 
+    //     funcName: 'getNumBoardMembers', 
+    //     invalidations: [
+    //       {
+    //         funcName: 'performAction',
+    //         args: []
+    //       }
+    //     ]
+    //   },
+    //   { 
+    //     funcName: 'getNumProposers', 
+    //     invalidations: [
+    //       {
+    //         funcName: 'performAction',
+    //         args: []
+    //       }
+    //     ]
+    //   },
+    //   { 
+    //     funcName: 'userRole', 
+    //     invalidations: [
+    //       {
+    //         funcName: 'performAction',
+    //         args: [
+    //           { index: undefined, value: '*' }
+    //         ]
+    //       }
+    //     ]
+    //   },
+    //   { 
+    //     funcName: 'getPendingActionFullInfo', 
+    //     invalidations: [
+    //       {
+    //         funcName: '*',
+    //         args: []
+    //       },
+    //     ]
+    //   },
+    // ],
+    // 'erd1qqqqqqqqqqqqqpgqjsq7r0vsemjxxyruh4scgut3jgc6dtasermsq7ejx9': [
+    //   {
+    //     funcName: 'getMultisigContractName',
+    //     invalidations: []
+    //   }
+    // ],
+    // '/uYNe6O98aIOSpF57HocNxS4JQ7FILx6+N7MEN3oAQY=': [
 
-    ]
+    // ]
   };
 
   private asyncDel = promisify(this.client.del).bind(this.client);
@@ -93,7 +94,8 @@ export class CachingService {
     private readonly configService: ApiConfigService,
     private readonly eventsGateway: EventsGateway,
     @Inject(CACHE_MANAGER)
-    private readonly cache: Cache
+    private readonly cache: Cache,
+    private readonly roundService: RoundService
   ) {}
 
   public async incrementCachedValue(key: string): Promise<number> {
@@ -132,11 +134,11 @@ export class CachingService {
     return JSON.parse(response);
   };
 
-  private async setCacheLocal<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
+  async setCacheLocal<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
     return await this.cache.set<T>(key, value, { ttl });
   }
 
-  private async getCacheLocal<T>(key: string): Promise<T | undefined> {
+  async getCacheLocal<T>(key: string): Promise<T | undefined> {
     return this.cache.get<T>(key);
   }
 
@@ -277,8 +279,13 @@ export class CachingService {
     let value = await promise();
     profiler.stop(`Cache miss for key ${key}`);
 
-    await this.setCacheLocal<T>(key, value, localTtl);
-    await this.setCacheRemote<T>(key, value, remoteTtl);
+    if (localTtl > 0) {
+      await this.setCacheLocal<T>(key, value, localTtl);
+    }
+
+    if (remoteTtl > 0) {
+      await this.setCacheRemote<T>(key, value, remoteTtl);
+    }
     return value;
   }
 
@@ -423,5 +430,34 @@ export class CachingService {
     }
 
     return false;
+  }
+
+  async getSecondsRemainingUntilNextRound(): Promise<number> {
+    let genesisTimestamp = await this.getGenesisTimestamp();
+    let currentTimestamp = Math.round(Date.now() / 1000);
+
+
+    let result = 6 - (currentTimestamp - genesisTimestamp) % 6;
+    if (result === 6) {
+      result = 0;
+    }
+
+    console.log({currentTimestamp, genesisTimestamp, result});
+
+    return result;
+  }
+
+  private async getGenesisTimestamp(): Promise<number> {
+    return await this.getOrSetCache(
+      'genesisTimestamp',
+      async () => await this.getGenesisTimestampRaw(),
+      oneWeek(),
+      oneWeek()
+    );
+  }
+
+  private async getGenesisTimestampRaw(): Promise<number> {
+    let round = await this.roundService.getRound(0, 1);
+    return round.timestamp;
   }
 }

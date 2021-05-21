@@ -2,13 +2,13 @@ import { Injectable } from "@nestjs/common";
 import axios from "axios";
 import { ApiConfigService } from "../../helpers/api.config.service";
 import { CachingService } from "../../helpers/caching.service";
-import { oneDay, oneHour } from "../../helpers/helpers";
+import {  oneHour } from "../../helpers/helpers";
 
 @Injectable()
 export class VmQueryService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: CachingService
+    private readonly cachingService: CachingService,
   ) {}
 
   async vmQueryFullResult(contract: string, func: string, caller: string | undefined = undefined, args: string[] = []): Promise<any> {
@@ -31,7 +31,6 @@ export class VmQueryService {
     );
   }
 
-
   async vmQuery(contract: string, func: string, caller: string | undefined = undefined, args: string[] = []): Promise<string[]> {
     let key = `vm-query:${contract}:${func}`;
     if (caller) {
@@ -43,13 +42,19 @@ export class VmQueryService {
     }
 
     let isCachingQueryFunction = await this.cachingService.isCachingQueryFunction(contract, func);
-    let ttl = isCachingQueryFunction ? oneDay() : 6;
+    let secondsRemainingUntilNextRound = await this.cachingService.getSecondsRemainingUntilNextRound();
+
+    let localTtl = isCachingQueryFunction ? oneHour() : secondsRemainingUntilNextRound;
+
+    // no need to store value remotely just to evict it one second later
+    let remoteTtl = localTtl > 1 ? localTtl : 0;
 
     try {
       let result = await this.cachingService.getOrSetCache(
         key,
         async () => await this.vmQueryRaw(contract, func, caller, args),
-        ttl
+        remoteTtl,
+        localTtl
       );
 
       let data = result.data.data;
