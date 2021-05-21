@@ -50,8 +50,8 @@ export class NodeService {
     return allNodes.find(x => x.bls === bls);
   }
 
-  async getNodeCount(): Promise<number> {
-    let allNodes = await this.getAllNodes();
+  async getNodeCount(query: NodeQuery): Promise<number> {
+    let allNodes = await this.getFilteredNodes(query);
     return allNodes.length;
   }
 
@@ -83,15 +83,14 @@ export class NodeService {
       return data;
   }
 
-  async getNodes(query: NodeQuery): Promise<Node[]> {
+  private async getFilteredNodes(query: NodeQuery): Promise<Node[]> {
     let allNodes = await this.getAllNodes();
 
-    const filteredNodes = allNodes.filter(node => {
+    return allNodes.filter(node => {
       if (query.search !== undefined) {
         const nodeMatches = node.bls.toLowerCase().includes(query.search.toLowerCase());
         const nameMatches = node.name && node.name.toLowerCase().includes(query.search.toLowerCase());
-        const versionMatches =
-          node.version && node.version.toLowerCase().includes(query.search.toLowerCase());
+        const versionMatches = node.version && node.version.toLowerCase().includes(query.search.toLowerCase());
 
         if (!nodeMatches && !nameMatches && !versionMatches) {
           return false;
@@ -132,8 +131,12 @@ export class NodeService {
 
       return true;
     });
+  }
 
-    return filteredNodes.slice(query.from, query.from + query.size);
+  async getNodes(from: number, size: number, query: NodeQuery): Promise<Node[]> {
+    let filteredNodes = await this.getFilteredNodes(query);
+
+    return filteredNodes.slice(from, from + size);
   }
 
   async getAllNodes(): Promise<Node[]> {

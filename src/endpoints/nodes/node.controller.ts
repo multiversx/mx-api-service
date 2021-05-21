@@ -45,7 +45,7 @@ export class NodeController {
 		@Query('provider', ParseOptionalIntPipe) provider: string | undefined,
 		@Query('owner', ParseOptionalIntPipe) owner: string | undefined,
 	): Promise<Node[]> {
-		return await this.nodeService.getNodes({ from, size, search, online, type, status, shard, issues, identity, provider, owner });
+		return await this.nodeService.getNodes(from, size, { search, online, type, status, shard, issues, identity, provider, owner });
 	}
 
 	@Get("/nodes/versions")
@@ -64,8 +64,27 @@ export class NodeController {
 		status: 200,
 		description: 'The number of nodes available on the blockchain',
 	})
-	getBlocksCount(): Promise<number> {
-		return this.nodeService.getNodeCount();
+	@ApiQuery({ name: 'search', description: 'Search by name, bls or version', required: false })
+	@ApiQuery({ name: 'online', description: 'Whether node is online or not', required: false, type: 'boolean' })
+	@ApiQuery({ name: 'type', description: 'Type of node', required: false, enum: NodeType })
+	@ApiQuery({ name: 'status', description: 'Node status', required: false, enum: NodeStatus })
+	@ApiQuery({ name: 'shard', description: 'Node shard', required: false })
+	@ApiQuery({ name: 'issues', description: 'Whether node has issues or not', required: false, type: 'boolean' })
+	@ApiQuery({ name: 'identity', description: 'Node identity', required: false })
+	@ApiQuery({ name: 'provider', description: 'Node provider', required: false })
+	@ApiQuery({ name: 'owner', description: 'Node owner', required: false })
+	getNodeCount(
+		@Query('search') search: string | undefined,
+		@Query('online', ParseOptionalBoolPipe) online: boolean | undefined,
+		@Query('type', new ParseOptionalEnumPipe(NodeType)) type: NodeType | undefined,
+		@Query('status', new ParseOptionalEnumPipe(NodeStatus)) status: NodeStatus | undefined,
+		@Query('shard', ParseOptionalIntPipe) shard: number | undefined,
+		@Query('issues', ParseOptionalBoolPipe) issues: boolean | undefined,
+		@Query('identity', ParseOptionalIntPipe) identity: string | undefined,
+		@Query('provider', ParseOptionalIntPipe) provider: string | undefined,
+		@Query('owner', ParseOptionalIntPipe) owner: string | undefined,
+	): Promise<number> {
+		return this.nodeService.getNodeCount({ search, online, type, status, shard, issues, identity, provider, owner });
 	}
 
   @Get('/nodes/:bls')
