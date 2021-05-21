@@ -43,6 +43,8 @@ import { DelegationService } from './endpoints/delegation/delegation.service';
 import { VmQueryController } from './endpoints/vm.query/vm.query.controller';
 import { CacheConfigService } from './helpers/cache.config.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
+import { ShardController } from './endpoints/shards/shard.controller';
+import { ShardService } from './endpoints/shards/shard.service';
 
 @Module({
   imports: [
@@ -56,14 +58,14 @@ import { CachingInterceptor } from './interceptors/caching.interceptor';
     NetworkController, AccountController, TransactionController, TokenController, BlockController, 
     MiniBlockController, RoundController, NodeController, MultisigController, ProviderController,
     AccessController, DelegationLegacyController, StakeController, DelegationController,
-    VmQueryController
+    VmQueryController, ShardController
   ],
   providers: [
     NetworkService, ApiConfigService, AccountService, ElasticService, GatewayService, TransactionService, 
     TokenService, BlockService, MiniBlockService, RoundService, NodeService, VmQueryService,
     CachingService, KeybaseService, TransactionProcessorService, EventsGateway, ProviderService,
     StakeService, LoggingInterceptor, ApiService, ProfilerService, AccessService, DelegationLegacyService,
-    DelegationService, CacheConfigService, CachingInterceptor
+    DelegationService, CacheConfigService, CachingInterceptor, ShardService
   ],
 })
 export class AppModule {}

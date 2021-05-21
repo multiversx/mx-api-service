@@ -1,32 +1,52 @@
-// import { Injectable } from "@nestjs/common";
-// import { ElasticPagination } from "src/helpers/entities/ElasticPagination";
-// import { ElasticService } from "src/helpers/elastic.service";
-// import { mergeObjects } from "src/helpers/helpers";
+import { Injectable } from "@nestjs/common";
+import { NodeService } from "../nodes/node.service";
+import { NodeStatus } from "../nodes/entities/node.status";
+import { Shard } from "./entities/shard";
+import { CachingService } from "src/helpers/caching.service";
+import { oneMinute } from "src/helpers/helpers";
 
-// @Injectable()
-// export class ShardService {
-//   constructor(private readonly elasticService: ElasticService) {}
+@Injectable()
+export class ShardService {
+  constructor(
+    private readonly nodeService: NodeService,
+    private readonly cachingService: CachingService
+  ) {}
 
-//   async getShards(shard: number | null, from: number, size: number): Promise<Shard[]> {
-//     const query = {
-//       shardId: shard
-//     };
+  async getShards(from: number, size: number): Promise<Shard[]> {
+    let allShards = await this.getAllShardsRaw();
 
-//     const pagination: ElasticPagination = {
-//       from,
-//       size
-//     }
+    return allShards.slice(from, size);
+  }
 
-//     const sort = {
-//       timestamp: 'desc',
-//     };
+  async getAllShards(): Promise<Shard[]> {
+    return this.cachingService.getOrSetCache(
+      'shards',
+      async () => await this.getAllShardsRaw(),
+      oneMinute()
+    );
+  }
 
-//     let result = await this.elasticService.getList('blocks', 'hash', query, pagination, sort);
+  async getAllShardsRaw(): Promise<Shard[]> {
+    let nodes = await this.nodeService.getAllNodes();
 
-//     for (let item of result) {
-//       item.shard = item.shardId;
-//     }
+    const validators = nodes.filter(
+      ({ type, shard, status }) =>
+        type === 'validator' &&
+        shard !== undefined &&
+        [ NodeStatus.eligible, NodeStatus.waiting, NodeStatus.leaving ].includes(status ?? NodeStatus.unknown)
+    );
 
-//     return result.map(item => mergeObjects(new Block(), item));
-//   }
-// }
+    const shards = [...new Set(validators.map(({ shard }) => shard).filter(shard => shard !== undefined).map(shard => shard!!))];
+
+    return shards.map((shard) => {
+      const shardValidators = validators.filter((node) => node.shard === shard);
+      const activeShardValidators = shardValidators.filter(({ online }) => online);
+
+      return {
+        shard,
+        validators: shardValidators.length,
+        activeValidators: activeShardValidators.length,
+      };
+    });
+  }
+}
