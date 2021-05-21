@@ -18,6 +18,7 @@ export class TokenService {
 
   async getToken(identifier: string): Promise<Token | undefined> {
     let tokens = await this.getAllTokens();
+    console.log({tokens});
     return tokens.find(x => x.token === identifier);
   }
 
