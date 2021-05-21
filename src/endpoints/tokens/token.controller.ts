@@ -1,5 +1,5 @@
-import { Controller, Get, HttpException, HttpStatus, Param } from "@nestjs/common";
-import { ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Controller, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
+import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Token } from "./entities/token";
 import { TokenService } from "./token.service";
 
@@ -15,8 +15,11 @@ export class TokenController {
     type: Token,
     isArray: true
   })
-  async getTokens(): Promise<Token[]> {
-    return await this.tokenService.getTokens();
+	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
+  async getTokens(
+		@Query('search') search: string | undefined,
+  ): Promise<Token[]> {
+    return await this.tokenService.getTokens(search);
   }
 
   @Get("/tokens/count")
