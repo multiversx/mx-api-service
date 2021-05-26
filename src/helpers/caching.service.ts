@@ -160,6 +160,29 @@ export class CachingService {
   }
 
   async batchProcess<IN, OUT>(payload: IN[], cacheKeyFunction: (element: IN) => string, handler: (generator: IN) => Promise<OUT>, ttl: number = this.configService.getCacheTtl(), skipCache: boolean = false): Promise<OUT[]> {
+    let chunks = this.getChunks(payload, 25);
+    let result: OUT[] = [];
+
+    for (let chunk of chunks) {
+      let retries = 0;
+
+      while (retries < 3) {
+        try {
+          let processedChunk = await this.batchProcessChunk(chunk, cacheKeyFunction, handler, ttl, skipCache);
+          result.push(...processedChunk);
+          break;
+        } catch (error) {
+          console.error(error);
+          console.log(`Retries: ${retries}`);
+          retries++;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  async batchProcessChunk<IN, OUT>(payload: IN[], cacheKeyFunction: (element: IN) => string, handler: (generator: IN) => Promise<OUT>, ttl: number = this.configService.getCacheTtl(), skipCache: boolean = false): Promise<OUT[]> {
     const keys = payload.map(element => `${this.configService.getNetwork()}:${cacheKeyFunction(element)}`);
 
     let cached: OUT[] = [];
@@ -197,10 +220,26 @@ export class CachingService {
     );
   }
 
+  private spreadTtl(ttl: number): number {
+    const threshold = 300; // seconds after which to start spreading ttls
+    const spread = 10; // percent ttls spread
+  
+    if (ttl >= threshold) {
+      const sign = Math.round(Math.random()) * 2 - 1;
+      const amount = Math.floor(Math.random() * ((ttl * spread) / 100));
+  
+      ttl = ttl + sign * amount;
+    }
+  
+    return ttl;
+  };
+
   async batchSetCache(keys: string[], values: any[], ttls: number[]) {
     if (!ttls) {
       ttls = new Array(keys.length).fill(this.configService.getCacheTtl());
     }
+
+    ttls = ttls.map(ttl => this.spreadTtl(ttl));
   
     const chunks = this.getChunks(
       keys.map((key, index) => {
@@ -226,8 +265,8 @@ export class CachingService {
     await this.asyncMulti(sets);
   };
 
-  private getChunks(array: any[], size = 25) {
-    return array.reduce((result, item, current) => {
+  private getChunks<T>(array: T[], size = 25): T[][] {
+    return array.reduce((result: T[][], item, current) => {
       const index = Math.floor(current / size);
   
       if (!result[index]) {
