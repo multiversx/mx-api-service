@@ -160,7 +160,7 @@ export class CachingService {
   }
 
   async batchProcess<IN, OUT>(payload: IN[], cacheKeyFunction: (element: IN) => string, handler: (generator: IN) => Promise<OUT>, ttl: number = this.configService.getCacheTtl(), skipCache: boolean = false): Promise<OUT[]> {
-    let chunks = this.getChunks(payload, 25);
+    let chunks = this.getChunks(payload, 100);
     let result: OUT[] = [];
 
     for (let [index, chunk] of chunks.entries()) {
