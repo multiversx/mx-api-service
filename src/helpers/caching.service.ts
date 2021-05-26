@@ -163,8 +163,9 @@ export class CachingService {
     let chunks = this.getChunks(payload, 25);
     let result: OUT[] = [];
 
-    for (let chunk of chunks) {
+    for (let [index, chunk] of chunks.entries()) {
       let retries = 0;
+      console.log(`Loading ${index + 1} / ${chunks.length} chunks`);
 
       while (retries < 3) {
         try {
