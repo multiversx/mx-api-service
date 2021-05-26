@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { GatewayService } from "src/helpers/gateway.service";
-import { bech32Encode, oneHour } from "src/helpers/helpers";
+import { bech32Encode, oneDay, oneHour, oneMinute } from "src/helpers/helpers";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
@@ -13,7 +13,7 @@ export class TokenService {
     private readonly gatewayService: GatewayService, 
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
-    private readonly vmQueryService: VmQueryService
+    private readonly vmQueryService: VmQueryService,
   ) {}
 
   async getToken(identifier: string): Promise<Token | undefined> {
@@ -90,7 +90,7 @@ export class TokenService {
       'allTokens',
       async () => await this.getAllTokensRaw(),
       oneHour(),
-      6
+      oneMinute()
     );
   }
 
@@ -103,7 +103,7 @@ export class TokenService {
       tokensIdentifiers,
       token => `tokenProperties:${token}`,
       async (token: string) => await this.getTokenProperties(token),
-      oneHour()
+      oneDay()
     );
 
     // const object: any = {};
@@ -130,6 +130,7 @@ export class TokenService {
       'getTokenProperties',
       undefined,
       [ arg ],
+      true
     );
   
     const tokenProperties = tokenPropertiesEncoded.map((encoded, index) =>
