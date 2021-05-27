@@ -1,22 +1,23 @@
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { AppModule } from './app.module';
+import { PublicAppModule } from './public.app.module';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { ApiConfigService } from './helpers/api.config.service';
 import { CachingService } from './helpers/caching.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
+import { PrivateAppModule } from './private.app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  const publicApp = await NestFactory.create(PublicAppModule);
+  publicApp.enableCors();
 
-  let apiConfigService = app.get<ApiConfigService>(ApiConfigService);
-  let cachingService = app.get<CachingService>(CachingService);
-  let httpAdapterHostService = app.get<HttpAdapterHost>(HttpAdapterHost);
+  let apiConfigService = publicApp.get<ApiConfigService>(ApiConfigService);
+  let cachingService = publicApp.get<CachingService>(CachingService);
+  let httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
 
-  app.useGlobalInterceptors(
+  publicApp.useGlobalInterceptors(
     new LoggingInterceptor(apiConfigService, cachingService), 
     new CachingInterceptor(cachingService, httpAdapterHostService)
   );
@@ -34,9 +35,14 @@ async function bootstrap() {
     .setExternalDoc('Elrond Docs', 'https://docs.elrond.com')
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  const document = SwaggerModule.createDocument(publicApp, config);
+  SwaggerModule.setup('api', publicApp, document);
 
-  await app.listen(3001);
+  if (apiConfigService.getIsApiActive()) {
+    await publicApp.listen(3001);
+
+    const privateApp = await NestFactory.create(PrivateAppModule);
+    await privateApp.listen(4001);
+  }
 }
 bootstrap();

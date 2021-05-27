@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import { WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
+import { WebSocketServer } from "@nestjs/websockets";
 import { Server } from 'socket.io'
 
 @Injectable()
-@WebSocketGateway(3002)
+// @WebSocketGateway(3003)
 export class EventsGateway {
   @WebSocketServer()
   server: Server | undefined
@@ -12,11 +12,5 @@ export class EventsGateway {
     console.log(`publishing websocket event balanceChanged:${account}`);
 
     this.server?.emit(`balanceChanged:${account}`); 
-  }
-
-  onVmQueryValueChanged(cacheKey: string) {
-    console.log(`publishing websocket event ${cacheKey}`);
-
-    this.server?.emit(cacheKey);
   }
 }

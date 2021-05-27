@@ -6,11 +6,11 @@ import asyncPool from 'tiny-async-pool';
 import { CachedFunction } from "src/crons/entities/cached.function";
 import { InvalidationFunction } from "src/crons/entities/invalidation.function";
 import { isSmartContractAddress, oneWeek } from "./helpers";
-import { EventsGateway } from "src/websockets/events.gateway";
 import { PerformanceProfiler } from "./performance.profiler";
 import { ShardTransaction } from "src/crons/entities/shard.transaction";
 import { Cache } from "cache-manager";
 import { RoundService } from "src/endpoints/rounds/round.service";
+import axios from "axios";
 
 @Injectable()
 export class CachingService {
@@ -92,10 +92,10 @@ export class CachingService {
 
   constructor(
     private readonly configService: ApiConfigService,
-    private readonly eventsGateway: EventsGateway,
     @Inject(CACHE_MANAGER)
     private readonly cache: Cache,
-    private readonly roundService: RoundService
+    private readonly roundService: RoundService,
+    private readonly apiConfigService: ApiConfigService
   ) {}
 
   public async incrementCachedValue(key: string): Promise<number> {
@@ -107,7 +107,7 @@ export class CachingService {
   }
 
   private async setCacheRemote<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
-    await this.asyncSet(`${this.configService.getNetwork()}:${key}`, JSON.stringify(value), 'EX', ttl ?? this.configService.getCacheTtl());
+    await this.asyncSet(key, JSON.stringify(value), 'EX', ttl ?? this.configService.getCacheTtl());
     return value;
   };
 
@@ -120,7 +120,7 @@ export class CachingService {
     if (pendingGetRemote) {
       response = await pendingGetRemote;
     } else {
-      pendingGetRemote = this.asyncGet(`${this.configService.getNetwork()}:${key}`);
+      pendingGetRemote = this.asyncGet(key);
 
       this.pendingGetRemotes[key] = pendingGetRemote;
 
@@ -160,8 +160,21 @@ export class CachingService {
   }
 
   async batchProcess<IN, OUT>(payload: IN[], cacheKeyFunction: (element: IN) => string, handler: (generator: IN) => Promise<OUT>, ttl: number = this.configService.getCacheTtl(), skipCache: boolean = false): Promise<OUT[]> {
-    let chunks = this.getChunks(payload, 100);
     let result: OUT[] = [];
+
+    let remaining: IN[] = [];
+    for (let element of payload) {
+      let cached = await this.getCacheLocal<OUT>(cacheKeyFunction(element));
+      if (cached !== undefined) {
+        result.push(cached);
+      } else {
+        remaining.push(element);
+      }
+    }
+
+    console.log(`Found ${result.length} elements in local cache`);
+
+    let chunks = this.getChunks(remaining, 100);
 
     for (let [index, chunk] of chunks.entries()) {
       let retries = 0;
@@ -184,7 +197,7 @@ export class CachingService {
   }
 
   async batchProcessChunk<IN, OUT>(payload: IN[], cacheKeyFunction: (element: IN) => string, handler: (generator: IN) => Promise<OUT>, ttl: number = this.configService.getCacheTtl(), skipCache: boolean = false): Promise<OUT[]> {
-    const keys = payload.map(element => `${this.configService.getNetwork()}:${cacheKeyFunction(element)}`);
+    const keys = payload.map(element => cacheKeyFunction(element));
 
     let cached: OUT[] = [];
     if (skipCache) {
@@ -241,6 +254,14 @@ export class CachingService {
     }
 
     ttls = ttls.map(ttl => this.spreadTtl(ttl));
+
+    for (let [index, key] of keys.entries()) {
+      let value = values[index];
+      let ttl = ttls[index];
+
+      this.setCacheLocal(key, value, ttl);
+    }
+
   
     const chunks = this.getChunks(
       keys.map((key, index) => {
@@ -331,22 +352,31 @@ export class CachingService {
     return value;
   }
 
+  async deleteInCacheLocal(key: string) {
+    await this.cache.del(key);
+  }
+
   async deleteInCache(key: string) {
-    let fullKey = `${this.configService.getNetwork()}:${key}`;
-    if (fullKey.includes('*')) {
-      let allKeys = await this.asyncKeys(fullKey);
+    if (key.includes('*')) {
+      let allKeys = await this.asyncKeys(key);
       for (let key of allKeys) {
         console.log(`Invalidating key: ${key}`);
         await this.cache.del(key);
         await this.asyncDel(key);
-        this.eventsGateway.onVmQueryValueChanged(key);
+        await this.deleteInCacheOnApiServers(key);
       }
     } else {
-      console.log(`Invalidating key ${fullKey}`);
-      await this.cache.del(fullKey);
-      await this.asyncDel(fullKey);
-      this.eventsGateway.onVmQueryValueChanged(fullKey);
+      console.log(`Invalidating key ${key}`);
+      await this.cache.del(key);
+      await this.asyncDel(key);
+      await this.deleteInCacheOnApiServers(key);
     }
+  }
+
+  async deleteInCacheOnApiServers(key: string) {
+    let apiUrls = this.apiConfigService.getPrivateApiUrls();
+
+    await Promise.all(apiUrls.map(url => axios.delete(`${url}/cache/${key}`)));
   }
 
   async tryInvalidateTransaction(transaction: ShardTransaction) {

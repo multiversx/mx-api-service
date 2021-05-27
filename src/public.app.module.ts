@@ -67,5 +67,8 @@ import { ShardService } from './endpoints/shards/shard.service';
     StakeService, LoggingInterceptor, ApiService, ProfilerService, AccessService, DelegationLegacyService,
     DelegationService, CacheConfigService, CachingInterceptor, ShardService
   ],
+  exports: [
+    ApiConfigService, EventsGateway, RoundService, CachingService
+  ]
 })
-export class AppModule {}
+export class PublicAppModule {}

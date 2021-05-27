@@ -2,6 +2,7 @@ network: 'mainnet'
 profile: true
 csrfSecret: '1nt3rn3tsc@l3'
 cronActive: true
+apiActive: true
 logApiCalls: true
 metaChainShardId: 4294967295
 urls:
@@ -9,6 +10,8 @@ urls:
     - 'https://index.elrond.com'
   gateway:
     - 'https://gateway.elrond.com'
+  privateApi:
+    - 'http://localhost:4001'
   redis: '127.0.0.1'
   providers: 'https://internal-delegation-api.elrond.com/providers'
 caching:
