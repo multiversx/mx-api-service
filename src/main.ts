@@ -8,6 +8,7 @@ import { ApiConfigService } from './helpers/api.config.service';
 import { CachingService } from './helpers/caching.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { PrivateAppModule } from './private.app.module';
+import { ProcessorModule } from './processor.module';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
@@ -43,6 +44,11 @@ async function bootstrap() {
 
     const privateApp = await NestFactory.create(PrivateAppModule);
     await privateApp.listen(4001);
+  }
+
+  if (apiConfigService.getIsCronActive()) {
+    let processorModule = await NestFactory.create(ProcessorModule);
+    await processorModule.listen(5001);
   }
 }
 bootstrap();
