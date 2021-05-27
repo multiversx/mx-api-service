@@ -209,6 +209,10 @@ export class ProviderService {
       this.apiConfigService.getDelegationManagerContractAddress(),
       'getAllContractAddresses',
     );
+
+    if (!providersBase64) {
+      return [];
+    }
   
     const value = providersBase64.map((providerBase64) =>
       bech32Encode(Buffer.from(providerBase64, 'base64').toString('hex'))
