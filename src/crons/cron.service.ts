@@ -10,7 +10,7 @@ import { EventsGateway } from "src/websockets/events.gateway";
 import { ShardTransaction } from "./entities/shard.transaction";
 
 @Injectable()
-export class TransactionProcessorService {
+export class CronService {
   isProcessing: boolean = false;
 
   shards: number[] = [ 0, 1, 2, 4294967295 ];
@@ -21,11 +21,11 @@ export class TransactionProcessorService {
       private readonly cachingService: CachingService,
       private readonly eventsGateway: EventsGateway,
       private readonly gatewayService: GatewayService,
-      private readonly apiConfigService: ApiConfigService
+      private readonly apiConfigService: ApiConfigService,
   ) {}
 
   @Cron('*/1 * * * * *')
-  async handleCron() {
+  async handleNewTransactions() {
     let isCronActive = this.apiConfigService.getIsCronActive();
     if (!isCronActive) {
       return;

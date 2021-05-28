@@ -9,6 +9,7 @@ import { CachingService } from './helpers/caching.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { PrivateAppModule } from './private.app.module';
 import { ProcessorModule } from './processor.module';
+import { MetricsService } from './endpoints/metrics/metrics.service';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
@@ -17,9 +18,10 @@ async function bootstrap() {
   let apiConfigService = publicApp.get<ApiConfigService>(ApiConfigService);
   let cachingService = publicApp.get<CachingService>(CachingService);
   let httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
+  let metricsService = publicApp.get<MetricsService>(MetricsService);
 
   publicApp.useGlobalInterceptors(
-    new LoggingInterceptor(apiConfigService, cachingService), 
+    new LoggingInterceptor(apiConfigService, cachingService, metricsService), 
     new CachingInterceptor(cachingService, httpAdapterHostService)
   );
   const description = readFileSync(join(__dirname, '..', 'docs', 'swagger.md'), 'utf8');

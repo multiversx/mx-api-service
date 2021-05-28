@@ -42,11 +42,10 @@ import { CacheConfigService } from './helpers/cache.config.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { ShardController } from './endpoints/shards/shard.controller';
 import { ShardService } from './endpoints/shards/shard.service';
-import { ScheduleModule } from '@nestjs/schedule';
+import { MetricsService } from './endpoints/metrics/metrics.service';
 
 @Module({
   imports: [
-    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       load: [configuration]
     }),
@@ -63,10 +62,10 @@ import { ScheduleModule } from '@nestjs/schedule';
     TokenService, BlockService, MiniBlockService, RoundService, NodeService, VmQueryService,
     CachingService, KeybaseService, ProviderService,
     StakeService, LoggingInterceptor, ApiService, ProfilerService, AccessService, DelegationLegacyService,
-    DelegationService, CacheConfigService, CachingInterceptor, ShardService
+    DelegationService, CacheConfigService, CachingInterceptor, ShardService, MetricsService
   ],
   exports: [
-    ApiConfigService, RoundService, CachingService, TransactionService, GatewayService
+    ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService
   ]
 })
 export class PublicAppModule {}

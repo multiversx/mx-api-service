@@ -42,6 +42,7 @@
     "csrf": "^3.1.0",
     "js-yaml": "^4.0.0",
     "node-object-hash": "^2.3.1",
+    "prom-client": "^13.1.0",
     "redis": "^3.1.2",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
