@@ -39,6 +39,8 @@ export class CronService {
     try {
       let newTransactions = await this.getNewTransactions();
 
+      let allInvalidatedKeys = [];
+
       for (let transaction of newTransactions) {
         console.log(`Transferred ${transaction.value} from ${transaction.sender} to ${transaction.receiver}`);
 
@@ -49,11 +51,20 @@ export class CronService {
         if (!isSmartContractAddress(transaction.receiver)) {
           this.eventsGateway.onAccountBalanceChanged(transaction.receiver);
         }
+        
+        let invalidatedTransactionKeys = await this.cachingService.tryInvalidateTransaction(transaction);
+        let invalidatedTokenKeys = await this.cachingService.tryInvalidateTokens(transaction);
+        let invalidatedTokensOnAccountKeys = await this.cachingService.tryInvalidateTokensOnAccount(transaction);
+        let invalidatedTokenBalancesKeys = await this.cachingService.tryInvalidateTokenBalance(transaction);
 
-        this.cachingService.tryInvalidateTransaction(transaction);
-        this.cachingService.tryInvalidateTokens(transaction);
-        this.cachingService.tryInvalidateTokensOnAccount(transaction);
-        this.cachingService.tryInvalidateTokenBalance(transaction);
+        allInvalidatedKeys.push(...invalidatedTransactionKeys, ...invalidatedTokenKeys, ...invalidatedTokensOnAccountKeys, ...invalidatedTokenBalancesKeys);
+      }
+
+      let uniqueInvalidatedKeys = [...new Set(allInvalidatedKeys)];
+      console.log({uniqueInvalidatedKeys});
+
+      for (let invalidatedKey of uniqueInvalidatedKeys) {
+        await this.cachingService.deleteInCacheOnApiServers(invalidatedKey);
       }
     } finally {
       this.isProcessing = false;

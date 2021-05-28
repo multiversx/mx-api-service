@@ -356,64 +356,84 @@ export class CachingService {
     await this.cache.del(key);
   }
 
-  async deleteInCache(key: string) {
+  async deleteInCache(key: string): Promise<string[]> {
+    let invalidatedKeys = [];
+
     if (key.includes('*')) {
       let allKeys = await this.asyncKeys(key);
       for (let key of allKeys) {
         console.log(`Invalidating key: ${key}`);
         await this.cache.del(key);
         await this.asyncDel(key);
-        await this.deleteInCacheOnApiServers(key);
+        invalidatedKeys.push(key);
       }
     } else {
       console.log(`Invalidating key ${key}`);
       await this.cache.del(key);
       await this.asyncDel(key);
-      await this.deleteInCacheOnApiServers(key);
+      invalidatedKeys.push(key);
     }
+
+    return invalidatedKeys;
   }
 
   async deleteInCacheOnApiServers(key: string) {
     let apiUrls = this.apiConfigService.getPrivateApiUrls();
 
-    await Promise.all(apiUrls.map(url => axios.delete(`${url}/cache/${key}`)));
-  }
-
-  async tryInvalidateTransaction(transaction: ShardTransaction) {
-    let keys = await this.getInvalidationKeys(transaction);
-    for (let key of keys) {
-      let invalidationKey = `vm-query:${transaction.receiver}:${key}`;
-      this.deleteInCache(invalidationKey);
+    try {
+      await Promise.all(apiUrls.map(url => axios.delete(`${url}/cache/${key}`)));
+    } catch (error) {
+      console.error(`Error when deleting key ${key} on API servers`, error);
     }
   }
 
-  async tryInvalidateTokens(transaction: ShardTransaction) {
+  async tryInvalidateTransaction(transaction: ShardTransaction): Promise<string[]> {
+    let keys = await this.getInvalidationKeys(transaction);
+    let invalidatedKeys = [];
+    for (let key of keys) {
+      let invalidationKey = `vm-query:${transaction.receiver}:${key}`;
+      let invalidated = await this.deleteInCache(invalidationKey);
+      invalidatedKeys.push(...invalidated);
+    }
+
+    return invalidatedKeys;
+  }
+
+  async tryInvalidateTokens(transaction: ShardTransaction): Promise<string[]> {
     if (transaction.receiver !== this.configService.getEsdtContractAddress()) {
-      return;
+      return [];
     }
 
     let transactionFuncName = transaction.getDataFunctionName();
 
     // if transaction target is ESDT SC and functionName is "issue", kick out 'allTokens' key
     if (transactionFuncName === 'issue') {
-      this.deleteInCache('allTokens');
+      return await this.deleteInCache('allTokens');
     }
+
+    return [];
   }
 
-  async tryInvalidateTokensOnAccount(transaction: ShardTransaction) {
+  async tryInvalidateTokensOnAccount(transaction: ShardTransaction): Promise<string[]> {
     if (transaction.sender !== this.configService.getEsdtContractAddress()) {
-      return;
+      return [];
     }
 
-    this.deleteInCache(`tokens:${transaction.receiver}`);
+    return await this.deleteInCache(`tokens:${transaction.receiver}`);
   }
 
-  async tryInvalidateTokenBalance(transaction: ShardTransaction) {
+  async tryInvalidateTokenBalance(transaction: ShardTransaction): Promise<string[]> {
     let transactionFuncName = transaction.getDataFunctionName();
     if (transactionFuncName === 'ESDTTransfer') {
-      this.deleteInCache(`tokens:${transaction.sender}`);
-      this.deleteInCache(`tokens:${transaction.receiver}`);
+      let invalidatedKeys = [];
+      let invalidated = await this.deleteInCache(`tokens:${transaction.sender}`);
+      invalidatedKeys.push(...invalidated);
+
+      invalidated = await this.deleteInCache(`tokens:${transaction.receiver}`);
+      invalidatedKeys.push(...invalidated);
     }
+
+    return [];
   }
 
   private async getInvalidationKeys(transaction: ShardTransaction): Promise<string[]> {
