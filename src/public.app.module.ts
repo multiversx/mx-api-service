@@ -42,6 +42,8 @@ import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { ShardController } from './endpoints/shards/shard.controller';
 import { ShardService } from './endpoints/shards/shard.service';
 import { MetricsService } from './endpoints/metrics/metrics.service';
+import { IdentitiesController } from './endpoints/identities/identities.controller';
+import { IdentitiesService } from './endpoints/identities/identities.service';
 
 @Module({
   imports: [
@@ -54,14 +56,14 @@ import { MetricsService } from './endpoints/metrics/metrics.service';
     NetworkController, AccountController, TransactionController, TokenController, BlockController, 
     MiniBlockController, RoundController, NodeController, ProviderController,
     AccessController, DelegationLegacyController, StakeController, DelegationController,
-    VmQueryController, ShardController
+    VmQueryController, ShardController, IdentitiesController
   ],
   providers: [
     NetworkService, ApiConfigService, AccountService, ElasticService, GatewayService, TransactionService, 
     TokenService, BlockService, MiniBlockService, RoundService, NodeService, VmQueryService,
     CachingService, KeybaseService, ProviderService,
     StakeService, LoggingInterceptor, ApiService, ProfilerService, AccessService, DelegationLegacyService,
-    DelegationService, CacheConfigService, CachingInterceptor, ShardService, MetricsService
+    DelegationService, CacheConfigService, CachingInterceptor, ShardService, MetricsService, IdentitiesService
   ],
   exports: [
     ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService

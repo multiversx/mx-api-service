@@ -3,7 +3,6 @@ import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Node } from "src/endpoints/nodes/entities/node";
 import { ProviderService } from "./provider.service";
 import { Provider } from "./entities/provider";
-import { PerformanceProfiler } from "src/helpers/performance.profiler";
 
 @Controller()
 @ApiTags('providers')
@@ -25,10 +24,7 @@ export class ProviderController {
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('identity') identity: string | undefined,
 	): Promise<Provider[]> {
-		let profiler = new PerformanceProfiler('providers api call');
-		let result = await this.providerService.getProviders({ from, size, identity });
-		profiler.stop();
-		return result;
+		return await this.providerService.getProviders({ from, size, identity });
 	}
 
   @Get('/providers/:address')
