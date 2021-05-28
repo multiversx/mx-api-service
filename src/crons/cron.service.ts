@@ -38,11 +38,14 @@ export class CronService {
     this.isProcessing = true;
     try {
       let newTransactions = await this.getNewTransactions();
+      if (newTransactions.length > 0) {
+        console.log({newTransactions, nonces: this.shardNonces});
+      }
 
       let allInvalidatedKeys = [];
 
       for (let transaction of newTransactions) {
-        console.log(`Transferred ${transaction.value} from ${transaction.sender} to ${transaction.receiver}`);
+        // console.log(`Transferred ${transaction.value} from ${transaction.sender} to ${transaction.receiver}`);
 
         if (!isSmartContractAddress(transaction.sender)) {
           this.eventsGateway.onAccountBalanceChanged(transaction.sender);
@@ -61,8 +64,6 @@ export class CronService {
       }
 
       let uniqueInvalidatedKeys = [...new Set(allInvalidatedKeys)];
-      console.log({uniqueInvalidatedKeys});
-
       for (let invalidatedKey of uniqueInvalidatedKeys) {
         await this.cachingService.deleteInCacheOnApiServers(invalidatedKey);
       }
