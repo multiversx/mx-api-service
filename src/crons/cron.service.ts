@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { Cron } from "@nestjs/schedule";
+import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { TransactionQuery } from "src/endpoints/transactions/entities/transaction.query";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { ApiConfigService } from "src/helpers/api.config.service";
@@ -22,6 +23,7 @@ export class CronService {
       private readonly eventsGateway: EventsGateway,
       private readonly gatewayService: GatewayService,
       private readonly apiConfigService: ApiConfigService,
+      private readonly metricsService: MetricsService
   ) {}
 
   @Cron('*/1 * * * * *')
@@ -93,6 +95,17 @@ export class CronService {
     let lastProcessedNonces = await Promise.all(
       this.shards.map(shard => this.getLastProcessedNonce(shard))
     );
+
+    for (let [index, shardId] of this.shards.entries()) {
+      let currentNonce = currentNonces[index];
+      let lastProcessedNonce = lastProcessedNonces[index];
+      if (lastProcessedNonce === undefined) {
+        continue;
+      }
+
+      let noncesBehind = currentNonce - lastProcessedNonce;
+      this.metricsService.setNoncesBehind(shardId, noncesBehind);
+    }
 
     let allTransactions: ShardTransaction[] = [];
 
