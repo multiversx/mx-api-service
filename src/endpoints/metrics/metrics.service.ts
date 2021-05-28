@@ -12,7 +12,7 @@ export class MetricsService {
         name: 'api',
         help: 'API Calls',
         labelNames: [ 'endpoint', 'code' ],
-        buckets: [ 1, 10, 100, 500, 1000, 10000 ]
+        buckets: [ ]
       });
     }
 
