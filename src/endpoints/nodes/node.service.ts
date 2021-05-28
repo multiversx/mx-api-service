@@ -121,9 +121,9 @@ export class NodeService {
         return false;
       }
 
-      // if (query.provider && node.provider !== query.provider) {
-      //   return false;
-      // }
+      if (query.provider && node.provider !== query.provider) {
+        return false;
+      }
 
       if (query.owner && node.owner !== query.owner) {
         return false;
