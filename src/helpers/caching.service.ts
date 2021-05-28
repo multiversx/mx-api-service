@@ -362,13 +362,13 @@ export class CachingService {
     if (key.includes('*')) {
       let allKeys = await this.asyncKeys(key);
       for (let key of allKeys) {
-        console.log(`Invalidating key: ${key}`);
+        // console.log(`Invalidating key ${key}`);
         await this.cache.del(key);
         await this.asyncDel(key);
         invalidatedKeys.push(key);
       }
     } else {
-      console.log(`Invalidating key ${key}`);
+      // console.log(`Invalidating key ${key}`);
       await this.cache.del(key);
       await this.asyncDel(key);
       invalidatedKeys.push(key);

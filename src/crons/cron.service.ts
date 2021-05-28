@@ -39,7 +39,7 @@ export class CronService {
     try {
       let newTransactions = await this.getNewTransactions();
       if (newTransactions.length > 0) {
-        console.log({newTransactions, nonces: this.shardNonces});
+        console.log({transactions: newTransactions.length});
       }
 
       let allInvalidatedKeys = [];
@@ -125,6 +125,8 @@ export class CronService {
 
         allTransactions = allTransactions.concat(...transactions);
       }
+
+      console.log(`Processed nonce ${currentNonce} on shard ${shardId}`);
 
       this.setLastProcessedNonce(shardId, currentNonce);
     }
