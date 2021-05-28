@@ -23,7 +23,6 @@ import { NodeService } from './endpoints/nodes/node.service';
 import { VmQueryService } from './endpoints/vm.query/vm.query.service';
 import { CachingService } from './helpers/caching.service';
 import { KeybaseService } from './helpers/keybase.service';
-import { MultisigController } from './endpoints/multisig/multisig.controller';
 import { ProviderService } from './endpoints/providers/provider.service';
 import { ProviderController } from './endpoints/providers/provider.controller';
 import { StakeService } from './endpoints/stake/stake.service';
@@ -53,7 +52,7 @@ import { MetricsService } from './endpoints/metrics/metrics.service';
   ],
   controllers: [
     NetworkController, AccountController, TransactionController, TokenController, BlockController, 
-    MiniBlockController, RoundController, NodeController, MultisigController, ProviderController,
+    MiniBlockController, RoundController, NodeController, ProviderController,
     AccessController, DelegationLegacyController, StakeController, DelegationController,
     VmQueryController, ShardController
   ],
