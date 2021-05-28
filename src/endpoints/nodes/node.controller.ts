@@ -81,7 +81,7 @@ export class NodeController {
 		@Query('shard', ParseOptionalIntPipe) shard: number | undefined,
 		@Query('issues', ParseOptionalBoolPipe) issues: boolean | undefined,
 		@Query('identity', ParseOptionalIntPipe) identity: string | undefined,
-		@Query('provider', ParseOptionalIntPipe) provider: string | undefined,
+		@Query('provider') provider: string | undefined,
 		@Query('owner', ParseOptionalIntPipe) owner: string | undefined,
 	): Promise<number> {
 		return this.nodeService.getNodeCount({ search, online, type, status, shard, issues, identity, provider, owner });

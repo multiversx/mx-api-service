@@ -53,12 +53,6 @@ export class IdentitiesService {
         console.log(`pushing identity for node ${node.bls}`);
         identities.push({ name: node.bls, nodes: [node] });
       }
-      
-      /* TODO: take this also into consideration
-      else if (!key) {
-        identities.push({ name: node.bls, nodes: [node] });
-      }
-      */
 
       if (node.type == 'validator') {
         if (node.stake) {
