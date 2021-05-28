@@ -39,6 +39,30 @@ export class TokenService {
     let allTokens = await this.getAllTokens();
     return allTokens.length;
   }
+
+  async getNft(identifier: string): Promise<Token | undefined> {
+    let nfts = await this.getAllNfts();
+    return nfts.find(x => x.token === identifier);
+  }
+
+  async getNfts(from: number, size: number, search: string | undefined): Promise<Token[]> {
+    let nfts = await this.getAllNfts();
+
+    nfts = nfts.slice(from, from + size);
+
+    if (search) {
+      let searchLower = search.toLowerCase();
+
+      nfts = nfts.filter(token => token.name.toLowerCase().includes(searchLower) || token.token.toLowerCase().includes(searchLower));
+    }
+
+    return nfts;
+  }
+
+  async getNftCount(): Promise<number> {
+    let allNfts = await this.getAllNfts();
+    return allNfts.length;
+  }
   
   async getTokenCountForAddress(address: string): Promise<number> {
     let tokens = await this.getTokensForAddress(address);
@@ -96,7 +120,7 @@ export class TokenService {
   async getAllTokensRaw(): Promise<Token[]> {
     const {
       tokens: tokensIdentifiers,
-    } = await this.gatewayService.get('network/esdts');
+    } = await this.gatewayService.get('network/esdt/fungible-tokens');
 
     let tokens = await this.cachingService.batchProcess(
       tokensIdentifiers,
@@ -105,20 +129,43 @@ export class TokenService {
       oneDay()
     );
 
-    // const object: any = {};
-
-    // tokens.forEach((token) => {
-    //   object[token.token] = token;
-    // });
-
-    // tokens = {
-    //   // @ts-ignore
-    //   object,
-    //   array: tokens,
-    // };
-
     // @ts-ignore
     return tokens;
+  }
+
+  async getAllNfts(): Promise<Token[]> {
+    return this.cachingService.getOrSetCache(
+      'allNfts',
+      async () => await this.getAllNftsRaw(),
+      oneHour()
+    );
+  }
+
+  async getAllNftsRaw(): Promise<Token[]> {
+    const {
+      tokens: nftIdentifiers,
+    } = await this.gatewayService.get('network/esdt/non-fungible-tokens');
+
+    const {
+      tokens: sftIdentifiers,
+    } = await this.gatewayService.get('network/esdt/semi-fungible-tokens');
+
+    let nfts = await this.cachingService.batchProcess(
+      nftIdentifiers,
+      token => `tokenProperties:${token}`,
+      async (token: string) => await this.getTokenProperties(token),
+      oneDay()
+    );
+
+    let sfts = await this.cachingService.batchProcess(
+      sftIdentifiers,
+      token => `tokenProperties:${token}`,
+      async (token: string) => await this.getTokenProperties(token),
+      oneDay()
+    );
+
+    // @ts-ignore
+    return nfts.concat(...sfts);
   }
 
   async getTokenProperties(token: string) {
