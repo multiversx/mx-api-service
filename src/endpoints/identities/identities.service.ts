@@ -50,7 +50,6 @@ export class IdentitiesService {
 
         found.nodes.push(node);
       } else {
-        console.log(`pushing identity for node ${node.bls}`);
         identities.push({ name: node.bls, nodes: [node] });
       }
 
