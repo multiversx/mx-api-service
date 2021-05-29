@@ -11,7 +11,7 @@ import { EventsGateway } from "src/websockets/events.gateway";
 import { ShardTransaction } from "./entities/shard.transaction";
 
 @Injectable()
-export class CronService {
+export class TransactionProcessorService {
   isProcessing: boolean = false;
 
   shards: number[] = [ 0, 1, 2, 4294967295 ];
