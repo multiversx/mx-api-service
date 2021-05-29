@@ -1,10 +1,12 @@
 network: 'testnet'
 profile: true
 csrfSecret: '1nt3rn3tsc@l3'
-cronActive: true
 apiActive: true
 logApiCalls: true
 metaChainShardId: 4294967295
+cron:
+  transactionProcessor: true
+  cacheWarmer: true
 urls:
   elastic:
     - 'https://testnet-index.elrond.com'

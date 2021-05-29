@@ -28,7 +28,7 @@ export class TransactionProcessorService {
 
   @Cron('*/1 * * * * *')
   async handleNewTransactions() {
-    let isCronActive = this.apiConfigService.getIsCronActive();
+    let isCronActive = this.apiConfigService.getIsTransactionProcessorCronActive();
     if (!isCronActive) {
       return;
     }

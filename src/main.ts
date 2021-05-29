@@ -10,6 +10,7 @@ import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { PrivateAppModule } from './private.app.module';
 import { TransactionProcessorModule } from './transaction.processor.module';
 import { MetricsService } from './endpoints/metrics/metrics.service';
+import { CacheWarmerModule } from './cache.warmer.module';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
@@ -48,9 +49,14 @@ async function bootstrap() {
     await privateApp.listen(4001);
   }
 
-  if (apiConfigService.getIsCronActive()) {
+  if (apiConfigService.getIsTransactionProcessorCronActive()) {
     let processorModule = await NestFactory.create(TransactionProcessorModule);
     await processorModule.listen(5001);
+  }
+
+  if (apiConfigService.getIsCacheWarmerCronActive()) {
+    let processorModule = await NestFactory.create(CacheWarmerModule);
+    await processorModule.listen(6001);
   }
 }
 bootstrap();

@@ -138,10 +138,19 @@ export class ApiConfigService {
     return csrfSecret;
   }
 
-  getIsCronActive(): boolean {
-    let isCronActive = this.configService.get<boolean>('cronActive');
+  getIsTransactionProcessorCronActive(): boolean {
+    let isCronActive = this.configService.get<boolean>('cron.transactionProcessor');
     if (isCronActive === undefined) {
-      throw new Error('No cronActive flag present');
+      throw new Error('No cron.transactionProcessor flag present');
+    }
+
+    return isCronActive;
+  }
+
+  getIsCacheWarmerCronActive(): boolean {
+    let isCronActive = this.configService.get<boolean>('cron.cacheWarmer');
+    if (isCronActive === undefined) {
+      throw new Error('No cron.cacheWarmer flag present');
     }
 
     return isCronActive;
