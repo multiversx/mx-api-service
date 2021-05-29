@@ -19,4 +19,4 @@ import { EventsGateway } from './websockets/events.gateway';
     TransactionProcessorService, EventsGateway
   ],
 })
-export class ProcessorModule {}
+export class TransactionProcessorModule {}
