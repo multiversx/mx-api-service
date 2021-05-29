@@ -77,6 +77,8 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/tokens")
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
   @ApiResponse({
     status: 200,
     description: 'The tokens of a given account',
@@ -86,9 +88,13 @@ export class AccountController {
     status: 404,
     description: 'Account not found'
   })
-  async getAccountTokens(@Param('address') address: string): Promise<Token[]> {
+  async getAccountTokens(
+    @Param('address') address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+  ): Promise<Token[]> {
     try {
-      return await this.tokenService.getTokensForAddress(address);
+      return await this.tokenService.getTokensForAddress(address, from, size);
     } catch (error) {
       console.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);

@@ -65,20 +65,25 @@ export class TokenService {
   }
   
   async getTokenCountForAddress(address: string): Promise<number> {
-    let tokens = await this.getTokensForAddress(address);
+    let tokens = await this.getAllTokensForAddress(address);
     return tokens.length;
   }
 
-  async getTokensForAddress(address: string): Promise<Token[]> {
+  async getTokensForAddress(address: string, from: number, size: number): Promise<Token[]> {
+    let allTokens = await this.getAllTokensForAddress(address);
+    return allTokens.slice(from, from + size);
+  }
+
+  async getAllTokensForAddress(address: string): Promise<Token[]> {
     return await this.cachingService.getOrSetCache(
       `tokens:${address}`,
-      async () => await this.getTokensForAddressRaw(address),
+      async () => await this.getAllTokensForAddressRaw(address),
       oneHour(),
       6
     );
   }
 
-  async getTokensForAddressRaw(address: string): Promise<TokenWithBalance[]> {
+  async getAllTokensForAddressRaw(address: string): Promise<TokenWithBalance[]> {
     let tokens = await this.getAllTokens();
 
     let tokensIndexed: { [index: string]: Token } = {};
