@@ -24,13 +24,13 @@ export class TokenService {
   async getTokens(from: number, size: number, search: string | undefined): Promise<Token[]> {
     let tokens = await this.getAllTokens();
 
-    tokens = tokens.slice(from, from + size);
-
     if (search) {
       let searchLower = search.toLowerCase();
 
       tokens = tokens.filter(token => token.name.toLowerCase().includes(searchLower) || token.token.toLowerCase().includes(searchLower));
     }
+
+    tokens = tokens.slice(from, from + size);
 
     return tokens;
   }
