@@ -90,13 +90,17 @@ export class CachingService {
   private asyncDel = promisify(this.client.del).bind(this.client);
   private asyncKeys = promisify(this.client.keys).bind(this.client);
 
+  private static cache: Cache;
+
   constructor(
     private readonly configService: ApiConfigService,
     @Inject(CACHE_MANAGER)
-    private readonly cache: Cache,
+    cache: Cache,
     private readonly roundService: RoundService,
     private readonly apiConfigService: ApiConfigService
-  ) {}
+  ) {
+    CachingService.cache = cache;
+  }
 
   public async incrementCachedValue(key: string): Promise<number> {
     return await this.asyncIncr(key);
@@ -137,11 +141,11 @@ export class CachingService {
   };
 
   async setCacheLocal<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
-    return await this.cache.set<T>(key, value, { ttl });
+    return await CachingService.cache.set<T>(key, value, { ttl });
   }
 
   async getCacheLocal<T>(key: string): Promise<T | undefined> {
-    return await this.cache.get<T>(key);
+    return await CachingService.cache.get<T>(key);
   }
 
   public async getCache<T>(key: string): Promise<T | undefined> {
@@ -353,7 +357,7 @@ export class CachingService {
   }
 
   async deleteInCacheLocal(key: string) {
-    await this.cache.del(key);
+    await CachingService.cache.del(key);
   }
 
   async deleteInCache(key: string): Promise<string[]> {
@@ -363,13 +367,13 @@ export class CachingService {
       let allKeys = await this.asyncKeys(key);
       for (let key of allKeys) {
         // console.log(`Invalidating key ${key}`);
-        await this.cache.del(key);
+        await CachingService.cache.del(key);
         await this.asyncDel(key);
         invalidatedKeys.push(key);
       }
     } else {
       // console.log(`Invalidating key ${key}`);
-      await this.cache.del(key);
+      await CachingService.cache.del(key);
       await this.asyncDel(key);
       invalidatedKeys.push(key);
     }
