@@ -32,10 +32,10 @@ export class ElasticService {
     return { ...item, ..._source };
   };
 
-  async getList(collection: string, key: string, query: any, pagination: ElasticPagination, sort: { [key: string]: string }): Promise<any[]> {
+  async getList(collection: string, key: string, query: any, pagination: ElasticPagination, sort: { [key: string]: string }, condition: string = 'must'): Promise<any[]> {
     const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_search`;
     let elasticSort = this.buildSort(sort);
-    let elasticQuery = this.buildQuery(query);
+    let elasticQuery = this.buildQuery(query, condition);
 
     const {
       data: {

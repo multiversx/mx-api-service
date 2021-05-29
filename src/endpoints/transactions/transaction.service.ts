@@ -36,7 +36,7 @@ export class TransactionService {
       'nonce': 'desc',
     };
 
-    let transactions = await this.elasticService.getList('transactions', 'txHash', query, pagination, sort)
+    let transactions = await this.elasticService.getList('transactions', 'txHash', query, pagination, sort, transactionQuery.condition ?? 'must')
 
     return transactions.map(transaction => mergeObjects(new Transaction(), transaction));
   }

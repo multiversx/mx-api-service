@@ -3,6 +3,7 @@ export class TransactionQuery {
     receiver: string | undefined
     senderShard: number | undefined
     receiverShard: number | undefined
+    condition: string | undefined
     before: number | undefined
     after: number | undefined
     from: number = 0
