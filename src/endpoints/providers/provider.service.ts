@@ -157,6 +157,8 @@ export class ProviderService {
       ),
     ]);
 
+    console.log({metadatas});
+
 
     const keybases: Keybase[] = metadatas
       .filter(({ identity }) => !!identity)
