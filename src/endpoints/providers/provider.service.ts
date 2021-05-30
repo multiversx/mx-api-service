@@ -155,14 +155,11 @@ export class ProviderService {
       ),
     ]);
 
-
     const keybases: Keybase[] = metadatas
       .filter(({ identity }) => !!identity)
       .map(({ identity }, index) => {
         return { identity: identity ?? '', key: providers[index] };
       });
-
-    console.log({keybases});
 
     const confirmedKeybases = await this.cachingService.batchProcess(
       keybases,
