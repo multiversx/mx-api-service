@@ -18,9 +18,13 @@ export class IdentitiesService {
     return identities.find(x => x.identity === identifier);
   }
 
-  async getIdentities(from: number, size: number): Promise<Identity[]> {
+  async getIdentities(ids: string[]): Promise<Identity[]> {
     let identities = await this.getAllIdentities();
-    return identities.slice(from, from + size);
+    if (ids.length > 0) {
+      identities = identities.filter(x => ids.includes(x.identity));
+    }
+    
+    return identities;
   }
 
   async getAllIdentities(): Promise<Identity[]> {

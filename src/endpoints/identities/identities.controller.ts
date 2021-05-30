@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { Controller,  Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
 import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Identity } from "./entities/identity";
 import { IdentitiesService } from "./identities.service";
@@ -15,13 +15,13 @@ export class IdentitiesController {
 		type: Identity,
 		isArray: true
 	})
-	@ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-	@ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+	@ApiQuery({ name: 'identities', description: 'Filter by comma-separated list of identities', required: false })
 	async getIdentities(
-		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
-		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+		@Query('identities') identities: string | undefined
 	): Promise<Identity[]> {
-		return await this.identitiesService.getIdentities(from, size);
+    let identityArray = identities ? identities.split(',') : [];
+
+		return await this.identitiesService.getIdentities(identityArray);
 	}
 
   @Get('/identities/:identifier')
