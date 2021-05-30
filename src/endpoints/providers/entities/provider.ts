@@ -25,7 +25,7 @@ export class Provider {
   cumulatedRewards: string | null = null;
 
   @ApiProperty()
-  identity: string = '';
+  identity: string | undefined;
 
   @ApiProperty()
   stake: string = '';

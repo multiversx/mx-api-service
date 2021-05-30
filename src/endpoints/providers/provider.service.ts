@@ -174,7 +174,7 @@ export class ProviderService {
         ...configs[index],
         numUsers: numUsers[index] ?? 0,
         cumulatedRewards: cumulatedRewards[index] ?? '0',
-        identity: '',
+        identity: undefined,
         numNodes: 0,
         stake: '0',
         topUp: '0',
