@@ -8,6 +8,8 @@ import { ParseOptionalEnumPipe } from "src/helpers/pipes/parse.optional.enum.pip
 import { NodeStatus } from "./entities/node.status";
 import { ParseOptionalIntPipe } from "src/helpers/pipes/parse.optional.int.pipe";
 import { Response } from 'express';
+import { SortOrder } from "src/helpers/entities/sort.order";
+import { NodeSort } from "./entities/node.sort";
 
 @Controller()
 @ApiTags('nodes')
@@ -32,6 +34,8 @@ export class NodeController {
 	@ApiQuery({ name: 'identity', description: 'Node identity', required: false })
 	@ApiQuery({ name: 'provider', description: 'Node provider', required: false })
 	@ApiQuery({ name: 'owner', description: 'Node owner', required: false })
+	@ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false })
+	@ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false })
 	async getNodes(
 		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -44,8 +48,10 @@ export class NodeController {
 		@Query('identity', ParseOptionalIntPipe) identity: string | undefined,
 		@Query('provider') provider: string | undefined,
 		@Query('owner', ParseOptionalIntPipe) owner: string | undefined,
+		@Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort: NodeSort | undefined,
+		@Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
 	): Promise<Node[]> {
-		return await this.nodeService.getNodes(from, size, { search, online, type, status, shard, issues, identity, provider, owner });
+		return await this.nodeService.getNodes(from, size, { search, online, type, status, shard, issues, identity, provider, owner, sort, order });
 	}
 
 	@Get("/nodes/versions")
@@ -73,6 +79,8 @@ export class NodeController {
 	@ApiQuery({ name: 'identity', description: 'Node identity', required: false })
 	@ApiQuery({ name: 'provider', description: 'Node provider', required: false })
 	@ApiQuery({ name: 'owner', description: 'Node owner', required: false })
+	@ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false })
+	@ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false })
 	getNodeCount(
 		@Query('search') search: string | undefined,
 		@Query('online', ParseOptionalBoolPipe) online: boolean | undefined,
@@ -83,8 +91,10 @@ export class NodeController {
 		@Query('identity', ParseOptionalIntPipe) identity: string | undefined,
 		@Query('provider') provider: string | undefined,
 		@Query('owner', ParseOptionalIntPipe) owner: string | undefined,
+		@Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort: NodeSort | undefined,
+		@Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
 	): Promise<number> {
-		return this.nodeService.getNodeCount({ search, online, type, status, shard, issues, identity, provider, owner });
+		return this.nodeService.getNodeCount({ search, online, type, status, shard, issues, identity, provider, owner, sort, order });
 	}
 
   @Get('/nodes/:bls')

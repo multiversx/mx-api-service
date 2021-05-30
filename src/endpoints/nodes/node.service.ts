@@ -13,6 +13,7 @@ import { Keybase } from "src/helpers/entities/keybase";
 import { NodeQuery } from "./entities/node.query";
 import { ProviderService } from "../providers/provider.service";
 import { StakeService } from "../stake/stake.service";
+import { SortOrder } from "src/helpers/entities/sort.order";
 
 @Injectable()
 export class NodeService {
@@ -86,7 +87,7 @@ export class NodeService {
   private async getFilteredNodes(query: NodeQuery): Promise<Node[]> {
     let allNodes = await this.getAllNodes();
 
-    return allNodes.filter(node => {
+    let filteredNodes = allNodes.filter(node => {
       if (query.search !== undefined) {
         const nodeMatches = node.bls.toLowerCase().includes(query.search.toLowerCase());
         const nameMatches = node.name && node.name.toLowerCase().includes(query.search.toLowerCase());
@@ -131,6 +132,29 @@ export class NodeService {
 
       return true;
     });
+
+    if (query.sort) {
+      filteredNodes.sort((a: any, b: any) => {
+        let asort = a[query.sort ?? ''];
+        let bsort = b[query.sort ?? ''];
+
+        if (asort && typeof asort === 'string') {
+          asort = asort.toLowerCase();
+        }
+
+        if (bsort && typeof bsort === 'string') {
+          bsort = bsort.toLowerCase();
+        }
+
+        return asort > bsort ? 1 : bsort > asort ? -1 : 0;
+      });
+
+      if (query.order === SortOrder.desc) {
+        filteredNodes.reverse();
+      }
+    }
+
+    return filteredNodes;
   }
 
   async getNodes(from: number, size: number, query: NodeQuery): Promise<Node[]> {

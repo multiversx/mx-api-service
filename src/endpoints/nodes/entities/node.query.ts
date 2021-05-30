@@ -1,5 +1,7 @@
+import { SortOrder } from "src/helpers/entities/sort.order";
 import { NodeStatus } from "./node.status";
 import { NodeType } from "./node.type";
+import { NodeSort } from "./node.sort"
 
 export class NodeQuery {
   search: string | undefined; 
@@ -11,4 +13,6 @@ export class NodeQuery {
   identity: string | undefined;
   provider: string | undefined;
   owner: string | undefined;
+  sort: NodeSort | undefined;
+  order: SortOrder | undefined;
 } 
