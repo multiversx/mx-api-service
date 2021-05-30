@@ -18,14 +18,20 @@ export class BlockController {
       isArray: true
     })
     @ApiQuery({ name: 'shard', description: 'Id of the shard the block belongs to', required: false })
+    @ApiQuery({ name: 'proposer', description: 'Filter by proposer', required: false })
+    @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
+    @ApiQuery({ name: 'epoch', description: 'Filter by epoch', required: false })
     @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
     @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
     getBlocks(
       @Query('shard', ParseOptionalIntPipe) shard: number | undefined, 
+      @Query('proposer') proposer: string | undefined,
+      @Query('validator') validator: string | undefined,
+      @Query('epoch', ParseOptionalIntPipe) epoch: number | undefined,
       @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
       @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
     ): Promise<Block[]> {
-      return this.blockService.getBlocks(shard, from, size);
+      return this.blockService.getBlocks(shard, proposer, validator, epoch, from, size);
     }
 
     @Get("/blocks/count")

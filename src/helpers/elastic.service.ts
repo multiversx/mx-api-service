@@ -68,6 +68,24 @@ export class ElasticService {
     return publicKeys;
   };
 
+  async getBlsIndex(bls: string, shardId: number, epoch: number): Promise<number | boolean> {
+    const url = `${this.apiConfigService.getElasticUrl()}/validators/_doc/${shardId}_${epoch}`;
+  
+    const {
+      data: {
+        _source: { publicKeys },
+      },
+    } = await axios.get(url);
+  
+    const index = publicKeys.indexOf(bls);
+  
+    if (index !== -1) {
+      return index;
+    }
+  
+    return false;
+  };
+
   private buildQuery(query: any = {}, operator: string = 'must') {
     delete query['from'];
     delete query['size'];

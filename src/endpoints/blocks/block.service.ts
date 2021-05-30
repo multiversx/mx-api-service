@@ -13,10 +13,22 @@ export class BlockService {
     return this.elasticService.getCount('blocks');
   }
 
-  async getBlocks(shard: number | undefined, from: number, size: number): Promise<Block[]> {
-    const query = {
-      shardId: shard
+  async getBlocks(shard: number | undefined, proposer: string | undefined, validator: string | undefined, epoch: number | undefined, from: number, size: number): Promise<Block[]> {
+    let query: any = {
+      shardId: shard,
     };
+
+    if (proposer && shard && epoch) {
+      let index = await this.elasticService.getBlsIndex(proposer, shard, epoch);
+      query.proposer = index ? index : -1;
+    }
+
+    if (validator && shard && epoch) {
+      let index = await this.elasticService.getBlsIndex(validator, shard, epoch);
+      query.validators = index ? index : -1;
+    }
+
+    console.log({query});
 
     const pagination: ElasticPagination = {
       from,
