@@ -28,8 +28,6 @@ export class BlockService {
       query.validators = index ? index : -1;
     }
 
-    console.log({query});
-
     const pagination: ElasticPagination = {
       from,
       size
