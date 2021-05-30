@@ -168,17 +168,13 @@ export class ProviderService {
       oneWeek(),
     );
 
+    // @ts-ignore
     const value: Provider[] = providers.map((provider, index) => {
       return {
         provider,
         ...configs[index],
         numUsers: numUsers[index] ?? 0,
-        numNodes: 0,
         cumulatedRewards: cumulatedRewards[index] ?? '0',
-        identity: '',
-        stake: '',
-        topUp: '',
-        locked: '',
       };
     });
 
