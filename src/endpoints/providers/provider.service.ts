@@ -128,6 +128,8 @@ export class ProviderService {
   async getAllProvidersRaw() : Promise<Provider[]> {
     const providers = await this.getProviderAddresses();
 
+    console.log({providers});
+
     const [configs, metadatas, numUsers, cumulatedRewards] = await Promise.all([
       this.cachingService.batchProcess(
         providers,
@@ -155,11 +157,14 @@ export class ProviderService {
       ),
     ]);
 
+
     const keybases: Keybase[] = metadatas
       .filter(({ identity }) => !!identity)
       .map(({ identity }, index) => {
         return { identity: identity ?? '', key: providers[index] };
       });
+
+    console.log({keybases});
 
     const confirmedKeybases = await this.cachingService.batchProcess(
       keybases,
@@ -181,6 +186,8 @@ export class ProviderService {
         locked: '0'
       };
     });
+
+    console.log({value});
 
     keybases.forEach(({ identity, key }, index) => {
       if (confirmedKeybases[index]) {
