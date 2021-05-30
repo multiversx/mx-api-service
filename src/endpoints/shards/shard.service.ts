@@ -4,12 +4,16 @@ import { NodeStatus } from "../nodes/entities/node.status";
 import { Shard } from "./entities/shard";
 import { CachingService } from "src/helpers/caching.service";
 import { oneMinute } from "src/helpers/helpers";
+import { GatewayService } from "src/helpers/gateway.service";
 
 @Injectable()
 export class ShardService {
+  shards: number[] = [ 0, 1, 2, 4294967295 ];
+
   constructor(
     private readonly nodeService: NodeService,
-    private readonly cachingService: CachingService
+    private readonly cachingService: CachingService,
+    private readonly gatewayService: GatewayService
   ) {}
 
   async getShards(from: number, size: number): Promise<Shard[]> {
@@ -48,5 +52,30 @@ export class ShardService {
         activeValidators: activeShardValidators.length,
       };
     });
+  }
+
+  async getCurrentNonce(shardId: number): Promise<number> {
+    let shardInfo = await this.gatewayService.get(`network/status/${shardId}`);
+    return shardInfo.status.erd_nonce;
+  }
+
+  async getLastProcessedNonce(shardId: number): Promise<number | undefined> {
+    return await this.cachingService.getCache<number>(`shardNonce:${shardId}`);
+  }
+
+  async setLastProcessedNonce(shardId: number, nonce: number): Promise<number> {
+    return await this.cachingService.setCache<number>(`shardNonce:${shardId}`, nonce, Number.MAX_SAFE_INTEGER);
+  }
+
+  async getCurrentNonces(): Promise<number[]> {
+    return await Promise.all(
+      this.shards.map(shard => this.getCurrentNonce(shard))
+    );
+  }
+
+  async getLastProcessedNonces(): Promise<(number | undefined)[]> {
+    return await Promise.all(
+      this.shards.map(shard => this.getLastProcessedNonce(shard))
+    );
   }
 }

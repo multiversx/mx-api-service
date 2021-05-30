@@ -24,8 +24,8 @@ async function bootstrap() {
   let metricsService = publicApp.get<MetricsService>(MetricsService);
 
   publicApp.useGlobalInterceptors(
-    new LoggingInterceptor(apiConfigService, cachingService, metricsService), 
-    new CachingInterceptor(cachingService, httpAdapterHostService)
+    new LoggingInterceptor(apiConfigService, metricsService), 
+    new CachingInterceptor(cachingService, httpAdapterHostService, metricsService)
   );
   const description = readFileSync(join(__dirname, '..', 'docs', 'swagger.md'), 'utf8');
 

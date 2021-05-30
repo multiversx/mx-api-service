@@ -2,6 +2,7 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nes
 import { HttpAdapterHost } from "@nestjs/core";
 import { Observable, of, throwError } from "rxjs";
 import { catchError, tap } from 'rxjs/operators';
+import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { CachingService } from "src/helpers/caching.service";
 
 @Injectable()
@@ -11,19 +12,24 @@ export class CachingInterceptor implements NestInterceptor {
   constructor(
     private readonly cachingService: CachingService,
     private readonly httpAdapterHost: HttpAdapterHost,
+    private readonly metricsService: MetricsService
   ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
+    let apiFunction = context.getClass().name + '.' + context.getHandler().name;
+
     let cacheKey = this.getCacheKey(context);
     if (cacheKey) {
       let pendingRequest = this.pendingRequestsDictionary[cacheKey];
       if (pendingRequest) {
         let result = await pendingRequest;
+        this.metricsService.incrementPendingApiHit(apiFunction);
         return of(result);
       }
 
       let cachedValue = await this.cachingService.getCacheLocal(cacheKey);
       if (cachedValue) {
+        this.metricsService.incrementCachedApiHit(apiFunction);
         return of(cachedValue);
       }
 

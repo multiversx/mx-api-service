@@ -66,7 +66,8 @@ import { IdentitiesService } from './endpoints/identities/identities.service';
     DelegationService, CacheConfigService, CachingInterceptor, ShardService, MetricsService, IdentitiesService
   ],
   exports: [
-    ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService, TokenService
+    ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService,
+    TokenService, ShardService
   ]
 })
 export class PublicAppModule {}

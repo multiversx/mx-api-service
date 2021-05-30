@@ -16,8 +16,6 @@ export class CachingService {
   private client = createClient(6379, this.configService.getRedisUrl());
   private asyncSet = promisify(this.client.set).bind(this.client);
   private asyncGet = promisify(this.client.get).bind(this.client);
-  private asyncIncr = promisify(this.client.incr).bind(this.client);
-  private asyncIncrBy = promisify(this.client.incrby).bind(this.client);
   // private asyncMSet = promisify(this.client.mset).bind(this.client);
   private asyncMGet = promisify(this.client.mget).bind(this.client);
   private asyncMulti = (commands: any[]) => {

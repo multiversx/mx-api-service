@@ -2,6 +2,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
+import { ShardService } from "src/endpoints/shards/shard.service";
 import { TransactionQuery } from "src/endpoints/transactions/entities/transaction.query";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { ApiConfigService } from "src/helpers/api.config.service";
@@ -15,8 +16,6 @@ import { ShardTransaction } from "./entities/shard.transaction";
 export class TransactionProcessorService {
   isProcessing: boolean = false;
 
-  shards: number[] = [ 0, 1, 2, 4294967295 ];
-  shardNonces: number[] = [ 0, 0, 0, 0 ];
 
   constructor(
       private readonly transactionService: TransactionService,
@@ -26,6 +25,7 @@ export class TransactionProcessorService {
       private readonly apiConfigService: ApiConfigService,
       private readonly metricsService: MetricsService,
       @Inject('PUBSUB_SERVICE') private client: ClientProxy,
+      private readonly shardService: ShardService
   ) {}
 
   @Cron('*/1 * * * * *')
@@ -76,48 +76,28 @@ export class TransactionProcessorService {
     }
   }
 
-  async getCurrentNonce(shardId: number): Promise<number> {
-    let shardInfo = await this.gatewayService.get(`network/status/${shardId}`);
-    return shardInfo.status.erd_nonce;
-  }
-
-  async getLastProcessedNonce(shardId: number): Promise<number | undefined> {
-    return await this.cachingService.getCache<number>(`shardNonce:${shardId}`);
-  }
-
-  async setLastProcessedNonce(shardId: number, nonce: number): Promise<number> {
-    return await this.cachingService.setCache<number>(`shardNonce:${shardId}`, nonce, Number.MAX_SAFE_INTEGER);
-  }
-
   async getNewTransactions(): Promise<ShardTransaction[]> {
-    let currentNonces = await Promise.all(
-      this.shards.map(shard => this.getCurrentNonce(shard))
-    );
+    let currentNonces = await this.shardService.getCurrentNonces();
+    let lastProcessedNonces = await this.shardService.getLastProcessedNonces();
 
-    let lastProcessedNonces = await Promise.all(
-      this.shards.map(shard => this.getLastProcessedNonce(shard))
-    );
-
-    for (let [index, shardId] of this.shards.entries()) {
-      let currentNonce = currentNonces[index];
+    for (let [index, shardId] of this.shardService.shards.entries()) {
       let lastProcessedNonce = lastProcessedNonces[index];
       if (lastProcessedNonce === undefined) {
         continue;
       }
 
-      let noncesBehind = currentNonce - lastProcessedNonce;
-      this.metricsService.setNoncesBehind(shardId, noncesBehind);
+      this.metricsService.setLastProcessedNonce(shardId, lastProcessedNonce);
     }
 
     let allTransactions: ShardTransaction[] = [];
 
-    for (let [index, shardId] of this.shards.entries()) {
+    for (let [index, shardId] of this.shardService.shards.entries()) {
       let currentNonce = currentNonces[index];
       let lastProcessedNonce = lastProcessedNonces[index];
 
       // for the first time, we don't import all history, we start with the latest nonce
       if (!lastProcessedNonce) {
-        this.setLastProcessedNonce(shardId, currentNonce);
+        this.shardService.setLastProcessedNonce(shardId, currentNonce);
         continue;
       }
 
@@ -143,7 +123,7 @@ export class TransactionProcessorService {
 
       console.log(`Processed nonce ${currentNonce} on shard ${shardId}`);
 
-      this.setLastProcessedNonce(shardId, currentNonce);
+      this.shardService.setLastProcessedNonce(shardId, currentNonce);
     }
 
     return allTransactions;
@@ -175,21 +155,6 @@ export class TransactionProcessorService {
 
     // we only care about transactions that are finalized on the destinationShard
     return transactions.filter(x => x.destinationShard === shardId);
-  }
-
-  getShardsToRefresh(nonces: number[]): { shardId: number, nonce: number }[] {
-    let result = [];
-    
-    for (let [index, nonce] of nonces.entries()) {
-      if (nonce > this.shardNonces[index]) {
-        result.push({ 
-          shardId: this.shards[index],
-          nonce
-        });
-      }
-    }
-
-    return result;
   }
 
   async getLastTimestamp() {
