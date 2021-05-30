@@ -178,6 +178,8 @@ export class ProviderService {
       };
     });
 
+    console.log({value});
+
     keybases.forEach(({ identity, key }, index) => {
       if (confirmedKeybases[index]) {
         console.log(`Confirmed keybase for identity ${identity} and key ${key}`);
