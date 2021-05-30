@@ -86,4 +86,7 @@ export class Node {
 
     @ApiProperty()
     validatorSuccess: number = 0;
+
+    @ApiProperty()
+    position: number = 0;
 }

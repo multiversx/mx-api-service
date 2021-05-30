@@ -153,9 +153,11 @@ export class NodeService {
       if (node) {
         node.type = NodeType.validator;
         node.status = NodeStatus.queued;
+        node.position = queueItem.position;
       } else {
         let newNode = new Node();
         newNode.bls = queueItem.bls;
+        newNode.position = queueItem.position;
         newNode.type = NodeType.validator;
         newNode.status = NodeStatus.queued;
 
@@ -341,7 +343,7 @@ export class NodeService {
         const nonceHex = Buffer.from(nonceBase64, 'base64').toString('hex');
         const nonce = parseInt(BigInt(nonceHex ? '0x' + nonceHex : nonceHex).toString());
 
-        result.push({ bls, nonce, rewards });
+        result.push({ bls, nonce, rewards, position: index / 3 + 1 });
       }
 
       return result;
@@ -447,7 +449,8 @@ export class NodeService {
         validatorFailure,
         validatorIgnoredSignatures,
         validatorSuccess,
-        issues: []
+        issues: [],
+        position: 0
       };
 
       if (node.uptimeSec === 0 && item.downtimeSec === 0) {

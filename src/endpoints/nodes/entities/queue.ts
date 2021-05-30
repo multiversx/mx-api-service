@@ -9,4 +9,7 @@ export class Queue {
 
     @ApiProperty()
     rewards: number = 0;
+
+    @ApiProperty()
+    position: number = 0;
 }
