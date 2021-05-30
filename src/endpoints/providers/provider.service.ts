@@ -161,10 +161,10 @@ export class ProviderService {
 
 
     const keybases: Keybase[] = metadatas
-      .filter(({ identity }) => !!identity)
       .map(({ identity }, index) => {
         return { identity: identity ?? '', key: providers[index] };
-      });
+      })
+      .filter(({ identity }) => !!identity);
 
     console.log({keybases});
 
