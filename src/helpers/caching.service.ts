@@ -100,14 +100,6 @@ export class CachingService {
     CachingService.cache = cache;
   }
 
-  public async incrementCachedValue(key: string): Promise<number> {
-    return await this.asyncIncr(key);
-  }
-
-  public async incrementCachedValueBy(key: string, number: number): Promise<number> {
-    return await this.asyncIncrBy(key, number);
-  }
-
   private async setCacheRemote<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
     await this.asyncSet(key, JSON.stringify(value), 'EX', ttl ?? this.configService.getCacheTtl());
     return value;
