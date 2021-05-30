@@ -149,7 +149,9 @@ export class IdentitiesService {
       delete identity.sort;
     });
 
-    identities = identities.filter(({ locked }) => locked !== '0');
+    identities = identities
+      .filter(x => x !== false)
+      .filter(({ locked }) => locked !== '0');
 
     identities.forEach((identity, index) => {
       identity.rank = index + 1;
