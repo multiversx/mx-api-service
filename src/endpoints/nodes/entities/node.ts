@@ -55,7 +55,7 @@ export class Node {
     owner: string = '';
 
     @ApiProperty()
-    identity: string | null = '';
+    identity: string | undefined = undefined;
 
     @ApiProperty()
     provider: string = '';

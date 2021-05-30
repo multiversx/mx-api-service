@@ -170,7 +170,7 @@ export class NodeService {
       });
 
     for (let node of nodes) {
-      node.identity = null;
+      delete node.identity;
     }
 
     const confirmedKeybases = await this.cachingService.batchProcess(
