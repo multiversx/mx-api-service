@@ -1,4 +1,5 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
+import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { TransactionQuery } from "src/endpoints/transactions/entities/transaction.query";
@@ -23,7 +24,8 @@ export class TransactionProcessorService {
       private readonly eventsGateway: EventsGateway,
       private readonly gatewayService: GatewayService,
       private readonly apiConfigService: ApiConfigService,
-      private readonly metricsService: MetricsService
+      private readonly metricsService: MetricsService,
+      @Inject('PUBSUB_SERVICE') private client: ClientProxy,
   ) {}
 
   @Cron('*/1 * * * * *')
@@ -66,8 +68,8 @@ export class TransactionProcessorService {
       }
 
       let uniqueInvalidatedKeys = [...new Set(allInvalidatedKeys)];
-      for (let invalidatedKey of uniqueInvalidatedKeys) {
-        await this.cachingService.deleteInCacheOnApiServers(invalidatedKey);
+      if (uniqueInvalidatedKeys.length > 0) {
+        this.client.emit('deleteCacheKeys', uniqueInvalidatedKeys);
       }
     } finally {
       this.isProcessing = false;

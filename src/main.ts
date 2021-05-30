@@ -11,6 +11,8 @@ import { PrivateAppModule } from './private.app.module';
 import { TransactionProcessorModule } from './transaction.processor.module';
 import { MetricsService } from './endpoints/metrics/metrics.service';
 import { CacheWarmerModule } from './cache.warmer.module';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { PubSubModule } from './pub.sub.module';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
@@ -50,13 +52,24 @@ async function bootstrap() {
   }
 
   if (apiConfigService.getIsTransactionProcessorCronActive()) {
-    let processorModule = await NestFactory.create(TransactionProcessorModule);
-    await processorModule.listen(5001);
+    let processorApp = await NestFactory.create(TransactionProcessorModule);
+    await processorApp.listen(5001);
   }
 
   if (apiConfigService.getIsCacheWarmerCronActive()) {
-    let processorModule = await NestFactory.create(CacheWarmerModule);
-    await processorModule.listen(6001);
+    let processorApp = await NestFactory.create(CacheWarmerModule);
+    await processorApp.listen(6001);
   }
+
+  const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
+    PubSubModule,
+    {
+      transport: Transport.REDIS,
+      options: {
+        url: `redis://${apiConfigService.getRedisUrl()}:6379`,
+      }
+    },
+  );
+  pubSubApp.listen(() => console.log('Started Redis pub/sub microservice'));
 }
 bootstrap();

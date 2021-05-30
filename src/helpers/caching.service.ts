@@ -10,7 +10,6 @@ import { PerformanceProfiler } from "./performance.profiler";
 import { ShardTransaction } from "src/crons/entities/shard.transaction";
 import { Cache } from "cache-manager";
 import { RoundService } from "src/endpoints/rounds/round.service";
-import axios from "axios";
 
 @Injectable()
 export class CachingService {
@@ -97,7 +96,6 @@ export class CachingService {
     @Inject(CACHE_MANAGER)
     cache: Cache,
     private readonly roundService: RoundService,
-    private readonly apiConfigService: ApiConfigService
   ) {
     CachingService.cache = cache;
   }
@@ -382,16 +380,6 @@ export class CachingService {
     }
 
     return invalidatedKeys;
-  }
-
-  async deleteInCacheOnApiServers(key: string) {
-    let apiUrls = this.apiConfigService.getPrivateApiUrls();
-
-    try {
-      await Promise.all(apiUrls.map(url => axios.delete(`${url}/cache/${key}`)));
-    } catch (error) {
-      console.error(`Error when deleting key ${key} on API servers`, error);
-    }
   }
 
   async tryInvalidateTransaction(transaction: ShardTransaction): Promise<string[]> {

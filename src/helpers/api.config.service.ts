@@ -23,15 +23,6 @@ export class ApiConfigService {
     return elasticUrls[Math.floor(Math.random() * elasticUrls.length)];
   }
 
-  getPrivateApiUrls(): string[] {
-    const apiUrls = this.configService.get<string[]>('urls.privateApi');
-    if (!apiUrls) {
-      throw new Error('No private api urls present');
-    }
-
-    return apiUrls;
-  }
-
   getEsdtContractAddress(): string {
     const address = this.configService.get<string>('contracts.esdt');
     if (!address) {

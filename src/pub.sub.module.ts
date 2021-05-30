@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { MetricsController } from './endpoints/metrics/metrics.controller';
+import { CacheController } from './endpoints/cache/cache.controller';
 import { PublicAppModule } from './public.app.module';
 
 @Module({
@@ -7,10 +7,10 @@ import { PublicAppModule } from './public.app.module';
     PublicAppModule
   ],
   controllers: [
-    MetricsController
+    CacheController
   ],
   providers: [
     
   ],
 })
-export class PrivateAppModule {}
+export class PubSubModule {}

@@ -12,8 +12,6 @@ urls:
     - 'https://index.elrond.com'
   gateway:
     - 'https://gateway.elrond.com'
-  privateApi:
-    - 'http://localhost:4001'
   redis: '127.0.0.1'
   providers: 'https://internal-delegation-api.elrond.com/providers'
 caching:
