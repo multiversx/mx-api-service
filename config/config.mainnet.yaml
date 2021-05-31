@@ -1,11 +1,12 @@
 network: 'mainnet'
-profile: true
 csrfSecret: '1nt3rn3tsc@l3'
-apiActive: true
-logApiCalls: true
 metaChainShardId: 4294967295
+api:
+  public: true
+  private: true
 cron:
   transactionProcessor: true
+  transactionProcessorMaxLookBehind: 1000
   cacheWarmer: true
 urls:
   elastic:

@@ -24,7 +24,7 @@ async function bootstrap() {
   let metricsService = publicApp.get<MetricsService>(MetricsService);
 
   publicApp.useGlobalInterceptors(
-    new LoggingInterceptor(apiConfigService, metricsService), 
+    new LoggingInterceptor(metricsService), 
     new CachingInterceptor(cachingService, httpAdapterHostService, metricsService)
   );
   const description = readFileSync(join(__dirname, '..', 'docs', 'swagger.md'), 'utf8');
@@ -44,21 +44,20 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(publicApp, config);
   SwaggerModule.setup('api', publicApp, document);
 
-  console.log(`API active: ${apiConfigService.getIsApiActive()}`);
-  if (apiConfigService.getIsApiActive()) {
+  if (apiConfigService.getIsPublicApiActive()) {
     await publicApp.listen(3001);
+  }
 
+  if (apiConfigService.getIsPrivateApiActive()) {
     const privateApp = await NestFactory.create(PrivateAppModule);
     await privateApp.listen(4001);
   }
 
-  console.log(`Transaction processor active: ${apiConfigService.getIsTransactionProcessorCronActive()}`);
   if (apiConfigService.getIsTransactionProcessorCronActive()) {
     let processorApp = await NestFactory.create(TransactionProcessorModule);
     await processorApp.listen(5001);
   }
 
-  console.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
   if (apiConfigService.getIsCacheWarmerCronActive()) {
     let processorApp = await NestFactory.create(CacheWarmerModule);
     await processorApp.listen(6001);
@@ -74,5 +73,10 @@ async function bootstrap() {
     },
   );
   pubSubApp.listen(() => console.log('Started Redis pub/sub microservice'));
+
+  console.log(`Public API active: ${apiConfigService.getIsPublicApiActive()}`);
+  console.log(`Private API active: ${apiConfigService.getIsPublicApiActive()}`);
+  console.log(`Transaction processor active: ${apiConfigService.getIsTransactionProcessorCronActive()}`);
+  console.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
 }
 bootstrap();

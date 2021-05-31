@@ -138,6 +138,15 @@ export class ApiConfigService {
     return isCronActive;
   }
 
+  getTransactionProcessorMaxLookBehind(): number {
+    let transactionProcessorMaxLookBehind = this.configService.get<number>('cron.transactionProcessorMaxLookBehind');
+    if (transactionProcessorMaxLookBehind === undefined) {
+      throw new Error('No cron.transactionProcessorMaxLookBehind flag present');
+    }
+
+    return transactionProcessorMaxLookBehind;
+  }
+
   getIsCacheWarmerCronActive(): boolean {
     let isCronActive = this.configService.get<boolean>('cron.cacheWarmer');
     if (isCronActive === undefined) {
@@ -147,22 +156,22 @@ export class ApiConfigService {
     return isCronActive;
   }
 
-  getIsApiActive(): boolean {
-    let isApiActive = this.configService.get<boolean>('apiActive');
+  getIsPublicApiActive(): boolean {
+    let isApiActive = this.configService.get<boolean>('api.public');
     if (isApiActive === undefined) {
-      throw new Error('No apiActive flag present');
+      throw new Error('No api.public flag present');
     }
 
     return isApiActive;
   }
 
-  isLoggingApiCalls(): boolean {
-    let isLoggingApiCalls = this.configService.get<boolean>('logApiCalls');
-    if (isLoggingApiCalls === undefined) {
-      throw new Error('No logApiCalls flag present');
+  getIsPrivateApiActive(): boolean {
+    let isApiActive = this.configService.get<boolean>('api.private');
+    if (isApiActive === undefined) {
+      throw new Error('No api.private flag present');
     }
 
-    return isLoggingApiCalls;
+    return isApiActive;
   }
 
   getMetaChainShardId(): number {

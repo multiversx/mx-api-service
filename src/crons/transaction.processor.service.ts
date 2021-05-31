@@ -120,9 +120,10 @@ export class TransactionProcessorService {
         this.shardService.setLastProcessedNonce(shardId, currentNonce);
       }
 
-      // maximum last 100 nonces, makes no sense to look too far behind
-      if (currentNonce > lastProcessedNonce + 100) {
-        lastProcessedNonce = currentNonce - 100;
+      // maximum last number of nonces, makes no sense to look too far behind
+      let maxLookBehind = this.apiConfigService.getTransactionProcessorMaxLookBehind();
+      if (currentNonce > lastProcessedNonce + maxLookBehind) {
+        lastProcessedNonce = currentNonce - maxLookBehind;
       }
 
       // max 10 nonces at once to avoid overload
