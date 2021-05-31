@@ -69,12 +69,12 @@ export class TokenService {
     return tokens.length;
   }
 
-  async getTokensForAddress(address: string, from: number, size: number): Promise<Token[]> {
+  async getTokensForAddress(address: string, from: number, size: number): Promise<TokenWithBalance[]> {
     let allTokens = await this.getAllTokensForAddress(address);
     return allTokens.slice(from, from + size);
   }
 
-  async getAllTokensForAddress(address: string): Promise<Token[]> {
+  async getAllTokensForAddress(address: string): Promise<TokenWithBalance[]> {
     return await this.cachingService.getOrSetCache(
       `tokens:${address}`,
       async () => await this.getAllTokensForAddressRaw(address),
@@ -112,6 +112,21 @@ export class TokenService {
     }
 
     return tokensWithBalance;
+  }
+
+  async getNftCountForAddress(address: string): Promise<number> {
+    let allTokens = await this.getAllNftsForAddress(address);
+    return allTokens.length;
+  }
+
+  async getNftsForAddress(address: string, from: number, size: number): Promise<Token[]> {
+    let allTokens = await this.getAllNftsForAddress(address);
+    return allTokens.slice(from, from + size);
+  }
+
+  async getAllNftsForAddress(address: string): Promise<Token[]> {
+    let allTokens = await this.getAllTokens();
+    return allTokens.filter(x => x.ownerAddress === address);
   }
 
   async getAllTokens(): Promise<Token[]> {
