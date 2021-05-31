@@ -110,8 +110,14 @@ export class TransactionProcessorService {
         continue;
       }
 
-      if (currentNonce <= lastProcessedNonce) {
+      if (currentNonce === lastProcessedNonce) {
         continue;
+      }
+
+      // current nonce less than last processed means that testnet has been probably reset
+      // and that means we will set the last processed nonce as the current nonce
+      if (currentNonce < lastProcessedNonce) {
+        this.shardService.setLastProcessedNonce(shardId, currentNonce);
       }
 
       // maximum last 100 nonces, makes no sense to look too far behind
