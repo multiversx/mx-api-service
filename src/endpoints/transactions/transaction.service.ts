@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { CachingService } from 'src/helpers/caching.service';
 import { ElasticPagination } from 'src/helpers/entities/elastic.pagination';
 import { GatewayService } from 'src/helpers/gateway.service';
-import { mergeObjects } from 'src/helpers/helpers';
+import { mergeObjects, oneMinute } from 'src/helpers/helpers';
 import { ElasticService } from '../../helpers/elastic.service';
 import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
@@ -10,10 +11,18 @@ import { TransactionQuery } from './entities/transaction.query';
 
 @Injectable()
 export class TransactionService {
-  constructor(private readonly elasticService: ElasticService, private readonly gatewayService: GatewayService) {}
+  constructor(
+    private readonly elasticService: ElasticService, 
+    private readonly gatewayService: GatewayService,
+    private readonly cachingService: CachingService
+  ) {}
 
   async getTransactionCount(): Promise<number> {
-    return await this.elasticService.getCount('transactions');
+    return await this.cachingService.getOrSetCache(
+      'transaction:count',
+      async () => await this.elasticService.getCount('transactions'),
+      oneMinute()
+    );
   }
 
   async getTransactions(transactionQuery: TransactionQuery): Promise<Transaction[]> {

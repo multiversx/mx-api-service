@@ -1,16 +1,24 @@
 import { Injectable } from "@nestjs/common";
 import { ElasticPagination } from "src/helpers/entities/elastic.pagination";
 import { ElasticService } from "src/helpers/elastic.service";
-import { mergeObjects } from "src/helpers/helpers";
+import { mergeObjects, oneMinute } from "src/helpers/helpers";
 import { Block } from "./entities/block";
 import { BlockDetailed } from "./entities/block.detailed";
+import { CachingService } from "src/helpers/caching.service";
 
 @Injectable()
 export class BlockService {
-  constructor(private readonly elasticService: ElasticService) {}
+  constructor(
+    private readonly elasticService: ElasticService,
+    private readonly cachingService: CachingService
+  ) {}
 
   async getBlocksCount(): Promise<number> {
-    return this.elasticService.getCount('blocks');
+    return await this.cachingService.getOrSetCache(
+      'blocks:count',
+      async () => await this.elasticService.getCount('blocks'),
+      oneMinute()
+    );
   }
 
   async getBlocks(shard: number | undefined, proposer: string | undefined, validator: string | undefined, epoch: number | undefined, from: number, size: number): Promise<Block[]> {
