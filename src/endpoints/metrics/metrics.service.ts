@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { register, Histogram, Gauge } from 'prom-client';
+import { register, Histogram, Gauge, collectDefaultMetrics } from 'prom-client';
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { ShardService } from "../shards/shard.service";
 
@@ -10,6 +10,7 @@ export class MetricsService {
   private static lastProcessedNonceGauge: Gauge<string>;
   private static pendingApiHitGauge: Gauge<string>;
   private static cachedApiHitGauge: Gauge<string>;
+  private static isDefaultMetricsRegistered: boolean = false;
 
   constructor(
     private readonly shardService: ShardService,
@@ -55,6 +56,11 @@ export class MetricsService {
         labelNames: [ 'endpoint' ]
       });
     }
+
+    if (!MetricsService.isDefaultMetricsRegistered) {
+      MetricsService.isDefaultMetricsRegistered = true;
+      collectDefaultMetrics();
+    }
   }
 
   setApiCall(endpoint: string, status: number, duration: number) {
@@ -80,6 +86,7 @@ export class MetricsService {
         MetricsService.currentNonceGauge.set({ shardId }, currentNonces[index]);
       }
     }
+
 
     return register.metrics();
   }
