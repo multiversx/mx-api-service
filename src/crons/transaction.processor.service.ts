@@ -9,6 +9,7 @@ import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { GatewayService } from "src/helpers/gateway.service";
 import { isSmartContractAddress } from "src/helpers/helpers";
+import { PerformanceProfiler } from "src/helpers/performance.profiler";
 import { EventsGateway } from "src/websockets/events.gateway";
 import { ShardTransaction } from "./entities/shard.transaction";
 
@@ -41,10 +42,16 @@ export class TransactionProcessorService {
 
     this.isProcessing = true;
     try {
+      let profiler = new PerformanceProfiler('Getting new transactions');
       let newTransactions = await this.getNewTransactions();
-      if (newTransactions.length > 0) {
-        console.log({transactions: newTransactions.length});
+      profiler.stop();
+      if (newTransactions.length === 0) {
+        return;
       }
+
+      profiler = new PerformanceProfiler('Processing new transactions');
+
+      console.log({transactions: newTransactions.length});
 
       let allInvalidatedKeys = [];
 
@@ -71,6 +78,8 @@ export class TransactionProcessorService {
       if (uniqueInvalidatedKeys.length > 0) {
         this.client.emit('deleteCacheKeys', uniqueInvalidatedKeys);
       }
+
+      profiler.stop();
     } finally {
       this.isProcessing = false;
     }
