@@ -82,7 +82,7 @@ export class TransactionProcessorService {
 
     for (let [index, shardId] of this.shardService.shards.entries()) {
       let lastProcessedNonce = lastProcessedNonces[index];
-      if (lastProcessedNonce === undefined) {
+      if (!lastProcessedNonce) {
         continue;
       }
 
