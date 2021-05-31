@@ -8,7 +8,7 @@ export class Token {
     name: string = '';
 
     @ApiProperty()
-    ownerAddress: string = '';
+    owner: string = '';
 
     @ApiProperty()
     mintedValue: string = '';
