@@ -117,4 +117,8 @@ export class NetworkService {
       roundsPerEpoch,
     }
   }
+
+  async getValidatorStatistics() {
+    return await this.gatewayService.get('validator/statistics');
+  }
 }
