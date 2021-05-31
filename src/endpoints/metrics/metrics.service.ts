@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { register, Histogram, Gauge } from 'prom-client';
+import { ApiConfigService } from "src/helpers/api.config.service";
 import { ShardService } from "../shards/shard.service";
 
 @Injectable()
@@ -11,7 +12,8 @@ export class MetricsService {
   private static cachedApiHitGauge: Gauge<string>;
 
   constructor(
-    private readonly shardService: ShardService
+    private readonly shardService: ShardService,
+    private readonly apiConfigService: ApiConfigService
   ) {
     if (!MetricsService.apiCallsHistogram) {
       MetricsService.apiCallsHistogram = new Histogram({
@@ -72,9 +74,11 @@ export class MetricsService {
   }
 
   async getMetrics(): Promise<string> {
-    let currentNonces = await this.shardService.getCurrentNonces();
-    for (let [index, shardId] of this.shardService.shards.entries()) {
-      MetricsService.currentNonceGauge.set({ shardId }, currentNonces[index]);
+    if (this.apiConfigService.getIsTransactionProcessorCronActive()) {
+      let currentNonces = await this.shardService.getCurrentNonces();
+      for (let [index, shardId] of this.shardService.shards.entries()) {
+        MetricsService.currentNonceGauge.set({ shardId }, currentNonces[index]);
+      }
     }
 
     return register.metrics();
