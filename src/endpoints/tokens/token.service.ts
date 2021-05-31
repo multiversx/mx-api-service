@@ -125,7 +125,7 @@ export class TokenService {
   }
 
   async getAllNftsForAddress(address: string): Promise<Token[]> {
-    let allTokens = await this.getAllTokens();
+    let allTokens = await this.getAllNfts();
     return allTokens.filter(x => x.owner === address);
   }
 
