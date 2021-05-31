@@ -6,6 +6,7 @@ api:
   private: true
 cron:
   transactionProcessor: true
+  transactionProcessorMaxLookBehind: 100
   cacheWarmer: true
 urls:
   elastic:
