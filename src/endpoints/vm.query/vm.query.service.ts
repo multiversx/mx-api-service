@@ -22,12 +22,18 @@ export class VmQueryService {
     }
 
     let isCachingQueryFunction = await this.cachingService.isCachingQueryFunction(contract, func);
-    let ttl = isCachingQueryFunction ? oneHour() : 6;
+    let secondsRemainingUntilNextRound = await this.cachingService.getSecondsRemainingUntilNextRound();
+
+    let localTtl = isCachingQueryFunction ? oneHour() : secondsRemainingUntilNextRound;
+
+    // no need to store value remotely just to evict it one second later
+    let remoteTtl = localTtl > 1 ? localTtl : 0;
 
     return await this.cachingService.getOrSetCache(
       key,
       async () => await this.vmQueryRaw(contract, func, caller, args),
-      ttl
+      remoteTtl,
+      localTtl
     );
   }
 
@@ -53,7 +59,8 @@ export class VmQueryService {
     
         // no need to store value remotely just to evict it one second later
         let remoteTtl = localTtl > 1 ? localTtl : 0;
-            result = await this.cachingService.getOrSetCache(
+
+        result = await this.cachingService.getOrSetCache(
           key,
           async () => await this.vmQueryRaw(contract, func, caller, args),
           remoteTtl,
