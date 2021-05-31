@@ -44,6 +44,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(publicApp, config);
   SwaggerModule.setup('api', publicApp, document);
 
+  console.log(`API active: ${apiConfigService.getIsApiActive()}`);
   if (apiConfigService.getIsApiActive()) {
     await publicApp.listen(3001);
 
@@ -51,11 +52,13 @@ async function bootstrap() {
     await privateApp.listen(4001);
   }
 
+  console.log(`Transaction processor active: ${apiConfigService.getIsTransactionProcessorCronActive()}`);
   if (apiConfigService.getIsTransactionProcessorCronActive()) {
     let processorApp = await NestFactory.create(TransactionProcessorModule);
     await processorApp.listen(5001);
   }
 
+  console.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
   if (apiConfigService.getIsCacheWarmerCronActive()) {
     let processorApp = await NestFactory.create(CacheWarmerModule);
     await processorApp.listen(6001);
