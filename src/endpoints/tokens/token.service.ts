@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { GatewayService } from "src/helpers/gateway.service";
-import { bech32Encode, oneDay, oneHour } from "src/helpers/helpers";
+import { bech32Decode, bech32Encode, oneDay, oneHour } from "src/helpers/helpers";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
@@ -128,6 +128,89 @@ export class TokenService {
     let allTokens = await this.getAllNfts();
     return allTokens.filter(x => x.owner === address);
   }
+
+  async getStakeForAddress(address: string) {
+    const [totalStakedEncoded, unStakedTokensListEncoded] = await Promise.all([
+      this.vmQueryService.vmQuery(
+        this.apiConfigService.getAuctionContractAddress(),
+        'getTotalStaked',
+        address,
+      ),
+      this.vmQueryService.vmQuery(
+        this.apiConfigService.getAuctionContractAddress(),
+        'getUnStakedTokensList',
+        address,
+        [ bech32Decode(address) ],
+      ),
+    ]);
+
+    const data: any = {
+      totalStaked: Buffer.from(totalStakedEncoded[0], 'base64').toString('ascii'),
+      unstakedTokens: undefined,
+    };
+
+    if (unStakedTokensListEncoded) {
+      data.unstakedTokens = unStakedTokensListEncoded.reduce((result: any, _, index, array) => {
+        if (index % 2 === 0) {
+          const [encodedAmount, encodedEpochs] = array.slice(index, index + 2);
+
+          const amountHex = Buffer.from(encodedAmount, 'base64').toString('hex');
+          const amount = BigInt(amountHex ? '0x' + amountHex : amountHex).toString();
+
+          const epochsHex = Buffer.from(encodedEpochs, 'base64').toString('hex');
+          const epochs = parseInt(BigInt(epochsHex ? '0x' + epochsHex : epochsHex).toString());
+
+          result.push({ amount, epochs });
+        }
+
+        return result;
+      }, []);
+
+      const networkConfig = await this.getNetworkConfig();
+
+      for (const element of data.unstakedTokens) {
+        element.expires = element.epochs
+          ? this.getExpires(element.epochs, networkConfig.roundsPassed, networkConfig.roundsPerEpoch, networkConfig.roundDuration)
+          : undefined;
+        delete element.epochs;
+      }
+    }
+  }
+
+  getExpires(epochs: number, roundsPassed: number, roundsPerEpoch: number, roundDuration: number) {
+    const now = Math.floor(Date.now() / 1000);
+  
+    if (epochs === 0) {
+      return now;
+    }
+  
+    const fullEpochs = (epochs - 1) * roundsPerEpoch * roundDuration;
+    const lastEpoch = (roundsPerEpoch - roundsPassed) * roundDuration;
+  
+    // console.log('expires', JSON.stringify({ epochs, roundsPassed, roundsPerEpoch, roundDuration }));
+  
+    return now + fullEpochs + lastEpoch;
+  };
+
+  async getNetworkConfig() {
+    const [
+      {
+        config: { erd_round_duration, erd_rounds_per_epoch },
+      },
+      {
+        status: { erd_rounds_passed_in_current_epoch },
+      },
+    ] = await Promise.all([
+      this.gatewayService.get('network/config'),
+      this.gatewayService.get('network/status/4294967295')
+    ]);
+  
+    const roundsPassed = erd_rounds_passed_in_current_epoch;
+    const roundsPerEpoch = erd_rounds_per_epoch;
+    const roundDuration = erd_round_duration / 1000;
+  
+    return { roundsPassed, roundsPerEpoch, roundDuration };
+  };
 
   async getAllTokens(): Promise<Token[]> {
     return this.cachingService.getOrSetCache(

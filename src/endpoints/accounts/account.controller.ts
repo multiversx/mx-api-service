@@ -165,6 +165,24 @@ export class AccountController {
     }
   }
 
+  @Get("/accounts/:address/stake")
+  @ApiResponse({
+    status: 200,
+    description: 'Staking information for a given account',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  async getAccountStake(@Param('address') address: string) {
+    try {
+      return await this.tokenService.getStakeForAddress(address);
+    } catch (error) {
+      console.error(error);
+      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+    }
+  }
+
   // @Get("/accounts/:address/delegationlegacy")
   // @ApiResponse({
   //   status: 200,
