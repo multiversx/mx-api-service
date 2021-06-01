@@ -185,13 +185,12 @@ export class ProviderService {
     keybases.forEach(({ identity, key }, index) => {
       if (confirmedKeybases[index]) {
         console.log(`Confirmed keybase for identity ${identity} and key ${key}`);
+        const found = value.find(({ provider }) => provider === key);
+        if (found) {
+          found.identity = identity;
+        }
       } else {
         console.log(`Unconfirmed keybase for identity ${identity} and key ${key}`);
-      }
-
-      const found = value.find(({ provider }) => provider === key);
-      if (found) {
-        found.identity = identity;
       }
     });
 
