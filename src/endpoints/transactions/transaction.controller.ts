@@ -1,5 +1,7 @@
 import { Body, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { QueryCondition } from 'src/helpers/entities/query.condition';
+import { ParseOptionalEnumPipe } from 'src/helpers/pipes/parse.optional.enum.pipe';
 import { ParseOptionalIntPipe } from 'src/helpers/pipes/parse.optional.int.pipe';
 import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
@@ -23,6 +25,7 @@ export class TransactionController {
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false  })
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false  })
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false  })
+  @ApiQuery({ name: 'condition', description: 'Condition type (should/must)', required: false  })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
@@ -33,7 +36,7 @@ export class TransactionController {
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
     @Query('miniBlockHash') miniBlockHash: string | undefined, 
-    @Query('condition') condition: string | undefined, 
+    @Query('condition', new ParseOptionalEnumPipe(QueryCondition)) condition: QueryCondition | undefined, 
     @Query('before', ParseOptionalIntPipe) before: number | undefined, 
     @Query('after', ParseOptionalIntPipe) after: number | undefined, 
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 

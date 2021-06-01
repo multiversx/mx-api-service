@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CachingService } from 'src/helpers/caching.service';
 import { ElasticPagination } from 'src/helpers/entities/elastic.pagination';
+import { QueryCondition } from 'src/helpers/entities/query.condition';
 import { GatewayService } from 'src/helpers/gateway.service';
 import { mergeObjects, oneMinute } from 'src/helpers/helpers';
 import { ElasticService } from '../../helpers/elastic.service';
@@ -46,7 +47,7 @@ export class TransactionService {
       'nonce': 'desc',
     };
 
-    let transactions = await this.elasticService.getList('transactions', 'txHash', query, pagination, sort, transactionQuery.condition ?? 'must')
+    let transactions = await this.elasticService.getList('transactions', 'txHash', query, pagination, sort, transactionQuery.condition ?? QueryCondition.must)
 
     return transactions.map(transaction => mergeObjects(new Transaction(), transaction));
   }

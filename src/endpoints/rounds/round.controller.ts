@@ -1,5 +1,8 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { QueryCondition } from "src/helpers/entities/query.condition";
+import { ParseOptionalEnumPipe } from "src/helpers/pipes/parse.optional.enum.pipe";
+import { ParseOptionalIntPipe } from "src/helpers/pipes/parse.optional.int.pipe";
 import { Round } from "./entities/round";
 import { RoundDetailed } from "./entities/round.detailed";
 import { RoundService } from "./round.service";
@@ -18,11 +21,18 @@ export class RoundController {
     })
     @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
     @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+    @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false  })
+    @ApiQuery({ name: 'shard', description: 'Filter by shard identifier', required: false  })
+    @ApiQuery({ name: 'epoch', description: 'Filter by epoch number', required: false  })
     getRounds(
       @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
-      @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+      @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+      @Query("validator") validator: string | undefined,
+      @Query('condition', new ParseOptionalEnumPipe(QueryCondition)) condition: QueryCondition | undefined, 
+      @Query("shard", new ParseOptionalIntPipe) shard: number | undefined,
+      @Query("epoch", new ParseOptionalIntPipe) epoch: number | undefined
     ): Promise<Round[]> {
-      return this.roundService.getRounds(from, size);
+      return this.roundService.getRounds({ from, size, condition, validator, shard, epoch });
     }
 
     @Get("/rounds/count")

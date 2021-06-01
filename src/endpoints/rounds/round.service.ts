@@ -4,6 +4,8 @@ import { ElasticService } from "src/helpers/elastic.service";
 import { Round } from "./entities/round";
 import { mergeObjects, roundToEpoch } from "src/helpers/helpers";
 import { RoundDetailed } from "./entities/round.detailed";
+import { RoundQuery } from "./entities/round.query";
+import { QueryCondition } from "src/helpers/entities/query.condition";
 
 @Injectable()
 export class RoundService {
@@ -13,19 +15,33 @@ export class RoundService {
     return this.elasticService.getCount('rounds');
   }
 
-  async getRounds(from: number, size: number): Promise<Round[]> {
-    const query = {};
+  async getRounds(roundQuery: RoundQuery): Promise<Round[]> {
+    const query: any = {
+      shardId: roundQuery.shard
+    };
+
+    if (roundQuery.validator && roundQuery.shard && roundQuery.epoch) {
+      const index = await this.elasticService.getBlsIndex(roundQuery.validator, roundQuery.shard, roundQuery.epoch);
+
+      if (index) {
+        query.signersIndexes = index;
+      } else {
+        query.signersIndexes = -1;
+      }
+
+      console.log({query});
+    }
 
     const pagination: ElasticPagination = {
-      from,
-      size
+      from: roundQuery.from,
+      size: roundQuery.size
     }
 
     const sort = {
       timestamp: 'desc',
     };
 
-    let result = await this.elasticService.getList('rounds', 'round', query, pagination, sort);
+    let result = await this.elasticService.getList('rounds', 'round', query, pagination, sort, roundQuery.condition ?? QueryCondition.must);
 
     for (let item of result) {
       item.shard = item.shardId;
