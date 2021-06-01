@@ -31,6 +31,7 @@ export class TransactionService {
       receiver: transactionQuery.receiver,
       senderShard: transactionQuery.senderShard,
       receiverShard: transactionQuery.receiverShard,
+      miniBlockHash: transactionQuery.miniBlockHash,
       before: transactionQuery.before,
       after: transactionQuery.after
     };
