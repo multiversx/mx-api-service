@@ -28,8 +28,6 @@ export class RoundService {
       } else {
         query.signersIndexes = -1;
       }
-
-      console.log({query});
     }
 
     const pagination: ElasticPagination = {
