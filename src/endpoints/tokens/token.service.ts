@@ -75,15 +75,6 @@ export class TokenService {
   }
 
   async getAllTokensForAddress(address: string): Promise<TokenWithBalance[]> {
-    return await this.cachingService.getOrSetCache(
-      `tokens:${address}`,
-      async () => await this.getAllTokensForAddressRaw(address),
-      oneHour(),
-      6
-    );
-  }
-
-  async getAllTokensForAddressRaw(address: string): Promise<TokenWithBalance[]> {
     let tokens = await this.getAllTokens();
 
     let tokensIndexed: { [index: string]: Token } = {};
@@ -96,6 +87,10 @@ export class TokenService {
     let tokensWithBalance: TokenWithBalance[] = [];
 
     for (let tokenIdentifier of Object.keys(esdtResult.esdts)) {
+      if (!this.isEsdt(tokenIdentifier)) {
+        continue;
+      }
+
       let esdt = esdtResult.esdts[tokenIdentifier];
       let token = tokensIndexed[tokenIdentifier];
       if (!token) {
@@ -104,14 +99,24 @@ export class TokenService {
       }
 
       let tokenWithBalance = {
-        balance: esdt.balance,
-        ...token
+        ...token,
+        ...esdt,
       };
 
       tokensWithBalance.push(tokenWithBalance);
     }
 
     return tokensWithBalance;
+  }
+
+  isEsdt(tokenIdentifier: string) {
+    return tokenIdentifier.split('-').length === 2;
+  }
+
+  getNftGlobalIdentifier(tokenIdentifier: string) {
+    let parts = tokenIdentifier.split('-');
+    parts.length = 2;
+    return parts.join('-');
   }
 
   async getNftCountForAddress(address: string): Promise<number> {
@@ -125,8 +130,40 @@ export class TokenService {
   }
 
   async getAllNftsForAddress(address: string): Promise<Token[]> {
-    let allTokens = await this.getAllNfts();
-    return allTokens.filter(x => x.owner === address);
+    let nfts = await this.getAllNfts();
+
+    let tokensIndexed: { [index: string]: Token } = {};
+    for (let token of nfts) {
+      tokensIndexed[token.token] = token;
+    }
+
+    let esdtResult = await this.gatewayService.get(`address/${address}/esdt`);
+
+    let tokensWithBalance: TokenWithBalance[] = [];
+
+    for (let tokenIdentifier of Object.keys(esdtResult.esdts)) {
+      if (this.isEsdt(tokenIdentifier)) {
+        continue;
+      }
+
+      let nftIdentifier = this.getNftGlobalIdentifier(tokenIdentifier);
+
+      let esdt = esdtResult.esdts[tokenIdentifier];
+      let token = tokensIndexed[nftIdentifier];
+      if (!token) {
+        console.log(`Could not find token with identifier ${nftIdentifier}`);
+        continue;
+      }
+
+      let tokenWithBalance = {
+        ...token,
+        ...esdt,
+      };
+
+      tokensWithBalance.push(tokenWithBalance);
+    }
+
+    return tokensWithBalance;
   }
 
   async getStakeForAddress(address: string) {
