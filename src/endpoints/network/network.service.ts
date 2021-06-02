@@ -3,9 +3,11 @@ import axios from 'axios';
 import { Stats } from 'src/endpoints/network/entities/stats';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { CachingService } from 'src/helpers/caching.service';
-import { ElasticService } from 'src/helpers/elastic.service';
 import { GatewayService } from 'src/helpers/gateway.service';
 import { oneMinute } from 'src/helpers/helpers';
+import { AccountService } from '../accounts/account.service';
+import { BlockService } from '../blocks/block.service';
+import { TransactionService } from '../transactions/transaction.service';
 import { VmQueryService } from '../vm.query/vm.query.service';
 import { Constants } from './entities/constants';
 import { Economics } from './entities/economics';
@@ -17,7 +19,9 @@ export class NetworkService {
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
-    private readonly elasticService: ElasticService
+    private readonly blockService: BlockService,
+    private readonly accountService: AccountService,
+    private readonly transactionService: TransactionService,
   ) {}
 
   async getConstants(): Promise<Constants> {
@@ -101,9 +105,9 @@ export class NetworkService {
     ] = await Promise.all([
       this.gatewayService.get('network/config'),
       this.gatewayService.get(`network/status/${metaChainShard}`),
-      this.elasticService.getCount('blocks'),
-      this.elasticService.getCount('accounts'),
-      this.elasticService.getCount('transactions'),
+      this.blockService.getBlocksCount(),
+      this.accountService.getAccountsCount(),
+      this.transactionService.getTransactionCount(),
     ]);
 
     return {
