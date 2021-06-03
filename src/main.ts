@@ -15,10 +15,12 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { PubSubModule } from './pub.sub.module';
 import * as bodyParser from 'body-parser';
 import { Logger } from '@nestjs/common';
+import * as requestIp from 'request-ip';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
   publicApp.use(bodyParser.json({limit: '1mb'}));
+  publicApp.use(requestIp.mw());
   publicApp.enableCors();
 
   let apiConfigService = publicApp.get<ApiConfigService>(ApiConfigService);
