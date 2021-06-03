@@ -1,4 +1,4 @@
-import { CACHE_MANAGER, Inject, Injectable } from "@nestjs/common";
+import { CACHE_MANAGER, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "./api.config.service";
 const { promisify } = require('util');
 import { createClient } from 'redis';
@@ -89,6 +89,8 @@ export class CachingService {
 
   private static cache: Cache;
 
+  private readonly logger: Logger
+
   constructor(
     private readonly configService: ApiConfigService,
     @Inject(CACHE_MANAGER)
@@ -96,6 +98,7 @@ export class CachingService {
     private readonly roundService: RoundService,
   ) {
     CachingService.cache = cache;
+    this.logger = new Logger(CachingService.name);
   }
 
   private async setCacheRemote<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
@@ -164,12 +167,12 @@ export class CachingService {
     //   }
     // }
 
-    // console.log(`Found ${result.length} elements in local cache`);
+    // this.logger.log(`Found ${result.length} elements in local cache`);
 
     let chunks = this.getChunks(payload, 100);
 
     for (let [index, chunk] of chunks.entries()) {
-      console.log(`Loading ${index + 1} / ${chunks.length} chunks`);
+      this.logger.log(`Loading ${index + 1} / ${chunks.length} chunks`);
 
       let retries = 0;
       while (true) {
@@ -178,8 +181,8 @@ export class CachingService {
           result.push(...processedChunk);
           break;
         } catch (error) {
-          console.error(error);
-          console.log(`Retries: ${retries}`);
+          this.logger.error(error);
+          this.logger.log(`Retries: ${retries}`);
           retries++;
           if (retries >= 3) {
             throw error;
@@ -357,13 +360,13 @@ export class CachingService {
     if (key.includes('*')) {
       let allKeys = await this.asyncKeys(key);
       for (let key of allKeys) {
-        // console.log(`Invalidating key ${key}`);
+        // this.logger.log(`Invalidating key ${key}`);
         await CachingService.cache.del(key);
         await this.asyncDel(key);
         invalidatedKeys.push(key);
       }
     } else {
-      // console.log(`Invalidating key ${key}`);
+      // this.logger.log(`Invalidating key ${key}`);
       await CachingService.cache.del(key);
       await this.asyncDel(key);
       invalidatedKeys.push(key);

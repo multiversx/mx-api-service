@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccountService } from './account.service';
 import { AccountDetailed } from './entities/account.detailed';
@@ -11,10 +11,14 @@ import { TokenWithBalance } from '../tokens/entities/token.with.balance';
 @Controller()
 @ApiTags('accounts')
 export class AccountController {
+  private readonly logger: Logger
+
   constructor(
     private readonly accountService: AccountService,
     private readonly tokenService: TokenService
-  ) {}
+  ) {
+    this.logger = new Logger(AccountController.name);
+  }
 
   @Get("/accounts")
   @ApiResponse({
@@ -98,7 +102,7 @@ export class AccountController {
     try {
       return await this.tokenService.getTokensForAddress(address, from, size);
     } catch (error) {
-      console.error(error);
+      this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
   }
@@ -116,7 +120,7 @@ export class AccountController {
     try {
       return await this.tokenService.getTokenCountForAddress(address);
     } catch (error) {
-      console.error(error);
+      this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
   }
@@ -142,7 +146,7 @@ export class AccountController {
     try {
       return await this.tokenService.getNftsForAddress(address, from, size);
     } catch (error) {
-      console.error(error);
+      this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
   }
@@ -160,7 +164,7 @@ export class AccountController {
     try {
       return await this.tokenService.getNftCountForAddress(address);
     } catch (error) {
-      console.error(error);
+      this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
   }
@@ -178,7 +182,7 @@ export class AccountController {
     try {
       return await this.tokenService.getStakeForAddress(address);
     } catch (error) {
-      console.error(error);
+      this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
   }
@@ -197,7 +201,7 @@ export class AccountController {
   //   try {
   //     return await this.delegationLegacyService.getDelegationForAddress(address);
   //   } catch (error) {
-  //     console.error(error);
+  //     this.logger.error(error);
   //     throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
   //   }
   // }

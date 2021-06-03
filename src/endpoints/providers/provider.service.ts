@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { bech32Encode, oneHour, oneMinute, oneWeek } from "src/helpers/helpers";
@@ -14,6 +14,8 @@ import { ApiService } from "src/helpers/api.service";
 
 @Injectable()
 export class ProviderService {
+  private readonly logger: Logger
+
   constructor(
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
@@ -22,7 +24,9 @@ export class ProviderService {
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
     private readonly apiService: ApiService
-  ) {}
+  ) {
+    this.logger = new Logger(ProviderService.name);
+  }
 
   async getProvider(address: string): Promise<Provider | undefined> {
     let query = new ProviderQuery();
@@ -120,7 +124,7 @@ export class ProviderService {
     try {
       return await this.getAllProvidersRaw();
     } catch (error) {
-      console.error('getProviders error', error);
+      this.logger.error('getProviders error', error);
       return [];
     }
   }
@@ -184,13 +188,13 @@ export class ProviderService {
 
     keybases.forEach(({ identity, key }, index) => {
       if (confirmedKeybases[index]) {
-        console.log(`Confirmed keybase for identity ${identity} and key ${key}`);
+        this.logger.log(`Confirmed keybase for identity ${identity} and key ${key}`);
         const found = value.find(({ provider }) => provider === key);
         if (found) {
           found.identity = identity;
         }
       } else {
-        console.log(`Unconfirmed keybase for identity ${identity} and key ${key}`);
+        this.logger.log(`Unconfirmed keybase for identity ${identity} and key ${key}`);
       }
     });
 

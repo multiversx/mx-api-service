@@ -14,6 +14,7 @@ import { CacheWarmerModule } from './cache.warmer.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { PubSubModule } from './pub.sub.module';
 import * as bodyParser from 'body-parser';
+import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
@@ -65,6 +66,8 @@ async function bootstrap() {
     await processorApp.listen(6001);
   }
 
+  let logger = new Logger('Bootstrapper');
+
   const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
     PubSubModule,
     {
@@ -74,11 +77,11 @@ async function bootstrap() {
       }
     },
   );
-  pubSubApp.listen(() => console.log('Started Redis pub/sub microservice'));
+  pubSubApp.listen(() => logger.log('Started Redis pub/sub microservice'));
 
-  console.log(`Public API active: ${apiConfigService.getIsPublicApiActive()}`);
-  console.log(`Private API active: ${apiConfigService.getIsPublicApiActive()}`);
-  console.log(`Transaction processor active: ${apiConfigService.getIsTransactionProcessorCronActive()}`);
-  console.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
+  logger.log(`Public API active: ${apiConfigService.getIsPublicApiActive()}`);
+  logger.log(`Private API active: ${apiConfigService.getIsPublicApiActive()}`);
+  logger.log(`Transaction processor active: ${apiConfigService.getIsTransactionProcessorCronActive()}`);
+  logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
 }
 bootstrap();

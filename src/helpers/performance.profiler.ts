@@ -1,3 +1,5 @@
+import { Logger } from "@nestjs/common";
+
 export class PerformanceProfiler {
   started: number;
   description: string;
@@ -13,7 +15,8 @@ export class PerformanceProfiler {
   stop(description: string | null = null) {
     this.stopped = Date.now();
     this.duration = this.stopped - this.started;
+    let logger = new Logger(PerformanceProfiler.name);
 
-    console.log(`${description ?? this.description}: ${this.duration}ms`);
+    logger.log(`${description ?? this.description}: ${this.duration}ms`);
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { GatewayService } from "src/helpers/gateway.service";
@@ -9,12 +9,16 @@ import { TokenWithBalance } from "./entities/token.with.balance";
 
 @Injectable()
 export class TokenService {
+  private readonly logger: Logger
+
   constructor(
     private readonly gatewayService: GatewayService, 
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
-  ) {}
+  ) {
+    this.logger = new Logger(TokenService.name);
+  }
 
   async getToken(identifier: string): Promise<Token | undefined> {
     let tokens = await this.getAllTokens();
@@ -94,7 +98,7 @@ export class TokenService {
       let esdt = esdtResult.esdts[tokenIdentifier];
       let token = tokensIndexed[tokenIdentifier];
       if (!token) {
-        console.log(`Could not find token with identifier ${tokenIdentifier}`);
+        this.logger.log(`Could not find token with identifier ${tokenIdentifier}`);
         continue;
       }
 
@@ -151,7 +155,7 @@ export class TokenService {
       let esdt = esdtResult.esdts[tokenIdentifier];
       let token = tokensIndexed[nftIdentifier];
       if (!token) {
-        console.log(`Could not find token with identifier ${nftIdentifier}`);
+        this.logger.log(`Could not find token with identifier ${nftIdentifier}`);
         continue;
       }
 
@@ -224,7 +228,7 @@ export class TokenService {
     const fullEpochs = (epochs - 1) * roundsPerEpoch * roundDuration;
     const lastEpoch = (roundsPerEpoch - roundsPassed) * roundDuration;
   
-    // console.log('expires', JSON.stringify({ epochs, roundsPassed, roundsPerEpoch, roundDuration }));
+    // this.logger.log('expires', JSON.stringify({ epochs, roundsPassed, roundsPerEpoch, roundDuration }));
   
     return now + fullEpochs + lastEpoch;
   };

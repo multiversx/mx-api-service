@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
@@ -16,7 +16,7 @@ import { ShardTransaction } from "./entities/shard.transaction";
 @Injectable()
 export class TransactionProcessorService {
   isProcessing: boolean = false;
-
+  private readonly logger: Logger;
 
   constructor(
       private readonly transactionService: TransactionService,
@@ -27,7 +27,9 @@ export class TransactionProcessorService {
       private readonly metricsService: MetricsService,
       @Inject('PUBSUB_SERVICE') private client: ClientProxy,
       private readonly shardService: ShardService
-  ) {}
+  ) {
+    this.logger = new Logger(TransactionProcessorService.name);
+  }
 
   @Cron('*/1 * * * * *')
   async handleNewTransactions() {
@@ -51,12 +53,12 @@ export class TransactionProcessorService {
 
       profiler = new PerformanceProfiler('Processing new transactions');
 
-      console.log({transactions: newTransactions.length});
+      this.logger.log(`New transactions: ${newTransactions.length}`);
 
       let allInvalidatedKeys = [];
 
       for (let transaction of newTransactions) {
-        // console.log(`Transferred ${transaction.value} from ${transaction.sender} to ${transaction.receiver}`);
+        // this.logger.log(`Transferred ${transaction.value} from ${transaction.sender} to ${transaction.receiver}`);
 
         if (!isSmartContractAddress(transaction.sender)) {
           this.eventsGateway.onAccountBalanceChanged(transaction.sender);
@@ -137,7 +139,7 @@ export class TransactionProcessorService {
         allTransactions = allTransactions.concat(...transactions);
       }
 
-      console.log(`Processed nonce ${currentNonce} on shard ${shardId}`);
+      this.logger.log(`Processed nonce ${currentNonce} on shard ${shardId}`);
 
       this.shardService.setLastProcessedNonce(shardId, currentNonce);
     }

@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import axios from "axios";
 import { ApiConfigService } from "../../helpers/api.config.service";
 import { CachingService } from "../../helpers/caching.service";
@@ -6,10 +6,14 @@ import {  oneHour } from "../../helpers/helpers";
 
 @Injectable()
 export class VmQueryService {
+  private readonly logger: Logger
+
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
-  ) {}
+  ) {
+    this.logger = new Logger(VmQueryService.name);
+  }
 
   async vmQueryFullResult(contract: string, func: string, caller: string | undefined = undefined, args: string[] = []): Promise<any> {
     let key = `vm-query:${contract}:${func}`;
@@ -72,7 +76,7 @@ export class VmQueryService {
 
       return 'ReturnData' in data ? data.ReturnData : data.returnData;
     } catch (error) {
-      console.error(`Error in vm query for address '${contract}', function '${func}', caller '${caller}', args '${JSON.stringify(args)}'. Error message: ${error.response?.data?.error}`);
+      this.logger.error(`Error in vm query for address '${contract}', function '${func}', caller '${caller}', args '${JSON.stringify(args)}'. Error message: ${error.response?.data?.error}`);
       throw error;
     }
   }
