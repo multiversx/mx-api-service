@@ -15,6 +15,11 @@ export class LoggingInterceptor implements NestInterceptor {
 
     let profiler = new PerformanceProfiler(apiFunction);
 
+    // @ts-ignore
+    console.log({userAgent: context.args[0].res.req.headers['user-agent']});
+    // @ts-ignore
+    console.log({clientIp: context.args[0].res.req.clientIp});
+
     return next
       .handle()
       .pipe(
