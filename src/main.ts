@@ -13,9 +13,11 @@ import { MetricsService } from './endpoints/metrics/metrics.service';
 import { CacheWarmerModule } from './cache.warmer.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { PubSubModule } from './pub.sub.module';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
+  publicApp.use(bodyParser.json({limit: '1mb'}));
   publicApp.enableCors();
 
   let apiConfigService = publicApp.get<ApiConfigService>(ApiConfigService);
