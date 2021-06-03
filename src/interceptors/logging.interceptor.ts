@@ -18,10 +18,10 @@ export class LoggingInterceptor implements NestInterceptor {
     return next
       .handle()
       .pipe(
-        tap(() => {
+        tap((result) => {
           profiler.stop();
 
-          this.metricsService.setApiCall(apiFunction, 200, profiler.duration);
+          this.metricsService.setApiCall(apiFunction, 200, profiler.duration, JSON.stringify(result).length);
         }),
       );
   }

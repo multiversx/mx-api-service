@@ -6,6 +6,7 @@ import { ShardService } from "../shards/shard.service";
 @Injectable()
 export class MetricsService {
   private static apiCallsHistogram: Histogram<string>;
+  private static apiResponseSizeHistogram: Histogram<string>;
   private static currentNonceGauge: Gauge<string>;
   private static lastProcessedNonceGauge: Gauge<string>;
   private static pendingApiHitGauge: Gauge<string>;
@@ -21,6 +22,15 @@ export class MetricsService {
         name: 'api',
         help: 'API Calls',
         labelNames: [ 'endpoint', 'code' ],
+        buckets: [ ]
+      });
+    }
+
+    if (!MetricsService.apiResponseSizeHistogram) {
+      MetricsService.apiResponseSizeHistogram = new Histogram({
+        name: 'api_response_size',
+        help: 'API Response size',
+        labelNames: [ 'endpoint' ],
         buckets: [ ]
       });
     }
@@ -63,8 +73,9 @@ export class MetricsService {
     }
   }
 
-  setApiCall(endpoint: string, status: number, duration: number) {
+  setApiCall(endpoint: string, status: number, duration: number, responseSize: number) {
     MetricsService.apiCallsHistogram.labels(endpoint, status.toString()).observe(duration);
+    MetricsService.apiResponseSizeHistogram.labels(endpoint).observe(responseSize);
   }
 
   setLastProcessedNonce(shardId: number, nonce: number) {
