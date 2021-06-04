@@ -13,15 +13,17 @@ import { MetricsService } from './endpoints/metrics/metrics.service';
 import { CacheWarmerModule } from './cache.warmer.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { PubSubModule } from './pub.sub.module';
-import * as bodyParser from 'body-parser';
 import { Logger } from '@nestjs/common';
+import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
   publicApp.use(bodyParser.json({limit: '1mb'}));
   publicApp.use(requestIp.mw());
   publicApp.enableCors();
+  publicApp.useLogger(publicApp.get(WINSTON_MODULE_NEST_PROVIDER));
 
   let apiConfigService = publicApp.get<ApiConfigService>(ApiConfigService);
   let cachingService = publicApp.get<CachingService>(CachingService);

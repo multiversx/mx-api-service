@@ -43,6 +43,7 @@
     "cache-manager": "^3.4.3",
     "csrf": "^3.1.0",
     "js-yaml": "^4.0.0",
+    "nest-winston": "^1.5.0",
     "node-object-hash": "^2.3.1",
     "prom-client": "^13.1.0",
     "redis": "^3.1.2",
@@ -51,7 +52,9 @@
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.6",
     "swagger-ui-express": "^4.1.6",
-    "tiny-async-pool": "^1.2.0"
+    "tiny-async-pool": "^1.2.0",
+    "winston": "^3.3.3",
+    "winston-daily-rotate-file": "^4.5.5"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.6.0",

@@ -44,13 +44,33 @@ import { ShardService } from './endpoints/shards/shard.service';
 import { MetricsService } from './endpoints/metrics/metrics.service';
 import { IdentitiesController } from './endpoints/identities/identities.controller';
 import { IdentitiesService } from './endpoints/identities/identities.service';
+import { WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
+const DailyRotateFile = require('winston-daily-rotate-file');
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       load: [configuration]
     }),
-    CacheModule.register()
+    CacheModule.register(),
+    WinstonModule.forRoot({
+      level: 'verbose',
+      format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+      transports: [
+        new winston.transports.Console({ level: 'warn' }),
+        new DailyRotateFile({
+          filename: 'application-%DATE%.log',
+          datePattern: 'YYYY-MM-DD-HH',
+          zippedArchive: true,
+          maxSize: '20m',
+          maxFiles: '14d',
+          createSymlink: true,
+          dirname: 'dist',
+          symlinkName: 'application.log'
+        }),
+      ]
+    }),
   ],
   controllers: [
     NetworkController, AccountController, TransactionController, TokenController, BlockController, 
