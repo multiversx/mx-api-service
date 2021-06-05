@@ -7,13 +7,20 @@ export class GatewayService {
   constructor(private readonly apiConfigService: ApiConfigService) {}
 
   async get(url: string): Promise<any> {
-    let result = await axios.get(`${this.apiConfigService.getGatewayUrl()}/${url}`);
+    let result = await this.getRaw(url);
     return result.data.data;
   }
 
-  async create(url: string, data: any): Promise<any> {
-    let result = await axios.post(`${this.apiConfigService.getGatewayUrl()}/${url}`, data);
+  async getRaw(url: string): Promise<any> {
+    return await axios.get(`${this.apiConfigService.getGatewayUrl()}/${url}`);
+  }
 
+  async create(url: string, data: any): Promise<any> {
+    let result = await this.createRaw(url, data);
     return result.data.data;
+  }
+
+  async createRaw(url: string, data: any): Promise<any> {
+    return await axios.post(`${this.apiConfigService.getGatewayUrl()}/${url}`, data);
   }
 }

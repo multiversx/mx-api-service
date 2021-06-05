@@ -46,6 +46,7 @@ import { IdentitiesController } from './endpoints/identities/identities.controll
 import { IdentitiesService } from './endpoints/identities/identities.service';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
+import { ProxyController } from './endpoints/proxy/proxy.controller';
 const DailyRotateFile = require('winston-daily-rotate-file');
 
 @Module({
@@ -76,14 +77,14 @@ const DailyRotateFile = require('winston-daily-rotate-file');
     NetworkController, AccountController, TransactionController, TokenController, BlockController, 
     MiniBlockController, RoundController, NodeController, ProviderController,
     AccessController, DelegationLegacyController, StakeController, DelegationController,
-    VmQueryController, ShardController, IdentitiesController
+    VmQueryController, ShardController, IdentitiesController, ProxyController
   ],
   providers: [
     NetworkService, ApiConfigService, AccountService, ElasticService, GatewayService, TransactionService, 
     TokenService, BlockService, MiniBlockService, RoundService, NodeService, VmQueryService,
     CachingService, KeybaseService, ProviderService,
     StakeService, LoggingInterceptor, ApiService, ProfilerService, AccessService, DelegationLegacyService,
-    DelegationService, CacheConfigService, CachingInterceptor, ShardService, MetricsService, IdentitiesService
+    DelegationService, CacheConfigService, CachingInterceptor, ShardService, MetricsService, IdentitiesService,
   ],
   exports: [
     ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService,

@@ -32,7 +32,11 @@ export class LoggingInterceptor implements NestInterceptor {
         tap((result) => {
           profiler.stop();
 
-          this.metricsService.setApiCall(apiFunction, 200, profiler.duration, JSON.stringify(result).length);
+          if (result !== undefined) {
+            this.metricsService.setApiCall(apiFunction, 200, profiler.duration, JSON.stringify(result).length);
+          } else {
+            this.metricsService.setApiCall(apiFunction, 200, profiler.duration, 0);
+          }
         }),
       );
   }
