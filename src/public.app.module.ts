@@ -59,7 +59,7 @@ const DailyRotateFile = require('winston-daily-rotate-file');
       level: 'verbose',
       format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
       transports: [
-        new winston.transports.Console({ level: 'warn' }),
+        new winston.transports.Console({ level: 'info' }),
         new DailyRotateFile({
           filename: 'application-%DATE%.log',
           datePattern: 'YYYY-MM-DD-HH',
