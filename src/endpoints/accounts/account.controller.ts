@@ -107,6 +107,40 @@ export class AccountController {
     }
   }
 
+  @Get("/accounts/:address/tokens/:token")
+  @ApiResponse({
+    status: 200,
+    description: 'A specific token of a given account',
+    type: TokenWithBalance,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Token not found'
+  })
+  async getAccountToken(
+    @Param('address') address: string,
+    @Param('token') token: string,
+  ): Promise<TokenWithBalance> {
+    let allTokens: TokenWithBalance[];
+    try {
+      allTokens = await this.tokenService.getAllTokensForAddress(address);
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+    }
+
+    let foundToken = allTokens.find(x => x.token === token);
+    if (!foundToken) {
+      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+    }
+
+    return foundToken;
+  }
+
   @Get("/accounts/:address/tokens/count")
   @ApiResponse({
     status: 200,
@@ -149,6 +183,40 @@ export class AccountController {
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
+  }
+
+  @Get("/accounts/:address/nfts/:nft")
+  @ApiResponse({
+    status: 200,
+    description: 'A specific non-fungible or semi-fungible token of a given account',
+    type: TokenWithBalance,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Token not found'
+  })
+  async getAccountNft(
+    @Param('address') address: string,
+    @Param('nft') nft: string,
+  ): Promise<Token> {
+    let allNfts: Token[];
+    try {
+      allNfts = await this.tokenService.getAllNftsForAddress(address);
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+    }
+
+    let foundNft = allNfts.find(x => x.token === nft);
+    if (!foundNft) {
+      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+    }
+
+    return foundNft;
   }
 
   @Get("/accounts/:address/nfts/count")
