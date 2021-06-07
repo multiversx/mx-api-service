@@ -148,7 +148,16 @@ export class TokenService {
       allTokens = allTokens.filter(x => x.token === token);
     }
 
-    return allTokens.slice(from, from + size);
+    allTokens = allTokens.slice(from, from + size);
+
+    for (let token of allTokens) {
+      // @ts-ignore
+      token.identifier = token.tokenIdentifier;
+      // @ts-ignore
+      delete token.tokenIdentifier;
+    }
+
+    return allTokens;
   }
 
   async getAllNftsForAddress(address: string): Promise<Token[]> {
