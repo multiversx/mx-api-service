@@ -1,13 +1,16 @@
-import { Body, Controller, Get, HttpStatus, Param, Query, Res } from "@nestjs/common";
-import { ApiQuery, ApiTags } from "@nestjs/swagger";
+import { Body, Controller, Get, HttpStatus, Param, Post, Query, Res } from "@nestjs/common";
+import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { GatewayService } from "src/helpers/gateway.service";
 import { Response } from 'express';
+import { VmQueryRequest } from "../vm.query/entities/vm.query.request";
+import { VmQueryService } from "../vm.query/vm.query.service";
 
 @Controller()
 @ApiTags('proxy')
 export class ProxyController {
   constructor(
-    private readonly gatewayService: GatewayService
+    private readonly gatewayService: GatewayService,
+    private readonly vmQueryService: VmQueryService
   ) {}
 
   @Get('/address/:address')
@@ -45,27 +48,27 @@ export class ProxyController {
     await this.gatewayGet(res, `address/${address}/esdt`);
   }
 
-  @Get('/transaction/send')
+  @Post('/transaction/send')
   async transactionSend(@Res() res: Response, @Body() body: any) {
     await this.gatewayPost(res, 'transaction/send', body);
   }
 
-  @Get('/transaction/simulate')
+  @Post('/transaction/simulate')
   async transactionSimulate(@Res() res: Response, @Body() body: any) {
     await this.gatewayPost(res, 'transaction/simulate', body);
   }
 
-  @Get('/transaction/send-multiple')
+  @Post('/transaction/send-multiple')
   async transactionSendMultiple(@Res() res: Response, @Body() body: any) {
     await this.gatewayPost(res, 'transaction/send-multiple', body);
   }
 
-  @Get('/transaction/send-user-funds')
+  @Post('/transaction/send-user-funds')
   async transactionSendUserFunds(@Res() res: Response, @Body() body: any) {
     await this.gatewayPost(res, 'transaction/send-user-funds', body);
   }
 
-  @Get('/transaction/cost')
+  @Post('/transaction/cost')
   async transactionCost(@Res() res: Response, @Body() body: any) {
     await this.gatewayPost(res, 'transaction/cost', body);
   }
@@ -92,24 +95,33 @@ export class ProxyController {
     await this.gatewayGet(res, `transaction/${hash}`, { sender });
   }
 
-  @Get('/vm-values/hex')
+  @Post('/vm-values/hex')
   async vmValuesHex(@Res() res: Response, @Body() body: any) {
     await this.gatewayPost(res, 'vm-values/hex', body);
   }
 
-  @Get('/vm-values/string')
+  @Post('/vm-values/string')
   async vmValuesString(@Res() res: Response, @Body() body: any) {
     await this.gatewayPost(res, 'vm-values/string', body);
   }
 
-  @Get('/vm-values/int')
+  @Post('/vm-values/int')
   async vmValuesInt(@Res() res: Response, @Body() body: any) {
     await this.gatewayPost(res, 'vm-values/int', body);
   }
 
-  @Get('/vm-values/query')
-  async vmValuesQuery(@Res() res: Response, @Body() body: any) {
-    await this.gatewayPost(res, 'vm-values/query', body);
+  @Post('/vm-values/query')
+  @ApiResponse({
+    status: 201,
+    description: 'Returns the result of the query (legacy)',
+  })
+  async queryLegacy(@Body() query: VmQueryRequest, @Res() res: Response) {
+    try {
+      let result = await this.vmQueryService.vmQueryFullResult(query.scAddress, query.FuncName, query.caller, query.args);
+      res.status(HttpStatus.OK).json(result).send();
+    } catch (error) {
+      res.status(HttpStatus.BAD_REQUEST).json(error.response.data).send();
+    }
   }
 
   @Get('/network/status/:shard')
