@@ -40,11 +40,9 @@ async function bootstrap() {
     .setTitle('Elrond API')
     .setDescription(description)
     .setVersion('1.0.0')
-    .addServer('http://localhost:3001')
-    .addServer('http://138.68.110.168:3001')
-    .addServer('https://api.elrond.com')
-    .addServer('https://devnet-api.elrond.com')
-    .addServer('https://testnet-api.elrond.com')
+    .addServer('https://beta-api.elrond.com')
+    .addServer('https://devnet-beta-api.elrond.com')
+    .addServer('https://testnet-beta-api.elrond.com')
     .setExternalDoc('Elrond Docs', 'https://docs.elrond.com')
     .build();
 
