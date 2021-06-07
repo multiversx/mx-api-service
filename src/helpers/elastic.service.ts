@@ -86,6 +86,20 @@ export class ElasticService {
     return false;
   };
 
+  async getBlses(shard: number, epoch: number) {
+    const key = `${shard}_${epoch}`;
+  
+    const url = `${this.apiConfigService.getElasticUrl()}/validators/_doc/${key}`;
+  
+    const {
+      data: {
+        _source: { publicKeys },
+      },
+    } = await axios.get(url);
+  
+    return publicKeys;
+  };
+
   private buildQuery(query: any = {}, operator: string = 'must') {
     delete query['from'];
     delete query['size'];
