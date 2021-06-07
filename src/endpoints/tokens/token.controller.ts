@@ -1,6 +1,9 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Nft } from "./entities/nft";
+import { NftDetailed } from "./entities/nft.detailed";
 import { Token } from "./entities/token";
+import { TokenDetailed } from "./entities/token.detailed";
 import { TokenService } from "./token.service";
 
 @Controller()
@@ -39,13 +42,13 @@ export class TokenController {
   @ApiResponse({
     status: 200,
     description: 'Token details',
-    type: Token,
+    type: TokenDetailed,
   })
   @ApiResponse({
     status: 404,
     description: 'Token not found'
   })
-  async getToken(@Param('identifier') identifier: string): Promise<Token> {
+  async getToken(@Param('identifier') identifier: string): Promise<TokenDetailed> {
     let token = await this.tokenService.getToken(identifier);
     if (token === undefined) {
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
@@ -58,7 +61,7 @@ export class TokenController {
   @ApiResponse({
     status: 200,
     description: 'List non-fungible and semi-fungible tokens',
-    type: Token,
+    type: Nft,
     isArray: true
   })
 	@ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
@@ -68,7 +71,7 @@ export class TokenController {
 		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('search') search: string | undefined,
-  ): Promise<Token[]> {
+  ): Promise<Nft[]> {
     return await this.tokenService.getNfts(from, size, search);
   }
 
@@ -85,13 +88,13 @@ export class TokenController {
   @ApiResponse({
     status: 200,
     description: 'Non-fungible / semi-fungible token details',
-    type: Token,
+    type: NftDetailed,
   })
   @ApiResponse({
     status: 404,
     description: 'Token not found'
   })
-  async getNft(@Param('identifier') identifier: string): Promise<Token> {
+  async getNft(@Param('identifier') identifier: string): Promise<NftDetailed> {
     let token = await this.tokenService.getNft(identifier);
     if (token === undefined) {
       throw new HttpException('NFT not found', HttpStatus.NOT_FOUND);

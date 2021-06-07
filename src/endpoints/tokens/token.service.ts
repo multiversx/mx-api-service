@@ -2,10 +2,13 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { GatewayService } from "src/helpers/gateway.service";
-import { bech32Decode, bech32Encode, oneDay, oneHour } from "src/helpers/helpers";
+import { bech32Decode, bech32Encode, mergeObjects, oneDay, oneHour } from "src/helpers/helpers";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
+import { TokenDetailed } from "./entities/token.detailed";
+import { Nft } from "./entities/nft";
+import { NftDetailed } from "./entities/nft.detailed";
 
 @Injectable()
 export class TokenService {
@@ -20,9 +23,14 @@ export class TokenService {
     this.logger = new Logger(TokenService.name);
   }
 
-  async getToken(identifier: string): Promise<Token | undefined> {
+  async getToken(identifier: string): Promise<TokenDetailed | undefined> {
     let tokens = await this.getAllTokens();
-    return tokens.find(x => x.token === identifier);
+    let token = tokens.find(x => x.token === identifier);
+    if (token) {
+      return mergeObjects(new TokenDetailed(), token);
+    }
+
+    return undefined;
   }
 
   async getTokens(from: number, size: number, search: string | undefined): Promise<Token[]> {
@@ -36,7 +44,7 @@ export class TokenService {
 
     tokens = tokens.slice(from, from + size);
 
-    return tokens;
+    return tokens.map(item => mergeObjects(new Token(), item));
   }
 
   async getTokenCount(): Promise<number> {
@@ -44,12 +52,17 @@ export class TokenService {
     return allTokens.length;
   }
 
-  async getNft(identifier: string): Promise<Token | undefined> {
+  async getNft(identifier: string): Promise<NftDetailed | undefined> {
     let nfts = await this.getAllNfts();
-    return nfts.find(x => x.token === identifier);
+    let nft = nfts.find(x => x.token === identifier);
+    if (nft) {
+      return mergeObjects(new NftDetailed(), nft);
+    }
+
+    return nft;
   }
 
-  async getNfts(from: number, size: number, search: string | undefined): Promise<Token[]> {
+  async getNfts(from: number, size: number, search: string | undefined): Promise<Nft[]> {
     let nfts = await this.getAllNfts();
 
     nfts = nfts.slice(from, from + size);
@@ -60,7 +73,7 @@ export class TokenService {
       nfts = nfts.filter(token => token.name.toLowerCase().includes(searchLower) || token.token.toLowerCase().includes(searchLower));
     }
 
-    return nfts;
+    return nfts.map(nft => mergeObjects(new Nft(), nft));
   }
 
   async getNftCount(): Promise<number> {
