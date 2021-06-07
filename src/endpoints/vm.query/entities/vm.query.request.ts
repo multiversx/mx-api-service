@@ -1,6 +1,6 @@
 export class VmQueryRequest {
   scAddress: string = '';
-  FuncName: string = '';
+  funcName: string = '';
   caller: string | undefined;
   args: string[] = []
 }

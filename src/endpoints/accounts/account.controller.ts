@@ -97,7 +97,7 @@ export class AccountController {
   async getAccountTokens(
     @Param('address') address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
-    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<TokenWithBalance[]> {
     try {
       return await this.tokenService.getTokensForAddress(address, from, size);
@@ -162,6 +162,7 @@ export class AccountController {
   @Get("/accounts/:address/nfts")
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+  @ApiQuery({ name: 'token', description: 'Filter by token identifier', required: false  })
   @ApiResponse({
     status: 200,
     description: 'The non-fungible and semi-fungible tokens of a given account',
@@ -175,10 +176,11 @@ export class AccountController {
   async getAccountNfts(
     @Param('address') address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
-    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('token') token: string | undefined
   ): Promise<Token[]> {
     try {
-      return await this.tokenService.getNftsForAddress(address, from, size);
+      return await this.tokenService.getNftsForAddress(address, from, size, token);
     } catch (error) {
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
@@ -211,7 +213,8 @@ export class AccountController {
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
 
-    let foundNft = allNfts.find(x => x.token === nft);
+    // @ts-ignore
+    let foundNft = allNfts.find(x => x.tokenIdentifier === nft);
     if (!foundNft) {
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
     }

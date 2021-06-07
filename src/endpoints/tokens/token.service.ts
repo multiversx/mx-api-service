@@ -128,8 +128,13 @@ export class TokenService {
     return allTokens.length;
   }
 
-  async getNftsForAddress(address: string, from: number, size: number): Promise<Token[]> {
+  async getNftsForAddress(address: string, from: number, size: number, token: string | undefined): Promise<Token[]> {
     let allTokens = await this.getAllNftsForAddress(address);
+
+    if (token) {
+      allTokens = allTokens.filter(x => x.token === token);
+    }
+
     return allTokens.slice(from, from + size);
   }
 
