@@ -214,7 +214,7 @@ export class AccountController {
     }
 
     // @ts-ignore
-    let foundNft = allNfts.find(x => x.tokenIdentifier === nft);
+    let foundNft = allNfts.find(x => x.identifier === nft);
     if (!foundNft) {
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
     }
