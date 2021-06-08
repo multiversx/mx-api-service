@@ -123,6 +123,13 @@ export class TokenService {
       tokensWithBalance.push(tokenWithBalance);
     }
 
+    for (let token of tokensWithBalance) {
+      // @ts-ignore
+      token.identifier = token.tokenIdentifier;
+      // @ts-ignore
+      delete token.tokenIdentifier;
+    }
+
     return tokensWithBalance;
   }
 
