@@ -22,41 +22,6 @@ export class BlockService {
   }
 
   async getBlocks(shard: number | undefined, proposer: string | undefined, validator: string | undefined, epoch: number | undefined, from: number, size: number): Promise<Block[]> {
-    let totalBlocks: Block[] = [];
-
-    let totalIterations = 0;
-
-    // We get valid proposers only within one epoch
-    // meaning we need to fetch epoch by epoch until we reached the total size of the result set
-    while (true) {
-      let remainingSize = size - totalBlocks.length;
-
-      // we reached total blocks => out
-      if (remainingSize <= 0) {
-        return totalBlocks;
-      }
-
-      let blocksForEpoch = await this.getBlocksForEpoch(shard, proposer, validator, epoch, from, size);
-      
-      totalBlocks.push(...blocksForEpoch);
-
-      // no epoch filter, no reason to decrement it
-      if (!epoch) {
-        return totalBlocks;
-      }
-
-      epoch--;
-
-      totalIterations++;
-
-      // general safety measure (max 10 requests towards elastic)
-      if (totalIterations >= 10) {
-        return totalBlocks;
-      }
-    }
-  }
-
-  async getBlocksForEpoch(shard: number | undefined, proposer: string | undefined, validator: string | undefined, epoch: number | undefined, from: number, size: number): Promise<Block[]> {
     let query: any = {
       shardId: shard,
       epoch: epoch
