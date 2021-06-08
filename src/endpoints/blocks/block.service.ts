@@ -62,12 +62,12 @@ export class BlockService {
       epoch: epoch
     };
 
-    if (proposer && shard && epoch) {
+    if (proposer && shard !== undefined && epoch !== undefined) {
       let index = await this.elasticService.getBlsIndex(proposer, shard, epoch);
       query.proposer = index ? index : -1;
     }
 
-    if (validator && shard && epoch) {
+    if (validator && shard !== undefined && epoch !== undefined) {
       let index = await this.elasticService.getBlsIndex(validator, shard, epoch);
       query.validators = index ? index : -1;
     }
