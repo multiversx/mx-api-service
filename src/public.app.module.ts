@@ -67,7 +67,7 @@ const DailyRotateFile = require('winston-daily-rotate-file');
           maxSize: '20m',
           maxFiles: '14d',
           createSymlink: true,
-          dirname: 'dist',
+          dirname: 'dist/logs',
           symlinkName: 'application.log'
         }),
       ]
