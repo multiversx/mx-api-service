@@ -48,6 +48,7 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(publicApp, config);
   SwaggerModule.setup('docs', publicApp, document);
+  SwaggerModule.setup('', publicApp, document);
 
   if (apiConfigService.getIsPublicApiActive()) {
     await publicApp.listen(3001);
