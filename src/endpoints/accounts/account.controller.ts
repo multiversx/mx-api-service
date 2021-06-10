@@ -107,6 +107,24 @@ export class AccountController {
     }
   }
 
+  @Get("/accounts/:address/tokens/count")
+  @ApiResponse({
+    status: 200,
+    description: 'The number of tokens available on the blockchain for the given address',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  async getTokenCount(@Param('address') address: string): Promise<number> {
+    try {
+      return await this.tokenService.getTokenCountForAddress(address);
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+    }
+  }
+
   @Get("/accounts/:address/tokens/:token")
   @ApiResponse({
     status: 200,
@@ -141,24 +159,6 @@ export class AccountController {
     return foundToken;
   }
 
-  @Get("/accounts/:address/tokens/count")
-  @ApiResponse({
-    status: 200,
-    description: 'The number of tokens available on the blockchain for the given address',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Account not found'
-  })
-  async getTokenCount(@Param('address') address: string): Promise<number> {
-    try {
-      return await this.tokenService.getTokenCountForAddress(address);
-    } catch (error) {
-      this.logger.error(error);
-      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
-    }
-  }
-
   @Get("/accounts/:address/nfts")
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
@@ -181,6 +181,24 @@ export class AccountController {
   ): Promise<Token[]> {
     try {
       return await this.tokenService.getNftsForAddress(address, from, size, token);
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  @Get("/accounts/:address/nfts/count")
+  @ApiResponse({
+    status: 200,
+    description: 'The number of non-fungible and semi-fungible tokens available on the blockchain for the given address',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  async getNftCount(@Param('address') address: string): Promise<number> {
+    try {
+      return await this.tokenService.getNftCountForAddress(address);
     } catch (error) {
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
@@ -220,24 +238,6 @@ export class AccountController {
     }
 
     return foundNft;
-  }
-
-  @Get("/accounts/:address/nfts/count")
-  @ApiResponse({
-    status: 200,
-    description: 'The number of non-fungible and semi-fungible tokens available on the blockchain for the given address',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Account not found'
-  })
-  async getNftCount(@Param('address') address: string): Promise<number> {
-    try {
-      return await this.tokenService.getNftCountForAddress(address);
-    } catch (error) {
-      this.logger.error(error);
-      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
-    }
   }
 
   @Get("/accounts/:address/stake")
