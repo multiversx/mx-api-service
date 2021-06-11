@@ -106,7 +106,8 @@ export class AccountController {
       return await this.tokenService.getTokensForAddress(address, from, size);
     } catch (error) {
       this.logger.error(error);
-      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      return [];
     }
   }
 
@@ -124,7 +125,8 @@ export class AccountController {
       return await this.tokenService.getTokenCountForAddress(address);
     } catch (error) {
       this.logger.error(error);
-      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      return 0;
     }
   }
 
@@ -186,7 +188,8 @@ export class AccountController {
       return await this.tokenService.getNftsForAddress(address, from, size, token);
     } catch (error) {
       this.logger.error(error);
-      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      return [];
     }
   }
 
@@ -204,7 +207,8 @@ export class AccountController {
       return await this.tokenService.getNftCountForAddress(address);
     } catch (error) {
       this.logger.error(error);
-      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      return 0;
     }
   }
 
