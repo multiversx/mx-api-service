@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import axios from "axios";
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { ApiConfigService } from "./api.config.service";
+import { ApiService } from "./api.service";
 import { PerformanceProfiler } from "./performance.profiler";
 
 @Injectable()
@@ -9,7 +9,8 @@ export class GatewayService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => MetricsService))
-    private readonly metricsService: MetricsService
+    private readonly metricsService: MetricsService,
+    private readonly apiService: ApiService
   ) {}
 
   async get(url: string): Promise<any> {
@@ -19,7 +20,7 @@ export class GatewayService {
 
   async getRaw(url: string): Promise<any> {
     let profiler = new PerformanceProfiler();
-    let result = await axios.get(`${this.apiConfigService.getGatewayUrl()}/${url}`);
+    let result = await this.apiService.get(`${this.apiConfigService.getGatewayUrl()}/${url}`);
     profiler.stop();
 
     this.metricsService.setExternalCall('gateway', profiler.duration);
@@ -34,7 +35,7 @@ export class GatewayService {
 
   async createRaw(url: string, data: any): Promise<any> {
     let profiler = new PerformanceProfiler();
-    let result = await axios.post(`${this.apiConfigService.getGatewayUrl()}/${url}`, data);
+    let result = await this.apiService.post(`${this.apiConfigService.getGatewayUrl()}/${url}`, data);
     profiler.stop();
 
     this.metricsService.setExternalCall('gateway', profiler.duration);

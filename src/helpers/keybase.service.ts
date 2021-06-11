@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
-import axios from "axios";
 import { ApiConfigService } from "./api.config.service";
+import { ApiService } from "./api.service";
 import { CachingService } from "./caching.service";
 import { Keybase } from "./entities/keybase";
 import { oneWeek } from "./helpers";
@@ -12,6 +12,7 @@ export class KeybaseService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
+    private readonly apiService: ApiService
   ) {
     this.logger = new Logger(KeybaseService.name);
   }
@@ -37,7 +38,7 @@ export class KeybaseService {
   
       this.logger.log(`Fetching keybase for identity ${keybase.identity} and key ${keybase.key}`);
 
-      const { status } = await axios.head(url);
+      const { status } = await this.apiService.head(url);
 
       return status === 200;
     } catch (error) {
@@ -49,7 +50,7 @@ export class KeybaseService {
     let value;
   
     try {
-      const { status, data } = await axios.get(
+      const { status, data } = await this.apiService.get(
         `https://keybase.io/_/api/1.0/user/lookup.json?username=${identity}`
       );
   

@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import axios from "axios";
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { ApiConfigService } from "./api.config.service";
+import { ApiService } from "./api.service";
 import { ElasticPagination } from "./entities/elastic.pagination";
 import { PerformanceProfiler } from "./performance.profiler";
 
@@ -10,7 +10,8 @@ export class ElasticService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => MetricsService))
-    private readonly metricsService: MetricsService
+    private readonly metricsService: MetricsService,
+    private readonly apiService: ApiService
   ) {}
 
   async getCount(collection: string, query = {}) {
@@ -180,7 +181,7 @@ export class ElasticService {
 
   private async get(url: string) {
     let profiler = new PerformanceProfiler();
-    let result = await axios.get(url);
+    let result = await this.apiService.get(url);
     profiler.stop();
 
     this.metricsService.setExternalCall('elastic', profiler.duration);
@@ -190,7 +191,7 @@ export class ElasticService {
 
   private async post(url: string, body: any) {
     let profiler = new PerformanceProfiler();
-    let result = await axios.post(url, body);
+    let result = await this.apiService.post(url, body);
     profiler.stop();
 
     this.metricsService.setExternalCall('elastic', profiler.duration);

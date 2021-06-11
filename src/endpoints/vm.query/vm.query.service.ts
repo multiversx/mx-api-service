@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import axios from "axios";
+import { ApiService } from "src/helpers/api.service";
 import { ApiConfigService } from "../../helpers/api.config.service";
 import { CachingService } from "../../helpers/caching.service";
 import {  oneHour } from "../../helpers/helpers";
@@ -11,6 +11,7 @@ export class VmQueryService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
+    private readonly apiService: ApiService
   ) {
     this.logger = new Logger(VmQueryService.name);
   }
@@ -89,7 +90,7 @@ export class VmQueryService {
       args: args,
     };
 
-    let result = await axios.post(
+    let result = await this.apiService.post(
       `${this.apiConfigService.getVmQueryUrl()}/vm-values/query`,
       payload,
     );
