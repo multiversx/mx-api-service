@@ -36,6 +36,10 @@ export function base64DecodeBinary(str: string): Buffer {
   return Buffer.from(str, 'base64');
 };
 
+export function padHex(value: string): string {
+  return (value.length % 2 ? '0' + value : value);
+}
+
 export function oneMinute(): number {
   return 60;
 }

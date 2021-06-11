@@ -9,6 +9,7 @@ import { TokenService } from '../tokens/token.service';
 import { TokenWithBalance } from '../tokens/entities/token.with.balance';
 import { DelegationLegacyService } from '../delegation.legacy/delegation.legacy.service';
 import { AccountDelegationLegacy } from '../delegation.legacy/entities/account.delegation.legacy';
+import { AccountKey } from './entities/account.key';
 
 @Controller()
 @ApiTags('accounts')
@@ -278,6 +279,26 @@ export class AccountController {
   async getAccountDelegationLegacy(@Param('address') address: string): Promise<AccountDelegationLegacy> {
     try {
       return await this.delegationLegacyService.getDelegationForAddress(address);
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  @Get("/accounts/:address/keys")
+  @ApiResponse({
+    status: 200,
+    description: 'The key details of a given account',
+    type: AccountKey,
+    isArray: true
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  async getAccountKeys(@Param('address') address: string): Promise<AccountKey[]> {
+    try {
+      return await this.accountService.getKeys(address);
     } catch (error) {
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);

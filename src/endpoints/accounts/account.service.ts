@@ -4,7 +4,7 @@ import { GatewayService } from '../../helpers/gateway.service';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
 import { ElasticPagination } from 'src/helpers/entities/elastic.pagination';
-import { bech32Decode, mergeObjects, oneDay, oneMinute } from 'src/helpers/helpers';
+import { bech32Decode, bech32Encode, mergeObjects, oneDay, oneMinute, padHex } from 'src/helpers/helpers';
 import { CachingService } from 'src/helpers/caching.service';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -121,6 +121,87 @@ export class AccountService {
 
       return result;
     }, []);
+
+    return data;
+  }
+
+  async getKeys(address: string) {
+    let publicKey = bech32Decode(address);
+
+    const BlsKeysStatus = await this.vmQueryService.vmQuery(
+      this.apiConfigService.getAuctionContractAddress(),
+      'getBlsKeysStatus',
+      this.apiConfigService.getAuctionContractAddress(),
+      [ publicKey ],
+    );
+
+    if (!BlsKeysStatus) {
+      return [];
+    }
+
+    const queued: any = [];
+
+    const data = BlsKeysStatus.reduce((result: any, _, index, array) => {
+      if (index % 2 === 0) {
+        const [encodedBlsKey, encodedStatus] = array.slice(index, index + 2);
+
+        const blsKey = padHex(Buffer.from(encodedBlsKey, 'base64').toString('hex'));
+        const status = Buffer.from(encodedStatus, 'base64').toString();
+        const stake = '2500000000000000000000';
+
+        if (status === 'queued') {
+          queued.push(blsKey);
+        }
+
+        result.push({ blsKey, stake, status });
+      }
+      return result;
+    }, []);
+
+    if (data && data[0] && data[0].blsKey) {
+      const [encodedRewardsPublicKey] = await this.vmQueryService.vmQuery(
+        this.apiConfigService.getStakingContractAddress(),
+        'getRewardAddress',
+        undefined,
+        [ data[0].blsKey ],
+      );
+
+      const rewardsPublicKey = Buffer.from(encodedRewardsPublicKey, 'base64').toString();
+      const rewardAddress = bech32Encode(rewardsPublicKey);
+
+      for (let [index, _] of data.entries()) {
+        data[index].rewardAddress = rewardAddress;
+      }
+    }
+
+    if (queued.length) {
+      const results = await Promise.all([
+        this.vmQueryService.vmQuery(
+          this.apiConfigService.getStakingContractAddress(),
+          'getQueueSize',
+        ),
+        ...queued.map((blsKey: string) =>
+          this.vmQueryService.vmQuery(
+            this.apiConfigService.getStakingContractAddress(),
+            'getQueueIndex',
+            this.apiConfigService.getAuctionContractAddress(),
+            [ blsKey ],
+          )
+        ),
+      ]);
+
+      let queueSize = '0';
+      results.forEach(([result], index) => {
+        if (index === 0) {
+          queueSize = Buffer.from(result, 'base64').toString();
+        } else {
+          const [found] = data.filter((x: any) => x.blsKey === queued[index - 1]);
+
+          found.queueIndex = Buffer.from(result, 'base64').toString();
+          found.queueSize = queueSize;
+        }
+      });
+    }
 
     return data;
   }
