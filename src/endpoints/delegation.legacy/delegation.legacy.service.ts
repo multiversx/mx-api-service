@@ -3,6 +3,7 @@ import { ApiConfigService } from "src/helpers/api.config.service";
 import { bech32Decode } from "src/helpers/helpers";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { DelegationLegacy } from "./entities/delegation.legacy";
+import { AccountDelegationLegacy } from "./entities/account.delegation.legacy";
 
 @Injectable()
 export class DelegationLegacyService {
@@ -43,41 +44,41 @@ export class DelegationLegacyService {
     };
   }
 
-  async getDelegationForAddress(address: string): Promise<DelegationLegacy> {
+  async getDelegationForAddress(address: string): Promise<AccountDelegationLegacy> {
     const publicKey = bech32Decode(address);
 
-    const [totalStakeByTypeEncoded, numUsersEncoded] = await Promise.all([
+    const [userStakeByTypeEncoded, claimableRewardsEncoded] = await Promise.all([
       this.vmQueryService.vmQuery(
         this.apiConfigService.getDelegationContractAddress(),
-        'getTotalStakeByType',
+        'getUserStakeByType',
         undefined,
         [ publicKey ]
       ),
       this.vmQueryService.vmQuery(
         this.apiConfigService.getDelegationContractAddress(),
-        'getNumUsers',
+        'getClaimableRewards',
         undefined,
         [ publicKey ]
       ),
     ]);
 
     const [
-      totalWithdrawOnlyStake,
-      totalWaitingStake,
-      totalActiveStake,
-      totalUnstakedStake,
-      totalDeferredPaymentStake,
-    ] = totalStakeByTypeEncoded.map((encoded) => this.numberDecode(encoded));
+      userWithdrawOnlyStake,
+      userWaitingStake,
+      userActiveStake,
+      userUnstakedStake,
+      userDeferredPaymentStake,
+    ] = userStakeByTypeEncoded.map((encoded) => this.numberDecode(encoded));
 
-    const numUsers = this.numberDecode(numUsersEncoded[0]);
+    const claimableRewards = this.numberDecode(claimableRewardsEncoded[0]);
 
     return {
-      totalWithdrawOnlyStake,
-      totalWaitingStake,
-      totalActiveStake,
-      totalUnstakedStake,
-      totalDeferredPaymentStake,
-      numUsers,
+      userWithdrawOnlyStake,
+      userWaitingStake,
+      userActiveStake,
+      userUnstakedStake,
+      userDeferredPaymentStake,
+      claimableRewards,
     };
   }
 

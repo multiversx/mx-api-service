@@ -7,6 +7,8 @@ import { AccountDeferred } from './entities/account.deferred';
 import { Token } from '../tokens/entities/token';
 import { TokenService } from '../tokens/token.service';
 import { TokenWithBalance } from '../tokens/entities/token.with.balance';
+import { DelegationLegacyService } from '../delegation.legacy/delegation.legacy.service';
+import { AccountDelegationLegacy } from '../delegation.legacy/entities/account.delegation.legacy';
 
 @Controller()
 @ApiTags('accounts')
@@ -15,7 +17,8 @@ export class AccountController {
 
   constructor(
     private readonly accountService: AccountService,
-    private readonly tokenService: TokenService
+    private readonly tokenService: TokenService,
+    private readonly delegationLegacyService: DelegationLegacyService
   ) {
     this.logger = new Logger(AccountController.name);
   }
@@ -258,22 +261,22 @@ export class AccountController {
     }
   }
 
-  // @Get("/accounts/:address/delegationlegacy")
-  // @ApiResponse({
-  //   status: 200,
-  //   description: 'The legacy delegation details of a given account',
-  //   type: AccountDeferred
-  // })
-  // @ApiResponse({
-  //   status: 404,
-  //   description: 'Account not found'
-  // })
-  // async getAccountDelegationLegacy(@Param('address') address: string): Promise<DelegationLegacy> {
-  //   try {
-  //     return await this.delegationLegacyService.getDelegationForAddress(address);
-  //   } catch (error) {
-  //     this.logger.error(error);
-  //     throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
-  //   }
-  // }
+  @Get("/accounts/:address/delegation-legacy")
+  @ApiResponse({
+    status: 200,
+    description: 'The legacy delegation details of a given account',
+    type: AccountDelegationLegacy
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  async getAccountDelegationLegacy(@Param('address') address: string): Promise<AccountDelegationLegacy> {
+    try {
+      return await this.delegationLegacyService.getDelegationForAddress(address);
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+    }
+  }
 }
