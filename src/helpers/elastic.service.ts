@@ -1,17 +1,23 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import axios from "axios";
+import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { ApiConfigService } from "./api.config.service";
 import { ElasticPagination } from "./entities/elastic.pagination";
+import { PerformanceProfiler } from "./performance.profiler";
 
 @Injectable()
 export class ElasticService {
-  constructor(private readonly apiConfigService: ApiConfigService) {}
+  constructor(
+    private readonly apiConfigService: ApiConfigService,
+    @Inject(forwardRef(() => MetricsService))
+    private readonly metricsService: MetricsService
+  ) {}
 
   async getCount(collection: string, query = {}) {
     const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_count`;
     query = this.buildQuery(query, 'should');
  
-    const result: any = await axios.post(url, { query });
+    const result: any = await this.post(url, { query });
     let count = result.data.count;
 
     return count;
@@ -19,7 +25,7 @@ export class ElasticService {
 
   async getItem(collection: string, key: string, identifier: string) {
     const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_doc/${identifier}`;
-    const { data: document } = await axios.get(url);
+    const { data: document } = await this.get(url);
 
     return this.formatItem(document, key);
   };
@@ -41,7 +47,7 @@ export class ElasticService {
       data: {
         hits: { hits: documents },
       },
-    } = await axios.post(url, { query: elasticQuery, sort: elasticSort, from: pagination.from, size: pagination.size });
+    } = await this.post(url, { query: elasticQuery, sort: elasticSort, from: pagination.from, size: pagination.size });
   
     return documents.map((document: any) => this.formatItem(document, key));
   };
@@ -61,7 +67,7 @@ export class ElasticService {
       data: {
         _source: { publicKeys },
       },
-    } = await axios.get(url);
+    } = await this.get(url);
   
     this.publicKeysCache[key] = publicKeys;
   
@@ -75,7 +81,7 @@ export class ElasticService {
       data: {
         _source: { publicKeys },
       },
-    } = await axios.get(url);
+    } = await this.get(url);
   
     const index = publicKeys.indexOf(bls);
   
@@ -95,7 +101,7 @@ export class ElasticService {
       data: {
         _source: { publicKeys },
       },
-    } = await axios.get(url);
+    } = await this.get(url);
   
     return publicKeys;
   };
@@ -171,4 +177,24 @@ export class ElasticService {
     });
     return obj;
   };
+
+  private async get(url: string) {
+    let profiler = new PerformanceProfiler();
+    let result = await axios.get(url);
+    profiler.stop();
+
+    this.metricsService.setExternalCall('elastic', profiler.duration);
+
+    return result;
+  }
+
+  private async post(url: string, body: any) {
+    let profiler = new PerformanceProfiler();
+    let result = await axios.post(url, body);
+    profiler.stop();
+
+    this.metricsService.setExternalCall('elastic', profiler.duration);
+
+    return result;
+  }
 }

@@ -11,4 +11,9 @@ export class MetricsController {
   async getMetrics(): Promise<string> {
     return this.metricsService.getMetrics();
   }
+  
+  @Get("/hello")
+  async getHello(): Promise<string> {
+    return 'hello';
+  }
 }

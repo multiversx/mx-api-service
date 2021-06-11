@@ -7,16 +7,19 @@ export class PerformanceProfiler {
   stopped: number = 0;
   duration: number = 0;
 
-  constructor(description: string) {
+  constructor(description: string = '') {
     this.started = Date.now();
     this.description = description;
   }
 
-  stop(description: string | null = null) {
+  stop(description: string | null = null, skipLogging: boolean = false) {
     this.stopped = Date.now();
     this.duration = this.stopped - this.started;
-    let logger = new Logger(PerformanceProfiler.name);
 
-    logger.log(`${description ?? this.description}: ${this.duration}ms`);
+    if (!skipLogging) {
+      let logger = new Logger(PerformanceProfiler.name);
+
+      logger.log(`${description ?? this.description}: ${this.duration}ms`);
+    }
   }
 }
