@@ -19,7 +19,7 @@ export class PerformanceProfiler {
     if (!skipLogging) {
       let logger = new Logger(PerformanceProfiler.name);
 
-      logger.log(`${description ?? this.description}: ${this.duration}ms`);
+      logger.verbose(`${description ?? this.description}: ${this.duration}ms`);
     }
   }
 }
