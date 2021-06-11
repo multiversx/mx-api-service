@@ -3,19 +3,20 @@ import { CachingService } from 'src/helpers/caching.service';
 import { ElasticPagination } from 'src/helpers/entities/elastic.pagination';
 import { QueryCondition } from 'src/helpers/entities/query.condition';
 import { GatewayService } from 'src/helpers/gateway.service';
-import { mergeObjects, oneMinute } from 'src/helpers/helpers';
+import { bech32Decode, computeShard, mergeObjects, oneMinute } from 'src/helpers/helpers';
 import { ElasticService } from '../../helpers/elastic.service';
 import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
 import { TransactionQuery } from './entities/transaction.query';
+import { TransactionSendResult } from './entities/transaction.send.result';
 
 @Injectable()
 export class TransactionService {
   constructor(
     private readonly elasticService: ElasticService, 
     private readonly gatewayService: GatewayService,
-    private readonly cachingService: CachingService
+    private readonly cachingService: CachingService,
   ) {}
 
   async getTransactionCount(): Promise<number> {
@@ -53,7 +54,14 @@ export class TransactionService {
   }
 
   async getTransaction(txHash: string): Promise<TransactionDetailed | null> {
-    return this.tryGetTransactionFromElastic(txHash) ?? this.tryGetTransactionFromGateway(txHash);
+    let transaction = await this.tryGetTransactionFromElastic(txHash);
+    console.log({transactionFromElastic: transaction});
+    if (transaction === null) {
+      transaction = await this.tryGetTransactionFromGateway(txHash);
+      console.log({transactionFromGateway: transaction});
+    }
+
+    return transaction;
   }
 
   async tryGetTransactionFromElastic(txHash: string): Promise<TransactionDetailed | null> {
@@ -67,11 +75,7 @@ export class TransactionService {
 
   async tryGetTransactionFromGateway(txHash: string): Promise<TransactionDetailed | null> {
     try {
-      const {
-        data: {
-          transaction
-        }
-      } = await this.gatewayService.get(`transaction/${txHash}`);
+      const { transaction } = await this.gatewayService.get(`transaction/${txHash}`);
 
       return {
         txHash: txHash,
@@ -98,26 +102,20 @@ export class TransactionService {
     }
   }
 
-  async createTransaction(transaction: TransactionCreate): Promise<Transaction> {
-    let result = await this.gatewayService.create('transaction/send', transaction);
-    
+  async createTransaction(transaction: TransactionCreate): Promise<TransactionSendResult> {
+    const receiverShard = computeShard(bech32Decode(transaction.receiver));
+    const senderShard = computeShard(bech32Decode(transaction.sender));
+
+    const { txHash } = await this.gatewayService.create('transaction/send', transaction);
+
+    // TODO: pending alignment
     return {
-      txHash: result.txHash,
-      receiver: result.receiver,
-      sender: result.sender,
-      receiverShard: result.receiverShard,
-      senderShard: result.senderShard,
-      gasLimit: 0,
-      gasPrice: 0,
-      gasUsed: 0,
-      miniBlockHash: '',
-      nonce: 0,
-      round: 0,
-      signature: '',
+      txHash,
+      receiver: transaction.receiver,
+      sender: transaction.sender,
+      receiverShard,
+      senderShard,
       status: 'Pending',
-      value: '',
-      fee: '',
-      timestamp: 0
-    }
+    };
   }
 }

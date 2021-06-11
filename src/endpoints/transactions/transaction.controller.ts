@@ -6,6 +6,7 @@ import { ParseOptionalIntPipe } from 'src/helpers/pipes/parse.optional.int.pipe'
 import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
+import { TransactionSendResult } from './entities/transaction.send.result';
 import { TransactionService } from './transaction.service';
 
 @Controller()
@@ -85,9 +86,9 @@ export class TransactionController {
   @ApiResponse({
     status: 201,
     description: 'Create a transaction',
-    type: Transaction
+    type: TransactionSendResult
   })
-  async createTransaction(@Body() transaction: TransactionCreate) {
+  async createTransaction(@Body() transaction: TransactionCreate): Promise<TransactionSendResult> {
     return await this.transactionService.createTransaction(transaction);
   }
 }
