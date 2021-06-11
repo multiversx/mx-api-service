@@ -6,7 +6,7 @@ import { NodeStatus } from "./entities/node.status";
 import { Queue } from "./entities/queue";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { ApiConfigService } from "src/helpers/api.config.service";
-import { bech32Decode, bech32Encode, oneHour, oneWeek } from "src/helpers/helpers";
+import { bech32Decode, bech32Encode, oneHour, oneMinute, oneWeek } from "src/helpers/helpers";
 import { CachingService } from "src/helpers/caching.service";
 import { KeybaseService } from "src/helpers/keybase.service";
 import { Keybase } from "src/helpers/entities/keybase";
@@ -164,7 +164,7 @@ export class NodeService {
   }
 
   async getAllNodes(): Promise<Node[]> {
-    return await this.cachingService.getOrSetCache('nodes', async () => await this.getAllNodesRaw(), oneHour());
+    return await this.cachingService.getOrSetCache('nodes', async () => await this.getAllNodesRaw(), oneHour(), oneMinute());
   }
 
   async getAllNodesRaw(): Promise<Node[]> {
