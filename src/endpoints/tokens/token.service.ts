@@ -218,9 +218,13 @@ export class TokenService {
     ]);
 
     const data: any = {
-      totalStaked: Buffer.from(totalStakedEncoded[0], 'base64').toString('ascii'),
+      totalStaked: '0',
       unstakedTokens: undefined,
     };
+
+    if (totalStakedEncoded) {
+      data.totalStaked = Buffer.from(totalStakedEncoded[0], 'base64').toString('ascii');
+    }
 
     if (unStakedTokensListEncoded) {
       data.unstakedTokens = unStakedTokensListEncoded.reduce((result: any, _, index, array) => {
@@ -248,6 +252,8 @@ export class TokenService {
         delete element.epochs;
       }
     }
+
+    return data;
   }
 
   getExpires(epochs: number, roundsPassed: number, roundsPerEpoch: number, roundDuration: number) {

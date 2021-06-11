@@ -5,7 +5,7 @@ import { PerformanceProfiler } from "./performance.profiler";
 @Injectable()
 export class ApiService {
   async get(url: string): Promise<any> {
-    let profiler = new PerformanceProfiler(`apiService:get:${url}`);
+    let profiler = new PerformanceProfiler(`apiService get ${url}`);
 
     try {
       return await axios.get(url);
@@ -19,7 +19,7 @@ export class ApiService {
   }
 
   async post(url: string, data: any): Promise<any> {
-    let profiler = new PerformanceProfiler(`apiService:get:${url}`);
+    let profiler = new PerformanceProfiler(`apiService post ${url}`);
     
     try {
       return await axios.post(url, data);
@@ -33,7 +33,7 @@ export class ApiService {
   }
 
   async head(url: string): Promise<any> {
-    let profiler = new PerformanceProfiler(`apiService:get:${url}`);
+    let profiler = new PerformanceProfiler(`apiService head ${url}`);
 
     try {
       return await axios.head(url);
