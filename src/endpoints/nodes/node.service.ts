@@ -288,11 +288,13 @@ export class NodeService {
 
         if (!owners[bls]) {
           const owner = await this.getBlsOwner(bls);
-          const blses = await this.getOwnerBlses(owner);
+          if (owner) {
+            const blses = await this.getOwnerBlses(owner);
 
-          blses.forEach(bls => {
-            owners[bls] = owner;
-          });
+            blses.forEach(bls => {
+              owners[bls] = owner;
+            });
+          }
         }
       }
 
@@ -308,13 +310,19 @@ export class NodeService {
     return blses.map((bls, index) => (missing.includes(index) ? owners[bls] : cached[index]));
   };
   
-  async getBlsOwner(bls: string): Promise<string> {
-    const [encodedOwnerBase64] = await this.vmQueryService.vmQuery(
+  async getBlsOwner(bls: string): Promise<string | undefined> {
+    let result = await this.vmQueryService.vmQuery(
       this.apiConfigService.getStakingContractAddress(),
       'getOwner',
       this.apiConfigService.getAuctionContractAddress(),
       [ bls ],
     );
+
+    if (!result) {
+      return undefined;
+    }
+
+    const [encodedOwnerBase64] = result;
   
     return bech32Encode(Buffer.from(encodedOwnerBase64, 'base64').toString('hex'));
   };

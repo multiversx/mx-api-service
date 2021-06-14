@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { GatewayService } from "src/helpers/gateway.service";
@@ -12,14 +12,18 @@ import { StakeTopup } from "./entities/stake.topup";
 
 @Injectable()
 export class StakeService {
+  private logger: Logger;
+
   constructor(
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
-    private readonly gatewayService: GatewayService
-  ) {}
+    private readonly gatewayService: GatewayService,
+  ) {
+    this.logger = new Logger(StakeService.name);
+  }
 
   async getGlobalStake() {
     return await this.cachingService.getOrSetCache(
@@ -99,14 +103,17 @@ export class StakeService {
   }
 
   async getStakedTopupRaw(address: string): Promise<StakeTopup> {
-    const response = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getAuctionContractAddress(),
-      'getTotalStakedTopUpStakedBlsKeys',
-      this.apiConfigService.getAuctionContractAddress(),
-      [ bech32Decode(address) ],
-    );
-  
-    if (!response) {
+    let response: string[];
+    try {
+      response = await this.vmQueryService.vmQuery(
+        this.apiConfigService.getAuctionContractAddress(),
+        'getTotalStakedTopUpStakedBlsKeys',
+        this.apiConfigService.getAuctionContractAddress(),
+        [ bech32Decode(address) ],
+      );
+    } catch (error) {
+      this.logger.log(error);
+
       return {
         topUp: '0',
         stake: '0',

@@ -206,10 +206,16 @@ export class ProviderService {
   }
 
   async getProviderAddressesRaw() {
-    const providersBase64 = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getDelegationManagerContractAddress(),
-      'getAllContractAddresses',
-    );
+    let providersBase64: string[];
+    try {
+      providersBase64 = await this.vmQueryService.vmQuery(
+        this.apiConfigService.getDelegationManagerContractAddress(),
+        'getAllContractAddresses',
+      );
+    } catch (error) {
+      this.logger.error(error);
+      return [];
+    }
 
     if (!providersBase64) {
       return [];
