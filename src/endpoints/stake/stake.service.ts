@@ -103,7 +103,7 @@ export class StakeService {
   }
 
   async getStakedTopupRaw(address: string): Promise<StakeTopup> {
-    let response: string[];
+    let response: string[] | undefined;
     try {
       response = await this.vmQueryService.vmQuery(
         this.apiConfigService.getAuctionContractAddress(),
@@ -113,7 +113,10 @@ export class StakeService {
       );
     } catch (error) {
       this.logger.log(error);
+      response = undefined;
+    }
 
+    if (!response) {
       return {
         topUp: '0',
         stake: '0',
