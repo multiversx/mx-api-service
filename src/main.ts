@@ -17,8 +17,36 @@ import { Logger } from '@nestjs/common';
 import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import simpleGit, {SimpleGit, SimpleGitOptions} from 'simple-git';
+var rimraf = require("rimraf");
 
 async function bootstrap() {
+  let logger = new Logger('Bootstrapper');
+
+  const localGitPath = 'dist/repos/assets';
+  rimraf(localGitPath, function () { 
+    logger.log("done deleting"); 
+
+    const options: Partial<SimpleGitOptions> = {
+      baseDir: process.cwd(),
+      binary: 'git',
+      maxConcurrentProcesses: 6,
+    };
+    
+    // when setting all options in a single object
+    const git: SimpleGit = simpleGit(options);
+
+    git.outputHandler((_, stdout, stderr) => {
+      stdout.pipe(process.stdout);
+      stderr.pipe(process.stderr)
+
+      stdout.on('data', (data) => {
+          // Print data
+          logger.log(data.toString('utf8'))
+      })
+    }).clone('https://github.com/ElrondNetwork/assets.git', localGitPath);
+  });
+
   const publicApp = await NestFactory.create(PublicAppModule);
   publicApp.use(bodyParser.json({limit: '1mb'}));
   publicApp.use(requestIp.mw());
@@ -68,8 +96,6 @@ async function bootstrap() {
     let processorApp = await NestFactory.create(CacheWarmerModule);
     await processorApp.listen(6001);
   }
-
-  let logger = new Logger('Bootstrapper');
 
   const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
     PubSubModule,
