@@ -6,6 +6,7 @@ import { join } from 'path';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { ApiConfigService } from './helpers/api.config.service';
 import { CachingService } from './helpers/caching.service';
+import { TokenAssetService } from './helpers/token.asset.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { PrivateAppModule } from './private.app.module';
 import { TransactionProcessorModule } from './transaction.processor.module';
@@ -17,36 +18,8 @@ import { Logger } from '@nestjs/common';
 import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import simpleGit, {SimpleGit, SimpleGitOptions} from 'simple-git';
-var rimraf = require("rimraf");
 
 async function bootstrap() {
-  let logger = new Logger('Bootstrapper');
-
-  const localGitPath = 'dist/repos/assets';
-  rimraf(localGitPath, function () { 
-    logger.log("done deleting"); 
-
-    const options: Partial<SimpleGitOptions> = {
-      baseDir: process.cwd(),
-      binary: 'git',
-      maxConcurrentProcesses: 6,
-    };
-    
-    // when setting all options in a single object
-    const git: SimpleGit = simpleGit(options);
-
-    git.outputHandler((_, stdout, stderr) => {
-      stdout.pipe(process.stdout);
-      stderr.pipe(process.stderr)
-
-      stdout.on('data', (data) => {
-          // Print data
-          logger.log(data.toString('utf8'))
-      })
-    }).clone('https://github.com/ElrondNetwork/assets.git', localGitPath);
-  });
-
   const publicApp = await NestFactory.create(PublicAppModule);
   publicApp.use(bodyParser.json({limit: '1mb'}));
   publicApp.use(requestIp.mw());
@@ -57,6 +30,9 @@ async function bootstrap() {
   let cachingService = publicApp.get<CachingService>(CachingService);
   let httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
   let metricsService = publicApp.get<MetricsService>(MetricsService);
+  let tokenAssetService = publicApp.get<TokenAssetService>(TokenAssetService);
+
+  await tokenAssetService.checkout();
 
   publicApp.useGlobalInterceptors(
     new LoggingInterceptor(metricsService), 
@@ -97,6 +73,8 @@ async function bootstrap() {
     await processorApp.listen(6001);
   }
 
+  let logger = new Logger('Bootstrapper');
+
   const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
     PubSubModule,
     {
@@ -113,4 +91,5 @@ async function bootstrap() {
   logger.log(`Transaction processor active: ${apiConfigService.getIsTransactionProcessorCronActive()}`);
   logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
 }
+
 bootstrap();
