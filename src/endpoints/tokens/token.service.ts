@@ -7,8 +7,10 @@ import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
 import { TokenDetailed } from "./entities/token.detailed";
-import { Nft } from "./entities/nft";
 import { NftDetailed } from "./entities/nft.detailed";
+import { NftType } from "./entities/nft.type";
+import { ElasticService } from "src/helpers/elastic.service";
+import { NftElastic } from "./entities/nft.elastic";
 
 @Injectable()
 export class TokenService {
@@ -19,6 +21,7 @@ export class TokenService {
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
+    private readonly elasticService: ElasticService
   ) {
     this.logger = new Logger(TokenService.name);
   }
@@ -62,18 +65,49 @@ export class TokenService {
     return nft;
   }
 
-  async getNfts(from: number, size: number, search: string | undefined): Promise<Nft[]> {
-    let nfts = await this.getAllNfts();
+  async getNfts(from: number, size: number, search: string | undefined, type: NftType | undefined, token: string | undefined, tags: string | undefined, creator: string | undefined): Promise<NftElastic[]> {
+    return await this.getNftsInternal(from, size, search, type, undefined, token, tags, creator);
+  }
 
-    nfts = nfts.slice(from, from + size);
-
-    if (search) {
-      let searchLower = search.toLowerCase();
-
-      nfts = nfts.filter(token => token.name.toLowerCase().includes(searchLower) || token.token.toLowerCase().includes(searchLower));
+  async getSingleNft(identifier: string): Promise<NftElastic | undefined> {
+    let nfts = await this.getNftsInternal(0, 1, undefined, undefined, identifier, undefined, undefined, undefined);
+    if (nfts.length === 0) {
+      return undefined;
     }
 
-    return nfts.map(nft => mergeObjects(new Nft(), nft));
+    return nfts[0];
+  }
+
+  async getNftsInternal(from: number, size: number, search: string | undefined, type: NftType | undefined, identifier: string | undefined, token: string | undefined, tags: string | undefined, creator: string | undefined): Promise<NftElastic[]> {
+    let tagArray: string[] = [];
+    if (tags !== undefined) {
+      tagArray = tags.split(',');
+    }
+
+    let elasticNfts = await this.elasticService.getNfts(from, size, search, type, identifier, token, tagArray, creator);
+    let nfts: NftElastic[] = [];
+
+    for (let elasticNft of elasticNfts) {
+      let nft = new NftElastic()
+      nft.identifier = elasticNft.identifier;
+      nft.token = elasticNft.token;
+      nft.type = elasticNft.type;
+      nft.timestamp = elasticNft.timestamp;
+      
+      let metadata = elasticNft.metaData;
+
+      nft.name = metadata.name;
+      nft.creator = metadata.creator;
+      nft.royalties = metadata.royalties;
+      nft.hash = metadata.hash;
+      nft.uris = metadata.uris;
+      nft.url = metadata.uris[0];
+      nft.tags = metadata.attributes.tags;
+
+      nfts.push(nft);
+    }
+
+    return nfts;
   }
 
   async getNftCount(): Promise<number> {

@@ -1,5 +1,6 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
+import { NftType } from "src/endpoints/tokens/entities/nft.type";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
 import { ElasticPagination } from "./entities/elastic.pagination";
@@ -106,6 +107,98 @@ export class ElasticService {
   
     return publicKeys;
   };
+
+  private getNestedQuery(path: string, match: any) {
+    return {
+      nested: {
+         path,
+         query: {
+            bool: {
+               must: [
+                  {
+                     match
+                  }
+               ]
+            }
+         }
+      }
+   };
+  }
+
+  private getSimpleQuery(match: any) {
+    return {
+       bool: {
+          must:[
+             {
+                match
+             }
+          ]
+       }
+    };
+  }
+
+  private getWildcardQuery(wildcard: any) {
+    return { wildcard };
+  }
+
+  async getNfts(from: number, size: number, search: string | undefined, type: NftType | undefined, identifier: string | undefined, token: string | undefined, tagArray: string[], creator: string | undefined) {
+    let queries = [];
+
+    if (search !== undefined) {
+      queries.push(this.getWildcardQuery({ token: `*${search}*` }));
+    }
+
+    if (type !== undefined) {
+      queries.push(this.getSimpleQuery({ type }));
+    }
+
+    if (identifier !== undefined) {
+      queries.push(this.getSimpleQuery({ identifier }));
+    }
+
+    if (token !== undefined) {
+      queries.push(this.getSimpleQuery({ token }));
+    }
+
+    if (tagArray.length > 0) {
+      for (let tag of tagArray) {
+        queries.push(this.getNestedQuery("metaData.attributes", { "metaData.attributes.tags": tag }));
+      }
+    }
+
+    if (creator !== undefined) {
+      queries.push(this.getNestedQuery("metaData", { "metaData.creator": creator }));
+    }
+
+    let payload = {
+      sort: [
+         {
+            timestamp: {
+               order: "desc"
+            }
+         }
+      ],
+      from,
+      size,
+      query: {
+         bool: {
+            must: queries
+         }
+      }
+   };
+
+   console.log(JSON.stringify(payload));
+
+   let url = `${this.apiConfigService.getElasticUrl()}/tokens/_search`;
+
+   const {
+    data: {
+      hits: { hits: documents },
+    },
+  } = await this.post(url, payload);
+
+  return documents.map((document: any) => this.formatItem(document, 'identifier'));
+}
 
   private buildQuery(query: any = {}, operator: string = 'must') {
     delete query['from'];

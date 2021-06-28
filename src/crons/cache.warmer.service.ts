@@ -42,7 +42,7 @@ export class CacheWarmerService {
     }
 
     this.isRunningTokenInvalidations = true;
-    let profiler = new PerformanceProfiler('Running node invalidations');
+    let profiler = new PerformanceProfiler('Running token invalidations');
     try {
       await this.tokenService.getAllTokensRaw();
       await this.tokenService.getAllTokens();

@@ -1,7 +1,8 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { Nft } from "./entities/nft";
-import { NftDetailed } from "./entities/nft.detailed";
+import { ParseOptionalEnumPipe } from "src/helpers/pipes/parse.optional.enum.pipe";
+import { NftElastic } from "./entities/nft.elastic";
+import { NftType } from "./entities/nft.type";
 import { Token } from "./entities/token";
 import { TokenDetailed } from "./entities/token.detailed";
 import { TokenService } from "./token.service";
@@ -61,7 +62,7 @@ export class TokenController {
   @ApiResponse({
     status: 200,
     description: 'List non-fungible and semi-fungible tokens',
-    type: Nft,
+    type: NftElastic,
     isArray: true
   })
 	@ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
@@ -71,8 +72,12 @@ export class TokenController {
 		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('search') search: string | undefined,
-  ): Promise<Nft[]> {
-    return await this.tokenService.getNfts(from, size, search);
+		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+		@Query('token') token: string | undefined,
+		@Query('tags') tags: string | undefined,
+		@Query('creator') creator: string | undefined,
+  ): Promise<NftElastic[]> {
+    return await this.tokenService.getNfts(from, size, search, type, token, tags, creator);
   }
 
   @Get("/nfts/count")
@@ -88,14 +93,14 @@ export class TokenController {
   @ApiResponse({
     status: 200,
     description: 'Non-fungible / semi-fungible token details',
-    type: NftDetailed,
+    type: NftElastic,
   })
   @ApiResponse({
     status: 404,
     description: 'Token not found'
   })
-  async getNft(@Param('identifier') identifier: string): Promise<NftDetailed> {
-    let token = await this.tokenService.getNft(identifier);
+  async getNft(@Param('identifier') identifier: string): Promise<NftElastic> {
+    let token = await this.tokenService.getSingleNft(identifier);
     if (token === undefined) {
       throw new HttpException('NFT not found', HttpStatus.NOT_FOUND);
     }
