@@ -13,6 +13,7 @@ import { ElasticService } from "src/helpers/elastic.service";
 import { NftElastic } from "./entities/nft.elastic";
 import { NftElasticDetailed } from "./entities/nft.elastic.detailed";
 import { NftElasticOwner } from "./entities/nft.elastic.owner";
+import { NftElasticAccount } from "./entities/nft.elastic.account";
 
 @Injectable()
 export class TokenService {
@@ -79,7 +80,7 @@ export class TokenService {
 
     let nft: NftElasticDetailed = mergeObjects(new NftElasticDetailed(), nfts[0]);
 
-    let accountsEsdt = await this.elasticService.getAccountEsdt(nft.identifier);
+    let accountsEsdt = await this.elasticService.getAccountEsdtByIdentifier(nft.identifier);
     if (nft.type === NftType.NonFungibleESDT) {
       nft.owner = accountsEsdt[0].address;
       
@@ -215,14 +216,72 @@ export class TokenService {
     return allTokens.length;
   }
 
-  async getNftsForAddress(address: string, from: number, size: number, token: string | undefined): Promise<Token[]> {
-    let allTokens = await this.getAllNftsForAddress(address);
+  async getNftsForAddress(address: string, from: number, size: number, token: string | undefined): Promise<NftElasticAccount[]> {
+    let elasticNfts = await this.elasticService.getAccountEsdtByAddress(address, from, size, token);
 
-    if (token) {
-      allTokens = allTokens.filter(x => x.token === token);
+    let nfts: NftElastic[] = [];
+
+    for (let elasticNft of elasticNfts) {
+      let nft = new NftElastic();
+      nft.identifier = elasticNft.identifier;
+      nft.token = elasticNft.token;
+      
+      let metadata = elasticNft.metaData;
+      if (metadata) {
+        nft.name = metadata.name;
+        nft.creator = metadata.creator;
+        nft.royalties = metadata.royalties / 10000; // 10.000 => 100%
+        nft.hash = metadata.hash;
+        nft.uris = metadata.uris.filter((x: any) => x);
+        nft.url = metadata.uris[0];
+
+        if (metadata.attributes && metadata.attributes.tags) {
+          nft.tags = metadata.attributes.tags;
+        }
+      }
+
+      nfts.push(nft);
     }
 
-    return allTokens.slice(from, from + size);
+    let identifiers = nfts.map(x => x.identifier);
+    let tokens = await this.elasticService.getTokensByIdentifiers(identifiers);
+
+    for (let token of tokens) {
+      let nft = nfts.find(x => x.identifier === token.identifier);
+      if (!nft) {
+        throw new Error(`Could not identify NFT with identifier '${token.identifier}' in elastic tokens by identifiers`);
+      }
+
+      nft.type = token.type;
+      nft.timestamp = token.timestamp;
+    }
+
+    for (let nft of nfts) {
+      let gatewayNft = await this.getNft(nft.identifier);
+      if (gatewayNft) {
+        mergeObjects(nft, gatewayNft);
+      }
+    }
+
+    let nftAccounts: NftElasticAccount[] = [];
+    for (let elasticNft of elasticNfts) {
+      let nft = nfts.find(x => x.identifier === elasticNft.identifier);
+      if (!nft) {
+        throw new Error(`Could not identify NFT with identifier '${elasticNft.identifier}' in NFT array`);
+      }
+
+      let nftAccount: NftElasticAccount = mergeObjects(new NftElasticAccount(), nft);
+      if (nftAccount.type === NftType.NonFungibleESDT) {
+        // @ts-ignore
+        delete nftAccount.balance;
+      } else if (nftAccount.type === NftType.SemiFungibleESDT) {
+        nftAccount.balance = elasticNft.balance;
+      }
+
+      nftAccounts.push(nftAccount);
+    }
+
+    return nftAccounts;
   }
 
   async getAllNftsForAddress(address: string): Promise<Token[]> {

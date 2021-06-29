@@ -155,7 +155,7 @@ export class ElasticService {
     };
   }
 
-  async getAccountEsdt(identifier: string) {
+  async getAccountEsdtByIdentifier(identifier: string) {
     let query = this.getSimpleQuery({
         identifier: {
           query: identifier,
@@ -169,6 +169,68 @@ export class ElasticService {
             must: [
               query
             ]
+         }
+      }
+    };
+
+    let url = `${this.betaUrl}/accountsesdt/_search`;
+
+    const {
+      data: {
+        hits: { hits: documents },
+      },
+    } = await this.post(url, payload);
+
+    return documents.map((document: any) => this.formatItem(document, 'identifier'));
+  }
+
+  async getTokensByIdentifiers(identifiers: string[]) {
+    let queries = identifiers.map(identifier => this.getSimpleQuery({
+        identifier: {
+          query: identifier,
+          operator: "AND"
+      }
+    }));
+
+    let payload = {
+      query: {
+         bool: {
+            should: queries
+         }
+      }
+    };
+
+    let url = `${this.betaUrl}/tokens/_search`;
+
+    const {
+      data: {
+        hits: { hits: documents },
+      },
+    } = await this.post(url, payload);
+
+    return documents.map((document: any) => this.formatItem(document, 'identifier'));
+  }
+
+  async getAccountEsdtByAddress(address: string, from: number, size: number, token: string | undefined) {
+    let queries = [];
+
+    queries.push(this.getSimpleQuery({ address }));
+
+    if (token) {
+      queries.push(this.getSimpleQuery({
+        token: {
+          query: token,
+          operator: "AND"
+        }
+      }));
+    }
+
+    let payload = {
+      from,
+      size,
+      query: {
+         bool: {
+            must: queries
          }
       }
     };
