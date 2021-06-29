@@ -133,8 +133,7 @@ export class TokenService {
   }
 
   async getNftCount(): Promise<number> {
-    let allNfts = await this.getAllNfts();
-    return allNfts.length;
+    return await this.elasticService.getTokenCount();
   }
   
   async getTokenCountForAddress(address: string): Promise<number> {

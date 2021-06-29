@@ -8,15 +8,21 @@ import { PerformanceProfiler } from "./performance.profiler";
 
 @Injectable()
 export class ElasticService {
+  private readonly url: string;
+  private readonly betaUrl: string;
+
   constructor(
-    private readonly apiConfigService: ApiConfigService,
+    apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => MetricsService))
     private readonly metricsService: MetricsService,
     private readonly apiService: ApiService
-  ) {}
+  ) {
+    this.url = apiConfigService.getElasticUrl();
+    this.betaUrl = apiConfigService.getElasticBetaUrl();
+  }
 
   async getCount(collection: string, query = {}) {
-    const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_count`;
+    const url = `${this.url}/${collection}/_count`;
     query = this.buildQuery(query, 'should');
  
     const result: any = await this.post(url, { query });
@@ -26,7 +32,7 @@ export class ElasticService {
   };
 
   async getItem(collection: string, key: string, identifier: string) {
-    const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_doc/${identifier}`;
+    const url = `${this.url}/${collection}/_doc/${identifier}`;
     const { data: document } = await this.get(url);
 
     return this.formatItem(document, key);
@@ -41,7 +47,7 @@ export class ElasticService {
   };
 
   async getList(collection: string, key: string, query: any, pagination: ElasticPagination, sort: { [key: string]: string }, condition: string = 'must'): Promise<any[]> {
-    const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_search`;
+    const url = `${this.url}/${collection}/_search`;
     let elasticSort = this.buildSort(sort);
     let elasticQuery = this.buildQuery(query, condition);
 
@@ -63,7 +69,7 @@ export class ElasticService {
       return this.publicKeysCache[key];
     }
   
-    const url = `${this.apiConfigService.getElasticUrl()}/validators/_doc/${key}`;
+    const url = `${this.url}/validators/_doc/${key}`;
   
     const {
       data: {
@@ -77,7 +83,7 @@ export class ElasticService {
   };
 
   async getBlsIndex(bls: string, shardId: number, epoch: number): Promise<number | boolean> {
-    const url = `${this.apiConfigService.getElasticUrl()}/validators/_doc/${shardId}_${epoch}`;
+    const url = `${this.url}/validators/_doc/${shardId}_${epoch}`;
   
     const {
       data: {
@@ -97,7 +103,7 @@ export class ElasticService {
   async getBlses(shard: number, epoch: number) {
     const key = `${shard}_${epoch}`;
   
-    const url = `${this.apiConfigService.getElasticUrl()}/validators/_doc/${key}`;
+    const url = `${this.url}/validators/_doc/${key}`;
   
     const {
       data: {
@@ -166,7 +172,7 @@ export class ElasticService {
       }
     };
 
-    let url = `${this.apiConfigService.getElasticBetaUrl()}/accountsesdt/_search`;
+    let url = `${this.betaUrl}/accountsesdt/_search`;
 
     const {
       data: {
@@ -224,7 +230,7 @@ export class ElasticService {
       }
     };
 
-    let url = `${this.apiConfigService.getElasticBetaUrl()}/tokens/_search`;
+    let url = `${this.betaUrl}/tokens/_search`;
 
     const {
       data: {
@@ -233,6 +239,36 @@ export class ElasticService {
     } = await this.post(url, payload);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
+  }
+
+  async getTokenCount(): Promise<number> {
+    let existsQuery = this.getExistsQuery('identifier');
+
+    let payload = {
+      from: 0,
+      size: 0,
+      query: {
+         bool: {
+            must: [
+              existsQuery
+            ]
+         }
+      }
+    };
+
+    let url = `${this.betaUrl}/tokens/_search`;
+
+    const {
+      data: {
+        hits: {
+          total: {
+            value
+          }
+        }
+      }
+    } = await this.post(url, payload);
+
+    return value;
   }
 
   private buildQuery(query: any = {}, operator: string = 'must') {
