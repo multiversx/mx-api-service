@@ -189,7 +189,7 @@ export class ElasticService {
 
    console.log(JSON.stringify(payload));
 
-   let url = `${this.apiConfigService.getElasticUrl()}/tokens/_search`;
+   let url = `${this.apiConfigService.getElasticBetaUrl()}/tokens/_search`;
 
    const {
     data: {
