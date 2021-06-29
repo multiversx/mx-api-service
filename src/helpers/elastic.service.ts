@@ -155,19 +155,20 @@ export class ElasticService {
     };
   }
 
-  async getAccountsEsdt(identifiers: string[]) {
-    let queries = identifiers.map(identifier => this.getSimpleQuery({
+  async getAccountEsdt(identifier: string) {
+    let query = this.getSimpleQuery({
         identifier: {
           query: identifier,
           operator: "AND"
       }
-    }));
+    });
 
     let payload = {
-      size: identifiers.length,
       query: {
          bool: {
-            should: queries
+            must: [
+              query
+            ]
          }
       }
     };

@@ -11,6 +11,8 @@ import { NftDetailed } from "./entities/nft.detailed";
 import { NftType } from "./entities/nft.type";
 import { ElasticService } from "src/helpers/elastic.service";
 import { NftElastic } from "./entities/nft.elastic";
+import { NftElasticDetailed } from "./entities/nft.elastic.detailed";
+import { NftElasticOwner } from "./entities/nft.elastic.owner";
 
 @Injectable()
 export class TokenService {
@@ -69,13 +71,34 @@ export class TokenService {
     return await this.getNftsInternal(from, size, search, type, undefined, token, tags, creator);
   }
 
-  async getSingleNft(identifier: string): Promise<NftElastic | undefined> {
+  async getSingleNft(identifier: string): Promise<NftElasticDetailed | undefined> {
     let nfts = await this.getNftsInternal(0, 1, undefined, undefined, identifier, undefined, undefined, undefined);
     if (nfts.length === 0) {
       return undefined;
     }
 
-    return nfts[0];
+    let nft: NftElasticDetailed = mergeObjects(new NftElasticDetailed(), nfts[0]);
+
+    let accountsEsdt = await this.elasticService.getAccountEsdt(nft.identifier);
+    if (nft.type === NftType.NonFungibleESDT) {
+      nft.owner = accountsEsdt[0].address;
+      
+      // @ts-ignore
+      delete nft.owners;
+    } else {
+      nft.owners = accountsEsdt.map((esdt: any) => {
+        let owner = new NftElasticOwner();
+        owner.address = esdt.address;
+        owner.balance = esdt.balance;
+
+        return owner;
+      });
+
+      // @ts-ignore
+      delete nft.owner;
+    }
+
+    return nft;
   }
 
   async getNftsInternal(from: number, size: number, search: string | undefined, type: NftType | undefined, identifier: string | undefined, token: string | undefined, tags: string | undefined, creator: string | undefined): Promise<NftElastic[]> {
@@ -98,7 +121,7 @@ export class TokenService {
       if (metadata) {
         nft.name = metadata.name;
         nft.creator = metadata.creator;
-        nft.royalties = metadata.royalties;
+        nft.royalties = metadata.royalties / 10000; // 10.000 => 100%
         nft.hash = metadata.hash;
         nft.uris = metadata.uris.filter((x: any) => x);
         nft.url = metadata.uris[0];
@@ -109,17 +132,6 @@ export class TokenService {
       }
 
       nfts.push(nft);
-    }
-
-    let identifiers = nfts.map(x => x.identifier);
-
-    let accountsEsdt = await this.elasticService.getAccountsEsdt(identifiers);
-    for (let accountEsdt of accountsEsdt) {
-      let nft = nfts.find(x => x.identifier === accountEsdt.identifier);
-      if (nft) {
-        nft.balance = accountEsdt.balance;
-        nft.owner = accountEsdt.address;
-      }
     }
 
     for (let nft of nfts) {

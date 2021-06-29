@@ -21,12 +21,6 @@ export class NftElastic {
   creator: string = '';
 
   @ApiProperty()
-  owner: string = '';
-
-  @ApiProperty()
-  balance: string = '0';
-
-  @ApiProperty()
   royalties: number = 0;
 
   @ApiProperty()
