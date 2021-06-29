@@ -174,12 +174,7 @@ export class ElasticService {
     };
 
     let url = `${this.betaUrl}/accountsesdt/_search`;
-
-    const {
-      data: {
-        hits: { hits: documents },
-      },
-    } = await this.post(url, payload);
+    let documents = await this.getDocuments(url, payload);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
@@ -201,12 +196,7 @@ export class ElasticService {
     };
 
     let url = `${this.betaUrl}/tokens/_search`;
-
-    const {
-      data: {
-        hits: { hits: documents },
-      },
-    } = await this.post(url, payload);
+    let documents = await this.getDocuments(url, payload);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
@@ -236,12 +226,37 @@ export class ElasticService {
     };
 
     let url = `${this.betaUrl}/accountsesdt/_search`;
+    let documents = await this.getDocuments(url, payload);
 
-    const {
-      data: {
-        hits: { hits: documents },
-      },
-    } = await this.post(url, payload);
+    return documents.map((document: any) => this.formatItem(document, 'identifier'));
+  }
+
+  async getAccountEsdtByAddressCount(address: string, from: number, size: number, token: string | undefined) {
+    let queries = [];
+
+    queries.push(this.getSimpleQuery({ address }));
+
+    if (token) {
+      queries.push(this.getSimpleQuery({
+        token: {
+          query: token,
+          operator: "AND"
+        }
+      }));
+    }
+
+    let payload = {
+      from,
+      size,
+      query: {
+         bool: {
+            must: queries
+         }
+      }
+    };
+
+    let url = `${this.betaUrl}/accountsesdt/_search`;
+    let documents = await this.getDocuments(url, payload);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
@@ -294,12 +309,7 @@ export class ElasticService {
     };
 
     let url = `${this.betaUrl}/tokens/_search`;
-
-    const {
-      data: {
-        hits: { hits: documents },
-      },
-    } = await this.post(url, payload);
+    let documents = await this.getDocuments(url, payload);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
@@ -320,18 +330,7 @@ export class ElasticService {
     };
 
     let url = `${this.betaUrl}/tokens/_search`;
-
-    const {
-      data: {
-        hits: {
-          total: {
-            value
-          }
-        }
-      }
-    } = await this.post(url, payload);
-
-    return value;
+    return await this.getDocumentCount(url, payload);
   }
 
   private buildQuery(query: any = {}, operator: string = 'must') {
@@ -424,5 +423,29 @@ export class ElasticService {
     this.metricsService.setExternalCall('elastic', profiler.duration);
 
     return result;
+  }
+
+  private async getDocuments(url: string, body: any) {
+    const {
+      data: {
+        hits: { hits: documents },
+      },
+    } = await this.post(url, body);
+
+    return documents;
+  }
+
+  private async getDocumentCount(url: string, body: any) {
+    const {
+      data: {
+        hits: {
+          total: {
+            value
+          }
+        }
+      }
+    } = await this.post(url, body);
+
+    return value;
   }
 }
