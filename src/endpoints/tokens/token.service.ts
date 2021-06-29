@@ -331,14 +331,30 @@ export class TokenService {
 
     mergeObjects(nft, gatewayNft);
 
-    // search in gateway by address (and identifier?); set balance
-    let esdtsResult = await this.gatewayService.get(`address/${address}/esdt`);
-    let esdt = esdtsResult.esdts[nft.identifier];
-    if (!esdt) {
-      return undefined;
-    }
+    if (nft.type === NftType.NonFungibleESDT) {
+      // @ts-ignore
+      delete nft.balance;
+    } else if (nft.type === NftType.SemiFungibleESDT) {
+      // search in gateway by address (and identifier?); set balance
+      let nonceHex = nft.identifier.split('-')[2];
+      if (!nonceHex) {
+        return undefined;
+      }
 
-    nft.balance = esdt.balance;
+      let nonce = parseInt('0x' + nonceHex);
+      if (isNaN(nonce)) {
+        return undefined;
+      }
+
+      let nftGatewayResult = await this.gatewayService.get(`address/${address}/nft/${nft.token}/nonce/${nonce}`);
+      if (!nftGatewayResult || !nftGatewayResult.tokenData || !nftGatewayResult.tokenData.balance) {
+        return undefined;
+      }
+
+      nft.balance = nftGatewayResult.tokenData.balance;
+    } else {
+      throw new Error(`Unrecognized NFT Type '${nft.type}'`);
+    }
 
     return nft;
   }
