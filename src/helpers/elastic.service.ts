@@ -231,23 +231,14 @@ export class ElasticService {
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
 
-  async getAccountEsdtByAddressCount(address: string, from: number, size: number, token: string | undefined) {
+  async getAccountEsdtByAddressCount(address: string) {
     let queries = [];
 
     queries.push(this.getSimpleQuery({ address }));
 
-    if (token) {
-      queries.push(this.getSimpleQuery({
-        token: {
-          query: token,
-          operator: "AND"
-        }
-      }));
-    }
-
     let payload = {
-      from,
-      size,
+      from: 0,
+      size: 0,
       query: {
          bool: {
             must: queries
@@ -256,9 +247,7 @@ export class ElasticService {
     };
 
     let url = `${this.betaUrl}/accountsesdt/_search`;
-    let documents = await this.getDocuments(url, payload);
-
-    return documents.map((document: any) => this.formatItem(document, 'identifier'));
+    return await this.getDocumentCount(url, payload);
   }
 
   async getTokens(from: number, size: number, search: string | undefined, type: NftType | undefined, identifier: string | undefined, token: string | undefined, tagArray: string[], creator: string | undefined) {

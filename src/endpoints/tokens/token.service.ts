@@ -212,8 +212,7 @@ export class TokenService {
   }
 
   async getNftCountForAddress(address: string): Promise<number> {
-    let allTokens = await this.getAllNftsForAddress(address);
-    return allTokens.length;
+    return await this.elasticService.getAccountEsdtByAddressCount(address);
   }
 
   async getNftsForAddress(address: string, from: number, size: number, token: string | undefined): Promise<NftElasticAccount[]> {
