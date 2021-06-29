@@ -95,14 +95,15 @@ export class TokenService {
       nft.timestamp = elasticNft.timestamp;
       
       let metadata = elasticNft.metaData;
-
-      nft.name = metadata.name;
-      nft.creator = metadata.creator;
-      nft.royalties = metadata.royalties;
-      nft.hash = metadata.hash;
-      nft.uris = metadata.uris;
-      nft.url = metadata.uris[0];
-      nft.tags = metadata.attributes.tags;
+      if (metadata) {
+        nft.name = metadata.name;
+        nft.creator = metadata.creator;
+        nft.royalties = metadata.royalties;
+        nft.hash = metadata.hash;
+        nft.uris = metadata.uris.filter((x: any) => x);
+        nft.url = metadata.uris[0];
+        nft.tags = metadata.attributes.tags;
+      }
 
       nfts.push(nft);
     }
