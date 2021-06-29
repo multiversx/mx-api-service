@@ -190,11 +190,11 @@ export class ElasticService {
     }
 
     if (identifier !== undefined) {
-      queries.push(this.getSimpleQuery({ identifier }));
+      queries.push(this.getSimpleQuery({ identifier: { query: identifier, operator: "AND" } }));
     }
 
     if (token !== undefined) {
-      queries.push(this.getSimpleQuery({ token }));
+      queries.push(this.getSimpleQuery({ token: { query: token, operator: "AND" } }));
     }
 
     if (tagArray.length > 0) {
