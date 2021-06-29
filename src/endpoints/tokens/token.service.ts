@@ -84,11 +84,11 @@ export class TokenService {
       tagArray = tags.split(',');
     }
 
-    let elasticNfts = await this.elasticService.getNfts(from, size, search, type, identifier, token, tagArray, creator);
+    let elasticNfts = await this.elasticService.getTokens(from, size, search, type, identifier, token, tagArray, creator);
     let nfts: NftElastic[] = [];
 
     for (let elasticNft of elasticNfts) {
-      let nft = new NftElastic()
+      let nft = new NftElastic();
       nft.identifier = elasticNft.identifier;
       nft.token = elasticNft.token;
       nft.type = elasticNft.type;
@@ -106,6 +106,24 @@ export class TokenService {
       }
 
       nfts.push(nft);
+    }
+
+    let identifiers = nfts.map(x => x.identifier);
+
+    let accountsEsdt = await this.elasticService.getAccountsEsdt(identifiers);
+    for (let accountEsdt of accountsEsdt) {
+      let nft = nfts.find(x => x.identifier === accountEsdt.identifier);
+      if (nft) {
+        nft.balance = accountEsdt.balance;
+        nft.owner = accountEsdt.address;
+      }
+    }
+
+    for (let nft of nfts) {
+      let gatewayNft = await this.getNft(nft.identifier);
+      if (gatewayNft) {
+        mergeObjects(nft, gatewayNft);
+      }
     }
 
     return nfts;

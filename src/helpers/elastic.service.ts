@@ -141,8 +141,45 @@ export class ElasticService {
     return { wildcard };
   }
 
-  async getNfts(from: number, size: number, search: string | undefined, type: NftType | undefined, identifier: string | undefined, token: string | undefined, tagArray: string[], creator: string | undefined) {
+  private getExistsQuery(field: string) {
+    return { 
+      exists: {
+        field
+      }
+    };
+  }
+
+  async getAccountsEsdt(identifiers: string[]) {
+    let queries = identifiers.map(identifier => this.getSimpleQuery({
+        identifier: {
+          query: identifier,
+          operator: "AND"
+      }
+    }));
+
+    let payload = {
+      size: identifiers.length,
+      query: {
+         bool: {
+            should: queries
+         }
+      }
+    };
+
+    let url = `${this.apiConfigService.getElasticBetaUrl()}/accountsesdt/_search`;
+
+    const {
+      data: {
+        hits: { hits: documents },
+      },
+    } = await this.post(url, payload);
+
+    return documents.map((document: any) => this.formatItem(document, 'identifier'));
+  }
+
+  async getTokens(from: number, size: number, search: string | undefined, type: NftType | undefined, identifier: string | undefined, token: string | undefined, tagArray: string[], creator: string | undefined) {
     let queries = [];
+    queries.push(this.getExistsQuery('identifier'));
 
     if (search !== undefined) {
       queries.push(this.getWildcardQuery({ token: `*${search}*` }));
@@ -185,20 +222,18 @@ export class ElasticService {
             must: queries
          }
       }
-   };
+    };
 
-   console.log(JSON.stringify(payload));
+    let url = `${this.apiConfigService.getElasticBetaUrl()}/tokens/_search`;
 
-   let url = `${this.apiConfigService.getElasticBetaUrl()}/tokens/_search`;
+    const {
+      data: {
+        hits: { hits: documents },
+      },
+    } = await this.post(url, payload);
 
-   const {
-    data: {
-      hits: { hits: documents },
-    },
-  } = await this.post(url, payload);
-
-  return documents.map((document: any) => this.formatItem(document, 'identifier'));
-}
+    return documents.map((document: any) => this.formatItem(document, 'identifier'));
+  }
 
   private buildQuery(query: any = {}, operator: string = 'must') {
     delete query['from'];
