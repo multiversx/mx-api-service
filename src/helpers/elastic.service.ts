@@ -231,6 +231,34 @@ export class ElasticService {
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
 
+  async getAccountEsdtByAddressAndIdentifier(address: string, identifier: string) {
+    let queries = [];
+
+    queries.push(this.getSimpleQuery({ address }));
+
+    queries.push(this.getSimpleQuery({
+      identifier: {
+        query: identifier,
+        operator: "AND"
+      }
+    }));
+
+    let payload = {
+      from: 0,
+      size: 1,
+      query: {
+         bool: {
+            must: queries
+         }
+      }
+    };
+
+    let url = `${this.betaUrl}/accountsesdt/_search`;
+    let documents = await this.getDocuments(url, payload);
+
+    return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
+  }
+
   async getAccountEsdtByAddressCount(address: string) {
     let queries = [];
 
@@ -301,6 +329,27 @@ export class ElasticService {
     let documents = await this.getDocuments(url, payload);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
+  }
+
+  async getTokenByIdentifier(identifier: string) {
+    let queries = [];
+    queries.push(this.getExistsQuery('identifier'));
+    queries.push(this.getSimpleQuery({ identifier: { query: identifier, operator: "AND" } }));
+
+    let payload = {
+      from: 0,
+      size: 1,
+      query: {
+         bool: {
+            must: queries
+         }
+      }
+    };
+
+    let url = `${this.betaUrl}/tokens/_search`;
+    let documents = await this.getDocuments(url, payload);
+
+    return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
   }
 
   async getTokenCount(): Promise<number> {

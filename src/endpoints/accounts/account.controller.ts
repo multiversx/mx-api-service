@@ -211,6 +211,32 @@ export class AccountController {
     }
   }
 
+  @Get("/accounts/:address/nfts/:nft")
+  @ApiResponse({
+    status: 200,
+    description: 'A specific non-fungible or semi-fungible token of a given account',
+    type: TokenWithBalance,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Token not found'
+  })
+  async getAccountNft(
+    @Param('address') address: string,
+    @Param('nft') nft: string,
+  ): Promise<NftElasticAccount> {
+    let result = await this.tokenService.getNftForAddress(address, nft);
+    if (!result) {
+      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+    }
+
+    return result;
+  }
+
   @Get("/accounts/:address/stake")
   @ApiResponse({
     status: 200,
