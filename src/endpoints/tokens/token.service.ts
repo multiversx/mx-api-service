@@ -102,7 +102,10 @@ export class TokenService {
         nft.hash = metadata.hash;
         nft.uris = metadata.uris.filter((x: any) => x);
         nft.url = metadata.uris[0];
-        nft.tags = metadata.attributes.tags;
+
+        if (metadata.attributes && metadata.attributes.tags) {
+          nft.tags = metadata.attributes.tags;
+        }
       }
 
       nfts.push(nft);
