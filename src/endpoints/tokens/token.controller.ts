@@ -68,6 +68,10 @@ export class TokenController {
 	@ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
 	@ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
 	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
+	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
+	@ApiQuery({ name: 'token', description: 'Get all tokens by token collection', required: false })
+	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
+	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
   async getNfts(
 		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
