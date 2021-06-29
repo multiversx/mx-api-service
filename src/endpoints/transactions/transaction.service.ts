@@ -55,10 +55,8 @@ export class TransactionService {
 
   async getTransaction(txHash: string): Promise<TransactionDetailed | null> {
     let transaction = await this.tryGetTransactionFromElastic(txHash);
-    console.log({transactionFromElastic: transaction});
     if (transaction === null) {
       transaction = await this.tryGetTransactionFromGateway(txHash);
-      console.log({transactionFromGateway: transaction});
     }
 
     return transaction;
