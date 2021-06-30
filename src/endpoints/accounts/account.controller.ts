@@ -149,20 +149,12 @@ export class AccountController {
     @Param('address') address: string,
     @Param('token') token: string,
   ): Promise<TokenWithBalance> {
-    let allTokens: TokenWithBalance[];
-    try {
-      allTokens = await this.tokenService.getAllTokensForAddress(address);
-    } catch (error) {
-      this.logger.error(error);
+    let result = await this.tokenService.getTokenForAddress(address, token);
+    if (!result) {
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
 
-    let foundToken = allTokens.find(x => x.token === token);
-    if (!foundToken) {
-      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
-    }
-
-    return foundToken;
+    return result;
   }
 
   @Get("/accounts/:address/nfts")
