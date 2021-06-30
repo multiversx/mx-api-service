@@ -86,7 +86,6 @@ export class TokenAssetService {
       return await this.cachingService.setCacheLocal('tokenAssets', {});
     }
     
-    console.log({tokensPath});
     let tokenIdentifiers = getDirectories(tokensPath);
     
     // for every folder, create a TokenAssets entity with the contents of info.json and the urls from github
