@@ -424,4 +424,8 @@ export class TokenService {
   canBool(string: string) {
     return string.split('-').pop() === 'true';
   };
+
+  getTokenAssetDetails(token: string) {
+    
+  }
 }
