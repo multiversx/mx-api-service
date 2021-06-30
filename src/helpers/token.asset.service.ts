@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import simpleGit, {SimpleGit, SimpleGitOptions} from 'simple-git';
 import { TokenAssets } from "src/endpoints/tokens/entities/token.assets";
+import { ApiConfigService } from "./api.config.service";
 import { CachingService } from "./caching.service";
 import { getDirectories } from "./helpers";
 const rimraf = require("rimraf");
@@ -12,7 +13,8 @@ export class TokenAssetService {
   private readonly logger: Logger;
 
   constructor(
-    private readonly cachingService: CachingService
+    private readonly cachingService: CachingService,
+    private readonly apiConfigService: ApiConfigService
   ) {
     this.logger = new Logger(TokenAssetService.name);
   }
@@ -59,12 +61,32 @@ export class TokenAssetService {
   }
 
   private getImageUrl(tokenIdentifier: string, name: string) {
-    return `https://github.com/ElrondNetwork/assets/raw/master/tokens/${tokenIdentifier}/${name}`;
+    let tokensRelativePath = this.getTokensRelativePath();
+
+    return `https://github.com/ElrondNetwork/assets/raw/master/${tokensRelativePath}/${tokenIdentifier}/${name}`;
+  }
+
+  private getTokensPath() {
+    return path.join(process.cwd(), 'dist/repos/assets', this.getTokensRelativePath());
+  }
+
+  private getTokensRelativePath() {
+    let network = this.apiConfigService.getNetwork();
+    if (network !== 'mainnet') {
+      return path.join(network, 'tokens');
+    }
+
+    return 'tokens';
   }
 
   private async readAssets() {
     // read all folders from dist/repos/assets/tokens (token identifiers)
-    let tokensPath = path.join(process.cwd(), 'dist/repos/assets/tokens');
+    let tokensPath = this.getTokensPath();
+    if (!fs.existsSync(tokensPath)) {
+      return await this.cachingService.setCacheLocal('tokenAssets', {});
+    }
+    
+    console.log({tokensPath});
     let tokenIdentifiers = getDirectories(tokensPath);
     
     // for every folder, create a TokenAssets entity with the contents of info.json and the urls from github
@@ -75,8 +97,7 @@ export class TokenAssetService {
     }
 
     // create a dictionary with the being the token identifier and the value the TokenAssets entity and store it in the cache
-    await this.cachingService.setCacheLocal('tokenAssets', assets);
-    return assets;
+    return await this.cachingService.setCacheLocal('tokenAssets', assets);
   }
 
   private async getOrReadAssets() {
