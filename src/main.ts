@@ -8,6 +8,7 @@ import { ApiConfigService } from './helpers/api.config.service';
 import { CachingService } from './helpers/caching.service';
 import { TokenAssetService } from './helpers/token.asset.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
+import { FieldsInterceptor } from './interceptors/fields.interceptor';
 import { PrivateAppModule } from './private.app.module';
 import { TransactionProcessorModule } from './transaction.processor.module';
 import { MetricsService } from './endpoints/metrics/metrics.service';
@@ -36,7 +37,8 @@ async function bootstrap() {
 
   publicApp.useGlobalInterceptors(
     new LoggingInterceptor(metricsService), 
-    new CachingInterceptor(cachingService, httpAdapterHostService, metricsService)
+    new CachingInterceptor(cachingService, httpAdapterHostService, metricsService),
+    new FieldsInterceptor()
   );
   const description = readFileSync(join(__dirname, '..', 'docs', 'swagger.md'), 'utf8');
 
