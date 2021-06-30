@@ -1,4 +1,5 @@
 const bech32 = require('bech32');
+const { readdirSync } = require('fs')
 
 export function mergeObjects(obj1: any, obj2: any) {
   for (const key of Object.keys(obj2)) {
@@ -134,3 +135,9 @@ Array.prototype.selectMany = function(predicate: Function) {
 
   return result;
 };
+
+export function getDirectories(source: string) {
+  return readdirSync(source, { withFileTypes: true })
+    .filter((dirent: any) => dirent.isDirectory())
+    .map((dirent: any) => dirent.name);
+}

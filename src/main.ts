@@ -6,7 +6,9 @@ import { join } from 'path';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { ApiConfigService } from './helpers/api.config.service';
 import { CachingService } from './helpers/caching.service';
+import { TokenAssetService } from './helpers/token.asset.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
+import { FieldsInterceptor } from './interceptors/fields.interceptor';
 import { PrivateAppModule } from './private.app.module';
 import { TransactionProcessorModule } from './transaction.processor.module';
 import { MetricsService } from './endpoints/metrics/metrics.service';
@@ -29,10 +31,14 @@ async function bootstrap() {
   let cachingService = publicApp.get<CachingService>(CachingService);
   let httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
   let metricsService = publicApp.get<MetricsService>(MetricsService);
+  let tokenAssetService = publicApp.get<TokenAssetService>(TokenAssetService);
+
+  await tokenAssetService.checkout();
 
   publicApp.useGlobalInterceptors(
     new LoggingInterceptor(metricsService), 
-    new CachingInterceptor(cachingService, httpAdapterHostService, metricsService)
+    new CachingInterceptor(cachingService, httpAdapterHostService, metricsService),
+    new FieldsInterceptor()
   );
   const description = readFileSync(join(__dirname, '..', 'docs', 'swagger.md'), 'utf8');
 
@@ -87,4 +93,5 @@ async function bootstrap() {
   logger.log(`Transaction processor active: ${apiConfigService.getIsTransactionProcessorCronActive()}`);
   logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
 }
+
 bootstrap();

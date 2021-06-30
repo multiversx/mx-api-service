@@ -1,5 +1,6 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
+import { NftType } from "src/endpoints/tokens/entities/nft.type";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
 import { ElasticPagination } from "./entities/elastic.pagination";
@@ -7,12 +8,18 @@ import { PerformanceProfiler } from "./performance.profiler";
 
 @Injectable()
 export class ElasticService {
+  private readonly url: string;
+  private readonly betaUrl: string;
+
   constructor(
-    private readonly apiConfigService: ApiConfigService,
+    apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => MetricsService))
     private readonly metricsService: MetricsService,
     private readonly apiService: ApiService
-  ) {}
+  ) {
+    this.url = apiConfigService.getElasticUrl();
+    this.betaUrl = apiConfigService.getElasticBetaUrl();
+  }
 
   async getCount(collection: string, query = {}, condition: string = 'must') {
     const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_count`;
@@ -25,7 +32,7 @@ export class ElasticService {
   };
 
   async getItem(collection: string, key: string, identifier: string) {
-    const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_doc/${identifier}`;
+    const url = `${this.url}/${collection}/_doc/${identifier}`;
     const { data: document } = await this.get(url);
 
     return this.formatItem(document, key);
@@ -40,7 +47,7 @@ export class ElasticService {
   };
 
   async getList(collection: string, key: string, query: any, pagination: ElasticPagination, sort: { [key: string]: string }, condition: string = 'must'): Promise<any[]> {
-    const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_search`;
+    const url = `${this.url}/${collection}/_search`;
     let elasticSort = this.buildSort(sort);
     let elasticQuery = this.buildQuery(query, condition);
 
@@ -62,7 +69,7 @@ export class ElasticService {
       return this.publicKeysCache[key];
     }
   
-    const url = `${this.apiConfigService.getElasticUrl()}/validators/_doc/${key}`;
+    const url = `${this.url}/validators/_doc/${key}`;
   
     const {
       data: {
@@ -76,7 +83,7 @@ export class ElasticService {
   };
 
   async getBlsIndex(bls: string, shardId: number, epoch: number): Promise<number | boolean> {
-    const url = `${this.apiConfigService.getElasticUrl()}/validators/_doc/${shardId}_${epoch}`;
+    const url = `${this.url}/validators/_doc/${shardId}_${epoch}`;
   
     const {
       data: {
@@ -96,7 +103,7 @@ export class ElasticService {
   async getBlses(shard: number, epoch: number) {
     const key = `${shard}_${epoch}`;
   
-    const url = `${this.apiConfigService.getElasticUrl()}/validators/_doc/${key}`;
+    const url = `${this.url}/validators/_doc/${key}`;
   
     const {
       data: {
@@ -106,6 +113,263 @@ export class ElasticService {
   
     return publicKeys;
   };
+
+  private getNestedQuery(path: string, match: any) {
+    return {
+      nested: {
+         path,
+         query: {
+            bool: {
+               must: [
+                  {
+                     match
+                  }
+               ]
+            }
+         }
+      }
+   };
+  }
+
+  private getSimpleQuery(match: any) {
+    return {
+       bool: {
+          must:[
+             {
+                match
+             }
+          ]
+       }
+    };
+  }
+
+  private getWildcardQuery(wildcard: any) {
+    return { wildcard };
+  }
+
+  private getExistsQuery(field: string) {
+    return { 
+      exists: {
+        field
+      }
+    };
+  }
+
+  async getAccountEsdtByIdentifier(identifier: string) {
+    let query = this.getSimpleQuery({
+        identifier: {
+          query: identifier,
+          operator: "AND"
+      }
+    });
+
+    let payload = {
+      query: {
+         bool: {
+            must: [
+              query
+            ]
+         }
+      }
+    };
+
+    let url = `${this.betaUrl}/accountsesdt/_search`;
+    let documents = await this.getDocuments(url, payload);
+
+    return documents.map((document: any) => this.formatItem(document, 'identifier'));
+  }
+
+  async getTokensByIdentifiers(identifiers: string[]) {
+    let queries = identifiers.map(identifier => this.getSimpleQuery({
+        identifier: {
+          query: identifier,
+          operator: "AND"
+      }
+    }));
+
+    let payload = {
+      query: {
+         bool: {
+            should: queries
+         }
+      }
+    };
+
+    let url = `${this.betaUrl}/tokens/_search`;
+    let documents = await this.getDocuments(url, payload);
+
+    return documents.map((document: any) => this.formatItem(document, 'identifier'));
+  }
+
+  async getAccountEsdtByAddress(address: string, from: number, size: number, token: string | undefined) {
+    let queries = [];
+
+    queries.push(this.getSimpleQuery({ address }));
+
+    if (token) {
+      queries.push(this.getSimpleQuery({
+        token: {
+          query: token,
+          operator: "AND"
+        }
+      }));
+    }
+
+    let payload = {
+      from,
+      size,
+      query: {
+         bool: {
+            must: queries
+         }
+      }
+    };
+
+    let url = `${this.betaUrl}/accountsesdt/_search`;
+    let documents = await this.getDocuments(url, payload);
+
+    return documents.map((document: any) => this.formatItem(document, 'identifier'));
+  }
+
+  async getAccountEsdtByAddressAndIdentifier(address: string, identifier: string) {
+    let queries = [];
+
+    queries.push(this.getSimpleQuery({ address }));
+
+    queries.push(this.getSimpleQuery({
+      identifier: {
+        query: identifier,
+        operator: "AND"
+      }
+    }));
+
+    let payload = {
+      from: 0,
+      size: 1,
+      query: {
+         bool: {
+            must: queries
+         }
+      }
+    };
+
+    let url = `${this.betaUrl}/accountsesdt/_search`;
+    let documents = await this.getDocuments(url, payload);
+
+    return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
+  }
+
+  async getAccountEsdtByAddressCount(address: string) {
+    let queries = [];
+
+    queries.push(this.getSimpleQuery({ address }));
+
+    let payload = {
+      from: 0,
+      size: 0,
+      query: {
+         bool: {
+            must: queries
+         }
+      }
+    };
+
+    let url = `${this.betaUrl}/accountsesdt/_search`;
+    return await this.getDocumentCount(url, payload);
+  }
+
+  async getTokens(from: number, size: number, search: string | undefined, type: NftType | undefined, identifier: string | undefined, token: string | undefined, tagArray: string[], creator: string | undefined) {
+    let queries = [];
+    queries.push(this.getExistsQuery('identifier'));
+
+    if (search !== undefined) {
+      queries.push(this.getWildcardQuery({ token: `*${search}*` }));
+    }
+
+    if (type !== undefined) {
+      queries.push(this.getSimpleQuery({ type }));
+    }
+
+    if (identifier !== undefined) {
+      queries.push(this.getSimpleQuery({ identifier: { query: identifier, operator: "AND" } }));
+    }
+
+    if (token !== undefined) {
+      queries.push(this.getSimpleQuery({ token: { query: token, operator: "AND" } }));
+    }
+
+    if (tagArray.length > 0) {
+      for (let tag of tagArray) {
+        queries.push(this.getNestedQuery("metaData.attributes", { "metaData.attributes.tags": tag }));
+      }
+    }
+
+    if (creator !== undefined) {
+      queries.push(this.getNestedQuery("metaData", { "metaData.creator": creator }));
+    }
+
+    let payload = {
+      sort: [
+         {
+            timestamp: {
+               order: "desc"
+            }
+         }
+      ],
+      from,
+      size,
+      query: {
+         bool: {
+            must: queries
+         }
+      }
+    };
+
+    let url = `${this.betaUrl}/tokens/_search`;
+    let documents = await this.getDocuments(url, payload);
+
+    return documents.map((document: any) => this.formatItem(document, 'identifier'));
+  }
+
+  async getTokenByIdentifier(identifier: string) {
+    let queries = [];
+    queries.push(this.getExistsQuery('identifier'));
+    queries.push(this.getSimpleQuery({ identifier: { query: identifier, operator: "AND" } }));
+
+    let payload = {
+      from: 0,
+      size: 1,
+      query: {
+         bool: {
+            must: queries
+         }
+      }
+    };
+
+    let url = `${this.betaUrl}/tokens/_search`;
+    let documents = await this.getDocuments(url, payload);
+
+    return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
+  }
+
+  async getTokenCount(): Promise<number> {
+    let existsQuery = this.getExistsQuery('identifier');
+
+    let payload = {
+      from: 0,
+      size: 0,
+      query: {
+         bool: {
+            must: [
+              existsQuery
+            ]
+         }
+      }
+    };
+
+    let url = `${this.betaUrl}/tokens/_search`;
+    return await this.getDocumentCount(url, payload);
+  }
 
   private buildQuery(query: any = {}, operator: string = 'must') {
     delete query['from'];
@@ -202,5 +466,29 @@ export class ElasticService {
     this.metricsService.setExternalCall('elastic', profiler.duration);
 
     return result;
+  }
+
+  private async getDocuments(url: string, body: any) {
+    const {
+      data: {
+        hits: { hits: documents },
+      },
+    } = await this.post(url, body);
+
+    return documents;
+  }
+
+  private async getDocumentCount(url: string, body: any) {
+    const {
+      data: {
+        hits: {
+          total: {
+            value
+          }
+        }
+      }
+    } = await this.post(url, body);
+
+    return value;
   }
 }
