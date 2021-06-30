@@ -42,7 +42,7 @@ export class TransactionController {
     @Query('after', ParseOptionalIntPipe) after: number | undefined, 
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number
-  ): Promise<Transaction[]> {
+  ): Promise<TransactionDetailed[]> {
     return this.transactionService.getTransactions({
         sender, 
         receiver, 

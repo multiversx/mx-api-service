@@ -5,7 +5,6 @@ import { QueryCondition } from 'src/helpers/entities/query.condition';
 import { GatewayService } from 'src/helpers/gateway.service';
 import { bech32Decode, computeShard, mergeObjects, oneMinute } from 'src/helpers/helpers';
 import { ElasticService } from '../../helpers/elastic.service';
-import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
 import { TransactionQuery } from './entities/transaction.query';
@@ -27,7 +26,7 @@ export class TransactionService {
     );
   }
 
-  async getTransactions(transactionQuery: TransactionQuery): Promise<Transaction[]> {
+  async getTransactions(transactionQuery: TransactionQuery): Promise<TransactionDetailed[]> {
     const query = {
       sender: transactionQuery.sender,
       receiver: transactionQuery.receiver,
@@ -48,9 +47,9 @@ export class TransactionService {
       'nonce': 'desc',
     };
 
-    let transactions = await this.elasticService.getList('transactions', 'txHash', query, pagination, sort, transactionQuery.condition ?? QueryCondition.must)
+    let transactions = await this.elasticService.getList('transactions', 'txHash', query, pagination, sort, transactionQuery.condition ?? QueryCondition.must);
 
-    return transactions.map(transaction => mergeObjects(new Transaction(), transaction));
+    return transactions.map(transaction => mergeObjects(new TransactionDetailed(), transaction));
   }
 
   async getTransaction(txHash: string): Promise<TransactionDetailed | null> {
