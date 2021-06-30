@@ -14,6 +14,7 @@ import { NftElastic } from "./entities/nft.elastic";
 import { NftElasticDetailed } from "./entities/nft.elastic.detailed";
 import { NftElasticOwner } from "./entities/nft.elastic.owner";
 import { NftElasticAccount } from "./entities/nft.elastic.account";
+import { TokenAssetService } from "src/helpers/token.asset.service";
 
 @Injectable()
 export class TokenService {
@@ -24,7 +25,8 @@ export class TokenService {
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
-    private readonly elasticService: ElasticService
+    private readonly elasticService: ElasticService,
+    private readonly tokenAssetService: TokenAssetService
   ) {
     this.logger = new Logger(TokenService.name);
   }
@@ -33,6 +35,8 @@ export class TokenService {
     let tokens = await this.getAllTokens();
     let token = tokens.find(x => x.token === identifier);
     if (token) {
+      token.assets = await this.tokenAssetService.getAssets(token.token);
+
       return mergeObjects(new TokenDetailed(), token);
     }
 
@@ -49,6 +53,10 @@ export class TokenService {
     }
 
     tokens = tokens.slice(from, from + size);
+
+    for (let token of tokens) {
+      token.assets = await this.tokenAssetService.getAssets(token.token);
+    }
 
     return tokens.map(item => mergeObjects(new TokenDetailed(), item));
   }
@@ -162,8 +170,28 @@ export class TokenService {
   }
 
   async getTokensForAddress(address: string, from: number, size: number): Promise<TokenWithBalance[]> {
+    let tokens = await this.getAllTokensForAddress(address);
+
+    tokens = tokens.slice(from, from + size);
+
+    for (let token of tokens) {
+      token.assets = await this.tokenAssetService.getAssets(token.token);
+    }
+
+    return tokens.map(token => mergeObjects(new TokenWithBalance(), token));
+  }
+
+  async getTokenForAddress(address: string, tokenIdentifier: string): Promise<TokenWithBalance | undefined> {
     let allTokens = await this.getAllTokensForAddress(address);
-    return allTokens.slice(from, from + size);
+
+    let foundToken = allTokens.find(x => x.token === tokenIdentifier);
+    if (!foundToken) {
+      return undefined;
+    }
+
+    foundToken.assets = await this.tokenAssetService.getAssets(tokenIdentifier);
+
+    return foundToken;
   }
 
   async getAllTokensForAddress(address: string): Promise<TokenWithBalance[]> {
@@ -492,7 +520,7 @@ export class TokenService {
     return { roundsPassed, roundsPerEpoch, roundDuration };
   };
 
-  async getAllTokens(): Promise<Token[]> {
+  async getAllTokens(): Promise<TokenDetailed[]> {
     return this.cachingService.getOrSetCache(
       'allTokens',
       async () => await this.getAllTokensRaw(),
@@ -500,7 +528,7 @@ export class TokenService {
     );
   }
 
-  async getAllTokensRaw(): Promise<Token[]> {
+  async getAllTokensRaw(): Promise<TokenDetailed[]> {
     const {
       tokens: tokensIdentifiers,
     } = await this.gatewayService.get('network/esdt/fungible-tokens');
@@ -626,7 +654,7 @@ export class TokenService {
     return string.split('-').pop() === 'true';
   };
 
-  getTokenAssetDetails(token: string) {
+  // getTokenAssetDetails(token: string) {
     
-  }
+  // }
 }
