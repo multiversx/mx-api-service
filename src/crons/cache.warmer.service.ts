@@ -28,7 +28,7 @@ export class CacheWarmerService {
     let profiler = new PerformanceProfiler('Running node invalidations');
     try {
       let nodes = await this.nodeService.getAllNodesRaw();
-      this.cachingService.setCache('nodes', nodes, oneHour());
+      await this.cachingService.setCache('nodes', nodes, oneHour());
     } finally {
       profiler.stop();
       this.isRunningNodeInvalidations = false;
@@ -42,10 +42,10 @@ export class CacheWarmerService {
     }
 
     this.isRunningTokenInvalidations = true;
-    let profiler = new PerformanceProfiler('Running node invalidations');
+    let profiler = new PerformanceProfiler('Running token invalidations');
     try {
-      await this.tokenService.getAllTokensRaw();
-      await this.tokenService.getAllTokens();
+      let tokens = await this.tokenService.getAllTokensRaw();
+      await this.cachingService.setCache('allTokens', tokens, oneHour());
     } finally {
       profiler.stop();
       this.isRunningTokenInvalidations = false;
@@ -61,8 +61,8 @@ export class CacheWarmerService {
     this.isRunningNftInvalidations = true;
     let profiler = new PerformanceProfiler('Running NFT invalidations');
     try {
-      await this.tokenService.getAllNftsRaw();
-      await this.tokenService.getAllNfts();
+      let nfts = await this.tokenService.getAllNftsRaw();
+      await this.cachingService.setCache('allNfts', nfts, oneHour());
     } finally {
       profiler.stop();
       this.isRunningNftInvalidations = false;

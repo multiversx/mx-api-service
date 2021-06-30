@@ -28,4 +28,16 @@ export class Nft {
 
   @ApiProperty()
   isPaused: boolean = false;
+
+  @ApiProperty()
+  tags: string[] = [];
+
+  @ApiProperty()
+  royalties: number = 0;
+
+  @ApiProperty()
+  uris: string[] = [];
+
+  @ApiProperty()
+  url: string = '';
 }

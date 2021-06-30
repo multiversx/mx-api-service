@@ -4,12 +4,12 @@ import { AccountService } from './account.service';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
 import { AccountDeferred } from './entities/account.deferred';
-import { Token } from '../tokens/entities/token';
 import { TokenService } from '../tokens/token.service';
 import { TokenWithBalance } from '../tokens/entities/token.with.balance';
 import { DelegationLegacyService } from '../delegation.legacy/delegation.legacy.service';
 import { AccountDelegationLegacy } from '../delegation.legacy/entities/account.delegation.legacy';
 import { AccountKey } from './entities/account.key';
+import { NftElasticAccount } from '../tokens/entities/nft.elastic.account';
 
 @Controller()
 @ApiTags('accounts')
@@ -172,7 +172,7 @@ export class AccountController {
   @ApiResponse({
     status: 200,
     description: 'The non-fungible and semi-fungible tokens of a given account',
-    type: Token,
+    type: NftElasticAccount,
     isArray: true
   })
   @ApiResponse({
@@ -184,12 +184,11 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('token') token: string | undefined
-  ): Promise<Token[]> {
+  ): Promise<NftElasticAccount[]> {
     try {
       return await this.tokenService.getNftsForAddress(address, from, size, token);
     } catch (error) {
       this.logger.error(error);
-      // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return [];
     }
   }
@@ -208,7 +207,6 @@ export class AccountController {
       return await this.tokenService.getNftCountForAddress(address);
     } catch (error) {
       this.logger.error(error);
-      // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return 0;
     }
   }
@@ -230,22 +228,13 @@ export class AccountController {
   async getAccountNft(
     @Param('address') address: string,
     @Param('nft') nft: string,
-  ): Promise<Token> {
-    let allNfts: Token[];
-    try {
-      allNfts = await this.tokenService.getAllNftsForAddress(address);
-    } catch (error) {
-      this.logger.error(error);
+  ): Promise<NftElasticAccount> {
+    let result = await this.tokenService.getNftForAddress(address, nft);
+    if (!result) {
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
 
-    // @ts-ignore
-    let foundNft = allNfts.find(x => x.identifier === nft);
-    if (!foundNft) {
-      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
-    }
-
-    return foundNft;
+    return result;
   }
 
   @Get("/accounts/:address/stake")
