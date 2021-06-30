@@ -3,7 +3,6 @@ import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ParseOptionalEnumPipe } from "src/helpers/pipes/parse.optional.enum.pipe";
 import { NftElastic } from "./entities/nft.elastic";
 import { NftType } from "./entities/nft.type";
-import { Token } from "./entities/token";
 import { TokenDetailed } from "./entities/token.detailed";
 import { TokenService } from "./token.service";
 
