@@ -12,7 +12,7 @@ export class ElasticService {
   private readonly betaUrl: string;
 
   constructor(
-    apiConfigService: ApiConfigService,
+    private apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => MetricsService))
     private readonly metricsService: MetricsService,
     private readonly apiService: ApiService

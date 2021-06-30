@@ -34,7 +34,7 @@ export class TransactionService {
     return await this.elasticService.getCount('transactions', query, transactionQuery.condition ?? QueryCondition.must);
   }
 
-  async getTransactions(transactionQuery: TransactionQuery): Promise<Transaction[]> {
+  async getTransactions(transactionQuery: TransactionQuery): Promise<TransactionDetailed[]> {
     const query = this.buildTransactionFilterQuery(transactionQuery);
 
     const pagination: ElasticPagination = {
