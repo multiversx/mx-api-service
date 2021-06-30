@@ -29,12 +29,7 @@ export class TransactionService {
     };
   }
   async getTransactionCount(transactionQuery: TransactionQuery): Promise<number> {
-
-    console.log(transactionQuery);
-
     const query = this.buildTransactionFilterQuery(transactionQuery);
-
-    console.log(transactionQuery);
 
     return await this.elasticService.getCount('transactions', query, transactionQuery.condition ?? QueryCondition.must);
   }
@@ -59,10 +54,10 @@ export class TransactionService {
 
   async getTransaction(txHash: string): Promise<TransactionDetailed | null> {
     let transaction = await this.tryGetTransactionFromElastic(txHash);
-    console.log({transactionFromElastic: transaction});
+   
     if (transaction === null) {
       transaction = await this.tryGetTransactionFromGateway(txHash);
-      console.log({transactionFromGateway: transaction});
+      
     }
 
     return transaction;
