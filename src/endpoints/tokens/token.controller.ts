@@ -16,7 +16,7 @@ export class TokenController {
   @ApiResponse({
     status: 200,
     description: 'List tokens',
-    type: Token,
+    type: TokenDetailed,
     isArray: true
   })
 	@ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
@@ -26,7 +26,7 @@ export class TokenController {
 		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('search') search: string | undefined,
-  ): Promise<Token[]> {
+  ): Promise<TokenDetailed[]> {
     return await this.tokenService.getTokens(from, size, search);
   }
 

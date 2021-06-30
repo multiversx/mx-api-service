@@ -39,7 +39,7 @@ export class TokenService {
     return undefined;
   }
 
-  async getTokens(from: number, size: number, search: string | undefined): Promise<Token[]> {
+  async getTokens(from: number, size: number, search: string | undefined): Promise<TokenDetailed[]> {
     let tokens = await this.getAllTokens();
 
     if (search) {
@@ -50,7 +50,7 @@ export class TokenService {
 
     tokens = tokens.slice(from, from + size);
 
-    return tokens.map(item => mergeObjects(new Token(), item));
+    return tokens.map(item => mergeObjects(new TokenDetailed(), item));
   }
 
   async getTokenCount(): Promise<number> {
