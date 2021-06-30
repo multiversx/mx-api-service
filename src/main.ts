@@ -6,6 +6,7 @@ import { join } from 'path';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { ApiConfigService } from './helpers/api.config.service';
 import { CachingService } from './helpers/caching.service';
+import { TokenAssetService } from './helpers/token.asset.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { PrivateAppModule } from './private.app.module';
 import { TransactionProcessorModule } from './transaction.processor.module';
@@ -29,6 +30,9 @@ async function bootstrap() {
   let cachingService = publicApp.get<CachingService>(CachingService);
   let httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
   let metricsService = publicApp.get<MetricsService>(MetricsService);
+  let tokenAssetService = publicApp.get<TokenAssetService>(TokenAssetService);
+
+  await tokenAssetService.checkout();
 
   publicApp.useGlobalInterceptors(
     new LoggingInterceptor(metricsService), 
@@ -87,4 +91,5 @@ async function bootstrap() {
   logger.log(`Transaction processor active: ${apiConfigService.getIsTransactionProcessorCronActive()}`);
   logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
 }
+
 bootstrap();
