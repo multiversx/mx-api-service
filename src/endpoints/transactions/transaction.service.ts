@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { CachingService } from 'src/helpers/caching.service';
 import { ElasticPagination } from 'src/helpers/entities/elastic.pagination';
 import { QueryCondition } from 'src/helpers/entities/query.condition';
 import { GatewayService } from 'src/helpers/gateway.service';
-import { bech32Decode, computeShard, mergeObjects, oneMinute } from 'src/helpers/helpers';
+import { bech32Decode, computeShard, mergeObjects } from 'src/helpers/helpers';
 import { ElasticService } from '../../helpers/elastic.service';
 import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
@@ -15,19 +14,11 @@ export class TransactionService {
   constructor(
     private readonly elasticService: ElasticService, 
     private readonly gatewayService: GatewayService,
-    private readonly cachingService: CachingService,
   ) {}
 
-  async getTransactionCount(): Promise<number> {
-    return await this.cachingService.getOrSetCache(
-      'transaction:count',
-      async () => await this.elasticService.getCount('transactions'),
-      oneMinute()
-    );
-  }
 
-  async getTransactions(transactionQuery: TransactionQuery): Promise<TransactionDetailed[]> {
-    const query = {
+  private buildTransactionFilterQuery(transactionQuery: TransactionQuery){
+    return {
       sender: transactionQuery.sender,
       receiver: transactionQuery.receiver,
       senderShard: transactionQuery.senderShard,
@@ -36,6 +27,15 @@ export class TransactionService {
       before: transactionQuery.before,
       after: transactionQuery.after
     };
+  }
+  async getTransactionCount(transactionQuery: TransactionQuery): Promise<number> {
+    const query = this.buildTransactionFilterQuery(transactionQuery);
+
+    return await this.elasticService.getCount('transactions', query, transactionQuery.condition ?? QueryCondition.must);
+  }
+
+  async getTransactions(transactionQuery: TransactionQuery): Promise<TransactionDetailed[]> {
+    const query = this.buildTransactionFilterQuery(transactionQuery);
 
     const pagination: ElasticPagination = {
       from: transactionQuery.from, 
@@ -54,6 +54,7 @@ export class TransactionService {
 
   async getTransaction(txHash: string): Promise<TransactionDetailed | null> {
     let transaction = await this.tryGetTransactionFromElastic(txHash);
+   
     if (transaction === null) {
       transaction = await this.tryGetTransactionFromGateway(txHash);
     }

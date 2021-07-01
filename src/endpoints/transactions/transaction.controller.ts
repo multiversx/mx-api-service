@@ -58,8 +58,40 @@ export class TransactionController {
   }
 
   @Get("/transactions/count")
-  getTransactionCount(): Promise<number> {
-    return this.transactionService.getTransactionCount();  
+  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false  })
+  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false  })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false  })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false  })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false  })
+  @ApiQuery({ name: 'condition', description: 'Condition type (should/must)', required: false  })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+  getTransactionCount(
+    @Query('sender') sender: string | undefined, 
+    @Query('receiver') receiver: string | undefined, 
+    @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
+    @Query('miniBlockHash') miniBlockHash: string | undefined, 
+    @Query('condition', new ParseOptionalEnumPipe(QueryCondition)) condition: QueryCondition | undefined, 
+    @Query('before', ParseOptionalIntPipe) before: number | undefined, 
+    @Query('after', ParseOptionalIntPipe) after: number | undefined, 
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number
+  ): Promise<number> {
+    return this.transactionService.getTransactionCount({
+      sender, 
+      receiver, 
+      senderShard, 
+      receiverShard, 
+      miniBlockHash,
+      condition,
+      before,
+      after,
+      from, 
+      size
+  });  
   }
 
   @Get('/transactions/:txHash')
