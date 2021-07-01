@@ -7,6 +7,7 @@ import { GatewayService } from 'src/helpers/gateway.service';
 import { oneMinute } from 'src/helpers/helpers';
 import { AccountService } from '../accounts/account.service';
 import { BlockService } from '../blocks/block.service';
+import { TransactionQuery } from '../transactions/entities/transaction.query';
 import { TransactionService } from '../transactions/transaction.service';
 import { VmQueryService } from '../vm.query/vm.query.service';
 import { Constants } from './entities/constants';
@@ -107,7 +108,7 @@ export class NetworkService {
       this.gatewayService.get(`network/status/${metaChainShard}`),
       this.blockService.getBlocksCount(),
       this.accountService.getAccountsCount(),
-      this.transactionService.getTransactionCount(),
+      this.transactionService.getTransactionCount(new TransactionQuery()),
     ]);
 
     return {

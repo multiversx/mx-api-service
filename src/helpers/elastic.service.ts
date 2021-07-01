@@ -12,7 +12,7 @@ export class ElasticService {
   private readonly betaUrl: string;
 
   constructor(
-    apiConfigService: ApiConfigService,
+    private apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => MetricsService))
     private readonly metricsService: MetricsService,
     private readonly apiService: ApiService
@@ -21,9 +21,9 @@ export class ElasticService {
     this.betaUrl = apiConfigService.getElasticBetaUrl();
   }
 
-  async getCount(collection: string, query = {}) {
-    const url = `${this.url}/${collection}/_count`;
-    query = this.buildQuery(query, 'should');
+  async getCount(collection: string, query = {}, condition: string = 'must') {
+    const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_count`;
+    query = this.buildQuery(query, condition);
  
     const result: any = await this.post(url, { query });
     let count = result.data.count;
@@ -403,12 +403,17 @@ export class ElasticService {
 
       result = { bool: criteria };
 
-      if (Object.keys(range['timestamp']).length != 0) {
-        result.bool['filter'] = {
-          range
-        };
-      }
-    } 
+    }
+
+    if (Object.keys(range['timestamp']).length != 0) {
+      result.bool['filter'] = {
+        range
+      };
+    }
+
+    if(operator === 'should')
+      result.bool['minimum_should_match'] = 1;
+
 
     if (result === null) {
       result = { match_all: {} };
