@@ -72,14 +72,16 @@ export class TransactionService {
 
       let transactionDetailed: TransactionDetailed = mergeObjects(new TransactionDetailed(), result);
 
-      let scResults = await this.elasticService.getList('scresults', 'scHash', { originalTxHash: txHash }, { from: 0, size: 100 }, { "timestamp": "asc" });
-      for (let scResult of scResults) {
-        scResult.hash = scResult.scHash;
+      if (result.hasScResults === true) {
+        let scResults = await this.elasticService.getList('scresults', 'scHash', { originalTxHash: txHash }, { from: 0, size: 100 }, { "timestamp": "asc" });
+        for (let scResult of scResults) {
+          scResult.hash = scResult.scHash;
 
-        delete scResult.scHash;
+          delete scResult.scHash;
+        }
+
+        transactionDetailed.scResults = scResults.map(scResult => mergeObjects(new SmartContractResult(), scResult));
       }
-
-      transactionDetailed.scResults = scResults.map(scResult => mergeObjects(new SmartContractResult(), scResult));
 
       let receipts = await this.elasticService.getList('receipts', 'receiptHash', { txHash }, { from: 0, size: 1 }, { "timestamp": "asc" });
       if (receipts.length > 0) {
