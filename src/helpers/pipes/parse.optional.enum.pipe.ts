@@ -14,7 +14,7 @@ export class ParseOptionalEnumPipe<T extends { [name: string]: any }> implements
         return resolve(value);
       }
 
-      throw new HttpException(`Validation failed (one of the following values is expected: ${values})`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`Validation failed (one of the following values is expected: ${values.join(', ')})`, HttpStatus.BAD_REQUEST);
     });
   }
 
