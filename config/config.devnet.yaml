@@ -11,8 +11,6 @@ cron:
 urls:
   elastic:
     - 'https://devnet-index.elrond.com'
-  elasticBeta:
-    - 'https://devnet-index-beta.elrond.com'
   gateway:
     - 'https://devnet-gateway.elrond.com'
   redis: '127.0.0.1'

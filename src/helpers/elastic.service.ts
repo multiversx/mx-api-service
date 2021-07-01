@@ -9,7 +9,6 @@ import { PerformanceProfiler } from "./performance.profiler";
 @Injectable()
 export class ElasticService {
   private readonly url: string;
-  private readonly betaUrl: string;
 
   constructor(
     private apiConfigService: ApiConfigService,
@@ -18,7 +17,6 @@ export class ElasticService {
     private readonly apiService: ApiService
   ) {
     this.url = apiConfigService.getElasticUrl();
-    this.betaUrl = apiConfigService.getElasticBetaUrl();
   }
 
   async getCount(collection: string, query = {}, condition: string = 'must') {
@@ -173,7 +171,7 @@ export class ElasticService {
       }
     };
 
-    let url = `${this.betaUrl}/accountsesdt/_search`;
+    let url = `${this.url}/accountsesdt/_search`;
     let documents = await this.getDocuments(url, payload);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
@@ -195,7 +193,7 @@ export class ElasticService {
       }
     };
 
-    let url = `${this.betaUrl}/tokens/_search`;
+    let url = `${this.url}/tokens/_search`;
     let documents = await this.getDocuments(url, payload);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
@@ -225,7 +223,7 @@ export class ElasticService {
       }
     };
 
-    let url = `${this.betaUrl}/accountsesdt/_search`;
+    let url = `${this.url}/accountsesdt/_search`;
     let documents = await this.getDocuments(url, payload);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
@@ -253,7 +251,7 @@ export class ElasticService {
       }
     };
 
-    let url = `${this.betaUrl}/accountsesdt/_search`;
+    let url = `${this.url}/accountsesdt/_search`;
     let documents = await this.getDocuments(url, payload);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
@@ -274,7 +272,7 @@ export class ElasticService {
       }
     };
 
-    let url = `${this.betaUrl}/accountsesdt/_search`;
+    let url = `${this.url}/accountsesdt/_search`;
     return await this.getDocumentCount(url, payload);
   }
 
@@ -325,7 +323,7 @@ export class ElasticService {
       }
     };
 
-    let url = `${this.betaUrl}/tokens/_search`;
+    let url = `${this.url}/tokens/_search`;
     let documents = await this.getDocuments(url, payload);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
@@ -346,7 +344,7 @@ export class ElasticService {
       }
     };
 
-    let url = `${this.betaUrl}/tokens/_search`;
+    let url = `${this.url}/tokens/_search`;
     let documents = await this.getDocuments(url, payload);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
@@ -367,7 +365,7 @@ export class ElasticService {
       }
     };
 
-    let url = `${this.betaUrl}/tokens/_search`;
+    let url = `${this.url}/tokens/_search`;
     return await this.getDocumentCount(url, payload);
   }
 

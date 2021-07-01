@@ -23,15 +23,6 @@ export class ApiConfigService {
     return elasticUrls[Math.floor(Math.random() * elasticUrls.length)];
   }
 
-  getElasticBetaUrl(): string {
-    const elasticUrls = this.configService.get<string[]>('urls.elasticBeta');
-    if (!elasticUrls) {
-      throw new Error('No elastic beta urls present');
-    }
-
-    return elasticUrls[Math.floor(Math.random() * elasticUrls.length)];
-  }
-
   getEsdtContractAddress(): string {
     const address = this.configService.get<string>('contracts.esdt');
     if (!address) {
