@@ -1,4 +1,5 @@
 import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from "@nestjs/common";
+import { HttpAdapterHost } from "@nestjs/core";
 import { Observable } from "rxjs";
 import { tap } from 'rxjs/operators';
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
@@ -9,7 +10,8 @@ export class LoggingInterceptor implements NestInterceptor {
   private readonly logger: Logger
 
   constructor(
-    private readonly metricsService: MetricsService
+    private readonly metricsService: MetricsService,
+    private readonly httpAdapterHost: HttpAdapterHost
   ) {
     this.logger = new Logger(LoggingInterceptor.name);
   }
@@ -19,12 +21,17 @@ export class LoggingInterceptor implements NestInterceptor {
 
     let profiler = new PerformanceProfiler(apiFunction);
 
-    const req = context.getArgByIndex(0);
+    const request = context.getArgByIndex(0);
 
-    this.logger.verbose({
-      userAgent: req.headers['user-agent'],
-      clientIp: req.headers['X-Real-Ip']
-    });
+    const httpAdapter = this.httpAdapterHost.httpAdapter;
+    if (httpAdapter.getRequestMethod(request) !== 'GET') {
+      this.logger.verbose({
+        apiFunction,
+        body: request.body,
+        userAgent: request.headers['user-agent'],
+        clientIp: request.headers['X-Real-Ip']
+      });
+    }
 
     return next
       .handle()
