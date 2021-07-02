@@ -33,7 +33,7 @@ async function bootstrap() {
   let metricsService = publicApp.get<MetricsService>(MetricsService);
   let tokenAssetService = publicApp.get<TokenAssetService>(TokenAssetService);
 
-  httpAdapterHostService.httpAdapter.getHttpServer().keepAliveTimeout = 61 * 1000;
+  httpAdapterHostService.httpAdapter.getHttpServer().keepAliveTimeout = apiConfigService.getServerTimeout();
 
   await tokenAssetService.checkout();
 

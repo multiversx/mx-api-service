@@ -111,6 +111,15 @@ export class ApiConfigService {
     return this.configService.get<number>('caching.processTtl') ?? 60;
   }
 
+  getAxiosTimeout(): number {
+    return this.configService.get<number>('keepAliveTimeout.downstream_axios') ?? 61000;
+  }
+
+  getServerTimeout(): number {
+    return this.configService.get<number>('keepAliveTimeout.upstream_server') ?? 60000;
+  }
+
+
   getProvidersUrl(): string {
     let providerUrl = this.configService.get<string>('urls.providers');
     if (!providerUrl) {
