@@ -277,17 +277,19 @@ export class TokenService {
       nfts.push(nft);
     }
 
-    let identifiers = nfts.map(x => x.identifier);
-    let tokens = await this.elasticService.getTokensByIdentifiers(identifiers);
+    if (nfts.length > 0) {
+      let identifiers = nfts.map(x => x.identifier);
+      let tokens = await this.elasticService.getTokensByIdentifiers(identifiers);
 
-    for (let token of tokens) {
-      let nft = nfts.find(x => x.identifier === token.identifier);
-      if (!nft) {
-        throw new Error(`Could not identify NFT with identifier '${token.identifier}' in elastic tokens by identifiers`);
+      for (let token of tokens) {
+        let nft = nfts.find(x => x.identifier === token.identifier);
+        if (!nft) {
+          throw new Error(`Could not identify NFT with identifier '${token.identifier}' in elastic tokens by identifiers`);
+        }
+
+        nft.type = token.type;
+        nft.timestamp = token.timestamp;
       }
-
-      nft.type = token.type;
-      nft.timestamp = token.timestamp;
     }
 
     for (let nft of nfts) {
