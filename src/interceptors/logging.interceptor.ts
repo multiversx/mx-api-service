@@ -1,8 +1,8 @@
 import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from "@nestjs/common";
-import { HttpAdapterHost } from "@nestjs/core";
 import { Observable } from "rxjs";
 import { tap } from 'rxjs/operators';
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
+import { TransactionController } from "src/endpoints/transactions/transaction.controller";
 import { PerformanceProfiler } from "src/helpers/performance.profiler";
 
 @Injectable()
@@ -11,7 +11,6 @@ export class LoggingInterceptor implements NestInterceptor {
 
   constructor(
     private readonly metricsService: MetricsService,
-    private readonly httpAdapterHost: HttpAdapterHost
   ) {
     this.logger = new Logger(LoggingInterceptor.name);
   }
@@ -23,17 +22,12 @@ export class LoggingInterceptor implements NestInterceptor {
 
     const request = context.getArgByIndex(0);
 
-    const httpAdapter = this.httpAdapterHost.httpAdapter;
-    if (httpAdapter.getRequestMethod(request) !== 'GET') {
+    if (context.getClass().name === TransactionController.name && context.getHandler().name === 'createTransaction') {
       this.logger.verbose({
         apiFunction,
         body: request.body,
         userAgent: request.headers['user-agent'],
         clientIp: request.headers['x-forwarded-for'] || request.headers['x-real-ip'] || request.socket.remoteAddress
-      });
-
-      this.logger.verbose({
-        headers: JSON.stringify(request.headers)
       });
     }
 
