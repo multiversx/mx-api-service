@@ -132,6 +132,7 @@ export class TokenService {
       nft.token = elasticNft.token;
       nft.type = elasticNft.type;
       nft.timestamp = elasticNft.timestamp;
+      nft.nonce = parseInt('0x' + nft.identifier.split('-')[2]);
       
       let metadata = elasticNft.metaData;
       if (metadata) {
@@ -259,6 +260,7 @@ export class TokenService {
       let nft = new NftElasticAccount();
       nft.identifier = elasticNft.identifier;
       nft.token = elasticNft.token;
+      nft.nonce = parseInt('0x' + elasticNft.identifier.split('-')[2]);
       
       let metadata = elasticNft.metaData;
       if (metadata) {
@@ -330,6 +332,7 @@ export class TokenService {
     let nft = new NftElasticAccount();
     nft.identifier = accountEsdt.identifier;
     nft.token = accountEsdt.token;
+    nft.nonce = parseInt('0x' + accountEsdt.identifier.split('-')[2]);
     
     let metadata = accountEsdt.metaData;
     if (metadata) {

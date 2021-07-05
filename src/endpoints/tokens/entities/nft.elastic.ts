@@ -9,6 +9,9 @@ export class NftElastic {
   token: string = '';
 
   @ApiProperty()
+  nonce: number = 0;
+
+  @ApiProperty()
   type: NftType = NftType.NonFungibleESDT;
 
   @ApiProperty()
