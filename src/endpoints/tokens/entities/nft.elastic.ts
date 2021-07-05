@@ -9,10 +9,13 @@ export class NftElastic {
   token: string = '';
 
   @ApiProperty()
-  type: NftType = NftType.NonFungibleESDT;
+  attributes: string = '';
 
   @ApiProperty()
-  timestamp: number = 0;
+  nonce: number = 0;
+
+  @ApiProperty()
+  type: NftType = NftType.NonFungibleESDT;
 
   @ApiProperty()
   name: string = '';
@@ -22,9 +25,6 @@ export class NftElastic {
 
   @ApiProperty()
   royalties: number = 0;
-
-  @ApiProperty()
-  hash: string = '';
 
   @ApiProperty()
   uris: string[] = [];
