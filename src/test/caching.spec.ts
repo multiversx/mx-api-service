@@ -14,15 +14,33 @@ describe('Caching Service', () => {
   });
 
   describe('Cache Local', () => {
-    it(`shuld return undefined, 'test' key isn't set`, async () => {
-      expect(await cachingService.getCacheLocal('test')).toBeUndefined();
+    //CRUD
+    it(`should return undefined, 'test' key isn't set`, async () => {
+      const cacheValue = await cachingService.getCacheLocal('test');
+      expect(cacheValue).toBeUndefined();
     });
 
     it(`should return 'test' value after key is set`, async () => {
       await cachingService.setCacheLocal('test', 'test', 1);
 
-      expect(await cachingService.getCacheLocal('test')).toBe('test');
-    })
+      const cacheValue = await cachingService.getCacheLocal('test');
+      expect(cacheValue).toBe('test');
+    });
+
+    it(`should return 'test-update' value after key is set`, async () => {
+      await cachingService.setCacheLocal('test', 'test-update', 1);
+
+      const cacheValue = await cachingService.getCacheLocal('test');
+      expect(cacheValue).toBe('test-update');
+    });
+
+    it(`should return undefined because key is invalidated`, async() => {
+      await cachingService.deleteInCache('test');
+
+      const cacheValue = await cachingService.getCacheLocal('test');
+      expect(cacheValue).toBeUndefined();
+    });
+
   });
 
   describe('Get Or Set Cache', () => {
@@ -44,23 +62,13 @@ describe('Caching Service', () => {
 
     it(`should return emptyOutput because keys aren't set`, async () => {
       expect(await cachingService.batchGetCache(input.map((x) => cacheKeyFunction(x)))).toStrictEqual(emptyOutput);
-    })
+    });
 
     it(`should return ouput keys as string`, async () => {
       await cachingService.batchProcess(input, cacheKeyFunction, handlerFunction, 1);
       expect(await cachingService.batchGetCache(input.map((x) => cacheKeyFunction(x)))).toStrictEqual(output);
-    })
+    });
+
   });
 
-  describe('Delete caching for keys', () => {
-    it(`should return 'test-del' because key is set`, async() => {
-      expect(await cachingService.getOrSetCache('test-del', async () => 'test-del', 1)).toBe('test-del');
-    })
-
-    it(`should return undefined because key is invalidated`, async() => {
-      await cachingService.deleteInCache('test-del');
-
-      expect(await cachingService.getCache('test-del')).toBeNull();
-    })
-  })
 });
