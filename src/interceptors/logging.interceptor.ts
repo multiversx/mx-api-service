@@ -29,7 +29,11 @@ export class LoggingInterceptor implements NestInterceptor {
         apiFunction,
         body: request.body,
         userAgent: request.headers['user-agent'],
-        clientIp: request.headers['X-Forwarded-For'] || request.headers['X-Real-Ip'] || request.socket.remoteAddress
+        clientIp: request.headers['x-forwarded-for'] || request.headers['x-real-ip'] || request.socket.remoteAddress
+      });
+
+      this.logger.verbose({
+        headers: JSON.stringify(request.headers)
       });
     }
 
