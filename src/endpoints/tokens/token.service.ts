@@ -107,13 +107,6 @@ export class TokenService {
       delete nft.owner;
     }
 
-    // let gatewayNft = await this.getNft(nft.token);
-    // if (!gatewayNft) {
-    //   throw new Error(`Could not get NFT token details for token '${nft.token}'`);
-    // }
-
-    // mergeObjects(nft, gatewayNft);
-
     return nft;
   }
 
