@@ -203,6 +203,7 @@ export class ElasticService {
     let queries = [];
 
     queries.push(this.getSimpleQuery({ address }));
+    queries.push(this.getExistsQuery("identifier"));
 
     if (token) {
       queries.push(this.getSimpleQuery({
