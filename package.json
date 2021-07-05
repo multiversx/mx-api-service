@@ -61,6 +61,7 @@
     "@nestjs/cli": "^7.6.0",
     "@nestjs/schematics": "^7.3.0",
     "@nestjs/testing": "^7.6.15",
+    "@testing-library/jest-dom": "^4.2.4",
     "@types/axios": "^0.14.0",
     "@types/cron": "^1.7.2",
     "@types/csrf": "^3.1.0",
@@ -109,6 +110,7 @@
     ],
     "moduleDirectories": [
       "node_modules"
-    ]
+    ],
+    "typeRoots": ["../node_modules/@types", "./test/typings"]
   }
 }
