@@ -266,7 +266,7 @@ export class NodeService {
   }
 
   async getOwners(blses: string[], skipCache = false) {
-    const keys = blses.map((bls) => `${this.apiConfigService.getNetwork()}:owner:${bls}`);
+    const keys = blses.map((bls) => `owner:${bls}`);
 
     let cached: any[] = [];
     if (skipCache) {
@@ -297,7 +297,7 @@ export class NodeService {
       }
 
       const params = {
-        keys: Object.keys(owners).map((bls) => `${this.apiConfigService.getNetwork()}:owner:${bls}`),
+        keys: Object.keys(owners).map((bls) => `owner:${bls}`),
         values: Object.values(owners),
         ttls: new Array(Object.keys(owners).length).fill(60 * 60 * 24), // 24h
       };
