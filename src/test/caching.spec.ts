@@ -1,6 +1,8 @@
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import { CachingService } from '../helpers/caching.service';
+import {oneSecond} from '../helpers/helpers';
+
 
 describe('Caching Service', () => {
   let cachingService: CachingService;
@@ -21,14 +23,14 @@ describe('Caching Service', () => {
     });
 
     it(`should return 'test' value after key is set`, async () => {
-      await cachingService.setCacheLocal('test', 'test', 1);
+      await cachingService.setCacheLocal('test', 'test', oneSecond());
 
       const cacheValue = await cachingService.getCacheLocal('test');
       expect(cacheValue).toBe('test');
     });
 
     it(`should return 'test-update' value after key is set`, async () => {
-      await cachingService.setCacheLocal('test', 'test-update', 1);
+      await cachingService.setCacheLocal('test', 'test-update', oneSecond());
 
       const cacheValue = await cachingService.getCacheLocal('test');
       expect(cacheValue).toBe('test-update');
@@ -45,11 +47,8 @@ describe('Caching Service', () => {
 
   describe('Get Or Set Cache', () => {
     it(`should return 'test' value after key is set`, async () => {
-      expect(await cachingService.getOrSetCache(
-        'test',
-        async () => 'test',
-        1,
-      )).toBe('test');
+      const cacheValue = await cachingService.getOrSetCache('test', async () => 'test', oneSecond());
+      expect(cacheValue).toBe('test');
     })
   });
 
@@ -61,12 +60,16 @@ describe('Caching Service', () => {
     let handlerFunction = async(number: Number) => await number.toString();
 
     it(`should return emptyOutput because keys aren't set`, async () => {
-      expect(await cachingService.batchGetCache(input.map((x) => cacheKeyFunction(x)))).toStrictEqual(emptyOutput);
+      const cacheValueChunks = await cachingService.batchGetCache(input.map((x) => cacheKeyFunction(x)));
+
+      expect(cacheValueChunks).toStrictEqual(emptyOutput);
     });
 
     it(`should return ouput keys as string`, async () => {
-      await cachingService.batchProcess(input, cacheKeyFunction, handlerFunction, 1);
-      expect(await cachingService.batchGetCache(input.map((x) => cacheKeyFunction(x)))).toStrictEqual(output);
+      await cachingService.batchProcess(input, cacheKeyFunction, handlerFunction, oneSecond());
+
+      const cacheValueChunks = await cachingService.batchGetCache(input.map((x) => cacheKeyFunction(x)));
+      expect(cacheValueChunks).toStrictEqual(output);
     });
 
   });
