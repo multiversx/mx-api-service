@@ -262,6 +262,7 @@ export class ElasticService {
     let queries = [];
 
     queries.push(this.getSimpleQuery({ address }));
+    queries.push(this.getExistsQuery("identifier"));
 
     let payload = {
       from: 0,
