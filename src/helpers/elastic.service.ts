@@ -331,6 +331,92 @@ export class ElasticService {
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
 
+  async getTokenCollectionCount(search: string | undefined, type: NftType | undefined) {
+    let mustNotQueries = [];
+    mustNotQueries.push(this.getExistsQuery('identifier'));
+
+    let mustQueries = [];
+    if (search !== undefined) {
+      mustQueries.push(this.getWildcardQuery({ token: `*${search}*` }));
+    }
+
+    if (type !== undefined) {
+      mustQueries.push(this.getSimpleQuery({ type }));
+    }
+
+    let shouldQueries = [];
+    shouldQueries.push(this.getSimpleQuery({ type: NftType.SemiFungibleESDT }));
+    shouldQueries.push(this.getSimpleQuery({ type: NftType.NonFungibleESDT }));
+
+    let payload = {
+      sort: [
+         {
+            timestamp: {
+               order: "desc"
+            }
+         }
+      ],
+      from: 0,
+      size: 0,
+      query: {
+         bool: {
+            must_not: mustNotQueries,
+            must: mustQueries,
+            should: shouldQueries
+         }
+      }
+    };
+
+    let url = `${this.url}/tokens/_search`;
+    return await this.getDocumentCount(url, payload);
+  }
+
+  async getTokenCollections(from: number, size: number, search: string | undefined, type: NftType | undefined, token: string | undefined) {
+    let mustNotQueries = [];
+    mustNotQueries.push(this.getExistsQuery('identifier'));
+
+    let mustQueries = [];
+    if (search !== undefined) {
+      mustQueries.push(this.getWildcardQuery({ token: `*${search}*` }));
+    }
+
+    if (type !== undefined) {
+      mustQueries.push(this.getSimpleQuery({ type }));
+    }
+
+    if (token !== undefined) {
+      mustQueries.push(this.getSimpleQuery({ token: { query: token, operator: "AND" } }));
+    }
+
+    let shouldQueries = [];
+    shouldQueries.push(this.getSimpleQuery({ type: NftType.SemiFungibleESDT }));
+    shouldQueries.push(this.getSimpleQuery({ type: NftType.NonFungibleESDT }));
+
+    let payload = {
+      sort: [
+         {
+            timestamp: {
+               order: "desc"
+            }
+         }
+      ],
+      from,
+      size,
+      query: {
+         bool: {
+            must_not: mustNotQueries,
+            must: mustQueries,
+            should: shouldQueries
+         }
+      }
+    };
+
+    let url = `${this.url}/tokens/_search`;
+    let documents = await this.getDocuments(url, payload);
+
+    return documents.map((document: any) => this.formatItem(document, 'identifier'));
+  }
+
   async getTokenByIdentifier(identifier: string) {
     let queries = [];
     queries.push(this.getExistsQuery('identifier'));

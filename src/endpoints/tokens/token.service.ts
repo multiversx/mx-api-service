@@ -15,6 +15,7 @@ import { NftElasticDetailed } from "./entities/nft.elastic.detailed";
 import { NftElasticOwner } from "./entities/nft.elastic.owner";
 import { NftElasticAccount } from "./entities/nft.elastic.account";
 import { TokenAssetService } from "src/helpers/token.asset.service";
+import { NftCollection } from "./entities/nft.collection";
 
 @Injectable()
 export class TokenService {
@@ -66,14 +67,59 @@ export class TokenService {
     return allTokens.length;
   }
 
-  async getNft(identifier: string): Promise<NftDetailed | undefined> {
+  async getNft(token: string): Promise<NftDetailed | undefined> {
     let nfts = await this.getAllNfts();
-    let nft = nfts.find(x => x.token === identifier);
+    let nft = nfts.find(x => x.token === token);
     if (nft) {
       return mergeObjects(new NftDetailed(), nft);
     }
 
     return nft;
+  }
+
+  async getNftCollections(from: number, size: number, search: string | undefined, type: NftType | undefined): Promise<NftCollection[]> {
+    let tokenCollections = await this.elasticService.getTokenCollections(from, size, search, type, undefined);
+
+    let nftCollections: NftCollection[] = [];
+    for (let tokenCollection of tokenCollections) {
+      let nftCollection = new NftCollection();
+      nftCollection.collection = tokenCollection.token;
+
+      mergeObjects(nftCollection, tokenCollection);
+
+      let nft = await this.getNft(nftCollection.collection);
+      if (nft) {
+        mergeObjects(nftCollection, nft);
+      }
+
+      nftCollections.push(nftCollection);
+    }
+
+    return nftCollections;
+  }
+
+  async getNftCollectionCount(search: string | undefined, type: NftType | undefined): Promise<number> {
+    return await this.elasticService.getTokenCollectionCount(search, type);
+  }
+
+  async getNftCollection(collection: string): Promise<NftCollection | undefined> {
+    let tokenCollections = await this.elasticService.getTokenCollections(0, 1, undefined, undefined, collection);
+    if (tokenCollections.length === 0) {
+      return undefined;
+    }
+
+    let tokenCollection = tokenCollections[0];
+    let nftCollection = new NftCollection();
+    nftCollection.collection = tokenCollection.token;
+
+    mergeObjects(nftCollection, tokenCollection);
+
+    let nft = await this.getNft(nftCollection.collection);
+    if (nft) {
+      mergeObjects(nftCollection, nft);
+    }
+
+    return nftCollection;
   }
 
   async getNfts(from: number, size: number, search: string | undefined, type: NftType | undefined, token: string | undefined, tags: string | undefined, creator: string | undefined): Promise<NftElastic[]> {
