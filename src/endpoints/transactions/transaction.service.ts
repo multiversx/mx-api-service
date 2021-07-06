@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ElasticPagination } from 'src/helpers/entities/elastic.pagination';
 import { QueryCondition } from 'src/helpers/entities/query.condition';
 import { GatewayService } from 'src/helpers/gateway.service';
@@ -14,11 +14,14 @@ import { TransactionSendResult } from './entities/transaction.send.result';
 
 @Injectable()
 export class TransactionService {
+  private readonly logger: Logger
+
   constructor(
     private readonly elasticService: ElasticService, 
     private readonly gatewayService: GatewayService,
-  ) {}
-
+  ) {
+    this.logger = new Logger(TransactionService.name);
+  }
 
   private buildTransactionFilterQuery(transactionQuery: TransactionQuery){
     return {
@@ -90,7 +93,8 @@ export class TransactionService {
       }
 
       return mergeObjects(new TransactionDetailed(), transactionDetailed);
-    } catch {
+    } catch (error) {
+      this.logger.error(error);
       return null;
     }
   }
@@ -103,12 +107,14 @@ export class TransactionService {
         transaction.receipt.value = transaction.receipt.value.toString();
       }
 
-      for (let smartContractResult of transaction.smartContractResults) {
-        smartContractResult.callType = smartContractResult.callType.toString();
-        smartContractResult.value = smartContractResult.value.toString();
+      if (transaction.smartContractResults) {
+        for (let smartContractResult of transaction.smartContractResults) {
+          smartContractResult.callType = smartContractResult.callType.toString();
+          smartContractResult.value = smartContractResult.value.toString();
 
-        if (smartContractResult.data) {
-          smartContractResult.data = base64Encode(smartContractResult.data);
+          if (smartContractResult.data) {
+            smartContractResult.data = base64Encode(smartContractResult.data);
+          }
         }
       }
 
@@ -130,12 +136,13 @@ export class TransactionService {
         round: transaction.round,
         fee: transaction.fee,
         timestamp: transaction.timestamp,
-        scResults: transaction.smartContractResults.map((scResult: any) => mergeObjects(new SmartContractResult(), scResult)),
+        scResults: transaction.smartContractResults ? transaction.smartContractResults.map((scResult: any) => mergeObjects(new SmartContractResult(), scResult)) : [],
         receipt: transaction.receipt ? mergeObjects(new TransactionReceipt(), transaction.receipt) : undefined
       };
 
       return mergeObjects(new TransactionDetailed(), result);
-    } catch {
+    } catch (error) {
+      this.logger.error(error);
       return null;
     }
   }
