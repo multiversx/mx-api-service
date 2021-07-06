@@ -16,6 +16,7 @@ import { NftElasticOwner } from "./entities/nft.elastic.owner";
 import { NftElasticAccount } from "./entities/nft.elastic.account";
 import { TokenAssetService } from "src/helpers/token.asset.service";
 import { NftCollection } from "./entities/nft.collection";
+import { NftFilter } from "./entities/nft.filter";
 
 @Injectable()
 export class TokenService {
@@ -299,8 +300,8 @@ export class TokenService {
     return parts.join('-');
   }
 
-  async getNftsForAddress(address: string, from: number, size: number, type: NftType | undefined, token: string | undefined): Promise<NftElasticAccount[]> {
-    let nfts = await this.getNftsForAddressInternal(address, type, token);
+  async getNftsForAddress(address: string, from: number, size: number, filter: NftFilter): Promise<NftElasticAccount[]> {
+    let nfts = await this.getNftsForAddressInternal(address, filter);
 
     nfts = nfts.splice(from, from + size);
 
@@ -317,13 +318,13 @@ export class TokenService {
     return nfts;
   }
 
-  async getNftCountForAddress(address: string, type: NftType | undefined, token: string | undefined): Promise<number> {
-    let nfts = await this.getNftsForAddressInternal(address, type, token);
+  async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {
+    let nfts = await this.getNftsForAddressInternal(address, filter);
 
     return nfts.length;
   }
 
-  async getNftsForAddressInternal(address: string, type: NftType | undefined, token: string | undefined): Promise<NftElasticAccount[]> {
+  async getNftsForAddressInternal(address: string, filter: NftFilter): Promise<NftElasticAccount[]> {
     let gatewayNftResult = await this.gatewayService.get(`address/${address}/esdt`);
 
     let gatewayNfts = Object.values(gatewayNftResult['esdts']).map(x => x as any);
@@ -363,27 +364,32 @@ export class TokenService {
       if (gatewayNftDetails) {
         nft.type = gatewayNftDetails.type;
         nft.name = gatewayNftDetails.name;
-        // nft.canUpgrade = gatewayNftDetails.canUpgrade;
-        // nft.canMint = gatewayNftDetails.canMint;
-        // nft.canBurn = gatewayNftDetails.canBurn;
-        // nft.canChangeOwner = gatewayNftDetails.canChangeOwner;
-        // nft.canPause = gatewayNftDetails.canPause;
-        // nft.canFreeze = gatewayNftDetails.canFreeze;
-        // nft.canWipe = gatewayNftDetails.canWipe;
-        // nft.canAddSpecialRoles = gatewayNftDetails.canAddSpecialRoles;
-        // nft.canTransferNFTCreateRole = gatewayNftDetails.canTransferNFTCreateRole;
-        // nft.NFTCreateStopped = gatewayNftDetails.NFTCreateStopped;
       }
 
       nfts.push(nft);
     }
 
-    if (type) {
-      nfts = nfts.filter(x => x.type === type);
+    if (filter.search) {
+      let searchLower = filter.search.toLowerCase();
+
+      nfts = nfts.filter(x => x.name.toLowerCase().includes(searchLower));
     }
 
-    if (token) {
-      nfts = nfts.filter(x => x.collection === token);
+    if (filter.type) {
+      nfts = nfts.filter(x => x.type === filter.type);
+    }
+
+    if (filter.collection) {
+      nfts = nfts.filter(x => x.collection === filter.collection);
+    }
+
+    if (filter.tags) {
+      let tagsArray = filter.tags.split(',');
+      nfts = nfts.filter(nft => tagsArray.filter(tag => nft.tags.includes(tag)).length === tagsArray.length);
+    }
+
+    if (filter.creator) {
+      nfts = nfts.filter(x => x.creator === filter.creator);
     }
 
     return nfts;
@@ -400,7 +406,7 @@ export class TokenService {
   }
 
   async getNftForAddress(address: string, identifier: string): Promise<NftElasticAccount | undefined> {
-    let nfts = await this.getNftsForAddressInternal(address, undefined, undefined);
+    let nfts = await this.getNftsForAddressInternal(address, new NftFilter());
     return nfts.find(x => x.identifier === identifier);
   }
 

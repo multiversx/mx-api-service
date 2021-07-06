@@ -162,8 +162,11 @@ export class AccountController {
   @Get("/accounts/:address/nfts")
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
 	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
-  @ApiQuery({ name: 'token', description: 'Filter by token identifier', required: false  })
+	@ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
+	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
+	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
   @ApiResponse({
     status: 200,
     description: 'The non-fungible and semi-fungible tokens of a given account',
@@ -178,11 +181,14 @@ export class AccountController {
     @Param('address') address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+		@Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-    @Query('token') token: string | undefined
+		@Query('collection') collection: string | undefined,
+		@Query('tags') tags: string | undefined,
+		@Query('creator') creator: string | undefined,
   ): Promise<NftElasticAccount[]> {
     try {
-      return await this.tokenService.getNftsForAddress(address, from, size, type, token);
+      return await this.tokenService.getNftsForAddress(address, from, size, { search, type, collection, tags, creator });
     } catch (error) {
       this.logger.error(error);
       return [];
@@ -190,8 +196,11 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/nfts/count")
+	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
 	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
-  @ApiQuery({ name: 'token', description: 'Filter by token identifier', required: false  })
+	@ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
+	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
+	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
   @ApiResponse({
     status: 200,
     description: 'The number of non-fungible and semi-fungible tokens available on the blockchain for the given address',
@@ -202,11 +211,14 @@ export class AccountController {
   })
   async getNftCount(
     @Param('address') address: string,
+		@Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-    @Query('token') token: string | undefined
+		@Query('collection') collection: string | undefined,
+		@Query('tags') tags: string | undefined,
+		@Query('creator') creator: string | undefined,
   ): Promise<number> {
     try {
-      return await this.tokenService.getNftCountForAddress(address, type, token);
+      return await this.tokenService.getNftCountForAddress(address, { search, type, collection, tags, creator });
     } catch (error) {
       this.logger.error(error);
       return 0;
