@@ -56,16 +56,7 @@ export class TransactionService {
 
     let transactions = await this.elasticService.getList('transactions', 'txHash', query, pagination, sort, transactionQuery.condition ?? QueryCondition.must);
 
-    transactions = transactions.map(transaction => mergeObjects(new Transaction(), transaction));
-
-    for (let transaction of transactions) {
-      if (!transaction.data) {
-        // @ts-ignore
-        delete transaction.data;
-      }
-    }
-
-    return transactions;
+    return transactions.map(transaction => mergeObjects(new Transaction(), transaction));
   }
 
   async getTransaction(txHash: string): Promise<TransactionDetailed | null> {
