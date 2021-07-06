@@ -126,6 +126,9 @@ export class TokenService {
       nft.type = elasticNft.type;
       nft.nonce = parseInt('0x' + nft.identifier.split('-')[2]);
       nft.timestamp = elasticNft.timestamp;
+
+      // @ts-ignore
+      delete nft.attributes;
       
       let metadata = elasticNft.metaData;
       if (metadata) {
@@ -135,8 +138,10 @@ export class TokenService {
         nft.uris = metadata.uris.filter((x: any) => x);
         nft.url = metadata.uris[0];
 
-        if (metadata.attributes && metadata.attributes.tags) {
-          nft.tags = metadata.attributes.tags;
+        if (metadata.attributes) {
+          if (metadata.attributes.tags) {
+            nft.tags = metadata.attributes.tags;
+          }
         }
       }
 
@@ -144,9 +149,11 @@ export class TokenService {
     }
 
     for (let nft of nfts) {
-      let gatewayNft = await this.getNft(nft.identifier);
-      if (gatewayNft) {
-        mergeObjects(nft, gatewayNft);
+      if (nft.type === NftType.SemiFungibleESDT) {
+        let gatewayNft = await this.getNft(nft.token);
+        if (gatewayNft) {
+          nft.name = gatewayNft.name;
+        }
       }
     }
 
@@ -295,16 +302,16 @@ export class TokenService {
       if (gatewayNftDetails) {
         nft.type = gatewayNftDetails.type;
         nft.name = gatewayNftDetails.name;
-        nft.canUpgrade = gatewayNftDetails.canUpgrade;
-        nft.canMint = gatewayNftDetails.canMint;
-        nft.canBurn = gatewayNftDetails.canBurn;
-        nft.canChangeOwner = gatewayNftDetails.canChangeOwner;
-        nft.canPause = gatewayNftDetails.canPause;
-        nft.canFreeze = gatewayNftDetails.canFreeze;
-        nft.canWipe = gatewayNftDetails.canWipe;
-        nft.canAddSpecialRoles = gatewayNftDetails.canAddSpecialRoles;
-        nft.canTransferNFTCreateRole = gatewayNftDetails.canTransferNFTCreateRole;
-        nft.NFTCreateStopped = gatewayNftDetails.NFTCreateStopped;
+        // nft.canUpgrade = gatewayNftDetails.canUpgrade;
+        // nft.canMint = gatewayNftDetails.canMint;
+        // nft.canBurn = gatewayNftDetails.canBurn;
+        // nft.canChangeOwner = gatewayNftDetails.canChangeOwner;
+        // nft.canPause = gatewayNftDetails.canPause;
+        // nft.canFreeze = gatewayNftDetails.canFreeze;
+        // nft.canWipe = gatewayNftDetails.canWipe;
+        // nft.canAddSpecialRoles = gatewayNftDetails.canAddSpecialRoles;
+        // nft.canTransferNFTCreateRole = gatewayNftDetails.canTransferNFTCreateRole;
+        // nft.NFTCreateStopped = gatewayNftDetails.NFTCreateStopped;
       }
 
       nfts.push(nft);
