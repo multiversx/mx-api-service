@@ -123,12 +123,12 @@ export class TokenService {
     return nftCollection;
   }
 
-  async getNfts(from: number, size: number, search: string | undefined, type: NftType | undefined, collection: string | undefined, tags: string | undefined, creator: string | undefined): Promise<NftElastic[]> {
-    return await this.getNftsInternal(from, size, search, type, undefined, collection, tags, creator);
+  async getNfts(from: number, size: number, filter: NftFilter): Promise<NftElastic[]> {
+    return await this.getNftsInternal(from, size, filter, undefined);
   }
 
   async getSingleNft(identifier: string): Promise<NftElasticDetailed | undefined> {
-    let nfts = await this.getNftsInternal(0, 1, undefined, undefined, identifier, undefined, undefined, undefined);
+    let nfts = await this.getNftsInternal(0, 1, new NftFilter(), identifier);
     if (nfts.length === 0) {
       return undefined;
     }
@@ -157,13 +157,8 @@ export class TokenService {
     return nft;
   }
 
-  async getNftsInternal(from: number, size: number, search: string | undefined, type: NftType | undefined, identifier: string | undefined, collection: string | undefined, tags: string | undefined, creator: string | undefined): Promise<NftElastic[]> {
-    let tagArray: string[] = [];
-    if (tags !== undefined) {
-      tagArray = tags.split(',');
-    }
-
-    let elasticNfts = await this.elasticService.getTokens(from, size, search, type, identifier, collection, tagArray, creator);
+  async getNftsInternal(from: number, size: number, filter: NftFilter, identifier: string | undefined): Promise<NftElastic[]> {
+    let elasticNfts = await this.elasticService.getTokens(from, size, filter, identifier);
     let nfts: NftElastic[] = [];
 
     for (let elasticNft of elasticNfts) {
@@ -390,6 +385,12 @@ export class TokenService {
 
     if (filter.creator) {
       nfts = nfts.filter(x => x.creator === filter.creator);
+    }
+
+    if (filter.hasUris === true) {
+      nfts = nfts.filter(x => x.uris.length > 0);
+    } else if (filter.hasUris === false) {
+      nfts = nfts.filter(x => x.uris.length === 0);
     }
 
     return nfts;

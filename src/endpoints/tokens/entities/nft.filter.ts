@@ -6,4 +6,5 @@ export class NftFilter {
   collection: string | undefined;
   tags: string | undefined;
   creator: string | undefined;
+  hasUris: boolean | undefined;
 }

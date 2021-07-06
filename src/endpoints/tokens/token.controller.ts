@@ -1,5 +1,6 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ParseOptionalBoolPipe } from "src/helpers/pipes/parse.optional.bool.pipe";
 import { ParseOptionalEnumPipe } from "src/helpers/pipes/parse.optional.enum.pipe";
 import { NftCollection } from "./entities/nft.collection";
 import { NftElastic } from "./entities/nft.elastic";
@@ -125,6 +126,7 @@ export class TokenController {
 	@ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
 	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
 	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
+	@ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
   async getNfts(
 		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -133,8 +135,9 @@ export class TokenController {
 		@Query('collection') collection: string | undefined,
 		@Query('tags') tags: string | undefined,
 		@Query('creator') creator: string | undefined,
+		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<NftElastic[]> {
-    return await this.tokenService.getNfts(from, size, search, type, collection, tags, creator);
+    return await this.tokenService.getNfts(from, size, { search, type, collection, tags, creator, hasUris });
   }
 
   @Get("/nfts/count")
