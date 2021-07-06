@@ -122,8 +122,8 @@ export class TokenService {
     return nftCollection;
   }
 
-  async getNfts(from: number, size: number, search: string | undefined, type: NftType | undefined, token: string | undefined, tags: string | undefined, creator: string | undefined): Promise<NftElastic[]> {
-    return await this.getNftsInternal(from, size, search, type, undefined, token, tags, creator);
+  async getNfts(from: number, size: number, search: string | undefined, type: NftType | undefined, collection: string | undefined, tags: string | undefined, creator: string | undefined): Promise<NftElastic[]> {
+    return await this.getNftsInternal(from, size, search, type, undefined, collection, tags, creator);
   }
 
   async getSingleNft(identifier: string): Promise<NftElasticDetailed | undefined> {
@@ -156,13 +156,13 @@ export class TokenService {
     return nft;
   }
 
-  async getNftsInternal(from: number, size: number, search: string | undefined, type: NftType | undefined, identifier: string | undefined, token: string | undefined, tags: string | undefined, creator: string | undefined): Promise<NftElastic[]> {
+  async getNftsInternal(from: number, size: number, search: string | undefined, type: NftType | undefined, identifier: string | undefined, collection: string | undefined, tags: string | undefined, creator: string | undefined): Promise<NftElastic[]> {
     let tagArray: string[] = [];
     if (tags !== undefined) {
       tagArray = tags.split(',');
     }
 
-    let elasticNfts = await this.elasticService.getTokens(from, size, search, type, identifier, token, tagArray, creator);
+    let elasticNfts = await this.elasticService.getTokens(from, size, search, type, identifier, collection, tagArray, creator);
     let nfts: NftElastic[] = [];
 
     for (let elasticNft of elasticNfts) {
@@ -182,7 +182,14 @@ export class TokenService {
         nft.creator = metadata.creator;
         nft.royalties = metadata.royalties / 10000; // 10.000 => 100%
         nft.uris = metadata.uris.filter((x: any) => x);
-        nft.url = metadata.uris[0];
+
+        if (metadata.uris && metadata.uris.length > 0) {
+          try {
+            nft.url = base64Decode(metadata.uris[0]);
+          } catch (error) {
+            this.logger.error(error);
+          }
+        }
 
         if (metadata.attributes) {
           if (metadata.attributes.tags) {
@@ -336,7 +343,15 @@ export class TokenService {
       nft.creator = gatewayNft.creator;
       nft.royalties = Number(gatewayNft.royalties) / 10000; // 10.000 => 100%
       nft.uris = gatewayNft.uris.filter((x: any) => x);
-      nft.url = gatewayNft.uris[0];
+
+      if (nft.uris && nft.uris.length > 0) {
+        try {
+          nft.url = base64Decode(nft.uris[0]);
+        } catch (error) {
+          this.logger.error(error);
+        }
+      }
+
       nft.attributes = gatewayNft.attributes;
       nft.balance = gatewayNft.balance;
       

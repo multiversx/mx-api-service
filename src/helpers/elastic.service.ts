@@ -278,7 +278,7 @@ export class ElasticService {
     return await this.getDocumentCount(url, payload);
   }
 
-  async getTokens(from: number, size: number, search: string | undefined, type: NftType | undefined, identifier: string | undefined, token: string | undefined, tagArray: string[], creator: string | undefined) {
+  async getTokens(from: number, size: number, search: string | undefined, type: NftType | undefined, identifier: string | undefined, collection: string | undefined, tagArray: string[], creator: string | undefined) {
     let queries = [];
     queries.push(this.getExistsQuery('identifier'));
 
@@ -294,8 +294,8 @@ export class ElasticService {
       queries.push(this.getSimpleQuery({ identifier: { query: identifier, operator: "AND" } }));
     }
 
-    if (token !== undefined) {
-      queries.push(this.getSimpleQuery({ token: { query: token, operator: "AND" } }));
+    if (collection !== undefined) {
+      queries.push(this.getSimpleQuery({ token: { query: collection, operator: "AND" } }));
     }
 
     if (tagArray.length > 0) {
