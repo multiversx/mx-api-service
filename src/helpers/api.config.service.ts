@@ -23,15 +23,6 @@ export class ApiConfigService {
     return elasticUrls[Math.floor(Math.random() * elasticUrls.length)];
   }
 
-  getElasticBetaUrl(): string {
-    const elasticUrls = this.configService.get<string[]>('urls.elasticBeta');
-    if (!elasticUrls) {
-      throw new Error('No elastic beta urls present');
-    }
-
-    return elasticUrls[Math.floor(Math.random() * elasticUrls.length)];
-  }
-
   getEsdtContractAddress(): string {
     const address = this.configService.get<string>('contracts.esdt');
     if (!address) {
@@ -119,6 +110,15 @@ export class ApiConfigService {
   getProcessTtl(): number {
     return this.configService.get<number>('caching.processTtl') ?? 60;
   }
+
+  getAxiosTimeout(): number {
+    return this.configService.get<number>('keepAliveTimeout.downstream_axios') ?? 61000;
+  }
+
+  getServerTimeout(): number {
+    return this.configService.get<number>('keepAliveTimeout.upstream_server') ?? 60000;
+  }
+
 
   getProvidersUrl(): string {
     let providerUrl = this.configService.get<string>('urls.providers');

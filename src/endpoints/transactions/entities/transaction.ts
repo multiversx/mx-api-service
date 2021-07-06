@@ -48,4 +48,7 @@ export class Transaction {
 
     @ApiProperty()
     timestamp: number = 0;
+
+    @ApiProperty()
+    data: string = '';
 }

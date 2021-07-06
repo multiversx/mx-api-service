@@ -1,14 +1,20 @@
 import { Injectable, Logger } from "@nestjs/common";
 import axios from "axios";
+import { ApiConfigService } from "./api.config.service";
 import { PerformanceProfiler } from "./performance.profiler";
 
 @Injectable()
 export class ApiService {
+
+  constructor(
+    private readonly apiConfigService: ApiConfigService,
+  ){};
+
   async get(url: string): Promise<any> {
     let profiler = new PerformanceProfiler(`apiService get ${url}`);
 
     try {
-      return await axios.get(url);
+      return await axios.get(url, {timeout: this.apiConfigService.getAxiosTimeout()});
     } catch(error) {
       let logger = new Logger(ApiService.name);
       logger.error(`Error when performing GET on url ${url}`);
@@ -22,7 +28,7 @@ export class ApiService {
     let profiler = new PerformanceProfiler(`apiService post ${url}`);
     
     try {
-      return await axios.post(url, data);
+      return await axios.post(url, data, {timeout: this.apiConfigService.getAxiosTimeout()});
     } catch(error) {
       let logger = new Logger(ApiService.name);
       logger.error(`Error when performing POST on url ${url} and data ${data}`);
@@ -36,7 +42,7 @@ export class ApiService {
     let profiler = new PerformanceProfiler(`apiService head ${url}`);
 
     try {
-      return await axios.head(url);
+      return await axios.head(url, {timeout: this.apiConfigService.getAxiosTimeout()});
     } catch(error) {
       let logger = new Logger(ApiService.name);
       logger.error(`Error when performing HEAD on url ${url}`);

@@ -11,8 +11,6 @@ cron:
 urls:
   elastic:
     - 'https://devnet-index.elrond.com'
-  elasticBeta:
-    - 'https://devnet-index-beta.elrond.com'
   gateway:
     - 'https://devnet-gateway.elrond.com'
   redis: '127.0.0.1'
@@ -21,6 +19,9 @@ caching:
   cacheTtl: 6
   processTtl: 600
   poolLimit: 10
+keepAliveTimeout:
+  downstream_axios: 61000
+  upstream_server: 60000
 contracts:
   esdt: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u'
   auction: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l'

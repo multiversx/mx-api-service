@@ -2,11 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { ElasticPagination } from 'src/helpers/entities/elastic.pagination';
 import { QueryCondition } from 'src/helpers/entities/query.condition';
 import { GatewayService } from 'src/helpers/gateway.service';
-import { bech32Decode, computeShard, mergeObjects } from 'src/helpers/helpers';
+import { base64Encode, bech32Decode, computeShard, mergeObjects } from 'src/helpers/helpers';
 import { ElasticService } from '../../helpers/elastic.service';
+import { SmartContractResult } from './entities/smart.contract.result';
+import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
 import { TransactionQuery } from './entities/transaction.query';
+import { TransactionReceipt } from './entities/transaction.receipt';
 import { TransactionSendResult } from './entities/transaction.send.result';
 
 @Injectable()
@@ -24,6 +27,7 @@ export class TransactionService {
       senderShard: transactionQuery.senderShard,
       receiverShard: transactionQuery.receiverShard,
       miniBlockHash: transactionQuery.miniBlockHash,
+      status: transactionQuery.status,
       before: transactionQuery.before,
       after: transactionQuery.after
     };
@@ -34,7 +38,7 @@ export class TransactionService {
     return await this.elasticService.getCount('transactions', query, transactionQuery.condition ?? QueryCondition.must);
   }
 
-  async getTransactions(transactionQuery: TransactionQuery): Promise<TransactionDetailed[]> {
+  async getTransactions(transactionQuery: TransactionQuery): Promise<Transaction[]> {
     const query = this.buildTransactionFilterQuery(transactionQuery);
 
     const pagination: ElasticPagination = {
@@ -49,7 +53,7 @@ export class TransactionService {
 
     let transactions = await this.elasticService.getList('transactions', 'txHash', query, pagination, sort, transactionQuery.condition ?? QueryCondition.must);
 
-    return transactions.map(transaction => mergeObjects(new TransactionDetailed(), transaction));
+    return transactions.map(transaction => mergeObjects(new Transaction(), transaction));
   }
 
   async getTransaction(txHash: string): Promise<TransactionDetailed | null> {
@@ -65,7 +69,27 @@ export class TransactionService {
   async tryGetTransactionFromElastic(txHash: string): Promise<TransactionDetailed | null> {
     try {
       const result = await this.elasticService.getItem('transactions', 'txHash', txHash);
-      return mergeObjects(new TransactionDetailed(), result);
+
+      let transactionDetailed: TransactionDetailed = mergeObjects(new TransactionDetailed(), result);
+
+      if (result.hasScResults === true) {
+        let scResults = await this.elasticService.getList('scresults', 'scHash', { originalTxHash: txHash }, { from: 0, size: 100 }, { "timestamp": "asc" });
+        for (let scResult of scResults) {
+          scResult.hash = scResult.scHash;
+
+          delete scResult.scHash;
+        }
+
+        transactionDetailed.scResults = scResults.map(scResult => mergeObjects(new SmartContractResult(), scResult));
+      }
+
+      let receipts = await this.elasticService.getList('receipts', 'receiptHash', { txHash }, { from: 0, size: 1 }, { "timestamp": "asc" });
+      if (receipts.length > 0) {
+        let receipt = receipts[0];
+        transactionDetailed.receipt = mergeObjects(new TransactionReceipt(), receipt);
+      }
+
+      return mergeObjects(new TransactionDetailed(), transactionDetailed);
     } catch {
       return null;
     }
@@ -73,9 +97,22 @@ export class TransactionService {
 
   async tryGetTransactionFromGateway(txHash: string): Promise<TransactionDetailed | null> {
     try {
-      const { transaction } = await this.gatewayService.get(`transaction/${txHash}`);
+      const { transaction } = await this.gatewayService.get(`transaction/${txHash}?withResults=true`);
 
-      return {
+      if (transaction.receipt) {
+        transaction.receipt.value = transaction.receipt.value.toString();
+      }
+
+      for (let smartContractResult of transaction.smartContractResults) {
+        smartContractResult.callType = smartContractResult.callType.toString();
+        smartContractResult.value = smartContractResult.value.toString();
+
+        if (smartContractResult.data) {
+          smartContractResult.data = base64Encode(smartContractResult.data);
+        }
+      }
+
+      let result = {
         txHash: txHash,
         data: transaction.data,
         gasLimit: transaction.gasLimit,
@@ -93,8 +130,11 @@ export class TransactionService {
         round: transaction.round,
         fee: transaction.fee,
         timestamp: transaction.timestamp,
-        scResults: []
+        scResults: transaction.smartContractResults.map((scResult: any) => mergeObjects(new SmartContractResult(), scResult)),
+        receipt: transaction.receipt ? mergeObjects(new TransactionReceipt(), transaction.receipt) : undefined
       };
+
+      return mergeObjects(new TransactionDetailed(), result);
     } catch {
       return null;
     }

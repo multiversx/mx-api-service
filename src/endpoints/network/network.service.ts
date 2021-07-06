@@ -45,6 +45,7 @@ export class NetworkService {
     } = await axios({
       method: 'get',
       url: `${gatewayUrl}/network/config`,
+      timeout: this.apiConfigService.getAxiosTimeout(),
     });
 
     return { chainId, gasPerDataByte, minGasLimit, minGasPrice, minTransactionVersion };
