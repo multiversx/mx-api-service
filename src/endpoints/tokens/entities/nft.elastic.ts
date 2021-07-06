@@ -9,6 +9,9 @@ export class NftElastic {
   token: string = '';
 
   @ApiProperty()
+  timestamp: number = 0;
+
+  @ApiProperty()
   attributes: string = '';
 
   @ApiProperty()

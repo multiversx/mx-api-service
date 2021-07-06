@@ -125,6 +125,7 @@ export class TokenService {
       nft.token = elasticNft.token;
       nft.type = elasticNft.type;
       nft.nonce = parseInt('0x' + nft.identifier.split('-')[2]);
+      nft.timestamp = elasticNft.timestamp;
       
       let metadata = elasticNft.metaData;
       if (metadata) {
@@ -242,6 +243,16 @@ export class TokenService {
     let nfts = await this.getNftsForAddressInternal(address, type, token);
 
     nfts = nfts.splice(from, from + size);
+
+    let identifiers = nfts.map(x => x.identifier);
+    let elasticNfts = await this.elasticService.getTokensByIdentifiers(identifiers);
+
+    for (let nft of nfts) {
+      let elasticNft = elasticNfts.find((x: any) => x.identifier === nft.identifier);
+      if (elasticNft) {
+        nft.timestamp = elasticNft.timestamp;
+      }
+    }
 
     return nfts;
   }
