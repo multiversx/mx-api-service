@@ -6,7 +6,7 @@ export class NftElastic {
   identifier: string = '';
 
   @ApiProperty()
-  token: string = '';
+  collection: string = '';
 
   @ApiProperty()
   timestamp: number = 0;

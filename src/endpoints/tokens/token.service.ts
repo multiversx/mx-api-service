@@ -122,7 +122,7 @@ export class TokenService {
     for (let elasticNft of elasticNfts) {
       let nft = new NftElastic();
       nft.identifier = elasticNft.identifier;
-      nft.token = elasticNft.token;
+      nft.collection = elasticNft.token;
       nft.type = elasticNft.type;
       nft.nonce = parseInt('0x' + nft.identifier.split('-')[2]);
       nft.timestamp = elasticNft.timestamp;
@@ -150,7 +150,7 @@ export class TokenService {
 
     for (let nft of nfts) {
       if (nft.type === NftType.SemiFungibleESDT) {
-        let gatewayNft = await this.getNft(nft.token);
+        let gatewayNft = await this.getNft(nft.collection);
         if (gatewayNft) {
           nft.name = gatewayNft.name;
         }
@@ -285,7 +285,7 @@ export class TokenService {
 
       let nft = new NftElasticAccount();
       nft.identifier = gatewayNft.tokenIdentifier;
-      nft.token = gatewayNft.tokenIdentifier.split('-').slice(0, 2).join('-');
+      nft.collection = gatewayNft.tokenIdentifier.split('-').slice(0, 2).join('-');
       nft.nonce = parseInt('0x' + gatewayNft.tokenIdentifier.split('-')[2]);
       nft.creator = gatewayNft.creator;
       nft.royalties = Number(gatewayNft.royalties) / 10000; // 10.000 => 100%
@@ -298,7 +298,7 @@ export class TokenService {
         nft.tags = this.getTags(gatewayNft.attributes);
       }
 
-      let gatewayNftDetails = await this.getNft(nft.token);
+      let gatewayNftDetails = await this.getNft(nft.collection);
       if (gatewayNftDetails) {
         nft.type = gatewayNftDetails.type;
         nft.name = gatewayNftDetails.name;
@@ -322,7 +322,7 @@ export class TokenService {
     }
 
     if (token) {
-      nfts = nfts.filter(x => x.token === token);
+      nfts = nfts.filter(x => x.collection === token);
     }
 
     return nfts;
