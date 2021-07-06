@@ -47,8 +47,7 @@ describe('Account Controller', () => {
             expect(accountsList).toBeInstanceOf(Array);
             expect(accountsList).toHaveLength(25);
 
-            for(let account of accountsList)
-            {
+            for (let account of accountsList) {
                 expect(account).toHaveStructure(Object.keys(new Account()));
                 accountAddress = account.address;
             }
@@ -59,8 +58,9 @@ describe('Account Controller', () => {
             expect(accountsList).toBeInstanceOf(Array);
             expect(accountsList).toHaveLength(100);
 
-            for(let account of accountsList)
+            for (let account of accountsList) {
                 expect(account).toHaveStructure(Object.keys(new Account()));
+            }
         });
     
     });
@@ -89,12 +89,13 @@ describe('Account Controller', () => {
             });
         })
         
-        describe('Account Deffered', () => {
+        describe('Account Deferred', () => {
             it(`should return a deferred account with account address`, async () => {
                 const accountDeferred = await accountController.getAccountDeferred(accountAddress);
     
-                for(let deffered of accountDeferred)
+                for (let deffered of accountDeferred) {
                     expect(deffered).toHaveStructure(Object.keys(new AccountDeferred()));
+                }
             });
     
             it(`should throw 'Account not found' error`, async () => {
