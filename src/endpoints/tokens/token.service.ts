@@ -440,7 +440,7 @@ export class TokenService {
 
   getTags(attributes: string): string[] {
     let decodedAttributes = base64Decode(attributes);
-    let match = decodedAttributes.match(/tags:(?<tags>[\w\,]*)/);
+    let match = decodedAttributes.match(/tags:(?<tags>[\w\s\,]*)/);
     if (!match || !match.groups) {
       return [];
     }
