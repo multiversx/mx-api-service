@@ -176,7 +176,7 @@ export class TokenService {
       if (metadata) {
         nft.name = metadata.name;
         nft.creator = metadata.creator;
-        nft.royalties = metadata.royalties / 10000; // 10.000 => 100%
+        nft.royalties = metadata.royalties / 100; // 10.000 => 100%
         nft.uris = metadata.uris.filter((x: any) => x);
 
         if (metadata.uris && metadata.uris.length > 0) {
@@ -337,7 +337,7 @@ export class TokenService {
       nft.collection = gatewayNft.tokenIdentifier.split('-').slice(0, 2).join('-');
       nft.nonce = parseInt('0x' + gatewayNft.tokenIdentifier.split('-')[2]);
       nft.creator = gatewayNft.creator;
-      nft.royalties = Number(gatewayNft.royalties) / 10000; // 10.000 => 100%
+      nft.royalties = Number(gatewayNft.royalties) / 100; // 10.000 => 100%
       nft.uris = gatewayNft.uris.filter((x: any) => x);
 
       if (nft.uris && nft.uris.length > 0) {
