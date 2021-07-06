@@ -1,5 +1,6 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
+import { NftFilter } from "src/endpoints/tokens/entities/nft.filter";
 import { NftType } from "src/endpoints/tokens/entities/nft.type";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
@@ -278,34 +279,37 @@ export class ElasticService {
     return await this.getDocumentCount(url, payload);
   }
 
-  async getTokens(from: number, size: number, search: string | undefined, type: NftType | undefined, identifier: string | undefined, token: string | undefined, tagArray: string[], creator: string | undefined) {
+  async getTokens(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
     let queries = [];
     queries.push(this.getExistsQuery('identifier'));
 
-    if (search !== undefined) {
-      queries.push(this.getWildcardQuery({ token: `*${search}*` }));
+    if (filter.search !== undefined) {
+      queries.push(this.getWildcardQuery({ token: `*${filter.search}*` }));
     }
 
-    if (type !== undefined) {
-      queries.push(this.getSimpleQuery({ type }));
+    if (filter.type !== undefined) {
+      queries.push(this.getSimpleQuery({ type: filter.type }));
     }
 
     if (identifier !== undefined) {
       queries.push(this.getSimpleQuery({ identifier: { query: identifier, operator: "AND" } }));
     }
 
-    if (token !== undefined) {
-      queries.push(this.getSimpleQuery({ token: { query: token, operator: "AND" } }));
+    if (filter.collection !== undefined) {
+      queries.push(this.getSimpleQuery({ token: { query: filter.collection, operator: "AND" } }));
     }
 
-    if (tagArray.length > 0) {
-      for (let tag of tagArray) {
-        queries.push(this.getNestedQuery("metaData.attributes", { "metaData.attributes.tags": tag }));
+    if (filter.tags) {
+      let tagArray = filter.tags.split(',');
+      if (tagArray.length > 0) {
+        for (let tag of tagArray) {
+          queries.push(this.getNestedQuery("metaData.attributes", { "metaData.attributes.tags": tag }));
+        }
       }
     }
 
-    if (creator !== undefined) {
-      queries.push(this.getNestedQuery("metaData", { "metaData.creator": creator }));
+    if (filter.creator !== undefined) {
+      queries.push(this.getNestedQuery("metaData", { "metaData.creator": filter.creator }));
     }
 
     let payload = {
@@ -321,6 +325,92 @@ export class ElasticService {
       query: {
          bool: {
             must: queries
+         }
+      }
+    };
+
+    let url = `${this.url}/tokens/_search`;
+    let documents = await this.getDocuments(url, payload);
+
+    return documents.map((document: any) => this.formatItem(document, 'identifier'));
+  }
+
+  async getTokenCollectionCount(search: string | undefined, type: NftType | undefined) {
+    let mustNotQueries = [];
+    mustNotQueries.push(this.getExistsQuery('identifier'));
+
+    let mustQueries = [];
+    if (search !== undefined) {
+      mustQueries.push(this.getWildcardQuery({ token: `*${search}*` }));
+    }
+
+    if (type !== undefined) {
+      mustQueries.push(this.getSimpleQuery({ type }));
+    }
+
+    let shouldQueries = [];
+    shouldQueries.push(this.getSimpleQuery({ type: NftType.SemiFungibleESDT }));
+    shouldQueries.push(this.getSimpleQuery({ type: NftType.NonFungibleESDT }));
+
+    let payload = {
+      sort: [
+         {
+            timestamp: {
+               order: "desc"
+            }
+         }
+      ],
+      from: 0,
+      size: 0,
+      query: {
+         bool: {
+            must_not: mustNotQueries,
+            must: mustQueries,
+            should: shouldQueries
+         }
+      }
+    };
+
+    let url = `${this.url}/tokens/_search`;
+    return await this.getDocumentCount(url, payload);
+  }
+
+  async getTokenCollections(from: number, size: number, search: string | undefined, type: NftType | undefined, token: string | undefined) {
+    let mustNotQueries = [];
+    mustNotQueries.push(this.getExistsQuery('identifier'));
+
+    let mustQueries = [];
+    if (search !== undefined) {
+      mustQueries.push(this.getWildcardQuery({ token: `*${search}*` }));
+    }
+
+    if (type !== undefined) {
+      mustQueries.push(this.getSimpleQuery({ type }));
+    }
+
+    if (token !== undefined) {
+      mustQueries.push(this.getSimpleQuery({ token: { query: token, operator: "AND" } }));
+    }
+
+    let shouldQueries = [];
+    shouldQueries.push(this.getSimpleQuery({ type: NftType.SemiFungibleESDT }));
+    shouldQueries.push(this.getSimpleQuery({ type: NftType.NonFungibleESDT }));
+
+    let payload = {
+      sort: [
+         {
+            timestamp: {
+               order: "desc"
+            }
+         }
+      ],
+      from,
+      size,
+      query: {
+         bool: {
+            must_not: mustNotQueries,
+            must: mustQueries,
+            should: shouldQueries
          }
       }
     };
