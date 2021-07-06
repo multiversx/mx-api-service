@@ -10,7 +10,7 @@ cron:
   cacheWarmer: true
 urls:
   elastic:
-    - 'https://devnet-index.elrond.com'
+    - 'https://search-elrond-devnet-v2-ov66nzaicqf257tba5rctuo73m.eu-central-1.es.amazonaws.com'
   gateway:
     - 'https://devnet-gateway.elrond.com'
   redis: '127.0.0.1'
@@ -20,8 +20,8 @@ caching:
   processTtl: 600
   poolLimit: 10
 keepAliveTimeout:
-  downstream_axios: 61000
-  upstream_server: 60000
+  downstream: 61000
+  upstream: 60000
 contracts:
   esdt: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u'
   auction: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l'

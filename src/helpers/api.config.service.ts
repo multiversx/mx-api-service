@@ -112,11 +112,11 @@ export class ApiConfigService {
   }
 
   getAxiosTimeout(): number {
-    return this.configService.get<number>('keepAliveTimeout.downstream_axios') ?? 61000;
+    return this.configService.get<number>('keepAliveTimeout.downstream') ?? 61000;
   }
 
   getServerTimeout(): number {
-    return this.configService.get<number>('keepAliveTimeout.upstream_server') ?? 60000;
+    return this.configService.get<number>('keepAliveTimeout.upstream') ?? 60000;
   }
 
 

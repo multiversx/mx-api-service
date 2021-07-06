@@ -39,7 +39,7 @@ async function bootstrap() {
   await tokenAssetService.checkout();
 
   publicApp.useGlobalInterceptors(
-    new LoggingInterceptor(metricsService, httpAdapterHostService), 
+    new LoggingInterceptor(metricsService), 
     new CachingInterceptor(cachingService, httpAdapterHostService, metricsService),
     new FieldsInterceptor()
   );

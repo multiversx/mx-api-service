@@ -10,6 +10,8 @@ import { DelegationLegacyService } from '../delegation.legacy/delegation.legacy.
 import { AccountDelegationLegacy } from '../delegation.legacy/entities/account.delegation.legacy';
 import { AccountKey } from './entities/account.key';
 import { NftElasticAccount } from '../tokens/entities/nft.elastic.account';
+import { ParseOptionalEnumPipe } from 'src/helpers/pipes/parse.optional.enum.pipe';
+import { NftType } from '../tokens/entities/nft.type';
 
 @Controller()
 @ApiTags('accounts')
@@ -160,6 +162,7 @@ export class AccountController {
   @Get("/accounts/:address/nfts")
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
   @ApiQuery({ name: 'token', description: 'Filter by token identifier', required: false  })
   @ApiResponse({
     status: 200,
@@ -175,10 +178,11 @@ export class AccountController {
     @Param('address') address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
     @Query('token') token: string | undefined
   ): Promise<NftElasticAccount[]> {
     try {
-      return await this.tokenService.getNftsForAddress(address, from, size, token);
+      return await this.tokenService.getNftsForAddress(address, from, size, type, token);
     } catch (error) {
       this.logger.error(error);
       return [];
@@ -186,6 +190,8 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/nfts/count")
+	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
+  @ApiQuery({ name: 'token', description: 'Filter by token identifier', required: false  })
   @ApiResponse({
     status: 200,
     description: 'The number of non-fungible and semi-fungible tokens available on the blockchain for the given address',
@@ -194,9 +200,13 @@ export class AccountController {
     status: 404,
     description: 'Account not found'
   })
-  async getNftCount(@Param('address') address: string): Promise<number> {
+  async getNftCount(
+    @Param('address') address: string,
+		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+    @Query('token') token: string | undefined
+  ): Promise<number> {
     try {
-      return await this.tokenService.getNftCountForAddress(address);
+      return await this.tokenService.getNftCountForAddress(address, type, token);
     } catch (error) {
       this.logger.error(error);
       return 0;
