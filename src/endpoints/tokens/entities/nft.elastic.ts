@@ -37,4 +37,7 @@ export class NftElastic {
 
   @ApiProperty()
   tags: string[] = [];
+
+  @ApiProperty()
+  metadata: Object | undefined = undefined;
 }

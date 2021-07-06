@@ -5,16 +5,19 @@ import { PerformanceProfiler } from "./performance.profiler";
 
 @Injectable()
 export class ApiService {
+  private readonly defaultTimeout: number = 30000;
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
-  ){};
+  ) {};
 
-  async get(url: string): Promise<any> {
+  async get(url: string, timeout: number | undefined = undefined): Promise<any> {
+    timeout = timeout || this.defaultTimeout;
+
     let profiler = new PerformanceProfiler(`apiService get ${url}`);
 
     try {
-      return await axios.get(url, {timeout: this.apiConfigService.getAxiosTimeout()});
+      return await axios.get(url, { timeout });
     } catch(error) {
       let logger = new Logger(ApiService.name);
       logger.error(`Error when performing GET on url ${url}`);

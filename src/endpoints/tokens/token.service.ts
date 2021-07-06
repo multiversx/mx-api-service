@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { GatewayService } from "src/helpers/gateway.service";
-import { base64Decode, bech32Decode, bech32Encode, mergeObjects, oneDay, oneHour } from "src/helpers/helpers";
+import { base64Decode, bech32Decode, bech32Encode, mergeObjects, oneDay, oneHour, oneWeek } from "src/helpers/helpers";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
@@ -17,6 +17,7 @@ import { NftElasticAccount } from "./entities/nft.elastic.account";
 import { TokenAssetService } from "src/helpers/token.asset.service";
 import { NftCollection } from "./entities/nft.collection";
 import { NftFilter } from "./entities/nft.filter";
+import { ApiService } from "src/helpers/api.service";
 
 @Injectable()
 export class TokenService {
@@ -28,7 +29,8 @@ export class TokenService {
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
     private readonly elasticService: ElasticService,
-    private readonly tokenAssetService: TokenAssetService
+    private readonly tokenAssetService: TokenAssetService,
+    private readonly apiService: ApiService
   ) {
     this.logger = new Logger(TokenService.name);
   }
@@ -134,7 +136,6 @@ export class TokenService {
     }
 
     let nft: NftElasticDetailed = mergeObjects(new NftElasticDetailed(), nfts[0]);
-
     let accountsEsdt = await this.elasticService.getAccountEsdtByIdentifier(nft.identifier);
     if (nft.type === NftType.NonFungibleESDT) {
       nft.owner = accountsEsdt[0].address;
@@ -190,6 +191,12 @@ export class TokenService {
         if (metadata.attributes) {
           if (metadata.attributes.tags) {
             nft.tags = metadata.attributes.tags;
+          }
+
+          if (metadata.attributes.description && metadata.attributes.description.length > 0) {
+            nft.metadata = await this.getExtendedAttributesFromDescription(metadata.attributes.description[0]);
+          } else {
+            nft.metadata = undefined;
           }
         }
       }
@@ -353,6 +360,7 @@ export class TokenService {
       
       if (gatewayNft.attributes) {
         nft.tags = this.getTags(gatewayNft.attributes);
+        nft.metadata = await this.getExtendedAttributesFromRawAttributes(gatewayNft.attributes);
       }
 
       let gatewayNftDetails = await this.getNft(nft.collection);
@@ -396,6 +404,40 @@ export class TokenService {
     return nfts;
   }
 
+  async getExtendedAttributesFromRawAttributes(attributes: string): Promise<Object | undefined> {
+    let description = this.getDescription(attributes);
+    if (description === undefined) {
+      return undefined;
+    }
+
+    return this.getExtendedAttributesFromDescription(description);
+  }
+  
+  async getExtendedAttributesFromDescription(description: string): Promise<Object | undefined> {
+    let result = await this.cachingService.getOrSetCache(
+      `nftExtendedAttributes:${description}`,
+      async () => await this.getExtendedAttributesFromIpfs(description ?? ''),
+      oneWeek(),
+      oneDay()
+    );
+
+    if (Object.keys(result).length > 0) {
+      return result;
+    }
+
+    return undefined;
+  }
+
+  async getExtendedAttributesFromIpfs(description: string): Promise<Object> {
+    try {
+      let result = await this.apiService.get(`https://ipfs.io/ipfs/${description}`, 1000);
+      return result.data;
+    } catch (error) {
+      this.logger.error(error);
+      return {};
+    }
+  }
+
   getTags(attributes: string): string[] {
     let decodedAttributes = base64Decode(attributes);
     let match = decodedAttributes.match(/tags:(?<tags>[\w\,]*)/);
@@ -404,6 +446,16 @@ export class TokenService {
     }
 
     return match.groups['tags'].split(',');
+  }
+
+  getDescription(attributes: string): string | undefined {
+    let decodedAttributes = base64Decode(attributes);
+    let match = decodedAttributes.match(/description:(?<description>[\w]*)/);
+    if (!match || !match.groups) {
+      return undefined;
+    }
+
+    return match.groups['description'];
   }
 
   async getNftForAddress(address: string, identifier: string): Promise<NftElasticAccount | undefined> {
