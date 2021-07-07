@@ -9,6 +9,10 @@ cron:
   transactionProcessorMaxLookBehind: 100
   cacheWarmer: true
 urls:
+  api:
+    - 'https://devnet-beta-api.elrond.com'
+    - 'https://testnet-beta-api.elrond.com'
+    - 'https://beta-api.elrond.com'
   elastic:
     - 'https://search-elrond-devnet-v2-ov66nzaicqf257tba5rctuo73m.eu-central-1.es.amazonaws.com'
   gateway:
