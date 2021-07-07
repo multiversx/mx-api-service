@@ -1,5 +1,5 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query, Res } from "@nestjs/common";
-import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { Node } from "src/endpoints/nodes/entities/node";
 import { ParseOptionalBoolPipe } from "src/helpers/pipes/parse.optional.bool.pipe";
@@ -82,6 +82,24 @@ export class NodeController {
 	@ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false })
 	@ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false })
 	getNodeCount(
+		@Query('search') search: string | undefined,
+		@Query('online', ParseOptionalBoolPipe) online: boolean | undefined,
+		@Query('type', new ParseOptionalEnumPipe(NodeType)) type: NodeType | undefined,
+		@Query('status', new ParseOptionalEnumPipe(NodeStatus)) status: NodeStatus | undefined,
+		@Query('shard', ParseOptionalIntPipe) shard: number | undefined,
+		@Query('issues', ParseOptionalBoolPipe) issues: boolean | undefined,
+		@Query('identity') identity: string | undefined,
+		@Query('provider') provider: string | undefined,
+		@Query('owner', ParseOptionalIntPipe) owner: string | undefined,
+		@Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort: NodeSort | undefined,
+		@Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
+	): Promise<number> {
+		return this.nodeService.getNodeCount({ search, online, type, status, shard, issues, identity, provider, owner, sort, order });
+	}
+
+	@Get("/nodes/c")
+	@ApiExcludeEndpoint()
+	getNodeCountAlternative(
 		@Query('search') search: string | undefined,
 		@Query('online', ParseOptionalBoolPipe) online: boolean | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NodeType)) type: NodeType | undefined,
