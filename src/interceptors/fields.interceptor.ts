@@ -11,17 +11,19 @@ export class FieldsInterceptor implements NestInterceptor {
       .handle()
       .pipe(
         tap(async (result) => {
-          if (Array.isArray(result)) {
-            let fieldsArgument = request.query.fields;
-            if (fieldsArgument) {
-              let fields = fieldsArgument.split(',');
-
+          let fieldsArgument = request.query.fields;
+          if (fieldsArgument) {
+            let fields = fieldsArgument.split(',');
+            if (Array.isArray(result)) {
               for (let item of result) {
                 this.transformItem(item, fields);
               }
             }
+            else {
+              this.transformItem(result, fields);
+            }
           }
-
+          
           return result;
         })
       );
