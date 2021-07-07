@@ -37,9 +37,9 @@ export class TokenService {
 
   async getToken(identifier: string): Promise<TokenDetailed | undefined> {
     let tokens = await this.getAllTokens();
-    let token = tokens.find(x => x.token === identifier);
+    let token = tokens.find(x => x.identifier === identifier);
     if (token) {
-      token.assets = await this.tokenAssetService.getAssets(token.token);
+      token.assets = await this.tokenAssetService.getAssets(token.identifier);
 
       return mergeObjects(new TokenDetailed(), token);
     }
@@ -53,13 +53,13 @@ export class TokenService {
     if (search) {
       let searchLower = search.toLowerCase();
 
-      tokens = tokens.filter(token => token.name.toLowerCase().includes(searchLower) || token.token.toLowerCase().includes(searchLower));
+      tokens = tokens.filter(token => token.name.toLowerCase().includes(searchLower) || token.identifier.toLowerCase().includes(searchLower));
     }
 
     tokens = tokens.slice(from, from + size);
 
     for (let token of tokens) {
-      token.assets = await this.tokenAssetService.getAssets(token.token);
+      token.assets = await this.tokenAssetService.getAssets(token.identifier);
     }
 
     return tokens.map(item => mergeObjects(new TokenDetailed(), item));
@@ -72,7 +72,7 @@ export class TokenService {
 
   async getNft(token: string): Promise<NftDetailed | undefined> {
     let nfts = await this.getAllNfts();
-    let nft = nfts.find(x => x.token === token);
+    let nft = nfts.find(x => x.identifier === token);
     if (nft) {
       return mergeObjects(new NftDetailed(), nft);
     }
@@ -231,7 +231,7 @@ export class TokenService {
     tokens = tokens.slice(from, from + size);
 
     for (let token of tokens) {
-      token.assets = await this.tokenAssetService.getAssets(token.token);
+      token.assets = await this.tokenAssetService.getAssets(token.identifier);
     }
 
     return tokens.map(token => mergeObjects(new TokenWithBalance(), token));
@@ -240,7 +240,7 @@ export class TokenService {
   async getTokenForAddress(address: string, tokenIdentifier: string): Promise<TokenWithBalance | undefined> {
     let allTokens = await this.getAllTokensForAddress(address);
 
-    let foundToken = allTokens.find(x => x.token === tokenIdentifier);
+    let foundToken = allTokens.find(x => x.identifier === tokenIdentifier);
     if (!foundToken) {
       return undefined;
     }
@@ -255,7 +255,7 @@ export class TokenService {
 
     let tokensIndexed: { [index: string]: Token } = {};
     for (let token of tokens) {
-      tokensIndexed[token.token] = token;
+      tokensIndexed[token.identifier] = token;
     }
 
     let esdtResult = await this.gatewayService.get(`address/${address}/esdt`);
@@ -468,7 +468,7 @@ export class TokenService {
 
     let tokensIndexed: { [index: string]: Token } = {};
     for (let token of nfts) {
-      tokensIndexed[token.token] = token;
+      tokensIndexed[token.identifier] = token;
     }
 
     let esdtResult = await this.gatewayService.get(`address/${address}/esdt`);
@@ -655,8 +655,8 @@ export class TokenService {
     return nfts.concat(...sfts);
   }
 
-  async getTokenProperties(token: string) {
-    const arg = Buffer.from(token, 'utf8').toString('hex');
+  async getTokenProperties(identifier: string) {
+    const arg = Buffer.from(identifier, 'utf8').toString('hex');
   
     const tokenPropertiesEncoded = await this.vmQueryService.vmQuery(
       this.apiConfigService.getEsdtContractAddress(),
@@ -692,7 +692,7 @@ export class TokenService {
     ] = tokenProperties;
   
     const tokenProps = {
-      token,
+      identifier,
       name,
       type,
       owner: bech32Encode(owner),
