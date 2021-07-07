@@ -51,21 +51,4 @@ export class CacheWarmerService {
       this.isRunningTokenInvalidations = false;
     }
   }
-
-  @Cron('* * * * *')
-  async handleNftInvalidations() {
-    if (this.isRunningNftInvalidations) {
-      return;
-    }
-
-    this.isRunningNftInvalidations = true;
-    let profiler = new PerformanceProfiler('Running NFT invalidations');
-    try {
-      let nfts = await this.tokenService.getAllNftsRaw();
-      await this.cachingService.setCache('allNfts', nfts, oneHour());
-    } finally {
-      profiler.stop();
-      this.isRunningNftInvalidations = false;
-    }
-  }
 }

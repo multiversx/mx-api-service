@@ -534,7 +534,12 @@ export class CachingService {
   }
 
   private async getGenesisTimestampRaw(): Promise<number> {
-    let round = await this.roundService.getRound(0, 1);
-    return round.timestamp;
+    try {
+      let round = await this.roundService.getRound(0, 1);
+      return round.timestamp;
+    } catch (error) {
+      this.logger.error(error);
+      return 0;
+    }
   }
 }
