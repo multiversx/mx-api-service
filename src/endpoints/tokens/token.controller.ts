@@ -1,5 +1,5 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ParseOptionalBoolPipe } from "src/helpers/pipes/parse.optional.bool.pipe";
 import { ParseOptionalEnumPipe } from "src/helpers/pipes/parse.optional.enum.pipe";
 import { NftCollection } from "./entities/nft.collection";
@@ -37,6 +37,12 @@ export class TokenController {
     description: 'The number of tokens available on the blockchain',
   })
   async getTokenCount(): Promise<number> {
+    return await this.tokenService.getTokenCount();
+  }
+
+  @Get("/tokens/c")
+  @ApiExcludeEndpoint()
+  async getTokenCountAlternative(): Promise<number> {
     return await this.tokenService.getTokenCount();
   }
 
@@ -87,6 +93,15 @@ export class TokenController {
     description: 'The number of non-fungible and semi-fungible token collections available on the blockchain',
   })
   async getCollectionCount(
+    @Query('search') search: string | undefined,
+		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+  ): Promise<number> {
+    return await this.tokenService.getNftCollectionCount(search, type);
+  }
+
+  @Get("/collections/c")
+  @ApiExcludeEndpoint()
+  async getCollectionCountAlternative(
     @Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
   ): Promise<number> {
@@ -146,6 +161,12 @@ export class TokenController {
     description: 'The number of non-fungible and semi-fungible tokens available on the blockchain',
   })
   async getNftCount(): Promise<number> {
+    return await this.tokenService.getNftCount();
+  }
+
+  @Get("/nfts/c")
+  @ApiExcludeEndpoint()
+  async getNftCountAlternative(): Promise<number> {
     return await this.tokenService.getNftCount();
   }
 

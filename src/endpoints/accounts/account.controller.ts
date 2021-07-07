@@ -1,5 +1,5 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, Param, ParseIntPipe, Query } from '@nestjs/common';
-import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccountService } from './account.service';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
@@ -49,6 +49,12 @@ export class AccountController {
     description: 'The number of accounts available on the blockchain',
   })
   async getAccountsCount(): Promise<number> {
+    return await this.accountService.getAccountsCount();
+  }
+
+  @Get("/accounts/c")
+  @ApiExcludeEndpoint()
+  async getAccountsCountAlternative(): Promise<number> {
     return await this.accountService.getAccountsCount();
   }
 
@@ -125,6 +131,18 @@ export class AccountController {
     description: 'Account not found'
   })
   async getTokenCount(@Param('address') address: string): Promise<number> {
+    try {
+      return await this.tokenService.getTokenCountForAddress(address);
+    } catch (error) {
+      this.logger.error(error);
+      // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      return 0;
+    }
+  }
+
+  @Get("/accounts/:address/tokens/c")
+  @ApiExcludeEndpoint()
+  async getTokenCountAlternative(@Param('address') address: string): Promise<number> {
     try {
       return await this.tokenService.getTokenCountForAddress(address);
     } catch (error) {
@@ -214,6 +232,25 @@ export class AccountController {
     description: 'Account not found'
   })
   async getNftCount(
+    @Param('address') address: string,
+		@Query('search') search: string | undefined,
+		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+		@Query('collection') collection: string | undefined,
+		@Query('tags') tags: string | undefined,
+		@Query('creator') creator: string | undefined,
+		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
+    ): Promise<number> {
+    try {
+      return await this.tokenService.getNftCountForAddress(address, { search, type, collection, tags, creator, hasUris });
+    } catch (error) {
+      this.logger.error(error);
+      return 0;
+    }
+  }
+
+  @Get("/accounts/:address/nfts/c")
+  @ApiExcludeEndpoint()
+  async getNftCountAlternative(
     @Param('address') address: string,
 		@Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
