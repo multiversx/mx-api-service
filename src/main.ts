@@ -19,6 +19,7 @@ import { Logger } from '@nestjs/common';
 import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import axios from 'axios';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
@@ -80,6 +81,9 @@ async function bootstrap() {
     let processorApp = await NestFactory.create(CacheWarmerModule);
     await processorApp.listen(6001);
   }
+
+  let res = await axios.get('http://localhost:4001/hello');
+  console.log({data:res.data});
 
   let logger = new Logger('Bootstrapper');
 

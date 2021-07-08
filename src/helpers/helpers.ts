@@ -81,8 +81,12 @@ function isAddressOfMetachain(pubKey: Buffer) {
   return false;
 };
 
+export function oneSecond(): number {
+  return 1;
+}
+
 export function oneMinute(): number {
-  return 60;
+  return oneSecond() * 60;
 }
 
 export function oneHour(): number { 
