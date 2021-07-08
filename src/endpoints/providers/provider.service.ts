@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { bech32Encode, oneHour, oneMinute, oneWeek } from "src/helpers/helpers";
@@ -14,6 +14,8 @@ import { ApiService } from "src/helpers/api.service";
 
 @Injectable()
 export class ProviderService {
+  private readonly logger: Logger
+
   constructor(
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
@@ -22,7 +24,9 @@ export class ProviderService {
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
     private readonly apiService: ApiService
-  ) {}
+  ) {
+    this.logger = new Logger(ProviderService.name);
+  }
 
   async getProvider(address: string): Promise<Provider | undefined> {
     let query = new ProviderQuery();
@@ -277,11 +281,17 @@ export class ProviderService {
     );
   
     if (response) {
-      const [name, website, identity] = response.map((base64) =>
-        Buffer.from(base64, 'base64').toString().trim().toLowerCase()
-      );
-  
-      return { name, website, identity };
+      try {
+        const [name, website, identity] = response.map((base64) =>
+          Buffer.from(base64, 'base64').toString().trim().toLowerCase()
+        );
+    
+        return { name, website, identity };
+      } catch (error) {
+        this.logger.error(`Could not get provider metadata for address '${address}'`);
+        this.logger.error(error);
+        return { name: null, website: null, identity: null };
+      }
     }
   
     return { name: null, website: null, identity: null };
