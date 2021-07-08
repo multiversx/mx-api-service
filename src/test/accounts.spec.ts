@@ -3,7 +3,6 @@ import { PublicAppModule } from 'src/public.app.module';
 import { AccountController } from 'src/endpoints/accounts/account.controller';
 import { Account } from 'src/endpoints/accounts/entities/account';
 import { AccountDetailed } from 'src/endpoints/accounts/entities/account.detailed';
-import { AccountDeferred } from 'src/endpoints/accounts/entities/account.deferred';
 import { AccountDelegationLegacy } from 'src/endpoints/delegation.legacy/entities/account.delegation.legacy';
 
 expect.extend({
@@ -53,16 +52,15 @@ describe('Account Controller', () => {
             }
         });
 
-        it(`should return a list with 100 accounts`, async () => {
-            const accountsList = await accountController.getAccounts(0, 100);
+        it(`should return a list with 50 accounts`, async () => {
+            const accountsList = await accountController.getAccounts(0, 50);
             expect(accountsList).toBeInstanceOf(Array);
-            expect(accountsList).toHaveLength(100);
+            expect(accountsList).toHaveLength(50);
 
             for (let account of accountsList) {
                 expect(account).toHaveStructure(Object.keys(new Account()));
             }
         });
-    
     });
 
     describe('Accounts count', () => {
@@ -71,7 +69,6 @@ describe('Account Controller', () => {
 
             expect(accountsCount).toBeInstanceOf(Number);
         });
-    
     });
 
     describe('Specific account', () => {
@@ -87,21 +84,7 @@ describe('Account Controller', () => {
             it(`should throw 'Account not found' error`, async () => {
                 await expect(accountController.getAccountDetails(accountAddress + 'a')).rejects.toThrowError('Account not found');
             });
-        })
-        
-        describe('Account Deferred', () => {
-            it(`should return a deferred account with account address`, async () => {
-                const accountDeferred = await accountController.getAccountDeferred(accountAddress);
-    
-                for (let deffered of accountDeferred) {
-                    expect(deffered).toHaveStructure(Object.keys(new AccountDeferred()));
-                }
-            });
-    
-            it(`should throw 'Account not found' error`, async () => {
-                await expect(accountController.getAccountDeferred(accountAddress + 'a')).rejects.toThrowError('Account not found');
-            });
-        })
+        });
 
         describe('Account Delegation Legacy', () => {
             it(`should return a delegation legacy for an account with address`, async () => {
@@ -114,7 +97,7 @@ describe('Account Controller', () => {
             it(`should throw 'Account not found' error`, async () => {
                 await expect(accountController.getAccountDelegationLegacy(accountAddress + 'a')).rejects.toThrowError('Account not found');
             });
-        })
+        });
 
         //TIMEOUT
         // describe('Account Tokens', () => {
