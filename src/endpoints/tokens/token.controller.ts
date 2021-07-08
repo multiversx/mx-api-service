@@ -3,7 +3,7 @@ import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swag
 import { ParseOptionalBoolPipe } from "src/helpers/pipes/parse.optional.bool.pipe";
 import { ParseOptionalEnumPipe } from "src/helpers/pipes/parse.optional.enum.pipe";
 import { NftCollection } from "./entities/nft.collection";
-import { NftElastic } from "./entities/nft.elastic";
+import { Nft } from "./entities/nft";
 import { NftType } from "./entities/nft.type";
 import { TokenDetailed } from "./entities/token.detailed";
 import { TokenService } from "./token.service";
@@ -131,7 +131,7 @@ export class TokenController {
   @ApiResponse({
     status: 200,
     description: 'List non-fungible and semi-fungible tokens',
-    type: NftElastic,
+    type: Nft,
     isArray: true
   })
 	@ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
@@ -151,7 +151,7 @@ export class TokenController {
 		@Query('tags') tags: string | undefined,
 		@Query('creator') creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
-  ): Promise<NftElastic[]> {
+  ): Promise<Nft[]> {
     return await this.tokenService.getNfts(from, size, { search, type, collection, tags, creator, hasUris });
   }
 
@@ -174,13 +174,13 @@ export class TokenController {
   @ApiResponse({
     status: 200,
     description: 'Non-fungible / semi-fungible token details',
-    type: NftElastic,
+    type: Nft,
   })
   @ApiResponse({
     status: 404,
     description: 'Token not found'
   })
-  async getNft(@Param('identifier') identifier: string): Promise<NftElastic> {
+  async getNft(@Param('identifier') identifier: string): Promise<Nft> {
     let token = await this.tokenService.getSingleNft(identifier);
     if (token === undefined) {
       throw new HttpException('NFT not found', HttpStatus.NOT_FOUND);
