@@ -1,27 +1,36 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { NftType } from "./nft.type";
 
-export class NftElastic {
-  @ApiProperty()
-  identifier: string = '';
-
+export class TokenProperties {
   @ApiProperty()
   token: string = '';
-
-  @ApiProperty()
-  attributes: string = '';
-
-  @ApiProperty()
-  nonce: number = 0;
-
-  @ApiProperty()
-  type: NftType = NftType.NonFungibleESDT;
 
   @ApiProperty()
   name: string = '';
 
   @ApiProperty()
-  creator: string = '';
+  type: NftType = NftType.NonFungibleESDT;
+
+  @ApiProperty()
+  owner: string = '';
+
+  @ApiProperty()
+  minted: string = '';
+
+  @ApiProperty()
+  burnt: string = '';
+
+  @ApiProperty()
+  wiped: string = '';
+
+  @ApiProperty()
+  decimals: number = 0;
+
+  @ApiProperty()
+  isPaused: boolean = false;
+
+  @ApiProperty()
+  tags: string[] = [];
 
   @ApiProperty()
   royalties: number = 0;
@@ -32,9 +41,6 @@ export class NftElastic {
   @ApiProperty()
   url: string = '';
 
-  @ApiProperty()
-  tags: string[] = [];
-  
   @ApiProperty()
   canUpgrade: boolean = false;
 

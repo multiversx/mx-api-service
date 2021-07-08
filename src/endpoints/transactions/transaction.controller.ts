@@ -1,5 +1,5 @@
 import { Body, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
-import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { QueryCondition } from 'src/helpers/entities/query.condition';
 import { ParseOptionalEnumPipe } from 'src/helpers/pipes/parse.optional.enum.pipe';
 import { ParseOptionalIntPipe } from 'src/helpers/pipes/parse.optional.int.pipe';
@@ -98,7 +98,37 @@ export class TransactionController {
       after,
       from, 
       size
-  });  
+    });  
+  }
+
+  @Get("/transactions/c")
+  @ApiExcludeEndpoint()
+  getTransactionCountAlternative(
+    @Query('sender') sender: string | undefined, 
+    @Query('receiver') receiver: string | undefined, 
+    @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
+    @Query('miniBlockHash') miniBlockHash: string | undefined, 
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
+    @Query('condition', new ParseOptionalEnumPipe(QueryCondition)) condition: QueryCondition | undefined, 
+    @Query('before', ParseOptionalIntPipe) before: number | undefined, 
+    @Query('after', ParseOptionalIntPipe) after: number | undefined, 
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number
+  ): Promise<number> {
+    return this.transactionService.getTransactionCount({
+      sender, 
+      receiver, 
+      senderShard, 
+      receiverShard, 
+      miniBlockHash,
+      status,
+      condition,
+      before,
+      after,
+      from, 
+      size
+    });  
   }
 
   @Get('/transactions/:txHash')

@@ -5,6 +5,15 @@ import { ConfigService } from "@nestjs/config";
 export class ApiConfigService {
   constructor(private readonly configService: ConfigService) {}
 
+  getApiUrls(): string[] {
+    const apiUrls = this.configService.get<string[]>('urls.api');
+    if (!apiUrls) {
+      throw new Error('No API urls present');
+    }
+
+    return apiUrls;
+  }
+
   getGatewayUrl(): string {
     const gatewayUrls = this.configService.get<string[]>('urls.gateway');
     if (!gatewayUrls) {
@@ -127,6 +136,24 @@ export class ApiConfigService {
     }
 
     return providerUrl;
+  }
+
+  getDataLatestCompleteUrl(): string {
+    let dataLatestCompleteUrl = this.configService.get<string>('urls.dataLatestCompleteUrl');
+    if (!dataLatestCompleteUrl) {
+      throw new Error('No dataLatestComplete url present');
+    }
+
+    return dataLatestCompleteUrl;
+  }
+
+  getDataLatestUrl(): string {
+    let dataLatestUrl = this.configService.get<string>('urls.dataLatestUrl');
+    if (!dataLatestUrl) {
+      throw new Error('No dataLatest url present');
+    }
+
+    return dataLatestUrl;
   }
 
   getCsrfSecret(): string {

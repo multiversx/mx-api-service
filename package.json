@@ -39,6 +39,7 @@
     "@nestjs/websockets": "^7.6.15",
     "@types/cache-manager": "^3.4.0",
     "@types/request-ip": "0.0.35",
+    "agentkeepalive": "^4.1.4",
     "axios": "^0.21.1",
     "cache-manager": "^3.4.3",
     "csrf": "^3.1.0",

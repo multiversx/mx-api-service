@@ -1,5 +1,5 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { QueryCondition } from "src/helpers/entities/query.condition";
 import { ParseOptionalEnumPipe } from "src/helpers/pipes/parse.optional.enum.pipe";
 import { ParseOptionalIntPipe } from "src/helpers/pipes/parse.optional.int.pipe";
@@ -41,6 +41,12 @@ export class RoundController {
       description: 'The number of rounds available on the blockchain',
     })
     getRoundCount(): Promise<number> {
+      return this.roundService.getRoundCount();
+    }
+
+    @Get("/rounds/c")
+    @ApiExcludeEndpoint()
+    getRoundCountAlternative(): Promise<number> {
       return this.roundService.getRoundCount();
     }
 
