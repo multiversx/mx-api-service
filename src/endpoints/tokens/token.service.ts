@@ -141,6 +141,11 @@ export class TokenService {
     }
 
     let nft: NftDetailed = mergeObjects(new NftDetailed(), nfts[0]);
+
+    if (nft.identifier.toLowerCase() !== identifier.toLowerCase()) {
+      return undefined;
+    }
+
     let accountsEsdt = await this.elasticService.getAccountEsdtByIdentifier(nft.identifier);
     if (nft.type === NftType.NonFungibleESDT) {
       nft.owner = accountsEsdt[0].address;
@@ -165,6 +170,7 @@ export class TokenService {
 
   async getNftsInternal(from: number, size: number, filter: NftFilter, identifier: string | undefined): Promise<Nft[]> {
     let elasticNfts = await this.elasticService.getTokens(from, size, filter, identifier);
+
     let nfts: Nft[] = [];
 
     for (let elasticNft of elasticNfts) {
@@ -175,34 +181,33 @@ export class TokenService {
       nft.nonce = parseInt('0x' + nft.identifier.split('-')[2]);
       nft.timestamp = elasticNft.timestamp;
 
-      // @ts-ignore
-      delete nft.attributes;
-      
-      let metadata = elasticNft.metaData;
-      if (metadata) {
-        nft.name = metadata.name;
-        nft.creator = metadata.creator;
-        nft.royalties = metadata.royalties / 100; // 10.000 => 100%
-        nft.uris = metadata.uris.filter((x: any) => x);
+      let elasticNftData = elasticNft.data;
+      if (elasticNftData) {
+        nft.name = elasticNftData.name;
+        nft.creator = elasticNftData.creator;
+        nft.royalties = elasticNftData.royalties / 100; // 10.000 => 100%
+        nft.attributes = elasticNftData.attributes;
 
-        if (metadata.uris && metadata.uris.length > 0) {
+        if (elasticNftData.uris) {
+          nft.uris = elasticNftData.uris;
+        }
+
+        if (elasticNftData.tags) {
+          nft.tags = elasticNftData.tags;
+        }
+
+        if (nft.uris && nft.uris.length > 0) {
           try {
-            nft.url = base64Decode(metadata.uris[0]);
+            nft.url = base64Decode(nft.uris[0]);
           } catch (error) {
             this.logger.error(error);
           }
         }
 
-        if (metadata.attributes) {
-          if (metadata.attributes.tags) {
-            nft.tags = metadata.attributes.tags;
-          }
-
-          if (metadata.attributes.description && metadata.attributes.description.length > 0) {
-            nft.metadata = await this.getExtendedAttributesFromDescription(metadata.attributes.description[0]);
-          } else {
-            nft.metadata = undefined;
-          }
+        if (elasticNftData.metadata) {
+          nft.metadata = await this.getExtendedAttributesFromDescription(elasticNftData.metadata);
+        } else {
+          nft.metadata = undefined;
         }
       }
 
