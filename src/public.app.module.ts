@@ -50,7 +50,7 @@ import { ProxyController } from './endpoints/proxy/proxy.controller';
 import { TokenAssetService } from './helpers/token.asset.service';
 import { HistoryController } from './endpoints/history/history.controller';
 import { HistoryService } from './endpoints/history/history.service';
-import { DataService } from './helpers/data.service';
+import { DataApiService } from './helpers/data.api.service';
 const DailyRotateFile = require('winston-daily-rotate-file');
 
 @Module({
@@ -89,7 +89,7 @@ const DailyRotateFile = require('winston-daily-rotate-file');
     CachingService, KeybaseService, ProviderService,
     StakeService, LoggingInterceptor, ApiService, ProfilerService, AccessService, DelegationLegacyService,
     DelegationService, CacheConfigService, CachingInterceptor, ShardService, MetricsService, IdentitiesService,
-    TokenAssetService, HistoryService, DataService
+    TokenAssetService, HistoryService, DataApiService
   ],
   exports: [
     ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService,
