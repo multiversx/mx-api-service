@@ -3,11 +3,10 @@ import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Data } from "./entities/data";
 import { HistoryService } from "./history.service";
 
-
 @Controller()
-@ApiTags('historical')
+@ApiTags('history')
 export class HistoryController {
-	constructor(private readonly historicalService: HistoryService) {}
+	constructor(private readonly historyService: HistoryService) {}
 
 	@Get("/history/price")
 	@ApiResponse({
@@ -17,7 +16,7 @@ export class HistoryController {
 		isArray: true
 	})
 	async getPrices(): Promise<Data[]> {
-		return await this.historicalService.getPrices();
+		return await this.historyService.getPrices();
 	}
 
     @Get("/history/market_cap")
@@ -28,7 +27,7 @@ export class HistoryController {
 		isArray: true
 	})
 	async getMarketCap(): Promise<Data[]> {
-		return await this.historicalService.getMarketCap();
+		return await this.historyService.getMarketCap();
 	}
 
     @Get("/history/volume_24h")
@@ -39,7 +38,7 @@ export class HistoryController {
 		isArray: true
 	})
 	async getVolume24h(): Promise<Data[]> {
-		return await this.historicalService.getVolume24h();
+		return await this.historyService.getVolume24h();
 	}
 
     @Get("/history/staking/value")
@@ -50,7 +49,7 @@ export class HistoryController {
 		isArray: true
 	})
 	async getStakingValue(): Promise<Data[]> {
-		return await this.historicalService.getStakingValue();
+		return await this.historyService.getStakingValue();
 	}
 
     @Get("/history/staking/users")
@@ -61,7 +60,7 @@ export class HistoryController {
 		isArray: true
 	})
 	async getStakingUsers(): Promise<number> {
-		return await this.historicalService.getStakingUsers();
+		return await this.historyService.getStakingUsers();
 	}
 
     @Get("/history/transactions/count_24h")
@@ -72,7 +71,7 @@ export class HistoryController {
 		isArray: true
 	})
 	async getTransactionsCount24h(): Promise<Data[]> {
-		return await this.historicalService.getTransactionsCount24h();
+		return await this.historyService.getTransactionsCount24h();
 	}
 
 	@Get("/history/accounts/count")
@@ -83,6 +82,6 @@ export class HistoryController {
 		isArray: true
 	})
 	async getAccountsCount(): Promise<Data[]> {
-		return await this.historicalService.getAccountsCount();
+		return await this.historyService.getAccountsCount();
 	}
 }

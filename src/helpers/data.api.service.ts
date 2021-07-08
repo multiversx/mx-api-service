@@ -3,15 +3,13 @@ import { Data } from "src/endpoints/history/entities/data";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
 
-
 @Injectable()
-export class DataService {
+export class DataApiService {
     private readonly quotesHistoricalUrl: string;
     private readonly stakingHistoricalUrl: string;
     private readonly stakingUsersHistoricalUrl: string;
     private readonly transactionsHistoricalUrl: string;
     private readonly accountsHistoricalUrl: string
-
 
     constructor(
         private readonly apiConfigService: ApiConfigService,
