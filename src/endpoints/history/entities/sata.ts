@@ -6,5 +6,4 @@ export class Data {
 
   @ApiProperty()
   value: number = 0;
-
 }
