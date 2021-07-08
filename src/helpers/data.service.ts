@@ -10,6 +10,7 @@ export class DataService {
     private readonly stakingHistoricalUrl: string;
     private readonly stakingUsersHistoricalUrl: string;
     private readonly transactionsHistoricalUrl: string;
+    private readonly accountsHistoricalUrl: string
 
 
     constructor(
@@ -20,6 +21,7 @@ export class DataService {
         this.stakingHistoricalUrl = `${this.apiConfigService.getDataLatestCompleteUrl()}/stakinghistorical/total`;
         this.stakingUsersHistoricalUrl = `${this.apiConfigService.getDataLatestUrl()}/stakinghistorical/total`;
         this.transactionsHistoricalUrl = `${this.apiConfigService.getDataLatestCompleteUrl()}/transactionshistorical/transactions`;
+        this.accountsHistoricalUrl = `${this.apiConfigService.getDataLatestCompleteUrl()}/accountshistorical/accounts`;
     };
     
     async getQuotesHistorical(quoteUrl: string): Promise<Data[]> {
@@ -42,6 +44,13 @@ export class DataService {
 
     async getTransactionsHistorical(transactionsUrl: string): Promise<Data[]> {
         const { data } = await this.apiService.get(`${this.transactionsHistoricalUrl}/${transactionsUrl}`);
+
+        return data;
+    }
+
+
+    async getAccountsHistorical(accountsUrl: string): Promise<Data[]> {
+        const { data } = await this.apiService.get(`${this.accountsHistoricalUrl}/${accountsUrl}`);
 
         return data;
     }

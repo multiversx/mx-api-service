@@ -58,4 +58,12 @@ export class HistoryService {
         oneDay()
       );
   }
+
+  async getAccountsCount(): Promise<Data[]> {
+    return await this.cachingService.getOrSetCache(
+        'accountsHistorical:count',
+        async () => await this.dataService.getAccountsHistorical('count'),
+        oneDay()
+      );
+  }
 }

@@ -74,4 +74,15 @@ export class HistoryController {
 	async getTransactionsCount24h(): Promise<Data[]> {
 		return await this.historicalService.getTransactionsCount24h();
 	}
+
+	@Get("/history/accounts/count")
+	@ApiResponse({
+		status: 200,
+		description: 'The history of accounts count in 24h for EGLD',
+		type: Data,
+		isArray: true
+	})
+	async getAccountsCount(): Promise<Data[]> {
+		return await this.historicalService.getAccountsCount();
+	}
 }
