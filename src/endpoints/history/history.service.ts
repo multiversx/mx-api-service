@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { CachingService } from "src/helpers/caching.service";
 import { DataService } from "src/helpers/data.service";
 import { oneDay } from "src/helpers/helpers";
-import { Data } from "./entities/Data";
+import { Data } from "./entities/data";
 
 @Injectable()
 export class HistoryService {

@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Data } from "src/endpoints/history/entities/Data";
+import { Data } from "src/endpoints/history/entities/data";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
 

@@ -1,6 +1,6 @@
 import { Controller,  Get } from "@nestjs/common";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
-import { Data } from "./entities/Data";
+import { Data } from "./entities/data";
 import { HistoryService } from "./history.service";
 
 
