@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { CachingService } from "src/helpers/caching.service";
 import { DataApiService } from "src/helpers/data.api.service";
-import { oneDay } from "src/helpers/helpers";
+import { oneDay, oneMinute } from "src/helpers/helpers";
 import { Data } from "./entities/data";
 
 @Injectable()
@@ -19,11 +19,27 @@ export class HistoryService {
     );
   }
 
+  async getLatestPrice(): Promise<number> {
+    return await this.cachingService.getOrSetCache(
+      'quotesHistorical:price:latest',
+      async () => await this.dataApiService.getQuotesHistoricalLatest('price'),
+      oneMinute()
+    );
+  }
+
   async getMarketCap(): Promise<Data[]> {
     return await this.cachingService.getOrSetCache(
       'quotesHistorical:market_cap',
       async () => await this.dataApiService.getQuotesHistorical('market_cap'),
       oneDay()
+    );
+  }
+
+  async getLatestMarketCap(): Promise<number> {
+    return await this.cachingService.getOrSetCache(
+      'quotesHistorical:market_cap:latest',
+      async () => await this.dataApiService.getQuotesHistoricalLatest('market_cap'),
+      oneMinute()
     );
   }
 

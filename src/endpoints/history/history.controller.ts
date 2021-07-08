@@ -19,7 +19,18 @@ export class HistoryController {
 		return await this.historyService.getPrices();
 	}
 
-    @Get("/history/market_cap")
+	@Get("/history/latest/price")
+	@ApiResponse({
+		status: 200,
+		description: 'The current price for EGLD',
+		type: Number,
+		isArray: true
+	})
+	async getLatestPrice(): Promise<Number> {
+		return await this.historyService.getLatestPrice();
+	}
+
+  @Get("/history/market_cap")
 	@ApiResponse({
 		status: 200,
 		description: 'The history of market cap on for EGLD',
@@ -30,7 +41,19 @@ export class HistoryController {
 		return await this.historyService.getMarketCap();
 	}
 
-    @Get("/history/volume_24h")
+
+  @Get("/history/latest/market_cap")
+	@ApiResponse({
+		status: 200,
+		description: 'The current market cap for EGLD',
+		type: Number,
+		isArray: true
+	})
+	async getLatestMarketCap(): Promise<Number> {
+		return await this.historyService.getLatestMarketCap();
+	}
+
+  @Get("/history/volume_24h")
 	@ApiResponse({
 		status: 200,
 		description: 'The history of 24h volume for EGLD',
@@ -41,7 +64,7 @@ export class HistoryController {
 		return await this.historyService.getVolume24h();
 	}
 
-    @Get("/history/staking/value")
+  @Get("/history/staking/value")
 	@ApiResponse({
 		status: 200,
 		description: 'The history of staking value for EGLD',
@@ -52,7 +75,7 @@ export class HistoryController {
 		return await this.historyService.getStakingValue();
 	}
 
-    @Get("/history/staking/users")
+  @Get("/history/staking/users")
 	@ApiResponse({
 		status: 200,
 		description: 'The history of number of staking users for EGLD',
@@ -63,7 +86,7 @@ export class HistoryController {
 		return await this.historyService.getStakingUsers();
 	}
 
-    @Get("/history/transactions/count_24h")
+  @Get("/history/transactions/count_24h")
 	@ApiResponse({
 		status: 200,
 		description: 'The history of transactions count in 24h for EGLD',

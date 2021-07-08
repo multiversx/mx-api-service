@@ -6,6 +6,7 @@ import { ApiService } from "./api.service";
 @Injectable()
 export class DataApiService {
   private readonly quotesHistoricalUrl: string;
+  private readonly quotesHistoricalLatestUrl: string;
   private readonly stakingHistoricalUrl: string;
   private readonly stakingUsersHistoricalUrl: string;
   private readonly transactionsHistoricalUrl: string;
@@ -16,6 +17,7 @@ export class DataApiService {
     private readonly apiService: ApiService,
   ) {
     this.quotesHistoricalUrl = `${this.apiConfigService.getDataLatestCompleteUrl()}/quoteshistorical/egld`;
+    this.quotesHistoricalLatestUrl = `${this.apiConfigService.getDataLatestUrl()}/quoteshistorical/egld`;
     this.stakingHistoricalUrl = `${this.apiConfigService.getDataLatestCompleteUrl()}/stakinghistorical/total`;
     this.stakingUsersHistoricalUrl = `${this.apiConfigService.getDataLatestUrl()}/stakinghistorical/total`;
     this.transactionsHistoricalUrl = `${this.apiConfigService.getDataLatestCompleteUrl()}/transactionshistorical/transactions`;
@@ -24,6 +26,12 @@ export class DataApiService {
   
   async getQuotesHistorical(quoteUrl: string): Promise<Data[]> {
     const { data } = await this.apiService.get(`${this.quotesHistoricalUrl}/${quoteUrl}`);
+
+    return data;
+  }
+
+  async getQuotesHistoricalLatest(quoteUrl: string): Promise<number> {
+    const { data } = await this.apiService.get(`${this.quotesHistoricalLatestUrl}/${quoteUrl}`);
 
     return data;
   }
