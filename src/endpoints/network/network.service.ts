@@ -60,7 +60,7 @@ export class NetworkService {
   }
 
   private async getEconomicsRaw(): Promise<Economics> {
-    const locked = 2890000;
+    const locked = 2660000;
     const [
       { account: { balance } },
       { metrics: { erd_total_supply } },
