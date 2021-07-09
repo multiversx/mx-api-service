@@ -105,10 +105,19 @@ export function isSmartContractAddress(address: string): boolean {
   return address.includes('qqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqq');
 }
 
+export function denominate(value: BigInt): number {
+  return Number(value.valueOf() / BigInt(Math.pow(10, 18)));
+}
+
+export function denominateString(value: string): number {
+  return denominate(BigInt(value));
+}
+
 declare global {
   interface Array<T> {
     groupBy(predicate: (item: T) => any): any;
     selectMany(predicate: (item: T) => T[]): T[];
+    firstOrUndefined(predicate: (item: T) => boolean): T | undefined;
   }
 }
 
@@ -138,6 +147,16 @@ Array.prototype.selectMany = function(predicate: Function) {
   }
 
   return result;
+};
+
+Array.prototype.firstOrUndefined = function(predicate: Function) {
+  let result = this.filter(x => predicate(x));
+
+  if (result.length > 0) {
+    return result[0];
+  }
+
+  return undefined;
 };
 
 export function getDirectories(source: string) {
