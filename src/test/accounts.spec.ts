@@ -36,6 +36,12 @@ describe('Account Controller', () => {
         }).compile();
   
         accountController = moduleRef.get<AccountController>(AccountController);
+
+        let accounts = await accountController.getAccounts(0, 1);
+        expect(accounts).toHaveLength(1);
+
+        let account = accounts[0];
+        accountAddress = account.address;
     });
 
     describe('Accounts list', () => {
@@ -47,7 +53,6 @@ describe('Account Controller', () => {
 
             for (let account of accountsList) {
                 expect(account).toHaveStructure(Object.keys(new Account()));
-                accountAddress = account.address;
             }
         });
         it(`should return a list with 50 accounts`, async () => {
