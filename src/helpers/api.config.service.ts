@@ -128,7 +128,6 @@ export class ApiConfigService {
     return this.configService.get<number>('keepAliveTimeout.upstream') ?? 60000;
   }
 
-
   getProvidersUrl(): string {
     let providerUrl = this.configService.get<string>('urls.providers');
     if (!providerUrl) {
@@ -217,5 +216,14 @@ export class ApiConfigService {
     }
 
     return metaChainShardId;
+  }
+
+  getUseLegacyElastic(): boolean {
+    let useLegacyElastic = this.configService.get<boolean>('useLegacyElastic');
+    if (useLegacyElastic === undefined) {
+      return false;
+    }
+
+    return useLegacyElastic;
   }
 }
