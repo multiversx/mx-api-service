@@ -54,7 +54,7 @@ export class AccountService {
         account: { nonce, balance, code, codeHash, rootHash },
       },
     ] = await Promise.all([
-      this.elasticService.getCount('transactions', query),
+      this.elasticService.getCount('transactions', query, 'should'),
       this.gatewayService.get(`address/${address}`)
     ]);
 
