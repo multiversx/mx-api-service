@@ -65,20 +65,21 @@ export class DelegationController {
         let totalNodes = provider.numNodes;
         let queuedNodes = groupedQueuedNodesWithIdentity[identity].length;
 
-        let lockedAmount = denominateString(provider.locked);
+        let topUpAmount = denominateString(provider.topUp);
         let queueRatio = queuedNodes / ( queuedNodes + totalNodes );
-        let queuedAmount = lockedAmount * queueRatio;
+        let queuedAmount = topUpAmount * queueRatio;
 
-        console.log({identity, totalNodes, queueRatio, queuedNodes, lockedAmount, queuedAmount});
+        console.log({identity, totalNodes, queueRatio, queuedNodes, lockedAmount: topUpAmount, queuedAmount});
 
-        realStaked = realStaked - queuedAmount;
+        realStaked = realStaked - queuedAmount - (queuedNodes * 2500);
       }
     }
 
     let firstYear = 1952123.4;
+    let apr = firstYear / realStaked;
 
-    console.log({totalStaked, realStaked, firstYear, apr: firstYear / realStaked});
+    console.log({totalStaked, realStaked, firstYear, apr });
 
-    return 4;
+    return apr;
   }
 }
