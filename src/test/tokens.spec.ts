@@ -54,17 +54,16 @@ describe('Token Controller', () => {
         }
       });
 
-      it(`should return a list with 50 tokens`, async () => {
-        const tokensList = await tokenController.getTokens(0, 50, undefined);
+      it(`should return a list with 10 tokens`, async () => {
+        const tokensList = await tokenController.getTokens(0, 10, undefined);
         expect(tokensList).toBeInstanceOf(Array);
-        expect(tokensList).toHaveLength(50);
+        expect(tokensList).toHaveLength(10);
 
         for (let token of tokensList) {
           expect(token).toHaveStructure(Object.keys(new TokenDetailed()));
           tokenName = token.name;
           tokenIdentifier = token.identifier;
         }
-
       });
     })
 
