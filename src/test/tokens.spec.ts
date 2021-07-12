@@ -62,14 +62,14 @@ describe('Token Controller', () => {
         for (let token of tokensList) {
           expect(token).toHaveStructure(Object.keys(new TokenDetailed()));
           tokenName = token.name;
-          tokenIdentifier = token.token;
+          tokenIdentifier = token.identifier;
         }
 
       });
     })
 
     describe('Tokens filters', () => {
-      it(`should return a list of transactions between two accounts`, async () => {
+      it(`should return a list of tokens for a collection`, async () => {
         const tokensList = await tokenController.getTokens(0, 50, tokenName);
         expect(tokensList).toBeInstanceOf(Array);
 
@@ -93,7 +93,7 @@ describe('Token Controller', () => {
     it(`should return a token for a specific identifier`, async () => {
       const token = await tokenController.getToken(tokenIdentifier);
 
-      expect(token.token).toBe(tokenIdentifier);
+      expect(token.identifier).toBe(tokenIdentifier);
       expect(token.name).toBe(tokenName)
     });
 
@@ -106,7 +106,7 @@ describe('Token Controller', () => {
   describe('Nfts list', () => {
     describe('Nfts pagination', () => {
       it(`should return a list with 25 nfts`, async () => {
-        const nftsList = await tokenController.getNfts(0, 25, undefined, undefined, undefined, undefined, undefined);
+        const nftsList = await tokenController.getNfts(0, 25, undefined, undefined, undefined, undefined, undefined, undefined);
 
         expect(nftsList).toBeInstanceOf(Array);
         expect(nftsList).toHaveLength(25);
@@ -117,7 +117,7 @@ describe('Token Controller', () => {
       });
 
       it(`should return a list with 50 nfts`, async () => {
-        const nftsList = await tokenController.getNfts(0, 50, undefined, undefined, undefined, undefined, undefined);
+        const nftsList = await tokenController.getNfts(0, 50, undefined, undefined, undefined, undefined, undefined, undefined);
         expect(nftsList).toBeInstanceOf(Array);
         expect(nftsList).toHaveLength(50);
 
@@ -132,18 +132,18 @@ describe('Token Controller', () => {
 
     describe('Nfts filters', () => {
       it(`should return a list with all nfts within a collection`, async () => {
-        const nftsList = await tokenController.getNfts(0, 25, undefined, undefined, tokenIdentifier, undefined, undefined);
+        const nftsList = await tokenController.getNfts(0, 25, undefined, undefined, tokenIdentifier, undefined, undefined, undefined);
         expect(nftsList).toBeInstanceOf(Array);
 
         for (let nft of nftsList) {
           expect(nft).toHaveStructure(Object.keys(new NftElastic()));
-          expect(nft.token).toBe(tokenIdentifier); 
+          expect(nft.identifier).toBe(tokenIdentifier); 
         }
 
       });
 
       it(`should return a list with SemiFungibleESDT tokens`, async () => {
-          const nftsList = await tokenController.getNfts(0, 25, undefined, NftType.SemiFungibleESDT, undefined, undefined, undefined);
+          const nftsList = await tokenController.getNfts(0, 25, undefined, NftType.SemiFungibleESDT, undefined, undefined, undefined, undefined);
           expect(nftsList).toBeInstanceOf(Array);
 
           for (let nft of nftsList) {
@@ -153,7 +153,7 @@ describe('Token Controller', () => {
       });
 
       it(`should return a list with all nfts of an address`, async () => {
-        const nftsList = await tokenController.getNfts(0, 25, undefined, undefined, undefined, undefined, nftCreator);
+        const nftsList = await tokenController.getNfts(0, 25, undefined, undefined, undefined, undefined, nftCreator, undefined);
         expect(nftsList).toBeInstanceOf(Array);
 
         for (let nft of nftsList) {
