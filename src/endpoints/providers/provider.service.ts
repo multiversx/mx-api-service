@@ -99,6 +99,8 @@ export class ProviderService {
       delete provider.owner;
     });
 
+    providers = providers.filter(provider => provider.numNodes > 0 && provider.stake !== '0');
+
     return providers;
   }
 

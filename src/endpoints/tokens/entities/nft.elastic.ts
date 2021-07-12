@@ -6,7 +6,10 @@ export class NftElastic {
   identifier: string = '';
 
   @ApiProperty()
-  token: string = '';
+  collection: string = '';
+
+  @ApiProperty()
+  timestamp: number = 0;
 
   @ApiProperty()
   attributes: string = '';
@@ -34,34 +37,7 @@ export class NftElastic {
 
   @ApiProperty()
   tags: string[] = [];
-  
-  @ApiProperty()
-  canUpgrade: boolean = false;
 
   @ApiProperty()
-  canMint: boolean = false;
-
-  @ApiProperty()
-  canBurn: boolean = false;
-
-  @ApiProperty()
-  canChangeOwner: boolean = false;
-
-  @ApiProperty()
-  canPause: boolean = false;
-
-  @ApiProperty()
-  canFreeze: boolean = false;
-  
-  @ApiProperty()
-  canWipe: boolean = false;
-  
-  @ApiProperty()
-  canAddSpecialRoles: boolean = false;
-  
-  @ApiProperty()
-  canTransferNFTCreateRole: boolean = false;
-  
-  @ApiProperty()
-  NFTCreateStopped: boolean = false;
+  metadata: Object | undefined = undefined;
 }
