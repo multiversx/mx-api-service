@@ -29,7 +29,6 @@ expect.extend({
 describe('Account Controller', () => {
     let accountController: AccountController;
     let accountAddress: string;
-    // let accountTokenIdentifier: string;
   
     beforeEach(async () => {
       const moduleRef = await Test.createTestingModule({
@@ -95,5 +94,8 @@ describe('Account Controller', () => {
             it(`should throw 'Account not found' error`, async () => {
                 await expect(accountController.getAccountDelegationLegacy(accountAddress + 'a')).rejects.toThrowError('Account not found');
             });
+        });
+        });
     });
+
 });

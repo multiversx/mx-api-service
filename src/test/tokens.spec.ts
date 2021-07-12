@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import { TokenController } from 'src/endpoints/tokens/token.controller';
 import { TokenDetailed } from 'src/endpoints/tokens/entities/token.detailed';
-import { NftElastic } from 'src/endpoints/tokens/entities/nft.elastic';
+import { Nft } from 'src/endpoints/tokens/entities/nft';
 import { NftType } from 'src/endpoints/tokens/entities/nft.type';
 
 expect.extend({
@@ -112,7 +112,7 @@ describe('Token Controller', () => {
         expect(nftsList).toHaveLength(25);
 
         for (let nft of nftsList) {
-          expect(nft).toHaveStructure(Object.keys(new NftElastic()));
+          expect(nft).toHaveStructure(Object.keys(new Nft()));
         }
       });
 
@@ -122,7 +122,7 @@ describe('Token Controller', () => {
         expect(nftsList).toHaveLength(50);
 
         for (let nft of nftsList) {
-          expect(nft).toHaveStructure(Object.keys(new NftElastic()));
+          expect(nft).toHaveStructure(Object.keys(new Nft()));
           nftCreator = nft.creator;
           nftIdentifier = nft.identifier;
         }
@@ -136,7 +136,7 @@ describe('Token Controller', () => {
         expect(nftsList).toBeInstanceOf(Array);
 
         for (let nft of nftsList) {
-          expect(nft).toHaveStructure(Object.keys(new NftElastic()));
+          expect(nft).toHaveStructure(Object.keys(new Nft()));
           expect(nft.identifier).toBe(tokenIdentifier); 
         }
 
@@ -147,7 +147,7 @@ describe('Token Controller', () => {
           expect(nftsList).toBeInstanceOf(Array);
 
           for (let nft of nftsList) {
-              expect(nft).toHaveStructure(Object.keys(new NftElastic()));
+              expect(nft).toHaveStructure(Object.keys(new Nft()));
               expect(nft.type).toBe(NftType.SemiFungibleESDT);
           }
       });
@@ -157,7 +157,7 @@ describe('Token Controller', () => {
         expect(nftsList).toBeInstanceOf(Array);
 
         for (let nft of nftsList) {
-            expect(nft).toHaveStructure(Object.keys(new NftElastic()));
+            expect(nft).toHaveStructure(Object.keys(new Nft()));
             expect(nft.creator).toBe(nftCreator);
         }
       });
