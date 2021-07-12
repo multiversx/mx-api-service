@@ -3,34 +3,28 @@ import { NftType } from "./nft.type";
 
 export class Nft {
   @ApiProperty()
-  token: string = '';
+  identifier: string = '';
 
   @ApiProperty()
-  name: string = '';
+  collection: string = '';
+
+  @ApiProperty()
+  timestamp: number = 0;
+
+  @ApiProperty()
+  attributes: string = '';
+
+  @ApiProperty()
+  nonce: number = 0;
 
   @ApiProperty()
   type: NftType = NftType.NonFungibleESDT;
 
   @ApiProperty()
-  owner: string = '';
+  name: string = '';
 
   @ApiProperty()
-  minted: string = '';
-
-  @ApiProperty()
-  burnt: string = '';
-
-  @ApiProperty()
-  wiped: string = '';
-
-  @ApiProperty()
-  decimals: number = 0;
-
-  @ApiProperty()
-  isPaused: boolean = false;
-
-  @ApiProperty()
-  tags: string[] = [];
+  creator: string = '';
 
   @ApiProperty()
   royalties: number = 0;
@@ -40,4 +34,10 @@ export class Nft {
 
   @ApiProperty()
   url: string = '';
+
+  @ApiProperty()
+  tags: string[] = [];
+
+  @ApiProperty()
+  metadata: Object | undefined = undefined;
 }

@@ -9,7 +9,7 @@ import { TokenWithBalance } from '../tokens/entities/token.with.balance';
 import { DelegationLegacyService } from '../delegation.legacy/delegation.legacy.service';
 import { AccountDelegationLegacy } from '../delegation.legacy/entities/account.delegation.legacy';
 import { AccountKey } from './entities/account.key';
-import { NftElasticAccount } from '../tokens/entities/nft.elastic.account';
+import { NftAccount } from '../tokens/entities/nft.account';
 import { ParseOptionalEnumPipe } from 'src/helpers/pipes/parse.optional.enum.pipe';
 import { NftType } from '../tokens/entities/nft.type';
 import { ParseOptionalBoolPipe } from 'src/helpers/pipes/parse.optional.bool.pipe';
@@ -190,7 +190,7 @@ export class AccountController {
   @ApiResponse({
     status: 200,
     description: 'The non-fungible and semi-fungible tokens of a given account',
-    type: NftElasticAccount,
+    type: NftAccount,
     isArray: true
   })
   @ApiResponse({
@@ -207,7 +207,7 @@ export class AccountController {
 		@Query('tags') tags: string | undefined,
 		@Query('creator') creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
-  ): Promise<NftElasticAccount[]> {
+  ): Promise<NftAccount[]> {
     try {
       return await this.tokenService.getNftsForAddress(address, from, size, { search, type, collection, tags, creator, hasUris });
     } catch (error) {
@@ -271,7 +271,7 @@ export class AccountController {
   @ApiResponse({
     status: 200,
     description: 'A specific non-fungible or semi-fungible token of a given account',
-    type: TokenWithBalance,
+    type: NftAccount,
   })
   @ApiResponse({
     status: 404,
@@ -284,7 +284,7 @@ export class AccountController {
   async getAccountNft(
     @Param('address') address: string,
     @Param('nft') nft: string,
-  ): Promise<NftElasticAccount> {
+  ): Promise<NftAccount> {
     let result = await this.tokenService.getNftForAddress(address, nft);
     if (!result) {
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);

@@ -1,34 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Nft } from "./nft";
+import { NftOwner } from "./nft.owner";
 
 export class NftDetailed extends Nft {
   @ApiProperty()
-  canUpgrade: boolean = false;
+  owner: string = '';
 
   @ApiProperty()
-  canMint: boolean = false;
-
-  @ApiProperty()
-  canBurn: boolean = false;
-
-  @ApiProperty()
-  canChangeOwner: boolean = false;
-
-  @ApiProperty()
-  canPause: boolean = false;
-
-  @ApiProperty()
-  canFreeze: boolean = false;
-  
-  @ApiProperty()
-  canWipe: boolean = false;
-  
-  @ApiProperty()
-  canAddSpecialRoles: boolean = false;
-  
-  @ApiProperty()
-  canTransferNFTCreateRole: boolean = false;
-  
-  @ApiProperty()
-  NFTCreateStopped: boolean = false;
+  owners: NftOwner[] = [];
 }

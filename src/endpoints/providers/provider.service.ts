@@ -287,11 +287,17 @@ export class ProviderService {
     );
   
     if (response) {
-      const [name, website, identity] = response.map((base64) =>
-        Buffer.from(base64, 'base64').toString().trim().toLowerCase()
-      );
-  
-      return { name, website, identity };
+      try {
+        const [name, website, identity] = response.map((base64) =>
+          Buffer.from(base64, 'base64').toString().trim().toLowerCase()
+        );
+    
+        return { name, website, identity };
+      } catch (error) {
+        this.logger.error(`Could not get provider metadata for address '${address}'`);
+        this.logger.error(error);
+        return { name: null, website: null, identity: null };
+      }
     }
   
     return { name: null, website: null, identity: null };
