@@ -27,7 +27,12 @@ export class ApiService {
       return await axios.get(url, { timeout, httpAgent: this.keepaliveAgent });
     } catch(error) {
       let logger = new Logger(ApiService.name);
-      logger.error(`Error when performing GET on url ${url}`);
+      logger.error({
+        method: 'GET',
+        url,
+        response: error.response.data
+      });
+      
       throw error;
     } finally {
       profiler.stop();
@@ -43,7 +48,13 @@ export class ApiService {
       return await axios.post(url, data, { timeout, httpAgent: this.keepaliveAgent });
     } catch(error) {
       let logger = new Logger(ApiService.name);
-      logger.error(`Error when performing POST on url ${url} and data ${JSON.stringify(data)}`);
+      logger.error({
+        method: 'POST',
+        url,
+        body: data,
+        response: error.response.data
+      });
+
       throw error;
     } finally {
       profiler.stop();
@@ -59,7 +70,12 @@ export class ApiService {
       return await axios.head(url, { timeout, httpAgent: this.keepaliveAgent });
     } catch(error) {
       let logger = new Logger(ApiService.name);
-      logger.error(`Error when performing HEAD on url ${url}`);
+      logger.error({
+        method: 'HEAD',
+        url,
+        response: error.response.data
+      });
+
       throw error;
     } finally {
       profiler.stop();
