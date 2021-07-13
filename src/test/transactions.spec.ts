@@ -38,6 +38,15 @@ describe('Transaction Controller', () => {
         }).compile();
   
         transactionController = moduleRef.get<TransactionController>(TransactionController);
+
+        let transactions = await transactionController.getTransactions(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 0, 1);
+        expect(transactions).toHaveLength(1);
+
+        let transaction = transactions[0];
+        transactionHash = transaction.txHash;
+        transactionSender = transaction.sender;
+        transactionReceiver = transaction.receiver;
+
     });
 
     describe('Transactions list', () => {
@@ -50,9 +59,6 @@ describe('Transaction Controller', () => {
     
                 for (let transaction of transactionsList) {
                     expect(transaction).toHaveStructure(Object.keys(new Transaction()));
-                    transactionHash = transaction.txHash;
-                    transactionSender = transaction.sender;
-                    transactionReceiver = transaction.receiver;
                 }
             });
     
