@@ -23,12 +23,12 @@ export class LoggingInterceptor implements NestInterceptor {
     const request = context.getArgByIndex(0);
 
     if (context.getClass().name === TransactionController.name && context.getHandler().name === 'createTransaction') {
-      this.logger.verbose({
+      this.logger.log({
         apiFunction,
         body: request.body,
         userAgent: request.headers['user-agent'],
         clientIp: request.headers['x-forwarded-for'] || request.headers['x-real-ip'] || request.socket.remoteAddress
-      }, 'TransactionSend');
+      });
     }
 
     return next
