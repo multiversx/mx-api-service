@@ -209,7 +209,7 @@ export class AccountController {
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<NftAccount[]> {
     try {
-      return await this.tokenService.getNftsForAddress(address, { from, size } , { search, type, collection, tags, creator, hasUris });
+      return await this.tokenService.getNftsForAddress(address, { from, size }, { search, type, collection, tags, creator, hasUris });
     } catch (error) {
       this.logger.error(error);
       return [];

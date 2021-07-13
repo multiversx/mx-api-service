@@ -159,7 +159,7 @@ export class NodeService {
   }
 
   async getNodes(queryPagination: QueryPagination, query: NodeFilter): Promise<Node[]> {
-    const { from, size } = queryPagination || {};
+    const { from, size } = queryPagination;
 
     let filteredNodes = await this.getFilteredNodes(query);
 

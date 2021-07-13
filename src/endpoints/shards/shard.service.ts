@@ -18,7 +18,7 @@ export class ShardService {
   ) {}
 
   async getShards(queryPagination: QueryPagination): Promise<Shard[]> {
-    const { from, size } = queryPagination || {};
+    const { from, size } = queryPagination;
     
     let allShards = await this.getAllShardsRaw();
 

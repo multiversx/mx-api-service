@@ -64,8 +64,8 @@ export class AccountService {
     return result;
   }
 
-  async getAccounts(queryBase: QueryPagination): Promise<Account[]> {
-    const { from, size } = queryBase || {};
+  async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
+    const { from, size } = queryPagination;
 
     const sort = {
       balanceNum: 'desc',

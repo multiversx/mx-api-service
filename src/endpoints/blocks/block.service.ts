@@ -23,9 +23,9 @@ export class BlockService {
     );
   }
 
-  async getBlocks(filter: BlockFilter, queryBase:  QueryPagination): Promise<Block[]> {
-    const { from, size } = queryBase || {};
-    const { shard, proposer, validator, epoch } = filter || {};
+  async getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<Block[]> {
+    const { from, size } = queryPagination;
+    const { shard, proposer, validator, epoch } = filter;
 
     let query: any = {
       shardId: shard,
