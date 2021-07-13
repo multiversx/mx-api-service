@@ -28,7 +28,7 @@ export class LoggingInterceptor implements NestInterceptor {
         body: request.body,
         userAgent: request.headers['user-agent'],
         clientIp: request.headers['x-forwarded-for'] || request.headers['x-real-ip'] || request.socket.remoteAddress
-      }, 'TransactionSend');
+      });
     }
 
     return next
