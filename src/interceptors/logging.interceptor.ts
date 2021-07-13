@@ -2,6 +2,7 @@ import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } fr
 import { Observable } from "rxjs";
 import { tap } from 'rxjs/operators';
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
+import { ProxyController } from "src/endpoints/proxy/proxy.controller";
 import { TransactionController } from "src/endpoints/transactions/transaction.controller";
 import { PerformanceProfiler } from "src/helpers/performance.profiler";
 
@@ -22,8 +23,11 @@ export class LoggingInterceptor implements NestInterceptor {
 
     const request = context.getArgByIndex(0);
 
-    if (context.getClass().name === TransactionController.name && context.getHandler().name === 'createTransaction') {
-      this.logger.verbose({
+    const isCreateTransactionCall = context.getClass().name === TransactionController.name && context.getHandler().name === 'createTransaction';
+    const isSendTransactionCall = context.getClass().name === ProxyController.name && context.getHandler().name === 'transactionSend';
+
+    if (isCreateTransactionCall || isSendTransactionCall) {
+      this.logger.log({
         apiFunction,
         body: request.body,
         userAgent: request.headers['user-agent'],

@@ -1,4 +1,4 @@
-import { Logger } from "@nestjs/common";
+// import { Logger } from "@nestjs/common";
 
 export class PerformanceProfiler {
   started: number;
@@ -12,14 +12,14 @@ export class PerformanceProfiler {
     this.description = description;
   }
 
-  stop(description: string | null = null, skipLogging: boolean = false) {
+  stop(_: string | null = null, skipLogging: boolean = false) {
     this.stopped = Date.now();
     this.duration = this.stopped - this.started;
 
     if (!skipLogging) {
-      let logger = new Logger(PerformanceProfiler.name);
+      // let logger = new Logger(PerformanceProfiler.name);
 
-      logger.verbose(`${description ?? this.description}: ${this.duration}ms`);
+      // logger.verbose(`${description ?? this.description}: ${this.duration}ms`);
     }
   }
 }

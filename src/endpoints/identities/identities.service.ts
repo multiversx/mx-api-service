@@ -28,6 +28,10 @@ export class IdentitiesService {
   }
 
   async getAllIdentities(): Promise<Identity[]> {
+    return this.cachingService.getOrSetCache('identities', async () => await this.getAllIdentitiesRaw(), oneMinute() * 15);
+  }
+
+  async getAllIdentitiesRaw(): Promise<Identity[]> {
     let nodes = await this.nodeService.getAllNodes();
 
     let keys = [
