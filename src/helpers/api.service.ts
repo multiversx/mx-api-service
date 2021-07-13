@@ -43,7 +43,7 @@ export class ApiService {
       return await axios.post(url, data, { timeout, httpAgent: this.keepaliveAgent });
     } catch(error) {
       let logger = new Logger(ApiService.name);
-      logger.error(`Error when performing POST on url ${url} and data ${data}`);
+      logger.error(`Error when performing POST on url ${url} and data ${JSON.stringify(data)}`);
       throw error;
     } finally {
       profiler.stop();

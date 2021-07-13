@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ElasticPagination } from 'src/helpers/entities/elastic.pagination';
 import { QueryCondition } from 'src/helpers/entities/query.condition';
 import { GatewayService } from 'src/helpers/gateway.service';
@@ -19,6 +20,7 @@ export class TransactionService {
   constructor(
     private readonly elasticService: ElasticService, 
     private readonly gatewayService: GatewayService,
+    private readonly apiConfigService: ApiConfigService
   ) {
     this.logger = new Logger(TransactionService.name);
   }
@@ -75,21 +77,23 @@ export class TransactionService {
 
       let transactionDetailed: TransactionDetailed = mergeObjects(new TransactionDetailed(), result);
 
-      if (result.hasScResults === true) {
-        let scResults = await this.elasticService.getList('scresults', 'scHash', { originalTxHash: txHash }, { from: 0, size: 100 }, { "timestamp": "asc" });
-        for (let scResult of scResults) {
-          scResult.hash = scResult.scHash;
+      if (!this.apiConfigService.getUseLegacyElastic()) {
+        if (result.hasScResults === true) {
+          let scResults = await this.elasticService.getList('scresults', 'scHash', { originalTxHash: txHash }, { from: 0, size: 100 }, { "timestamp": "asc" });
+          for (let scResult of scResults) {
+            scResult.hash = scResult.scHash;
 
-          delete scResult.scHash;
+            delete scResult.scHash;
+          }
+
+          transactionDetailed.scResults = scResults.map(scResult => mergeObjects(new SmartContractResult(), scResult));
         }
 
-        transactionDetailed.scResults = scResults.map(scResult => mergeObjects(new SmartContractResult(), scResult));
-      }
-
-      let receipts = await this.elasticService.getList('receipts', 'receiptHash', { txHash }, { from: 0, size: 1 }, { "timestamp": "asc" });
-      if (receipts.length > 0) {
-        let receipt = receipts[0];
-        transactionDetailed.receipt = mergeObjects(new TransactionReceipt(), receipt);
+        let receipts = await this.elasticService.getList('receipts', 'receiptHash', { txHash }, { from: 0, size: 1 }, { "timestamp": "asc" });
+        if (receipts.length > 0) {
+          let receipt = receipts[0];
+          transactionDetailed.receipt = mergeObjects(new TransactionReceipt(), receipt);
+        }
       }
 
       return mergeObjects(new TransactionDetailed(), transactionDetailed);
