@@ -46,43 +46,47 @@ export class DelegationController {
     let allNodes = await this.nodeService.getAllNodes();
     let queuedNodes = allNodes.filter(x => x.status === NodeStatus.queued);
 
+    console.log({queuedNodes: queuedNodes.length});
+
     let totalQueued = 0;
     let realStaked = totalStaked;
-    for (let queuedNodeWithoutIdentity of queuedNodes.filter(x => !x.identity)) {
-      realStaked = realStaked - denominateString(queuedNodeWithoutIdentity.stake);
-      totalQueued += 2500;
-    }
-
-    let queuedNodesWithIdentity = queuedNodes.filter(x => x.identity);
-    console.log({queueNodeCount: queuedNodesWithIdentity.length});
+    // for (let queuedNodeWithoutIdentity of queuedNodes.filter(x => !x.identity)) {
+    //   realStaked = realStaked - denominateString(queuedNodeWithoutIdentity.stake);
+    //   totalQueued += 2500;
+    // }
 
     let allProviders = await this.providerService.getProviders(new ProviderQuery());
     console.log({providers: allProviders.length});
 
+    let totalQueuedNodes = 0;
 
-    let groupedQueuedNodesWithIdentity = queuedNodesWithIdentity.groupBy(x => x.identity);
-    for (let identity of Object.keys(groupedQueuedNodesWithIdentity)) {
-      let provider = allProviders.firstOrUndefined(x => x.identity === identity);
-      if (provider) {
-        let totalNodes = provider.numNodes;
-        let queuedNodes = groupedQueuedNodesWithIdentity[identity].length;
-
-        let stakeAmount = denominateString(provider.stake);
-        let queueRatio = queuedNodes / ( queuedNodes + totalNodes );
-        let queuedAmount = stakeAmount * queueRatio;
-
-        console.log({identity, totalNodes, queueRatio, queuedNodes, stakeAmount, queuedAmount});
-
-        realStaked = realStaked - queuedAmount;
-        totalQueued += queuedAmount;
+    let groupedQueuedNodesWithOwner = queuedNodes.groupBy(x => x.owner);
+    for (let owner of Object.keys(groupedQueuedNodesWithOwner)) {
+      let totalLocked = BigInt(0);
+      let nodesWithSameOwner = allNodes.filter(x => x.owner === owner);
+      for (let node of nodesWithSameOwner) {
+        totalLocked += BigInt(node.locked);
       }
+
+      let totalNodes = nodesWithSameOwner.length;
+      let queuedNodes = groupedQueuedNodesWithOwner[owner].length;
+      totalQueuedNodes += queuedNodes;
+
+      let lockedAmount = denominateString(totalLocked.toString());
+      let queueRatio = queuedNodes / totalNodes;
+      let queuedAmount = lockedAmount * queueRatio;
+
+      console.log({owner, totalNodes, queueRatio, queuedNodes, lockedAmount, queuedAmount});
+
+      realStaked = realStaked - queuedAmount;
+      totalQueued += queuedAmount;
     }
 
     let firstYear = 1952123.4;
     let apr = firstYear / realStaked;
     let queuedNodesWithoutIdentity = queuedNodes.filter(x => !x.identity).length;
 
-    console.log({totalStaked, realStaked, firstYear, apr, totalQueued, queuedNodesWithoutIdentity });
+    console.log({totalStaked, realStaked, firstYear, apr, totalQueued, queuedNodesWithoutIdentity, totalQueuedNodes });
 
     return apr;
   }
