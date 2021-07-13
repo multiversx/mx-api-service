@@ -1,7 +1,7 @@
-import { QueryBase } from "src/common/entities/query.base";
+import { QueryPagination } from "src/common/entities/query.pagination";
 import { QueryCondition } from "src/helpers/entities/query.condition";
 
-export class RoundQuery extends QueryBase {
+export class RoundFilter extends QueryPagination {
   condition: QueryCondition | undefined;
   validator: string | undefined;
   shard: number | undefined;

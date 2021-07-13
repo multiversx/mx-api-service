@@ -9,6 +9,7 @@ import { CachingService } from 'src/helpers/caching.service';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { AccountDeferred } from './entities/account.deferred';
+import { QueryPagination } from 'src/common/entities/query.pagination';
 
 @Injectable()
 export class AccountService {
@@ -63,7 +64,9 @@ export class AccountService {
     return result;
   }
 
-  async getAccounts(from: number, size: number): Promise<Account[]> {
+  async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
+    const { from, size } = queryPagination;
+
     const sort = {
       balanceNum: 'desc',
     };

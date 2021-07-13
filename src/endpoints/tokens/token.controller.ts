@@ -28,7 +28,7 @@ export class TokenController {
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('search') search: string | undefined,
   ): Promise<TokenDetailed[]> {
-    return await this.tokenService.getTokens(from, size, search);
+    return await this.tokenService.getTokens({ from, size }, search);
   }
 
   @Get("/tokens/count")
@@ -82,7 +82,7 @@ export class TokenController {
 		@Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
   ): Promise<NftCollection[]> {
-    return await this.tokenService.getNftCollections(from, size, search, type);
+    return await this.tokenService.getNftCollections({ from, size }, { search, type });
   }
 
   @Get("/collections/count")
@@ -96,7 +96,7 @@ export class TokenController {
     @Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
   ): Promise<number> {
-    return await this.tokenService.getNftCollectionCount(search, type);
+    return await this.tokenService.getNftCollectionCount({ search, type });
   }
 
   @Get("/collections/c")
@@ -105,7 +105,7 @@ export class TokenController {
     @Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
   ): Promise<number> {
-    return await this.tokenService.getNftCollectionCount(search, type);
+    return await this.tokenService.getNftCollectionCount({ search, type });
   }
 
   @Get('/collections/:collection')
@@ -152,7 +152,7 @@ export class TokenController {
 		@Query('creator') creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<Nft[]> {
-    return await this.tokenService.getNfts(from, size, { search, type, collection, tags, creator, hasUris });
+    return await this.tokenService.getNfts({ from, size }, { search, type, collection, tags, creator, hasUris });
   }
 
   @Get("/nfts/count")

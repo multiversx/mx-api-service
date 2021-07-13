@@ -18,6 +18,8 @@ import { TokenAssetService } from "src/helpers/token.asset.service";
 import { NftCollection } from "./entities/nft.collection";
 import { NftFilter } from "./entities/nft.filter";
 import { ApiService } from "src/helpers/api.service";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { CollectionFilter } from "./entities/collection.filter";
 
 @Injectable()
 export class TokenService {
@@ -47,7 +49,9 @@ export class TokenService {
     return undefined;
   }
 
-  async getTokens(from: number, size: number, search: string | undefined): Promise<TokenDetailed[]> {
+  async getTokens(queryPagination: QueryPagination, search: string | undefined): Promise<TokenDetailed[]> {
+    const { from, size } = queryPagination;
+
     let tokens = await this.getAllTokens();
 
     if (search) {
@@ -85,7 +89,10 @@ export class TokenService {
     return mergeObjects(new TokenProperties(), properties);
   }
 
-  async getNftCollections(from: number, size: number, search: string | undefined, type: NftType | undefined): Promise<NftCollection[]> {
+  async getNftCollections(queryPagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
+    const { from, size } = queryPagination;
+    const { search, type } = filter || {};
+
     let tokenCollections = await this.elasticService.getTokenCollections(from, size, search, type, undefined);
 
     let nftCollections: NftCollection[] = [];
@@ -106,7 +113,9 @@ export class TokenService {
     return nftCollections;
   }
 
-  async getNftCollectionCount(search: string | undefined, type: NftType | undefined): Promise<number> {
+  async getNftCollectionCount(filter: CollectionFilter): Promise<number> {
+    const { search, type } = filter || {};
+
     return await this.elasticService.getTokenCollectionCount(search, type);
   }
 
@@ -130,7 +139,9 @@ export class TokenService {
     return nftCollection;
   }
 
-  async getNfts(from: number, size: number, filter: NftFilter): Promise<Nft[]> {
+  async getNfts(queryPagination: QueryPagination, filter: NftFilter): Promise<Nft[]> {
+    const  { from, size } = queryPagination;
+
     return await this.getNftsInternal(from, size, filter, undefined);
   }
 
@@ -235,7 +246,9 @@ export class TokenService {
     return tokens.length;
   }
 
-  async getTokensForAddress(address: string, from: number, size: number): Promise<TokenWithBalance[]> {
+  async getTokensForAddress(address: string, queryPagination:  QueryPagination): Promise<TokenWithBalance[]> {
+    const { from, size } = queryPagination;
+    
     let tokens = await this.getAllTokensForAddress(address);
 
     tokens = tokens.slice(from, from + size);
@@ -312,7 +325,9 @@ export class TokenService {
     return parts.join('-');
   }
 
-  async getNftsForAddress(address: string, from: number, size: number, filter: NftFilter): Promise<NftAccount[]> {
+  async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter): Promise<NftAccount[]> {
+    const { from, size }  = queryPagination;
+
     let nfts = await this.getNftsForAddressInternal(address, filter);
 
     nfts = nfts.splice(from, from + size);

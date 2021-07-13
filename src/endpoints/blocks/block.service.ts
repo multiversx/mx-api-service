@@ -5,6 +5,8 @@ import { mergeObjects, oneMinute, oneWeek } from "src/helpers/helpers";
 import { Block } from "./entities/block";
 import { BlockDetailed } from "./entities/block.detailed";
 import { CachingService } from "src/helpers/caching.service";
+import { BlockFilter } from "./entities/block.filter";
+import { QueryPagination } from "src/common/entities/query.pagination";
 
 @Injectable()
 export class BlockService {
@@ -21,7 +23,10 @@ export class BlockService {
     );
   }
 
-  async getBlocks(shard: number | undefined, proposer: string | undefined, validator: string | undefined, epoch: number | undefined, from: number, size: number): Promise<Block[]> {
+  async getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<Block[]> {
+    const { from, size } = queryPagination;
+    const { shard, proposer, validator, epoch } = filter;
+
     let query: any = {
       shardId: shard,
       epoch: epoch
