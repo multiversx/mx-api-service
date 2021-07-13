@@ -46,9 +46,11 @@ export class DelegationController {
     let allNodes = await this.nodeService.getAllNodes();
     let queuedNodes = allNodes.filter(x => x.status === NodeStatus.queued);
 
+    let totalQueued = 0;
     let realStaked = totalStaked;
     for (let queuedNodeWithoutIdentity of queuedNodes.filter(x => !x.identity)) {
       realStaked = realStaked - denominateString(queuedNodeWithoutIdentity.stake);
+      totalQueued += 2500;
     }
 
     let queuedNodesWithIdentity = queuedNodes.filter(x => x.identity);
@@ -65,20 +67,22 @@ export class DelegationController {
         let totalNodes = provider.numNodes;
         let queuedNodes = groupedQueuedNodesWithIdentity[identity].length;
 
-        let topUpAmount = denominateString(provider.topUp);
+        let stakeAmount = denominateString(provider.stake);
         let queueRatio = queuedNodes / ( queuedNodes + totalNodes );
-        let queuedAmount = topUpAmount * queueRatio;
+        let queuedAmount = stakeAmount * queueRatio;
 
-        console.log({identity, totalNodes, queueRatio, queuedNodes, lockedAmount: topUpAmount, queuedAmount});
+        console.log({identity, totalNodes, queueRatio, queuedNodes, stakeAmount, queuedAmount});
 
-        realStaked = realStaked - queuedAmount - (queuedNodes * 2500);
+        realStaked = realStaked - queuedAmount;
+        totalQueued += queuedAmount;
       }
     }
 
     let firstYear = 1952123.4;
     let apr = firstYear / realStaked;
+    let queuedNodesWithoutIdentity = queuedNodes.filter(x => !x.identity).length;
 
-    console.log({totalStaked, realStaked, firstYear, apr });
+    console.log({totalStaked, realStaked, firstYear, apr, totalQueued, queuedNodesWithoutIdentity });
 
     return apr;
   }
