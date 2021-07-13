@@ -5,6 +5,7 @@ import { Shard } from "./entities/shard";
 import { CachingService } from "src/helpers/caching.service";
 import { oneMinute } from "src/helpers/helpers";
 import { GatewayService } from "src/helpers/gateway.service";
+import { QueryPagination } from "src/common/entities/query.pagination";
 
 @Injectable()
 export class ShardService {
@@ -16,7 +17,9 @@ export class ShardService {
     private readonly gatewayService: GatewayService
   ) {}
 
-  async getShards(from: number, size: number): Promise<Shard[]> {
+  async getShards(queryPagination: QueryPagination): Promise<Shard[]> {
+    const { from, size } = queryPagination || {};
+    
     let allShards = await this.getAllShardsRaw();
 
     return allShards.slice(from, from + size);

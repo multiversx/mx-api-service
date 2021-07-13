@@ -9,7 +9,7 @@ import { SmartContractResult } from './entities/smart.contract.result';
 import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
-import { TransactionQuery } from './entities/transaction.query';
+import { TransactionFilter } from './entities/transaction.filter';
 import { TransactionReceipt } from './entities/transaction.receipt';
 import { TransactionSendResult } from './entities/transaction.send.result';
 
@@ -25,7 +25,7 @@ export class TransactionService {
     this.logger = new Logger(TransactionService.name);
   }
 
-  private buildTransactionFilterQuery(transactionQuery: TransactionQuery){
+  private buildTransactionFilterQuery(transactionQuery: TransactionFilter){
     return {
       sender: transactionQuery.sender,
       receiver: transactionQuery.receiver,
@@ -37,13 +37,13 @@ export class TransactionService {
       after: transactionQuery.after
     };
   }
-  async getTransactionCount(transactionQuery: TransactionQuery): Promise<number> {
+  async getTransactionCount(transactionQuery: TransactionFilter): Promise<number> {
     const query = this.buildTransactionFilterQuery(transactionQuery);
 
     return await this.elasticService.getCount('transactions', query, transactionQuery.condition ?? QueryCondition.must);
   }
 
-  async getTransactions(transactionQuery: TransactionQuery): Promise<Transaction[]> {
+  async getTransactions(transactionQuery: TransactionFilter): Promise<Transaction[]> {
     const query = this.buildTransactionFilterQuery(transactionQuery);
 
     const pagination: ElasticPagination = {

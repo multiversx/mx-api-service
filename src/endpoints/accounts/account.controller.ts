@@ -40,7 +40,7 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<Account[]> {
-    return this.accountService.getAccounts(from, size);
+    return this.accountService.getAccounts({from, size});
   }
 
   @Get("/accounts/count")
@@ -113,7 +113,7 @@ export class AccountController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<TokenWithBalance[]> {
     try {
-      return await this.tokenService.getTokensForAddress(address, from, size);
+      return await this.tokenService.getTokensForAddress(address, { from, size });
     } catch (error) {
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
@@ -209,7 +209,7 @@ export class AccountController {
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<NftAccount[]> {
     try {
-      return await this.tokenService.getNftsForAddress(address, from, size, { search, type, collection, tags, creator, hasUris });
+      return await this.tokenService.getNftsForAddress(address, { from, size } , { search, type, collection, tags, creator, hasUris });
     } catch (error) {
       this.logger.error(error);
       return [];

@@ -4,7 +4,7 @@ import { ElasticService } from "src/helpers/elastic.service";
 import { Round } from "./entities/round";
 import { mergeObjects, roundToEpoch } from "src/helpers/helpers";
 import { RoundDetailed } from "./entities/round.detailed";
-import { RoundQuery } from "./entities/round.query";
+import { RoundFilter } from "./entities/round.filter";
 import { QueryCondition } from "src/helpers/entities/query.condition";
 
 @Injectable()
@@ -15,7 +15,7 @@ export class RoundService {
     return this.elasticService.getCount('rounds');
   }
 
-  async getRounds(roundQuery: RoundQuery): Promise<Round[]> {
+  async getRounds(roundQuery: RoundFilter): Promise<Round[]> {
     const query: any = {
       shardId: roundQuery.shard
     };

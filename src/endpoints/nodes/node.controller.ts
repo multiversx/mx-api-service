@@ -51,7 +51,7 @@ export class NodeController {
 		@Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort: NodeSort | undefined,
 		@Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
 	): Promise<Node[]> {
-		return await this.nodeService.getNodes(from, size, { search, online, type, status, shard, issues, identity, provider, owner, sort, order });
+		return await this.nodeService.getNodes({ from, size }, { search, online, type, status, shard, issues, identity, provider, owner, sort, order });
 	}
 
 	@Get("/nodes/versions")

@@ -4,7 +4,7 @@ import { Cron } from "@nestjs/schedule";
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardService } from "src/endpoints/shards/shard.service";
-import { TransactionQuery } from "src/endpoints/transactions/entities/transaction.query";
+import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
@@ -201,7 +201,7 @@ export class TransactionProcessorService {
   }
 
   async getLastTimestamp() {
-    let transactionQuery = new TransactionQuery();
+    let transactionQuery = new TransactionFilter();
     transactionQuery.size = 1;
 
     let transactions = await this.transactionService.getTransactions(transactionQuery);
@@ -209,7 +209,7 @@ export class TransactionProcessorService {
   }
 
   async getTransactions(timestamp: number) {
-    let transactionQuery = new TransactionQuery();
+    let transactionQuery = new TransactionFilter();
     transactionQuery.after = timestamp;
     transactionQuery.size = 1000;
 

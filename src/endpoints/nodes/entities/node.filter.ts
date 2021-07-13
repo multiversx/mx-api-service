@@ -3,7 +3,7 @@ import { NodeStatus } from "./node.status";
 import { NodeType } from "./node.type";
 import { NodeSort } from "./node.sort"
 
-export class NodeQuery {
+export class NodeFilter {
   search: string | undefined; 
   online: boolean | undefined; 
   type: NodeType | undefined;
