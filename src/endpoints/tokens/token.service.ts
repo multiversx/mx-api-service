@@ -91,9 +91,8 @@ export class TokenService {
 
   async getNftCollections(queryPagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
     const { from, size } = queryPagination;
-    const { search, type } = filter || {};
 
-    let tokenCollections = await this.elasticService.getTokenCollections(from, size, search, type, undefined);
+    let tokenCollections = await this.elasticService.getTokenCollections(from, size, filter.search, filter.type, undefined, filter.issuer);
 
     let nftCollections: NftCollection[] = [];
     for (let tokenCollection of tokenCollections) {
@@ -120,7 +119,7 @@ export class TokenService {
   }
 
   async getNftCollection(collection: string): Promise<NftCollection | undefined> {
-    let tokenCollections = await this.elasticService.getTokenCollections(0, 1, undefined, undefined, collection);
+    let tokenCollections = await this.elasticService.getTokenCollections(0, 1, undefined, undefined, collection, undefined);
     if (tokenCollections.length === 0) {
       return undefined;
     }
