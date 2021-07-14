@@ -92,7 +92,8 @@ export class AccountController {
   async getAccountDeferred(@Param('address') address: string): Promise<AccountDeferred[]> {
     try {
       return await this.accountService.getDeferredAccount(address);
-    } catch {
+    } catch(error) {
+      this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
   }
