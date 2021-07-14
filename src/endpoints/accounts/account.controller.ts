@@ -13,6 +13,8 @@ import { NftAccount } from '../tokens/entities/nft.account';
 import { ParseOptionalEnumPipe } from 'src/helpers/pipes/parse.optional.enum.pipe';
 import { NftType } from '../tokens/entities/nft.type';
 import { ParseOptionalBoolPipe } from 'src/helpers/pipes/parse.optional.bool.pipe';
+import { WaitingList } from '../waiting-list/entities/waiting.list';
+import { WaitingListService } from '../waiting-list/waiting.list.service';
 
 @Controller()
 @ApiTags('accounts')
@@ -22,7 +24,8 @@ export class AccountController {
   constructor(
     private readonly accountService: AccountService,
     private readonly tokenService: TokenService,
-    private readonly delegationLegacyService: DelegationLegacyService
+    private readonly delegationLegacyService: DelegationLegacyService,
+    private readonly waitingListService: WaitingListService,
   ) {
     this.logger = new Logger(AccountController.name);
   }
@@ -348,5 +351,16 @@ export class AccountController {
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
+  }
+
+  @Get("/accounts/:address/waiting-list")
+  @ApiResponse({
+    status: 200,
+    description: 'The waiting list of a given account',
+    type: WaitingList,
+    isArray: true
+  })
+  async getAccountWaitingList(@Param('address') address: string): Promise<WaitingList[]> {
+    return await this.waitingListService.getWaitingListForAddress(address);
   }
 }

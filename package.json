@@ -41,6 +41,7 @@
     "@types/request-ip": "0.0.35",
     "agentkeepalive": "^4.1.4",
     "axios": "^0.21.1",
+    "bignumber.js": "^9.0.1",
     "cache-manager": "^3.4.3",
     "csrf": "^3.1.0",
     "js-yaml": "^4.0.0",
@@ -112,6 +113,9 @@
     "moduleDirectories": [
       "node_modules"
     ],
-    "typeRoots": ["../node_modules/@types", "./test/typings"]
+    "typeRoots": [
+      "../node_modules/@types",
+      "./test/typings"
+    ]
   }
 }
