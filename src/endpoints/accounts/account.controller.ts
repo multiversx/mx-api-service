@@ -15,6 +15,7 @@ import { NftType } from '../tokens/entities/nft.type';
 import { ParseOptionalBoolPipe } from 'src/helpers/pipes/parse.optional.bool.pipe';
 import { WaitingList } from '../waiting-list/entities/waiting.list';
 import { WaitingListService } from '../waiting-list/waiting.list.service';
+import { NftCollection } from '../tokens/entities/nft.collection';
 
 @Controller()
 @ApiTags('accounts')
@@ -149,6 +150,64 @@ export class AccountController {
   async getTokenCountAlternative(@Param('address') address: string): Promise<number> {
     try {
       return await this.tokenService.getTokenCountForAddress(address);
+    } catch (error) {
+      this.logger.error(error);
+      // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      return 0;
+    }
+  }
+
+  @Get("/accounts/:address/collections")
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+  @ApiResponse({
+    status: 200,
+    description: 'The token collections of a given account',
+    type: NftCollection,
+    isArray: true
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  async getAccountCollections(
+    @Param('address') address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number
+  ): Promise<NftCollection[]> {
+    try {
+      return await this.tokenService.getCollectionsForAddress(address, { from, size });
+    } catch (error) {
+      this.logger.error(error);
+      // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      return [];
+    }
+  }
+
+  @Get("/accounts/:address/collections/count")
+  @ApiResponse({
+    status: 200,
+    description: 'The number of token collections available on the blockchain for the given address',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  async getCollectionCount(@Param('address') address: string): Promise<number> {
+    try {
+      return await this.tokenService.getCollectionCountForAddress(address);
+    } catch (error) {
+      this.logger.error(error);
+      // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      return 0;
+    }
+  }
+
+  @Get("/accounts/:address/collections/c")
+  @ApiExcludeEndpoint()
+  async getCollectionCountAlternative(@Param('address') address: string): Promise<number> {
+    try {
+      return await this.tokenService.getCollectionCountForAddress(address);
     } catch (error) {
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
