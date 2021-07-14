@@ -67,8 +67,8 @@ export class NetworkService {
       { account: { balance } },
       { metrics: { erd_total_supply } },
       [, totalWaitingStakeBase64],
-      price,
-      marketCap,
+      priceValue,
+      marketCapValue,
     ] = await Promise.all([
       this.gatewayService.get(`address/${this.apiConfigService.getAuctionContractAddress()}`),
       this.gatewayService.get('network/economics'),
@@ -89,6 +89,9 @@ export class NetworkService {
     const totalSupply = parseInt(erd_total_supply.slice(0, -18));
 
     const circulatingSupply = totalSupply - locked;
+
+    const price = parseFloat(priceValue.toFixed(2));
+    const marketCap = parseFloat(marketCapValue.toFixed(2));
 
     return { totalSupply, circulatingSupply, staked, price, marketCap };
   }
