@@ -30,6 +30,12 @@ export class DataApiService {
     return data;
   }
 
+  async getQuotesHistoricalTimestamp(quoteUrl: string, timestamp: number): Promise<number> {
+    const { data } = await this.apiService.get(`https://data.elrond.com/closing/quoteshistorical/egld/${quoteUrl}/${timestamp}`);
+
+    return data;
+  }
+
   async getQuotesHistoricalLatest(quoteUrl: string): Promise<number> {
     const { data } = await this.apiService.get(`${this.quotesHistoricalLatestUrl}/${quoteUrl}`);
 

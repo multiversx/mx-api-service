@@ -111,6 +111,10 @@ export function numberDecode(encoded: string) {
   return BigNumber(hex, 16).toString(10);
 };
 
+export function timestampToShortISOString(timestamp: number) {
+  return new Date(timestamp * 1000).toISOString().slice(0,10);
+}
+
 declare global {
   interface Array<T> {
     groupBy(predicate: (item: T) => any): any;
