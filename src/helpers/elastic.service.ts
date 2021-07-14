@@ -375,7 +375,7 @@ export class ElasticService {
     return await this.getDocumentCount(url, payload);
   }
 
-  async getTokenCollections(from: number, size: number, search: string | undefined, type: NftType | undefined, token: string | undefined) {
+  async getTokenCollections(from: number, size: number, search: string | undefined, type: NftType | undefined, token: string | undefined, issuer: string | undefined) {
     let mustNotQueries = [];
     mustNotQueries.push(this.getExistsQuery('identifier'));
 
@@ -390,6 +390,10 @@ export class ElasticService {
 
     if (token !== undefined) {
       mustQueries.push(this.getSimpleQuery({ token: { query: token, operator: "AND" } }));
+    }
+
+    if (issuer !== undefined) {
+      mustQueries.push(this.getSimpleQuery({ issuer }));
     }
 
     let shouldQueries = [];
