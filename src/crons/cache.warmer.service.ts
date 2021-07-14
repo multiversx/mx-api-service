@@ -1,21 +1,23 @@
 import { Injectable } from "@nestjs/common";
 import { Cron } from "@nestjs/schedule";
+import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
 import { CachingService } from "src/helpers/caching.service";
-import { oneHour } from "src/helpers/helpers";
+import { oneHour, oneMinute } from "src/helpers/helpers";
 import { PerformanceProfiler } from "src/helpers/performance.profiler";
 
 @Injectable()
 export class CacheWarmerService {
   isRunningNodeInvalidations: boolean = false;
   isRunningTokenInvalidations: boolean = false;
-  isRunningNftInvalidations: boolean = false;
+  isRunningIdentitiesInvalidations: boolean = false;
 
   constructor(
     private readonly nodeService: NodeService,
     private readonly tokenService: TokenService,
-    private readonly cachingService: CachingService
+    private readonly cachingService: CachingService,
+    private readonly identitiesService: IdentitiesService,
   ) {}
 
   @Cron('* * * * *')
@@ -49,6 +51,23 @@ export class CacheWarmerService {
     } finally {
       profiler.stop();
       this.isRunningTokenInvalidations = false;
+    }
+  }
+
+  @Cron('*/7 * * * *')
+  async handleIdentityInvalidations() {
+    if (this.isRunningIdentitiesInvalidations) {
+      return;
+    }
+
+    this.isRunningIdentitiesInvalidations = true;
+    let profiler = new PerformanceProfiler('Running identities invalidations');
+    try {
+      let identities = await this.identitiesService.getAllIdentitiesRaw();
+      await this.cachingService.setCache('identities', identities, oneMinute() * 15);
+    } finally {
+      profiler.stop();
+      this.isRunningIdentitiesInvalidations = false;
     }
   }
 }
