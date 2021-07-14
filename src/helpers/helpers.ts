@@ -1,5 +1,6 @@
 const bech32 = require('bech32');
 const { readdirSync } = require('fs')
+const BigNumber = require('bignumber.js');
 
 export function mergeObjects(obj1: any, obj2: any) {
   for (const key of Object.keys(obj2)) {
@@ -104,6 +105,11 @@ export function oneWeek(): number {
 export function isSmartContractAddress(address: string): boolean {
   return address.includes('qqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqq');
 }
+
+export function numberDecode(encoded: string) {
+  const hex = Buffer.from(encoded, 'base64').toString('hex');
+  return BigNumber(hex, 16).toString(10);
+};
 
 declare global {
   interface Array<T> {

@@ -53,6 +53,8 @@ import { HistoryService } from './endpoints/history/history.service';
 import { DataApiService } from './helpers/data.api.service';
 import { KeysController } from './endpoints/keys/keys.controller';
 import { KeysService } from './endpoints/keys/keys.service';
+import { WaitingListController } from './endpoints/waiting-list/waiting.list.controller';
+import { WaitingListService } from './endpoints/waiting-list/waiting.list.service';
 const DailyRotateFile = require('winston-daily-rotate-file');
 
 @Module({
@@ -84,7 +86,7 @@ const DailyRotateFile = require('winston-daily-rotate-file');
     MiniBlockController, RoundController, NodeController, ProviderController,
     AccessController, DelegationLegacyController, StakeController, DelegationController,
     VmQueryController, ShardController, IdentitiesController, ProxyController, HistoryController,
-    KeysController
+    KeysController, WaitingListController
   ],
   providers: [
     NetworkService, ApiConfigService, AccountService, ElasticService, GatewayService, TransactionService, 
@@ -92,7 +94,7 @@ const DailyRotateFile = require('winston-daily-rotate-file');
     CachingService, KeybaseService, ProviderService,
     StakeService, LoggingInterceptor, ApiService, ProfilerService, AccessService, DelegationLegacyService,
     DelegationService, CacheConfigService, CachingInterceptor, ShardService, MetricsService, IdentitiesService,
-    TokenAssetService, HistoryService, DataApiService, KeysService
+    TokenAssetService, HistoryService, DataApiService, KeysService, WaitingListService
   ],
   exports: [
     ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService,
