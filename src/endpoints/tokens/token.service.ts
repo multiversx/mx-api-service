@@ -92,7 +92,7 @@ export class TokenService {
   async getNftCollections(queryPagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
     const { from, size } = queryPagination;
 
-    let tokenCollections = await this.elasticService.getTokenCollections(from, size, filter.search, filter.type, undefined, filter.issuer);
+    let tokenCollections = await this.elasticService.getTokenCollections(from, size, filter.search, filter.type, undefined, filter.issuer, filter.identifiers);
 
     let nftCollections: NftCollection[] = [];
     for (let tokenCollection of tokenCollections) {
@@ -119,7 +119,7 @@ export class TokenService {
   }
 
   async getNftCollection(collection: string): Promise<NftCollection | undefined> {
-    let tokenCollections = await this.elasticService.getTokenCollections(0, 1, undefined, undefined, collection, undefined);
+    let tokenCollections = await this.elasticService.getTokenCollections(0, 1, undefined, undefined, collection, undefined, []);
     if (tokenCollections.length === 0) {
       return undefined;
     }
@@ -245,7 +245,7 @@ export class TokenService {
     return tokens.length;
   }
 
-  async getTokensForAddress(address: string, queryPagination:  QueryPagination): Promise<TokenWithBalance[]> {
+  async getTokensForAddress(address: string, queryPagination: QueryPagination): Promise<TokenWithBalance[]> {
     const { from, size } = queryPagination;
     
     let tokens = await this.getAllTokensForAddress(address);
@@ -257,6 +257,21 @@ export class TokenService {
     }
 
     return tokens.map(token => mergeObjects(new TokenWithBalance(), token));
+  }
+
+  async getCollectionsForAddress(address: string, queryPagination: QueryPagination): Promise<NftCollection[]> {
+    let esdtResult = await this.gatewayService.get(`address/${address}/esdts-with-role/ESDTRoleNFTCreate`);
+
+    let filter = new CollectionFilter();
+    filter.identifiers = esdtResult.tokens;
+
+    return await this.getNftCollections(queryPagination, filter);
+  }
+
+  async getCollectionCountForAddress(address: string): Promise<number> {
+    let esdtResult = await this.gatewayService.get(`address/${address}/esdts-with-role/ESDTRoleNFTCreate`);
+
+    return esdtResult.tokens.length;
   }
 
   async getTokenForAddress(address: string, tokenIdentifier: string): Promise<TokenWithBalance | undefined> {
