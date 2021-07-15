@@ -4,7 +4,7 @@ import { GatewayService } from '../../helpers/gateway.service';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
 import { ElasticPagination } from 'src/helpers/entities/elastic.pagination';
-import { bech32Decode, bech32Encode, mergeObjects, oneDay, oneMinute, padHex } from 'src/helpers/helpers';
+import { bech32Decode, bech32Encode, computeShard, mergeObjects, oneDay, oneMinute, padHex } from 'src/helpers/helpers';
 import { CachingService } from 'src/helpers/caching.service';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -59,7 +59,9 @@ export class AccountService {
       this.gatewayService.get(`address/${address}`)
     ]);
 
-    let result = { address, nonce, balance, code, codeHash, rootHash, txCount, username };
+    let shard = computeShard(bech32Decode(address));
+
+    let result = { address, nonce, balance, code, codeHash, rootHash, txCount, username, shard };
 
     return result;
   }
@@ -79,7 +81,14 @@ export class AccountService {
 
     let result = await this.elasticService.getList('accounts', 'address', query, pagination, sort);
 
-    return result.map(item => mergeObjects(new Account(), item));
+    let accounts: Account[] = result.map(item => mergeObjects(new Account(), item));
+    for (let account of accounts) {
+      account.shard = computeShard(bech32Decode(account.address));
+
+      console.log({shard: account.shard});
+    }
+
+    return accounts;
   }
 
   async getDeferredAccount(address: string): Promise<AccountDeferred[]> {
