@@ -111,6 +111,38 @@ export function numberDecode(encoded: string) {
   return BigNumber(hex, 16).toString(10);
 };
 
+export function cleanupApiValueRecursively(obj: any) {
+  if (typeof obj === 'number') {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    for (let item of obj) {
+      if (item && typeof item === 'object') {
+        cleanupApiValueRecursively(item);
+      }
+    }
+  } else if (obj && typeof obj === 'object') {
+    for (let [key, value] of Object.entries(obj)) {
+      if (typeof value === 'object') {
+        cleanupApiValueRecursively(value);
+      }
+
+      if (Array.isArray(value)) {
+        for (let item of value) {
+          if (item && typeof item === 'object') {
+            cleanupApiValueRecursively(item);
+          }
+        }
+      }
+
+      if (value === null || value === '') {
+        delete obj[key];
+      }
+    }
+  }
+}
+
 Date.prototype.isToday = function(): boolean {
   return this.toISODateString() === new Date().toISODateString();
 };
