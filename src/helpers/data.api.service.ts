@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
+import { DataQuoteType } from "./entities/data.quote.type";
 
 @Injectable()
 export class DataApiService {
@@ -15,21 +16,15 @@ export class DataApiService {
     this.quotesHistoricalLatestUrl = `${this.apiConfigService.getDataLatestUrl()}/quoteshistorical/egld`;
     this.stakingUsersHistoricalUrl = `${this.apiConfigService.getDataLatestUrl()}/stakinghistorical/total`;
   };
-  
-  async getQuotesHistorical(quoteUrl: string): Promise<Data[]> {
-    const { data } = await this.apiService.get(`${this.quotesHistoricalUrl}/${quoteUrl}`);
+
+  async getQuotesHistoricalTimestamp(type: DataQuoteType, timestamp: number): Promise<number> {
+    const { data } = await this.apiService.get(`https://data.elrond.com/closing/quoteshistorical/egld/${type}/${timestamp}`);
 
     return data;
   }
 
-  async getQuotesHistoricalTimestamp(quoteUrl: string, timestamp: number): Promise<number> {
-    const { data } = await this.apiService.get(`https://data.elrond.com/closing/quoteshistorical/egld/${quoteUrl}/${timestamp}`);
-
-    return data;
-  }
-
-  async getQuotesHistoricalLatest(quoteUrl: string): Promise<number> {
-    const { data } = await this.apiService.get(`${this.quotesHistoricalLatestUrl}/${quoteUrl}`);
+  async getQuotesHistoricalLatest(type: DataQuoteType): Promise<number> {
+    const { data } = await this.apiService.get(`${this.quotesHistoricalLatestUrl}/${type}`);
 
     return data;
   }

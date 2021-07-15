@@ -2,10 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { CachingService } from 'src/helpers/caching.service';
 import { DataApiService } from 'src/helpers/data.api.service';
+import { DataQuoteType } from 'src/helpers/entities/data.quote.type';
 import { ElasticPagination } from 'src/helpers/entities/elastic.pagination';
 import { QueryCondition } from 'src/helpers/entities/query.condition';
 import { GatewayService } from 'src/helpers/gateway.service';
-import { base64Encode, bech32Decode, computeShard, mergeObjects, oneDay, timestampToShortISOString } from 'src/helpers/helpers';
+import { base64Encode, bech32Decode, computeShard, mergeObjects, oneDay, oneMinute } from 'src/helpers/helpers';
 import { ElasticService } from '../../helpers/elastic.service';
 import { SmartContractResult } from './entities/smart.contract.result';
 import { Transaction } from './entities/transaction';
@@ -67,35 +68,58 @@ export class TransactionService {
 
   async getTransaction(txHash: string): Promise<TransactionDetailed | null> {
     let transaction = await this.tryGetTransactionFromElastic(txHash);
-   
+
     if (transaction === null) {
       transaction = await this.tryGetTransactionFromGateway(txHash);
     }
 
-    if (transaction?.timestamp) {
-      transaction.price = await this.cachingService.getOrSetCache(
-        `price:${timestampToShortISOString(transaction.timestamp)}`,
-        async () => await this.getTransactionPrice(transaction?.timestamp),
-        oneDay() * 7
-      );
+    if (transaction !== null) {
+      transaction.price = await this.getTransactionPrice(transaction);
     }
     
     return transaction;
   }
 
-  private isTodayTransaction(transactionDate: Date): boolean {
-    return transactionDate > new Date();
-  }
-
-  private async getTransactionPrice(timestamp: number = 0): Promise<number|undefined> {
-    const transactionDate = new Date(timestamp * 1000);
-    transactionDate.setUTCHours(23, 59, 59, 999); //end of day
-
-    if (this.isTodayTransaction(transactionDate)) {
-      return await this.dataApiService.getQuotesHistoricalLatest('price'); //current price
+  private async getTransactionPrice(transaction: TransactionDetailed): Promise<number | undefined> {
+    if (transaction === null) {
+      return undefined;
     }
 
-    return await this.dataApiService.getQuotesHistoricalTimestamp('price', transactionDate.getTime() / 1000);
+    let transactionDate = transaction.getDate();
+    if (!transactionDate) {
+      return undefined;
+    }
+
+    let price = await this.getTransactionPriceForDate(transactionDate);
+    if (price) {
+      price = price.toRounded(2);
+    }
+
+    return price;
+  }
+
+  private async getTransactionPriceForDate(date: Date): Promise<number | undefined> {
+    if (date.isToday()) {
+      return await this.getTransactionPriceToday();
+    }
+
+    return await this.getTransactionPriceHistorical(date);
+  }
+
+  private async getTransactionPriceToday(): Promise<number | undefined> {
+    return await this.cachingService.getOrSetCache(
+      'currentPrice',
+      async () => await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price),
+      oneMinute()
+    );
+  }
+
+  private async getTransactionPriceHistorical(date: Date): Promise<number | undefined> {
+    return await this.cachingService.getOrSetCache(
+      `price:${date.toISODateString()}`,
+      async () => await this.dataApiService.getQuotesHistoricalTimestamp(DataQuoteType.price, date.getTime() / 1000),
+      oneDay() * 7
+    );
   }
 
   async tryGetTransactionFromElastic(txHash: string): Promise<TransactionDetailed | null> {
