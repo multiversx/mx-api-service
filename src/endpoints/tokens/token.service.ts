@@ -269,6 +269,10 @@ export class TokenService {
   async getCollectionsForAddress(address: string, queryPagination: QueryPagination): Promise<NftCollection[]> {
     let esdtResult = await this.gatewayService.get(`address/${address}/esdts-with-role/ESDTRoleNFTCreate`);
 
+    if (esdtResult.tokens.length === 0) {
+      return [];
+    }
+
     let filter = new CollectionFilter();
     filter.identifiers = esdtResult.tokens;
 
