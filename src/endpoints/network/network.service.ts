@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Stats } from 'src/endpoints/network/entities/stats';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { CachingService } from 'src/helpers/caching.service';
+import { DataApiService } from 'src/helpers/data.api.service';
 import { GatewayService } from 'src/helpers/gateway.service';
 import { oneMinute } from 'src/helpers/helpers';
 import { AccountService } from '../accounts/account.service';
@@ -23,6 +24,7 @@ export class NetworkService {
     private readonly blockService: BlockService,
     private readonly accountService: AccountService,
     private readonly transactionService: TransactionService,
+    private readonly dataApiService: DataApiService,
   ) {}
 
   async getConstants(): Promise<Constants> {
@@ -65,6 +67,8 @@ export class NetworkService {
       { account: { balance } },
       { metrics: { erd_total_supply } },
       [, totalWaitingStakeBase64],
+      priceValue,
+      marketCapValue,
     ] = await Promise.all([
       this.gatewayService.get(`address/${this.apiConfigService.getAuctionContractAddress()}`),
       this.gatewayService.get('network/economics'),
@@ -72,6 +76,8 @@ export class NetworkService {
         this.apiConfigService.getDelegationContractAddress(),
         'getTotalStakeByType',
       ),
+      this.dataApiService.getQuotesHistoricalLatest('price'),
+      this.dataApiService.getQuotesHistoricalLatest('market_cap')
     ]);
 
     const totalWaitingStakeHex = Buffer.from(totalWaitingStakeBase64, 'base64').toString('hex');
@@ -84,7 +90,10 @@ export class NetworkService {
 
     const circulatingSupply = totalSupply - locked;
 
-    return { totalSupply, circulatingSupply, staked };
+    const price = parseFloat(priceValue.toFixed(2));
+    const marketCap = parseInt(marketCapValue.toFixed(0));
+
+    return { totalSupply, circulatingSupply, staked, price, marketCap };
   }
 
   async getStats(): Promise<Stats> {
