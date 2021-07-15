@@ -21,12 +21,18 @@ export class ApiService {
   private getConfig(timeout: number | undefined): AxiosRequestConfig {
     timeout = timeout || this.defaultTimeout;
 
+    let headers = {};
+
+    let rateLimiterSecret = this.apiConfigService.getRateLimiterSecret();
+    if (rateLimiterSecret) {
+      // @ts-ignore
+      headers['x-rate-limiter-secret'] = rateLimiterSecret;
+    }
+
     return {
       timeout,
       httpAgent: this.keepaliveAgent,
-      headers: {
-        'x-rate-limiter-secret': this.apiConfigService.getRateLimiterSecret()
-      }
+      headers
     };
   }
 
