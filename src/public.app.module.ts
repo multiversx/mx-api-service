@@ -98,7 +98,7 @@ const DailyRotateFile = require('winston-daily-rotate-file');
   ],
   exports: [
     ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService,
-    TokenService, ShardService, 
+    TokenService, ShardService, IdentitiesService
   ]
 })
 export class PublicAppModule {}
