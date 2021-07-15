@@ -51,7 +51,8 @@ export class RoundController {
       @Query("validator") validator: string | undefined,
       @Query('condition', new ParseOptionalEnumPipe(QueryCondition)) condition: QueryCondition | undefined, 
       @Query("shard", new ParseOptionalIntPipe) shard: number | undefined,
-      @Query("epoch", new ParseOptionalIntPipe) epoch: number | undefined): Promise<number> {
+      @Query("epoch", new ParseOptionalIntPipe) epoch: number | undefined
+    ): Promise<number> {
       return this.roundService.getRoundCount({ from, size, condition, validator, shard, epoch });
     }
 
@@ -63,7 +64,8 @@ export class RoundController {
       @Query("validator") validator: string | undefined,
       @Query('condition', new ParseOptionalEnumPipe(QueryCondition)) condition: QueryCondition | undefined, 
       @Query("shard", new ParseOptionalIntPipe) shard: number | undefined,
-      @Query("epoch", new ParseOptionalIntPipe) epoch: number | undefined): Promise<number> {
+      @Query("epoch", new ParseOptionalIntPipe) epoch: number | undefined
+    ): Promise<number> {
       return this.roundService.getRoundCount({ from, size, condition, validator, shard, epoch });
     }
 

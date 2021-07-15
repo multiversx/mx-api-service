@@ -47,7 +47,8 @@ export class BlockController {
       @Query('shard', ParseOptionalIntPipe) shard: number | undefined, 
       @Query('proposer') proposer: string | undefined,
       @Query('validator') validator: string | undefined,
-      @Query('epoch', ParseOptionalIntPipe) epoch: number | undefined,): Promise<number> {
+      @Query('epoch', ParseOptionalIntPipe) epoch: number | undefined,
+    ): Promise<number> {
       return this.blockService.getBlocksCount({ shard, proposer, validator, epoch });
     }
 
@@ -57,7 +58,8 @@ export class BlockController {
       @Query('shard', ParseOptionalIntPipe) shard: number | undefined, 
       @Query('proposer') proposer: string | undefined,
       @Query('validator') validator: string | undefined,
-      @Query('epoch', ParseOptionalIntPipe) epoch: number | undefined,): Promise<number> {
+      @Query('epoch', ParseOptionalIntPipe) epoch: number | undefined,
+    ): Promise<number> {
       return this.blockService.getBlocksCount({ shard, proposer, validator, epoch });
     }
 
