@@ -226,4 +226,8 @@ export class ApiConfigService {
 
     return useLegacyElastic;
   }
+
+  getRateLimiterSecret(): string | undefined {
+    return this.configService.get<string>('rateLimiterSecret');
+  }
 }

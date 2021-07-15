@@ -9,4 +9,10 @@ export class Economics {
   
   @ApiProperty()
   staked: number = 0;
+
+  @ApiProperty()
+  price: number = 0;
+
+  @ApiProperty()
+  marketCap: number = 0;
 }
