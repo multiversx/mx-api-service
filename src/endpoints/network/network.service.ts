@@ -91,7 +91,7 @@ export class NetworkService {
     const circulatingSupply = totalSupply - locked;
 
     const price = parseFloat(priceValue.toFixed(2));
-    const marketCap = parseFloat(marketCapValue.toFixed(2));
+    const marketCap = parseInt(marketCapValue.toFixed(0));
 
     return { totalSupply, circulatingSupply, staked, price, marketCap };
   }
