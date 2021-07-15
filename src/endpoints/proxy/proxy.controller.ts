@@ -106,7 +106,7 @@ export class ProxyController {
     @Param('hash') hash: string,
     @Query('sender') sender: string,
   ) {
-    await this.gatewayGet(res, `transaction/${hash}`, { sender });
+    await this.gatewayGet(res, `transaction/${hash}/status`, { sender });
   }
 
   @Post('/vm-values/hex')
