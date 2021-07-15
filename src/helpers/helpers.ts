@@ -106,6 +106,15 @@ export function isSmartContractAddress(address: string): boolean {
   return address.includes('qqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqq');
 }
 
+export function hexToString(hex: string): string {
+  var str = '';
+  for (var n = 0; n < hex.length; n += 2) {
+    str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+  }
+  
+  return str;
+}
+
 export function numberDecode(encoded: string) {
   const hex = Buffer.from(encoded, 'base64').toString('hex');
   return BigNumber(hex, 16).toString(10);
