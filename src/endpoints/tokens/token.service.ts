@@ -69,9 +69,16 @@ export class TokenService {
     return tokens.map(item => mergeObjects(new TokenDetailed(), item));
   }
 
-  async getTokenCount(): Promise<number> {
-    let allTokens = await this.getAllTokens();
-    return allTokens.length;
+  async getTokenCount(search: string | undefined): Promise<number> {
+    let tokens = await this.getAllTokens();
+
+    if (search) {
+      let searchLower = search.toLowerCase();
+
+      tokens = tokens.filter(token => token.name.toLowerCase().includes(searchLower) || token.identifier.toLowerCase().includes(searchLower));
+    }
+
+    return tokens.length;
   }
 
   async getNft(identifier: string): Promise<TokenProperties | undefined> {
@@ -236,8 +243,8 @@ export class TokenService {
     return nfts;
   }
 
-  async getNftCount(): Promise<number> {
-    return await this.elasticService.getTokenCount();
+  async getNftCount(filter: NftFilter): Promise<number> {
+    return await this.elasticService.getTokenCount(filter);
   }
   
   async getTokenCountForAddress(address: string): Promise<number> {
