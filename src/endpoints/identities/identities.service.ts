@@ -165,7 +165,6 @@ export class IdentitiesService {
       identity.rank = index + 1;
     });
 
-    // @ts-ignore
     return identities;
   }
 }
