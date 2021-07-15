@@ -52,14 +52,14 @@ export class AccountService {
     const [
       txCount,
       {
-        account: { nonce, balance, code, codeHash, rootHash },
+        account: { nonce, balance, code, codeHash, rootHash, username },
       },
     ] = await Promise.all([
       this.elasticService.getCount('transactions', query, 'should'),
       this.gatewayService.get(`address/${address}`)
     ]);
 
-    let result = { address, nonce, balance, code, codeHash, rootHash, txCount };
+    let result = { address, nonce, balance, code, codeHash, rootHash, txCount, username };
 
     return result;
   }

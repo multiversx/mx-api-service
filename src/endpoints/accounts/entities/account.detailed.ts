@@ -10,4 +10,6 @@ export class AccountDetailed extends Account {
     rootHash: string = '';
     @ApiProperty({ description: 'The number of transactions performed on this account' })
     txCount: number = 0;
+    @ApiProperty()
+    username: string = '';
 }
