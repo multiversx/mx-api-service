@@ -426,8 +426,6 @@ export class ElasticService {
       }
     };
 
-    console.log({query: JSON.stringify(payload)});
-
     let url = `${this.url}/tokens/_search`;
     let documents = await this.getDocuments(url, payload);
 

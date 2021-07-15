@@ -163,7 +163,6 @@ describe('Token Controller', () => {
       });
 
       it(`should return a list with all nfts of the creator`, async () => {
-        console.log(`Getting nfts for creator '${nftCreator}'`);
         const nftsList = await tokenController.getNfts(0, 25, undefined, undefined, undefined, undefined, nftCreator, undefined);
         expect(nftsList).toBeInstanceOf(Array);
 

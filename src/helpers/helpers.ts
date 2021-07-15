@@ -111,7 +111,28 @@ export function numberDecode(encoded: string) {
   return BigNumber(hex, 16).toString(10);
 };
 
+Date.prototype.isToday = function(): boolean {
+  return this.toISODateString() === new Date().toISODateString();
+};
+
+Date.prototype.toISODateString = function(): string {
+  return this.toISOString().slice(0, 10);
+};
+
+Number.prototype.toRounded = function(digits: number): number {
+  return parseFloat(this.toFixed(digits));
+};
+
 declare global {
+  interface Number {
+    toRounded(digits: number): number;
+  }
+
+  interface Date {
+    toISODateString(): string;
+    isToday(): boolean;
+  }
+
   interface Array<T> {
     groupBy(predicate: (item: T) => any): any;
     selectMany(predicate: (item: T) => T[]): T[];
