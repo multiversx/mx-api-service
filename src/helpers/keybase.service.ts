@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ApiConfigService } from "./api.config.service";
+// import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
 import { CachingService } from "./caching.service";
 import { Keybase } from "./entities/keybase";
@@ -10,7 +10,7 @@ export class KeybaseService {
   // private readonly logger: Logger
 
   constructor(
-    private readonly apiConfigService: ApiConfigService,
+    // private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly apiService: ApiService
   ) {
