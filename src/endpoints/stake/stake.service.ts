@@ -71,15 +71,7 @@ export class StakeService {
     };
   };
 
-  async getStakes(addresses: string[]) {
-    return await this.cachingService.getOrSetCache(
-      'stakes',
-      async () => this.getStakesRaw(addresses),
-      oneHour()
-    );
-  }
-
-  async getStakesRaw(addresses: string[]): Promise<Stake[]> {
+  async getStakes(addresses: string[]): Promise<Stake[]> {
     const stakes = await this.getStakedTopups(addresses);
   
     const value: Stake[] = [];
