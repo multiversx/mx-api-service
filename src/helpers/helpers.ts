@@ -112,10 +112,6 @@ export function numberDecode(encoded: string) {
 };
 
 export function cleanupApiValueRecursively(obj: any) {
-  if (typeof obj === 'number') {
-    return obj;
-  }
-
   if (Array.isArray(obj)) {
     for (let item of obj) {
       if (item && typeof item === 'object') {
@@ -141,6 +137,8 @@ export function cleanupApiValueRecursively(obj: any) {
       }
     }
   }
+
+  return obj
 }
 
 Date.prototype.isToday = function(): boolean {
