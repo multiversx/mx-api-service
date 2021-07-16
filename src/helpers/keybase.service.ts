@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ApiConfigService } from "./api.config.service";
+// import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
 import { CachingService } from "./caching.service";
 import { Keybase } from "./entities/keybase";
@@ -10,7 +10,7 @@ export class KeybaseService {
   // private readonly logger: Logger
 
   constructor(
-    private readonly apiConfigService: ApiConfigService,
+    // private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly apiService: ApiService
   ) {
@@ -32,15 +32,16 @@ export class KeybaseService {
     }
 
     try {
-      const url = this.apiConfigService.getNetwork() === 'mainnet'
-          ? `https://keybase.pub/${keybase.identity}/elrond/${keybase.key}`
-          : `https://keybase.pub/${keybase.identity}/elrond/${this.apiConfigService.getNetwork()}/${keybase.key}`;
+      // const url = this.apiConfigService.getNetwork() === 'mainnet'
+      //     ? `https://keybase.pub/${keybase.identity}/elrond/${keybase.key}`
+      //     : `https://keybase.pub/${keybase.identity}/elrond/${this.apiConfigService.getNetwork()}/${keybase.key}`;
   
       // this.logger.log(`Fetching keybase for identity ${keybase.identity} and key ${keybase.key}`);
 
-      const { status } = await this.apiService.head(url);
+      // const { status } = await this.apiService.head(url);
 
-      return status === 200;
+      // return status === 200;
+      return true;
     } catch (error) {
       return false;
     }
