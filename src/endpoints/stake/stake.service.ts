@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { GatewayService } from "src/helpers/gateway.service";
-import { bech32Decode, oneHour, oneMinute } from "src/helpers/helpers";
+import { bech32Decode, oneMinute } from "src/helpers/helpers";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { NodeStatus } from "../nodes/entities/node.status";
 import { NodeType } from "../nodes/entities/node.type";
@@ -71,15 +71,7 @@ export class StakeService {
     };
   };
 
-  async getStakes(addresses: string[]) {
-    return await this.cachingService.getOrSetCache(
-      'stakes',
-      async () => this.getStakesRaw(addresses),
-      oneHour()
-    );
-  }
-
-  async getStakesRaw(addresses: string[]): Promise<Stake[]> {
+  async getStakes(addresses: string[]): Promise<Stake[]> {
     const stakes = await this.getStakedTopups(addresses);
   
     const value: Stake[] = [];
