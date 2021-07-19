@@ -91,4 +91,13 @@ export class BlockService {
 
     return mergeObjects(new BlockDetailed(), result);
   }
+
+  async getCurrentEpoch(): Promise<number> {
+    let blocks = await this.getBlocks(undefined, undefined, undefined, undefined, 0, 1);
+    if (blocks.length === 0) {
+      return -1;
+    }
+
+    return blocks[0].epoch;
+  }
 }

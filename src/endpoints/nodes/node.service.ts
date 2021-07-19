@@ -14,6 +14,7 @@ import { NodeQuery } from "./entities/node.query";
 import { ProviderService } from "../providers/provider.service";
 import { StakeService } from "../stake/stake.service";
 import { SortOrder } from "src/helpers/entities/sort.order";
+import { BlockService } from "../blocks/block.service";
 
 @Injectable()
 export class NodeService {
@@ -25,7 +26,8 @@ export class NodeService {
     private readonly keybaseService: KeybaseService,
     private readonly stakeService: StakeService,
     @Inject(forwardRef(() => ProviderService))
-    private readonly providerService: ProviderService
+    private readonly providerService: ProviderService,
+    private readonly blockService: BlockService
   ) {}
 
   private getIssues(node: Node, version: string): string[] {
@@ -216,7 +218,8 @@ export class NodeService {
     }
 
     const blses = nodes.filter(node => node.type === NodeType.validator).map(node => node.bls);
-    const owners = await this.getOwners(blses);
+    const epoch = await this.blockService.getCurrentEpoch();
+    const owners = await this.getOwners(blses, epoch);
 
     for (let [index, bls] of blses.entries()) {
       const node = nodes.find(node => node.bls === bls);
@@ -265,15 +268,10 @@ export class NodeService {
     return nodes;
   }
 
-  async getOwners(blses: string[], skipCache = false) {
-    const keys = blses.map((bls) => `owner:${bls}`);
+  async getOwners(blses: string[], epoch: number) {
+    const keys = blses.map((bls) => `owner:${epoch}:${bls}`);
 
-    let cached: any[] = [];
-    if (skipCache) {
-      cached = new Array(keys.length).fill(null);
-    } else {
-      cached = await this.cachingService.batchGetCache(keys);
-    }
+    let cached = await this.cachingService.batchGetCache(keys);
 
     const missing = cached
       .map((element, index) => (element === null ? index : false))
@@ -299,7 +297,7 @@ export class NodeService {
       }
 
       const params = {
-        keys: Object.keys(owners).map((bls) => `owner:${bls}`),
+        keys: Object.keys(owners).map((bls) => `owner:${epoch}:${bls}`),
         values: Object.values(owners),
         ttls: new Array(Object.keys(owners).length).fill(60 * 60 * 24), // 24h
       };
