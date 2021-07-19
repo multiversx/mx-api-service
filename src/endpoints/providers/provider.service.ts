@@ -122,15 +122,6 @@ export class ProviderService {
     return await this.cachingService.getOrSetCache('providers', async () => await this.getAllProvidersRaw(), oneHour());
   }
 
-  async tryGetAllProvidersRaw(): Promise<Provider[]> {
-    try {
-      return await this.getAllProvidersRaw();
-    } catch (error) {
-      this.logger.error('getProviders error', error);
-      return [];
-    }
-  }
-
   async getAllProvidersRaw() : Promise<Provider[]> {
     const providers = await this.getProviderAddresses();
 
@@ -204,10 +195,6 @@ export class ProviderService {
   }
 
   async getProviderAddresses() {
-    return await this.cachingService.getOrSetCache('providersAddresses', async () => await this.getProviderAddressesRaw(), this.apiConfigService.getProcessTtl());
-  }
-
-  async getProviderAddressesRaw() {
     let providersBase64: string[];
     try {
       providersBase64 = await this.vmQueryService.vmQuery(

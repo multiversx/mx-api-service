@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { ScheduleModule } from '@nestjs/schedule';
 import configuration from 'config/configuration';
 import { CacheWarmerService } from './crons/cache.warmer.service';
+import { ApiConfigService } from './helpers/api.config.service';
 import { PublicAppModule } from './public.app.module';
 
 @Module({
@@ -15,7 +17,21 @@ import { PublicAppModule } from './public.app.module';
   ],
   controllers: [],
   providers: [
-    CacheWarmerService
+    CacheWarmerService,
+    {
+      provide: 'PUBSUB_SERVICE',
+      useFactory: (apiConfigService: ApiConfigService) => {
+        let clientOptions: ClientOptions = {
+          transport: Transport.REDIS,
+          options: {
+            url: `redis://${apiConfigService.getRedisUrl()}:6379`
+          }
+        };
+
+        return ClientProxyFactory.create(clientOptions);
+      },
+      inject: [ ApiConfigService ]
+    }
   ],
 })
 export class CacheWarmerModule {}

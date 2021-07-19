@@ -171,8 +171,8 @@ export class CachingService {
 
     let chunks = this.getChunks(payload, 100);
 
-    for (let [index, chunk] of chunks.entries()) {
-      this.logger.log(`Loading ${index + 1} / ${chunks.length} chunks`);
+    for (let [_, chunk] of chunks.entries()) {
+      // this.logger.log(`Loading ${index + 1} / ${chunks.length} chunks`);
 
       let retries = 0;
       while (true) {
