@@ -107,7 +107,7 @@ export class BlockService {
   }
 
   async getCurrentEpoch(): Promise<number> {
-    let blocks = await this.getBlocks(undefined, undefined, undefined, undefined, 0, 1);
+    let blocks = await this.getBlocks(new BlockFilter(), { from: 0, size: 1 });
     if (blocks.length === 0) {
       return -1;
     }
