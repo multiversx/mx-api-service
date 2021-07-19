@@ -29,7 +29,7 @@ export class BlockController {
       @Query('validator') validator: string | undefined,
       @Query('epoch', ParseOptionalIntPipe) epoch: number | undefined,
       @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
-      @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+      @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     ): Promise<Block[]> {
       return this.blockService.getBlocks({ shard, proposer, validator, epoch }, { from, size });
     }

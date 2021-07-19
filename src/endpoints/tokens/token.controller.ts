@@ -38,14 +38,16 @@ export class TokenController {
   })
   @ApiQuery({ name: 'search', description: 'Search by token name', required: false })
   async getTokenCount(
-    @Query('search') search: string | undefined,): Promise<number> {
+    @Query('search') search: string | undefined,
+  ): Promise<number> {
     return await this.tokenService.getTokenCount(search);
   }
 
   @Get("/tokens/c")
   @ApiExcludeEndpoint()
   async getTokenCountAlternative(
-    @Query('search') search: string | undefined,): Promise<number> {
+    @Query('search') search: string | undefined,
+  ): Promise<number> {
     return await this.tokenService.getTokenCount(search);
   }
 
