@@ -14,7 +14,7 @@ urls:
     - 'https://testnet-api.elrond.com'
     - 'https://api.elrond.com'
   elastic:
-    - 'https://search-elrond-devnet-v2-ov66nzaicqf257tba5rctuo73m.eu-central-1.es.amazonaws.com'
+    - 'https://devnet-index.elrond.com'
   gateway:
     - 'https://devnet-gateway.elrond.com'
   redis: '127.0.0.1'
