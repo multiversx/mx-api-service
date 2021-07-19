@@ -25,12 +25,12 @@ export class BlockService {
 
     if (proposer && shard !== undefined && epoch !== undefined) {
       let index = await this.elasticService.getBlsIndex(proposer, shard, epoch);
-      query.proposer = index ? index : -1;
+      query.proposer = index !== false ? index : -1;
     }
 
     if (validator && shard !== undefined && epoch !== undefined) {
       let index = await this.elasticService.getBlsIndex(validator, shard, epoch);
-      query.validators = index ? index : -1;
+      query.validators = index !== false ? index : -1;
     }
 
     return query;
