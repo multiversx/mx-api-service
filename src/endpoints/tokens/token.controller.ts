@@ -182,7 +182,8 @@ export class TokenController {
 		@Query('collection') collection: string | undefined,
 		@Query('tags') tags: string | undefined,
 		@Query('creator') creator: string | undefined,
-		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,): Promise<number> {
+		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
+  ): Promise<number> {
     return await this.tokenService.getNftCount({ search, type, collection, tags, creator, hasUris });
   }
 
@@ -194,7 +195,8 @@ export class TokenController {
 		@Query('collection') collection: string | undefined,
 		@Query('tags') tags: string | undefined,
 		@Query('creator') creator: string | undefined,
-		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,): Promise<number> {
+		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
+  ): Promise<number> {
     return await this.tokenService.getNftCount({ search, type, collection, tags, creator, hasUris });
   }
 
