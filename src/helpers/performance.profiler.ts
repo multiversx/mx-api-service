@@ -12,14 +12,14 @@ export class PerformanceProfiler {
     this.description = description;
   }
 
-  stop(description: string | null = null, skipLogging: boolean = false) {
+  stop(description: string | null = null, log: boolean = false) {
     this.stopped = Date.now();
     this.duration = this.stopped - this.started;
 
-    if (!skipLogging) {
+    if (log) {
       let logger = new Logger(PerformanceProfiler.name);
 
-      logger.verbose(`${description ?? this.description}: ${this.duration}ms`);
+      logger.log(`${description ?? this.description}: ${this.duration}ms`);
     }
   }
 }

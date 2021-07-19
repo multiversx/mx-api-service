@@ -375,7 +375,7 @@ export class ElasticService {
     return await this.getDocumentCount(url, payload);
   }
 
-  async getTokenCollections(from: number, size: number, search: string | undefined, type: NftType | undefined, token: string | undefined) {
+  async getTokenCollections(from: number, size: number, search: string | undefined, type: NftType | undefined, token: string | undefined, issuer: string | undefined, identifiers: string[]) {
     let mustNotQueries = [];
     mustNotQueries.push(this.getExistsQuery('identifier'));
 
@@ -392,9 +392,20 @@ export class ElasticService {
       mustQueries.push(this.getSimpleQuery({ token: { query: token, operator: "AND" } }));
     }
 
+    if (issuer !== undefined) {
+      mustQueries.push(this.getSimpleQuery({ issuer }));
+    }
+
     let shouldQueries = [];
-    shouldQueries.push(this.getSimpleQuery({ type: NftType.SemiFungibleESDT }));
-    shouldQueries.push(this.getSimpleQuery({ type: NftType.NonFungibleESDT }));
+
+    if (identifiers.length > 0) {
+      for (let identifier of identifiers) {
+        shouldQueries.push(this.getSimpleQuery({ token: { query: identifier, operator: "AND" } }));
+      }
+    } else {
+      shouldQueries.push(this.getSimpleQuery({ type: NftType.SemiFungibleESDT }));
+      shouldQueries.push(this.getSimpleQuery({ type: NftType.NonFungibleESDT }));
+    }
 
     let payload = {
       sort: [

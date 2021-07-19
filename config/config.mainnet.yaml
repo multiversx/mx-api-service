@@ -1,6 +1,7 @@
 network: 'mainnet'
 csrfSecret: '1nt3rn3tsc@l3'
 metaChainShardId: 4294967295
+useLegacyElastic: true
 api:
   public: true
   private: true
@@ -10,9 +11,9 @@ cron:
   cacheWarmer: true
 urls:
   api:
-    - 'https://beta-api.elrond.com'
-    - 'https://devnet-beta-api.elrond.com'
-    - 'https://testnet-beta-api.elrond.com'
+    - 'https://api.elrond.com'
+    - 'https://devnet-api.elrond.com'
+    - 'https://testnet-api.elrond.com'
   elastic:
     - 'https://index.elrond.com'
   gateway:

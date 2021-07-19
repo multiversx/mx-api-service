@@ -28,7 +28,7 @@ export class TokenController {
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('search') search: string | undefined,
   ): Promise<TokenDetailed[]> {
-    return await this.tokenService.getTokens(from, size, search);
+    return await this.tokenService.getTokens({ from, size }, search);
   }
 
   @Get("/tokens/count")
@@ -76,18 +76,21 @@ export class TokenController {
 	@ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
 	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
 	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
+	@ApiQuery({ name: 'issuer', description: 'Filter by token issuer', required: false })
   async getNftCollections(
 		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+		@Query('issuer') issuer: string | undefined,
   ): Promise<NftCollection[]> {
-    return await this.tokenService.getNftCollections(from, size, search, type);
+    return await this.tokenService.getNftCollections({ from, size }, { search, type, issuer, identifiers: [] });
   }
 
   @Get("/collections/count")
 	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
 	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
+	@ApiQuery({ name: 'issuer', description: 'Filter by token issuer', required: false })
   @ApiResponse({
     status: 200,
     description: 'The number of non-fungible and semi-fungible token collections available on the blockchain',
@@ -95,8 +98,9 @@ export class TokenController {
   async getCollectionCount(
     @Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+		@Query('issuer') issuer: string | undefined,
   ): Promise<number> {
-    return await this.tokenService.getNftCollectionCount(search, type);
+    return await this.tokenService.getNftCollectionCount({ search, type, issuer, identifiers: [] });
   }
 
   @Get("/collections/c")
@@ -104,8 +108,9 @@ export class TokenController {
   async getCollectionCountAlternative(
     @Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+		@Query('issuer') issuer: string | undefined,
   ): Promise<number> {
-    return await this.tokenService.getNftCollectionCount(search, type);
+    return await this.tokenService.getNftCollectionCount({ search, type, issuer, identifiers: [] });
   }
 
   @Get('/collections/:collection')
@@ -152,7 +157,7 @@ export class TokenController {
 		@Query('creator') creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<Nft[]> {
-    return await this.tokenService.getNfts(from, size, { search, type, collection, tags, creator, hasUris });
+    return await this.tokenService.getNfts({ from, size }, { search, type, collection, tags, creator, hasUris });
   }
 
   @Get("/nfts/count")

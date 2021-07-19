@@ -3,18 +3,16 @@ import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { oneMinute } from "src/helpers/helpers";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
-import { ProviderService } from "../providers/provider.service";
-import { StakeService } from "../stake/stake.service";
 import { Delegation } from "./entities/delegation";
+import { NodeService } from "../nodes/node.service";
 
 @Injectable()
 export class DelegationService {
   constructor(
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly providerService: ProviderService,
     private readonly cachingService: CachingService,
-    private readonly stakeService: StakeService
+    private readonly nodeService: NodeService
   ) {}
 
   async getDelegation(): Promise<Delegation> {
@@ -26,13 +24,15 @@ export class DelegationService {
   }
 
   async getDelegationRaw(): Promise<Delegation> {
-    const [providers, configsBase64] = await Promise.all([
-      this.providerService.getAllProviders(),
-      this.vmQueryService.vmQuery(
-        this.apiConfigService.getDelegationManagerContractAddress(),
-        'getContractConfig',
-      ),
-    ]);
+    const configsBase64 = await this.vmQueryService.vmQuery(
+      this.apiConfigService.getDelegationManagerContractAddress(),
+      'getContractConfig',
+    );
+
+    let nodes = await this.nodeService.getAllNodes();
+    let providerAddresses = nodes.map(node => node.provider ? node.provider : node.owner);
+
+    providerAddresses = [...new Set(providerAddresses)];
 
     // @ts-ignore
     const minDelegationHex = Buffer.from(configsBase64.pop(), 'base64').toString('hex');
@@ -40,11 +40,7 @@ export class DelegationService {
       minDelegationHex ? '0x' + minDelegationHex : minDelegationHex
     ).toString();
 
-    const addresses = providers.map(({ provider }) => provider);
-
-    const stakes = await this.stakeService.getStakes(addresses);
-
-    const { stake, topUp } = stakes.reduce(
+    const { stake, topUp } = nodes.reduce(
       (accumulator, { stake, topUp }) => {
         accumulator.stake += BigInt(stake);
         accumulator.topUp += BigInt(topUp);

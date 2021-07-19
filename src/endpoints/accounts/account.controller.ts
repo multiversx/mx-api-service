@@ -13,6 +13,9 @@ import { NftAccount } from '../tokens/entities/nft.account';
 import { ParseOptionalEnumPipe } from 'src/helpers/pipes/parse.optional.enum.pipe';
 import { NftType } from '../tokens/entities/nft.type';
 import { ParseOptionalBoolPipe } from 'src/helpers/pipes/parse.optional.bool.pipe';
+import { WaitingList } from '../waiting-list/entities/waiting.list';
+import { WaitingListService } from '../waiting-list/waiting.list.service';
+import { NftCollection } from '../tokens/entities/nft.collection';
 
 @Controller()
 @ApiTags('accounts')
@@ -22,7 +25,8 @@ export class AccountController {
   constructor(
     private readonly accountService: AccountService,
     private readonly tokenService: TokenService,
-    private readonly delegationLegacyService: DelegationLegacyService
+    private readonly delegationLegacyService: DelegationLegacyService,
+    private readonly waitingListService: WaitingListService,
   ) {
     this.logger = new Logger(AccountController.name);
   }
@@ -40,7 +44,7 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<Account[]> {
-    return this.accountService.getAccounts(from, size);
+    return this.accountService.getAccounts({from, size});
   }
 
   @Get("/accounts/count")
@@ -89,7 +93,8 @@ export class AccountController {
   async getAccountDeferred(@Param('address') address: string): Promise<AccountDeferred[]> {
     try {
       return await this.accountService.getDeferredAccount(address);
-    } catch {
+    } catch(error) {
+      this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
   }
@@ -113,7 +118,7 @@ export class AccountController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<TokenWithBalance[]> {
     try {
-      return await this.tokenService.getTokensForAddress(address, from, size);
+      return await this.tokenService.getTokensForAddress(address, { from, size });
     } catch (error) {
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
@@ -145,6 +150,64 @@ export class AccountController {
   async getTokenCountAlternative(@Param('address') address: string): Promise<number> {
     try {
       return await this.tokenService.getTokenCountForAddress(address);
+    } catch (error) {
+      this.logger.error(error);
+      // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      return 0;
+    }
+  }
+
+  @Get("/accounts/:address/collections")
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+  @ApiResponse({
+    status: 200,
+    description: 'The token collections of a given account',
+    type: NftCollection,
+    isArray: true
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  async getAccountCollections(
+    @Param('address') address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number
+  ): Promise<NftCollection[]> {
+    try {
+      return await this.tokenService.getCollectionsForAddress(address, { from, size });
+    } catch (error) {
+      this.logger.error(error);
+      // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      return [];
+    }
+  }
+
+  @Get("/accounts/:address/collections/count")
+  @ApiResponse({
+    status: 200,
+    description: 'The number of token collections available on the blockchain for the given address',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  async getCollectionCount(@Param('address') address: string): Promise<number> {
+    try {
+      return await this.tokenService.getCollectionCountForAddress(address);
+    } catch (error) {
+      this.logger.error(error);
+      // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      return 0;
+    }
+  }
+
+  @Get("/accounts/:address/collections/c")
+  @ApiExcludeEndpoint()
+  async getCollectionCountAlternative(@Param('address') address: string): Promise<number> {
+    try {
+      return await this.tokenService.getCollectionCountForAddress(address);
     } catch (error) {
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
@@ -209,7 +272,7 @@ export class AccountController {
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<NftAccount[]> {
     try {
-      return await this.tokenService.getNftsForAddress(address, from, size, { search, type, collection, tags, creator, hasUris });
+      return await this.tokenService.getNftsForAddress(address, { from, size }, { search, type, collection, tags, creator, hasUris });
     } catch (error) {
       this.logger.error(error);
       return [];
@@ -348,5 +411,16 @@ export class AccountController {
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
+  }
+
+  @Get("/accounts/:address/waiting-list")
+  @ApiResponse({
+    status: 200,
+    description: 'The waiting list of a given account',
+    type: WaitingList,
+    isArray: true
+  })
+  async getAccountWaitingList(@Param('address') address: string): Promise<WaitingList[]> {
+    return await this.waitingListService.getWaitingListForAddress(address);
   }
 }

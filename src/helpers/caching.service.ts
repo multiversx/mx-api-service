@@ -5,7 +5,7 @@ import { createClient } from 'redis';
 import asyncPool from 'tiny-async-pool';
 import { CachedFunction } from "src/crons/entities/cached.function";
 import { InvalidationFunction } from "src/crons/entities/invalidation.function";
-import { isSmartContractAddress, oneWeek } from "./helpers";
+import { hexToString, isSmartContractAddress, oneWeek } from "./helpers";
 import { PerformanceProfiler } from "./performance.profiler";
 import { ShardTransaction } from "src/crons/entities/shard.transaction";
 import { Cache } from "cache-manager";
@@ -397,6 +397,25 @@ export class CachingService {
     // if transaction target is ESDT SC and functionName is "issue", kick out 'allTokens' key
     if (transactionFuncName === 'issue') {
       return await this.deleteInCache('allTokens');
+    }
+
+    return [];
+  }
+
+  async tryInvalidateTokenProperties(transaction: ShardTransaction): Promise<string[]> {
+    if (transaction.receiver !== this.configService.getEsdtContractAddress()) {
+      return [];
+    }
+
+    let transactionFuncName = transaction.getDataFunctionName();
+
+    if (transactionFuncName === 'controlChanges') {
+      let args = transaction.getDataArgs();
+      if (args && args.length > 0) {
+        let tokenIdentifier = hexToString(args[0]);
+        this.logger.log(`Invalidating token properties for token ${tokenIdentifier}`);
+        return await this.deleteInCache(`tokenProperties:${tokenIdentifier}`);
+      }
     }
 
     return [];

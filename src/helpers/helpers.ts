@@ -1,5 +1,6 @@
 const bech32 = require('bech32');
 const { readdirSync } = require('fs')
+const BigNumber = require('bignumber.js');
 
 export function mergeObjects(obj1: any, obj2: any) {
   for (const key of Object.keys(obj2)) {
@@ -113,7 +114,42 @@ export function denominateString(value: string): number {
   return denominate(BigInt(value));
 }
 
+export function hexToString(hex: string): string {
+  var str = '';
+  for (var n = 0; n < hex.length; n += 2) {
+    str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+  }
+  
+  return str;
+}
+
+export function numberDecode(encoded: string) {
+  const hex = Buffer.from(encoded, 'base64').toString('hex');
+  return BigNumber(hex, 16).toString(10);
+};
+
+Date.prototype.isToday = function(): boolean {
+  return this.toISODateString() === new Date().toISODateString();
+};
+
+Date.prototype.toISODateString = function(): string {
+  return this.toISOString().slice(0, 10);
+};
+
+Number.prototype.toRounded = function(digits: number): number {
+  return parseFloat(this.toFixed(digits));
+};
+
 declare global {
+  interface Number {
+    toRounded(digits: number): number;
+  }
+
+  interface Date {
+    toISODateString(): string;
+    isToday(): boolean;
+  }
+
   interface Array<T> {
     groupBy(predicate: (item: T) => any): any;
     selectMany(predicate: (item: T) => T[]): T[];
