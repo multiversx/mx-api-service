@@ -2,7 +2,6 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
-import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardService } from "src/endpoints/shards/shard.service";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
@@ -28,7 +27,6 @@ export class TransactionProcessorService {
       private readonly metricsService: MetricsService,
       @Inject('PUBSUB_SERVICE') private client: ClientProxy,
       private readonly shardService: ShardService,
-      private readonly nodeService: NodeService,
   ) {
     this.logger = new Logger(TransactionProcessorService.name);
   }
@@ -75,7 +73,6 @@ export class TransactionProcessorService {
         let invalidatedTokenProperties = await this.cachingService.tryInvalidateTokenProperties(transaction);
         let invalidatedTokensOnAccountKeys = await this.cachingService.tryInvalidateTokensOnAccount(transaction);
         let invalidatedTokenBalancesKeys = await this.cachingService.tryInvalidateTokenBalance(transaction);
-        let invalidatedOwners = await this.tryInvalidateOwners(transaction);
 
         allInvalidatedKeys.push(
           ...invalidatedTransactionKeys, 
@@ -83,7 +80,6 @@ export class TransactionProcessorService {
           ...invalidatedTokenProperties,
           ...invalidatedTokensOnAccountKeys, 
           ...invalidatedTokenBalancesKeys,
-          ...invalidatedOwners,
         );
       }
 
@@ -96,22 +92,6 @@ export class TransactionProcessorService {
     } finally {
       this.isProcessing = false;
     }
-  }
-
-  async tryInvalidateOwners(transaction: ShardTransaction): Promise<string[]> {
-    let functionName = transaction.getDataFunctionName();
-    if (functionName !== 'whitelistForMerge') {
-      return [];
-    }
-
-    let blses = await this.nodeService.getOwnerBlses(transaction.receiver);
-    let invalidationKeys = blses.map(bls => `owner:${bls}`);
-
-    for (let invalidationKey of invalidationKeys) {
-      await this.cachingService.deleteInCache(invalidationKey);
-    }
-
-    return invalidationKeys;
   }
 
   async getNewTransactions(): Promise<ShardTransaction[]> {
