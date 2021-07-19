@@ -1,4 +1,5 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
+import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
@@ -22,7 +23,8 @@ export class CacheWarmerService {
     private readonly cachingService: CachingService,
     private readonly identitiesService: IdentitiesService,
     private readonly providerService: ProviderService,
-  ) {
+    @Inject('PUBSUB_SERVICE') private client: ClientProxy,
+    ) {
     this.logger = new Logger(CacheWarmerService.name);
   }
 
@@ -37,6 +39,7 @@ export class CacheWarmerService {
     try {
       let nodes = await this.nodeService.getAllNodesRaw();
       await this.cachingService.setCache('nodes', nodes, oneHour());
+      await this.deleteCacheKey('nodes');
     } catch(error) {
       this.logger.error('Error running node invalidations');
       this.logger.error(error);
@@ -57,6 +60,7 @@ export class CacheWarmerService {
     try {
       let tokens = await this.tokenService.getAllTokensRaw();
       await this.cachingService.setCache('allTokens', tokens, oneHour());
+      await this.deleteCacheKey('allTokens');
     } catch(error) {
       this.logger.error('Error running token invalidations');
       this.logger.error(error);
@@ -77,6 +81,7 @@ export class CacheWarmerService {
     try {
       let identities = await this.identitiesService.getAllIdentitiesRaw();
       await this.cachingService.setCache('identities', identities, oneMinute() * 15);
+      await this.deleteCacheKey('identities');
     } catch(error) {
       this.logger.error('Error running identities invalidations');
       this.logger.error(error);
@@ -97,6 +102,7 @@ export class CacheWarmerService {
     try {
       let providers = await this.providerService.getAllProvidersRaw();
       await this.cachingService.setCache('providers', providers, oneHour());
+      await this.deleteCacheKey('providers');
     } catch(error) {
       this.logger.error('Error running provider invalidations');
       this.logger.error(error);
@@ -104,5 +110,9 @@ export class CacheWarmerService {
       profiler.stop('Running provider invalidations', true);
       this.isRunningProviderInvalidations = false;
     }
+  }
+
+  private async deleteCacheKey(key: string) {
+    await this.client.emit('deleteCacheKeys', [ key ]);
   }
 }

@@ -15,16 +15,7 @@ export class BlockService {
     private readonly cachingService: CachingService
   ) {}
 
-  async getBlocksCount(): Promise<number> {
-    return await this.cachingService.getOrSetCache(
-      'blocks:count',
-      async () => await this.elasticService.getCount('blocks'),
-      oneMinute()
-    );
-  }
-
-  async getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<Block[]> {
-    const { from, size } = queryPagination;
+  private async buildElasticBlocksFilter (filter: BlockFilter): Promise<any> {
     const { shard, proposer, validator, epoch } = filter;
 
     let query: any = {
@@ -41,6 +32,24 @@ export class BlockService {
       let index = await this.elasticService.getBlsIndex(validator, shard, epoch);
       query.validators = index !== false ? index : -1;
     }
+
+    return query;
+  }
+
+  async getBlocksCount(filter: BlockFilter): Promise<number> {
+    let query = await this.buildElasticBlocksFilter(filter);
+
+    return await this.cachingService.getOrSetCache(
+      `blocks:count:${JSON.stringify(query)}`,
+      async () => await this.elasticService.getCount('blocks', query),
+      oneMinute()
+    );
+  }
+
+  async getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<Block[]> {
+    const { from, size } = queryPagination;
+
+    let query = await this.buildElasticBlocksFilter(filter);
 
     const pagination: ElasticPagination = {
       from,
@@ -95,5 +104,14 @@ export class BlockService {
     result.validators = result.validators.map((validator: number) => publicKeys[validator]);
 
     return mergeObjects(new BlockDetailed(), result);
+  }
+
+  async getCurrentEpoch(): Promise<number> {
+    let blocks = await this.getBlocks(new BlockFilter(), { from: 0, size: 1 });
+    if (blocks.length === 0) {
+      return -1;
+    }
+
+    return blocks[0].epoch;
   }
 }

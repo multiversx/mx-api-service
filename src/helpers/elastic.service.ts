@@ -279,7 +279,7 @@ export class ElasticService {
     return await this.getDocumentCount(url, payload);
   }
 
-  async getTokens(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
+  private buildElasticNftFilter(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
     let queries = [];
     queries.push(this.getExistsQuery('identifier'));
 
@@ -312,7 +312,7 @@ export class ElasticService {
       queries.push(this.getNestedQuery("metaData", { "metaData.creator": filter.creator }));
     }
 
-    let payload = {
+    let query = {
       sort: [
          {
             timestamp: {
@@ -329,8 +329,14 @@ export class ElasticService {
       }
     };
 
+    return query;
+  }
+
+  async getTokens(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
+    let query = await this.buildElasticNftFilter(from, size, filter, identifier);
+
     let url = `${this.url}/tokens/_search`;
-    let documents = await this.getDocuments(url, payload);
+    let documents = await this.getDocuments(url, query);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
@@ -453,23 +459,11 @@ export class ElasticService {
     return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
   }
 
-  async getTokenCount(): Promise<number> {
-    let existsQuery = this.getExistsQuery('identifier');
-
-    let payload = {
-      from: 0,
-      size: 0,
-      query: {
-         bool: {
-            must: [
-              existsQuery
-            ]
-         }
-      }
-    };
+  async getTokenCount(filter: NftFilter): Promise<number> {
+    let query = await this.buildElasticNftFilter(0, 0, filter, undefined);
 
     let url = `${this.url}/tokens/_search`;
-    return await this.getDocumentCount(url, payload);
+    return await this.getDocumentCount(url, query);
   }
 
   private buildQuery(query: any = {}, operator: string = 'must') {

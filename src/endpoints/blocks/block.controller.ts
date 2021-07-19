@@ -29,7 +29,7 @@ export class BlockController {
       @Query('validator') validator: string | undefined,
       @Query('epoch', ParseOptionalIntPipe) epoch: number | undefined,
       @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
-      @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+      @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     ): Promise<Block[]> {
       return this.blockService.getBlocks({ shard, proposer, validator, epoch }, { from, size });
     }
@@ -39,14 +39,28 @@ export class BlockController {
       status: 200,
       description: 'The number of blocks available on the blockchain',
     })
-    getBlocksCount(): Promise<number> {
-      return this.blockService.getBlocksCount();
+    @ApiQuery({ name: 'shard', description: 'Id of the shard the block belongs to', required: false })
+    @ApiQuery({ name: 'proposer', description: 'Filter by proposer', required: false })
+    @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
+    @ApiQuery({ name: 'epoch', description: 'Filter by epoch', required: false })
+    getBlocksCount(
+      @Query('shard', ParseOptionalIntPipe) shard: number | undefined, 
+      @Query('proposer') proposer: string | undefined,
+      @Query('validator') validator: string | undefined,
+      @Query('epoch', ParseOptionalIntPipe) epoch: number | undefined,
+    ): Promise<number> {
+      return this.blockService.getBlocksCount({ shard, proposer, validator, epoch });
     }
 
     @Get("/blocks/c")
     @ApiExcludeEndpoint()
-    getBlocksCountAlternative(): Promise<number> {
-      return this.blockService.getBlocksCount();
+    getBlocksCountAlternative(
+      @Query('shard', ParseOptionalIntPipe) shard: number | undefined, 
+      @Query('proposer') proposer: string | undefined,
+      @Query('validator') validator: string | undefined,
+      @Query('epoch', ParseOptionalIntPipe) epoch: number | undefined,
+    ): Promise<number> {
+      return this.blockService.getBlocksCount({ shard, proposer, validator, epoch });
     }
 
     @Get("/blocks/:hash")
