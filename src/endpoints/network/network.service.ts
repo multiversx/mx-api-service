@@ -9,6 +9,7 @@ import { GatewayService } from 'src/helpers/gateway.service';
 import { oneMinute } from 'src/helpers/helpers';
 import { AccountService } from '../accounts/account.service';
 import { BlockService } from '../blocks/block.service';
+import { BlockFilter } from '../blocks/entities/block.filter';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
 import { TransactionService } from '../transactions/transaction.service';
 import { VmQueryService } from '../vm.query/vm.query.service';
@@ -117,7 +118,7 @@ export class NetworkService {
     ] = await Promise.all([
       this.gatewayService.get('network/config'),
       this.gatewayService.get(`network/status/${metaChainShard}`),
-      this.blockService.getBlocksCount(),
+      this.blockService.getBlocksCount(new BlockFilter()),
       this.accountService.getAccountsCount(),
       this.transactionService.getTransactionCount(new TransactionFilter()),
     ]);

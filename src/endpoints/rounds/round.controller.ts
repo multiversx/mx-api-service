@@ -30,7 +30,7 @@ export class RoundController {
       @Query("validator") validator: string | undefined,
       @Query('condition', new ParseOptionalEnumPipe(QueryCondition)) condition: QueryCondition | undefined, 
       @Query("shard", new ParseOptionalIntPipe) shard: number | undefined,
-      @Query("epoch", new ParseOptionalIntPipe) epoch: number | undefined
+      @Query("epoch", new ParseOptionalIntPipe) epoch: number | undefined,
     ): Promise<Round[]> {
       return this.roundService.getRounds({ from, size, condition, validator, shard, epoch });
     }
@@ -40,14 +40,33 @@ export class RoundController {
       status: 200,
       description: 'The number of rounds available on the blockchain',
     })
-    getRoundCount(): Promise<number> {
-      return this.roundService.getRoundCount();
+    @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+    @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+    @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false  })
+    @ApiQuery({ name: 'shard', description: 'Filter by shard identifier', required: false  })
+    @ApiQuery({ name: 'epoch', description: 'Filter by epoch number', required: false  })
+    getRoundCount(
+      @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+      @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+      @Query("validator") validator: string | undefined,
+      @Query('condition', new ParseOptionalEnumPipe(QueryCondition)) condition: QueryCondition | undefined, 
+      @Query("shard", new ParseOptionalIntPipe) shard: number | undefined,
+      @Query("epoch", new ParseOptionalIntPipe) epoch: number | undefined,
+    ): Promise<number> {
+      return this.roundService.getRoundCount({ from, size, condition, validator, shard, epoch });
     }
 
     @Get("/rounds/c")
     @ApiExcludeEndpoint()
-    getRoundCountAlternative(): Promise<number> {
-      return this.roundService.getRoundCount();
+    getRoundCountAlternative(
+      @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+      @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+      @Query("validator") validator: string | undefined,
+      @Query('condition', new ParseOptionalEnumPipe(QueryCondition)) condition: QueryCondition | undefined, 
+      @Query("shard", new ParseOptionalIntPipe) shard: number | undefined,
+      @Query("epoch", new ParseOptionalIntPipe) epoch: number | undefined,
+    ): Promise<number> {
+      return this.roundService.getRoundCount({ from, size, condition, validator, shard, epoch });
     }
 
     @Get("/rounds/:shard/:round")

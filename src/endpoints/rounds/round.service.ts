@@ -11,17 +11,13 @@ import { QueryCondition } from "src/helpers/entities/query.condition";
 export class RoundService {
   constructor(private readonly elasticService: ElasticService) {}
 
-  async getRoundCount(): Promise<number> {
-    return this.elasticService.getCount('rounds');
-  }
-
-  async getRounds(roundQuery: RoundFilter): Promise<Round[]> {
+  private async buildElasticRoundsFilter(filter: RoundFilter): Promise<any> {
     const query: any = {
-      shardId: roundQuery.shard
+      shardId: filter.shard
     };
 
-    if (roundQuery.validator && roundQuery.shard && roundQuery.epoch) {
-      const index = await this.elasticService.getBlsIndex(roundQuery.validator, roundQuery.shard, roundQuery.epoch);
+    if (filter.validator && filter.shard && filter.epoch) {
+      const index = await this.elasticService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
 
       if (index) {
         query.signersIndexes = index;
@@ -30,16 +26,28 @@ export class RoundService {
       }
     }
 
+    return query;
+  }
+
+  async getRoundCount(filter: RoundFilter): Promise<number> {
+    const query = await this.buildElasticRoundsFilter(filter);
+    
+    return this.elasticService.getCount('rounds', query);
+  }
+
+  async getRounds(filter: RoundFilter): Promise<Round[]> {
+    const query = await this.buildElasticRoundsFilter(filter);
+
     const pagination: ElasticPagination = {
-      from: roundQuery.from,
-      size: roundQuery.size
+      from: filter.from,
+      size: filter.size
     }
 
     const sort = {
       timestamp: 'desc',
     };
 
-    let result = await this.elasticService.getList('rounds', 'round', query, pagination, sort, roundQuery.condition ?? QueryCondition.must);
+    let result = await this.elasticService.getList('rounds', 'round', query, pagination, sort, filter.condition ?? QueryCondition.must);
 
     for (let item of result) {
       item.shard = item.shardId;
