@@ -13,6 +13,7 @@ import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
 import { TransactionFilter } from './entities/transaction.filter';
+import { TransactionLog } from './entities/transaction.log';
 import { TransactionReceipt } from './entities/transaction.receipt';
 import { TransactionSendResult } from './entities/transaction.send.result';
 
@@ -124,6 +125,8 @@ export class TransactionService {
 
   async tryGetTransactionFromElastic(txHash: string): Promise<TransactionDetailed | null> {
     try {
+
+      console.log({fromElastic: true});
       const result = await this.elasticService.getItem('transactions', 'txHash', txHash);
 
       let transactionDetailed: TransactionDetailed = mergeObjects(new TransactionDetailed(), result);
@@ -144,6 +147,17 @@ export class TransactionService {
         if (receipts.length > 0) {
           let receipt = receipts[0];
           transactionDetailed.receipt = mergeObjects(new TransactionReceipt(), receipt);
+        }
+      }
+
+      let logs = await this.elasticService.getList('logs', 'txHash', { _id: txHash }, { from: 0, size: 1 }, {});
+      if (logs.length > 0) {
+        let log = logs[0];
+        if (log.events && log.events.length > 0) {
+          transactionDetailed.logs = [];
+          for (let logEvent of log.events) {
+            transactionDetailed.logs.push(mergeObjects(new TransactionLog(), logEvent));
+          }
         }
       }
 
