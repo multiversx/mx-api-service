@@ -4,7 +4,11 @@ export class Provider {
   @ApiProperty()
   provider: string = '';
 
+  @ApiProperty()
   owner: string | null = null;
+
+  @ApiProperty()
+  featured: boolean = false;
 
   @ApiProperty()
   serviceFee: number = 0  ;
