@@ -5,7 +5,7 @@ import { denominateString } from "src/helpers/helpers";
 import { AccountService } from "../accounts/account.service";
 import { NodeStatus } from "../nodes/entities/node.status";
 import { NodeService } from "../nodes/node.service";
-import { ProviderQuery } from "../providers/entities/provider.query";
+import { ProviderFilter } from "../providers/entities/provider.filter";
 import { ProviderService } from "../providers/provider.service";
 import { DelegationService } from "./delegation.service";
 import { Delegation } from "./entities/delegation";
@@ -55,7 +55,7 @@ export class DelegationController {
     //   totalQueued += 2500;
     // }
 
-    let allProviders = await this.providerService.getProviders(new ProviderQuery());
+    let allProviders = await this.providerService.getProviders(new ProviderFilter());
     console.log({providers: allProviders.length});
 
     let totalQueuedNodes = 0;
