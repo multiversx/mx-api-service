@@ -1,12 +1,12 @@
 import { Controller, Get } from "@nestjs/common";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ApiConfigService } from "src/helpers/api.config.service";
+import { GatewayService } from "src/helpers/gateway.service";
 import { denominateString } from "src/helpers/helpers";
 import { AccountService } from "../accounts/account.service";
+import { BlockService } from "../blocks/block.service";
 import { NodeStatus } from "../nodes/entities/node.status";
 import { NodeService } from "../nodes/node.service";
-import { ProviderFilter } from "../providers/entities/provider.filter";
-import { ProviderService } from "../providers/provider.service";
 import { DelegationService } from "./delegation.service";
 import { Delegation } from "./entities/delegation";
 
@@ -18,7 +18,8 @@ export class DelegationController {
     private readonly accountService: AccountService,
     private readonly apiConfigService: ApiConfigService,
     private readonly nodeService: NodeService,
-    private readonly providerService: ProviderService
+    private readonly gatewayService: GatewayService,
+    private readonly blockService: BlockService
   ) {}
 
   @Get("/delegation")
@@ -41,24 +42,11 @@ export class DelegationController {
     let auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
     let auctionAccount = await this.accountService.getAccount(auctionContractAddress);
     let totalStaked = denominateString(auctionAccount.balance);
-    console.log({totalStaked});
 
     let allNodes = await this.nodeService.getAllNodes();
     let queuedNodes = allNodes.filter(x => x.status === NodeStatus.queued);
 
-    console.log({queuedNodes: queuedNodes.length});
-
-    let totalQueued = 0;
     let realStaked = totalStaked;
-    // for (let queuedNodeWithoutIdentity of queuedNodes.filter(x => !x.identity)) {
-    //   realStaked = realStaked - denominateString(queuedNodeWithoutIdentity.stake);
-    //   totalQueued += 2500;
-    // }
-
-    let allProviders = await this.providerService.getProviders(new ProviderFilter());
-    console.log({providers: allProviders.length});
-
-    let totalQueuedNodes = 0;
 
     let groupedQueuedNodesWithOwner = queuedNodes.groupBy(x => x.owner);
     for (let owner of Object.keys(groupedQueuedNodesWithOwner)) {
@@ -70,24 +58,32 @@ export class DelegationController {
 
       let totalNodes = nodesWithSameOwner.length;
       let queuedNodes = groupedQueuedNodesWithOwner[owner].length;
-      totalQueuedNodes += queuedNodes;
 
       let lockedAmount = denominateString(totalLocked.toString());
       let queueRatio = queuedNodes / totalNodes;
       let queuedAmount = lockedAmount * queueRatio;
 
-      console.log({owner, totalNodes, queueRatio, queuedNodes, lockedAmount, queuedAmount});
-
       realStaked = realStaked - queuedAmount;
-      totalQueued += queuedAmount;
     }
 
-    let firstYear = 1952123.4;
-    let apr = firstYear / realStaked;
-    let queuedNodesWithoutIdentity = queuedNodes.filter(x => !x.identity).length;
+    let networkConfig = await this.gatewayService.get('network/config');
+    let roundSeconds = networkConfig.config.erd_round_duration / 1000;
+    let roundsPerEpoch = networkConfig.config.erd_rounds_per_epoch;
+    let epochSeconds = roundSeconds * roundsPerEpoch;
 
-    console.log({totalStaked, realStaked, firstYear, apr, totalQueued, queuedNodesWithoutIdentity, totalQueuedNodes });
+    let yearSeconds = 3600 * 24 * 365;
+    let epochsInYear = yearSeconds / epochSeconds;
 
-    return apr;
+    let currentEpoch = await this.blockService.getCurrentEpoch();
+
+    let yearIndex = Math.floor(currentEpoch / epochsInYear);
+    let inflationAmounts = this.apiConfigService.getInflationAmounts();
+
+    if (yearIndex >= inflationAmounts.length) {
+      throw new Error(`There is no inflation information for year with index ${yearIndex}`);
+    }
+
+    let inflation = inflationAmounts[yearIndex];
+    return inflation / realStaked;
   }
 }

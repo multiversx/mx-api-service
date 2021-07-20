@@ -36,3 +36,11 @@ contracts:
   delegationManager: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6'
   delegation: 'erd1qqqqqqqqqqqqqpgqxwakt2g7u9atsnr03gqcgmhcv38pt7mkd94q6shuwt'
   delegationShardId: 2
+inflation:
+  - 1952123
+  - 1746637
+  - 1541150
+  - 1335663
+  - 1130177
+  - 924690
+  - 719203

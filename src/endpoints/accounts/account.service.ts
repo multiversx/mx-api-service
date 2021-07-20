@@ -84,8 +84,6 @@ export class AccountService {
     let accounts: Account[] = result.map(item => mergeObjects(new Account(), item));
     for (let account of accounts) {
       account.shard = computeShard(bech32Decode(account.address));
-
-      console.log({shard: account.shard});
     }
 
     return accounts;
