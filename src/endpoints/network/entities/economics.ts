@@ -15,4 +15,16 @@ export class Economics {
 
   @ApiProperty()
   marketCap: number = 0;
+
+  @ApiProperty()
+  queued: number = 0;
+
+  @ApiProperty()
+  aprPercent: number = 0;
+
+  @ApiProperty()
+  waiting: number = 0;
+
+  @ApiProperty()
+  inflation: number = 0;
 }
