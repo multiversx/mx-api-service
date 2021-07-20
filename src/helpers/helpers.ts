@@ -144,6 +144,10 @@ export function cleanupApiValueRecursively(obj: any) {
       if (value === null || value === '') {
         delete obj[key];
       }
+
+      if (Array.isArray(value) && value.length === 0) {
+        delete obj[key];
+      }
     }
   }
 

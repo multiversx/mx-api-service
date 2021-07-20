@@ -75,6 +75,16 @@ describe('API helpers', () => {
       expect(testObject).toMatchObject({ a:[ { b: 'b' }, { d: 'd' } ] });
     });
 
+    it('should remove empty array values within object', () => {
+      let testObject: any = {
+        a: [ { b: 'b', c: [] }, { d: 'd', e: [] }]
+      }
+
+      cleanupApiValueRecursively(testObject);
+
+      expect(testObject).toMatchObject({ a:[ { b: 'b' }, { d: 'd' } ] });
+    })
+
     it('should return same object', () => {
       let testObject: any = {
         a: 'a'
