@@ -230,4 +230,13 @@ export class ApiConfigService {
   getRateLimiterSecret(): string | undefined {
     return this.configService.get<string>('rateLimiterSecret');
   }
+
+  getInflationAmounts(): number[] {
+    let inflationAmounts = this.configService.get<number[]>('inflation');
+    if (!inflationAmounts) {
+      throw new Error('No inflation amounts present');
+    }
+
+    return inflationAmounts;
+  }
 }
