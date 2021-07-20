@@ -9,7 +9,6 @@ import { Provider } from "src/endpoints/providers/entities/provider";
 import { ProviderConfig } from "./entities/provider.config";
 import { NodeService } from "../nodes/node.service";
 import { ProviderQuery } from "src/endpoints/providers/entities/provider.query";
-import { PerformanceProfiler } from "src/helpers/performance.profiler";
 import { ApiService } from "src/helpers/api.service";
 
 @Injectable()
@@ -71,15 +70,19 @@ export class ProviderService {
       //   element.locked && element.locked !== '0' ? parseInt(element.locked.slice(0, -18)) : 0;
     });
 
-    let profiler = new PerformanceProfiler('axios');
     let data = await this.getDelegationProviders();
-    profiler.stop();
 
     providers.forEach((provider) => {
       const found = data.find((element: any) => element !== null && provider.provider === element.contract);
 
-      if (found && found.aprValue) {
-        provider.apr = parseFloat(found.aprValue.toFixed(2));
+      if (found) {
+        if (found.aprValue) {
+          provider.apr = parseFloat(found.aprValue.toFixed(2));
+        }
+
+        if (found.featured !== undefined) {
+          provider.featured = found.featured;
+        }
       }
     });
 
@@ -104,7 +107,7 @@ export class ProviderService {
     return providers;
   }
 
-  async getDelegationProviders(): Promise<{ aprValue: number; }[]> {
+  async getDelegationProviders(): Promise<{ aprValue: number; featured: boolean; }[]> {
     return this.cachingService.getOrSetCache(
       'delegationProviders',
       async () => await this.getDelegationProvidersRaw(),
@@ -112,7 +115,7 @@ export class ProviderService {
     );
   }
 
-  async getDelegationProvidersRaw(): Promise<{ aprValue: number; }[]> {
+  async getDelegationProvidersRaw(): Promise<{ aprValue: number; featured: boolean }[]> {
     const { data } = await this.apiService.get(this.apiConfigService.getProvidersUrl());
 
     return data;
@@ -175,7 +178,8 @@ export class ProviderService {
         numNodes: 0,
         stake: '0',
         topUp: '0',
-        locked: '0'
+        locked: '0',
+        featured: false
       };
     });
 
