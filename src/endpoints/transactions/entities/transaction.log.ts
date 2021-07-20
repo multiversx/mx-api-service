@@ -8,7 +8,7 @@ export class TransactionLog {
   identifier: string = '';
 
   @ApiProperty()
-  topics: Array<string> = [];
+  topics: string[] = [];
 
   @ApiProperty()
   data: string = '';

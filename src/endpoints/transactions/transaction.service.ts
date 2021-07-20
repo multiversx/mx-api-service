@@ -125,8 +125,6 @@ export class TransactionService {
 
   async tryGetTransactionFromElastic(txHash: string): Promise<TransactionDetailed | null> {
     try {
-
-      console.log({fromElastic: true});
       const result = await this.elasticService.getItem('transactions', 'txHash', txHash);
 
       let transactionDetailed: TransactionDetailed = mergeObjects(new TransactionDetailed(), result);
@@ -150,16 +148,9 @@ export class TransactionService {
         }
       }
 
-      let logs = await this.elasticService.getList('logs', 'txHash', { _id: txHash }, { from: 0, size: 1 }, {});
-      if (logs.length > 0) {
-        let log = logs[0];
-        if (log.events && log.events.length > 0) {
-          transactionDetailed.logs = [];
-          for (let logEvent of log.events) {
-            transactionDetailed.logs.push(mergeObjects(new TransactionLog(), logEvent));
-          }
-        }
-      }
+      let logs = await this.elasticService.getList('logs', 'txHash', { _id: txHash }, { from: 0, size: 100 }, {});
+
+      transactionDetailed.logs = logs.selectMany(x => x.events).map(transactionLog => mergeObjects(new TransactionLog(), transactionLog));
 
       return mergeObjects(new TransactionDetailed(), transactionDetailed);
     } catch (error) {
