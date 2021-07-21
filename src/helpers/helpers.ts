@@ -102,6 +102,10 @@ export function oneWeek(): number {
   return oneDay() * 7;
 }
 
+export function oneMonth(): number {
+  return oneWeek() * 4;
+}
+
 export function isSmartContractAddress(address: string): boolean {
   return address.includes('qqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqq');
 }

@@ -6,7 +6,7 @@ import { NodeStatus } from "./entities/node.status";
 import { Queue } from "./entities/queue";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { ApiConfigService } from "src/helpers/api.config.service";
-import { bech32Decode, bech32Encode, oneHour, oneMinute, oneWeek } from "src/helpers/helpers";
+import { bech32Decode, bech32Encode, oneHour, oneMinute } from "src/helpers/helpers";
 import { CachingService } from "src/helpers/caching.service";
 import { KeybaseService } from "src/helpers/keybase.service";
 import { Keybase } from "src/helpers/entities/keybase";
@@ -16,6 +16,7 @@ import { StakeService } from "../stake/stake.service";
 import { SortOrder } from "src/helpers/entities/sort.order";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockService } from "../blocks/block.service";
+import { KeybaseDetailed } from "src/helpers/entities/keybase.detailed";
 
 @Injectable()
 export class NodeService {
@@ -200,24 +201,19 @@ export class NodeService {
         return { identity: identity ?? '', key: bls };
       });
 
-    for (let node of nodes) {
-      delete node.identity;
-    }
+    const keybasesDetailed: KeybaseDetailed[] = await this.keybaseService.confirmKeybases(keybases);
 
-    const confirmedKeybases = await this.cachingService.batchProcess(
-      keybases,
-      (element) => `keybase:${element.identity}:${element.key}`,
-      async (keybase) => await this.keybaseService.confirmKeybase(keybase),
-      oneWeek(),
-    );
-
-    for (let [index, keybase] of keybases.entries()) {
-      if (confirmedKeybases[index]) {
-        const node = nodes.find(node => node.bls === keybase.key);
+    for (let keybaseDetailed of keybasesDetailed) {
+      if (keybaseDetailed.confirmed) {
+        const node = nodes.find(node => node.bls === keybaseDetailed.key);
         if (node) {
-          node.identity = keybase.identity;
+          node.identity = keybaseDetailed.identity;
         }
       }
+    }
+
+    for (let node of nodes) {
+      delete node.identity;
     }
 
     const blses = nodes.filter(node => node.type === NodeType.validator).map(node => node.bls);

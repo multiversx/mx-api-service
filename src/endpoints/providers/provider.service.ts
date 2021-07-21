@@ -1,15 +1,16 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
-import { bech32Encode, oneHour, oneMinute, oneWeek } from "src/helpers/helpers";
+import { bech32Encode, oneHour, oneMinute } from "src/helpers/helpers";
 import { KeybaseService } from "src/helpers/keybase.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
-import { Keybase } from "src/helpers/entities/keybase";
 import { Provider } from "src/endpoints/providers/entities/provider";
 import { ProviderConfig } from "./entities/provider.config";
 import { NodeService } from "../nodes/node.service";
 import { ProviderFilter } from "src/endpoints/providers/entities/provider.filter";
 import { ApiService } from "src/helpers/api.service";
+import { KeybaseDetailed } from "src/helpers/entities/keybase.detailed";
+import { Keybase } from "src/helpers/entities/keybase";
 
 @Injectable()
 export class ProviderService {
@@ -122,7 +123,8 @@ export class ProviderService {
   }
 
   async getAllProviders(): Promise<Provider[]> {
-    return await this.cachingService.getOrSetCache('providers', async () => await this.getAllProvidersRaw(), oneHour());
+    return await this.getAllProvidersRaw();
+    // return await this.cachingService.getOrSetCache('providers', async () => await this.getAllProvidersRaw(), oneHour());
   }
 
   async getAllProvidersRaw() : Promise<Provider[]> {
@@ -156,17 +158,14 @@ export class ProviderService {
     ]);
 
     const keybases: Keybase[] = metadatas
-      .map(({ identity }, index) => {
-        return { identity: identity ?? '', key: providers[index] };
-      })
-      .filter(({ identity }) => !!identity);
+    .map(({ identity }, index) => {
+      return { identity: identity ?? '', key: providers[index] };
+    })
+    .filter(({ identity }) => !!identity);
 
-    const confirmedKeybases = await this.cachingService.batchProcess(
-      keybases,
-      keybase => `keybase:${keybase.identity}:${keybase.key}`,
-      async (keybase) => await this.keybaseService.confirmKeybase(keybase),
-      oneWeek(),
-    );
+    const keybasesDetailed: KeybaseDetailed[] = await this.keybaseService.confirmKeybases(keybases);
+
+    console.log(keybasesDetailed);
 
     const value: Provider[] = providers.map((provider, index) => {
       return {
@@ -183,15 +182,12 @@ export class ProviderService {
       };
     });
 
-    keybases.forEach(({ identity, key }, index) => {
-      if (confirmedKeybases[index]) {
-        this.logger.log(`Confirmed keybase for identity ${identity} and key ${key}`);
+    keybasesDetailed.forEach(({ identity, key, confirmed }) => {
+      if (confirmed) {
         const found = value.find(({ provider }) => provider === key);
         if (found) {
           found.identity = identity;
         }
-      } else {
-        this.logger.log(`Unconfirmed keybase for identity ${identity} and key ${key}`);
       }
     });
 

@@ -1,29 +1,49 @@
-import { Injectable } from "@nestjs/common";
-// import { ApiConfigService } from "./api.config.service";
+import { Injectable, Logger } from "@nestjs/common";
+import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
 import { CachingService } from "./caching.service";
 import { Keybase } from "./entities/keybase";
-import { oneWeek } from "./helpers";
+import { KeybaseDetailed } from "./entities/keybase.detailed";
+import { mergeObjects, oneMonth, oneWeek } from "./helpers";
 
 @Injectable()
 export class KeybaseService {
-  // private readonly logger: Logger
+  private readonly logger: Logger
 
   constructor(
-    // private readonly apiConfigService: ApiConfigService,
+    private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
-    private readonly apiService: ApiService
+    private readonly apiService: ApiService,
   ) {
-    // this.logger = new Logger(KeybaseService.name);
+    this.logger = new Logger(KeybaseService.name);
   }
 
-  async confirmKeybases(keybases: Keybase[]): Promise<boolean[]> {
-    return await this.cachingService.batchProcess(
+  async getAllKeybasesDetailed(keybases: Keybase[]): Promise<KeybaseDetailed[]> {
+    return await this.cachingService.getOrSetCache('keybases', async () => await this.confirmKeybases(keybases), oneMonth() * 6);
+  }
+
+  async confirmKeybases(keybases: Keybase[]): Promise<KeybaseDetailed[]> {
+    const confirmedKeybases = await this.cachingService.batchProcess(
       keybases,
       keybase => `keybase:${keybase.identity}:${keybase.key}`,
       async (keybase) => await this.confirmKeybase(keybase),
       oneWeek(),
     );
+
+    return keybases.map((keybase, index) => {
+      const keybaseDetailed = mergeObjects(new KeybaseDetailed(), keybase);
+
+      if (confirmedKeybases[index]) {
+        keybaseDetailed.confirmed = true;
+        this.logger.log(`Confirmed keybase for identity ${keybase.identity} and key ${keybase.key}`);
+        
+      } else {
+        keybaseDetailed.confirmed = false;
+        this.logger.log(`Unconfirmed keybase for identity ${keybase.identity} and key ${keybase.key}`);
+      }
+
+      return keybaseDetailed;
+    });
   }
 
   async confirmKeybase(keybase: Keybase): Promise<boolean> {
@@ -32,16 +52,15 @@ export class KeybaseService {
     }
 
     try {
-      // const url = this.apiConfigService.getNetwork() === 'mainnet'
-      //     ? `https://keybase.pub/${keybase.identity}/elrond/${keybase.key}`
-      //     : `https://keybase.pub/${keybase.identity}/elrond/${this.apiConfigService.getNetwork()}/${keybase.key}`;
+      const url = this.apiConfigService.getNetwork() === 'mainnet'
+          ? `https://keybase.pub/${keybase.identity}/elrond/${keybase.key}`
+          : `https://keybase.pub/${keybase.identity}/elrond/${this.apiConfigService.getNetwork()}/${keybase.key}`;
   
-      // this.logger.log(`Fetching keybase for identity ${keybase.identity} and key ${keybase.key}`);
+      this.logger.log(`Fetching keybase for identity ${keybase.identity} and key ${keybase.key}`);
 
-      // const { status } = await this.apiService.head(url);
+      const { status } = await this.apiService.head(url);
 
-      // return status === 200;
-      return true;
+      return status === 200;
     } catch (error) {
       return false;
     }
