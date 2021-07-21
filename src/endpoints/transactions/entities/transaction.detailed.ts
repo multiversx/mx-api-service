@@ -14,7 +14,7 @@ export class TransactionDetailed extends Transaction {
     @ApiProperty()
     price: number | undefined = undefined;
 
-    @ApiProperty({ type: Array<TransactionLog>() })
-    logs: Array<TransactionLog> | undefined = [];
+    @ApiProperty({ type: TransactionLog })
+    logs: TransactionLog | undefined = undefined;
 }
 

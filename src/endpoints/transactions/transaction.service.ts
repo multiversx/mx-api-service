@@ -148,9 +148,9 @@ export class TransactionService {
         }
       }
 
-      let logs = await this.elasticService.getList('logs', 'txHash', { _id: txHash }, { from: 0, size: 100 }, {});
+      let [log] = await this.elasticService.getList('logs', 'txHash', { _id: txHash }, { from: 0, size: 100 }, {});
 
-      transactionDetailed.logs = logs.selectMany(x => x.events).map(transactionLog => mergeObjects(new TransactionLog(), transactionLog));
+      transactionDetailed.logs = mergeObjects(new TransactionLog(), log);
 
       return mergeObjects(new TransactionDetailed(), transactionDetailed);
     } catch (error) {
@@ -197,7 +197,8 @@ export class TransactionService {
         fee: transaction.fee,
         timestamp: transaction.timestamp,
         scResults: transaction.smartContractResults ? transaction.smartContractResults.map((scResult: any) => mergeObjects(new SmartContractResult(), scResult)) : [],
-        receipt: transaction.receipt ? mergeObjects(new TransactionReceipt(), transaction.receipt) : undefined
+        receipt: transaction.receipt ? mergeObjects(new TransactionReceipt(), transaction.receipt) : undefined,
+        logs: transaction.logs
       };
 
       return mergeObjects(new TransactionDetailed(), result);
