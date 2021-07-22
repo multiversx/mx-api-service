@@ -57,7 +57,7 @@ export class KeybaseService {
     });
   }
 
-  async confirmKeybase(keybase: Keybase): Promise<boolean> {
+  private async confirmKeybase(keybase: Keybase): Promise<boolean> {
     if (!keybase.identity) {
       return false;
     }
