@@ -155,15 +155,6 @@ export class ApiConfigService {
     return dataLatestUrl;
   }
 
-  getCsrfSecret(): string {
-    let csrfSecret = this.configService.get<string>('csrfSecret');
-    if (!csrfSecret) {
-      throw new Error('No CSRF secret present');
-    }
-
-    return csrfSecret;
-  }
-
   getIsTransactionProcessorCronActive(): boolean {
     let isCronActive = this.configService.get<boolean>('cron.transactionProcessor');
     if (isCronActive === undefined) {
