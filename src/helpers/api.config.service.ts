@@ -137,31 +137,8 @@ export class ApiConfigService {
     return providerUrl;
   }
 
-  getDataLatestCompleteUrl(): string {
-    let dataLatestCompleteUrl = this.configService.get<string>('urls.dataLatestCompleteUrl');
-    if (!dataLatestCompleteUrl) {
-      throw new Error('No dataLatestComplete url present');
-    }
-
-    return dataLatestCompleteUrl;
-  }
-
-  getDataLatestUrl(): string {
-    let dataLatestUrl = this.configService.get<string>('urls.dataLatestUrl');
-    if (!dataLatestUrl) {
-      throw new Error('No dataLatest url present');
-    }
-
-    return dataLatestUrl;
-  }
-
-  getCsrfSecret(): string {
-    let csrfSecret = this.configService.get<string>('csrfSecret');
-    if (!csrfSecret) {
-      throw new Error('No CSRF secret present');
-    }
-
-    return csrfSecret;
+  getDataUrl(): string | undefined {
+    return this.configService.get<string>('urls.dataUrl');
   }
 
   getIsTransactionProcessorCronActive(): boolean {

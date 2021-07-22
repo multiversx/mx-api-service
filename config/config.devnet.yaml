@@ -1,5 +1,4 @@
 network: 'devnet'
-csrfSecret: '1nt3rn3tsc@l3'
 metaChainShardId: 4294967295
 api:
   public: true
@@ -19,8 +18,6 @@ urls:
     - 'https://devnet-gateway.elrond.com'
   redis: '127.0.0.1'
   providers: 'https://devnet-delegation.maiarbrowser.com/providers'
-  dataLatestCompleteUrl: 'https://data.elrond.com/latestcomplete'
-  dataLatestUrl: 'https://data.elrond.com/latest'
 caching:
   cacheTtl: 6
   processTtl: 600
