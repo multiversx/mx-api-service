@@ -29,8 +29,6 @@ import { StakeService } from './endpoints/stake/stake.service';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { ApiService } from './helpers/api.service';
 import { ProfilerService } from './helpers/profiler.service';
-import { AccessController } from './endpoints/access/access.controller';
-import { AccessService } from './endpoints/access/access.service';
 import { DelegationLegacyService } from './endpoints/delegation.legacy/delegation.legacy.service';
 import { DelegationLegacyController } from './endpoints/delegation.legacy/delegation.legacy.controller';
 import { StakeController } from './endpoints/stake/stake.controller';
@@ -82,7 +80,7 @@ const DailyRotateFile = require('winston-daily-rotate-file');
   controllers: [
     NetworkController, AccountController, TransactionController, TokenController, BlockController, 
     MiniBlockController, RoundController, NodeController, ProviderController,
-    AccessController, DelegationLegacyController, StakeController, DelegationController,
+    DelegationLegacyController, StakeController, DelegationController,
     VmQueryController, ShardController, IdentitiesController, ProxyController,
     KeysController, WaitingListController
   ],
@@ -90,7 +88,7 @@ const DailyRotateFile = require('winston-daily-rotate-file');
     NetworkService, ApiConfigService, AccountService, ElasticService, GatewayService, TransactionService, 
     TokenService, BlockService, MiniBlockService, RoundService, NodeService, VmQueryService,
     CachingService, KeybaseService, ProviderService,
-    StakeService, LoggingInterceptor, ApiService, ProfilerService, AccessService, DelegationLegacyService,
+    StakeService, LoggingInterceptor, ApiService, ProfilerService, DelegationLegacyService,
     DelegationService, CacheConfigService, CachingInterceptor, ShardService, MetricsService, IdentitiesService,
     TokenAssetService, DataApiService, KeysService, WaitingListService
   ],
