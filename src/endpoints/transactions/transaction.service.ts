@@ -129,11 +129,15 @@ export class TransactionService {
 
       let transactionDetailed: TransactionDetailed = mergeObjects(new TransactionDetailed(), result);
 
+      const hashes: string[] = [];
+      hashes.push(txHash);
+
       if (!this.apiConfigService.getUseLegacyElastic()) {
         if (result.hasScResults === true) {
           let scResults = await this.elasticService.getList('scresults', 'scHash', { originalTxHash: txHash }, { from: 0, size: 100 }, { "timestamp": "asc" });
           for (let scResult of scResults) {
             scResult.hash = scResult.scHash;
+            hashes.push(scResult.hash);
 
             delete scResult.scHash;
           }
@@ -148,9 +152,19 @@ export class TransactionService {
         }
       }
 
-      let [log] = await this.elasticService.getList('logs', 'txHash', { _id: txHash }, { from: 0, size: 100 }, {});
+      let logs: any[] = await this.elasticService.getLogsForTransactionHashes(hashes);
 
-      transactionDetailed.logs = mergeObjects(new TransactionLog(), log);
+      for (let log of logs) {
+        if (log._id === txHash) {
+          transactionDetailed.logs = mergeObjects(new TransactionLog(), log._source);
+        }
+        else {
+          const foundScResult = transactionDetailed.scResults.find(({ hash }) => log._id === hash);
+          if (foundScResult) {
+            foundScResult.logs = mergeObjects(new TransactionLog(), log._source);
+          }
+        }
+      }
 
       return mergeObjects(new TransactionDetailed(), transactionDetailed);
     } catch (error) {
@@ -177,7 +191,7 @@ export class TransactionService {
           }
         }
       }
-
+      
       let result = {
         txHash: txHash,
         data: transaction.data,
