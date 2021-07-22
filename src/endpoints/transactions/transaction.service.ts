@@ -81,6 +81,11 @@ export class TransactionService {
   }
 
   private async getTransactionPrice(transaction: TransactionDetailed): Promise<number | undefined> {
+    let dataUrl = this.apiConfigService.getDataUrl();
+    if (!dataUrl) {
+      return undefined;
+    }
+
     if (transaction === null) {
       return undefined;
     }
