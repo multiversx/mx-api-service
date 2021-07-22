@@ -1,5 +1,4 @@
 network: 'mainnet'
-csrfSecret: '1nt3rn3tsc@l3'
 metaChainShardId: 4294967295
 useLegacyElastic: true
 api:
