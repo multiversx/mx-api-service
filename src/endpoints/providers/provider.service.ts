@@ -163,9 +163,7 @@ export class ProviderService {
     })
     .filter(({ identity }) => !!identity);
 
-    const keybasesDetailed: KeybaseDetailed[] = await this.keybaseService.confirmKeybases(keybases);
-
-    console.log(keybasesDetailed);
+    const keybasesDetailed: KeybaseDetailed[] = await this.keybaseService.getCachedKeybases(keybases);
 
     const value: Provider[] = providers.map((provider, index) => {
       return {

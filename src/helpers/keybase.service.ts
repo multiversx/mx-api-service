@@ -1,10 +1,11 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { NodeService } from "src/endpoints/nodes/node.service";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
 import { CachingService } from "./caching.service";
 import { Keybase } from "./entities/keybase";
 import { KeybaseDetailed } from "./entities/keybase.detailed";
-import { mergeObjects, oneMonth, oneWeek } from "./helpers";
+import { mergeObjects, oneMonth } from "./helpers";
 
 @Injectable()
 export class KeybaseService {
@@ -14,21 +15,31 @@ export class KeybaseService {
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly apiService: ApiService,
+    @Inject(forwardRef(() => NodeService))
+    private readonly nodeService: NodeService,
   ) {
     this.logger = new Logger(KeybaseService.name);
   }
 
-  async getAllKeybasesDetailed(keybases: Keybase[]): Promise<KeybaseDetailed[]> {
-    return await this.cachingService.getOrSetCache('keybases', async () => await this.confirmKeybases(keybases), oneMonth() * 6);
-  }
+  async confirmKeybasesRaw() {
+    let nodes = await this.nodeService.getHeartbeat();
 
-  async confirmKeybases(keybases: Keybase[]): Promise<KeybaseDetailed[]> {
-    const confirmedKeybases = await this.cachingService.batchProcess(
+    const keybases: Keybase[] = nodes
+      .filter(({ identity }) => !!identity)
+      .map(({ identity, bls }) => {
+        return { identity: identity ?? '', key: bls };
+      });
+
+    return await this.cachingService.batchProcess(
       keybases,
       keybase => `keybase:${keybase.identity}:${keybase.key}`,
       async (keybase) => await this.confirmKeybase(keybase),
-      oneWeek(),
+      oneMonth() * 6,
     );
+  }
+
+  async getCachedKeybases(keybases: Keybase[]): Promise<KeybaseDetailed[]> {
+    const confirmedKeybases = await this.cachingService.batchGetCache(keybases.map((keybase) => `keybase:${keybase.identity}:${keybase.key}`));
 
     return keybases.map((keybase, index) => {
       const keybaseDetailed = mergeObjects(new KeybaseDetailed(), keybase);

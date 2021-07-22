@@ -201,7 +201,7 @@ export class NodeService {
         return { identity: identity ?? '', key: bls };
       });
 
-    const keybasesDetailed: KeybaseDetailed[] = await this.keybaseService.confirmKeybases(keybases);
+    const keybasesDetailed: KeybaseDetailed[] = await this.keybaseService.getCachedKeybases(keybases);
 
     for (let keybaseDetailed of keybasesDetailed) {
       if (keybaseDetailed.confirmed) {
