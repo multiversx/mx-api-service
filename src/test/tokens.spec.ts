@@ -94,7 +94,7 @@ describe('Token Controller', () => {
 
   describe('Token count', () => {
     it(`should return a number`, async () => {
-      const tokensCount: Number = new Number(await tokenController.getTokenCount());
+      const tokensCount: Number = new Number(await tokenController.getTokenCount(undefined));
 
       expect(tokensCount).toBeInstanceOf(Number);
     });
@@ -176,7 +176,7 @@ describe('Token Controller', () => {
 
   describe('Nft count', () => {
     it(`should return a number`, async () => {
-      const nftCount: Number = new Number(await tokenController.getNftCount());
+      const nftCount: Number = new Number(await tokenController.getNftCount(undefined, undefined, undefined, undefined, undefined, undefined));
 
       expect(nftCount).toBeInstanceOf(Number);
     });
