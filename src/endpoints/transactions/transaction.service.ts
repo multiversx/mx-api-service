@@ -13,6 +13,7 @@ import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
 import { TransactionFilter } from './entities/transaction.filter';
+import { TransactionLog } from './entities/transaction.log';
 import { TransactionReceipt } from './entities/transaction.receipt';
 import { TransactionSendResult } from './entities/transaction.send.result';
 
@@ -133,11 +134,15 @@ export class TransactionService {
 
       let transactionDetailed: TransactionDetailed = mergeObjects(new TransactionDetailed(), result);
 
+      const hashes: string[] = [];
+      hashes.push(txHash);
+
       if (!this.apiConfigService.getUseLegacyElastic()) {
         if (result.hasScResults === true) {
           let scResults = await this.elasticService.getList('scresults', 'scHash', { originalTxHash: txHash }, { from: 0, size: 100 }, { "timestamp": "asc" });
           for (let scResult of scResults) {
             scResult.hash = scResult.scHash;
+            hashes.push(scResult.hash);
 
             delete scResult.scHash;
           }
@@ -149,6 +154,20 @@ export class TransactionService {
         if (receipts.length > 0) {
           let receipt = receipts[0];
           transactionDetailed.receipt = mergeObjects(new TransactionReceipt(), receipt);
+        }
+      }
+
+      let logs: any[] = await this.elasticService.getLogsForTransactionHashes(hashes);
+
+      for (let log of logs) {
+        if (log._id === txHash) {
+          transactionDetailed.logs = mergeObjects(new TransactionLog(), log._source);
+        }
+        else {
+          const foundScResult = transactionDetailed.scResults.find(({ hash }) => log._id === hash);
+          if (foundScResult) {
+            foundScResult.logs = mergeObjects(new TransactionLog(), log._source);
+          }
         }
       }
 
@@ -177,7 +196,7 @@ export class TransactionService {
           }
         }
       }
-
+      
       let result = {
         txHash: txHash,
         data: transaction.data,
@@ -197,7 +216,8 @@ export class TransactionService {
         fee: transaction.fee,
         timestamp: transaction.timestamp,
         scResults: transaction.smartContractResults ? transaction.smartContractResults.map((scResult: any) => mergeObjects(new SmartContractResult(), scResult)) : [],
-        receipt: transaction.receipt ? mergeObjects(new TransactionReceipt(), transaction.receipt) : undefined
+        receipt: transaction.receipt ? mergeObjects(new TransactionReceipt(), transaction.receipt) : undefined,
+        logs: transaction.logs
       };
 
       return mergeObjects(new TransactionDetailed(), result);

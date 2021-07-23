@@ -2,6 +2,7 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { NftFilter } from "src/endpoints/tokens/entities/nft.filter";
 import { NftType } from "src/endpoints/tokens/entities/nft.type";
+import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
 import { ElasticPagination } from "./entities/elastic.pagination";
@@ -464,6 +465,37 @@ export class ElasticService {
 
     let url = `${this.url}/tokens/_search`;
     return await this.getDocumentCount(url, query);
+  }
+
+  async getLogsForTransactionHashes(hashes: string[]): Promise<TransactionLog[]> {
+    let query = await this.buildLogsQuery(hashes);
+
+    let url = `${this.url}/logs/_search`;
+    return await this.getDocuments(url, query);
+  }
+
+  private getSimpleMatch(criteria: any) {
+    return { match: criteria };
+  }
+
+  private buildLogsQuery(hashes: string[]) {
+    let queries = [];
+
+    for (let hash of hashes) {
+      queries.push(this.getSimpleMatch({ "_id": hash } ));
+    }
+
+    let payload = {
+      from: 0,
+      size: 100,
+      query: {
+        bool: {
+          should: queries
+        }
+      }
+    }
+
+    return payload;
   }
 
   private buildQuery(query: any = {}, operator: string = 'must') {
