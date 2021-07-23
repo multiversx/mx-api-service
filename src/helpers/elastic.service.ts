@@ -5,7 +5,10 @@ import { NftType } from "src/endpoints/tokens/entities/nft.type";
 import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
+import { buildElasticPagination, buildElasticQuery, buildElasticSort } from "./elastic.queries";
 import { ElasticPagination } from "./entities/elastic.pagination";
+import { ElasticQuery } from "./entities/elastic.query";
+import { QueryCondition } from "./entities/query.condition";
 import { PerformanceProfiler } from "./performance.profiler";
 
 @Injectable()
@@ -46,16 +49,15 @@ export class ElasticService {
     return { ...item, ..._source };
   };
 
-  async getList(collection: string, key: string, query: any, pagination: ElasticPagination, sort: { [key: string]: string }, condition: string = 'must'): Promise<any[]> {
+  async getList(collection: string, key: string, query: ElasticQuery): Promise<any[]> {
     const url = `${this.url}/${collection}/_search`;
-    let elasticSort = this.buildSort(sort);
-    let elasticQuery = this.buildQuery(query, condition);
+    let elasticQuery = buildElasticQuery(query);
 
     const {
       data: {
         hits: { hits: documents },
       },
-    } = await this.post(url, { query: elasticQuery, sort: elasticSort, from: pagination.from, size: pagination.size });
+    } = await this.post(url, { query: elasticQuery, ...elasticSort, ...elasticPagination });
   
     return documents.map((document: any) => this.formatItem(document, key));
   };
