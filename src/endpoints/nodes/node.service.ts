@@ -9,14 +9,13 @@ import { ApiConfigService } from "src/helpers/api.config.service";
 import { bech32Decode, bech32Encode, oneHour, oneMinute } from "src/helpers/helpers";
 import { CachingService } from "src/helpers/caching.service";
 import { KeybaseService } from "src/helpers/keybase.service";
-import { Keybase } from "src/helpers/entities/keybase";
 import { NodeFilter } from "./entities/node.filter";
 import { ProviderService } from "../providers/provider.service";
 import { StakeService } from "../stake/stake.service";
 import { SortOrder } from "src/helpers/entities/sort.order";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockService } from "../blocks/block.service";
-import { KeybaseDetailed } from "src/helpers/entities/keybase.detailed";
+import { KeybaseState } from "src/helpers/entities/keybase.state";
 
 @Injectable()
 export class NodeService {
@@ -195,25 +194,12 @@ export class NodeService {
       }
     }
 
-    const keybases: Keybase[] = nodes
-      .filter(({ identity }) => !!identity)
-      .map(({ identity, bls }) => {
-        return { identity: identity ?? '', key: bls };
-      });
-
-    const keybasesDetailed: KeybaseDetailed[] = await this.keybaseService.getCachedKeybases(keybases);
-
-    for (let keybaseDetailed of keybasesDetailed) {
-      if (keybaseDetailed.confirmed) {
-        const node = nodes.find(node => node.bls === keybaseDetailed.key);
-        if (node) {
-          node.identity = keybaseDetailed.identity;
-        }
-      }
-    }
+    const keybases: { [key: string]: KeybaseState } | undefined = await this.keybaseService.getCachedKeybases();
 
     for (let node of nodes) {
-      delete node.identity;
+      if (keybases && keybases[node.bls] && keybases[node.bls].confirmed) {
+        node.identity = keybases[node.bls].identity;
+      }
     }
 
     const blses = nodes.filter(node => node.type === NodeType.validator).map(node => node.bls);
