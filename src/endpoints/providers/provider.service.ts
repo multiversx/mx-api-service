@@ -9,8 +9,7 @@ import { ProviderConfig } from "./entities/provider.config";
 import { NodeService } from "../nodes/node.service";
 import { ProviderFilter } from "src/endpoints/providers/entities/provider.filter";
 import { ApiService } from "src/helpers/api.service";
-import { KeybaseDetailed } from "src/helpers/entities/keybase.detailed";
-import { Keybase } from "src/helpers/entities/keybase";
+import { KeybaseState } from "src/helpers/entities/keybase.state";
 
 @Injectable()
 export class ProviderService {
@@ -123,24 +122,17 @@ export class ProviderService {
   }
 
   async getAllProviders(): Promise<Provider[]> {
-    return await this.getAllProvidersRaw();
-    // return await this.cachingService.getOrSetCache('providers', async () => await this.getAllProvidersRaw(), oneHour());
+    return await this.cachingService.getOrSetCache('providers', async () => await this.getAllProvidersRaw(), oneHour());
   }
 
   async getAllProvidersRaw() : Promise<Provider[]> {
     const providers = await this.getProviderAddresses();
 
-    const [configs, metadatas, numUsers, cumulatedRewards] = await Promise.all([
+    const [configs, numUsers, cumulatedRewards] = await Promise.all([
       this.cachingService.batchProcess(
         providers,
         address => `providerConfig:${address}`,
         async address => await this.getProviderConfig(address),
-        oneMinute() * 15,
-      ),
-      this.cachingService.batchProcess(
-        providers,
-        address => `providerMetadata:${address}`,
-        async address => await this.getProviderMetadata(address),
         oneMinute() * 15,
       ),
       this.cachingService.batchProcess(
@@ -157,13 +149,7 @@ export class ProviderService {
       ),
     ]);
 
-    const keybases: Keybase[] = metadatas
-    .map(({ identity }, index) => {
-      return { identity: identity ?? '', key: providers[index] };
-    })
-    .filter(({ identity }) => !!identity);
-
-    const keybasesDetailed: KeybaseDetailed[] = await this.keybaseService.getCachedKeybases(keybases);
+    const keybases: { [key: string]: KeybaseState } | undefined = await this.keybaseService.getCachedKeybases();
 
     const value: Provider[] = providers.map((provider, index) => {
       return {
@@ -180,14 +166,20 @@ export class ProviderService {
       };
     });
 
-    keybasesDetailed.forEach(({ identity, key, confirmed }) => {
-      if (confirmed) {
-        const found = value.find(({ provider }) => provider === key);
-        if (found) {
-          found.identity = identity;
+    for (let providerAddress of providers) {
+      const blses = await this.nodeService.getOwnerBlses(providerAddress);
+
+      for (let bls of blses) {
+        if (keybases && keybases[bls] && keybases[bls].confirmed) {
+          const found = value.find(({ provider }) => provider === providerAddress);
+          if (found) {
+            found.identity = keybases[bls].identity;
+          }
+
+          break;
         }
       }
-    });
+    };
 
     return value;
   }
