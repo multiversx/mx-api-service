@@ -4,8 +4,8 @@ import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
 import { CachingService } from "./caching.service";
 import { Keybase } from "./entities/keybase";
-import { KeybaseDetailed } from "./entities/keybase.detailed";
-import { mergeObjects, oneMonth } from "./helpers";
+import { KeybaseState } from "./entities/keybase.state";
+import { oneMonth } from "./helpers";
 
 @Injectable()
 export class KeybaseService {
@@ -24,37 +24,41 @@ export class KeybaseService {
   async confirmKeybasesRaw() {
     let nodes = await this.nodeService.getHeartbeat();
 
-    const keybases: Keybase[] = nodes
-      .filter(({ identity }) => !!identity)
-      .map(({ identity, bls }) => {
-        return { identity: identity ?? '', key: bls };
+    const keybasesArr: Keybase[] = nodes
+      .filter((node) => !!node.identity)
+      .map((node) => {
+        return { identity: node.identity, key: node.bls };
       });
 
-    return await this.cachingService.batchProcess(
-      keybases,
-      keybase => `keybase:${keybase.identity}:${keybase.key}`,
+    const confirmedKeybases =  await this.cachingService.batchProcess(
+      keybasesArr,
+      keybase => `keybase:${keybase.key}`,
       async (keybase) => await this.confirmKeybase(keybase),
       oneMonth() * 6,
     );
-  }
 
-  async getCachedKeybases(keybases: Keybase[]): Promise<KeybaseDetailed[]> {
-    const confirmedKeybases = await this.cachingService.batchGetCache(keybases.map((keybase) => `keybase:${keybase.identity}:${keybase.key}`));
+    const keybases: { [key: string]: KeybaseState } = {};
 
-    return keybases.map((keybase, index) => {
-      const keybaseDetailed = mergeObjects(new KeybaseDetailed(), keybase);
+    keybasesArr.forEach((keybase, index) => {
+      keybases[keybase.key] = new KeybaseState()
+      keybases[keybase.key].identity = keybase.identity;
 
       if (confirmedKeybases[index]) {
-        keybaseDetailed.confirmed = true;
+        keybases[keybase.key].confirmed = true;
         this.logger.log(`Confirmed keybase for identity ${keybase.identity} and key ${keybase.key}`);
         
       } else {
-        keybaseDetailed.confirmed = false;
+        keybases[keybase.key].confirmed = false;
         this.logger.log(`Unconfirmed keybase for identity ${keybase.identity} and key ${keybase.key}`);
       }
 
-      return keybaseDetailed;
     });
+
+    return keybases;
+  }
+
+  async getCachedKeybases(): Promise<{ [key: string]: KeybaseState } | undefined> {
+    return await this.cachingService.getCache('keybases');
   }
 
   private async confirmKeybase(keybase: Keybase): Promise<boolean> {
