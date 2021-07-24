@@ -49,15 +49,16 @@ export class ElasticService {
     return { ...item, ..._source };
   };
 
-  async getList(collection: string, key: string, query: ElasticQuery): Promise<any[]> {
+  async getList(collection: string, key: string, query: any, pagination: ElasticPagination, sort: any, condition: string = "must" ): Promise<any[]> {
     const url = `${this.url}/${collection}/_search`;
-    let elasticQuery = buildElasticQuery(query);
+    let elasticSort = this.buildSort(sort);
+    let elasticQuery = this.buildQuery(query, condition);
 
     const {
       data: {
         hits: { hits: documents },
       },
-    } = await this.post(url, { query: elasticQuery, ...elasticSort, ...elasticPagination });
+    } = await this.post(url, { query: elasticQuery, sort: elasticSort, from: pagination.from, size: pagination.size });
   
     return documents.map((document: any) => this.formatItem(document, key));
   };
