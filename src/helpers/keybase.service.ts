@@ -36,10 +36,10 @@ export class KeybaseService {
     let confirmedKeybases = keybasesArr.zip<(boolean | undefined), KeybaseState>(keybaseGetResults, (first, second) => ({ identity: first.identity, confirmed: second ?? false }));
 
     let result: { [key: string]: KeybaseState } = {};
-    for (let confirmedKeybase of confirmedKeybases) {
-      let identity = confirmedKeybase.identity;
-      if (identity !== undefined) {
-        result[identity] = confirmedKeybase;
+    for (let [index, confirmedKeybase] of confirmedKeybases.entries()) {
+      let bls = keybasesArr[index].key;
+      if (bls !== undefined) {
+        result[bls] = confirmedKeybase;
       }
     }
 
