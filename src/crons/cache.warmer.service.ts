@@ -124,7 +124,7 @@ export class CacheWarmerService {
     this.isRunningKeybaseInvalidations = true;
     let profiler = new PerformanceProfiler();
     try {
-      let keybases = await this.keybaseService.confirmKeybasesRaw();
+      let keybases = await this.keybaseService.confirmKeybasesAgainstKeybasePub();
       await this.cachingService.setCache('keybases', keybases, oneHour());
       await this.deleteCacheKey('keybases');
     } catch(error) {

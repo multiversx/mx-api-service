@@ -5,7 +5,7 @@ import { ApiService } from "./api.service";
 import { CachingService } from "./caching.service";
 import { Keybase } from "./entities/keybase";
 import { KeybaseState } from "./entities/keybase.state";
-import { oneMonth } from "./helpers";
+import { oneHour, oneMonth } from "./helpers";
 
 @Injectable()
 export class KeybaseService {
@@ -21,7 +21,7 @@ export class KeybaseService {
     this.logger = new Logger(KeybaseService.name);
   }
 
-  async confirmKeybasesRaw() {
+  async confirmKeybasesAgainstCache(): Promise<{ [key: string]: KeybaseState }> {
     let nodes = await this.nodeService.getHeartbeat();
 
     const keybasesArr: Keybase[] = nodes
@@ -30,7 +30,32 @@ export class KeybaseService {
         return { identity: node.identity, key: node.bls };
       });
 
-    const confirmedKeybases =  await this.cachingService.batchProcess(
+    let keybaseGetPromises = keybasesArr.map(keybase => this.cachingService.getCache<boolean>(`keybase:${keybase.key}`));
+    let keybaseGetResults = await Promise.all(keybaseGetPromises);
+
+    let confirmedKeybases = keybasesArr.zip<(boolean | undefined), KeybaseState>(keybaseGetResults, (first, second) => ({ identity: first.identity, confirmed: second ?? false }));
+
+    let result: { [key: string]: KeybaseState } = {};
+    for (let confirmedKeybase of confirmedKeybases) {
+      let identity = confirmedKeybase.identity;
+      if (identity !== undefined) {
+        result[identity] = confirmedKeybase;
+      }
+    }
+
+    return result;
+  }
+
+  async confirmKeybasesAgainstKeybasePub() {
+    let nodes = await this.nodeService.getHeartbeat();
+
+    const keybasesArr: Keybase[] = nodes
+      .filter((node) => !!node.identity)
+      .map((node) => {
+        return { identity: node.identity, key: node.bls };
+      });
+
+    const confirmedKeybases = await this.cachingService.batchProcess(
       keybasesArr,
       keybase => `keybase:${keybase.key}`,
       async (keybase) => await this.confirmKeybase(keybase),
@@ -59,7 +84,11 @@ export class KeybaseService {
   }
 
   async getCachedKeybases(): Promise<{ [key: string]: KeybaseState } | undefined> {
-    return await this.cachingService.getCache('keybases');
+    return await this.cachingService.getOrSetCache(
+      'keybases',
+      async () => await this.confirmKeybasesAgainstCache(),
+      oneHour()
+    );
   }
 
   private async confirmKeybase(keybase: Keybase): Promise<boolean> {
