@@ -1,6 +1,7 @@
 import { ElasticPagination } from "./entities/elastic.pagination";
 import { ElasticQuery } from "./entities/elastic.query";
 import { QueryCondition } from "./entities/query.condition";
+import { cleanupApiValueRecursively } from "./helpers";
 
 function buildElasticSort(sort: any): any {
   if (!sort) {
@@ -101,7 +102,7 @@ export function buildElasticQuery(query: ElasticQuery) {
   const elasticCondition = query.condition;
   const elasticQueries = buildElasticQueries(query.queries);
 
-  return {
+  const elasticQuery = {
     ...elasticPagination,
     ...elasticSort,
     query: {
@@ -114,4 +115,13 @@ export function buildElasticQuery(query: ElasticQuery) {
       }
     }
   }
+
+  cleanupApiValueRecursively(elasticQuery);
+
+  if (Object.keys(elasticQuery.query.bool).length === 0) {
+    delete elasticQuery.query.bool;
+    elasticQuery.query['match_all'] = {}
+  }
+  
+  return elasticQuery;
 }
