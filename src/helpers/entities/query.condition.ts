@@ -1,4 +1,5 @@
 export enum QueryCondition {
   should = 'should',
-  must = 'must'
+  must = 'must',
+  mustNot = 'must_not'
 }
