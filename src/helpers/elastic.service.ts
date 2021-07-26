@@ -27,17 +27,14 @@ export class ElasticService {
 
   async getCount(collection: string, query = {}, condition: QueryCondition = QueryCondition.must) {
     const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_count`;
-    const elasticStructureQuery = new ElasticQuery();
-    elasticStructureQuery.condition = condition;
-    elasticStructureQuery.queries = query;
-    elasticStructureQuery.filter = extractFilterQuery(query);
-    const oldQuery = this.buildQuery(query, condition);
-    const newQuery = buildElasticQuery(elasticStructureQuery);
 
-    console.log({oldQuery, bool: oldQuery.bool});
-    console.log({newQuery, bool: newQuery.query.bool});
+    const elasticQueryAdapter = new ElasticQuery();
+    elasticQueryAdapter.condition = condition;
+    elasticQueryAdapter.queries = query;
+    elasticQueryAdapter.filter = extractFilterQuery(query);
+    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
  
-    const result: any = await this.post(url, newQuery);
+    const result: any = await this.post(url, elasticQuery);
     let count = result.data.count;
 
     return count;
@@ -61,31 +58,20 @@ export class ElasticService {
   async getList(collection: string, key: string, query: any, pagination: ElasticPagination, sort: any, condition: QueryCondition = QueryCondition.must): Promise<any[]> {
     const url = `${this.url}/${collection}/_search`;
 
-    const elasticStructureQuery = new ElasticQuery();
-    elasticStructureQuery.sort = sort;
-    elasticStructureQuery.pagination = pagination;
-    elasticStructureQuery.condition = condition;
-    elasticStructureQuery.queries = query;
-    elasticStructureQuery.filter = extractFilterQuery(query);
+    const elasticQueryAdapter = new ElasticQuery();
+    elasticQueryAdapter.sort = sort;
+    elasticQueryAdapter.pagination = pagination;
+    elasticQueryAdapter.condition = condition;
+    elasticQueryAdapter.queries = query;
+    elasticQueryAdapter.filter = extractFilterQuery(query);
 
-    let elasticSort = this.buildSort(sort);
-    let elasticQuery = this.buildQuery(query, condition);
-
-    console.log({elasticStructureQuery});
-
-    const newQuery = buildElasticQuery(elasticStructureQuery);
-    cleanupApiValueRecursively(newQuery);
-    const oldQuery = { query: elasticQuery, sort: elasticSort, from: pagination.from, size: pagination.size };
-
-    console.log({newQuery, bool: newQuery.query.bool, sort: newQuery.sort});
-
-    console.log({oldQuery, bool: oldQuery.query.bool, sort: oldQuery.sort});
+    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
     const {
       data: {
         hits: { hits: documents },
       },
-    } = await this.post(url, newQuery);
+    } = await this.post(url, elasticQuery);
   
     return documents.map((document: any) => this.formatItem(document, key));
   };
@@ -202,6 +188,21 @@ export class ElasticService {
          }
       }
     };
+
+    let elasticStructureQuery = new ElasticQuery();
+    elasticStructureQuery.condition = QueryCondition.must;
+    elasticStructureQuery.queries = {
+      identifier: {
+        query: identifier,
+        operator: "AND"
+      }
+    }
+
+    const newQuery = buildElasticQuery(elasticStructureQuery);
+    cleanupApiValueRecursively(newQuery);
+    console.log({newQuery});
+    console.log({oldQuery: payload});
+
 
     let url = `${this.url}/accountsesdt/_search`;
     let documents = await this.getDocuments(url, payload);
@@ -527,83 +528,6 @@ export class ElasticService {
 
     return payload;
   }
-
-  private buildQuery(query: any = {}, operator: string = 'must') {
-    delete query['from'];
-    delete query['size'];
-
-    const before = query['before'];
-    const after = query['after'];
-
-    delete query['before'];
-    delete query['after'];
-    const range: any = this.buildRange({ before, after });
-
-    let result: any = null;
-
-    if (Object.keys(query).length) {
-      const must = Object.keys(query)
-        .filter(key => query[key] !== null && query[key] !== undefined)
-        .map((key) => {
-        const match: any = {};
-
-        const value = query[key];
-        if (value !== null) {
-          match[key] = query[key];
-        }
-
-        return { match };
-      });
-
-      let criteria: any = {};
-      criteria[operator] = must;
-
-      result = { bool: criteria };
-
-    }
-
-    if (Object.keys(range['timestamp']).length != 0) {
-      result.bool['filter'] = {
-        range
-      };
-    }
-
-    if(operator === 'should')
-      result.bool['minimum_should_match'] = 1;
-
-
-    if (result === null) {
-      result = { match_all: {} };
-    }
-
-    return result;
-  };
-
-  private buildSort(sort: any): any {
-    return Object.keys(sort).map((key) => {
-      const obj: any = {};
-
-      obj[key] = {
-        order: sort[key]
-      };
-
-      return obj;
-    });
-  };
-
-  private buildRange(range: any = {}) {
-    let obj: any = {};
-    obj['timestamp'] = {};
-    Object.keys(range).map((key) => {
-      if (key == 'before' && range[key] != undefined) {
-        obj['timestamp']['lte'] = range[key];
-      }
-      if (key == 'after' && range[key] != undefined) {
-        obj['timestamp']['gte'] = range[key];
-      }
-    });
-    return obj;
-  };
 
   private async get(url: string) {
     let profiler = new PerformanceProfiler();
