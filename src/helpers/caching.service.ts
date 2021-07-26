@@ -317,7 +317,7 @@ export class CachingService {
     }
 
     let cached = await this.getCacheRemote<T>(key);
-    if (cached) {
+    if (cached !== undefined && cached !== null) {
       profiler.stop(`Remote Cache hit for key ${key}`);
 
       // we only set ttl to half because we don't know what the real ttl of the item is and we want it to work good in most scenarios
