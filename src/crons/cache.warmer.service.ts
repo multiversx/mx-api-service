@@ -27,7 +27,7 @@ export class CacheWarmerService {
     private readonly providerService: ProviderService,
     private readonly keybaseService: KeybaseService,
     @Inject('PUBSUB_SERVICE') private client: ClientProxy,
-    ) {
+  ) {
     this.logger = new Logger(CacheWarmerService.name);
   }
 

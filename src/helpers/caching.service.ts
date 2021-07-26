@@ -157,18 +157,6 @@ export class CachingService {
   async batchProcess<IN, OUT>(payload: IN[], cacheKeyFunction: (element: IN) => string, handler: (generator: IN) => Promise<OUT>, ttl: number = this.configService.getCacheTtl(), skipCache: boolean = false): Promise<OUT[]> {
     let result: OUT[] = [];
 
-    // let remaining: IN[] = [];
-    // for (let element of payload) {
-    //   let cached = await this.getCacheLocal<OUT>(cacheKeyFunction(element));
-    //   if (cached !== undefined) {
-    //     result.push(cached);
-    //   } else {
-    //     remaining.push(element);
-    //   }
-    // }
-
-    // this.logger.log(`Found ${result.length} elements in local cache`);
-
     let chunks = this.getChunks(payload, 100);
 
     for (let [_, chunk] of chunks.entries()) {

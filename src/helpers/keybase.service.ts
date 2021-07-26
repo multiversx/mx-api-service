@@ -35,23 +35,24 @@ export class KeybaseService {
       keybase => `keybase:${keybase.key}`,
       async (keybase) => await this.confirmKeybase(keybase),
       oneMonth() * 6,
+      true
     );
 
     const keybases: { [key: string]: KeybaseState } = {};
 
     keybasesArr.forEach((keybase, index) => {
-      keybases[keybase.key] = new KeybaseState()
-      keybases[keybase.key].identity = keybase.identity;
+      let keybaseState = new KeybaseState();
+      keybaseState.identity = keybase.identity;
+
+      keybases[keybase.key] = keybaseState;
 
       if (confirmedKeybases[index]) {
         keybases[keybase.key].confirmed = true;
-        this.logger.log(`Confirmed keybase for identity ${keybase.identity} and key ${keybase.key}`);
-        
+        // this.logger.log(`Confirmed keybase for identity ${keybase.identity} and key ${keybase.key}`);
       } else {
         keybases[keybase.key].confirmed = false;
         this.logger.log(`Unconfirmed keybase for identity ${keybase.identity} and key ${keybase.key}`);
       }
-
     });
 
     return keybases;

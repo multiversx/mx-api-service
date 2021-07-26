@@ -103,7 +103,7 @@ export function oneWeek(): number {
 }
 
 export function oneMonth(): number {
-  return oneWeek() * 4;
+  return oneDay() * 30;
 }
 
 export function isSmartContractAddress(address: string): boolean {
