@@ -10,6 +10,7 @@ import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { AccountDeferred } from './entities/account.deferred';
 import { QueryPagination } from 'src/common/entities/query.pagination';
+import { QueryCondition } from 'src/helpers/entities/query.condition';
 
 @Injectable()
 export class AccountService {
@@ -55,7 +56,7 @@ export class AccountService {
         account: { nonce, balance, code, codeHash, rootHash, username },
       },
     ] = await Promise.all([
-      this.elasticService.getCount('transactions', query, 'should'),
+      this.elasticService.getCount('transactions', query, QueryCondition.should),
       this.gatewayService.get(`address/${address}`)
     ]);
 
