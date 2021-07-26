@@ -5,10 +5,11 @@ import { NftType } from "src/endpoints/tokens/entities/nft.type";
 import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
-import { buildElasticPagination, buildElasticQuery, buildElasticSort } from "./elastic.queries";
+import { buildElasticQuery, extractFilterQuery } from "./elastic.queries";
 import { ElasticPagination } from "./entities/elastic.pagination";
 import { ElasticQuery } from "./entities/elastic.query";
 import { QueryCondition } from "./entities/query.condition";
+import { cleanupApiValueRecursively } from "./helpers";
 import { PerformanceProfiler } from "./performance.profiler";
 
 @Injectable()
@@ -24,11 +25,19 @@ export class ElasticService {
     this.url = apiConfigService.getElasticUrl();
   }
 
-  async getCount(collection: string, query = {}, condition: string = 'must') {
+  async getCount(collection: string, query = {}, condition: QueryCondition = QueryCondition.must) {
     const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_count`;
-    query = this.buildQuery(query, condition);
+    const elasticStructureQuery = new ElasticQuery();
+    elasticStructureQuery.condition = condition;
+    elasticStructureQuery.queries = query;
+    elasticStructureQuery.filter = extractFilterQuery(query);
+    const oldQuery = this.buildQuery(query, condition);
+    const newQuery = buildElasticQuery(elasticStructureQuery);
+
+    console.log({oldQuery, bool: oldQuery.bool});
+    console.log({newQuery, bool: newQuery.query.bool});
  
-    const result: any = await this.post(url, { query });
+    const result: any = await this.post(url, newQuery);
     let count = result.data.count;
 
     return count;
@@ -49,16 +58,34 @@ export class ElasticService {
     return { ...item, ..._source };
   };
 
-  async getList(collection: string, key: string, query: any, pagination: ElasticPagination, sort: any, condition: string = "must" ): Promise<any[]> {
+  async getList(collection: string, key: string, query: any, pagination: ElasticPagination, sort: any, condition: QueryCondition = QueryCondition.must): Promise<any[]> {
     const url = `${this.url}/${collection}/_search`;
+
+    const elasticStructureQuery = new ElasticQuery();
+    elasticStructureQuery.sort = sort;
+    elasticStructureQuery.pagination = pagination;
+    elasticStructureQuery.condition = condition;
+    elasticStructureQuery.queries = query;
+    elasticStructureQuery.filter = extractFilterQuery(query);
+
     let elasticSort = this.buildSort(sort);
     let elasticQuery = this.buildQuery(query, condition);
+
+    console.log({elasticStructureQuery});
+
+    const newQuery = buildElasticQuery(elasticStructureQuery);
+    cleanupApiValueRecursively(newQuery);
+    const oldQuery = { query: elasticQuery, sort: elasticSort, from: pagination.from, size: pagination.size };
+
+    console.log({newQuery, bool: newQuery.query.bool, sort: newQuery.sort});
+
+    console.log({oldQuery, bool: oldQuery.query.bool, sort: oldQuery.sort});
 
     const {
       data: {
         hits: { hits: documents },
       },
-    } = await this.post(url, { query: elasticQuery, sort: elasticSort, from: pagination.from, size: pagination.size });
+    } = await this.post(url, newQuery);
   
     return documents.map((document: any) => this.formatItem(document, key));
   };

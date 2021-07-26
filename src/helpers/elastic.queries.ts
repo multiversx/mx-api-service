@@ -1,7 +1,8 @@
 import { ElasticPagination } from "./entities/elastic.pagination";
 import { ElasticQuery } from "./entities/elastic.query";
+import { QueryCondition } from "./entities/query.condition";
 
-export function buildElasticSort(sort: any): any {
+function buildElasticSort(sort: any): any {
   if (!sort) {
     return false
   }
@@ -18,7 +19,11 @@ export function buildElasticSort(sort: any): any {
   }
 };
 
-export function buildElasticPagination(pagination: ElasticPagination): {from: number, size: number} {
+function buildElasticPagination(pagination: ElasticPagination | undefined): {from: number, size: number} | undefined {
+  if (!pagination) {
+    return undefined;
+  }
+
   return {
     from: pagination.from,
     size: pagination.size,
@@ -39,32 +44,73 @@ function buildElasticRange(range: any = {}) {
   return obj;
 };
 
-export function buildElasticFilter(filter: any): any {
+function buildElasticFilter(filter: any): any {
   if (!filter) {
     return false;
   }
 
   if (filter['before'] || filter['after']) {
     const range = buildElasticRange(filter);
+
     return {
-      filter: {
-        range
-      }
+      range
     }
   }
+}
+
+export function extractFilterQuery(query: any): any {
+  if (!query) {
+    return false;
+  }
+
+  if (query['before'] || query['after']) {
+    const { before, after } = query;
+
+    delete query['before'];
+    delete query['after'];
+
+    return {
+      before, after
+    }
+  }
+}
+
+function buildElasticQueries(queries: any) {
+  if (Object.keys(queries).length) {
+    return Object.keys(queries)
+      .filter(key => queries[key] !== null && queries[key] !== undefined)
+      .map((key) => {
+      const match: any = {};
+
+      const value = queries[key];
+      if (value !== null) {
+        match[key] = queries[key];
+      }
+
+      return { match };
+    });
+  }
+
+  return null;
 }
 
 export function buildElasticQuery(query: ElasticQuery) {
   const elasticPagination = buildElasticPagination(query.pagination);
   const elasticSort = buildElasticSort(query.sort);
   const elasticFilter = buildElasticFilter(query.filter);
+  const elasticCondition = query.condition;
+  const elasticQueries = buildElasticQueries(query.queries);
 
   return {
     ...elasticPagination,
     ...elasticSort,
     query: {
       bool: {
-        filter: elasticFilter ? elasticFilter : undefined
+        filter: elasticFilter ? elasticFilter: undefined,
+        must: elasticCondition === QueryCondition.must ? elasticQueries : undefined,
+        should: elasticCondition === QueryCondition.should ? elasticQueries : undefined,
+        must_not: elasticCondition === QueryCondition.mustNot ? elasticQueries : undefined,
+        minimum_should_match: elasticCondition === QueryCondition.should ? 1 : undefined,
       }
     }
   }
