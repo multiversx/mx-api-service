@@ -9,6 +9,10 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { ElasticPagination } from "src/helpers/entities/elastic/elastic.pagination";
 import { ElasticSortProperty } from "src/helpers/entities/elastic/elastic.sort.property";
 import { ElasticSortOrder } from "src/helpers/entities/elastic/elastic.sort.order";
+import { ElasticQuery } from "src/helpers/entities/elastic/elastic.query";
+import { QueryCondition } from "src/helpers/entities/elastic/query.condition";
+import { AbstractQuery } from "src/helpers/entities/elastic/abstract.query";
+import { MatchQuery } from "src/helpers/entities/elastic/match.query";
 
 @Injectable()
 export class BlockService {
@@ -17,52 +21,63 @@ export class BlockService {
     private readonly cachingService: CachingService
   ) {}
 
-  private async buildElasticBlocksFilter (filter: BlockFilter): Promise<any> {
+  private async buildElasticBlocksFilter (filter: BlockFilter): Promise<AbstractQuery[]> {
     const { shard, proposer, validator, epoch } = filter;
 
-    let query: any = {
-      shardId: shard,
-      epoch: epoch
-    };
+    const queries: AbstractQuery[] = [];
+    if (shard) {
+      const shardIdQuery = new MatchQuery('shardId', shard, undefined).getQuery();
+      queries.push(shardIdQuery);
+    }
+    
+    if (epoch) {
+      const epochQuery = new MatchQuery('epoch', epoch, undefined).getQuery();
+      queries.push(epochQuery);
+    }
 
     if (proposer && shard !== undefined && epoch !== undefined) {
       let index = await this.elasticService.getBlsIndex(proposer, shard, epoch);
-      query.proposer = index !== false ? index : -1;
+      const proposerQuery = new MatchQuery('proposer', index !== false ? index : -1, undefined).getQuery();
+      queries.push(proposerQuery);
     }
 
     if (validator && shard !== undefined && epoch !== undefined) {
       let index = await this.elasticService.getBlsIndex(validator, shard, epoch);
-      query.validators = index !== false ? index : -1;
+      const validatorsQuery = new MatchQuery('validators', index !== false ? index : -1, undefined).getQuery();
+      queries.push(validatorsQuery);
     }
 
-    return query;
+    console.log(queries);
+    return queries;
   }
 
   async getBlocksCount(filter: BlockFilter): Promise<number> {
-    let query = await this.buildElasticBlocksFilter(filter);
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+    elasticQueryAdapter.condition = QueryCondition.must;
+    elasticQueryAdapter[elasticQueryAdapter.condition] = await this.buildElasticBlocksFilter(filter)
 
     return await this.cachingService.getOrSetCache(
-      `blocks:count:${JSON.stringify(query)}`,
-      async () => await this.elasticService.getCount('blocks', query),
+      `blocks:count:${JSON.stringify(elasticQueryAdapter)}`,
+      async () => await this.elasticService.getCount('blocks', elasticQueryAdapter),
       oneMinute()
     );
   }
 
   async getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<Block[]> {
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+    elasticQueryAdapter.condition = QueryCondition.must;
+
     const { from, size } = queryPagination;
+    const pagination: ElasticPagination = { 
+      from, size 
+    };
+    elasticQueryAdapter.pagination = pagination;
+    elasticQueryAdapter[elasticQueryAdapter.condition] = await this.buildElasticBlocksFilter(filter);
 
-    let query = await this.buildElasticBlocksFilter(filter);
-
-    const pagination: ElasticPagination = {
-      from,
-      size
-    }
-
-    const sorts: ElasticSortProperty[] = [];
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descendant };
-    sorts.push(timestamp);
+    elasticQueryAdapter.sort = [timestamp];
 
-    let result = await this.elasticService.getList('blocks', 'hash', query, pagination, sorts);
+    let result = await this.elasticService.getList('blocks', 'hash', elasticQueryAdapter);
 
     for (let item of result) {
       item.shard = item.shardId;

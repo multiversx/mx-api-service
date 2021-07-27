@@ -8,8 +8,7 @@ export class ElasticQuery {
   sort: ElasticSortProperty[] = []
   must: AbstractQuery[] = []
   should: AbstractQuery[] = []
-  mustNot: AbstractQuery[] = []
+  must_not: AbstractQuery[] = []
   filter: any
   condition: QueryCondition = QueryCondition.must
-  queries: any
 }

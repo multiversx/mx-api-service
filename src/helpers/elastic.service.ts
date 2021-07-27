@@ -5,11 +5,11 @@ import { NftType } from "src/endpoints/tokens/entities/nft.type";
 import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
-import { buildElasticQuery, extractFilterQuery } from "./elastic.queries";
-import { ElasticPagination } from "./entities/elastic/elastic.pagination";
+import { buildElasticQuery } from "./elastic.queries";
 import { ElasticQuery } from "./entities/elastic/elastic.query";
-import { ElasticSortProperty } from "./entities/elastic/elastic.sort.property";
+import { MatchQuery } from "./entities/elastic/match.query";
 import { QueryCondition } from "./entities/elastic/query.condition";
+import { QueryOperator } from "./entities/elastic/query.operator";
 import { cleanupApiValueRecursively } from "./helpers";
 import { PerformanceProfiler } from "./performance.profiler";
 
@@ -26,14 +26,18 @@ export class ElasticService {
     this.url = apiConfigService.getElasticUrl();
   }
 
-  async getCount(collection: string, query = {}, condition: QueryCondition = QueryCondition.must) {
+  async getCount(collection: string, elasticQueryAdapter: ElasticQuery | undefined = undefined) {
     const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_count`;
 
-    const elasticQueryAdapter = new ElasticQuery();
-    elasticQueryAdapter.condition = condition;
-    elasticQueryAdapter.queries = query;
-    elasticQueryAdapter.filter = extractFilterQuery(query);
-    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
+    console.log(elasticQueryAdapter);
+
+    let elasticQuery;
+
+    if (elasticQueryAdapter) {
+      elasticQuery = buildElasticQuery(elasticQueryAdapter)
+    }
+
+    console.log(elasticQuery);
  
     const result: any = await this.post(url, elasticQuery);
     let count = result.data.count;
@@ -56,17 +60,14 @@ export class ElasticService {
     return { ...item, ..._source };
   };
 
-  async getList(collection: string, key: string, query: any, pagination: ElasticPagination, sort: ElasticSortProperty[], condition: QueryCondition = QueryCondition.must): Promise<any[]> {
+  async getList(collection: string, key: string, elasticQueryAdapter: ElasticQuery): Promise<any[]> {
     const url = `${this.url}/${collection}/_search`;
 
-    const elasticQueryAdapter = new ElasticQuery();
-    elasticQueryAdapter.sort = sort;
-    elasticQueryAdapter.pagination = pagination;
-    elasticQueryAdapter.condition = condition;
-    elasticQueryAdapter.queries = query;
-    elasticQueryAdapter.filter = extractFilterQuery(query);
+    console.log(elasticQueryAdapter);
 
     const elasticQuery = buildElasticQuery(elasticQueryAdapter);
+
+    console.log(elasticQuery);
 
     const {
       data: {
@@ -192,12 +193,7 @@ export class ElasticService {
 
     let elasticStructureQuery = new ElasticQuery();
     elasticStructureQuery.condition = QueryCondition.must;
-    elasticStructureQuery.queries = {
-      identifier: {
-        query: identifier,
-        operator: "AND"
-      }
-    }
+    elasticStructureQuery[elasticStructureQuery.condition] = [new MatchQuery('identifier', identifier, QueryOperator.AND)];
 
     const newQuery = buildElasticQuery(elasticStructureQuery);
     cleanupApiValueRecursively(newQuery);

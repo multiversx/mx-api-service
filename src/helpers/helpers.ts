@@ -153,10 +153,10 @@ export function cleanupApiValueRecursively(obj: any) {
         delete obj[key];
       }
 
-      // TODO: think about whether this is applicable everywhere
-      // if (Array.isArray(value) && value.length === 0) {
-      //   delete obj[key];
-      // }
+      //TODO: think about whether this is applicable everywhere
+      if (Array.isArray(value) && value.length === 0) {
+        delete obj[key];
+      }
     }
   }
 

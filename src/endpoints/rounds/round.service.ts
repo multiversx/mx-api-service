@@ -8,48 +8,56 @@ import { ElasticPagination } from "src/helpers/entities/elastic/elastic.paginati
 import { ElasticSortProperty } from "src/helpers/entities/elastic/elastic.sort.property";
 import { ElasticSortOrder } from "src/helpers/entities/elastic/elastic.sort.order";
 import { QueryCondition } from "src/helpers/entities/elastic/query.condition";
+import { ElasticQuery } from "src/helpers/entities/elastic/elastic.query";
+import { AbstractQuery } from "src/helpers/entities/elastic/abstract.query";
+import { MatchQuery } from "src/helpers/entities/elastic/match.query";
 
 @Injectable()
 export class RoundService {
   constructor(private readonly elasticService: ElasticService) {}
 
-  private async buildElasticRoundsFilter(filter: RoundFilter): Promise<any> {
-    const query: any = {
-      shardId: filter.shard
-    };
+  private async buildElasticRoundsFilter(filter: RoundFilter): Promise<AbstractQuery[]> {
+    const queries: AbstractQuery[] = [];
 
+    if (filter.shard) {
+      const shardIdQuery = new MatchQuery('shardId', filter.shard, undefined).getQuery();
+      queries.push(shardIdQuery);
+    }
+    
     if (filter.validator && filter.shard && filter.epoch) {
       const index = await this.elasticService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
 
-      if (index) {
-        query.signersIndexes = index;
-      } else {
-        query.signersIndexes = -1;
-      }
+      const signersIndexesQuery = new MatchQuery('signersIndexes', index !== false ? index : -1, undefined).getQuery();
+      queries.push(signersIndexesQuery);
     }
 
-    return query;
+    return queries;
   }
 
   async getRoundCount(filter: RoundFilter): Promise<number> {
-    const query = await this.buildElasticRoundsFilter(filter);
-    
-    return this.elasticService.getCount('rounds', query);
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+    elasticQueryAdapter.condition = QueryCondition.must;
+    elasticQueryAdapter[elasticQueryAdapter.condition] = await this.buildElasticRoundsFilter(filter)
+
+    return this.elasticService.getCount('rounds', elasticQueryAdapter);
   }
 
   async getRounds(filter: RoundFilter): Promise<Round[]> {
-    const query = await this.buildElasticRoundsFilter(filter);
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+    elasticQueryAdapter.condition = filter.condition ?? QueryCondition.must;
 
-    const pagination: ElasticPagination = {
-      from: filter.from,
-      size: filter.size
-    }
+    const { from, size } = filter;
+    const pagination: ElasticPagination = { 
+      from, size 
+    };
+    elasticQueryAdapter.pagination = pagination;
 
-    const sorts: ElasticSortProperty[] = [];
+    elasticQueryAdapter[elasticQueryAdapter.condition] = await this.buildElasticRoundsFilter(filter);
+
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descendant };
-    sorts.push(timestamp);
+    elasticQueryAdapter.sort = [timestamp];
 
-    let result = await this.elasticService.getList('rounds', 'round', query, pagination, sorts, filter.condition ?? QueryCondition.must);
+    let result = await this.elasticService.getList('rounds', 'round', elasticQueryAdapter);
 
     for (let item of result) {
       item.shard = item.shardId;

@@ -1,7 +1,6 @@
 import { ElasticPagination } from "./entities/elastic/elastic.pagination";
 import { ElasticQuery } from "./entities/elastic/elastic.query";
 import { ElasticSortProperty } from "./entities/elastic/elastic.sort.property";
-import { MatchQuery } from "./entities/elastic/match.query";
 import { QueryCondition } from "./entities/elastic/query.condition";
 import { cleanupApiValueRecursively } from "./helpers";
 
@@ -69,22 +68,11 @@ export function extractFilterQuery(query: any): any {
   }
 }
 
-function buildElasticQueries(queries: any) {
-  if (Object.keys(queries).length) {
-    return Object.keys(queries)
-      .filter(key => queries[key] !== null && queries[key] !== undefined)
-      .map((key) => new MatchQuery(key, queries[key], undefined).getQuery());
-  }
-
-  return null;
-}
-
 export function buildElasticQuery(query: ElasticQuery) {
   const elasticPagination = buildElasticPagination(query.pagination);
   const elasticSort = buildElasticSort(query.sort);
   const elasticFilter = buildElasticFilter(query.filter);
   const elasticCondition = query.condition;
-  const elasticQueries = buildElasticQueries(query.queries);
 
   const elasticQuery = {
     ...elasticPagination,
@@ -92,18 +80,15 @@ export function buildElasticQuery(query: ElasticQuery) {
     query: {
       bool: {
         filter: [elasticFilter] ? elasticFilter: undefined,
-        must: elasticCondition === QueryCondition.must ? elasticQueries : undefined,
-        should: elasticCondition === QueryCondition.should ? elasticQueries : undefined,
-        must_not: elasticCondition === QueryCondition.mustNot ? elasticQueries : undefined,
+        must: query.must,
+        should: query.should,
+        must_not: query.must_not,
         minimum_should_match: elasticCondition === QueryCondition.should ? 1 : undefined,
       }
     }
   }
 
   cleanupApiValueRecursively(elasticQuery);
-
-  console.log({elasticQuery});
-  console.log({elasticQueries});
 
   if (Object.keys(elasticQuery.query.bool).length === 0) {
     //@ts-ignore
