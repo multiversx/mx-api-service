@@ -11,8 +11,8 @@ import { ElasticSortProperty } from "src/helpers/entities/elastic/elastic.sort.p
 import { ElasticSortOrder } from "src/helpers/entities/elastic/elastic.sort.order";
 import { ElasticQuery } from "src/helpers/entities/elastic/elastic.query";
 import { AbstractQuery } from "src/helpers/entities/elastic/abstract.query";
-import { MatchQuery } from "src/helpers/entities/elastic/match.query";
 import { BlsService } from "src/helpers/bls.service";
+import { QueryType } from "src/helpers/entities/elastic/query.type";
 
 @Injectable()
 export class BlockService {
@@ -26,25 +26,25 @@ export class BlockService {
     const { shard, proposer, validator, epoch } = filter;
 
     const queries: AbstractQuery[] = [];
-    if (shard) {
-      const shardIdQuery = new MatchQuery('shardId', shard, undefined).getQuery();
+    if (shard !== undefined) {
+      const shardIdQuery = QueryType.Match('shardId', shard, undefined);
       queries.push(shardIdQuery);
     }
     
-    if (epoch) {
-      const epochQuery = new MatchQuery('epoch', epoch, undefined).getQuery();
+    if (epoch !== undefined) {
+      const epochQuery = QueryType.Match('epoch', epoch, undefined);
       queries.push(epochQuery);
     }
 
     if (proposer && shard !== undefined && epoch !== undefined) {
       let index = await this.blsService.getBlsIndex(proposer, shard, epoch);
-      const proposerQuery = new MatchQuery('proposer', index !== false ? index : -1, undefined).getQuery();
+      const proposerQuery = QueryType.Match('proposer', index !== false ? index : -1, undefined);
       queries.push(proposerQuery);
     }
 
     if (validator && shard !== undefined && epoch !== undefined) {
       let index = await this.blsService.getBlsIndex(validator, shard, epoch);
-      const validatorsQuery = new MatchQuery('validators', index !== false ? index : -1, undefined).getQuery();
+      const validatorsQuery = QueryType.Match('validators', index !== false ? index : -1, undefined);
       queries.push(validatorsQuery);
     }
 

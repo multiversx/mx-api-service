@@ -13,7 +13,7 @@ import { ElasticPagination } from 'src/helpers/entities/elastic/elastic.paginati
 import { ElasticSortProperty } from 'src/helpers/entities/elastic/elastic.sort.property';
 import { ElasticSortOrder } from 'src/helpers/entities/elastic/elastic.sort.order';
 import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
-import { MatchQuery } from 'src/helpers/entities/elastic/match.query';
+import { QueryType } from 'src/helpers/entities/elastic/query.type';
 
 @Injectable()
 export class AccountService {
@@ -50,8 +50,8 @@ export class AccountService {
   async getAccount(address: string): Promise<AccountDetailed> {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
     elasticQueryAdapter.condition.should = [
-      new MatchQuery('sender', address, undefined),
-      new MatchQuery('receiver', address, undefined),
+      QueryType.Match('sender', address, undefined),
+      QueryType.Match('receiver', address, undefined),
     ]
 
     const [

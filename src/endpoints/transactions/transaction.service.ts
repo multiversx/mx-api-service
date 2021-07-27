@@ -8,9 +8,8 @@ import { ElasticPagination } from 'src/helpers/entities/elastic/elastic.paginati
 import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
 import { ElasticSortOrder } from 'src/helpers/entities/elastic/elastic.sort.order';
 import { ElasticSortProperty } from 'src/helpers/entities/elastic/elastic.sort.property';
-import { MatchQuery } from 'src/helpers/entities/elastic/match.query';
 import { QueryConditionOptions } from 'src/helpers/entities/elastic/query.condition.options';
-import { RangeQuery } from 'src/helpers/entities/elastic/range.query';
+import { QueryType } from 'src/helpers/entities/elastic/query.type';
 import { GatewayService } from 'src/helpers/gateway.service';
 import { base64Encode, bech32Decode, computeShard, mergeObjects, oneDay, oneMinute } from 'src/helpers/helpers';
 import { ElasticService } from '../../helpers/elastic.service';
@@ -42,27 +41,27 @@ export class TransactionService {
     const queries: AbstractQuery[] = [];
 
     if (filter.sender) {
-      queries.push(new MatchQuery('sender', filter.sender, undefined).getQuery());
+      queries.push(QueryType.Match('sender', filter.sender, undefined));
     }
 
     if (filter.receiver) {
-      queries.push(new MatchQuery('receiver', filter.receiver, undefined).getQuery());
+      queries.push(QueryType.Match('receiver', filter.receiver, undefined));
     }
 
     if (filter.senderShard) {
-      queries.push(new MatchQuery('senderShard', filter.senderShard, undefined).getQuery());
+      queries.push(QueryType.Match('senderShard', filter.senderShard, undefined));
     }
 
     if (filter.receiverShard) {
-      queries.push(new MatchQuery('receiverShard', filter.receiverShard, undefined).getQuery());
+      queries.push(QueryType.Match('receiverShard', filter.receiverShard, undefined));
     }
 
     if (filter.miniBlockHash) {
-      queries.push(new MatchQuery('miniBlockHash', filter.miniBlockHash, undefined).getQuery());
+      queries.push(QueryType.Match('miniBlockHash', filter.miniBlockHash, undefined));
     }
 
     if (filter.status) {
-      queries.push(new MatchQuery('status', filter.status, undefined).getQuery());
+      queries.push(QueryType.Match('status', filter.status, undefined));
     }
 
     return queries;
@@ -74,7 +73,7 @@ export class TransactionService {
     
     if (filter.before || filter.after) {
       elasticQueryAdapter.filter = [
-        new RangeQuery('timestamp', { before: filter.before, after: filter.after }, undefined).getQuery(),
+        QueryType.Range('timestamp', { before: filter.before, after: filter.after }, undefined),
       ]
     }
 
@@ -98,7 +97,7 @@ export class TransactionService {
 
     if (filter.before || filter.after) {
       elasticQueryAdapter.filter = [
-        new RangeQuery('timestamp', { before: filter.before, after: filter.after }, undefined).getQuery(),
+        QueryType.Range('timestamp', { before: filter.before, after: filter.after }, undefined),
       ]
     }
     
@@ -184,7 +183,7 @@ export class TransactionService {
         const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascendant };
         elasticQueryAdapterSc.sort = [timestamp];
 
-        const originalTxHashQuery = new MatchQuery('originalTxHash', txHash, undefined).getQuery();
+        const originalTxHashQuery = QueryType.Match('originalTxHash', txHash, undefined);
         elasticQueryAdapterSc.condition.must = [originalTxHashQuery];
 
         if (result.hasScResults === true) {
@@ -203,7 +202,7 @@ export class TransactionService {
         elasticQueryAdapterReceipts.pagination = { from:0, size: 1 };
         elasticQueryAdapterReceipts.sort = [timestamp];
         
-        const receiptHashQuery = new MatchQuery('receiptHash', txHash, undefined).getQuery();
+        const receiptHashQuery = QueryType.Match('receiptHash', txHash, undefined);
         elasticQueryAdapterReceipts.condition.must = [receiptHashQuery];
 
         let receipts = await this.elasticService.getList('receipts', 'receiptHash', elasticQueryAdapterReceipts);

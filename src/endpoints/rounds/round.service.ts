@@ -9,9 +9,9 @@ import { ElasticSortProperty } from "src/helpers/entities/elastic/elastic.sort.p
 import { ElasticSortOrder } from "src/helpers/entities/elastic/elastic.sort.order";
 import { ElasticQuery } from "src/helpers/entities/elastic/elastic.query";
 import { AbstractQuery } from "src/helpers/entities/elastic/abstract.query";
-import { MatchQuery } from "src/helpers/entities/elastic/match.query";
 import { BlsService } from "src/helpers/bls.service";
 import { QueryConditionOptions } from "src/helpers/entities/elastic/query.condition.options";
+import { QueryType } from "src/helpers/entities/elastic/query.type";
 
 @Injectable()
 export class RoundService {
@@ -24,14 +24,14 @@ export class RoundService {
     const queries: AbstractQuery[] = [];
 
     if (filter.shard) {
-      const shardIdQuery = new MatchQuery('shardId', filter.shard, undefined).getQuery();
+      const shardIdQuery = QueryType.Match('shardId', filter.shard, undefined);
       queries.push(shardIdQuery);
     }
     
     if (filter.validator && filter.shard && filter.epoch) {
       const index = await this.blsService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
 
-      const signersIndexesQuery = new MatchQuery('signersIndexes', index !== false ? index : -1, undefined).getQuery();
+      const signersIndexesQuery = QueryType.Match('signersIndexes', index !== false ? index : -1, undefined);
       queries.push(signersIndexesQuery);
     }
 

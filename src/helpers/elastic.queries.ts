@@ -43,6 +43,8 @@ export function buildElasticQuery(query: ElasticQuery) {
   const elasticFilter = query.filter;
   const elasticCondition = getConditionOption(query.condition);
 
+  console.log(query);
+
   const elasticQuery = {
     ...elasticPagination,
     sort: elasticSort,
@@ -58,6 +60,8 @@ export function buildElasticQuery(query: ElasticQuery) {
   }
 
   cleanupApiValueRecursively(elasticQuery);
+
+  console.log(elasticQuery);
 
   if (Object.keys(elasticQuery.query.bool).length === 0) {
     //@ts-ignore
