@@ -7,6 +7,8 @@ import { BlockDetailed } from "./entities/block.detailed";
 import { CachingService } from "src/helpers/caching.service";
 import { BlockFilter } from "./entities/block.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { ElasticSortOrder } from "src/helpers/entities/elastic.sort.order";
+import { ElasticSortProperty } from "src/helpers/entities/elastic.sort.property";
 
 @Injectable()
 export class BlockService {
@@ -56,11 +58,11 @@ export class BlockService {
       size
     }
 
-    const sort = {
-      timestamp: 'desc',
-    };
+    const sorts: ElasticSortProperty[] = [];
+    const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descendant };
+    sorts.push(timestamp);
 
-    let result = await this.elasticService.getList('blocks', 'hash', query, pagination, sort);
+    let result = await this.elasticService.getList('blocks', 'hash', query, pagination, sorts);
 
     for (let item of result) {
       item.shard = item.shardId;

@@ -4,6 +4,8 @@ import { CachingService } from 'src/helpers/caching.service';
 import { DataApiService } from 'src/helpers/data.api.service';
 import { DataQuoteType } from 'src/helpers/entities/data.quote.type';
 import { ElasticPagination } from 'src/helpers/entities/elastic.pagination';
+import { ElasticSortOrder } from 'src/helpers/entities/elastic.sort.order';
+import { ElasticSortProperty } from 'src/helpers/entities/elastic.sort.property';
 import { QueryCondition } from 'src/helpers/entities/query.condition';
 import { GatewayService } from 'src/helpers/gateway.service';
 import { base64Encode, bech32Decode, computeShard, mergeObjects, oneDay, oneMinute } from 'src/helpers/helpers';
@@ -57,12 +59,15 @@ export class TransactionService {
       size: transactionQuery.size
     }
 
-    const sort = {
-      'timestamp': 'desc',
-      'nonce': 'desc',
-    };
+    const sorts: ElasticSortProperty[] = [];
 
-    let transactions = await this.elasticService.getList('transactions', 'txHash', query, pagination, sort, transactionQuery.condition ?? QueryCondition.must);
+    const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descendant };
+    sorts.push(timestamp);
+
+    const nonce: ElasticSortProperty = { name: 'nonce', order: ElasticSortOrder.descendant };
+    sorts.push(nonce);
+
+    let transactions = await this.elasticService.getList('transactions', 'txHash', query, pagination, sorts, transactionQuery.condition ?? QueryCondition.must);
 
     return transactions.map(transaction => mergeObjects(new Transaction(), transaction));
   }
@@ -138,8 +143,12 @@ export class TransactionService {
       hashes.push(txHash);
 
       if (!this.apiConfigService.getUseLegacyElastic()) {
+        const sorts: ElasticSortProperty[] = [];
+        const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascendant };
+        sorts.push(timestamp);
+
         if (result.hasScResults === true) {
-          let scResults = await this.elasticService.getList('scresults', 'scHash', { originalTxHash: txHash }, { from: 0, size: 100 }, { "timestamp": "asc" });
+          let scResults = await this.elasticService.getList('scresults', 'scHash', { originalTxHash: txHash }, { from: 0, size: 100 }, sorts);
           for (let scResult of scResults) {
             scResult.hash = scResult.scHash;
             hashes.push(scResult.hash);
@@ -150,7 +159,7 @@ export class TransactionService {
           transactionDetailed.scResults = scResults.map(scResult => mergeObjects(new SmartContractResult(), scResult));
         }
 
-        let receipts = await this.elasticService.getList('receipts', 'receiptHash', { txHash }, { from: 0, size: 1 }, { "timestamp": "asc" });
+        let receipts = await this.elasticService.getList('receipts', 'receiptHash', { txHash }, { from: 0, size: 1 }, sorts);
         if (receipts.length > 0) {
           let receipt = receipts[0];
           transactionDetailed.receipt = mergeObjects(new TransactionReceipt(), receipt);

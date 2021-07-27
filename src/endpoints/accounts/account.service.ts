@@ -11,6 +11,8 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { AccountDeferred } from './entities/account.deferred';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { QueryCondition } from 'src/helpers/entities/query.condition';
+import { ElasticSortOrder } from 'src/helpers/entities/elastic.sort.order';
+import { ElasticSortProperty } from 'src/helpers/entities/elastic.sort.property';
 
 @Injectable()
 export class AccountService {
@@ -69,18 +71,17 @@ export class AccountService {
 
   async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
     const { from, size } = queryPagination;
-
-    const sort = {
-      balanceNum: 'desc',
-    };
-
     const pagination: ElasticPagination = { 
       from, size 
     };
 
+    const sorts: ElasticSortProperty[] = [];
+    const balanceNum: ElasticSortProperty = { name: 'balanceNum', order: ElasticSortOrder.descendant };
+    sorts.push(balanceNum);
+
     const query = {};
 
-    let result = await this.elasticService.getList('accounts', 'address', query, pagination, sort);
+    let result = await this.elasticService.getList('accounts', 'address', query, pagination, sorts);
 
     let accounts: Account[] = result.map(item => mergeObjects(new Account(), item));
     for (let account of accounts) {

@@ -8,6 +8,7 @@ import { ApiService } from "./api.service";
 import { buildElasticQuery, extractFilterQuery } from "./elastic.queries";
 import { ElasticPagination } from "./entities/elastic.pagination";
 import { ElasticQuery } from "./entities/elastic.query";
+import { ElasticSortProperty } from "./entities/elastic.sort.property";
 import { QueryCondition } from "./entities/query.condition";
 import { cleanupApiValueRecursively } from "./helpers";
 import { PerformanceProfiler } from "./performance.profiler";
@@ -55,7 +56,7 @@ export class ElasticService {
     return { ...item, ..._source };
   };
 
-  async getList(collection: string, key: string, query: any, pagination: ElasticPagination, sort: any, condition: QueryCondition = QueryCondition.must): Promise<any[]> {
+  async getList(collection: string, key: string, query: any, pagination: ElasticPagination, sort: ElasticSortProperty[], condition: QueryCondition = QueryCondition.must): Promise<any[]> {
     const url = `${this.url}/${collection}/_search`;
 
     const elasticQueryAdapter = new ElasticQuery();

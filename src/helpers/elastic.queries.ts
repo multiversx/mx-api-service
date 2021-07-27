@@ -1,23 +1,15 @@
 import { ElasticPagination } from "./entities/elastic.pagination";
 import { ElasticQuery } from "./entities/elastic.query";
+import { ElasticSortProperty } from "./entities/elastic.sort.property";
 import { QueryCondition } from "./entities/query.condition";
 import { cleanupApiValueRecursively } from "./helpers";
 
-function buildElasticSort(sort: any): any {
-  if (!sort) {
-    return false
+function buildElasticSort(sorts: ElasticSortProperty[]): any[] {
+  if (!sorts) {
+    return [];
   }
-  return { 
-    sort: Object.keys(sort).map((key) => {
-      const obj: any = {};
 
-      obj[key] = {
-        order: sort[key]
-      };
-
-      return obj;
-    }),
-  }
+  return sorts.map((sortProp: ElasticSortProperty) => ({[sortProp.name]: { order: sortProp.order}}))
 };
 
 function buildElasticPagination(pagination: ElasticPagination | undefined): {from: number, size: number} | undefined {
@@ -104,7 +96,7 @@ export function buildElasticQuery(query: ElasticQuery) {
 
   const elasticQuery = {
     ...elasticPagination,
-    ...elasticSort,
+    sort: elasticSort,
     query: {
       bool: {
         filter: elasticFilter ? elasticFilter: undefined,
@@ -118,8 +110,14 @@ export function buildElasticQuery(query: ElasticQuery) {
 
   cleanupApiValueRecursively(elasticQuery);
 
+  console.log({elasticQuery});
+  console.log({elasticSort});
+
   if (Object.keys(elasticQuery.query.bool).length === 0) {
+    //@ts-ignore
     delete elasticQuery.query.bool;
+
+    //@ts-ignore
     elasticQuery.query['match_all'] = {}
   }
   

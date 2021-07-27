@@ -6,6 +6,8 @@ import { mergeObjects, roundToEpoch } from "src/helpers/helpers";
 import { RoundDetailed } from "./entities/round.detailed";
 import { RoundFilter } from "./entities/round.filter";
 import { QueryCondition } from "src/helpers/entities/query.condition";
+import { ElasticSortOrder } from "src/helpers/entities/elastic.sort.order";
+import { ElasticSortProperty } from "src/helpers/entities/elastic.sort.property";
 
 @Injectable()
 export class RoundService {
@@ -43,11 +45,11 @@ export class RoundService {
       size: filter.size
     }
 
-    const sort = {
-      timestamp: 'desc',
-    };
+    const sorts: ElasticSortProperty[] = [];
+    const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descendant };
+    sorts.push(timestamp);
 
-    let result = await this.elasticService.getList('rounds', 'round', query, pagination, sort, filter.condition ?? QueryCondition.must);
+    let result = await this.elasticService.getList('rounds', 'round', query, pagination, sorts, filter.condition ?? QueryCondition.must);
 
     for (let item of result) {
       item.shard = item.shardId;
