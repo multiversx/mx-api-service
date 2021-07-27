@@ -11,10 +11,14 @@ import { QueryCondition } from "src/helpers/entities/elastic/query.condition";
 import { ElasticQuery } from "src/helpers/entities/elastic/elastic.query";
 import { AbstractQuery } from "src/helpers/entities/elastic/abstract.query";
 import { MatchQuery } from "src/helpers/entities/elastic/match.query";
+import { BlsService } from "src/helpers/bls.service";
 
 @Injectable()
 export class RoundService {
-  constructor(private readonly elasticService: ElasticService) {}
+  constructor(
+    private readonly elasticService: ElasticService,
+    private readonly blsService: BlsService
+  ) {}
 
   private async buildElasticRoundsFilter(filter: RoundFilter): Promise<AbstractQuery[]> {
     const queries: AbstractQuery[] = [];
@@ -25,7 +29,7 @@ export class RoundService {
     }
     
     if (filter.validator && filter.shard && filter.epoch) {
-      const index = await this.elasticService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
+      const index = await this.blsService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
 
       const signersIndexesQuery = new MatchQuery('signersIndexes', index !== false ? index : -1, undefined).getQuery();
       queries.push(signersIndexesQuery);
@@ -70,7 +74,7 @@ export class RoundService {
     const result = await this.elasticService.getItem('rounds', 'round', `${shard}_${round}`);
 
     const epoch = roundToEpoch(round);
-    const publicKeys = await this.elasticService.getPublicKeys(shard, epoch);
+    const publicKeys = await this.blsService.getPublicKeys(shard, epoch);
 
     result.shard = result.shardId;
     result.signers = result.signersIndexes.map((index: number) => publicKeys[index]);

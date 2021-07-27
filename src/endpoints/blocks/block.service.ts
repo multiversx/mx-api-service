@@ -13,12 +13,14 @@ import { ElasticQuery } from "src/helpers/entities/elastic/elastic.query";
 import { QueryCondition } from "src/helpers/entities/elastic/query.condition";
 import { AbstractQuery } from "src/helpers/entities/elastic/abstract.query";
 import { MatchQuery } from "src/helpers/entities/elastic/match.query";
+import { BlsService } from "src/helpers/bls.service";
 
 @Injectable()
 export class BlockService {
   constructor(
     private readonly elasticService: ElasticService,
-    private readonly cachingService: CachingService
+    private readonly cachingService: CachingService,
+    private readonly blsService: BlsService,
   ) {}
 
   private async buildElasticBlocksFilter (filter: BlockFilter): Promise<AbstractQuery[]> {
@@ -36,13 +38,13 @@ export class BlockService {
     }
 
     if (proposer && shard !== undefined && epoch !== undefined) {
-      let index = await this.elasticService.getBlsIndex(proposer, shard, epoch);
+      let index = await this.blsService.getBlsIndex(proposer, shard, epoch);
       const proposerQuery = new MatchQuery('proposer', index !== false ? index : -1, undefined).getQuery();
       queries.push(proposerQuery);
     }
 
     if (validator && shard !== undefined && epoch !== undefined) {
-      let index = await this.elasticService.getBlsIndex(validator, shard, epoch);
+      let index = await this.blsService.getBlsIndex(validator, shard, epoch);
       const validatorsQuery = new MatchQuery('validators', index !== false ? index : -1, undefined).getQuery();
       queries.push(validatorsQuery);
     }
@@ -100,7 +102,7 @@ export class BlockService {
     let key = `${shard}_${epoch}`;
     let blses: any = await this.cachingService.getCacheLocal(key);
     if (!blses) {
-      blses = await this.elasticService.getBlses(shard, epoch);
+      blses = await this.blsService.getBlses(shard, epoch);
 
       await this.cachingService.setCacheLocal(key, blses, oneWeek());
     }
@@ -114,7 +116,7 @@ export class BlockService {
   async getBlock(hash: string): Promise<BlockDetailed> {
     let result = await this.elasticService.getItem('blocks', 'hash', hash);
 
-    let publicKeys = await this.elasticService.getPublicKeys(result.shardId, result.epoch);
+    let publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);
     result.shard = result.shardId;
     result.proposer = publicKeys[result.proposer];
     result.validators = result.validators.map((validator: number) => publicKeys[validator]);
