@@ -9,6 +9,6 @@ export class ElasticQuery {
   must: AbstractQuery[] = []
   should: AbstractQuery[] = []
   must_not: AbstractQuery[] = []
-  filter: any
+  filter: AbstractQuery[] = []
   condition: QueryCondition = QueryCondition.must
 }

@@ -1,4 +1,3 @@
-import { ElasticPagination } from "./entities/elastic/elastic.pagination";
 import { ElasticQuery } from "./entities/elastic/elastic.query";
 import { ElasticSortProperty } from "./entities/elastic/elastic.sort.property";
 import { QueryCondition } from "./entities/elastic/query.condition";
@@ -11,45 +10,6 @@ function buildElasticSort(sorts: ElasticSortProperty[]): any[] {
 
   return sorts.map((sortProp: ElasticSortProperty) => ({[sortProp.name]: { order: sortProp.order}}))
 };
-
-function buildElasticPagination(pagination: ElasticPagination | undefined): {from: number, size: number} | undefined {
-  if (!pagination) {
-    return undefined;
-  }
-
-  return {
-    from: pagination.from,
-    size: pagination.size,
-  }
-}
-
-function buildElasticRange(range: any = {}) {
-  let obj: any = {};
-  obj['timestamp'] = {};
-  Object.keys(range).map((key) => {
-    if (key == 'before' && range[key] != undefined) {
-      obj['timestamp']['lte'] = range[key];
-    }
-    if (key == 'after' && range[key] != undefined) {
-      obj['timestamp']['gte'] = range[key];
-    }
-  });
-  return obj;
-};
-
-function buildElasticFilter(filter: any): any {
-  if (!filter) {
-    return undefined;
-  }
-
-  if (filter['before'] || filter['after']) {
-    const range = buildElasticRange(filter);
-
-    return {
-      range
-    }
-  }
-}
 
 export function extractFilterQuery(query: any): any {
   if (!query) {
@@ -69,9 +29,9 @@ export function extractFilterQuery(query: any): any {
 }
 
 export function buildElasticQuery(query: ElasticQuery) {
-  const elasticPagination = buildElasticPagination(query.pagination);
+  const elasticPagination = query.pagination;
   const elasticSort = buildElasticSort(query.sort);
-  const elasticFilter = buildElasticFilter(query.filter);
+  const elasticFilter = query.filter;
   const elasticCondition = query.condition;
 
   const elasticQuery = {

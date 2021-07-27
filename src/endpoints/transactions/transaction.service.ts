@@ -10,6 +10,7 @@ import { ElasticSortOrder } from 'src/helpers/entities/elastic/elastic.sort.orde
 import { ElasticSortProperty } from 'src/helpers/entities/elastic/elastic.sort.property';
 import { MatchQuery } from 'src/helpers/entities/elastic/match.query';
 import { QueryCondition } from 'src/helpers/entities/elastic/query.condition';
+import { RangeQuery } from 'src/helpers/entities/elastic/range.query';
 import { GatewayService } from 'src/helpers/gateway.service';
 import { base64Encode, bech32Decode, computeShard, mergeObjects, oneDay, oneMinute } from 'src/helpers/helpers';
 import { ElasticService } from '../../helpers/elastic.service';
@@ -65,22 +66,18 @@ export class TransactionService {
     }
 
     return queries;
-
-    // return {
-    //   sender: filter.sender,
-    //   receiver: filter.receiver,
-    //   senderShard: filter.senderShard,
-    //   receiverShard: filter.receiverShard,
-    //   miniBlockHash: filter.miniBlockHash,
-    //   status: filter.status,
-    //   before: filter.before,
-    //   after: filter.after
-    // };
   }
+
   async getTransactionCount(filter: TransactionFilter): Promise<number> {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
     elasticQueryAdapter.condition = filter.condition ?? QueryCondition.must;
     elasticQueryAdapter[elasticQueryAdapter.condition] = await this.buildTransactionFilterQuery(filter)
+    
+    if (filter.before || filter.after) {
+      elasticQueryAdapter.filter = [
+        new RangeQuery('timestamp', { before: filter.before, after: filter.after }, undefined).getQuery(),
+      ]
+    }
 
     return await this.elasticService.getCount('transactions', elasticQueryAdapter);
   }
@@ -101,6 +98,12 @@ export class TransactionService {
     const nonce: ElasticSortProperty = { name: 'nonce', order: ElasticSortOrder.descendant };
     elasticQueryAdapter.sort = [timestamp, nonce];
 
+    if (filter.before || filter.after) {
+      elasticQueryAdapter.filter = [
+        new RangeQuery('timestamp', { before: filter.before, after: filter.after }, undefined).getQuery(),
+      ]
+    }
+    
     let transactions = await this.elasticService.getList('transactions', 'txHash', elasticQueryAdapter);
 
     return transactions.map(transaction => mergeObjects(new Transaction(), transaction));
