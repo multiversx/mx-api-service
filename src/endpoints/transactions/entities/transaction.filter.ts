@@ -1,5 +1,5 @@
 import { QueryPagination } from "src/common/entities/query.pagination"
-import { QueryCondition } from "src/helpers/entities/query.condition"
+import { QueryCondition } from "src/helpers/entities/elastic/query.condition"
 import { TransactionStatus } from "./transaction.status"
 
 export class TransactionFilter extends QueryPagination{

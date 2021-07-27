@@ -1,13 +1,13 @@
 import { Injectable } from "@nestjs/common";
-import { ElasticPagination } from "src/helpers/entities/elastic.pagination";
 import { ElasticService } from "src/helpers/elastic.service";
 import { Round } from "./entities/round";
 import { mergeObjects, roundToEpoch } from "src/helpers/helpers";
 import { RoundDetailed } from "./entities/round.detailed";
 import { RoundFilter } from "./entities/round.filter";
-import { QueryCondition } from "src/helpers/entities/query.condition";
-import { ElasticSortOrder } from "src/helpers/entities/elastic.sort.order";
-import { ElasticSortProperty } from "src/helpers/entities/elastic.sort.property";
+import { ElasticPagination } from "src/helpers/entities/elastic/elastic.pagination";
+import { ElasticSortProperty } from "src/helpers/entities/elastic/elastic.sort.property";
+import { ElasticSortOrder } from "src/helpers/entities/elastic/elastic.sort.order";
+import { QueryCondition } from "src/helpers/entities/elastic/query.condition";
 
 @Injectable()
 export class RoundService {

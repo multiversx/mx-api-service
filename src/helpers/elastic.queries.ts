@@ -1,7 +1,8 @@
-import { ElasticPagination } from "./entities/elastic.pagination";
-import { ElasticQuery } from "./entities/elastic.query";
-import { ElasticSortProperty } from "./entities/elastic.sort.property";
-import { QueryCondition } from "./entities/query.condition";
+import { ElasticPagination } from "./entities/elastic/elastic.pagination";
+import { ElasticQuery } from "./entities/elastic/elastic.query";
+import { ElasticSortProperty } from "./entities/elastic/elastic.sort.property";
+import { MatchQuery } from "./entities/elastic/match.query";
+import { QueryCondition } from "./entities/elastic/query.condition";
 import { cleanupApiValueRecursively } from "./helpers";
 
 function buildElasticSort(sorts: ElasticSortProperty[]): any[] {
@@ -39,7 +40,7 @@ function buildElasticRange(range: any = {}) {
 
 function buildElasticFilter(filter: any): any {
   if (!filter) {
-    return false;
+    return undefined;
   }
 
   if (filter['before'] || filter['after']) {
@@ -72,16 +73,7 @@ function buildElasticQueries(queries: any) {
   if (Object.keys(queries).length) {
     return Object.keys(queries)
       .filter(key => queries[key] !== null && queries[key] !== undefined)
-      .map((key) => {
-      const match: any = {};
-
-      const value = queries[key];
-      if (value !== null) {
-        match[key] = queries[key];
-      }
-
-      return { match };
-    });
+      .map((key) => new MatchQuery(key, queries[key], undefined).getQuery());
   }
 
   return null;
@@ -99,7 +91,7 @@ export function buildElasticQuery(query: ElasticQuery) {
     sort: elasticSort,
     query: {
       bool: {
-        filter: elasticFilter ? elasticFilter: undefined,
+        filter: [elasticFilter] ? elasticFilter: undefined,
         must: elasticCondition === QueryCondition.must ? elasticQueries : undefined,
         should: elasticCondition === QueryCondition.should ? elasticQueries : undefined,
         must_not: elasticCondition === QueryCondition.mustNot ? elasticQueries : undefined,
@@ -111,7 +103,7 @@ export function buildElasticQuery(query: ElasticQuery) {
   cleanupApiValueRecursively(elasticQuery);
 
   console.log({elasticQuery});
-  console.log({elasticSort});
+  console.log({elasticQueries});
 
   if (Object.keys(elasticQuery.query.bool).length === 0) {
     //@ts-ignore

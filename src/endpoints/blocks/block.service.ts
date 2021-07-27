@@ -1,5 +1,4 @@
 import { Injectable } from "@nestjs/common";
-import { ElasticPagination } from "src/helpers/entities/elastic.pagination";
 import { ElasticService } from "src/helpers/elastic.service";
 import { mergeObjects, oneMinute, oneWeek } from "src/helpers/helpers";
 import { Block } from "./entities/block";
@@ -7,8 +6,9 @@ import { BlockDetailed } from "./entities/block.detailed";
 import { CachingService } from "src/helpers/caching.service";
 import { BlockFilter } from "./entities/block.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { ElasticSortOrder } from "src/helpers/entities/elastic.sort.order";
-import { ElasticSortProperty } from "src/helpers/entities/elastic.sort.property";
+import { ElasticPagination } from "src/helpers/entities/elastic/elastic.pagination";
+import { ElasticSortProperty } from "src/helpers/entities/elastic/elastic.sort.property";
+import { ElasticSortOrder } from "src/helpers/entities/elastic/elastic.sort.order";
 
 @Injectable()
 export class BlockService {

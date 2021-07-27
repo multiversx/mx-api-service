@@ -6,10 +6,10 @@ import { TransactionLog } from "src/endpoints/transactions/entities/transaction.
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
 import { buildElasticQuery, extractFilterQuery } from "./elastic.queries";
-import { ElasticPagination } from "./entities/elastic.pagination";
-import { ElasticQuery } from "./entities/elastic.query";
-import { ElasticSortProperty } from "./entities/elastic.sort.property";
-import { QueryCondition } from "./entities/query.condition";
+import { ElasticPagination } from "./entities/elastic/elastic.pagination";
+import { ElasticQuery } from "./entities/elastic/elastic.query";
+import { ElasticSortProperty } from "./entities/elastic/elastic.sort.property";
+import { QueryCondition } from "./entities/elastic/query.condition";
 import { cleanupApiValueRecursively } from "./helpers";
 import { PerformanceProfiler } from "./performance.profiler";
 

@@ -3,16 +3,16 @@ import { ElasticService } from '../../helpers/elastic.service';
 import { GatewayService } from '../../helpers/gateway.service';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
-import { ElasticPagination } from 'src/helpers/entities/elastic.pagination';
 import { bech32Decode, bech32Encode, computeShard, mergeObjects, oneDay, oneMinute, padHex } from 'src/helpers/helpers';
 import { CachingService } from 'src/helpers/caching.service';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { AccountDeferred } from './entities/account.deferred';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { QueryCondition } from 'src/helpers/entities/query.condition';
-import { ElasticSortOrder } from 'src/helpers/entities/elastic.sort.order';
-import { ElasticSortProperty } from 'src/helpers/entities/elastic.sort.property';
+import { QueryCondition } from 'src/helpers/entities/elastic/query.condition';
+import { ElasticPagination } from 'src/helpers/entities/elastic/elastic.pagination';
+import { ElasticSortProperty } from 'src/helpers/entities/elastic/elastic.sort.property';
+import { ElasticSortOrder } from 'src/helpers/entities/elastic/elastic.sort.order';
 
 @Injectable()
 export class AccountService {
