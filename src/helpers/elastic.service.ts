@@ -189,28 +189,11 @@ export class ElasticService {
       queries.push(QueryType.Nested("metaData", { "metaData.creator": filter.creator }, undefined));
     }
 
-    // elasticQueryAdapter.condition.must = queries;
+    elasticQueryAdapter.condition.must = queries;
 
-    // const elasticQuery = buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
-    let query = {
-      sort: [
-         {
-            timestamp: {
-               order: "desc"
-            }
-         }
-      ],
-      from,
-      size,
-      query: {
-         bool: {
-            must: queries
-         }
-      }
-    };
-
-    return query;
+    return elasticQuery;
   }
 
   async getTokens(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
@@ -246,29 +229,10 @@ export class ElasticService {
     shouldQueries.push(QueryType.Match('type', NftType.NonFungibleESDT, undefined));
     elasticQueryAdapter.condition.should = shouldQueries;
 
-    // const elasticQuery = buildElasticQuery(elasticQueryAdapter);
-
-    let payload = {
-      sort: [
-         {
-            timestamp: {
-               order: "desc"
-            }
-         }
-      ],
-      from: 0,
-      size: 0,
-      query: {
-         bool: {
-            must_not: mustNotQueries,
-            must: mustQueries,
-            should: shouldQueries
-         }
-      }
-    };
+    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
     let url = `${this.url}/tokens/_search`;
-    return await this.getDocumentCount(url, payload);
+    return await this.getDocumentCount(url, elasticQuery);
   }
 
   async getTokenCollections(from: number, size: number, search: string | undefined, type: NftType | undefined, token: string | undefined, issuer: string | undefined, identifiers: string[]) {
