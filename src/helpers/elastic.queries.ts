@@ -20,23 +20,6 @@ function getConditionOption(condition: QueryCondition): QueryConditionOptions {
   return QueryConditionOptions.must;
 }
 
-export function extractFilterQuery(query: any): any {
-  if (!query) {
-    return false;
-  }
-
-  if (query['before'] || query['after']) {
-    const { before, after } = query;
-
-    delete query['before'];
-    delete query['after'];
-
-    return {
-      before, after
-    }
-  }
-}
-
 export function buildElasticQuery(query: ElasticQuery) {
   const elasticSort = buildElasticSort(query.sort);
   const elasticCondition = getConditionOption(query.condition);
