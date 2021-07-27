@@ -7,10 +7,11 @@ import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
 import { buildElasticQuery } from "./elastic.queries";
 import { ElasticQuery } from "./entities/elastic/elastic.query";
+import { ElasticSortOrder } from "./entities/elastic/elastic.sort.order";
+import { ExistsQuery } from "./entities/elastic/exists.query";
 import { MatchQuery } from "./entities/elastic/match.query";
 import { QueryCondition } from "./entities/elastic/query.condition";
 import { QueryOperator } from "./entities/elastic/query.operator";
-import { cleanupApiValueRecursively } from "./helpers";
 import { PerformanceProfiler } from "./performance.profiler";
 
 @Injectable()
@@ -141,180 +142,121 @@ export class ElasticService {
    };
   }
 
-  private getSimpleQuery(match: any) {
-    return {
-       bool: {
-          must:[
-             {
-                match
-             }
-          ]
-       }
-    };
-  }
-
   private getWildcardQuery(wildcard: any) {
     return { wildcard };
   }
 
-  private getExistsQuery(field: string) {
-    return { 
-      exists: {
-        field
-      }
-    };
-  }
-
   async getAccountEsdtByIdentifier(identifier: string) {
-    let query = this.getSimpleQuery({
-        identifier: {
-          query: identifier,
-          operator: "AND"
-      }
-    });
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+    elasticQueryAdapter.condition = QueryCondition.must;
+    elasticQueryAdapter[elasticQueryAdapter.condition] = [
+      new MatchQuery('identifier', identifier, QueryOperator.AND).getQuery(),
+    ]
 
-    let payload = {
-      query: {
-         bool: {
-            must: [
-              query
-            ]
-         }
-      }
-    };
-
-    let elasticStructureQuery = new ElasticQuery();
-    elasticStructureQuery.condition = QueryCondition.must;
-    elasticStructureQuery[elasticStructureQuery.condition] = [new MatchQuery('identifier', identifier, QueryOperator.AND)];
-
-    const newQuery = buildElasticQuery(elasticStructureQuery);
-    cleanupApiValueRecursively(newQuery);
+    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
     let url = `${this.url}/accountsesdt/_search`;
-    let documents = await this.getDocuments(url, payload);
+    let documents = await this.getDocuments(url, elasticQuery);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
 
   async getTokensByIdentifiers(identifiers: string[]) {
-    let queries = identifiers.map(identifier => this.getSimpleQuery({
-        identifier: {
-          query: identifier,
-          operator: "AND"
-      }
-    }));
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+    elasticQueryAdapter.condition = QueryCondition.should;
+    elasticQueryAdapter[elasticQueryAdapter.condition] = identifiers.map(identifier => 
+      new MatchQuery('identifier', identifier, QueryOperator.AND).getQuery()
+    );
 
-    let payload = {
-      query: {
-         bool: {
-            should: queries
-         }
-      }
-    };
+    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
     let url = `${this.url}/tokens/_search`;
-    let documents = await this.getDocuments(url, payload);
+    let documents = await this.getDocuments(url, elasticQuery);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
 
   async getAccountEsdtByAddress(address: string, from: number, size: number, token: string | undefined) {
-    let queries = [];
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+    elasticQueryAdapter.condition = QueryCondition.must;
+    elasticQueryAdapter.pagination = { from, size };
 
-    queries.push(this.getSimpleQuery({ address }));
-    queries.push(this.getExistsQuery("identifier"));
+    elasticQueryAdapter[elasticQueryAdapter.condition] = [
+      new MatchQuery('address', address, undefined).getQuery(),
+      new ExistsQuery('identifier', undefined, undefined).getQuery(),
+    ]
 
     if (token) {
-      queries.push(this.getSimpleQuery({
-        token: {
-          query: token,
-          operator: "AND"
-        }
-      }));
+      elasticQueryAdapter[elasticQueryAdapter.condition].push(
+        new MatchQuery('token', token, QueryOperator.AND).getQuery()
+      );
     }
 
-    let payload = {
-      from,
-      size,
-      query: {
-         bool: {
-            must: queries
-         }
-      }
-    };
+    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
     let url = `${this.url}/accountsesdt/_search`;
-    let documents = await this.getDocuments(url, payload);
+    let documents = await this.getDocuments(url, elasticQuery);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
 
   async getAccountEsdtByAddressAndIdentifier(address: string, identifier: string) {
-    let queries = [];
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+    elasticQueryAdapter.condition = QueryCondition.must;
+    elasticQueryAdapter.pagination = { from: 0, size: 1 };
 
-    queries.push(this.getSimpleQuery({ address }));
+    elasticQueryAdapter[elasticQueryAdapter.condition] = [
+      new MatchQuery('address', address, undefined).getQuery(),
+      new MatchQuery('identifier', identifier, QueryOperator.AND).getQuery(),
+    ]
 
-    queries.push(this.getSimpleQuery({
-      identifier: {
-        query: identifier,
-        operator: "AND"
-      }
-    }));
-
-    let payload = {
-      from: 0,
-      size: 1,
-      query: {
-         bool: {
-            must: queries
-         }
-      }
-    };
+    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
     let url = `${this.url}/accountsesdt/_search`;
-    let documents = await this.getDocuments(url, payload);
+    let documents = await this.getDocuments(url, elasticQuery);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
   }
 
   async getAccountEsdtByAddressCount(address: string) {
-    let queries = [];
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+    elasticQueryAdapter.condition = QueryCondition.must;
+    elasticQueryAdapter.pagination = { from: 0, size: 0 };
 
-    queries.push(this.getSimpleQuery({ address }));
-    queries.push(this.getExistsQuery("identifier"));
+    elasticQueryAdapter[elasticQueryAdapter.condition] = [
+      new MatchQuery('address', address, undefined).getQuery(),
+      new ExistsQuery('identifier', undefined, undefined).getQuery(),
+    ]
 
-    let payload = {
-      from: 0,
-      size: 0,
-      query: {
-         bool: {
-            must: queries
-         }
-      }
-    };
+    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
     let url = `${this.url}/accountsesdt/_search`;
-    return await this.getDocumentCount(url, payload);
+    return await this.getDocumentCount(url, elasticQuery);
   }
 
   private buildElasticNftFilter(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+    elasticQueryAdapter.condition = QueryCondition.must;
+    elasticQueryAdapter.pagination = { from, size };
+    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descendant }]
+
     let queries = [];
-    queries.push(this.getExistsQuery('identifier'));
+    queries.push(new ExistsQuery('identifier', undefined, undefined).getQuery());
 
     if (filter.search !== undefined) {
       queries.push(this.getWildcardQuery({ token: `*${filter.search}*` }));
     }
 
     if (filter.type !== undefined) {
-      queries.push(this.getSimpleQuery({ type: filter.type }));
+      queries.push(new MatchQuery('type', filter.type, undefined).getQuery());
     }
 
     if (identifier !== undefined) {
-      queries.push(this.getSimpleQuery({ identifier: { query: identifier, operator: "AND" } }));
+      queries.push(new MatchQuery('identifier', identifier, QueryOperator.AND).getQuery());
     }
 
     if (filter.collection !== undefined) {
-      queries.push(this.getSimpleQuery({ token: { query: filter.collection, operator: "AND" } }));
+      queries.push(new MatchQuery('token', filter.collection, QueryOperator.AND).getQuery());
     }
 
     if (filter.tags) {
@@ -329,6 +271,10 @@ export class ElasticService {
     if (filter.creator !== undefined) {
       queries.push(this.getNestedQuery("metaData", { "metaData.creator": filter.creator }));
     }
+
+    elasticQueryAdapter[elasticQueryAdapter.condition] = queries;
+
+    // const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
     let query = {
       sort: [
@@ -360,8 +306,13 @@ export class ElasticService {
   }
 
   async getTokenCollectionCount(search: string | undefined, type: NftType | undefined) {
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+    elasticQueryAdapter.pagination = { from: 0, size: 0 };
+    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descendant }]
     let mustNotQueries = [];
-    mustNotQueries.push(this.getExistsQuery('identifier'));
+    mustNotQueries.push(new ExistsQuery('identifier', undefined, undefined).getQuery());
+
+    elasticQueryAdapter.must_not = mustNotQueries;
 
     let mustQueries = [];
     if (search !== undefined) {
@@ -369,12 +320,16 @@ export class ElasticService {
     }
 
     if (type !== undefined) {
-      mustQueries.push(this.getSimpleQuery({ type }));
+      mustQueries.push(new MatchQuery('type', type, undefined).getQuery());
     }
+    elasticQueryAdapter.must = mustQueries;
 
     let shouldQueries = [];
-    shouldQueries.push(this.getSimpleQuery({ type: NftType.SemiFungibleESDT }));
-    shouldQueries.push(this.getSimpleQuery({ type: NftType.NonFungibleESDT }));
+    shouldQueries.push(new MatchQuery('type', NftType.SemiFungibleESDT, undefined).getQuery());
+    shouldQueries.push(new MatchQuery('type', NftType.NonFungibleESDT, undefined).getQuery());
+    elasticQueryAdapter.should = shouldQueries;
+
+    // const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
     let payload = {
       sort: [
@@ -400,8 +355,13 @@ export class ElasticService {
   }
 
   async getTokenCollections(from: number, size: number, search: string | undefined, type: NftType | undefined, token: string | undefined, issuer: string | undefined, identifiers: string[]) {
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+    elasticQueryAdapter.pagination = { from, size };
+    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descendant }];
+
     let mustNotQueries = [];
-    mustNotQueries.push(this.getExistsQuery('identifier'));
+    mustNotQueries.push(new ExistsQuery('identifier', undefined, undefined).getQuery());
+    elasticQueryAdapter.must_not = mustNotQueries;
 
     let mustQueries = [];
     if (search !== undefined) {
@@ -409,27 +369,31 @@ export class ElasticService {
     }
 
     if (type !== undefined) {
-      mustQueries.push(this.getSimpleQuery({ type }));
+      mustQueries.push(new MatchQuery('type', type, undefined).getQuery());
     }
 
     if (token !== undefined) {
-      mustQueries.push(this.getSimpleQuery({ token: { query: token, operator: "AND" } }));
+      mustQueries.push(new MatchQuery('token', token, QueryOperator.AND).getQuery());
     }
 
     if (issuer !== undefined) {
-      mustQueries.push(this.getSimpleQuery({ issuer }));
+      mustQueries.push(new MatchQuery('issuer', issuer, undefined).getQuery());
     }
+    elasticQueryAdapter.must = mustQueries;
 
     let shouldQueries = [];
 
     if (identifiers.length > 0) {
       for (let identifier of identifiers) {
-        shouldQueries.push(this.getSimpleQuery({ token: { query: identifier, operator: "AND" } }));
+        shouldQueries.push(new MatchQuery('token', identifier, QueryOperator.AND).getQuery());
       }
     } else {
-      shouldQueries.push(this.getSimpleQuery({ type: NftType.SemiFungibleESDT }));
-      shouldQueries.push(this.getSimpleQuery({ type: NftType.NonFungibleESDT }));
+      shouldQueries.push(new MatchQuery('type', NftType.SemiFungibleESDT, undefined).getQuery());
+      shouldQueries.push(new MatchQuery('type', NftType.NonFungibleESDT, undefined).getQuery());
     }
+    elasticQueryAdapter.should = shouldQueries;
+
+    // const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
     let payload = {
       sort: [
@@ -457,22 +421,20 @@ export class ElasticService {
   }
 
   async getTokenByIdentifier(identifier: string) {
-    let queries = [];
-    queries.push(this.getExistsQuery('identifier'));
-    queries.push(this.getSimpleQuery({ identifier: { query: identifier, operator: "AND" } }));
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+    elasticQueryAdapter.condition = QueryCondition.must;
+    elasticQueryAdapter.pagination = { from: 0, size: 1 };
+    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descendant }];
 
-    let payload = {
-      from: 0,
-      size: 1,
-      query: {
-         bool: {
-            must: queries
-         }
-      }
-    };
+    elasticQueryAdapter[elasticQueryAdapter.condition] = [
+      new ExistsQuery('identifier', undefined, undefined).getQuery(),
+      new MatchQuery('identifier', identifier, QueryOperator.AND),
+    ]
+
+    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
     let url = `${this.url}/tokens/_search`;
-    let documents = await this.getDocuments(url, payload);
+    let documents = await this.getDocuments(url, elasticQuery);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
   }
@@ -491,28 +453,21 @@ export class ElasticService {
     return await this.getDocuments(url, query);
   }
 
-  private getSimpleMatch(criteria: any) {
-    return { match: criteria };
-  }
-
   private buildLogsQuery(hashes: string[]) {
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+    elasticQueryAdapter.condition = QueryCondition.should;
+    elasticQueryAdapter.pagination = { from: 0, size: 100 };
+    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descendant }];
+
     let queries = [];
-
     for (let hash of hashes) {
-      queries.push(this.getSimpleMatch({ "_id": hash } ));
+      queries.push(new MatchQuery('_id', hash, undefined).getQuery());
     }
+    elasticQueryAdapter[elasticQueryAdapter.condition] = queries;
 
-    let payload = {
-      from: 0,
-      size: 100,
-      query: {
-        bool: {
-          should: queries
-        }
-      }
-    }
+    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
-    return payload;
+    return elasticQuery;
   }
 
   private async get(url: string) {
