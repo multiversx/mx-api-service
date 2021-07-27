@@ -20,6 +20,7 @@ import { NftFilter } from "./entities/nft.filter";
 import { ApiService } from "src/helpers/api.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { CollectionFilter } from "./entities/collection.filter";
+import { NftMetadata } from "./entities/nft.metadata";
 
 @Injectable()
 export class TokenService {
@@ -231,6 +232,8 @@ export class TokenService {
       nfts.push(nft);
     }
 
+    await this.updateThumbnailUrlForNfts(nfts);
+
     for (let nft of nfts) {
       if (nft.type === NftType.SemiFungibleESDT) {
         let gatewayNft = await this.getNft(nft.collection);
@@ -241,6 +244,36 @@ export class TokenService {
     }
 
     return nfts;
+  }
+
+  async updateThumbnailUrlForNfts(nfts: Nft[]) {
+    let confirmations = await this.cachingService.batchProcess(
+      nfts,
+      nft => `nftCustomThumbnail:${nft.identifier}`,
+      async (nft) => await this.hasCustomThumbnail(nft.identifier),
+      oneHour()
+    );
+
+    for (let [index, nft] of nfts.entries()) {
+      let isCustomThumbnail = confirmations[index];
+      if (isCustomThumbnail === true) {
+        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/${nft.identifier}.png`;
+      } else if (nft.metadata && nft.metadata.fileType) {
+        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/${nft.metadata.fileType.replace('/', '-')}.png`;
+      } else {
+        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/smiley.png`;
+      }
+    }
+  }
+
+  async hasCustomThumbnail(nftIdentifier: string): Promise<boolean> {
+    try {
+      const { status } = await this.apiService.head(`${this.apiConfigService.getMediaUrl()}/nfts/${nftIdentifier}.png`);
+
+      return status === 200;
+    } catch (error) {
+      return false;
+    }
   }
 
   async getNftCount(filter: NftFilter): Promise<number> {
@@ -451,10 +484,12 @@ export class TokenService {
       nfts = nfts.filter(x => x.uris.length === 0);
     }
 
+    await this.updateThumbnailUrlForNfts(nfts);
+
     return nfts;
   }
 
-  async getExtendedAttributesFromRawAttributes(attributes: string): Promise<Object | undefined> {
+  async getExtendedAttributesFromRawAttributes(attributes: string): Promise<NftMetadata | undefined> {
     let description = this.getDescription(attributes);
     if (description === undefined) {
       return undefined;
@@ -463,8 +498,8 @@ export class TokenService {
     return this.getExtendedAttributesFromDescription(description);
   }
   
-  async getExtendedAttributesFromDescription(description: string): Promise<Object | undefined> {
-    let result = await this.cachingService.getOrSetCache(
+  async getExtendedAttributesFromDescription(description: string): Promise<NftMetadata | undefined> {
+    let result = await this.cachingService.getOrSetCache<NftMetadata>(
       `nftExtendedAttributes:${description}`,
       async () => await this.getExtendedAttributesFromIpfs(description ?? ''),
       oneWeek(),
@@ -478,13 +513,13 @@ export class TokenService {
     return undefined;
   }
 
-  async getExtendedAttributesFromIpfs(description: string): Promise<Object> {
+  async getExtendedAttributesFromIpfs(description: string): Promise<NftMetadata> {
     try {
       let result = await this.apiService.get(`https://ipfs.io/ipfs/${description}`, 1000);
       return result.data;
     } catch (error) {
       this.logger.error(error);
-      return {};
+      return new NftMetadata();
     }
   }
 

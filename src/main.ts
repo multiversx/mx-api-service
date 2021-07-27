@@ -20,6 +20,7 @@ import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CleanupInterceptor } from './interceptors/cleanup.interceptor';
+import { RedisClient } from 'redis';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
@@ -91,6 +92,11 @@ async function bootstrap() {
       transport: Transport.REDIS,
       options: {
         url: `redis://${apiConfigService.getRedisUrl()}:6379`,
+        retryAttempts: 100,
+        retryDelay: 1000,
+        retry_strategy: function(_: any) {
+          return 1000;
+        },
       }
     },
   );
@@ -103,3 +109,22 @@ async function bootstrap() {
 }
 
 bootstrap();
+
+RedisClient.prototype.on_error = function (err: any) {
+  if (this.closing) {
+      return;
+  }
+
+  err.message = 'Redis connection to ' + this.address + ' failed - ' + err.message;
+  // debug(err.message);
+  this.connected = false;
+  this.ready = false;
+
+  // Only emit the error if the retry_strategy option is not set
+  if (!this.options.retry_strategy) {
+      // this.emit('error', err);
+  }
+  // 'error' events get turned into exceptions if they aren't listened for. If the user handled this error
+  // then we should try to reconnect.
+  this.connection_gone('error', err);
+};
