@@ -69,23 +69,6 @@ export class ElasticService {
     return documents.map((document: any) => this.formatItem(document, key));
   };
 
-  private getNestedQuery(path: string, match: any) {
-    return {
-      nested: {
-         path,
-         query: {
-            bool: {
-               must: [
-                  {
-                     match
-                  }
-               ]
-            }
-         }
-      }
-   };
-  }
-
   async getAccountEsdtByIdentifier(identifier: string) {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
     elasticQueryAdapter.condition.must = [
@@ -197,13 +180,13 @@ export class ElasticService {
       let tagArray = filter.tags.split(',');
       if (tagArray.length > 0) {
         for (let tag of tagArray) {
-          queries.push(this.getNestedQuery("metaData.attributes", { "metaData.attributes.tags": tag }));
+          queries.push(QueryType.Nested("metaData.attributes", { "metaData.attributes.tags": tag }, undefined));
         }
       }
     }
 
     if (filter.creator !== undefined) {
-      queries.push(this.getNestedQuery("metaData", { "metaData.creator": filter.creator }));
+      queries.push(QueryType.Nested("metaData", { "metaData.creator": filter.creator }, undefined));
     }
 
     // elasticQueryAdapter.condition.must = queries;

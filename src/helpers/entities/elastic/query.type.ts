@@ -1,5 +1,6 @@
 import { ExistsQuery } from "./exists.query";
 import { MatchQuery } from "./match.query";
+import { NestedQuery } from "./nested.query";
 import { QueryOperator } from "./query.operator";
 import { RangeQuery } from "./range.query";
 import { WildcardQuery } from "./wildcard.query";
@@ -19,5 +20,9 @@ export class QueryType {
 
   static Wildcard = (key: string, value: any | undefined, operator: QueryOperator | undefined): WildcardQuery => {
     return new WildcardQuery(key, value, operator).getQuery();
+  }
+
+  static Nested = (key: string, value: any | undefined, operator: QueryOperator | undefined): NestedQuery => {
+    return new NestedQuery(key, value, operator).getQuery();
   }
 }
