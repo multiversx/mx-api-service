@@ -47,7 +47,6 @@ export class BlockService {
       queries.push(validatorsQuery);
     }
 
-    console.log(queries);
     return queries;
   }
 

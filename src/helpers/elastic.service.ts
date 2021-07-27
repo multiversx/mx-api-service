@@ -29,15 +29,11 @@ export class ElasticService {
   async getCount(collection: string, elasticQueryAdapter: ElasticQuery | undefined = undefined) {
     const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_count`;
 
-    console.log(elasticQueryAdapter);
-
     let elasticQuery;
 
     if (elasticQueryAdapter) {
       elasticQuery = buildElasticQuery(elasticQueryAdapter)
     }
-
-    console.log(elasticQuery);
  
     const result: any = await this.post(url, elasticQuery);
     let count = result.data.count;
@@ -63,11 +59,7 @@ export class ElasticService {
   async getList(collection: string, key: string, elasticQueryAdapter: ElasticQuery): Promise<any[]> {
     const url = `${this.url}/${collection}/_search`;
 
-    console.log(elasticQueryAdapter);
-
     const elasticQuery = buildElasticQuery(elasticQueryAdapter);
-
-    console.log(elasticQuery);
 
     const {
       data: {
@@ -197,9 +189,6 @@ export class ElasticService {
 
     const newQuery = buildElasticQuery(elasticStructureQuery);
     cleanupApiValueRecursively(newQuery);
-    console.log({newQuery});
-    console.log({oldQuery: payload});
-
 
     let url = `${this.url}/accountsesdt/_search`;
     let documents = await this.getDocuments(url, payload);
