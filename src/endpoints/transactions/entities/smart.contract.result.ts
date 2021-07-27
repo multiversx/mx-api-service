@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { TransactionLog } from "./transaction.log";
 
 export class SmartContractResult {
     @ApiProperty()
@@ -36,4 +37,10 @@ export class SmartContractResult {
 
     @ApiProperty()
     callType: string = '';
+
+    @ApiProperty({ type: TransactionLog })
+    logs: TransactionLog | undefined = undefined;
+
+    @ApiProperty()
+    returnMessage: string | undefined = undefined;
 }

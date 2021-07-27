@@ -95,17 +95,14 @@ export class NetworkService {
 
     const circulatingSupply = totalSupply - locked;
 
-    const price = parseFloat(priceValue.toFixed(2));
-    const marketCap = parseInt(marketCapValue.toFixed(0));
-
     let aprInfo = await this.getApr(denominateString(balance));
 
     return { 
       totalSupply, 
       circulatingSupply, 
       staked, 
-      price, 
-      marketCap, 
+      price: priceValue ? parseFloat(priceValue.toFixed(2)) : undefined, 
+      marketCap: marketCapValue ? parseInt(marketCapValue.toFixed(0)) : undefined, 
       aprPercent: (aprInfo.apr * 100).toRounded(2), 
       queued: aprInfo.totalQueued,
       waiting: denominate(totalWaitingStake),
