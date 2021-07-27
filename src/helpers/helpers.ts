@@ -102,6 +102,10 @@ export function oneWeek(): number {
   return oneDay() * 7;
 }
 
+export function oneMonth(): number {
+  return oneDay() * 30;
+}
+
 export function isSmartContractAddress(address: string): boolean {
   return address.includes('qqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqq');
 }
@@ -189,6 +193,7 @@ declare global {
     groupBy(predicate: (item: T) => any): any;
     selectMany(predicate: (item: T) => T[]): T[];
     firstOrUndefined(predicate: (item: T) => boolean): T | undefined;
+    zip<TSecond, TResult>(second: TSecond[], predicate: (first: T, second: TSecond) => TResult): TResult[];
   }
 }
 
@@ -228,6 +233,10 @@ Array.prototype.firstOrUndefined = function(predicate: Function) {
   }
 
   return undefined;
+};
+
+Array.prototype.zip = function<TSecond, TResult>(second: TSecond[], predicate: Function): TResult[] {
+  return this.map((element: any, index: number) => predicate(element, second[index]));
 };
 
 export function getDirectories(source: string) {

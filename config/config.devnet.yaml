@@ -18,6 +18,7 @@ urls:
     - 'https://devnet-gateway.elrond.com'
   redis: '127.0.0.1'
   providers: 'https://devnet-delegation.maiarbrowser.com/providers'
+  media: 'https://devnet-media.elrond.com'
 caching:
   cacheTtl: 6
   processTtl: 600

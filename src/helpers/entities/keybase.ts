@@ -1,4 +1,4 @@
 export class Keybase {
-  identity: string = '';
+  identity: string | undefined = '';
   key: string = '';
 }

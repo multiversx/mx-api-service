@@ -216,4 +216,13 @@ export class ApiConfigService {
 
     return inflationAmounts;
   }
+
+  getMediaUrl(): string {
+    let mediaUrl = this.configService.get<string>('urls.media');
+    if (!mediaUrl) {
+      throw new Error('No media url present');
+    }
+
+    return mediaUrl;
+  }
 }

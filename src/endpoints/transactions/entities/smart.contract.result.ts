@@ -40,4 +40,7 @@ export class SmartContractResult {
 
     @ApiProperty({ type: TransactionLog })
     logs: TransactionLog | undefined = undefined;
+
+    @ApiProperty()
+    returnMessage: string | undefined = undefined;
 }
