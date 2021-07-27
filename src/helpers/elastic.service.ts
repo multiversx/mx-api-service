@@ -12,6 +12,7 @@ import { ExistsQuery } from "./entities/elastic/exists.query";
 import { MatchQuery } from "./entities/elastic/match.query";
 import { QueryCondition } from "./entities/elastic/query.condition";
 import { QueryOperator } from "./entities/elastic/query.operator";
+import { WildcardQuery } from "./entities/elastic/wildcard.query";
 import { PerformanceProfiler } from "./performance.profiler";
 
 @Injectable()
@@ -142,10 +143,6 @@ export class ElasticService {
    };
   }
 
-  private getWildcardQuery(wildcard: any) {
-    return { wildcard };
-  }
-
   async getAccountEsdtByIdentifier(identifier: string) {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
     elasticQueryAdapter.condition = QueryCondition.must;
@@ -244,7 +241,7 @@ export class ElasticService {
     queries.push(new ExistsQuery('identifier', undefined, undefined).getQuery());
 
     if (filter.search !== undefined) {
-      queries.push(this.getWildcardQuery({ token: `*${filter.search}*` }));
+      queries.push(new WildcardQuery('token', `*${filter.search}*`, undefined).getQuery());
     }
 
     if (filter.type !== undefined) {
@@ -316,7 +313,7 @@ export class ElasticService {
 
     let mustQueries = [];
     if (search !== undefined) {
-      mustQueries.push(this.getWildcardQuery({ token: `*${search}*` }));
+      mustQueries.push(new WildcardQuery('token', `*${search}*`, undefined).getQuery());
     }
 
     if (type !== undefined) {
@@ -365,7 +362,7 @@ export class ElasticService {
 
     let mustQueries = [];
     if (search !== undefined) {
-      mustQueries.push(this.getWildcardQuery({ token: `*${search}*` }));
+      mustQueries.push(new WildcardQuery('token', `*${search}*`, undefined).getQuery());
     }
 
     if (type !== undefined) {
