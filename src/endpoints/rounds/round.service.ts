@@ -7,11 +7,11 @@ import { RoundFilter } from "./entities/round.filter";
 import { ElasticPagination } from "src/helpers/entities/elastic/elastic.pagination";
 import { ElasticSortProperty } from "src/helpers/entities/elastic/elastic.sort.property";
 import { ElasticSortOrder } from "src/helpers/entities/elastic/elastic.sort.order";
-import { QueryCondition } from "src/helpers/entities/elastic/query.condition";
 import { ElasticQuery } from "src/helpers/entities/elastic/elastic.query";
 import { AbstractQuery } from "src/helpers/entities/elastic/abstract.query";
 import { MatchQuery } from "src/helpers/entities/elastic/match.query";
 import { BlsService } from "src/helpers/bls.service";
+import { QueryConditionOptions } from "src/helpers/entities/elastic/query.condition.options";
 
 @Injectable()
 export class RoundService {
@@ -40,23 +40,21 @@ export class RoundService {
 
   async getRoundCount(filter: RoundFilter): Promise<number> {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.condition = QueryCondition.must;
-    elasticQueryAdapter[elasticQueryAdapter.condition] = await this.buildElasticRoundsFilter(filter)
+    elasticQueryAdapter.condition.must = await this.buildElasticRoundsFilter(filter)
 
     return this.elasticService.getCount('rounds', elasticQueryAdapter);
   }
 
   async getRounds(filter: RoundFilter): Promise<Round[]> {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.condition = filter.condition ?? QueryCondition.must;
-
+    
     const { from, size } = filter;
     const pagination: ElasticPagination = { 
       from, size 
     };
     elasticQueryAdapter.pagination = pagination;
 
-    elasticQueryAdapter[elasticQueryAdapter.condition] = await this.buildElasticRoundsFilter(filter);
+    elasticQueryAdapter.condition[filter.condition ?? QueryConditionOptions.must] = await this.buildElasticRoundsFilter(filter);
 
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descendant };
     elasticQueryAdapter.sort = [timestamp];

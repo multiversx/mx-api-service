@@ -1,6 +1,6 @@
 import { Body, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { QueryCondition } from 'src/helpers/entities/elastic/query.condition';
+import { QueryConditionOptions } from 'src/helpers/entities/elastic/query.condition.options';
 import { ParseOptionalEnumPipe } from 'src/helpers/pipes/parse.optional.enum.pipe';
 import { ParseOptionalIntPipe } from 'src/helpers/pipes/parse.optional.int.pipe';
 import { Transaction } from './entities/transaction';
@@ -40,7 +40,7 @@ export class TransactionController {
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
     @Query('miniBlockHash') miniBlockHash: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
-    @Query('condition', new ParseOptionalEnumPipe(QueryCondition)) condition: QueryCondition | undefined, 
+    @Query('condition', new ParseOptionalEnumPipe(QueryConditionOptions)) condition: QueryConditionOptions | undefined, 
     @Query('before', ParseOptionalIntPipe) before: number | undefined, 
     @Query('after', ParseOptionalIntPipe) after: number | undefined, 
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
@@ -80,7 +80,7 @@ export class TransactionController {
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
     @Query('miniBlockHash') miniBlockHash: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
-    @Query('condition', new ParseOptionalEnumPipe(QueryCondition)) condition: QueryCondition | undefined, 
+    @Query('condition', new ParseOptionalEnumPipe(QueryConditionOptions)) condition: QueryConditionOptions | undefined, 
     @Query('before', ParseOptionalIntPipe) before: number | undefined, 
     @Query('after', ParseOptionalIntPipe) after: number | undefined, 
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
@@ -110,7 +110,7 @@ export class TransactionController {
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
     @Query('miniBlockHash') miniBlockHash: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
-    @Query('condition', new ParseOptionalEnumPipe(QueryCondition)) condition: QueryCondition | undefined, 
+    @Query('condition', new ParseOptionalEnumPipe(QueryConditionOptions)) condition: QueryConditionOptions | undefined, 
     @Query('before', ParseOptionalIntPipe) before: number | undefined, 
     @Query('after', ParseOptionalIntPipe) after: number | undefined, 
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 

@@ -1,5 +1,7 @@
-export enum QueryCondition {
-  should = 'should',
-  must = 'must',
-  mustNot = 'must_not'
+import { AbstractQuery } from "./abstract.query"
+
+export class QueryCondition {
+  must: AbstractQuery[] = []
+  should: AbstractQuery[] = []
+  must_not: AbstractQuery[] = []
 }

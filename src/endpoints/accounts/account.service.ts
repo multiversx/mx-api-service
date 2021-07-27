@@ -9,7 +9,6 @@ import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { AccountDeferred } from './entities/account.deferred';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { QueryCondition } from 'src/helpers/entities/elastic/query.condition';
 import { ElasticPagination } from 'src/helpers/entities/elastic/elastic.pagination';
 import { ElasticSortProperty } from 'src/helpers/entities/elastic/elastic.sort.property';
 import { ElasticSortOrder } from 'src/helpers/entities/elastic/elastic.sort.order';
@@ -50,8 +49,7 @@ export class AccountService {
 
   async getAccount(address: string): Promise<AccountDetailed> {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.condition = QueryCondition.should;
-    elasticQueryAdapter[elasticQueryAdapter.condition] = [
+    elasticQueryAdapter.condition.should = [
       new MatchQuery('sender', address, undefined),
       new MatchQuery('receiver', address, undefined),
     ]
@@ -75,7 +73,6 @@ export class AccountService {
 
   async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.condition = QueryCondition.must;
     
     const { from, size } = queryPagination;
     const pagination: ElasticPagination = { 

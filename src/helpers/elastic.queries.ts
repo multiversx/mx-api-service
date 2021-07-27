@@ -1,6 +1,7 @@
 import { ElasticQuery } from "./entities/elastic/elastic.query";
 import { ElasticSortProperty } from "./entities/elastic/elastic.sort.property";
 import { QueryCondition } from "./entities/elastic/query.condition";
+import { QueryConditionOptions } from "./entities/elastic/query.condition.options";
 import { cleanupApiValueRecursively } from "./helpers";
 
 function buildElasticSort(sorts: ElasticSortProperty[]): any[] {
@@ -10,6 +11,14 @@ function buildElasticSort(sorts: ElasticSortProperty[]): any[] {
 
   return sorts.map((sortProp: ElasticSortProperty) => ({[sortProp.name]: { order: sortProp.order}}))
 };
+
+function getConditionOption(condition: QueryCondition): QueryConditionOptions {
+  if (condition.should.length !== 0 && condition.must.length === 0) {
+    return QueryConditionOptions.should
+  }
+
+  return QueryConditionOptions.must;
+}
 
 export function extractFilterQuery(query: any): any {
   if (!query) {
@@ -32,7 +41,7 @@ export function buildElasticQuery(query: ElasticQuery) {
   const elasticPagination = query.pagination;
   const elasticSort = buildElasticSort(query.sort);
   const elasticFilter = query.filter;
-  const elasticCondition = query.condition;
+  const elasticCondition = getConditionOption(query.condition);
 
   const elasticQuery = {
     ...elasticPagination,
@@ -40,10 +49,10 @@ export function buildElasticQuery(query: ElasticQuery) {
     query: {
       bool: {
         filter: [elasticFilter] ? elasticFilter: undefined,
-        must: query.must,
-        should: query.should,
-        must_not: query.must_not,
-        minimum_should_match: elasticCondition === QueryCondition.should ? 1 : undefined,
+        must: query.condition.must,
+        should: query.condition.should,
+        must_not: query.condition.must_not,
+        minimum_should_match: elasticCondition === QueryConditionOptions.should ? 1 : undefined,
       }
     }
   }

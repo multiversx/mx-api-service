@@ -9,7 +9,7 @@ import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
 import { ElasticSortOrder } from 'src/helpers/entities/elastic/elastic.sort.order';
 import { ElasticSortProperty } from 'src/helpers/entities/elastic/elastic.sort.property';
 import { MatchQuery } from 'src/helpers/entities/elastic/match.query';
-import { QueryCondition } from 'src/helpers/entities/elastic/query.condition';
+import { QueryConditionOptions } from 'src/helpers/entities/elastic/query.condition.options';
 import { RangeQuery } from 'src/helpers/entities/elastic/range.query';
 import { GatewayService } from 'src/helpers/gateway.service';
 import { base64Encode, bech32Decode, computeShard, mergeObjects, oneDay, oneMinute } from 'src/helpers/helpers';
@@ -70,8 +70,7 @@ export class TransactionService {
 
   async getTransactionCount(filter: TransactionFilter): Promise<number> {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.condition = filter.condition ?? QueryCondition.must;
-    elasticQueryAdapter[elasticQueryAdapter.condition] = await this.buildTransactionFilterQuery(filter)
+    elasticQueryAdapter.condition.must = await this.buildTransactionFilterQuery(filter)
     
     if (filter.before || filter.after) {
       elasticQueryAdapter.filter = [
@@ -84,7 +83,6 @@ export class TransactionService {
 
   async getTransactions(filter: TransactionFilter): Promise<Transaction[]> {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.condition = filter.condition ?? QueryCondition.must;
 
     const { from, size } = filter;
     const pagination: ElasticPagination = { 
@@ -92,7 +90,7 @@ export class TransactionService {
     };
     elasticQueryAdapter.pagination = pagination;
 
-    elasticQueryAdapter[elasticQueryAdapter.condition] = this.buildTransactionFilterQuery(filter);
+    elasticQueryAdapter.condition[filter.condition ?? QueryConditionOptions.must] = this.buildTransactionFilterQuery(filter);
 
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descendant };
     const nonce: ElasticSortProperty = { name: 'nonce', order: ElasticSortOrder.descendant };
@@ -181,14 +179,13 @@ export class TransactionService {
 
       if (!this.apiConfigService.getUseLegacyElastic()) {
         const elasticQueryAdapterSc: ElasticQuery = new ElasticQuery();
-        elasticQueryAdapterSc.condition = QueryCondition.must;
         elasticQueryAdapterSc.pagination = { from: 0, size: 100};
 
         const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascendant };
         elasticQueryAdapterSc.sort = [timestamp];
 
         const originalTxHashQuery = new MatchQuery('originalTxHash', txHash, undefined).getQuery();
-        elasticQueryAdapterSc[elasticQueryAdapterSc.condition] = [originalTxHashQuery];
+        elasticQueryAdapterSc.condition.must = [originalTxHashQuery];
 
         if (result.hasScResults === true) {
           let scResults = await this.elasticService.getList('scresults', 'scHash', elasticQueryAdapterSc);
@@ -203,12 +200,11 @@ export class TransactionService {
         }
 
         const elasticQueryAdapterReceipts: ElasticQuery = new ElasticQuery();
-        elasticQueryAdapterReceipts.condition = QueryCondition.must;
         elasticQueryAdapterReceipts.pagination = { from:0, size: 1 };
         elasticQueryAdapterReceipts.sort = [timestamp];
         
         const receiptHashQuery = new MatchQuery('receiptHash', txHash, undefined).getQuery();
-        elasticQueryAdapterReceipts[elasticQueryAdapterReceipts.condition] = [receiptHashQuery];
+        elasticQueryAdapterReceipts.condition.must = [receiptHashQuery];
 
         let receipts = await this.elasticService.getList('receipts', 'receiptHash', elasticQueryAdapterReceipts);
         if (receipts.length > 0) {

@@ -6,9 +6,6 @@ import { QueryCondition } from "./query.condition"
 export class ElasticQuery {
   pagination: ElasticPagination | undefined = undefined
   sort: ElasticSortProperty[] = []
-  must: AbstractQuery[] = []
-  should: AbstractQuery[] = []
-  must_not: AbstractQuery[] = []
   filter: AbstractQuery[] = []
-  condition: QueryCondition = QueryCondition.must
+  condition: QueryCondition = new QueryCondition()
 }
