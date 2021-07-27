@@ -38,17 +38,15 @@ export function extractFilterQuery(query: any): any {
 }
 
 export function buildElasticQuery(query: ElasticQuery) {
-  const elasticPagination = query.pagination;
   const elasticSort = buildElasticSort(query.sort);
-  const elasticFilter = query.filter;
   const elasticCondition = getConditionOption(query.condition);
 
   const elasticQuery = {
-    ...elasticPagination,
+    ...query.pagination,
     sort: elasticSort,
     query: {
       bool: {
-        filter: [elasticFilter] ? elasticFilter: undefined,
+        filter: query.filter,
         must: query.condition.must,
         should: query.condition.should,
         must_not: query.condition.must_not,
