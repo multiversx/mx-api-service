@@ -208,7 +208,8 @@ export class ElasticService {
   async getTokenCollectionCount(search: string | undefined, type: NftType | undefined) {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
     elasticQueryAdapter.pagination = { from: 0, size: 0 };
-    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descendant }]
+    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descendant }];
+
     let mustNotQueries = [];
     mustNotQueries.push(QueryType.Exists('identifier'));
 
@@ -307,27 +308,11 @@ export class ElasticService {
     return await this.getDocumentCount(url, query);
   }
 
-  async getLogsForTransactionHashes(hashes: string[]): Promise<TransactionLog[]> {
-    let query = await this.buildLogsQuery(hashes);
-
-    let url = `${this.url}/logs/_search`;
-    return await this.getDocuments(url, query);
-  }
-
-  private buildLogsQuery(hashes: string[]) {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.pagination = { from: 0, size: 100 };
-    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descendant }];
-
-    let queries = [];
-    for (let hash of hashes) {
-      queries.push(QueryType.Match('_id', hash));
-    }
-    elasticQueryAdapter.condition.should = queries;
-
+  async getLogsForTransactionHashes(elasticQueryAdapter: ElasticQuery): Promise<TransactionLog[]> {
     const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
-    return elasticQuery;
+    let url = `${this.url}/logs/_search`;
+    return await this.getDocuments(url, elasticQuery);
   }
 
   public async get(url: string) {

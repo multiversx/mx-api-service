@@ -212,7 +212,17 @@ export class TransactionService {
         }
       }
 
-      let logs: any[] = await this.elasticService.getLogsForTransactionHashes(hashes);
+      const elasticQueryAdapterLogs: ElasticQuery = new ElasticQuery();
+      elasticQueryAdapterLogs.pagination = { from: 0, size: 100 };
+      elasticQueryAdapterLogs.sort = [{ name: 'timestamp', order: ElasticSortOrder.descendant }];
+
+      let queries = [];
+      for (let hash of hashes) {
+        queries.push(QueryType.Match('_id', hash));
+      }
+      elasticQueryAdapterLogs.condition.should = queries;
+
+      let logs: any[] = await this.elasticService.getLogsForTransactionHashes(elasticQueryAdapterLogs);
 
       for (let log of logs) {
         if (log._id === txHash) {
