@@ -27,24 +27,24 @@ export class BlockService {
 
     const queries: AbstractQuery[] = [];
     if (shard !== undefined) {
-      const shardIdQuery = QueryType.Match('shardId', shard, undefined);
+      const shardIdQuery = QueryType.Match('shardId', shard);
       queries.push(shardIdQuery);
     }
     
     if (epoch !== undefined) {
-      const epochQuery = QueryType.Match('epoch', epoch, undefined);
+      const epochQuery = QueryType.Match('epoch', epoch);
       queries.push(epochQuery);
     }
 
     if (proposer && shard !== undefined && epoch !== undefined) {
       let index = await this.blsService.getBlsIndex(proposer, shard, epoch);
-      const proposerQuery = QueryType.Match('proposer', index !== false ? index : -1, undefined);
+      const proposerQuery = QueryType.Match('proposer', index !== false ? index : -1);
       queries.push(proposerQuery);
     }
 
     if (validator && shard !== undefined && epoch !== undefined) {
       let index = await this.blsService.getBlsIndex(validator, shard, epoch);
-      const validatorsQuery = QueryType.Match('validators', index !== false ? index : -1, undefined);
+      const validatorsQuery = QueryType.Match('validators', index !== false ? index : -1);
       queries.push(validatorsQuery);
     }
 

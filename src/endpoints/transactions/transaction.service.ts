@@ -41,27 +41,27 @@ export class TransactionService {
     const queries: AbstractQuery[] = [];
 
     if (filter.sender) {
-      queries.push(QueryType.Match('sender', filter.sender, undefined));
+      queries.push(QueryType.Match('sender', filter.sender));
     }
 
     if (filter.receiver) {
-      queries.push(QueryType.Match('receiver', filter.receiver, undefined));
+      queries.push(QueryType.Match('receiver', filter.receiver));
     }
 
     if (filter.senderShard) {
-      queries.push(QueryType.Match('senderShard', filter.senderShard, undefined));
+      queries.push(QueryType.Match('senderShard', filter.senderShard));
     }
 
     if (filter.receiverShard) {
-      queries.push(QueryType.Match('receiverShard', filter.receiverShard, undefined));
+      queries.push(QueryType.Match('receiverShard', filter.receiverShard));
     }
 
     if (filter.miniBlockHash) {
-      queries.push(QueryType.Match('miniBlockHash', filter.miniBlockHash, undefined));
+      queries.push(QueryType.Match('miniBlockHash', filter.miniBlockHash));
     }
 
     if (filter.status) {
-      queries.push(QueryType.Match('status', filter.status, undefined));
+      queries.push(QueryType.Match('status', filter.status));
     }
 
     return queries;
@@ -73,7 +73,7 @@ export class TransactionService {
     
     if (filter.before || filter.after) {
       elasticQueryAdapter.filter = [
-        QueryType.Range('timestamp', { before: filter.before, after: filter.after }, undefined),
+        QueryType.Range('timestamp', { before: filter.before, after: filter.after }),
       ]
     }
 
@@ -97,7 +97,7 @@ export class TransactionService {
 
     if (filter.before || filter.after) {
       elasticQueryAdapter.filter = [
-        QueryType.Range('timestamp', { before: filter.before, after: filter.after }, undefined),
+        QueryType.Range('timestamp', { before: filter.before, after: filter.after }),
       ]
     }
     
@@ -183,7 +183,7 @@ export class TransactionService {
         const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascendant };
         elasticQueryAdapterSc.sort = [timestamp];
 
-        const originalTxHashQuery = QueryType.Match('originalTxHash', txHash, undefined);
+        const originalTxHashQuery = QueryType.Match('originalTxHash', txHash);
         elasticQueryAdapterSc.condition.must = [originalTxHashQuery];
 
         if (result.hasScResults === true) {
@@ -202,7 +202,7 @@ export class TransactionService {
         elasticQueryAdapterReceipts.pagination = { from:0, size: 1 };
         elasticQueryAdapterReceipts.sort = [timestamp];
         
-        const receiptHashQuery = QueryType.Match('receiptHash', txHash, undefined);
+        const receiptHashQuery = QueryType.Match('receiptHash', txHash);
         elasticQueryAdapterReceipts.condition.must = [receiptHashQuery];
 
         let receipts = await this.elasticService.getList('receipts', 'receiptHash', elasticQueryAdapterReceipts);

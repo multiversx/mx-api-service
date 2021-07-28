@@ -24,14 +24,14 @@ export class RoundService {
     const queries: AbstractQuery[] = [];
 
     if (filter.shard) {
-      const shardIdQuery = QueryType.Match('shardId', filter.shard, undefined);
+      const shardIdQuery = QueryType.Match('shardId', filter.shard);
       queries.push(shardIdQuery);
     }
     
     if (filter.validator && filter.shard && filter.epoch) {
       const index = await this.blsService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
 
-      const signersIndexesQuery = QueryType.Match('signersIndexes', index !== false ? index : -1, undefined);
+      const signersIndexesQuery = QueryType.Match('signersIndexes', index !== false ? index : -1);
       queries.push(signersIndexesQuery);
     }
 

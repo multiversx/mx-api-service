@@ -50,8 +50,8 @@ export class AccountService {
   async getAccount(address: string): Promise<AccountDetailed> {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
     elasticQueryAdapter.condition.should = [
-      QueryType.Match('sender', address, undefined),
-      QueryType.Match('receiver', address, undefined),
+      QueryType.Match('sender', address),
+      QueryType.Match('receiver', address),
     ]
 
     const [
