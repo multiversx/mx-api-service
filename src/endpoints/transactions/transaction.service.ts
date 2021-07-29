@@ -3,8 +3,13 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { CachingService } from 'src/helpers/caching.service';
 import { DataApiService } from 'src/helpers/data.api.service';
 import { DataQuoteType } from 'src/helpers/entities/data.quote.type';
-import { ElasticPagination } from 'src/helpers/entities/elastic.pagination';
-import { QueryCondition } from 'src/helpers/entities/query.condition';
+import { AbstractQuery } from 'src/helpers/entities/elastic/abstract.query';
+import { ElasticPagination } from 'src/helpers/entities/elastic/elastic.pagination';
+import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
+import { ElasticSortOrder } from 'src/helpers/entities/elastic/elastic.sort.order';
+import { ElasticSortProperty } from 'src/helpers/entities/elastic/elastic.sort.property';
+import { QueryConditionOptions } from 'src/helpers/entities/elastic/query.condition.options';
+import { QueryType } from 'src/helpers/entities/elastic/query.type';
 import { GatewayService } from 'src/helpers/gateway.service';
 import { base64Encode, bech32Decode, computeShard, mergeObjects, oneDay, oneMinute } from 'src/helpers/helpers';
 import { ElasticService } from '../../helpers/elastic.service';
@@ -31,38 +36,71 @@ export class TransactionService {
     this.logger = new Logger(TransactionService.name);
   }
 
-  private buildTransactionFilterQuery(transactionQuery: TransactionFilter){
-    return {
-      sender: transactionQuery.sender,
-      receiver: transactionQuery.receiver,
-      senderShard: transactionQuery.senderShard,
-      receiverShard: transactionQuery.receiverShard,
-      miniBlockHash: transactionQuery.miniBlockHash,
-      status: transactionQuery.status,
-      before: transactionQuery.before,
-      after: transactionQuery.after
-    };
-  }
-  async getTransactionCount(transactionQuery: TransactionFilter): Promise<number> {
-    const query = this.buildTransactionFilterQuery(transactionQuery);
+  private buildTransactionFilterQuery(filter: TransactionFilter): AbstractQuery[] {
 
-    return await this.elasticService.getCount('transactions', query, transactionQuery.condition ?? QueryCondition.must);
-  }
+    const queries: AbstractQuery[] = [];
 
-  async getTransactions(transactionQuery: TransactionFilter): Promise<Transaction[]> {
-    const query = this.buildTransactionFilterQuery(transactionQuery);
-
-    const pagination: ElasticPagination = {
-      from: transactionQuery.from, 
-      size: transactionQuery.size
+    if (filter.sender) {
+      queries.push(QueryType.Match('sender', filter.sender));
     }
 
-    const sort = {
-      'timestamp': 'desc',
-      'nonce': 'desc',
-    };
+    if (filter.receiver) {
+      queries.push(QueryType.Match('receiver', filter.receiver));
+    }
 
-    let transactions = await this.elasticService.getList('transactions', 'txHash', query, pagination, sort, transactionQuery.condition ?? QueryCondition.must);
+    if (filter.senderShard) {
+      queries.push(QueryType.Match('senderShard', filter.senderShard));
+    }
+
+    if (filter.receiverShard) {
+      queries.push(QueryType.Match('receiverShard', filter.receiverShard));
+    }
+
+    if (filter.miniBlockHash) {
+      queries.push(QueryType.Match('miniBlockHash', filter.miniBlockHash));
+    }
+
+    if (filter.status) {
+      queries.push(QueryType.Match('status', filter.status));
+    }
+
+    return queries;
+  }
+
+  async getTransactionCount(filter: TransactionFilter): Promise<number> {
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+    elasticQueryAdapter.condition[filter.condition ?? QueryConditionOptions.must] = this.buildTransactionFilterQuery(filter);
+    
+    if (filter.before || filter.after) {
+      elasticQueryAdapter.filter = [
+        QueryType.Range('timestamp', { before: filter.before, after: filter.after }),
+      ]
+    }
+
+    return await this.elasticService.getCount('transactions', elasticQueryAdapter);
+  }
+
+  async getTransactions(filter: TransactionFilter): Promise<Transaction[]> {
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+
+    const { from, size } = filter;
+    const pagination: ElasticPagination = { 
+      from, size 
+    };
+    elasticQueryAdapter.pagination = pagination;
+    elasticQueryAdapter.condition[filter.condition ?? QueryConditionOptions.must] = this.buildTransactionFilterQuery(filter);
+
+    const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descending };
+    const nonce: ElasticSortProperty = { name: 'nonce', order: ElasticSortOrder.descending };
+    elasticQueryAdapter.sort = [timestamp, nonce];
+
+    if (filter.before || filter.after) {
+      elasticQueryAdapter.filter = [
+        QueryType.Range('timestamp', { before: filter.before, after: filter.after }),
+      ]
+    }
+    
+    let transactions = await this.elasticService.getList('transactions', 'txHash', elasticQueryAdapter);
 
     return transactions.map(transaction => mergeObjects(new Transaction(), transaction));
   }
@@ -138,8 +176,17 @@ export class TransactionService {
       hashes.push(txHash);
 
       if (!this.apiConfigService.getUseLegacyElastic()) {
+        const elasticQueryAdapterSc: ElasticQuery = new ElasticQuery();
+        elasticQueryAdapterSc.pagination = { from: 0, size: 100 };
+
+        const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
+        elasticQueryAdapterSc.sort = [timestamp];
+
+        const originalTxHashQuery = QueryType.Match('originalTxHash', txHash);
+        elasticQueryAdapterSc.condition.must = [originalTxHashQuery];
+
         if (result.hasScResults === true) {
-          let scResults = await this.elasticService.getList('scresults', 'scHash', { originalTxHash: txHash }, { from: 0, size: 100 }, { "timestamp": "asc" });
+          let scResults = await this.elasticService.getList('scresults', 'scHash', elasticQueryAdapterSc);
           for (let scResult of scResults) {
             scResult.hash = scResult.scHash;
             hashes.push(scResult.hash);
@@ -150,14 +197,29 @@ export class TransactionService {
           transactionDetailed.scResults = scResults.map(scResult => mergeObjects(new SmartContractResult(), scResult));
         }
 
-        let receipts = await this.elasticService.getList('receipts', 'receiptHash', { txHash }, { from: 0, size: 1 }, { "timestamp": "asc" });
+        const elasticQueryAdapterReceipts: ElasticQuery = new ElasticQuery();
+        elasticQueryAdapterReceipts.pagination = { from: 0, size: 1 };
+        
+        const receiptHashQuery = QueryType.Match('receiptHash', txHash);
+        elasticQueryAdapterReceipts.condition.must = [receiptHashQuery];
+
+        let receipts = await this.elasticService.getList('receipts', 'receiptHash', elasticQueryAdapterReceipts);
         if (receipts.length > 0) {
           let receipt = receipts[0];
           transactionDetailed.receipt = mergeObjects(new TransactionReceipt(), receipt);
         }
       }
 
-      let logs: any[] = await this.elasticService.getLogsForTransactionHashes(hashes);
+      const elasticQueryAdapterLogs: ElasticQuery = new ElasticQuery();
+      elasticQueryAdapterLogs.pagination = { from: 0, size: 100 };
+
+      let queries = [];
+      for (let hash of hashes) {
+        queries.push(QueryType.Match('_id', hash));
+      }
+      elasticQueryAdapterLogs.condition.should = queries;
+
+      let logs: any[] = await this.elasticService.getLogsForTransactionHashes(elasticQueryAdapterLogs);
 
       for (let log of logs) {
         if (log._id === txHash) {

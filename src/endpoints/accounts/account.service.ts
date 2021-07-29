@@ -3,13 +3,17 @@ import { ElasticService } from '../../helpers/elastic.service';
 import { GatewayService } from '../../helpers/gateway.service';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
-import { ElasticPagination } from 'src/helpers/entities/elastic.pagination';
 import { bech32Decode, bech32Encode, computeShard, mergeObjects, oneDay, oneMinute, padHex } from 'src/helpers/helpers';
 import { CachingService } from 'src/helpers/caching.service';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { AccountDeferred } from './entities/account.deferred';
 import { QueryPagination } from 'src/common/entities/query.pagination';
+import { ElasticPagination } from 'src/helpers/entities/elastic/elastic.pagination';
+import { ElasticSortProperty } from 'src/helpers/entities/elastic/elastic.sort.property';
+import { ElasticSortOrder } from 'src/helpers/entities/elastic/elastic.sort.order';
+import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
+import { QueryType } from 'src/helpers/entities/elastic/query.type';
 
 @Injectable()
 export class AccountService {
@@ -44,10 +48,11 @@ export class AccountService {
   }
 
   async getAccount(address: string): Promise<AccountDetailed> {
-    let query = {
-      sender: address,
-      receiver: address
-    };
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+    elasticQueryAdapter.condition.should = [
+      QueryType.Match('sender', address),
+      QueryType.Match('receiver', address),
+    ]
 
     const [
       txCount,
@@ -55,7 +60,7 @@ export class AccountService {
         account: { nonce, balance, code, codeHash, rootHash, username },
       },
     ] = await Promise.all([
-      this.elasticService.getCount('transactions', query, 'should'),
+      this.elasticService.getCount('transactions', elasticQueryAdapter),
       this.gatewayService.get(`address/${address}`)
     ]);
 
@@ -67,19 +72,18 @@ export class AccountService {
   }
 
   async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+    
     const { from, size } = queryPagination;
-
-    const sort = {
-      balanceNum: 'desc',
-    };
-
     const pagination: ElasticPagination = { 
       from, size 
     };
+    elasticQueryAdapter.pagination = pagination;
 
-    const query = {};
+    const balanceNum: ElasticSortProperty = { name: 'balanceNum', order: ElasticSortOrder.descending };
+    elasticQueryAdapter.sort = [balanceNum];
 
-    let result = await this.elasticService.getList('accounts', 'address', query, pagination, sort);
+    let result = await this.elasticService.getList('accounts', 'address', elasticQueryAdapter);
 
     let accounts: Account[] = result.map(item => mergeObjects(new Account(), item));
     for (let account of accounts) {
