@@ -23,12 +23,12 @@ export class RoundService {
   private async buildElasticRoundsFilter(filter: RoundFilter): Promise<AbstractQuery[]> {
     const queries: AbstractQuery[] = [];
 
-    if (filter.shard) {
+    if (filter.shard !== undefined) {
       const shardIdQuery = QueryType.Match('shardId', filter.shard);
       queries.push(shardIdQuery);
     }
     
-    if (filter.validator && filter.shard && filter.epoch) {
+    if (filter.validator !== undefined && filter.shard !== undefined && filter.epoch !== undefined) {
       const index = await this.blsService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
 
       const signersIndexesQuery = QueryType.Match('signersIndexes', index !== false ? index : -1);
