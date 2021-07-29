@@ -69,7 +69,7 @@ export class TransactionService {
 
   async getTransactionCount(filter: TransactionFilter): Promise<number> {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.condition.must = await this.buildTransactionFilterQuery(filter)
+    elasticQueryAdapter.condition[filter.condition ?? QueryConditionOptions.must] = this.buildTransactionFilterQuery(filter);
     
     if (filter.before || filter.after) {
       elasticQueryAdapter.filter = [
@@ -88,7 +88,6 @@ export class TransactionService {
       from, size 
     };
     elasticQueryAdapter.pagination = pagination;
-
     elasticQueryAdapter.condition[filter.condition ?? QueryConditionOptions.must] = this.buildTransactionFilterQuery(filter);
 
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descending };
@@ -200,7 +199,6 @@ export class TransactionService {
 
         const elasticQueryAdapterReceipts: ElasticQuery = new ElasticQuery();
         elasticQueryAdapterReceipts.pagination = { from: 0, size: 1 };
-        elasticQueryAdapterReceipts.sort = [timestamp];
         
         const receiptHashQuery = QueryType.Match('receiptHash', txHash);
         elasticQueryAdapterReceipts.condition.must = [receiptHashQuery];
@@ -214,7 +212,6 @@ export class TransactionService {
 
       const elasticQueryAdapterLogs: ElasticQuery = new ElasticQuery();
       elasticQueryAdapterLogs.pagination = { from: 0, size: 100 };
-      elasticQueryAdapterLogs.sort = [{ name: 'timestamp', order: ElasticSortOrder.descending }];
 
       let queries = [];
       for (let hash of hashes) {
