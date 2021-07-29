@@ -91,8 +91,8 @@ export class TransactionService {
 
     elasticQueryAdapter.condition[filter.condition ?? QueryConditionOptions.must] = this.buildTransactionFilterQuery(filter);
 
-    const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descendant };
-    const nonce: ElasticSortProperty = { name: 'nonce', order: ElasticSortOrder.descendant };
+    const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descending };
+    const nonce: ElasticSortProperty = { name: 'nonce', order: ElasticSortOrder.descending };
     elasticQueryAdapter.sort = [timestamp, nonce];
 
     if (filter.before || filter.after) {
@@ -178,9 +178,9 @@ export class TransactionService {
 
       if (!this.apiConfigService.getUseLegacyElastic()) {
         const elasticQueryAdapterSc: ElasticQuery = new ElasticQuery();
-        elasticQueryAdapterSc.pagination = { from: 0, size: 100};
+        elasticQueryAdapterSc.pagination = { from: 0, size: 100 };
 
-        const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascendant };
+        const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
         elasticQueryAdapterSc.sort = [timestamp];
 
         const originalTxHashQuery = QueryType.Match('originalTxHash', txHash);
@@ -199,7 +199,7 @@ export class TransactionService {
         }
 
         const elasticQueryAdapterReceipts: ElasticQuery = new ElasticQuery();
-        elasticQueryAdapterReceipts.pagination = { from:0, size: 1 };
+        elasticQueryAdapterReceipts.pagination = { from: 0, size: 1 };
         elasticQueryAdapterReceipts.sort = [timestamp];
         
         const receiptHashQuery = QueryType.Match('receiptHash', txHash);
@@ -214,7 +214,7 @@ export class TransactionService {
 
       const elasticQueryAdapterLogs: ElasticQuery = new ElasticQuery();
       elasticQueryAdapterLogs.pagination = { from: 0, size: 100 };
-      elasticQueryAdapterLogs.sort = [{ name: 'timestamp', order: ElasticSortOrder.descendant }];
+      elasticQueryAdapterLogs.sort = [{ name: 'timestamp', order: ElasticSortOrder.descending }];
 
       let queries = [];
       for (let hash of hashes) {

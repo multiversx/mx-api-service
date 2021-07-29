@@ -70,9 +70,9 @@ export class BlockService {
       from, size 
     };
     elasticQueryAdapter.pagination = pagination;
-    elasticQueryAdapter.condition.must= await this.buildElasticBlocksFilter(filter);
+    elasticQueryAdapter.condition.must = await this.buildElasticBlocksFilter(filter);
 
-    const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descendant };
+    const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descending };
     elasticQueryAdapter.sort = [timestamp];
 
     let result = await this.elasticService.getList('blocks', 'hash', elasticQueryAdapter);

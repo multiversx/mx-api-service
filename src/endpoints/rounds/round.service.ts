@@ -56,7 +56,7 @@ export class RoundService {
 
     elasticQueryAdapter.condition[filter.condition ?? QueryConditionOptions.must] = await this.buildElasticRoundsFilter(filter);
 
-    const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descendant };
+    const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descending };
     elasticQueryAdapter.sort = [timestamp];
 
     let result = await this.elasticService.getList('rounds', 'round', elasticQueryAdapter);

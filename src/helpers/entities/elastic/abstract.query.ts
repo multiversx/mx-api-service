@@ -11,7 +11,7 @@ export abstract class AbstractQuery {
     this.query = this.buildQuery(key, value, operator);
   }
 
-  abstract buildQuery(keyt: string, value: any | undefined, operator: QueryOperator | undefined): any;
+  abstract buildQuery(key: string, value: any | undefined, operator: QueryOperator | undefined): any;
 
   getQuery(): any {
     return this.query;

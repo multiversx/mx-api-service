@@ -9,12 +9,12 @@ function buildElasticSort(sorts: ElasticSortProperty[]): any[] {
     return [];
   }
 
-  return sorts.map((sortProp: ElasticSortProperty) => ({[sortProp.name]: { order: sortProp.order}}))
+  return sorts.map((sortProp: ElasticSortProperty) => ({[sortProp.name]: { order: sortProp.order}}));
 };
 
 function getConditionOption(condition: QueryCondition): QueryConditionOptions {
   if (condition.should.length !== 0 && condition.must.length === 0) {
-    return QueryConditionOptions.should
+    return QueryConditionOptions.should;
   }
 
   return QueryConditionOptions.must;

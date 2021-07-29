@@ -155,7 +155,7 @@ export class ElasticService {
   private buildElasticNftFilter(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
     elasticQueryAdapter.pagination = { from, size };
-    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descendant }]
+    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descending }]
 
     let queries = [];
     queries.push(QueryType.Exists('identifier'));
@@ -208,7 +208,7 @@ export class ElasticService {
   async getTokenCollectionCount(search: string | undefined, type: NftType | undefined) {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
     elasticQueryAdapter.pagination = { from: 0, size: 0 };
-    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descendant }];
+    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descending }];
 
     let mustNotQueries = [];
     mustNotQueries.push(QueryType.Exists('identifier'));
@@ -239,7 +239,7 @@ export class ElasticService {
   async getTokenCollections(from: number, size: number, search: string | undefined, type: NftType | undefined, token: string | undefined, issuer: string | undefined, identifiers: string[]) {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
     elasticQueryAdapter.pagination = { from, size };
-    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descendant }];
+    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descending }];
 
     let mustNotQueries = [];
     mustNotQueries.push(QueryType.Exists('identifier'));
@@ -286,7 +286,7 @@ export class ElasticService {
   async getTokenByIdentifier(identifier: string) {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
     elasticQueryAdapter.pagination = { from: 0, size: 1 };
-    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descendant }];
+    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descending }];
 
     elasticQueryAdapter.condition.must = [
       QueryType.Exists('identifier'),

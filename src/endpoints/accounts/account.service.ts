@@ -80,7 +80,7 @@ export class AccountService {
     };
     elasticQueryAdapter.pagination = pagination;
 
-    const balanceNum: ElasticSortProperty = { name: 'balanceNum', order: ElasticSortOrder.descendant };
+    const balanceNum: ElasticSortProperty = { name: 'balanceNum', order: ElasticSortOrder.descending };
     elasticQueryAdapter.sort = [balanceNum];
 
     let result = await this.elasticService.getList('accounts', 'address', elasticQueryAdapter);

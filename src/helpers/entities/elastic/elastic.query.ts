@@ -4,8 +4,8 @@ import { ElasticSortProperty } from "./elastic.sort.property"
 import { QueryCondition } from "./query.condition"
 
 export class ElasticQuery {
-  pagination: ElasticPagination | undefined = undefined
-  sort: ElasticSortProperty[] = []
-  filter: AbstractQuery[] = []
-  condition: QueryCondition = new QueryCondition()
+  pagination: ElasticPagination | undefined = undefined;
+  sort: ElasticSortProperty[] = [];
+  filter: AbstractQuery[] = [];
+  condition: QueryCondition = new QueryCondition();
 }
