@@ -36,14 +36,19 @@ export class TokenController {
     status: 200,
     description: 'The number of tokens available on the blockchain',
   })
-  async getTokenCount(): Promise<number> {
-    return await this.tokenService.getTokenCount();
+  @ApiQuery({ name: 'search', description: 'Filter tokens by token name', required: false })
+  async getTokenCount(
+    @Query('search') search: string | undefined,
+  ): Promise<number> {
+    return await this.tokenService.getTokenCount(search);
   }
 
   @Get("/tokens/c")
   @ApiExcludeEndpoint()
-  async getTokenCountAlternative(): Promise<number> {
-    return await this.tokenService.getTokenCount();
+  async getTokenCountAlternative(
+    @Query('search') search: string | undefined,
+  ): Promise<number> {
+    return await this.tokenService.getTokenCount(search);
   }
 
   @Get('/tokens/:identifier')

@@ -24,7 +24,7 @@ export class TokenService {
   private readonly logger: Logger
 
   constructor(
-    private readonly gatewayService: GatewayService, 
+    private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
@@ -65,8 +65,15 @@ export class TokenService {
     return tokens.map(item => mergeObjects(new TokenDetailed(), item));
   }
 
-  async getTokenCount(): Promise<number> {
+  async getTokenCount(search: string | undefined): Promise<number> {
     let allTokens = await this.getAllTokens();
+
+    if (search !== undefined) {
+      allTokens = allTokens.filter(function (token) {
+        return token.name.includes(search);
+      });
+    }
+
     return allTokens.length;
   }
 
@@ -77,7 +84,7 @@ export class TokenService {
       oneWeek(),
       oneDay()
     );
-    
+
     if (!properties) {
       return undefined;
     }
@@ -149,7 +156,7 @@ export class TokenService {
     let accountsEsdt = await this.elasticService.getAccountEsdtByIdentifier(nft.identifier);
     if (nft.type === NftType.NonFungibleESDT) {
       nft.owner = accountsEsdt[0].address;
-      
+
       // @ts-ignore
       delete nft.owners;
     } else {
@@ -229,7 +236,7 @@ export class TokenService {
   async getNftCount(): Promise<number> {
     return await this.elasticService.getTokenCount();
   }
-  
+
   async getTokenCountForAddress(address: string): Promise<number> {
     let tokens = await this.getAllTokensForAddress(address);
     return tokens.length;
@@ -367,7 +374,7 @@ export class TokenService {
 
       nft.attributes = gatewayNft.attributes;
       nft.balance = gatewayNft.balance;
-      
+
       if (gatewayNft.attributes) {
         nft.tags = this.getTags(gatewayNft.attributes);
         nft.metadata = await this.getExtendedAttributesFromRawAttributes(gatewayNft.attributes);
@@ -422,7 +429,7 @@ export class TokenService {
 
     return this.getExtendedAttributesFromDescription(description);
   }
-  
+
   async getExtendedAttributesFromDescription(description: string): Promise<Object | undefined> {
     let result = await this.cachingService.getOrSetCache(
       `nftExtendedAttributes:${description}`,
@@ -529,16 +536,16 @@ export class TokenService {
 
   getExpires(epochs: number, roundsPassed: number, roundsPerEpoch: number, roundDuration: number) {
     const now = Math.floor(Date.now() / 1000);
-  
+
     if (epochs === 0) {
       return now;
     }
-  
+
     const fullEpochs = (epochs - 1) * roundsPerEpoch * roundDuration;
     const lastEpoch = (roundsPerEpoch - roundsPassed) * roundDuration;
-  
+
     // this.logger.log('expires', JSON.stringify({ epochs, roundsPassed, roundsPerEpoch, roundDuration }));
-  
+
     return now + fullEpochs + lastEpoch;
   };
 
@@ -554,11 +561,11 @@ export class TokenService {
       this.gatewayService.get('network/config'),
       this.gatewayService.get('network/status/4294967295')
     ]);
-  
+
     const roundsPassed = erd_rounds_passed_in_current_epoch;
     const roundsPerEpoch = erd_rounds_per_epoch;
     const roundDuration = erd_round_duration / 1000;
-  
+
     return { roundsPassed, roundsPerEpoch, roundDuration };
   };
 
@@ -588,7 +595,7 @@ export class TokenService {
 
   async getTokenProperties(identifier: string) {
     const arg = Buffer.from(identifier, 'utf8').toString('hex');
-  
+
     const tokenPropertiesEncoded = await this.vmQueryService.vmQuery(
       this.apiConfigService.getEsdtContractAddress(),
       'getTokenProperties',
@@ -596,11 +603,11 @@ export class TokenService {
       [ arg ],
       true
     );
-  
+
     const tokenProperties = tokenPropertiesEncoded.map((encoded, index) =>
       Buffer.from(encoded, 'base64').toString(index === 2 ? 'hex' : undefined)
     );
-  
+
     const [
       name,
       type,
@@ -621,7 +628,7 @@ export class TokenService {
       NFTCreateStopped,
       wiped,
     ] = tokenProperties;
-  
+
     const tokenProps = {
       identifier,
       name,
@@ -643,7 +650,7 @@ export class TokenService {
       NFTCreateStopped: this.canBool(NFTCreateStopped),
       wiped: wiped.split('-').pop(),
     };
-  
+
     if (type === 'FungibleESDT') {
       // @ts-ignore
       delete tokenProps.canAddSpecialRoles;
@@ -653,7 +660,7 @@ export class TokenService {
       delete tokenProps.NFTCreateStopped;
       delete tokenProps.wiped;
     }
-  
+
     return tokenProps;
   };
 
