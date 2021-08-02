@@ -27,6 +27,11 @@ export class RoundService {
       const shardIdQuery = QueryType.Match('shardId', filter.shard);
       queries.push(shardIdQuery);
     }
+
+    if (filter.epoch !== undefined) {
+      const epochQuery = QueryType.Match('epoch', filter.epoch);
+      queries.push(epochQuery);
+    }
     
     if (filter.validator !== undefined && filter.shard !== undefined && filter.epoch !== undefined) {
       const index = await this.blsService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
