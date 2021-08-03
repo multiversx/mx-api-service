@@ -194,7 +194,7 @@ export class NodeService {
       }
     }
 
-    const keybases: { [key: string]: KeybaseState } | undefined = await this.keybaseService.getCachedKeybases();
+    const keybases: { [key: string]: KeybaseState } | undefined = await this.keybaseService.getCachedNodeKeybases();
 
     for (let node of nodes) {
       if (keybases && keybases[node.bls] && keybases[node.bls].confirmed) {
