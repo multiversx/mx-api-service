@@ -300,7 +300,7 @@ export class TokenService {
   }
 
   async getCollectionsForAddress(address: string, queryPagination: QueryPagination): Promise<NftCollection[]> {
-    let esdtResult = await this.gatewayService.get(`address/${address}/esdts-with-role/ESDTRoleNFTCreate`);
+    let esdtResult = await this.gatewayService.get(`address/${address}/registered-nfts`);
 
     if (esdtResult.tokens.length === 0) {
       return [];
@@ -313,7 +313,7 @@ export class TokenService {
   }
 
   async getCollectionCountForAddress(address: string): Promise<number> {
-    let esdtResult = await this.gatewayService.get(`address/${address}/esdts-with-role/ESDTRoleNFTCreate`);
+    let esdtResult = await this.gatewayService.get(`address/${address}/registered-nfts`);
 
     return esdtResult.tokens.length;
   }
