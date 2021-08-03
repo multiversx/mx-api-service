@@ -216,7 +216,7 @@ export class TokenService {
 
         if (nft.uris && nft.uris.length > 0) {
           try {
-            nft.url = base64Decode(nft.uris[0]);
+            nft.url = this.processUri(base64Decode(nft.uris[0]));
           } catch (error) {
             this.logger.error(error);
           }
@@ -507,10 +507,22 @@ export class TokenService {
     );
 
     if (Object.keys(result).length > 0) {
+      if (result.fileUri) {
+        result.fileUri = this.processUri(result.fileUri);
+      }
+
       return result;
     }
 
     return undefined;
+  }
+
+  private processUri(uri: string): string {
+    if (uri.startsWith('https://ipfs.io/ipfs')) {
+      return uri.replace('https://ipfs.io/ipfs', this.apiConfigService.getMediaUrl() + '/ipfs')
+    }
+
+    return uri;
   }
 
   async getExtendedAttributesFromIpfs(description: string): Promise<NftMetadata> {
