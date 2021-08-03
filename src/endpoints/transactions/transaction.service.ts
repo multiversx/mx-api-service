@@ -208,27 +208,27 @@ export class TransactionService {
           let receipt = receipts[0];
           transactionDetailed.receipt = mergeObjects(new TransactionReceipt(), receipt);
         }
-      }
 
-      const elasticQueryAdapterLogs: ElasticQuery = new ElasticQuery();
-      elasticQueryAdapterLogs.pagination = { from: 0, size: 100 };
-
-      let queries = [];
-      for (let hash of hashes) {
-        queries.push(QueryType.Match('_id', hash));
-      }
-      elasticQueryAdapterLogs.condition.should = queries;
-
-      let logs: any[] = await this.elasticService.getLogsForTransactionHashes(elasticQueryAdapterLogs);
-
-      for (let log of logs) {
-        if (log._id === txHash) {
-          transactionDetailed.logs = mergeObjects(new TransactionLog(), log._source);
+        const elasticQueryAdapterLogs: ElasticQuery = new ElasticQuery();
+        elasticQueryAdapterLogs.pagination = { from: 0, size: 100 };
+  
+        let queries = [];
+        for (let hash of hashes) {
+          queries.push(QueryType.Match('_id', hash));
         }
-        else {
-          const foundScResult = transactionDetailed.scResults.find(({ hash }) => log._id === hash);
-          if (foundScResult) {
-            foundScResult.logs = mergeObjects(new TransactionLog(), log._source);
+        elasticQueryAdapterLogs.condition.should = queries;
+  
+        let logs: any[] = await this.elasticService.getLogsForTransactionHashes(elasticQueryAdapterLogs);
+  
+        for (let log of logs) {
+          if (log._id === txHash) {
+            transactionDetailed.logs = mergeObjects(new TransactionLog(), log._source);
+          }
+          else {
+            const foundScResult = transactionDetailed.scResults.find(({ hash }) => log._id === hash);
+            if (foundScResult) {
+              foundScResult.logs = mergeObjects(new TransactionLog(), log._source);
+            }
           }
         }
       }
