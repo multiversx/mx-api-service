@@ -9,6 +9,7 @@ import { NodeService } from "../nodes/node.service";
 import { ProviderFilter } from "src/endpoints/providers/entities/provider.filter";
 import { ApiService } from "src/helpers/api.service";
 import { KeybaseState } from "src/helpers/entities/keybase.state";
+import { KeybaseService } from "src/helpers/keybase.service";
 
 @Injectable()
 export class ProviderService {
@@ -20,7 +21,9 @@ export class ProviderService {
     private readonly vmQueryService: VmQueryService,
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
-    private readonly apiService: ApiService
+    private readonly apiService: ApiService,
+    @Inject(forwardRef(() => KeybaseService))
+    private readonly keybaseService: KeybaseService,
   ) {
     this.logger = new Logger(ProviderService.name);
   }
@@ -162,7 +165,12 @@ export class ProviderService {
       };
     });
 
-    let providerKeybases = await this.cachingService.getCache<{ [key: string]: KeybaseState }>('providerKeybases');
+    let providerKeybases = await this.cachingService.getOrSetCache<{ [key: string]: KeybaseState }>(
+      'providerKeybases',
+      async () => await this.keybaseService.confirmKeybaseProvidersAgainstKeybasePub(),
+      oneHour()
+    );
+    
     if (providerKeybases) {
       for (let providerAddress of providers) {
         let providerInfo = providerKeybases[providerAddress];
