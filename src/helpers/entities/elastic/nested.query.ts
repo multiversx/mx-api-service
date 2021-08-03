@@ -8,9 +8,11 @@ export class NestedQuery extends AbstractQuery {
       nested: {
         path: key,
         query: {
-          must: [
-            QueryType.Match(Object.keys(value)[0], Object.values(value)[0])
-          ]
+          bool: {
+            must: [
+              QueryType.Match(Object.keys(value)[0], Object.values(value)[0])
+            ]
+          }
         } 
       }
     };
