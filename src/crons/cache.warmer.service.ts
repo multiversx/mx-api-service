@@ -124,9 +124,13 @@ export class CacheWarmerService {
     this.isRunningKeybaseInvalidations = true;
     let profiler = new PerformanceProfiler();
     try {
-      let keybases = await this.keybaseService.confirmKeybasesAgainstKeybasePub();
-      await this.cachingService.setCache('keybases', keybases, oneHour());
-      await this.deleteCacheKey('keybases');
+      let nodeKeybases = await this.keybaseService.confirmKeybaseNodesAgainstKeybasePub();
+      await this.cachingService.setCache('nodeKeybases', nodeKeybases, oneHour());
+      await this.deleteCacheKey('nodeKeybases');
+
+      let providerKeybases = await this.keybaseService.confirmKeybaseProvidersAgainstKeybasePub();
+      await this.cachingService.setCache('providerKeybases', providerKeybases, oneHour());
+      await this.deleteCacheKey('providerKeybases');
     } catch(error) {
       this.logger.error('Error running keybase invalidations');
       this.logger.error(error);

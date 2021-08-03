@@ -2,7 +2,6 @@ import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { bech32Encode, oneHour, oneMinute } from "src/helpers/helpers";
-import { KeybaseService } from "src/helpers/keybase.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Provider } from "src/endpoints/providers/entities/provider";
 import { ProviderConfig } from "./entities/provider.config";
@@ -19,7 +18,6 @@ export class ProviderService {
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
     private readonly vmQueryService: VmQueryService,
-    private readonly keybaseService: KeybaseService,
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
     private readonly apiService: ApiService
@@ -149,8 +147,6 @@ export class ProviderService {
       ),
     ]);
 
-    const keybases: { [key: string]: KeybaseState } | undefined = await this.keybaseService.getCachedKeybases();
-
     const value: Provider[] = providers.map((provider, index) => {
       return {
         provider,
@@ -166,17 +162,15 @@ export class ProviderService {
       };
     });
 
-    for (let providerAddress of providers) {
-      const blses = await this.nodeService.getOwnerBlses(providerAddress);
-
-      for (let bls of blses) {
-        if (keybases && keybases[bls] && keybases[bls].confirmed) {
-          const found = value.find(({ provider }) => provider === providerAddress);
+    let providerKeybases = await this.cachingService.getCache<{ [key: string]: KeybaseState }>('providerKeybases');
+    if (providerKeybases) {
+      for (let providerAddress of providers) {
+        let providerInfo = providerKeybases[providerAddress];
+        if (providerInfo) {
+          const found = value.find(x => x.provider === providerAddress);
           if (found) {
-            found.identity = keybases[bls].identity;
+            found.identity = providerInfo.identity;
           }
-
-          break;
         }
       }
     };

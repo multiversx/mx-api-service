@@ -1,11 +1,12 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { NodeService } from "src/endpoints/nodes/node.service";
+import { ProviderService } from "src/endpoints/providers/provider.service";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
 import { CachingService } from "./caching.service";
 import { Keybase } from "./entities/keybase";
 import { KeybaseState } from "./entities/keybase.state";
-import { oneHour, oneMonth } from "./helpers";
+import { oneHour, oneMinute, oneMonth, oneWeek } from "./helpers";
 
 @Injectable()
 export class KeybaseService {
@@ -17,6 +18,8 @@ export class KeybaseService {
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
+    @Inject(forwardRef(() => ProviderService))
+    private readonly providerService: ProviderService
   ) {
     this.logger = new Logger(KeybaseService.name);
   }
@@ -46,7 +49,52 @@ export class KeybaseService {
     return result;
   }
 
-  async confirmKeybasesAgainstKeybasePub() {
+  async confirmKeybaseProvidersAgainstKeybasePub() {
+    const providers = await this.providerService.getProviderAddresses();
+
+    const metadatas = await 
+      this.cachingService.batchProcess(
+        providers,
+        address => `providerMetadata:${address}`,
+        async address => await this.providerService.getProviderMetadata(address),
+        oneMinute() * 15,
+      );
+
+    const keybaseArr: Keybase[] = metadatas
+      .map(({ identity }, index) => {
+        return { identity: identity ?? '', key: providers[index] };
+      })
+      .filter(({ identity }) => !!identity);
+
+    const confirmedKeybases = await this.cachingService.batchProcess(
+      keybaseArr,
+      keybase => `keybase:${keybase.key}`,
+      async (keybase) => await this.confirmKeybase(keybase),
+      oneWeek(),
+      true
+    );
+
+    const keybases: { [key: string]: KeybaseState } = {};
+
+    keybaseArr.forEach((keybase, index) => {
+      let keybaseState = new KeybaseState();
+      keybaseState.identity = keybase.identity;
+
+      if (confirmedKeybases[index]) {
+        keybaseState.confirmed = true;
+        // this.logger.log(`Confirmed keybase for identity ${keybase.identity} and key ${keybase.key}`);
+      } else {
+        keybaseState.confirmed = false;
+        this.logger.log(`Unconfirmed keybase for identity ${keybase.identity} and key ${keybase.key}`);
+      }
+
+      keybases[keybase.key] = keybaseState;
+    });
+
+    return keybases;
+  }
+
+  async confirmKeybaseNodesAgainstKeybasePub() {
     let nodes = await this.nodeService.getHeartbeat();
 
     const keybasesArr: Keybase[] = nodes
@@ -83,9 +131,9 @@ export class KeybaseService {
     return keybases;
   }
 
-  async getCachedKeybases(): Promise<{ [key: string]: KeybaseState } | undefined> {
+  async getCachedNodeKeybases(): Promise<{ [key: string]: KeybaseState } | undefined> {
     return await this.cachingService.getOrSetCache(
-      'keybases',
+      'nodeKeybases',
       async () => await this.confirmKeybasesAgainstCache(),
       oneHour()
     );
