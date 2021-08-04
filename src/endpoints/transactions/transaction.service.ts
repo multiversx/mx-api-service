@@ -289,11 +289,18 @@ export class TransactionService {
     }
   }
 
-  async createTransaction(transaction: TransactionCreate): Promise<TransactionSendResult> {
+  async createTransaction(transaction: TransactionCreate): Promise<TransactionSendResult | string> {
     const receiverShard = computeShard(bech32Decode(transaction.receiver));
     const senderShard = computeShard(bech32Decode(transaction.sender));
 
-    const { txHash } = await this.gatewayService.create('transaction/send', transaction);
+    let txHash: string;
+    try {
+      let result = await this.gatewayService.create('transaction/send', transaction);
+      txHash = result.txHash;
+    } catch (error) {
+      this.logger.error(error);
+      return error.response.data.error;
+    }
 
     // TODO: pending alignment
     return {
