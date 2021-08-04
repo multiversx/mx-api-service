@@ -68,7 +68,7 @@ export class TokenService {
   async getTokenCount(search: string | undefined): Promise<number> {
     let allTokens = await this.getAllTokens();
 
-    if (search !== undefined) {
+    if (search) {
       allTokens = allTokens.filter(function (token) {
         return token.name.includes(search);
       });
