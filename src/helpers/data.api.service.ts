@@ -1,62 +1,35 @@
 import { Injectable } from "@nestjs/common";
-import { Data } from "src/endpoints/history/entities/data";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
+import { DataQuoteType } from "./entities/data.quote.type";
 
 @Injectable()
 export class DataApiService {
-  private readonly quotesHistoricalUrl: string;
-  private readonly quotesHistoricalLatestUrl: string;
-  private readonly stakingHistoricalUrl: string;
-  private readonly stakingUsersHistoricalUrl: string;
-  private readonly transactionsHistoricalUrl: string;
-  private readonly accountsHistoricalUrl: string
+  private readonly dataUrl: string | undefined;
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly apiService: ApiService,
   ) {
-    this.quotesHistoricalUrl = `${this.apiConfigService.getDataLatestCompleteUrl()}/quoteshistorical/egld`;
-    this.quotesHistoricalLatestUrl = `${this.apiConfigService.getDataLatestUrl()}/quoteshistorical/egld`;
-    this.stakingHistoricalUrl = `${this.apiConfigService.getDataLatestCompleteUrl()}/stakinghistorical/total`;
-    this.stakingUsersHistoricalUrl = `${this.apiConfigService.getDataLatestUrl()}/stakinghistorical/total`;
-    this.transactionsHistoricalUrl = `${this.apiConfigService.getDataLatestCompleteUrl()}/transactionshistorical/transactions`;
-    this.accountsHistoricalUrl = `${this.apiConfigService.getDataLatestCompleteUrl()}/accountshistorical/accounts`;
+    this.dataUrl = this.apiConfigService.getDataUrl();
   };
-  
-  async getQuotesHistorical(quoteUrl: string): Promise<Data[]> {
-    const { data } = await this.apiService.get(`${this.quotesHistoricalUrl}/${quoteUrl}`);
+
+  async getQuotesHistoricalTimestamp(type: DataQuoteType, timestamp: number): Promise<number | undefined> {
+    if (!this.dataUrl) {
+      return undefined;
+    }
+
+    const { data } = await this.apiService.get(`${this.dataUrl}/closing/quoteshistorical/egld/${type}/${timestamp}`);
 
     return data;
   }
 
-  async getQuotesHistoricalLatest(quoteUrl: string): Promise<number> {
-    const { data } = await this.apiService.get(`${this.quotesHistoricalLatestUrl}/${quoteUrl}`);
+  async getQuotesHistoricalLatest(type: DataQuoteType): Promise<number | undefined> {
+    if (!this.dataUrl) {
+      return undefined;
+    }
 
-    return data;
-  }
-
-  async getStakingHistorical(stakeUrl: string): Promise<Data[]> {
-    const { data } = await this.apiService.get(`${this.stakingHistoricalUrl}/${stakeUrl}`);
-
-    return data;
-  }
-
-  async getStakingUsersHistorical(stakeUrl: string): Promise<number> {
-    const { data } = await this.apiService.get(`${this.stakingUsersHistoricalUrl}/${stakeUrl}`);
-
-    return data;
-  }
-
-  async getTransactionsHistorical(transactionsUrl: string): Promise<Data[]> {
-    const { data } = await this.apiService.get(`${this.transactionsHistoricalUrl}/${transactionsUrl}`);
-
-    return data;
-  }
-
-
-  async getAccountsHistorical(accountsUrl: string): Promise<Data[]> {
-    const { data } = await this.apiService.get(`${this.accountsHistoricalUrl}/${accountsUrl}`);
+    const { data } = await this.apiService.get(`${this.dataUrl}/latest/quoteshistorical/egld/${type}`);
 
     return data;
   }

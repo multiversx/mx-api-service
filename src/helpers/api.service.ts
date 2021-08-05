@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import { ApiConfigService } from "./api.config.service";
 import { PerformanceProfiler } from "./performance.profiler";
 import Agent from 'agentkeepalive';
@@ -18,13 +18,31 @@ export class ApiService {
     private readonly apiConfigService: ApiConfigService,
   ) {};
 
+  private getConfig(timeout: number | undefined): AxiosRequestConfig {
+    timeout = timeout || this.defaultTimeout;
+
+    let headers = {};
+
+    let rateLimiterSecret = this.apiConfigService.getRateLimiterSecret();
+    if (rateLimiterSecret) {
+      // @ts-ignore
+      headers['x-rate-limiter-secret'] = rateLimiterSecret;
+    }
+
+    return {
+      timeout,
+      httpAgent: this.keepaliveAgent,
+      headers
+    };
+  }
+
   async get(url: string, timeout: number | undefined = undefined): Promise<any> {
     timeout = timeout || this.defaultTimeout;
 
     let profiler = new PerformanceProfiler(`apiService get ${url}`);
 
     try {
-      return await axios.get(url, { timeout, httpAgent: this.keepaliveAgent });
+      return await axios.get(url, this.getConfig(timeout));
     } catch(error) {
       let logger = new Logger(ApiService.name);
       logger.error({
@@ -46,7 +64,7 @@ export class ApiService {
     let profiler = new PerformanceProfiler(`apiService post ${url}`);
     
     try {
-      return await axios.post(url, data, { timeout, httpAgent: this.keepaliveAgent });
+      return await axios.post(url, data, this.getConfig(timeout));
     } catch(error) {
       let logger = new Logger(ApiService.name);
       logger.error({
@@ -69,7 +87,7 @@ export class ApiService {
     let profiler = new PerformanceProfiler(`apiService head ${url}`);
 
     try {
-      return await axios.head(url, { timeout, httpAgent: this.keepaliveAgent });
+      return await axios.head(url, this.getConfig(timeout));
     } catch(error) {
       let logger = new Logger(ApiService.name);
       logger.error({

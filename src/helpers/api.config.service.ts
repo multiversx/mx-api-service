@@ -137,22 +137,8 @@ export class ApiConfigService {
     return providerUrl;
   }
 
-  getDataLatestCompleteUrl(): string {
-    let dataLatestCompleteUrl = this.configService.get<string>('urls.dataLatestCompleteUrl');
-    if (!dataLatestCompleteUrl) {
-      throw new Error('No dataLatestComplete url present');
-    }
-
-    return dataLatestCompleteUrl;
-  }
-
-  getDataLatestUrl(): string {
-    let dataLatestUrl = this.configService.get<string>('urls.dataLatestUrl');
-    if (!dataLatestUrl) {
-      throw new Error('No dataLatest url present');
-    }
-
-    return dataLatestUrl;
+  getDataUrl(): string | undefined {
+    return this.configService.get<string>('urls.dataUrl');
   }
 
   getIsTransactionProcessorCronActive(): boolean {
@@ -216,5 +202,27 @@ export class ApiConfigService {
     }
 
     return useLegacyElastic;
+  }
+
+  getRateLimiterSecret(): string | undefined {
+    return this.configService.get<string>('rateLimiterSecret');
+  }
+
+  getInflationAmounts(): number[] {
+    let inflationAmounts = this.configService.get<number[]>('inflation');
+    if (!inflationAmounts) {
+      throw new Error('No inflation amounts present');
+    }
+
+    return inflationAmounts;
+  }
+
+  getMediaUrl(): string {
+    let mediaUrl = this.configService.get<string>('urls.media');
+    if (!mediaUrl) {
+      throw new Error('No media url present');
+    }
+
+    return mediaUrl;
   }
 }

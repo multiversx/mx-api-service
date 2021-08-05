@@ -1,16 +1,15 @@
-import { QueryCondition } from "src/helpers/entities/query.condition"
+import { QueryPagination } from "src/common/entities/query.pagination"
+import { QueryConditionOptions } from "src/helpers/entities/elastic/query.condition.options"
 import { TransactionStatus } from "./transaction.status"
 
-export class TransactionQuery {
+export class TransactionFilter extends QueryPagination{
     sender: string | undefined
     receiver: string | undefined
     senderShard: number | undefined
     receiverShard: number | undefined
     miniBlockHash: string | undefined
     status: TransactionStatus | undefined
-    condition: QueryCondition | undefined
+    condition: QueryConditionOptions | undefined = QueryConditionOptions.must
     before: number | undefined
     after: number | undefined
-    from: number = 0
-    size: number = 25
 }

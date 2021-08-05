@@ -1,4 +1,4 @@
-export enum QueryCondition {
+export enum QueryConditionOptions {
   should = 'should',
   must = 'must'
 }
