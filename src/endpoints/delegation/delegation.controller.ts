@@ -7,7 +7,7 @@ import { Delegation } from "./entities/delegation";
 @ApiTags('delegation')
 export class DelegationController {
   constructor(
-    private readonly delegationService: DelegationService
+    private readonly delegationService: DelegationService,
   ) {}
 
   @Get("/delegation")

@@ -29,7 +29,6 @@ expect.extend({
 describe('Account Controller', () => {
     let accountController: AccountController;
     let accountAddress: string;
-    // let accountTokenIdentifier: string;
   
     beforeEach(async () => {
       const moduleRef = await Test.createTestingModule({
@@ -37,6 +36,12 @@ describe('Account Controller', () => {
         }).compile();
   
         accountController = moduleRef.get<AccountController>(AccountController);
+
+        let accounts = await accountController.getAccounts(0, 1);
+        expect(accounts).toHaveLength(1);
+
+        let account = accounts[0];
+        accountAddress = account.address;
     });
 
     describe('Accounts list', () => {
@@ -48,10 +53,8 @@ describe('Account Controller', () => {
 
             for (let account of accountsList) {
                 expect(account).toHaveStructure(Object.keys(new Account()));
-                accountAddress = account.address;
             }
         });
-
         it(`should return a list with 50 accounts`, async () => {
             const accountsList = await accountController.getAccounts(0, 50);
             expect(accountsList).toBeInstanceOf(Array);
@@ -84,7 +87,6 @@ describe('Account Controller', () => {
             it(`should throw 'Account not found' error`, async () => {
                 await expect(accountController.getAccountDetails(accountAddress + 'a')).rejects.toThrowError('Account not found');
             });
-        });
 
         describe('Account Delegation Legacy', () => {
             it(`should return a delegation legacy for an account with address`, async () => {
@@ -98,31 +100,7 @@ describe('Account Controller', () => {
                 await expect(accountController.getAccountDelegationLegacy(accountAddress + 'a')).rejects.toThrowError('Account not found');
             });
         });
-
-        //TIMEOUT
-        // describe('Account Tokens', () => {
-        //     it(`should return a list of account tokens`, async () => {
-        //         const accountTokens = await accountController.getAccountTokens(accountAddress, 0, 25);
-    
-        //         for(let token of accountTokens)
-        //         {
-        //             expect(token).toHaveStructure(Object.keys(new TokenWithBalance()));
-        //             accountTokenIdentifier = token.token;
-        //         }
-        //     });
-    
-        //     it(`should throw 'Account not found' error`, async () => {
-        //         await expect(accountController.getAccountTokens(accountAddress + 'a', 0, 25)).rejects.toThrowError('Account not found');
-        //     });
-
-        //     it(`should throw error because a token identifiers isn't set`, async () => {
-        //         // const accountToken = await accountController.getAccountToken(accountAddress, accountTokenIdentifier);
-    
-                
-        //         // expect(accountToken).toHaveStructure(Object.keys(new TokenWithBalance()));
-
-        //         await expect(accountController.getAccountToken(accountAddress, accountTokenIdentifier)).rejects.toThrowError('Token not found')
-        //     });
-        // })
+        });
     });
+
 });

@@ -21,6 +21,6 @@ export class ShardController {
 		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 	): Promise<Shard[]> {
-		return await this.shardService.getShards(from, size);
+		return await this.shardService.getShards({from, size});
 	}
 }

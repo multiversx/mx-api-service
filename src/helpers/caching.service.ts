@@ -5,7 +5,7 @@ import { createClient } from 'redis';
 import asyncPool from 'tiny-async-pool';
 import { CachedFunction } from "src/crons/entities/cached.function";
 import { InvalidationFunction } from "src/crons/entities/invalidation.function";
-import { isSmartContractAddress, oneWeek } from "./helpers";
+import { hexToString, isSmartContractAddress, oneWeek } from "./helpers";
 import { PerformanceProfiler } from "./performance.profiler";
 import { ShardTransaction } from "src/crons/entities/shard.transaction";
 import { Cache } from "cache-manager";
@@ -156,18 +156,6 @@ export class CachingService {
 
   async batchProcess<IN, OUT>(payload: IN[], cacheKeyFunction: (element: IN) => string, handler: (generator: IN) => Promise<OUT>, ttl: number = this.configService.getCacheTtl(), skipCache: boolean = false): Promise<OUT[]> {
     let result: OUT[] = [];
-
-    // let remaining: IN[] = [];
-    // for (let element of payload) {
-    //   let cached = await this.getCacheLocal<OUT>(cacheKeyFunction(element));
-    //   if (cached !== undefined) {
-    //     result.push(cached);
-    //   } else {
-    //     remaining.push(element);
-    //   }
-    // }
-
-    // this.logger.log(`Found ${result.length} elements in local cache`);
 
     let chunks = this.getChunks(payload, 100);
 
@@ -329,7 +317,7 @@ export class CachingService {
     }
 
     let cached = await this.getCacheRemote<T>(key);
-    if (cached) {
+    if (cached !== undefined && cached !== null) {
       profiler.stop(`Remote Cache hit for key ${key}`);
 
       // we only set ttl to half because we don't know what the real ttl of the item is and we want it to work good in most scenarios
@@ -397,6 +385,25 @@ export class CachingService {
     // if transaction target is ESDT SC and functionName is "issue", kick out 'allTokens' key
     if (transactionFuncName === 'issue') {
       return await this.deleteInCache('allTokens');
+    }
+
+    return [];
+  }
+
+  async tryInvalidateTokenProperties(transaction: ShardTransaction): Promise<string[]> {
+    if (transaction.receiver !== this.configService.getEsdtContractAddress()) {
+      return [];
+    }
+
+    let transactionFuncName = transaction.getDataFunctionName();
+
+    if (transactionFuncName === 'controlChanges') {
+      let args = transaction.getDataArgs();
+      if (args && args.length > 0) {
+        let tokenIdentifier = hexToString(args[0]);
+        this.logger.log(`Invalidating token properties for token ${tokenIdentifier}`);
+        return await this.deleteInCache(`tokenProperties:${tokenIdentifier}`);
+      }
     }
 
     return [];

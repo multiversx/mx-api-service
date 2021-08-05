@@ -1,15 +1,15 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
-import { bech32Encode, oneHour, oneMinute, oneWeek } from "src/helpers/helpers";
-import { KeybaseService } from "src/helpers/keybase.service";
+import { bech32Encode, oneHour, oneMinute } from "src/helpers/helpers";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
-import { Keybase } from "src/helpers/entities/keybase";
 import { Provider } from "src/endpoints/providers/entities/provider";
 import { ProviderConfig } from "./entities/provider.config";
 import { NodeService } from "../nodes/node.service";
-import { ProviderQuery } from "src/endpoints/providers/entities/provider.query";
+import { ProviderFilter } from "src/endpoints/providers/entities/provider.filter";
 import { ApiService } from "src/helpers/api.service";
+import { KeybaseState } from "src/helpers/entities/keybase.state";
+import { KeybaseService } from "src/helpers/keybase.service";
 
 @Injectable()
 export class ProviderService {
@@ -19,22 +19,23 @@ export class ProviderService {
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
     private readonly vmQueryService: VmQueryService,
-    private readonly keybaseService: KeybaseService,
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
-    private readonly apiService: ApiService
+    private readonly apiService: ApiService,
+    @Inject(forwardRef(() => KeybaseService))
+    private readonly keybaseService: KeybaseService,
   ) {
     this.logger = new Logger(ProviderService.name);
   }
 
   async getProvider(address: string): Promise<Provider | undefined> {
-    let query = new ProviderQuery();
+    let query = new ProviderFilter();
     let providers = await this.getProviders(query);
 
     return providers.find(x => x.provider === address);
   }
 
-  async getProviders(query: ProviderQuery): Promise<Provider[]> {
+  async getProviders(query: ProviderFilter): Promise<Provider[]> {
     let providers = await this.getAllProviders();
     let nodes = await this.nodeService.getAllNodes();
 
@@ -128,17 +129,11 @@ export class ProviderService {
   async getAllProvidersRaw() : Promise<Provider[]> {
     const providers = await this.getProviderAddresses();
 
-    const [configs, metadatas, numUsers, cumulatedRewards] = await Promise.all([
+    const [configs, numUsers, cumulatedRewards] = await Promise.all([
       this.cachingService.batchProcess(
         providers,
         address => `providerConfig:${address}`,
         async address => await this.getProviderConfig(address),
-        oneMinute() * 15,
-      ),
-      this.cachingService.batchProcess(
-        providers,
-        address => `providerMetadata:${address}`,
-        async address => await this.getProviderMetadata(address),
         oneMinute() * 15,
       ),
       this.cachingService.batchProcess(
@@ -155,19 +150,6 @@ export class ProviderService {
       ),
     ]);
 
-    const keybases: Keybase[] = metadatas
-      .map(({ identity }, index) => {
-        return { identity: identity ?? '', key: providers[index] };
-      })
-      .filter(({ identity }) => !!identity);
-
-    const confirmedKeybases = await this.cachingService.batchProcess(
-      keybases,
-      keybase => `keybase:${keybase.identity}:${keybase.key}`,
-      async (keybase) => await this.keybaseService.confirmKeybase(keybase),
-      oneWeek(),
-    );
-
     const value: Provider[] = providers.map((provider, index) => {
       return {
         provider,
@@ -183,17 +165,23 @@ export class ProviderService {
       };
     });
 
-    keybases.forEach(({ identity, key }, index) => {
-      if (confirmedKeybases[index]) {
-        this.logger.log(`Confirmed keybase for identity ${identity} and key ${key}`);
-        const found = value.find(({ provider }) => provider === key);
-        if (found) {
-          found.identity = identity;
+    let providerKeybases = await this.cachingService.getOrSetCache<{ [key: string]: KeybaseState }>(
+      'providerKeybases',
+      async () => await this.keybaseService.confirmKeybaseProvidersAgainstKeybasePub(),
+      oneHour()
+    );
+    
+    if (providerKeybases) {
+      for (let providerAddress of providers) {
+        let providerInfo = providerKeybases[providerAddress];
+        if (providerInfo) {
+          const found = value.find(x => x.provider === providerAddress);
+          if (found) {
+            found.identity = providerInfo.identity;
+          }
         }
-      } else {
-        this.logger.log(`Unconfirmed keybase for identity ${identity} and key ${key}`);
       }
-    });
+    };
 
     return value;
   }
