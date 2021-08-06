@@ -174,7 +174,8 @@ export class ProviderService {
     if (providerKeybases) {
       for (let providerAddress of providers) {
         let providerInfo = providerKeybases[providerAddress];
-        if (providerInfo) {
+
+        if (providerInfo && providerInfo.confirmed) {
           const found = value.find(x => x.provider === providerAddress);
           if (found) {
             found.identity = providerInfo.identity;
