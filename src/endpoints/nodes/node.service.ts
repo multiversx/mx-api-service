@@ -197,6 +197,8 @@ export class NodeService {
     const keybases: { [key: string]: KeybaseState } | undefined = await this.keybaseService.getCachedNodeKeybases();
 
     for (let node of nodes) {
+      delete node.identity;
+
       if (keybases && keybases[node.bls] && keybases[node.bls].confirmed) {
         node.identity = keybases[node.bls].identity;
       }
@@ -222,10 +224,6 @@ export class NodeService {
         if (provider) {
           node.provider = provider.provider;
           node.owner = provider.owner ?? '';
-
-          if (provider.identity) {
-            node.identity = provider.identity;
-          }
         }
       }
     });
