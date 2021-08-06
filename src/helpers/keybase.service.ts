@@ -134,7 +134,7 @@ export class KeybaseService {
   async getCachedNodeKeybases(): Promise<{ [key: string]: KeybaseState } | undefined> {
     return await this.cachingService.getOrSetCache(
       'nodeKeybases',
-      async () => await this.confirmKeybasesAgainstCache(),
+      async () => await this.confirmKeybaseNodesAgainstKeybasePub(),
       oneHour()
     );
   }
