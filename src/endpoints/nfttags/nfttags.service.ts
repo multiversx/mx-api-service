@@ -1,20 +1,31 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { CachingService } from "src/helpers/caching.service";
 import { ElasticService } from "src/helpers/elastic.service";
 import { ElasticQuery } from "src/helpers/entities/elastic/elastic.query";
 import { ElasticSortOrder } from "src/helpers/entities/elastic/elastic.sort.order";
 import { ElasticSortProperty } from "src/helpers/entities/elastic/elastic.sort.property";
-import { mergeObjects } from "src/helpers/helpers";
+import { mergeObjects, oneHour } from "src/helpers/helpers";
 import { NftTag } from "./entities/nft.tag";
 
 @Injectable()
 export class NftTagsService {
 
   constructor(
-    private readonly elasticService: ElasticService, 
-  ) {}
+    private readonly elasticService: ElasticService,
+    @Inject(forwardRef(() => CachingService))
+    private readonly cachingService: CachingService,
+  ){}
 
   async getNftTags(pagination: QueryPagination): Promise<NftTag[]> {
+    return this.cachingService.getOrSetCache(
+      'nftTags',
+      async() => await this.getNftTagsRaw(pagination),
+      oneHour(),
+    )
+  }
+
+  async getNftTagsRaw(pagination: QueryPagination): Promise<NftTag[]> {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
     elasticQueryAdapter.pagination = pagination;
    
