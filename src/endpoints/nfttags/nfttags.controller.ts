@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NftTag } from './entities/nft.tag';
 import { NftTagsService } from './nfttags.service';
@@ -7,13 +7,9 @@ import { NftTagsService } from './nfttags.service';
 @Controller()
 @ApiTags('nfttags')
 export class NftTagsController {
-  private readonly logger: Logger
-
   constructor(
     private readonly nftTagsService: NftTagsService,
-  ) {
-    this.logger = new Logger(NftTagsController.name);
-  }
+  ) {}
 
   @Get("/nfttags")
   @ApiResponse({
@@ -41,9 +37,9 @@ export class NftTagsController {
     status: 404,
     description: 'Nft tag not found'
   })
-  async getAccountDetails(@Param('address') address: string): Promise<NftTag> {
+  async getAccountDetails(@Param('tag') tag: string): Promise<NftTag> {
     try {
-      return await this.nftTagsService.getNftTag(address);
+      return await this.nftTagsService.getNftTag(tag);
     } catch {
       throw new HttpException('Nft tag not found', HttpStatus.NOT_FOUND);
     }
