@@ -1,3 +1,6 @@
+import { Logger } from "@nestjs/common";
+import { PerformanceProfiler } from "./performance.profiler";
+
 const bech32 = require('bech32');
 const { readdirSync } = require('fs')
 const BigNumber = require('bignumber.js');
@@ -194,6 +197,7 @@ declare global {
     selectMany(predicate: (item: T) => T[]): T[];
     firstOrUndefined(predicate: (item: T) => boolean): T | undefined;
     zip<TSecond, TResult>(second: TSecond[], predicate: (first: T, second: TSecond) => TResult): TResult[];
+    remove(element: T): number;
   }
 }
 
@@ -239,8 +243,42 @@ Array.prototype.zip = function<TSecond, TResult>(second: TSecond[], predicate: F
   return this.map((element: any, index: number) => predicate(element, second[index]));
 };
 
+Array.prototype.remove = function<T>(element: T): number {
+  let index = this.indexOf(element);
+  if (index >= 0) {
+    this.splice(index, 1);
+  }
+
+  return index;
+}
+
 export function getDirectories(source: string) {
   return readdirSync(source, { withFileTypes: true })
     .filter((dirent: any) => dirent.isDirectory())
     .map((dirent: any) => dirent.name);
+}
+
+let lockArray: string[] = [];
+
+export async function lock(key: string, func: () => Promise<void>, log: boolean = false) {
+  let logger = new Logger('Lock');
+
+  if (lockArray.includes(key)) {
+    logger.log(`${key} is already running`);
+    return;
+  }
+
+  lockArray.push(key);
+
+  let profiler = new PerformanceProfiler();
+
+  try {
+    await func();
+  } catch (error) {
+    logger.error(`Error running ${key}`);
+    logger.error(error);
+  } finally {
+    profiler.stop(`Running ${key}`, log);
+    lockArray.remove(key);
+  }
 }
