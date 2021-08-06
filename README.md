@@ -7,9 +7,8 @@ REST API facade facilitating the interactions with the Elrond blockchain.
 
 ## Available Scripts
 
-​
-In the project directory, you can run:
-​
+This is an Elrond project built on Nest.js framework.
+
 
 ### `npm run start:prod`
 
@@ -17,22 +16,36 @@ In the project directory, you can run:
 Runs the app in the production mode.
 Make requests to [http://localhost:3001](http://localhost:3001).
 
-### `npm run start:dev`
+Redis Server is required to be installed.
 
-​
-Runs the app in the development mode.
-Make requests to [http://localhost:3001](http://localhost:3001).
-The app will reload if you make edits.
-You will also see any lint errors in the console.
-​
+## Running the app
 
-### `npm run start:custom`
+```bash
+# development watch mode
+$ npm run start:watch
 
-​
-Runs the app in the custom mode.
-Make requests to [http://localhost:3001](http://localhost:3001).
+# development debug mode
+$ npm run start:debug
+
+# development mode
+$ npm run start:dev
+
+# production mode
+$ npm run start:prod
+```
+Requests can be made to http://localhost:4001. The app will reload when you'll make edits (if opened in watch mode). You will also see any lint errors in the console.​
+
 
 ### `npm run test`
 
-​
-Launches the test runner in the interactive watch mode.
+```bash
+# unit tests
+$ npm run test
+
+# e2e tests
+$ npm run test:e2e
+
+# test coverage
+$ npm run test:cov
+```
+

@@ -36,7 +36,8 @@ export class TokenController {
     status: 200,
     description: 'The number of tokens available on the blockchain',
   })
-  @ApiQuery({ name: 'search', description: 'Search by token name', required: false })
+
+  @ApiQuery({ name: 'search', description: 'Filter tokens by token name', required: false })
   async getTokenCount(
     @Query('search') search: string | undefined,
   ): Promise<number> {
