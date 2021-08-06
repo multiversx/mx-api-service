@@ -184,7 +184,7 @@ export class ElasticService {
       let tagArray = filter.tags.split(',');
       if (tagArray.length > 0) {
         for (let tag of tagArray) {
-          queries.push(QueryType.Nested("metaData.attributes", { "metaData.attributes.tags": tag }));
+          queries.push(QueryType.Nested("data", { "data.tags": tag }));
         }
       }
     }
