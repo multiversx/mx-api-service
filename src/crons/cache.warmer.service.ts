@@ -6,6 +6,8 @@ import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
 import { CachingService } from "src/helpers/caching.service";
+import { DataApiService } from "src/helpers/data.api.service";
+import { DataQuoteType } from "src/helpers/entities/data.quote.type";
 import { lock, oneHour, oneMinute } from "src/helpers/helpers";
 import { KeybaseService } from "src/helpers/keybase.service";
 
@@ -20,6 +22,7 @@ export class CacheWarmerService {
     private readonly providerService: ProviderService,
     private readonly keybaseService: KeybaseService,
     @Inject('PUBSUB_SERVICE') private client: ClientProxy,
+    private readonly dataApiService: DataApiService,
   ) { }
 
   @Cron('* * * * *')
@@ -68,6 +71,15 @@ export class CacheWarmerService {
       let providerKeybases = await this.keybaseService.confirmKeybaseProvidersAgainstKeybasePub();
       await this.cachingService.setCache('providerKeybases', providerKeybases, oneHour());
       await this.deleteCacheKey('providerKeybases');
+    }, true);
+  }
+
+  @Cron('* * * * *')
+  async handleCurrentPriceInvalidations() {
+    await lock('Current price invalidations', async () => {
+      let currentPrice = await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price);
+      await this.cachingService.setCache('currentPrice', currentPrice, oneHour());
+      await this.deleteCacheKey('currentPrice');
     }, true);
   }
 
