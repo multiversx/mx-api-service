@@ -6,10 +6,10 @@ import { ElasticQuery } from "src/helpers/entities/elastic/elastic.query";
 import { ElasticSortOrder } from "src/helpers/entities/elastic/elastic.sort.order";
 import { ElasticSortProperty } from "src/helpers/entities/elastic/elastic.sort.property";
 import { mergeObjects, oneHour } from "src/helpers/helpers";
-import { NftTag } from "./entities/nft.tag";
+import { Tag } from "./entities/tag";
 
 @Injectable()
-export class NftTagsService {
+export class TagService {
 
   constructor(
     private readonly elasticService: ElasticService,
@@ -17,7 +17,7 @@ export class NftTagsService {
     private readonly cachingService: CachingService,
   ){}
 
-  async getNftTags(pagination: QueryPagination): Promise<NftTag[]> {
+  async getNftTags(pagination: QueryPagination): Promise<Tag[]> {
     return this.cachingService.getOrSetCache(
       'nftTags',
       async() => await this.getNftTagsRaw(pagination),
@@ -25,7 +25,7 @@ export class NftTagsService {
     )
   }
 
-  async getNftTagsRaw(pagination: QueryPagination): Promise<NftTag[]> {
+  async getNftTagsRaw(pagination: QueryPagination): Promise<Tag[]> {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
     elasticQueryAdapter.pagination = pagination;
    
@@ -34,14 +34,14 @@ export class NftTagsService {
 
     let result = await this.elasticService.getList('tags', 'tag', elasticQueryAdapter);
 
-    let nftTags: NftTag[] = result.map(item => mergeObjects(new NftTag(), item));
+    let nftTags: Tag[] = result.map(item => mergeObjects(new Tag(), item));
 
     return nftTags;
   }
 
-  async getNftTag(tag: string): Promise<NftTag> {
+  async getNftTag(tag: string): Promise<Tag> {
     let result = await this.elasticService.getItem('tags', 'tag', tag);
 
-    return mergeObjects(new NftTag(), result);
+    return mergeObjects(new Tag(), result);
   }
 }
