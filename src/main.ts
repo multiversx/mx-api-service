@@ -21,6 +21,7 @@ import * as requestIp from 'request-ip';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CleanupInterceptor } from './interceptors/cleanup.interceptor';
 import { RedisClient } from 'redis';
+import { ExtractInterceptor } from './interceptors/extract.interceptor';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
@@ -43,6 +44,7 @@ async function bootstrap() {
     new LoggingInterceptor(metricsService), 
     new CachingInterceptor(cachingService, httpAdapterHostService, metricsService),
     new FieldsInterceptor(),
+    new ExtractInterceptor(),
     new CleanupInterceptor()
   );
   const description = readFileSync(join(__dirname, '..', 'docs', 'swagger.md'), 'utf8');
