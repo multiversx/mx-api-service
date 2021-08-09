@@ -176,17 +176,21 @@ export class ElasticService {
       queries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
     }
 
+    if (filter.hasUris !== undefined) {
+      queries.push(QueryType.Nested('data', { "data.nonEmptyURIs": filter.hasUris }));
+    }
+
     if (filter.tags) {
       let tagArray = filter.tags.split(',');
       if (tagArray.length > 0) {
         for (let tag of tagArray) {
-          queries.push(QueryType.Nested("metaData.attributes", { "metaData.attributes.tags": tag }));
+          queries.push(QueryType.Nested("data", { "data.tags": tag }));
         }
       }
     }
 
     if (filter.creator !== undefined) {
-      queries.push(QueryType.Nested("metaData", { "metaData.creator": filter.creator }));
+      queries.push(QueryType.Nested("data", { "data.creator": filter.creator }));
     }
 
     elasticQueryAdapter.condition.must = queries;

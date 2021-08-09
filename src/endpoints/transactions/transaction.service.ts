@@ -11,7 +11,7 @@ import { ElasticSortProperty } from 'src/helpers/entities/elastic/elastic.sort.p
 import { QueryConditionOptions } from 'src/helpers/entities/elastic/query.condition.options';
 import { QueryType } from 'src/helpers/entities/elastic/query.type';
 import { GatewayService } from 'src/helpers/gateway.service';
-import { base64Encode, bech32Decode, computeShard, mergeObjects, oneDay, oneMinute } from 'src/helpers/helpers';
+import { base64Encode, bech32Decode, computeShard, mergeObjects, oneDay, oneHour } from 'src/helpers/helpers';
 import { ElasticService } from '../../helpers/elastic.service';
 import { SmartContractResult } from './entities/smart.contract.result';
 import { Transaction } from './entities/transaction';
@@ -154,7 +154,7 @@ export class TransactionService {
     return await this.cachingService.getOrSetCache(
       'currentPrice',
       async () => await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price),
-      oneMinute()
+      oneHour()
     );
   }
 
@@ -208,27 +208,27 @@ export class TransactionService {
           let receipt = receipts[0];
           transactionDetailed.receipt = mergeObjects(new TransactionReceipt(), receipt);
         }
-      }
 
-      const elasticQueryAdapterLogs: ElasticQuery = new ElasticQuery();
-      elasticQueryAdapterLogs.pagination = { from: 0, size: 100 };
-
-      let queries = [];
-      for (let hash of hashes) {
-        queries.push(QueryType.Match('_id', hash));
-      }
-      elasticQueryAdapterLogs.condition.should = queries;
-
-      let logs: any[] = await this.elasticService.getLogsForTransactionHashes(elasticQueryAdapterLogs);
-
-      for (let log of logs) {
-        if (log._id === txHash) {
-          transactionDetailed.logs = mergeObjects(new TransactionLog(), log._source);
+        const elasticQueryAdapterLogs: ElasticQuery = new ElasticQuery();
+        elasticQueryAdapterLogs.pagination = { from: 0, size: 100 };
+  
+        let queries = [];
+        for (let hash of hashes) {
+          queries.push(QueryType.Match('_id', hash));
         }
-        else {
-          const foundScResult = transactionDetailed.scResults.find(({ hash }) => log._id === hash);
-          if (foundScResult) {
-            foundScResult.logs = mergeObjects(new TransactionLog(), log._source);
+        elasticQueryAdapterLogs.condition.should = queries;
+  
+        let logs: any[] = await this.elasticService.getLogsForTransactionHashes(elasticQueryAdapterLogs);
+  
+        for (let log of logs) {
+          if (log._id === txHash) {
+            transactionDetailed.logs = mergeObjects(new TransactionLog(), log._source);
+          }
+          else {
+            const foundScResult = transactionDetailed.scResults.find(({ hash }) => log._id === hash);
+            if (foundScResult) {
+              foundScResult.logs = mergeObjects(new TransactionLog(), log._source);
+            }
           }
         }
       }
@@ -289,11 +289,18 @@ export class TransactionService {
     }
   }
 
-  async createTransaction(transaction: TransactionCreate): Promise<TransactionSendResult> {
+  async createTransaction(transaction: TransactionCreate): Promise<TransactionSendResult | string> {
     const receiverShard = computeShard(bech32Decode(transaction.receiver));
     const senderShard = computeShard(bech32Decode(transaction.sender));
 
-    const { txHash } = await this.gatewayService.create('transaction/send', transaction);
+    let txHash: string;
+    try {
+      let result = await this.gatewayService.create('transaction/send', transaction);
+      txHash = result.txHash;
+    } catch (error) {
+      this.logger.error(error);
+      return error.response.data.error;
+    }
 
     // TODO: pending alignment
     return {

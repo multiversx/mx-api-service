@@ -158,6 +158,12 @@ export class TransactionController {
     type: TransactionSendResult
   })
   async createTransaction(@Body() transaction: TransactionCreate): Promise<TransactionSendResult> {
-    return await this.transactionService.createTransaction(transaction);
+    let result = await this.transactionService.createTransaction(transaction);
+
+    if (typeof result === 'string' || result instanceof String) {
+      throw new HttpException(result, HttpStatus.BAD_REQUEST);
+    }
+
+    return result;
   }
 }
