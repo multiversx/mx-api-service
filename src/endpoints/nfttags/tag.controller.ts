@@ -1,21 +1,21 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { NftTag } from './entities/nft.tag';
-import { NftTagsService } from './nfttags.service';
+import { Tag } from './entities/tag';
+import { TagService } from './tag.service';
 
 
 @Controller()
-@ApiTags('nfttags')
-export class NftTagsController {
+@ApiTags('tags')
+export class TagController {
   constructor(
-    private readonly nftTagsService: NftTagsService,
+    private readonly nftTagsService: TagService,
   ) {}
 
-  @Get("/nfttags")
+  @Get("/tags")
   @ApiResponse({
     status: 200,
     description: 'The nft tags available',
-    type: NftTag,
+    type: Tag,
     isArray: true
   })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
@@ -23,21 +23,21 @@ export class NftTagsController {
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
-  ): Promise<NftTag[]> {
+  ): Promise<Tag[]> {
     return this.nftTagsService.getNftTags({from, size});
   }
 
-  @Get("/nfttags/:tag")
+  @Get("/tags/:tag")
   @ApiResponse({
     status: 200,
     description: 'The details of a given nft tag',
-    type: NftTag
+    type: Tag
   })
   @ApiResponse({
     status: 404,
     description: 'Nft tag not found'
   })
-  async getAccountDetails(@Param('tag') tag: string): Promise<NftTag> {
+  async getAccountDetails(@Param('tag') tag: string): Promise<Tag> {
     try {
       return await this.nftTagsService.getNftTag(tag);
     } catch {
