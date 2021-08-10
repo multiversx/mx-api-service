@@ -48,8 +48,8 @@ export class ApiService {
       logger.error({
         method: 'GET',
         url,
-        response: error.response.data,
-        status: error.response.status,
+        response: error.response?.data,
+        status: error.response?.status,
       });
 
       throw error;
@@ -71,8 +71,8 @@ export class ApiService {
         method: 'POST',
         url,
         body: data,
-        response: error.response.data,
-        status: error.response.status,
+        response: error.response?.data,
+        status: error.response?.status,
       });
 
       throw error;
@@ -93,8 +93,8 @@ export class ApiService {
       logger.error({
         method: 'HEAD',
         url,
-        response: error.response.data,
-        status: error.response.status,
+        response: error.response?.data,
+        status: error.response?.status,
       });
 
       throw error;
