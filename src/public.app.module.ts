@@ -46,13 +46,14 @@ import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { ProxyController } from './endpoints/proxy/proxy.controller';
 import { TokenAssetService } from './helpers/token.asset.service';
-import { HistoryController } from './endpoints/history/history.controller';
-import { HistoryService } from './endpoints/history/history.service';
 import { DataApiService } from './helpers/data.api.service';
 import { KeysController } from './endpoints/keys/keys.controller';
 import { KeysService } from './endpoints/keys/keys.service';
 import { WaitingListController } from './endpoints/waiting-list/waiting.list.controller';
 import { WaitingListService } from './endpoints/waiting-list/waiting.list.service';
+import { BlsService } from './helpers/bls.service';
+import { TagController } from './endpoints/nfttags/tag.controller';
+import { TagService } from './endpoints/nfttags/tag.service';
 const DailyRotateFile = require('winston-daily-rotate-file');
 
 @Module({
@@ -83,8 +84,8 @@ const DailyRotateFile = require('winston-daily-rotate-file');
     NetworkController, AccountController, TransactionController, TokenController, BlockController, 
     MiniBlockController, RoundController, NodeController, ProviderController,
     DelegationLegacyController, StakeController, DelegationController,
-    VmQueryController, ShardController, IdentitiesController, ProxyController, HistoryController,
-    KeysController, WaitingListController
+    VmQueryController, ShardController, IdentitiesController, ProxyController,
+    KeysController, WaitingListController, TagController
   ],
   providers: [
     NetworkService, ApiConfigService, AccountService, ElasticService, GatewayService, TransactionService, 
@@ -92,11 +93,11 @@ const DailyRotateFile = require('winston-daily-rotate-file');
     CachingService, KeybaseService, ProviderService,
     StakeService, LoggingInterceptor, ApiService, ProfilerService, DelegationLegacyService,
     DelegationService, CacheConfigService, CachingInterceptor, ShardService, MetricsService, IdentitiesService,
-    TokenAssetService, HistoryService, DataApiService, KeysService, WaitingListService
+    TokenAssetService, DataApiService, KeysService, WaitingListService, BlsService, TagService
   ],
   exports: [
     ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService,
-    TokenService, ShardService, IdentitiesService, ProviderService
+    TokenService, ShardService, IdentitiesService, ProviderService, KeybaseService, DataApiService
   ]
 })
 export class PublicAppModule {}

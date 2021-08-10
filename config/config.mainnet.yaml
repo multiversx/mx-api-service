@@ -1,5 +1,6 @@
 network: 'mainnet'
 metaChainShardId: 4294967295
+useLegacyElastic: true
 api:
   public: true
   private: true
@@ -9,17 +10,16 @@ cron:
   cacheWarmer: true
 urls:
   api:
-    - 'https://beta-api.elrond.com'
-    - 'https://devnet-beta-api.elrond.com'
-    - 'https://testnet-beta-api.elrond.com'
+    - 'https://api.elrond.com'
+    - 'https://devnet-api.elrond.com'
+    - 'https://testnet-api.elrond.com'
   elastic:
     - 'https://index.elrond.com'
   gateway:
     - 'https://gateway.elrond.com'
   redis: '127.0.0.1'
   providers: 'https://internal-delegation-api.elrond.com/providers'
-  dataLatestCompleteUrl: 'https://data.elrond.com/latestcomplete'
-  dataLatestUrl: 'https://data.elrond.com/latest'
+  media: 'https://media.elrond.com'
 caching:
   cacheTtl: 6
   processTtl: 600
@@ -34,3 +34,11 @@ contracts:
   delegationManager: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6'
   delegation: 'erd1qqqqqqqqqqqqqpgqxwakt2g7u9atsnr03gqcgmhcv38pt7mkd94q6shuwt'
   delegationShardId: 2
+inflation:
+  - 1952123
+  - 1746637
+  - 1541150
+  - 1335663
+  - 1130177
+  - 924690
+  - 719203

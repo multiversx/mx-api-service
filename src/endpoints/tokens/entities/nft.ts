@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { NftMetadata } from "./nft.metadata";
 import { NftType } from "./nft.type";
 
 export class Nft {
@@ -42,5 +43,5 @@ export class Nft {
   tags: string[] = [];
 
   @ApiProperty()
-  metadata: Object | undefined = undefined;
+  metadata: NftMetadata | undefined = undefined;
 }
