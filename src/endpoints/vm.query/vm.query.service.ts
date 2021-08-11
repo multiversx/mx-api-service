@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { ApiService } from "src/helpers/api.service";
+import { GatewayService } from "src/helpers/gateway.service";
 import { ApiConfigService } from "../../helpers/api.config.service";
 import { CachingService } from "../../helpers/caching.service";
 import {  oneHour } from "../../helpers/helpers";
@@ -11,7 +11,7 @@ export class VmQueryService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
-    private readonly apiService: ApiService
+    private readonly gatewayService: GatewayService
   ) {
     this.logger = new Logger(VmQueryService.name);
   }
@@ -90,8 +90,8 @@ export class VmQueryService {
       args: args,
     };
 
-    let result = await this.apiService.post(
-      `${this.apiConfigService.getVmQueryUrl()}/vm-values/query`,
+    let result = await this.gatewayService.createRaw(
+      'vm-values/query',
       payload,
     );
 
