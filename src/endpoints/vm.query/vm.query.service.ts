@@ -1,6 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { GatewayService } from "src/helpers/gateway.service";
-import { ApiConfigService } from "../../helpers/api.config.service";
 import { CachingService } from "../../helpers/caching.service";
 import {  oneHour } from "../../helpers/helpers";
 
@@ -9,7 +8,6 @@ export class VmQueryService {
   private readonly logger: Logger
 
   constructor(
-    private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService
   ) {
