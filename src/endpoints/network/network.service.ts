@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import axios from 'axios';
 import { Stats } from 'src/endpoints/network/entities/stats';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import { ApiService } from 'src/helpers/api.service';
 import { CachingService } from 'src/helpers/caching.service';
 import { DataApiService } from 'src/helpers/data.api.service';
 import { DataQuoteType } from 'src/helpers/entities/data.quote.type';
@@ -29,7 +29,8 @@ export class NetworkService {
     private readonly accountService: AccountService,
     private readonly transactionService: TransactionService,
     private readonly dataApiService: DataApiService,
-    private readonly nodeService: NodeService
+    private readonly nodeService: NodeService,
+    private readonly apiService: ApiService
   ) {}
 
   async getConstants(): Promise<Constants> {
@@ -49,11 +50,7 @@ export class NetworkService {
           },
         },
       },
-    } = await axios({
-      method: 'get',
-      url: `${gatewayUrl}/network/config`,
-      timeout: this.apiConfigService.getAxiosTimeout(),
-    });
+    } = await this.apiService.get(`${gatewayUrl}/network/config`);
 
     return { chainId, gasPerDataByte, minGasLimit, minGasPrice, minTransactionVersion };
   }

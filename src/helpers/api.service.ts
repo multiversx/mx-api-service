@@ -1,8 +1,9 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import axios, { AxiosRequestConfig } from "axios";
 import { ApiConfigService } from "./api.config.service";
 import { PerformanceProfiler } from "./performance.profiler";
 import Agent from 'agentkeepalive';
+import { MetricsService } from "src/endpoints/metrics/metrics.service";
 
 @Injectable()
 export class ApiService {
@@ -16,6 +17,8 @@ export class ApiService {
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
+    @Inject(forwardRef(() => MetricsService))
+    private readonly metricsService: MetricsService
   ) {};
 
   private getConfig(timeout: number | undefined): AxiosRequestConfig {
@@ -55,6 +58,7 @@ export class ApiService {
       throw error;
     } finally {
       profiler.stop();
+      this.metricsService.setExternalCall(this.getHostname(url), profiler.duration);
     }
   }
 
@@ -78,6 +82,7 @@ export class ApiService {
       throw error;
     } finally {
       profiler.stop();
+      this.metricsService.setExternalCall(this.getHostname(url), profiler.duration);
     }
   }
 
@@ -100,6 +105,11 @@ export class ApiService {
       throw error;
     } finally {
       profiler.stop();
+      this.metricsService.setExternalCall(this.getHostname(url), profiler.duration);
     }
+  }
+
+  private getHostname(url: string): string {
+    return new URL(url).hostname;
   }
 }

@@ -1,5 +1,4 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { NftFilter } from "src/endpoints/tokens/entities/nft.filter";
 import { NftType } from "src/endpoints/tokens/entities/nft.type";
 import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
@@ -10,7 +9,6 @@ import { ElasticQuery } from "./entities/elastic/elastic.query";
 import { ElasticSortOrder } from "./entities/elastic/elastic.sort.order";
 import { QueryOperator } from "./entities/elastic/query.operator";
 import { QueryType } from "./entities/elastic/query.type";
-import { PerformanceProfiler } from "./performance.profiler";
 
 @Injectable()
 export class ElasticService {
@@ -18,8 +16,7 @@ export class ElasticService {
 
   constructor(
     private apiConfigService: ApiConfigService,
-    @Inject(forwardRef(() => MetricsService))
-    private readonly metricsService: MetricsService,
+    @Inject(forwardRef(() => ApiService))
     private readonly apiService: ApiService
   ) {
     this.url = apiConfigService.getElasticUrl();
@@ -320,23 +317,11 @@ export class ElasticService {
   }
 
   public async get(url: string) {
-    let profiler = new PerformanceProfiler();
-    let result = await this.apiService.get(url);
-    profiler.stop();
-
-    this.metricsService.setExternalCall('elastic', profiler.duration);
-
-    return result;
+    return await this.apiService.get(url);
   }
 
   private async post(url: string, body: any) {
-    let profiler = new PerformanceProfiler();
-    let result = await this.apiService.post(url, body);
-    profiler.stop();
-
-    this.metricsService.setExternalCall('elastic', profiler.duration);
-
-    return result;
+    return await this.apiService.post(url, body);
   }
 
   private async getDocuments(url: string, body: any) {
