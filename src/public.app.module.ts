@@ -93,11 +93,11 @@ const DailyRotateFile = require('winston-daily-rotate-file');
     CachingService, KeybaseService, ProviderService,
     StakeService, LoggingInterceptor, ApiService, ProfilerService, DelegationLegacyService,
     DelegationService, CacheConfigService, CachingInterceptor, ShardService, MetricsService, IdentitiesService,
-    TokenAssetService, DataApiService, KeysService, WaitingListService, BlsService, TagService
+    TokenAssetService, DataApiService, KeysService, WaitingListService, BlsService, TagService,
   ],
   exports: [
     ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService,
-    TokenService, ShardService, IdentitiesService, ProviderService, KeybaseService, DataApiService, ApiService
+    TokenService, ShardService, IdentitiesService, ProviderService, KeybaseService, DataApiService, ApiService,
   ]
 })
 export class PublicAppModule {}
