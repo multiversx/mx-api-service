@@ -1,8 +1,8 @@
+import { ElasticQuery } from "src/common/entities/elastic/elastic.query";
+import { ElasticSortProperty } from "src/common/entities/elastic/elastic.sort.property";
+import { QueryCondition } from "src/common/entities/elastic/query.condition";
+import { QueryConditionOptions } from "src/common/entities/elastic/query.condition.options";
 import { ApiUtils } from "src/utils/api.utils";
-import { ElasticQuery } from "../helpers/entities/elastic/elastic.query";
-import { ElasticSortProperty } from "../helpers/entities/elastic/elastic.sort.property";
-import { QueryCondition } from "../helpers/entities/elastic/query.condition";
-import { QueryConditionOptions } from "../helpers/entities/elastic/query.condition.options";
 
 function buildElasticSort(sorts: ElasticSortProperty[]): any[] {
   if (!sorts) {

@@ -8,7 +8,7 @@ import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe"
 import { NodeStatus } from "./entities/node.status";
 import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { Response } from 'express';
-import { SortOrder } from "src/helpers/entities/sort.order";
+import { SortOrder } from "src/common/entities/sort.order";
 import { NodeSort } from "./entities/node.sort";
 
 @Controller()
