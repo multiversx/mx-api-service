@@ -1,14 +1,6 @@
 const { readdirSync } = require('fs');
 
-Number.prototype.toRounded = function(digits: number): number {
-  return parseFloat(this.toFixed(digits));
-};
-
 declare global {
-  interface Number {
-    toRounded(digits: number): number;
-  }
-
   interface Array<T> {
     groupBy(predicate: (item: T) => any): any;
     selectMany(predicate: (item: T) => T[]): T[];
