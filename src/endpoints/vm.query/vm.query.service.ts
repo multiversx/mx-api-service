@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { GatewayService } from "src/helpers/gateway.service";
+import { CachingService } from "src/common/caching.service";
+import { GatewayService } from "src/common/gateway.service";
 import { Constants } from "src/utils/constants";
-import { CachingService } from "../../helpers/caching.service";
 
 @Injectable()
 export class VmQueryService {

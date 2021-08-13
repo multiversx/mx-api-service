@@ -1,8 +1,8 @@
 import { Body, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { QueryConditionOptions } from 'src/helpers/entities/elastic/query.condition.options';
-import { ParseOptionalEnumPipe } from 'src/helpers/pipes/parse.optional.enum.pipe';
-import { ParseOptionalIntPipe } from 'src/helpers/pipes/parse.optional.int.pipe';
+import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
+import { ParseOptionalEnumPipe } from 'src/utils/pipes/parse.optional.enum.pipe';
+import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
 import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';

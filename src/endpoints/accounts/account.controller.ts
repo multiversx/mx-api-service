@@ -10,9 +10,9 @@ import { DelegationLegacyService } from '../delegation.legacy/delegation.legacy.
 import { AccountDelegationLegacy } from '../delegation.legacy/entities/account.delegation.legacy';
 import { AccountKey } from './entities/account.key';
 import { NftAccount } from '../tokens/entities/nft.account';
-import { ParseOptionalEnumPipe } from 'src/helpers/pipes/parse.optional.enum.pipe';
+import { ParseOptionalEnumPipe } from 'src/utils/pipes/parse.optional.enum.pipe';
 import { NftType } from '../tokens/entities/nft.type';
-import { ParseOptionalBoolPipe } from 'src/helpers/pipes/parse.optional.bool.pipe';
+import { ParseOptionalBoolPipe } from 'src/utils/pipes/parse.optional.bool.pipe';
 import { WaitingList } from '../waiting-list/entities/waiting.list';
 import { WaitingListService } from '../waiting-list/waiting.list.service';
 import { NftCollection } from '../tokens/entities/nft.collection';

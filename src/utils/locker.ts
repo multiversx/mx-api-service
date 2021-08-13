@@ -1,5 +1,5 @@
 import { Logger } from "@nestjs/common";
-import { PerformanceProfiler } from "../helpers/performance.profiler";
+import { PerformanceProfiler } from "./performance.profiler";
 
 export class Locker {
   private static lockArray: string[] = [];

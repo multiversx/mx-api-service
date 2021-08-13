@@ -1,17 +1,17 @@
 import { Injectable } from "@nestjs/common";
-import { ElasticService } from "src/helpers/elastic.service";
+import { ElasticService } from "src/common/elastic.service";
 import { Block } from "./entities/block";
 import { BlockDetailed } from "./entities/block.detailed";
-import { CachingService } from "src/helpers/caching.service";
+import { CachingService } from "src/common/caching.service";
 import { BlockFilter } from "./entities/block.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { ElasticPagination } from "src/helpers/entities/elastic/elastic.pagination";
-import { ElasticSortProperty } from "src/helpers/entities/elastic/elastic.sort.property";
-import { ElasticSortOrder } from "src/helpers/entities/elastic/elastic.sort.order";
-import { ElasticQuery } from "src/helpers/entities/elastic/elastic.query";
-import { AbstractQuery } from "src/helpers/entities/elastic/abstract.query";
-import { BlsService } from "src/helpers/bls.service";
-import { QueryType } from "src/helpers/entities/elastic/query.type";
+import { ElasticPagination } from "src/common/entities/elastic/elastic.pagination";
+import { ElasticSortProperty } from "src/common/entities/elastic/elastic.sort.property";
+import { ElasticSortOrder } from "src/common/entities/elastic/elastic.sort.order";
+import { ElasticQuery } from "src/common/entities/elastic/elastic.query";
+import { AbstractQuery } from "src/common/entities/elastic/abstract.query";
+import { BlsService } from "src/common/bls.service";
+import { QueryType } from "src/common/entities/elastic/query.type";
 import { Constants } from "src/utils/constants";
 import { ApiUtils } from "src/utils/api.utils";
 

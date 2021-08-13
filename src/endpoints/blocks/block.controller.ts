@@ -1,6 +1,6 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { ParseOptionalIntPipe as ParseOptionalIntPipe } from "src/helpers/pipes/parse.optional.int.pipe";
+import { ParseOptionalIntPipe as ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { BlockService } from "./block.service";
 import { Block } from "./entities/block";
 import { BlockDetailed } from "./entities/block.detailed";

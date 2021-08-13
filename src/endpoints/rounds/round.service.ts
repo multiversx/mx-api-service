@@ -1,16 +1,16 @@
 import { Injectable } from "@nestjs/common";
-import { ElasticService } from "src/helpers/elastic.service";
+import { ElasticService } from "src/common/elastic.service";
 import { Round } from "./entities/round";
 import { RoundDetailed } from "./entities/round.detailed";
 import { RoundFilter } from "./entities/round.filter";
-import { ElasticPagination } from "src/helpers/entities/elastic/elastic.pagination";
-import { ElasticSortProperty } from "src/helpers/entities/elastic/elastic.sort.property";
-import { ElasticSortOrder } from "src/helpers/entities/elastic/elastic.sort.order";
-import { ElasticQuery } from "src/helpers/entities/elastic/elastic.query";
-import { AbstractQuery } from "src/helpers/entities/elastic/abstract.query";
-import { BlsService } from "src/helpers/bls.service";
-import { QueryConditionOptions } from "src/helpers/entities/elastic/query.condition.options";
-import { QueryType } from "src/helpers/entities/elastic/query.type";
+import { ElasticPagination } from "src/common/entities/elastic/elastic.pagination";
+import { ElasticSortProperty } from "src/common/entities/elastic/elastic.sort.property";
+import { ElasticSortOrder } from "src/common/entities/elastic/elastic.sort.order";
+import { ElasticQuery } from "src/common/entities/elastic/elastic.query";
+import { AbstractQuery } from "src/common/entities/elastic/abstract.query";
+import { BlsService } from "src/common/bls.service";
+import { QueryConditionOptions } from "src/common/entities/elastic/query.condition.options";
+import { QueryType } from "src/common/entities/elastic/query.type";
 import { RoundUtils } from "src/utils/round.utils";
 import { ApiUtils } from "src/utils/api.utils";
 

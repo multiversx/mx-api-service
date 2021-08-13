@@ -5,11 +5,11 @@ import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { ShardService } from "src/endpoints/shards/shard.service";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
-import { ApiConfigService } from "src/helpers/api.config.service";
-import { CachingService } from "src/helpers/caching.service";
-import { GatewayService } from "src/helpers/gateway.service";
-import { PerformanceProfiler } from "src/helpers/performance.profiler";
+import { ApiConfigService } from "src/common/api.config.service";
+import { CachingService } from "src/common/caching.service";
+import { GatewayService } from "src/common/gateway.service";
 import { AddressUtils } from "src/utils/address.utils";
+import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { EventsGateway } from "src/websockets/events.gateway";
 import { ShardTransaction } from "./entities/shard.transaction";
 

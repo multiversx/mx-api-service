@@ -5,10 +5,10 @@ import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
-import { CachingService } from "src/helpers/caching.service";
-import { DataApiService } from "src/helpers/data.api.service";
-import { DataQuoteType } from "src/helpers/entities/data.quote.type";
-import { KeybaseService } from "src/helpers/keybase.service";
+import { CachingService } from "src/common/caching.service";
+import { DataApiService } from "src/common/data.api.service";
+import { DataQuoteType } from "src/common/entities/data.quote.type";
+import { KeybaseService } from "src/common/keybase.service";
 import { Constants } from "src/utils/constants";
 import { Locker } from "src/utils/locker";
 

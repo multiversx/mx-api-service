@@ -1,20 +1,20 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { GatewayService } from "src/helpers/gateway.service";
+import { GatewayService } from "src/common/gateway.service";
 import { Node } from "src/endpoints/nodes/entities/node";
 import { NodeType } from "./entities/node.type";
 import { NodeStatus } from "./entities/node.status";
 import { Queue } from "./entities/queue";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
-import { ApiConfigService } from "src/helpers/api.config.service";
-import { CachingService } from "src/helpers/caching.service";
-import { KeybaseService } from "src/helpers/keybase.service";
+import { ApiConfigService } from "src/common/api.config.service";
+import { CachingService } from "src/common/caching.service";
+import { KeybaseService } from "src/common/keybase.service";
 import { NodeFilter } from "./entities/node.filter";
 import { ProviderService } from "../providers/provider.service";
 import { StakeService } from "../stake/stake.service";
-import { SortOrder } from "src/helpers/entities/sort.order";
+import { SortOrder } from "src/common/entities/sort.order";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockService } from "../blocks/block.service";
-import { KeybaseState } from "src/helpers/entities/keybase.state";
+import { KeybaseState } from "src/common/entities/keybase.state";
 import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
 
