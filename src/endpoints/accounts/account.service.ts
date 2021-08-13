@@ -15,8 +15,8 @@ import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
 import { QueryType } from 'src/helpers/entities/elastic/query.type';
 import { Constants } from 'src/utils/constants';
 import { AddressUtils } from 'src/utils/address.utils';
-import { NumberUtils } from 'src/utils/number.utils';
 import { ApiUtils } from 'src/utils/api.utils';
+import { BinaryUtils } from 'src/utils/binary.utils';
 
 @Injectable()
 export class AccountService {
@@ -162,7 +162,7 @@ export class AccountService {
       if (index % 2 === 0) {
         const [encodedBlsKey, encodedStatus] = array.slice(index, index + 2);
 
-        const blsKey = NumberUtils.padHex(Buffer.from(encodedBlsKey, 'base64').toString('hex'));
+        const blsKey = BinaryUtils.padHex(Buffer.from(encodedBlsKey, 'base64').toString('hex'));
         const status = Buffer.from(encodedStatus, 'base64').toString();
         const stake = '2500000000000000000000';
 
