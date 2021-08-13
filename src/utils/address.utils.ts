@@ -1,24 +1,6 @@
 const bech32 = require('bech32');
 
-function isAddressOfMetachain(pubKey: Buffer) {
-  // prettier-ignore
-  let metachainPrefix = Buffer.from([
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    ]);
-  let pubKeyPrefix = pubKey.slice(0, metachainPrefix.length);
 
-  if (pubKeyPrefix.equals(metachainPrefix)) {
-    return true;
-  }
-
-  let zeroAddress = Buffer.alloc(32).fill(0);
-
-  if (pubKey.equals(zeroAddress)) {
-    return true;
-  }
-
-  return false;
-};
 
 export class AddressUtils {
   static bech32Encode(publicKey: string) {
@@ -38,7 +20,7 @@ export class AddressUtils {
     let pubKey = Buffer.from(hexPubKey, 'hex');
     let lastByteOfPubKey = pubKey[31];
   
-    if (isAddressOfMetachain(pubKey)) {
+    if (AddressUtils.isAddressOfMetachain(pubKey)) {
       return 4294967295;
     }
   
@@ -54,4 +36,24 @@ export class AddressUtils {
   static isSmartContractAddress(address: string): boolean {
     return address.includes('qqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqq');
   }
+
+  private static isAddressOfMetachain(pubKey: Buffer) {
+    // prettier-ignore
+    let metachainPrefix = Buffer.from([
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+      ]);
+    let pubKeyPrefix = pubKey.slice(0, metachainPrefix.length);
+  
+    if (pubKeyPrefix.equals(metachainPrefix)) {
+      return true;
+    }
+  
+    let zeroAddress = Buffer.alloc(32).fill(0);
+  
+    if (pubKey.equals(zeroAddress)) {
+      return true;
+    }
+  
+    return false;
+  };
 }
