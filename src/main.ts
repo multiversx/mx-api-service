@@ -22,6 +22,9 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CleanupInterceptor } from './interceptors/cleanup.interceptor';
 import { RedisClient } from 'redis';
 import { ExtractInterceptor } from './interceptors/extract.interceptor';
+import "./utils/extensions/array.extensions";
+import "./utils/extensions/date.extensions";
+import "./utils/extensions/number.extensions";
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
