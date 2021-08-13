@@ -250,28 +250,49 @@ export class TokenService {
   }
 
   async updateThumbnailUrlForNfts(nfts: Nft[]) {
-    let confirmations = await this.cachingService.batchProcess(
+    let customThumbnailConfirmations = await this.cachingService.batchProcess(
       nfts,
       nft => `nftCustomThumbnail:${nft.identifier}`,
       async (nft) => await this.hasCustomThumbnail(nft.identifier),
-      Constants.oneHour()
+      Constants.oneWeek()
+    );
+
+    let standardThumbnailConfirmations = await this.cachingService.batchProcess(
+      nfts,
+      nft => `nftStandardThumbnail:${nft.identifier}`,
+      async (nft) => await this.hasStandardThumbnail(nft.identifier),
+      Constants.oneWeek()
     );
 
     for (let [index, nft] of nfts.entries()) {
-      let isCustomThumbnail = confirmations[index];
+      let isCustomThumbnail = customThumbnailConfirmations[index];
+      let isStandardThumbnail = standardThumbnailConfirmations[index];
+
       if (isCustomThumbnail === true) {
-        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/${nft.identifier}.png`;
+        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/custom/${nft.identifier}`;
+      } if (isStandardThumbnail === true) {
+        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/standard/${nft.identifier}`;
       } else if (nft.metadata && nft.metadata.fileType) {
-        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/${nft.metadata.fileType.replace('/', '-')}.png`;
+        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/default/${nft.metadata.fileType.replace('/', '-')}`;
       } else {
-        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/smiley.png`;
+        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/default/default`;
       }
     }
   }
 
   async hasCustomThumbnail(nftIdentifier: string): Promise<boolean> {
     try {
-      const { status } = await this.apiService.head(`${this.apiConfigService.getMediaUrl()}/nfts/${nftIdentifier}.png`);
+      const { status } = await this.apiService.head(`${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/custom/${nftIdentifier}`);
+
+      return status === 200;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async hasStandardThumbnail(nftIdentifier: string): Promise<boolean> {
+    try {
+      const { status } = await this.apiService.head(`${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/standard/${nftIdentifier}`);
 
       return status === 200;
     } catch (error) {
@@ -542,7 +563,7 @@ export class TokenService {
 
   private processUri(uri: string): string {
     if (uri.startsWith('https://ipfs.io/ipfs')) {
-      return uri.replace('https://ipfs.io/ipfs', this.apiConfigService.getMediaUrl() + '/ipfs')
+      return uri.replace('https://ipfs.io/ipfs', this.apiConfigService.getMediaUrl() + '/nfts/asset')
     }
 
     return uri;
@@ -550,7 +571,10 @@ export class TokenService {
 
   async getExtendedAttributesFromIpfs(description: string): Promise<NftMetadata> {
     try {
-      let result = await this.apiService.get(`https://ipfs.io/ipfs/${description}`, 1000);
+      let ipfsUri = `https://ipfs.io/ipfs/${description}`;
+      let processedIpfsUri = this.processUri(ipfsUri);
+
+      let result = await this.apiService.get(processedIpfsUri, 1000);
       return result.data;
     } catch (error) {
       this.logger.error(error);
