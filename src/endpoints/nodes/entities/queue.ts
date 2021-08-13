@@ -8,7 +8,7 @@ export class Queue {
     nonce: number = 0;
 
     @ApiProperty()
-    rewards: number = 0;
+    rewardsAddress: string = '';
 
     @ApiProperty()
     position: number = 0;
