@@ -1,4 +1,4 @@
-import { cleanupApiValueRecursively } from "src/helpers/helpers";
+import { ApiUtils } from "src/utils/api.utils";
 
 describe('API helpers', () => {
   describe('Cleanup API response helper', () => {
@@ -8,7 +8,7 @@ describe('API helpers', () => {
         b: null,
       }
 
-      cleanupApiValueRecursively(testObject);
+      ApiUtils.cleanupApiValueRecursively(testObject);
 
       expect(testObject).toMatchObject({ a: 'a' });
     });
@@ -19,7 +19,7 @@ describe('API helpers', () => {
         b: '',
       }
 
-      cleanupApiValueRecursively(testObject);
+      ApiUtils.cleanupApiValueRecursively(testObject);
 
       expect(testObject).toMatchObject({ a: 'a' });
     });
@@ -32,7 +32,7 @@ describe('API helpers', () => {
         d: '',
       }
 
-      cleanupApiValueRecursively(testObject);
+      ApiUtils.cleanupApiValueRecursively(testObject);
 
       expect(testObject).toMatchObject({ a: 'a', b: 'b' });
     });
@@ -42,7 +42,7 @@ describe('API helpers', () => {
       arr.push({ a: 'a', b: '' });
       arr.push({ c: 'c', d: null });
 
-      cleanupApiValueRecursively(arr);
+      ApiUtils.cleanupApiValueRecursively(arr);
 
       expect(arr[0]).toMatchObject({ a: 'a' });
       expect(arr[1]).toMatchObject({ c: 'c' });
@@ -60,7 +60,7 @@ describe('API helpers', () => {
         f: null
       }
 
-      cleanupApiValueRecursively(testObject);
+      ApiUtils.cleanupApiValueRecursively(testObject);
 
       expect(testObject).toMatchObject({ a: { c: { e: 'e' }}});
     });
@@ -70,7 +70,7 @@ describe('API helpers', () => {
         a: [ { b: 'b', c: null }, { d: 'd', e: '' }]
       }
 
-      cleanupApiValueRecursively(testObject);
+      ApiUtils.cleanupApiValueRecursively(testObject);
 
       expect(testObject).toMatchObject({ a:[ { b: 'b' }, { d: 'd' } ] });
     });
@@ -80,7 +80,7 @@ describe('API helpers', () => {
     //     a: [ { b: 'b', c: [] }, { d: 'd', e: [] }]
     //   }
 
-    //   cleanupApiValueRecursively(testObject);
+    //   ApiUtils.cleanupApiValueRecursively(testObject);
 
     //   expect(testObject).toMatchObject({ a:[ { b: 'b' }, { d: 'd' } ] });
     // })
@@ -90,7 +90,7 @@ describe('API helpers', () => {
         a: 'a'
       }
 
-      cleanupApiValueRecursively(testObject);
+      ApiUtils.cleanupApiValueRecursively(testObject);
 
       expect(testObject).toMatchObject(testObject);
     })

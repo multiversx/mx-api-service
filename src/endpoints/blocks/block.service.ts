@@ -1,6 +1,5 @@
 import { Injectable } from "@nestjs/common";
 import { ElasticService } from "src/helpers/elastic.service";
-import { mergeObjects } from "src/helpers/helpers";
 import { Block } from "./entities/block";
 import { BlockDetailed } from "./entities/block.detailed";
 import { CachingService } from "src/helpers/caching.service";
@@ -14,6 +13,7 @@ import { AbstractQuery } from "src/helpers/entities/elastic/abstract.query";
 import { BlsService } from "src/helpers/bls.service";
 import { QueryType } from "src/helpers/entities/elastic/query.type";
 import { Constants } from "src/utils/constants";
+import { ApiUtils } from "src/utils/api.utils";
 
 @Injectable()
 export class BlockService {
@@ -90,7 +90,7 @@ export class BlockService {
       finalResult.push(transformedItem);
     }
 
-    return finalResult.map(item => mergeObjects(new Block(), item));
+    return finalResult.map(item => ApiUtils.mergeObjects(new Block(), item));
   }
 
   async transformItem(item: any) {
@@ -119,7 +119,7 @@ export class BlockService {
     result.proposer = publicKeys[result.proposer];
     result.validators = result.validators.map((validator: number) => publicKeys[validator]);
 
-    return mergeObjects(new BlockDetailed(), result);
+    return ApiUtils.mergeObjects(new BlockDetailed(), result);
   }
 
   async getCurrentEpoch(): Promise<number> {

@@ -5,7 +5,7 @@ import { ElasticService } from "src/helpers/elastic.service";
 import { ElasticQuery } from "src/helpers/entities/elastic/elastic.query";
 import { ElasticSortOrder } from "src/helpers/entities/elastic/elastic.sort.order";
 import { ElasticSortProperty } from "src/helpers/entities/elastic/elastic.sort.property";
-import { mergeObjects } from "src/helpers/helpers";
+import { ApiUtils } from "src/utils/api.utils";
 import { Constants } from "src/utils/constants";
 import { Tag } from "./entities/tag";
 
@@ -35,7 +35,7 @@ export class TagService {
 
     let result = await this.elasticService.getList('tags', 'tag', elasticQueryAdapter);
 
-    let nftTags: Tag[] = result.map(item => mergeObjects(new Tag(), item));
+    let nftTags: Tag[] = result.map(item => ApiUtils.mergeObjects(new Tag(), item));
 
     return nftTags;
   }
@@ -43,6 +43,6 @@ export class TagService {
   async getNftTag(tag: string): Promise<Tag> {
     let result = await this.elasticService.getItem('tags', 'tag', tag);
 
-    return mergeObjects(new Tag(), result);
+    return ApiUtils.mergeObjects(new Tag(), result);
   }
 }

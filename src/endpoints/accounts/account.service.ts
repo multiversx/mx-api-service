@@ -3,7 +3,6 @@ import { ElasticService } from '../../helpers/elastic.service';
 import { GatewayService } from '../../helpers/gateway.service';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
-import { mergeObjects } from 'src/helpers/helpers';
 import { CachingService } from 'src/helpers/caching.service';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -17,6 +16,7 @@ import { QueryType } from 'src/helpers/entities/elastic/query.type';
 import { Constants } from 'src/utils/constants';
 import { AddressUtils } from 'src/utils/address.utils';
 import { NumberUtils } from 'src/utils/number.utils';
+import { ApiUtils } from 'src/utils/api.utils';
 
 @Injectable()
 export class AccountService {
@@ -88,7 +88,7 @@ export class AccountService {
 
     let result = await this.elasticService.getList('accounts', 'address', elasticQueryAdapter);
 
-    let accounts: Account[] = result.map(item => mergeObjects(new Account(), item));
+    let accounts: Account[] = result.map(item => ApiUtils.mergeObjects(new Account(), item));
     for (let account of accounts) {
       account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address));
     }

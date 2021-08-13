@@ -2,7 +2,6 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { GatewayService } from "src/helpers/gateway.service";
-import { mergeObjects } from "src/helpers/helpers";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
@@ -24,6 +23,7 @@ import { NftMetadata } from "./entities/nft.metadata";
 import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
+import { ApiUtils } from "src/utils/api.utils";
 
 @Injectable()
 export class TokenService {
@@ -47,7 +47,7 @@ export class TokenService {
     if (token) {
       token.assets = await this.tokenAssetService.getAssets(token.identifier);
 
-      return mergeObjects(new TokenDetailed(), token);
+      return ApiUtils.mergeObjects(new TokenDetailed(), token);
     }
 
     return undefined;
@@ -70,7 +70,7 @@ export class TokenService {
       token.assets = await this.tokenAssetService.getAssets(token.identifier);
     }
 
-    return tokens.map(item => mergeObjects(new TokenDetailed(), item));
+    return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
   }
 
   async getTokenCount(search: string | undefined): Promise<number> {
@@ -97,7 +97,7 @@ export class TokenService {
       return undefined;
     }
 
-    return mergeObjects(new TokenProperties(), properties);
+    return ApiUtils.mergeObjects(new TokenProperties(), properties);
   }
 
   async getNftCollections(queryPagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
@@ -110,11 +110,11 @@ export class TokenService {
       let nftCollection = new NftCollection();
       nftCollection.collection = tokenCollection.token;
 
-      mergeObjects(nftCollection, tokenCollection);
+      ApiUtils.mergeObjects(nftCollection, tokenCollection);
 
       let nft = await this.getNft(nftCollection.collection);
       if (nft) {
-        mergeObjects(nftCollection, nft);
+        ApiUtils.mergeObjects(nftCollection, nft);
       }
 
       nftCollections.push(nftCollection);
@@ -139,11 +139,11 @@ export class TokenService {
     let nftCollection = new NftCollection();
     nftCollection.collection = tokenCollection.token;
 
-    mergeObjects(nftCollection, tokenCollection);
+    ApiUtils.mergeObjects(nftCollection, tokenCollection);
 
     let nft = await this.getNft(nftCollection.collection);
     if (nft) {
-      mergeObjects(nftCollection, nft);
+      ApiUtils.mergeObjects(nftCollection, nft);
     }
 
     return nftCollection;
@@ -161,7 +161,7 @@ export class TokenService {
       return undefined;
     }
 
-    let nft: NftDetailed = mergeObjects(new NftDetailed(), nfts[0]);
+    let nft: NftDetailed = ApiUtils.mergeObjects(new NftDetailed(), nfts[0]);
 
     if (nft.identifier.toLowerCase() !== identifier.toLowerCase()) {
       return undefined;
@@ -299,7 +299,7 @@ export class TokenService {
       token.assets = await this.tokenAssetService.getAssets(token.identifier);
     }
 
-    return tokens.map(token => mergeObjects(new TokenWithBalance(), token));
+    return tokens.map(token => ApiUtils.mergeObjects(new TokenWithBalance(), token));
   }
 
   async getCollectionsForAddress(address: string, queryPagination: QueryPagination): Promise<NftCollection[]> {

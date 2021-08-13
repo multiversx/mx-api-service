@@ -11,8 +11,8 @@ import { ElasticSortProperty } from 'src/helpers/entities/elastic/elastic.sort.p
 import { QueryConditionOptions } from 'src/helpers/entities/elastic/query.condition.options';
 import { QueryType } from 'src/helpers/entities/elastic/query.type';
 import { GatewayService } from 'src/helpers/gateway.service';
-import { mergeObjects } from 'src/helpers/helpers';
 import { AddressUtils } from 'src/utils/address.utils';
+import { ApiUtils } from 'src/utils/api.utils';
 import { BinaryUtils } from 'src/utils/binary.utils';
 import { Constants } from 'src/utils/constants';
 import { ElasticService } from '../../helpers/elastic.service';
@@ -105,7 +105,7 @@ export class TransactionService {
     
     let transactions = await this.elasticService.getList('transactions', 'txHash', elasticQueryAdapter);
 
-    return transactions.map(transaction => mergeObjects(new Transaction(), transaction));
+    return transactions.map(transaction => ApiUtils.mergeObjects(new Transaction(), transaction));
   }
 
   async getTransaction(txHash: string): Promise<TransactionDetailed | null> {
@@ -173,7 +173,7 @@ export class TransactionService {
     try {
       const result = await this.elasticService.getItem('transactions', 'txHash', txHash);
 
-      let transactionDetailed: TransactionDetailed = mergeObjects(new TransactionDetailed(), result);
+      let transactionDetailed: TransactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), result);
 
       const hashes: string[] = [];
       hashes.push(txHash);
@@ -197,7 +197,7 @@ export class TransactionService {
             delete scResult.scHash;
           }
 
-          transactionDetailed.scResults = scResults.map(scResult => mergeObjects(new SmartContractResult(), scResult));
+          transactionDetailed.scResults = scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
         }
 
         const elasticQueryAdapterReceipts: ElasticQuery = new ElasticQuery();
@@ -209,7 +209,7 @@ export class TransactionService {
         let receipts = await this.elasticService.getList('receipts', 'receiptHash', elasticQueryAdapterReceipts);
         if (receipts.length > 0) {
           let receipt = receipts[0];
-          transactionDetailed.receipt = mergeObjects(new TransactionReceipt(), receipt);
+          transactionDetailed.receipt = ApiUtils.mergeObjects(new TransactionReceipt(), receipt);
         }
 
         const elasticQueryAdapterLogs: ElasticQuery = new ElasticQuery();
@@ -225,18 +225,18 @@ export class TransactionService {
   
         for (let log of logs) {
           if (log._id === txHash) {
-            transactionDetailed.logs = mergeObjects(new TransactionLog(), log._source);
+            transactionDetailed.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
           }
           else {
             const foundScResult = transactionDetailed.scResults.find(({ hash }) => log._id === hash);
             if (foundScResult) {
-              foundScResult.logs = mergeObjects(new TransactionLog(), log._source);
+              foundScResult.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
             }
           }
         }
       }
 
-      return mergeObjects(new TransactionDetailed(), transactionDetailed);
+      return ApiUtils.mergeObjects(new TransactionDetailed(), transactionDetailed);
     } catch (error) {
       this.logger.error(error);
       return null;
@@ -280,12 +280,12 @@ export class TransactionService {
         round: transaction.round,
         fee: transaction.fee,
         timestamp: transaction.timestamp,
-        scResults: transaction.smartContractResults ? transaction.smartContractResults.map((scResult: any) => mergeObjects(new SmartContractResult(), scResult)) : [],
-        receipt: transaction.receipt ? mergeObjects(new TransactionReceipt(), transaction.receipt) : undefined,
+        scResults: transaction.smartContractResults ? transaction.smartContractResults.map((scResult: any) => ApiUtils.mergeObjects(new SmartContractResult(), scResult)) : [],
+        receipt: transaction.receipt ? ApiUtils.mergeObjects(new TransactionReceipt(), transaction.receipt) : undefined,
         logs: transaction.logs
       };
 
-      return mergeObjects(new TransactionDetailed(), result);
+      return ApiUtils.mergeObjects(new TransactionDetailed(), result);
     } catch (error) {
       this.logger.error(error);
       return null;

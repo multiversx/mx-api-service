@@ -1,8 +1,8 @@
+import { ApiUtils } from "src/utils/api.utils";
 import { ElasticQuery } from "./entities/elastic/elastic.query";
 import { ElasticSortProperty } from "./entities/elastic/elastic.sort.property";
 import { QueryCondition } from "./entities/elastic/query.condition";
 import { QueryConditionOptions } from "./entities/elastic/query.condition.options";
-import { cleanupApiValueRecursively } from "./helpers";
 
 function buildElasticSort(sorts: ElasticSortProperty[]): any[] {
   if (!sorts) {
@@ -38,7 +38,7 @@ export function buildElasticQuery(query: ElasticQuery) {
     }
   }
 
-  cleanupApiValueRecursively(elasticQuery);
+  ApiUtils.cleanupApiValueRecursively(elasticQuery);
 
   if (Object.keys(elasticQuery.query.bool).length === 0) {
     //@ts-ignore

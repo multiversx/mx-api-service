@@ -3,51 +3,6 @@ import { PerformanceProfiler } from "./performance.profiler";
 
 const { readdirSync } = require('fs');
 
-export function mergeObjects(obj1: any, obj2: any) {
-  for (const key of Object.keys(obj2)) {
-      if (key in obj1) {
-          obj1[key] = obj2[key];
-      }
-  }
-
-  return obj1;
-}
-
-export function cleanupApiValueRecursively(obj: any) {
-  if (Array.isArray(obj)) {
-    for (let item of obj) {
-      if (item && typeof item === 'object') {
-        cleanupApiValueRecursively(item);
-      }
-    }
-  } else if (obj && typeof obj === 'object') {
-    for (let [key, value] of Object.entries(obj)) {
-      if (typeof value === 'object') {
-        cleanupApiValueRecursively(value);
-      }
-
-      if (Array.isArray(value)) {
-        for (let item of value) {
-          if (item && typeof item === 'object') {
-            cleanupApiValueRecursively(item);
-          }
-        }
-      }
-
-      if (value === null || value === '' || value === undefined) {
-        delete obj[key];
-      }
-
-      //TODO: think about whether this is applicable everywhere
-      if (Array.isArray(value) && value.length === 0) {
-        delete obj[key];
-      }
-    }
-  }
-
-  return obj
-}
-
 Date.prototype.isToday = function(): boolean {
   return this.toISODateString() === new Date().toISODateString();
 };
