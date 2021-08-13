@@ -4,7 +4,7 @@ import { tap } from 'rxjs/operators';
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { ProxyController } from "src/endpoints/proxy/proxy.controller";
 import { TransactionController } from "src/endpoints/transactions/transaction.controller";
-import { PerformanceProfiler } from "src/helpers/performance.profiler";
+import { PerformanceProfiler } from "src/utils/performance.profiler";
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {

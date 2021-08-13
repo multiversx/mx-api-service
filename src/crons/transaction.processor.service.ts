@@ -8,8 +8,8 @@ import { TransactionService } from "src/endpoints/transactions/transaction.servi
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { GatewayService } from "src/helpers/gateway.service";
-import { PerformanceProfiler } from "src/helpers/performance.profiler";
 import { AddressUtils } from "src/utils/address.utils";
+import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { EventsGateway } from "src/websockets/events.gateway";
 import { ShardTransaction } from "./entities/shard.transaction";
 

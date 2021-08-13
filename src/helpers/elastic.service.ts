@@ -4,7 +4,7 @@ import { NftType } from "src/endpoints/tokens/entities/nft.type";
 import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
-import { buildElasticQuery } from "./elastic.queries";
+import { buildElasticQuery } from "../utils/elastic.queries";
 import { ElasticQuery } from "./entities/elastic/elastic.query";
 import { ElasticSortOrder } from "./entities/elastic/elastic.sort.order";
 import { QueryOperator } from "./entities/elastic/query.operator";
