@@ -339,7 +339,17 @@ export class TokenService {
       tokensIndexed[token.identifier] = token;
     }
 
-    let esdtResult = await this.gatewayService.get(`address/${address}/esdt`);
+    let esdtResult: any;
+    try {
+      esdtResult = await this.gatewayService.get(`address/${address}/esdt`);
+    } catch (error) {
+      let errorMessage = error?.response?.data?.error;
+      if (errorMessage && errorMessage.includes('account was not found')) {
+        return [];
+      }
+      
+      throw error;
+    }
 
     let tokensWithBalance: TokenWithBalance[] = [];
 
@@ -410,7 +420,17 @@ export class TokenService {
   }
 
   async getNftsForAddressInternal(address: string, filter: NftFilter): Promise<NftAccount[]> {
-    let gatewayNftResult = await this.gatewayService.get(`address/${address}/esdt`);
+    let gatewayNftResult: any;
+    try {
+      gatewayNftResult = await this.gatewayService.get(`address/${address}/esdt`);
+    } catch (error) {
+      let errorMessage = error?.response?.data?.error;
+      if (errorMessage && errorMessage.includes('account was not found')) {
+        return [];
+      }
+
+      throw error;
+    }
 
     let gatewayNfts = Object.values(gatewayNftResult['esdts']).map(x => x as any);
 
