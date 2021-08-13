@@ -25,7 +25,7 @@ export class TransactionProcessorService {
       private readonly gatewayService: GatewayService,
       private readonly apiConfigService: ApiConfigService,
       private readonly metricsService: MetricsService,
-      @Inject('PUBSUB_SERVICE') private client: ClientProxy,
+      @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
       private readonly shardService: ShardService,
   ) {
     this.logger = new Logger(TransactionProcessorService.name);
@@ -85,7 +85,7 @@ export class TransactionProcessorService {
 
       let uniqueInvalidatedKeys = [...new Set(allInvalidatedKeys)];
       if (uniqueInvalidatedKeys.length > 0) {
-        this.client.emit('deleteCacheKeys', uniqueInvalidatedKeys);
+        this.clientProxy.emit('deleteCacheKeys', uniqueInvalidatedKeys);
       }
 
       profiler.stop();
