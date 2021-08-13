@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { Cron } from "@nestjs/schedule";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
@@ -9,7 +9,8 @@ import { DataQuoteType } from "src/common/entities/data.quote.type";
 import { KeybaseService } from "src/common/keybase.service";
 import { Constants } from "src/utils/constants";
 import { Locker } from "src/utils/locker";
-import { InvalidateService } from "src/common/invalidate.service";
+import { CachingService } from "src/common/caching.service";
+import { ClientProxy } from "@nestjs/microservices";
 
 @Injectable()
 export class CacheWarmerService {
@@ -20,15 +21,16 @@ export class CacheWarmerService {
     private readonly identitiesService: IdentitiesService,
     private readonly providerService: ProviderService,
     private readonly keybaseService: KeybaseService,
-    private readonly invalidateService: InvalidateService,
     private readonly dataApiService: DataApiService,
+    private readonly cachingService: CachingService,
+    @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) { }
 
   @Cron('* * * * *')
   async handleNodeInvalidations() {
     await Locker.lock('Nodes invalidations', async () => {
       let nodes = await this.nodeService.getAllNodesRaw();
-      await this.invalidateService.invalidateKey('nodes', nodes, Constants.oneHour());
+      await this.invalidateKey('nodes', nodes, Constants.oneHour());
     }, true);
   }
 
@@ -36,7 +38,7 @@ export class CacheWarmerService {
   async handleTokenInvalidations() {
     await Locker.lock('Tokens invalidations', async () => {
       let tokens = await this.tokenService.getAllTokensRaw();
-      await this.invalidateService.invalidateKey('allTokens', tokens, Constants.oneHour());
+      await this.invalidateKey('allTokens', tokens, Constants.oneHour());
     }, true);
   }
 
@@ -44,7 +46,7 @@ export class CacheWarmerService {
   async handleIdentityInvalidations() {
     await Locker.lock('Identities invalidations', async () => {
       let identities = await this.identitiesService.getAllIdentitiesRaw();
-      await this.invalidateService.invalidateKey('identities', identities, Constants.oneMinute() * 15);
+      await this.invalidateKey('identities', identities, Constants.oneMinute() * 15);
     }, true);
   }
 
@@ -52,7 +54,7 @@ export class CacheWarmerService {
   async handleProviderInvalidations() {
     await Locker.lock('Providers invalidations', async () => {
       let providers = await this.providerService.getAllProvidersRaw();
-      await this.invalidateService.invalidateKey('providers', providers, Constants.oneHour());
+      await this.invalidateKey('providers', providers, Constants.oneHour());
     }, true);
   }
 
@@ -62,8 +64,8 @@ export class CacheWarmerService {
       let nodeKeybases = await this.keybaseService.confirmKeybaseNodesAgainstKeybasePub();
       let providerKeybases = await this.keybaseService.confirmKeybaseProvidersAgainstKeybasePub();
       await Promise.all([
-        this.invalidateService.invalidateKey('nodeKeybases', nodeKeybases, Constants.oneHour()),
-        this.invalidateService.invalidateKey('providerKeybases', providerKeybases, Constants.oneHour())
+        this.invalidateKey('nodeKeybases', nodeKeybases, Constants.oneHour()),
+        this.invalidateKey('providerKeybases', providerKeybases, Constants.oneHour())
       ]);
     }, true);
   }
@@ -72,7 +74,18 @@ export class CacheWarmerService {
   async handleCurrentPriceInvalidations() {
     await Locker.lock('Current price invalidations', async () => {
       let currentPrice = await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price);
-      await this.invalidateService.invalidateKey('currentPrice', currentPrice, Constants.oneHour());
+      await this.invalidateKey('currentPrice', currentPrice, Constants.oneHour());
     }, true);
+  }
+
+  private async invalidateKey(key: string, data: any, ttl: number) {
+    await Promise.all([
+      this.cachingService.setCache(key, data, ttl),
+      this.deleteCacheKey(key),
+    ]);
+  }
+
+  private async deleteCacheKey(key: string) {
+    await this.clientProxy.emit('deleteCacheKeys', [ key ]);
   }
 }
