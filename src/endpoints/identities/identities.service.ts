@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { CachingService } from "src/helpers/caching.service";
-import { oneMinute } from "src/helpers/helpers";
 import { KeybaseService } from "src/helpers/keybase.service";
+import { Constants } from "src/utils/constants";
 import { NodeService } from "../nodes/node.service";
 import { Identity } from "./entities/identity";
 
@@ -28,7 +28,7 @@ export class IdentitiesService {
   }
 
   async getAllIdentities(): Promise<Identity[]> {
-    return this.cachingService.getOrSetCache('identities', async () => await this.getAllIdentitiesRaw(), oneMinute() * 15);
+    return this.cachingService.getOrSetCache('identities', async () => await this.getAllIdentitiesRaw(), Constants.oneMinute() * 15);
   }
 
   async getAllIdentitiesRaw(): Promise<Identity[]> {
@@ -42,7 +42,7 @@ export class IdentitiesService {
       keys,
       key => `identityProfile:${key}`,
       async key => await this.keybaseService.getProfile(key),
-      oneMinute() * 30
+      Constants.oneMinute() * 30
     );
 
     let totalStake = BigInt(0);

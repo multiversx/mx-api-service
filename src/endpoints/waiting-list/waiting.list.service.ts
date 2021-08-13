@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
-import { bech32Encode, numberDecode, oneMinute } from "src/helpers/helpers";
+import { bech32Encode, numberDecode } from "src/helpers/helpers";
+import { Constants } from "src/utils/constants";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { WaitingList } from "./entities/waiting.list";
 
@@ -33,7 +34,7 @@ export class WaitingListService {
     return await this.cachingService.getOrSetCache(
       'waiting-list',
       async () => await this.getFullWaitingListRaw(),
-      oneMinute() * 5
+      Constants.oneMinute() * 5
     );
   }
 

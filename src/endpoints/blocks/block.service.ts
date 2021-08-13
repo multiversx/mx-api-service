@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ElasticService } from "src/helpers/elastic.service";
-import { mergeObjects, oneMinute, oneWeek } from "src/helpers/helpers";
+import { mergeObjects } from "src/helpers/helpers";
 import { Block } from "./entities/block";
 import { BlockDetailed } from "./entities/block.detailed";
 import { CachingService } from "src/helpers/caching.service";
@@ -13,6 +13,7 @@ import { ElasticQuery } from "src/helpers/entities/elastic/elastic.query";
 import { AbstractQuery } from "src/helpers/entities/elastic/abstract.query";
 import { BlsService } from "src/helpers/bls.service";
 import { QueryType } from "src/helpers/entities/elastic/query.type";
+import { Constants } from "src/utils/constants";
 
 @Injectable()
 export class BlockService {
@@ -58,7 +59,7 @@ export class BlockService {
     return await this.cachingService.getOrSetCache(
       `blocks:count:${JSON.stringify(elasticQueryAdapter)}`,
       async () => await this.elasticService.getCount('blocks', elasticQueryAdapter),
-      oneMinute()
+      Constants.oneMinute()
     );
   }
 
@@ -101,7 +102,7 @@ export class BlockService {
     if (!blses) {
       blses = await this.blsService.getBlses(shard, epoch);
 
-      await this.cachingService.setCacheLocal(key, blses, oneWeek());
+      await this.cachingService.setCacheLocal(key, blses, Constants.oneWeek());
     }
   
     proposer = blses[proposer];

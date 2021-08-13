@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
-import { oneMinute } from "src/helpers/helpers";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Delegation } from "./entities/delegation";
 import { NodeService } from "../nodes/node.service";
+import { Constants } from "src/utils/constants";
 
 @Injectable()
 export class DelegationService {
@@ -19,7 +19,7 @@ export class DelegationService {
     return this.cachingService.getOrSetCache(
       'delegation',
       async () => await this.getDelegationRaw(),
-      oneMinute() * 10
+      Constants.oneMinute() * 10
     );
   }
 

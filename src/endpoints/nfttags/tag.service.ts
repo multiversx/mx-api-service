@@ -5,7 +5,8 @@ import { ElasticService } from "src/helpers/elastic.service";
 import { ElasticQuery } from "src/helpers/entities/elastic/elastic.query";
 import { ElasticSortOrder } from "src/helpers/entities/elastic/elastic.sort.order";
 import { ElasticSortProperty } from "src/helpers/entities/elastic/elastic.sort.property";
-import { mergeObjects, oneHour } from "src/helpers/helpers";
+import { mergeObjects } from "src/helpers/helpers";
+import { Constants } from "src/utils/constants";
 import { Tag } from "./entities/tag";
 
 @Injectable()
@@ -21,7 +22,7 @@ export class TagService {
     return this.cachingService.getOrSetCache(
       'nftTags',
       async() => await this.getNftTagsRaw(pagination),
-      oneHour(),
+      Constants.oneHour(),
     )
   }
 

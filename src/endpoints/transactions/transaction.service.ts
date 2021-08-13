@@ -11,7 +11,8 @@ import { ElasticSortProperty } from 'src/helpers/entities/elastic/elastic.sort.p
 import { QueryConditionOptions } from 'src/helpers/entities/elastic/query.condition.options';
 import { QueryType } from 'src/helpers/entities/elastic/query.type';
 import { GatewayService } from 'src/helpers/gateway.service';
-import { base64Encode, bech32Decode, computeShard, mergeObjects, oneDay, oneHour } from 'src/helpers/helpers';
+import { base64Encode, bech32Decode, computeShard, mergeObjects } from 'src/helpers/helpers';
+import { Constants } from 'src/utils/constants';
 import { ElasticService } from '../../helpers/elastic.service';
 import { SmartContractResult } from './entities/smart.contract.result';
 import { Transaction } from './entities/transaction';
@@ -154,7 +155,7 @@ export class TransactionService {
     return await this.cachingService.getOrSetCache(
       'currentPrice',
       async () => await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price),
-      oneHour()
+      Constants.oneHour()
     );
   }
 
@@ -162,7 +163,7 @@ export class TransactionService {
     return await this.cachingService.getOrSetCache(
       `price:${date.toISODateString()}`,
       async () => await this.dataApiService.getQuotesHistoricalTimestamp(DataQuoteType.price, date.getTime() / 1000),
-      oneDay() * 7
+      Constants.oneDay() * 7
     );
   }
 

@@ -5,11 +5,12 @@ import { createClient } from 'redis';
 import asyncPool from 'tiny-async-pool';
 import { CachedFunction } from "src/crons/entities/cached.function";
 import { InvalidationFunction } from "src/crons/entities/invalidation.function";
-import { hexToString, isSmartContractAddress, oneWeek } from "./helpers";
+import { hexToString, isSmartContractAddress } from "./helpers";
 import { PerformanceProfiler } from "./performance.profiler";
 import { ShardTransaction } from "src/crons/entities/shard.transaction";
 import { Cache } from "cache-manager";
 import { RoundService } from "src/endpoints/rounds/round.service";
+import { Constants } from "src/utils/constants";
 
 @Injectable()
 export class CachingService {
@@ -535,8 +536,8 @@ export class CachingService {
     return await this.getOrSetCache(
       'genesisTimestamp',
       async () => await this.getGenesisTimestampRaw(),
-      oneWeek(),
-      oneWeek()
+      Constants.oneWeek(),
+      Constants.oneWeek()
     );
   }
 

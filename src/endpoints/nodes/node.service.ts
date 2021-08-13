@@ -6,7 +6,7 @@ import { NodeStatus } from "./entities/node.status";
 import { Queue } from "./entities/queue";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { ApiConfigService } from "src/helpers/api.config.service";
-import { bech32Decode, bech32Encode, oneHour, oneMinute } from "src/helpers/helpers";
+import { bech32Decode, bech32Encode } from "src/helpers/helpers";
 import { CachingService } from "src/helpers/caching.service";
 import { KeybaseService } from "src/helpers/keybase.service";
 import { NodeFilter } from "./entities/node.filter";
@@ -16,6 +16,7 @@ import { SortOrder } from "src/helpers/entities/sort.order";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockService } from "../blocks/block.service";
 import { KeybaseState } from "src/helpers/entities/keybase.state";
+import { Constants } from "src/utils/constants";
 
 @Injectable()
 export class NodeService {
@@ -169,7 +170,7 @@ export class NodeService {
   }
 
   async getAllNodes(): Promise<Node[]> {
-    return await this.cachingService.getOrSetCache('nodes', async () => await this.getAllNodesRaw(), oneHour(), oneMinute());
+    return await this.cachingService.getOrSetCache('nodes', async () => await this.getAllNodesRaw(), Constants.oneHour(), Constants.oneMinute());
   }
 
   async getAllNodesRaw(): Promise<Node[]> {

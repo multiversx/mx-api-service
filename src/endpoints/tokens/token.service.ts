@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { GatewayService } from "src/helpers/gateway.service";
-import { base64Decode, bech32Decode, bech32Encode, mergeObjects, oneDay, oneHour, oneWeek } from "src/helpers/helpers";
+import { base64Decode, bech32Decode, bech32Encode, mergeObjects } from "src/helpers/helpers";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
@@ -21,6 +21,7 @@ import { ApiService } from "src/helpers/api.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { CollectionFilter } from "./entities/collection.filter";
 import { NftMetadata } from "./entities/nft.metadata";
+import { Constants } from "src/utils/constants";
 
 @Injectable()
 export class TokenService {
@@ -86,8 +87,8 @@ export class TokenService {
     let properties = await this.cachingService.getOrSetCache(
       `nft:${identifier}`,
       async () => await this.getTokenProperties(identifier),
-      oneWeek(),
-      oneDay()
+      Constants.oneWeek(),
+      Constants.oneDay()
     );
 
     if (!properties) {
@@ -251,7 +252,7 @@ export class TokenService {
       nfts,
       nft => `nftCustomThumbnail:${nft.identifier}`,
       async (nft) => await this.hasCustomThumbnail(nft.identifier),
-      oneHour()
+      Constants.oneHour()
     );
 
     for (let [index, nft] of nfts.entries()) {
@@ -522,8 +523,8 @@ export class TokenService {
     let result = await this.cachingService.getOrSetCache<NftMetadata>(
       `nftExtendedAttributes:${description}`,
       async () => await this.getExtendedAttributesFromIpfs(description ?? ''),
-      oneWeek(),
-      oneDay()
+      Constants.oneWeek(),
+      Constants.oneDay()
     );
 
     if (Object.keys(result).length > 0) {
@@ -673,7 +674,7 @@ export class TokenService {
     return this.cachingService.getOrSetCache(
       'allTokens',
       async () => await this.getAllTokensRaw(),
-      oneHour()
+      Constants.oneHour()
     );
   }
 
@@ -686,7 +687,7 @@ export class TokenService {
       tokensIdentifiers,
       token => `tokenProperties:${token}`,
       async (token: string) => await this.getTokenProperties(token),
-      oneDay()
+      Constants.oneDay()
     );
 
     // @ts-ignore
