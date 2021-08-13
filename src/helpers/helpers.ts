@@ -14,10 +14,6 @@ export function mergeObjects(obj1: any, obj2: any) {
   return obj1;
 }
 
-export function roundToEpoch(round: number): number {
-  return Math.floor(round / 14401);
-}
-
 export function base64Encode(str: string) {
   return Buffer.from(str).toString('base64');
 };
