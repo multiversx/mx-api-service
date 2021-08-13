@@ -1,13 +1,5 @@
 const { readdirSync } = require('fs');
 
-Date.prototype.isToday = function(): boolean {
-  return this.toISODateString() === new Date().toISODateString();
-};
-
-Date.prototype.toISODateString = function(): string {
-  return this.toISOString().slice(0, 10);
-};
-
 Number.prototype.toRounded = function(digits: number): number {
   return parseFloat(this.toFixed(digits));
 };
@@ -15,11 +7,6 @@ Number.prototype.toRounded = function(digits: number): number {
 declare global {
   interface Number {
     toRounded(digits: number): number;
-  }
-
-  interface Date {
-    toISODateString(): string;
-    isToday(): boolean;
   }
 
   interface Array<T> {
