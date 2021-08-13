@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { GatewayService } from "src/helpers/gateway.service";
-import { base64Decode, bech32Decode, bech32Encode, mergeObjects } from "src/helpers/helpers";
+import { base64Decode, mergeObjects } from "src/helpers/helpers";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
@@ -22,6 +22,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { CollectionFilter } from "./entities/collection.filter";
 import { NftMetadata } from "./entities/nft.metadata";
 import { Constants } from "src/utils/constants";
+import { AddressUtils } from "src/utils/address.utils";
 
 @Injectable()
 export class TokenService {
@@ -592,7 +593,7 @@ export class TokenService {
         this.apiConfigService.getAuctionContractAddress(),
         'getUnStakedTokensList',
         address,
-        [ bech32Decode(address) ],
+        [ AddressUtils.bech32Decode(address) ],
       ),
     ]);
 
@@ -734,7 +735,7 @@ export class TokenService {
       identifier,
       name,
       type,
-      owner: bech32Encode(owner),
+      owner: AddressUtils.bech32Encode(owner),
       minted,
       burnt,
       decimals: parseInt(decimals.split('-').pop() ?? '0'),

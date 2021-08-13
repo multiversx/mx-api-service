@@ -8,8 +8,8 @@ import { TransactionService } from "src/endpoints/transactions/transaction.servi
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { GatewayService } from "src/helpers/gateway.service";
-import { isSmartContractAddress } from "src/helpers/helpers";
 import { PerformanceProfiler } from "src/helpers/performance.profiler";
+import { AddressUtils } from "src/utils/address.utils";
 import { EventsGateway } from "src/websockets/events.gateway";
 import { ShardTransaction } from "./entities/shard.transaction";
 
@@ -60,11 +60,11 @@ export class TransactionProcessorService {
       for (let transaction of newTransactions) {
         // this.logger.log(`Transferred ${transaction.value} from ${transaction.sender} to ${transaction.receiver}`);
 
-        if (!isSmartContractAddress(transaction.sender)) {
+        if (!AddressUtils.isSmartContractAddress(transaction.sender)) {
           this.eventsGateway.onAccountBalanceChanged(transaction.sender);
         }
 
-        if (!isSmartContractAddress(transaction.receiver)) {
+        if (!AddressUtils.isSmartContractAddress(transaction.receiver)) {
           this.eventsGateway.onAccountBalanceChanged(transaction.receiver);
         }
         

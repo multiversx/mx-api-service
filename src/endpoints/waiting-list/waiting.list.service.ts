@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
-import { bech32Encode, numberDecode } from "src/helpers/helpers";
+import { numberDecode } from "src/helpers/helpers";
+import { AddressUtils } from "src/utils/address.utils";
 import { Constants } from "src/utils/constants";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { WaitingList } from "./entities/waiting.list";
@@ -51,7 +52,7 @@ export class WaitingListService {
         const [publicKeyEncoded, valueEncoded, nonceEncoded] = array.slice(index, index + 3);
 
         const publicKey = Buffer.from(publicKeyEncoded, 'base64').toString('hex');
-        const address = bech32Encode(publicKey);
+        const address = AddressUtils.bech32Encode(publicKey);
         const value = numberDecode(valueEncoded);
         const nonce = parseInt(numberDecode(nonceEncoded));
 

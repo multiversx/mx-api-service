@@ -11,7 +11,8 @@ import { ElasticSortProperty } from 'src/helpers/entities/elastic/elastic.sort.p
 import { QueryConditionOptions } from 'src/helpers/entities/elastic/query.condition.options';
 import { QueryType } from 'src/helpers/entities/elastic/query.type';
 import { GatewayService } from 'src/helpers/gateway.service';
-import { base64Encode, bech32Decode, computeShard, mergeObjects } from 'src/helpers/helpers';
+import { base64Encode, mergeObjects } from 'src/helpers/helpers';
+import { AddressUtils } from 'src/utils/address.utils';
 import { Constants } from 'src/utils/constants';
 import { ElasticService } from '../../helpers/elastic.service';
 import { SmartContractResult } from './entities/smart.contract.result';
@@ -291,8 +292,8 @@ export class TransactionService {
   }
 
   async createTransaction(transaction: TransactionCreate): Promise<TransactionSendResult | string> {
-    const receiverShard = computeShard(bech32Decode(transaction.receiver));
-    const senderShard = computeShard(bech32Decode(transaction.sender));
+    const receiverShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.receiver));
+    const senderShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.sender));
 
     let txHash: string;
     try {

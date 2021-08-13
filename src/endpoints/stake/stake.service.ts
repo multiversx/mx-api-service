@@ -2,7 +2,6 @@ import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { GatewayService } from "src/helpers/gateway.service";
-import { bech32Decode } from "src/helpers/helpers";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { NodeStatus } from "../nodes/entities/node.status";
 import { NodeType } from "../nodes/entities/node.type";
@@ -10,6 +9,7 @@ import { NodeService } from "../nodes/node.service";
 import { Stake } from "./entities/stake";
 import { StakeTopup } from "./entities/stake.topup";
 import { Constants } from "src/utils/constants";
+import { AddressUtils } from "src/utils/address.utils";
 
 @Injectable()
 export class StakeService {
@@ -102,7 +102,7 @@ export class StakeService {
         this.apiConfigService.getAuctionContractAddress(),
         'getTotalStakedTopUpStakedBlsKeys',
         this.apiConfigService.getAuctionContractAddress(),
-        [ bech32Decode(address) ],
+        [ AddressUtils.bech32Decode(address) ],
       );
     } catch (error) {
       this.logger.log(error);

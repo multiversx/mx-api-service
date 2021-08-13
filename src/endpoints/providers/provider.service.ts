@@ -1,7 +1,6 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
-import { bech32Encode } from "src/helpers/helpers";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Provider } from "src/endpoints/providers/entities/provider";
 import { ProviderConfig } from "./entities/provider.config";
@@ -11,6 +10,7 @@ import { ApiService } from "src/helpers/api.service";
 import { KeybaseState } from "src/helpers/entities/keybase.state";
 import { KeybaseService } from "src/helpers/keybase.service";
 import { Constants } from "src/utils/constants";
+import { AddressUtils } from "src/utils/address.utils";
 
 @Injectable()
 export class ProviderService {
@@ -205,7 +205,7 @@ export class ProviderService {
     }
   
     const value = providersBase64.map((providerBase64) =>
-      bech32Encode(Buffer.from(providerBase64, 'base64').toString('hex'))
+      AddressUtils.bech32Encode(Buffer.from(providerBase64, 'base64').toString('hex'))
     );
   
     return value;
@@ -227,7 +227,7 @@ export class ProviderService {
       'getContractConfig',
     );
   
-    const owner = bech32Encode(Buffer.from(ownerBase64, 'base64').toString('hex'));
+    const owner = AddressUtils.bech32Encode(Buffer.from(ownerBase64, 'base64').toString('hex'));
   
     const [serviceFee, delegationCap] = [
       // , initialOwnerFunds, createdNonce

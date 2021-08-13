@@ -1,7 +1,6 @@
 import { Logger } from "@nestjs/common";
 import { PerformanceProfiler } from "./performance.profiler";
 
-const bech32 = require('bech32');
 const { readdirSync } = require('fs')
 const BigNumber = require('bignumber.js');
 
@@ -19,16 +18,6 @@ export function roundToEpoch(round: number): number {
   return Math.floor(round / 14401);
 }
 
-export function bech32Encode(publicKey: string) {
-  const words = bech32.toWords(Buffer.from(publicKey, 'hex'));
-  return bech32.encode('erd', words);
-};
-
-export function bech32Decode(address: string) {
-  const decoded = bech32.decode(address, 256);
-  return Buffer.from(bech32.fromWords(decoded.words)).toString('hex');
-};
-
 export function base64Encode(str: string) {
   return Buffer.from(str).toString('base64');
 };
@@ -43,50 +32,6 @@ export function base64DecodeBinary(str: string): Buffer {
 
 export function padHex(value: string): string {
   return (value.length % 2 ? '0' + value : value);
-}
-
-export function computeShard(hexPubKey: string) {
-  let numShards = 3;
-  let maskHigh = parseInt('11', 2);
-  let maskLow = parseInt('01', 2);
-  let pubKey = Buffer.from(hexPubKey, 'hex');
-  let lastByteOfPubKey = pubKey[31];
-
-  if (isAddressOfMetachain(pubKey)) {
-    return 4294967295;
-  }
-
-  let shard = lastByteOfPubKey & maskHigh;
-
-  if (shard > numShards - 1) {
-    shard = lastByteOfPubKey & maskLow;
-  }
-
-  return shard;
-};
-
-function isAddressOfMetachain(pubKey: Buffer) {
-  // prettier-ignore
-  let metachainPrefix = Buffer.from([
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    ]);
-  let pubKeyPrefix = pubKey.slice(0, metachainPrefix.length);
-
-  if (pubKeyPrefix.equals(metachainPrefix)) {
-    return true;
-  }
-
-  let zeroAddress = Buffer.alloc(32).fill(0);
-
-  if (pubKey.equals(zeroAddress)) {
-    return true;
-  }
-
-  return false;
-};
-
-export function isSmartContractAddress(address: string): boolean {
-  return address.includes('qqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqq');
 }
 
 export function denominate(value: BigInt): number {
