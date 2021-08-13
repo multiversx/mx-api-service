@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
-import { bech32Decode } from "src/helpers/helpers";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { DelegationLegacy } from "./entities/delegation.legacy";
 import { AccountDelegationLegacy } from "./entities/account.delegation.legacy";
+import { AddressUtils } from "src/utils/address.utils";
 
 @Injectable()
 export class DelegationLegacyService {
@@ -45,7 +45,7 @@ export class DelegationLegacyService {
   }
 
   async getDelegationForAddress(address: string): Promise<AccountDelegationLegacy> {
-    const publicKey = bech32Decode(address);
+    const publicKey = AddressUtils.bech32Decode(address);
 
     const [userStakeByTypeEncoded, claimableRewardsEncoded] = await Promise.all([
       this.vmQueryService.vmQuery(

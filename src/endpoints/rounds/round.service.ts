@@ -1,7 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ElasticService } from "src/helpers/elastic.service";
 import { Round } from "./entities/round";
-import { mergeObjects, roundToEpoch } from "src/helpers/helpers";
 import { RoundDetailed } from "./entities/round.detailed";
 import { RoundFilter } from "./entities/round.filter";
 import { ElasticPagination } from "src/helpers/entities/elastic/elastic.pagination";
@@ -12,6 +11,8 @@ import { AbstractQuery } from "src/helpers/entities/elastic/abstract.query";
 import { BlsService } from "src/helpers/bls.service";
 import { QueryConditionOptions } from "src/helpers/entities/elastic/query.condition.options";
 import { QueryType } from "src/helpers/entities/elastic/query.type";
+import { RoundUtils } from "src/utils/round.utils";
+import { ApiUtils } from "src/utils/api.utils";
 
 @Injectable()
 export class RoundService {
@@ -65,18 +66,18 @@ export class RoundService {
       item.shard = item.shardId;
     }
 
-    return result.map(item => mergeObjects(new Round(), item));
+    return result.map(item => ApiUtils.mergeObjects(new Round(), item));
   }
 
   async getRound(shard: number, round: number): Promise<RoundDetailed> {
     const result = await this.elasticService.getItem('rounds', 'round', `${shard}_${round}`);
 
-    const epoch = roundToEpoch(round);
+    const epoch = RoundUtils.roundToEpoch(round);
     const publicKeys = await this.blsService.getPublicKeys(shard, epoch);
 
     result.shard = result.shardId;
     result.signers = result.signersIndexes.map((index: number) => publicKeys[index]);
 
-    return mergeObjects(new RoundDetailed(), result);
+    return ApiUtils.mergeObjects(new RoundDetailed(), result);
   }
 }

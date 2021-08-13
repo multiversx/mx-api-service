@@ -6,7 +6,8 @@ import { CachingService } from 'src/helpers/caching.service';
 import { DataApiService } from 'src/helpers/data.api.service';
 import { DataQuoteType } from 'src/helpers/entities/data.quote.type';
 import { GatewayService } from 'src/helpers/gateway.service';
-import { denominate, denominateString, oneMinute } from 'src/helpers/helpers';
+import { Constants } from 'src/utils/constants';
+import { NumberUtils } from 'src/utils/number.utils';
 import { AccountService } from '../accounts/account.service';
 import { BlockService } from '../blocks/block.service';
 import { BlockFilter } from '../blocks/entities/block.filter';
@@ -15,7 +16,7 @@ import { NodeService } from '../nodes/node.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
 import { TransactionService } from '../transactions/transaction.service';
 import { VmQueryService } from '../vm.query/vm.query.service';
-import { Constants } from './entities/constants';
+import { NetworkConstants } from './entities/constants';
 import { Economics } from './entities/economics';
 
 @Injectable()
@@ -33,7 +34,7 @@ export class NetworkService {
     private readonly apiService: ApiService
   ) {}
 
-  async getConstants(): Promise<Constants> {
+  async getConstants(): Promise<NetworkConstants> {
     let gatewayUrl = this.apiConfigService.getGatewayUrl();
 
     const {
@@ -59,7 +60,7 @@ export class NetworkService {
     return this.cachingService.getOrSetCache(
       'economics',
       async () => await this.getEconomicsRaw(),
-      oneMinute() * 10
+      Constants.oneMinute() * 10
     );
   }
 
@@ -92,7 +93,7 @@ export class NetworkService {
 
     const circulatingSupply = totalSupply - locked;
 
-    let aprInfo = await this.getApr(denominateString(balance));
+    let aprInfo = await this.getApr(NumberUtils.denominateString(balance));
 
     return { 
       totalSupply, 
@@ -102,7 +103,7 @@ export class NetworkService {
       marketCap: marketCapValue ? parseInt(marketCapValue.toFixed(0)) : undefined, 
       aprPercent: (aprInfo.apr * 100).toRounded(2), 
       queued: aprInfo.totalQueued,
-      waiting: denominate(totalWaitingStake),
+      waiting: NumberUtils.denominate(totalWaitingStake),
       inflation: aprInfo.inflation,
     };
   }
@@ -126,7 +127,7 @@ export class NetworkService {
       let queuedNodes = groupedQueuedNodesWithOwner[owner].length;
       totalQueuedNodes += queuedNodes;
 
-      let lockedAmount = denominateString(totalLocked.toString());
+      let lockedAmount = NumberUtils.denominateString(totalLocked.toString());
       let queueRatio = queuedNodes / totalNodes;
       let queuedAmount = lockedAmount * queueRatio;
 

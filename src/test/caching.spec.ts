@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
+import { Constants } from 'src/utils/constants';
 import { CachingService } from '../helpers/caching.service';
-import {oneSecond} from '../helpers/helpers';
 
 
 describe('Caching Service', () => {
@@ -23,14 +23,14 @@ describe('Caching Service', () => {
     });
 
     it(`should return 'test' value after key is set`, async () => {
-      await cachingService.setCacheLocal('test', 'test', oneSecond());
+      await cachingService.setCacheLocal('test', 'test', Constants.oneSecond());
 
       const cacheValue = await cachingService.getCacheLocal('test');
       expect(cacheValue).toBe('test');
     });
 
     it(`should return 'test-update' value after key is set`, async () => {
-      await cachingService.setCacheLocal('test', 'test-update', oneSecond());
+      await cachingService.setCacheLocal('test', 'test-update', Constants.oneSecond());
 
       const cacheValue = await cachingService.getCacheLocal('test');
       expect(cacheValue).toBe('test-update');
@@ -47,7 +47,7 @@ describe('Caching Service', () => {
 
   describe('Get Or Set Cache', () => {
     it(`should return 'test' value after key is set`, async () => {
-      const cacheValue = await cachingService.getOrSetCache('test', async () => 'test', oneSecond());
+      const cacheValue = await cachingService.getOrSetCache('test', async () => 'test', Constants.oneSecond());
       expect(cacheValue).toBe('test');
     })
   });
@@ -66,7 +66,7 @@ describe('Caching Service', () => {
     });
 
     it(`should return ouput keys as string`, async () => {
-      await cachingService.batchProcess(input, cacheKeyFunction, handlerFunction, oneSecond());
+      await cachingService.batchProcess(input, cacheKeyFunction, handlerFunction, Constants.oneSecond());
 
       const cacheValueChunks = await cachingService.batchGetCache(input.map((x) => cacheKeyFunction(x)));
       expect(cacheValueChunks).toStrictEqual(output);

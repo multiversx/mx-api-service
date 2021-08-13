@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { GatewayService } from "src/helpers/gateway.service";
+import { Constants } from "src/utils/constants";
 import { CachingService } from "../../helpers/caching.service";
-import {  oneHour } from "../../helpers/helpers";
 
 @Injectable()
 export class VmQueryService {
@@ -27,7 +27,7 @@ export class VmQueryService {
     let isCachingQueryFunction = await this.cachingService.isCachingQueryFunction(contract, func);
     let secondsRemainingUntilNextRound = await this.cachingService.getSecondsRemainingUntilNextRound();
 
-    let localTtl = isCachingQueryFunction ? oneHour() : secondsRemainingUntilNextRound;
+    let localTtl = isCachingQueryFunction ? Constants.oneHour() : secondsRemainingUntilNextRound;
 
     // no need to store value remotely just to evict it one second later
     let remoteTtl = localTtl > 1 ? localTtl : 0;
@@ -58,7 +58,7 @@ export class VmQueryService {
         let isCachingQueryFunction = await this.cachingService.isCachingQueryFunction(contract, func);
         let secondsRemainingUntilNextRound = await this.cachingService.getSecondsRemainingUntilNextRound();
     
-        let localTtl = isCachingQueryFunction ? oneHour() : secondsRemainingUntilNextRound;
+        let localTtl = isCachingQueryFunction ? Constants.oneHour() : secondsRemainingUntilNextRound;
     
         // no need to store value remotely just to evict it one second later
         let remoteTtl = localTtl > 1 ? localTtl : 0;

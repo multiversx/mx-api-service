@@ -6,7 +6,6 @@ import { NodeStatus } from "./entities/node.status";
 import { Queue } from "./entities/queue";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { ApiConfigService } from "src/helpers/api.config.service";
-import { bech32Decode, bech32Encode, oneHour, oneMinute } from "src/helpers/helpers";
 import { CachingService } from "src/helpers/caching.service";
 import { KeybaseService } from "src/helpers/keybase.service";
 import { NodeFilter } from "./entities/node.filter";
@@ -16,6 +15,8 @@ import { SortOrder } from "src/helpers/entities/sort.order";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockService } from "../blocks/block.service";
 import { KeybaseState } from "src/helpers/entities/keybase.state";
+import { Constants } from "src/utils/constants";
+import { AddressUtils } from "src/utils/address.utils";
 
 @Injectable()
 export class NodeService {
@@ -169,7 +170,7 @@ export class NodeService {
   }
 
   async getAllNodes(): Promise<Node[]> {
-    return await this.cachingService.getOrSetCache('nodes', async () => await this.getAllNodesRaw(), oneHour(), oneMinute());
+    return await this.cachingService.getOrSetCache('nodes', async () => await this.getAllNodesRaw(), Constants.oneHour(), Constants.oneMinute());
   }
 
   async getAllNodesRaw(): Promise<Node[]> {
@@ -309,7 +310,7 @@ export class NodeService {
 
     const [encodedOwnerBase64] = result;
   
-    return bech32Encode(Buffer.from(encodedOwnerBase64, 'base64').toString('hex'));
+    return AddressUtils.bech32Encode(Buffer.from(encodedOwnerBase64, 'base64').toString('hex'));
   };
 
   async getOwnerBlses(owner: string): Promise<string[]> {
@@ -317,7 +318,7 @@ export class NodeService {
       this.apiConfigService.getAuctionContractAddress(),
       'getBlsKeysStatus',
       this.apiConfigService.getAuctionContractAddress(),
-      [ bech32Decode(owner) ],
+      [ AddressUtils.bech32Decode(owner) ],
     );
   
     if (!getBlsKeysStatusListEncoded) {
@@ -355,7 +356,7 @@ export class NodeService {
         const bls = Buffer.from(blsBase64, 'base64').toString('hex');
 
         const rewardsHex = Buffer.from(rewardsBase64, 'base64').toString('hex');
-        const rewards = bech32Encode(rewardsHex);
+        const rewards = AddressUtils.bech32Encode(rewardsHex);
 
         const nonceHex = Buffer.from(nonceBase64, 'base64').toString('hex');
         const nonce = parseInt(BigInt(nonceHex ? '0x' + nonceHex : nonceHex).toString());

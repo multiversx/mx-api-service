@@ -1,7 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { tap } from 'rxjs/operators';
-import { cleanupApiValueRecursively } from "src/helpers/helpers";
+import { ApiUtils } from "src/utils/api.utils";
 
 @Injectable()
 export class CleanupInterceptor implements NestInterceptor {
@@ -9,7 +9,7 @@ export class CleanupInterceptor implements NestInterceptor {
     return next
       .handle()
       .pipe(
-        tap(result => cleanupApiValueRecursively(result))
+        tap(result => ApiUtils.cleanupApiValueRecursively(result))
       );
   }
 }

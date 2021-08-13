@@ -2,7 +2,6 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { GatewayService } from "src/helpers/gateway.service";
-import { base64Decode, bech32Decode, bech32Encode, mergeObjects, oneDay, oneHour, oneWeek } from "src/helpers/helpers";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
@@ -21,6 +20,10 @@ import { ApiService } from "src/helpers/api.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { CollectionFilter } from "./entities/collection.filter";
 import { NftMetadata } from "./entities/nft.metadata";
+import { Constants } from "src/utils/constants";
+import { AddressUtils } from "src/utils/address.utils";
+import { BinaryUtils } from "src/utils/binary.utils";
+import { ApiUtils } from "src/utils/api.utils";
 
 @Injectable()
 export class TokenService {
@@ -44,7 +47,7 @@ export class TokenService {
     if (token) {
       token.assets = await this.tokenAssetService.getAssets(token.identifier);
 
-      return mergeObjects(new TokenDetailed(), token);
+      return ApiUtils.mergeObjects(new TokenDetailed(), token);
     }
 
     return undefined;
@@ -67,7 +70,7 @@ export class TokenService {
       token.assets = await this.tokenAssetService.getAssets(token.identifier);
     }
 
-    return tokens.map(item => mergeObjects(new TokenDetailed(), item));
+    return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
   }
 
   async getTokenCount(search: string | undefined): Promise<number> {
@@ -86,15 +89,15 @@ export class TokenService {
     let properties = await this.cachingService.getOrSetCache(
       `nft:${identifier}`,
       async () => await this.getTokenProperties(identifier),
-      oneWeek(),
-      oneDay()
+      Constants.oneWeek(),
+      Constants.oneDay()
     );
 
     if (!properties) {
       return undefined;
     }
 
-    return mergeObjects(new TokenProperties(), properties);
+    return ApiUtils.mergeObjects(new TokenProperties(), properties);
   }
 
   async getNftCollections(queryPagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
@@ -107,11 +110,11 @@ export class TokenService {
       let nftCollection = new NftCollection();
       nftCollection.collection = tokenCollection.token;
 
-      mergeObjects(nftCollection, tokenCollection);
+      ApiUtils.mergeObjects(nftCollection, tokenCollection);
 
       let nft = await this.getNft(nftCollection.collection);
       if (nft) {
-        mergeObjects(nftCollection, nft);
+        ApiUtils.mergeObjects(nftCollection, nft);
       }
 
       nftCollections.push(nftCollection);
@@ -136,11 +139,11 @@ export class TokenService {
     let nftCollection = new NftCollection();
     nftCollection.collection = tokenCollection.token;
 
-    mergeObjects(nftCollection, tokenCollection);
+    ApiUtils.mergeObjects(nftCollection, tokenCollection);
 
     let nft = await this.getNft(nftCollection.collection);
     if (nft) {
-      mergeObjects(nftCollection, nft);
+      ApiUtils.mergeObjects(nftCollection, nft);
     }
 
     return nftCollection;
@@ -158,7 +161,7 @@ export class TokenService {
       return undefined;
     }
 
-    let nft: NftDetailed = mergeObjects(new NftDetailed(), nfts[0]);
+    let nft: NftDetailed = ApiUtils.mergeObjects(new NftDetailed(), nfts[0]);
 
     if (nft.identifier.toLowerCase() !== identifier.toLowerCase()) {
       return undefined;
@@ -216,7 +219,7 @@ export class TokenService {
 
         if (nft.uris && nft.uris.length > 0) {
           try {
-            nft.url = this.processUri(base64Decode(nft.uris[0]));
+            nft.url = this.processUri(BinaryUtils.base64Decode(nft.uris[0]));
           } catch (error) {
             this.logger.error(error);
           }
@@ -251,7 +254,7 @@ export class TokenService {
       nfts,
       nft => `nftCustomThumbnail:${nft.identifier}`,
       async (nft) => await this.hasCustomThumbnail(nft.identifier),
-      oneHour()
+      Constants.oneHour()
     );
 
     for (let [index, nft] of nfts.entries()) {
@@ -296,7 +299,7 @@ export class TokenService {
       token.assets = await this.tokenAssetService.getAssets(token.identifier);
     }
 
-    return tokens.map(token => mergeObjects(new TokenWithBalance(), token));
+    return tokens.map(token => ApiUtils.mergeObjects(new TokenWithBalance(), token));
   }
 
   async getCollectionsForAddress(address: string, queryPagination: QueryPagination): Promise<NftCollection[]> {
@@ -452,7 +455,7 @@ export class TokenService {
 
       if (nft.uris && nft.uris.length > 0) {
         try {
-          nft.url = base64Decode(nft.uris[0]);
+          nft.url = BinaryUtils.base64Decode(nft.uris[0]);
         } catch (error) {
           this.logger.error(error);
         }
@@ -522,8 +525,8 @@ export class TokenService {
     let result = await this.cachingService.getOrSetCache<NftMetadata>(
       `nftExtendedAttributes:${description}`,
       async () => await this.getExtendedAttributesFromIpfs(description ?? ''),
-      oneWeek(),
-      oneDay()
+      Constants.oneWeek(),
+      Constants.oneDay()
     );
 
     if (Object.keys(result).length > 0) {
@@ -556,7 +559,7 @@ export class TokenService {
   }
 
   getTags(attributes: string): string[] {
-    let decodedAttributes = base64Decode(attributes);
+    let decodedAttributes = BinaryUtils.base64Decode(attributes);
     let match = decodedAttributes.match(/tags:(?<tags>[\w\s\,]*)/);
     if (!match || !match.groups) {
       return [];
@@ -566,7 +569,7 @@ export class TokenService {
   }
 
   getDescription(attributes: string): string | undefined {
-    let decodedAttributes = base64Decode(attributes);
+    let decodedAttributes = BinaryUtils.base64Decode(attributes);
     let match = decodedAttributes.match(/description:(?<description>[\w]*)/);
     if (!match || !match.groups) {
       return undefined;
@@ -591,7 +594,7 @@ export class TokenService {
         this.apiConfigService.getAuctionContractAddress(),
         'getUnStakedTokensList',
         address,
-        [ bech32Decode(address) ],
+        [ AddressUtils.bech32Decode(address) ],
       ),
     ]);
 
@@ -673,7 +676,7 @@ export class TokenService {
     return this.cachingService.getOrSetCache(
       'allTokens',
       async () => await this.getAllTokensRaw(),
-      oneHour()
+      Constants.oneHour()
     );
   }
 
@@ -686,7 +689,7 @@ export class TokenService {
       tokensIdentifiers,
       token => `tokenProperties:${token}`,
       async (token: string) => await this.getTokenProperties(token),
-      oneDay()
+      Constants.oneDay()
     );
 
     // @ts-ignore
@@ -733,7 +736,7 @@ export class TokenService {
       identifier,
       name,
       type,
-      owner: bech32Encode(owner),
+      owner: AddressUtils.bech32Encode(owner),
       minted,
       burnt,
       decimals: parseInt(decimals.split('-').pop() ?? '0'),
