@@ -13,18 +13,6 @@ export function mergeObjects(obj1: any, obj2: any) {
   return obj1;
 }
 
-export function base64Encode(str: string) {
-  return Buffer.from(str).toString('base64');
-};
-
-export function base64Decode(str: string): string {
-  return base64DecodeBinary(str).toString('binary');
-}
-
-export function base64DecodeBinary(str: string): Buffer {
-  return Buffer.from(str, 'base64');
-};
-
 export function cleanupApiValueRecursively(obj: any) {
   if (Array.isArray(obj)) {
     for (let item of obj) {

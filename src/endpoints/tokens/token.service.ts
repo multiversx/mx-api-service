@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { CachingService } from "src/helpers/caching.service";
 import { GatewayService } from "src/helpers/gateway.service";
-import { base64Decode, mergeObjects } from "src/helpers/helpers";
+import { mergeObjects } from "src/helpers/helpers";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
@@ -23,6 +23,7 @@ import { CollectionFilter } from "./entities/collection.filter";
 import { NftMetadata } from "./entities/nft.metadata";
 import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
+import { BinaryUtils } from "src/utils/binary.utils";
 
 @Injectable()
 export class TokenService {
@@ -218,7 +219,7 @@ export class TokenService {
 
         if (nft.uris && nft.uris.length > 0) {
           try {
-            nft.url = this.processUri(base64Decode(nft.uris[0]));
+            nft.url = this.processUri(BinaryUtils.base64Decode(nft.uris[0]));
           } catch (error) {
             this.logger.error(error);
           }
@@ -454,7 +455,7 @@ export class TokenService {
 
       if (nft.uris && nft.uris.length > 0) {
         try {
-          nft.url = base64Decode(nft.uris[0]);
+          nft.url = BinaryUtils.base64Decode(nft.uris[0]);
         } catch (error) {
           this.logger.error(error);
         }
@@ -558,7 +559,7 @@ export class TokenService {
   }
 
   getTags(attributes: string): string[] {
-    let decodedAttributes = base64Decode(attributes);
+    let decodedAttributes = BinaryUtils.base64Decode(attributes);
     let match = decodedAttributes.match(/tags:(?<tags>[\w\s\,]*)/);
     if (!match || !match.groups) {
       return [];
@@ -568,7 +569,7 @@ export class TokenService {
   }
 
   getDescription(attributes: string): string | undefined {
-    let decodedAttributes = base64Decode(attributes);
+    let decodedAttributes = BinaryUtils.base64Decode(attributes);
     let match = decodedAttributes.match(/description:(?<description>[\w]*)/);
     if (!match || !match.groups) {
       return undefined;

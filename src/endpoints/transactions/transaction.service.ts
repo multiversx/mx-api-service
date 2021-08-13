@@ -11,8 +11,9 @@ import { ElasticSortProperty } from 'src/helpers/entities/elastic/elastic.sort.p
 import { QueryConditionOptions } from 'src/helpers/entities/elastic/query.condition.options';
 import { QueryType } from 'src/helpers/entities/elastic/query.type';
 import { GatewayService } from 'src/helpers/gateway.service';
-import { base64Encode, mergeObjects } from 'src/helpers/helpers';
+import { mergeObjects } from 'src/helpers/helpers';
 import { AddressUtils } from 'src/utils/address.utils';
+import { BinaryUtils } from 'src/utils/binary.utils';
 import { Constants } from 'src/utils/constants';
 import { ElasticService } from '../../helpers/elastic.service';
 import { SmartContractResult } from './entities/smart.contract.result';
@@ -256,7 +257,7 @@ export class TransactionService {
           smartContractResult.value = smartContractResult.value.toString();
 
           if (smartContractResult.data) {
-            smartContractResult.data = base64Encode(smartContractResult.data);
+            smartContractResult.data = BinaryUtils.base64Encode(smartContractResult.data);
           }
         }
       }
