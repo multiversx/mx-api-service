@@ -3,7 +3,7 @@ import { ElasticService } from '../../helpers/elastic.service';
 import { GatewayService } from '../../helpers/gateway.service';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
-import { mergeObjects, padHex } from 'src/helpers/helpers';
+import { mergeObjects } from 'src/helpers/helpers';
 import { CachingService } from 'src/helpers/caching.service';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -16,6 +16,7 @@ import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
 import { QueryType } from 'src/helpers/entities/elastic/query.type';
 import { Constants } from 'src/utils/constants';
 import { AddressUtils } from 'src/utils/address.utils';
+import { NumberUtils } from 'src/utils/number.utils';
 
 @Injectable()
 export class AccountService {
@@ -161,7 +162,7 @@ export class AccountService {
       if (index % 2 === 0) {
         const [encodedBlsKey, encodedStatus] = array.slice(index, index + 2);
 
-        const blsKey = padHex(Buffer.from(encodedBlsKey, 'base64').toString('hex'));
+        const blsKey = NumberUtils.padHex(Buffer.from(encodedBlsKey, 'base64').toString('hex'));
         const status = Buffer.from(encodedStatus, 'base64').toString();
         const stake = '2500000000000000000000';
 

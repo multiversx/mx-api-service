@@ -1,8 +1,7 @@
 import { Logger } from "@nestjs/common";
 import { PerformanceProfiler } from "./performance.profiler";
 
-const { readdirSync } = require('fs')
-const BigNumber = require('bignumber.js');
+const { readdirSync } = require('fs');
 
 export function mergeObjects(obj1: any, obj2: any) {
   for (const key of Object.keys(obj2)) {
@@ -24,32 +23,6 @@ export function base64Decode(str: string): string {
 
 export function base64DecodeBinary(str: string): Buffer {
   return Buffer.from(str, 'base64');
-};
-
-export function padHex(value: string): string {
-  return (value.length % 2 ? '0' + value : value);
-}
-
-export function denominate(value: BigInt): number {
-  return Number(value.valueOf() / BigInt(Math.pow(10, 18)));
-}
-
-export function denominateString(value: string): number {
-  return denominate(BigInt(value));
-}
-
-export function hexToString(hex: string): string {
-  var str = '';
-  for (var n = 0; n < hex.length; n += 2) {
-    str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
-  }
-  
-  return str;
-}
-
-export function numberDecode(encoded: string) {
-  const hex = Buffer.from(encoded, 'base64').toString('hex');
-  return BigNumber(hex, 16).toString(10);
 };
 
 export function cleanupApiValueRecursively(obj: any) {

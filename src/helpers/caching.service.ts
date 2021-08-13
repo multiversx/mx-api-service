@@ -5,13 +5,13 @@ import { createClient } from 'redis';
 import asyncPool from 'tiny-async-pool';
 import { CachedFunction } from "src/crons/entities/cached.function";
 import { InvalidationFunction } from "src/crons/entities/invalidation.function";
-import { hexToString } from "./helpers";
 import { PerformanceProfiler } from "./performance.profiler";
 import { ShardTransaction } from "src/crons/entities/shard.transaction";
 import { Cache } from "cache-manager";
 import { RoundService } from "src/endpoints/rounds/round.service";
 import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
+import { NumberUtils } from "src/utils/number.utils";
 
 @Injectable()
 export class CachingService {
@@ -402,7 +402,7 @@ export class CachingService {
     if (transactionFuncName === 'controlChanges') {
       let args = transaction.getDataArgs();
       if (args && args.length > 0) {
-        let tokenIdentifier = hexToString(args[0]);
+        let tokenIdentifier = NumberUtils.hexToString(args[0]);
         this.logger.log(`Invalidating token properties for token ${tokenIdentifier}`);
         return await this.deleteInCache(`tokenProperties:${tokenIdentifier}`);
       }

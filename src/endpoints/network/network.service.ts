@@ -6,8 +6,8 @@ import { CachingService } from 'src/helpers/caching.service';
 import { DataApiService } from 'src/helpers/data.api.service';
 import { DataQuoteType } from 'src/helpers/entities/data.quote.type';
 import { GatewayService } from 'src/helpers/gateway.service';
-import { denominate, denominateString } from 'src/helpers/helpers';
 import { Constants } from 'src/utils/constants';
+import { NumberUtils } from 'src/utils/number.utils';
 import { AccountService } from '../accounts/account.service';
 import { BlockService } from '../blocks/block.service';
 import { BlockFilter } from '../blocks/entities/block.filter';
@@ -93,7 +93,7 @@ export class NetworkService {
 
     const circulatingSupply = totalSupply - locked;
 
-    let aprInfo = await this.getApr(denominateString(balance));
+    let aprInfo = await this.getApr(NumberUtils.denominateString(balance));
 
     return { 
       totalSupply, 
@@ -103,7 +103,7 @@ export class NetworkService {
       marketCap: marketCapValue ? parseInt(marketCapValue.toFixed(0)) : undefined, 
       aprPercent: (aprInfo.apr * 100).toRounded(2), 
       queued: aprInfo.totalQueued,
-      waiting: denominate(totalWaitingStake),
+      waiting: NumberUtils.denominate(totalWaitingStake),
       inflation: aprInfo.inflation,
     };
   }
@@ -127,7 +127,7 @@ export class NetworkService {
       let queuedNodes = groupedQueuedNodesWithOwner[owner].length;
       totalQueuedNodes += queuedNodes;
 
-      let lockedAmount = denominateString(totalLocked.toString());
+      let lockedAmount = NumberUtils.denominateString(totalLocked.toString());
       let queueRatio = queuedNodes / totalNodes;
       let queuedAmount = lockedAmount * queueRatio;
 
