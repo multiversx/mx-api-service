@@ -1,11 +1,3 @@
-declare interface Array<T> {
-    groupBy(predicate: (item: T) => any): any;
-    selectMany(predicate: (item: T) => T[]): T[];
-    firstOrUndefined(predicate: (item: T) => boolean): T | undefined;
-    zip<TSecond, TResult>(second: TSecond[], predicate: (first: T, second: TSecond) => TResult): TResult[];
-    remove(element: T): number;
-}
-
 Array.prototype.groupBy = function(predicate: Function, asArray = false) {
   let result = this.reduce(function(rv, x) {
       (rv[predicate(x)] = rv[predicate(x)] || []).push(x);
@@ -55,4 +47,13 @@ Array.prototype.remove = function<T>(element: T): number {
   }
 
   return index;
+}
+
+
+declare interface Array<T> {
+  groupBy(predicate: (item: T) => any): any;
+  selectMany(predicate: (item: T) => T[]): T[];
+  firstOrUndefined(predicate: (item: T) => boolean): T | undefined;
+  zip<TSecond, TResult>(second: TSecond[], predicate: (first: T, second: TSecond) => TResult): TResult[];
+  remove(element: T): number;
 }
