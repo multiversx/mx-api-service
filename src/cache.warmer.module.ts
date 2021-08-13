@@ -6,6 +6,7 @@ import configuration from 'config/configuration';
 import { CacheWarmerService } from './crons/cache.warmer.service';
 import { ApiConfigService } from './common/api.config.service';
 import { PublicAppModule } from './public.app.module';
+import { InvalidateService } from './common/invalidate.service';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { PublicAppModule } from './public.app.module';
   controllers: [],
   providers: [
     CacheWarmerService,
+    InvalidateService,
     {
       provide: 'PUBSUB_SERVICE',
       useFactory: (apiConfigService: ApiConfigService) => {
