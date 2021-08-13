@@ -139,7 +139,7 @@ export class TransactionService {
 
     let price = await this.getTransactionPriceForDate(transactionDate);
     if (price) {
-      price = price.toRounded(2);
+      price = Number(price).toRounded(2);
     }
 
     return price;
