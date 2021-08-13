@@ -8,9 +8,9 @@ import { TokenService } from "src/endpoints/tokens/token.service";
 import { CachingService } from "src/helpers/caching.service";
 import { DataApiService } from "src/helpers/data.api.service";
 import { DataQuoteType } from "src/helpers/entities/data.quote.type";
-import { lock } from "src/helpers/helpers";
 import { KeybaseService } from "src/helpers/keybase.service";
 import { Constants } from "src/utils/constants";
+import { Locker } from "src/utils/locker";
 
 @Injectable()
 export class CacheWarmerService {
@@ -28,7 +28,7 @@ export class CacheWarmerService {
 
   @Cron('* * * * *')
   async handleNodeInvalidations() {
-    await lock('Nodes invalidations', async () => {
+    await Locker.lock('Nodes invalidations', async () => {
       let nodes = await this.nodeService.getAllNodesRaw();
       await this.cachingService.setCache('nodes', nodes, Constants.oneHour());
       await this.deleteCacheKey('nodes');
@@ -37,7 +37,7 @@ export class CacheWarmerService {
 
   @Cron('* * * * *')
   async handleTokenInvalidations() {
-    await lock('Tokens invalidations', async () => {
+    await Locker.lock('Tokens invalidations', async () => {
       let tokens = await this.tokenService.getAllTokensRaw();
       await this.cachingService.setCache('allTokens', tokens, Constants.oneHour());
       await this.deleteCacheKey('allTokens');
@@ -46,7 +46,7 @@ export class CacheWarmerService {
 
   @Cron('*/7 * * * *')
   async handleIdentityInvalidations() {
-    await lock('Identities invalidations', async () => {
+    await Locker.lock('Identities invalidations', async () => {
       let identities = await this.identitiesService.getAllIdentitiesRaw();
       await this.cachingService.setCache('identities', identities, Constants.oneMinute() * 15);
       await this.deleteCacheKey('identities');
@@ -55,7 +55,7 @@ export class CacheWarmerService {
 
   @Cron('*/30 * * * *')
   async handleProviderInvalidations() {
-    await lock('Providers invalidations', async () => {
+    await Locker.lock('Providers invalidations', async () => {
       let providers = await this.providerService.getAllProvidersRaw();
       await this.cachingService.setCache('providers', providers, Constants.oneHour());
       await this.deleteCacheKey('providers');
@@ -64,7 +64,7 @@ export class CacheWarmerService {
 
   @Cron('*/30 * * * *')
   async handleKeybaseInvalidations() {
-    await lock('Keybase invalidations', async () => {
+    await Locker.lock('Keybase invalidations', async () => {
       let nodeKeybases = await this.keybaseService.confirmKeybaseNodesAgainstKeybasePub();
       await this.cachingService.setCache('nodeKeybases', nodeKeybases, Constants.oneHour());
       await this.deleteCacheKey('nodeKeybases');
@@ -77,7 +77,7 @@ export class CacheWarmerService {
 
   @Cron('* * * * *')
   async handleCurrentPriceInvalidations() {
-    await lock('Current price invalidations', async () => {
+    await Locker.lock('Current price invalidations', async () => {
       let currentPrice = await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price);
       await this.cachingService.setCache('currentPrice', currentPrice, Constants.oneHour());
       await this.deleteCacheKey('currentPrice');

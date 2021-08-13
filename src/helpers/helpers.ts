@@ -1,6 +1,3 @@
-import { Logger } from "@nestjs/common";
-import { PerformanceProfiler } from "./performance.profiler";
-
 const { readdirSync } = require('fs');
 
 Date.prototype.isToday = function(): boolean {
@@ -89,29 +86,4 @@ export function getDirectories(source: string) {
   return readdirSync(source, { withFileTypes: true })
     .filter((dirent: any) => dirent.isDirectory())
     .map((dirent: any) => dirent.name);
-}
-
-let lockArray: string[] = [];
-
-export async function lock(key: string, func: () => Promise<void>, log: boolean = false) {
-  let logger = new Logger('Lock');
-
-  if (lockArray.includes(key)) {
-    logger.log(`${key} is already running`);
-    return;
-  }
-
-  lockArray.push(key);
-
-  let profiler = new PerformanceProfiler();
-
-  try {
-    await func();
-  } catch (error) {
-    logger.error(`Error running ${key}`);
-    logger.error(error);
-  } finally {
-    profiler.stop(`Running ${key}`, log);
-    lockArray.remove(key);
-  }
 }
