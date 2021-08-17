@@ -172,7 +172,6 @@ export class NetworkService {
     let config = await this.getNetworkConfig();
     let stake = await this.stakeService.getGlobalStake();
     const { account: { balance: stakedBalance } } = await this.gatewayService.get(`address/${this.apiConfigService.getAuctionContractAddress()}`);
-    let keys = await this.accountService.getKeys(this.apiConfigService.getDelegationContractAddress());
     let [ activeStake ] = await this.vmQueryService.vmQuery(
       this.apiConfigService.getDelegationContractAddress(),
       'getTotalActiveStake',
@@ -211,25 +210,11 @@ export class NetworkService {
 
     const topUpReward = ((2 * topUpRewardsLimit) / Math.PI) * Math.atan(networkTopUpStake / (2 * 2000000));
     const baseReward = rewardsPerEpochWithoutProtocolSustainability - topUpReward;
-    const allNodes = keys.filter(key => key.status === 'staked' || key.status === 'jailed' || key.status === 'queued').length;
+    
+    const apr = (epochsInYear * (topUpReward + baseReward)) / networkTotalStake;
 
-    const allActiveNodes = keys.filter(key => key.status === 'staked').length;
-    if (allActiveNodes <= 0) {
-      return { apr: 0, baseApr: 0, topUpApr: 0 };
-    }
-
-    // based on validator total stake recalibrate the active nodes.
-    // it can happen that an user can unStake some tokens, but the node is still active until the epoch change
-    const validatorTotalStake = NumberUtils.denominateString(activeStake);
-    const actualNumberOfNodes = Math.min(Math.floor(validatorTotalStake / stakePerNode), allActiveNodes);
-    const validatorBaseStake = actualNumberOfNodes * stakePerNode;
-    const validatorTopUpStake = ((validatorTotalStake - (allNodes * stakePerNode)) / allNodes) * allActiveNodes;
-    const validatorTopUpReward = networkTopUpStake > 0 ? (validatorTopUpStake / networkTopUpStake) * topUpReward : 0;
-    const validatorBaseReward = (validatorBaseStake / networkBaseStake) * baseReward;
-    const apr = (epochsInYear * (validatorTopUpReward + validatorBaseReward)) / validatorTotalStake;
-
-    let topUpApr = epochsInYear * validatorTopUpReward / validatorTopUpStake;
-    let baseApr = epochsInYear * validatorBaseReward / validatorBaseStake;
+    let topUpApr = epochsInYear * topUpReward / networkTopUpStake;
+    let baseApr = epochsInYear * baseReward / networkBaseStake;
 
     return { apr, topUpApr, baseApr };
   }
