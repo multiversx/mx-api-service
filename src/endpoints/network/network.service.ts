@@ -120,9 +120,9 @@ export class NetworkService {
       staked, 
       price: priceValue ? parseFloat(priceValue.toFixed(2)) : undefined, 
       marketCap: marketCapValue ? parseInt(marketCapValue.toFixed(0)) : undefined, 
-      aprPercent: (aprInfo.apr * 100).toRounded(2), 
-      topUpApr: aprInfo.topUpApr ? aprInfo.topUpApr : 0,
-      baseApr: aprInfo.baseApr ? aprInfo.baseApr : 0,
+      apr: aprInfo.apr ? aprInfo.apr.toRounded(6) : 0, 
+      topUpApr: aprInfo.topUpApr ? aprInfo.topUpApr.toRounded(6) : 0,
+      baseApr: aprInfo.baseApr ? aprInfo.baseApr.toRounded(6) : 0,
     };
   }
 
@@ -185,33 +185,14 @@ export class NetworkService {
       protocolSustainabilityRewards: 0.1,
     };
 
-    let networkStats = {
-      RoundsPerEpoch: stats.roundsPerEpoch,
-      EpochNumber: stats.epoch,
-    };
-
-    let networkConfig = {
-      RoundsPerEpoch: config.roundsPerEpoch,
-      RoundDuration: config.roundDuration
-    };
-
-    let networkStake = {
-      ActiveValidators: stake.activeValidators,
-      TotalValidators: stake.totalValidators,
-      QueueSize: stake.queueSize,
-    };
-
     const feesInEpoch = elrondConfig.feesInEpoch;
     const stakePerNode = elrondConfig.stakePerNode;
     const protocolSustainabilityRewards = elrondConfig.protocolSustainabilityRewards;
-    if (!networkConfig.RoundsPerEpoch) {
-      networkConfig.RoundsPerEpoch = networkStats.RoundsPerEpoch;
-    }
-    const epochDuration = networkConfig.RoundDuration / 1000 * networkConfig.RoundsPerEpoch;
+    const epochDuration = config.roundDuration / 1000 * config.roundsPerEpoch;
     const secondsInYear = 365 * 24 * 3600;
     const epochsInYear = secondsInYear / epochDuration;
 
-    let yearIndex = Math.floor(networkStats.EpochNumber / epochsInYear);
+    let yearIndex = Math.floor(stats.epoch / epochsInYear);
     let inflationAmounts = this.apiConfigService.getInflationAmounts();
 
     if (yearIndex >= inflationAmounts.length) {
@@ -223,10 +204,10 @@ export class NetworkService {
 
     const rewardsPerEpochWithoutProtocolSustainability = (1 - protocolSustainabilityRewards) * rewardsPerEpoch;
     const topUpRewardsLimit = 0.5 * rewardsPerEpochWithoutProtocolSustainability;
-    const networkBaseStake = networkStake.ActiveValidators * stakePerNode;
+    const networkBaseStake = stake.activeValidators * stakePerNode;
     const networkTotalStake = NumberUtils.denominateString(stakedBalance);
 
-    const networkTopUpStake = networkTotalStake - (networkStake.TotalValidators * stakePerNode) - (networkStake.QueueSize * stakePerNode);
+    const networkTopUpStake = networkTotalStake - (stake.totalValidators * stakePerNode) - (stake.queueSize * stakePerNode);
 
     const topUpReward = ((2 * topUpRewardsLimit) / Math.PI) * Math.atan(networkTopUpStake / (2 * 2000000));
     const baseReward = rewardsPerEpochWithoutProtocolSustainability - topUpReward;

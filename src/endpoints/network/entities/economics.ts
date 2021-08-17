@@ -17,7 +17,7 @@ export class Economics {
   marketCap: number | undefined = undefined;
 
   @ApiProperty()
-  aprPercent: number = 0;
+  apr: number = 0;
 
   @ApiProperty()
   topUpApr: number = 0;
