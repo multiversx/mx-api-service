@@ -17,14 +17,11 @@ export class Economics {
   marketCap: number | undefined = undefined;
 
   @ApiProperty()
-  queued: number = 0;
-
-  @ApiProperty()
   aprPercent: number = 0;
 
   @ApiProperty()
-  waiting: number = 0;
+  topUpApr: number = 0;
 
   @ApiProperty()
-  inflation: number = 0;
+  baseApr: number = 0;
 }
