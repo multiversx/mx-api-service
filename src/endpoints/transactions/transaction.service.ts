@@ -67,6 +67,10 @@ export class TransactionService {
       queries.push(QueryType.Match('status', filter.status));
     }
 
+    if (filter.search) {
+      queries.push(QueryType.Wildcard('data', `*${filter.search}*`));
+    }
+
     return queries;
   }
 
