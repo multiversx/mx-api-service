@@ -28,6 +28,7 @@ export class TransactionController {
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false  })
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false  })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false  })
+  @ApiQuery({ name: 'search', description: 'Search in data object', required: false  })
   @ApiQuery({ name: 'condition', description: 'Condition type (should/must)', required: false  })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
@@ -40,6 +41,7 @@ export class TransactionController {
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
     @Query('miniBlockHash') miniBlockHash: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
+    @Query('search') search: string | undefined, 
     @Query('condition', new ParseOptionalEnumPipe(QueryConditionOptions)) condition: QueryConditionOptions | undefined, 
     @Query('before', ParseOptionalIntPipe) before: number | undefined, 
     @Query('after', ParseOptionalIntPipe) after: number | undefined, 
@@ -53,6 +55,7 @@ export class TransactionController {
         receiverShard, 
         miniBlockHash,
         status,
+        search,
         condition,
         before,
         after,
@@ -68,6 +71,7 @@ export class TransactionController {
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false  })
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false  })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false  })
+  @ApiQuery({ name: 'search', description: 'Search in data object', required: false  })
   @ApiQuery({ name: 'condition', description: 'Condition type (should/must)', required: false  })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
@@ -80,6 +84,7 @@ export class TransactionController {
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
     @Query('miniBlockHash') miniBlockHash: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
+    @Query('search') search: string | undefined, 
     @Query('condition', new ParseOptionalEnumPipe(QueryConditionOptions)) condition: QueryConditionOptions | undefined, 
     @Query('before', ParseOptionalIntPipe) before: number | undefined, 
     @Query('after', ParseOptionalIntPipe) after: number | undefined, 
@@ -93,6 +98,7 @@ export class TransactionController {
       receiverShard, 
       miniBlockHash,
       status,
+      search,
       condition,
       before,
       after,
@@ -110,6 +116,7 @@ export class TransactionController {
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
     @Query('miniBlockHash') miniBlockHash: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
+    @Query('search') search: string | undefined, 
     @Query('condition', new ParseOptionalEnumPipe(QueryConditionOptions)) condition: QueryConditionOptions | undefined, 
     @Query('before', ParseOptionalIntPipe) before: number | undefined, 
     @Query('after', ParseOptionalIntPipe) after: number | undefined, 
@@ -123,6 +130,7 @@ export class TransactionController {
       receiverShard, 
       miniBlockHash,
       status,
+      search,
       condition,
       before,
       after,
