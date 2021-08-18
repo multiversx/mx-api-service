@@ -24,6 +24,7 @@ import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { ApiUtils } from "src/utils/api.utils";
+import { NetworkService } from "../network/network.service";
 
 @Injectable()
 export class TokenService {
@@ -36,7 +37,8 @@ export class TokenService {
     private readonly vmQueryService: VmQueryService,
     private readonly elasticService: ElasticService,
     private readonly tokenAssetService: TokenAssetService,
-    private readonly apiService: ApiService
+    private readonly apiService: ApiService,
+    private readonly networkService: NetworkService,
   ) {
     this.logger = new Logger(TokenService.name);
   }
@@ -648,7 +650,7 @@ export class TokenService {
         return result;
       }, []);
 
-      const networkConfig = await this.getNetworkConfig();
+      const networkConfig = await this.networkService.getNetworkConfig();
 
       for (const element of data.unstakedTokens) {
         element.expires = element.epochs
@@ -674,26 +676,6 @@ export class TokenService {
     // this.logger.log('expires', JSON.stringify({ epochs, roundsPassed, roundsPerEpoch, roundDuration }));
 
     return now + fullEpochs + lastEpoch;
-  };
-
-  async getNetworkConfig() {
-    const [
-      {
-        config: { erd_round_duration, erd_rounds_per_epoch },
-      },
-      {
-        status: { erd_rounds_passed_in_current_epoch },
-      },
-    ] = await Promise.all([
-      this.gatewayService.get('network/config'),
-      this.gatewayService.get('network/status/4294967295')
-    ]);
-
-    const roundsPassed = erd_rounds_passed_in_current_epoch;
-    const roundsPerEpoch = erd_rounds_per_epoch;
-    const roundDuration = erd_round_duration / 1000;
-
-    return { roundsPassed, roundsPerEpoch, roundDuration };
   };
 
   async getAllTokens(): Promise<TokenDetailed[]> {
