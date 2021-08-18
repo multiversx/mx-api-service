@@ -314,8 +314,8 @@ export class CachingService {
 
     let cachedValue = await this.getCacheLocal<T>(key);
     if (cachedValue !== undefined) {
-        profiler.stop(`Local Cache hit for key ${key}`);
-        return cachedValue;
+      profiler.stop(`Local Cache hit for key ${key}`);
+      return cachedValue;
     }
 
     let cached = await this.getCacheRemote<T>(key);
