@@ -226,7 +226,13 @@ export class TokenService {
         }
 
         if (elasticNftData.metadata) {
-          nft.metadata = await this.getExtendedAttributesFromDescription(elasticNftData.metadata);
+          try {
+            nft.metadata = await this.getExtendedAttributesFromDescription(elasticNftData.metadata);
+          } catch (error) {
+            this.logger.error(`Error when getting extended attributes for NFT '${nft.identifier}'`);
+            this.logger.error(error);
+            nft.metadata = undefined;
+          }
         } else {
           nft.metadata = undefined;
         }
@@ -250,21 +256,23 @@ export class TokenService {
   }
 
   async updateThumbnailUrlForNfts(nfts: Nft[]) {
+    let mediaNfts = nfts.filter(nft => nft.uris.filter(uri => uri).length > 0);
+
     let customThumbnailConfirmations = await this.cachingService.batchProcess(
-      nfts,
+      mediaNfts,
       nft => `nftCustomThumbnail:${nft.identifier}`,
       async (nft) => await this.hasCustomThumbnail(nft.identifier),
       Constants.oneWeek()
     );
 
     let standardThumbnailConfirmations = await this.cachingService.batchProcess(
-      nfts,
+      mediaNfts,
       nft => `nftStandardThumbnail:${nft.identifier}`,
       async (nft) => await this.hasStandardThumbnail(nft.identifier),
       Constants.oneWeek()
     );
 
-    for (let [index, nft] of nfts.entries()) {
+    for (let [index, nft] of mediaNfts.entries()) {
       let isCustomThumbnail = customThumbnailConfirmations[index];
       let isStandardThumbnail = standardThumbnailConfirmations[index];
 
@@ -487,7 +495,12 @@ export class TokenService {
 
       if (gatewayNft.attributes) {
         nft.tags = this.getTags(gatewayNft.attributes);
-        nft.metadata = await this.getExtendedAttributesFromRawAttributes(gatewayNft.attributes);
+        try {
+          nft.metadata = await this.getExtendedAttributesFromRawAttributes(gatewayNft.attributes);
+        } catch (error) {
+          this.logger.error(`Could not get extended attributes for nft '${nft.identifier}'`);
+          this.logger.error(error);
+        }
       }
 
       let gatewayNftDetails = await this.getNft(nft.collection);
@@ -570,16 +583,11 @@ export class TokenService {
   }
 
   async getExtendedAttributesFromIpfs(description: string): Promise<NftMetadata> {
-    try {
-      let ipfsUri = `https://ipfs.io/ipfs/${description}`;
-      let processedIpfsUri = this.processUri(ipfsUri);
+    let ipfsUri = `https://ipfs.io/ipfs/${description}`;
+    let processedIpfsUri = this.processUri(ipfsUri);
 
-      let result = await this.apiService.get(processedIpfsUri, 1000);
-      return result.data;
-    } catch (error) {
-      this.logger.error(error);
-      return new NftMetadata();
-    }
+    let result = await this.apiService.get(processedIpfsUri, 1000);
+    return result.data;
   }
 
   getTags(attributes: string): string[] {
