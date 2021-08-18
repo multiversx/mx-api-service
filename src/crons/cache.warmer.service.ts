@@ -11,6 +11,7 @@ import { Constants } from "src/utils/constants";
 import { Locker } from "src/utils/locker";
 import { CachingService } from "src/common/caching.service";
 import { ClientProxy } from "@nestjs/microservices";
+import { ApiConfigService } from "src/common/api.config.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -24,6 +25,7 @@ export class CacheWarmerService {
     private readonly dataApiService: DataApiService,
     private readonly cachingService: CachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
+    private readonly apiConfigService: ApiConfigService
   ) { }
 
   @Cron('* * * * *')
@@ -72,10 +74,12 @@ export class CacheWarmerService {
 
   @Cron('* * * * *')
   async handleCurrentPriceInvalidations() {
-    await Locker.lock('Current price invalidations', async () => {
-      let currentPrice = await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price);
-      await this.invalidateKey('currentPrice', currentPrice, Constants.oneHour());
-    }, true);
+    if (this.apiConfigService.getDataUrl()) {
+      await Locker.lock('Current price invalidations', async () => {
+        let currentPrice = await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price);
+        await this.invalidateKey('currentPrice', currentPrice, Constants.oneHour());
+      }, true);
+    }
   }
 
   private async invalidateKey(key: string, data: any, ttl: number) {
