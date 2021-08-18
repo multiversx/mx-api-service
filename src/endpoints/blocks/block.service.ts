@@ -105,7 +105,10 @@ export class BlockService {
     }
   
     proposer = blses[proposer];
-    validators = validators.map((index: number) => blses[index]);
+
+    if (validators) {
+      validators = validators.map((index: number) => blses[index]);
+    }
   
     return { shard, epoch, proposer, validators, ...rest };
   };
