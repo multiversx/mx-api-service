@@ -142,7 +142,7 @@ export class AccountService {
     return data;
   }
 
-  async getKeys(address: string) {
+  async getKeys(address: string): Promise<{ blsKey: string, stake: string, status: string, rewardAddress: string }[]> {
     let publicKey = AddressUtils.bech32Decode(address);
 
     const BlsKeysStatus = await this.vmQueryService.vmQuery(
