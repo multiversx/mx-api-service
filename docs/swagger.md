@@ -1,4 +1,4 @@
-## Welcome the the Elrond API
+## Welcome to the Elrond API
 
 The API is built to allow you to create apps or integrations quickly and easily.
 
