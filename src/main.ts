@@ -108,7 +108,7 @@ async function bootstrap() {
   pubSubApp.listen(() => logger.log('Started Redis pub/sub microservice'));
 
   logger.log(`Public API active: ${apiConfigService.getIsPublicApiActive()}`);
-  logger.log(`Private API active: ${apiConfigService.getIsPublicApiActive()}`);
+  logger.log(`Private API active: ${apiConfigService.getIsPrivateApiActive()}`);
   logger.log(`Transaction processor active: ${apiConfigService.getIsTransactionProcessorCronActive()}`);
   logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
 }
