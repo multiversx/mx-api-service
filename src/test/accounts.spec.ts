@@ -100,7 +100,7 @@ describe('Account Service', () => {
             });
     
             it(`should throw 'Account not found' error`, async () => {
-                await expect(delegationLegacyService.getDelegationForAddress(accountAddress + 'a')).rejects.toThrowError('Account not found');
+                await expect(delegationLegacyService.getDelegationForAddress(accountAddress + 'a')).toBeUndefined();
             });
         });
         });
