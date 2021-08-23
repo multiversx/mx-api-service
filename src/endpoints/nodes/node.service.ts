@@ -26,6 +26,7 @@ export class NodeService {
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly keybaseService: KeybaseService,
+    @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
@@ -351,17 +352,17 @@ export class NodeService {
 
     return queueEncoded.reduce((result: Queue[], _: any, index: number, array: any) => {
       if (index % 3 === 0) {
-        const [blsBase64, rewardsBase64, nonceBase64] = array.slice(index, index + 3);
+        const [blsBase64, rewardsAddressBase64, nonceBase64] = array.slice(index, index + 3);
 
         const bls = Buffer.from(blsBase64, 'base64').toString('hex');
 
-        const rewardsHex = Buffer.from(rewardsBase64, 'base64').toString('hex');
-        const rewards = AddressUtils.bech32Encode(rewardsHex);
+        const rewardsAddressHex = Buffer.from(rewardsAddressBase64, 'base64').toString('hex');
+        const rewardsAddress = AddressUtils.bech32Encode(rewardsAddressHex);
 
         const nonceHex = Buffer.from(nonceBase64, 'base64').toString('hex');
         const nonce = parseInt(BigInt(nonceHex ? '0x' + nonceHex : nonceHex).toString());
 
-        result.push({ bls, nonce, rewards, position: index / 3 + 1 });
+        result.push({ bls, nonce, rewardsAddress, position: index / 3 + 1 });
       }
 
       return result;

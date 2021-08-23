@@ -24,6 +24,7 @@ import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { ApiUtils } from "src/utils/api.utils";
+import { NetworkService } from "../network/network.service";
 
 @Injectable()
 export class TokenService {
@@ -36,7 +37,8 @@ export class TokenService {
     private readonly vmQueryService: VmQueryService,
     private readonly elasticService: ElasticService,
     private readonly tokenAssetService: TokenAssetService,
-    private readonly apiService: ApiService
+    private readonly apiService: ApiService,
+    private readonly networkService: NetworkService,
   ) {
     this.logger = new Logger(TokenService.name);
   }
@@ -226,7 +228,13 @@ export class TokenService {
         }
 
         if (elasticNftData.metadata) {
-          nft.metadata = await this.getExtendedAttributesFromDescription(elasticNftData.metadata);
+          try {
+            nft.metadata = await this.getExtendedAttributesFromDescription(elasticNftData.metadata);
+          } catch (error) {
+            this.logger.error(`Error when getting extended attributes for NFT '${nft.identifier}'`);
+            this.logger.error(error);
+            nft.metadata = undefined;
+          }
         } else {
           nft.metadata = undefined;
         }
@@ -250,28 +258,51 @@ export class TokenService {
   }
 
   async updateThumbnailUrlForNfts(nfts: Nft[]) {
-    let confirmations = await this.cachingService.batchProcess(
-      nfts,
+    let mediaNfts = nfts.filter(nft => nft.uris.filter(uri => uri).length > 0);
+
+    let customThumbnailConfirmations = await this.cachingService.batchProcess(
+      mediaNfts,
       nft => `nftCustomThumbnail:${nft.identifier}`,
       async (nft) => await this.hasCustomThumbnail(nft.identifier),
-      Constants.oneHour()
+      Constants.oneWeek()
     );
 
-    for (let [index, nft] of nfts.entries()) {
-      let isCustomThumbnail = confirmations[index];
+    let standardThumbnailConfirmations = await this.cachingService.batchProcess(
+      mediaNfts,
+      nft => `nftStandardThumbnail:${nft.identifier}`,
+      async (nft) => await this.hasStandardThumbnail(nft.identifier),
+      Constants.oneWeek()
+    );
+
+    for (let [index, nft] of mediaNfts.entries()) {
+      let isCustomThumbnail = customThumbnailConfirmations[index];
+      let isStandardThumbnail = standardThumbnailConfirmations[index];
+
       if (isCustomThumbnail === true) {
-        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/${nft.identifier}.png`;
+        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/custom/${nft.identifier}`;
+      } if (isStandardThumbnail === true) {
+        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/standard/${nft.identifier}`;
       } else if (nft.metadata && nft.metadata.fileType) {
-        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/${nft.metadata.fileType.replace('/', '-')}.png`;
+        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/default/${nft.metadata.fileType.replace('/', '-')}`;
       } else {
-        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/smiley.png`;
+        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/default/default`;
       }
     }
   }
 
   async hasCustomThumbnail(nftIdentifier: string): Promise<boolean> {
     try {
-      const { status } = await this.apiService.head(`${this.apiConfigService.getMediaUrl()}/nfts/${nftIdentifier}.png`);
+      const { status } = await this.apiService.head(`${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/custom/${nftIdentifier}`);
+
+      return status === 200;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async hasStandardThumbnail(nftIdentifier: string): Promise<boolean> {
+    try {
+      const { status } = await this.apiService.head(`${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/standard/${nftIdentifier}`);
 
       return status === 200;
     } catch (error) {
@@ -466,7 +497,12 @@ export class TokenService {
 
       if (gatewayNft.attributes) {
         nft.tags = this.getTags(gatewayNft.attributes);
-        nft.metadata = await this.getExtendedAttributesFromRawAttributes(gatewayNft.attributes);
+        try {
+          nft.metadata = await this.getExtendedAttributesFromRawAttributes(gatewayNft.attributes);
+        } catch (error) {
+          this.logger.error(`Could not get extended attributes for nft '${nft.identifier}'`);
+          this.logger.error(error);
+        }
       }
 
       let gatewayNftDetails = await this.getNft(nft.collection);
@@ -542,20 +578,18 @@ export class TokenService {
 
   private processUri(uri: string): string {
     if (uri.startsWith('https://ipfs.io/ipfs')) {
-      return uri.replace('https://ipfs.io/ipfs', this.apiConfigService.getMediaUrl() + '/ipfs')
+      return uri.replace('https://ipfs.io/ipfs', this.apiConfigService.getMediaUrl() + '/nfts/asset')
     }
 
     return uri;
   }
 
   async getExtendedAttributesFromIpfs(description: string): Promise<NftMetadata> {
-    try {
-      let result = await this.apiService.get(`https://ipfs.io/ipfs/${description}`, 1000);
-      return result.data;
-    } catch (error) {
-      this.logger.error(error);
-      return new NftMetadata();
-    }
+    let ipfsUri = `https://ipfs.io/ipfs/${description}`;
+    let processedIpfsUri = this.processUri(ipfsUri);
+
+    let result = await this.apiService.get(processedIpfsUri, 1000);
+    return result.data;
   }
 
   getTags(attributes: string): string[] {
@@ -624,7 +658,7 @@ export class TokenService {
         return result;
       }, []);
 
-      const networkConfig = await this.getNetworkConfig();
+      const networkConfig = await this.networkService.getNetworkConfig();
 
       for (const element of data.unstakedTokens) {
         element.expires = element.epochs
@@ -650,26 +684,6 @@ export class TokenService {
     // this.logger.log('expires', JSON.stringify({ epochs, roundsPassed, roundsPerEpoch, roundDuration }));
 
     return now + fullEpochs + lastEpoch;
-  };
-
-  async getNetworkConfig() {
-    const [
-      {
-        config: { erd_round_duration, erd_rounds_per_epoch },
-      },
-      {
-        status: { erd_rounds_passed_in_current_epoch },
-      },
-    ] = await Promise.all([
-      this.gatewayService.get('network/config'),
-      this.gatewayService.get('network/status/4294967295')
-    ]);
-
-    const roundsPassed = erd_rounds_passed_in_current_epoch;
-    const roundsPerEpoch = erd_rounds_per_epoch;
-    const roundDuration = erd_round_duration / 1000;
-
-    return { roundsPassed, roundsPerEpoch, roundDuration };
   };
 
   async getAllTokens(): Promise<TokenDetailed[]> {

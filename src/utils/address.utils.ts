@@ -1,14 +1,12 @@
-const bech32 = require('bech32');
+import { Address } from "@elrondnetwork/erdjs";
 
 export class AddressUtils {
   static bech32Encode(publicKey: string) {
-    const words = bech32.toWords(Buffer.from(publicKey, 'hex'));
-    return bech32.encode('erd', words);
+    return Address.fromHex(publicKey).bech32();
   };
   
   static bech32Decode(address: string) {
-    const decoded = bech32.decode(address, 256);
-    return Buffer.from(bech32.fromWords(decoded.words)).toString('hex');
+    return Address.fromBech32(address).hex();
   };
   
   static computeShard(hexPubKey: string) {
