@@ -695,9 +695,16 @@ export class TokenService {
   }
 
   async getAllTokensRaw(): Promise<TokenDetailed[]> {
-    const {
-      tokens: tokensIdentifiers,
-    } = await this.gatewayService.get('network/esdt/fungible-tokens');
+    let tokensIdentifiers: string[];
+    try {
+      const getFungibleTokensResult = await this.gatewayService.get('network/esdt/fungible-tokens');
+
+      tokensIdentifiers = getFungibleTokensResult.tokens;
+    } catch (error) {
+      this.logger.error('Error when getting fungible tokens from gateway');
+      this.logger.error(error);
+      return [];
+    }
 
     let tokens = await this.cachingService.batchProcess(
       tokensIdentifiers,
