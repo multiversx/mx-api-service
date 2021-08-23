@@ -68,7 +68,7 @@ describe('Account Service', () => {
             });
     
             it(`should throw 'Account not found' error`, async () => {
-                await expect(accountService.getAccount(accountAddress + 'a')).rejects.toThrowError('Account not found');
+                await expect(accountService.getAccount(accountAddress + 'a')).toThrow();
             });
 
         describe('Account Delegation Legacy', () => {
