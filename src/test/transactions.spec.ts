@@ -5,27 +5,7 @@ import { TransactionStatus } from 'src/endpoints/transactions/entities/transacti
 import { TransactionService } from 'src/endpoints/transactions/transaction.service';
 import { TransactionFilter } from 'src/endpoints/transactions/entities/transaction.filter';
 import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
-
-expect.extend({
-    toHaveStructure(received: any, keys: string[]) {
-        const objectSortedKeys = JSON.stringify(Object.keys(received).sort());
-        const expectedKeys = JSON.stringify(keys.sort());
-
-        const pass = objectSortedKeys === expectedKeys;
-        if (pass) {
-            return {
-                pass: true,
-                message: () => `expected ${Object.keys(received)} not to be a valid ${keys} `,
-            }
-        } 
-        else {
-            return {
-                pass: false,
-                message: () => `expected ${Object.keys(received)} to be a valid ${keys} `,
-            }
-        }
-    },
-});
+import "../utils/extensions/jest.extensions";
 
 describe('Transaction Service', () => {
     let transactionService: TransactionService;
