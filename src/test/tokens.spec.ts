@@ -112,7 +112,7 @@ describe('Token Service', () => {
     });
 
     it(`should throw 'Token not found' error`, async () => {
-      await expect(tokenService.getToken(tokenIdentifier + 'a')).rejects.toThrowError('Token not found');
+      await expect(tokenService.getToken(tokenIdentifier + 'a')).toBeUndefined();
     });
   })
 

@@ -180,7 +180,7 @@ describe('Transaction Service', () => {
 
         it(`should throw 'Transaction not found' error`, async () => {
 
-            await expect(transactionService.getTransaction(transactionHash + 'a')).toBeUndefined();
+            await expect(transactionService.getTransaction(transactionHash + 'a')).toBeNull();
         });
     })
 });
