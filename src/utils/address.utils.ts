@@ -1,7 +1,5 @@
 const bech32 = require('bech32');
 
-
-
 export class AddressUtils {
   static bech32Encode(publicKey: string) {
     const words = bech32.toWords(Buffer.from(publicKey, 'hex'));
