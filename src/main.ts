@@ -105,7 +105,7 @@ async function bootstrap() {
       }
     },
   );
-  pubSubApp.listen(() => logger.log('Started Redis pub/sub microservice'));
+  pubSubApp.listen();
 
   logger.log(`Public API active: ${apiConfigService.getIsPublicApiActive()}`);
   logger.log(`Private API active: ${apiConfigService.getIsPrivateApiActive()}`);
