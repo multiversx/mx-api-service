@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
+import { CachingService } from 'src/common/caching.service';
 import { PublicAppModule } from 'src/public.app.module';
 import { Constants } from 'src/utils/constants';
-import { CachingService } from '../helpers/caching.service';
 
 
 describe('Caching Service', () => {
