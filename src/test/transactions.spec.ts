@@ -1,9 +1,10 @@
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
-import { TransactionController } from 'src/endpoints/transactions/transaction.controller';
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
-import { QueryCondition } from 'src/common/entities/query.condition';
 import { TransactionStatus } from 'src/endpoints/transactions/entities/transaction.status';
+import { TransactionService } from 'src/endpoints/transactions/transaction.service';
+import { TransactionFilter } from 'src/endpoints/transactions/entities/transaction.filter';
+import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
 
 expect.extend({
     toHaveStructure(received: any, keys: string[]) {
@@ -26,8 +27,8 @@ expect.extend({
     },
 });
 
-describe('Transaction Controller', () => {
-    let transactionController: TransactionController;
+describe('Transaction Service', () => {
+    let transactionService: TransactionService;
     let transactionHash: string;
     let transactionSender: string;
     let transactionReceiver: string;
@@ -37,9 +38,13 @@ describe('Transaction Controller', () => {
           imports: [PublicAppModule],
         }).compile();
   
-        transactionController = moduleRef.get<TransactionController>(TransactionController);
+        transactionService = moduleRef.get<TransactionService>(TransactionService);
 
-        let transactions = await transactionController.getTransactions(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 0, 1);
+        const transactionFilter = new TransactionFilter();
+        transactionFilter.from = 0;
+        transactionFilter.size = 1;
+
+        let transactions = await transactionService.getTransactions(transactionFilter);
         expect(transactions).toHaveLength(1);
 
         let transaction = transactions[0];
@@ -52,7 +57,10 @@ describe('Transaction Controller', () => {
     describe('Transactions list', () => {
         describe('Transactions pagination', () => {
             it(`should return a list with 25 transactions`, async () => {
-                const transactionsList = await transactionController.getTransactions(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 0, 25);
+                const transactionFilter = new TransactionFilter();
+                transactionFilter.from = 0;
+                transactionFilter.size = 25;
+                const transactionsList = await transactionService.getTransactions(transactionFilter);
     
                 expect(transactionsList).toBeInstanceOf(Array);
                 expect(transactionsList).toHaveLength(25);
@@ -63,7 +71,11 @@ describe('Transaction Controller', () => {
             });
     
             it(`should return a list with 100 transactions`, async () => {
-                const transactionsList = await transactionController.getTransactions(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 0, 100);;
+                const transactionFilter = new TransactionFilter();
+                transactionFilter.from = 0;
+                transactionFilter.size = 100;
+                const transactionsList = await transactionService.getTransactions(transactionFilter);
+
                 expect(transactionsList).toBeInstanceOf(Array);
                 expect(transactionsList).toHaveLength(100);
     
@@ -75,7 +87,13 @@ describe('Transaction Controller', () => {
         
         describe('Transactions filters', () => {
             it(`should return a list of transactions between two accounts`, async () => {
-                const transactionsList = await transactionController.getTransactions(transactionSender, transactionReceiver, undefined, undefined, undefined, undefined, QueryCondition.must, undefined, undefined, 0, 25);
+                const transactionFilter = new TransactionFilter();
+                transactionFilter.from = 0;
+                transactionFilter.size = 25;
+                transactionFilter.sender = transactionSender;
+                transactionFilter.receiver = transactionReceiver;
+                const transactionsList = await transactionService.getTransactions(transactionFilter);
+
                 expect(transactionsList).toBeInstanceOf(Array);
     
                 for (let transaction of transactionsList) {
@@ -86,7 +104,11 @@ describe('Transaction Controller', () => {
             });
     
             it(`should return a list with pending transactions`, async () => {
-                const transactionsList = await transactionController.getTransactions(undefined, undefined, undefined, undefined, undefined, TransactionStatus.pending, undefined, undefined, undefined, 0, 100);;
+                const transactionFilter = new TransactionFilter();
+                transactionFilter.from = 0;
+                transactionFilter.size = 25;
+                transactionFilter.status = TransactionStatus.pending;
+                const transactionsList = await transactionService.getTransactions(transactionFilter);
                 expect(transactionsList).toBeInstanceOf(Array);
 
                 for (let transaction of transactionsList) {
@@ -96,22 +118,33 @@ describe('Transaction Controller', () => {
             });
 
             it(`should return a list with transactions in one date range`, async () => {
-                const before = 1625559162;
-                const after = 1625559108;
-                const transactionsList = await transactionController.getTransactions(undefined, undefined, undefined, undefined, undefined, undefined, undefined, before, after, 0, 100);;
+                const transactionFilter = new TransactionFilter();
+                transactionFilter.from = 0;
+                transactionFilter.size = 25;
+                transactionFilter.before = 1625559162;
+                transactionFilter.after = 1625559108;
+                const transactionsList = await transactionService.getTransactions(transactionFilter);
                 expect(transactionsList).toBeInstanceOf(Array);
     
                 for (let transaction of transactionsList) {
                     expect(transaction).toHaveStructure(Object.keys(new Transaction()));
-                    expect(transaction.timestamp).toBeGreaterThanOrEqual(after);
-                    expect(transaction.timestamp).toBeLessThanOrEqual(before);
+                    expect(transaction.timestamp).toBeGreaterThanOrEqual(transactionFilter.after);
+                    expect(transaction.timestamp).toBeLessThanOrEqual(transactionFilter.before);
                 }
             });
 
             it(`should return a list with transactions for an adress, in one date range, with success status`, async () => {
-                const after = 1625559108;
-                const address = transactionSender;
-                const transactionsList = await transactionController.getTransactions(address, address, undefined, undefined, undefined, TransactionStatus.success, QueryCondition.should, undefined, after, 0, 100);
+                const address = transactionSender
+                const transactionFilter = new TransactionFilter();
+                transactionFilter.from = 0;
+                transactionFilter.size = 25;
+                transactionFilter.after = 1625559108;
+                transactionFilter.sender = address;
+                transactionFilter.receiver = address;
+                transactionFilter.status = TransactionStatus.success;
+                transactionFilter.condition = QueryConditionOptions.should;
+
+                const transactionsList = await transactionService.getTransactions(transactionFilter);
                 expect(transactionsList).toBeInstanceOf(Array);
     
                 for (let transaction of transactionsList) {
@@ -120,7 +153,7 @@ describe('Transaction Controller', () => {
                     {
                         expect(false);
                     }
-                    expect(transaction.timestamp).toBeGreaterThanOrEqual(after);
+                    expect(transaction.timestamp).toBeGreaterThanOrEqual(transactionFilter.after);
                     expect(transaction.status).toBe(TransactionStatus.success);
                 }
             });
@@ -130,7 +163,7 @@ describe('Transaction Controller', () => {
 
     describe('Transaction count', () => {
         it(`should return a number`, async () => {
-            const transactionsCount: Number = new Number(await transactionController.getTransactionCount(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 0, 25));
+            const transactionsCount: Number = new Number(await transactionService.getTransactionCount(new TransactionFilter()));
 
             expect(transactionsCount).toBeInstanceOf(Number);
         });
@@ -138,14 +171,16 @@ describe('Transaction Controller', () => {
 
     describe('Specific transaction', () => {
         it(`should return a transaction for a specific hash`, async () => {
-            const transaction = await transactionController.getTransaction(transactionHash);
+            const transaction = await transactionService.getTransaction(transactionHash);
 
-            expect(transaction.txHash).toBe(transactionHash);
+            if (transaction) {
+             expect(transaction.txHash).toBe(transactionHash);
+            }
         });
 
         it(`should throw 'Transaction not found' error`, async () => {
 
-            await expect(transactionController.getTransaction(transactionHash + 'a')).rejects.toThrowError('Transaction not found');
+            await expect(transactionService.getTransaction(transactionHash + 'a')).toBeUndefined();
         });
     })
 });
