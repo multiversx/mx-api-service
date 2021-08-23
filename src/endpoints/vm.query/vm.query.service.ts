@@ -1,17 +1,15 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { ApiService } from "src/helpers/api.service";
-import { ApiConfigService } from "../../helpers/api.config.service";
-import { CachingService } from "../../helpers/caching.service";
-import {  oneHour } from "../../helpers/helpers";
+import { CachingService } from "src/common/caching.service";
+import { GatewayService } from "src/common/gateway.service";
+import { Constants } from "src/utils/constants";
 
 @Injectable()
 export class VmQueryService {
   private readonly logger: Logger
 
   constructor(
-    private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
-    private readonly apiService: ApiService
+    private readonly gatewayService: GatewayService
   ) {
     this.logger = new Logger(VmQueryService.name);
   }
@@ -29,7 +27,7 @@ export class VmQueryService {
     let isCachingQueryFunction = await this.cachingService.isCachingQueryFunction(contract, func);
     let secondsRemainingUntilNextRound = await this.cachingService.getSecondsRemainingUntilNextRound();
 
-    let localTtl = isCachingQueryFunction ? oneHour() : secondsRemainingUntilNextRound;
+    let localTtl = isCachingQueryFunction ? Constants.oneHour() : secondsRemainingUntilNextRound;
 
     // no need to store value remotely just to evict it one second later
     let remoteTtl = localTtl > 1 ? localTtl : 0;
@@ -60,7 +58,7 @@ export class VmQueryService {
         let isCachingQueryFunction = await this.cachingService.isCachingQueryFunction(contract, func);
         let secondsRemainingUntilNextRound = await this.cachingService.getSecondsRemainingUntilNextRound();
     
-        let localTtl = isCachingQueryFunction ? oneHour() : secondsRemainingUntilNextRound;
+        let localTtl = isCachingQueryFunction ? Constants.oneHour() : secondsRemainingUntilNextRound;
     
         // no need to store value remotely just to evict it one second later
         let remoteTtl = localTtl > 1 ? localTtl : 0;
@@ -90,8 +88,8 @@ export class VmQueryService {
       args: args,
     };
 
-    let result = await this.apiService.post(
-      `${this.apiConfigService.getVmQueryUrl()}/vm-values/query`,
+    let result = await this.gatewayService.createRaw(
+      'vm-values/query',
       payload,
     );
 

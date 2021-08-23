@@ -1,7 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import { ApiConfigService } from "src/helpers/api.config.service";
-import { CachingService } from "src/helpers/caching.service";
-import { bech32Encode, numberDecode, oneMinute } from "src/helpers/helpers";
+import { ApiConfigService } from "src/common/api.config.service";
+import { CachingService } from "src/common/caching.service";
+import { AddressUtils } from "src/utils/address.utils";
+import { Constants } from "src/utils/constants";
+import { NumberUtils } from "src/utils/number.utils";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { WaitingList } from "./entities/waiting.list";
 
@@ -33,7 +35,7 @@ export class WaitingListService {
     return await this.cachingService.getOrSetCache(
       'waiting-list',
       async () => await this.getFullWaitingListRaw(),
-      oneMinute() * 5
+      Constants.oneMinute() * 5
     );
   }
 
@@ -50,9 +52,9 @@ export class WaitingListService {
         const [publicKeyEncoded, valueEncoded, nonceEncoded] = array.slice(index, index + 3);
 
         const publicKey = Buffer.from(publicKeyEncoded, 'base64').toString('hex');
-        const address = bech32Encode(publicKey);
-        const value = numberDecode(valueEncoded);
-        const nonce = parseInt(numberDecode(nonceEncoded));
+        const address = AddressUtils.bech32Encode(publicKey);
+        const value = NumberUtils.numberDecode(valueEncoded);
+        const nonce = parseInt(NumberUtils.numberDecode(nonceEncoded));
 
         let waitingList: WaitingList = { address, value, nonce, rank: 0 };
 

@@ -1,19 +1,22 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { ElasticService } from '../../helpers/elastic.service';
-import { GatewayService } from '../../helpers/gateway.service';
+import { ElasticService } from '../../common/elastic.service';
+import { GatewayService } from '../../common/gateway.service';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
-import { bech32Decode, bech32Encode, computeShard, mergeObjects, oneDay, oneMinute, padHex } from 'src/helpers/helpers';
-import { CachingService } from 'src/helpers/caching.service';
+import { CachingService } from 'src/common/caching.service';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
-import { ApiConfigService } from 'src/helpers/api.config.service';
+import { ApiConfigService } from 'src/common/api.config.service';
 import { AccountDeferred } from './entities/account.deferred';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { ElasticPagination } from 'src/helpers/entities/elastic/elastic.pagination';
-import { ElasticSortProperty } from 'src/helpers/entities/elastic/elastic.sort.property';
-import { ElasticSortOrder } from 'src/helpers/entities/elastic/elastic.sort.order';
-import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
-import { QueryType } from 'src/helpers/entities/elastic/query.type';
+import { ElasticPagination } from 'src/common/entities/elastic/elastic.pagination';
+import { ElasticSortProperty } from 'src/common/entities/elastic/elastic.sort.property';
+import { ElasticSortOrder } from 'src/common/entities/elastic/elastic.sort.order';
+import { ElasticQuery } from 'src/common/entities/elastic/elastic.query';
+import { QueryType } from 'src/common/entities/elastic/query.type';
+import { Constants } from 'src/utils/constants';
+import { AddressUtils } from 'src/utils/address.utils';
+import { ApiUtils } from 'src/utils/api.utils';
+import { BinaryUtils } from 'src/utils/binary.utils';
 
 @Injectable()
 export class AccountService {
@@ -30,7 +33,7 @@ export class AccountService {
     return await this.cachingService.getOrSetCache(
       'account:count',
       async () => await this.elasticService.getCount('accounts'),
-      oneMinute()
+      Constants.oneMinute()
     );
   }
 
@@ -38,7 +41,7 @@ export class AccountService {
     return await this.cachingService.getOrSetCache(
       `codeHash:${address}`,
       async () => this.getAccountCodeHashRaw(address),
-      oneDay()
+      Constants.oneDay()
     );
   }
 
@@ -64,7 +67,7 @@ export class AccountService {
       this.gatewayService.get(`address/${address}`)
     ]);
 
-    let shard = computeShard(bech32Decode(address));
+    let shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
 
     let result = { address, nonce, balance, code, codeHash, rootHash, txCount, username, shard };
 
@@ -85,16 +88,16 @@ export class AccountService {
 
     let result = await this.elasticService.getList('accounts', 'address', elasticQueryAdapter);
 
-    let accounts: Account[] = result.map(item => mergeObjects(new Account(), item));
+    let accounts: Account[] = result.map(item => ApiUtils.mergeObjects(new Account(), item));
     for (let account of accounts) {
-      account.shard = computeShard(bech32Decode(account.address));
+      account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address));
     }
 
     return accounts;
   }
 
   async getDeferredAccount(address: string): Promise<AccountDeferred[]> {
-    const publicKey = bech32Decode(address);
+    const publicKey = AddressUtils.bech32Decode(address);
 
     let [
       encodedUserDeferredPaymentList,
@@ -139,8 +142,8 @@ export class AccountService {
     return data;
   }
 
-  async getKeys(address: string) {
-    let publicKey = bech32Decode(address);
+  async getKeys(address: string): Promise<{ blsKey: string, stake: string, status: string, rewardAddress: string }[]> {
+    let publicKey = AddressUtils.bech32Decode(address);
 
     const BlsKeysStatus = await this.vmQueryService.vmQuery(
       this.apiConfigService.getAuctionContractAddress(),
@@ -159,7 +162,7 @@ export class AccountService {
       if (index % 2 === 0) {
         const [encodedBlsKey, encodedStatus] = array.slice(index, index + 2);
 
-        const blsKey = padHex(Buffer.from(encodedBlsKey, 'base64').toString('hex'));
+        const blsKey = BinaryUtils.padHex(Buffer.from(encodedBlsKey, 'base64').toString('hex'));
         const status = Buffer.from(encodedStatus, 'base64').toString();
         const stake = '2500000000000000000000';
 
@@ -181,7 +184,7 @@ export class AccountService {
       );
 
       const rewardsPublicKey = Buffer.from(encodedRewardsPublicKey, 'base64').toString();
-      const rewardAddress = bech32Encode(rewardsPublicKey);
+      const rewardAddress = AddressUtils.bech32Encode(rewardsPublicKey);
 
       for (let [index, _] of data.entries()) {
         data[index].rewardAddress = rewardAddress;

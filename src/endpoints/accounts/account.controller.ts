@@ -10,9 +10,9 @@ import { DelegationLegacyService } from '../delegation.legacy/delegation.legacy.
 import { AccountDelegationLegacy } from '../delegation.legacy/entities/account.delegation.legacy';
 import { AccountKey } from './entities/account.key';
 import { NftAccount } from '../tokens/entities/nft.account';
-import { ParseOptionalEnumPipe } from 'src/helpers/pipes/parse.optional.enum.pipe';
+import { ParseOptionalEnumPipe } from 'src/utils/pipes/parse.optional.enum.pipe';
 import { NftType } from '../tokens/entities/nft.type';
-import { ParseOptionalBoolPipe } from 'src/helpers/pipes/parse.optional.bool.pipe';
+import { ParseOptionalBoolPipe } from 'src/utils/pipes/parse.optional.bool.pipe';
 import { WaitingList } from '../waiting-list/entities/waiting.list';
 import { WaitingListService } from '../waiting-list/waiting.list.service';
 import { NftCollection } from '../tokens/entities/nft.collection';
@@ -235,7 +235,7 @@ export class AccountController {
   ): Promise<TokenWithBalance> {
     let result = await this.tokenService.getTokenForAddress(address, token);
     if (!result) {
-      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('Token for given account not found', HttpStatus.NOT_FOUND);
     }
 
     return result;
@@ -350,7 +350,7 @@ export class AccountController {
   ): Promise<NftAccount> {
     let result = await this.tokenService.getNftForAddress(address, nft);
     if (!result) {
-      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('Token for given account not found', HttpStatus.NOT_FOUND);
     }
 
     return result;

@@ -1,26 +1,30 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { ApiConfigService } from "src/helpers/api.config.service";
-import { CachingService } from "src/helpers/caching.service";
-import { GatewayService } from "src/helpers/gateway.service";
-import { base64Decode, bech32Decode, bech32Encode, mergeObjects, oneDay, oneHour, oneWeek } from "src/helpers/helpers";
+import { ApiConfigService } from "src/common/api.config.service";
+import { CachingService } from "src/common/caching.service";
+import { GatewayService } from "src/common/gateway.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
 import { TokenDetailed } from "./entities/token.detailed";
 import { TokenProperties } from "./entities/token.properties";
 import { NftType } from "./entities/nft.type";
-import { ElasticService } from "src/helpers/elastic.service";
+import { ElasticService } from "src/common/elastic.service";
 import { Nft } from "./entities/nft";
 import { NftDetailed } from "./entities/nft.detailed";
 import { NftOwner } from "./entities/nft.owner";
 import { NftAccount } from "./entities/nft.account";
-import { TokenAssetService } from "src/helpers/token.asset.service";
+import { TokenAssetService } from "src/common/token.asset.service";
 import { NftCollection } from "./entities/nft.collection";
 import { NftFilter } from "./entities/nft.filter";
-import { ApiService } from "src/helpers/api.service";
+import { ApiService } from "src/common/api.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { CollectionFilter } from "./entities/collection.filter";
 import { NftMetadata } from "./entities/nft.metadata";
+import { Constants } from "src/utils/constants";
+import { AddressUtils } from "src/utils/address.utils";
+import { BinaryUtils } from "src/utils/binary.utils";
+import { ApiUtils } from "src/utils/api.utils";
+import { NetworkService } from "../network/network.service";
 
 @Injectable()
 export class TokenService {
@@ -33,7 +37,8 @@ export class TokenService {
     private readonly vmQueryService: VmQueryService,
     private readonly elasticService: ElasticService,
     private readonly tokenAssetService: TokenAssetService,
-    private readonly apiService: ApiService
+    private readonly apiService: ApiService,
+    private readonly networkService: NetworkService,
   ) {
     this.logger = new Logger(TokenService.name);
   }
@@ -44,7 +49,7 @@ export class TokenService {
     if (token) {
       token.assets = await this.tokenAssetService.getAssets(token.identifier);
 
-      return mergeObjects(new TokenDetailed(), token);
+      return ApiUtils.mergeObjects(new TokenDetailed(), token);
     }
 
     return undefined;
@@ -67,7 +72,7 @@ export class TokenService {
       token.assets = await this.tokenAssetService.getAssets(token.identifier);
     }
 
-    return tokens.map(item => mergeObjects(new TokenDetailed(), item));
+    return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
   }
 
   async getTokenCount(search: string | undefined): Promise<number> {
@@ -86,15 +91,15 @@ export class TokenService {
     let properties = await this.cachingService.getOrSetCache(
       `nft:${identifier}`,
       async () => await this.getTokenProperties(identifier),
-      oneWeek(),
-      oneDay()
+      Constants.oneWeek(),
+      Constants.oneDay()
     );
 
     if (!properties) {
       return undefined;
     }
 
-    return mergeObjects(new TokenProperties(), properties);
+    return ApiUtils.mergeObjects(new TokenProperties(), properties);
   }
 
   async getNftCollections(queryPagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
@@ -107,11 +112,11 @@ export class TokenService {
       let nftCollection = new NftCollection();
       nftCollection.collection = tokenCollection.token;
 
-      mergeObjects(nftCollection, tokenCollection);
+      ApiUtils.mergeObjects(nftCollection, tokenCollection);
 
       let nft = await this.getNft(nftCollection.collection);
       if (nft) {
-        mergeObjects(nftCollection, nft);
+        ApiUtils.mergeObjects(nftCollection, nft);
       }
 
       nftCollections.push(nftCollection);
@@ -136,11 +141,11 @@ export class TokenService {
     let nftCollection = new NftCollection();
     nftCollection.collection = tokenCollection.token;
 
-    mergeObjects(nftCollection, tokenCollection);
+    ApiUtils.mergeObjects(nftCollection, tokenCollection);
 
     let nft = await this.getNft(nftCollection.collection);
     if (nft) {
-      mergeObjects(nftCollection, nft);
+      ApiUtils.mergeObjects(nftCollection, nft);
     }
 
     return nftCollection;
@@ -158,7 +163,7 @@ export class TokenService {
       return undefined;
     }
 
-    let nft: NftDetailed = mergeObjects(new NftDetailed(), nfts[0]);
+    let nft: NftDetailed = ApiUtils.mergeObjects(new NftDetailed(), nfts[0]);
 
     if (nft.identifier.toLowerCase() !== identifier.toLowerCase()) {
       return undefined;
@@ -216,14 +221,20 @@ export class TokenService {
 
         if (nft.uris && nft.uris.length > 0) {
           try {
-            nft.url = this.processUri(base64Decode(nft.uris[0]));
+            nft.url = this.processUri(BinaryUtils.base64Decode(nft.uris[0]));
           } catch (error) {
             this.logger.error(error);
           }
         }
 
         if (elasticNftData.metadata) {
-          nft.metadata = await this.getExtendedAttributesFromDescription(elasticNftData.metadata);
+          try {
+            nft.metadata = await this.getExtendedAttributesFromDescription(elasticNftData.metadata);
+          } catch (error) {
+            this.logger.error(`Error when getting extended attributes for NFT '${nft.identifier}'`);
+            this.logger.error(error);
+            nft.metadata = undefined;
+          }
         } else {
           nft.metadata = undefined;
         }
@@ -247,28 +258,51 @@ export class TokenService {
   }
 
   async updateThumbnailUrlForNfts(nfts: Nft[]) {
-    let confirmations = await this.cachingService.batchProcess(
-      nfts,
+    let mediaNfts = nfts.filter(nft => nft.uris.filter(uri => uri).length > 0);
+
+    let customThumbnailConfirmations = await this.cachingService.batchProcess(
+      mediaNfts,
       nft => `nftCustomThumbnail:${nft.identifier}`,
       async (nft) => await this.hasCustomThumbnail(nft.identifier),
-      oneHour()
+      Constants.oneWeek()
     );
 
-    for (let [index, nft] of nfts.entries()) {
-      let isCustomThumbnail = confirmations[index];
+    let standardThumbnailConfirmations = await this.cachingService.batchProcess(
+      mediaNfts,
+      nft => `nftStandardThumbnail:${nft.identifier}`,
+      async (nft) => await this.hasStandardThumbnail(nft.identifier),
+      Constants.oneWeek()
+    );
+
+    for (let [index, nft] of mediaNfts.entries()) {
+      let isCustomThumbnail = customThumbnailConfirmations[index];
+      let isStandardThumbnail = standardThumbnailConfirmations[index];
+
       if (isCustomThumbnail === true) {
-        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/${nft.identifier}.png`;
+        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/custom/${nft.identifier}`;
+      } if (isStandardThumbnail === true) {
+        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/standard/${nft.identifier}`;
       } else if (nft.metadata && nft.metadata.fileType) {
-        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/${nft.metadata.fileType.replace('/', '-')}.png`;
+        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/default/${nft.metadata.fileType.replace('/', '-')}`;
       } else {
-        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/smiley.png`;
+        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/default/default`;
       }
     }
   }
 
   async hasCustomThumbnail(nftIdentifier: string): Promise<boolean> {
     try {
-      const { status } = await this.apiService.head(`${this.apiConfigService.getMediaUrl()}/nfts/${nftIdentifier}.png`);
+      const { status } = await this.apiService.head(`${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/custom/${nftIdentifier}`);
+
+      return status === 200;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async hasStandardThumbnail(nftIdentifier: string): Promise<boolean> {
+    try {
+      const { status } = await this.apiService.head(`${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/standard/${nftIdentifier}`);
 
       return status === 200;
     } catch (error) {
@@ -296,7 +330,7 @@ export class TokenService {
       token.assets = await this.tokenAssetService.getAssets(token.identifier);
     }
 
-    return tokens.map(token => mergeObjects(new TokenWithBalance(), token));
+    return tokens.map(token => ApiUtils.mergeObjects(new TokenWithBalance(), token));
   }
 
   async getCollectionsForAddress(address: string, queryPagination: QueryPagination): Promise<NftCollection[]> {
@@ -339,7 +373,17 @@ export class TokenService {
       tokensIndexed[token.identifier] = token;
     }
 
-    let esdtResult = await this.gatewayService.get(`address/${address}/esdt`);
+    let esdtResult: any;
+    try {
+      esdtResult = await this.gatewayService.get(`address/${address}/esdt`);
+    } catch (error) {
+      let errorMessage = error?.response?.data?.error;
+      if (errorMessage && errorMessage.includes('account was not found')) {
+        return [];
+      }
+      
+      throw error;
+    }
 
     let tokensWithBalance: TokenWithBalance[] = [];
 
@@ -410,7 +454,17 @@ export class TokenService {
   }
 
   async getNftsForAddressInternal(address: string, filter: NftFilter): Promise<NftAccount[]> {
-    let gatewayNftResult = await this.gatewayService.get(`address/${address}/esdt`);
+    let gatewayNftResult: any;
+    try {
+      gatewayNftResult = await this.gatewayService.get(`address/${address}/esdt`);
+    } catch (error) {
+      let errorMessage = error?.response?.data?.error;
+      if (errorMessage && errorMessage.includes('account was not found')) {
+        return [];
+      }
+
+      throw error;
+    }
 
     let gatewayNfts = Object.values(gatewayNftResult['esdts']).map(x => x as any);
 
@@ -432,7 +486,7 @@ export class TokenService {
 
       if (nft.uris && nft.uris.length > 0) {
         try {
-          nft.url = base64Decode(nft.uris[0]);
+          nft.url = BinaryUtils.base64Decode(nft.uris[0]);
         } catch (error) {
           this.logger.error(error);
         }
@@ -443,7 +497,12 @@ export class TokenService {
 
       if (gatewayNft.attributes) {
         nft.tags = this.getTags(gatewayNft.attributes);
-        nft.metadata = await this.getExtendedAttributesFromRawAttributes(gatewayNft.attributes);
+        try {
+          nft.metadata = await this.getExtendedAttributesFromRawAttributes(gatewayNft.attributes);
+        } catch (error) {
+          this.logger.error(`Could not get extended attributes for nft '${nft.identifier}'`);
+          this.logger.error(error);
+        }
       }
 
       let gatewayNftDetails = await this.getNft(nft.collection);
@@ -502,8 +561,8 @@ export class TokenService {
     let result = await this.cachingService.getOrSetCache<NftMetadata>(
       `nftExtendedAttributes:${description}`,
       async () => await this.getExtendedAttributesFromIpfs(description ?? ''),
-      oneWeek(),
-      oneDay()
+      Constants.oneWeek(),
+      Constants.oneDay()
     );
 
     if (Object.keys(result).length > 0) {
@@ -519,24 +578,22 @@ export class TokenService {
 
   private processUri(uri: string): string {
     if (uri.startsWith('https://ipfs.io/ipfs')) {
-      return uri.replace('https://ipfs.io/ipfs', this.apiConfigService.getMediaUrl() + '/ipfs')
+      return uri.replace('https://ipfs.io/ipfs', this.apiConfigService.getMediaUrl() + '/nfts/asset')
     }
 
     return uri;
   }
 
   async getExtendedAttributesFromIpfs(description: string): Promise<NftMetadata> {
-    try {
-      let result = await this.apiService.get(`https://ipfs.io/ipfs/${description}`, 1000);
-      return result.data;
-    } catch (error) {
-      this.logger.error(error);
-      return new NftMetadata();
-    }
+    let ipfsUri = `https://ipfs.io/ipfs/${description}`;
+    let processedIpfsUri = this.processUri(ipfsUri);
+
+    let result = await this.apiService.get(processedIpfsUri, 1000);
+    return result.data;
   }
 
   getTags(attributes: string): string[] {
-    let decodedAttributes = base64Decode(attributes);
+    let decodedAttributes = BinaryUtils.base64Decode(attributes);
     let match = decodedAttributes.match(/tags:(?<tags>[\w\s\,]*)/);
     if (!match || !match.groups) {
       return [];
@@ -546,7 +603,7 @@ export class TokenService {
   }
 
   getDescription(attributes: string): string | undefined {
-    let decodedAttributes = base64Decode(attributes);
+    let decodedAttributes = BinaryUtils.base64Decode(attributes);
     let match = decodedAttributes.match(/description:(?<description>[\w]*)/);
     if (!match || !match.groups) {
       return undefined;
@@ -571,7 +628,7 @@ export class TokenService {
         this.apiConfigService.getAuctionContractAddress(),
         'getUnStakedTokensList',
         address,
-        [ bech32Decode(address) ],
+        [ AddressUtils.bech32Decode(address) ],
       ),
     ]);
 
@@ -601,7 +658,7 @@ export class TokenService {
         return result;
       }, []);
 
-      const networkConfig = await this.getNetworkConfig();
+      const networkConfig = await this.networkService.getNetworkConfig();
 
       for (const element of data.unstakedTokens) {
         element.expires = element.epochs
@@ -629,31 +686,11 @@ export class TokenService {
     return now + fullEpochs + lastEpoch;
   };
 
-  async getNetworkConfig() {
-    const [
-      {
-        config: { erd_round_duration, erd_rounds_per_epoch },
-      },
-      {
-        status: { erd_rounds_passed_in_current_epoch },
-      },
-    ] = await Promise.all([
-      this.gatewayService.get('network/config'),
-      this.gatewayService.get('network/status/4294967295')
-    ]);
-
-    const roundsPassed = erd_rounds_passed_in_current_epoch;
-    const roundsPerEpoch = erd_rounds_per_epoch;
-    const roundDuration = erd_round_duration / 1000;
-
-    return { roundsPassed, roundsPerEpoch, roundDuration };
-  };
-
   async getAllTokens(): Promise<TokenDetailed[]> {
     return this.cachingService.getOrSetCache(
       'allTokens',
       async () => await this.getAllTokensRaw(),
-      oneHour()
+      Constants.oneHour()
     );
   }
 
@@ -673,7 +710,7 @@ export class TokenService {
       tokensIdentifiers,
       token => `tokenProperties:${token}`,
       async (token: string) => await this.getTokenProperties(token),
-      oneDay()
+      Constants.oneDay()
     );
 
     // @ts-ignore
@@ -720,7 +757,7 @@ export class TokenService {
       identifier,
       name,
       type,
-      owner: bech32Encode(owner),
+      owner: AddressUtils.bech32Encode(owner),
       minted,
       burnt,
       decimals: parseInt(decimals.split('-').pop() ?? '0'),

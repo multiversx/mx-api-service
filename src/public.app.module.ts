@@ -3,9 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 import configuration from '../config/configuration';
 import { AccountController } from './endpoints/accounts/account.controller';
 import { AccountService } from './endpoints/accounts/account.service';
-import { ApiConfigService } from './helpers/api.config.service';
-import { ElasticService } from './helpers/elastic.service';
-import { GatewayService } from './helpers/gateway.service';
+import { ApiConfigService } from './common/api.config.service';
+import { ElasticService } from './common/elastic.service';
+import { GatewayService } from './common/gateway.service';
 import { NetworkController } from './endpoints/network/network.controller';
 import { NetworkService } from './endpoints/network/network.service';
 import { TransactionController } from './endpoints/transactions/transaction.controller';
@@ -21,21 +21,21 @@ import { RoundController } from './endpoints/rounds/round.controller';
 import { NodeController } from './endpoints/nodes/node.controller';
 import { NodeService } from './endpoints/nodes/node.service';
 import { VmQueryService } from './endpoints/vm.query/vm.query.service';
-import { CachingService } from './helpers/caching.service';
-import { KeybaseService } from './helpers/keybase.service';
+import { CachingService } from './common/caching.service';
+import { KeybaseService } from './common/keybase.service';
 import { ProviderService } from './endpoints/providers/provider.service';
 import { ProviderController } from './endpoints/providers/provider.controller';
 import { StakeService } from './endpoints/stake/stake.service';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
-import { ApiService } from './helpers/api.service';
-import { ProfilerService } from './helpers/profiler.service';
+import { ApiService } from './common/api.service';
+import { ProfilerService } from './common/profiler.service';
 import { DelegationLegacyService } from './endpoints/delegation.legacy/delegation.legacy.service';
 import { DelegationLegacyController } from './endpoints/delegation.legacy/delegation.legacy.controller';
 import { StakeController } from './endpoints/stake/stake.controller';
 import { DelegationController } from './endpoints/delegation/delegation.controller';
 import { DelegationService } from './endpoints/delegation/delegation.service';
 import { VmQueryController } from './endpoints/vm.query/vm.query.controller';
-import { CacheConfigService } from './helpers/cache.config.service';
+import { CacheConfigService } from './common/cache.config.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { ShardController } from './endpoints/shards/shard.controller';
 import { ShardService } from './endpoints/shards/shard.service';
@@ -45,13 +45,13 @@ import { IdentitiesService } from './endpoints/identities/identities.service';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { ProxyController } from './endpoints/proxy/proxy.controller';
-import { TokenAssetService } from './helpers/token.asset.service';
-import { DataApiService } from './helpers/data.api.service';
+import { TokenAssetService } from './common/token.asset.service';
+import { DataApiService } from './common/data.api.service';
 import { KeysController } from './endpoints/keys/keys.controller';
 import { KeysService } from './endpoints/keys/keys.service';
 import { WaitingListController } from './endpoints/waiting-list/waiting.list.controller';
 import { WaitingListService } from './endpoints/waiting-list/waiting.list.service';
-import { BlsService } from './helpers/bls.service';
+import { BlsService } from './common/bls.service';
 import { TagController } from './endpoints/nfttags/tag.controller';
 import { TagService } from './endpoints/nfttags/tag.service';
 const DailyRotateFile = require('winston-daily-rotate-file');
@@ -93,11 +93,11 @@ const DailyRotateFile = require('winston-daily-rotate-file');
     CachingService, KeybaseService, ProviderService,
     StakeService, LoggingInterceptor, ApiService, ProfilerService, DelegationLegacyService,
     DelegationService, CacheConfigService, CachingInterceptor, ShardService, MetricsService, IdentitiesService,
-    TokenAssetService, DataApiService, KeysService, WaitingListService, BlsService, TagService
+    TokenAssetService, DataApiService, KeysService, WaitingListService, BlsService, TagService,
   ],
   exports: [
     ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService,
-    TokenService, ShardService, IdentitiesService, ProviderService, KeybaseService, DataApiService
+    TokenService, ShardService, IdentitiesService, ProviderService, KeybaseService, DataApiService, ApiService,
   ]
 })
 export class PublicAppModule {}

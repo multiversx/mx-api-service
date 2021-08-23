@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import { TransactionController } from 'src/endpoints/transactions/transaction.controller';
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
-import { QueryCondition } from 'src/helpers/entities/query.condition';
+import { QueryCondition } from 'src/common/entities/query.condition';
 import { TransactionStatus } from 'src/endpoints/transactions/entities/transaction.status';
 
 expect.extend({

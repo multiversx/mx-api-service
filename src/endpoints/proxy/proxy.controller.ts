@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpStatus, Param, Post, Query, Res } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { GatewayService } from "src/helpers/gateway.service";
+import { GatewayService } from "src/common/gateway.service";
 import { Response } from 'express';
 import { VmQueryRequest } from "../vm.query/entities/vm.query.request";
 import { VmQueryService } from "../vm.query/vm.query.service";

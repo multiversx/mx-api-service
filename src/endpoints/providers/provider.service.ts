@@ -1,15 +1,16 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
-import { ApiConfigService } from "src/helpers/api.config.service";
-import { CachingService } from "src/helpers/caching.service";
-import { bech32Encode, oneHour, oneMinute } from "src/helpers/helpers";
+import { ApiConfigService } from "src/common/api.config.service";
+import { CachingService } from "src/common/caching.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Provider } from "src/endpoints/providers/entities/provider";
 import { ProviderConfig } from "./entities/provider.config";
 import { NodeService } from "../nodes/node.service";
 import { ProviderFilter } from "src/endpoints/providers/entities/provider.filter";
-import { ApiService } from "src/helpers/api.service";
-import { KeybaseState } from "src/helpers/entities/keybase.state";
-import { KeybaseService } from "src/helpers/keybase.service";
+import { ApiService } from "src/common/api.service";
+import { KeybaseState } from "src/common/entities/keybase.state";
+import { KeybaseService } from "src/common/keybase.service";
+import { Constants } from "src/utils/constants";
+import { AddressUtils } from "src/utils/address.utils";
 
 @Injectable()
 export class ProviderService {
@@ -112,7 +113,7 @@ export class ProviderService {
     return this.cachingService.getOrSetCache(
       'delegationProviders',
       async () => await this.getDelegationProvidersRaw(),
-      oneMinute()
+      Constants.oneMinute()
     );
   }
 
@@ -128,7 +129,7 @@ export class ProviderService {
   }
 
   async getAllProviders(): Promise<Provider[]> {
-    return await this.cachingService.getOrSetCache('providers', async () => await this.getAllProvidersRaw(), oneHour());
+    return await this.cachingService.getOrSetCache('providers', async () => await this.getAllProvidersRaw(), Constants.oneHour());
   }
 
   async getAllProvidersRaw() : Promise<Provider[]> {
@@ -139,19 +140,19 @@ export class ProviderService {
         providers,
         address => `providerConfig:${address}`,
         async address => await this.getProviderConfig(address),
-        oneMinute() * 15,
+        Constants.oneMinute() * 15,
       ),
       this.cachingService.batchProcess(
         providers,
         address => `providerNumUsers:${address}`,
         async address => await this.getNumUsers(address),
-        oneHour(),
+        Constants.oneHour(),
       ),
       this.cachingService.batchProcess(
         providers,
         address => `providerCumulatedRewards:${address}`,
         async address => await this.getCumulatedRewards(address),
-        oneHour()
+        Constants.oneHour()
       ),
     ]);
 
@@ -173,7 +174,7 @@ export class ProviderService {
     let providerKeybases = await this.cachingService.getOrSetCache<{ [key: string]: KeybaseState }>(
       'providerKeybases',
       async () => await this.keybaseService.confirmKeybaseProvidersAgainstKeybasePub(),
-      oneHour()
+      Constants.oneHour()
     );
     
     if (providerKeybases) {
@@ -209,7 +210,7 @@ export class ProviderService {
     }
   
     const value = providersBase64.map((providerBase64) =>
-      bech32Encode(Buffer.from(providerBase64, 'base64').toString('hex'))
+      AddressUtils.bech32Encode(Buffer.from(providerBase64, 'base64').toString('hex'))
     );
   
     return value;
@@ -231,7 +232,7 @@ export class ProviderService {
       'getContractConfig',
     );
   
-    const owner = bech32Encode(Buffer.from(ownerBase64, 'base64').toString('hex'));
+    const owner = AddressUtils.bech32Encode(Buffer.from(ownerBase64, 'base64').toString('hex'));
   
     const [serviceFee, delegationCap] = [
       // , initialOwnerFunds, createdNonce

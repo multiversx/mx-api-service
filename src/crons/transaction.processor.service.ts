@@ -5,11 +5,11 @@ import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { ShardService } from "src/endpoints/shards/shard.service";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
-import { ApiConfigService } from "src/helpers/api.config.service";
-import { CachingService } from "src/helpers/caching.service";
-import { GatewayService } from "src/helpers/gateway.service";
-import { isSmartContractAddress } from "src/helpers/helpers";
-import { PerformanceProfiler } from "src/helpers/performance.profiler";
+import { ApiConfigService } from "src/common/api.config.service";
+import { CachingService } from "src/common/caching.service";
+import { GatewayService } from "src/common/gateway.service";
+import { AddressUtils } from "src/utils/address.utils";
+import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { EventsGateway } from "src/websockets/events.gateway";
 import { ShardTransaction } from "./entities/shard.transaction";
 
@@ -25,7 +25,7 @@ export class TransactionProcessorService {
       private readonly gatewayService: GatewayService,
       private readonly apiConfigService: ApiConfigService,
       private readonly metricsService: MetricsService,
-      @Inject('PUBSUB_SERVICE') private client: ClientProxy,
+      @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
       private readonly shardService: ShardService,
   ) {
     this.logger = new Logger(TransactionProcessorService.name);
@@ -60,11 +60,11 @@ export class TransactionProcessorService {
       for (let transaction of newTransactions) {
         // this.logger.log(`Transferred ${transaction.value} from ${transaction.sender} to ${transaction.receiver}`);
 
-        if (!isSmartContractAddress(transaction.sender)) {
+        if (!AddressUtils.isSmartContractAddress(transaction.sender)) {
           this.eventsGateway.onAccountBalanceChanged(transaction.sender);
         }
 
-        if (!isSmartContractAddress(transaction.receiver)) {
+        if (!AddressUtils.isSmartContractAddress(transaction.receiver)) {
           this.eventsGateway.onAccountBalanceChanged(transaction.receiver);
         }
         
@@ -85,7 +85,7 @@ export class TransactionProcessorService {
 
       let uniqueInvalidatedKeys = [...new Set(allInvalidatedKeys)];
       if (uniqueInvalidatedKeys.length > 0) {
-        this.client.emit('deleteCacheKeys', uniqueInvalidatedKeys);
+        this.clientProxy.emit('deleteCacheKeys', uniqueInvalidatedKeys);
       }
 
       profiler.stop();
