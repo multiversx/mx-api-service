@@ -25,6 +25,7 @@ import { ExtractInterceptor } from './interceptors/extract.interceptor';
 import "./utils/extensions/array.extensions";
 import "./utils/extensions/date.extensions";
 import "./utils/extensions/number.extensions";
+import axios from 'axios';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
@@ -133,3 +134,14 @@ RedisClient.prototype.on_error = function (err: any) {
   // then we should try to reconnect.
   this.connection_gone('error', err);
 };
+
+// temp fix for erdjs
+axios.defaults.transformResponse = [ 
+  (data) => {
+    try {
+      return JSON.parse(data);
+    } catch (error) {
+      return data;
+    }
+  }  
+];
