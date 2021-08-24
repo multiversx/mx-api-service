@@ -58,7 +58,7 @@ export class CachingInterceptor implements NestInterceptor {
             delete this.pendingRequestsDictionary[cacheKey ?? ''];
             pendingRequestReject(err);
 
-            return throwError(err);
+            return throwError(() => err);
           })
         );
     }
