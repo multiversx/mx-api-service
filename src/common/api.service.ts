@@ -51,7 +51,7 @@ export class ApiService {
   async get(url: string, timeout: number | undefined = undefined): Promise<any> {
     timeout = timeout || this.defaultTimeout;
 
-    let profiler = new PerformanceProfiler(`apiService get ${url}`);
+    let profiler = new PerformanceProfiler();
 
     try {
       return await axios.get(url, this.getConfig(timeout));
@@ -75,7 +75,7 @@ export class ApiService {
   async post(url: string, data: any, timeout: number | undefined = undefined): Promise<any> {
     timeout = timeout || this.defaultTimeout;
 
-    let profiler = new PerformanceProfiler(`apiService post ${url}`);
+    let profiler = new PerformanceProfiler();
     
     try {
       return await axios.post(url, data, this.getConfig(timeout));
@@ -100,7 +100,7 @@ export class ApiService {
   async head(url: string, timeout: number | undefined = undefined): Promise<any> {
     timeout = timeout || this.defaultTimeout;
 
-    let profiler = new PerformanceProfiler(`apiService head ${url}`);
+    let profiler = new PerformanceProfiler();
 
     try {
       return await axios.head(url, this.getConfig(timeout));
