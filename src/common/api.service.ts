@@ -36,7 +36,7 @@ export class ApiService {
       timeout,
       httpAgent: this.keepaliveAgent,
       headers,
-      transformRequest: [],
+      transformResponse: undefined,
     };
   }
 
