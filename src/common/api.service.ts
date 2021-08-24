@@ -36,6 +36,15 @@ export class ApiService {
       timeout,
       httpAgent: this.keepaliveAgent,
       headers,
+      transformResponse: [ 
+        (data) => {
+          try {
+            return JSON.parse(data);
+          } catch (error) {
+            return data;
+          }
+        }  
+      ],
     };
   }
 
