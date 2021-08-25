@@ -25,6 +25,7 @@ describe('Provider Service', () => {
     providerService = publicAppModule.get<ProviderService>(ProviderService);
     cachingService = publicAppModule.get<CachingService>(CachingService);
     providers = await providerService.getAllProviders();
+    providers = providers.filter(x => x.identity);
   });
 
   describe('Providers', () => {
@@ -53,15 +54,7 @@ describe('Provider Service', () => {
     });
 
     it('some providers should be confirmed', async () => {
-      let numConfirmedProviders = 0;
-
-      for (let provider of providers) {
-        if (provider.identity) {
-          numConfirmedProviders ++;
-        }
-      }
-
-      expect(numConfirmedProviders).toBeGreaterThanOrEqual(32);
+      expect(providers.length).toBeGreaterThanOrEqual(32);
     });
   });
 });
