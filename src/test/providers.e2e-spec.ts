@@ -4,20 +4,26 @@ import { KeybaseState } from "src/common/entities/keybase.state";
 import { Provider } from "src/endpoints/providers/entities/provider";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { PublicAppModule } from "src/public.app.module";
+import { Constants } from "src/utils/constants";
 import "../utils/extensions/jest.extensions";
+import Initializer from "./e2e-init";
 
 describe('Provider Service', () => {
   let providerService: ProviderService;
   let cachingService: CachingService;
   let allProvidersRaw: Provider[];
 
+  beforeAll(async () => {
+    await Initializer.initialize();
+  }, Constants.oneHour() * 1000);
+
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
+    const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
-    providerService = moduleRef.get<ProviderService>(ProviderService);
-    cachingService = moduleRef.get<CachingService>(CachingService);
+    providerService = publicAppModule.get<ProviderService>(ProviderService);
+    cachingService = publicAppModule.get<CachingService>(CachingService);
     allProvidersRaw = await providerService.getAllProvidersRaw();
   });
 
