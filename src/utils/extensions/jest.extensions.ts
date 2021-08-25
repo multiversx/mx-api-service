@@ -7,13 +7,13 @@ expect.extend({
       if (pass) {
           return {
               pass: true,
-              message: () => `expected ${Object.keys(received)} not to be a valid ${keys} `,
+              message: () => `expected ${objectSortedKeys} not to have structure ${expectedKeys} `,
           }
       } 
       else {
           return {
               pass: false,
-              message: () => `expected ${Object.keys(received)} to be a valid ${keys} `,
+              message: () => `expected ${objectSortedKeys} to have structure ${expectedKeys} `,
           }
       }
   },
