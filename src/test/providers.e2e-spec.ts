@@ -11,7 +11,7 @@ import Initializer from "./e2e-init";
 describe('Provider Service', () => {
   let providerService: ProviderService;
   let cachingService: CachingService;
-  let allProvidersRaw: Provider[];
+  let providers: Provider[];
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -24,12 +24,12 @@ describe('Provider Service', () => {
 
     providerService = publicAppModule.get<ProviderService>(ProviderService);
     cachingService = publicAppModule.get<CachingService>(CachingService);
-    allProvidersRaw = await providerService.getAllProvidersRaw();
+    providers = await providerService.getAllProviders();
   });
 
-  describe('Providers Raw', () => {
+  describe('Providers', () => {
     it('all entities should have provider structure', async () => {
-      for (let provider of allProvidersRaw) {
+      for (let provider of providers) {
         expect(provider).toHaveStructure(Object.keys(new Provider()));
       }
     });
@@ -37,7 +37,7 @@ describe('Provider Service', () => {
     it('should be in sync with keybase confirmations', async () => {
       const providerKeybases:{ [key: string]: KeybaseState } | undefined = await cachingService.getCache('providerKeybases');
 
-      for (let provider of allProvidersRaw) {
+      for (let provider of providers) {
         if (providerKeybases) {
           if (providerKeybases[provider.provider] && providerKeybases[provider.provider].confirmed) {
             expect(provider.identity).toBe(providerKeybases[provider.provider].identity);
@@ -55,7 +55,7 @@ describe('Provider Service', () => {
     it('some providers should be confirmed', async () => {
       let numConfirmedProviders = 0;
 
-      for (let provider of allProvidersRaw) {
+      for (let provider of providers) {
         if (provider.identity) {
           numConfirmedProviders ++;
         }
