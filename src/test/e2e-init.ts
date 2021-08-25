@@ -16,11 +16,6 @@ export default class Initializer {
       return;
     }
 
-    // @ts-ignore
-    if (global.__WARM__) {
-      return;
-    }
-
     // here goes the initialization code
     console.log('Initializing...');
 
