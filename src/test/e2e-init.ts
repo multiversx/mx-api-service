@@ -7,18 +7,9 @@ import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 
 export default class Initializer {
-  private static isInitialized: boolean = false;
   private static cachingService: CachingService;
 
   static async initialize() {
-    if (Initializer.isInitialized) {
-      console.log('Already initialized');
-      return;
-    }
-
-    // here goes the initialization code
-    console.log('Initializing...');
-
     const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -28,6 +19,11 @@ export default class Initializer {
     const nodeService = publicAppModule.get<NodeService>(NodeService);
     const providerService = publicAppModule.get<ProviderService>(ProviderService);
 
+    let isInitialized = await Initializer.cachingService.getCacheRemote<boolean>('isInitialized');
+    if (isInitialized === true) {
+      return;
+    }
+
     await this.execute('Flushing db', async () => await Initializer.cachingService.flushDb());
 
     await this.fetch('nodeKeybases', async () => await keybaseService.confirmKeybaseNodesAgainstKeybasePub());
@@ -35,7 +31,7 @@ export default class Initializer {
     await this.fetch('nodes', async () => await nodeService.getAllNodesRaw());
     await this.fetch('providers', async () => await providerService.getAllProvidersRaw());
 
-    Initializer.isInitialized = true;
+    await Initializer.cachingService.setCacheRemote<boolean>('isInitialized', true, Constants.oneHour());
   }
 
   private static async fetch<T>(key: string, promise: () => Promise<T>) {

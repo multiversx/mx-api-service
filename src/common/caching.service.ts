@@ -104,14 +104,14 @@ export class CachingService {
     this.logger = new Logger(CachingService.name);
   }
 
-  private async setCacheRemote<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
+  public async setCacheRemote<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
     await this.asyncSet(key, JSON.stringify(value), 'EX', ttl ?? this.configService.getCacheTtl());
     return value;
   };
 
   pendingGetRemotes: { [key: string]: Promise<any> } = {};
 
-  private async getCacheRemote<T>(key: string): Promise<T | undefined> {
+  public async getCacheRemote<T>(key: string): Promise<T | undefined> {
     let response;
 
     let pendingGetRemote = this.pendingGetRemotes[key];
