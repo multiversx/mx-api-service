@@ -33,8 +33,8 @@ describe('Provider Service', () => {
 
       for (let provider of allProvidersRaw) {
         if (providerKeybases) {
-          if (providerKeybases.provider.confirmed) {
-            expect(provider.identity).toBe(providerKeybases.provider.identity);
+          if (providerKeybases[provider.provider] && providerKeybases[provider.provider].confirmed) {
+            expect(provider.identity).toBe(providerKeybases[provider.provider].identity);
           }
           else {
             expect(provider.identity).toBeUndefined();
