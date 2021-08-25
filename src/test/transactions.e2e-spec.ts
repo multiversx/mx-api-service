@@ -5,12 +5,18 @@ import { TransactionStatus } from 'src/endpoints/transactions/entities/transacti
 import { TransactionService } from 'src/endpoints/transactions/transaction.service';
 import { TransactionFilter } from 'src/endpoints/transactions/entities/transaction.filter';
 import "../utils/extensions/jest.extensions";
+import Initializer from './e2e-init';
+import { Constants } from 'src/utils/constants';
 
 describe('Transaction Service', () => {
     let transactionService: TransactionService;
     let transactionHash: string;
     let transactionSender: string;
     let transactionReceiver: string;
+
+    beforeAll(async () => {
+      await Initializer.initialize();
+    }, Constants.oneHour() * 1000);
   
     beforeEach(async () => {
       const moduleRef = await Test.createTestingModule({

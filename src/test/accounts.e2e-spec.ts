@@ -6,11 +6,17 @@ import { AccountDelegationLegacy } from 'src/endpoints/delegation.legacy/entitie
 import { AccountService } from 'src/endpoints/accounts/account.service';
 import { DelegationLegacyService } from 'src/endpoints/delegation.legacy/delegation.legacy.service';
 import "../utils/extensions/jest.extensions";
+import Initializer from './e2e-init';
+import { Constants } from 'src/utils/constants';
 
 describe('Account Service', () => {
     let accountService: AccountService;
     let delegationLegacyService: DelegationLegacyService;
     let accountAddress: string;
+
+    beforeAll(async () => {
+      await Initializer.initialize();
+    }, Constants.oneHour() * 1000);
   
     beforeEach(async () => {
       const moduleRef = await Test.createTestingModule({

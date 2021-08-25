@@ -45,6 +45,3 @@ jobs:
     - run: npm ci
     - name: Run integration tests
       run: npm run test:e2e
-      env:
-        # The hostname used to communicate with the Redis service container
-        REDIS_HOST: redis

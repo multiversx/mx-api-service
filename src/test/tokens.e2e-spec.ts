@@ -6,6 +6,8 @@ import { NftType } from 'src/endpoints/tokens/entities/nft.type';
 import { TokenService } from 'src/endpoints/tokens/token.service';
 import { NftFilter } from 'src/endpoints/tokens/entities/nft.filter';
 import "../utils/extensions/jest.extensions";
+import Initializer from './e2e-init';
+import { Constants } from 'src/utils/constants';
 
 describe.skip('Token Service', () => {
   let tokenService: TokenService;
@@ -13,6 +15,10 @@ describe.skip('Token Service', () => {
   let tokenIdentifier: string;
   let nftCreator: string;
   let nftIdentifier: string;
+
+  beforeAll(async () => {
+    await Initializer.initialize();
+  }, Constants.oneHour() * 1000);
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
