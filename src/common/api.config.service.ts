@@ -91,7 +91,7 @@ export class ApiConfigService {
   }
 
   getRedisUrl(): string {
-    const redisUrl = this.configService.get<string>('urls.redis');
+    const redisUrl = process.env.REDIS_HOST ?? this.configService.get<string>('urls.redis');
     if (!redisUrl) {
       throw new Error('No redis url present');
     }
