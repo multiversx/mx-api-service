@@ -18,6 +18,7 @@ export class CachingService {
   private client = createClient(6379, this.configService.getRedisUrl());
   private asyncSet = promisify(this.client.set).bind(this.client);
   private asyncGet = promisify(this.client.get).bind(this.client);
+  private asyncFlushDb = promisify(this.client.flushdb).bind(this.client);
   // private asyncMSet = promisify(this.client.mset).bind(this.client);
   private asyncMGet = promisify(this.client.mget).bind(this.client);
   private asyncMulti = (commands: any[]) => {
@@ -550,5 +551,9 @@ export class CachingService {
       this.logger.error(error);
       return 0;
     }
+  }
+
+  async flushDb(): Promise<any> {
+    await this.asyncFlushDb();
   }
 }
