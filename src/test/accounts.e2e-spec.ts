@@ -38,6 +38,7 @@ describe('Account Service', () => {
                 expect(account).toHaveStructure(Object.keys(new Account()));
             }
         });
+
         it(`should return a list with 50 accounts`, async () => {
             const accountsList = await accountService.getAccounts({from: 0, size: 50});
             expect(accountsList).toBeInstanceOf(Array);
@@ -61,28 +62,22 @@ describe('Account Service', () => {
         describe('Account Details', () => {
             it(`should return a detailed account with account address`, async () => {
                 const accountDetailed = await accountService.getAccount(accountAddress);
-    
+                expect(accountDetailed).toBeDefined();
                 expect(accountDetailed).toHaveStructure(Object.keys(new AccountDetailed()));
-                expect(accountDetailed.address).toStrictEqual(accountAddress);
-    
+                expect(accountDetailed!.address).toStrictEqual(accountAddress);
             });
     
             it(`should throw 'Account not found' error`, async () => {
-                await expect(accountService.getAccount(accountAddress + 'a')).toThrow();
+                expect(await accountService.getAccount(accountAddress + 'a')).toBeNull();
             });
+        });
 
         describe('Account Delegation Legacy', () => {
             it(`should return a delegation legacy for an account with address`, async () => {
                 const accountDelegationLegacy = await delegationLegacyService.getDelegationForAddress(accountAddress);
-    
                
                 expect(accountDelegationLegacy).toHaveStructure(Object.keys(new AccountDelegationLegacy()));
             });
-    
-            it(`should throw 'Account not found' error`, async () => {
-                await expect(delegationLegacyService.getDelegationForAddress(accountAddress + 'a')).toBeUndefined();
-            });
-        });
         });
     });
 

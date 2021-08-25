@@ -7,7 +7,7 @@ import { TokenService } from 'src/endpoints/tokens/token.service';
 import { NftFilter } from 'src/endpoints/tokens/entities/nft.filter';
 import "../utils/extensions/jest.extensions";
 
-describe('Token Service', () => {
+describe.skip('Token Service', () => {
   let tokenService: TokenService;
   let tokenName: string;
   let tokenIdentifier: string;

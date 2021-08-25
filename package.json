@@ -21,6 +21,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./src/test/jest-e2e.json --detectOpenHandles --runInBand",
+    "test:e2e:warm": "jest --config ./src/test/jest-e2e-warm.json --detectOpenHandles --runInBand",
     "copy-devnet-config": "cp ./config/config.devnet.yaml ./config/config.yaml",
     "copy-testnet-config": "cp ./config/config.testnet.yaml ./config/config.yaml",
     "copy-mainnet-config": "cp ./config/config.mainnet.yaml ./config/config.yaml",
