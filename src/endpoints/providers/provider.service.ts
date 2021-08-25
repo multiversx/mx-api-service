@@ -118,9 +118,14 @@ export class ProviderService {
   }
 
   async getDelegationProvidersRaw(): Promise<{ aprValue: number; featured: boolean }[]> {
-    const { data } = await this.apiService.get(this.apiConfigService.getProvidersUrl());
-
-    return data;
+    try {
+      const { data } = await this.apiService.get(this.apiConfigService.getProvidersUrl());
+      return data;
+    } catch (error) {
+      this.logger.error('Error when getting delegation providers');
+      this.logger.error(error);
+      return [];
+    }
   }
 
   async getAllProviders(): Promise<Provider[]> {

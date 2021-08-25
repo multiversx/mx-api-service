@@ -35,14 +35,23 @@ export class ApiService {
     return {
       timeout,
       httpAgent: this.keepaliveAgent,
-      headers
+      headers,
+      transformResponse: [ 
+        (data) => {
+          try {
+            return JSON.parse(data);
+          } catch (error) {
+            return data;
+          }
+        }  
+      ],
     };
   }
 
   async get(url: string, timeout: number | undefined = undefined): Promise<any> {
     timeout = timeout || this.defaultTimeout;
 
-    let profiler = new PerformanceProfiler(`apiService get ${url}`);
+    let profiler = new PerformanceProfiler();
 
     try {
       return await axios.get(url, this.getConfig(timeout));
@@ -53,6 +62,7 @@ export class ApiService {
         url,
         response: error.response?.data,
         status: error.response?.status,
+        error,
       });
 
       throw error;
@@ -65,7 +75,7 @@ export class ApiService {
   async post(url: string, data: any, timeout: number | undefined = undefined): Promise<any> {
     timeout = timeout || this.defaultTimeout;
 
-    let profiler = new PerformanceProfiler(`apiService post ${url}`);
+    let profiler = new PerformanceProfiler();
     
     try {
       return await axios.post(url, data, this.getConfig(timeout));
@@ -77,6 +87,7 @@ export class ApiService {
         body: data,
         response: error.response?.data,
         status: error.response?.status,
+        error,
       });
 
       throw error;
@@ -89,7 +100,7 @@ export class ApiService {
   async head(url: string, timeout: number | undefined = undefined): Promise<any> {
     timeout = timeout || this.defaultTimeout;
 
-    let profiler = new PerformanceProfiler(`apiService head ${url}`);
+    let profiler = new PerformanceProfiler();
 
     try {
       return await axios.head(url, this.getConfig(timeout));
@@ -100,6 +111,7 @@ export class ApiService {
         url,
         response: error.response?.data,
         status: error.response?.status,
+        error,
       });
 
       throw error;
