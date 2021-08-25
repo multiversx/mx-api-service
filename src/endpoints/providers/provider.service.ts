@@ -272,7 +272,7 @@ export class ProviderService {
       'getMetaData',
     );
   
-    if (response) {
+    if (response && response.every(x => x !== null)) {
       try {
         const [name, website, identity] = response.map((base64) =>
           Buffer.from(base64, 'base64').toString().trim().toLowerCase()
