@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { Constants } from "src/utils/constants";
@@ -151,7 +151,14 @@ export class KeybaseService {
   
       this.logger.log(`Fetching keybase for identity ${keybase.identity} and key ${keybase.key}`);
 
-      const { status } = await this.apiService.head(url);
+      const { status } = await this.apiService.head(url, undefined, async (error: any) => {
+        if (error.response?.status === HttpStatus.NOT_FOUND) {
+          this.logger.log(`Keybase not found for identity ${keybase.identity} and key ${keybase.key}`);
+          return true;
+        }
+
+        return false;
+      });
 
       return status === 200;
     } catch (error) {
