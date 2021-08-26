@@ -156,7 +156,7 @@ export class ProviderService {
       ),
     ]);
 
-    const value: Provider[] = providers.map((provider, index) => {
+    const providersRaw: Provider[] = providers.map((provider, index) => {
       return {
         provider,
         ...configs[index],
@@ -182,7 +182,7 @@ export class ProviderService {
         let providerInfo = providerKeybases[providerAddress];
 
         if (providerInfo && providerInfo.confirmed) {
-          const found = value.find(x => x.provider === providerAddress);
+          const found = providersRaw.find(x => x.provider === providerAddress);
           if (found) {
             found.identity = providerInfo.identity;
           }
@@ -190,7 +190,7 @@ export class ProviderService {
       }
     };
 
-    return value;
+    return providersRaw;
   }
 
   async getProviderAddresses() {
@@ -272,7 +272,7 @@ export class ProviderService {
       'getMetaData',
     );
   
-    if (response) {
+    if (response && response.every(x => x !== null)) {
       try {
         const [name, website, identity] = response.map((base64) =>
           Buffer.from(base64, 'base64').toString().trim().toLowerCase()

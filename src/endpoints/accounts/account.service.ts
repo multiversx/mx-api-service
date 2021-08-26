@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { ElasticService } from '../../common/elastic.service';
 import { GatewayService } from '../../common/gateway.service';
 import { AccountDetailed } from './entities/account.detailed';
@@ -20,6 +20,8 @@ import { BinaryUtils } from 'src/utils/binary.utils';
 
 @Injectable()
 export class AccountService {
+  private readonly logger: Logger
+
   constructor(
     private readonly elasticService: ElasticService, 
     private readonly gatewayService: GatewayService,
@@ -27,7 +29,9 @@ export class AccountService {
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService
-  ) {}
+  ) {
+    this.logger = new Logger(AccountService.name);
+  }
 
   async getAccountsCount(): Promise<number> {
     return await this.cachingService.getOrSetCache(
@@ -37,41 +41,34 @@ export class AccountService {
     );
   }
 
-  async getAccountCodeHash(address: string): Promise<string | undefined> {
-    return await this.cachingService.getOrSetCache(
-      `codeHash:${address}`,
-      async () => this.getAccountCodeHashRaw(address),
-      Constants.oneDay()
-    );
-  }
-
-  async getAccountCodeHashRaw(address: string): Promise<string | undefined> {
-    let account = await this.getAccount(address);
-    return account.codeHash;
-  }
-
-  async getAccount(address: string): Promise<AccountDetailed> {
+  async getAccount(address: string): Promise<AccountDetailed | null> {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
     elasticQueryAdapter.condition.should = [
       QueryType.Match('sender', address),
       QueryType.Match('receiver', address),
     ]
 
-    const [
-      txCount,
-      {
-        account: { nonce, balance, code, codeHash, rootHash, username },
-      },
-    ] = await Promise.all([
-      this.elasticService.getCount('transactions', elasticQueryAdapter),
-      this.gatewayService.get(`address/${address}`)
-    ]);
+    try {
+      const [
+        txCount,
+        {
+          account: { nonce, balance, code, codeHash, rootHash, username },
+        },
+      ] = await Promise.all([
+        this.elasticService.getCount('transactions', elasticQueryAdapter),
+        this.gatewayService.get(`address/${address}`)
+      ]);
 
-    let shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
-
-    let result = { address, nonce, balance, code, codeHash, rootHash, txCount, username, shard };
-
-    return result;
+      let shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
+  
+      let result = { address, nonce, balance, code, codeHash, rootHash, txCount, username, shard };
+  
+      return result;
+    } catch (error) {
+      this.logger.error(error);
+      this.logger.error(`Error when getting account details for address '${address}'`);
+      return null;
+    }
   }
 
   async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {

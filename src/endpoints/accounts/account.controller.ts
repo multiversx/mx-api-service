@@ -73,11 +73,12 @@ export class AccountController {
     description: 'Account not found'
   })
   async getAccountDetails(@Param('address') address: string): Promise<AccountDetailed> {
-    try {
-      return await this.accountService.getAccount(address);
-    } catch {
+    let account = await this.accountService.getAccount(address);
+    if (!account) {
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
+
+    return account;
   }
 
   @Get("/accounts/:address/deferred")

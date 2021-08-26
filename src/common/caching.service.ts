@@ -18,6 +18,7 @@ export class CachingService {
   private client = createClient(6379, this.configService.getRedisUrl());
   private asyncSet = promisify(this.client.set).bind(this.client);
   private asyncGet = promisify(this.client.get).bind(this.client);
+  private asyncFlushDb = promisify(this.client.flushdb).bind(this.client);
   // private asyncMSet = promisify(this.client.mset).bind(this.client);
   private asyncMGet = promisify(this.client.mget).bind(this.client);
   private asyncMulti = (commands: any[]) => {
@@ -103,14 +104,14 @@ export class CachingService {
     this.logger = new Logger(CachingService.name);
   }
 
-  private async setCacheRemote<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
+  public async setCacheRemote<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
     await this.asyncSet(key, JSON.stringify(value), 'EX', ttl ?? this.configService.getCacheTtl());
     return value;
   };
 
   pendingGetRemotes: { [key: string]: Promise<any> } = {};
 
-  private async getCacheRemote<T>(key: string): Promise<T | undefined> {
+  public async getCacheRemote<T>(key: string): Promise<T | undefined> {
     let response;
 
     let pendingGetRemote = this.pendingGetRemotes[key];
@@ -550,5 +551,9 @@ export class CachingService {
       this.logger.error(error);
       return 0;
     }
+  }
+
+  async flushDb(): Promise<any> {
+    await this.asyncFlushDb();
   }
 }

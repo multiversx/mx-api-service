@@ -1,43 +1,32 @@
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
-import { AccountController } from 'src/endpoints/accounts/account.controller';
 import { Account } from 'src/endpoints/accounts/entities/account';
 import { AccountDetailed } from 'src/endpoints/accounts/entities/account.detailed';
 import { AccountDelegationLegacy } from 'src/endpoints/delegation.legacy/entities/account.delegation.legacy';
+import { AccountService } from 'src/endpoints/accounts/account.service';
+import { DelegationLegacyService } from 'src/endpoints/delegation.legacy/delegation.legacy.service';
+import "../utils/extensions/jest.extensions";
+import Initializer from './e2e-init';
+import { Constants } from 'src/utils/constants';
 
-expect.extend({
-    toHaveStructure(received: any, keys: string[]) {
-        const objectSortedKeys = JSON.stringify(Object.keys(received).sort());
-        const expectedKeys = JSON.stringify(keys.sort());
-
-        const pass = objectSortedKeys === expectedKeys;
-        if (pass) {
-            return {
-                pass: true,
-                message: () => `expected ${Object.keys(received)} not to be a valid ${keys} `,
-            }
-        } 
-        else {
-            return {
-                pass: false,
-                message: () => `expected ${Object.keys(received)} to be a valid ${keys} `,
-            }
-        }
-    },
-});
-
-describe('Account Controller', () => {
-    let accountController: AccountController;
+describe('Account Service', () => {
+    let accountService: AccountService;
+    let delegationLegacyService: DelegationLegacyService;
     let accountAddress: string;
+
+    beforeAll(async () => {
+      await Initializer.initialize();
+    }, Constants.oneHour() * 1000);
   
     beforeEach(async () => {
       const moduleRef = await Test.createTestingModule({
           imports: [PublicAppModule],
         }).compile();
   
-        accountController = moduleRef.get<AccountController>(AccountController);
+        accountService = moduleRef.get<AccountService>(AccountService);
+        delegationLegacyService = moduleRef.get<DelegationLegacyService>(DelegationLegacyService);
 
-        let accounts = await accountController.getAccounts(0, 1);
+        let accounts = await accountService.getAccounts({from: 0, size: 1});
         expect(accounts).toHaveLength(1);
 
         let account = accounts[0];
@@ -46,7 +35,7 @@ describe('Account Controller', () => {
 
     describe('Accounts list', () => {
         it(`should return a list with 25 accounts`, async () => {
-            const accountsList = await accountController.getAccounts(0, 25);
+            const accountsList = await accountService.getAccounts({from: 0, size: 25});
 
             expect(accountsList).toBeInstanceOf(Array);
             expect(accountsList).toHaveLength(25);
@@ -55,8 +44,9 @@ describe('Account Controller', () => {
                 expect(account).toHaveStructure(Object.keys(new Account()));
             }
         });
+
         it(`should return a list with 50 accounts`, async () => {
-            const accountsList = await accountController.getAccounts(0, 50);
+            const accountsList = await accountService.getAccounts({from: 0, size: 50});
             expect(accountsList).toBeInstanceOf(Array);
             expect(accountsList).toHaveLength(50);
 
@@ -68,7 +58,7 @@ describe('Account Controller', () => {
 
     describe('Accounts count', () => {
         it(`should return a number`, async () => {
-            const accountsCount: Number = new Number(await accountController.getAccountsCount());
+            const accountsCount: Number = new Number(await accountService.getAccountsCount());
 
             expect(accountsCount).toBeInstanceOf(Number);
         });
@@ -77,29 +67,23 @@ describe('Account Controller', () => {
     describe('Specific account', () => {
         describe('Account Details', () => {
             it(`should return a detailed account with account address`, async () => {
-                const accountDetailed = await accountController.getAccountDetails(accountAddress);
-    
+                const accountDetailed = await accountService.getAccount(accountAddress);
+                expect(accountDetailed).toBeDefined();
                 expect(accountDetailed).toHaveStructure(Object.keys(new AccountDetailed()));
-                expect(accountDetailed.address).toStrictEqual(accountAddress);
-    
+                expect(accountDetailed!.address).toStrictEqual(accountAddress);
             });
     
             it(`should throw 'Account not found' error`, async () => {
-                await expect(accountController.getAccountDetails(accountAddress + 'a')).rejects.toThrowError('Account not found');
+                expect(await accountService.getAccount(accountAddress + 'a')).toBeNull();
             });
+        });
 
         describe('Account Delegation Legacy', () => {
             it(`should return a delegation legacy for an account with address`, async () => {
-                const accountDelegationLegacy = await accountController.getAccountDelegationLegacy(accountAddress);
-    
+                const accountDelegationLegacy = await delegationLegacyService.getDelegationForAddress(accountAddress);
                
                 expect(accountDelegationLegacy).toHaveStructure(Object.keys(new AccountDelegationLegacy()));
             });
-    
-            it(`should throw 'Account not found' error`, async () => {
-                await expect(accountController.getAccountDelegationLegacy(accountAddress + 'a')).rejects.toThrowError('Account not found');
-            });
-        });
         });
     });
 
