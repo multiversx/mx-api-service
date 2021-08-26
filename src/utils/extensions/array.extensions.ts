@@ -52,7 +52,7 @@ Array.prototype.remove = function<T>(element: T): number {
 
 declare interface Array<T> {
   groupBy(predicate: (item: T) => any): any;
-  selectMany(predicate: (item: T) => T[]): T[];
+  selectMany<TOUT>(predicate: (item: T) => TOUT[]): TOUT[];
   firstOrUndefined(predicate: (item: T) => boolean): T | undefined;
   zip<TSecond, TResult>(second: TSecond[], predicate: (first: T, second: TSecond) => TResult): TResult[];
   remove(element: T): number;
