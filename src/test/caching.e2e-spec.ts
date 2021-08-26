@@ -2,9 +2,14 @@ import { Test } from '@nestjs/testing';
 import { CachingService } from 'src/common/caching.service';
 import { PublicAppModule } from 'src/public.app.module';
 import { Constants } from 'src/utils/constants';
+import Initializer from './e2e-init';
 
 describe('Caching Service', () => {
   let cachingService: CachingService;
+
+  beforeAll(async () => {
+    await Initializer.initialize();
+  }, Constants.oneHour() * 1000);
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({

@@ -4,14 +4,19 @@ import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import { TransactionStatus } from 'src/endpoints/transactions/entities/transaction.status';
 import { TransactionService } from 'src/endpoints/transactions/transaction.service';
 import { TransactionFilter } from 'src/endpoints/transactions/entities/transaction.filter';
-import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
 import "../utils/extensions/jest.extensions";
+import Initializer from './e2e-init';
+import { Constants } from 'src/utils/constants';
 
 describe('Transaction Service', () => {
     let transactionService: TransactionService;
     let transactionHash: string;
     let transactionSender: string;
     let transactionReceiver: string;
+
+    beforeAll(async () => {
+      await Initializer.initialize();
+    }, Constants.oneHour() * 1000);
   
     beforeEach(async () => {
       const moduleRef = await Test.createTestingModule({
@@ -113,16 +118,16 @@ describe('Transaction Service', () => {
                 }
             });
 
-            it(`should return a list with transactions for an adress, in one date range, with success status`, async () => {
+            it(`should return a list with transactions for an address, in one date range, with success status`, async () => {
                 const address = transactionSender
                 const transactionFilter = new TransactionFilter();
                 transactionFilter.from = 0;
                 transactionFilter.size = 25;
                 transactionFilter.after = 1625559108;
                 transactionFilter.sender = address;
-                transactionFilter.receiver = address;
+                // transactionFilter.receiver = address;
                 transactionFilter.status = TransactionStatus.success;
-                transactionFilter.condition = QueryConditionOptions.should;
+                // transactionFilter.condition = QueryConditionOptions.should;
 
                 const transactionsList = await transactionService.getTransactions(transactionFilter);
                 expect(transactionsList).toBeInstanceOf(Array);
@@ -159,8 +164,7 @@ describe('Transaction Service', () => {
         });
 
         it(`should throw 'Transaction not found' error`, async () => {
-
-            await expect(transactionService.getTransaction(transactionHash + 'a')).toBeNull();
+            expect(await transactionService.getTransaction(transactionHash + 'a')).toBeNull();
         });
     })
 });

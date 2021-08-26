@@ -4,26 +4,33 @@ import { KeybaseState } from "src/common/entities/keybase.state";
 import { Provider } from "src/endpoints/providers/entities/provider";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { PublicAppModule } from "src/public.app.module";
+import { Constants } from "src/utils/constants";
 import "../utils/extensions/jest.extensions";
+import Initializer from "./e2e-init";
 
 describe('Provider Service', () => {
   let providerService: ProviderService;
   let cachingService: CachingService;
-  let allProvidersRaw: Provider[];
+  let providers: Provider[];
+
+  beforeAll(async () => {
+    await Initializer.initialize();
+  }, Constants.oneHour() * 1000);
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
+    const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
-    providerService = moduleRef.get<ProviderService>(ProviderService);
-    cachingService = moduleRef.get<CachingService>(CachingService);
-    allProvidersRaw = await providerService.getAllProvidersRaw();
+    providerService = publicAppModule.get<ProviderService>(ProviderService);
+    cachingService = publicAppModule.get<CachingService>(CachingService);
+    providers = await providerService.getAllProviders();
+    providers = providers.filter(x => x.identity);
   });
 
-  describe('Providers Raw', () => {
+  describe('Providers', () => {
     it('all entities should have provider structure', async () => {
-      for (let provider of allProvidersRaw) {
+      for (let provider of providers) {
         expect(provider).toHaveStructure(Object.keys(new Provider()));
       }
     });
@@ -31,7 +38,7 @@ describe('Provider Service', () => {
     it('should be in sync with keybase confirmations', async () => {
       const providerKeybases:{ [key: string]: KeybaseState } | undefined = await cachingService.getCache('providerKeybases');
 
-      for (let provider of allProvidersRaw) {
+      for (let provider of providers) {
         if (providerKeybases) {
           if (providerKeybases[provider.provider] && providerKeybases[provider.provider].confirmed) {
             expect(provider.identity).toBe(providerKeybases[provider.provider].identity);
@@ -47,15 +54,7 @@ describe('Provider Service', () => {
     });
 
     it('some providers should be confirmed', async () => {
-      let numConfirmedProviders = 0;
-
-      for (let provider of allProvidersRaw) {
-        if (provider.identity) {
-          numConfirmedProviders ++;
-        }
-      }
-
-      expect(numConfirmedProviders).toBeGreaterThanOrEqual(32);
+      expect(providers.length).toBeGreaterThanOrEqual(32);
     });
   });
 });
