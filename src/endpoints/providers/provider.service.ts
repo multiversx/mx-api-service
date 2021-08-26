@@ -106,8 +106,6 @@ export class ProviderService {
       providers = providers.filter((provider) => provider.identity === query.identity);
     }
 
-    console.log(providers);
-
     providers.sort((a, b) => {
         let aSort = a.locked && a.locked !== '0' ? parseInt(a.locked.slice(0, -18)) : 0;
         let bSort = b.locked && b.locked !== '0' ? parseInt(b.locked.slice(0, -18)) : 0;
