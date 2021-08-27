@@ -26,8 +26,11 @@ Array.prototype.selectMany = function(predicate: Function) {
   return result;
 };
 
-Array.prototype.firstOrUndefined = function(predicate: Function) {
-  let result = this.filter(x => predicate(x));
+Array.prototype.firstOrUndefined = function(predicate?: Function) {
+  let result = this;
+  if (predicate) {
+    result = this.filter(x => predicate(x));
+  }
 
   if (result.length > 0) {
     return result[0];
@@ -53,7 +56,7 @@ Array.prototype.remove = function<T>(element: T): number {
 declare interface Array<T> {
   groupBy(predicate: (item: T) => any): any;
   selectMany<TOUT>(predicate: (item: T) => TOUT[]): TOUT[];
-  firstOrUndefined(predicate: (item: T) => boolean): T | undefined;
+  firstOrUndefined(predicate?: (item: T) => boolean): T | undefined;
   zip<TSecond, TResult>(second: TSecond[], predicate: (first: T, second: TSecond) => TResult): TResult[];
   remove(element: T): number;
 }

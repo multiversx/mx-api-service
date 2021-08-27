@@ -178,6 +178,20 @@ export class TransactionService {
     );
   }
 
+  private async tryGetTransactionFromElasticBySenderAndNonce(sender: string, nonce: number): Promise<TransactionDetailed | undefined> {
+    const query: ElasticQuery = new ElasticQuery();
+    query.pagination = { from: 0, size: 1 };
+
+    query.condition.must = [
+      QueryType.Match('sender', sender),
+      QueryType.Match('nonce', nonce)
+    ];
+
+    let transactions = await this.elasticService.getList('transactions', 'txHash', query);
+
+    return transactions.firstOrUndefined();
+  }
+
   async tryGetTransactionFromElastic(txHash: string): Promise<TransactionDetailed | null> {
     try {
       const result = await this.elasticService.getItem('transactions', 'txHash', txHash);
@@ -324,6 +338,13 @@ export class TransactionService {
   async tryGetTransactionFromGateway(txHash: string): Promise<TransactionDetailed | null> {
     try {
       const { transaction } = await this.gatewayService.get(`transaction/${txHash}?withResults=true`);
+
+      if (transaction.status === 'pending') {
+        let existingTransaction = await this.tryGetTransactionFromElasticBySenderAndNonce(transaction.sender, transaction.nonce);
+        if (existingTransaction && existingTransaction.txHash !== txHash) {
+          return null;
+        }
+      }
 
       if (transaction.receipt) {
         transaction.receipt.value = transaction.receipt.value.toString();
