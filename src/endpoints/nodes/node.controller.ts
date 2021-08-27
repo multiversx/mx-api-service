@@ -47,7 +47,7 @@ export class NodeController {
 		@Query('issues', ParseOptionalBoolPipe) issues: boolean | undefined,
 		@Query('identity') identity: string | undefined,
 		@Query('provider') provider: string | undefined,
-		@Query('owner', ParseOptionalIntPipe) owner: string | undefined,
+		@Query('owner') owner: string | undefined,
 		@Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort: NodeSort | undefined,
 		@Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
 	): Promise<Node[]> {
