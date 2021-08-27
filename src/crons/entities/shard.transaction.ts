@@ -1,4 +1,4 @@
-import { base64Decode } from "src/helpers/helpers";
+import { BinaryUtils } from "src/utils/binary.utils";
 
 export class ShardTransaction {
   value: string = '';
@@ -15,7 +15,7 @@ export class ShardTransaction {
   private getDataDecoded(): string | undefined {
     if (!this.dataDecoded) {
       if (this.data) {
-        this.dataDecoded = base64Decode(this.data);
+        this.dataDecoded = BinaryUtils.base64Decode(this.data);
       }
     }
 

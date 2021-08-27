@@ -3,7 +3,7 @@ import { HttpAdapterHost } from "@nestjs/core";
 import { Observable, of, throwError } from "rxjs";
 import { catchError, tap } from 'rxjs/operators';
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
-import { CachingService } from "src/helpers/caching.service";
+import { CachingService } from "src/common/caching.service";
 
 @Injectable()
 export class CachingInterceptor implements NestInterceptor {
@@ -58,7 +58,7 @@ export class CachingInterceptor implements NestInterceptor {
             delete this.pendingRequestsDictionary[cacheKey ?? ''];
             pendingRequestReject(err);
 
-            return throwError(err);
+            return throwError(() => err);
           })
         );
     }

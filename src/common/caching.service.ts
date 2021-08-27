@@ -5,17 +5,20 @@ import { createClient } from 'redis';
 import asyncPool from 'tiny-async-pool';
 import { CachedFunction } from "src/crons/entities/cached.function";
 import { InvalidationFunction } from "src/crons/entities/invalidation.function";
-import { hexToString, isSmartContractAddress, oneWeek } from "./helpers";
-import { PerformanceProfiler } from "./performance.profiler";
+import { PerformanceProfiler } from "../utils/performance.profiler";
 import { ShardTransaction } from "src/crons/entities/shard.transaction";
 import { Cache } from "cache-manager";
 import { RoundService } from "src/endpoints/rounds/round.service";
+import { Constants } from "src/utils/constants";
+import { AddressUtils } from "src/utils/address.utils";
+import { BinaryUtils } from "src/utils/binary.utils";
 
 @Injectable()
 export class CachingService {
   private client = createClient(6379, this.configService.getRedisUrl());
   private asyncSet = promisify(this.client.set).bind(this.client);
   private asyncGet = promisify(this.client.get).bind(this.client);
+  private asyncFlushDb = promisify(this.client.flushdb).bind(this.client);
   // private asyncMSet = promisify(this.client.mset).bind(this.client);
   private asyncMGet = promisify(this.client.mget).bind(this.client);
   private asyncMulti = (commands: any[]) => {
@@ -101,14 +104,14 @@ export class CachingService {
     this.logger = new Logger(CachingService.name);
   }
 
-  private async setCacheRemote<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
+  public async setCacheRemote<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
     await this.asyncSet(key, JSON.stringify(value), 'EX', ttl ?? this.configService.getCacheTtl());
     return value;
   };
 
   pendingGetRemotes: { [key: string]: Promise<any> } = {};
 
-  private async getCacheRemote<T>(key: string): Promise<T | undefined> {
+  public async getCacheRemote<T>(key: string): Promise<T | undefined> {
     let response;
 
     let pendingGetRemote = this.pendingGetRemotes[key];
@@ -312,8 +315,8 @@ export class CachingService {
 
     let cachedValue = await this.getCacheLocal<T>(key);
     if (cachedValue !== undefined) {
-        profiler.stop(`Local Cache hit for key ${key}`);
-        return cachedValue;
+      profiler.stop(`Local Cache hit for key ${key}`);
+      return cachedValue;
     }
 
     let cached = await this.getCacheRemote<T>(key);
@@ -400,7 +403,7 @@ export class CachingService {
     if (transactionFuncName === 'controlChanges') {
       let args = transaction.getDataArgs();
       if (args && args.length > 0) {
-        let tokenIdentifier = hexToString(args[0]);
+        let tokenIdentifier = BinaryUtils.hexToString(args[0]);
         this.logger.log(`Invalidating token properties for token ${tokenIdentifier}`);
         return await this.deleteInCache(`tokenProperties:${tokenIdentifier}`);
       }
@@ -432,7 +435,7 @@ export class CachingService {
   }
 
   private async getInvalidationKeys(transaction: ShardTransaction): Promise<string[]> {
-    if (!isSmartContractAddress(transaction.receiver)) {
+    if (!AddressUtils.isSmartContractAddress(transaction.receiver)) {
       return [];
     }
 
@@ -535,8 +538,8 @@ export class CachingService {
     return await this.getOrSetCache(
       'genesisTimestamp',
       async () => await this.getGenesisTimestampRaw(),
-      oneWeek(),
-      oneWeek()
+      Constants.oneWeek(),
+      Constants.oneWeek()
     );
   }
 
@@ -548,5 +551,9 @@ export class CachingService {
       this.logger.error(error);
       return 0;
     }
+  }
+
+  async flushDb(): Promise<any> {
+    await this.asyncFlushDb();
   }
 }

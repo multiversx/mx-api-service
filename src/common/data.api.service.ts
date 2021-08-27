@@ -1,9 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
 import { DataQuoteType } from "./entities/data.quote.type";
-import { PerformanceProfiler } from "./performance.profiler";
 
 @Injectable()
 export class DataApiService {
@@ -12,7 +10,6 @@ export class DataApiService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly apiService: ApiService,
-    private readonly metricsService: MetricsService,
   ) {
     this.dataUrl = this.apiConfigService.getDataUrl();
   };
@@ -22,11 +19,7 @@ export class DataApiService {
       return undefined;
     }
 
-    let profiler = new PerformanceProfiler();
     const { data } = await this.apiService.get(`${this.dataUrl}/closing/quoteshistorical/egld/${type}/${timestamp}`);
-    profiler.stop();
-
-    this.metricsService.setExternalCall('data', profiler.duration);
 
     return data;
   }
@@ -36,11 +29,7 @@ export class DataApiService {
       return undefined;
     }
 
-    let profiler = new PerformanceProfiler();
     const { data } = await this.apiService.get(`${this.dataUrl}/latest/quoteshistorical/egld/${type}`);
-    profiler.stop();
-
-    this.metricsService.setExternalCall('data', profiler.duration);
 
     return data;
   }

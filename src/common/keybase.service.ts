@@ -1,12 +1,12 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
+import { Constants } from "src/utils/constants";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
 import { CachingService } from "./caching.service";
 import { Keybase } from "./entities/keybase";
 import { KeybaseState } from "./entities/keybase.state";
-import { oneHour, oneMinute, oneMonth, oneWeek } from "./helpers";
 
 @Injectable()
 export class KeybaseService {
@@ -57,7 +57,7 @@ export class KeybaseService {
         providers,
         address => `providerMetadata:${address}`,
         async address => await this.providerService.getProviderMetadata(address),
-        oneMinute() * 15,
+        Constants.oneMinute() * 15,
       );
 
     const keybaseArr: Keybase[] = metadatas
@@ -70,7 +70,7 @@ export class KeybaseService {
       keybaseArr,
       keybase => `keybase:${keybase.key}`,
       async (keybase) => await this.confirmKeybase(keybase),
-      oneWeek(),
+      Constants.oneWeek(),
       true
     );
 
@@ -107,7 +107,7 @@ export class KeybaseService {
       keybasesArr,
       keybase => `keybase:${keybase.key}`,
       async (keybase) => await this.confirmKeybase(keybase),
-      oneMonth() * 6,
+      Constants.oneMonth() * 6,
       true
     );
 
@@ -135,7 +135,7 @@ export class KeybaseService {
     return await this.cachingService.getOrSetCache(
       'nodeKeybases',
       async () => await this.confirmKeybaseNodesAgainstKeybasePub(),
-      oneHour()
+      Constants.oneHour()
     );
   }
 
@@ -151,7 +151,14 @@ export class KeybaseService {
   
       this.logger.log(`Fetching keybase for identity ${keybase.identity} and key ${keybase.key}`);
 
-      const { status } = await this.apiService.head(url);
+      const { status } = await this.apiService.head(url, undefined, async (error: any) => {
+        if (error.response?.status === HttpStatus.NOT_FOUND) {
+          this.logger.log(`Keybase not found for identity ${keybase.identity} and key ${keybase.key}`);
+          return true;
+        }
+
+        return false;
+      });
 
       return status === 200;
     } catch (error) {

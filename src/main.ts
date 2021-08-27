@@ -4,9 +4,9 @@ import { PublicAppModule } from './public.app.module';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
-import { ApiConfigService } from './helpers/api.config.service';
-import { CachingService } from './helpers/caching.service';
-import { TokenAssetService } from './helpers/token.asset.service';
+import { ApiConfigService } from './common/api.config.service';
+import { CachingService } from './common/caching.service';
+import { TokenAssetService } from './common/token.asset.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { FieldsInterceptor } from './interceptors/fields.interceptor';
 import { PrivateAppModule } from './private.app.module';
@@ -22,6 +22,9 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CleanupInterceptor } from './interceptors/cleanup.interceptor';
 import { RedisClient } from 'redis';
 import { ExtractInterceptor } from './interceptors/extract.interceptor';
+import "./utils/extensions/array.extensions";
+import "./utils/extensions/date.extensions";
+import "./utils/extensions/number.extensions";
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
@@ -105,7 +108,7 @@ async function bootstrap() {
   pubSubApp.listen();
 
   logger.log(`Public API active: ${apiConfigService.getIsPublicApiActive()}`);
-  logger.log(`Private API active: ${apiConfigService.getIsPublicApiActive()}`);
+  logger.log(`Private API active: ${apiConfigService.getIsPrivateApiActive()}`);
   logger.log(`Transaction processor active: ${apiConfigService.getIsTransactionProcessorCronActive()}`);
   logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
 }

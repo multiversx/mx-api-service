@@ -1,11 +1,12 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { CachingService } from "src/helpers/caching.service";
-import { ElasticService } from "src/helpers/elastic.service";
-import { ElasticQuery } from "src/helpers/entities/elastic/elastic.query";
-import { ElasticSortOrder } from "src/helpers/entities/elastic/elastic.sort.order";
-import { ElasticSortProperty } from "src/helpers/entities/elastic/elastic.sort.property";
-import { mergeObjects, oneHour } from "src/helpers/helpers";
+import { CachingService } from "src/common/caching.service";
+import { ElasticService } from "src/common/elastic.service";
+import { ElasticQuery } from "src/common/entities/elastic/elastic.query";
+import { ElasticSortOrder } from "src/common/entities/elastic/elastic.sort.order";
+import { ElasticSortProperty } from "src/common/entities/elastic/elastic.sort.property";
+import { ApiUtils } from "src/utils/api.utils";
+import { Constants } from "src/utils/constants";
 import { Tag } from "./entities/tag";
 
 @Injectable()
@@ -21,7 +22,7 @@ export class TagService {
     return this.cachingService.getOrSetCache(
       'nftTags',
       async() => await this.getNftTagsRaw(pagination),
-      oneHour(),
+      Constants.oneHour(),
     )
   }
 
@@ -34,7 +35,7 @@ export class TagService {
 
     let result = await this.elasticService.getList('tags', 'tag', elasticQueryAdapter);
 
-    let nftTags: Tag[] = result.map(item => mergeObjects(new Tag(), item));
+    let nftTags: Tag[] = result.map(item => ApiUtils.mergeObjects(new Tag(), item));
 
     return nftTags;
   }
@@ -42,6 +43,6 @@ export class TagService {
   async getNftTag(tag: string): Promise<Tag> {
     let result = await this.elasticService.getItem('tags', 'tag', tag);
 
-    return mergeObjects(new Tag(), result);
+    return ApiUtils.mergeObjects(new Tag(), result);
   }
 }

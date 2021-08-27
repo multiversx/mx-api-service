@@ -1,9 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common";
 import simpleGit, {SimpleGit, SimpleGitOptions} from 'simple-git';
 import { TokenAssets } from "src/endpoints/tokens/entities/token.assets";
+import { FileUtils } from "src/utils/file.utils";
 import { ApiConfigService } from "./api.config.service";
 import { CachingService } from "./caching.service";
-import { getDirectories } from "./helpers";
 const rimraf = require("rimraf");
 const path = require('path');
 const fs = require('fs');
@@ -86,7 +86,7 @@ export class TokenAssetService {
       return await this.cachingService.setCacheLocal('tokenAssets', {});
     }
     
-    let tokenIdentifiers = getDirectories(tokensPath);
+    let tokenIdentifiers = FileUtils.getDirectories(tokensPath);
     
     // for every folder, create a TokenAssets entity with the contents of info.json and the urls from github
     let assets: { [key: string]: TokenAssets } = {};

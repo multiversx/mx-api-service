@@ -1,10 +1,10 @@
-import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from "@nestjs/common";
-import { Observable } from "rxjs";
-import { tap } from 'rxjs/operators';
+import { CallHandler, ExecutionContext, HttpStatus, Injectable, Logger, NestInterceptor } from "@nestjs/common";
+import { Observable, throwError } from "rxjs";
+import { catchError, tap } from 'rxjs/operators';
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { ProxyController } from "src/endpoints/proxy/proxy.controller";
 import { TransactionController } from "src/endpoints/transactions/transaction.controller";
-import { PerformanceProfiler } from "src/helpers/performance.profiler";
+import { PerformanceProfiler } from "src/utils/performance.profiler";
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -41,12 +41,23 @@ export class LoggingInterceptor implements NestInterceptor {
         tap((result) => {
           profiler.stop();
 
+          const http = context.switchToHttp();
+          const res = http.getResponse();
+
           if (result !== undefined) {
-            this.metricsService.setApiCall(apiFunction, 200, profiler.duration, JSON.stringify(result).length);
+            this.metricsService.setApiCall(apiFunction, res.statusCode, profiler.duration, JSON.stringify(result).length);
           } else {
-            this.metricsService.setApiCall(apiFunction, 200, profiler.duration, 0);
+            this.metricsService.setApiCall(apiFunction, res.statusCode, profiler.duration, 0);
           }
         }),
+        catchError(err => {
+          profiler.stop();
+
+          let statusCode = err.status ?? HttpStatus.INTERNAL_SERVER_ERROR;
+          this.metricsService.setApiCall(apiFunction, statusCode, profiler.duration, 0);
+          
+          return throwError(() => err);
+        })
       );
   }
 }
