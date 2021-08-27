@@ -42,16 +42,8 @@ export class CacheController {
     status: 200,
     description: 'Key has been updated',
   })
-  @ApiResponse({
-    status: 404,
-    description: 'Key not found'
-  })
-  async updateCache(@Param('key') key:string, @Body() cacheValue: CacheValue) {
-    const value = await this.cachingService.getCache(key);
-    if (!value) {
-      throw new HttpException('Key not found', HttpStatus.BAD_REQUEST);
-    }
-
+  async setCache(@Param('key') key:string, @Body() cacheValue: CacheValue) {
+    await this.deleteCacheKey([key]);
     await this.cachingService.setCache(key, cacheValue.value, cacheValue.ttl);
   }
 
@@ -70,7 +62,7 @@ export class CacheController {
     if (!value) {
       throw new HttpException('Key not found', HttpStatus.BAD_REQUEST);
     }
-    await this.cachingService.deleteInCache(key);
+    await this.deleteCacheKey([key]);
   }
 
   @UseGuards(JwtAuthenticateGuard, JwtAdminGuard)
