@@ -31,7 +31,7 @@ export class CacheController {
   async getCache(@Param('key') key: string): Promise<unknown> {
     const value = await this.cachingService.getCacheRemote(key);
     if (!value) {
-      throw new HttpException('Key not found', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Key not found', HttpStatus.NOT_FOUND);
     }
     return JSON.stringify(value);
   }
@@ -60,7 +60,7 @@ export class CacheController {
   async delCache(@Param('key') key: string) {
     const value = await this.cachingService.getCacheRemote(key);
     if (!value) {
-      throw new HttpException('Key not found', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Key not found', HttpStatus.NOT_FOUND);
     }
     await this.deleteCacheKey([key]);
   }
