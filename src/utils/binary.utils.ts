@@ -22,7 +22,7 @@ export class BinaryUtils {
   }
 
   static base64ToBigInt(str: string): BigInt {
-    return BigInt('0x' + Buffer.from(str, 'base64').toString('hex'));
+    return BigInt('0x' + this.base64ToHex(str));
   }
   
   static tryBase64ToHex(str: string): string | undefined {
@@ -46,7 +46,7 @@ export class BinaryUtils {
   }
 
   static base64ToAddress(str: string): string {
-    return AddressUtils.bech32Encode(Buffer.from(str, 'base64').toString('hex'));
+    return AddressUtils.bech32Encode(this.base64ToHex(str));
   }
   
   static hexToString(hex: string): string {
