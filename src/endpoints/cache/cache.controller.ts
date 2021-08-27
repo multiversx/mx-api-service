@@ -70,17 +70,7 @@ export class CacheController {
   async getKeys(
     @Query('keys') keys: string | undefined,
   ): Promise<string[]> {
-    const keysWithPattern = [];
-    if (keys) {
-      const allKeys = await caches.keys();
-      for (let key of allKeys) {
-        if (key.includes(keys)) {
-          keysWithPattern.push(key);
-        }
-      }
-    }
-    
-    return keysWithPattern;
+    return await this.cachingService.getKeys(keys);
   }
 
   @EventPattern('deleteCacheKeys')
