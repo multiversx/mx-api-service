@@ -1,7 +1,9 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Logger, Param, Put, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Logger, Param, Put, Query, UseGuards } from "@nestjs/common";
 import { EventPattern } from "@nestjs/microservices";
 import { ApiResponse } from "@nestjs/swagger";
 import { CachingService } from "src/common/caching.service";
+import { JwtAdminGuard } from "src/utils/guards/jwt.admin.guard";
+import { JwtAuthenticateGuard } from "src/utils/guards/jwt.authenticate.guard";
 import { CacheValue } from "./entities/cache.value";
 
 @Controller()
@@ -15,6 +17,7 @@ export class CacheController {
   }
 
 
+  @UseGuards(JwtAuthenticateGuard, JwtAdminGuard)
   @Get("/caching/:key")
   @ApiResponse({
     status: 200,
@@ -33,6 +36,7 @@ export class CacheController {
     return JSON.stringify(value);
   }
 
+  @UseGuards(JwtAuthenticateGuard, JwtAdminGuard)
   @Put("/caching/:key")
   @ApiResponse({
     status: 200,
@@ -51,6 +55,7 @@ export class CacheController {
     await this.cachingService.setCache(key, cacheValue.value, cacheValue.ttl);
   }
 
+  @UseGuards(JwtAuthenticateGuard, JwtAdminGuard)
   @Delete("/caching/:key")
   @ApiResponse({
     status: 200,
@@ -68,6 +73,7 @@ export class CacheController {
     await this.cachingService.deleteInCache(key);
   }
 
+  @UseGuards(JwtAuthenticateGuard, JwtAdminGuard)
   @Get("/caching")
   async getKeys(
     @Query('keys') keys: string | undefined,

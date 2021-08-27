@@ -5,9 +5,9 @@ api:
   public: true
   private: true
 cron:
-  transactionProcessor: true
+  transactionProcessor: false
   transactionProcessorMaxLookBehind: 1000
-  cacheWarmer: true
+  cacheWarmer: false
 urls:
   api:
     - 'https://api.elrond.com'
@@ -42,3 +42,6 @@ inflation:
   - 1130177
   - 924690
   - 719203
+security:
+  admins:
+  jwtSecret:
