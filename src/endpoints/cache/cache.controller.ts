@@ -29,7 +29,7 @@ export class CacheController {
     description: 'Key not found'
   })
   async getCache(@Param('key') key: string): Promise<unknown> {
-    const value = await this.cachingService.getCache(key);
+    const value = await this.cachingService.getCacheRemote(key);
     if (!value) {
       throw new HttpException('Key not found', HttpStatus.BAD_REQUEST);
     }
@@ -43,8 +43,8 @@ export class CacheController {
     description: 'Key has been updated',
   })
   async setCache(@Param('key') key:string, @Body() cacheValue: CacheValue) {
+    await this.cachingService.setCacheRemote(key, cacheValue.value, cacheValue.ttl);
     await this.deleteCacheKey([key]);
-    await this.cachingService.setCache(key, cacheValue.value, cacheValue.ttl);
   }
 
   @UseGuards(JwtAuthenticateGuard, JwtAdminGuard)
@@ -58,7 +58,7 @@ export class CacheController {
     description: 'Key not found'
   })
   async delCache(@Param('key') key: string) {
-    const value = await this.cachingService.getCache(key);
+    const value = await this.cachingService.getCacheRemote(key);
     if (!value) {
       throw new HttpException('Key not found', HttpStatus.BAD_REQUEST);
     }
