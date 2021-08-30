@@ -58,7 +58,6 @@ const DailyRotateFile = require('winston-daily-rotate-file');
 import "./utils/extensions/array.extensions";
 import "./utils/extensions/date.extensions";
 import "./utils/extensions/number.extensions";
-import "./utils/extensions/jest.extensions";
 
 @Module({
   imports: [
