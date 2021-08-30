@@ -73,13 +73,13 @@ export class ProviderService {
 
     let nodesGroupedByProvider: { [key: string]: any[] } = nodes.groupBy(x => x.provider);    
 
-    let providerDelegationData: DelegationData[] = await this.getDelegationProviders();
+    let providersDelegationData: DelegationData[] = await this.getDelegationProviders();
 
     providers.forEach((element) => {
       const providerAddress = element.provider;
 
     // Delegation details for provider
-      const delegationData: DelegationData | undefined = providerDelegationData.find((providerDelegationInfo: any) => providerDelegationInfo !== null && providerAddress === providerDelegationInfo.contract);
+      const delegationData: DelegationData | undefined = providersDelegationData.find((providerDelegationInfo: any) => providerDelegationInfo !== null && providerAddress === providerDelegationInfo.contract);
       if (delegationData) {
         if (delegationData.aprValue) {
           element.apr = parseFloat(delegationData.aprValue.toFixed(2));
@@ -107,11 +107,11 @@ export class ProviderService {
     }
 
     providers.sort((a, b) => {
-        let aSort = a.locked && a.locked !== '0' ? parseInt(a.locked.slice(0, -18)) : 0;
-        let bSort = b.locked && b.locked !== '0' ? parseInt(b.locked.slice(0, -18)) : 0;
+      let aSort = a.locked && a.locked !== '0' ? parseInt(a.locked.slice(0, -18)) : 0;
+      let bSort = b.locked && b.locked !== '0' ? parseInt(b.locked.slice(0, -18)) : 0;
 
-        return bSort - aSort;
-      });
+      return bSort - aSort;
+    });
     
     providers = providers.filter(provider => provider.numNodes > 0 && provider.stake !== '0');
 
