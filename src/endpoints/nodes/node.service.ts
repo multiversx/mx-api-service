@@ -94,9 +94,20 @@ export class NodeService {
 
     let filteredNodes = allNodes.filter(node => {
       if (query.search !== undefined) {
-        const nodeMatches = node.bls.toLowerCase().includes(query.search.toLowerCase());
-        const nameMatches = node.name && node.name.toLowerCase().includes(query.search.toLowerCase());
-        const versionMatches = node.version && node.version.toLowerCase().includes(query.search.toLowerCase());
+        let nodeMatches;
+        if (node.bls) {
+          nodeMatches = node.bls.toLowerCase().includes(query.search.toLowerCase());
+        }
+
+        let nameMatches;
+        if (node.name) {
+          nameMatches = node.name && node.name.toLowerCase().includes(query.search.toLowerCase());
+        }
+
+        let versionMatches;
+        if (node.version) {
+          versionMatches = node.version && node.version.toLowerCase().includes(query.search.toLowerCase());
+        }
 
         if (!nodeMatches && !nameMatches && !versionMatches) {
           return false;
