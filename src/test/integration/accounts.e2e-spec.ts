@@ -5,7 +5,6 @@ import { AccountDetailed } from 'src/endpoints/accounts/entities/account.detaile
 import { AccountDelegationLegacy } from 'src/endpoints/delegation.legacy/entities/account.delegation.legacy';
 import { AccountService } from 'src/endpoints/accounts/account.service';
 import { DelegationLegacyService } from 'src/endpoints/delegation.legacy/delegation.legacy.service';
-import "../utils/extensions/jest.extensions";
 import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 
