@@ -94,7 +94,7 @@ export class NodeService {
 
     let filteredNodes = allNodes.filter(node => {
       if (query.search !== undefined) {
-        const nodeMatches = node.bls.toLowerCase().includes(query.search.toLowerCase());
+        const nodeMatches = node.bls && node.bls.toLowerCase().includes(query.search.toLowerCase());
         const nameMatches = node.name && node.name.toLowerCase().includes(query.search.toLowerCase());
         const versionMatches = node.version && node.version.toLowerCase().includes(query.search.toLowerCase());
 
@@ -228,10 +228,6 @@ export class NodeService {
         if (provider) {
           node.provider = provider.provider;
           node.owner = provider.owner ?? '';
-
-          if (provider.identity) {
-            node.identity = provider.identity;
-          }
         }
       }
     });
