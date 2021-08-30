@@ -226,10 +226,6 @@ export class NodeService {
         if (provider) {
           node.provider = provider.provider;
           node.owner = provider.owner ?? '';
-
-          if (provider.identity) {
-            node.identity = provider.identity;
-          }
         }
       }
     });
