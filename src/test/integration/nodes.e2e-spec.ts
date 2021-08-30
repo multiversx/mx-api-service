@@ -7,14 +7,12 @@ import { NodeSort } from "src/endpoints/nodes/entities/node.sort";
 import { NodeStatus } from "src/endpoints/nodes/entities/node.status";
 import { NodeType } from "src/endpoints/nodes/entities/node.type";
 import { NodeService } from "src/endpoints/nodes/node.service";
-import { ProviderService } from "src/endpoints/providers/provider.service";
 import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 import Initializer from "./e2e-init";
 
 describe('Node Service', () => {
   let nodeService: NodeService;
-  let providerService: ProviderService;
   let cachingService: CachingService;
   let nodes: Node[];
   let nodeSentinel: Node;
@@ -29,7 +27,6 @@ describe('Node Service', () => {
     }).compile();
 
     nodeService = publicAppModule.get<NodeService>(NodeService);
-    providerService = publicAppModule.get<ProviderService>(ProviderService);
     cachingService = publicAppModule.get<CachingService>(CachingService);
     nodes = await nodeService.getAllNodes();
     nodeSentinel = nodes[0];
@@ -42,14 +39,7 @@ describe('Node Service', () => {
 
       if(nodeKeybases) {
         for (let node of nodes) {
-          if (node.provider) {
-            const provider = await providerService.getProvider(node.provider);
-            expect(provider).toBeDefined();
-            if (provider && provider.identity) {
-              expect(node.identity).toStrictEqual(provider.identity);
-            }
-          }
-          else if (nodeKeybases[node.bls] && nodeKeybases[node.bls].confirmed) {
+          if (nodeKeybases[node.bls] && nodeKeybases[node.bls].confirmed) {
             expect(node.identity).toStrictEqual(nodeKeybases[node.bls].identity);
           }
           else {
