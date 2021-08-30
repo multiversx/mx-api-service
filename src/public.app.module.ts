@@ -55,6 +55,10 @@ import { BlsService } from './common/bls.service';
 import { TagController } from './endpoints/nfttags/tag.controller';
 import { TagService } from './endpoints/nfttags/tag.service';
 const DailyRotateFile = require('winston-daily-rotate-file');
+import "./utils/extensions/array.extensions";
+import "./utils/extensions/date.extensions";
+import "./utils/extensions/number.extensions";
+import "./utils/extensions/jest.extensions";
 
 @Module({
   imports: [

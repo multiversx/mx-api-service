@@ -5,7 +5,6 @@ import { Nft } from 'src/endpoints/tokens/entities/nft';
 import { NftType } from 'src/endpoints/tokens/entities/nft.type';
 import { TokenService } from 'src/endpoints/tokens/token.service';
 import { NftFilter } from 'src/endpoints/tokens/entities/nft.filter';
-import "../utils/extensions/jest.extensions";
 import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 
