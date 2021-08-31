@@ -35,6 +35,7 @@ describe('Identities Service', () => {
       let index = 1;
 
       while (index < identities.length) {
+        expect(identities[index]).toBeDefined();
         expect(identities[index-1]).toHaveProperty('locked');
         expect(identities[index]).toHaveProperty('locked');
         if (identities[index].locked < identities[index-1].locked) {
