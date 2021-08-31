@@ -1,11 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { CachingService } from "src/common/caching.service";
+import { KeybaseIdentity } from "src/common/entities/keybase.identity";
 import { KeybaseService } from "src/common/keybase.service";
 import { Constants } from "src/utils/constants";
 import { Node } from "../nodes/entities/node";
 import { NodeService } from "../nodes/node.service";
 import { NodesInfos } from "../providers/entities/nodes.infos";
 import { Identity } from "./entities/identity";
+import { IdentityDetailed } from "./entities/identity.detailed";
 import { StakeInfo } from "./entities/stake.info";
 
 @Injectable()
@@ -24,7 +26,7 @@ export class IdentitiesService {
   async getIdentities(ids: string[]): Promise<Identity[]> {
     let identities = await this.getAllIdentities();
     if (ids.length > 0) {
-      identities = identities.filter(x => ids.includes(x.identity));
+      identities = identities.filter(x => x.identity && ids.includes(x.identity));
     }
     
     return identities;
@@ -143,37 +145,53 @@ export class IdentitiesService {
   async getAllIdentitiesRaw(): Promise<Identity[]> {
     let nodes = await this.nodeService.getAllNodes();
 
-    let keys = [
-      ...new Set(nodes.filter(({ identity }) => !!identity).map(({ identity }) => identity)),
-    ].filter(x => x !== null).map(x => x ?? '');
+    let keybaseIdentities: KeybaseIdentity[] = await this.keybaseService.getCachedIdentityKeybases();
 
-    let identities: any[] = await this.cachingService.batchProcess(
-      keys,
-      key => `identityProfile:${key}`,
-      async key => await this.keybaseService.getProfile(key),
-      Constants.oneMinute() * 30
-    );
+    let identitiesDetailed: IdentityDetailed[] = [];
+
+    for (let keybaseIdentity of keybaseIdentities) {
+      if (keybaseIdentity.identity) {
+        const identityDetailed = new IdentityDetailed();
+        identityDetailed.avatar = keybaseIdentity.avatar;
+        identityDetailed.description = keybaseIdentity.description;
+        identityDetailed.identity = keybaseIdentity.identity;
+        identityDetailed.location = keybaseIdentity.location;
+        identityDetailed.name = keybaseIdentity.name;
+        identityDetailed.twitter = keybaseIdentity.twitter;
+        identityDetailed.website = keybaseIdentity.website;
+        identitiesDetailed.push(identityDetailed);
+      }
+    }
 
     nodes.forEach((node) => {
-      const found = identities.find(({ identity }) => identity === node.identity);
+      const found = identitiesDetailed.find((identityDetailed) => identityDetailed.identity === node.identity);
 
       if (found && node.identity && !!node.identity) {
         if (!found.nodes) {
           found.nodes = [];
-        }
-
+        }      
         found.nodes.push(node);
-      } else {
-        identities.push({ name: node.bls, nodes: [node] });
+      }
+      else {
+        const identityDetailed = new IdentityDetailed();
+        identityDetailed.name = node.bls;
+        identityDetailed.nodes = [node];
+        identitiesDetailed.push(identityDetailed);
       }
     });
 
     const { locked: totalLocked } = this.computeTotalStakeAndTopUp(nodes);
 
-    identities.forEach((identity: any) => {
-      if (identity.nodes && identity.nodes.length) {
-        const stakeInfo = this.getStakeInfoForIdentity(identity, BigInt(parseInt(totalLocked)));
-        identity.score = stakeInfo.score;
+    let identities: Identity[] = identitiesDetailed.map((identityDetailed: IdentityDetailed) => {
+      if (identityDetailed.nodes && identityDetailed.nodes.length) {
+        const identity = new Identity();
+        identity.identity = identityDetailed.identity;
+        identity.avatar = identityDetailed.avatar;
+        identity.description = identityDetailed.description;
+        identity.name = identityDetailed.name;
+
+        const stakeInfo = this.getStakeInfoForIdentity(identityDetailed, BigInt(parseInt(totalLocked)));
+        identity.score = stakeInfo.score ;
         identity.validators = stakeInfo.validators
         identity.stake = stakeInfo.stake;
         identity.topUp = stakeInfo.topUp;
@@ -181,23 +199,24 @@ export class IdentitiesService {
         identity.distribution = stakeInfo.distribution;
         identity.providers = stakeInfo.providers;
         identity.stakePercent = stakeInfo.stakePercent;
-        identity.sort = stakeInfo.sort;
+        return identity;
       }
+      return new Identity();
     });
 
     identities = identities
-    .filter(x => x !== false)
-    .filter(({ locked }) => locked !== '0');
+      .filter((identity) => identity && identity.locked !== '0');
 
     identities.sort((a, b) => {
-      return b.sort - a.sort;
+      const aSort = a && a.locked && a.locked !== '0' ? parseInt(a.locked.slice(0, -18)) : 0;
+      const bSort = b && b.locked && b.locked !== '0' ? parseInt(b.locked.slice(0, -18)) : 0;
+      return bSort - aSort;
     });
 
     identities.forEach((identity, index) => {
-      delete identity.nodes;
-      delete identity.sort;
-      identity.rank = index + 1;
-      console.log({ locked: identity.locked })
+      if (identity) {
+        identity.rank = index + 1;
+      }
     });
 
     return identities;
