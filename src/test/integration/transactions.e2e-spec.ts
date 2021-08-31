@@ -4,7 +4,6 @@ import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import { TransactionStatus } from 'src/endpoints/transactions/entities/transaction.status';
 import { TransactionService } from 'src/endpoints/transactions/transaction.service';
 import { TransactionFilter } from 'src/endpoints/transactions/entities/transaction.filter';
-import "../utils/extensions/jest.extensions";
 import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 
@@ -40,6 +39,19 @@ describe('Transaction Service', () => {
     });
 
     describe('Transactions list', () => {
+        it('transactions should have txHash, sender and receiver', async () => {
+            const transactionFilter = new TransactionFilter();
+            transactionFilter.from = 0;
+            transactionFilter.size = 25;
+            const transactionsList = await transactionService.getTransactions(transactionFilter);
+
+            for (let transaction of transactionsList) {
+                expect(transaction).toHaveProperty('txHash');
+                expect(transaction).toHaveProperty('sender');
+                expect(transaction).toHaveProperty('receiver');
+            }
+        });
+
         describe('Transactions pagination', () => {
             it(`should return a list with 25 transactions`, async () => {
                 const transactionFilter = new TransactionFilter();

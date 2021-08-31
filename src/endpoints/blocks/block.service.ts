@@ -82,18 +82,18 @@ export class BlockService {
       item.shard = item.shardId;
     }
 
-    let finalResult = [];
+    let blocks = [];
 
     for (let item of result) {
-      let transformedItem = await this.transformItem(item);
+      let block = await this.computeProposerAndValidators(item);
 
-      finalResult.push(transformedItem);
+      blocks.push(ApiUtils.mergeObjects(new Block(), block));
     }
 
-    return finalResult.map(item => ApiUtils.mergeObjects(new Block(), item));
+    return blocks;
   }
 
-  async transformItem(item: any) {
+  async computeProposerAndValidators(item: any) {
     // eslint-disable-next-line no-unused-vars
     let { shardId: shard, epoch, proposer, validators, searchOrder, ...rest } = item;
 

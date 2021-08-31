@@ -5,6 +5,7 @@ import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
+import "../../utils/extensions/jest.extensions";
 
 export default class Initializer {
   private static cachingService: CachingService;
