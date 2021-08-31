@@ -30,9 +30,9 @@ export function buildElasticQuery(query: ElasticQuery) {
     query: {
       bool: {
         filter: query.filter,
-        must: query.condition.must,
-        should: query.condition.should,
-        must_not: query.condition.must_not,
+        must: query.condition.must.map(query => query.getQuery()),
+        should: query.condition.should.map(query => query.getQuery()),
+        must_not: query.condition.must_not.map(query => query.getQuery()),
         minimum_should_match: elasticCondition === QueryConditionOptions.should ? 1 : undefined,
       }
     }

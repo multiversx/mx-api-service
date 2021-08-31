@@ -2,17 +2,24 @@ import { AbstractQuery } from "./abstract.query";
 import { QueryOperator } from "./query.operator";
 
 export class MatchQuery extends AbstractQuery {
+  constructor(
+    private readonly key: string,
+    private readonly value: any,
+    private readonly operator: QueryOperator | undefined = undefined
+  ) {
+    super();
+  }
 
-  buildQuery(key: string, value: any, operator: QueryOperator | undefined): any {
-    if (!operator) {
-      return { match: { [key]: value } };
+  getQuery(): any {
+    if (!this.operator) {
+      return { match: { [this.key]: this.value } };
     }
 
     return {
       match: {
-        [key]: {
-        query: value,
-        operator: operator
+        [this.key]: {
+          query: this.value,
+          operator: this.operator
         }
       }
     }

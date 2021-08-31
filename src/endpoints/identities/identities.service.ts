@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { ApiConfigService } from "src/common/api.config.service";
 import { CachingService } from "src/common/caching.service";
 import { KeybaseService } from "src/common/keybase.service";
 import { Constants } from "src/utils/constants";
@@ -10,7 +11,8 @@ export class IdentitiesService {
   constructor(
      private readonly nodeService: NodeService,
      private readonly keybaseService: KeybaseService,
-     private readonly cachingService: CachingService
+     private readonly cachingService: CachingService,
+     private readonly apiConfigService: ApiConfigService,
   ) {}
 
   async getIdentity(identifier: string): Promise<Identity | undefined> {
@@ -163,8 +165,16 @@ export class IdentitiesService {
 
     identities.forEach((identity, index) => {
       identity.rank = index + 1;
+
+      if (identity.avatar) {
+        identity.avatar = this.processIdentityAvatar(identity.avatar);
+      }
     });
 
     return identities;
+  }
+
+  private processIdentityAvatar(avatar: string): string {
+    return avatar.replace('https://s3.amazonaws.com/keybase_processed_uploads', `${this.apiConfigService.getMediaUrl()}/providers/asset`);
   }
 }

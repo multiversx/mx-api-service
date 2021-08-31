@@ -190,6 +190,11 @@ export class ElasticService {
       queries.push(QueryType.Nested("data", { "data.creator": filter.creator }));
     }
 
+    if (filter.identifiers) {
+      let identifiers = filter.identifiers.split(',');
+      queries.push(QueryType.Should(identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
+    }
+
     elasticQueryAdapter.condition.must = queries;
 
     const elasticQuery = buildElasticQuery(elasticQueryAdapter);

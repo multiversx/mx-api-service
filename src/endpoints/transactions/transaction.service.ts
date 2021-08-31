@@ -85,7 +85,7 @@ export class TransactionService {
     
     if (filter.before || filter.after) {
       elasticQueryAdapter.filter = [
-        QueryType.Range('timestamp', { before: filter.before, after: filter.after }),
+        QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0),
       ]
     }
 
@@ -108,7 +108,7 @@ export class TransactionService {
 
     if (filter.before || filter.after) {
       elasticQueryAdapter.filter = [
-        QueryType.Range('timestamp', { before: filter.before, after: filter.after }),
+        QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0),
       ]
     }
     
