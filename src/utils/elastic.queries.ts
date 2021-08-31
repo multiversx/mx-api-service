@@ -29,7 +29,7 @@ export function buildElasticQuery(query: ElasticQuery) {
     sort: elasticSort,
     query: {
       bool: {
-        filter: query.filter,
+        filter: query.filter.map(query => query.getQuery()),
         must: query.condition.must.map(query => query.getQuery()),
         should: query.condition.should.map(query => query.getQuery()),
         must_not: query.condition.must_not.map(query => query.getQuery()),
