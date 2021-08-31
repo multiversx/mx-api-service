@@ -65,9 +65,11 @@ export class CacheWarmerService {
     await Locker.lock('Keybase invalidations', async () => {
       let nodeKeybases = await this.keybaseService.confirmKeybaseNodesAgainstKeybasePub();
       let providerKeybases = await this.keybaseService.confirmKeybaseProvidersAgainstKeybasePub();
+      let identityKeybases = await this.keybaseService.getIdentitiesProfilesAgainstKeybasePub();
       await Promise.all([
         this.invalidateKey('nodeKeybases', nodeKeybases, Constants.oneHour()),
-        this.invalidateKey('providerKeybases', providerKeybases, Constants.oneHour())
+        this.invalidateKey('providerKeybases', providerKeybases, Constants.oneHour()),
+        this.invalidateKey('identityKeybases', identityKeybases, Constants.oneHour())
       ]);
     }, true);
   }
