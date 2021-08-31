@@ -25,6 +25,7 @@ import { AddressUtils } from "src/utils/address.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { ApiUtils } from "src/utils/api.utils";
 import { NetworkService } from "../network/network.service";
+import { TokenFilter } from "./entities/token.filter";
 
 @Injectable()
 export class TokenService {
@@ -55,16 +56,10 @@ export class TokenService {
     return undefined;
   }
 
-  async getTokens(queryPagination: QueryPagination, search: string | undefined): Promise<TokenDetailed[]> {
+  async getTokens(queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenDetailed[]> {
     const { from, size } = queryPagination;
 
-    let tokens = await this.getAllTokens();
-
-    if (search) {
-      let searchLower = search.toLowerCase();
-
-      tokens = tokens.filter(token => token.name.toLowerCase().includes(searchLower) || token.identifier.toLowerCase().includes(searchLower));
-    }
+    let tokens = await this.getFilteredTokens(filter);
 
     tokens = tokens.slice(from, from + size);
 
@@ -75,14 +70,32 @@ export class TokenService {
     return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
   }
 
-  async getTokenCount(search: string | undefined): Promise<number> {
+  async getFilteredTokens(filter: TokenFilter): Promise<TokenDetailed[]> {
     let tokens = await this.getAllTokens();
 
-    if (search) {
-      let searchLower = search.toLowerCase();
+    if (filter.search) {
+      let searchLower = filter.search.toLowerCase();
 
       tokens = tokens.filter(token => token.name.toLowerCase().includes(searchLower) || token.identifier.toLowerCase().includes(searchLower));
     }
+
+    if (filter.name) {
+      let nameLower = filter.name.toLowerCase();
+
+      tokens = tokens.filter(token => token.name.toLowerCase().includes(nameLower));
+    }
+
+    if (filter.identifier) {
+      let identifierLower = filter.identifier.toLowerCase();
+
+      tokens = tokens.filter(token => token.identifier.toLowerCase().includes(identifierLower));
+    }
+    
+    return tokens;
+  }
+
+  async getTokenCount(filter: TokenFilter): Promise<number> {
+    let tokens = await this.getFilteredTokens(filter);
 
     return tokens.length;
   }
@@ -280,7 +293,7 @@ export class TokenService {
 
       if (isCustomThumbnail === true) {
         nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/custom/${nft.identifier}`;
-      } if (isStandardThumbnail === true) {
+      } else if (isStandardThumbnail === true) {
         nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/standard/${nft.identifier}`;
       } else if (nft.metadata && nft.metadata.fileType) {
         nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/default/${nft.metadata.fileType.replace('/', '-')}`;
@@ -292,7 +305,7 @@ export class TokenService {
 
   async hasCustomThumbnail(nftIdentifier: string): Promise<boolean> {
     try {
-      const { status } = await this.apiService.head(`${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/custom/${nftIdentifier}`);
+      const { status } = await this.apiService.head(`${this.apiConfigService.getNftThumbnailsUrl()}/custom/${nftIdentifier}`);
 
       return status === 200;
     } catch (error) {
@@ -302,7 +315,7 @@ export class TokenService {
 
   async hasStandardThumbnail(nftIdentifier: string): Promise<boolean> {
     try {
-      const { status } = await this.apiService.head(`${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/standard/${nftIdentifier}`);
+      const { status } = await this.apiService.head(`${this.apiConfigService.getNftThumbnailsUrl()}/standard/${nftIdentifier}`);
 
       return status === 200;
     } catch (error) {

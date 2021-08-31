@@ -7,6 +7,7 @@ import { TokenService } from 'src/endpoints/tokens/token.service';
 import { NftFilter } from 'src/endpoints/tokens/entities/nft.filter';
 import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
+import { TokenFilter } from 'src/endpoints/tokens/entities/token.filter';
 
 describe.skip('Token Service', () => {
   let tokenService: TokenService;
@@ -33,7 +34,7 @@ describe.skip('Token Service', () => {
     nftCreator = nft.creator;
     nftIdentifier = nft.identifier;
 
-    let tokens = await tokenService.getTokens({from: 0, size: 1}, undefined);
+    let tokens = await tokenService.getTokens({from: 0, size: 1}, new TokenFilter());
     expect(tokens).toHaveLength(1);
 
     let token = tokens[0];
@@ -44,7 +45,7 @@ describe.skip('Token Service', () => {
   describe('Tokens list', () => {
     describe('Tokens pagination', () => {
       it(`should return a list with 25 tokens`, async () => {
-        const tokensList = await tokenService.getTokens({from: 0, size: 25}, undefined);
+        const tokensList = await tokenService.getTokens({from: 0, size: 25}, new TokenFilter());
 
         expect(tokensList).toBeInstanceOf(Array);
         expect(tokensList).toHaveLength(25);
@@ -55,7 +56,7 @@ describe.skip('Token Service', () => {
       });
 
       it(`should return a list with 10 tokens`, async () => {
-        const tokensList = await tokenService.getTokens({from: 0, size: 10}, undefined);
+        const tokensList = await tokenService.getTokens({from: 0, size: 10}, new TokenFilter());
         expect(tokensList).toBeInstanceOf(Array);
         expect(tokensList).toHaveLength(10);
 
@@ -67,7 +68,7 @@ describe.skip('Token Service', () => {
 
     describe('Tokens filters', () => {
       it(`should return a list of tokens for a collection`, async () => {
-        const tokensList = await tokenService.getTokens({from: 0, size: 50}, tokenName);
+        const tokensList = await tokenService.getTokens({from: 0, size: 50}, { name: tokenName });
         expect(tokensList).toBeInstanceOf(Array);
 
         for (let token of tokensList) {
@@ -80,7 +81,7 @@ describe.skip('Token Service', () => {
 
   describe('Token count', () => {
     it(`should return a number`, async () => {
-      const tokensCount: Number = new Number(await tokenService.getTokenCount(undefined));
+      const tokensCount: Number = new Number(await tokenService.getTokenCount(new TokenFilter()));
 
       expect(tokensCount).toBeInstanceOf(Number);
     });

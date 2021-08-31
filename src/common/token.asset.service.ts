@@ -61,9 +61,7 @@ export class TokenAssetService {
   }
 
   private getImageUrl(tokenIdentifier: string, name: string) {
-    let tokensRelativePath = this.getTokensRelativePath();
-
-    return `https://github.com/ElrondNetwork/assets/raw/master/${tokensRelativePath}/${tokenIdentifier}/${name}`;
+    return `${this.apiConfigService.getMediaUrl()}/tokens/asset/${tokenIdentifier}/${name}`;
   }
 
   private getTokensPath() {
