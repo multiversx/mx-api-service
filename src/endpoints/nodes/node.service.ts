@@ -25,6 +25,7 @@ export class NodeService {
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
+    @Inject(forwardRef(() => KeybaseService))
     private readonly keybaseService: KeybaseService,
     @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
