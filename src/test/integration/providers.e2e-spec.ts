@@ -33,6 +33,12 @@ describe('Provider Service', () => {
   });
 
   describe('Providers', () => {
+    it('all providers should have provider address', async () => {
+      for (let provider of providers) {
+        expect(provider).toHaveProperty('provider');
+      }
+    });
+    
     it('all entities should have provider structure', async () => {
       for (let provider of providers) {
         expect(provider).toHaveStructure(Object.keys(new Provider()));

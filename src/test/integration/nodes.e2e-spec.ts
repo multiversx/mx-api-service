@@ -33,6 +33,13 @@ describe('Node Service', () => {
   });
 
   describe('Nodes', () => {
+    it('all nodes should have bls and type', async () => {
+      for (let node of nodes) {
+        expect(node).toHaveProperty('bls');
+        expect(node).toHaveProperty('type');
+      }
+    });
+
     it('should be in sync with keybase confirmations', async () => {
       const nodeKeybases:{ [key: string]: KeybaseState } | undefined = await cachingService.getCache('nodeKeybases');
       expect(nodeKeybases).toBeDefined();
