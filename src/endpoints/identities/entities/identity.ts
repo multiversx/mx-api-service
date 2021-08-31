@@ -32,7 +32,7 @@ export class Identity {
   stakePercent: number = 0;
 
   @ApiProperty()
-  topup: string = '';
+  topUp: string = '';
 
   @ApiProperty()
   validators: number = 0;
