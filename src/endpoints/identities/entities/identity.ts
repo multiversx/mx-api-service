@@ -2,38 +2,41 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class Identity {
   @ApiProperty()
-  avatar: string = '';
+  identity?: string;
 
   @ApiProperty()
-  description: string = '';
+  name?: string;
 
   @ApiProperty()
-  distribution: { [ index: string ]: number } = {};
+  description?: string;
 
   @ApiProperty()
-  identity: string = '';
+  avatar?: string;
 
   @ApiProperty()
-  locked: string = '';
+  score?: number;
 
   @ApiProperty()
-  name: string = '';
+  validators?: number;
 
   @ApiProperty()
-  rank: number = 0;
+  stake?: string;
 
   @ApiProperty()
-  score: string = '';
+  topUp?: string;
 
   @ApiProperty()
-  stake: string = '';
+  locked: string = '0';
 
   @ApiProperty()
-  stakePercent: number = 0;
+  distribution?: { [ index: string ]: number } = {};
 
   @ApiProperty()
-  topup: string = '';
+  providers?: string[];
 
   @ApiProperty()
-  validators: number = 0;
+  stakePercent?: number;
+
+  @ApiProperty()
+  rank?: number;
 }
