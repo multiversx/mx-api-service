@@ -1,26 +1,34 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ApiConfigService } from 'src/helpers/api.config.service';
-import { CachingService } from 'src/helpers/caching.service';
-import { DataApiService } from 'src/helpers/data.api.service';
-import { DataQuoteType } from 'src/helpers/entities/data.quote.type';
-import { AbstractQuery } from 'src/helpers/entities/elastic/abstract.query';
-import { ElasticPagination } from 'src/helpers/entities/elastic/elastic.pagination';
-import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
-import { ElasticSortOrder } from 'src/helpers/entities/elastic/elastic.sort.order';
-import { ElasticSortProperty } from 'src/helpers/entities/elastic/elastic.sort.property';
-import { QueryConditionOptions } from 'src/helpers/entities/elastic/query.condition.options';
-import { QueryType } from 'src/helpers/entities/elastic/query.type';
-import { GatewayService } from 'src/helpers/gateway.service';
-import { base64Encode, bech32Decode, computeShard, mergeObjects, oneDay, oneHour } from 'src/helpers/helpers';
-import { ElasticService } from '../../helpers/elastic.service';
+import { ApiConfigService } from 'src/common/api.config.service';
+import { CachingService } from 'src/common/caching.service';
+import { DataApiService } from 'src/common/data.api.service';
+import { DataQuoteType } from 'src/common/entities/data.quote.type';
+import { AbstractQuery } from 'src/common/entities/elastic/abstract.query';
+import { ElasticPagination } from 'src/common/entities/elastic/elastic.pagination';
+import { ElasticQuery } from 'src/common/entities/elastic/elastic.query';
+import { ElasticSortOrder } from 'src/common/entities/elastic/elastic.sort.order';
+import { ElasticSortProperty } from 'src/common/entities/elastic/elastic.sort.property';
+import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
+import { QueryType } from 'src/common/entities/elastic/query.type';
+import { GatewayService } from 'src/common/gateway.service';
+import { AddressUtils } from 'src/utils/address.utils';
+import { ApiUtils } from 'src/utils/api.utils';
+import { BinaryUtils } from 'src/utils/binary.utils';
+import { Constants } from 'src/utils/constants';
+import { ElasticService } from '../../common/elastic.service';
 import { SmartContractResult } from './entities/smart.contract.result';
 import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
 import { TransactionFilter } from './entities/transaction.filter';
 import { TransactionLog } from './entities/transaction.log';
+import { TransactionLogEvent } from './entities/transaction.log.event';
+import { TransactionLogEventIdentifier } from './entities/transaction.log.event.identifier';
+import { TransactionOperation } from './entities/transaction.operation';
 import { TransactionReceipt } from './entities/transaction.receipt';
 import { TransactionSendResult } from './entities/transaction.send.result';
+import { TransactionOperationType } from './entities/transaction.operation.type';
+import { TransactionOperationAction } from './entities/transaction.operation.action';
 
 @Injectable()
 export class TransactionService {
@@ -64,6 +72,10 @@ export class TransactionService {
       queries.push(QueryType.Match('status', filter.status));
     }
 
+    if (filter.search) {
+      queries.push(QueryType.Wildcard('data', `*${filter.search}*`));
+    }
+
     return queries;
   }
 
@@ -73,7 +85,7 @@ export class TransactionService {
     
     if (filter.before || filter.after) {
       elasticQueryAdapter.filter = [
-        QueryType.Range('timestamp', { before: filter.before, after: filter.after }),
+        QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0),
       ]
     }
 
@@ -96,13 +108,13 @@ export class TransactionService {
 
     if (filter.before || filter.after) {
       elasticQueryAdapter.filter = [
-        QueryType.Range('timestamp', { before: filter.before, after: filter.after }),
+        QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0),
       ]
     }
     
     let transactions = await this.elasticService.getList('transactions', 'txHash', elasticQueryAdapter);
 
-    return transactions.map(transaction => mergeObjects(new Transaction(), transaction));
+    return transactions.map(transaction => ApiUtils.mergeObjects(new Transaction(), transaction));
   }
 
   async getTransaction(txHash: string): Promise<TransactionDetailed | null> {
@@ -136,7 +148,7 @@ export class TransactionService {
 
     let price = await this.getTransactionPriceForDate(transactionDate);
     if (price) {
-      price = price.toRounded(2);
+      price = Number(price).toRounded(2);
     }
 
     return price;
@@ -154,7 +166,7 @@ export class TransactionService {
     return await this.cachingService.getOrSetCache(
       'currentPrice',
       async () => await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price),
-      oneHour()
+      Constants.oneHour()
     );
   }
 
@@ -162,15 +174,29 @@ export class TransactionService {
     return await this.cachingService.getOrSetCache(
       `price:${date.toISODateString()}`,
       async () => await this.dataApiService.getQuotesHistoricalTimestamp(DataQuoteType.price, date.getTime() / 1000),
-      oneDay() * 7
+      Constants.oneDay() * 7
     );
+  }
+
+  private async tryGetTransactionFromElasticBySenderAndNonce(sender: string, nonce: number): Promise<TransactionDetailed | undefined> {
+    const query: ElasticQuery = new ElasticQuery();
+    query.pagination = { from: 0, size: 1 };
+
+    query.condition.must = [
+      QueryType.Match('sender', sender),
+      QueryType.Match('nonce', nonce)
+    ];
+
+    let transactions = await this.elasticService.getList('transactions', 'txHash', query);
+
+    return transactions.firstOrUndefined();
   }
 
   async tryGetTransactionFromElastic(txHash: string): Promise<TransactionDetailed | null> {
     try {
       const result = await this.elasticService.getItem('transactions', 'txHash', txHash);
 
-      let transactionDetailed: TransactionDetailed = mergeObjects(new TransactionDetailed(), result);
+      let transactionDetailed: TransactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), result);
 
       const hashes: string[] = [];
       hashes.push(txHash);
@@ -194,7 +220,7 @@ export class TransactionService {
             delete scResult.scHash;
           }
 
-          transactionDetailed.scResults = scResults.map(scResult => mergeObjects(new SmartContractResult(), scResult));
+          transactionDetailed.scResults = scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
         }
 
         const elasticQueryAdapterReceipts: ElasticQuery = new ElasticQuery();
@@ -206,7 +232,7 @@ export class TransactionService {
         let receipts = await this.elasticService.getList('receipts', 'receiptHash', elasticQueryAdapterReceipts);
         if (receipts.length > 0) {
           let receipt = receipts[0];
-          transactionDetailed.receipt = mergeObjects(new TransactionReceipt(), receipt);
+          transactionDetailed.receipt = ApiUtils.mergeObjects(new TransactionReceipt(), receipt);
         }
 
         const elasticQueryAdapterLogs: ElasticQuery = new ElasticQuery();
@@ -219,30 +245,106 @@ export class TransactionService {
         elasticQueryAdapterLogs.condition.should = queries;
   
         let logs: any[] = await this.elasticService.getLogsForTransactionHashes(elasticQueryAdapterLogs);
-  
+        let transactionLogs = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
+
+        transactionDetailed.operations = this.getOperationsForTransactionLogs(txHash, transactionLogs);
+   
         for (let log of logs) {
           if (log._id === txHash) {
-            transactionDetailed.logs = mergeObjects(new TransactionLog(), log._source);
+            transactionDetailed.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
           }
           else {
             const foundScResult = transactionDetailed.scResults.find(({ hash }) => log._id === hash);
             if (foundScResult) {
-              foundScResult.logs = mergeObjects(new TransactionLog(), log._source);
+              foundScResult.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
             }
           }
         }
       }
 
-      return mergeObjects(new TransactionDetailed(), transactionDetailed);
+      return ApiUtils.mergeObjects(new TransactionDetailed(), transactionDetailed);
     } catch (error) {
       this.logger.error(error);
       return null;
     }
   }
 
+  getOperationsForTransactionLogs(txHash: string, logs: TransactionLog[]): TransactionOperation[] {
+    let operations: (TransactionOperation | undefined)[] = [];
+
+    for (let log of logs) {
+      for (let event of log.events) {
+        switch (event.identifier) {
+          case TransactionLogEventIdentifier.ESDTNFTTransfer:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.transfer));
+            break;
+          case TransactionLogEventIdentifier.ESDTNFTBurn:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.burn));
+            break;
+          case TransactionLogEventIdentifier.ESDTNFTAddQuantity:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.addQuantity));
+            break;
+          case TransactionLogEventIdentifier.ESDTNFTCreate:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.create));
+            break;
+          case TransactionLogEventIdentifier.MultiESDTNFTTransfer:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.multiTransfer));
+            break;
+          case TransactionLogEventIdentifier.ESDTTransfer:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.transfer));
+            break;
+          case TransactionLogEventIdentifier.ESDTBurn:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.burn));
+            break;
+          case TransactionLogEventIdentifier.ESDTLocalMint:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.localMint));
+            break;
+          case TransactionLogEventIdentifier.ESDTLocalBurn:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.localBurn));
+            break;
+          case TransactionLogEventIdentifier.ESDTWipe:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.wipe));
+            break;
+        }
+      }
+    }
+
+    return operations.filter(operation => operation !== undefined).map(operation => operation!);
+  }
+
+  private getTransactionNftOperation(txHash: string, log: TransactionLog, event: TransactionLogEvent, action: TransactionOperationAction): TransactionOperation | undefined {
+    try {
+      let identifier = BinaryUtils.base64Decode(event.topics[0]);
+      let nonce = BinaryUtils.tryBase64ToHex(event.topics[1]);
+      let value = BinaryUtils.tryBase64ToBigInt(event.topics[2])?.toString() ?? '0';
+      let receiver = BinaryUtils.tryBase64ToAddress(event.topics[3]) ?? log.address;
+
+      let collection: string | undefined = undefined;
+      if (nonce) {
+        collection = identifier;
+        identifier = `${collection}-${nonce}`
+      }
+
+      let type = nonce ? TransactionOperationType.nft : TransactionOperationType.esdt;
+
+      return { action, type, collection, identifier, sender: log.address, receiver, value };
+    } catch (error) {
+      this.logger.error(`Error when parsing NFT transaction log for tx hash '${txHash}' with action '${action}' and topics: ${event.topics}`);
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
   async tryGetTransactionFromGateway(txHash: string): Promise<TransactionDetailed | null> {
     try {
       const { transaction } = await this.gatewayService.get(`transaction/${txHash}?withResults=true`);
+
+      if (transaction.status === 'pending') {
+        let existingTransaction = await this.tryGetTransactionFromElasticBySenderAndNonce(transaction.sender, transaction.nonce);
+        if (existingTransaction && existingTransaction.txHash !== txHash) {
+          return null;
+        }
+      }
 
       if (transaction.receipt) {
         transaction.receipt.value = transaction.receipt.value.toString();
@@ -254,7 +356,7 @@ export class TransactionService {
           smartContractResult.value = smartContractResult.value.toString();
 
           if (smartContractResult.data) {
-            smartContractResult.data = base64Encode(smartContractResult.data);
+            smartContractResult.data = BinaryUtils.base64Encode(smartContractResult.data);
           }
         }
       }
@@ -277,12 +379,12 @@ export class TransactionService {
         round: transaction.round,
         fee: transaction.fee,
         timestamp: transaction.timestamp,
-        scResults: transaction.smartContractResults ? transaction.smartContractResults.map((scResult: any) => mergeObjects(new SmartContractResult(), scResult)) : [],
-        receipt: transaction.receipt ? mergeObjects(new TransactionReceipt(), transaction.receipt) : undefined,
+        scResults: transaction.smartContractResults ? transaction.smartContractResults.map((scResult: any) => ApiUtils.mergeObjects(new SmartContractResult(), scResult)) : [],
+        receipt: transaction.receipt ? ApiUtils.mergeObjects(new TransactionReceipt(), transaction.receipt) : undefined,
         logs: transaction.logs
       };
 
-      return mergeObjects(new TransactionDetailed(), result);
+      return ApiUtils.mergeObjects(new TransactionDetailed(), result);
     } catch (error) {
       this.logger.error(error);
       return null;
@@ -290,8 +392,8 @@ export class TransactionService {
   }
 
   async createTransaction(transaction: TransactionCreate): Promise<TransactionSendResult | string> {
-    const receiverShard = computeShard(bech32Decode(transaction.receiver));
-    const senderShard = computeShard(bech32Decode(transaction.sender));
+    const receiverShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.receiver));
+    const senderShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.sender));
 
     let txHash: string;
     try {

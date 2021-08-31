@@ -2,13 +2,13 @@ import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Pa
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { Node } from "src/endpoints/nodes/entities/node";
-import { ParseOptionalBoolPipe } from "src/helpers/pipes/parse.optional.bool.pipe";
+import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { NodeType } from "./entities/node.type";
-import { ParseOptionalEnumPipe } from "src/helpers/pipes/parse.optional.enum.pipe";
+import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { NodeStatus } from "./entities/node.status";
-import { ParseOptionalIntPipe } from "src/helpers/pipes/parse.optional.int.pipe";
+import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { Response } from 'express';
-import { SortOrder } from "src/helpers/entities/sort.order";
+import { SortOrder } from "src/common/entities/sort.order";
 import { NodeSort } from "./entities/node.sort";
 
 @Controller()
@@ -47,7 +47,7 @@ export class NodeController {
 		@Query('issues', ParseOptionalBoolPipe) issues: boolean | undefined,
 		@Query('identity') identity: string | undefined,
 		@Query('provider') provider: string | undefined,
-		@Query('owner', ParseOptionalIntPipe) owner: string | undefined,
+		@Query('owner') owner: string | undefined,
 		@Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort: NodeSort | undefined,
 		@Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
 	): Promise<Node[]> {

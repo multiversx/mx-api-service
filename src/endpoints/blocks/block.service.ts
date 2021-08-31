@@ -1,18 +1,19 @@
 import { Injectable } from "@nestjs/common";
-import { ElasticService } from "src/helpers/elastic.service";
-import { mergeObjects, oneMinute, oneWeek } from "src/helpers/helpers";
+import { ElasticService } from "src/common/elastic.service";
 import { Block } from "./entities/block";
 import { BlockDetailed } from "./entities/block.detailed";
-import { CachingService } from "src/helpers/caching.service";
+import { CachingService } from "src/common/caching.service";
 import { BlockFilter } from "./entities/block.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { ElasticPagination } from "src/helpers/entities/elastic/elastic.pagination";
-import { ElasticSortProperty } from "src/helpers/entities/elastic/elastic.sort.property";
-import { ElasticSortOrder } from "src/helpers/entities/elastic/elastic.sort.order";
-import { ElasticQuery } from "src/helpers/entities/elastic/elastic.query";
-import { AbstractQuery } from "src/helpers/entities/elastic/abstract.query";
-import { BlsService } from "src/helpers/bls.service";
-import { QueryType } from "src/helpers/entities/elastic/query.type";
+import { ElasticPagination } from "src/common/entities/elastic/elastic.pagination";
+import { ElasticSortProperty } from "src/common/entities/elastic/elastic.sort.property";
+import { ElasticSortOrder } from "src/common/entities/elastic/elastic.sort.order";
+import { ElasticQuery } from "src/common/entities/elastic/elastic.query";
+import { AbstractQuery } from "src/common/entities/elastic/abstract.query";
+import { BlsService } from "src/common/bls.service";
+import { QueryType } from "src/common/entities/elastic/query.type";
+import { Constants } from "src/utils/constants";
+import { ApiUtils } from "src/utils/api.utils";
 
 @Injectable()
 export class BlockService {
@@ -58,7 +59,7 @@ export class BlockService {
     return await this.cachingService.getOrSetCache(
       `blocks:count:${JSON.stringify(elasticQueryAdapter)}`,
       async () => await this.elasticService.getCount('blocks', elasticQueryAdapter),
-      oneMinute()
+      Constants.oneMinute()
     );
   }
 
@@ -81,18 +82,18 @@ export class BlockService {
       item.shard = item.shardId;
     }
 
-    let finalResult = [];
+    let blocks = [];
 
     for (let item of result) {
-      let transformedItem = await this.transformItem(item);
+      let block = await this.computeProposerAndValidators(item);
 
-      finalResult.push(transformedItem);
+      blocks.push(ApiUtils.mergeObjects(new Block(), block));
     }
 
-    return finalResult.map(item => mergeObjects(new Block(), item));
+    return blocks;
   }
 
-  async transformItem(item: any) {
+  async computeProposerAndValidators(item: any) {
     // eslint-disable-next-line no-unused-vars
     let { shardId: shard, epoch, proposer, validators, searchOrder, ...rest } = item;
 
@@ -101,11 +102,14 @@ export class BlockService {
     if (!blses) {
       blses = await this.blsService.getBlses(shard, epoch);
 
-      await this.cachingService.setCacheLocal(key, blses, oneWeek());
+      await this.cachingService.setCacheLocal(key, blses, Constants.oneWeek());
     }
   
     proposer = blses[proposer];
-    validators = validators.map((index: number) => blses[index]);
+
+    if (validators) {
+      validators = validators.map((index: number) => blses[index]);
+    }
   
     return { shard, epoch, proposer, validators, ...rest };
   };
@@ -118,7 +122,7 @@ export class BlockService {
     result.proposer = publicKeys[result.proposer];
     result.validators = result.validators.map((validator: number) => publicKeys[validator]);
 
-    return mergeObjects(new BlockDetailed(), result);
+    return ApiUtils.mergeObjects(new BlockDetailed(), result);
   }
 
   async getCurrentEpoch(): Promise<number> {

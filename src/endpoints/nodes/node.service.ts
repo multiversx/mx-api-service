@@ -1,21 +1,22 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { GatewayService } from "src/helpers/gateway.service";
+import { GatewayService } from "src/common/gateway.service";
 import { Node } from "src/endpoints/nodes/entities/node";
 import { NodeType } from "./entities/node.type";
 import { NodeStatus } from "./entities/node.status";
 import { Queue } from "./entities/queue";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
-import { ApiConfigService } from "src/helpers/api.config.service";
-import { bech32Decode, bech32Encode, oneHour, oneMinute } from "src/helpers/helpers";
-import { CachingService } from "src/helpers/caching.service";
-import { KeybaseService } from "src/helpers/keybase.service";
+import { ApiConfigService } from "src/common/api.config.service";
+import { CachingService } from "src/common/caching.service";
+import { KeybaseService } from "src/common/keybase.service";
 import { NodeFilter } from "./entities/node.filter";
 import { ProviderService } from "../providers/provider.service";
 import { StakeService } from "../stake/stake.service";
-import { SortOrder } from "src/helpers/entities/sort.order";
+import { SortOrder } from "src/common/entities/sort.order";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockService } from "../blocks/block.service";
-import { KeybaseState } from "src/helpers/entities/keybase.state";
+import { KeybaseState } from "src/common/entities/keybase.state";
+import { Constants } from "src/utils/constants";
+import { AddressUtils } from "src/utils/address.utils";
 
 @Injectable()
 export class NodeService {
@@ -24,7 +25,9 @@ export class NodeService {
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
+    @Inject(forwardRef(() => KeybaseService))
     private readonly keybaseService: KeybaseService,
+    @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
@@ -63,28 +66,28 @@ export class NodeService {
     let allNodes = await this.getAllNodes();
 
     const data = allNodes
-        .filter(({ type }) => type === NodeType.validator)
-        .reduce((accumulator: any, item) => {
-          if (item.version) {
-            if (!accumulator[item.version]) {
-              accumulator[item.version] = 1;
-            } else {
-              accumulator[item.version] += 1;
-            }
+      .filter(({ type }) => type === NodeType.validator)
+      .reduce((accumulator: any, item) => {
+        if (item.version) {
+          if (!accumulator[item.version]) {
+            accumulator[item.version] = 1;
+          } else {
+            accumulator[item.version] += 1;
           }
+        }
 
-          return accumulator;
-        }, {});
+        return accumulator;
+      }, {});
 
-      const sum = Object.keys(data).reduce((accumulator, item) => {
-        return accumulator + data[item];
-      }, 0);
+    const sum = Object.keys(data).reduce((accumulator, item) => {
+      return accumulator + data[item];
+    }, 0);
 
-      Object.keys(data).forEach((key) => {
-        data[key] = parseFloat((data[key] / sum).toFixed(2));
-      });
+    Object.keys(data).forEach((key) => {
+      data[key] = parseFloat((data[key] / sum).toFixed(2));
+    });
 
-      return data;
+    return data;
   }
 
   private async getFilteredNodes(query: NodeFilter): Promise<Node[]> {
@@ -92,7 +95,7 @@ export class NodeService {
 
     let filteredNodes = allNodes.filter(node => {
       if (query.search !== undefined) {
-        const nodeMatches = node.bls.toLowerCase().includes(query.search.toLowerCase());
+        const nodeMatches = node.bls && node.bls.toLowerCase().includes(query.search.toLowerCase());
         const nameMatches = node.name && node.name.toLowerCase().includes(query.search.toLowerCase());
         const versionMatches = node.version && node.version.toLowerCase().includes(query.search.toLowerCase());
 
@@ -169,7 +172,7 @@ export class NodeService {
   }
 
   async getAllNodes(): Promise<Node[]> {
-    return await this.cachingService.getOrSetCache('nodes', async () => await this.getAllNodesRaw(), oneHour(), oneMinute());
+    return await this.cachingService.getOrSetCache('nodes', async () => await this.getAllNodesRaw(), Constants.oneHour(), Constants.oneMinute());
   }
 
   async getAllNodesRaw(): Promise<Node[]> {
@@ -196,11 +199,13 @@ export class NodeService {
 
     const keybases: { [key: string]: KeybaseState } | undefined = await this.keybaseService.getCachedNodeKeybases();
 
-    for (let node of nodes) {
-      node.identity = undefined;
-
-      if (keybases && keybases[node.bls] && keybases[node.bls].confirmed) {
-        node.identity = keybases[node.bls].identity;
+    if (keybases) {
+      for (let node of nodes) {
+        node.identity = undefined;
+  
+        if (keybases[node.bls] && keybases[node.bls].confirmed) {
+          node.identity = keybases[node.bls].identity;
+        }
       }
     }
 
@@ -224,10 +229,6 @@ export class NodeService {
         if (provider) {
           node.provider = provider.provider;
           node.owner = provider.owner ?? '';
-
-          if (provider.identity) {
-            node.identity = provider.identity;
-          }
         }
       }
     });
@@ -309,7 +310,7 @@ export class NodeService {
 
     const [encodedOwnerBase64] = result;
   
-    return bech32Encode(Buffer.from(encodedOwnerBase64, 'base64').toString('hex'));
+    return AddressUtils.bech32Encode(Buffer.from(encodedOwnerBase64, 'base64').toString('hex'));
   };
 
   async getOwnerBlses(owner: string): Promise<string[]> {
@@ -317,7 +318,7 @@ export class NodeService {
       this.apiConfigService.getAuctionContractAddress(),
       'getBlsKeysStatus',
       this.apiConfigService.getAuctionContractAddress(),
-      [ bech32Decode(owner) ],
+      [ AddressUtils.bech32Decode(owner) ],
     );
   
     if (!getBlsKeysStatusListEncoded) {
@@ -350,17 +351,17 @@ export class NodeService {
 
     return queueEncoded.reduce((result: Queue[], _: any, index: number, array: any) => {
       if (index % 3 === 0) {
-        const [blsBase64, rewardsBase64, nonceBase64] = array.slice(index, index + 3);
+        const [blsBase64, rewardsAddressBase64, nonceBase64] = array.slice(index, index + 3);
 
         const bls = Buffer.from(blsBase64, 'base64').toString('hex');
 
-        const rewardsHex = Buffer.from(rewardsBase64, 'base64').toString('hex');
-        const rewards = bech32Encode(rewardsHex);
+        const rewardsAddressHex = Buffer.from(rewardsAddressBase64, 'base64').toString('hex');
+        const rewardsAddress = AddressUtils.bech32Encode(rewardsAddressHex);
 
         const nonceHex = Buffer.from(nonceBase64, 'base64').toString('hex');
         const nonce = parseInt(BigInt(nonceHex ? '0x' + nonceHex : nonceHex).toString());
 
-        result.push({ bls, nonce, rewards, position: index / 3 + 1 });
+        result.push({ bls, nonce, rewardsAddress, position: index / 3 + 1 });
       }
 
       return result;

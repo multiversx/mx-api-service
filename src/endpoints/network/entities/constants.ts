@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 
-export class Constants {
+export class NetworkConstants {
     @ApiProperty({ description: 'The chain identifier' })
     chainId: string = '';
 

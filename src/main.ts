@@ -4,9 +4,9 @@ import { PublicAppModule } from './public.app.module';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
-import { ApiConfigService } from './helpers/api.config.service';
-import { CachingService } from './helpers/caching.service';
-import { TokenAssetService } from './helpers/token.asset.service';
+import { ApiConfigService } from './common/api.config.service';
+import { CachingService } from './common/caching.service';
+import { TokenAssetService } from './common/token.asset.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { FieldsInterceptor } from './interceptors/fields.interceptor';
 import { PrivateAppModule } from './private.app.module';
@@ -102,10 +102,10 @@ async function bootstrap() {
       }
     },
   );
-  pubSubApp.listen(() => logger.log('Started Redis pub/sub microservice'));
+  pubSubApp.listen();
 
   logger.log(`Public API active: ${apiConfigService.getIsPublicApiActive()}`);
-  logger.log(`Private API active: ${apiConfigService.getIsPublicApiActive()}`);
+  logger.log(`Private API active: ${apiConfigService.getIsPrivateApiActive()}`);
   logger.log(`Transaction processor active: ${apiConfigService.getIsTransactionProcessorCronActive()}`);
   logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
 }

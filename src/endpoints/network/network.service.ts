@@ -1,22 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import axios from 'axios';
 import { Stats } from 'src/endpoints/network/entities/stats';
-import { ApiConfigService } from 'src/helpers/api.config.service';
-import { CachingService } from 'src/helpers/caching.service';
-import { DataApiService } from 'src/helpers/data.api.service';
-import { DataQuoteType } from 'src/helpers/entities/data.quote.type';
-import { GatewayService } from 'src/helpers/gateway.service';
-import { denominate, denominateString, oneMinute } from 'src/helpers/helpers';
+import { ApiConfigService } from 'src/common/api.config.service';
+import { ApiService } from 'src/common/api.service';
+import { CachingService } from 'src/common/caching.service';
+import { DataApiService } from 'src/common/data.api.service';
+import { DataQuoteType } from 'src/common/entities/data.quote.type';
+import { GatewayService } from 'src/common/gateway.service';
+import { Constants } from 'src/utils/constants';
+import { NumberUtils } from 'src/utils/number.utils';
 import { AccountService } from '../accounts/account.service';
 import { BlockService } from '../blocks/block.service';
 import { BlockFilter } from '../blocks/entities/block.filter';
-import { NodeStatus } from '../nodes/entities/node.status';
-import { NodeService } from '../nodes/node.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
 import { TransactionService } from '../transactions/transaction.service';
 import { VmQueryService } from '../vm.query/vm.query.service';
-import { Constants } from './entities/constants';
+import { NetworkConstants } from './entities/constants';
 import { Economics } from './entities/economics';
+import { StakeService } from '../stake/stake.service';
 
 @Injectable()
 export class NetworkService {
@@ -29,10 +29,11 @@ export class NetworkService {
     private readonly accountService: AccountService,
     private readonly transactionService: TransactionService,
     private readonly dataApiService: DataApiService,
-    private readonly nodeService: NodeService
+    private readonly apiService: ApiService,
+    private readonly stakeService: StakeService
   ) {}
 
-  async getConstants(): Promise<Constants> {
+  async getConstants(): Promise<NetworkConstants> {
     let gatewayUrl = this.apiConfigService.getGatewayUrl();
 
     const {
@@ -49,20 +50,36 @@ export class NetworkService {
           },
         },
       },
-    } = await axios({
-      method: 'get',
-      url: `${gatewayUrl}/network/config`,
-      timeout: this.apiConfigService.getAxiosTimeout(),
-    });
+    } = await this.apiService.get(`${gatewayUrl}/network/config`);
 
     return { chainId, gasPerDataByte, minGasLimit, minGasPrice, minTransactionVersion };
+  }
+
+  async getNetworkConfig() {
+    const [
+      {
+        config: { erd_round_duration, erd_rounds_per_epoch },
+      },
+      {
+        status: { erd_rounds_passed_in_current_epoch },
+      },
+    ] = await Promise.all([
+      this.gatewayService.get('network/config'),
+      this.gatewayService.get('network/status/4294967295')
+    ]);
+
+    const roundsPassed = erd_rounds_passed_in_current_epoch;
+    const roundsPerEpoch = erd_rounds_per_epoch;
+    const roundDuration = erd_round_duration / 1000;
+
+    return { roundsPassed, roundsPerEpoch, roundDuration };
   }
 
   async getEconomics(): Promise<Economics> {
     return this.cachingService.getOrSetCache(
       'economics',
       async () => await this.getEconomicsRaw(),
-      oneMinute() * 10
+      Constants.oneMinute() * 10
     );
   }
 
@@ -95,7 +112,7 @@ export class NetworkService {
 
     const circulatingSupply = totalSupply - locked;
 
-    let aprInfo = await this.getApr(denominateString(balance));
+    let aprInfo = await this.getApr();
 
     return { 
       totalSupply, 
@@ -103,64 +120,10 @@ export class NetworkService {
       staked, 
       price: priceValue ? parseFloat(priceValue.toFixed(2)) : undefined, 
       marketCap: marketCapValue ? parseInt(marketCapValue.toFixed(0)) : undefined, 
-      aprPercent: (aprInfo.apr * 100).toRounded(2), 
-      queued: aprInfo.totalQueued,
-      waiting: denominate(totalWaitingStake),
-      inflation: aprInfo.inflation,
+      apr: aprInfo.apr ? aprInfo.apr.toRounded(6) : 0, 
+      topUpApr: aprInfo.topUpApr ? aprInfo.topUpApr.toRounded(6) : 0,
+      baseApr: aprInfo.baseApr ? aprInfo.baseApr.toRounded(6) : 0,
     };
-  }
-
-  async getApr(stake: number): Promise<{ realStaked: number, inflation: number, apr: number; totalQueued: number, totalQueuedNodes: number }> {
-    let allNodes = await this.nodeService.getAllNodes();
-    let queuedNodes = allNodes.filter(x => x.status === NodeStatus.queued);
-
-    let totalQueued = 0;
-    let totalQueuedNodes = 0;
-
-    let groupedQueuedNodesWithOwner = queuedNodes.groupBy(x => x.owner);
-    for (let owner of Object.keys(groupedQueuedNodesWithOwner)) {
-      let totalLocked = BigInt(0);
-      let nodesWithSameOwner = allNodes.filter(x => x.owner === owner);
-      for (let node of nodesWithSameOwner) {
-        totalLocked += BigInt(node.locked);
-      }
-
-      let totalNodes = nodesWithSameOwner.length;
-      let queuedNodes = groupedQueuedNodesWithOwner[owner].length;
-      totalQueuedNodes += queuedNodes;
-
-      let lockedAmount = denominateString(totalLocked.toString());
-      let queueRatio = queuedNodes / totalNodes;
-      let queuedAmount = lockedAmount * queueRatio;
-
-      totalQueued += queuedAmount;
-    }
-
-    totalQueued = Math.round(totalQueued);
-    stake = Math.round(stake);
-    let realStaked = stake - totalQueued;
-
-    let networkConfig = await this.gatewayService.get('network/config');
-    let roundSeconds = networkConfig.config.erd_round_duration / 1000;
-    let roundsPerEpoch = networkConfig.config.erd_rounds_per_epoch;
-    let epochSeconds = roundSeconds * roundsPerEpoch;
-
-    let yearSeconds = 3600 * 24 * 365;
-    let epochsInYear = yearSeconds / epochSeconds;
-
-    let currentEpoch = await this.blockService.getCurrentEpoch();
-
-    let yearIndex = Math.floor(currentEpoch / epochsInYear);
-    let inflationAmounts = this.apiConfigService.getInflationAmounts();
-
-    if (yearIndex >= inflationAmounts.length) {
-      throw new Error(`There is no inflation information for year with index ${yearIndex}`);
-    }
-
-    let inflation = inflationAmounts[yearIndex];
-    let apr = inflation / realStaked;
-
-    return { realStaked, inflation, apr, totalQueued, totalQueuedNodes };
   }
 
   async getStats(): Promise<Stats> {
@@ -203,4 +166,61 @@ export class NetworkService {
   async getValidatorStatistics() {
     return await this.gatewayService.get('validator/statistics');
   }
+
+  async getApr(): Promise<{ apr: number, topUpApr: number, baseApr: number }> {
+    let stats = await this.getStats();
+    let config = await this.getNetworkConfig();
+    let stake = await this.stakeService.getGlobalStake();
+    const { account: { balance: stakedBalance } } = await this.gatewayService.get(`address/${this.apiConfigService.getAuctionContractAddress()}`);
+    let [ activeStake ] = await this.vmQueryService.vmQuery(
+      this.apiConfigService.getDelegationContractAddress(),
+      'getTotalActiveStake',
+    );
+    activeStake = this.numberDecode(activeStake);
+
+    let elrondConfig = {
+      feesInEpoch: 0,
+      stakePerNode: 2500,
+      protocolSustainabilityRewards: 0.1,
+    };
+
+    const feesInEpoch = elrondConfig.feesInEpoch;
+    const stakePerNode = elrondConfig.stakePerNode;
+    const protocolSustainabilityRewards = elrondConfig.protocolSustainabilityRewards;
+    const epochDuration = config.roundDuration / 1000 * config.roundsPerEpoch;
+    const secondsInYear = 365 * 24 * 3600;
+    const epochsInYear = secondsInYear / epochDuration;
+
+    let yearIndex = Math.floor(stats.epoch / epochsInYear);
+    let inflationAmounts = this.apiConfigService.getInflationAmounts();
+
+    if (yearIndex >= inflationAmounts.length) {
+      throw new Error(`There is no inflation information for year with index ${yearIndex}`);
+    }
+
+    let inflation = inflationAmounts[yearIndex];
+    const rewardsPerEpoch = Math.max(inflation / epochsInYear, feesInEpoch);
+
+    const rewardsPerEpochWithoutProtocolSustainability = (1 - protocolSustainabilityRewards) * rewardsPerEpoch;
+    const topUpRewardsLimit = 0.5 * rewardsPerEpochWithoutProtocolSustainability;
+    const networkBaseStake = stake.activeValidators * stakePerNode;
+    const networkTotalStake = NumberUtils.denominateString(stakedBalance);
+
+    const networkTopUpStake = networkTotalStake - (stake.totalValidators * stakePerNode) - (stake.queueSize * stakePerNode);
+
+    const topUpReward = ((2 * topUpRewardsLimit) / Math.PI) * Math.atan(networkTopUpStake / (2 * 2000000));
+    const baseReward = rewardsPerEpochWithoutProtocolSustainability - topUpReward;
+    
+    const apr = (epochsInYear * (topUpReward + baseReward)) / networkTotalStake;
+
+    let topUpApr = epochsInYear * topUpReward / networkTopUpStake;
+    let baseApr = epochsInYear * baseReward / networkBaseStake;
+
+    return { apr, topUpApr, baseApr };
+  }
+
+  numberDecode(encoded: string) {
+    const hex = Buffer.from(encoded, 'base64').toString('hex');
+    return BigInt(hex ? '0x' + hex : hex).toString();
+  };
 }

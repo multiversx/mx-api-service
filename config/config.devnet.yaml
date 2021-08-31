@@ -19,6 +19,7 @@ urls:
   redis: '127.0.0.1'
   providers: 'https://devnet-delegation.maiarbrowser.com/providers'
   media: 'https://devnet-media.elrond.com'
+  nftThumbnails: 'https://devnet-media.elrond.com/nfts/thumbnail'
 caching:
   cacheTtl: 6
   processTtl: 600
@@ -41,3 +42,6 @@ inflation:
   - 1130177
   - 924690
   - 719203
+security:
+  admins:
+  jwtSecret:
