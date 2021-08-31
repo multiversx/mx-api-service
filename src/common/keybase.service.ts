@@ -143,7 +143,8 @@ export class KeybaseService {
       keys,
       key => `identityProfile:${key}`,
       async key => await this.getProfile(key) ?? new KeybaseIdentity(),
-      Constants.oneMinute() * 30
+      Constants.oneMinute() * 30,
+      true
     );
 
     return identities;
