@@ -177,6 +177,10 @@ export class TransactionService {
     try {
       const result = await this.elasticService.getItem('transactions', 'txHash', txHash);
 
+      if (result.scResults) {
+        result.results = result.scResults;
+      }
+
       let transactionDetailed: TransactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), result);
 
       const hashes: string[] = [];
