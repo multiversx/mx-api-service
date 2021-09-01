@@ -4,7 +4,6 @@ import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import { TransactionStatus } from 'src/endpoints/transactions/entities/transaction.status';
 import { TransactionService } from 'src/endpoints/transactions/transaction.service';
 import { TransactionFilter } from 'src/endpoints/transactions/entities/transaction.filter';
-import "../utils/extensions/jest.extensions";
 import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 

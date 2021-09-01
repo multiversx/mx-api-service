@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { NodesInfos } from "./nodes.infos";
 
-export class Provider {
+export class Provider extends NodesInfos {
   @ApiProperty()
   provider: string = '';
 
@@ -23,20 +24,8 @@ export class Provider {
   numUsers: number = 0;
 
   @ApiProperty()
-  numNodes: number = 0;
-
-  @ApiProperty()
   cumulatedRewards: string | null = null;
 
   @ApiProperty()
   identity: string | undefined = undefined;
-
-  @ApiProperty()
-  stake: string = '';
-
-  @ApiProperty()
-  topUp: string = '';
-
-  @ApiProperty()
-  locked: string = '';
 }

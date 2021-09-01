@@ -104,6 +104,12 @@ export class CachingService {
     this.logger = new Logger(CachingService.name);
   }
 
+  public async getKeys(key: string | undefined) {
+    if (key) {
+      return await this.asyncKeys(key);
+    }
+  }
+
   public async setCacheRemote<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
     await this.asyncSet(key, JSON.stringify(value), 'EX', ttl ?? this.configService.getCacheTtl());
     return value;

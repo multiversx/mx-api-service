@@ -42,3 +42,6 @@ inflation:
   - 1130177
   - 924690
   - 719203
+security:
+  admins:
+  jwtSecret:
