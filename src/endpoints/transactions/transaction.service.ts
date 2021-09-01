@@ -29,6 +29,7 @@ import { TransactionReceipt } from './entities/transaction.receipt';
 import { TransactionSendResult } from './entities/transaction.send.result';
 import { TransactionOperationType } from './entities/transaction.operation.type';
 import { TransactionOperationAction } from './entities/transaction.operation.action';
+import { QueryOperator } from 'src/common/entities/elastic/query.operator';
 
 @Injectable()
 export class TransactionService {
@@ -54,6 +55,10 @@ export class TransactionService {
 
     if (filter.receiver) {
       queries.push(QueryType.Match('receiver', filter.receiver));
+    }
+
+    if (filter.token) {
+      queries.push(QueryType.Match('tokens', filter.token, QueryOperator.AND));
     }
 
     if (filter.senderShard) {
@@ -112,9 +117,49 @@ export class TransactionService {
       ]
     }
     
-    let transactions = await this.elasticService.getList('transactions', 'txHash', elasticQueryAdapter);
+    let elasticTransactions = await this.elasticService.getList('transactions', 'txHash', elasticQueryAdapter);
 
-    return transactions.map(transaction => ApiUtils.mergeObjects(new Transaction(), transaction));
+    let transactions: Transaction[] = [];
+
+    for (let elasticTransaction of elasticTransactions) {
+      let transaction = ApiUtils.mergeObjects(new Transaction(), elasticTransaction);
+
+      let tokenTransfer = this.getTokenTransfer(elasticTransaction);
+      if (tokenTransfer) {
+        transaction.tokenValue = tokenTransfer.tokenAmount;
+        transaction.tokenIdentifier = tokenTransfer.tokenIdentifier;
+      }
+
+      transactions.push(transaction);
+    }
+
+    return transactions;
+  }
+
+  private getTokenTransfer(elasticTransaction: any): { tokenIdentifier: string, tokenAmount: string } | undefined {
+    if (!elasticTransaction.data) {
+      return undefined;
+    }
+
+    let tokens = elasticTransaction.tokens;
+    if (!tokens || tokens.length === 0) {
+      return undefined;
+    }
+
+    let esdtValues = elasticTransaction.esdtValues;
+    if (!esdtValues || esdtValues.length === 0) {
+      return undefined;
+    }
+
+    let decodedData = BinaryUtils.base64Decode(elasticTransaction.data);
+    if (!decodedData.startsWith('ESDTTransfer@')) {
+      return undefined;
+    }
+
+    let token = tokens[0];
+    let esdtValue = esdtValues[0];
+
+    return { tokenIdentifier: token, tokenAmount: esdtValue };
   }
 
   async getTransaction(txHash: string): Promise<TransactionDetailed | null> {
@@ -201,6 +246,11 @@ export class TransactionService {
       }
 
       let transactionDetailed: TransactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), result);
+      let tokenTransfer = this.getTokenTransfer(result);
+      if (tokenTransfer) {
+        transactionDetailed.tokenValue = tokenTransfer.tokenAmount;
+        transactionDetailed.tokenIdentifier = tokenTransfer.tokenIdentifier;
+      }
 
       const hashes: string[] = [];
       hashes.push(txHash);

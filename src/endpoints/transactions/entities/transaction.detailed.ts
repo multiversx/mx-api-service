@@ -5,6 +5,7 @@ import { TransactionReceipt } from "./transaction.receipt";
 import { TransactionLog } from "./transaction.log";
 import { TransactionOperation } from "./transaction.operation";
 
+
 export class TransactionDetailed extends Transaction {
     @ApiProperty({ type: SmartContractResult, isArray: true })
     results: SmartContractResult[] = [];
@@ -18,7 +19,7 @@ export class TransactionDetailed extends Transaction {
     @ApiProperty({ type: TransactionLog })
     logs: TransactionLog | undefined = undefined;
 
-    @ApiProperty({ type: TransactionOperation })
+    @ApiProperty({ type: TransactionOperation, isArray: true })
     operations: TransactionOperation[] = [];
 }
 
