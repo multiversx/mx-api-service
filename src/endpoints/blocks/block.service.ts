@@ -39,13 +39,13 @@ export class BlockService {
 
     if (proposer && shard !== undefined && epoch !== undefined) {
       let index = await this.blsService.getBlsIndex(proposer, shard, epoch);
-      const proposerQuery = QueryType.Match('proposer', index !== false ? index : -1);
+      const proposerQuery = QueryType.Match('proposer', index);
       queries.push(proposerQuery);
     }
 
     if (validator && shard !== undefined && epoch !== undefined) {
       let index = await this.blsService.getBlsIndex(validator, shard, epoch);
-      const validatorsQuery = QueryType.Match('validators', index !== false ? index : -1);
+      const validatorsQuery = QueryType.Match('validators', index);
       queries.push(validatorsQuery);
     }
 

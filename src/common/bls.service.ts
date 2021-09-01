@@ -41,12 +41,6 @@ export class BlsService {
   async getBlsIndex(bls: string, shardId: number, epoch: number): Promise<number | boolean> {
     let publicKeys = await this.getPublicKeys(shardId, epoch);
 
-    const index = publicKeys.indexOf(bls);
-  
-    if (index !== -1) {
-      return index;
-    }
-  
-    return false;
+    return publicKeys.indexOf(bls);
   };
 }
