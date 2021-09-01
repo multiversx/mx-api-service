@@ -241,6 +241,10 @@ export class TransactionService {
     try {
       const result = await this.elasticService.getItem('transactions', 'txHash', txHash);
 
+      if (result.scResults) {
+        result.results = result.scResults;
+      }
+
       let transactionDetailed: TransactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), result);
       let tokenTransfer = this.getTokenTransfer(result);
       if (tokenTransfer) {
@@ -270,7 +274,7 @@ export class TransactionService {
             delete scResult.scHash;
           }
 
-          transactionDetailed.scResults = scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+          transactionDetailed.results = scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
         }
 
         const elasticQueryAdapterReceipts: ElasticQuery = new ElasticQuery();
@@ -304,7 +308,7 @@ export class TransactionService {
             transactionDetailed.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
           }
           else {
-            const foundScResult = transactionDetailed.scResults.find(({ hash }) => log._id === hash);
+            const foundScResult = transactionDetailed.results.find(({ hash }) => log._id === hash);
             if (foundScResult) {
               foundScResult.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
             }

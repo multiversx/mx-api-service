@@ -8,7 +8,7 @@ import { TransactionOperation } from "./transaction.operation";
 
 export class TransactionDetailed extends Transaction {
     @ApiProperty({ type: SmartContractResult, isArray: true })
-    scResults: SmartContractResult[] = [];
+    results: SmartContractResult[] = [];
 
     @ApiProperty({ type: TransactionReceipt })
     receipt: TransactionReceipt | undefined = undefined;
