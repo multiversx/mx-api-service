@@ -41,9 +41,14 @@ export class ElasticService {
     const url = `${this.url}/${collection}/_search?q=_id:${identifier}`;
     let result = await this.get(url);
 
-    let document = result.data.hits.hits[0];
+    let hits = result.data?.hits?.hits;
+    if (hits && hits.length > 0) {
+      let document = hits[0];
 
-    return this.formatItem(document, key);
+      return this.formatItem(document, key);
+    }
+
+    return undefined;
   };
 
   private formatItem(document: any, key: string) {
