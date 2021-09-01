@@ -48,13 +48,16 @@ export class ApiService {
     };
   }
 
-  async get(url: string, timeout: number | undefined = undefined, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
+  async get(url: string, timeout: number | undefined = undefined, errorHandler?: (error: any) => Promise<boolean>, body?: any): Promise<any> {
     timeout = timeout || this.defaultTimeout;
 
     let profiler = new PerformanceProfiler();
 
+    let config = this.getConfig(timeout);
+    config.data = body;
+
     try {
-      return await axios.get(url, this.getConfig(timeout));
+      return await axios.get(url, config);
     } catch(error) {
       let handled = false;
       if (errorHandler) {

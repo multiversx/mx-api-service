@@ -328,7 +328,7 @@ export class ElasticService {
   }
 
   private async post(url: string, body: any) {
-    return await this.apiService.post(url, body);
+    return await this.apiService.get(url, undefined, undefined, body);
   }
 
   private async getDocuments(url: string, body: any) {
