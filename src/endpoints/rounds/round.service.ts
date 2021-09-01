@@ -32,7 +32,7 @@ export class RoundService {
     if (filter.validator !== undefined && filter.shard !== undefined && filter.epoch !== undefined) {
       const index = await this.blsService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
 
-      const signersIndexesQuery = QueryType.Match('signersIndexes', index !== false ? index : -1);
+      const signersIndexesQuery = QueryType.Match('signersIndexes', index);
       queries.push(signersIndexesQuery);
     }
 
