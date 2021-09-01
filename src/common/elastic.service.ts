@@ -31,7 +31,7 @@ export class ElasticService {
       elasticQuery = buildElasticQuery(elasticQueryAdapter)
     }
  
-    const result: any = await this.post(url, elasticQuery);
+    const result: any = await this.get(url, elasticQuery);
     let count = result.data.count;
 
     return count;
@@ -68,7 +68,7 @@ export class ElasticService {
       data: {
         hits: { hits: documents },
       },
-    } = await this.post(url, elasticQuery);
+    } = await this.get(url, elasticQuery);
   
     return documents.map((document: any) => this.formatItem(document, key));
   };
@@ -323,11 +323,7 @@ export class ElasticService {
     return await this.getDocuments(url, elasticQuery);
   }
 
-  public async get(url: string) {
-    return await this.apiService.get(url);
-  }
-
-  private async post(url: string, body: any) {
+  public async get(url: string, body?: any) {
     return await this.apiService.get(url, undefined, undefined, body);
   }
 
@@ -336,7 +332,7 @@ export class ElasticService {
       data: {
         hits: { hits: documents },
       },
-    } = await this.post(url, body);
+    } = await this.get(url, body);
 
     return documents;
   }
@@ -350,7 +346,7 @@ export class ElasticService {
           }
         }
       }
-    } = await this.post(url, body);
+    } = await this.get(url, body);
 
     return value;
   }
