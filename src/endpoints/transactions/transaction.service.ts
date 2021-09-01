@@ -29,6 +29,7 @@ import { TransactionReceipt } from './entities/transaction.receipt';
 import { TransactionSendResult } from './entities/transaction.send.result';
 import { TransactionOperationType } from './entities/transaction.operation.type';
 import { TransactionOperationAction } from './entities/transaction.operation.action';
+import { QueryOperator } from 'src/common/entities/elastic/query.operator';
 
 @Injectable()
 export class TransactionService {
@@ -54,6 +55,10 @@ export class TransactionService {
 
     if (filter.receiver) {
       queries.push(QueryType.Match('receiver', filter.receiver));
+    }
+
+    if (filter.token) {
+      queries.push(QueryType.Match('tokens', filter.token, QueryOperator.AND));
     }
 
     if (filter.senderShard) {

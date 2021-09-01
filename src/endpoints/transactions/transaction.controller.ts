@@ -70,6 +70,7 @@ export class TransactionController {
   @Get("/transactions/count")
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false  })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false  })
+  @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false  })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false  })
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false  })
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false  })
@@ -83,6 +84,7 @@ export class TransactionController {
   getTransactionCount(
     @Query('sender') sender: string | undefined, 
     @Query('receiver') receiver: string | undefined, 
+    @Query('token') token: string | undefined, 
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
     @Query('miniBlockHash') miniBlockHash: string | undefined, 
@@ -97,6 +99,7 @@ export class TransactionController {
     return this.transactionService.getTransactionCount({
       sender, 
       receiver, 
+      token,
       senderShard, 
       receiverShard, 
       miniBlockHash,
@@ -115,6 +118,7 @@ export class TransactionController {
   getTransactionCountAlternative(
     @Query('sender') sender: string | undefined, 
     @Query('receiver') receiver: string | undefined, 
+    @Query('token') token: string | undefined, 
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
     @Query('miniBlockHash') miniBlockHash: string | undefined, 
@@ -129,6 +133,7 @@ export class TransactionController {
     return this.transactionService.getTransactionCount({
       sender, 
       receiver, 
+      token,
       senderShard, 
       receiverShard, 
       miniBlockHash,
