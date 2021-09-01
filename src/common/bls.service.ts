@@ -22,28 +22,20 @@ export class BlsService {
       return this.publicKeysCache[key];
     }
   
-    const url = `${this.url}/validators/_doc/${key}`;
+    const url = `${this.url}/validators/_search?q=_id:${key}`;
   
-    const {
-      data: {
-        _source: { publicKeys },
-      },
-    } = await this.elasticService.get(url);
-  
+    let result = await this.elasticService.get(url);
+
+    let publicKeys = result.data.hits.hits[0]._source.publicKeys;
+
     this.publicKeysCache[key] = publicKeys;
   
     return publicKeys;
   };
 
   async getBlsIndex(bls: string, shardId: number, epoch: number): Promise<number | boolean> {
-    const url = `${this.url}/validators/_doc/${shardId}_${epoch}`;
-  
-    const {
-      data: {
-        _source: { publicKeys },
-      },
-    } = await this.elasticService.get(url);
-  
+    let publicKeys = await this.getPublicKeys(shardId, epoch);
+
     const index = publicKeys.indexOf(bls);
   
     if (index !== -1) {
@@ -51,19 +43,5 @@ export class BlsService {
     }
   
     return false;
-  };
-
-  async getBlses(shard: number, epoch: number) {
-    const key = `${shard}_${epoch}`;
-  
-    const url = `${this.url}/validators/_doc/${key}`;
-  
-    const {
-      data: {
-        _source: { publicKeys },
-      },
-    } = await this.elasticService.get(url);
-  
-    return publicKeys;
   };
 }

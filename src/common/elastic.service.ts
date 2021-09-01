@@ -38,8 +38,10 @@ export class ElasticService {
   };
 
   async getItem(collection: string, key: string, identifier: string) {
-    const url = `${this.url}/${collection}/_doc/${identifier}`;
-    const { data: document } = await this.get(url);
+    const url = `${this.url}/${collection}/_search?q=_id:${identifier}`;
+    let result = await this.get(url);
+
+    let document = result.data.hits.hits[0];
 
     return this.formatItem(document, key);
   };

@@ -100,7 +100,7 @@ export class BlockService {
     let key = `${shard}_${epoch}`;
     let blses: any = await this.cachingService.getCacheLocal(key);
     if (!blses) {
-      blses = await this.blsService.getBlses(shard, epoch);
+      blses = await this.blsService.getPublicKeys(shard, epoch);
 
       await this.cachingService.setCacheLocal(key, blses, Constants.oneWeek());
     }
