@@ -112,9 +112,49 @@ export class TransactionService {
       ]
     }
     
-    let transactions = await this.elasticService.getList('transactions', 'txHash', elasticQueryAdapter);
+    let elasticTransactions = await this.elasticService.getList('transactions', 'txHash', elasticQueryAdapter);
 
-    return transactions.map(transaction => ApiUtils.mergeObjects(new Transaction(), transaction));
+    let transactions: Transaction[] = [];
+
+    for (let elasticTransaction of elasticTransactions) {
+      let transaction = ApiUtils.mergeObjects(new Transaction(), elasticTransaction);
+
+      let tokenTransfer = this.getTokenTransfer(elasticTransaction);
+      if (tokenTransfer) {
+        transaction.tokenValue = tokenTransfer.tokenAmount;
+        transaction.tokenIdentifier = tokenTransfer.tokenIdentifier;
+      }
+
+      transactions.push(transaction);
+    }
+
+    return transactions;
+  }
+
+  private getTokenTransfer(elasticTransaction: any): { tokenIdentifier: string, tokenAmount: string } | undefined {
+    if (!elasticTransaction.data) {
+      return undefined;
+    }
+
+    let tokens = elasticTransaction.tokens;
+    if (!tokens || tokens.length === 0) {
+      return undefined;
+    }
+
+    let esdtValues = elasticTransaction.esdtValues;
+    if (!esdtValues || esdtValues.length === 0) {
+      return undefined;
+    }
+
+    let decodedData = BinaryUtils.base64Decode(elasticTransaction.data);
+    if (!decodedData.startsWith('ESDTTransfer@')) {
+      return undefined;
+    }
+
+    let token = tokens[0];
+    let esdtValue = esdtValues[0];
+
+    return { tokenIdentifier: token, tokenAmount: esdtValue };
   }
 
   async getTransaction(txHash: string): Promise<TransactionDetailed | null> {
@@ -197,6 +237,11 @@ export class TransactionService {
       const result = await this.elasticService.getItem('transactions', 'txHash', txHash);
 
       let transactionDetailed: TransactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), result);
+      let tokenTransfer = this.getTokenTransfer(result);
+      if (tokenTransfer) {
+        transactionDetailed.tokenValue = tokenTransfer.tokenAmount;
+        transactionDetailed.tokenIdentifier = tokenTransfer.tokenIdentifier;
+      }
 
       const hashes: string[] = [];
       hashes.push(txHash);

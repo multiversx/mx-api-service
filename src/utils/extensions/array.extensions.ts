@@ -52,7 +52,6 @@ Array.prototype.remove = function<T>(element: T): number {
   return index;
 }
 
-
 declare interface Array<T> {
   groupBy(predicate: (item: T) => any): any;
   selectMany<TOUT>(predicate: (item: T) => TOUT[]): TOUT[];
