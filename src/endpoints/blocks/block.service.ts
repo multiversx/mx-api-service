@@ -39,13 +39,13 @@ export class BlockService {
 
     if (proposer && shard !== undefined && epoch !== undefined) {
       let index = await this.blsService.getBlsIndex(proposer, shard, epoch);
-      const proposerQuery = QueryType.Match('proposer', index !== false ? index : -1);
+      const proposerQuery = QueryType.Match('proposer', index);
       queries.push(proposerQuery);
     }
 
     if (validator && shard !== undefined && epoch !== undefined) {
       let index = await this.blsService.getBlsIndex(validator, shard, epoch);
-      const validatorsQuery = QueryType.Match('validators', index !== false ? index : -1);
+      const validatorsQuery = QueryType.Match('validators', index);
       queries.push(validatorsQuery);
     }
 
@@ -100,7 +100,7 @@ export class BlockService {
     let key = `${shard}_${epoch}`;
     let blses: any = await this.cachingService.getCacheLocal(key);
     if (!blses) {
-      blses = await this.blsService.getBlses(shard, epoch);
+      blses = await this.blsService.getPublicKeys(shard, epoch);
 
       await this.cachingService.setCacheLocal(key, blses, Constants.oneWeek());
     }
