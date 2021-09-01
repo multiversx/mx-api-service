@@ -26,11 +26,16 @@ export class BlsService {
   
     let result = await this.elasticService.get(url);
 
-    let publicKeys = result.data.hits.hits[0]._source.publicKeys;
+    let hits = result.data?.hits?.hits;
+    if (hits && hits.length > 0) {
+      let publicKeys = hits[0]._source.publicKeys;
 
-    this.publicKeysCache[key] = publicKeys;
-  
-    return publicKeys;
+      this.publicKeysCache[key] = publicKeys;
+    
+      return publicKeys;
+    }
+
+    return [];
   };
 
   async getBlsIndex(bls: string, shardId: number, epoch: number): Promise<number | boolean> {
