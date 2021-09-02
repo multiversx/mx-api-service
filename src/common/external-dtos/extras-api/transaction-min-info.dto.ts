@@ -3,5 +3,4 @@ export class ExtrasApiTransactionMinInfoDto {
   receiver: string = '';
   data: string = '';
   value: string = '';
-  hasScResults: boolean = false;
 }

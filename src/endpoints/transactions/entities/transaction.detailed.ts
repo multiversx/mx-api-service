@@ -23,6 +23,6 @@ export class TransactionDetailed extends Transaction {
     operations: TransactionOperation[] = [];
 
     @ApiProperty({ type: TransactionScamInfo })
-    scamInfo?: TransactionScamInfo | null;
+    scamInfo: TransactionScamInfo | undefined = undefined;
 }
 

@@ -31,6 +31,7 @@ import { TransactionOperationType } from './entities/transaction.operation.type'
 import { TransactionOperationAction } from './entities/transaction.operation.action';
 import { QueryOperator } from 'src/common/entities/elastic/query.operator';
 import { TransactionScamCheckService } from './scam-check/transaction-scam-check.service';
+import { TransactionScamInfo } from './entities/transaction-scam-info';
 
 @Injectable()
 export class TransactionService {
@@ -174,7 +175,7 @@ export class TransactionService {
     if (transaction !== null) {
       const [price, scamInfo] = await Promise.all([
         this.getTransactionPrice(transaction),
-        this.transactionScamCheckService.getScamInfo(transaction),
+        this.getScamInfo(transaction),
       ]);
 
       transaction.price = price;
@@ -187,10 +188,6 @@ export class TransactionService {
   private async getTransactionPrice(transaction: TransactionDetailed): Promise<number | undefined> {
     let dataUrl = this.apiConfigService.getDataUrl();
     if (!dataUrl) {
-      return undefined;
-    }
-
-    if (transaction === null) {
       return undefined;
     }
 
@@ -475,5 +472,14 @@ export class TransactionService {
       senderShard,
       status: 'Pending',
     };
+  }
+
+  private async getScamInfo(transaction: TransactionDetailed): Promise<TransactionScamInfo | undefined> {
+    let extrasApiUrl = this.apiConfigService.getExtrasApiUrl();
+    if (!extrasApiUrl) {
+      return undefined;
+    }
+
+    return await this.transactionScamCheckService.getScamInfo(transaction);
   }
 }

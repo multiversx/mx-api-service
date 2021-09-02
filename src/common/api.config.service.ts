@@ -261,9 +261,4 @@ export class ApiConfigService {
 
     return extrasApiUrl;
   }
-
-  getTransactionsScamCheck(): boolean {
-    var transactionsScamCheck = this.configService.get<boolean>('transactionsScamCheck');
-    return transactionsScamCheck ?? true;
-  }
 }

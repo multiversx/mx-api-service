@@ -20,7 +20,6 @@ urls:
   providers: 'https://devnet-delegation.maiarbrowser.com/providers'
   media: 'https://devnet-media.elrond.com'
   nftThumbnails: 'https://devnet-media.elrond.com/nfts/thumbnail'
-  extras: 'https://devnet-extras-api.elrond.com'
 caching:
   cacheTtl: 6
   processTtl: 600
@@ -46,4 +45,3 @@ inflation:
 security:
   admins:
   jwtSecret:
-transactionsScamCheck: true
