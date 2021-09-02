@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class ApiConfigService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) { }
 
   getApiUrls(): string[] {
     const apiUrls = this.configService.get<string[]>('urls.api');
@@ -224,5 +224,22 @@ export class ApiConfigService {
     }
 
     return mediaUrl;
+  }
+
+  getExtrasApiUrl(): string {
+    let extrasApiUrl = this.configService.get<string>('urls.extras');
+    if (!extrasApiUrl) {
+      throw new Error('No extras api url present');
+    }
+
+    return extrasApiUrl;
+  }
+
+  getTransactionsScamCheck(): boolean {
+    var transactionsScamCheck = this.configService.get<boolean>('transactionsScamCheck');
+    if (transactionsScamCheck === undefined) {
+      throw new Error('No extras api url present');
+    }
+    return transactionsScamCheck;
   }
 }
