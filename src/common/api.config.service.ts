@@ -264,9 +264,6 @@ export class ApiConfigService {
 
   getTransactionsScamCheck(): boolean {
     var transactionsScamCheck = this.configService.get<boolean>('transactionsScamCheck');
-    if (transactionsScamCheck === undefined) {
-      throw new Error('No extras api url present');
-    }
-    return transactionsScamCheck;
+    return transactionsScamCheck ?? true;
   }
 }
