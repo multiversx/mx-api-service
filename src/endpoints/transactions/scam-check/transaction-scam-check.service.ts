@@ -3,6 +3,7 @@ import { ApiConfigService } from 'src/common/api.config.service';
 import { CachingService } from 'src/common/caching.service';
 import { ExtrasApiScamTransactionResult, ExtrasApiTransactionMinInfoDto } from 'src/common/external-dtos/extras-api';
 import { ExtrasApiService } from 'src/common/extras-api.service';
+import { Constants } from 'src/utils/constants';
 import { TransactionScamInfo } from '../entities/transaction-scam-info';
 import { mapTransactionScamTypeFromExtrasApi, TransactionScamType } from '../entities/transaction-scam-type.enum';
 import { TransactionDetailed } from '../entities/transaction.detailed';
@@ -61,8 +62,8 @@ export class TransactionScamCheckService {
   private async loadScamTransactionResult(transaction: TransactionDetailed): Promise<ExtrasApiScamTransactionResult | null> {
     const input = this.buildExtrasApiTransactionMinInfoDto(transaction);
     return await this.cachingService.getOrSetCache(
-      `scam-info.${transaction.txHash}.${input.hasScResults}`,
-      () => this.extrasApiService.checkScamTransaction(input), 300, 300);
+      `scam-info.${transaction.txHash}`,
+      () => this.extrasApiService.checkScamTransaction(input), Constants.oneMinute() * 5);
   }
 
   private buildExtrasApiTransactionMinInfoDto(transaction: TransactionDetailed): ExtrasApiTransactionMinInfoDto {
