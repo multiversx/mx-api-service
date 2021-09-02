@@ -19,7 +19,11 @@ urls:
   redis: '127.0.0.1'
   providers: 'https://devnet-delegation.maiarbrowser.com/providers'
   media: 'https://devnet-media.elrond.com'
+<<<<<<< HEAD
   extras: 'https://devnet-extras-api.elrond.com'
+=======
+  nftThumbnails: 'https://devnet-media.elrond.com/nfts/thumbnail'
+>>>>>>> development
 caching:
   cacheTtl: 6
   processTtl: 600
@@ -42,4 +46,10 @@ inflation:
   - 1130177
   - 924690
   - 719203
+<<<<<<< HEAD
 transactionsScamCheck: true
+=======
+security:
+  admins:
+  jwtSecret:
+>>>>>>> development

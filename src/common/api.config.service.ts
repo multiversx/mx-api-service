@@ -226,6 +226,7 @@ export class ApiConfigService {
     return mediaUrl;
   }
 
+<<<<<<< HEAD
   getExtrasApiUrl(): string {
     let extrasApiUrl = this.configService.get<string>('urls.extras');
     if (!extrasApiUrl) {
@@ -241,5 +242,32 @@ export class ApiConfigService {
       throw new Error('No extras api url present');
     }
     return transactionsScamCheck;
+=======
+  getNftThumbnailsUrl(): string {
+    let nftThumbnailsUrl = this.configService.get<string>('urls.nftThumbnails');
+    if (!nftThumbnailsUrl) {
+      throw new Error('No nft thumbnails url present');
+    }
+
+    return nftThumbnailsUrl;
+  }
+
+  getSecurityAdmins(): string[] {
+    let admins = this.configService.get<string[]>('security.admins');
+    if (admins === undefined) {
+      throw new Error('No security admins value present');
+    }
+
+    return admins;
+  }
+
+  getJwtSecret(): string {
+    const jwtSecret = this.configService.get<string>('security.jwtSecret');
+    if (!jwtSecret) {
+      throw new Error('No jwtSecret present');
+    }
+
+    return jwtSecret;
+>>>>>>> development
   }
 }

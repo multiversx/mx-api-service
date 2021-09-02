@@ -6,6 +6,7 @@ import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
 import { CachingService } from "./caching.service";
 import { Keybase } from "./entities/keybase";
+import { KeybaseIdentity } from "./entities/keybase.identity";
 import { KeybaseState } from "./entities/keybase.state";
 
 @Injectable()
@@ -131,6 +132,32 @@ export class KeybaseService {
     return keybases;
   }
 
+  async getIdentitiesProfilesAgainstKeybasePub(): Promise<KeybaseIdentity[]> {
+    let nodes = await this.nodeService.getAllNodes();
+
+    let keys = [
+      ...new Set(nodes.filter(({ identity }) => !!identity).map(({ identity }) => identity)),
+    ].filter(x => x !== null).map(x => x ?? '');
+
+    let identities: KeybaseIdentity[] = await this.cachingService.batchProcess(
+      keys,
+      key => `identityProfile:${key}`,
+      async key => await this.getProfile(key) ?? new KeybaseIdentity(),
+      Constants.oneMinute() * 30,
+      true
+    );
+
+    return identities;
+  }
+
+  async getCachedIdentityKeybases(): Promise<KeybaseIdentity[]> {
+    return await this.cachingService.getOrSetCache(
+      'identityKeybases',
+      async () => await this.getIdentitiesProfilesAgainstKeybasePub(),
+      Constants.oneHour()
+    );
+  }
+
   async getCachedNodeKeybases(): Promise<{ [key: string]: KeybaseState } | undefined> {
     return await this.cachingService.getOrSetCache(
       'nodeKeybases',
@@ -159,15 +186,14 @@ export class KeybaseService {
 
         return false;
       });
-
       return status === 200;
     } catch (error) {
       return false;
     }
   };
 
-  async getProfile(identity: string) {
-    let value;
+  async getProfile(identity: string): Promise<KeybaseIdentity | undefined> {
+    let value: KeybaseIdentity | undefined;
   
     try {
       const { status, data } = await this.apiService.get(
@@ -195,11 +221,9 @@ export class KeybaseService {
           website: website && website.service_url ? website.service_url : undefined,
           location: profile && profile.location ? profile.location : undefined,
         };
-      } else {
-        value = false;
-      }
+      } 
     } catch (error) {
-      value = false;
+      return value;
     }
   
     return value;

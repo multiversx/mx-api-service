@@ -11,6 +11,8 @@ import { KeybaseState } from "src/common/entities/keybase.state";
 import { KeybaseService } from "src/common/keybase.service";
 import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
+import { NodesInfos } from "./entities/nodes.infos";
+import { DelegationData } from "./entities/delegation.data";
 
 @Injectable()
 export class ProviderService {
@@ -36,56 +38,68 @@ export class ProviderService {
     return providers.find(x => x.provider === address);
   }
 
+  private getNodesInfosForProvider(providerNodes: any[]): NodesInfos {
+    const results = providerNodes.reduce(
+      (accumulator, current) => {
+        if (current && current.stake && current.topUp && current.locked) {
+          accumulator.numNodes += 1;
+          accumulator.stake += BigInt(current.stake);
+          accumulator.topUp += BigInt(current.topUp);
+          accumulator.locked += BigInt(current.locked);
+        }
+
+        return accumulator;
+      },
+      {
+        numNodes: 0,
+        stake: BigInt('0'),
+        topUp: BigInt('0'),
+        locked: BigInt('0'),
+      }
+    );
+    
+    const nodesInfos: NodesInfos = new NodesInfos();
+    nodesInfos.numNodes = results.numNodes;
+    nodesInfos.stake = results.stake.toString();
+    nodesInfos.topUp = results.topUp.toString();
+    nodesInfos.locked = results.locked.toString();
+
+    return nodesInfos;
+  }
+
   async getProviders(query: ProviderFilter): Promise<Provider[]> {
     let providers = await this.getAllProviders();
     let nodes = await this.nodeService.getAllNodes();
 
-    let grouped: { [key: string]: any[] } = nodes.groupBy(x => x.provider);    
+    let nodesGroupedByProvider: { [key: string]: any[] } = nodes.groupBy(x => x.provider);    
+
+    let providersDelegationData: DelegationData[] = await this.getDelegationProviders();
 
     providers.forEach((element) => {
-      const filtered = grouped[element.provider] ?? [];
+      const providerAddress = element.provider;
 
-      const results = filtered.reduce(
-        (accumulator, current) => {
-          if (current && current.stake && current.topUp && current.locked) {
-            accumulator.numNodes += 1;
-            accumulator.stake += BigInt(current.stake);
-            accumulator.topUp += BigInt(current.topUp);
-            accumulator.locked += BigInt(current.locked);
-          }
-
-          return accumulator;
-        },
-        {
-          numNodes: 0,
-          stake: BigInt('0'),
-          topUp: BigInt('0'),
-          locked: BigInt('0'),
-        }
-      );
-
-      element.numNodes = results.numNodes;
-      element.stake = results.stake.toString();
-      element.topUp = results.topUp.toString();
-      element.locked = results.locked.toString();
-      // element.sort =
-      //   element.locked && element.locked !== '0' ? parseInt(element.locked.slice(0, -18)) : 0;
-    });
-
-    let data = await this.getDelegationProviders();
-
-    providers.forEach((provider) => {
-      const found = data.find((element: any) => element !== null && provider.provider === element.contract);
-
-      if (found) {
-        if (found.aprValue) {
-          provider.apr = parseFloat(found.aprValue.toFixed(2));
+    // Delegation details for provider
+      const delegationData: DelegationData | undefined = providersDelegationData.find((providerDelegationInfo: any) => providerDelegationInfo !== null && providerAddress === providerDelegationInfo.contract);
+      if (delegationData) {
+        if (delegationData.aprValue) {
+          element.apr = parseFloat(delegationData.aprValue.toFixed(2));
         }
 
-        if (found.featured !== undefined) {
-          provider.featured = found.featured;
+        if (delegationData.featured) {
+          element.featured = delegationData.featured;
         }
       }
+
+    // Add Nodes details for provider
+      const providerNodes = nodesGroupedByProvider[providerAddress] ?? [];
+      const nodesInfos: NodesInfos = this.getNodesInfosForProvider(providerNodes);
+      element.numNodes = nodesInfos.numNodes;
+      element.stake = nodesInfos.stake;
+      element.topUp = nodesInfos.topUp;
+      element.locked = nodesInfos.locked;
+
+      // @ts-ignore
+      delete element.owner;
     });
 
     if (query.identity) {
@@ -98,18 +112,13 @@ export class ProviderService {
 
       return bSort - aSort;
     });
-
-    providers.forEach((provider) => {
-      // @ts-ignore
-      delete provider.owner;
-    });
-
+    
     providers = providers.filter(provider => provider.numNodes > 0 && provider.stake !== '0');
 
     return providers;
   }
 
-  async getDelegationProviders(): Promise<{ aprValue: number; featured: boolean; }[]> {
+  async getDelegationProviders(): Promise<DelegationData[]> {
     return this.cachingService.getOrSetCache(
       'delegationProviders',
       async () => await this.getDelegationProvidersRaw(),
@@ -117,7 +126,7 @@ export class ProviderService {
     );
   }
 
-  async getDelegationProvidersRaw(): Promise<{ aprValue: number; featured: boolean }[]> {
+  async getDelegationProvidersRaw(): Promise<DelegationData[]> {
     try {
       const { data } = await this.apiService.get(this.apiConfigService.getProvidersUrl());
       return data;
@@ -272,13 +281,16 @@ export class ProviderService {
       'getMetaData',
     );
   
-    if (response && response.every(x => x !== null)) {
+    if (response) {
       try {
-        const [name, website, identity] = response.map((base64) =>
-          Buffer.from(base64, 'base64').toString().trim().toLowerCase()
-        );
+        const [name, website, identity] = response.map((base64) => {
+          if(base64) {
+            return Buffer.from(base64, 'base64').toString().trim().toLowerCase();
+          }
+          return "";
+        });
     
-        return { name, website, identity };
+        return { name, website, identity }; 
       } catch (error) {
         this.logger.error(`Could not get provider metadata for address '${address}'`);
         this.logger.error(error);

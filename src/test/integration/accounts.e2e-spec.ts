@@ -5,7 +5,6 @@ import { AccountDetailed } from 'src/endpoints/accounts/entities/account.detaile
 import { AccountDelegationLegacy } from 'src/endpoints/delegation.legacy/entities/account.delegation.legacy';
 import { AccountService } from 'src/endpoints/accounts/account.service';
 import { DelegationLegacyService } from 'src/endpoints/delegation.legacy/delegation.legacy.service';
-import "../utils/extensions/jest.extensions";
 import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 
@@ -34,6 +33,15 @@ describe('Account Service', () => {
     });
 
     describe('Accounts list', () => {
+        it('accounts should have address, shard and nonce', async () => {
+            const accountsList = await accountService.getAccounts({from: 0, size: 25});
+            for (let account of accountsList) {
+                expect(account).toHaveProperty('address');
+                expect(account).toHaveProperty('shard');
+                expect(account).toHaveProperty('nonce');
+            }
+        });
+
         it(`should return a list with 25 accounts`, async () => {
             const accountsList = await accountService.getAccounts({from: 0, size: 25});
 

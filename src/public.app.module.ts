@@ -58,6 +58,9 @@ import { ExtrasApiService } from './common/extras-api.service';
 import { TransactionScamCheckService } from './endpoints/transactions/scam-check/transaction-scam-check.service';
 import { PotentialScamTransactionChecker } from './endpoints/transactions/scam-check/potential-scam-transaction.checker';
 const DailyRotateFile = require('winston-daily-rotate-file');
+import "./utils/extensions/array.extensions";
+import "./utils/extensions/date.extensions";
+import "./utils/extensions/number.extensions";
 
 @Module({
   imports: [

@@ -3,6 +3,7 @@ import { SmartContractResult } from './smart.contract.result';
 import { Transaction } from './transaction';
 import { TransactionReceipt } from './transaction.receipt';
 import { TransactionLog } from './transaction.log';
+import { TransactionOperation } from "./transaction.operation";
 import { TransactionScamInfo } from './transaction-scam-info';
 
 export class TransactionDetailed extends Transaction {
@@ -17,6 +18,9 @@ export class TransactionDetailed extends Transaction {
 
     @ApiProperty({ type: TransactionLog })
     logs: TransactionLog | undefined = undefined;
+
+    @ApiProperty({ type: TransactionOperation, isArray: true })
+    operations: TransactionOperation[] = [];
 
     @ApiProperty({ type: TransactionScamInfo })
     scamInfo?: TransactionScamInfo | null;

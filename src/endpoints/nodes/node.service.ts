@@ -25,6 +25,7 @@ export class NodeService {
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
+    @Inject(forwardRef(() => KeybaseService))
     private readonly keybaseService: KeybaseService,
     @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
@@ -65,28 +66,28 @@ export class NodeService {
     let allNodes = await this.getAllNodes();
 
     const data = allNodes
-        .filter(({ type }) => type === NodeType.validator)
-        .reduce((accumulator: any, item) => {
-          if (item.version) {
-            if (!accumulator[item.version]) {
-              accumulator[item.version] = 1;
-            } else {
-              accumulator[item.version] += 1;
-            }
+      .filter(({ type }) => type === NodeType.validator)
+      .reduce((accumulator: any, item) => {
+        if (item.version) {
+          if (!accumulator[item.version]) {
+            accumulator[item.version] = 1;
+          } else {
+            accumulator[item.version] += 1;
           }
+        }
 
-          return accumulator;
-        }, {});
+        return accumulator;
+      }, {});
 
-      const sum = Object.keys(data).reduce((accumulator, item) => {
-        return accumulator + data[item];
-      }, 0);
+    const sum = Object.keys(data).reduce((accumulator, item) => {
+      return accumulator + data[item];
+    }, 0);
 
-      Object.keys(data).forEach((key) => {
-        data[key] = parseFloat((data[key] / sum).toFixed(2));
-      });
+    Object.keys(data).forEach((key) => {
+      data[key] = parseFloat((data[key] / sum).toFixed(2));
+    });
 
-      return data;
+    return data;
   }
 
   private async getFilteredNodes(query: NodeFilter): Promise<Node[]> {
@@ -198,11 +199,13 @@ export class NodeService {
 
     const keybases: { [key: string]: KeybaseState } | undefined = await this.keybaseService.getCachedNodeKeybases();
 
-    for (let node of nodes) {
-      node.identity = undefined;
-
-      if (keybases && keybases[node.bls] && keybases[node.bls].confirmed) {
-        node.identity = keybases[node.bls].identity;
+    if (keybases) {
+      for (let node of nodes) {
+        node.identity = undefined;
+  
+        if (keybases[node.bls] && keybases[node.bls].confirmed) {
+          node.identity = keybases[node.bls].identity;
+        }
       }
     }
 
@@ -226,10 +229,6 @@ export class NodeService {
         if (provider) {
           node.provider = provider.provider;
           node.owner = provider.owner ?? '';
-
-          if (provider.identity) {
-            node.identity = provider.identity;
-          }
         }
       }
     });
