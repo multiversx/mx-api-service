@@ -226,23 +226,6 @@ export class ApiConfigService {
     return mediaUrl;
   }
 
-<<<<<<< HEAD
-  getExtrasApiUrl(): string {
-    let extrasApiUrl = this.configService.get<string>('urls.extras');
-    if (!extrasApiUrl) {
-      throw new Error('No extras api url present');
-    }
-
-    return extrasApiUrl;
-  }
-
-  getTransactionsScamCheck(): boolean {
-    var transactionsScamCheck = this.configService.get<boolean>('transactionsScamCheck');
-    if (transactionsScamCheck === undefined) {
-      throw new Error('No extras api url present');
-    }
-    return transactionsScamCheck;
-=======
   getNftThumbnailsUrl(): string {
     let nftThumbnailsUrl = this.configService.get<string>('urls.nftThumbnails');
     if (!nftThumbnailsUrl) {
@@ -268,6 +251,22 @@ export class ApiConfigService {
     }
 
     return jwtSecret;
->>>>>>> development
+  }
+
+  getExtrasApiUrl(): string {
+    let extrasApiUrl = this.configService.get<string>('urls.extras');
+    if (!extrasApiUrl) {
+      throw new Error('No extras api url present');
+    }
+
+    return extrasApiUrl;
+  }
+
+  getTransactionsScamCheck(): boolean {
+    var transactionsScamCheck = this.configService.get<boolean>('transactionsScamCheck');
+    if (transactionsScamCheck === undefined) {
+      throw new Error('No extras api url present');
+    }
+    return transactionsScamCheck;
   }
 }

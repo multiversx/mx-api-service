@@ -19,12 +19,9 @@ urls:
     - 'https://gateway.elrond.com'
   redis: '127.0.0.1'
   providers: 'https://internal-delegation-api.elrond.com/providers'
-  media: 'https://media.elrond.com'
-<<<<<<< HEAD
-  extras: 'https://extras-api.elrond.com'
-=======
+  media: 'https://media.elrond.com'  
   nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
->>>>>>> development
+  extras: 'https://extras-api.elrond.com'
 caching:
   cacheTtl: 6
   processTtl: 600
@@ -47,10 +44,7 @@ inflation:
   - 1130177
   - 924690
   - 719203
-<<<<<<< HEAD
-transactionsScamCheck: true
-=======
 security:
   admins:
   jwtSecret:
->>>>>>> development
+transactionsScamCheck: true
