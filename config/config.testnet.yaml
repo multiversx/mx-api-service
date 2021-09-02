@@ -45,4 +45,3 @@ inflation:
 security:
   admins:
   jwtSecret:
-transactionsScamCheck: true
