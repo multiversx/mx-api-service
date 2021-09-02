@@ -253,12 +253,7 @@ export class ApiConfigService {
     return jwtSecret;
   }
 
-  getExtrasApiUrl(): string {
-    let extrasApiUrl = this.configService.get<string>('urls.extras');
-    if (!extrasApiUrl) {
-      throw new Error('No extras api url present');
-    }
-
-    return extrasApiUrl;
+  getExtrasApiUrl(): string | undefined {
+    return this.configService.get<string>('urls.extras');
   }
 }
