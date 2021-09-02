@@ -278,7 +278,7 @@ export class ProviderService {
           if(base64) {
             return Buffer.from(base64, 'base64').toString().trim().toLowerCase();
           }
-          return base64;
+          return "";
         });
     
         return { name, website, identity }; 
