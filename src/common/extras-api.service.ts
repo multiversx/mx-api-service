@@ -21,7 +21,7 @@ export class ExtrasApiService {
       return null;
     }
 
-    return await this.apiService.post(`${this.getServiceUrl()}/${route}`, data);
+    return await this.apiService.post(`${url}/${route}`, data);
   }
 
   async checkScamTransaction(transactionMinInfoDto: ExtrasApiTransactionMinInfoDto): Promise<ExtrasApiScamTransactionResult | null> {
