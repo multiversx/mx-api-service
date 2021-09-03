@@ -15,15 +15,6 @@ export class ExtrasApiService {
     this.logger = new Logger(ExtrasApiService.name);
   }
 
-  async post(route: string, data: any): Promise<any> {
-    const url = this.getServiceUrl();
-    if (!url) {
-      return null;
-    }
-
-    return await this.apiService.post(`${url}/${route}`, data);
-  }
-
   async checkScamTransaction(transactionMinInfoDto: ExtrasApiTransactionMinInfoDto): Promise<ExtrasApiScamTransactionResult | null> {
     if (!this.apiConfigService.getExtrasApiUrl()) {
       return null;
@@ -39,9 +30,5 @@ export class ExtrasApiService {
       });
       return null;
     }
-  }
-
-  private getServiceUrl(): string | undefined {
-    return this.apiConfigService.getExtrasApiUrl();
   }
 }
