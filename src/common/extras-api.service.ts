@@ -16,7 +16,7 @@ export class ExtrasApiService {
   }
 
   async post(route: string, data: any): Promise<any> {
-    const url = this.getServiceUrl();
+    const url = this.apiConfigService.getExtrasApiUrl();
     if (!url) {
       return null;
     }
@@ -26,8 +26,8 @@ export class ExtrasApiService {
 
   async checkScamTransaction(transactionMinInfoDto: ExtrasApiTransactionMinInfoDto): Promise<ExtrasApiScamTransactionResult | null> {
     try {
-      const result: ExtrasApiScamTransactionResult = (await this.apiService.post('transactions/check-scam', transactionMinInfoDto))?.data;
-      return result;
+      let result = await this.post('transactions/check-scam', transactionMinInfoDto);
+      return result?.data;
     } catch (err) {
       this.logger.error('An error occurred while calling check scam transaction API.', {
         exception: err.toString(),
@@ -35,9 +35,5 @@ export class ExtrasApiService {
       });
       return null;
     }
-  }
-
-  private getServiceUrl(): string | undefined {
-    return this.apiConfigService.getExtrasApiUrl();
   }
 }
