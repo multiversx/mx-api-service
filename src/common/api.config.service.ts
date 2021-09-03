@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class ApiConfigService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) { }
 
   getApiUrls(): string[] {
     const apiUrls = this.configService.get<string[]>('urls.api');
@@ -251,5 +251,9 @@ export class ApiConfigService {
     }
 
     return jwtSecret;
+  }
+
+  getExtrasApiUrl(): string | undefined {
+    return this.configService.get<string>('urls.extras');
   }
 }

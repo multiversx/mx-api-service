@@ -54,6 +54,9 @@ import { WaitingListService } from './endpoints/waiting-list/waiting.list.servic
 import { BlsService } from './common/bls.service';
 import { TagController } from './endpoints/nfttags/tag.controller';
 import { TagService } from './endpoints/nfttags/tag.service';
+import { ExtrasApiService } from './common/extras-api.service';
+import { TransactionScamCheckService } from './endpoints/transactions/scam-check/transaction-scam-check.service';
+import { PotentialScamTransactionChecker } from './endpoints/transactions/scam-check/potential-scam-transaction.checker';
 const DailyRotateFile = require('winston-daily-rotate-file');
 import "./utils/extensions/array.extensions";
 import "./utils/extensions/date.extensions";
@@ -84,23 +87,24 @@ import "./utils/extensions/number.extensions";
     }),
   ],
   controllers: [
-    NetworkController, AccountController, TransactionController, TokenController, BlockController, 
+    NetworkController, AccountController, TransactionController, TokenController, BlockController,
     MiniBlockController, RoundController, NodeController, ProviderController,
     DelegationLegacyController, StakeController, DelegationController,
     VmQueryController, ShardController, IdentitiesController, ProxyController,
     KeysController, WaitingListController, TagController
   ],
   providers: [
-    NetworkService, ApiConfigService, AccountService, ElasticService, GatewayService, TransactionService, 
+    NetworkService, ApiConfigService, AccountService, ElasticService, GatewayService, TransactionService,
     TokenService, BlockService, MiniBlockService, RoundService, NodeService, VmQueryService,
     CachingService, KeybaseService, ProviderService,
     StakeService, LoggingInterceptor, ApiService, ProfilerService, DelegationLegacyService,
     DelegationService, CacheConfigService, CachingInterceptor, ShardService, MetricsService, IdentitiesService,
-    TokenAssetService, DataApiService, KeysService, WaitingListService, BlsService, TagService,
+    TokenAssetService, DataApiService, KeysService, WaitingListService, BlsService, TagService, ExtrasApiService,
+    TransactionScamCheckService, PotentialScamTransactionChecker,
   ],
   exports: [
     ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService,
     TokenService, ShardService, IdentitiesService, ProviderService, KeybaseService, DataApiService, ApiService,
   ]
 })
-export class PublicAppModule {}
+export class PublicAppModule { }
