@@ -73,7 +73,7 @@ export class StakeService {
   };
 
   async getStakes(addresses: string[]): Promise<Stake[]> {
-    const stakes = await this.getStakedTopups(addresses);
+    const stakes = await this.getAllStakesForNodes(addresses);
   
     const value: Stake[] = [];
   
@@ -86,16 +86,16 @@ export class StakeService {
     return value;
   };
 
-  async getStakedTopups(addresses: string[]) {
+  async getAllStakesForNodes(addresses: string[]) {
     return this.cachingService.batchProcess(
       addresses,
       address => `stakeTopup:${address}`,
-      async address => await this.getStakedTopupRaw(address),
+      async address => await this.getAllStakesForAddressNodesRaw(address),
       Constants.oneMinute() * 15
     );
   }
 
-  async getStakedTopupRaw(address: string): Promise<StakeTopup> {
+  async getAllStakesForAddressNodesRaw(address: string): Promise<StakeTopup> {
     let response: string[] | undefined;
     try {
       response = await this.vmQueryService.vmQuery(
@@ -121,17 +121,17 @@ export class StakeService {
     }
   
     const [topUpBase64, stakedBase64, numNodesBase64, ...blsesBase64] = response || [];
-  
-    const numNodesHex = Buffer.from(numNodesBase64, 'base64').toString('hex');
-    const numNodes = BigInt(numNodesHex ? '0x' + numNodesHex : numNodesHex);
-  
+
     const topUpHex = Buffer.from(topUpBase64, 'base64').toString('hex');
     const totalTopUp = BigInt(topUpHex ? '0x' + topUpHex : topUpHex);
-  
+
     const stakedHex = Buffer.from(stakedBase64, 'base64').toString('hex');
     const totalStaked = BigInt(stakedHex ? '0x' + stakedHex : stakedHex) - totalTopUp;
   
     const totalLocked = totalStaked + totalTopUp;
+
+    const numNodesHex = Buffer.from(numNodesBase64, 'base64').toString('hex');
+    const numNodes = BigInt(numNodesHex ? '0x' + numNodesHex : numNodesHex);
   
     const blses = blsesBase64.map((nodeBase64) => Buffer.from(nodeBase64, 'base64').toString('hex'));
   
