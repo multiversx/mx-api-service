@@ -51,7 +51,6 @@ export class TransactionService {
   private buildTransactionFilterQuery(filter: TransactionFilter): AbstractQuery[] {
 
     const queries: AbstractQuery[] = [];
-
     if (filter.sender) {
       queries.push(QueryType.Match('sender', filter.sender));
     }
@@ -64,11 +63,11 @@ export class TransactionService {
       queries.push(QueryType.Match('tokens', filter.token, QueryOperator.AND));
     }
 
-    if (filter.senderShard) {
+    if (filter.senderShard !== undefined) {
       queries.push(QueryType.Match('senderShard', filter.senderShard));
     }
 
-    if (filter.receiverShard) {
+    if (filter.receiverShard !== undefined) {
       queries.push(QueryType.Match('receiverShard', filter.receiverShard));
     }
 
