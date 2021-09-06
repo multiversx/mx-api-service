@@ -27,7 +27,7 @@ describe('Shard Service', () => {
       for (let shard of shards) {
         expect(shard).toHaveProperty('shard');
         expect(shard).toHaveProperty('validators');
-        expect(shard).not.toHaveProperty('activeValidators');
+        expect(shard).toHaveProperty('activeValidators');
       }
     });
     
