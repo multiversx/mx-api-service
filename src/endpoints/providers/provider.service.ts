@@ -281,13 +281,16 @@ export class ProviderService {
       'getMetaData',
     );
   
-    if (response && response.every(x => x !== null)) {
+    if (response) {
       try {
-        const [name, website, identity] = response.map((base64) =>
-          Buffer.from(base64, 'base64').toString().trim().toLowerCase()
-        );
+        const [name, website, identity] = response.map((base64) => {
+          if(base64) {
+            return Buffer.from(base64, 'base64').toString().trim().toLowerCase();
+          }
+          return "";
+        });
     
-        return { name, website, identity };
+        return { name, website, identity }; 
       } catch (error) {
         this.logger.error(`Could not get provider metadata for address '${address}'`);
         this.logger.error(error);

@@ -9,6 +9,8 @@ import { ElasticQuery } from "./entities/elastic/elastic.query";
 import { ElasticSortOrder } from "./entities/elastic/elastic.sort.order";
 import { QueryOperator } from "./entities/elastic/query.operator";
 import { QueryType } from "./entities/elastic/query.type";
+import { PerformanceProfiler } from "src/utils/performance.profiler";
+import { MetricsService } from "src/endpoints/metrics/metrics.service";
 
 @Injectable()
 export class ElasticService {
@@ -17,7 +19,8 @@ export class ElasticService {
   constructor(
     private apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => ApiService))
-    private readonly apiService: ApiService
+    private readonly apiService: ApiService,
+    private readonly metricsService: MetricsService
   ) {
     this.url = apiConfigService.getElasticUrl();
   }
@@ -31,17 +34,31 @@ export class ElasticService {
       elasticQuery = buildElasticQuery(elasticQueryAdapter)
     }
  
+    let profiler = new PerformanceProfiler();
+
     const result: any = await this.post(url, elasticQuery);
+
+    profiler.stop();
+
+    this.metricsService.setElasticDuration(collection, profiler.duration);
+
     let count = result.data.count;
 
     return count;
   };
 
   async getItem(collection: string, key: string, identifier: string) {
-    const url = `${this.url}/${collection}/_doc/${identifier}`;
-    const { data: document } = await this.get(url);
+    const url = `${this.url}/${collection}/_search?q=_id:${identifier}`;
+    let result = await this.get(url);
 
-    return this.formatItem(document, key);
+    let hits = result.data?.hits?.hits;
+    if (hits && hits.length > 0) {
+      let document = hits[0];
+
+      return this.formatItem(document, key);
+    }
+
+    return undefined;
   };
 
   private formatItem(document: any, key: string) {
@@ -57,12 +74,20 @@ export class ElasticService {
 
     const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
-    const {
-      data: {
-        hits: { hits: documents },
-      },
-    } = await this.post(url, elasticQuery);
-  
+    let profiler = new PerformanceProfiler();
+
+    const result = await this.post(url, elasticQuery);
+
+    profiler.stop();
+
+    this.metricsService.setElasticDuration(collection, profiler.duration);
+
+    let took = result.data.took;
+    if (!isNaN(took)) {
+      this.metricsService.setElasticTook(collection, took);
+    }
+
+    let documents = result.data.hits.hits;
     return documents.map((document: any) => this.formatItem(document, key));
   };
 
@@ -74,8 +99,7 @@ export class ElasticService {
 
     const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
-    let url = `${this.url}/accountsesdt/_search`;
-    let documents = await this.getDocuments(url, elasticQuery);
+    let documents = await this.getDocuments('accountsesdt', elasticQuery);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
@@ -88,8 +112,7 @@ export class ElasticService {
 
     const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
-    let url = `${this.url}/tokens/_search`;
-    let documents = await this.getDocuments(url, elasticQuery);
+    let documents = await this.getDocuments('tokens', elasticQuery);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
@@ -111,8 +134,7 @@ export class ElasticService {
 
     const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
-    let url = `${this.url}/accountsesdt/_search`;
-    let documents = await this.getDocuments(url, elasticQuery);
+    let documents = await this.getDocuments('accountsesdt', elasticQuery);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
@@ -128,8 +150,7 @@ export class ElasticService {
 
     const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
-    let url = `${this.url}/accountsesdt/_search`;
-    let documents = await this.getDocuments(url, elasticQuery);
+    let documents = await this.getDocuments('accountsesdt', elasticQuery);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
   }
@@ -145,8 +166,7 @@ export class ElasticService {
 
     const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
-    let url = `${this.url}/accountsesdt/_search`;
-    return await this.getDocumentCount(url, elasticQuery);
+    return await this.getDocumentCount('accountsesdt', elasticQuery);
   }
 
   private buildElasticNftFilter(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
@@ -190,6 +210,11 @@ export class ElasticService {
       queries.push(QueryType.Nested("data", { "data.creator": filter.creator }));
     }
 
+    if (filter.identifiers) {
+      let identifiers = filter.identifiers.split(',');
+      queries.push(QueryType.Should(identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
+    }
+
     elasticQueryAdapter.condition.must = queries;
 
     const elasticQuery = buildElasticQuery(elasticQueryAdapter);
@@ -200,8 +225,7 @@ export class ElasticService {
   async getTokens(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
     let query = await this.buildElasticNftFilter(from, size, filter, identifier);
 
-    let url = `${this.url}/tokens/_search`;
-    let documents = await this.getDocuments(url, query);
+    let documents = await this.getDocuments('tokens', query);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
@@ -233,8 +257,7 @@ export class ElasticService {
 
     const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
-    let url = `${this.url}/tokens/_search`;
-    return await this.getDocumentCount(url, elasticQuery);
+    return await this.getDocumentCount('tokens', elasticQuery);
   }
 
   async getTokenCollections(from: number, size: number, search: string | undefined, type: NftType | undefined, token: string | undefined, issuer: string | undefined, identifiers: string[]) {
@@ -278,8 +301,7 @@ export class ElasticService {
 
     const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
-    let url = `${this.url}/tokens/_search`;
-    let documents = await this.getDocuments(url, elasticQuery);
+    let documents = await this.getDocuments('tokens', elasticQuery);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
@@ -296,8 +318,7 @@ export class ElasticService {
 
     const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
-    let url = `${this.url}/tokens/_search`;
-    let documents = await this.getDocuments(url, elasticQuery);
+    let documents = await this.getDocuments('tokens', elasticQuery);
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
   }
@@ -305,15 +326,13 @@ export class ElasticService {
   async getTokenCount(filter: NftFilter): Promise<number> {
     let query = await this.buildElasticNftFilter(0, 0, filter, undefined);
 
-    let url = `${this.url}/tokens/_search`;
-    return await this.getDocumentCount(url, query);
+    return await this.getDocumentCount('tokens', query);
   }
 
   async getLogsForTransactionHashes(elasticQueryAdapter: ElasticQuery): Promise<TransactionLog[]> {
     const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
-    let url = `${this.url}/logs/_search`;
-    return await this.getDocuments(url, elasticQuery);
+    return await this.getDocuments('logs', elasticQuery);
   }
 
   public async get(url: string) {
@@ -324,17 +343,26 @@ export class ElasticService {
     return await this.apiService.post(url, body);
   }
 
-  private async getDocuments(url: string, body: any) {
-    const {
-      data: {
-        hits: { hits: documents },
-      },
-    } = await this.post(url, body);
+  private async getDocuments(collection: string, body: any) {
+    let profiler = new PerformanceProfiler();
 
-    return documents;
+    let result = await this.post(`${this.url}/${collection}/_search`, body);
+
+    profiler.stop();
+
+    this.metricsService.setElasticDuration(collection, profiler.duration);
+
+    let took = result.data.tookn;
+    if (!isNaN(took)) {
+      this.metricsService.setElasticTook(collection, took);
+    }
+
+    return result.data.hits.hits;
   }
 
-  private async getDocumentCount(url: string, body: any) {
+  private async getDocumentCount(collection: string, body: any) {
+    let profiler = new PerformanceProfiler();
+
     const {
       data: {
         hits: {
@@ -343,7 +371,11 @@ export class ElasticService {
           }
         }
       }
-    } = await this.post(url, body);
+    } = await this.post(`${this.url}/${collection}/_search`, body);
+
+    profiler.stop();
+
+    this.metricsService.setElasticDuration(collection, profiler.duration);
 
     return value;
   }
