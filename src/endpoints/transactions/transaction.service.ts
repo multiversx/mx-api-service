@@ -51,11 +51,11 @@ export class TransactionService {
       queries.push(QueryType.Match('receiver', filter.receiver));
     }
 
-    if (filter.senderShard) {
+    if (filter.senderShard !== undefined) {
       queries.push(QueryType.Match('senderShard', filter.senderShard));
     }
 
-    if (filter.receiverShard) {
+    if (filter.receiverShard !== undefined) {
       queries.push(QueryType.Match('receiverShard', filter.receiverShard));
     }
 
