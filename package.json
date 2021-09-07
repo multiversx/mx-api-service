@@ -20,11 +20,14 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "npm run copy-mainnet-config & nest build & jest --config ./src/test/jest-e2e.json --forceExit --detectOpenHandles --runInBand",
-    "test:e2e:warm": "npm run copy-mainnet-config & nest build & jest --config ./src/test/jest-e2e-warm.json --forceExit --detectOpenHandles --runInBand",
+    "test:e2e": "npm run copy-e2e-mainnet-config & nest build & jest --config ./src/test/jest-e2e.json --forceExit --detectOpenHandles --runInBand",
+    "test:e2e:mocked": "npm run copy-e2e-mocked-mainnet-config & nest build & jest --config ./src/test/jest-e2e.json --forceExit --detectOpenHandles --runInBand",
+    "test:e2e:warm": "npm run copy-e2e-mainnet-config & nest build & jest --config ./src/test/jest-e2e-warm.json --forceExit --detectOpenHandles --runInBand",
     "copy-devnet-config": "cp ./config/config.devnet.yaml ./config/config.yaml",
     "copy-testnet-config": "cp ./config/config.testnet.yaml ./config/config.yaml",
     "copy-mainnet-config": "cp ./config/config.mainnet.yaml ./config/config.yaml",
+    "copy-e2e-mainnet-config": "cp ./config/config.e2e.mainnet.yaml ./config/config.yaml",
+    "copy-e2e-mocked-mainnet-config": "cp ./config/config.e2e-mocked.mainnet.yaml ./config/config.yaml",
     "copy-custom-config": "cp ./config/config.custom.yaml ./config/config.yaml"
   },
   "dependencies": {
