@@ -1,5 +1,7 @@
 import { Test } from "@nestjs/testing";
+import { ApiConfigService } from "src/common/api.config.service";
 import { CachingService } from "src/common/caching.service";
+import { KeybaseIdentity } from "src/common/entities/keybase.identity";
 import { KeybaseService } from "src/common/keybase.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
@@ -9,6 +11,7 @@ import "../../utils/extensions/jest.extensions";
 
 export default class Initializer {
   private static cachingService: CachingService;
+  private static apiConfigService: ApiConfigService;
 
   static async initialize() {
     const publicAppModule = await Test.createTestingModule({
@@ -16,9 +19,15 @@ export default class Initializer {
     }).compile();
 
     Initializer.cachingService = publicAppModule.get<CachingService>(CachingService);
+    Initializer.apiConfigService = publicAppModule.get<ApiConfigService>(ApiConfigService);
     const keybaseService = publicAppModule.get<KeybaseService>(KeybaseService);
     const nodeService = publicAppModule.get<NodeService>(NodeService);
     const providerService = publicAppModule.get<ProviderService>(ProviderService);
+    
+    if (Initializer.apiConfigService.getMockKeybases()) {
+      jest.spyOn(KeybaseService.prototype, "confirmKeybase").mockImplementation(jest.fn(async() => true));
+      jest.spyOn(KeybaseService.prototype, "getProfile").mockImplementation(jest.fn(async() => new KeybaseIdentity()));
+    }
 
     let isInitialized = await Initializer.cachingService.getCacheRemote<boolean>('isInitialized');
     if (isInitialized === true) {

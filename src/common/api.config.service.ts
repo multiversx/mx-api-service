@@ -256,4 +256,12 @@ export class ApiConfigService {
   getExtrasApiUrl(): string | undefined {
     return this.configService.get<string>('urls.extras');
   }
+
+  getMockKeybases(): boolean | undefined {
+    return this.configService.get<boolean>('test.mockKeybases');
+  }
+
+  getMockNodes(): boolean | undefined {
+    return this.configService.get<boolean>('test.mockNodes');
+  }
 }
