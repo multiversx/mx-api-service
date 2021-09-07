@@ -18,15 +18,16 @@ export default class Initializer {
       imports: [PublicAppModule],
     }).compile();
 
+    Initializer.cachingService = publicAppModule.get<CachingService>(CachingService);
+    Initializer.apiConfigService = publicAppModule.get<ApiConfigService>(ApiConfigService);
+    const keybaseService = publicAppModule.get<KeybaseService>(KeybaseService);
+    const nodeService = publicAppModule.get<NodeService>(NodeService);
+    const providerService = publicAppModule.get<ProviderService>(ProviderService);
+    
     if (Initializer.apiConfigService.getMockKeybases()) {
       jest.spyOn(KeybaseService.prototype, "confirmKeybase").mockImplementation(jest.fn(async() => true));
       jest.spyOn(KeybaseService.prototype, "getProfile").mockImplementation(jest.fn(async() => new KeybaseIdentity()));
     }
-
-    Initializer.cachingService = publicAppModule.get<CachingService>(CachingService);
-    const keybaseService = publicAppModule.get<KeybaseService>(KeybaseService);
-    const nodeService = publicAppModule.get<NodeService>(NodeService);
-    const providerService = publicAppModule.get<ProviderService>(ProviderService);
 
     let isInitialized = await Initializer.cachingService.getCacheRemote<boolean>('isInitialized');
     if (isInitialized === true) {
