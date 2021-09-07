@@ -43,7 +43,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - name: Run integration tests
-        if: ${{ github.ref == 'refs/heads/main' }}
+      - if: ${{ github.ref == 'refs/heads/main' }}
         run: npm run test:e2e
-        if: ${{ github.ref == 'refs/heads/development' }}
+      - if: ${{ github.ref == 'refs/heads/development' }}
         run: npm run test:e2e:mocked
