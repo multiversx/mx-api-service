@@ -5,9 +5,9 @@ name: Integration tests
 
 on:
   push:
-    branches: [main]
+    branches: [development]
   pull_request:
-    branches: [main]
+    branches: [development]
 
 jobs:
   build:
@@ -43,4 +43,4 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - name: Run integration tests
-        run: npm run test:e2e
+        run: npm run test:e2e:mocked
