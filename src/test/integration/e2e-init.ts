@@ -1,5 +1,6 @@
 import { Test } from "@nestjs/testing";
 import { CachingService } from "src/common/caching.service";
+import { KeybaseIdentity } from "src/common/entities/keybase.identity";
 import { KeybaseService } from "src/common/keybase.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
@@ -14,6 +15,10 @@ export default class Initializer {
     const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
+
+    // TO DO: should take in consideration github action flag
+    jest.spyOn(KeybaseService.prototype, "confirmKeybase").mockImplementation(jest.fn(async() => true));
+    jest.spyOn(KeybaseService.prototype, "getProfile").mockImplementation(jest.fn(async() => new KeybaseIdentity()));
 
     Initializer.cachingService = publicAppModule.get<CachingService>(CachingService);
     const keybaseService = publicAppModule.get<KeybaseService>(KeybaseService);
