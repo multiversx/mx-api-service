@@ -385,7 +385,7 @@ export class TransactionService {
 
       let type = nonce ? TransactionOperationType.nft : TransactionOperationType.esdt;
 
-      return { action, type, collection, identifier, sender: log.address, receiver, value };
+      return { action, type, collection, identifier, sender: event.address, receiver, value };
     } catch (error) {
       this.logger.error(`Error when parsing NFT transaction log for tx hash '${txHash}' with action '${action}' and topics: ${event.topics}`);
       this.logger.error(error);
