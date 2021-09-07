@@ -1,11 +1,11 @@
 import { NftType } from "./nft.type";
 
 export class NftFilter {
-  search: string | undefined;
-  identifiers: string | undefined;
-  type: NftType | undefined;
-  collection: string | undefined;
-  tags: string | undefined;
-  creator: string | undefined;
-  hasUris: boolean | undefined;
+  search?: string;
+  identifiers?: string;
+  type?: NftType;
+  collection?: string;
+  tags?: string;
+  creator?: string;
+  hasUris?: boolean;
 }
