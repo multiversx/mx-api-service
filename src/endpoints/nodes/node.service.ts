@@ -17,7 +17,6 @@ import { BlockService } from "../blocks/block.service";
 import { KeybaseState } from "src/common/entities/keybase.state";
 import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
-import { BlsService } from "src/common/bls.service";
 
 @Injectable()
 export class NodeService {
@@ -33,7 +32,6 @@ export class NodeService {
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
     private readonly blockService: BlockService,
-    private readonly blsService: BlsService,
   ) {}
 
   private getIssues(node: Node, version: string): string[] {
@@ -291,9 +289,9 @@ export class NodeService {
         const bls = blses[index];
 
         if (!owners[bls]) {
-          const owner = await this.blsService.getBlsOwner(bls);
+          const owner = await this.getBlsOwner(bls);
           if (owner) {
-            const blses = await this.blsService.getOwnerBlses(owner);
+            const blses = await this.getOwnerBlses(owner);
 
             blses.forEach(bls => {
               owners[bls] = owner;
@@ -312,6 +310,48 @@ export class NodeService {
     }
 
     return blses.map((bls, index) => (missing.includes(index) ? owners[bls] : cached[index]));
+  };
+
+  async getBlsOwner(bls: string): Promise<string | undefined> {
+    let result = await this.vmQueryService.vmQuery(
+      this.apiConfigService.getStakingContractAddress(),
+      'getOwner',
+      this.apiConfigService.getAuctionContractAddress(),
+      [ bls ],
+    );
+
+    if (!result) {
+      return undefined;
+    }
+
+    const [encodedOwnerBase64] = result;
+  
+    return AddressUtils.bech32Encode(Buffer.from(encodedOwnerBase64, 'base64').toString('hex'));
+  };
+
+  async getOwnerBlses(owner: string): Promise<string[]> {
+    const getBlsKeysStatusListEncoded = await this.vmQueryService.vmQuery(
+      this.apiConfigService.getAuctionContractAddress(),
+      'getBlsKeysStatus',
+      this.apiConfigService.getAuctionContractAddress(),
+      [ AddressUtils.bech32Decode(owner) ],
+    );
+  
+    if (!getBlsKeysStatusListEncoded) {
+      return [];
+    }
+  
+    return getBlsKeysStatusListEncoded.reduce((result: any[], _: string, index: number, array: string[]) => {
+      if (index % 2 === 0) {
+        const [blsBase64, _] = array.slice(index, index + 2);
+  
+        const bls = Buffer.from(blsBase64, 'base64').toString('hex');
+  
+        result.push(bls);
+      }
+  
+      return result;
+    }, []);
   };
 
   async getQueue(): Promise<Queue[]> {

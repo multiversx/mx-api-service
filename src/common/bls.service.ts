@@ -1,6 +1,4 @@
 import { Injectable } from "@nestjs/common";
-import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
-import { AddressUtils } from "src/utils/address.utils";
 import { ApiConfigService } from "./api.config.service";
 import { ElasticService } from "./elastic.service";
 
@@ -12,7 +10,6 @@ export class BlsService {
   constructor(
     private apiConfigService: ApiConfigService,
     private readonly elasticService: ElasticService,
-    private readonly vmQueryService: VmQueryService,
   ) { 
     this.url = this.apiConfigService.getElasticUrl();
   }
@@ -45,47 +42,5 @@ export class BlsService {
     let publicKeys = await this.getPublicKeys(shardId, epoch);
 
     return publicKeys.indexOf(bls);
-  };
-
-  async getBlsOwner(bls: string): Promise<string | undefined> {
-    let result = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getStakingContractAddress(),
-      'getOwner',
-      this.apiConfigService.getAuctionContractAddress(),
-      [ bls ],
-    );
-
-    if (!result) {
-      return undefined;
-    }
-
-    const [encodedOwnerBase64] = result;
-  
-    return AddressUtils.bech32Encode(Buffer.from(encodedOwnerBase64, 'base64').toString('hex'));
-  };
-  
-  async getOwnerBlses(owner: string): Promise<string[]> {
-    const getBlsKeysStatusListEncoded = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getAuctionContractAddress(),
-      'getBlsKeysStatus',
-      this.apiConfigService.getAuctionContractAddress(),
-      [ AddressUtils.bech32Decode(owner) ],
-    );
-  
-    if (!getBlsKeysStatusListEncoded) {
-      return [];
-    }
-  
-    return getBlsKeysStatusListEncoded.reduce((result: any[], _: string, index: number, array: string[]) => {
-      if (index % 2 === 0) {
-        const [blsBase64, _] = array.slice(index, index + 2);
-  
-        const bls = Buffer.from(blsBase64, 'base64').toString('hex');
-  
-        result.push(bls);
-      }
-  
-      return result;
-    }, []);
   };
 }
