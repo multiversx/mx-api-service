@@ -49,3 +49,4 @@ security:
 test:
   mockKeybases: false
   mockNodes: false
+  mockPath: './src/test/mocks/'
