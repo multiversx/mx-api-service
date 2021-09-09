@@ -105,6 +105,7 @@ import "./utils/extensions/number.extensions";
   exports: [
     ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService,
     TokenService, ShardService, IdentitiesService, ProviderService, KeybaseService, DataApiService, ApiService,
+    BlsService
   ]
 })
 export class PublicAppModule { }
