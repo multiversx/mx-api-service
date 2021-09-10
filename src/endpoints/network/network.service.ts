@@ -16,7 +16,7 @@ import { TransactionService } from '../transactions/transaction.service';
 import { VmQueryService } from '../vm.query/vm.query.service';
 import { NetworkConstants } from './entities/constants';
 import { Economics } from './entities/economics';
-import { NetworkConfig } from './entities/networkConfig';
+import { NetworkConfig } from './entities/network.config';
 import { StakeService } from '../stake/stake.service';
 
 @Injectable()
