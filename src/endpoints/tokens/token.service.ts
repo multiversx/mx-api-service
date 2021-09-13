@@ -24,11 +24,9 @@ import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { ApiUtils } from "src/utils/api.utils";
-import { NetworkService } from "../network/network.service";
 import { TokenFilter } from "./entities/token.filter";
 import { TokenUtils } from "src/utils/tokens.utils";
 import { NftThumbnailService } from "src/common/nft.thumbnail.service";
-import { RoundUtils } from "src/utils/round.utils";
 
 @Injectable()
 export class TokenService {
@@ -42,7 +40,6 @@ export class TokenService {
     private readonly elasticService: ElasticService,
     private readonly tokenAssetService: TokenAssetService,
     private readonly apiService: ApiService,
-    private readonly networkService: NetworkService,
     private readonly nftThumbnailService: NftThumbnailService,
   ) {
     this.logger = new Logger(TokenService.name);
@@ -569,60 +566,6 @@ export class TokenService {
   async getNftForAddress(address: string, identifier: string): Promise<NftAccount | undefined> {
     let nfts = await this.getNftsForAddressInternal(address, new NftFilter());
     return nfts.find(x => x.identifier === identifier);
-  }
-
-  async getStakeForAddress(address: string) {
-    const [totalStakedEncoded, unStakedTokensListEncoded] = await Promise.all([
-      this.vmQueryService.vmQuery(
-        this.apiConfigService.getAuctionContractAddress(),
-        'getTotalStaked',
-        address,
-      ),
-      this.vmQueryService.vmQuery(
-        this.apiConfigService.getAuctionContractAddress(),
-        'getUnStakedTokensList',
-        address,
-        [ AddressUtils.bech32Decode(address) ],
-      ),
-    ]);
-
-    const data: any = {
-      totalStaked: '0',
-      unstakedTokens: undefined,
-    };
-
-    if (totalStakedEncoded) {
-      data.totalStaked = Buffer.from(totalStakedEncoded[0], 'base64').toString('ascii');
-    }
-
-    if (unStakedTokensListEncoded) {
-      data.unstakedTokens = unStakedTokensListEncoded.reduce((result: any, _, index, array) => {
-        if (index % 2 === 0) {
-          const [encodedAmount, encodedEpochs] = array.slice(index, index + 2);
-
-          const amountHex = Buffer.from(encodedAmount, 'base64').toString('hex');
-          const amount = BigInt(amountHex ? '0x' + amountHex : amountHex).toString();
-
-          const epochsHex = Buffer.from(encodedEpochs, 'base64').toString('hex');
-          const epochs = parseInt(BigInt(epochsHex ? '0x' + epochsHex : epochsHex).toString());
-
-          result.push({ amount, epochs });
-        }
-
-        return result;
-      }, []);
-
-      const networkConfig = await this.networkService.getNetworkConfig();
-
-      for (const element of data.unstakedTokens) {
-        element.expires = element.epochs
-          ? RoundUtils.getExpires(element.epochs, networkConfig.roundsPassed, networkConfig.roundsPerEpoch, networkConfig.roundDuration)
-          : undefined;
-        delete element.epochs;
-      }
-    }
-
-    return data;
   }
 
   async getAllTokens(): Promise<TokenDetailed[]> {

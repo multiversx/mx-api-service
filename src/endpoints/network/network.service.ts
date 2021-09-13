@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Stats } from 'src/endpoints/network/entities/stats';
 import { ApiConfigService } from 'src/common/api.config.service';
 import { ApiService } from 'src/common/api.service';
@@ -30,6 +30,7 @@ export class NetworkService {
     private readonly transactionService: TransactionService,
     private readonly dataApiService: DataApiService,
     private readonly apiService: ApiService,
+    @Inject(forwardRef( () => StakeService))
     private readonly stakeService: StakeService
   ) {}
 

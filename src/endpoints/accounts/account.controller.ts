@@ -16,6 +16,7 @@ import { ParseOptionalBoolPipe } from 'src/utils/pipes/parse.optional.bool.pipe'
 import { WaitingList } from '../waiting-list/entities/waiting.list';
 import { WaitingListService } from '../waiting-list/waiting.list.service';
 import { NftCollection } from '../tokens/entities/nft.collection';
+import { StakeService } from '../stake/stake.service';
 
 @Controller()
 @ApiTags('accounts')
@@ -27,6 +28,7 @@ export class AccountController {
     private readonly tokenService: TokenService,
     private readonly delegationLegacyService: DelegationLegacyService,
     private readonly waitingListService: WaitingListService,
+    private readonly stakeService: StakeService,
   ) {
     this.logger = new Logger(AccountController.name);
   }
@@ -373,7 +375,7 @@ export class AccountController {
   })
   async getAccountStake(@Param('address') address: string) {
     try {
-      return await this.tokenService.getStakeForAddress(address);
+      return await this.stakeService.getStakeForAddress(address);
     } catch (error) {
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
