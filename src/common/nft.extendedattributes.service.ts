@@ -1,20 +1,23 @@
 import { Injectable } from "@nestjs/common";
 import { NftMetadata } from "src/endpoints/tokens/entities/nft.metadata";
-import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
+import { TokenUtils } from "src/utils/tokens.utils";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
 import { CachingService } from "./caching.service";
 
 @Injectable()
 export class NftExtendedAttributesService {
+  private readonly NFT_THUMBNAIL_PREFIX: string;
 
   constructor(
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
     private readonly apiService: ApiService,
-  ) {}
+  ) {
+    this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getMediaUrl() + '/nfts/asset';
+  }
 
   async getExtendedAttributesFromRawAttributes(attributes: string): Promise<NftMetadata | undefined> {
     let metadata = this.getMetadata(attributes);
@@ -35,7 +38,7 @@ export class NftExtendedAttributesService {
 
     if (Object.keys(result).length > 0) {
       if (result.fileUri) {
-        result.fileUri = ApiUtils.replaceUri(result.fileUri, 'https://ipfs.io/ipfs', this.apiConfigService.getMediaUrl() + '/nfts/asset');
+        result.fileUri = TokenUtils.computeNftUri(result.fileUri, this.NFT_THUMBNAIL_PREFIX);
       }
 
       return result;
@@ -46,9 +49,9 @@ export class NftExtendedAttributesService {
 
   private async getExtendedAttributesFromIpfs(metadata: string): Promise<NftMetadata> {
     let ipfsUri = `https://ipfs.io/ipfs/${metadata}`;
-    let processedIpfsUri = ApiUtils.replaceUri(ipfsUri, 'https://ipfs.io/ipfs', this.apiConfigService.getMediaUrl() + '/nfts/asset');
+    let processedIpfsUri = TokenUtils.computeNftUri(ipfsUri, this.NFT_THUMBNAIL_PREFIX);
 
-    let result = await this.apiService.get(processedIpfsUri, 1000);
+    let result = await this.apiService.get(processedIpfsUri, 5000);
     return result.data;
   }
 

@@ -30,6 +30,7 @@ import { NftExtendedAttributesService } from "src/common/nft.extendedattributes.
 @Injectable()
 export class TokenService {
   private readonly logger: Logger
+  private readonly NFT_THUMBNAIL_PREFIX: string;
 
   constructor(
     private readonly gatewayService: GatewayService,
@@ -42,6 +43,7 @@ export class TokenService {
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
   ) {
     this.logger = new Logger(TokenService.name);
+    this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getMediaUrl() + '/nfts/asset';
   }
 
   async getToken(identifier: string): Promise<TokenDetailed | undefined> {
@@ -234,7 +236,7 @@ export class TokenService {
 
         if (nft.uris && nft.uris.length > 0) {
           try {
-            nft.url = ApiUtils.replaceUri(BinaryUtils.base64Decode(nft.uris[0]), 'https://ipfs.io/ipfs', this.apiConfigService.getMediaUrl() + '/nfts/asset');
+            nft.url = TokenUtils.computeNftUri(nft.url, this.NFT_THUMBNAIL_PREFIX);
           } catch (error) {
             this.logger.error(error);
           }
