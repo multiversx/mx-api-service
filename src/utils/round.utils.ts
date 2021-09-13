@@ -13,8 +13,6 @@ export class RoundUtils {
     const fullEpochs = (epochs - 1) * roundsPerEpoch * roundDuration;
     const lastEpoch = (roundsPerEpoch - roundsPassed) * roundDuration;
 
-    // this.logger.log('expires', JSON.stringify({ epochs, roundsPassed, roundsPerEpoch, roundDuration }));
-
     return now + fullEpochs + lastEpoch;
   };
 }
