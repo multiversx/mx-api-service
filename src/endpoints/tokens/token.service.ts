@@ -26,6 +26,7 @@ import { BinaryUtils } from "src/utils/binary.utils";
 import { ApiUtils } from "src/utils/api.utils";
 import { NetworkService } from "../network/network.service";
 import { TokenFilter } from "./entities/token.filter";
+import { TokenUtils } from "src/utils/tokens.utils";
 
 @Injectable()
 export class TokenService {
@@ -401,7 +402,7 @@ export class TokenService {
     let tokensWithBalance: TokenWithBalance[] = [];
 
     for (let tokenIdentifier of Object.keys(esdtResult.esdts)) {
-      if (!this.isEsdt(tokenIdentifier)) {
+      if (!TokenUtils.isEsdt(tokenIdentifier)) {
         continue;
       }
 
@@ -428,16 +429,6 @@ export class TokenService {
     }
 
     return tokensWithBalance;
-  }
-
-  isEsdt(tokenIdentifier: string) {
-    return tokenIdentifier.split('-').length === 2;
-  }
-
-  getNftGlobalIdentifier(tokenIdentifier: string) {
-    let parts = tokenIdentifier.split('-');
-    parts.length = 2;
-    return parts.join('-');
   }
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter): Promise<NftAccount[]> {
