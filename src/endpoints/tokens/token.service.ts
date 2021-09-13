@@ -27,6 +27,7 @@ import { ApiUtils } from "src/utils/api.utils";
 import { NetworkService } from "../network/network.service";
 import { TokenFilter } from "./entities/token.filter";
 import { TokenUtils } from "src/utils/tokens.utils";
+import { NftThumbnailService } from "src/common/nft.thumbnail.service";
 
 @Injectable()
 export class TokenService {
@@ -41,6 +42,7 @@ export class TokenService {
     private readonly tokenAssetService: TokenAssetService,
     private readonly apiService: ApiService,
     private readonly networkService: NetworkService,
+    private readonly nftThumbnailService: NftThumbnailService,
   ) {
     this.logger = new Logger(TokenService.name);
   }
@@ -257,7 +259,7 @@ export class TokenService {
       nfts.push(nft);
     }
 
-    await this.updateThumbnailUrlForNfts(nfts);
+    await this.nftThumbnailService.updateThumbnailUrlForNfts(nfts);
 
     for (let nft of nfts) {
       if (nft.type === NftType.SemiFungibleESDT) {
@@ -270,60 +272,7 @@ export class TokenService {
 
     return nfts;
   }
-
-  async updateThumbnailUrlForNfts(nfts: Nft[]) {
-    let mediaNfts = nfts.filter(nft => nft.uris.filter(uri => uri).length > 0);
-
-    let customThumbnailConfirmations = await this.cachingService.batchProcess(
-      mediaNfts,
-      nft => `nftCustomThumbnail:${nft.identifier}`,
-      async (nft) => await this.hasCustomThumbnail(nft.identifier),
-      Constants.oneWeek()
-    );
-
-    let standardThumbnailConfirmations = await this.cachingService.batchProcess(
-      mediaNfts,
-      nft => `nftStandardThumbnail:${nft.identifier}`,
-      async (nft) => await this.hasStandardThumbnail(nft.identifier),
-      Constants.oneWeek()
-    );
-
-    for (let [index, nft] of mediaNfts.entries()) {
-      let isCustomThumbnail = customThumbnailConfirmations[index];
-      let isStandardThumbnail = standardThumbnailConfirmations[index];
-
-      if (isCustomThumbnail === true) {
-        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/custom/${nft.identifier}`;
-      } else if (isStandardThumbnail === true) {
-        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/standard/${nft.identifier}`;
-      } else if (nft.metadata && nft.metadata.fileType) {
-        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/default/${nft.metadata.fileType.replace('/', '-')}`;
-      } else {
-        nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/default/default`;
-      }
-    }
-  }
-
-  async hasCustomThumbnail(nftIdentifier: string): Promise<boolean> {
-    try {
-      const { status } = await this.apiService.head(`${this.apiConfigService.getNftThumbnailsUrl()}/custom/${nftIdentifier}`);
-
-      return status === 200;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  async hasStandardThumbnail(nftIdentifier: string): Promise<boolean> {
-    try {
-      const { status } = await this.apiService.head(`${this.apiConfigService.getNftThumbnailsUrl()}/standard/${nftIdentifier}`);
-
-      return status === 200;
-    } catch (error) {
-      return false;
-    }
-  }
-
+  
   async getNftCount(filter: NftFilter): Promise<number> {
     return await this.elasticService.getTokenCount(filter);
   }
@@ -547,7 +496,7 @@ export class TokenService {
       nfts = nfts.filter(x => x.uris.length === 0);
     }
 
-    await this.updateThumbnailUrlForNfts(nfts);
+    await this.nftThumbnailService.updateThumbnailUrlForNfts(nfts);
 
     return nfts;
   }
