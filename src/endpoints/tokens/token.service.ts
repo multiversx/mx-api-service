@@ -486,7 +486,7 @@ export class TokenService {
 
       if (nft.uris && nft.uris.length > 0) {
         try {
-          nft.url = BinaryUtils.base64Decode(nft.uris[0]);
+          nft.url = this.processUri(BinaryUtils.base64Decode(nft.uris[0]));
         } catch (error) {
           this.logger.error(error);
         }
@@ -586,9 +586,9 @@ export class TokenService {
 
   async getExtendedAttributesFromIpfs(metadata: string): Promise<NftMetadata> {
     let ipfsUri = `https://ipfs.io/ipfs/${metadata}`;
-    // let processedIpfsUri = this.processUri(ipfsUri);
+    let processedIpfsUri = this.processUri(ipfsUri);
 
-    let result = await this.apiService.get(ipfsUri, 5000);
+    let result = await this.apiService.get(processedIpfsUri, 5000);
     return result.data;
   }
 
