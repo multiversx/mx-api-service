@@ -62,6 +62,7 @@ import "./utils/extensions/array.extensions";
 import "./utils/extensions/date.extensions";
 import "./utils/extensions/number.extensions";
 import { NftThumbnailService } from './common/nft.thumbnail.service';
+import { NftExtendedAttributesService } from './common/nft.extendedattributes.service';
 
 @Module({
   imports: [
@@ -101,7 +102,7 @@ import { NftThumbnailService } from './common/nft.thumbnail.service';
     StakeService, LoggingInterceptor, ApiService, ProfilerService, DelegationLegacyService,
     DelegationService, CacheConfigService, CachingInterceptor, ShardService, MetricsService, IdentitiesService,
     TokenAssetService, DataApiService, KeysService, WaitingListService, BlsService, TagService, ExtrasApiService,
-    TransactionScamCheckService, PotentialScamTransactionChecker, NftThumbnailService,
+    TransactionScamCheckService, PotentialScamTransactionChecker, NftThumbnailService, NftExtendedAttributesService,
   ],
   exports: [
     ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService,
