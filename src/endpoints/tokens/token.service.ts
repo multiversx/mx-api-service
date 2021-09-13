@@ -700,17 +700,17 @@ export class TokenService {
       minted,
       burnt,
       decimals: parseInt(decimals.split('-').pop() ?? '0'),
-      isPaused: this.canBool(isPaused),
-      canUpgrade: this.canBool(canUpgrade),
-      canMint: this.canBool(canMint),
-      canBurn: this.canBool(canBurn),
-      canChangeOwner: this.canBool(canChangeOwner),
-      canPause: this.canBool(canPause),
-      canFreeze: this.canBool(canFreeze),
-      canWipe: this.canBool(canWipe),
-      canAddSpecialRoles: this.canBool(canAddSpecialRoles),
-      canTransferNFTCreateRole: this.canBool(canTransferNFTCreateRole),
-      NFTCreateStopped: this.canBool(NFTCreateStopped),
+      isPaused: TokenUtils.canBool(isPaused),
+      canUpgrade: TokenUtils.canBool(canUpgrade),
+      canMint: TokenUtils.canBool(canMint),
+      canBurn: TokenUtils.canBool(canBurn),
+      canChangeOwner: TokenUtils.canBool(canChangeOwner),
+      canPause: TokenUtils.canBool(canPause),
+      canFreeze: TokenUtils.canBool(canFreeze),
+      canWipe: TokenUtils.canBool(canWipe),
+      canAddSpecialRoles: TokenUtils.canBool(canAddSpecialRoles),
+      canTransferNFTCreateRole: TokenUtils.canBool(canTransferNFTCreateRole),
+      NFTCreateStopped: TokenUtils.canBool(NFTCreateStopped),
       wiped: wiped.split('-').pop(),
     };
 
@@ -725,9 +725,5 @@ export class TokenService {
     }
 
     return tokenProps;
-  };
-
-  canBool(string: string) {
-    return string.split('-').pop() === 'true';
   };
 }
