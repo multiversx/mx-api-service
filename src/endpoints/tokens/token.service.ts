@@ -229,7 +229,7 @@ export class TokenService {
 
         if (elasticNftData.metadata) {
           try {
-            nft.metadata = await this.getExtendedAttributesFromDescription(elasticNftData.metadata);
+            nft.metadata = await this.getExtendedAttributesFromMetadata(elasticNftData.metadata);
           } catch (error) {
             this.logger.error(`Error when getting extended attributes for NFT '${nft.identifier}'`);
             this.logger.error(error);
@@ -549,18 +549,18 @@ export class TokenService {
   }
 
   async getExtendedAttributesFromRawAttributes(attributes: string): Promise<NftMetadata | undefined> {
-    let description = this.getDescription(attributes);
-    if (description === undefined) {
+    let metadata = this.getMetadata(attributes);
+    if (metadata === undefined) {
       return undefined;
     }
 
-    return this.getExtendedAttributesFromDescription(description);
+    return this.getExtendedAttributesFromMetadata(metadata);
   }
 
-  async getExtendedAttributesFromDescription(description: string): Promise<NftMetadata | undefined> {
+  async getExtendedAttributesFromMetadata(metadata: string): Promise<NftMetadata | undefined> {
     let result = await this.cachingService.getOrSetCache<NftMetadata>(
-      `nftExtendedAttributes:${description}`,
-      async () => await this.getExtendedAttributesFromIpfs(description ?? ''),
+      `nftExtendedAttributes:${metadata}`,
+      async () => await this.getExtendedAttributesFromIpfs(metadata ?? ''),
       Constants.oneWeek(),
       Constants.oneDay()
     );
@@ -584,11 +584,11 @@ export class TokenService {
     return uri;
   }
 
-  async getExtendedAttributesFromIpfs(description: string): Promise<NftMetadata> {
-    let ipfsUri = `https://ipfs.io/ipfs/${description}`;
-    let processedIpfsUri = this.processUri(ipfsUri);
+  async getExtendedAttributesFromIpfs(metadata: string): Promise<NftMetadata> {
+    let ipfsUri = `https://ipfs.io/ipfs/${metadata}`;
+    // let processedIpfsUri = this.processUri(ipfsUri);
 
-    let result = await this.apiService.get(processedIpfsUri, 1000);
+    let result = await this.apiService.get(ipfsUri, 5000);
     return result.data;
   }
 
@@ -602,14 +602,14 @@ export class TokenService {
     return match.groups['tags'].split(',');
   }
 
-  getDescription(attributes: string): string | undefined {
+  getMetadata(attributes: string): string | undefined {
     let decodedAttributes = BinaryUtils.base64Decode(attributes);
-    let match = decodedAttributes.match(/description:(?<description>[\w]*)/);
+    let match = decodedAttributes.match(/metadata:(?<metadata>[\w]*)/);
     if (!match || !match.groups) {
       return undefined;
     }
 
-    return match.groups['description'];
+    return match.groups['metadata'];
   }
 
   async getNftForAddress(address: string, identifier: string): Promise<NftAccount | undefined> {
