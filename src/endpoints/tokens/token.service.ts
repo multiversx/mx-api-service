@@ -28,6 +28,7 @@ import { NetworkService } from "../network/network.service";
 import { TokenFilter } from "./entities/token.filter";
 import { TokenUtils } from "src/utils/tokens.utils";
 import { NftThumbnailService } from "src/common/nft.thumbnail.service";
+import { RoundUtils } from "src/utils/round.utils";
 
 @Injectable()
 export class TokenService {
@@ -272,7 +273,7 @@ export class TokenService {
 
     return nfts;
   }
-  
+
   async getNftCount(filter: NftFilter): Promise<number> {
     return await this.elasticService.getTokenCount(filter);
   }
@@ -615,7 +616,7 @@ export class TokenService {
 
       for (const element of data.unstakedTokens) {
         element.expires = element.epochs
-          ? this.getExpires(element.epochs, networkConfig.roundsPassed, networkConfig.roundsPerEpoch, networkConfig.roundDuration)
+          ? RoundUtils.getExpires(element.epochs, networkConfig.roundsPassed, networkConfig.roundsPerEpoch, networkConfig.roundDuration)
           : undefined;
         delete element.epochs;
       }
@@ -623,21 +624,6 @@ export class TokenService {
 
     return data;
   }
-
-  getExpires(epochs: number, roundsPassed: number, roundsPerEpoch: number, roundDuration: number) {
-    const now = Math.floor(Date.now() / 1000);
-
-    if (epochs === 0) {
-      return now;
-    }
-
-    const fullEpochs = (epochs - 1) * roundsPerEpoch * roundDuration;
-    const lastEpoch = (roundsPerEpoch - roundsPassed) * roundDuration;
-
-    // this.logger.log('expires', JSON.stringify({ epochs, roundsPassed, roundsPerEpoch, roundDuration }));
-
-    return now + fullEpochs + lastEpoch;
-  };
 
   async getAllTokens(): Promise<TokenDetailed[]> {
     return this.cachingService.getOrSetCache(
