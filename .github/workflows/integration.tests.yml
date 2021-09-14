@@ -54,7 +54,7 @@ jobs:
         run: npm run test:e2e:cov
       - uses: codecov/codecov-action@v2
         with:
-          files: ./coverage/unit/clover.xml,./coverage/e2e/clover.xml
+          files: ./coverage/e2e/clover.xml
           flags: integrationtests
           name: codecov-umbrella
           fail_ci_if_error: true
