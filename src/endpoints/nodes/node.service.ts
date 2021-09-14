@@ -31,7 +31,7 @@ export class NodeService {
     private readonly stakeService: StakeService,
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
-    private readonly blockService: BlockService
+    private readonly blockService: BlockService,
   ) {}
 
   private getIssues(node: Node, version: string): string[] {
@@ -175,10 +175,7 @@ export class NodeService {
     return await this.cachingService.getOrSetCache('nodes', async () => await this.getAllNodesRaw(), Constants.oneHour(), Constants.oneMinute());
   }
 
-  async getAllNodesRaw(): Promise<Node[]> {
-    let nodes = await this.getHeartbeat();
-    let queue = await this.getQueue();
-
+  private processQueuedNodes(nodes: Node[], queue: Queue[]) {
     for (let queueItem of queue) {
       const node = nodes.find(node => node.bls === queueItem.bls);
   
@@ -196,7 +193,9 @@ export class NodeService {
         nodes.push(newNode);
       }
     }
+  }
 
+  private async getNodesIdentities(nodes: Node[]) {
     const keybases: { [key: string]: KeybaseState } | undefined = await this.keybaseService.getCachedNodeKeybases();
 
     if (keybases) {
@@ -208,7 +207,9 @@ export class NodeService {
         }
       }
     }
+  }
 
+  private async getNodesOwnerAndProvider(nodes: Node[]) {
     const blses = nodes.filter(node => node.type === NodeType.validator).map(node => node.bls);
     const epoch = await this.blockService.getCurrentEpoch();
     const owners = await this.getOwners(blses, epoch);
@@ -222,7 +223,7 @@ export class NodeService {
 
     const providers = await this.providerService.getAllProviders();
 
-    nodes.forEach((node) => {
+    for (let node of nodes) {
       if (node.type === NodeType.validator) {
         const provider = providers.find(({ provider }) => provider === node.owner);
 
@@ -231,17 +232,19 @@ export class NodeService {
           node.owner = provider.owner ?? '';
         }
       }
-    });
+    }
+  }
 
+  private async getNodesStakeDetails(nodes: Node[]) {
     let addresses = nodes
-      .filter(({ type }) => type === NodeType.validator)
-      .map(({ owner, provider }) => (provider ? provider : owner));
-  
+    .filter(({ type }) => type === NodeType.validator)
+    .map(({ owner, provider }) => (provider ? provider : owner));
+
     addresses = [...new Set(addresses)];
 
     const stakes = await this.stakeService.getStakes(addresses);
 
-    nodes.forEach((node) => {
+    for (let node of nodes) {
       if (node.type === 'validator') {
         const stake = stakes.find(({ bls }) => bls === node.bls);
 
@@ -251,7 +254,20 @@ export class NodeService {
           node.locked = stake.locked;
         }
       }
-    });
+    }
+  }
+
+  async getAllNodesRaw(): Promise<Node[]> {
+    let nodes = await this.getHeartbeat();
+    let queue = await this.getQueue();
+
+    this.processQueuedNodes(nodes, queue);
+
+    await this.getNodesIdentities(nodes);
+
+    await this.getNodesOwnerAndProvider(nodes);
+
+    await this.getNodesStakeDetails(nodes);
 
     return nodes;
   }
@@ -295,7 +311,7 @@ export class NodeService {
 
     return blses.map((bls, index) => (missing.includes(index) ? owners[bls] : cached[index]));
   };
-  
+
   async getBlsOwner(bls: string): Promise<string | undefined> {
     let result = await this.vmQueryService.vmQuery(
       this.apiConfigService.getStakingContractAddress(),

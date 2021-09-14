@@ -264,4 +264,13 @@ export class ApiConfigService {
   getMockNodes(): boolean | undefined {
     return this.configService.get<boolean>('test.mockNodes');
   }
+
+  getMockPath(): string | undefined {
+    let mockPath = this.configService.get<string>('test.mockPath');
+    if (mockPath === undefined) {
+      throw new Error('No mock path value present');
+    }
+
+    return mockPath;
+  }
 }
