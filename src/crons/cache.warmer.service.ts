@@ -12,6 +12,8 @@ import { Locker } from "src/utils/locker";
 import { CachingService } from "src/common/caching.service";
 import { ClientProxy } from "@nestjs/microservices";
 import { ApiConfigService } from "src/common/api.config.service";
+import { NetworkService } from "src/endpoints/network/network.service";
+import { AccountService } from "src/endpoints/accounts/account.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -25,7 +27,9 @@ export class CacheWarmerService {
     private readonly dataApiService: DataApiService,
     private readonly cachingService: CachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
-    private readonly apiConfigService: ApiConfigService
+    private readonly apiConfigService: ApiConfigService,
+    private readonly networkService: NetworkService,
+    private readonly accountService: AccountService,
   ) { }
 
   @Cron('* * * * *')
@@ -80,6 +84,22 @@ export class CacheWarmerService {
         await this.invalidateKey('currentPrice', currentPrice, Constants.oneHour());
       }, true);
     }
+  }
+
+  @Cron('* * * * *')
+  async handleEconomicsInvalidations() {
+    await Locker.lock('Economics invalidations', async () => {
+      let economics = await this.networkService.getEconomics();
+      await this.invalidateKey('economics', economics, Constants.oneMinute() * 10);
+    }, true);
+  }
+
+  @Cron('* * * * *')
+  async handleAccountInvalidations() {
+    await Locker.lock('Accounts invalidations', async () => {
+      let accounts = await this.accountService.getAccounts({ from: 0, size: 25 });
+      await this.invalidateKey('accounts:0:25', accounts, Constants.oneMinute() * 2);
+    }, true);
   }
 
   private async invalidateKey(key: string, data: any, ttl: number) {
