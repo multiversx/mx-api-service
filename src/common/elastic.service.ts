@@ -117,6 +117,17 @@ export class ElasticService {
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
 
+  async getAccountEsdtByIdentifiers(identifiers: string[]) {
+    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+    elasticQueryAdapter.condition.should = identifiers.map((identifier) => QueryType.Match('identifier', identifier, QueryOperator.AND));
+
+    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
+
+    let documents = await this.getDocuments('accountsesdt', elasticQuery);
+
+    return documents.map((document: any) => this.formatItem(document, 'identifier'));
+  }
+
   async getAccountEsdtByAddress(address: string, from: number, size: number, token: string | undefined) {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
     elasticQueryAdapter.pagination = { from, size };

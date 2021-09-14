@@ -7,6 +7,7 @@ import { Nft } from "./entities/nft";
 import { NftType } from "./entities/nft.type";
 import { TokenDetailed } from "./entities/token.detailed";
 import { TokenService } from "./token.service";
+import { NftDetailed } from "./entities/nft.detailed";
 
 @Controller()
 @ApiTags('tokens')
@@ -163,6 +164,7 @@ export class TokenController {
 	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
 	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
 	@ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
+  @ApiQuery({ name: 'withOwner', description: 'Return all NFTs that have one or more uris', required: false })
   async getNfts(
 		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -173,8 +175,9 @@ export class TokenController {
 		@Query('tags') tags: string | undefined,
 		@Query('creator') creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
-  ): Promise<Nft[]> {
-    return await this.tokenService.getNfts({ from, size }, { search, identifiers, type, collection, tags, creator, hasUris });
+    @Query('withOwner', new ParseOptionalBoolPipe) withOwner: boolean | undefined,
+  ): Promise<Nft[] | NftDetailed[]> {
+    return await this.tokenService.getNfts({ from, size }, { search, identifiers, type, collection, tags, creator, hasUris }, withOwner);
   }
 
   @Get("/nfts/count")
