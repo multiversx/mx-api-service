@@ -23,6 +23,7 @@
     "test:e2e": "npm run copy-e2e-mainnet-config & nest build & jest --config ./src/test/jest-e2e.json --forceExit --detectOpenHandles --runInBand",
     "test:e2e:mocked": "npm run copy-e2e-mocked-mainnet-config & nest build & jest --config ./src/test/jest-e2e.json --forceExit --detectOpenHandles --runInBand",
     "test:e2e:warm": "npm run copy-e2e-mainnet-config & nest build & jest --config ./src/test/jest-e2e-warm.json --forceExit --detectOpenHandles --runInBand",
+    "test:e2e:cov": "jest --config ./src/test/jest-e2e.json --coverage",
     "copy-devnet-config": "cp ./config/config.devnet.yaml ./config/config.yaml",
     "copy-testnet-config": "cp ./config/config.testnet.yaml ./config/config.yaml",
     "copy-mainnet-config": "cp ./config/config.mainnet.yaml ./config/config.yaml",
@@ -106,9 +107,9 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "./src/**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
+    "coverageDirectory": "./coverage/unit",
     "testEnvironment": "node",
     "roots": [
       "<rootDir>"
