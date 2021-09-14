@@ -462,6 +462,7 @@ export class TokenService {
       nft.creator = gatewayNft.creator;
       nft.royalties = Number(gatewayNft.royalties) / 100; // 10.000 => 100%
       nft.uris = gatewayNft.uris.filter((x: any) => x);
+      nft.name = gatewayNft.name;
 
       if (nft.uris && nft.uris.length > 0) {
         try {
@@ -487,7 +488,6 @@ export class TokenService {
       let gatewayNftDetails = await this.getNft(nft.collection);
       if (gatewayNftDetails) {
         nft.type = gatewayNftDetails.type;
-        nft.name = gatewayNftDetails.name;
       }
 
       nfts.push(nft);
