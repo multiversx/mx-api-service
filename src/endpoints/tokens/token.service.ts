@@ -173,21 +173,15 @@ export class TokenService {
 
     if (withOwner) {
       let accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nfts.map(({identifier}) => identifier));
-      let nftsDetailed: NftDetailed[] = [];
+      
       for (let nft of nfts) {
-        let nftDetailed: NftDetailed = ApiUtils.mergeObjects(new NftDetailed(), nft);
-
-        if (nftDetailed.type === NftType.NonFungibleESDT) {
-          const accountEsdt = accountsEsdts.find((accountEsdt: any) => accountEsdt.identifier == nftDetailed.identifier);
+        if (nft.type === NftType.NonFungibleESDT) {
+          const accountEsdt = accountsEsdts.find((accountEsdt: any) => accountEsdt.identifier == nft.identifier);
           if (accountEsdt) {
-            nftDetailed.owner = accountEsdt.address;
+            nft.owner = accountEsdt.address;
           }
         }
-
-        nftsDetailed.push(nftDetailed);
-      };
-
-      return nftsDetailed;
+      }
     }
     
     return nfts;
