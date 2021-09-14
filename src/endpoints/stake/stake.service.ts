@@ -10,6 +10,8 @@ import { Stake } from "./entities/stake";
 import { StakeTopup } from "./entities/stake.topup";
 import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
+import { NetworkService } from "../network/network.service";
+import { RoundUtils } from "src/utils/round.utils";
 
 @Injectable()
 export class StakeService {
@@ -22,6 +24,7 @@ export class StakeService {
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
     private readonly gatewayService: GatewayService,
+    private readonly networkService: NetworkService,
   ) {
     this.logger = new Logger(StakeService.name);
   }
@@ -159,4 +162,58 @@ export class StakeService {
       };
     }
   };
+
+  async getStakeForAddress(address: string) {
+    const [totalStakedEncoded, unStakedTokensListEncoded] = await Promise.all([
+      this.vmQueryService.vmQuery(
+        this.apiConfigService.getAuctionContractAddress(),
+        'getTotalStaked',
+        address,
+      ),
+      this.vmQueryService.vmQuery(
+        this.apiConfigService.getAuctionContractAddress(),
+        'getUnStakedTokensList',
+        address,
+        [ AddressUtils.bech32Decode(address) ],
+      ),
+    ]);
+
+    const data: any = {
+      totalStaked: '0',
+      unstakedTokens: undefined,
+    };
+
+    if (totalStakedEncoded) {
+      data.totalStaked = Buffer.from(totalStakedEncoded[0], 'base64').toString('ascii');
+    }
+
+    if (unStakedTokensListEncoded) {
+      data.unstakedTokens = unStakedTokensListEncoded.reduce((result: any, _, index, array) => {
+        if (index % 2 === 0) {
+          const [encodedAmount, encodedEpochs] = array.slice(index, index + 2);
+
+          const amountHex = Buffer.from(encodedAmount, 'base64').toString('hex');
+          const amount = BigInt(amountHex ? '0x' + amountHex : amountHex).toString();
+
+          const epochsHex = Buffer.from(encodedEpochs, 'base64').toString('hex');
+          const epochs = parseInt(BigInt(epochsHex ? '0x' + epochsHex : epochsHex).toString());
+
+          result.push({ amount, epochs });
+        }
+
+        return result;
+      }, []);
+
+      const networkConfig = await this.networkService.getNetworkConfig();
+
+      for (const element of data.unstakedTokens) {
+        element.expires = element.epochs
+          ? RoundUtils.getExpires(element.epochs, networkConfig.roundsPassed, networkConfig.roundsPerEpoch, networkConfig.roundDuration)
+          : undefined;
+        delete element.epochs;
+      }
+    }
+
+    return data;
+  }
 }

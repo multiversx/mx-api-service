@@ -36,5 +36,13 @@ export class ApiUtils {
   
     return obj
   }
+
+  static replaceUri(uri: string, pattern: string, replacer: string): string {
+    if (uri.startsWith(pattern)) {
+      return uri.replace(pattern, replacer);
+    }
+
+    return uri;
+  }
   
 }
