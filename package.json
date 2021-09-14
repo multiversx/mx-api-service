@@ -27,6 +27,7 @@
     "copy-mainnet-config": "run-script-os",
     "copy-testnet-config": "run-script-os",
     "copy-devnet-config": "run-script-os",
+    "copy-custom-config": "run-script-os",
     "copy-devnet-config:nix": "cp ./config/config.devnet.yaml ./config/config.yaml",
     "copy-testnet-config:nix": "cp ./config/config.testnet.yaml ./config/config.yaml",
     "copy-mainnet-config:nix": "cp ./config/config.mainnet.yaml ./config/config.yaml",
