@@ -39,13 +39,13 @@ export class BlockService {
 
     if (proposer && shard !== undefined && epoch !== undefined) {
       let index = await this.blsService.getBlsIndex(proposer, shard, epoch);
-      const proposerQuery = QueryType.Match('proposer', index !== false ? index : -1);
+      const proposerQuery = QueryType.Match('proposer', index);
       queries.push(proposerQuery);
     }
 
     if (validator && shard !== undefined && epoch !== undefined) {
       let index = await this.blsService.getBlsIndex(validator, shard, epoch);
-      const validatorsQuery = QueryType.Match('validators', index !== false ? index : -1);
+      const validatorsQuery = QueryType.Match('validators', index);
       queries.push(validatorsQuery);
     }
 
@@ -82,25 +82,25 @@ export class BlockService {
       item.shard = item.shardId;
     }
 
-    let finalResult = [];
+    let blocks = [];
 
     for (let item of result) {
-      let transformedItem = await this.transformItem(item);
+      let block = await this.computeProposerAndValidators(item);
 
-      finalResult.push(transformedItem);
+      blocks.push(ApiUtils.mergeObjects(new Block(), block));
     }
 
-    return finalResult.map(item => ApiUtils.mergeObjects(new Block(), item));
+    return blocks;
   }
 
-  async transformItem(item: any) {
+  async computeProposerAndValidators(item: any) {
     // eslint-disable-next-line no-unused-vars
     let { shardId: shard, epoch, proposer, validators, searchOrder, ...rest } = item;
 
     let key = `${shard}_${epoch}`;
     let blses: any = await this.cachingService.getCacheLocal(key);
     if (!blses) {
-      blses = await this.blsService.getBlses(shard, epoch);
+      blses = await this.blsService.getPublicKeys(shard, epoch);
 
       await this.cachingService.setCacheLocal(key, blses, Constants.oneWeek());
     }

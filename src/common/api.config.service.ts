@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class ApiConfigService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) { }
 
   getApiUrls(): string[] {
     const apiUrls = this.configService.get<string[]>('urls.api');
@@ -226,6 +226,15 @@ export class ApiConfigService {
     return mediaUrl;
   }
 
+  getNftThumbnailsUrl(): string {
+    let nftThumbnailsUrl = this.configService.get<string>('urls.nftThumbnails');
+    if (!nftThumbnailsUrl) {
+      throw new Error('No nft thumbnails url present');
+    }
+
+    return nftThumbnailsUrl;
+  }
+
   getSecurityAdmins(): string[] {
     let admins = this.configService.get<string[]>('security.admins');
     if (admins === undefined) {
@@ -242,5 +251,26 @@ export class ApiConfigService {
     }
 
     return jwtSecret;
+  }
+
+  getExtrasApiUrl(): string | undefined {
+    return this.configService.get<string>('urls.extras');
+  }
+
+  getMockKeybases(): boolean | undefined {
+    return this.configService.get<boolean>('test.mockKeybases');
+  }
+
+  getMockNodes(): boolean | undefined {
+    return this.configService.get<boolean>('test.mockNodes');
+  }
+
+  getMockPath(): string | undefined {
+    let mockPath = this.configService.get<string>('test.mockPath');
+    if (mockPath === undefined) {
+      throw new Error('No mock path value present');
+    }
+
+    return mockPath;
   }
 }
