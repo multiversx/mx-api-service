@@ -72,6 +72,14 @@ export class AccountService {
   }
 
   async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
+    return this.cachingService.getOrSetCache(
+      `accounts:${queryPagination.from}:${queryPagination.size}`,
+      async () => await this.getAccountsRaw(queryPagination),
+      Constants.oneMinute(),
+    );
+  }
+
+  async getAccountsRaw(queryPagination: QueryPagination): Promise<Account[]> {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
     
     const { from, size } = queryPagination;
