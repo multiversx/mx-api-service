@@ -82,7 +82,7 @@ export class TokenAssetService {
     // read all folders from dist/repos/assets/tokens (token identifiers)
     let tokensPath = this.getTokensPath();
     if (!fs.existsSync(tokensPath)) {
-      return await this.cachingService.setCacheLocal('tokenAssets', {}, Constants.oneDay());
+      return await this.cachingService.setCache('tokenAssets', {}, Constants.oneDay());
     }
     
     let tokenIdentifiers = FileUtils.getDirectories(tokensPath);
@@ -95,11 +95,11 @@ export class TokenAssetService {
     }
 
     // create a dictionary with the being the token identifier and the value the TokenAssets entity and store it in the cache
-    return await this.cachingService.setCacheLocal('tokenAssets', assets, Constants.oneDay());
+    return await this.cachingService.setCache('tokenAssets', assets, Constants.oneDay());
   }
 
   private async getOrReadAssets() {
-    let assets = await this.cachingService.getCacheLocal<{ [key: string] : TokenAssets }>('tokenAssets');
+    let assets = await this.cachingService.getCache<{ [key: string] : TokenAssets }>('tokenAssets');
     if (!assets) {
       assets = await this.readAssets();
     }
