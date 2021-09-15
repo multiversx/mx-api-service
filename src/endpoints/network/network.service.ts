@@ -83,7 +83,7 @@ export class NetworkService {
     );
   }
 
-  private async getEconomicsRaw(): Promise<Economics> {
+  async getEconomicsRaw(): Promise<Economics> {
     const locked = 2660000;
     const [
       { account: { balance } },
