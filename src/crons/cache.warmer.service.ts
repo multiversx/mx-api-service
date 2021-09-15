@@ -91,7 +91,7 @@ export class CacheWarmerService {
   @Cron('* * * * *')
   async handleEconomicsInvalidations() {
     await Locker.lock('Economics invalidations', async () => {
-      let economics = await this.networkService.getEconomics();
+      let economics = await this.networkService.getEconomicsRaw();
       await this.invalidateKey('economics', economics, Constants.oneMinute() * 10);
     }, true);
   }
@@ -99,7 +99,7 @@ export class CacheWarmerService {
   @Cron('* * * * *')
   async handleAccountInvalidations() {
     await Locker.lock('Accounts invalidations', async () => {
-      let accounts = await this.accountService.getAccounts({ from: 0, size: 25 });
+      let accounts = await this.accountService.getAccountsRaw({ from: 0, size: 25 });
       await this.invalidateKey('accounts:0:25', accounts, Constants.oneMinute() * 2);
     }, true);
   }
