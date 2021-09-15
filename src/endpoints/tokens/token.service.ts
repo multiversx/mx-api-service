@@ -400,20 +400,22 @@ export class TokenService {
     return tokensWithBalance;
   }
 
-  async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter): Promise<NftAccount[]> {
+  async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, withTimestamp: boolean = false): Promise<NftAccount[]> {
     const { from, size }  = queryPagination;
 
     let nfts = await this.getNftsForAddressInternal(address, filter);
 
     nfts = nfts.splice(from, from + size);
 
-    let identifiers = nfts.map(x => x.identifier);
-    let elasticNfts = await this.elasticService.getTokensByIdentifiers(identifiers);
+    if (withTimestamp) {
+      let identifiers = nfts.map(x => x.identifier);
+      let elasticNfts = await this.elasticService.getTokensByIdentifiers(identifiers);
 
-    for (let nft of nfts) {
-      let elasticNft = elasticNfts.find((x: any) => x.identifier === nft.identifier);
-      if (elasticNft) {
-        nft.timestamp = elasticNft.timestamp;
+      for (let nft of nfts) {
+        let elasticNft = elasticNfts.find((x: any) => x.identifier === nft.identifier);
+        if (elasticNft) {
+          nft.timestamp = elasticNft.timestamp;
+        }
       }
     }
 

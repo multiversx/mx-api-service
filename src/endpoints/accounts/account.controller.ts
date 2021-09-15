@@ -254,6 +254,7 @@ export class AccountController {
 	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
 	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
 	@ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
+	@ApiQuery({ name: 'withTimestamp', description: 'Add timestamp in the response structure', required: false })
   @ApiResponse({
     status: 200,
     description: 'The non-fungible and semi-fungible tokens of a given account',
@@ -275,9 +276,10 @@ export class AccountController {
 		@Query('tags') tags: string | undefined,
 		@Query('creator') creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
+		@Query('withTimestamp', new ParseOptionalBoolPipe) withTimestamp: boolean | undefined,
   ): Promise<NftAccount[]> {
     try {
-      return await this.tokenService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, tags, creator, hasUris });
+      return await this.tokenService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, tags, creator, hasUris }, withTimestamp ?? false);
     } catch (error) {
       this.logger.error(error);
       return [];

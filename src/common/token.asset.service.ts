@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import simpleGit, {SimpleGit, SimpleGitOptions} from 'simple-git';
 import { TokenAssets } from "src/endpoints/tokens/entities/token.assets";
+import { Constants } from "src/utils/constants";
 import { FileUtils } from "src/utils/file.utils";
 import { ApiConfigService } from "./api.config.service";
 import { CachingService } from "./caching.service";
@@ -81,7 +82,7 @@ export class TokenAssetService {
     // read all folders from dist/repos/assets/tokens (token identifiers)
     let tokensPath = this.getTokensPath();
     if (!fs.existsSync(tokensPath)) {
-      return await this.cachingService.setCacheLocal('tokenAssets', {});
+      return await this.cachingService.setCacheLocal('tokenAssets', {}, Constants.oneDay());
     }
     
     let tokenIdentifiers = FileUtils.getDirectories(tokensPath);
@@ -94,7 +95,7 @@ export class TokenAssetService {
     }
 
     // create a dictionary with the being the token identifier and the value the TokenAssets entity and store it in the cache
-    return await this.cachingService.setCacheLocal('tokenAssets', assets);
+    return await this.cachingService.setCacheLocal('tokenAssets', assets, Constants.oneDay());
   }
 
   private async getOrReadAssets() {
