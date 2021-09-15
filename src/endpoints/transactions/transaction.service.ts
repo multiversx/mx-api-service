@@ -172,13 +172,18 @@ export class TransactionService {
     }
 
     if (transaction !== null) {
-      const [price, scamInfo] = await Promise.all([
-        this.getTransactionPrice(transaction),
-        this.getScamInfo(transaction),
-      ]);
+      try {
+        const [price, scamInfo] = await Promise.all([
+          this.getTransactionPrice(transaction),
+          this.getScamInfo(transaction),
+        ]);
 
-      transaction.price = price;
-      transaction.scamInfo = scamInfo;
+        transaction.price = price;
+        transaction.scamInfo = scamInfo;
+      } catch(error) {
+        this.logger.error(`Error when fetching transaction price for transaction with hash '${txHash}'`);
+        this.logger.error(error);
+      }
     }
 
     return transaction;
