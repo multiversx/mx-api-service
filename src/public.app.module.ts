@@ -107,7 +107,7 @@ import { NftExtendedAttributesService } from './common/nft.extendedattributes.se
   exports: [
     ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService,
     TokenService, ShardService, IdentitiesService, ProviderService, KeybaseService, DataApiService, ApiService,
-    BlsService
+    BlsService, NetworkService, AccountService,
   ]
 })
 export class PublicAppModule { }
