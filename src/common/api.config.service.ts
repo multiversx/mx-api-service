@@ -138,7 +138,11 @@ export class ApiConfigService {
   }
 
   getDataUrl(): string | undefined {
-    return this.configService.get<string>('urls.dataUrl');
+    let dataUrl = this.configService.get<string>('urls.dataUrl');
+    if (!dataUrl) {
+      throw new Error('No data url present');
+    }
+    return dataUrl;
   }
 
   getIsTransactionProcessorCronActive(): boolean {
