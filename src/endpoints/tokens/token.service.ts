@@ -26,6 +26,7 @@ import { TokenFilter } from "./entities/token.filter";
 import { TokenUtils } from "src/utils/tokens.utils";
 import { NftThumbnailService } from "src/common/nft.thumbnail.service";
 import { NftExtendedAttributesService } from "src/common/nft.extendedattributes.service";
+import { MetricsService } from "../metrics/metrics.service";
 
 @Injectable()
 export class TokenService {
@@ -41,6 +42,7 @@ export class TokenService {
     private readonly tokenAssetService: TokenAssetService,
     private readonly nftThumbnailService: NftThumbnailService,
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
+    private readonly metricsService: MetricsService,
   ) {
     this.logger = new Logger(TokenService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getMediaUrl() + '/nfts/asset';
@@ -347,6 +349,52 @@ export class TokenService {
 
     return foundToken;
   }
+  
+  private async getAllEsdtsRaw(address: string): Promise<{ [ key: string]: any }> {
+    try {
+      let esdtResult = await this.gatewayService.get(`address/${address}/esdt`);
+      return esdtResult.esdts;
+    } catch (error) {
+      let errorMessage = error?.response?.data?.error;
+      if (errorMessage && errorMessage.includes('account was not found')) {
+        return {};
+      }
+      
+      throw error;
+    }
+  }
+
+  private pendingRequestsDictionary: { [ key: string]: any; } = {};
+  
+  async getAllEsdts(address: string): Promise<{ [ key: string]: any }> {
+    let pendingRequest = this.pendingRequestsDictionary[address];
+    if (pendingRequest) {
+      let result = await pendingRequest;
+      this.metricsService.incrementPendingApiHit('Gateway.AccountEsdts');
+      return result;
+    }
+
+    let cachedValue = await this.cachingService.getCacheLocal<{ [ key: string]: any }>(`address:${address}:esdts`);
+    if (cachedValue) {
+      this.metricsService.incrementCachedApiHit('Gateway.AccountEsdts');
+      return cachedValue;
+    }
+
+    pendingRequest = this.getAllEsdtsRaw(address);
+    this.pendingRequestsDictionary[address] = pendingRequest;
+
+    let esdts: { [ key: string]: any };
+    try {
+      esdts = await pendingRequest;
+    } finally {
+      delete this.pendingRequestsDictionary[address];
+    }
+
+    let ttl = await this.cachingService.getSecondsRemainingUntilNextRound();
+
+    await this.cachingService.setCacheLocal(`address:${address}:esdts`, esdts, ttl);
+    return esdts;
+  }
 
   async getAllTokensForAddress(address: string): Promise<TokenWithBalance[]> {
     let tokens = await this.getAllTokens();
@@ -356,26 +404,16 @@ export class TokenService {
       tokensIndexed[token.identifier] = token;
     }
 
-    let esdtResult: any;
-    try {
-      esdtResult = await this.gatewayService.get(`address/${address}/esdt`);
-    } catch (error) {
-      let errorMessage = error?.response?.data?.error;
-      if (errorMessage && errorMessage.includes('account was not found')) {
-        return [];
-      }
-      
-      throw error;
-    }
+    let esdts = await this.getAllEsdts(address);
 
     let tokensWithBalance: TokenWithBalance[] = [];
 
-    for (let tokenIdentifier of Object.keys(esdtResult.esdts)) {
+    for (let tokenIdentifier of Object.keys(esdts)) {
       if (!TokenUtils.isEsdt(tokenIdentifier)) {
         continue;
       }
 
-      let esdt = esdtResult.esdts[tokenIdentifier];
+      let esdt = esdts[tokenIdentifier];
       let token = tokensIndexed[tokenIdentifier];
       if (!token) {
         this.logger.log(`Could not find token with identifier ${tokenIdentifier}`);
@@ -429,19 +467,9 @@ export class TokenService {
   }
 
   async getNftsForAddressInternal(address: string, filter: NftFilter): Promise<NftAccount[]> {
-    let gatewayNftResult: any;
-    try {
-      gatewayNftResult = await this.gatewayService.get(`address/${address}/esdt`);
-    } catch (error) {
-      let errorMessage = error?.response?.data?.error;
-      if (errorMessage && errorMessage.includes('account was not found')) {
-        return [];
-      }
+    let esdts = await this.getAllEsdts(address);
 
-      throw error;
-    }
-
-    let gatewayNfts = Object.values(gatewayNftResult['esdts']).map(x => x as any);
+    let gatewayNfts = Object.values(esdts).map(x => x as any);
 
     let nfts: NftAccount[] = [];
 
