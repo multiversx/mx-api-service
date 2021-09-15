@@ -120,7 +120,12 @@ export class TransactionService {
     }
 
     if (transaction !== null) {
-      transaction.price = await this.getTransactionPrice(transaction);
+      try {
+        transaction.price = await this.getTransactionPrice(transaction);
+      } catch (error) {
+        this.logger.error(`Error when fetching transaction price for transaction with hash '${txHash}'`);
+        this.logger.error(error);
+      }
     }
     
     return transaction;
