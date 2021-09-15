@@ -22,8 +22,16 @@ import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
 import { TransactionFilter } from './entities/transaction.filter';
 import { TransactionLog } from './entities/transaction.log';
+import { TransactionLogEvent } from './entities/transaction.log.event';
+import { TransactionLogEventIdentifier } from './entities/transaction.log.event.identifier';
+import { TransactionOperation } from './entities/transaction.operation';
 import { TransactionReceipt } from './entities/transaction.receipt';
 import { TransactionSendResult } from './entities/transaction.send.result';
+import { TransactionOperationType } from './entities/transaction.operation.type';
+import { TransactionOperationAction } from './entities/transaction.operation.action';
+import { QueryOperator } from 'src/common/entities/elastic/query.operator';
+import { TransactionScamCheckService } from './scam-check/transaction-scam-check.service';
+import { TransactionScamInfo } from './entities/transaction-scam-info';
 
 @Injectable()
 export class TransactionService {
@@ -31,10 +39,11 @@ export class TransactionService {
 
   constructor(
     private readonly elasticService: ElasticService,
-    private readonly cachingService: CachingService, 
+    private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
     private readonly dataApiService: DataApiService,
+    private readonly transactionScamCheckService: TransactionScamCheckService,
   ) {
     this.logger = new Logger(TransactionService.name);
   }
@@ -42,13 +51,16 @@ export class TransactionService {
   private buildTransactionFilterQuery(filter: TransactionFilter): AbstractQuery[] {
 
     const queries: AbstractQuery[] = [];
-
     if (filter.sender) {
       queries.push(QueryType.Match('sender', filter.sender));
     }
 
     if (filter.receiver) {
       queries.push(QueryType.Match('receiver', filter.receiver));
+    }
+
+    if (filter.token) {
+      queries.push(QueryType.Match('tokens', filter.token, QueryOperator.AND));
     }
 
     if (filter.senderShard !== undefined) {
@@ -77,10 +89,10 @@ export class TransactionService {
   async getTransactionCount(filter: TransactionFilter): Promise<number> {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
     elasticQueryAdapter.condition[filter.condition ?? QueryConditionOptions.must] = this.buildTransactionFilterQuery(filter);
-    
+
     if (filter.before || filter.after) {
       elasticQueryAdapter.filter = [
-        QueryType.Range('timestamp', { before: filter.before, after: filter.after }),
+        QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0),
       ]
     }
 
@@ -91,8 +103,8 @@ export class TransactionService {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
 
     const { from, size } = filter;
-    const pagination: ElasticPagination = { 
-      from, size 
+    const pagination: ElasticPagination = {
+      from, size
     };
     elasticQueryAdapter.pagination = pagination;
     elasticQueryAdapter.condition[filter.condition ?? QueryConditionOptions.must] = this.buildTransactionFilterQuery(filter);
@@ -103,13 +115,53 @@ export class TransactionService {
 
     if (filter.before || filter.after) {
       elasticQueryAdapter.filter = [
-        QueryType.Range('timestamp', { before: filter.before, after: filter.after }),
+        QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0),
       ]
     }
-    
-    let transactions = await this.elasticService.getList('transactions', 'txHash', elasticQueryAdapter);
 
-    return transactions.map(transaction => ApiUtils.mergeObjects(new Transaction(), transaction));
+    let elasticTransactions = await this.elasticService.getList('transactions', 'txHash', elasticQueryAdapter);
+
+    let transactions: Transaction[] = [];
+
+    for (let elasticTransaction of elasticTransactions) {
+      let transaction = ApiUtils.mergeObjects(new Transaction(), elasticTransaction);
+
+      let tokenTransfer = this.getTokenTransfer(elasticTransaction);
+      if (tokenTransfer) {
+        transaction.tokenValue = tokenTransfer.tokenAmount;
+        transaction.tokenIdentifier = tokenTransfer.tokenIdentifier;
+      }
+
+      transactions.push(transaction);
+    }
+
+    return transactions;
+  }
+
+  private getTokenTransfer(elasticTransaction: any): { tokenIdentifier: string, tokenAmount: string } | undefined {
+    if (!elasticTransaction.data) {
+      return undefined;
+    }
+
+    let tokens = elasticTransaction.tokens;
+    if (!tokens || tokens.length === 0) {
+      return undefined;
+    }
+
+    let esdtValues = elasticTransaction.esdtValues;
+    if (!esdtValues || esdtValues.length === 0) {
+      return undefined;
+    }
+
+    let decodedData = BinaryUtils.base64Decode(elasticTransaction.data);
+    if (!decodedData.startsWith('ESDTTransfer@')) {
+      return undefined;
+    }
+
+    let token = tokens[0];
+    let esdtValue = esdtValues[0];
+
+    return { tokenIdentifier: token, tokenAmount: esdtValue };
   }
 
   async getTransaction(txHash: string): Promise<TransactionDetailed | null> {
@@ -120,19 +172,21 @@ export class TransactionService {
     }
 
     if (transaction !== null) {
-      transaction.price = await this.getTransactionPrice(transaction);
+      const [price, scamInfo] = await Promise.all([
+        this.getTransactionPrice(transaction),
+        this.getScamInfo(transaction),
+      ]);
+
+      transaction.price = price;
+      transaction.scamInfo = scamInfo;
     }
-    
+
     return transaction;
   }
 
   private async getTransactionPrice(transaction: TransactionDetailed): Promise<number | undefined> {
     let dataUrl = this.apiConfigService.getDataUrl();
     if (!dataUrl) {
-      return undefined;
-    }
-
-    if (transaction === null) {
       return undefined;
     }
 
@@ -173,6 +227,20 @@ export class TransactionService {
     );
   }
 
+  private async tryGetTransactionFromElasticBySenderAndNonce(sender: string, nonce: number): Promise<TransactionDetailed | undefined> {
+    const query: ElasticQuery = new ElasticQuery();
+    query.pagination = { from: 0, size: 1 };
+
+    query.condition.must = [
+      QueryType.Match('sender', sender),
+      QueryType.Match('nonce', nonce)
+    ];
+
+    let transactions = await this.elasticService.getList('transactions', 'txHash', query);
+
+    return transactions.firstOrUndefined();
+  }
+
   async tryGetTransactionFromElastic(txHash: string): Promise<TransactionDetailed | null> {
     try {
       const result = await this.elasticService.getItem('transactions', 'txHash', txHash);
@@ -182,6 +250,11 @@ export class TransactionService {
       }
 
       let transactionDetailed: TransactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), result);
+      let tokenTransfer = this.getTokenTransfer(result);
+      if (tokenTransfer) {
+        transactionDetailed.tokenValue = tokenTransfer.tokenAmount;
+        transactionDetailed.tokenIdentifier = tokenTransfer.tokenIdentifier;
+      }
 
       const hashes: string[] = [];
       hashes.push(txHash);
@@ -210,7 +283,7 @@ export class TransactionService {
 
         const elasticQueryAdapterReceipts: ElasticQuery = new ElasticQuery();
         elasticQueryAdapterReceipts.pagination = { from: 0, size: 1 };
-        
+
         const receiptHashQuery = QueryType.Match('receiptHash', txHash);
         elasticQueryAdapterReceipts.condition.must = [receiptHashQuery];
 
@@ -222,15 +295,18 @@ export class TransactionService {
 
         const elasticQueryAdapterLogs: ElasticQuery = new ElasticQuery();
         elasticQueryAdapterLogs.pagination = { from: 0, size: 100 };
-  
+
         let queries = [];
         for (let hash of hashes) {
           queries.push(QueryType.Match('_id', hash));
         }
         elasticQueryAdapterLogs.condition.should = queries;
-  
+
         let logs: any[] = await this.elasticService.getLogsForTransactionHashes(elasticQueryAdapterLogs);
-  
+        let transactionLogs = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
+
+        transactionDetailed.operations = this.getOperationsForTransactionLogs(txHash, transactionLogs);
+
         for (let log of logs) {
           if (log._id === txHash) {
             transactionDetailed.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
@@ -251,9 +327,82 @@ export class TransactionService {
     }
   }
 
+  getOperationsForTransactionLogs(txHash: string, logs: TransactionLog[]): TransactionOperation[] {
+    let operations: (TransactionOperation | undefined)[] = [];
+
+    for (let log of logs) {
+      for (let event of log.events) {
+        switch (event.identifier) {
+          case TransactionLogEventIdentifier.ESDTNFTTransfer:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.transfer));
+            break;
+          case TransactionLogEventIdentifier.ESDTNFTBurn:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.burn));
+            break;
+          case TransactionLogEventIdentifier.ESDTNFTAddQuantity:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.addQuantity));
+            break;
+          case TransactionLogEventIdentifier.ESDTNFTCreate:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.create));
+            break;
+          case TransactionLogEventIdentifier.MultiESDTNFTTransfer:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.multiTransfer));
+            break;
+          case TransactionLogEventIdentifier.ESDTTransfer:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.transfer));
+            break;
+          case TransactionLogEventIdentifier.ESDTBurn:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.burn));
+            break;
+          case TransactionLogEventIdentifier.ESDTLocalMint:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.localMint));
+            break;
+          case TransactionLogEventIdentifier.ESDTLocalBurn:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.localBurn));
+            break;
+          case TransactionLogEventIdentifier.ESDTWipe:
+            operations.push(this.getTransactionNftOperation(txHash, log, event, TransactionOperationAction.wipe));
+            break;
+        }
+      }
+    }
+
+    return operations.filter(operation => operation !== undefined).map(operation => operation!);
+  }
+
+  private getTransactionNftOperation(txHash: string, log: TransactionLog, event: TransactionLogEvent, action: TransactionOperationAction): TransactionOperation | undefined {
+    try {
+      let identifier = BinaryUtils.base64Decode(event.topics[0]);
+      let nonce = BinaryUtils.tryBase64ToHex(event.topics[1]);
+      let value = BinaryUtils.tryBase64ToBigInt(event.topics[2])?.toString() ?? '0';
+      let receiver = BinaryUtils.tryBase64ToAddress(event.topics[3]) ?? log.address;
+
+      let collection: string | undefined = undefined;
+      if (nonce) {
+        collection = identifier;
+        identifier = `${collection}-${nonce}`
+      }
+
+      let type = nonce ? TransactionOperationType.nft : TransactionOperationType.esdt;
+
+      return { action, type, collection, identifier, sender: event.address, receiver, value };
+    } catch (error) {
+      this.logger.error(`Error when parsing NFT transaction log for tx hash '${txHash}' with action '${action}' and topics: ${event.topics}`);
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
   async tryGetTransactionFromGateway(txHash: string): Promise<TransactionDetailed | null> {
     try {
       const { transaction } = await this.gatewayService.get(`transaction/${txHash}?withResults=true`);
+
+      if (transaction.status === 'pending') {
+        let existingTransaction = await this.tryGetTransactionFromElasticBySenderAndNonce(transaction.sender, transaction.nonce);
+        if (existingTransaction && existingTransaction.txHash !== txHash) {
+          return null;
+        }
+      }
 
       if (transaction.receipt) {
         transaction.receipt.value = transaction.receipt.value.toString();
@@ -269,7 +418,7 @@ export class TransactionService {
           }
         }
       }
-      
+
       let result = {
         txHash: txHash,
         data: transaction.data,
@@ -322,5 +471,14 @@ export class TransactionService {
       senderShard,
       status: 'Pending',
     };
+  }
+
+  private async getScamInfo(transaction: TransactionDetailed): Promise<TransactionScamInfo | undefined> {
+    let extrasApiUrl = this.apiConfigService.getExtrasApiUrl();
+    if (!extrasApiUrl) {
+      return undefined;
+    }
+
+    return await this.transactionScamCheckService.getScamInfo(transaction);
   }
 }

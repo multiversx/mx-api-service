@@ -18,13 +18,17 @@
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "npm run copy-mainnet-config & nest build & jest",
     "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
+    "test:cov": "jest --coverage --forceExit --detectOpenHandles",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "npm run copy-mainnet-config & nest build & jest --config ./src/test/jest-e2e.json --forceExit --detectOpenHandles --runInBand",
-    "test:e2e:warm": "npm run copy-mainnet-config & nest build & jest --config ./src/test/jest-e2e-warm.json --forceExit --detectOpenHandles --runInBand",
+    "test:e2e": "npm run copy-e2e-mainnet-config & nest build & jest --config ./src/test/jest-e2e.json --forceExit --detectOpenHandles --runInBand",
+    "test:e2e:mocked": "npm run copy-e2e-mocked-mainnet-config & nest build & jest --config ./src/test/jest-e2e.json --forceExit --detectOpenHandles --runInBand",
+    "test:e2e:warm": "npm run copy-e2e-mainnet-config & nest build & jest --config ./src/test/jest-e2e-warm.json --forceExit --detectOpenHandles --runInBand",
+    "test:e2e:cov": "jest --config ./src/test/jest-e2e.json --coverage --forceExit --detectOpenHandles",
     "copy-devnet-config": "cp ./config/config.devnet.yaml ./config/config.yaml",
     "copy-testnet-config": "cp ./config/config.testnet.yaml ./config/config.yaml",
     "copy-mainnet-config": "cp ./config/config.mainnet.yaml ./config/config.yaml",
+    "copy-e2e-mainnet-config": "cp ./config/config.e2e.mainnet.yaml ./config/config.yaml",
+    "copy-e2e-mocked-mainnet-config": "cp ./config/config.e2e-mocked.mainnet.yaml ./config/config.yaml",
     "copy-custom-config": "cp ./config/config.custom.yaml ./config/config.yaml"
   },
   "dependencies": {
@@ -46,6 +50,7 @@
     "cache-manager": "^3.4.4",
     "csrf": "^3.1.0",
     "js-yaml": "^4.1.0",
+    "jsonwebtoken": "^8.5.1",
     "nest-winston": "^1.5.0",
     "node-object-hash": "^2.3.8",
     "prom-client": "^13.2.0",
@@ -71,6 +76,7 @@
     "@types/express": "^4.17.13",
     "@types/jest": "^27.0.1",
     "@types/js-yaml": "^4.0.2",
+    "@types/jsonwebtoken": "^8.5.5",
     "@types/node": "^16.6.1",
     "@types/redis": "^2.8.31",
     "@types/socket.io": "^3.0.1",
@@ -101,9 +107,9 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "./src/**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
+    "coverageDirectory": "./coverage/unit",
     "testEnvironment": "node",
     "roots": [
       "<rootDir>"
@@ -113,10 +119,6 @@
     ],
     "moduleDirectories": [
       "node_modules"
-    ],
-    "typeRoots": [
-      "../node_modules/@types",
-      "./test/typings"
     ]
   }
 }

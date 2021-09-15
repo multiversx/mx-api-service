@@ -14,6 +14,21 @@ export class VmQueryService {
     this.logger = new Logger(VmQueryService.name);
   }
 
+  private async computeTtls(contract: string, func: string): Promise<{localTtl: number, remoteTtl: number}> {
+    let isCachingQueryFunction = await this.cachingService.isCachingQueryFunction(contract, func);
+    let secondsRemainingUntilNextRound = await this.cachingService.getSecondsRemainingUntilNextRound();
+
+    let localTtl = isCachingQueryFunction ? Constants.oneHour() : secondsRemainingUntilNextRound;
+
+    // no need to store value remotely just to evict it one second later
+    let remoteTtl = localTtl > 1 ? localTtl : 0;
+
+    return {
+      localTtl,
+      remoteTtl,
+    }
+  }
+
   async vmQueryFullResult(contract: string, func: string, caller: string | undefined = undefined, args: string[] = []): Promise<any> {
     let key = `vm-query:${contract}:${func}`;
     if (caller) {
@@ -24,13 +39,7 @@ export class VmQueryService {
       key += `@${args.join('@')}`;
     }
 
-    let isCachingQueryFunction = await this.cachingService.isCachingQueryFunction(contract, func);
-    let secondsRemainingUntilNextRound = await this.cachingService.getSecondsRemainingUntilNextRound();
-
-    let localTtl = isCachingQueryFunction ? Constants.oneHour() : secondsRemainingUntilNextRound;
-
-    // no need to store value remotely just to evict it one second later
-    let remoteTtl = localTtl > 1 ? localTtl : 0;
+    const { localTtl, remoteTtl } = await this.computeTtls(contract, func);
 
     return await this.cachingService.getOrSetCache(
       key,
@@ -55,14 +64,9 @@ export class VmQueryService {
       if (skipCache) {
         result = await this.vmQueryRaw(contract, func, caller, args);
       } else {
-        let isCachingQueryFunction = await this.cachingService.isCachingQueryFunction(contract, func);
-        let secondsRemainingUntilNextRound = await this.cachingService.getSecondsRemainingUntilNextRound();
-    
-        let localTtl = isCachingQueryFunction ? Constants.oneHour() : secondsRemainingUntilNextRound;
-    
-        // no need to store value remotely just to evict it one second later
-        let remoteTtl = localTtl > 1 ? localTtl : 0;
-
+        
+        const { localTtl, remoteTtl } = await this.computeTtls(contract, func);
+        
         result = await this.cachingService.getOrSetCache(
           key,
           async () => await this.vmQueryRaw(contract, func, caller, args),
