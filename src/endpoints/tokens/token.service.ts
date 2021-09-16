@@ -304,10 +304,15 @@ export class TokenService {
     return tokens.length;
   }
 
-  async getTokensForAddress(address: string, queryPagination: QueryPagination): Promise<TokenWithBalance[]> {
+  async getTokensForAddress(address: string, queryPagination: QueryPagination, identifiers?: string): Promise<TokenWithBalance[]> {
     const { from, size } = queryPagination;
     
     let tokens = await this.getAllTokensForAddress(address);
+
+    if (identifiers) {
+      const identifierArray = identifiers.split(',');
+      tokens = tokens.filter(token => identifierArray.includes(token.identifier));
+    }
 
     tokens = tokens.slice(from, from + size);
 
@@ -530,6 +535,11 @@ export class TokenService {
 
     if (filter.collection) {
       nfts = nfts.filter(x => x.collection === filter.collection);
+    }
+
+    if (filter.collections) {
+      const collectionArray = filter.collections.split(',');
+      nfts = nfts.filter(x => collectionArray.includes(x.collection));
     }
 
     if (filter.tags) {
