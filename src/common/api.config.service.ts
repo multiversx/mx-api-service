@@ -128,6 +128,14 @@ export class ApiConfigService {
     return this.configService.get<number>('keepAliveTimeout.upstream') ?? 60000;
   }
 
+  getUseRequestCachingFlag(): boolean {
+    return this.configService.get<boolean>('flags.useRequestCaching') ?? true;
+  }
+
+  getUseKeepAliveAgentFlag(): boolean {
+    return this.configService.get<boolean>('flags.useKeepAliveAgent') ?? true;
+  }
+
   getProvidersUrl(): string {
     let providerUrl = this.configService.get<string>('urls.providers');
     if (!providerUrl) {

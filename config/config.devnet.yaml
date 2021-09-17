@@ -7,6 +7,9 @@ cron:
   transactionProcessor: true
   transactionProcessorMaxLookBehind: 100
   cacheWarmer: true
+flags:
+  useRequestCaching: true
+  useKeepAliveAgent: true
 urls:
   api:
     - 'https://devnet-api.elrond.com'

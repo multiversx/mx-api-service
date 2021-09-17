@@ -15,7 +15,7 @@ import { MetricsService } from './endpoints/metrics/metrics.service';
 import { CacheWarmerModule } from './cache.warmer.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { PubSubModule } from './pub.sub.module';
-import { Logger } from '@nestjs/common';
+import { Logger, NestInterceptor } from '@nestjs/common';
 import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -40,13 +40,18 @@ async function bootstrap() {
 
   await tokenAssetService.checkout();
 
-  publicApp.useGlobalInterceptors(
-    new LoggingInterceptor(metricsService), 
-    new CachingInterceptor(cachingService, httpAdapterHostService, metricsService),
-    new FieldsInterceptor(),
-    new ExtractInterceptor(),
-    new CleanupInterceptor()
-  );
+  let globalInterceptors: NestInterceptor[] = [];
+  globalInterceptors.push(new LoggingInterceptor(metricsService));
+
+  if (apiConfigService.getUseRequestCachingFlag()) {
+    globalInterceptors.push(new CachingInterceptor(cachingService, httpAdapterHostService, metricsService));
+  }
+  
+  globalInterceptors.push(new FieldsInterceptor());
+  globalInterceptors.push(new ExtractInterceptor());
+  globalInterceptors.push(new CleanupInterceptor());
+
+  publicApp.useGlobalInterceptors(...globalInterceptors);
   const description = readFileSync(join(__dirname, '..', 'docs', 'swagger.md'), 'utf8');
 
   let documentBuilder = new DocumentBuilder()

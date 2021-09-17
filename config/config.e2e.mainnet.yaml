@@ -8,6 +8,9 @@ cron:
   transactionProcessor: true
   transactionProcessorMaxLookBehind: 1000
   cacheWarmer: true
+flags:
+  useRequestCaching: true
+  useKeepAliveAgent: true
 urls:
   api:
     - 'https://api.elrond.com'
