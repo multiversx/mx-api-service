@@ -36,6 +36,10 @@ async function bootstrap() {
   let metricsService = publicApp.get<MetricsService>(MetricsService);
   let tokenAssetService = publicApp.get<TokenAssetService>(TokenAssetService);
 
+  if (apiConfigService.getUseTracingFlag()) {
+    require('dd-trace').init();
+  }
+  
   httpAdapterHostService.httpAdapter.getHttpServer().keepAliveTimeout = apiConfigService.getServerTimeout();
 
   await tokenAssetService.checkout();

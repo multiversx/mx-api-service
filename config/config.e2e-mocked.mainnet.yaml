@@ -11,6 +11,7 @@ cron:
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true
+  useTracing: false
 urls:
   api:
     - 'https://api.elrond.com'

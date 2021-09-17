@@ -136,6 +136,10 @@ export class ApiConfigService {
     return this.configService.get<boolean>('flags.useKeepAliveAgent') ?? true;
   }
 
+  getUseTracingFlag(): boolean {
+    return this.configService.get<boolean>('flags.useTracing') ?? false;
+  }
+
   getProvidersUrl(): string {
     let providerUrl = this.configService.get<string>('urls.providers');
     if (!providerUrl) {
