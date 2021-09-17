@@ -20,6 +20,7 @@ export class ApiService {
     if (this.keepaliveAgent === null) {
       if (this.apiConfigService.getUseKeepAliveAgentFlag()) {
         this.keepaliveAgent = new Agent({
+          keepAlive: true,
           maxSockets: Infinity,
           maxFreeSockets: 10,
           timeout: this.apiConfigService.getAxiosTimeout(), // active socket keepalive
