@@ -40,7 +40,8 @@ async function bootstrap() {
     require('dd-trace').init();
   }
   
-  httpAdapterHostService.httpAdapter.getHttpServer().keepAliveTimeout = apiConfigService.getServerTimeout();
+  const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
+  httpServer.keepalive = true;
 
   await tokenAssetService.checkout();
 
