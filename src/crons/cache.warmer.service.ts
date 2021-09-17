@@ -104,11 +104,11 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('*/10 * * * * *')
+  @Cron('* * * * *')
   async handleHeartbeatStatusInvalidations() {
     await Locker.lock('Heartbeatstatus invalidations', async () => {
       let result = await this.gatewayService.getRaw('node/heartbeatstatus');
-      await this.invalidateKey('heartbeatstatus', result.data, Constants.oneMinute());
+      await this.invalidateKey('heartbeatstatus', result.data, Constants.oneMinute() * 2);
     }, true);
   }
 

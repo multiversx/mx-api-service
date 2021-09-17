@@ -179,7 +179,7 @@ export class ProxyController {
           const result = await this.gatewayService.getRaw('node/heartbeatstatus');
           return result.data;
         },
-        Constants.oneMinute(),
+        Constants.oneMinute() * 2,
       );
       res.json(heartbeat);
     } catch(error) {
