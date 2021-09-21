@@ -159,7 +159,7 @@ export class NetworkService {
       transactions,
       refreshRate,
       epoch,
-      roundsPassed,
+      roundsPassed: roundsPassed % roundsPerEpoch,
       roundsPerEpoch,
     }
   }
