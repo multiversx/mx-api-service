@@ -14,6 +14,7 @@ import { ClientProxy } from "@nestjs/microservices";
 import { ApiConfigService } from "src/common/api.config.service";
 import { NetworkService } from "src/endpoints/network/network.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
+import { GatewayService } from "src/common/gateway.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -30,6 +31,7 @@ export class CacheWarmerService {
     private readonly apiConfigService: ApiConfigService,
     private readonly networkService: NetworkService,
     private readonly accountService: AccountService,
+    private readonly gatewayService: GatewayService,
   ) { }
 
   @Cron('* * * * *')
@@ -101,6 +103,14 @@ export class CacheWarmerService {
     await Locker.lock('Accounts invalidations', async () => {
       let accounts = await this.accountService.getAccountsRaw({ from: 0, size: 25 });
       await this.invalidateKey('accounts:0:25', accounts, Constants.oneMinute() * 2);
+    }, true);
+  }
+
+  @Cron('* * * * *')
+  async handleHeartbeatStatusInvalidations() {
+    await Locker.lock('Heartbeatstatus invalidations', async () => {
+      let result = await this.gatewayService.getRaw('node/heartbeatstatus');
+      await this.invalidateKey('heartbeatstatus', result.data, Constants.oneMinute() * 2);
     }, true);
   }
 
