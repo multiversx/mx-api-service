@@ -4,4 +4,6 @@ export class TokenFilter {
   name?: string;
 
   identifier?: string;
+  
+  identifiers?: string;
 }
