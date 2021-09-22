@@ -11,6 +11,7 @@ import { QueryOperator } from "./entities/elastic/query.operator";
 import { QueryType } from "./entities/elastic/query.type";
 import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
+import { ElasticPagination } from "./entities/elastic/elastic.pagination";
 
 @Injectable()
 export class ElasticService {
@@ -120,6 +121,11 @@ export class ElasticService {
   async getAccountEsdtByIdentifiers(identifiers: string[]) {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
     elasticQueryAdapter.condition.should = identifiers.map((identifier) => QueryType.Match('identifier', identifier, QueryOperator.AND));
+    
+    let pagination = new ElasticPagination();
+    pagination.size = 10000;
+    elasticQueryAdapter.pagination = pagination;
+
 
     const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 

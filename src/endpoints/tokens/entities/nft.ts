@@ -47,4 +47,7 @@ export class Nft {
 
   @ApiProperty()
   owner?: string;
+
+  @ApiProperty()
+  balance?: string;
 }
