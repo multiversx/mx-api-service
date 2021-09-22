@@ -229,6 +229,7 @@ export class IdentitiesService {
   }
 
   private processIdentityAvatar(avatar: string): string {
-    return avatar.replace('https://s3.amazonaws.com/keybase_processed_uploads', `${this.apiConfigService.getExternalMediaUrl()}/providers/asset`);
+    // return avatar.replace('https://s3.amazonaws.com/keybase_processed_uploads', `${this.apiConfigService.getExternalMediaUrl()}/providers/asset`);
+    return avatar;
   }
 }
