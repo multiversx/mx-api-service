@@ -61,7 +61,7 @@ export class TokenAssetService {
   }
 
   private getImageUrl(tokenIdentifier: string, name: string) {
-    return `${this.apiConfigService.getMediaUrl()}/tokens/asset/${tokenIdentifier}/${name}`;
+    return `${this.apiConfigService.getExternalMediaUrl()}/tokens/asset/${tokenIdentifier}/${name}`;
   }
 
   private getTokensPath() {

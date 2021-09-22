@@ -226,6 +226,15 @@ export class ApiConfigService {
     return mediaUrl;
   }
 
+  getExternalMediaUrl(): string {
+    let mediaUrl = this.getMediaUrl();
+    if (mediaUrl.endsWith('.')) {
+      return mediaUrl.substring(0, mediaUrl.length - 1);
+    }
+
+    return mediaUrl;
+  }
+
   getNftThumbnailsUrl(): string {
     let nftThumbnailsUrl = this.configService.get<string>('urls.nftThumbnails');
     if (!nftThumbnailsUrl) {

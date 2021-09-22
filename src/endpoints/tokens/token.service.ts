@@ -43,7 +43,7 @@ export class TokenService {
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
   ) {
     this.logger = new Logger(TokenService.name);
-    this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getMediaUrl() + '/nfts/asset';
+    this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
   }
 
   async getToken(identifier: string): Promise<TokenDetailed | undefined> {
