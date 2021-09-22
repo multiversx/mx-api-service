@@ -173,7 +173,7 @@ export class TokenService {
   }
 
   async getNfts(queryPagination: QueryPagination, filter: NftFilter, withOwner: boolean = false): Promise<Nft[] | NftDetailed[]> {
-    const  { from, size } = queryPagination;
+    const { from, size } = queryPagination;
 
     let nfts =  await this.getNftsInternal(from, size, filter, undefined);
 
@@ -186,6 +186,11 @@ export class TokenService {
           if (accountEsdt) {
             nft.owner = accountEsdt.address;
           }
+        } else if (nft.type === NftType.SemiFungibleESDT) {
+          nft.balance = accountsEsdts.filter((x: any) => x.identifier === nft.identifier)
+            .map((x: any) => BigInt(x.balance))
+            .reduce((previous: BigInt, current: BigInt) => previous.valueOf() + current.valueOf())
+            .toString();
         }
       }
     }
