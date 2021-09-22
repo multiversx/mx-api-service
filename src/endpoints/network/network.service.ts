@@ -124,9 +124,7 @@ export class NetworkService {
       totalWaitingStakeHex ? '0x' + totalWaitingStakeHex : totalWaitingStakeHex,
     );
 
-    const staked = parseInt(
-      (BigInt(balance) + totalWaitingStake).toString().slice(0, -18),
-    );
+    const staked = parseInt((BigInt(balance) + totalWaitingStake).toString().slice(0, -18));
     const totalSupply = parseInt(erd_total_supply.slice(0, -18));
 
     const circulatingSupply = totalSupply - locked;
@@ -182,7 +180,7 @@ export class NetworkService {
       transactions,
       refreshRate,
       epoch,
-      roundsPassed,
+      roundsPassed: roundsPassed % roundsPerEpoch,
       roundsPerEpoch,
     };
   }
