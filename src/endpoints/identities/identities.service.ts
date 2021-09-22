@@ -1,5 +1,4 @@
 import { Injectable } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api.config.service";
 import { CachingService } from "src/common/caching.service";
 import { KeybaseIdentity } from "src/common/entities/keybase.identity";
 import { KeybaseService } from "src/common/keybase.service";
@@ -17,7 +16,6 @@ export class IdentitiesService {
      private readonly nodeService: NodeService,
      private readonly keybaseService: KeybaseService,
      private readonly cachingService: CachingService,
-     private readonly apiConfigService: ApiConfigService,
   ) {}
 
   async getIdentity(identifier: string): Promise<Identity | undefined> {
