@@ -179,7 +179,7 @@ export class TokenService {
 
     if (withOwner) {
       let accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nfts.map(({identifier}) => identifier));
-      
+
       for (let nft of nfts) {
         if (nft.type === NftType.NonFungibleESDT) {
           const accountEsdt = accountsEsdts.find((accountEsdt: any) => accountEsdt.identifier == nft.identifier);
@@ -293,11 +293,10 @@ export class TokenService {
     await this.nftThumbnailService.updateThumbnailUrlForNfts(nfts);
 
     for (let nft of nfts) {
-      if (nft.type === NftType.SemiFungibleESDT) {
-        let gatewayNft = await this.getNft(nft.collection);
-        if (gatewayNft) {
-          nft.name = gatewayNft.name;
-        }
+      let gatewayNft = await this.getNft(nft.collection);
+      if (gatewayNft) {
+        nft.name = gatewayNft.name;
+        nft.type = gatewayNft.type;
       }
     }
 
