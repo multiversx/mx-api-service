@@ -26,14 +26,16 @@ export class TokenController {
 	@ApiQuery({ name: 'search', description: 'Search by token name / identifier', required: false })
 	@ApiQuery({ name: 'name', description: 'Search by token name', required: false })
 	@ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
+	@ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
   async getTokens(
 		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('search') search: string | undefined,
 		@Query('name') name: string | undefined,
 		@Query('identifier') identifier: string | undefined,
+		@Query('identifiers') identifiers: string | undefined,
   ): Promise<TokenDetailed[]> {
-    return await this.tokenService.getTokens({ from, size }, { search, name, identifier });
+    return await this.tokenService.getTokens({ from, size }, { search, name, identifier, identifiers });
   }
 
   @Get("/tokens/count")
@@ -44,12 +46,14 @@ export class TokenController {
   @ApiQuery({ name: 'search', description: 'Filter tokens by token name', required: false })
 	@ApiQuery({ name: 'name', description: 'Search by token name', required: false })
 	@ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
+	@ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
   async getTokenCount(
     @Query('search') search: string | undefined,
 		@Query('name') name: string | undefined,
 		@Query('identifier') identifier: string | undefined,
-  ): Promise<number> {
-    return await this.tokenService.getTokenCount({ search, name, identifier });
+		@Query('identifiers') identifiers: string | undefined,
+    ): Promise<number> {
+    return await this.tokenService.getTokenCount({ search, name, identifier, identifiers });
   }
 
   @Get("/tokens/c")
@@ -58,8 +62,9 @@ export class TokenController {
     @Query('search') search: string | undefined,
 		@Query('name') name: string | undefined,
 		@Query('identifier') identifier: string | undefined,
-  ): Promise<number> {
-    return await this.tokenService.getTokenCount({ search, name, identifier });
+		@Query('identifiers') identifiers: string | undefined,
+    ): Promise<number> {
+    return await this.tokenService.getTokenCount({ search, name, identifier, identifiers });
   }
 
   @Get('/tokens/:identifier')
