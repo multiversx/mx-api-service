@@ -9,15 +9,11 @@ import { CachingService } from "./caching.service";
 
 @Injectable()
 export class NftExtendedAttributesService {
-  private readonly NFT_THUMBNAIL_PREFIX: string;
-
   constructor(
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
     private readonly apiService: ApiService,
-  ) {
-    this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getMediaUrl() + '/nfts/asset';
-  }
+  ) {}
 
   async getExtendedAttributesFromRawAttributes(attributes: string): Promise<NftMetadata | undefined> {
     let metadata = this.getMetadata(attributes);
@@ -38,7 +34,7 @@ export class NftExtendedAttributesService {
 
     if (Object.keys(result).length > 0) {
       if (result.fileUri) {
-        result.fileUri = TokenUtils.computeNftUri(result.fileUri, this.NFT_THUMBNAIL_PREFIX);
+        result.fileUri = TokenUtils.computeNftUri(result.fileUri, this.apiConfigService.getExternalMediaUrl() + '/nfts/asset');
       }
 
       return result;
@@ -49,7 +45,7 @@ export class NftExtendedAttributesService {
 
   private async getExtendedAttributesFromIpfs(metadata: string): Promise<NftMetadata> {
     let ipfsUri = `https://ipfs.io/ipfs/${metadata}`;
-    let processedIpfsUri = TokenUtils.computeNftUri(ipfsUri, this.NFT_THUMBNAIL_PREFIX);
+    let processedIpfsUri = TokenUtils.computeNftUri(ipfsUri, this.apiConfigService.getMediaUrl() + '/nfts/asset');
 
     let result = await this.apiService.get(processedIpfsUri, 5000);
     return result.data;

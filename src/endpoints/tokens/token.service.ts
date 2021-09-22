@@ -45,7 +45,7 @@ export class TokenService {
     private readonly metricsService: MetricsService,
   ) {
     this.logger = new Logger(TokenService.name);
-    this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getMediaUrl() + '/nfts/asset';
+    this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
   }
 
   async getToken(identifier: string): Promise<TokenDetailed | undefined> {
@@ -175,19 +175,24 @@ export class TokenService {
   }
 
   async getNfts(queryPagination: QueryPagination, filter: NftFilter, withOwner: boolean = false): Promise<Nft[] | NftDetailed[]> {
-    const  { from, size } = queryPagination;
+    const { from, size } = queryPagination;
 
     let nfts =  await this.getNftsInternal(from, size, filter, undefined);
 
     if (withOwner) {
       let accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nfts.map(({identifier}) => identifier));
-      
+
       for (let nft of nfts) {
         if (nft.type === NftType.NonFungibleESDT) {
           const accountEsdt = accountsEsdts.find((accountEsdt: any) => accountEsdt.identifier == nft.identifier);
           if (accountEsdt) {
             nft.owner = accountEsdt.address;
           }
+        } else if (nft.type === NftType.SemiFungibleESDT) {
+          nft.balance = accountsEsdts.filter((x: any) => x.identifier === nft.identifier)
+            .map((x: any) => BigInt(x.balance))
+            .reduce((previous: BigInt, current: BigInt) => previous.valueOf() + current.valueOf())
+            .toString();
         }
       }
     }
@@ -290,11 +295,10 @@ export class TokenService {
     await this.nftThumbnailService.updateThumbnailUrlForNfts(nfts);
 
     for (let nft of nfts) {
-      if (nft.type === NftType.SemiFungibleESDT) {
-        let gatewayNft = await this.getNft(nft.collection);
-        if (gatewayNft) {
-          nft.name = gatewayNft.name;
-        }
+      let gatewayNft = await this.getNft(nft.collection);
+      if (gatewayNft) {
+        nft.name = gatewayNft.name;
+        nft.type = gatewayNft.type;
       }
     }
 
