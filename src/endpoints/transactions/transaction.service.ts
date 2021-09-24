@@ -75,6 +75,11 @@ export class TransactionService {
       queries.push(QueryType.Match('miniBlockHash', filter.miniBlockHash));
     }
 
+    if (filter.hashes) {
+      const hashArray = filter.hashes.split(',');
+      queries.push(QueryType.Should(hashArray.map(hash => QueryType.Match('_id', hash))));
+    }
+
     if (filter.status) {
       queries.push(QueryType.Match('status', filter.status));
     }

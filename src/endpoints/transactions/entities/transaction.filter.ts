@@ -9,6 +9,7 @@ export class TransactionFilter extends QueryPagination{
     senderShard: number | undefined
     receiverShard: number | undefined
     miniBlockHash: string | undefined
+    hashes: string | undefined
     status: TransactionStatus | undefined
     search: string | undefined
     condition: QueryConditionOptions | undefined = QueryConditionOptions.must
