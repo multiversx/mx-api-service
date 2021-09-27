@@ -40,18 +40,18 @@ describe('Node Service', () => {
       }
     });
 
-    it('should be in sync with keybase confirmations', async () => {
-      const nodeKeybases:{ [key: string]: KeybaseState } | undefined = await cachingService.getCache('nodeKeybases');
-      expect(nodeKeybases).toBeDefined();
+    // it('should be in sync with keybase confirmations', async () => {
+    //   const nodeKeybases:{ [key: string]: KeybaseState } | undefined = await cachingService.getCache('nodeKeybases');
+    //   expect(nodeKeybases).toBeDefined();
 
-      if(nodeKeybases) {
-        for (let node of nodes) {
-          if (nodeKeybases[node.bls] && nodeKeybases[node.bls].confirmed) {
-            expect(node.identity).toStrictEqual(nodeKeybases[node.bls].identity);
-          }
-        }
-      }
-    });
+    //   if(nodeKeybases) {
+    //     for (let node of nodes) {
+    //       if (nodeKeybases[node.bls] && nodeKeybases[node.bls].confirmed) {
+    //         expect(node.identity).toStrictEqual(nodeKeybases[node.bls].identity);
+    //       }
+    //     }
+    //   }
+    // });
 
     it('should be filtered by bls, name or version', async () => {
       const nodeFilter: NodeFilter = new NodeFilter();
