@@ -70,12 +70,14 @@ describe('Identities Service', () => {
 
     it('all providers identities should appear', async () => {
       for (let provider of providers) {
-        const providerIdentity = identities.find(({ identity }) => identity === provider.identity);
+        if (provider.identity) {
+          const providerIdentity = identities.find(({ identity }) => identity === provider.identity);
 
-        expect(providerIdentity).toBeDefined();
-        expect(providerIdentity).toHaveProperty('locked');
-        expect(providerIdentity).toHaveProperty('name');
-        expect(providerIdentity).toHaveProperty('website');
+          expect(providerIdentity).toBeDefined();
+          expect(providerIdentity).toHaveProperty('locked');
+          expect(providerIdentity).toHaveProperty('name');
+          expect(providerIdentity).toHaveProperty('website');
+        }
       }
     });
   });
