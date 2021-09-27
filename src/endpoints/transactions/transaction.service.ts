@@ -254,6 +254,9 @@ export class TransactionService {
   async tryGetTransactionFromElastic(txHash: string): Promise<TransactionDetailed | null> {
     try {
       const result = await this.elasticService.getItem('transactions', 'txHash', txHash);
+      if (!result) {
+        return null;
+      }
 
       if (result.scResults) {
         result.results = result.scResults;
