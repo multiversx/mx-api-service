@@ -1,6 +1,4 @@
 import { Test } from "@nestjs/testing";
-import { CachingService } from "src/common/caching.service";
-import { KeybaseState } from "src/common/entities/keybase.state";
 import { Node } from "src/endpoints/nodes/entities/node";
 import { NodeFilter } from "src/endpoints/nodes/entities/node.filter";
 import { NodeSort } from "src/endpoints/nodes/entities/node.sort";
@@ -13,7 +11,6 @@ import Initializer from "./e2e-init";
 
 describe('Node Service', () => {
   let nodeService: NodeService;
-  let cachingService: CachingService;
   let nodes: Node[];
   let nodeSentinel: Node;
 
@@ -27,7 +24,6 @@ describe('Node Service', () => {
     }).compile();
 
     nodeService = publicAppModule.get<NodeService>(NodeService);
-    cachingService = publicAppModule.get<CachingService>(CachingService);
     nodes = await nodeService.getAllNodes();
     nodeSentinel = nodes[0];
   });
