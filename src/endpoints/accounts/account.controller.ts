@@ -104,7 +104,8 @@ export class AccountController {
 
   @Get("/accounts/:address/tokens")
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'identifiers', description: 'A comma-separated list of identifiers to filter by', required: false })
   @ApiResponse({
     status: 200,
     description: 'The tokens of a given account',
@@ -118,10 +119,11 @@ export class AccountController {
   async getAccountTokens(
     @Param('address') address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
-    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('identifiers') identifiers?: string,
   ): Promise<TokenWithBalance[]> {
     try {
-      return await this.tokenService.getTokensForAddress(address, { from, size });
+      return await this.tokenService.getTokensForAddress(address, { from, size }, identifiers);
     } catch (error) {
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
@@ -250,10 +252,12 @@ export class AccountController {
 	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
 	@ApiQuery({ name: 'identifiers', description: 'Filter by identifiers, comma-separated', required: false })
 	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
-	@ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
+	@ApiQuery({ name: 'collection', description: 'Get all tokens by token collection. Deprecated, replaced by collections parameter', required: false, deprecated: true })
+	@ApiQuery({ name: 'collections', description: 'Get all tokens by token collections, comma-separated', required: false })
 	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
 	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
 	@ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
+	@ApiQuery({ name: 'withTimestamp', description: 'Add timestamp in the response structure', required: false })
   @ApiResponse({
     status: 200,
     description: 'The non-fungible and semi-fungible tokens of a given account',
@@ -268,16 +272,18 @@ export class AccountController {
     @Param('address') address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-		@Query('search') search: string | undefined,
-		@Query('identifiers') identifiers: string | undefined,
-		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-		@Query('collection') collection: string | undefined,
-		@Query('tags') tags: string | undefined,
-		@Query('creator') creator: string | undefined,
-		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
+    @Query('search') search?: string,
+    @Query('identifiers') identifiers?: string,
+    @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
+    @Query('collection') collection?: string,
+    @Query('collections') collections?: string,
+    @Query('tags') tags?: string,
+    @Query('creator') creator?: string,
+    @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
+    @Query('withTimestamp', new ParseOptionalBoolPipe) withTimestamp?: boolean,
   ): Promise<NftAccount[]> {
     try {
-      return await this.tokenService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, tags, creator, hasUris });
+      return await this.tokenService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, collections, tags, creator, hasUris }, withTimestamp ?? false);
     } catch (error) {
       this.logger.error(error);
       return [];

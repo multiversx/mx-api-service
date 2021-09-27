@@ -8,6 +8,7 @@ export class MetricsService {
   shards: number[] = [ 0, 1, 2, 4294967295 ];
 
   private static apiCallsHistogram: Histogram<string>;
+  private static pendingRequestsHistogram: Gauge<string>;
   private static externalCallsHistogram: Histogram<string>;
   private static elasticDurationHistogram: Histogram<string>;
   private static elasticTookHistogram: Histogram<string>;
@@ -29,6 +30,14 @@ export class MetricsService {
         help: 'API Calls',
         labelNames: [ 'endpoint', 'code' ],
         buckets: [ ]
+      });
+    }
+
+    if (!MetricsService.pendingRequestsHistogram) {
+      MetricsService.pendingRequestsHistogram = new Gauge({
+        name: 'pending_requests',
+        help: 'Pending requests',
+        labelNames: [ 'endpoint' ],
       });
     }
 
@@ -109,6 +118,10 @@ export class MetricsService {
   setApiCall(endpoint: string, status: number, duration: number, responseSize: number) {
     MetricsService.apiCallsHistogram.labels(endpoint, status.toString()).observe(duration);
     MetricsService.apiResponseSizeHistogram.labels(endpoint).observe(responseSize);
+  }
+
+  setPendingRequestsCount(count: number) {
+    MetricsService.pendingRequestsHistogram.set(count);
   }
 
   setExternalCall(system: string, duration: number) {

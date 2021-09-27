@@ -18,6 +18,8 @@ export class CachingInterceptor implements NestInterceptor {
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     let apiFunction = context.getClass().name + '.' + context.getHandler().name;
 
+    this.metricsService.setPendingRequestsCount(Object.keys(this.pendingRequestsDictionary).length);
+
     let cacheKey = this.getCacheKey(context);
     if (cacheKey) {
       let pendingRequest = this.pendingRequestsDictionary[cacheKey];
@@ -49,6 +51,7 @@ export class CachingInterceptor implements NestInterceptor {
           tap(async (result) => {
             delete this.pendingRequestsDictionary[cacheKey ?? ''];
             pendingRequestResolver(result);
+            this.metricsService.setPendingRequestsCount(Object.keys(this.pendingRequestsDictionary).length);
 
             let ttl = await this.cachingService.getSecondsRemainingUntilNextRound();
 
@@ -57,6 +60,7 @@ export class CachingInterceptor implements NestInterceptor {
           catchError(err => {
             delete this.pendingRequestsDictionary[cacheKey ?? ''];
             pendingRequestReject(err);
+            this.metricsService.setPendingRequestsCount(Object.keys(this.pendingRequestsDictionary).length);
 
             return throwError(() => err);
           })

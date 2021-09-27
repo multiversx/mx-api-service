@@ -5,6 +5,7 @@ export class NftFilter {
   identifiers?: string;
   type?: NftType;
   collection?: string;
+  collections?: string;
   tags?: string;
   creator?: string;
   hasUris?: boolean;

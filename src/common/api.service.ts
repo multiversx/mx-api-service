@@ -8,18 +8,32 @@ import { MetricsService } from "src/endpoints/metrics/metrics.service";
 @Injectable()
 export class ApiService {
   private readonly defaultTimeout: number = 30000;
-  private readonly keepaliveAgent = new Agent({
-    maxSockets: 100,
-    maxFreeSockets: 10,
-    timeout: this.apiConfigService.getAxiosTimeout(), // active socket keepalive
-    freeSocketTimeout: 30000, // free socket keepalive for 30 seconds
-  });
+  private keepaliveAgent: Agent | undefined | null = null;
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => MetricsService))
     private readonly metricsService: MetricsService
   ) {};
+  
+  private getKeepAliveAgent(): Agent | undefined {
+    if (this.keepaliveAgent === null) {
+      if (this.apiConfigService.getUseKeepAliveAgentFlag()) {
+        this.keepaliveAgent = new Agent({
+          keepAlive: true,
+          maxSockets: Infinity,
+          maxFreeSockets: 10,
+          timeout: this.apiConfigService.getAxiosTimeout(), // active socket keepalive
+          freeSocketTimeout: 30000, // free socket keepalive for 30 seconds
+        });
+      } else {
+        this.keepaliveAgent = undefined;
+      }
+    }
+
+    return this.keepaliveAgent;
+  }
+
 
   private getConfig(timeout: number | undefined): AxiosRequestConfig {
     timeout = timeout || this.defaultTimeout;
@@ -34,7 +48,7 @@ export class ApiService {
 
     return {
       timeout,
-      httpAgent: this.keepaliveAgent,
+      httpAgent: this.getKeepAliveAgent(),
       headers,
       transformResponse: [ 
         (data) => {
