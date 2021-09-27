@@ -189,6 +189,9 @@ export class IdentitiesService {
         identity.avatar = identityDetailed.avatar;
         identity.description = identityDetailed.description;
         identity.name = identityDetailed.name;
+        identity.website = identityDetailed.website;
+        identity.twitter = identityDetailed.twitter;
+        identity.location = identityDetailed.location;
 
         const stakeInfo = this.getStakeInfoForIdentity(identityDetailed, BigInt(parseInt(totalLocked)));
         identity.score = stakeInfo.score ;
