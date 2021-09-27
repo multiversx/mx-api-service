@@ -163,8 +163,8 @@ export class IdentitiesService {
       }
     }
 
-    nodes.forEach((node) => {
-      const found = identitiesDetailed.find((identityDetailed) => identityDetailed.identity === node.identity);
+    for (let node of nodes) {
+      const found = identitiesDetailed.find((identityDetailed) => identityDetailed.identity == node.identity);
 
       if (found && node.identity && !!node.identity) {
         if (!found.nodes) {
@@ -178,7 +178,7 @@ export class IdentitiesService {
         identityDetailed.nodes = [node];
         identitiesDetailed.push(identityDetailed);
       }
-    });
+    };
 
     const { locked: totalLocked } = this.computeTotalStakeAndTopUp(nodes);
 
@@ -189,6 +189,9 @@ export class IdentitiesService {
         identity.avatar = identityDetailed.avatar;
         identity.description = identityDetailed.description;
         identity.name = identityDetailed.name;
+        identity.website = identityDetailed.website;
+        identity.twitter = identityDetailed.twitter;
+        identity.location = identityDetailed.location;
 
         const stakeInfo = this.getStakeInfoForIdentity(identityDetailed, BigInt(parseInt(totalLocked)));
         identity.score = stakeInfo.score ;
