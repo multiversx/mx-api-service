@@ -1,4 +1,5 @@
 import { Test } from "@nestjs/testing";
+import { ApiConfigService } from "src/common/api.config.service";
 import { Identity } from "src/endpoints/identities/entities/identity";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { Provider } from "src/endpoints/providers/entities/provider";
@@ -10,6 +11,7 @@ import Initializer from "./e2e-init";
 describe('Identities Service', () => {
   let identityService: IdentitiesService;
   let providerService: ProviderService;
+  let apiConfigService: ApiConfigService;
   let identities: Identity[];
   let providers: Provider[];
 
@@ -24,6 +26,7 @@ describe('Identities Service', () => {
 
     identityService = publicAppModule.get<IdentitiesService>(IdentitiesService);
     providerService = publicAppModule.get<ProviderService>(ProviderService);
+    apiConfigService = publicAppModule.get<ApiConfigService>(ApiConfigService);
     identities = await identityService.getAllIdentities();
     providers = await providerService.getAllProviders();
   });
@@ -69,14 +72,19 @@ describe('Identities Service', () => {
     });
 
     it('all providers identities should appear', async () => {
-      for (let provider of providers) {
-        if (provider.identity) {
-          const providerIdentity = identities.find(({ identity }) => identity === provider.identity);
-
-          expect(providerIdentity).toBeDefined();
-          expect(providerIdentity).toHaveProperty('locked');
-          expect(providerIdentity).toHaveProperty('name');
-          expect(providerIdentity).toHaveProperty('website');
+      if (!apiConfigService.getMockNodes()) {
+        for (let provider of providers) {
+          if (provider.identity) {
+            const providerIdentity = identities.find(({ identity }) => identity === provider.identity);
+  
+            if (!providerIdentity) {
+              console.log(provider.identity);
+            }
+  
+            expect(providerIdentity).toBeDefined();
+            expect(providerIdentity).toHaveProperty('locked');
+            expect(providerIdentity).toHaveProperty('name');
+          }
         }
       }
     });
