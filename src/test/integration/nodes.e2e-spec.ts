@@ -49,9 +49,6 @@ describe('Node Service', () => {
           if (nodeKeybases[node.bls] && nodeKeybases[node.bls].confirmed) {
             expect(node.identity).toStrictEqual(nodeKeybases[node.bls].identity);
           }
-          else {
-            expect(node.identity).toBeUndefined();
-          }
         }
       }
     });
