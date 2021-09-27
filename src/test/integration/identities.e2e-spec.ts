@@ -1,13 +1,17 @@
 import { Test } from "@nestjs/testing";
 import { Identity } from "src/endpoints/identities/entities/identity";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
+import { Provider } from "src/endpoints/providers/entities/provider";
+import { ProviderService } from "src/endpoints/providers/provider.service";
 import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 import Initializer from "./e2e-init";
 
 describe('Identities Service', () => {
   let identityService: IdentitiesService;
+  let providerService: ProviderService;
   let identities: Identity[];
+  let providers: Provider[];
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -19,7 +23,9 @@ describe('Identities Service', () => {
     }).compile();
 
     identityService = publicAppModule.get<IdentitiesService>(IdentitiesService);
+    providerService = publicAppModule.get<ProviderService>(ProviderService);
     identities = await identityService.getAllIdentities();
+    providers = await providerService.getAllProviders();
   });
 
   describe('Identities', () => {
@@ -60,6 +66,17 @@ describe('Identities Service', () => {
 
     it('some identities should be confirmed', async () => {
       expect(identities.length).toBeGreaterThanOrEqual(32);
+    });
+
+    it('all providers identities should appear', async () => {
+      for (let provider of providers) {
+        const providerIdentity = identities.find(({ identity }) => identity === provider.identity);
+
+        expect(providerIdentity).toBeDefined();
+        expect(providerIdentity).toHaveProperty('locked');
+        expect(providerIdentity).toHaveProperty('name');
+        expect(providerIdentity).toHaveProperty('website');
+      }
     });
   });
 });
