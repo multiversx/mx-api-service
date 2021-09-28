@@ -1,8 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ApiConfigService } from 'src/common/api.config.service';
-import { CachingService } from 'src/common/caching.service';
-import { DataApiService } from 'src/common/data.api.service';
-import { DataQuoteType } from 'src/common/entities/data.quote.type';
 import { AbstractQuery } from 'src/common/entities/elastic/abstract.query';
 import { ElasticPagination } from 'src/common/entities/elastic/elastic.pagination';
 import { ElasticQuery } from 'src/common/entities/elastic/elastic.query';
@@ -13,7 +10,6 @@ import { QueryType } from 'src/common/entities/elastic/query.type';
 import { GatewayService } from 'src/common/gateway.service';
 import { AddressUtils } from 'src/utils/address.utils';
 import { ApiUtils } from 'src/utils/api.utils';
-import { Constants } from 'src/utils/constants';
 import { ElasticService } from '../../common/elastic.service';
 import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
@@ -25,6 +21,7 @@ import { TransactionScamCheckService } from './scam-check/transaction-scam-check
 import { TransactionScamInfo } from './entities/transaction-scam-info';
 import { TransactionGetService } from './transaction.get.service';
 import { TokenTransferService } from './token.transfer.service';
+import { TransactionPriceService } from './transaction.price.service';
 
 @Injectable()
 export class TransactionService {
@@ -32,10 +29,9 @@ export class TransactionService {
 
   constructor(
     private readonly elasticService: ElasticService,
-    private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly dataApiService: DataApiService,
+    private readonly transactionPriceService: TransactionPriceService,
     private readonly transactionScamCheckService: TransactionScamCheckService,
     private readonly transactionGetService: TransactionGetService,
     private readonly tokenTransferService: TokenTransferService,
@@ -161,7 +157,7 @@ export class TransactionService {
     if (transaction !== null) {
       try {
         const [price, scamInfo] = await Promise.all([
-          this.getTransactionPrice(transaction),
+          this.transactionPriceService.getTransactionPrice(transaction),
           this.getScamInfo(transaction),
         ]);
 
@@ -174,49 +170,6 @@ export class TransactionService {
     }
 
     return transaction;
-  }
-
-  private async getTransactionPrice(transaction: TransactionDetailed): Promise<number | undefined> {
-    let dataUrl = this.apiConfigService.getDataUrl();
-    if (!dataUrl) {
-      return undefined;
-    }
-
-    let transactionDate = transaction.getDate();
-    if (!transactionDate) {
-      return undefined;
-    }
-
-    let price = await this.getTransactionPriceForDate(transactionDate);
-    if (price) {
-      price = Number(price).toRounded(2);
-    }
-
-    return price;
-  }
-
-  private async getTransactionPriceForDate(date: Date): Promise<number | undefined> {
-    if (date.isToday()) {
-      return await this.getTransactionPriceToday();
-    }
-
-    return await this.getTransactionPriceHistorical(date);
-  }
-
-  private async getTransactionPriceToday(): Promise<number | undefined> {
-    return await this.cachingService.getOrSetCache(
-      'currentPrice',
-      async () => await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price),
-      Constants.oneHour()
-    );
-  }
-
-  private async getTransactionPriceHistorical(date: Date): Promise<number | undefined> {
-    return await this.cachingService.getOrSetCache(
-      `price:${date.toISODateString()}`,
-      async () => await this.dataApiService.getQuotesHistoricalTimestamp(DataQuoteType.price, date.getTime() / 1000),
-      Constants.oneDay() * 7
-    );
   }
 
   async createTransaction(transaction: TransactionCreate): Promise<TransactionSendResult | string> {
