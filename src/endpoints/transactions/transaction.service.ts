@@ -128,6 +128,27 @@ export class TransactionService {
 
     let transactions: Transaction[] = [];
 
+    if (filter.hashes) {
+      const txHashes: string[] = filter.hashes.split(',');
+      const elasticHashes = elasticTransactions.map(({txHash}) => txHash);
+      const missingHashes: string[] = txHashes.findMissingElements(elasticHashes);
+      let gatewayTransactions = await Promise.all(
+        missingHashes
+          .map(async (txHash) => {
+            const gatewayTransaction = await this.tryGetTransactionFromGateway(txHash);
+            if (gatewayTransaction) {
+              return ApiUtils.mergeObjects(new Transaction(), gatewayTransaction);  
+            }
+            return undefined; //invalid hash     
+          })
+      );
+      for (let gatewayTransaction of gatewayTransactions) {
+        if (gatewayTransaction) {
+          transactions.push(gatewayTransaction);
+        }
+      }
+    }
+
     for (let elasticTransaction of elasticTransactions) {
       let transaction = ApiUtils.mergeObjects(new Transaction(), elasticTransaction);
 
