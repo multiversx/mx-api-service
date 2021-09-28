@@ -63,6 +63,8 @@ import "./utils/extensions/date.extensions";
 import "./utils/extensions/number.extensions";
 import { NftThumbnailService } from './common/nft.thumbnail.service';
 import { NftExtendedAttributesService } from './common/nft.extendedattributes.service';
+import { TransactionGetService } from './endpoints/transactions/transaction.get.service';
+import { TokenTransferService } from './endpoints/transactions/token.transfer.service';
 import { TransactionPriceService } from './endpoints/transactions/transaction.price.service';
 
 @Module({
@@ -104,6 +106,7 @@ import { TransactionPriceService } from './endpoints/transactions/transaction.pr
     DelegationService, CacheConfigService, CachingInterceptor, ShardService, MetricsService, IdentitiesService,
     TokenAssetService, DataApiService, KeysService, WaitingListService, BlsService, TagService, ExtrasApiService,
     TransactionScamCheckService, PotentialScamTransactionChecker, NftThumbnailService, NftExtendedAttributesService,
+    TransactionGetService, TokenTransferService,
     TransactionPriceService,
   ],
   exports: [
