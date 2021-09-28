@@ -128,6 +128,19 @@ export class TransactionService {
 
     let transactions: Transaction[] = [];
 
+    if (filter.hashes) {
+      const txHashes: string[] = filter.hashes.split(',');
+      const elasticHashes = elasticTransactions.map(({txHash}) => txHash);
+      const missingHashes: string[] = txHashes.findMissingElements(elasticHashes);
+      
+      let gatewayTransactions = await Promise.all(missingHashes.map((txHash) => this.tryGetTransactionFromGatewayForList(txHash)));
+      for (let gatewayTransaction of gatewayTransactions) {
+        if (gatewayTransaction) {
+          transactions.push(gatewayTransaction);
+        }
+      }
+    }
+
     for (let elasticTransaction of elasticTransactions) {
       let transaction = ApiUtils.mergeObjects(new Transaction(), elasticTransaction);
 
@@ -406,11 +419,19 @@ export class TransactionService {
     }
   }
 
-  async tryGetTransactionFromGateway(txHash: string): Promise<TransactionDetailed | null> {
+  async tryGetTransactionFromGatewayForList(txHash: string) {
+    const gatewayTransaction = await this.tryGetTransactionFromGateway(txHash, false);
+    if (gatewayTransaction) {
+      return ApiUtils.mergeObjects(new Transaction(), gatewayTransaction);  
+    }
+    return undefined; //invalid hash 
+  }
+
+  async tryGetTransactionFromGateway(txHash: string, queryInElastic: boolean = true): Promise<TransactionDetailed | null> {
     try {
       const { transaction } = await this.gatewayService.get(`transaction/${txHash}?withResults=true`);
 
-      if (transaction.status === 'pending') {
+      if (transaction.status === 'pending' && queryInElastic) {
         let existingTransaction = await this.tryGetTransactionFromElasticBySenderAndNonce(transaction.sender, transaction.nonce);
         if (existingTransaction && existingTransaction.txHash !== txHash) {
           return null;

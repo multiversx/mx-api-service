@@ -52,10 +52,22 @@ Array.prototype.remove = function<T>(element: T): number {
   return index;
 }
 
+Array.prototype.findMissingElements = function<T>(second: T[]) {
+  const missing: T[] = [];
+  for (let item of this) {
+    if (!second.includes(item)) {
+      missing.push(item);
+    }
+  }
+
+  return missing;
+}
+
 declare interface Array<T> {
   groupBy(predicate: (item: T) => any): any;
   selectMany<TOUT>(predicate: (item: T) => TOUT[]): TOUT[];
   firstOrUndefined(predicate?: (item: T) => boolean): T | undefined;
   zip<TSecond, TResult>(second: TSecond[], predicate: (first: T, second: TSecond) => TResult): TResult[];
   remove(element: T): number;
+  findMissingElements<T>(second: T[]): T[];
 }
