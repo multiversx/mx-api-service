@@ -45,6 +45,12 @@ describe('Provider Service', () => {
       }
     });
 
+    it('all providers should have nodes', async () => {
+      for (let provider of providers) {
+        expect(provider.numNodes).toBeGreaterThan(0);
+      }
+    });
+
     it('providers with more than 30 nodes should have identity', async () => {
       for (let provider of providers) {
         if (provider.numNodes >= 30) {
