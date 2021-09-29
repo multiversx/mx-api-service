@@ -113,6 +113,8 @@ export class ProviderService {
       return bSort - aSort;
     });
 
+    providers = providers.filter((provider) => provider.numNodes > 0);
+
     return providers;
   }
 
