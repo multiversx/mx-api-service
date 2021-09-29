@@ -58,7 +58,7 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('*/30 * * * *')
+  @Cron('* * * * *')
   async handleProviderInvalidations() {
     await Locker.lock('Providers invalidations', async () => {
       let providers = await this.providerService.getAllProvidersRaw();
