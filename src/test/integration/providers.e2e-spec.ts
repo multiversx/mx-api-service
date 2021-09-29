@@ -26,8 +26,7 @@ describe('Provider Service', () => {
 
     providerService = publicAppModule.get<ProviderService>(ProviderService);
     cachingService = publicAppModule.get<CachingService>(CachingService);
-    providers = await providerService.getAllProviders();
-    providers = providers.filter(x => x.identity);
+    providers = await providerService.getProviders(new ProviderFilter());
     identity = "istari_vision";
     providerSentinel = providers[0];
   });
@@ -36,12 +35,6 @@ describe('Provider Service', () => {
     it('all providers should have provider address', async () => {
       for (let provider of providers) {
         expect(provider).toHaveProperty('provider');
-      }
-    });
-    
-    it('all entities should have provider structure', async () => {
-      for (let provider of providers) {
-        expect(provider).toHaveStructure(Object.keys(new Provider()));
       }
     });
 
@@ -115,7 +108,12 @@ describe('Provider Service', () => {
       while (index < providers.length) {
         expect(providers[index-1]).toHaveProperty('locked');
         expect(providers[index]).toHaveProperty('locked');
-        expect(BigInt(providers[index].locked)).toBeGreaterThanOrEqual(BigInt(providers[index-1].locked));
+        if (providers[index].locked >= providers[index-1].locked) {
+          expect(true);
+        }
+        else {
+          expect(false);
+        }
         index ++;
       }
     });
