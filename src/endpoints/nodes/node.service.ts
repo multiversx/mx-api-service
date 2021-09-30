@@ -119,7 +119,7 @@ export class NodeService {
         return false;
       }
 
-      if (query.issues !== undefined && (query.issues === true ? node.issues.length === 0 : node.issues.length > 0)) {
+      if (query.issues !== undefined && node.issues !== undefined && (query.issues === true ? node.issues.length === 0 : node.issues.length > 0)) {
         return false;
       }
 
