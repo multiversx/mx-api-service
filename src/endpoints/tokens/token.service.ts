@@ -310,19 +310,14 @@ export class TokenService {
   }
 
   async getTokenCountForAddress(address: string): Promise<number> {
-    let tokens = await this.getAllTokensForAddress(address);
+    let tokens = await this.getAllTokensForAddress(address, new TokenFilter());
     return tokens.length;
   }
 
-  async getTokensForAddress(address: string, queryPagination: QueryPagination, identifiers?: string): Promise<TokenWithBalance[]> {
+  async getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
     const { from, size } = queryPagination;
     
-    let tokens = await this.getAllTokensForAddress(address);
-
-    if (identifiers) {
-      const identifierArray = identifiers.split(',');
-      tokens = tokens.filter(token => identifierArray.includes(token.identifier));
-    }
+    let tokens = await this.getAllTokensForAddress(address, filter);
 
     tokens = tokens.slice(from, from + size);
 
@@ -353,7 +348,7 @@ export class TokenService {
   }
 
   async getTokenForAddress(address: string, tokenIdentifier: string): Promise<TokenWithBalance | undefined> {
-    let allTokens = await this.getAllTokensForAddress(address);
+    let allTokens = await this.getAllTokensForAddress(address, new TokenFilter());
 
     let foundToken = allTokens.find(x => x.identifier === tokenIdentifier);
     if (!foundToken) {
@@ -411,8 +406,8 @@ export class TokenService {
     return esdts;
   }
 
-  async getAllTokensForAddress(address: string): Promise<TokenWithBalance[]> {
-    let tokens = await this.getAllTokens();
+  async getAllTokensForAddress(address: string, filter: TokenFilter): Promise<TokenWithBalance[]> {
+    let tokens = await this.getFilteredTokens(filter);
 
     let tokensIndexed: { [index: string]: Token } = {};
     for (let token of tokens) {
