@@ -105,6 +105,9 @@ export class AccountController {
   @Get("/accounts/:address/tokens")
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'search', description: 'Search by token name / identifier', required: false })
+	@ApiQuery({ name: 'name', description: 'Search by token name', required: false })
+	@ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'A comma-separated list of identifiers to filter by', required: false })
   @ApiResponse({
     status: 200,
@@ -120,10 +123,13 @@ export class AccountController {
     @Param('address') address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('search') search: string | undefined,
+		@Query('name') name: string | undefined,
+		@Query('identifier') identifier: string | undefined,
     @Query('identifiers') identifiers?: string,
   ): Promise<TokenWithBalance[]> {
     try {
-      return await this.tokenService.getTokensForAddress(address, { from, size }, identifiers);
+      return await this.tokenService.getTokensForAddress(address, { from, size }, { search, name, identifier, identifiers });
     } catch (error) {
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
