@@ -191,7 +191,7 @@ export class TokenService {
         } else if (nft.type === NftType.SemiFungibleESDT) {
           nft.balance = accountsEsdts.filter((x: any) => x.identifier === nft.identifier)
             .map((x: any) => BigInt(x.balance))
-            .reduce((previous: BigInt, current: BigInt) => previous.valueOf() + current.valueOf())
+            .reduce((previous: BigInt, current: BigInt) => previous.valueOf() + current.valueOf(), BigInt(0))
             .toString();
         }
       }
