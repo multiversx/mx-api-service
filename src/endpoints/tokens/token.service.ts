@@ -110,7 +110,7 @@ export class TokenService {
     return tokens.length;
   }
 
-  async getNft(identifier: string): Promise<TokenProperties | undefined> {
+  async getCollection(identifier: string): Promise<TokenProperties | undefined> {
     let properties = await this.cachingService.getOrSetCache(
       `nft:${identifier}`,
       async () => await this.getTokenProperties(identifier),
@@ -137,7 +137,7 @@ export class TokenService {
 
       ApiUtils.mergeObjects(nftCollection, tokenCollection);
 
-      let nft = await this.getNft(nftCollection.collection);
+      let nft = await this.getCollection(nftCollection.collection);
       if (nft) {
         ApiUtils.mergeObjects(nftCollection, nft);
       }
@@ -166,7 +166,7 @@ export class TokenService {
 
     ApiUtils.mergeObjects(nftCollection, tokenCollection);
 
-    let nft = await this.getNft(nftCollection.collection);
+    let nft = await this.getCollection(nftCollection.collection);
     if (nft) {
       ApiUtils.mergeObjects(nftCollection, nft);
     }
@@ -296,7 +296,7 @@ export class TokenService {
 
     for (let nft of nfts) {
       if (!nft.name || !nft.type) {
-        let gatewayNft = await this.getNft(nft.collection);
+        let gatewayNft = await this.getCollection(nft.collection);
         if (gatewayNft) {
           if (!nft.name) {
             nft.name = gatewayNft.name;
@@ -526,7 +526,7 @@ export class TokenService {
         }
       }
 
-      let gatewayNftDetails = await this.getNft(nft.collection);
+      let gatewayNftDetails = await this.getCollection(nft.collection);
       if (gatewayNftDetails) {
         nft.type = gatewayNftDetails.type;
         nft.name = gatewayNftDetails.name;
