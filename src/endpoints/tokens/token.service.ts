@@ -295,10 +295,17 @@ export class TokenService {
     await this.nftThumbnailService.updateThumbnailUrlForNfts(nfts);
 
     for (let nft of nfts) {
-      let gatewayNft = await this.getNft(nft.collection);
-      if (gatewayNft) {
-        nft.name = gatewayNft.name;
-        nft.type = gatewayNft.type;
+      if (!nft.name || !nft.type) {
+        let gatewayNft = await this.getNft(nft.collection);
+        if (gatewayNft) {
+          if (!nft.name) {
+            nft.name = gatewayNft.name;
+          }
+
+          if (!nft.type) {
+            nft.type = gatewayNft.type;
+          }
+        }
       }
     }
 
