@@ -298,8 +298,13 @@ export class TokenService {
       if (!nft.name || !nft.type) {
         let gatewayNft = await this.getNft(nft.collection);
         if (gatewayNft) {
-          nft.name = gatewayNft.name;
-          nft.type = gatewayNft.type;
+          if (!nft.name) {
+            nft.name = gatewayNft.name;
+          }
+
+          if (!nft.type) {
+            nft.type = gatewayNft.type;
+          }
         }
       }
     }
