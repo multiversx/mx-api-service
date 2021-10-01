@@ -14,6 +14,15 @@ export class Identity {
   avatar?: string;
 
   @ApiProperty()
+  website?: string;
+
+  @ApiProperty()
+  twitter?: string;
+
+  @ApiProperty()
+  location?: string;
+
+  @ApiProperty()
   score?: number;
 
   @ApiProperty()

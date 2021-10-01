@@ -4,8 +4,5 @@ import { NftOwner } from "./nft.owner";
 
 export class NftDetailed extends Nft {
   @ApiProperty()
-  owner: string = '';
-
-  @ApiProperty()
   owners: NftOwner[] = [];
 }

@@ -1,0 +1,350 @@
+[
+  {
+    "bls": "8ef3301efec2357c629551b0e1a4691a5f60b1f71f36a8611ef14b5e7fe67f107b35b1629bb8088791e7edd2c77bfd17c83a365acaf79745d9963bbf48ff907a035f1b9b70e57a07b506a79c7f938eaca3f4d9789c3070f3120d1ce3508cdc08",
+    "nonce": 5012958,
+    "rewardsAddress": "erd1qzfkcsdvra29kfps59tsw673e9v0c4z6v3ymelrad2qjcup87hesv7gzhm",
+    "position": 1
+  },
+  {
+    "bls": "c1d32fe0618d090e1a64b468076d0215b1a57fcbb759c80a8d8c6ac2150f782ef5ec1f39b685a366cb20e29381a90b0c3161937fd3f4bb6e3eae0e3112545c0f6f059f1971df8adeb12705e7708e9cc90126d0acca535aa733012daac5e07e8f",
+    "nonce": 5013014,
+    "rewardsAddress": "erd1zj7vzv6fv4uuhza44m6763v2j6877wre4zajev5lkuyjn92dlqeqjwyk0x",
+    "position": 2
+  },
+  {
+    "bls": "3c31f020f4ab712f59ef6163553df1518c0d24e424c6daaa62b26e5a9dfe000f25fafd77aa8320990ea6b543d9ff7607f2bc605b790c3041db39ae69fa57f9dd92344f1bb71ec91204ae089ac213f977b6c2d1adc29316ff3d27fbb92a513f18",
+    "nonce": 5013014,
+    "rewardsAddress": "erd1zj7vzv6fv4uuhza44m6763v2j6877wre4zajev5lkuyjn92dlqeqjwyk0x",
+    "position": 3
+  },
+  {
+    "bls": "65ca2c70dae6d255d8368342a97179dbfd86e580c723d01576a94035dccb0beeaaf9f0d418e98fc59dac064df3891010633549e6166149e1d2b4a8e72bd7391b2db65af049f831e6460eae9d73f7d71e837091c56f603a91cfad974ed8d09818",
+    "nonce": 5013035,
+    "rewardsAddress": "erd1d39cfk25c9vtzlshsfcpf6x6zgvrvjwpq2973qu5zhz8d8pu8vfsh5lcgj",
+    "position": 4
+  },
+  {
+    "bls": "93cfd03024d7ab627fe116e85f100de43c1e13de29bfbc685f48f2442499c4db9c8f726326bff5b2c4d60b5dad6e0019f4972e20331c58b07a63fbd968451fee3ba841caf047e24b0bcda2be54d900932694c2934c06fade9e7dee292c207c89",
+    "nonce": 5013035,
+    "rewardsAddress": "erd1d39cfk25c9vtzlshsfcpf6x6zgvrvjwpq2973qu5zhz8d8pu8vfsh5lcgj",
+    "position": 5
+  },
+  {
+    "bls": "5304e0499abd49e3476380c7cdef4d93d06e62418b36bed9212f03ba2d7a84cf02c5b9ba006ba43d81c35f6ea9873b14827e7ac9d16d77804be37bc0be00ea01e85d5d4cb2a0075be72b7365736b40dc06040611cadf5c3b98179b5ed25da782",
+    "nonce": 5025713,
+    "rewardsAddress": "erd1q4rzmjhyshqhw4wmh479sx3vjhkdf5jxy06p9vhfjlk9z3xnwdpqn8s9j0",
+    "position": 6
+  },
+  {
+    "bls": "cd3c5cf9626e78f3fdda2c84dfecbb2ca244dc1afaab8a3ac9ef68042cedec868b5510ac1324329e6df97496e4bda315be15ecf5eaa1d8477ddb6c5ed0ff1e4acdb30ee0287dd849809f02eb9f9a6eb1d9f1a1918494a03c21ffd1bad1293a18",
+    "nonce": 5025721,
+    "rewardsAddress": "erd1q4rzmjhyshqhw4wmh479sx3vjhkdf5jxy06p9vhfjlk9z3xnwdpqn8s9j0",
+    "position": 7
+  },
+  {
+    "bls": "a75961393f383c7295e8a1469f6666f2b7b8ca275cf9cb9bbe9b36bfff2fd537e899df803ea65c400a4ebc329774ab0a356bd595fc78b5af0d33e482383fc4443b49d6a954c36659b5afedd109a7e9a05b9b642351d26824d69184ed090c7119",
+    "nonce": 5025745,
+    "rewardsAddress": "erd1wkqq8vd405hgxaxdv80yd672ld253f2jntqdzghdgurdls8kyuwskzst4j",
+    "position": 8
+  },
+  {
+    "bls": "7dc6fc13e654cde891f393ecab93bee779b414e85c5ba7dd96c66343f4e682de8cbdb4b295ce3d3bf161399fe042ee114508fcd5ea8fbe16ac2d1dbbeae5822cc26620f48797cbf7d923aedcf269a4c52f28c63934574e8a5ebc5588a7842e89",
+    "nonce": 5081560,
+    "rewardsAddress": "erd12p8w8z82yxknxvvuzcdkefccrej5gxn3gljeu0fzamgflte7jtdsgfln77",
+    "position": 9
+  },
+  {
+    "bls": "3a2be7f32111147ff5155a3af485ee8a7195b81626666223e68e8f82590fb630291810219d13596324287bfa83d8a2007facc9abef97a57de550c24a48d30252385f4eb62e7a3e6e7b137be36f3071af2065a6be21a9f9e8c3cf0fdf86bfc987",
+    "nonce": 5085358,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqd0lllls5qqfun",
+    "position": 10
+  },
+  {
+    "bls": "91d6f8ea0b069b08cdccf9a506c9cc0302b699164e1f887db69aa777beff00fe9b6a456f2a7831cf4395b48745a2650f7f60b1c170893d06cfd311794b19dd307432efbedff4a2f6ad8610500db5ba55a3f4bc5020d10b8608772cf96fb01706",
+    "nonce": 5104238,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq48llllszfjtl6",
+    "position": 11
+  },
+  {
+    "bls": "0c6c73e50b62901e1212502439243f724ab6839a584484ff1cedccea80449681b6ede96050925757fbfdf8b8b81229027297ba0bad25749578341c81bce7ff59d323a9d81d3a10587a132576306bad678150ed2ba9f7b34dec34fc770e2ac68d",
+    "nonce": 5106923,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg8llllsqra25h",
+    "position": 12
+  },
+  {
+    "bls": "ff3e49fdf253864b770e311e323478326a8802c432259c19b67d29ce6d476280dde12b83387c5c00fadc126c1ecfb008f72385a10abcd4ef4eec1423d80a22d645e51988652de5a8aea6bcd3ffb650f3c7753a58abe26e3ba1414552a6906418",
+    "nonce": 5119352,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg8llllsqra25h",
+    "position": 13
+  },
+  {
+    "bls": "6a7965c5fa4b2f2edf086bcc6f77407b28ec0955722f20a54639767bda37c61fc86c6d2344ce7e849dd91a8b46e45a0cab1cfd24bcfcbb9a83b25de28923c5361c15c3982e586877492f9361cc8f6b556c28ff870254a57b31905a624c305818",
+    "nonce": 5119433,
+    "rewardsAddress": "erd1uam5wdfulr8m0ladnf6zdunhctnj08l2el8umg7j3uyphlyaqgkq7lnwua",
+    "position": 14
+  },
+  {
+    "bls": "31ff7db5d5821d7ba9422e3dab7eb86a7a4a96c5e85934abb8076d6b47fd2e97f94de63cf8509497bac3d0b7b4d87c0131c33f274980f5f90d1e082af96a8e92c4d2617ece8ca9bac0a7c60f55bc703a1ccc863413fd2f27f5d29265199f1d14",
+    "nonce": 5119769,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg8llllsqra25h",
+    "position": 15
+  },
+  {
+    "bls": "385a01d2d1f67984c16e518efa51388561691d1b1d1dd79fff757a15fcde4a3d050fc7a1fa4dcda1b8eae735b398ed122b70e77d7f4b893b7fd73defb4d45432e2f6c885475fd8b6eb361c47545d77c5ec895c2cd72b5021a033d563767eb682",
+    "nonce": 5126088,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqnlllllsja3cq7",
+    "position": 16
+  },
+  {
+    "bls": "f7cf86589e5f4524b7d1b1d9d14732f5cc367ecca78bab7d05b5e8360feb193702f78417bba624a1b03460b8d97ccf15836ac455e2d94b55629e5096aff5103a6f06351667353a99ca36eb96ae3175aed20266680ac380074641c381f3a68406",
+    "nonce": 5156857,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr8llllse9cj2t",
+    "position": 17
+  },
+  {
+    "bls": "17e6d30fb8ffd182896d4f3281fff174686a4cad373264ae07b8ae9989d248f2f665a97d04d443f31acfdf8aa44e0e05a7c05f70cf057b805e9f8b7fdf5a453be845c24fc90e56702fd6ef809b3414a4fe2d893defd4058f6430da4a4399078f",
+    "nonce": 5182013,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq30llllsc4t005",
+    "position": 18
+  },
+  {
+    "bls": "7d597793ff87f14623da83d241d771c750fe6a6b894bcae4a69404b3fa58f6b6343bc8ff924a0ecf8a5d92367f3b7c08f3d5d6b2be1aa35f1397d53a32c9e0bdec858dd79ce0aa0975301f2e1cb9a372036dd0f9cc6f839f7c4261d8b4971809",
+    "nonce": 5328515,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqh0lllls49nadp",
+    "position": 19
+  },
+  {
+    "bls": "2172aedf502a144b2e2d66a3fab395cd6f02e0739dde1403a152c6a6fc84067ecff056c219cf92adfdd07a214d193d16a84aeaffdf057bbdf4e46ab93baca3f9c9ec4a8fbe22441173d46da445a465a93e7bd0bea1419b1fd6cc27ec5659a68a",
+    "nonce": 5328515,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqh0lllls49nadp",
+    "position": 20
+  },
+  {
+    "bls": "b0ce0b56ab1b91f4c3d5b03c5b24dd8612d8dbe08643c0423d5ca5a8e364d0b0d050d2e373377b71784b5e8e1c9c7f0565de8ee55df4a322cba9597d747de79fb52d401acf74756c0dd3916521bd33f87f259c29cca9e0e87632042e15dda717",
+    "nonce": 5328515,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqh0lllls49nadp",
+    "position": 21
+  },
+  {
+    "bls": "8fdb8efd7984fadc29dea0b9bc2e72e5fba5c7feac616f2b35389fb3f3f9864f7b144ff087f9dcfddef4843ac7b15c18b7a0f5c4e20b20b4008d61319ab2f172aef69d261f2fc9e405ac665ccb1dc5992962756a8dbc6de6e39d8dc5c643e497",
+    "nonce": 5328515,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqh0lllls49nadp",
+    "position": 22
+  },
+  {
+    "bls": "6c27003483c9ed39b56dd74844b951b26d2a94552434f5815fc7ae7eb931edfed02059a8449a75b7512ac38f21ed350fed7ee93571fe0aa97d3b94a873451be3b8bbb90f4daad126183057a8303e2b2fd04b2f7d52e6d4fadbb07b982f92950c",
+    "nonce": 5337736,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8llllls4xn0vm",
+    "position": 23
+  },
+  {
+    "bls": "39b41bacf9d7de9e05851930295004a41539a3aa4b01e9367b3972e11892e61ac67aa8c738c85c69c43b9b1917ccd90d5953b38a7c0a619911d17b180ba480daab60ed6a4090aac715cad40dc07c98a23271c274a8ea50d96efa2b0ca58c2e0a",
+    "nonce": 5398971,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq98lllls54qqg7",
+    "position": 24
+  },
+  {
+    "bls": "44a2e2f63794f8510e9ef99252ad5b4483983c1ad8a5076c65b90b0226831ca41d0d17876f21894146e634a4099760010f8bd06c3b85f315dfecf15844b367d64c48fee65a50ad2f349cf7dcb5ab339d48182c5025dd905392ff5e45019a9b8c",
+    "nonce": 5443386,
+    "rewardsAddress": "erd12267vxx953hgzdk794y4vg7ldnsx6f59xr6wyajseakzey9qwphqcy9fdq",
+    "position": 25
+  },
+  {
+    "bls": "3e26fbfbc31a4d62bfd2d743769986dfc1e124a8b2cd539a6ef86cae7d58ebc3a703228a9e8727c3fd1b9ba46a228101ed2f13ed77c5f698090e0be9b161ed418d7f2f863891f4dad293993e540ee5c7a1dcf830afc40b21a1560064a855b816",
+    "nonce": 5443420,
+    "rewardsAddress": "erd1509z8ftl4y56qzja99xtgfunpvmvea68frlpv72eyk7amu5ad3wqexdntn",
+    "position": 26
+  },
+  {
+    "bls": "831f17316fdc4a265a5bef9dc23cc551177649ce8986d70143faacaa47cc1a0d2a5af7c90daf2ba7b906da32033e7b196eb9ef998400743713687d67080a28978d16ded6a8cbc82cc0f23699f743f56a5713c0e1a4950eb386811190b493a60f",
+    "nonce": 5482286,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqk0llllsm6h64t",
+    "position": 27
+  },
+  {
+    "bls": "fac6157854b043146027e5371c1be4e073368b4063acd2e7affe0ff6eca930d1c3f659945f208a69902ef9f601dc0b195be50932b7a9ef944a1a1f78c3deda3362e3f6a6ed9f1068ae51e8d9f7717b19355189adc9b513c0218269a834ccd416",
+    "nonce": 5494095,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqk0llllsm6h64t",
+    "position": 28
+  },
+  {
+    "bls": "6e6b55535163c37f3606996428a5a47ebfd9c5d6bf38004393fcbb12b206234eb5774d036536f0c01077a4515638230e66f2189bf199e236a1dc7ecbf58e0a5e1efbc847355ea85b923c7ef5d01a10f145162514a0acee3b7277cfaf98f3b592",
+    "nonce": 5553425,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqw8llllsdn9ckz",
+    "position": 29
+  },
+  {
+    "bls": "922bc7b7acf217b33a75dc0658ef7c1a98cbac3c53dc39e60136ae69b33067e550043cfeaa2259815662ebd316861d1144975dfe2021621661907ec00d251836b52b02c81438c36333ca49f6d29020bdc0b89c4855b9acfd296150f831e54395",
+    "nonce": 5586110,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40",
+    "position": 30
+  },
+  {
+    "bls": "d3209b22cc3f8f804a9c10156e09e79d1f1d04b98e49554438f9c6f9e2135a6c613651df253df0d990acbdd138b42004ecd61a95142a56afa08a6ee2a750e0f11ecdf11d09c0e88a62c25886f6f4d0f70e9a9582b008f3d40f2af93349b24897",
+    "nonce": 5586157,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqyhllllsv4k7x2",
+    "position": 31
+  },
+  {
+    "bls": "359c559c1ff39b90854ef45306dd98a6bc774571b7bd2cfc2bca876f4a80c312f4c65e30e12e3839918f254975b9ff10cb00ad599b9672e27356a7ada58c1226af02a5b305f6e3fef45cd31a7972c0b7805931be70d5dbed9c8b593fdd82350b",
+    "nonce": 5586280,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdhllllsfymgpz",
+    "position": 32
+  },
+  {
+    "bls": "54349c2aaae8578b9e319d6d2a813d1dac13d2a9f8d53638f72541001792f8ec0e7db3dd1d9573f3205df6edb1f4d609b2d8368701f5ef040231e4b662fb0b735edcc43919cd79bcf6a3e3462ab6518b6ef2f4531111d67fe17e8ce7b10eef92",
+    "nonce": 5586566,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqxlllllsmehg53",
+    "position": 33
+  },
+  {
+    "bls": "ef43269494b476a925acdfecc79b466125c8cad9e5e21422f5d44fd3e71e72446f5a6a0c7a861f7de53a89368785da11b5a89437de441167fc9e311229465cb048b020d654f53c9735df7600c663aa02898573a07743c7fa8ee6daf47800c308",
+    "nonce": 5586573,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqxlllllsmehg53",
+    "position": 34
+  },
+  {
+    "bls": "3078f39fa8fe045b3e82bcfda5caeda61d33921f6e44a48f45e37b31a94f073062e1dd89a691afcb7b6b559a44c9990547360976b6c90eb0d38a223c08f9b6960cdb0694ffcf01c032f5168c1db7bb2cf5f30fc4f459acff9ec427a14a477490",
+    "nonce": 5586617,
+    "rewardsAddress": "erd1wkqq8vd405hgxaxdv80yd672ld253f2jntqdzghdgurdls8kyuwskzst4j",
+    "position": 35
+  },
+  {
+    "bls": "1bfd0528db8a798d5d2bbe53603653336b8c3aa41cd463594c94bd0f83adbb44550357279b6210d759d5623f9281791871aea137f681db4a3b7819a2b371ab1a28958fe1009473319b8d5b63cdd9ed3152cf32aed6e663e763c821e3eafe4d01",
+    "nonce": 5599639,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq90llllslwfcr3",
+    "position": 36
+  },
+  {
+    "bls": "1a9de3fbd565e56be8c312a4dff31e852e6c803c771dccbdfe1f3e7fbaa4a938259dbdd3e6bfdfbb7a1fbd85fd1e750e1f8ffe2d04d416416271fdea491da61cd436539d2073be35b82583c3d4d1f798040f652e3faaed8d491487c0dc696712",
+    "nonce": 5599639,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq90llllslwfcr3",
+    "position": 37
+  },
+  {
+    "bls": "1958cf272522ed0b9201ec1c89d93fde6dedcf5165417c95f48c7c06d18cd589f9241ff6ce351addc737ca62208edb01c8a254468ac0e194283a84d835cfee8c325c09f43dd3a435fe570bcb87a4aef9a9f9f75747abc2dce9ae525634358c8d",
+    "nonce": 5599660,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq90llllslwfcr3",
+    "position": 38
+  },
+  {
+    "bls": "1ee400d4c5719bcbcd87a09b41ddb6d6efdba272a86187ff19c94227b8d3c65ba0cbd68746d3841fdcc6f33c0532d40231ae8e7fa6b5cf1dc2a65cc3025f7c4f9f07054dd28c4d88ca28ad20729b46ece0d447a5c6ba4016f0866ba0ba7d150d",
+    "nonce": 5599660,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq90llllslwfcr3",
+    "position": 39
+  },
+  {
+    "bls": "070259f2e39d22c82829570c9b01c7ddb3257996d2450c493aa74736acdfd399169a985b6f3735774d3aa5a121ddaa06d4d731d0c28070901b849cbcac6410a02a580ef625ad6fd02843c8e77efdc3f9a61354b0a5daca9ef586b59157f0968a",
+    "nonce": 5602661,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqj8llllspxw799",
+    "position": 40
+  },
+  {
+    "bls": "2b2296897db983cd522f7b522d0c2849576bc4a5b56f375ca0fc8d11c4002d5e898d92f0f1f388af2a0b7dd072793102aa256fdecb9d7610e2e22c4c5be9e045fdebb69ec47e6e508d851a82aa753c8801e6991c82a3b3f31d695688d22e4286",
+    "nonce": 5602723,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqj8llllspxw799",
+    "position": 41
+  },
+  {
+    "bls": "23668193ad9e1c3aa8542340234ce839188db2e9d1f5255058b7e145416aa27943b6b257c1ee09fea24b84a3d8c7a30732c078b0b474e73b4373569fc0f3a1f8e91e41f15511765b282b34e38d9c8593ec46501a148c5f81a303c7cd64ab2e89",
+    "nonce": 5612501,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq90llllslwfcr3",
+    "position": 42
+  },
+  {
+    "bls": "fdae82986a2fce2e720333cf10524e958fd75f7f338687fce01f641883676cd200a0c00746b01183a2b18c3e9a504b0db88b5ea4af14240966a58958200ced9f8d2f4b32c491eaa58c60538a8daf567149920ef3edc387fbf9f3e4e383dcaa0f",
+    "nonce": 5637787,
+    "rewardsAddress": "erd1plqh2qhztutmpx7ql9heqftadn5qtk7ky4u6dult94zadcypsq7qrrqe7l",
+    "position": 43
+  },
+  {
+    "bls": "9bef56e07d34f74b238241880a0a3ce053afde201a441844361ddc0fa5dc6cf14685453b338796b7a3d44b154f762704c826f4742e99d5f4403655d785403749bc9694684eda7727557ec056f7c24f8734937eef6a8030aa47d237c53598758f",
+    "nonce": 5637787,
+    "rewardsAddress": "erd1plqh2qhztutmpx7ql9heqftadn5qtk7ky4u6dult94zadcypsq7qrrqe7l",
+    "position": 44
+  },
+  {
+    "bls": "965acbdab3422b1bf9ffd9d70c8c8450b79e64770def5fc908a8439123f107f1282616940ab167ad7efc2fa65074e403d874400affd1034b200cdd2c3f87af99bd51fe5c967f8c12932b985191a8f9b01a7b9c1b0fb4ff775add8177e3b02707",
+    "nonce": 5637822,
+    "rewardsAddress": "erd1rqtw2cvqv3gtluad5hwdr5m73u3de338e9cnr3g3nxanlkhyq6eqgpdaju",
+    "position": 45
+  },
+  {
+    "bls": "6511ea0f80d022ea2503e25ccca4e863eb91a3f638e5a41d236cbef66f2cc07c34d1fdca1def9e527a69473f58c6400e7fae4bad255fad3d2ef7136fabb45bb772642bc433f4f4ac61f8c0cb3bc238b2e9eafdb2aa5b5860ed53e10bef24ba85",
+    "nonce": 5637822,
+    "rewardsAddress": "erd1rqtw2cvqv3gtluad5hwdr5m73u3de338e9cnr3g3nxanlkhyq6eqgpdaju",
+    "position": 46
+  },
+  {
+    "bls": "384f49d51f68302ad61e2b019bbf479b432e83c025513d40dde5bc01c8a2bbf868f8855df8b821026cb5cfeba205f50da782391c6748d2a29aeb76af9779c10cc2e6fe0a527c3b6c2f6049e51b73d398493114357207cc4e8152ec3777d20806",
+    "nonce": 5637866,
+    "rewardsAddress": "erd1fkplgu6zw75slwque9z5aaessf9pnvggsypmxv9yu6zrccajwfvsyfx9e7",
+    "position": 47
+  },
+  {
+    "bls": "afc149f209e7ead19b35ef4ae9a4b33d78b8d31f8e5fd55d8abbb656f93fdeaaa800ce629dff3963a5bee1c2f8080304a1ddea77da1380c75addf81dfdc8d74d5b3c28acbcfe51507cc1dc0d3fff1910aeaf604a79880066876319ffe05d7408",
+    "nonce": 5637866,
+    "rewardsAddress": "erd1fkplgu6zw75slwque9z5aaessf9pnvggsypmxv9yu6zrccajwfvsyfx9e7",
+    "position": 48
+  },
+  {
+    "bls": "149541bc63ca6fc84c856e6d9c6a956f26c2947fb987ffaddd9ae68f968226695f237861b35e6335ecabb23fa418c0175dfab1cb43fa6f806ebaa55ef57b509222cb374bd8ec89a39f29d65e67f5f9cdc4be514e02e8d9e54c6677b02a7dfc14",
+    "nonce": 5637885,
+    "rewardsAddress": "erd1ffjv27xd2u6fl9xygw79xwuhvq4fqkmda7zfjw73ht57m72s49uqawwz78",
+    "position": 49
+  },
+  {
+    "bls": "67cee622859725acc7d51210e7719e1729790e1cc003342f675855effe4e8f122db1468826f3f93c677804cf69b3f50ca9030b79f2b9ba37f2f111ecffe9fceaa3dc75b31dd726c1ea6123df9c76388ea4a6934e8522753089d7d214b9cd408b",
+    "nonce": 5637885,
+    "rewardsAddress": "erd1ffjv27xd2u6fl9xygw79xwuhvq4fqkmda7zfjw73ht57m72s49uqawwz78",
+    "position": 50
+  },
+  {
+    "bls": "24f3298e054088c4b11e1af833362d0d63994dc2b38c00de99b2efcc8de5a5e7cef1883994f06b1b13ea325e95db0006e0b3ba9c04bb38f2bf70f26c58d991d8a6f8a3c041a6c52bca1385d5b56083d3c7ae3cea3ba999abebd04be27162bb09",
+    "nonce": 5670177,
+    "rewardsAddress": "erd1w32p7nvlm3tdxfhwd75zc7tmn4y3v656kueu6avd7de4e4yyhaqsccthts",
+    "position": 51
+  },
+  {
+    "bls": "3da07900d813a55c709483790498e2cded55f07faa8b90a13ce4be384c04f94ef2d4a4201de7017feb6e5984a213851113467b0ca34c27582b40d2c441a293e3cf014ece74759415ab12e9e72185347006de0b8a821bc0cb547e90a64ad97709",
+    "nonce": 5670177,
+    "rewardsAddress": "erd1w32p7nvlm3tdxfhwd75zc7tmn4y3v656kueu6avd7de4e4yyhaqsccthts",
+    "position": 52
+  },
+  {
+    "bls": "0dfbb99d05df7bd28eac0fb2225c4908229349cb29431e977e7a21be3afb9cd58eb5310103f5cb6a4aa182625a95b501d2eb14dff44013fd712fedc0bd42b409846e749d509b738d925b0e89bd53a1dc50345de816845a75d805f7685624f080",
+    "nonce": 5681178,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqk0llllsm6h64t",
+    "position": 53
+  },
+  {
+    "bls": "17c68f27376573a64c75c9395905a500fffe2e21a2b460c45f2aa01cc9c52ad3b6d2a57dc8d0a3632112edc38a609c017767a350030fdf8e4dcf331a5a224b0c5d0f8b4606d86cf42a8823c8b14506bb29106d085ab514e6d582341156f68618",
+    "nonce": 5681178,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqk0llllsm6h64t",
+    "position": 54
+  },
+  {
+    "bls": "bfd563f644313dc1c4c9b69a6eb22b1b00a5afd9bedb0d7347d3e7bcaf5659839634c323e61ac52fa5d8588cfe3ce816cca5bcd26807be7f7eeb5f68b26e338616fa9e7b0e2495935651db91fde8932e01c72a38699db0028cf5351a5e099e83",
+    "nonce": 5726963,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqk0llllsm6h64t",
+    "position": 55
+  },
+  {
+    "bls": "084337cf07376aa155d5b1b61e7f33fead425719c1b38bfad79d216869565b10299bf02f73e6c95046be2732ad474010659f2b2612e3953f311a3137e7b8731d89ce001a246e78792145c99709a8efd23b52eb32ec388a7b44e2891962452d84",
+    "nonce": 5743868,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqvhlllls8ml0eg",
+    "position": 56
+  },
+  {
+    "bls": "62f4ed375f35570e57ab1726ba6943d92c6082ee3b210392e86f9669612d37ea50c1e4bcd117e274b5ba843e1fe1a401fa4c233d8a3d0ecc008c0fd331ff76e1b4daa40f122d7cb1cc47ce4a8cff0f25d5d04c285b182bdb9eecd6ee81ebbf16",
+    "nonce": 5745569,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqv8lllls3ydk0k",
+    "position": 57
+  },
+  {
+    "bls": "82112e0a48661240178db87887bd50d8848d1cac318797af5d1e324488ff63d639285d1c05e3efc0a4086a865cad1b1521bc15c107b4b4f6f357a067d7984cb078158b7fe5492d7306c097e0812d66c9ce7cf03b6abeab5eea965114ce32d309",
+    "nonce": 5781914,
+    "rewardsAddress": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqk0llllsm6h64t",
+    "position": 58
+  }
+]

@@ -7,6 +7,8 @@ import { NodeSort } from "src/endpoints/nodes/entities/node.sort";
 import { NodeStatus } from "src/endpoints/nodes/entities/node.status";
 import { NodeType } from "src/endpoints/nodes/entities/node.type";
 import { NodeService } from "src/endpoints/nodes/node.service";
+import { Provider } from "src/endpoints/providers/entities/provider";
+import { ProviderService } from "src/endpoints/providers/provider.service";
 import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 import Initializer from "./e2e-init";
@@ -14,7 +16,9 @@ import Initializer from "./e2e-init";
 describe('Node Service', () => {
   let nodeService: NodeService;
   let cachingService: CachingService;
+  let providerService: ProviderService;
   let nodes: Node[];
+  let providers: Provider[];
   let nodeSentinel: Node;
 
   beforeAll(async () => {
@@ -28,7 +32,9 @@ describe('Node Service', () => {
 
     nodeService = publicAppModule.get<NodeService>(NodeService);
     cachingService = publicAppModule.get<CachingService>(CachingService);
+    providerService = publicAppModule.get<ProviderService>(ProviderService);
     nodes = await nodeService.getAllNodes();
+    providers = await providerService.getAllProviders();
     nodeSentinel = nodes[0];
   });
 
@@ -46,7 +52,11 @@ describe('Node Service', () => {
 
       if(nodeKeybases) {
         for (let node of nodes) {
-          if (nodeKeybases[node.bls] && nodeKeybases[node.bls].confirmed) {
+          const nodeProvider = providers.find((provider) => node.provider === provider.provider);
+          if (nodeProvider?.identity) {
+            expect(node.identity).toStrictEqual(nodeProvider.identity);
+          }
+          else if (nodeKeybases[node.bls] && nodeKeybases[node.bls].confirmed) {
             expect(node.identity).toStrictEqual(nodeKeybases[node.bls].identity);
           }
           else {

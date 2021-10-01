@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import simpleGit, {SimpleGit, SimpleGitOptions} from 'simple-git';
 import { TokenAssets } from "src/endpoints/tokens/entities/token.assets";
+import { Constants } from "src/utils/constants";
 import { FileUtils } from "src/utils/file.utils";
 import { ApiConfigService } from "./api.config.service";
 import { CachingService } from "./caching.service";
@@ -61,7 +62,7 @@ export class TokenAssetService {
   }
 
   private getImageUrl(tokenIdentifier: string, name: string) {
-    return `${this.apiConfigService.getMediaUrl()}/tokens/asset/${tokenIdentifier}/${name}`;
+    return `${this.apiConfigService.getExternalMediaUrl()}/tokens/asset/${tokenIdentifier}/${name}`;
   }
 
   private getTokensPath() {
@@ -81,7 +82,7 @@ export class TokenAssetService {
     // read all folders from dist/repos/assets/tokens (token identifiers)
     let tokensPath = this.getTokensPath();
     if (!fs.existsSync(tokensPath)) {
-      return await this.cachingService.setCacheLocal('tokenAssets', {});
+      return await this.cachingService.setCache('tokenAssets', {}, Constants.oneDay());
     }
     
     let tokenIdentifiers = FileUtils.getDirectories(tokensPath);
@@ -94,11 +95,11 @@ export class TokenAssetService {
     }
 
     // create a dictionary with the being the token identifier and the value the TokenAssets entity and store it in the cache
-    return await this.cachingService.setCacheLocal('tokenAssets', assets);
+    return await this.cachingService.setCache('tokenAssets', assets, Constants.oneDay());
   }
 
   private async getOrReadAssets() {
-    let assets = await this.cachingService.getCacheLocal<{ [key: string] : TokenAssets }>('tokenAssets');
+    let assets = await this.cachingService.getCache<{ [key: string] : TokenAssets }>('tokenAssets');
     if (!assets) {
       assets = await this.readAssets();
     }

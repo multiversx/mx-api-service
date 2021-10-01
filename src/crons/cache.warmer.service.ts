@@ -12,6 +12,9 @@ import { Locker } from "src/utils/locker";
 import { CachingService } from "src/common/caching.service";
 import { ClientProxy } from "@nestjs/microservices";
 import { ApiConfigService } from "src/common/api.config.service";
+import { NetworkService } from "src/endpoints/network/network.service";
+import { AccountService } from "src/endpoints/accounts/account.service";
+import { GatewayService } from "src/common/gateway.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -25,7 +28,10 @@ export class CacheWarmerService {
     private readonly dataApiService: DataApiService,
     private readonly cachingService: CachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
-    private readonly apiConfigService: ApiConfigService
+    private readonly apiConfigService: ApiConfigService,
+    private readonly networkService: NetworkService,
+    private readonly accountService: AccountService,
+    private readonly gatewayService: GatewayService,
   ) { }
 
   @Cron('* * * * *')
@@ -52,7 +58,7 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('*/30 * * * *')
+  @Cron('* * * * *')
   async handleProviderInvalidations() {
     await Locker.lock('Providers invalidations', async () => {
       let providers = await this.providerService.getAllProvidersRaw();
@@ -82,6 +88,30 @@ export class CacheWarmerService {
         await this.invalidateKey('currentPrice', currentPrice, Constants.oneHour());
       }, true);
     }
+  }
+
+  @Cron('* * * * *')
+  async handleEconomicsInvalidations() {
+    await Locker.lock('Economics invalidations', async () => {
+      let economics = await this.networkService.getEconomicsRaw();
+      await this.invalidateKey('economics', economics, Constants.oneMinute() * 10);
+    }, true);
+  }
+
+  @Cron('* * * * *')
+  async handleAccountInvalidations() {
+    await Locker.lock('Accounts invalidations', async () => {
+      let accounts = await this.accountService.getAccountsRaw({ from: 0, size: 25 });
+      await this.invalidateKey('accounts:0:25', accounts, Constants.oneMinute() * 2);
+    }, true);
+  }
+
+  @Cron('* * * * *')
+  async handleHeartbeatStatusInvalidations() {
+    await Locker.lock('Heartbeatstatus invalidations', async () => {
+      let result = await this.gatewayService.getRaw('node/heartbeatstatus');
+      await this.invalidateKey('heartbeatstatus', result.data, Constants.oneMinute() * 2);
+    }, true);
   }
 
   private async invalidateKey(key: string, data: any, ttl: number) {

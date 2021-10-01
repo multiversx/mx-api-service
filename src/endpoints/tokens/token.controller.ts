@@ -7,6 +7,7 @@ import { Nft } from "./entities/nft";
 import { NftType } from "./entities/nft.type";
 import { TokenDetailed } from "./entities/token.detailed";
 import { TokenService } from "./token.service";
+import { NftDetailed } from "./entities/nft.detailed";
 
 @Controller()
 @ApiTags('tokens')
@@ -25,14 +26,16 @@ export class TokenController {
 	@ApiQuery({ name: 'search', description: 'Search by token name / identifier', required: false })
 	@ApiQuery({ name: 'name', description: 'Search by token name', required: false })
 	@ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
+	@ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
   async getTokens(
 		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('search') search: string | undefined,
 		@Query('name') name: string | undefined,
 		@Query('identifier') identifier: string | undefined,
+		@Query('identifiers') identifiers: string | undefined,
   ): Promise<TokenDetailed[]> {
-    return await this.tokenService.getTokens({ from, size }, { search, name, identifier });
+    return await this.tokenService.getTokens({ from, size }, { search, name, identifier, identifiers });
   }
 
   @Get("/tokens/count")
@@ -43,12 +46,14 @@ export class TokenController {
   @ApiQuery({ name: 'search', description: 'Filter tokens by token name', required: false })
 	@ApiQuery({ name: 'name', description: 'Search by token name', required: false })
 	@ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
+	@ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
   async getTokenCount(
     @Query('search') search: string | undefined,
 		@Query('name') name: string | undefined,
 		@Query('identifier') identifier: string | undefined,
-  ): Promise<number> {
-    return await this.tokenService.getTokenCount({ search, name, identifier });
+		@Query('identifiers') identifiers: string | undefined,
+    ): Promise<number> {
+    return await this.tokenService.getTokenCount({ search, name, identifier, identifiers });
   }
 
   @Get("/tokens/c")
@@ -57,8 +62,9 @@ export class TokenController {
     @Query('search') search: string | undefined,
 		@Query('name') name: string | undefined,
 		@Query('identifier') identifier: string | undefined,
-  ): Promise<number> {
-    return await this.tokenService.getTokenCount({ search, name, identifier });
+		@Query('identifiers') identifiers: string | undefined,
+    ): Promise<number> {
+    return await this.tokenService.getTokenCount({ search, name, identifier, identifiers });
   }
 
   @Get('/tokens/:identifier')
@@ -163,6 +169,7 @@ export class TokenController {
 	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
 	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
 	@ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
+  @ApiQuery({ name: 'withOwner', description: 'Return owner where type = NonFungibleESDT', required: false })
   async getNfts(
 		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -173,8 +180,9 @@ export class TokenController {
 		@Query('tags') tags: string | undefined,
 		@Query('creator') creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
-  ): Promise<Nft[]> {
-    return await this.tokenService.getNfts({ from, size }, { search, identifiers, type, collection, tags, creator, hasUris });
+    @Query('withOwner', new ParseOptionalBoolPipe) withOwner: boolean | undefined,
+  ): Promise<Nft[] | NftDetailed[]> {
+    return await this.tokenService.getNfts({ from, size }, { search, identifiers, type, collection, tags, creator, hasUris }, withOwner);
   }
 
   @Get("/nfts/count")

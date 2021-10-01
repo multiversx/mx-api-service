@@ -6,7 +6,9 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "prebuild": "rimraf dist",
+    "prebuild": "run-script-os",
+    "prebuild:nix": "rimraf dist",
+    "prebuild:windows": "rd /s /q dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start:dev": "npm run copy-devnet-config & nest start",
@@ -18,14 +20,30 @@
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "npm run copy-mainnet-config & nest build & jest",
     "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
+    "test:cov": "jest --coverage --forceExit --detectOpenHandles",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "npm run copy-mainnet-config & nest build & jest --config ./src/test/jest-e2e.json --forceExit --detectOpenHandles --runInBand",
-    "test:e2e:warm": "npm run copy-mainnet-config & nest build & jest --config ./src/test/jest-e2e-warm.json --forceExit --detectOpenHandles --runInBand",
-    "copy-devnet-config": "cp ./config/config.devnet.yaml ./config/config.yaml",
-    "copy-testnet-config": "cp ./config/config.testnet.yaml ./config/config.yaml",
-    "copy-mainnet-config": "cp ./config/config.mainnet.yaml ./config/config.yaml",
-    "copy-custom-config": "cp ./config/config.custom.yaml ./config/config.yaml"
+    "test:e2e": "npm run copy-e2e-mainnet-config & nest build & jest --config ./src/test/jest-e2e.json --forceExit --detectOpenHandles --runInBand",
+    "test:e2e:mocked": "npm run copy-e2e-mocked-mainnet-config & nest build & jest --config ./src/test/jest-e2e.json --forceExit --detectOpenHandles --runInBand",
+    "test:e2e:warm": "npm run copy-e2e-mainnet-config & nest build & jest --config ./src/test/jest-e2e-warm.json --forceExit --detectOpenHandles --runInBand",
+    "test:e2e:cov": "jest --config ./src/test/jest-e2e.json --coverage --forceExit --detectOpenHandles",
+    "copy-mainnet-config": "run-script-os",
+    "copy-testnet-config": "run-script-os",
+    "copy-devnet-config": "run-script-os",
+    "copy-custom-config": "run-script-os",
+    "copy-devnet-config:nix": "cp ./config/config.devnet.yaml ./config/config.yaml",
+    "copy-testnet-config:nix": "cp ./config/config.testnet.yaml ./config/config.yaml",
+    "copy-mainnet-config:nix": "cp ./config/config.mainnet.yaml ./config/config.yaml",
+    "copy-custom-config:nix": "cp ./config/config.custom.yaml ./config/config.yaml",
+    "copy-devnet-config:windows": "copy  .\\config\\config.devnet.yaml .\\config\\config.yaml",
+    "copy-testnet-config:windows": "copy  .\\config\\config.testnet.yaml .\\config\\config.yaml",
+    "copy-mainnet-config:windows": "copy  .\\config\\config.mainnet.yaml .\\config\\config.yaml",
+    "copy-custom-config:windows": "copy  .\\config\\config.custom.yaml .\\config\\config.yaml",
+    "copy-e2e-mainnet-config": "run-script-os",
+    "copy-e2e-mocked-mainnet-config": "run-script-os",
+    "copy-e2e-mainnet-config:nix": "cp ./config/config.e2e.mainnet.yaml ./config/config.yaml",
+    "copy-e2e-mocked-mainnet-config:nix": "cp ./config/config.e2e-mocked.mainnet.yaml ./config/config.yaml",
+    "copy-e2e-mainnet-config:windows": "copy .\\config\\config.e2e.mainnet.yaml .\\config\\config.yaml",
+    "copy-e2e-mocked-mainnet-config:windows": "copy .\\config\\config.e2e-mocked.mainnet.yaml .\\config\\config.yaml"
   },
   "dependencies": {
     "@elrondnetwork/erdjs": "^6.6.2",
@@ -38,8 +56,6 @@
     "@nestjs/schedule": "^1.0.1",
     "@nestjs/swagger": "^5.0.9",
     "@nestjs/websockets": "^8.0.6",
-    "@types/cache-manager": "^3.4.2",
-    "@types/request-ip": "0.0.37",
     "agentkeepalive": "^4.1.4",
     "axios": "^0.21.1",
     "bignumber.js": "^9.0.1",
@@ -67,6 +83,7 @@
     "@nestjs/testing": "^8.0.6",
     "@testing-library/jest-dom": "^5.14.1",
     "@types/axios": "^0.14.0",
+    "@types/cache-manager": "^3.4.2",
     "@types/cron": "^1.7.3",
     "@types/csrf": "^3.1.0",
     "@types/express": "^4.17.13",
@@ -75,11 +92,13 @@
     "@types/jsonwebtoken": "^8.5.5",
     "@types/node": "^16.6.1",
     "@types/redis": "^2.8.31",
+    "@types/request-ip": "0.0.37",
     "@types/socket.io": "^3.0.1",
     "@types/supertest": "^2.0.11",
     "@types/tiny-async-pool": "^1.0.0",
     "@typescript-eslint/eslint-plugin": "^4.29.2",
     "@typescript-eslint/parser": "^4.29.2",
+    "run-script-os": "^1.1.6",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
@@ -103,9 +122,9 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "./src/**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
+    "coverageDirectory": "./coverage/unit",
     "testEnvironment": "node",
     "roots": [
       "<rootDir>"
@@ -115,10 +134,6 @@
     ],
     "moduleDirectories": [
       "node_modules"
-    ],
-    "typeRoots": [
-      "../node_modules/@types",
-      "./test/typings"
     ]
   }
 }

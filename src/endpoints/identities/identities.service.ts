@@ -1,5 +1,4 @@
 import { Injectable } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api.config.service";
 import { CachingService } from "src/common/caching.service";
 import { KeybaseIdentity } from "src/common/entities/keybase.identity";
 import { KeybaseService } from "src/common/keybase.service";
@@ -17,7 +16,6 @@ export class IdentitiesService {
      private readonly nodeService: NodeService,
      private readonly keybaseService: KeybaseService,
      private readonly cachingService: CachingService,
-     private readonly apiConfigService: ApiConfigService,
   ) {}
 
   async getIdentity(identifier: string): Promise<Identity | undefined> {
@@ -165,8 +163,8 @@ export class IdentitiesService {
       }
     }
 
-    nodes.forEach((node) => {
-      const found = identitiesDetailed.find((identityDetailed) => identityDetailed.identity === node.identity);
+    for (let node of nodes) {
+      const found = identitiesDetailed.find((identityDetailed) => identityDetailed.identity == node.identity);
 
       if (found && node.identity && !!node.identity) {
         if (!found.nodes) {
@@ -180,7 +178,7 @@ export class IdentitiesService {
         identityDetailed.nodes = [node];
         identitiesDetailed.push(identityDetailed);
       }
-    });
+    };
 
     const { locked: totalLocked } = this.computeTotalStakeAndTopUp(nodes);
 
@@ -191,6 +189,9 @@ export class IdentitiesService {
         identity.avatar = identityDetailed.avatar;
         identity.description = identityDetailed.description;
         identity.name = identityDetailed.name;
+        identity.website = identityDetailed.website;
+        identity.twitter = identityDetailed.twitter;
+        identity.location = identityDetailed.location;
 
         const stakeInfo = this.getStakeInfoForIdentity(identityDetailed, BigInt(parseInt(totalLocked)));
         identity.score = stakeInfo.score ;
@@ -229,6 +230,7 @@ export class IdentitiesService {
   }
 
   private processIdentityAvatar(avatar: string): string {
-    return avatar.replace('https://s3.amazonaws.com/keybase_processed_uploads', `${this.apiConfigService.getMediaUrl()}/providers/asset`);
+    // return avatar.replace('https://s3.amazonaws.com/keybase_processed_uploads', `${this.apiConfigService.getExternalMediaUrl()}/providers/asset`);
+    return avatar;
   }
 }

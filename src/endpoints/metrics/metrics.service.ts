@@ -8,7 +8,10 @@ export class MetricsService {
   shards: number[] = [ 0, 1, 2, 4294967295 ];
 
   private static apiCallsHistogram: Histogram<string>;
+  private static pendingRequestsHistogram: Gauge<string>;
   private static externalCallsHistogram: Histogram<string>;
+  private static elasticDurationHistogram: Histogram<string>;
+  private static elasticTookHistogram: Histogram<string>;
   private static apiResponseSizeHistogram: Histogram<string>;
   private static currentNonceGauge: Gauge<string>;
   private static lastProcessedNonceGauge: Gauge<string>;
@@ -30,11 +33,37 @@ export class MetricsService {
       });
     }
 
+    if (!MetricsService.pendingRequestsHistogram) {
+      MetricsService.pendingRequestsHistogram = new Gauge({
+        name: 'pending_requests',
+        help: 'Pending requests',
+        labelNames: [ 'endpoint' ],
+      });
+    }
+
     if (!MetricsService.externalCallsHistogram) {
       MetricsService.externalCallsHistogram = new Histogram({
         name: 'external_apis',
         help: 'External Calls',
         labelNames: [ 'system' ],
+        buckets: [ ]
+      });
+    }
+
+    if (!MetricsService.elasticDurationHistogram) {
+      MetricsService.elasticDurationHistogram = new Histogram({
+        name: 'elastic_duration',
+        help: 'Elastic Duration',
+        labelNames: [ 'index' ],
+        buckets: [ ]
+      });
+    }
+
+    if (!MetricsService.elasticTookHistogram) {
+      MetricsService.elasticTookHistogram = new Histogram({
+        name: 'elastic_took',
+        help: 'Elastic Took',
+        labelNames: [ 'index' ],
         buckets: [ ]
       });
     }
@@ -91,8 +120,20 @@ export class MetricsService {
     MetricsService.apiResponseSizeHistogram.labels(endpoint).observe(responseSize);
   }
 
+  setPendingRequestsCount(count: number) {
+    MetricsService.pendingRequestsHistogram.set(count);
+  }
+
   setExternalCall(system: string, duration: number) {
     MetricsService.externalCallsHistogram.labels(system).observe(duration);
+  }
+
+  setElasticDuration(index: string, duration: number) {
+    MetricsService.elasticDurationHistogram.labels(index).observe(duration);
+  }
+
+  setElasticTook(index: string, took: number) {
+    MetricsService.elasticTookHistogram.labels(index).observe(took);
   }
 
   setLastProcessedNonce(shardId: number, nonce: number) {

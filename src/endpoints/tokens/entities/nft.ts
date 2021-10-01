@@ -44,4 +44,10 @@ export class Nft {
 
   @ApiProperty()
   metadata: NftMetadata | undefined = undefined;
+
+  @ApiProperty()
+  owner?: string;
+
+  @ApiProperty()
+  balance?: string;
 }

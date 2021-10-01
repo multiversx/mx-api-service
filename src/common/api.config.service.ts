@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class ApiConfigService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) { }
 
   getApiUrls(): string[] {
     const apiUrls = this.configService.get<string[]>('urls.api');
@@ -128,6 +128,18 @@ export class ApiConfigService {
     return this.configService.get<number>('keepAliveTimeout.upstream') ?? 60000;
   }
 
+  getUseRequestCachingFlag(): boolean {
+    return this.configService.get<boolean>('flags.useRequestCaching') ?? true;
+  }
+
+  getUseKeepAliveAgentFlag(): boolean {
+    return this.configService.get<boolean>('flags.useKeepAliveAgent') ?? true;
+  }
+
+  getUseTracingFlag(): boolean {
+    return this.configService.get<boolean>('flags.useTracing') ?? false;
+  }
+
   getProvidersUrl(): string {
     let providerUrl = this.configService.get<string>('urls.providers');
     if (!providerUrl) {
@@ -226,6 +238,15 @@ export class ApiConfigService {
     return mediaUrl;
   }
 
+  getExternalMediaUrl(): string {
+    let mediaUrl = this.getMediaUrl();
+    if (mediaUrl.endsWith('.')) {
+      return mediaUrl.substring(0, mediaUrl.length - 1);
+    }
+
+    return mediaUrl;
+  }
+
   getNftThumbnailsUrl(): string {
     let nftThumbnailsUrl = this.configService.get<string>('urls.nftThumbnails');
     if (!nftThumbnailsUrl) {
@@ -251,5 +272,26 @@ export class ApiConfigService {
     }
 
     return jwtSecret;
+  }
+
+  getExtrasApiUrl(): string | undefined {
+    return this.configService.get<string>('urls.extras');
+  }
+
+  getMockKeybases(): boolean | undefined {
+    return this.configService.get<boolean>('test.mockKeybases');
+  }
+
+  getMockNodes(): boolean | undefined {
+    return this.configService.get<boolean>('test.mockNodes');
+  }
+
+  getMockPath(): string | undefined {
+    let mockPath = this.configService.get<string>('test.mockPath');
+    if (mockPath === undefined) {
+      throw new Error('No mock path value present');
+    }
+
+    return mockPath;
   }
 }
