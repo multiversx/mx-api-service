@@ -120,8 +120,12 @@ export class NodeService {
         return false;
       }
 
-      if (query.issues !== undefined && node.issues !== undefined && (query.issues === true ? node.issues.length === 0 : node.issues.length > 0)) {
-        return false;
+      if (query.issues !== undefined) {
+        if (query.issues === true && (node.issues === undefined || node.issues.length === 0)) {
+          return false;
+        } else if (query.issues === false && node.issues !== undefined && node.issues.length > 0) {
+          return false;
+        }
       }
 
       if (query.identity && node.identity !== query.identity) {
