@@ -280,7 +280,7 @@ export class TokenService {
 
       if (isCustomThumbnail === true) {
         nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/custom/${nft.identifier}`;
-      } if (isStandardThumbnail === true) {
+      } else if (isStandardThumbnail === true) {
         nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/standard/${nft.identifier}`;
       } else if (nft.metadata && nft.metadata.fileType) {
         nft.thumbnailUrl = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/default/${nft.metadata.fileType.replace('/', '-')}`;
@@ -321,7 +321,7 @@ export class TokenService {
 
   async getTokensForAddress(address: string, queryPagination: QueryPagination): Promise<TokenWithBalance[]> {
     const { from, size } = queryPagination;
-    
+
     let tokens = await this.getAllTokensForAddress(address);
 
     tokens = tokens.slice(from, from + size);
@@ -381,7 +381,7 @@ export class TokenService {
       if (errorMessage && errorMessage.includes('account was not found')) {
         return [];
       }
-      
+
       throw error;
     }
 
@@ -594,7 +594,7 @@ export class TokenService {
 
   getTags(attributes: string): string[] {
     let decodedAttributes = BinaryUtils.base64Decode(attributes);
-    let match = decodedAttributes.match(/tags:(?<tags>[\w\s\,]*)/);
+    let match = decodedAttributes.match(/tags:(?<tags>[\w\s,]*)/);
     if (!match || !match.groups) {
       return [];
     }
@@ -684,7 +684,7 @@ export class TokenService {
     // this.logger.log('expires', JSON.stringify({ epochs, roundsPassed, roundsPerEpoch, roundDuration }));
 
     return now + fullEpochs + lastEpoch;
-  };
+  }
 
   async getAllTokens(): Promise<TokenDetailed[]> {
     return this.cachingService.getOrSetCache(
@@ -786,9 +786,9 @@ export class TokenService {
     }
 
     return tokenProps;
-  };
+  }
 
   canBool(string: string) {
     return string.split('-').pop() === 'true';
-  };
+  }
 }
