@@ -174,25 +174,43 @@ export class TokenService {
     return nftCollection;
   }
 
-  async getNfts(queryPagination: QueryPagination, filter: NftFilter, withOwner: boolean = false): Promise<Nft[] | NftDetailed[]> {
+  async getNfts(queryPagination: QueryPagination, filter: NftFilter, withOwner: boolean = false, withSupply: boolean = false): Promise<Nft[] | NftDetailed[]> {
     const { from, size } = queryPagination;
 
     let nfts =  await this.getNftsInternal(from, size, filter, undefined);
 
-    if (withOwner) {
-      let accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nfts.map(({identifier}) => identifier));
+    if (!withOwner && !withSupply) {
+      return nfts;
+    }
 
-      for (let nft of nfts) {
-        if (nft.type === NftType.NonFungibleESDT) {
+    let accountsEsdts;
+    if (withOwner) {
+      accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nfts.map(({identifier}) => identifier));
+    }
+
+    for (let nft of nfts) {
+      if (nft.type === NftType.NonFungibleESDT) {
+        if (withOwner) {
           const accountEsdt = accountsEsdts.find((accountEsdt: any) => accountEsdt.identifier == nft.identifier);
           if (accountEsdt) {
             nft.owner = accountEsdt.address;
           }
-        } else if (nft.type === NftType.SemiFungibleESDT) {
+        }
+      } else if (nft.type === NftType.SemiFungibleESDT) {
+        if (withOwner) {
           nft.balance = accountsEsdts.filter((x: any) => x.identifier === nft.identifier)
-            .map((x: any) => BigInt(x.balance))
-            .reduce((previous: BigInt, current: BigInt) => previous.valueOf() + current.valueOf(), BigInt(0))
-            .toString();
+          .map((x: any) => BigInt(x.balance))
+          .reduce((previous: BigInt, current: BigInt) => previous.valueOf() + current.valueOf(), BigInt(0))
+          .toString();
+        }
+
+        if (withSupply) {
+          const { supply } = await this.cachingService.getOrSetCache(
+            `supply:${nft.identifier}`,
+            async () => await this.gatewayService.get(`network/esdt/supply/${nft.identifier}`),
+            Constants.oneHour()
+          );
+          nft.supply = supply;
         }
       }
     }
