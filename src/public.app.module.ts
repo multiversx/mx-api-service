@@ -67,6 +67,7 @@ import { NftExtendedAttributesService } from './common/nft.extendedattributes.se
 import { TransactionGetService } from './endpoints/transactions/transaction.get.service';
 import { TokenTransferService } from './endpoints/transactions/token.transfer.service';
 import { TransactionPriceService } from './endpoints/transactions/transaction.price.service';
+import { NftService } from './endpoints/nfts/nft.service';
 
 @Module({
   imports: [
@@ -108,7 +109,7 @@ import { TransactionPriceService } from './endpoints/transactions/transaction.pr
     TokenAssetService, DataApiService, KeysService, WaitingListService, BlsService, TagService, ExtrasApiService,
     TransactionScamCheckService, PotentialScamTransactionChecker, NftThumbnailService, NftExtendedAttributesService,
     TransactionGetService, TokenTransferService,
-    TransactionPriceService,
+    TransactionPriceService, NftService,
   ],
   exports: [
     ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService,
