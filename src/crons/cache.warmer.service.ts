@@ -3,7 +3,6 @@ import { Cron } from "@nestjs/schedule";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
-import { TokenService } from "src/endpoints/tokens/token.service";
 import { DataApiService } from "src/common/data.api.service";
 import { DataQuoteType } from "src/common/entities/data.quote.type";
 import { KeybaseService } from "src/common/keybase.service";

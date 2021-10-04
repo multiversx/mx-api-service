@@ -114,8 +114,8 @@ import { EsdtService } from './common/esdt.service';
   ],
   exports: [
     ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService,
-    TokenService, ShardService, IdentitiesService, ProviderService, KeybaseService, DataApiService, ApiService,
-    BlsService, NetworkService, AccountService,
+    ShardService, IdentitiesService, ProviderService, KeybaseService, DataApiService, ApiService,
+    BlsService, NetworkService, AccountService, EsdtService,
   ]
 })
 export class PublicAppModule { }
