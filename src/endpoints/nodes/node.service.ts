@@ -87,6 +87,17 @@ export class NodeService {
       data[key] = parseFloat((data[key] / sum).toFixed(2));
     });
 
+    const numbers: number[] = Object.values(data);
+    const totalSum = numbers.reduce((previous: number, current: number) => previous + current, 0);
+    const largestNumber = numbers.sort((a: number, b: number) => b - a)[0];
+
+    for (let key of Object.keys(data)) {
+      if (data[key] === largestNumber) {
+        data[key] = parseFloat((largestNumber + 1 - totalSum).toFixed(2));
+        break;
+      }
+    }
+
     return data;
   }
 
