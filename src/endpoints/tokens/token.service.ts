@@ -183,39 +183,34 @@ export class TokenService {
   async getNfts(queryPagination: QueryPagination, filter: NftFilter, withOwner: boolean = false, withSupply: boolean = false): Promise<Nft[] | NftDetailed[]> {
     const { from, size } = queryPagination;
 
-    let nfts =  await this.getNftsInternal(from, size, filter, undefined);
+    let nfts = await this.getNftsInternal(from, size, filter, undefined);
 
-    if (!withOwner && !withSupply) {
-      return nfts;
-    }
-
-    let accountsEsdts;
     if (withOwner) {
-      accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nfts.map(({identifier}) => identifier));
-    }
+      const accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nfts.map(({identifier}) => identifier));
 
-    for (let nft of nfts) {
-      if (nft.type === NftType.NonFungibleESDT) {
-        if (withOwner) {
+      for (let nft of nfts) {
+        if (nft.type === NftType.NonFungibleESDT) {
           const accountEsdt = accountsEsdts.find((accountEsdt: any) => accountEsdt.identifier == nft.identifier);
           if (accountEsdt) {
             nft.owner = accountEsdt.address;
           }
-        }
-      } else if (nft.type === NftType.SemiFungibleESDT) {
-        if (withOwner) {
+        } else if (nft.type === NftType.SemiFungibleESDT) {
           nft.balance = accountsEsdts.filter((x: any) => x.identifier === nft.identifier)
           .map((x: any) => BigInt(x.balance))
           .reduce((previous: BigInt, current: BigInt) => previous.valueOf() + current.valueOf(), BigInt(0))
           .toString();
         }
+      }
+    }
 
-        if (withSupply) {
+    if (withSupply) {
+      for (let nft of nfts) {
+        if (nft.type === NftType.SemiFungibleESDT && withSupply) {
           nft.supply = await this.cachingService.getOrSetCache(
-            `getTokenSupply:${nft.identifier}`,
+            `tokenSupply:${nft.identifier}`,
             async () => await this.getTokenSupply(nft.identifier),
             Constants.oneHour()
-          );;
+          );
         }
       }
     }
