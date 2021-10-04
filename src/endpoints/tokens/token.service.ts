@@ -174,6 +174,12 @@ export class TokenService {
     return nftCollection;
   }
 
+  async getTokenSupply(identifier: string) {
+    const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`);
+
+    return supply;
+  }
+
   async getNfts(queryPagination: QueryPagination, filter: NftFilter, withOwner: boolean = false, withSupply: boolean = false): Promise<Nft[] | NftDetailed[]> {
     const { from, size } = queryPagination;
 
@@ -205,12 +211,11 @@ export class TokenService {
         }
 
         if (withSupply) {
-          const { supply } = await this.cachingService.getOrSetCache(
-            `supply:${nft.identifier}`,
-            async () => await this.gatewayService.get(`network/esdt/supply/${nft.identifier}`),
+          nft.supply = await this.cachingService.getOrSetCache(
+            `getTokenSupply:${nft.identifier}`,
+            async () => await this.getTokenSupply(nft.identifier),
             Constants.oneHour()
-          );
-          nft.supply = supply;
+          );;
         }
       }
     }
