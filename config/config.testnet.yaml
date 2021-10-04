@@ -4,9 +4,9 @@ api:
   public: true
   private: true
 cron:
-  transactionProcessor: false
+  transactionProcessor: true
   transactionProcessorMaxLookBehind: 100
-  cacheWarmer: false
+  cacheWarmer: true
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true
