@@ -103,13 +103,20 @@ export class NftService {
     return nftCollection;
   }
 
-  async getNfts(queryPagination: QueryPagination, filter: NftFilter, withOwner: boolean = false): Promise<Nft[] | NftDetailed[]> {
+  private async getSftSupply(identifier: string) {
+    const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`);
+
+    return supply;
+  }
+
+  async getNfts(queryPagination: QueryPagination, filter: NftFilter, withOwner: boolean = false, withSupply: boolean = false): Promise<Nft[] | NftDetailed[]> {
     const { from, size } = queryPagination;
 
     let nfts =  await this.getNftsInternal(from, size, filter, undefined);
 
+    
     if (withOwner) {
-      let accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nfts.map(({identifier}) => identifier));
+      const accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nfts.map(({identifier}) => identifier));
 
       for (let nft of nfts) {
         if (nft.type === NftType.NonFungibleESDT) {
@@ -119,9 +126,21 @@ export class NftService {
           }
         } else if (nft.type === NftType.SemiFungibleESDT) {
           nft.balance = accountsEsdts.filter((x: any) => x.identifier === nft.identifier)
-            .map((x: any) => BigInt(x.balance))
-            .reduce((previous: BigInt, current: BigInt) => previous.valueOf() + current.valueOf(), BigInt(0))
-            .toString();
+          .map((x: any) => BigInt(x.balance))
+          .reduce((previous: BigInt, current: BigInt) => previous.valueOf() + current.valueOf(), BigInt(0))
+          .toString();
+        }
+      }
+    }
+
+    if (withSupply) {
+      for (let nft of nfts) {
+        if (nft.type === NftType.SemiFungibleESDT && withSupply) {
+          nft.supply = await this.cachingService.getOrSetCache(
+            `tokenSupply:${nft.identifier}`,
+            async () => await this.getSftSupply(nft.identifier),
+            Constants.oneHour()
+          );
         }
       }
     }
