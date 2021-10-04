@@ -50,4 +50,7 @@ export class Nft {
 
   @ApiProperty()
   balance?: string;
+
+  @ApiProperty()
+  supply?: string;
 }
