@@ -2,16 +2,16 @@ import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Pa
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
-import { Nft } from "../tokens/entities/nft";
-import { NftCollection } from "../tokens/entities/nft.collection";
-import { NftDetailed } from "../tokens/entities/nft.detailed";
-import { NftType } from "../tokens/entities/nft.type";
-import { TokenService } from "../tokens/token.service";
+import { Nft } from "./entities/nft";
+import { NftCollection } from "./entities/nft.collection";
+import { NftDetailed } from "./entities/nft.detailed";
+import { NftType } from "./entities/nft.type";
+import { NftService } from "./nft.service";
 
 @Controller()
 @ApiTags('nfts')
 export class NftController {
-  constructor(private readonly tokenService: TokenService) {}
+  constructor(private readonly nftService: NftService) {}
 
   @Get("/collections")
   @ApiResponse({
@@ -32,7 +32,7 @@ export class NftController {
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
 		@Query('issuer') issuer: string | undefined,
   ): Promise<NftCollection[]> {
-    return await this.tokenService.getNftCollections({ from, size }, { search, type, issuer, identifiers: [] });
+    return await this.nftService.getNftCollections({ from, size }, { search, type, issuer, identifiers: [] });
   }
 
   @Get("/collections/count")
@@ -48,7 +48,7 @@ export class NftController {
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
 		@Query('issuer') issuer: string | undefined,
   ): Promise<number> {
-    return await this.tokenService.getNftCollectionCount({ search, type, issuer, identifiers: [] });
+    return await this.nftService.getNftCollectionCount({ search, type, issuer, identifiers: [] });
   }
 
   @Get("/collections/c")
@@ -58,7 +58,7 @@ export class NftController {
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
 		@Query('issuer') issuer: string | undefined,
   ): Promise<number> {
-    return await this.tokenService.getNftCollectionCount({ search, type, issuer, identifiers: [] });
+    return await this.nftService.getNftCollectionCount({ search, type, issuer, identifiers: [] });
   }
 
   @Get('/collections/:collection')
@@ -72,7 +72,7 @@ export class NftController {
     description: 'Token collection not found'
   })
   async getNftCollection(@Param('collection') collection: string): Promise<NftCollection> {
-    let token = await this.tokenService.getNftCollection(collection);
+    let token = await this.nftService.getNftCollection(collection);
     if (token === undefined) {
       throw new HttpException('NFT collection not found', HttpStatus.NOT_FOUND);
     }
@@ -109,7 +109,7 @@ export class NftController {
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
     @Query('withOwner', new ParseOptionalBoolPipe) withOwner: boolean | undefined,
   ): Promise<Nft[] | NftDetailed[]> {
-    return await this.tokenService.getNfts({ from, size }, { search, identifiers, type, collection, tags, creator, hasUris }, withOwner);
+    return await this.nftService.getNfts({ from, size }, { search, identifiers, type, collection, tags, creator, hasUris }, withOwner);
   }
 
   @Get("/nfts/count")
@@ -133,7 +133,7 @@ export class NftController {
 		@Query('creator') creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<number> {
-    return await this.tokenService.getNftCount({ search, identifiers, type, collection, tags, creator, hasUris });
+    return await this.nftService.getNftCount({ search, identifiers, type, collection, tags, creator, hasUris });
   }
 
   @Get("/nfts/c")
@@ -147,7 +147,7 @@ export class NftController {
 		@Query('creator') creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<number> {
-    return await this.tokenService.getNftCount({ search, identifiers, type, collection, tags, creator, hasUris });
+    return await this.nftService.getNftCount({ search, identifiers, type, collection, tags, creator, hasUris });
   }
 
   @Get('/nfts/:identifier')
@@ -161,7 +161,7 @@ export class NftController {
     description: 'Token not found'
   })
   async getNft(@Param('identifier') identifier: string): Promise<Nft> {
-    let token = await this.tokenService.getSingleNft(identifier);
+    let token = await this.nftService.getSingleNft(identifier);
     if (token === undefined) {
       throw new HttpException('NFT not found', HttpStatus.NOT_FOUND);
     }

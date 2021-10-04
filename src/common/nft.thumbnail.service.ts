@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Nft } from "src/endpoints/tokens/entities/nft";
+import { Nft } from "src/endpoints/nfts/entities/nft";
 import { Constants } from "src/utils/constants";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";

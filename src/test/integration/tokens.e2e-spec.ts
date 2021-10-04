@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import { TokenDetailed } from 'src/endpoints/tokens/entities/token.detailed';
-import { Nft } from 'src/endpoints/tokens/entities/nft';
+import { Nft } from 'src/endpoints/nfts/entities/nft';
 import { NftType } from 'src/endpoints/tokens/entities/nft.type';
 import { TokenService } from 'src/endpoints/tokens/token.service';
 import { NftFilter } from 'src/endpoints/tokens/entities/nft.filter';
