@@ -5,7 +5,6 @@ import { ElasticService } from "src/common/elastic.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayService } from "src/common/gateway.service";
 import { NftExtendedAttributesService } from "src/common/nft.extendedattributes.service";
-import { NftThumbnailService } from "src/common/nft.thumbnail.service";
 import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
@@ -31,7 +30,6 @@ export class NftService {
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly elasticService: ElasticService,
-    private readonly nftThumbnailService: NftThumbnailService,
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     private readonly esdtService: EsdtService,
   ) {
@@ -240,7 +238,7 @@ export class NftService {
       nfts.push(nft);
     }
 
-    await this.nftThumbnailService.updateThumbnailUrlForNfts(nfts);
+    await this.updateThumbnailUrlForNfts(nfts);
 
     for (let nft of nfts) {
       if (!nft.name || !nft.type) {
@@ -259,6 +257,14 @@ export class NftService {
 
     return nfts;
   }
+
+  updateThumbnailUrlForNfts(nfts: Nft[]) {
+    let mediaNfts = nfts.filter(nft => nft.uris.filter(uri => uri).length > 0);
+    for (let mediaNft of mediaNfts) {
+      mediaNft.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${mediaNft.identifier}`;
+    }
+  }
+
 
   async getNftCount(filter: NftFilter): Promise<number> {
     return await this.elasticService.getTokenCount(filter);
@@ -403,7 +409,7 @@ export class NftService {
 
     await this.filterNfts(filter, nfts);
 
-    await this.nftThumbnailService.updateThumbnailUrlForNfts(nfts);
+    await this.updateThumbnailUrlForNfts(nfts);
 
     return nfts;
   }
