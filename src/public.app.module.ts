@@ -11,6 +11,7 @@ import { NetworkService } from './endpoints/network/network.service';
 import { TransactionController } from './endpoints/transactions/transaction.controller';
 import { TransactionService } from './endpoints/transactions/transaction.service';
 import { TokenController } from './endpoints/tokens/token.controller';
+import { NftController } from './endpoints/nfts/nft.controller';
 import { TokenService } from './endpoints/tokens/token.service';
 import { BlockService } from './endpoints/blocks/block.service';
 import { BlockController } from './endpoints/blocks/block.controller';
@@ -96,7 +97,7 @@ import { TransactionPriceService } from './endpoints/transactions/transaction.pr
     MiniBlockController, RoundController, NodeController, ProviderController,
     DelegationLegacyController, StakeController, DelegationController,
     VmQueryController, ShardController, IdentitiesController, ProxyController,
-    KeysController, WaitingListController, TagController
+    KeysController, WaitingListController, TagController, NftController,
   ],
   providers: [
     NetworkService, ApiConfigService, AccountService, ElasticService, GatewayService, TransactionService,
