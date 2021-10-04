@@ -170,6 +170,7 @@ export class TokenController {
 	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
 	@ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
   @ApiQuery({ name: 'withOwner', description: 'Return owner where type = NonFungibleESDT', required: false })
+  @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false })
   async getNfts(
 		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -181,8 +182,9 @@ export class TokenController {
 		@Query('creator') creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
     @Query('withOwner', new ParseOptionalBoolPipe) withOwner: boolean | undefined,
+    @Query('withSupply', new ParseOptionalBoolPipe) withSupply: boolean | undefined,
   ): Promise<Nft[] | NftDetailed[]> {
-    return await this.tokenService.getNfts({ from, size }, { search, identifiers, type, collection, tags, creator, hasUris }, withOwner);
+    return await this.tokenService.getNfts({ from, size }, { search, identifiers, type, collection, tags, creator, hasUris }, withOwner, withSupply);
   }
 
   @Get("/nfts/count")
