@@ -292,6 +292,44 @@ export class NftService {
     return nfts.length;
   }
 
+  private async filterNfts(filter: NftFilter, nfts: NftAccount[]): Promise<NftAccount[]> {
+    if (filter.search) {
+      let searchLower = filter.search.toLowerCase();
+
+      nfts = nfts.filter(x => x.name.toLowerCase().includes(searchLower));
+    }
+
+    if (filter.type) {
+      nfts = nfts.filter(x => x.type === filter.type);
+    }
+
+    if (filter.collection) {
+      nfts = nfts.filter(x => x.collection === filter.collection);
+    }
+
+    if (filter.collections) {
+      const collectionArray = filter.collections.split(',');
+      nfts = nfts.filter(x => collectionArray.includes(x.collection));
+    }
+
+    if (filter.tags) {
+      let tagsArray = filter.tags.split(',');
+      nfts = nfts.filter(nft => tagsArray.filter(tag => nft.tags.includes(tag)).length === tagsArray.length);
+    }
+
+    if (filter.creator) {
+      nfts = nfts.filter(x => x.creator === filter.creator);
+    }
+
+    if (filter.hasUris === true) {
+      nfts = nfts.filter(x => x.uris.length > 0);
+    } else if (filter.hasUris === false) {
+      nfts = nfts.filter(x => x.uris.length === 0);
+    }
+
+    return nfts;
+  }
+
   async getNftsForAddressInternal(address: string, filter: NftFilter): Promise<NftAccount[]> {
     let esdts = await this.esdtService.getAllEsdtsForAddress(address);
 
@@ -344,39 +382,7 @@ export class NftService {
       nfts.push(nft);
     }
 
-    if (filter.search) {
-      let searchLower = filter.search.toLowerCase();
-
-      nfts = nfts.filter(x => x.name.toLowerCase().includes(searchLower));
-    }
-
-    if (filter.type) {
-      nfts = nfts.filter(x => x.type === filter.type);
-    }
-
-    if (filter.collection) {
-      nfts = nfts.filter(x => x.collection === filter.collection);
-    }
-
-    if (filter.collections) {
-      const collectionArray = filter.collections.split(',');
-      nfts = nfts.filter(x => collectionArray.includes(x.collection));
-    }
-
-    if (filter.tags) {
-      let tagsArray = filter.tags.split(',');
-      nfts = nfts.filter(nft => tagsArray.filter(tag => nft.tags.includes(tag)).length === tagsArray.length);
-    }
-
-    if (filter.creator) {
-      nfts = nfts.filter(x => x.creator === filter.creator);
-    }
-
-    if (filter.hasUris === true) {
-      nfts = nfts.filter(x => x.uris.length > 0);
-    } else if (filter.hasUris === false) {
-      nfts = nfts.filter(x => x.uris.length === 0);
-    }
+    await this.filterNfts(filter, nfts);
 
     await this.nftThumbnailService.updateThumbnailUrlForNfts(nfts);
 
