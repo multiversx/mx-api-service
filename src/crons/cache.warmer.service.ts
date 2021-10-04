@@ -15,13 +15,14 @@ import { ApiConfigService } from "src/common/api.config.service";
 import { NetworkService } from "src/endpoints/network/network.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { GatewayService } from "src/common/gateway.service";
+import { EsdtService } from "src/common/esdt.service";
 
 @Injectable()
 export class CacheWarmerService {
 
   constructor(
     private readonly nodeService: NodeService,
-    private readonly tokenService: TokenService,
+    private readonly esdtService: EsdtService,
     private readonly identitiesService: IdentitiesService,
     private readonly providerService: ProviderService,
     private readonly keybaseService: KeybaseService,
@@ -43,10 +44,10 @@ export class CacheWarmerService {
   }
 
   @Cron('* * * * *')
-  async handleTokenInvalidations() {
-    await Locker.lock('Tokens invalidations', async () => {
-      let tokens = await this.tokenService.getAllTokensRaw();
-      await this.invalidateKey('allTokens', tokens, Constants.oneHour());
+  async handleEsdtTokenInvalidations() {
+    await Locker.lock('Esdt tokens invalidations', async () => {
+      let tokens = await this.esdtService.getAllEsdtTokensRaw();
+      await this.invalidateKey('allEsdtTokens', tokens, Constants.oneHour());
     }, true);
   }
 

@@ -19,7 +19,7 @@ import { NftFilter } from "./entities/nft.filter";
 import { NftOwner } from "./entities/nft.owner";
 import { NftType } from "./entities/nft.type";
 import { TokenProperties } from "../tokens/entities/token.properties";
-import { TokenService } from "../tokens/token.service";
+import { EsdtService } from "src/common/esdt.service";
 
 @Injectable()
 export class NftService {
@@ -33,7 +33,7 @@ export class NftService {
     private readonly elasticService: ElasticService,
     private readonly nftThumbnailService: NftThumbnailService,
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
-    private readonly tokenService: TokenService,
+    private readonly esdtService: EsdtService,
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -42,7 +42,7 @@ export class NftService {
   async getCollection(identifier: string): Promise<TokenProperties | undefined> {
     let properties = await this.cachingService.getOrSetCache(
       `nft:${identifier}`,
-      async () => await this.tokenService.getTokenProperties(identifier),
+      async () => await this.esdtService.getEsdtTokenProperties(identifier),
       Constants.oneWeek(),
       Constants.oneDay()
     );
@@ -293,7 +293,7 @@ export class NftService {
   }
 
   async getNftsForAddressInternal(address: string, filter: NftFilter): Promise<NftAccount[]> {
-    let esdts = await this.tokenService.getAllEsdts(address);
+    let esdts = await this.esdtService.getAllEsdtsForAddress(address);
 
     let gatewayNfts = Object.values(esdts).map(x => x as any);
 
