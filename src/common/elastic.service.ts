@@ -1,6 +1,4 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { NftFilter } from "src/endpoints/tokens/entities/nft.filter";
-import { NftType } from "src/endpoints/tokens/entities/nft.type";
 import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
@@ -12,6 +10,8 @@ import { QueryType } from "./entities/elastic/query.type";
 import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { ElasticPagination } from "./entities/elastic/elastic.pagination";
+import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
+import { NftType } from "src/endpoints/nfts/entities/nft.type";
 
 @Injectable()
 export class ElasticService {

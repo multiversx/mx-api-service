@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { NftMetadata } from "src/endpoints/tokens/entities/nft.metadata";
+import { NftMetadata } from "src/endpoints/nfts/entities/nft.metadata";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
 import { TokenUtils } from "src/utils/tokens.utils";

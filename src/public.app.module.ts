@@ -11,6 +11,7 @@ import { NetworkService } from './endpoints/network/network.service';
 import { TransactionController } from './endpoints/transactions/transaction.controller';
 import { TransactionService } from './endpoints/transactions/transaction.service';
 import { TokenController } from './endpoints/tokens/token.controller';
+import { NftController } from './endpoints/nfts/nft.controller';
 import { TokenService } from './endpoints/tokens/token.service';
 import { BlockService } from './endpoints/blocks/block.service';
 import { BlockController } from './endpoints/blocks/block.controller';
@@ -65,6 +66,8 @@ import { NftExtendedAttributesService } from './common/nft.extendedattributes.se
 import { TransactionGetService } from './endpoints/transactions/transaction.get.service';
 import { TokenTransferService } from './endpoints/transactions/token.transfer.service';
 import { TransactionPriceService } from './endpoints/transactions/transaction.price.service';
+import { NftService } from './endpoints/nfts/nft.service';
+import { EsdtService } from './common/esdt.service';
 
 @Module({
   imports: [
@@ -95,7 +98,7 @@ import { TransactionPriceService } from './endpoints/transactions/transaction.pr
     MiniBlockController, RoundController, NodeController, ProviderController,
     DelegationLegacyController, StakeController, DelegationController,
     VmQueryController, ShardController, IdentitiesController, ProxyController,
-    KeysController, WaitingListController, TagController
+    KeysController, WaitingListController, TagController, NftController,
   ],
   providers: [
     NetworkService, ApiConfigService, AccountService, ElasticService, GatewayService, TransactionService,
@@ -106,12 +109,12 @@ import { TransactionPriceService } from './endpoints/transactions/transaction.pr
     TokenAssetService, DataApiService, KeysService, WaitingListService, BlsService, TagService, ExtrasApiService,
     TransactionScamCheckService, PotentialScamTransactionChecker, NftExtendedAttributesService,
     TransactionGetService, TokenTransferService,
-    TransactionPriceService,
+    TransactionPriceService, NftService, EsdtService
   ],
   exports: [
     ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService,
-    TokenService, ShardService, IdentitiesService, ProviderService, KeybaseService, DataApiService, ApiService,
-    BlsService, NetworkService, AccountService,
+    ShardService, IdentitiesService, ProviderService, KeybaseService, DataApiService, ApiService,
+    BlsService, NetworkService, AccountService, EsdtService,
   ]
 })
 export class PublicAppModule { }
