@@ -3,7 +3,6 @@ import { Cron } from "@nestjs/schedule";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
-import { TokenService } from "src/endpoints/tokens/token.service";
 import { DataApiService } from "src/common/data.api.service";
 import { DataQuoteType } from "src/common/entities/data.quote.type";
 import { KeybaseService } from "src/common/keybase.service";
@@ -15,13 +14,14 @@ import { ApiConfigService } from "src/common/api.config.service";
 import { NetworkService } from "src/endpoints/network/network.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { GatewayService } from "src/common/gateway.service";
+import { EsdtService } from "src/common/esdt.service";
 
 @Injectable()
 export class CacheWarmerService {
 
   constructor(
     private readonly nodeService: NodeService,
-    private readonly tokenService: TokenService,
+    private readonly esdtService: EsdtService,
     private readonly identitiesService: IdentitiesService,
     private readonly providerService: ProviderService,
     private readonly keybaseService: KeybaseService,
@@ -43,10 +43,10 @@ export class CacheWarmerService {
   }
 
   @Cron('* * * * *')
-  async handleTokenInvalidations() {
-    await Locker.lock('Tokens invalidations', async () => {
-      let tokens = await this.tokenService.getAllTokensRaw();
-      await this.invalidateKey('allTokens', tokens, Constants.oneHour());
+  async handleEsdtTokenInvalidations() {
+    await Locker.lock('Esdt tokens invalidations', async () => {
+      let tokens = await this.esdtService.getAllEsdtTokensRaw();
+      await this.invalidateKey('allEsdtTokens', tokens, Constants.oneHour());
     }, true);
   }
 

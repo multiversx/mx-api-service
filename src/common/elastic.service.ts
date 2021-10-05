@@ -1,6 +1,4 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { NftFilter } from "src/endpoints/tokens/entities/nft.filter";
-import { NftType } from "src/endpoints/tokens/entities/nft.type";
 import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
@@ -12,6 +10,8 @@ import { QueryType } from "./entities/elastic/query.type";
 import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { ElasticPagination } from "./entities/elastic/elastic.pagination";
+import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
+import { NftType } from "src/endpoints/nfts/entities/nft.type";
 
 @Injectable()
 export class ElasticService {
@@ -93,16 +93,7 @@ export class ElasticService {
   };
 
   async getAccountEsdtByIdentifier(identifier: string) {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.condition.must = [
-      QueryType.Match('identifier', identifier, QueryOperator.AND),
-    ]
-
-    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
-
-    let documents = await this.getDocuments('accountsesdt', elasticQuery);
-
-    return documents.map((document: any) => this.formatItem(document, 'identifier'));
+    return this.getAccountEsdtByIdentifiers([ identifier ]);
   }
 
   async getTokensByIdentifiers(identifiers: string[]) {
@@ -126,12 +117,14 @@ export class ElasticService {
     pagination.size = 10000;
     elasticQueryAdapter.pagination = pagination;
 
-
     const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
-    let documents = await this.getDocuments('accountsesdt', elasticQuery);
+    const documents = await this.getDocuments('accountsesdt', elasticQuery);
 
-    return documents.map((document: any) => this.formatItem(document, 'identifier'));
+    let result = documents.map((document: any) => this.formatItem(document, 'identifier'));
+    result.reverse();
+
+    return result;
   }
 
   async getAccountEsdtByAddress(address: string, from: number, size: number, token: string | undefined) {
