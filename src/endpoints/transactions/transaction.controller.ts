@@ -70,7 +70,7 @@ export class TransactionController {
         after,
         from, 
         size
-    }, withScResults);
+    }, { withScResults });
   }
 
   @Get("/transactions/count")

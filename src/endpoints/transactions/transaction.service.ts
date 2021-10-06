@@ -22,6 +22,7 @@ import { TransactionScamInfo } from './entities/transaction-scam-info';
 import { TransactionGetService } from './transaction.get.service';
 import { TokenTransferService } from './token.transfer.service';
 import { TransactionPriceService } from './transaction.price.service';
+import { TransactionQueryOptions } from './entities/transactions.query.options';
 
 @Injectable()
 export class TransactionService {
@@ -95,7 +96,7 @@ export class TransactionService {
     return await this.elasticService.getCount('transactions', elasticQueryAdapter);
   }
 
-  async getTransactions(filter: TransactionFilter, withScResults: boolean = false): Promise<(Transaction | TransactionDetailed)[]> {
+  async getTransactions(filter: TransactionFilter, queryOptions: TransactionQueryOptions): Promise<(Transaction | TransactionDetailed)[]> {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
 
     const { from, size } = filter;
@@ -143,7 +144,7 @@ export class TransactionService {
         }
       }
 
-      if (withScResults) {
+      if (queryOptions.withScResults) {
       // Add scResults to transaction details
         const detailedTransactions: TransactionDetailed[] = [];
         for (let transaction of transactions) {
