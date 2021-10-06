@@ -78,7 +78,7 @@ export class VmQueryService {
       let data = result.data.data;
 
       return 'ReturnData' in data ? data.ReturnData : data.returnData;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error in vm query for address '${contract}', function '${func}', caller '${caller}', args '${JSON.stringify(args)}'. Error message: ${error.response?.data?.error}`);
       throw error;
     }
