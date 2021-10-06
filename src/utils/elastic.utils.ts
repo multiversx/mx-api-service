@@ -6,8 +6,24 @@ import { QueryConditionOptions } from "src/common/entities/elastic/query.conditi
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { ApiUtils } from "./api.utils";
 
+function buildElasticIndexerSort(sorts: ElasticSortProperty[]): any[] {
+  if (!sorts) {
+    return [];
+  }
+
+  return sorts.map((sortProp: ElasticSortProperty) => ({[sortProp.name]: { order: sortProp.order}}));
+};
+
+function getConditionOption(condition: QueryCondition): QueryConditionOptions {
+  if (condition.should.length !== 0 && condition.must.length === 0) {
+    return QueryConditionOptions.should;
+  }
+
+  return QueryConditionOptions.must;
+}
+
 export class ElasticUtils {
-  static boilerplate(condition: QueryConditionOptions, queries: AbstractQuery[], pagination?: QueryPagination, sort?: ElasticSortProperty[]) {
+  static boilerplate(condition: QueryConditionOptions, queries: AbstractQuery[], pagination?: QueryPagination, sort?: ElasticSortProperty[]): ElasticQuery {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
     if (pagination) {
       elasticQueryAdapter.pagination = pagination;
@@ -20,9 +36,9 @@ export class ElasticUtils {
     return elasticQueryAdapter;
   };
 
-  static buildElasticQuery(query: ElasticQuery) {
-    const elasticSort = ElasticUtils.buildElasticSort(query.sort);
-    const elasticCondition = ElasticUtils.getConditionOption(query.condition);
+  static buildElasticIndexerQuery(query: ElasticQuery) {
+    const elasticSort = buildElasticIndexerSort(query.sort);
+    const elasticCondition = getConditionOption(query.condition);
   
     const elasticQuery = {
       ...query.pagination,
@@ -49,21 +65,5 @@ export class ElasticUtils {
     }
     
     return elasticQuery;
-  }
-
-  static buildElasticSort(sorts: ElasticSortProperty[]): any[] {
-    if (!sorts) {
-      return [];
-    }
-  
-    return sorts.map((sortProp: ElasticSortProperty) => ({[sortProp.name]: { order: sortProp.order}}));
-  };
-  
-  static getConditionOption(condition: QueryCondition): QueryConditionOptions {
-    if (condition.should.length !== 0 && condition.must.length === 0) {
-      return QueryConditionOptions.should;
-    }
-  
-    return QueryConditionOptions.must;
   }
 }

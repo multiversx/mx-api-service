@@ -32,7 +32,7 @@ export class ElasticService {
     let elasticQuery;
 
     if (elasticQueryAdapter) {
-      elasticQuery = ElasticUtils.buildElasticQuery(elasticQueryAdapter)
+      elasticQuery = ElasticUtils.buildElasticIndexerQuery(elasticQueryAdapter)
     }
  
     let profiler = new PerformanceProfiler();
@@ -73,7 +73,7 @@ export class ElasticService {
   async getList(collection: string, key: string, elasticQueryAdapter: ElasticQuery): Promise<any[]> {
     const url = `${this.url}/${collection}/_search`;
 
-    const elasticQuery = ElasticUtils.buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticUtils.buildElasticIndexerQuery(elasticQueryAdapter);
 
     let profiler = new PerformanceProfiler();
 
@@ -102,7 +102,7 @@ export class ElasticService {
     );
 
     const elasticQueryAdapter = ElasticUtils.boilerplate(QueryConditionOptions.should, queries);
-    const elasticQuery = ElasticUtils.buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticUtils.buildElasticIndexerQuery(elasticQueryAdapter);
 
     let documents = await this.getDocuments('tokens', elasticQuery);
 
@@ -113,7 +113,7 @@ export class ElasticService {
     const queries = identifiers.map((identifier) => QueryType.Match('identifier', identifier, QueryOperator.AND));
 
     const elasticQueryAdapter = ElasticUtils.boilerplate(QueryConditionOptions.should, queries, { from: 0, size: 10000 });
-    const elasticQuery = ElasticUtils.buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticUtils.buildElasticIndexerQuery(elasticQueryAdapter);
 
     const documents = await this.getDocuments('accountsesdt', elasticQuery);
 
@@ -136,7 +136,7 @@ export class ElasticService {
     }
 
     const elasticQueryAdapter = ElasticUtils.boilerplate(QueryConditionOptions.must, queries, { from, size });
-    const elasticQuery = ElasticUtils.buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticUtils.buildElasticIndexerQuery(elasticQueryAdapter);
 
     let documents = await this.getDocuments('accountsesdt', elasticQuery);
 
@@ -152,7 +152,7 @@ export class ElasticService {
       QueryType.Match('identifier', identifier, QueryOperator.AND),
     ]
 
-    const elasticQuery = ElasticUtils.buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticUtils.buildElasticIndexerQuery(elasticQueryAdapter);
 
     let documents = await this.getDocuments('accountsesdt', elasticQuery);
 
@@ -166,7 +166,7 @@ export class ElasticService {
     ]
 
     const elasticQueryAdapter = ElasticUtils.boilerplate(QueryConditionOptions.must, queries);
-    const elasticQuery = ElasticUtils.buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticUtils.buildElasticIndexerQuery(elasticQueryAdapter);
 
     return await this.getDocumentCount('accountsesdt', elasticQuery);
   }
@@ -217,7 +217,7 @@ export class ElasticService {
     }
 
     const elasticQueryAdapter = ElasticUtils.boilerplate(QueryConditionOptions.must, queries, pagination, sort);
-    const elasticQuery = ElasticUtils.buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticUtils.buildElasticIndexerQuery(elasticQueryAdapter);
 
     return elasticQuery;
   }
@@ -255,7 +255,7 @@ export class ElasticService {
     shouldQueries.push(QueryType.Match('type', NftType.NonFungibleESDT));
     elasticQueryAdapter.condition.should = shouldQueries;
 
-    const elasticQuery = ElasticUtils.buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticUtils.buildElasticIndexerQuery(elasticQueryAdapter);
 
     return await this.getDocumentCount('tokens', elasticQuery);
   }
@@ -299,7 +299,7 @@ export class ElasticService {
     }
     elasticQueryAdapter.condition.should = shouldQueries;
 
-    const elasticQuery = ElasticUtils.buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticUtils.buildElasticIndexerQuery(elasticQueryAdapter);
 
     let documents = await this.getDocuments('tokens', elasticQuery);
 
@@ -316,7 +316,7 @@ export class ElasticService {
     ]
 
     const elasticQueryAdapter = ElasticUtils.boilerplate(QueryConditionOptions.must, queries, pagination, sort)
-    const elasticQuery = ElasticUtils.buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticUtils.buildElasticIndexerQuery(elasticQueryAdapter);
 
     let documents = await this.getDocuments('tokens', elasticQuery);
 
@@ -330,7 +330,7 @@ export class ElasticService {
   }
 
   async getLogsForTransactionHashes(elasticQueryAdapter: ElasticQuery): Promise<TransactionLog[]> {
-    const elasticQuery = ElasticUtils.buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticUtils.buildElasticIndexerQuery(elasticQueryAdapter);
 
     return await this.getDocuments('logs', elasticQuery);
   }
