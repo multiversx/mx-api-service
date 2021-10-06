@@ -153,11 +153,8 @@ export class TransactionService {
 
       const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
       elasticQueryAdapterSc.sort = [timestamp];
-
-      elasticQueryAdapterSc.condition.should = [];
-      for (let transaction of transactions) {
-        const originalTxHashQuery = QueryType.Match('originalTxHash', transaction.txHash);
-        elasticQueryAdapterSc.condition.should.push(originalTxHashQuery);
+      elasticQueryAdapterSc.condition.terms = {
+        originalTxHash: elasticTransactions.filter(x => x.hasScResults === true).map(x => x.txHash)
       }
 
       let scResults = await this.elasticService.getList('scresults', 'scHash', elasticQueryAdapterSc);
