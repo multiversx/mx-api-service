@@ -23,6 +23,7 @@ import { TransactionGetService } from './transaction.get.service';
 import { TokenTransferService } from './token.transfer.service';
 import { TransactionPriceService } from './transaction.price.service';
 import { TransactionQueryOptions } from './entities/transactions.query.options';
+import { SmartContractResult } from './entities/smart.contract.result';
 
 @Injectable()
 export class TransactionService {
@@ -96,7 +97,7 @@ export class TransactionService {
     return await this.elasticService.getCount('transactions', elasticQueryAdapter);
   }
 
-  async getTransactions(filter: TransactionFilter, queryOptions: TransactionQueryOptions): Promise<(Transaction | TransactionDetailed)[]> {
+  async getTransactions(filter: TransactionFilter, queryOptions?: TransactionQueryOptions): Promise<(Transaction | TransactionDetailed)[]> {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
 
     const { from, size } = filter;
@@ -144,12 +145,34 @@ export class TransactionService {
         }
       }
 
-      if (queryOptions.withScResults) {
-      // Add scResults to transaction details
+      if (queryOptions && queryOptions.withScResults) {
+        // Add scResults to transaction details
+        const elasticQueryAdapterSc: ElasticQuery = new ElasticQuery();
+        elasticQueryAdapterSc.pagination = { from: 0, size: 100 };
+
+        const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
+        elasticQueryAdapterSc.sort = [timestamp];
+
+        elasticQueryAdapterSc.condition.should = [];
+        for (let transaction of transactions) {
+          const originalTxHashQuery = QueryType.Match('originalTxHash', transaction.txHash);
+          elasticQueryAdapterSc.condition.should.push(originalTxHashQuery);
+        }
+
+        let scResults = await this.elasticService.getList('scresults', 'scHash', elasticQueryAdapterSc);
+        for (let scResult of scResults) {
+          scResult.hash = scResult.scHash;
+
+          delete scResult.scHash;
+        }
+
         const detailedTransactions: TransactionDetailed[] = [];
         for (let transaction of transactions) {
-          const detailedTransaction = ApiUtils.mergeObjects(new TransactionDetailed(), await this.getTransaction(transaction.txHash));
-          detailedTransactions.push(detailedTransaction);
+          const transactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), transaction);
+          const transactionsScResults = scResults.filter(({originalTxHash}) => originalTxHash == transaction.txHash);
+          transactionDetailed.results = transactionsScResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+
+          detailedTransactions.push(transactionDetailed);
         }
 
         return detailedTransactions;
