@@ -95,7 +95,7 @@ export class TransactionService {
     return await this.elasticService.getCount('transactions', elasticQueryAdapter);
   }
 
-  async getTransactions(filter: TransactionFilter): Promise<Transaction[]> {
+  async getTransactions(filter: TransactionFilter, withScResults: boolean = false): Promise<(Transaction | TransactionDetailed)[]> {
     const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
 
     const { from, size } = filter;
@@ -117,7 +117,19 @@ export class TransactionService {
 
     let elasticTransactions = await this.elasticService.getList('transactions', 'txHash', elasticQueryAdapter);
 
-    let transactions: Transaction[] = [];
+    let transactions: (Transaction | TransactionDetailed)[] = [];
+
+    for (let elasticTransaction of elasticTransactions) {
+      let transaction = ApiUtils.mergeObjects(new Transaction(), elasticTransaction);
+
+      let tokenTransfer = this.tokenTransferService.getTokenTransfer(elasticTransaction);
+      if (tokenTransfer) {
+        transaction.tokenValue = tokenTransfer.tokenAmount;
+        transaction.tokenIdentifier = tokenTransfer.tokenIdentifier;
+      }
+
+      transactions.push(transaction);
+    }
 
     if (filter.hashes) {
       const txHashes: string[] = filter.hashes.split(',');
@@ -130,18 +142,17 @@ export class TransactionService {
           transactions.push(gatewayTransaction);
         }
       }
-    }
 
-    for (let elasticTransaction of elasticTransactions) {
-      let transaction = ApiUtils.mergeObjects(new Transaction(), elasticTransaction);
+      if (withScResults) {
+      // Add scResults to transaction details
+        const detailedTransactions: TransactionDetailed[] = [];
+        for (let transaction of transactions) {
+          const detailedTransaction = ApiUtils.mergeObjects(new TransactionDetailed(), await this.getTransaction(transaction.txHash));
+          detailedTransactions.push(detailedTransaction);
+        }
 
-      let tokenTransfer = this.tokenTransferService.getTokenTransfer(elasticTransaction);
-      if (tokenTransfer) {
-        transaction.tokenValue = tokenTransfer.tokenAmount;
-        transaction.tokenIdentifier = tokenTransfer.tokenIdentifier;
+        return detailedTransactions;
       }
-
-      transactions.push(transaction);
     }
 
     return transactions;
