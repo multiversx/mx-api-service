@@ -108,12 +108,12 @@ export class NftService {
     return supply;
   }
 
-  async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions: NftQueryOptions): Promise<Nft[] | NftDetailed[]> {
+  async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[] | NftDetailed[]> {
     const { from, size } = queryPagination;
 
     let nfts =  await this.getNftsInternal(from, size, filter, undefined);
     
-    if (queryOptions.withOwner) {
+    if (queryOptions && queryOptions.withOwner) {
       const accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nfts.map(({identifier}) => identifier));
 
       for (let nft of nfts) {
@@ -131,7 +131,7 @@ export class NftService {
       }
     }
 
-    if (queryOptions.withSupply) {
+    if (queryOptions && queryOptions.withSupply) {
       for (let nft of nfts) {
         if (nft.type === NftType.SemiFungibleESDT) {
           nft.supply = await this.cachingService.getOrSetCache(
@@ -289,14 +289,14 @@ export class NftService {
     return esdtResult.tokens.length;
   }
 
-  async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions: NftQueryOptions): Promise<NftAccount[]> {
+  async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<NftAccount[]> {
     const { from, size }  = queryPagination;
 
     let nfts = await this.getNftsForAddressInternal(address, filter);
 
     nfts = nfts.splice(from, from + size);
 
-    if (queryOptions.withTimestamp) {
+    if (queryOptions && queryOptions.withTimestamp) {
       let identifiers = nfts.map(x => x.identifier);
       let elasticNfts = await this.elasticService.getTokensByIdentifiers(identifiers);
 
