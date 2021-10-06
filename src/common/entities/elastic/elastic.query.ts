@@ -8,4 +8,5 @@ export class ElasticQuery {
   sort: ElasticSortProperty[] = [];
   filter: AbstractQuery[] = [];
   condition: QueryCondition = new QueryCondition();
+  terms: { [ key: string ]: any } = {};
 }

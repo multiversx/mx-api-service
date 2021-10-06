@@ -27,7 +27,7 @@ export class EsdtService {
     try {
       let esdtResult = await this.gatewayService.get(`address/${address}/esdt`);
       return esdtResult.esdts;
-    } catch (error) {
+    } catch (error: any) {
       let errorMessage = error?.response?.data?.error;
       if (errorMessage && errorMessage.includes('account was not found')) {
         return {};

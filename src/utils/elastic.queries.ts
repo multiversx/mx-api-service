@@ -23,11 +23,13 @@ function getConditionOption(condition: QueryCondition): QueryConditionOptions {
 export function buildElasticQuery(query: ElasticQuery) {
   const elasticSort = buildElasticSort(query.sort);
   const elasticCondition = getConditionOption(query.condition);
+  const terms = Object.keys(query.condition.terms).length > 0 ? query.condition.terms : undefined;
 
   const elasticQuery = {
     ...query.pagination,
     sort: elasticSort,
     query: {
+      terms,
       bool: {
         filter: query.filter.map(query => query.getQuery()),
         must: query.condition.must.map(query => query.getQuery()),
@@ -44,9 +46,11 @@ export function buildElasticQuery(query: ElasticQuery) {
     //@ts-ignore
     delete elasticQuery.query.bool;
 
-    //@ts-ignore
-    elasticQuery.query['match_all'] = {}
+    if (!terms) {
+      //@ts-ignore
+      elasticQuery.query['match_all'] = {};
+    }
   }
-  
+
   return elasticQuery;
 }
