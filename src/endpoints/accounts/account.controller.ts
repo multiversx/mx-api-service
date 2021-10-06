@@ -291,7 +291,7 @@ export class AccountController {
     @Query('withTimestamp', new ParseOptionalBoolPipe) withTimestamp?: boolean,
   ): Promise<NftAccount[]> {
     try {
-      return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, collections, tags, creator, hasUris }, withTimestamp ?? false);
+      return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, collections, tags, creator, hasUris }, { withTimestamp });
     } catch (error) {
       this.logger.error(error);
       return [];

@@ -289,14 +289,14 @@ export class NftService {
     return esdtResult.tokens.length;
   }
 
-  async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, withTimestamp: boolean = false): Promise<NftAccount[]> {
+  async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions: NftQueryOptions): Promise<NftAccount[]> {
     const { from, size }  = queryPagination;
 
     let nfts = await this.getNftsForAddressInternal(address, filter);
 
     nfts = nfts.splice(from, from + size);
 
-    if (withTimestamp) {
+    if (queryOptions.withTimestamp) {
       let identifiers = nfts.map(x => x.identifier);
       let elasticNfts = await this.elasticService.getTokensByIdentifiers(identifiers);
 
