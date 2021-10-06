@@ -144,39 +144,39 @@ export class TransactionService {
           transactions.push(gatewayTransaction);
         }
       }
+    }
 
-      if (queryOptions && queryOptions.withScResults) {
-        // Add scResults to transaction details
-        const elasticQueryAdapterSc: ElasticQuery = new ElasticQuery();
-        elasticQueryAdapterSc.pagination = { from: 0, size: 100 };
+    if (queryOptions && queryOptions.withScResults) {
+      // Add scResults to transaction details
+      const elasticQueryAdapterSc: ElasticQuery = new ElasticQuery();
+      elasticQueryAdapterSc.pagination = { from: 0, size: 10000 };
 
-        const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
-        elasticQueryAdapterSc.sort = [timestamp];
+      const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
+      elasticQueryAdapterSc.sort = [timestamp];
 
-        elasticQueryAdapterSc.condition.should = [];
-        for (let transaction of transactions) {
-          const originalTxHashQuery = QueryType.Match('originalTxHash', transaction.txHash);
-          elasticQueryAdapterSc.condition.should.push(originalTxHashQuery);
-        }
-
-        let scResults = await this.elasticService.getList('scresults', 'scHash', elasticQueryAdapterSc);
-        for (let scResult of scResults) {
-          scResult.hash = scResult.scHash;
-
-          delete scResult.scHash;
-        }
-
-        const detailedTransactions: TransactionDetailed[] = [];
-        for (let transaction of transactions) {
-          const transactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), transaction);
-          const transactionsScResults = scResults.filter(({originalTxHash}) => originalTxHash == transaction.txHash);
-          transactionDetailed.results = transactionsScResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
-
-          detailedTransactions.push(transactionDetailed);
-        }
-
-        return detailedTransactions;
+      elasticQueryAdapterSc.condition.should = [];
+      for (let transaction of transactions) {
+        const originalTxHashQuery = QueryType.Match('originalTxHash', transaction.txHash);
+        elasticQueryAdapterSc.condition.should.push(originalTxHashQuery);
       }
+
+      let scResults = await this.elasticService.getList('scresults', 'scHash', elasticQueryAdapterSc);
+      for (let scResult of scResults) {
+        scResult.hash = scResult.scHash;
+
+        delete scResult.scHash;
+      }
+
+      const detailedTransactions: TransactionDetailed[] = [];
+      for (let transaction of transactions) {
+        const transactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), transaction);
+        const transactionsScResults = scResults.filter(({originalTxHash}) => originalTxHash == transaction.txHash);
+        transactionDetailed.results = transactionsScResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+
+        detailedTransactions.push(transactionDetailed);
+      }
+
+      return detailedTransactions;
     }
 
     return transactions;
@@ -215,7 +215,7 @@ export class TransactionService {
     try {
       let result = await this.gatewayService.create('transaction/send', transaction);
       txHash = result.txHash;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(error);
       return error.response.data.error;
     }
