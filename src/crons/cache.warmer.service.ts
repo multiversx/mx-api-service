@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { Cron } from "@nestjs/schedule";
+import { Cron, CronExpression, SchedulerRegistry } from "@nestjs/schedule";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
@@ -15,10 +15,10 @@ import { NetworkService } from "src/endpoints/network/network.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { GatewayService } from "src/common/gateway.service";
 import { EsdtService } from "src/common/esdt.service";
+import { CronJob } from "cron";
 
 @Injectable()
 export class CacheWarmerService {
-
   constructor(
     private readonly nodeService: NodeService,
     private readonly esdtService: EsdtService,
@@ -32,7 +32,13 @@ export class CacheWarmerService {
     private readonly networkService: NetworkService,
     private readonly accountService: AccountService,
     private readonly gatewayService: GatewayService,
-  ) { }
+    private readonly schedulerRegistry: SchedulerRegistry,
+  ) { 
+    const cronTime = this.apiConfigService.getIsFastWarmerCronActive() ? CronExpression.EVERY_10_SECONDS : CronExpression.EVERY_30_MINUTES;
+    const keybaseCronJob = new CronJob(cronTime, async () => await this.handleKeybaseInvalidations())
+    this.schedulerRegistry.addCronJob('keybaseCron', keybaseCronJob);
+    keybaseCronJob.start();
+  }
 
   @Cron('* * * * *')
   async handleNodeInvalidations() {
@@ -66,7 +72,6 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('*/30 * * * *')
   async handleKeybaseInvalidations() {
     await Locker.lock('Keybase invalidations', async () => {
       let nodeKeybases = await this.keybaseService.confirmKeybaseNodesAgainstKeybasePub();
