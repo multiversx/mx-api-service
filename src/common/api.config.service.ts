@@ -183,7 +183,7 @@ export class ApiConfigService {
   getIsFastWarmerCronActive(): boolean {
     let isCronActive = this.configService.get<boolean>('cron.fastWarm');
     if (isCronActive === undefined) {
-      throw new Error('No cron.fastWarm flag present');
+      return false;
     }
 
     return isCronActive;

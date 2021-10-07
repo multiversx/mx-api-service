@@ -34,10 +34,26 @@ export class CacheWarmerService {
     private readonly gatewayService: GatewayService,
     private readonly schedulerRegistry: SchedulerRegistry,
   ) { 
-    const cronTime = this.apiConfigService.getIsFastWarmerCronActive() ? CronExpression.EVERY_10_SECONDS : CronExpression.EVERY_30_MINUTES;
-    const keybaseCronJob = new CronJob(cronTime, async () => await this.handleKeybaseInvalidations())
-    this.schedulerRegistry.addCronJob('keybaseCron', keybaseCronJob);
-    keybaseCronJob.start();
+    this.configCronJob(
+      'keybaseCronJob', 
+      CronExpression.EVERY_10_SECONDS, 
+      CronExpression.EVERY_30_MINUTES, 
+      async () => await this.handleKeybaseInvalidations()
+    );
+
+    this.configCronJob(
+      'identityCronJob', 
+      CronExpression.EVERY_10_SECONDS, 
+      CronExpression.EVERY_5_MINUTES, 
+      async () => await this.handleIdentityInvalidations()
+    );
+  }
+
+  private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {
+    const cronTime = this.apiConfigService.getIsFastWarmerCronActive() ? fastExpression : normalExpression;
+    const cronJob = new CronJob(cronTime, async () => await callback())
+    this.schedulerRegistry.addCronJob(name, cronJob);
+    cronJob.start();
   }
 
   @Cron('* * * * *')
@@ -56,7 +72,6 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('*/7 * * * *')
   async handleIdentityInvalidations() {
     await Locker.lock('Identities invalidations', async () => {
       let identities = await this.identitiesService.getAllIdentitiesRaw();
