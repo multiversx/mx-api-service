@@ -319,10 +319,11 @@ export class NodeService {
         }
       }
 
+      const fastWarm = this.apiConfigService.getIsFastWarmerCronActive();
       const params = {
         keys: Object.keys(owners).map((bls) => `owner:${epoch}:${bls}`),
         values: Object.values(owners),
-        ttls: new Array(Object.keys(owners).length).fill(60 * 60 * 24), // 24h
+        ttls: new Array(Object.keys(owners).length).fill(fastWarm ? 60 : 60 * 60 * 24), // 1 minute or 24h
       };
 
       await this.cachingService.batchSetCache(params.keys, params.values, params.ttls);
