@@ -36,14 +36,14 @@ export class CacheWarmerService {
   ) { 
     this.configCronJob(
       'keybaseCronJob', 
-      CronExpression.EVERY_10_SECONDS, 
+      CronExpression.EVERY_MINUTE, 
       CronExpression.EVERY_30_MINUTES, 
       async () => await this.handleKeybaseInvalidations()
     );
 
     this.configCronJob(
       'identityCronJob', 
-      CronExpression.EVERY_10_SECONDS, 
+      CronExpression.EVERY_MINUTE, 
       CronExpression.EVERY_5_MINUTES, 
       async () => await this.handleIdentityInvalidations()
     );
@@ -56,7 +56,7 @@ export class CacheWarmerService {
     cronJob.start();
   }
 
-  @Cron('* * * * *')
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleNodeInvalidations() {
     await Locker.lock('Nodes invalidations', async () => {
       let nodes = await this.nodeService.getAllNodesRaw();
@@ -64,7 +64,7 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('* * * * *')
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleEsdtTokenInvalidations() {
     await Locker.lock('Esdt tokens invalidations', async () => {
       let tokens = await this.esdtService.getAllEsdtTokensRaw();
@@ -79,7 +79,7 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('* * * * *')
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleProviderInvalidations() {
     await Locker.lock('Providers invalidations', async () => {
       let providers = await this.providerService.getAllProvidersRaw();
@@ -100,7 +100,7 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('* * * * *')
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleCurrentPriceInvalidations() {
     if (this.apiConfigService.getDataUrl()) {
       await Locker.lock('Current price invalidations', async () => {
@@ -110,7 +110,7 @@ export class CacheWarmerService {
     }
   }
 
-  @Cron('* * * * *')
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleEconomicsInvalidations() {
     await Locker.lock('Economics invalidations', async () => {
       let economics = await this.networkService.getEconomicsRaw();
@@ -118,7 +118,7 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('* * * * *')
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleAccountInvalidations() {
     await Locker.lock('Accounts invalidations', async () => {
       let accounts = await this.accountService.getAccountsRaw({ from: 0, size: 25 });
@@ -126,7 +126,7 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('* * * * *')
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleHeartbeatStatusInvalidations() {
     await Locker.lock('Heartbeatstatus invalidations', async () => {
       let result = await this.gatewayService.getRaw('node/heartbeatstatus');
