@@ -1,8 +1,8 @@
-import { forwardRef, HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, /*HttpStatus, */Inject, Injectable, Logger } from "@nestjs/common";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { Constants } from "src/utils/constants";
-import { ApiConfigService } from "./api.config.service";
+// import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
 import { CachingService } from "./caching.service";
 import { Keybase } from "./entities/keybase";
@@ -14,7 +14,7 @@ export class KeybaseService {
   private readonly logger: Logger
 
   constructor(
-    private readonly apiConfigService: ApiConfigService,
+    // private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => NodeService))
@@ -71,7 +71,8 @@ export class KeybaseService {
       keybaseArr,
       keybase => `keybase:${keybase.key}`,
       async (keybase) => await this.confirmKeybase(keybase),
-      Constants.oneWeek(),
+      Constants.oneMonth() * 6,
+      true
     );
 
     const keybases: { [key: string]: KeybaseState } = {};
@@ -108,6 +109,7 @@ export class KeybaseService {
       keybase => `keybase:${keybase.key}`,
       async (keybase) => await this.confirmKeybase(keybase),
       Constants.oneMonth() * 6,
+      true
     );
 
     const keybases: { [key: string]: KeybaseState } = {};
@@ -169,25 +171,27 @@ export class KeybaseService {
       return false;
     }
 
-    try {
-      const url = this.apiConfigService.getNetwork() === 'mainnet'
-          ? `https://keybase.pub/${keybase.identity}/elrond/${keybase.key}`
-          : `https://keybase.pub/${keybase.identity}/elrond/${this.apiConfigService.getNetwork()}/${keybase.key}`;
+    // try {
+    //   const url = this.apiConfigService.getNetwork() === 'mainnet'
+    //       ? `https://keybase.pub/${keybase.identity}/elrond/${keybase.key}`
+    //       : `https://keybase.pub/${keybase.identity}/elrond/${this.apiConfigService.getNetwork()}/${keybase.key}`;
   
-      this.logger.log(`Fetching keybase for identity ${keybase.identity} and key ${keybase.key}`);
+    //   this.logger.log(`Fetching keybase for identity ${keybase.identity} and key ${keybase.key}`);
 
-      const { status } = await this.apiService.head(url, undefined, async (error: any) => {
-        if (error.response?.status === HttpStatus.NOT_FOUND) {
-          this.logger.log(`Keybase not found for identity ${keybase.identity} and key ${keybase.key}`);
-          return true;
-        }
+    //   const { status } = await this.apiService.head(url, undefined, async (error: any) => {
+    //     if (error.response?.status === HttpStatus.NOT_FOUND) {
+    //       this.logger.log(`Keybase not found for identity ${keybase.identity} and key ${keybase.key}`);
+    //       return true;
+    //     }
 
-        return false;
-      });
-      return status === 200;
-    } catch (error) {
-      return false;
-    }
+    //     return false;
+    //   });
+    //   return status === 200;
+    // } catch (error) {
+    //   return false;
+    // }
+
+    return true;
   };
 
   async getProfile(identity: string): Promise<KeybaseIdentity | undefined> {
