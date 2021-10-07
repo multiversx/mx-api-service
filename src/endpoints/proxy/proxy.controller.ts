@@ -140,7 +140,7 @@ export class ProxyController {
     try {
       let result = await this.vmQueryService.vmQueryFullResult(query.scAddress, query.funcName, query.caller, query.args);
       res.status(HttpStatus.OK).json(result).send();
-    } catch (error) {
+    } catch (error: any) {
       res.status(HttpStatus.BAD_REQUEST).json(error.response.data).send();
     }
   }
@@ -182,7 +182,7 @@ export class ProxyController {
         Constants.oneMinute() * 2,
       );
       res.json(heartbeat);
-    } catch(error) {
+    } catch (error: any) {
       res.status(HttpStatus.BAD_REQUEST).json(error.response.data).send();
     }
   }
@@ -247,7 +247,7 @@ export class ProxyController {
     try {
       let result = await this.gatewayService.getRaw(url);
       res.json(result.data);
-    } catch (error) {
+    } catch (error: any) {
       res.status(HttpStatus.BAD_REQUEST).json(error.response.data).send();
     }
   }
@@ -256,7 +256,7 @@ export class ProxyController {
     try {
       let result = await this.gatewayService.createRaw(url, data);
       res.json(result.data);
-    } catch (error) {
+    } catch (error: any) {
       res.status(HttpStatus.BAD_REQUEST).json(error.response.data).send();
     }
   }
