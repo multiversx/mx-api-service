@@ -182,7 +182,7 @@ export class ProviderService {
 
     let providerKeybases = await this.cachingService.getOrSetCache<{ [key: string]: KeybaseState }>(
       'providerKeybases',
-      async () => await this.keybaseService.confirmKeybaseProvidersAgainstKeybasePub(),
+      async () => await this.keybaseService.confirmKeybasesAgainstCache(),
       Constants.oneHour()
     );
     
