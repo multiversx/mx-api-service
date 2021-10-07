@@ -77,10 +77,6 @@ describe('Identities Service', () => {
           if (provider.identity) {
             const providerIdentity = identities.find(({ identity }) => identity === provider.identity);
   
-            if (!providerIdentity) {
-              console.log(provider.identity);
-            }
-  
             expect(providerIdentity).toBeDefined();
             expect(providerIdentity).toHaveProperty('locked');
             expect(providerIdentity).toHaveProperty('name');
