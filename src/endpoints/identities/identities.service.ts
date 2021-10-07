@@ -169,8 +169,12 @@ export class IdentitiesService {
       if (found && node.identity && !!node.identity) {
         if (!found.nodes) {
           found.nodes = [];
-        }      
+        }
         found.nodes.push(node);
+
+        if (!found.name) {
+          found.name = node.bls;
+        }
       }
       else {
         const identityDetailed = new IdentityDetailed();
