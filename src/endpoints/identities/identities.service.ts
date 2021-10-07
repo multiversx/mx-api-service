@@ -100,6 +100,13 @@ export class IdentitiesService {
       distribution[first] = parseFloat((1 - rest).toFixed(2));
     }
 
+    for (let key of Object.keys(distribution)) {
+      if (distribution[key] === 0) {
+        // @ts-ignore
+        delete distribution[key];
+      }
+    }
+
     return distribution;
   }
 
