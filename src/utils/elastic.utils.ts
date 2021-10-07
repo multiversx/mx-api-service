@@ -50,7 +50,8 @@ export class ElasticUtils {
           should: query.condition.should.map(query => query.getQuery()),
           must_not: query.condition.must_not.map(query => query.getQuery()),
           minimum_should_match: elasticCondition === QueryConditionOptions.should ? 1 : undefined,
-        }
+        },
+        terms: query.terms?.getQuery(),
       }
     }
   
@@ -60,8 +61,10 @@ export class ElasticUtils {
       //@ts-ignore
       delete elasticQuery.query.bool;
   
-      //@ts-ignore
-      elasticQuery.query['match_all'] = {}
+      if (!query.terms) {
+        //@ts-ignore
+        elasticQuery.query['match_all'] = {}
+      }
     }
     
     return elasticQuery;

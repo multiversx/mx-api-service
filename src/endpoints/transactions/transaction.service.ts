@@ -24,6 +24,8 @@ import { TokenTransferService } from './token.transfer.service';
 import { TransactionPriceService } from './transaction.price.service';
 import { TransactionQueryOptions } from './entities/transactions.query.options';
 import { SmartContractResult } from './entities/smart.contract.result';
+import { ElasticUtils } from 'src/utils/elastic.utils';
+import { TermsQuery } from 'src/common/entities/elastic/terms.query';
 
 @Injectable()
 export class TransactionService {
@@ -148,14 +150,9 @@ export class TransactionService {
 
     if (queryOptions && queryOptions.withScResults) {
       // Add scResults to transaction details
-      const elasticQueryAdapterSc: ElasticQuery = new ElasticQuery();
-      elasticQueryAdapterSc.pagination = { from: 0, size: 10000 };
-
-      const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
-      elasticQueryAdapterSc.sort = [timestamp];
-      elasticQueryAdapterSc.condition.terms = {
-        originalTxHash: elasticTransactions.filter(x => x.hasScResults === true).map(x => x.txHash)
-      }
+      const sort = [timestamp];
+      const elasticQueryAdapterSc = ElasticUtils.boilerplate(QueryConditionOptions.must, [], { from: 0, size: 10000 }, sort);
+      elasticQueryAdapterSc.terms = new TermsQuery('originalTxHash', elasticTransactions.filter(x => x.hasScResults === true).map(x => x.txHash));
 
       let scResults = await this.elasticService.getList('scresults', 'scHash', elasticQueryAdapterSc);
       for (let scResult of scResults) {
