@@ -24,6 +24,7 @@ import { TokenTransferService } from './token.transfer.service';
 import { TransactionPriceService } from './transaction.price.service';
 import { TransactionQueryOptions } from './entities/transactions.query.options';
 import { SmartContractResult } from './entities/smart.contract.result';
+import { TermsQuery } from 'src/common/entities/elastic/terms.query';
 
 @Injectable()
 export class TransactionService {
@@ -85,39 +86,37 @@ export class TransactionService {
   }
 
   async getTransactionCount(filter: TransactionFilter): Promise<number> {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.condition[filter.condition ?? QueryConditionOptions.must] = this.buildTransactionFilterQuery(filter);
+    const elasticQuery = ElasticQuery.create()
+      .withCondition(filter.condition ?? QueryConditionOptions.must, this.buildTransactionFilterQuery(filter));
 
     if (filter.before || filter.after) {
-      elasticQueryAdapter.filter = [
-        QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0),
-      ]
+      elasticQuery
+        .withFilter([QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0)]);
     }
 
-    return await this.elasticService.getCount('transactions', elasticQueryAdapter);
+    return await this.elasticService.getCount('transactions', elasticQuery);
   }
 
   async getTransactions(filter: TransactionFilter, queryOptions?: TransactionQueryOptions): Promise<(Transaction | TransactionDetailed)[]> {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-
     const { from, size } = filter;
     const pagination: ElasticPagination = {
       from, size
     };
-    elasticQueryAdapter.pagination = pagination;
-    elasticQueryAdapter.condition[filter.condition ?? QueryConditionOptions.must] = this.buildTransactionFilterQuery(filter);
 
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descending };
     const nonce: ElasticSortProperty = { name: 'nonce', order: ElasticSortOrder.descending };
-    elasticQueryAdapter.sort = [timestamp, nonce];
+
+    const elasticQuery = ElasticQuery.create()
+      .withPagination(pagination)
+      .withCondition(filter.condition ?? QueryConditionOptions.must, this.buildTransactionFilterQuery(filter))
+      .withSort([timestamp, nonce]);
 
     if (filter.before || filter.after) {
-      elasticQueryAdapter.filter = [
-        QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0),
-      ]
+      elasticQuery
+        .withFilter([QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0)]);
     }
 
-    let elasticTransactions = await this.elasticService.getList('transactions', 'txHash', elasticQueryAdapter);
+    let elasticTransactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
 
     let transactions: (Transaction | TransactionDetailed)[] = [];
 
@@ -148,16 +147,13 @@ export class TransactionService {
 
     if (queryOptions && queryOptions.withScResults) {
       // Add scResults to transaction details
-      const elasticQueryAdapterSc: ElasticQuery = new ElasticQuery();
-      elasticQueryAdapterSc.pagination = { from: 0, size: 10000 };
 
-      const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
-      elasticQueryAdapterSc.sort = [timestamp];
-      elasticQueryAdapterSc.condition.terms = {
-        originalTxHash: elasticTransactions.filter(x => x.hasScResults === true).map(x => x.txHash)
-      }
+      const elasticQuery = ElasticQuery.create()
+        .withPagination({ from: 0, size: 10000 })
+        .withSort([{ name: 'timestamp' , order: ElasticSortOrder.ascending }])
+        .withTerms(new TermsQuery('originalTxHash', elasticTransactions.filter(x => x.hasScResults === true).map(x => x.txHash)));
 
-      let scResults = await this.elasticService.getList('scresults', 'scHash', elasticQueryAdapterSc);
+      let scResults = await this.elasticService.getList('scresults', 'scHash', elasticQuery);
       for (let scResult of scResults) {
         scResult.hash = scResult.scHash;
 
