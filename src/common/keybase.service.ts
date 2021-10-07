@@ -72,7 +72,6 @@ export class KeybaseService {
       keybase => `keybase:${keybase.key}`,
       async (keybase) => await this.confirmKeybase(keybase),
       Constants.oneWeek(),
-      true
     );
 
     const keybases: { [key: string]: KeybaseState } = {};
@@ -109,7 +108,6 @@ export class KeybaseService {
       keybase => `keybase:${keybase.key}`,
       async (keybase) => await this.confirmKeybase(keybase),
       Constants.oneMonth() * 6,
-      true
     );
 
     const keybases: { [key: string]: KeybaseState } = {};
