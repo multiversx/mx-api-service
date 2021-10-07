@@ -311,7 +311,7 @@ export class ElasticService {
   async getTokenCount(filter: NftFilter): Promise<number> {
     let query = await this.buildElasticNftFilter(0, 0, filter, undefined);
 
-    return await this.getDocumentCount('tokens', query);
+    return await this.getDocumentCount('tokens', query.toJson());
   }
 
   async getLogsForTransactionHashes(elasticQuery: ElasticQuery): Promise<TransactionLog[]> {
