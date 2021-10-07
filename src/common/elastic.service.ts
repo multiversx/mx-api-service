@@ -30,7 +30,7 @@ export class ElasticService {
 
     let profiler = new PerformanceProfiler();
 
-    const result: any = await this.post(url, elasticQuery?.toRaw());
+    const result: any = await this.post(url, elasticQuery?.toJson());
 
     profiler.stop();
 
@@ -68,7 +68,7 @@ export class ElasticService {
 
     let profiler = new PerformanceProfiler();
 
-    const result = await this.post(url, elasticQuery.toRaw());
+    const result = await this.post(url, elasticQuery.toJson());
 
     profiler.stop();
 
@@ -95,7 +95,7 @@ export class ElasticService {
     const elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.should, queries);
 
-    let documents = await this.getDocuments('tokens', elasticQuery.toRaw());
+    let documents = await this.getDocuments('tokens', elasticQuery.toJson());
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
@@ -107,7 +107,7 @@ export class ElasticService {
       .withPagination({ from: 0, size: 10000 })
       .withCondition(QueryConditionOptions.should, queries);
 
-    const documents = await this.getDocuments('accountsesdt', elasticQuery.toRaw());
+    const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
 
     let result = documents.map((document: any) => this.formatItem(document, 'identifier'));
     result.reverse();
@@ -131,7 +131,7 @@ export class ElasticService {
       .withPagination({ from, size })
       .withCondition(QueryConditionOptions.must, queries);
 
-    let documents = await this.getDocuments('accountsesdt', elasticQuery.toRaw());
+    let documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
@@ -146,7 +146,7 @@ export class ElasticService {
       .withPagination({ from: 0, size: 1})
       .withCondition(QueryConditionOptions.must, queries);
 
-    let documents = await this.getDocuments('accountsesdt', elasticQuery.toRaw());
+    let documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
   }
@@ -160,7 +160,7 @@ export class ElasticService {
     const elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, queries);
 
-    return await this.getDocumentCount('accountsesdt', elasticQuery.toRaw());
+    return await this.getDocumentCount('accountsesdt', elasticQuery.toJson());
   }
 
   private buildElasticNftFilter(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
@@ -219,7 +219,7 @@ export class ElasticService {
   async getTokens(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
     let elasticQuery = await this.buildElasticNftFilter(from, size, filter, identifier);
 
-    let documents = await this.getDocuments('tokens', elasticQuery.toRaw());
+    let documents = await this.getDocuments('tokens', elasticQuery.toJson());
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
@@ -248,7 +248,7 @@ export class ElasticService {
       .withCondition(QueryConditionOptions.should, shouldQueries)
       .withCondition(QueryConditionOptions.mustNot, mustNotQueries);
 
-    return await this.getDocumentCount('tokens', elasticQuery.toRaw());
+    return await this.getDocumentCount('tokens', elasticQuery.toJson());
   }
 
   async getTokenCollections(from: number, size: number, search: string | undefined, type: NftType | undefined, token: string | undefined, issuer: string | undefined, identifiers: string[]) {
@@ -290,7 +290,7 @@ export class ElasticService {
       .withCondition(QueryConditionOptions.should, shouldQueries)
       .withCondition(QueryConditionOptions.mustNot, mustNotQueries);
 
-    let documents = await this.getDocuments('tokens', elasticQuery.toRaw());
+    let documents = await this.getDocuments('tokens', elasticQuery.toJson());
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
@@ -306,7 +306,7 @@ export class ElasticService {
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
       .withCondition(QueryConditionOptions.must, queries);
 
-    let documents = await this.getDocuments('tokens', elasticQuery.toRaw());
+    let documents = await this.getDocuments('tokens', elasticQuery.toJson());
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
   }
@@ -318,7 +318,7 @@ export class ElasticService {
   }
 
   async getLogsForTransactionHashes(elasticQuery: ElasticQuery): Promise<TransactionLog[]> {
-    return await this.getDocuments('logs', elasticQuery.toRaw());
+    return await this.getDocuments('logs', elasticQuery.toJson());
   }
 
   public async get(url: string) {

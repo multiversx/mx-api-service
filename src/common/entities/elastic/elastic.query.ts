@@ -64,7 +64,7 @@ export class ElasticQuery {
     return this;
   }
 
-  toRaw() {
+  toJson() {
     const elasticSort = buildElasticIndexerSort(this.sort);
     const elasticCondition = getConditionOption(this.condition);
   
