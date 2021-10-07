@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api.config.service";
 import { ElasticService } from "src/common/elastic.service";
+import { ElasticQuery } from "src/common/entities/elastic/elastic.query";
 import { ElasticSortOrder } from "src/common/entities/elastic/elastic.sort.order";
 import { ElasticSortProperty } from "src/common/entities/elastic/elastic.sort.property";
 import { QueryConditionOptions } from "src/common/entities/elastic/query.condition.options";
@@ -8,7 +9,6 @@ import { QueryType } from "src/common/entities/elastic/query.type";
 import { GatewayService } from "src/common/gateway.service";
 import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
-import { ElasticUtils } from "src/utils/elastic.utils";
 import { SmartContractResult } from "./entities/smart.contract.result";
 import { Transaction } from "./entities/transaction";
 import { TransactionDetailed } from "./entities/transaction.detailed";
@@ -35,7 +35,11 @@ export class TransactionGetService {
       QueryType.Match('nonce', nonce)
     ];
 
-    let transactions = await this.elasticService.getList('transactions', 'txHash', ElasticUtils.boilerplate(QueryConditionOptions.must, queries, { from: 0, size: 1}, ));
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: 1 })
+      .withCondition(QueryConditionOptions.must, queries);
+
+    let transactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
 
     return transactions.firstOrUndefined();
   }
@@ -61,15 +65,18 @@ export class TransactionGetService {
       const hashes: string[] = [];
       hashes.push(txHash);
 
-      let elasticQueries;
       if (!this.apiConfigService.getUseLegacyElastic()) {
       //Elastic query for scResults
         const originalTxHashQuery = QueryType.Match('originalTxHash', txHash);
-        elasticQueries = [originalTxHashQuery];
         const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
 
+        const elasticQuerySc = ElasticQuery.create()
+          .withPagination({ from: 0, size: 100 })
+          .withSort([timestamp])
+          .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
+
         if (result.hasScResults === true) {
-          let scResults = await this.elasticService.getList('scresults', 'scHash', ElasticUtils.boilerplate(QueryConditionOptions.must, elasticQueries,{ from: 0, size: 100}, [timestamp]));
+          let scResults = await this.elasticService.getList('scresults', 'scHash', elasticQuerySc);
           for (let scResult of scResults) {
             scResult.hash = scResult.scHash;
             hashes.push(scResult.hash);
@@ -82,9 +89,11 @@ export class TransactionGetService {
       
       //Elastic query for receipts
         const receiptHashQuery = QueryType.Match('receiptHash', txHash);
-        elasticQueries = [receiptHashQuery];
+        const elasticQueryReceipts = ElasticQuery.create()
+          .withPagination({ from: 0, size: 1})
+          .withCondition(QueryConditionOptions.must, [receiptHashQuery])
 
-        let receipts = await this.elasticService.getList('receipts', 'receiptHash', ElasticUtils.boilerplate(QueryConditionOptions.must, elasticQueries, { from: 0, size: 1}));
+        let receipts = await this.elasticService.getList('receipts', 'receiptHash', elasticQueryReceipts);
         if (receipts.length > 0) {
           let receipt = receipts[0];
           transactionDetailed.receipt = ApiUtils.mergeObjects(new TransactionReceipt(), receipt);
@@ -95,8 +104,11 @@ export class TransactionGetService {
         for (let hash of hashes) {
           queries.push(QueryType.Match('_id', hash));
         }
+        const elasticQueryLogs = ElasticQuery.create()
+          .withPagination({ from: 0, size: 100})
+          .withCondition(QueryConditionOptions.should, queries);
 
-        let logs: any[] = await this.elasticService.getLogsForTransactionHashes(ElasticUtils.boilerplate(QueryConditionOptions.should, queries, { from: 0, size: 100}));
+        let logs: any[] = await this.elasticService.getLogsForTransactionHashes(elasticQueryLogs);
         let transactionLogs = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
 
         transactionDetailed.operations = this.tokenTransferService.getOperationsForTransactionLogs(txHash, transactionLogs);
