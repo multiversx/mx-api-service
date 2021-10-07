@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { Cron } from "@nestjs/schedule";
+import { Cron, CronExpression, SchedulerRegistry } from "@nestjs/schedule";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
@@ -15,10 +15,10 @@ import { NetworkService } from "src/endpoints/network/network.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { GatewayService } from "src/common/gateway.service";
 import { EsdtService } from "src/common/esdt.service";
+import { CronJob } from "cron";
 
 @Injectable()
 export class CacheWarmerService {
-
   constructor(
     private readonly nodeService: NodeService,
     private readonly esdtService: EsdtService,
@@ -32,7 +32,29 @@ export class CacheWarmerService {
     private readonly networkService: NetworkService,
     private readonly accountService: AccountService,
     private readonly gatewayService: GatewayService,
-  ) { }
+    private readonly schedulerRegistry: SchedulerRegistry,
+  ) { 
+    this.configCronJob(
+      'keybaseCronJob', 
+      CronExpression.EVERY_10_SECONDS, 
+      CronExpression.EVERY_30_MINUTES, 
+      async () => await this.handleKeybaseInvalidations()
+    );
+
+    this.configCronJob(
+      'identityCronJob', 
+      CronExpression.EVERY_10_SECONDS, 
+      CronExpression.EVERY_5_MINUTES, 
+      async () => await this.handleIdentityInvalidations()
+    );
+  }
+
+  private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {
+    const cronTime = this.apiConfigService.getIsFastWarmerCronActive() ? fastExpression : normalExpression;
+    const cronJob = new CronJob(cronTime, async () => await callback())
+    this.schedulerRegistry.addCronJob(name, cronJob);
+    cronJob.start();
+  }
 
   @Cron('* * * * *')
   async handleNodeInvalidations() {
@@ -50,7 +72,6 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('*/7 * * * *')
   async handleIdentityInvalidations() {
     await Locker.lock('Identities invalidations', async () => {
       let identities = await this.identitiesService.getAllIdentitiesRaw();
@@ -66,7 +87,6 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('*/30 * * * *')
   async handleKeybaseInvalidations() {
     await Locker.lock('Keybase invalidations', async () => {
       let nodeKeybases = await this.keybaseService.confirmKeybaseNodesAgainstKeybasePub();

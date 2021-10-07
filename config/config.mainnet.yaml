@@ -8,6 +8,7 @@ cron:
   transactionProcessor: true
   transactionProcessorMaxLookBehind: 1000
   cacheWarmer: true
+  fastWarm: false
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true
