@@ -164,9 +164,6 @@ export class ElasticService {
   }
 
   private buildElasticNftFilter(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
-    const pagination = { from, size };
-    const sort = [{ name: 'timestamp', order: ElasticSortOrder.descending }]
-
     let queries = [];
     queries.push(QueryType.Exists('identifier'));
 
@@ -209,8 +206,8 @@ export class ElasticService {
     }
 
     const elasticQuery = ElasticQuery.create()
-      .withPagination(pagination)
-      .withSort(sort)
+      .withPagination({ from, size })
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
       .withCondition(QueryConditionOptions.must, queries);
 
     return elasticQuery;
