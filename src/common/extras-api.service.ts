@@ -28,7 +28,7 @@ export class ExtrasApiService {
     try {
       let result = await this.post('transactions/check-scam', transactionMinInfoDto);
       return result?.data;
-    } catch (err) {
+    } catch (err: any) {
       this.logger.error('An error occurred while calling check scam transaction API.', {
         exception: err.toString(),
         txInfo: transactionMinInfoDto,

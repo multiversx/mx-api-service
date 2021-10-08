@@ -180,6 +180,15 @@ export class ApiConfigService {
     return isCronActive;
   }
 
+  getIsFastWarmerCronActive(): boolean {
+    let isCronActive = this.configService.get<boolean>('cron.fastWarm');
+    if (isCronActive === undefined) {
+      return false;
+    }
+
+    return isCronActive;
+  }
+
   getIsPublicApiActive(): boolean {
     let isApiActive = this.configService.get<boolean>('api.public');
     if (isApiActive === undefined) {

@@ -103,7 +103,6 @@ describe('API helpers', () => {
     });
 
     it('should return a denomination value', () => {
-      console.log(NumberUtils.denominateFloat('50000000100000000000'));
       expect(NumberUtils.denominateFloat('50000000100000000000')).toEqual(
         '50.000000100000000000',
       );

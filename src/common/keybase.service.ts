@@ -93,56 +93,40 @@ export class KeybaseService {
     return keybaseGetResults;
   }
 
-  async confirmKeybasesAgainstKeybasePub() {
+  async confirmKeybasesAgainstKeybasePub(): Promise<void> {
+    const isKeybaseUp = await this.isKeybaseUp();
+    if (!isKeybaseUp) {
+      return;
+    }
+
     const keybaseProvidersArr: Keybase[] = await this.getProvidersKeybasesRaw();
     const keybasesNodesArr: Keybase[] = await this.getNodesKeybasesRaw();
 
     const keybasesArr: Keybase[] = [...keybaseProvidersArr, ...keybasesNodesArr];
 
-    const confirmedKeybases = await this.cachingService.batchProcess(
+    await this.cachingService.batchProcess(
       keybasesArr,
       keybase => `keybase:${keybase.key}`,
       async (keybase) => await this.confirmKeybase(keybase),
       Constants.oneMonth() * 6,
       true
     );
-
-    const keybases: { [key: string]: KeybaseState } = {};
-
-    keybasesArr.forEach((keybase, index) => {
-      let keybaseState = new KeybaseState();
-      keybaseState.identity = keybase.identity;
-
-      if (confirmedKeybases[index]) {
-        keybaseState.confirmed = true;
-        // this.logger.log(`Confirmed keybase for identity ${keybase.identity} and key ${keybase.key}`);
-      } else {
-        keybaseState.confirmed = false;
-        this.logger.log(`Unconfirmed keybase for identity ${keybase.identity} and key ${keybase.key}`);
-      }
-
-      keybases[keybase.key] = keybaseState;
-    });
-
-    return keybases;
   }
 
-  async getIdentitiesProfilesAgainstKeybasePub(): Promise<KeybaseIdentity[]> {
+  async confirmIdentityProfilesAgainstKeybasePub(): Promise<void> {
     let nodes = await this.nodeService.getAllNodes();
 
     let keys = [
       ...new Set(nodes.filter(({ identity }) => !!identity).map(({ identity }) => identity)),
     ].filter(x => x !== null).map(x => x ?? '');
 
-    let identities: KeybaseIdentity[] = await this.cachingService.batchProcess(
+    await this.cachingService.batchProcess(
       keys,
       key => `identityProfile:${key}`,
       async key => await this.getProfile(key) ?? new KeybaseIdentity(),
       Constants.oneMonth() * 6,
       true
     );
-
-    return identities;
   }
 
   async getCachedIdentityProfilesKeybases(): Promise<(KeybaseIdentity | undefined)[]> {
@@ -159,6 +143,12 @@ export class KeybaseService {
       async () => await this.confirmKeybasesAgainstCache(),
       Constants.oneHour()
     );
+  }
+
+  async isKeybaseUp(): Promise<boolean> {
+    const { status } = await this.apiService.head('https://keybase.pub');
+
+    return status === 200;
   }
 
   async confirmKeybase(keybase: Keybase): Promise<boolean> {
