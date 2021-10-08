@@ -22,6 +22,9 @@ import { TransactionScamInfo } from './entities/transaction-scam-info';
 import { TransactionGetService } from './transaction.get.service';
 import { TokenTransferService } from './token.transfer.service';
 import { TransactionPriceService } from './transaction.price.service';
+import { TransactionQueryOptions } from './entities/transactions.query.options';
+import { SmartContractResult } from './entities/smart.contract.result';
+import { TermsQuery } from 'src/common/entities/elastic/terms.query';
 
 @Injectable()
 export class TransactionService {
@@ -83,41 +86,51 @@ export class TransactionService {
   }
 
   async getTransactionCount(filter: TransactionFilter): Promise<number> {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.condition[filter.condition ?? QueryConditionOptions.must] = this.buildTransactionFilterQuery(filter);
+    const elasticQuery = ElasticQuery.create()
+      .withCondition(filter.condition ?? QueryConditionOptions.must, this.buildTransactionFilterQuery(filter));
 
     if (filter.before || filter.after) {
-      elasticQueryAdapter.filter = [
-        QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0),
-      ]
+      elasticQuery
+        .withFilter([QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0)]);
     }
 
-    return await this.elasticService.getCount('transactions', elasticQueryAdapter);
+    return await this.elasticService.getCount('transactions', elasticQuery);
   }
 
-  async getTransactions(filter: TransactionFilter): Promise<Transaction[]> {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-
+  async getTransactions(filter: TransactionFilter, queryOptions?: TransactionQueryOptions): Promise<(Transaction | TransactionDetailed)[]> {
     const { from, size } = filter;
     const pagination: ElasticPagination = {
       from, size
     };
-    elasticQueryAdapter.pagination = pagination;
-    elasticQueryAdapter.condition[filter.condition ?? QueryConditionOptions.must] = this.buildTransactionFilterQuery(filter);
 
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descending };
     const nonce: ElasticSortProperty = { name: 'nonce', order: ElasticSortOrder.descending };
-    elasticQueryAdapter.sort = [timestamp, nonce];
+
+    const elasticQuery = ElasticQuery.create()
+      .withPagination(pagination)
+      .withCondition(filter.condition ?? QueryConditionOptions.must, this.buildTransactionFilterQuery(filter))
+      .withSort([timestamp, nonce]);
 
     if (filter.before || filter.after) {
-      elasticQueryAdapter.filter = [
-        QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0),
-      ]
+      elasticQuery
+        .withFilter([QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0)]);
     }
 
-    let elasticTransactions = await this.elasticService.getList('transactions', 'txHash', elasticQueryAdapter);
+    let elasticTransactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
 
-    let transactions: Transaction[] = [];
+    let transactions: (Transaction | TransactionDetailed)[] = [];
+
+    for (let elasticTransaction of elasticTransactions) {
+      let transaction = ApiUtils.mergeObjects(new Transaction(), elasticTransaction);
+
+      let tokenTransfer = this.tokenTransferService.getTokenTransfer(elasticTransaction);
+      if (tokenTransfer) {
+        transaction.tokenValue = tokenTransfer.tokenAmount;
+        transaction.tokenIdentifier = tokenTransfer.tokenIdentifier;
+      }
+
+      transactions.push(transaction);
+    }
 
     if (filter.hashes) {
       const txHashes: string[] = filter.hashes.split(',');
@@ -132,16 +145,31 @@ export class TransactionService {
       }
     }
 
-    for (let elasticTransaction of elasticTransactions) {
-      let transaction = ApiUtils.mergeObjects(new Transaction(), elasticTransaction);
+    if (queryOptions && queryOptions.withScResults) {
+      // Add scResults to transaction details
 
-      let tokenTransfer = this.tokenTransferService.getTokenTransfer(elasticTransaction);
-      if (tokenTransfer) {
-        transaction.tokenValue = tokenTransfer.tokenAmount;
-        transaction.tokenIdentifier = tokenTransfer.tokenIdentifier;
+      const elasticQuery = ElasticQuery.create()
+        .withPagination({ from: 0, size: 10000 })
+        .withSort([{ name: 'timestamp' , order: ElasticSortOrder.ascending }])
+        .withTerms(new TermsQuery('originalTxHash', elasticTransactions.filter(x => x.hasScResults === true).map(x => x.txHash)));
+
+      let scResults = await this.elasticService.getList('scresults', 'scHash', elasticQuery);
+      for (let scResult of scResults) {
+        scResult.hash = scResult.scHash;
+
+        delete scResult.scHash;
       }
 
-      transactions.push(transaction);
+      const detailedTransactions: TransactionDetailed[] = [];
+      for (let transaction of transactions) {
+        const transactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), transaction);
+        const transactionsScResults = scResults.filter(({originalTxHash}) => originalTxHash == transaction.txHash);
+        transactionDetailed.results = transactionsScResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+
+        detailedTransactions.push(transactionDetailed);
+      }
+
+      return detailedTransactions;
     }
 
     return transactions;
@@ -180,7 +208,7 @@ export class TransactionService {
     try {
       let result = await this.gatewayService.create('transaction/send', transaction);
       txHash = result.txHash;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(error);
       return error.response.data.error;
     }

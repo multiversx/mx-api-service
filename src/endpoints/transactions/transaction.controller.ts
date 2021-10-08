@@ -1,6 +1,7 @@
 import { Body, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
+import { ParseOptionalBoolPipe } from 'src/utils/pipes/parse.optional.bool.pipe';
 import { ParseOptionalEnumPipe } from 'src/utils/pipes/parse.optional.enum.pipe';
 import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
 import { Transaction } from './entities/transaction';
@@ -36,6 +37,7 @@ export class TransactionController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+  @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions (it activates only if in filter are some hashes)', required: false })
   getTransactions(
     @Query('sender') sender: string | undefined, 
     @Query('receiver') receiver: string | undefined, 
@@ -50,7 +52,8 @@ export class TransactionController {
     @Query('before', ParseOptionalIntPipe) before: number | undefined, 
     @Query('after', ParseOptionalIntPipe) after: number | undefined, 
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
-    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('withScResults', new ParseOptionalBoolPipe) withScResults: boolean | undefined,
   ): Promise<Transaction[]> {
     return this.transactionService.getTransactions({
         sender, 
@@ -67,7 +70,7 @@ export class TransactionController {
         after,
         from, 
         size
-    });
+    }, { withScResults });
   }
 
   @Get("/transactions/count")

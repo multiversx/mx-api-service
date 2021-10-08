@@ -69,7 +69,7 @@ export class ApiService {
 
     try {
       return await axios.get(url, this.getConfig(timeout));
-    } catch(error) {
+    } catch (error: any) {
       let handled = false;
       if (errorHandler) {
         handled = await errorHandler(error);
@@ -101,7 +101,7 @@ export class ApiService {
     
     try {
       return await axios.post(url, data, this.getConfig(timeout));
-    } catch(error) {
+    } catch (error: any) {
       let handled = false;
       if (errorHandler) {
         handled = await errorHandler(error);
@@ -134,7 +134,7 @@ export class ApiService {
 
     try {
       return await axios.head(url, this.getConfig(timeout));
-    } catch(error) {
+    } catch (error: any) {
       let handled = false;
       if (errorHandler) {
         handled = await errorHandler(error);

@@ -2,16 +2,15 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
-import { buildElasticQuery } from "../utils/elastic.queries";
 import { ElasticQuery } from "./entities/elastic/elastic.query";
 import { ElasticSortOrder } from "./entities/elastic/elastic.sort.order";
 import { QueryOperator } from "./entities/elastic/query.operator";
 import { QueryType } from "./entities/elastic/query.type";
 import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
-import { ElasticPagination } from "./entities/elastic/elastic.pagination";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
+import { QueryConditionOptions } from "./entities/elastic/query.condition.options";
 
 @Injectable()
 export class ElasticService {
@@ -26,18 +25,12 @@ export class ElasticService {
     this.url = apiConfigService.getElasticUrl();
   }
 
-  async getCount(collection: string, elasticQueryAdapter: ElasticQuery | undefined = undefined) {
+  async getCount(collection: string, elasticQuery: ElasticQuery | undefined = undefined) {
     const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_count`;
 
-    let elasticQuery;
-
-    if (elasticQueryAdapter) {
-      elasticQuery = buildElasticQuery(elasticQueryAdapter)
-    }
- 
     let profiler = new PerformanceProfiler();
 
-    const result: any = await this.post(url, elasticQuery);
+    const result: any = await this.post(url, elasticQuery?.toJson());
 
     profiler.stop();
 
@@ -70,14 +63,12 @@ export class ElasticService {
     return { ...item, ..._source };
   };
 
-  async getList(collection: string, key: string, elasticQueryAdapter: ElasticQuery): Promise<any[]> {
+  async getList(collection: string, key: string, elasticQuery: ElasticQuery): Promise<any[]> {
     const url = `${this.url}/${collection}/_search`;
-
-    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
     let profiler = new PerformanceProfiler();
 
-    const result = await this.post(url, elasticQuery);
+    const result = await this.post(url, elasticQuery.toJson());
 
     profiler.stop();
 
@@ -97,29 +88,26 @@ export class ElasticService {
   }
 
   async getTokensByIdentifiers(identifiers: string[]) {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.condition.should = identifiers.map(identifier => 
+    const queries = identifiers.map(identifier => 
       QueryType.Match('identifier', identifier, QueryOperator.AND)
     );
 
-    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.should, queries);
 
-    let documents = await this.getDocuments('tokens', elasticQuery);
+    let documents = await this.getDocuments('tokens', elasticQuery.toJson());
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
 
   async getAccountEsdtByIdentifiers(identifiers: string[]) {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.condition.should = identifiers.map((identifier) => QueryType.Match('identifier', identifier, QueryOperator.AND));
-    
-    let pagination = new ElasticPagination();
-    pagination.size = 10000;
-    elasticQueryAdapter.pagination = pagination;
+    const queries = identifiers.map((identifier) => QueryType.Match('identifier', identifier, QueryOperator.AND));
 
-    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: 10000 })
+      .withCondition(QueryConditionOptions.should, queries);
 
-    const documents = await this.getDocuments('accountsesdt', elasticQuery);
+    const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
 
     let result = documents.map((document: any) => this.formatItem(document, 'identifier'));
     result.reverse();
@@ -128,62 +116,54 @@ export class ElasticService {
   }
 
   async getAccountEsdtByAddress(address: string, from: number, size: number, token: string | undefined) {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.pagination = { from, size };
-
-    elasticQueryAdapter.condition.must = [
+    const queries = [
       QueryType.Match('address', address),
       QueryType.Exists('identifier'),
     ]
 
     if (token) {
-      elasticQueryAdapter.condition.must.push(
+      queries.push(
         QueryType.Match('token', token, QueryOperator.AND)
       );
     }
 
-    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from, size })
+      .withCondition(QueryConditionOptions.must, queries);
 
-    let documents = await this.getDocuments('accountsesdt', elasticQuery);
+    let documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
 
   async getAccountEsdtByAddressAndIdentifier(address: string, identifier: string) {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.pagination = { from: 0, size: 1 };
-
-    elasticQueryAdapter.condition.must = [
+    const queries = [
       QueryType.Match('address', address),
       QueryType.Match('identifier', identifier, QueryOperator.AND),
     ]
 
-    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: 1})
+      .withCondition(QueryConditionOptions.must, queries);
 
-    let documents = await this.getDocuments('accountsesdt', elasticQuery);
+    let documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
   }
 
   async getAccountEsdtByAddressCount(address: string) {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.pagination = { from: 0, size: 0 };
-
-    elasticQueryAdapter.condition.must = [
+    const queries = [
       QueryType.Match('address', address),
       QueryType.Exists('identifier'),
     ]
 
-    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, queries);
 
-    return await this.getDocumentCount('accountsesdt', elasticQuery);
+    return await this.getDocumentCount('accountsesdt', elasticQuery.toJson());
   }
 
   private buildElasticNftFilter(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.pagination = { from, size };
-    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descending }]
-
     let queries = [];
     queries.push(QueryType.Exists('identifier'));
 
@@ -225,30 +205,25 @@ export class ElasticService {
       queries.push(QueryType.Should(identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
     }
 
-    elasticQueryAdapter.condition.must = queries;
-
-    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from, size })
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
+      .withCondition(QueryConditionOptions.must, queries);
 
     return elasticQuery;
   }
 
   async getTokens(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
-    let query = await this.buildElasticNftFilter(from, size, filter, identifier);
+    let elasticQuery = await this.buildElasticNftFilter(from, size, filter, identifier);
 
-    let documents = await this.getDocuments('tokens', query);
+    let documents = await this.getDocuments('tokens', elasticQuery.toJson());
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
 
   async getTokenCollectionCount(search: string | undefined, type: NftType | undefined) {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.pagination = { from: 0, size: 0 };
-    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descending }];
-
     let mustNotQueries = [];
     mustNotQueries.push(QueryType.Exists('identifier'));
-
-    elasticQueryAdapter.condition.must_not = mustNotQueries;
 
     let mustQueries = [];
     if (search !== undefined) {
@@ -258,26 +233,24 @@ export class ElasticService {
     if (type !== undefined) {
       mustQueries.push(QueryType.Match('type', type));
     }
-    elasticQueryAdapter.condition.must = mustQueries;
 
     let shouldQueries = [];
     shouldQueries.push(QueryType.Match('type', NftType.SemiFungibleESDT));
     shouldQueries.push(QueryType.Match('type', NftType.NonFungibleESDT));
-    elasticQueryAdapter.condition.should = shouldQueries;
 
-    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: 0})
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
+      .withCondition(QueryConditionOptions.must, mustQueries)
+      .withCondition(QueryConditionOptions.should, shouldQueries)
+      .withCondition(QueryConditionOptions.mustNot, mustNotQueries);
 
-    return await this.getDocumentCount('tokens', elasticQuery);
+    return await this.getDocumentCount('tokens', elasticQuery.toJson());
   }
 
   async getTokenCollections(from: number, size: number, search: string | undefined, type: NftType | undefined, token: string | undefined, issuer: string | undefined, identifiers: string[]) {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.pagination = { from, size };
-    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descending }];
-
     let mustNotQueries = [];
     mustNotQueries.push(QueryType.Exists('identifier'));
-    elasticQueryAdapter.condition.must_not = mustNotQueries;
 
     let mustQueries = [];
     if (search !== undefined) {
@@ -295,7 +268,6 @@ export class ElasticService {
     if (issuer !== undefined) {
       mustQueries.push(QueryType.Match('issuer', issuer));
     }
-    elasticQueryAdapter.condition.must = mustQueries;
 
     let shouldQueries = [];
 
@@ -307,28 +279,31 @@ export class ElasticService {
       shouldQueries.push(QueryType.Match('type', NftType.SemiFungibleESDT));
       shouldQueries.push(QueryType.Match('type', NftType.NonFungibleESDT));
     }
-    elasticQueryAdapter.condition.should = shouldQueries;
 
-    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from, size})
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
+      .withCondition(QueryConditionOptions.must, mustQueries)
+      .withCondition(QueryConditionOptions.should, shouldQueries)
+      .withCondition(QueryConditionOptions.mustNot, mustNotQueries);
 
-    let documents = await this.getDocuments('tokens', elasticQuery);
+    let documents = await this.getDocuments('tokens', elasticQuery.toJson());
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
 
   async getTokenByIdentifier(identifier: string) {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.pagination = { from: 0, size: 1 };
-    elasticQueryAdapter.sort = [{ name: 'timestamp', order: ElasticSortOrder.descending }];
-
-    elasticQueryAdapter.condition.must = [
+    const queries = [
       QueryType.Exists('identifier'),
       QueryType.Match('identifier', identifier, QueryOperator.AND),
     ]
 
-    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: 1 })
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
+      .withCondition(QueryConditionOptions.must, queries);
 
-    let documents = await this.getDocuments('tokens', elasticQuery);
+    let documents = await this.getDocuments('tokens', elasticQuery.toJson());
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
   }
@@ -336,13 +311,11 @@ export class ElasticService {
   async getTokenCount(filter: NftFilter): Promise<number> {
     let query = await this.buildElasticNftFilter(0, 0, filter, undefined);
 
-    return await this.getDocumentCount('tokens', query);
+    return await this.getDocumentCount('tokens', query.toJson());
   }
 
-  async getLogsForTransactionHashes(elasticQueryAdapter: ElasticQuery): Promise<TransactionLog[]> {
-    const elasticQuery = buildElasticQuery(elasticQueryAdapter);
-
-    return await this.getDocuments('logs', elasticQuery);
+  async getLogsForTransactionHashes(elasticQuery: ElasticQuery): Promise<TransactionLog[]> {
+    return await this.getDocuments('logs', elasticQuery.toJson());
   }
 
   public async get(url: string) {
