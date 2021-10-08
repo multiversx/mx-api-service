@@ -26,7 +26,7 @@ describe('Keybase Service', () => {
     keybasePubKeybases = await keybaseService.confirmKeybasesAgainstKeybasePub();
 
     cachedIdentityProfiles = await keybaseService.getCachedIdentityProfilesKeybases();
-    keybasePubIdentityProfiles = await keybaseService.getIdentitiesProfilesAgainstKeybasePub();
+    keybasePubIdentityProfiles = await keybaseService.confirmIdentityProfilesAgainstKeybasePub();
   });
 
   it('cached keybases should be in sync with keybase pub', async () => {

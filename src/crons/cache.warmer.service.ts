@@ -82,19 +82,10 @@ export class CacheWarmerService {
 
   @Cron(CronExpression.EVERY_HOUR)
   async handleKeybaseAgainstKeybasePubInvalidations() {
-    const { status } = await this.apiService.head('https://keybase.pub');
-    
-    if (status === 200) {
-    //Run invalidations against keybase.pub if service isn't down
-      await Locker.lock('Keybase invalidations', async () => {
-        let nodesAndProvidersKeybases = await this.keybaseService.confirmKeybasesAgainstKeybasePub();
-        let identityProfilesKeybases = await this.keybaseService.getIdentitiesProfilesAgainstKeybasePub();
-        await Promise.all([
-          this.invalidateKey('keybases', nodesAndProvidersKeybases, Constants.oneHour()),
-          this.invalidateKey('identityProfilesKeybases', identityProfilesKeybases, Constants.oneHour())
-        ]);
-      }, true);
-    }
+    await Locker.lock('Keybase invalidations', async () => {
+      await this.keybaseService.confirmKeybasesAgainstKeybasePub();
+      await this.keybaseService.confirmIdentityProfilesAgainstKeybasePub();
+    }, true);
   }
 
   @Cron('* * * * *')
