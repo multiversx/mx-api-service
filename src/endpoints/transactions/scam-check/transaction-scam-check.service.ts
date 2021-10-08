@@ -31,7 +31,7 @@ export class TransactionScamCheckService {
         return;
       }
       return this.buildResult(result);
-    } catch (err) {
+    } catch (err: any) {
       this.logger.error('An error occurred while getting scam info.', {
         exception: err.toString()
       });

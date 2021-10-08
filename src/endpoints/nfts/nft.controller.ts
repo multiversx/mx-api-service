@@ -111,7 +111,7 @@ export class NftController {
     @Query('withOwner', new ParseOptionalBoolPipe) withOwner: boolean | undefined,
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply: boolean | undefined,
   ): Promise<Nft[] | NftDetailed[]> {
-    return await this.nftService.getNfts({ from, size }, { search, identifiers, type, collection, tags, creator, hasUris }, withOwner, withSupply);
+    return await this.nftService.getNfts({ from, size }, { search, identifiers, type, collection, tags, creator, hasUris }, { withOwner, withSupply });
   }
 
   @Get("/nfts/count")

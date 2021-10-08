@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { Cron } from "@nestjs/schedule";
+import { Cron, CronExpression, SchedulerRegistry } from "@nestjs/schedule";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
@@ -15,10 +15,10 @@ import { NetworkService } from "src/endpoints/network/network.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { GatewayService } from "src/common/gateway.service";
 import { EsdtService } from "src/common/esdt.service";
+import { CronJob } from "cron";
 
 @Injectable()
 export class CacheWarmerService {
-
   constructor(
     private readonly nodeService: NodeService,
     private readonly esdtService: EsdtService,
@@ -32,9 +32,31 @@ export class CacheWarmerService {
     private readonly networkService: NetworkService,
     private readonly accountService: AccountService,
     private readonly gatewayService: GatewayService,
-  ) { }
+    private readonly schedulerRegistry: SchedulerRegistry,
+  ) { 
+    this.configCronJob(
+      'keybaseCronJob', 
+      CronExpression.EVERY_MINUTE, 
+      CronExpression.EVERY_30_MINUTES, 
+      async () => await this.handleKeybaseInvalidations()
+    );
 
-  @Cron('* * * * *')
+    this.configCronJob(
+      'identityCronJob', 
+      CronExpression.EVERY_MINUTE, 
+      CronExpression.EVERY_5_MINUTES, 
+      async () => await this.handleIdentityInvalidations()
+    );
+  }
+
+  private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {
+    const cronTime = this.apiConfigService.getIsFastWarmerCronActive() ? fastExpression : normalExpression;
+    const cronJob = new CronJob(cronTime, async () => await callback())
+    this.schedulerRegistry.addCronJob(name, cronJob);
+    cronJob.start();
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleNodeInvalidations() {
     await Locker.lock('Nodes invalidations', async () => {
       let nodes = await this.nodeService.getAllNodesRaw();
@@ -42,7 +64,7 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('* * * * *')
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleEsdtTokenInvalidations() {
     await Locker.lock('Esdt tokens invalidations', async () => {
       let tokens = await this.esdtService.getAllEsdtTokensRaw();
@@ -50,7 +72,6 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('*/7 * * * *')
   async handleIdentityInvalidations() {
     await Locker.lock('Identities invalidations', async () => {
       let identities = await this.identitiesService.getAllIdentitiesRaw();
@@ -58,7 +79,7 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('* * * * *')
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleProviderInvalidations() {
     await Locker.lock('Providers invalidations', async () => {
       let providers = await this.providerService.getAllProvidersRaw();
@@ -66,7 +87,6 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('*/30 * * * *')
   async handleKeybaseInvalidations() {
     await Locker.lock('Keybase invalidations', async () => {
       let nodeKeybases = await this.keybaseService.confirmKeybaseNodesAgainstKeybasePub();
@@ -80,7 +100,7 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('* * * * *')
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleCurrentPriceInvalidations() {
     if (this.apiConfigService.getDataUrl()) {
       await Locker.lock('Current price invalidations', async () => {
@@ -90,7 +110,7 @@ export class CacheWarmerService {
     }
   }
 
-  @Cron('* * * * *')
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleEconomicsInvalidations() {
     await Locker.lock('Economics invalidations', async () => {
       let economics = await this.networkService.getEconomicsRaw();
@@ -98,7 +118,7 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('* * * * *')
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleAccountInvalidations() {
     await Locker.lock('Accounts invalidations', async () => {
       let accounts = await this.accountService.getAccountsRaw({ from: 0, size: 25 });
@@ -106,7 +126,7 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron('* * * * *')
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleHeartbeatStatusInvalidations() {
     await Locker.lock('Heartbeatstatus invalidations', async () => {
       let result = await this.gatewayService.getRaw('node/heartbeatstatus');
