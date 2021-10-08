@@ -7,7 +7,6 @@ import { ProviderConfig } from "./entities/provider.config";
 import { NodeService } from "../nodes/node.service";
 import { ProviderFilter } from "src/endpoints/providers/entities/provider.filter";
 import { ApiService } from "src/common/api.service";
-import { KeybaseState } from "src/common/entities/keybase.state";
 import { KeybaseService } from "src/common/keybase.service";
 import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
