@@ -211,7 +211,7 @@ export class NodeService {
   }
 
   private async getNodesIdentities(nodes: Node[]) {
-    const keybases: { [key: string]: KeybaseState } | undefined = await this.keybaseService.getCachedNodeKeybases();
+    const keybases: { [key: string]: KeybaseState } | undefined = await this.keybaseService.getCachedNodesAndProvidersKeybases();
 
     if (keybases) {
       for (let node of nodes) {

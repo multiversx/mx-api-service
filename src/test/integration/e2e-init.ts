@@ -46,8 +46,7 @@ export default class Initializer {
 
     await this.execute('Flushing db', async () => await Initializer.cachingService.flushDb());
 
-    await this.fetch('nodeKeybases', async () => await keybaseService.confirmKeybaseNodesAgainstKeybasePub());
-    await this.fetch('providerKeybases', async () => await keybaseService.confirmKeybaseProvidersAgainstKeybasePub());
+    await this.fetch('keybases', async () => await keybaseService.confirmKeybasesAgainstCache());
     await this.fetch('nodes', async () => await nodeService.getAllNodesRaw());
     await this.fetch('providers', async () => await providerService.getAllProvidersRaw());
 

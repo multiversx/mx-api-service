@@ -145,7 +145,7 @@ export class IdentitiesService {
   async getAllIdentitiesRaw(): Promise<Identity[]> {
     let nodes = await this.nodeService.getAllNodes();
 
-    let keybaseIdentities: (KeybaseIdentity | undefined)[] = await this.keybaseService.getCachedIdentityKeybases();
+    let keybaseIdentities: (KeybaseIdentity | undefined)[] = await this.keybaseService.getCachedIdentityProfilesKeybases();
 
     let identitiesDetailed: IdentityDetailed[] = [];
 

@@ -179,7 +179,7 @@ export class ProviderService {
       };
     });
 
-    let providerKeybases = await this.keybaseService.getCachedProviderKeybases();
+    let providerKeybases = await this.keybaseService.getCachedNodesAndProvidersKeybases();
     
     if (providerKeybases) {
       for (let providerAddress of providers) {
