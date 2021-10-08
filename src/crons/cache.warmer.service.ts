@@ -67,7 +67,7 @@ export class CacheWarmerService {
   }
 
   @Cron('*/30 * * * *')
-  async handleKeybaseInvalidations() {
+  async handleKeybaseAgainstCacheInvalidations() {
     await Locker.lock('Keybase invalidations', async () => {
       let nodesAndProvidersKeybases = await this.keybaseService.confirmKeybasesAgainstCache();
       let identityProfilesKeybases = await this.keybaseService.getIdentitiesProfilesAgainstCache();
