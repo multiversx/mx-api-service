@@ -80,7 +80,7 @@ export class KeybaseService {
     return keybasesDict;
   }
 
-  async getIdentitiesProfilesAgainstCache(): Promise<(KeybaseIdentity | undefined)[]> {
+  async getIdentitiesProfilesAgainstCache(): Promise<KeybaseIdentity[]> {
     let nodes = await this.nodeService.getAllNodes();
 
     let keys = [
@@ -90,7 +90,8 @@ export class KeybaseService {
     let keybaseGetPromises = keys.map(key => this.cachingService.getCache<KeybaseIdentity>(`identityProfile:${key}`));
     let keybaseGetResults = await Promise.all(keybaseGetPromises);
 
-    return keybaseGetResults;
+    // @ts-ignore
+    return keybaseGetResults.filter(x => x !== undefined && x !== null);
   }
 
   async confirmKeybasesAgainstKeybasePub(): Promise<void> {
@@ -128,13 +129,13 @@ export class KeybaseService {
     await this.cachingService.batchProcess(
       keys,
       key => `identityProfile:${key}`,
-      async key => await this.getProfile(key) ?? new KeybaseIdentity(),
+      async key => await this.getProfile(key),
       Constants.oneMonth() * 6,
       true
     );
   }
 
-  async getCachedIdentityProfilesKeybases(): Promise<(KeybaseIdentity | undefined)[]> {
+  async getCachedIdentityProfilesKeybases(): Promise<KeybaseIdentity[]> {
     return await this.cachingService.getOrSetCache(
       'identityProfilesKeybases',
       async () => await this.getIdentitiesProfilesAgainstCache(),
@@ -151,9 +152,12 @@ export class KeybaseService {
   }
 
   async isKeybaseUp(): Promise<boolean> {
-    const { status } = await this.apiService.head('https://keybase.pub');
-
-    return status === 200;
+    try {
+      const { status } = await this.apiService.head('https://keybase.pub');
+      return status === HttpStatus.OK;
+    } catch (error) {
+      return false;
+    }
   }
 
   async confirmKeybase(keybase: Keybase): Promise<boolean> {
@@ -168,44 +172,24 @@ export class KeybaseService {
   
       this.logger.log(`Fetching keybase for identity ${keybase.identity} and key ${keybase.key}`);
 
-      const { status } = await this.apiService.head(url, undefined, async (error: any) => {
-        if (error.response?.status === HttpStatus.NOT_FOUND) {
-          this.logger.log(`Keybase not found for identity ${keybase.identity} and key ${keybase.key}`);
-          return true;
-        }
-
-        return false;
-      });
-      return status === 200;
-    } catch (error) {
-      if (error) {
-      // http status code 404
+      const { status } = await this.apiService.head(url);
+      return status === HttpStatus.OK;
+    } catch (error: any) {
+      if (error.response?.status === HttpStatus.NOT_FOUND) {
+        this.logger.log(`Keybase not found for identity ${keybase.identity} and key ${keybase.key}`);
         return false
       }
 
       const cachedConfirmation = await this.cachingService.getCache<boolean>(`keybase:${keybase.key}`);
-      return cachedConfirmation !== undefined ? cachedConfirmation : false;
+      return cachedConfirmation !== undefined && cachedConfirmation !== null ? cachedConfirmation : false;
     }
   };
 
-  async getProfile(identity: string): Promise<KeybaseIdentity | undefined> {
-    let value: KeybaseIdentity | undefined;
-  
+  async getProfile(identity: string): Promise<KeybaseIdentity | null> {
     try {
-      const { status, data } = await this.apiService.get(
-        `https://keybase.io/_/api/1.0/user/lookup.json?username=${identity}`,
-        undefined,
-        async (error: any) => {
-          if (error.response?.status === HttpStatus.NOT_FOUND) {
-            this.logger.log(`Identity profile not found for identity ${identity}`);
-            return true;
-          }
+      const { status, data } = await this.apiService.get(`https://keybase.io/_/api/1.0/user/lookup.json?username=${identity}`);
   
-          return false;
-        } 
-      );
-  
-      if (status === 200 && data.status.code === 0) {
+      if (status === HttpStatus.OK && data.status.code === 0) {
         const { profile, pictures } = data.them;
   
         const { proofs_summary } = data.them || {};
@@ -216,7 +200,7 @@ export class KeybaseService {
           (element: any) => element['proof_type'] === 'dns' || element['proof_type'] === 'generic_web_site'
         );
   
-        value = {
+        return {
           identity,
           name: profile && profile.full_name ? profile.full_name : undefined,
           description: profile && profile.bio ? profile.bio : undefined,
@@ -228,15 +212,10 @@ export class KeybaseService {
         };
       }
 
-      return value;
-    } catch (error) {
-      if (error) {
-      // http status code 404
-        return undefined
-      }
-
+      return null;
+    } catch (error: any) {
       const cachedIdentityProfile = await this.cachingService.getCache<KeybaseIdentity>(`identityProfile:${identity}`)
-      return cachedIdentityProfile;
+      return cachedIdentityProfile ? cachedIdentityProfile : null;
     }
   };
 }

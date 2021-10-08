@@ -95,7 +95,7 @@ export class CacheWarmerService {
   }
 
   async handleKeybaseAgainstCacheInvalidations() {
-    await Locker.lock('Keybase invalidations', async () => {
+    await Locker.lock('Keybase against cache invalidations', async () => {
       let nodesAndProvidersKeybases = await this.keybaseService.confirmKeybasesAgainstCache();
       let identityProfilesKeybases = await this.keybaseService.getIdentitiesProfilesAgainstCache();
       await Promise.all([
@@ -106,7 +106,7 @@ export class CacheWarmerService {
   }
 
   async handleKeybaseAgainstKeybasePubInvalidations() {
-    await Locker.lock('Keybase invalidations', async () => {
+    await Locker.lock('Keybase against keybase.pub / keybase.io invalidations', async () => {
       await this.keybaseService.confirmKeybasesAgainstKeybasePub();
       await this.keybaseService.confirmIdentityProfilesAgainstKeybasePub();
     }, true);
