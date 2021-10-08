@@ -102,6 +102,10 @@ export class CacheWarmerService {
         this.invalidateKey('keybases', nodesAndProvidersKeybases, Constants.oneHour()),
         this.invalidateKey('identityProfilesKeybases', identityProfilesKeybases, Constants.oneHour())
       ]);
+    //Refresh cached nodes, providers and identities
+      await this.handleNodeInvalidations();
+      await this.handleProviderInvalidations();
+      await this.handleIdentityInvalidations();
     }, true);
   }
 
@@ -109,6 +113,8 @@ export class CacheWarmerService {
     await Locker.lock('Keybase against keybase.pub / keybase.io invalidations', async () => {
       await this.keybaseService.confirmKeybasesAgainstKeybasePub();
       await this.keybaseService.confirmIdentityProfilesAgainstKeybasePub();
+    //Refresh cached keybases
+      await this.handleKeybaseAgainstCacheInvalidations();
     }, true);
   }
 
