@@ -25,8 +25,7 @@ export class KeybaseService {
     this.logger = new Logger(KeybaseService.name);
   }
 
-  async confirmKeybasesAgainstCache(): Promise<{ [key: string]: KeybaseState }> {
-    let nodes = await this.nodeService.getHeartbeat();
+  private async getProvidersKeybasesRaw(): Promise<Keybase[]> {
     const providers = await this.providerService.getProviderAddresses();
     const metadatas = await 
       this.cachingService.batchProcess(
@@ -42,11 +41,24 @@ export class KeybaseService {
       })
       .filter(({ identity }) => !!identity);
 
+    return keybaseProvidersArr;
+  }
+
+  private async getNodesKeybasesRaw(): Promise<Keybase[]> {
+    let nodes = await this.nodeService.getHeartbeat();
+
     const keybasesNodesArr: Keybase[] = nodes
       .filter((node) => !!node.identity)
       .map((node) => {
         return { identity: node.identity, key: node.bls };
       });
+
+    return keybasesNodesArr;
+  }
+
+  async confirmKeybasesAgainstCache(): Promise<{ [key: string]: KeybaseState }> {
+    const keybaseProvidersArr: Keybase[] = await this.getProvidersKeybasesRaw();
+    const keybasesNodesArr: Keybase[] = await this.getNodesKeybasesRaw();
 
     const keybasesArr: Keybase[] = [...keybaseProvidersArr, ...keybasesNodesArr];
 
@@ -67,21 +79,7 @@ export class KeybaseService {
   }
 
   async confirmKeybaseProvidersAgainstKeybasePub() {
-    const providers = await this.providerService.getProviderAddresses();
-
-    const metadatas = await 
-      this.cachingService.batchProcess(
-        providers,
-        address => `providerMetadata:${address}`,
-        async address => await this.providerService.getProviderMetadata(address),
-        Constants.oneMinute() * 15,
-      );
-
-    const keybaseArr: Keybase[] = metadatas
-      .map(({ identity }, index) => {
-        return { identity: identity ?? '', key: providers[index] };
-      })
-      .filter(({ identity }) => !!identity);
+    const keybaseArr: Keybase[] = await this.getProvidersKeybasesRaw();
 
     const confirmedKeybases = await this.cachingService.batchProcess(
       keybaseArr,
@@ -112,13 +110,7 @@ export class KeybaseService {
   }
 
   async confirmKeybaseNodesAgainstKeybasePub() {
-    let nodes = await this.nodeService.getHeartbeat();
-
-    const keybasesArr: Keybase[] = nodes
-      .filter((node) => !!node.identity)
-      .map((node) => {
-        return { identity: node.identity, key: node.bls };
-      });
+    const keybasesArr: Keybase[] = await this.getNodesKeybasesRaw();
 
     const confirmedKeybases = await this.cachingService.batchProcess(
       keybasesArr,
