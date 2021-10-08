@@ -114,6 +114,11 @@ export class KeybaseService {
   }
 
   async confirmIdentityProfilesAgainstKeybasePub(): Promise<void> {
+    const isKeybaseUp = await this.isKeybaseUp();
+    if (!isKeybaseUp) {
+      return;
+    }
+    
     let nodes = await this.nodeService.getAllNodes();
 
     let keys = [
