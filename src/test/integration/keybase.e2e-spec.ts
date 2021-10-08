@@ -9,6 +9,7 @@ describe('Keybase Service', () => {
   let keybaseService: KeybaseService;
   let apiService: ApiService;
   let cachedKeybases: any, keybasePubKeybases: any;
+  let cachedIdentityProfiles: any[], keybasePubIdentityProfiles: any[];
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -22,12 +23,23 @@ describe('Keybase Service', () => {
     keybaseService = publicAppModule.get<KeybaseService>(KeybaseService);
     apiService = publicAppModule.get<ApiService>(ApiService);
     cachedKeybases = await keybaseService.confirmKeybasesAgainstCache();
-    keybasePubKeybases = await keybaseService.confirmKeybasesAgainstKeybasePub();
+    await keybaseService.confirmKeybasesAgainstKeybasePub();
+    keybasePubKeybases = await keybaseService.confirmKeybasesAgainstCache();
+
+    cachedIdentityProfiles = await keybaseService.getIdentitiesProfilesAgainstCache();
+    await keybaseService.confirmIdentityProfilesAgainstKeybasePub();
+    keybasePubIdentityProfiles = await keybaseService.getIdentitiesProfilesAgainstCache();
   }, Constants.oneHour() * 1000);
 
   it('cached keybases should be in sync with keybase pub', async () => {
     expect(Object.keys(cachedKeybases).length).toStrictEqual(Object.keys(keybasePubKeybases).length);
     expect(Object.keys(cachedKeybases)).toStrictEqual(Object.keys(keybasePubKeybases));
+    expect(cachedKeybases).toStrictEqual(keybasePubKeybases);
+  });
+
+  it('cached identity profiles should be in sync with keybase pub', async () => {
+    expect(cachedIdentityProfiles.length).toStrictEqual(keybasePubIdentityProfiles.length);
+    expect(cachedIdentityProfiles).toStrictEqual(keybasePubIdentityProfiles);
     expect(cachedKeybases).toStrictEqual(keybasePubKeybases);
   });
 
