@@ -41,7 +41,9 @@ describe('Keybase Service', () => {
   });
 
   it('it should return cached keybases if keybase.pub is down', async () => {
-    if (apiService.head('https://keybase.pub')) {
+    const { status } = await apiService.head('https://keybase.pub');
+    
+    if (status === 200) {
       expect(cachedKeybases).toStrictEqual(keybasePubKeybases);
       expect(cachedIdentityProfiles).toStrictEqual(keybasePubIdentityProfiles);
     }
