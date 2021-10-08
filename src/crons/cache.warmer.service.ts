@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { Cron } from "@nestjs/schedule";
+import { Cron, CronExpression } from "@nestjs/schedule";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
@@ -15,6 +15,7 @@ import { NetworkService } from "src/endpoints/network/network.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { GatewayService } from "src/common/gateway.service";
 import { EsdtService } from "src/common/esdt.service";
+import { ApiService } from "src/common/api.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -32,6 +33,7 @@ export class CacheWarmerService {
     private readonly networkService: NetworkService,
     private readonly accountService: AccountService,
     private readonly gatewayService: GatewayService,
+    private readonly apiService: ApiService,
   ) { }
 
   @Cron('* * * * *')
@@ -76,6 +78,23 @@ export class CacheWarmerService {
         this.invalidateKey('identityProfilesKeybases', identityProfilesKeybases, Constants.oneHour())
       ]);
     }, true);
+  }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async handleKeybaseAgainstKeybasePubInvalidations() {
+    const { status } = await this.apiService.head('https://keybase.pub');
+    
+    if (status === 200) {
+    //Run invalidations against keybase.pub if service isn't down
+      await Locker.lock('Keybase invalidations', async () => {
+        let nodesAndProvidersKeybases = await this.keybaseService.confirmKeybasesAgainstKeybasePub();
+        let identityProfilesKeybases = await this.keybaseService.getIdentitiesProfilesAgainstKeybasePub();
+        await Promise.all([
+          this.invalidateKey('keybases', nodesAndProvidersKeybases, Constants.oneHour()),
+          this.invalidateKey('identityProfilesKeybases', identityProfilesKeybases, Constants.oneHour())
+        ]);
+      }, true);
+    }
   }
 
   @Cron('* * * * *')
