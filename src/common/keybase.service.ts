@@ -181,7 +181,13 @@ export class KeybaseService {
       });
       return status === 200;
     } catch (error) {
-      return false;
+      if (error) {
+      // http status code 404
+        return false
+      }
+
+      const cachedConfirmation = await this.cachingService.getCache<boolean>(`keybase:${keybase.key}`);
+      return cachedConfirmation !== undefined ? cachedConfirmation : false;
     }
   };
 
@@ -190,7 +196,16 @@ export class KeybaseService {
   
     try {
       const { status, data } = await this.apiService.get(
-        `https://keybase.io/_/api/1.0/user/lookup.json?username=${identity}`
+        `https://keybase.io/_/api/1.0/user/lookup.json?username=${identity}`,
+        undefined,
+        async (error: any) => {
+          if (error.response?.status === HttpStatus.NOT_FOUND) {
+            this.logger.log(`Identity profile not found for identity ${identity}`);
+            return true;
+          }
+  
+          return false;
+        } 
       );
   
       if (status === 200 && data.status.code === 0) {
@@ -214,11 +229,17 @@ export class KeybaseService {
           website: website && website.service_url ? website.service_url : undefined,
           location: profile && profile.location ? profile.location : undefined,
         };
-      } 
-    } catch (error) {
+      }
+
       return value;
+    } catch (error) {
+      if (error) {
+      // http status code 404
+        return undefined
+      }
+
+      const cachedIdentityProfile = await this.cachingService.getCache<KeybaseIdentity>(`identityProfile:${identity}`)
+      return cachedIdentityProfile;
     }
-  
-    return value;
   };
 }
