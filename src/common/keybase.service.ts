@@ -1,6 +1,7 @@
 import { forwardRef, HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
+import { ApiUtils } from "src/utils/api.utils";
 import { Constants } from "src/utils/constants";
 import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
@@ -67,15 +68,16 @@ export class KeybaseService {
 
     let confirmedKeybases = keybasesArr.zip<(boolean | undefined), KeybaseState>(keybaseGetResults, (first, second) => ({ identity: first.identity, confirmed: second ?? false }));
 
-    let result: { [key: string]: KeybaseState } = {};
+    let keybasesDict: { [key: string]: KeybaseState } = {};
     for (let [index, confirmedKeybase] of confirmedKeybases.entries()) {
-      let bls = keybasesArr[index].key;
-      if (bls !== undefined) {
-        result[bls] = confirmedKeybase;
+      let key = keybasesArr[index].key;
+      if (key !== undefined) {
+        let keybaseState = ApiUtils.mergeObjects(new KeybaseState(), confirmedKeybase);
+        keybasesDict[key] = keybaseState;
       }
     }
 
-    return result;
+    return keybasesDict;
   }
 
   async getIdentitiesProfilesAgainstCache(): Promise<(KeybaseIdentity | undefined)[]> {

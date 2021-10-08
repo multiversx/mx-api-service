@@ -27,7 +27,10 @@ describe('Keybase Service', () => {
 
     cachedIdentityProfiles = await keybaseService.getCachedIdentityProfilesKeybases();
     keybasePubIdentityProfiles = await keybaseService.getIdentitiesProfilesAgainstKeybasePub();
-  });
+
+    console.log({cachedKeybases: cachedKeybases['fff338ce7ac423023d66ee1d55ac69e4588b52a4fcf54b0a240afed7b55ef33169b5758f6a1f36e79769548c6bdf940ea195ce0fc12cc0e03fc9da8f51582dad6753db76243e542872a725585127e700da167f223a22154360daf22973dbb198'], 
+    keybasePubKeybases: keybasePubKeybases['fff338ce7ac423023d66ee1d55ac69e4588b52a4fcf54b0a240afed7b55ef33169b5758f6a1f36e79769548c6bdf940ea195ce0fc12cc0e03fc9da8f51582dad6753db76243e542872a725585127e700da167f223a22154360daf22973dbb198']})
+  }, Constants.oneHour() * 1000);
 
   it('cached keybases should be in sync with keybase pub', async () => {
     expect(Object.keys(cachedKeybases).length).toStrictEqual(Object.keys(keybasePubKeybases).length);
