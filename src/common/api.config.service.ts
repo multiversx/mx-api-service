@@ -293,12 +293,12 @@ export class ApiConfigService {
   }
 
   getAccessAddress(): string {
-    const jwtSecret = this.configService.get<string>('security.accessAddress');
-    if (!jwtSecret) {
+    const accessAddress = this.configService.get<string>('security.accessAddress');
+    if (!accessAddress) {
       throw new Error('No access address present');
     }
 
-    return jwtSecret;
+    return accessAddress;
   }
 
   getExtrasApiUrl(): string | undefined {
