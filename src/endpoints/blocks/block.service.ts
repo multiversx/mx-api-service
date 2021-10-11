@@ -13,7 +13,6 @@ import { QueryType } from "src/common/entities/elastic/query.type";
 import { Constants } from "src/utils/constants";
 import { ApiUtils } from "src/utils/api.utils";
 import { QueryConditionOptions } from "src/common/entities/elastic/query.condition.options";
-import { RangeQuery } from "src/common/entities/elastic/range.query";
 
 @Injectable()
 export class BlockService {
@@ -24,9 +23,13 @@ export class BlockService {
   ) {}
 
   private async buildElasticBlocksFilter (filter: BlockFilter): Promise<AbstractQuery[]> {
-    const { shard, proposer, validator, epoch } = filter;
+    const { shard, proposer, validator, epoch, nonce } = filter;
 
     const queries: AbstractQuery[] = [];
+    if  (nonce !== undefined) {
+      const nonceQuery = QueryType.Match("nonce", nonce);
+      queries.push(nonceQuery);
+    }
     if (shard !== undefined) {
       const shardIdQuery = QueryType.Match('shardId', shard);
       queries.push(shardIdQuery);
@@ -69,8 +72,7 @@ export class BlockService {
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from, size })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
-      .withCondition(QueryConditionOptions.must, await this.buildElasticBlocksFilter(filter))
-      .withFilter([new RangeQuery('nonce', undefined, filter.nonce ? filter.nonce + 1 : undefined)]);
+      .withCondition(QueryConditionOptions.must, await this.buildElasticBlocksFilter(filter));
 
     let result = await this.elasticService.getList('blocks', 'hash', elasticQuery);
 
