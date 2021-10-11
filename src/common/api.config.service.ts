@@ -208,12 +208,7 @@ export class ApiConfigService {
   }
 
   getIsAuthActive(): boolean {
-    let isApiAuthActive = this.configService.get<boolean>('api.auth');
-    if (isApiAuthActive === undefined) {
-      throw new Error('No api.auth flag present');
-    }
-
-    return isApiAuthActive;
+    return this.configService.get<boolean>('api.auth') ?? false;
   }
 
   getMetaChainShardId(): number {
@@ -293,12 +288,7 @@ export class ApiConfigService {
   }
 
   getAccessAddress(): string {
-    const accessAddress = this.configService.get<string>('security.accessAddress');
-    if (!accessAddress) {
-      throw new Error('No access address present');
-    }
-
-    return accessAddress;
+    return this.configService.get<string>('security.accessAddress') ?? '';
   }
 
   getExtrasApiUrl(): string | undefined {
