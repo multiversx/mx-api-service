@@ -3,6 +3,7 @@ metaChainShardId: 4294967295
 api:
   public: true
   private: true
+  auth: false
 cron:
   transactionProcessor: true
   transactionProcessorMaxLookBehind: 100
@@ -50,3 +51,4 @@ inflation:
 security:
   admins:
   jwtSecret:
+  accessAddress:

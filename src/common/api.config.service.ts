@@ -207,6 +207,15 @@ export class ApiConfigService {
     return isApiActive;
   }
 
+  getIsAuthActive(): boolean {
+    let isApiAuthActive = this.configService.get<boolean>('api.auth');
+    if (isApiAuthActive === undefined) {
+      throw new Error('No api.auth flag present');
+    }
+
+    return isApiAuthActive;
+  }
+
   getMetaChainShardId(): number {
     let metaChainShardId = this.configService.get<number>('metaChainShardId');
     if (metaChainShardId === undefined) {
@@ -278,6 +287,15 @@ export class ApiConfigService {
     const jwtSecret = this.configService.get<string>('security.jwtSecret');
     if (!jwtSecret) {
       throw new Error('No jwtSecret present');
+    }
+
+    return jwtSecret;
+  }
+
+  getAccessAddress(): string {
+    const jwtSecret = this.configService.get<string>('security.accessAddress');
+    if (!jwtSecret) {
+      throw new Error('No access address present');
     }
 
     return jwtSecret;
