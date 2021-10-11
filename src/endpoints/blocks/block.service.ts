@@ -5,8 +5,6 @@ import { BlockDetailed } from "./entities/block.detailed";
 import { CachingService } from "src/common/caching.service";
 import { BlockFilter } from "./entities/block.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { ElasticPagination } from "src/common/entities/elastic/elastic.pagination";
-import { ElasticSortProperty } from "src/common/entities/elastic/elastic.sort.property";
 import { ElasticSortOrder } from "src/common/entities/elastic/elastic.sort.order";
 import { ElasticQuery } from "src/common/entities/elastic/elastic.query";
 import { AbstractQuery } from "src/common/entities/elastic/abstract.query";
@@ -14,6 +12,7 @@ import { BlsService } from "src/common/bls.service";
 import { QueryType } from "src/common/entities/elastic/query.type";
 import { Constants } from "src/utils/constants";
 import { ApiUtils } from "src/utils/api.utils";
+import { QueryConditionOptions } from "src/common/entities/elastic/query.condition.options";
 
 @Injectable()
 export class BlockService {
@@ -53,30 +52,25 @@ export class BlockService {
   }
 
   async getBlocksCount(filter: BlockFilter): Promise<number> {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.condition.must = await this.buildElasticBlocksFilter(filter)
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, await this.buildElasticBlocksFilter(filter));
 
     return await this.cachingService.getOrSetCache(
-      `blocks:count:${JSON.stringify(elasticQueryAdapter)}`,
-      async () => await this.elasticService.getCount('blocks', elasticQueryAdapter),
+      `blocks:count:${JSON.stringify(elasticQuery)}`,
+      async () => await this.elasticService.getCount('blocks', elasticQuery),
       Constants.oneMinute()
     );
   }
 
   async getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<Block[]> {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-
     const { from, size } = queryPagination;
-    const pagination: ElasticPagination = { 
-      from, size 
-    };
-    elasticQueryAdapter.pagination = pagination;
-    elasticQueryAdapter.condition.must = await this.buildElasticBlocksFilter(filter);
+    
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from, size })
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
+      .withCondition(QueryConditionOptions.must, await this.buildElasticBlocksFilter(filter));
 
-    const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descending };
-    elasticQueryAdapter.sort = [timestamp];
-
-    let result = await this.elasticService.getList('blocks', 'hash', elasticQueryAdapter);
+    let result = await this.elasticService.getList('blocks', 'hash', elasticQuery);
 
     for (let item of result) {
       item.shard = item.shardId;
