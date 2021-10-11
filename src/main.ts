@@ -22,6 +22,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CleanupInterceptor } from './interceptors/cleanup.interceptor';
 import { RedisClient } from 'redis';
 import { ExtractInterceptor } from './interceptors/extract.interceptor';
+import { JwtAuthenticateGuard } from './interceptors/access.interceptor';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
@@ -35,6 +36,10 @@ async function bootstrap() {
   let httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
   let metricsService = publicApp.get<MetricsService>(MetricsService);
   let tokenAssetService = publicApp.get<TokenAssetService>(TokenAssetService);
+
+  if (apiConfigService.getIsAuthActive()) {
+    publicApp.useGlobalGuards(new JwtAuthenticateGuard(apiConfigService));
+  }
 
   if (apiConfigService.getUseTracingFlag()) {
     require('dd-trace').init();
@@ -55,6 +60,7 @@ async function bootstrap() {
   globalInterceptors.push(new FieldsInterceptor());
   globalInterceptors.push(new ExtractInterceptor());
   globalInterceptors.push(new CleanupInterceptor());
+  
 
   publicApp.useGlobalInterceptors(...globalInterceptors);
   const description = readFileSync(join(__dirname, '..', 'docs', 'swagger.md'), 'utf8');

@@ -207,6 +207,10 @@ export class ApiConfigService {
     return isApiActive;
   }
 
+  getIsAuthActive(): boolean {
+    return this.configService.get<boolean>('api.auth') ?? false;
+  }
+
   getMetaChainShardId(): number {
     let metaChainShardId = this.configService.get<number>('metaChainShardId');
     if (metaChainShardId === undefined) {
@@ -281,6 +285,10 @@ export class ApiConfigService {
     }
 
     return jwtSecret;
+  }
+
+  getAccessAddress(): string {
+    return this.configService.get<string>('security.accessAddress') ?? '';
   }
 
   getExtrasApiUrl(): string | undefined {
