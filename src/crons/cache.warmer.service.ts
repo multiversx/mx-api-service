@@ -35,14 +35,21 @@ export class CacheWarmerService {
     private readonly schedulerRegistry: SchedulerRegistry,
   ) { 
     this.configCronJob(
-      'keybaseCronJob', 
+      'handleKeybaseAgainstKeybasePubInvalidations', 
       CronExpression.EVERY_MINUTE, 
       CronExpression.EVERY_30_MINUTES, 
-      async () => await this.handleKeybaseInvalidations()
+      async () => await this.handleKeybaseAgainstKeybasePubInvalidations()
     );
 
     this.configCronJob(
-      'identityCronJob', 
+      'handleKeybaseAgainstCacheInvalidations', 
+      CronExpression.EVERY_MINUTE, 
+      CronExpression.EVERY_10_MINUTES, 
+      async () => await this.handleKeybaseAgainstCacheInvalidations()
+    );
+
+    this.configCronJob(
+      'handleIdentityInvalidations', 
       CronExpression.EVERY_MINUTE, 
       CronExpression.EVERY_5_MINUTES, 
       async () => await this.handleIdentityInvalidations()
@@ -87,16 +94,27 @@ export class CacheWarmerService {
     }, true);
   }
 
-  async handleKeybaseInvalidations() {
-    await Locker.lock('Keybase invalidations', async () => {
-      let nodeKeybases = await this.keybaseService.confirmKeybaseNodesAgainstKeybasePub();
-      let providerKeybases = await this.keybaseService.confirmKeybaseProvidersAgainstKeybasePub();
-      let identityKeybases = await this.keybaseService.getIdentitiesProfilesAgainstKeybasePub();
+  async handleKeybaseAgainstCacheInvalidations() {
+    await Locker.lock('Keybase against cache invalidations', async () => {
+      let nodesAndProvidersKeybases = await this.keybaseService.confirmKeybasesAgainstCache();
+      let identityProfilesKeybases = await this.keybaseService.getIdentitiesProfilesAgainstCache();
       await Promise.all([
-        this.invalidateKey('nodeKeybases', nodeKeybases, Constants.oneHour()),
-        this.invalidateKey('providerKeybases', providerKeybases, Constants.oneHour()),
-        this.invalidateKey('identityKeybases', identityKeybases, Constants.oneHour())
+        this.invalidateKey('keybases', nodesAndProvidersKeybases, Constants.oneHour()),
+        this.invalidateKey('identityProfilesKeybases', identityProfilesKeybases, Constants.oneHour())
       ]);
+
+      await this.handleNodeInvalidations();
+      await this.handleProviderInvalidations();
+      await this.handleIdentityInvalidations();
+    }, true);
+  }
+
+  async handleKeybaseAgainstKeybasePubInvalidations() {
+    await Locker.lock('Keybase against keybase.pub / keybase.io invalidations', async () => {
+      await this.keybaseService.confirmKeybasesAgainstKeybasePub();
+      await this.keybaseService.confirmIdentityProfilesAgainstKeybasePub();
+      
+      await this.handleKeybaseAgainstCacheInvalidations();
     }, true);
   }
 

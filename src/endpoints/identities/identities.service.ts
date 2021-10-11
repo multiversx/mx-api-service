@@ -152,12 +152,12 @@ export class IdentitiesService {
   async getAllIdentitiesRaw(): Promise<Identity[]> {
     let nodes = await this.nodeService.getAllNodes();
 
-    let keybaseIdentities: KeybaseIdentity[] = await this.keybaseService.getCachedIdentityKeybases();
+    let keybaseIdentities: (KeybaseIdentity | undefined)[] = await this.keybaseService.getCachedIdentityProfilesKeybases();
 
     let identitiesDetailed: IdentityDetailed[] = [];
 
     for (let keybaseIdentity of keybaseIdentities) {
-      if (keybaseIdentity.identity) {
+      if (keybaseIdentity && keybaseIdentity.identity) {
         const identityDetailed = new IdentityDetailed();
         identityDetailed.avatar = keybaseIdentity.avatar;
         identityDetailed.description = keybaseIdentity.description;

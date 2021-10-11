@@ -7,7 +7,6 @@ import { ProviderConfig } from "./entities/provider.config";
 import { NodeService } from "../nodes/node.service";
 import { ProviderFilter } from "src/endpoints/providers/entities/provider.filter";
 import { ApiService } from "src/common/api.service";
-import { KeybaseState } from "src/common/entities/keybase.state";
 import { KeybaseService } from "src/common/keybase.service";
 import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
@@ -180,11 +179,7 @@ export class ProviderService {
       };
     });
 
-    let providerKeybases = await this.cachingService.getOrSetCache<{ [key: string]: KeybaseState }>(
-      'providerKeybases',
-      async () => await this.keybaseService.confirmKeybaseProvidersAgainstKeybasePub(),
-      Constants.oneHour()
-    );
+    let providerKeybases = await this.keybaseService.getCachedNodesAndProvidersKeybases();
     
     if (providerKeybases) {
       for (let providerAddress of providers) {
