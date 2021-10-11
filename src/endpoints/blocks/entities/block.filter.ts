@@ -1,6 +1,7 @@
 export class BlockFilter {
-  shard: number | undefined;
-  proposer: string | undefined;
-  validator: string | undefined;
-  epoch: number | undefined;
+  shard?: number;
+  proposer?: string;
+  validator?: string;
+  epoch?: number;
+  nonce?: number;
 }

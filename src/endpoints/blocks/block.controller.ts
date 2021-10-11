@@ -23,6 +23,7 @@ export class BlockController {
     @ApiQuery({ name: 'epoch', description: 'Filter by epoch', required: false })
     @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
     @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+    @ApiQuery({ name: 'nonce', description: 'Filter by nonce', required: false  })
     getBlocks(
       @Query('shard', ParseOptionalIntPipe) shard: number | undefined, 
       @Query('proposer') proposer: string | undefined,
@@ -30,8 +31,9 @@ export class BlockController {
       @Query('epoch', ParseOptionalIntPipe) epoch: number | undefined,
       @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
       @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+      @Query('nonce', ParseOptionalIntPipe) nonce: number | undefined,
     ): Promise<Block[]> {
-      return this.blockService.getBlocks({ shard, proposer, validator, epoch }, { from, size });
+      return this.blockService.getBlocks({ shard, proposer, validator, epoch, nonce }, { from, size });
     }
 
     @Get("/blocks/count")
@@ -43,13 +45,15 @@ export class BlockController {
     @ApiQuery({ name: 'proposer', description: 'Filter by proposer', required: false })
     @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
     @ApiQuery({ name: 'epoch', description: 'Filter by epoch', required: false })
+    @ApiQuery({ name: 'nonce', description: 'Filter by nonce', required: false  })
     getBlocksCount(
       @Query('shard', ParseOptionalIntPipe) shard: number | undefined, 
       @Query('proposer') proposer: string | undefined,
       @Query('validator') validator: string | undefined,
       @Query('epoch', ParseOptionalIntPipe) epoch: number | undefined,
+      @Query('nonce', ParseOptionalIntPipe) nonce: number | undefined,
     ): Promise<number> {
-      return this.blockService.getBlocksCount({ shard, proposer, validator, epoch });
+      return this.blockService.getBlocksCount({ shard, proposer, validator, epoch, nonce });
     }
 
     @Get("/blocks/c")
@@ -59,8 +63,9 @@ export class BlockController {
       @Query('proposer') proposer: string | undefined,
       @Query('validator') validator: string | undefined,
       @Query('epoch', ParseOptionalIntPipe) epoch: number | undefined,
+      @Query('nonce', ParseOptionalIntPipe) nonce: number | undefined,
     ): Promise<number> {
-      return this.blockService.getBlocksCount({ shard, proposer, validator, epoch });
+      return this.blockService.getBlocksCount({ shard, proposer, validator, epoch, nonce });
     }
 
     @Get("/blocks/:hash")
