@@ -68,6 +68,8 @@ import { TokenTransferService } from './endpoints/transactions/token.transfer.se
 import { TransactionPriceService } from './endpoints/transactions/transaction.price.service';
 import { NftService } from './endpoints/nfts/nft.service';
 import { EsdtService } from './common/esdt.service';
+import { UsernameController } from './endpoints/usernames/usernames.controller';
+import { UsernameService } from './endpoints/usernames/username.service';
 
 @Module({
   imports: [
@@ -99,6 +101,7 @@ import { EsdtService } from './common/esdt.service';
     DelegationLegacyController, StakeController, DelegationController,
     VmQueryController, ShardController, IdentitiesController, ProxyController,
     KeysController, WaitingListController, TagController, NftController,
+    UsernameController,
   ],
   providers: [
     NetworkService, ApiConfigService, AccountService, ElasticService, GatewayService, TransactionService,
@@ -109,7 +112,7 @@ import { EsdtService } from './common/esdt.service';
     TokenAssetService, DataApiService, KeysService, WaitingListService, BlsService, TagService, ExtrasApiService,
     TransactionScamCheckService, PotentialScamTransactionChecker, NftExtendedAttributesService,
     TransactionGetService, TokenTransferService,
-    TransactionPriceService, NftService, EsdtService
+    TransactionPriceService, NftService, EsdtService, UsernameService,
   ],
   exports: [
     ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService,
