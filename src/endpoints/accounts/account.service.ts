@@ -8,8 +8,6 @@ import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { ApiConfigService } from 'src/common/api.config.service';
 import { AccountDeferred } from './entities/account.deferred';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { ElasticPagination } from 'src/common/entities/elastic/elastic.pagination';
-import { ElasticSortProperty } from 'src/common/entities/elastic/elastic.sort.property';
 import { ElasticSortOrder } from 'src/common/entities/elastic/elastic.sort.order';
 import { ElasticQuery } from 'src/common/entities/elastic/elastic.query';
 import { QueryType } from 'src/common/entities/elastic/query.type';
@@ -17,6 +15,7 @@ import { Constants } from 'src/utils/constants';
 import { AddressUtils } from 'src/utils/address.utils';
 import { ApiUtils } from 'src/utils/api.utils';
 import { BinaryUtils } from 'src/utils/binary.utils';
+import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
 
 @Injectable()
 export class AccountService {
@@ -42,11 +41,12 @@ export class AccountService {
   }
 
   async getAccount(address: string): Promise<AccountDetailed | null> {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.condition.should = [
+    const queries = [
       QueryType.Match('sender', address),
       QueryType.Match('receiver', address),
-    ]
+    ];
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.should, queries);
 
     try {
       const [
@@ -55,7 +55,7 @@ export class AccountService {
           account: { nonce, balance, code, codeHash, rootHash, username },
         },
       ] = await Promise.all([
-        this.elasticService.getCount('transactions', elasticQueryAdapter),
+        this.elasticService.getCount('transactions', elasticQuery),
         this.gatewayService.get(`address/${address}`)
       ]);
 
@@ -80,18 +80,13 @@ export class AccountService {
   }
 
   async getAccountsRaw(queryPagination: QueryPagination): Promise<Account[]> {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    
     const { from, size } = queryPagination;
-    const pagination: ElasticPagination = { 
-      from, size 
-    };
-    elasticQueryAdapter.pagination = pagination;
 
-    const balanceNum: ElasticSortProperty = { name: 'balanceNum', order: ElasticSortOrder.descending };
-    elasticQueryAdapter.sort = [balanceNum];
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from, size })
+      .withSort([{ name: 'balanceNum', order: ElasticSortOrder.descending }]);
 
-    let result = await this.elasticService.getList('accounts', 'address', elasticQueryAdapter);
+    let result = await this.elasticService.getList('accounts', 'address', elasticQuery);
 
     let accounts: Account[] = result.map(item => ApiUtils.mergeObjects(new Account(), item));
     for (let account of accounts) {
