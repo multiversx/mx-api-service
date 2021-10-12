@@ -131,7 +131,7 @@ export class IdentitiesService {
     const locked = stake + topUp;
     stakeInfo.locked = locked.toString();
 
-    const stakePercent = (locked * BigInt(10000)) / totalLocked;
+    const stakePercent = totalLocked > 0 ? (locked * BigInt(10000)) / totalLocked : 0;
     stakeInfo.stakePercent = parseFloat(stakePercent.toString()) / 100;
 
     const providers = identity.nodes
