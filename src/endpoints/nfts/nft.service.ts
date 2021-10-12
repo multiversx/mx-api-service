@@ -102,7 +102,15 @@ export class NftService {
     return nftCollection;
   }
 
-  private async getSftSupply(identifier: string) {
+  private async getSftSupply(identifier: string): Promise<string> {
+    return await this.cachingService.getOrSetCache(
+      `tokenSupply:${identifier}`,
+      async () => await this.getSftSupplyRaw(identifier),
+      Constants.oneHour()
+    );
+  }
+
+  private async getSftSupplyRaw(identifier: string): Promise<string> {
     const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`);
 
     return supply;
@@ -134,11 +142,7 @@ export class NftService {
     if (queryOptions && queryOptions.withSupply) {
       for (let nft of nfts) {
         if (nft.type === NftType.SemiFungibleESDT) {
-          nft.supply = await this.cachingService.getOrSetCache(
-            `tokenSupply:${nft.identifier}`,
-            async () => await this.getSftSupply(nft.identifier),
-            Constants.oneHour()
-          );
+          nft.supply = await this.getSftSupply(nft.identifier);
         }
       }
     }
@@ -304,6 +308,14 @@ export class NftService {
         let elasticNft = elasticNfts.find((x: any) => x.identifier === nft.identifier);
         if (elasticNft) {
           nft.timestamp = elasticNft.timestamp;
+        }
+      }
+    }
+
+    if (queryOptions && queryOptions.withSupply) {
+      for (let nft of nfts) {
+        if (nft.type === NftType.SemiFungibleESDT) {
+          nft.supply = await this.getSftSupply(nft.identifier);
         }
       }
     }
