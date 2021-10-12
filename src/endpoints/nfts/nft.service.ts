@@ -407,9 +407,9 @@ export class NftService {
       nfts.push(nft);
     }
 
-    await this.filterNfts(filter, nfts);
+    nfts = await this.filterNfts(filter, nfts);
 
-    await this.updateThumbnailUrlForNfts(nfts);
+    this.updateThumbnailUrlForNfts(nfts);
 
     return nfts;
   }
