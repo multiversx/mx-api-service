@@ -23,9 +23,13 @@ export class BlockService {
   ) {}
 
   private async buildElasticBlocksFilter (filter: BlockFilter): Promise<AbstractQuery[]> {
-    const { shard, proposer, validator, epoch } = filter;
+    const { shard, proposer, validator, epoch, nonce } = filter;
 
     const queries: AbstractQuery[] = [];
+    if  (nonce !== undefined) {
+      const nonceQuery = QueryType.Match("nonce", nonce);
+      queries.push(nonceQuery);
+    }
     if (shard !== undefined) {
       const shardIdQuery = QueryType.Match('shardId', shard);
       queries.push(shardIdQuery);
