@@ -527,4 +527,14 @@ export class NodeService {
 
     return nodes;
   }
+
+  async getOwnerKeysForAddress(address: string): Promise<string[]> {
+    let nodes = await this.getAllNodes();
+    let epoch = await this.blockService.getCurrentEpoch();
+    let keys = nodes
+      .filter(x => x.owner === address)
+      .map(x => `owner:${epoch}:${x.bls}`);
+
+    return keys;
+  }
 }
