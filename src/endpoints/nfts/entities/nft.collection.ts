@@ -1,8 +1,12 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { NftType } from "./nft.type";
 
 export class NftCollection {
   @ApiProperty()
   collection: string = '';
+
+  @ApiProperty()
+  type: NftType = NftType.NonFungibleESDT;
 
   @ApiProperty()
   name: string = '';
@@ -17,32 +21,14 @@ export class NftCollection {
   timestamp: number = 0;
 
   @ApiProperty()
-  canUpgrade: boolean = false;
-
-  @ApiProperty()
-  canMint: boolean = false;
-
-  @ApiProperty()
-  canBurn: boolean = false;
-
-  @ApiProperty()
-  canChangeOwner: boolean = false;
-
-  @ApiProperty()
-  canPause: boolean = false;
-
-  @ApiProperty()
-  canFreeze: boolean = false;
+  isFreezable: boolean = false;
   
   @ApiProperty()
-  canWipe: boolean = false;
+  isWipeable: boolean = false;
+
+  @ApiProperty()
+  isPausable: boolean = false;
   
   @ApiProperty()
-  canAddSpecialRoles: boolean = false;
-  
-  @ApiProperty()
-  canTransferNFTCreateRole: boolean = false;
-  
-  @ApiProperty()
-  NFTCreateStopped: boolean = false;
+  isRoleTransferable: boolean = false;
 }

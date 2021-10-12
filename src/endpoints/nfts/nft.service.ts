@@ -20,6 +20,7 @@ import { NftType } from "./entities/nft.type";
 import { TokenProperties } from "../tokens/entities/token.properties";
 import { EsdtService } from "src/common/esdt.service";
 import { NftQueryOptions } from "./entities/nft.query.options";
+import { NftCollectionAccount } from "./entities/nft.collection.account";
 
 @Injectable()
 export class NftService {
@@ -38,7 +39,7 @@ export class NftService {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
   }
 
-  async getCollection(identifier: string): Promise<TokenProperties | undefined> {
+  async getTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
     let properties = await this.cachingService.getOrSetCache(
       `nft:${identifier}`,
       async () => await this.esdtService.getEsdtTokenProperties(identifier),
@@ -61,13 +62,18 @@ export class NftService {
     let nftCollections: NftCollection[] = [];
     for (let tokenCollection of tokenCollections) {
       let nftCollection = new NftCollection();
+      nftCollection.name = tokenCollection.name;
+      nftCollection.type = tokenCollection.type;
       nftCollection.collection = tokenCollection.token;
+      nftCollection.ticker = tokenCollection.ticker;
+      nftCollection.timestamp = tokenCollection.timestamp;
 
-      ApiUtils.mergeObjects(nftCollection, tokenCollection);
-
-      let nft = await this.getCollection(nftCollection.collection);
-      if (nft) {
-        ApiUtils.mergeObjects(nftCollection, nft);
+      let tokenProperties = await this.getTokenProperties(nftCollection.collection);
+      if (tokenProperties) {
+        nftCollection.isFreezable = tokenProperties.canFreeze;
+        nftCollection.isWipeable = tokenProperties.canWipe;
+        nftCollection.isPausable = tokenProperties.canPause;
+        nftCollection.isRoleTransferable = tokenProperties.canTransferNFTCreateRole;
       }
 
       nftCollections.push(nftCollection);
@@ -94,7 +100,7 @@ export class NftService {
 
     ApiUtils.mergeObjects(nftCollection, tokenCollection);
 
-    let nft = await this.getCollection(nftCollection.collection);
+    let nft = await this.getTokenProperties(nftCollection.collection);
     if (nft) {
       ApiUtils.mergeObjects(nftCollection, nft);
     }
@@ -242,7 +248,7 @@ export class NftService {
 
     for (let nft of nfts) {
       if (!nft.name || !nft.type) {
-        let gatewayNft = await this.getCollection(nft.collection);
+        let gatewayNft = await this.getTokenProperties(nft.collection);
         if (gatewayNft) {
           if (!nft.name) {
             nft.name = gatewayNft.name;
@@ -270,7 +276,7 @@ export class NftService {
     return await this.elasticService.getTokenCount(filter);
   }
 
-  async getCollectionsForAddress(address: string, queryPagination: QueryPagination): Promise<NftCollection[]> {
+  async getCollectionsForAddress(address: string, queryPagination: QueryPagination): Promise<NftCollectionAccount[]> {
     let esdtResult = await this.gatewayService.get(`address/${address}/registered-nfts`);
 
     if (esdtResult.tokens.length === 0) {
@@ -280,7 +286,31 @@ export class NftService {
     let filter = new CollectionFilter();
     filter.identifiers = esdtResult.tokens;
 
-    return await this.getNftCollections(queryPagination, filter);
+    let collections = await this.getNftCollections(queryPagination, filter);
+
+    let rolesResult = await this.gatewayService.get(`address/${address}/esdts/roles`);
+    let roles = rolesResult.roles;
+
+    let result: NftCollectionAccount[] = [];
+    for (let collection of collections) {
+      let item = ApiUtils.mergeObjects<NftCollectionAccount>(new NftCollectionAccount(), collection)
+
+      let role = roles[collection.collection];
+      if (!role) {
+        continue;
+      }
+
+      item.canCreate = role.includes('ESDTRoleNFTCreate');
+      item.canBurn = role.includes('ESDTRoleNFTBurn');
+      
+      if (item.type === NftType.SemiFungibleESDT) {
+        item.canAddQuantity = role.includes('ESDTRoleNFTAddQuantity');
+      }
+
+      result.push(item);
+    }
+
+    return result;
   }
 
   async getCollectionCountForAddress(address: string): Promise<number> {
@@ -398,7 +428,7 @@ export class NftService {
         }
       }
 
-      let gatewayNftDetails = await this.getCollection(nft.collection);
+      let gatewayNftDetails = await this.getTokenProperties(nft.collection);
       if (gatewayNftDetails) {
         nft.type = gatewayNftDetails.type;
         nft.name = gatewayNftDetails.name;

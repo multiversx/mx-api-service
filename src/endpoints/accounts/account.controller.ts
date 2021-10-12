@@ -15,9 +15,9 @@ import { NftType } from '../nfts/entities/nft.type';
 import { ParseOptionalBoolPipe } from 'src/utils/pipes/parse.optional.bool.pipe';
 import { WaitingList } from '../waiting-list/entities/waiting.list';
 import { WaitingListService } from '../waiting-list/waiting.list.service';
-import { NftCollection } from '../nfts/entities/nft.collection';
 import { StakeService } from '../stake/stake.service';
 import { NftService } from '../nfts/nft.service';
+import { NftCollectionAccount } from '../nfts/entities/nft.collection.account';
 
 @Controller()
 @ApiTags('accounts')
@@ -176,7 +176,7 @@ export class AccountController {
   @ApiResponse({
     status: 200,
     description: 'The token collections of a given account',
-    type: NftCollection,
+    type: NftCollectionAccount,
     isArray: true
   })
   @ApiResponse({
@@ -187,7 +187,7 @@ export class AccountController {
     @Param('address') address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number
-  ): Promise<NftCollection[]> {
+  ): Promise<NftCollectionAccount[]> {
     try {
       return await this.nftService.getCollectionsForAddress(address, { from, size });
     } catch (error) {
