@@ -21,6 +21,7 @@ import { TokenProperties } from "../tokens/entities/token.properties";
 import { EsdtService } from "src/common/esdt.service";
 import { NftQueryOptions } from "./entities/nft.query.options";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
+import { CollectionAccountFilter } from "./entities/collection.account.filter";
 
 @Injectable()
 export class NftService {
@@ -270,19 +271,15 @@ export class NftService {
     return await this.elasticService.getTokenCount(filter);
   }
 
-  async getCollectionsForAddress(address: string, queryPagination: QueryPagination): Promise<NftCollectionAccount[]> {
+  private async getFilteredCollectionsForAddress(address: string, filter: CollectionAccountFilter): Promise<NftCollectionAccount[]> {
     let esdtResult = await this.gatewayService.get(`address/${address}/registered-nfts`);
+    let rolesResult = await this.gatewayService.get(`address/${address}/esdts/roles`);
 
-    if (esdtResult.tokens.length === 0) {
+    let tokenIdentifiers = [...new Set([...esdtResult.tokens, ...Object.keys(rolesResult.roles)])];
+    if (tokenIdentifiers.length === 0) {
       return [];
     }
 
-    let filter = new CollectionFilter();
-    filter.identifiers = esdtResult.tokens;
-
-    let collections = await this.getNftCollections(queryPagination, filter);
-
-    let rolesResult = await this.gatewayService.get(`address/${address}/esdts/roles`);
     let roles = rolesResult.roles;
 
     let nftCollections: NftCollectionAccount[] = [];
@@ -312,11 +309,11 @@ export class NftService {
       nftCollection.canCreate = role ? role.includes('ESDTRoleNFTCreate') : false;
       nftCollection.canBurn = role ? role.includes('ESDTRoleNFTBurn') : false;
       
-      if (item.type === NftType.SemiFungibleESDT) {
-        item.canAddQuantity = role.includes('ESDTRoleNFTAddQuantity');
+      if (nftCollection.type === NftType.SemiFungibleESDT) {
+        nftCollection.canAddQuantity = role ? role.includes('ESDTRoleNFTAddQuantity') : false;
       }
 
-      result.push(item);
+      nftCollections.push(nftCollection);
     }
 
     if (filter.search !== undefined) {
@@ -343,11 +340,19 @@ export class NftService {
 
     return nftCollections;
   }
+  
+  async getCollectionsForAddress(address: string, filter: CollectionAccountFilter, queryPagination: QueryPagination): Promise<NftCollectionAccount[]> {
+    let nftCollections = await this.getFilteredCollectionsForAddress(address, filter);
 
-  async getCollectionCountForAddress(address: string): Promise<number> {
-    let esdtResult = await this.gatewayService.get(`address/${address}/registered-nfts`);
+    nftCollections = nftCollections.slice(queryPagination.from, queryPagination.from + queryPagination.size);
 
-    return esdtResult.tokens.length;
+    return nftCollections;
+  }
+
+  async getCollectionCountForAddress(address: string, filter: CollectionAccountFilter): Promise<number> {
+    let nftCollections = await this.getFilteredCollectionsForAddress(address, filter);
+
+    return nftCollections.length;
   }
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<NftAccount[]> {
@@ -446,6 +451,9 @@ export class NftService {
       nft.uris = gatewayNft.uris.filter((x: any) => x);
       nft.name = gatewayNft.name;
 
+      // @ts-ignore
+      delete nft.timestamp;
+
       if (nft.uris && nft.uris.length > 0) {
         try {
           nft.url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(nft.uris[0]), this.NFT_THUMBNAIL_PREFIX);
@@ -455,7 +463,6 @@ export class NftService {
       }
 
       nft.attributes = gatewayNft.attributes;
-      nft.balance = gatewayNft.balance;
 
       if (gatewayNft.attributes) {
         nft.tags = this.nftExtendedAttributesService.getTags(gatewayNft.attributes);
