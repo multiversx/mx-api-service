@@ -315,6 +315,10 @@ export class NftService {
       nftCollections.push(nftCollection);
     }
 
+    if (filter.type !== undefined) {
+      nftCollections = nftCollections.filter(x => x.type === filter.type);
+    }
+
     if (filter.search !== undefined) {
       let searchLower = filter.search.toLowerCase();
 
