@@ -90,23 +90,12 @@ export class NftService {
   }
 
   async getNftCollection(collection: string): Promise<NftCollection | undefined> {
-    let tokenCollections = await this.elasticService.getTokenCollections(0, 1, undefined, undefined, collection, undefined, []);
-    if (tokenCollections.length === 0) {
-      return undefined;
+    let result = await this.getNftCollections({ from: 0, size: 1}, { collection });
+    if (result.length > 0) {
+      return result[0];
     }
 
-    let tokenCollection = tokenCollections[0];
-    let nftCollection = new NftCollection();
-    nftCollection.collection = tokenCollection.token;
-
-    ApiUtils.mergeObjects(nftCollection, tokenCollection);
-
-    let nft = await this.getTokenProperties(nftCollection.collection);
-    if (nft) {
-      ApiUtils.mergeObjects(nftCollection, nft);
-    }
-
-    return nftCollection;
+    return undefined;
   }
 
   private async getSftSupply(identifier: string): Promise<string> {
