@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { NftType } from "../../nfts/entities/nft.type";
+import { TokenType } from "./token.type";
 
 export class TokenProperties {
   @ApiProperty()
@@ -9,7 +9,7 @@ export class TokenProperties {
   name: string = '';
 
   @ApiProperty()
-  type: NftType = NftType.NonFungibleESDT;
+  type: TokenType = TokenType.NonFungibleESDT;
 
   @ApiProperty()
   owner: string = '';
