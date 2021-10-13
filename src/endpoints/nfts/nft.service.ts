@@ -145,8 +145,12 @@ export class NftService {
     return nfts;
   }
   
-  private async getNftDistribution(identifier: string, nftDetailed: NftDetailed): Promise<NftDetailed> {
+  private async applyNftDistribution(identifier: string, nftDetailed: NftDetailed): Promise<void> {
     let accountsEsdt = await this.elasticService.getAccountEsdtByIdentifier(identifier);
+    if (accountsEsdt.length === 0) {
+      return;
+    }
+
     if (nftDetailed.type === NftType.NonFungibleESDT) {
       nftDetailed.owner = accountsEsdt[0].address;
 
@@ -164,8 +168,6 @@ export class NftService {
       // @ts-ignore
       delete nftDetailed.owner;
     }
-
-    return nftDetailed;
   }
 
   async getSingleNft(identifier: string): Promise<NftDetailed | undefined> {
@@ -180,7 +182,7 @@ export class NftService {
       return undefined;
     }
 
-    nft = await this.getNftDistribution(nft.identifier, nft);
+    await this.applyNftDistribution(nft.identifier, nft);
 
     return nft;
   }
