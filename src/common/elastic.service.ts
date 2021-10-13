@@ -255,16 +255,16 @@ export class ElasticService {
     mustNotQueries.push(QueryType.Exists('identifier'));
 
     let mustQueries = [];
+    if (filter.collection !== undefined) {
+      mustQueries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
+    }
+    
     if (filter.search !== undefined) {
       mustQueries.push(QueryType.Wildcard('token', `*${filter.search}*`));
     }
 
     if (filter.type !== undefined) {
       mustQueries.push(QueryType.Match('type', filter.type));
-    }
-
-    if (filter.collection !== undefined) {
-      mustQueries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
     }
 
     if (filter.owner !== undefined) {
