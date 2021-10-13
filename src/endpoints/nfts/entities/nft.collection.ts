@@ -21,14 +21,14 @@ export class NftCollection {
   timestamp: number = 0;
 
   @ApiProperty()
-  isFreezable: boolean = false;
+  canFreeze: boolean = false;
   
   @ApiProperty()
-  isWipeable: boolean = false;
+  canWipe: boolean = false;
 
   @ApiProperty()
-  isPausable: boolean = false;
+  canPause: boolean = false;
   
   @ApiProperty()
-  isRoleTransferable: boolean = false;
+  canTransferRole: boolean = false;
 }

@@ -70,10 +70,10 @@ export class NftService {
 
       let tokenProperties = await this.getTokenProperties(nftCollection.collection);
       if (tokenProperties) {
-        nftCollection.isFreezable = tokenProperties.canFreeze;
-        nftCollection.isWipeable = tokenProperties.canWipe;
-        nftCollection.isPausable = tokenProperties.canPause;
-        nftCollection.isRoleTransferable = tokenProperties.canTransferNFTCreateRole;
+        nftCollection.canFreeze = tokenProperties.canFreeze;
+        nftCollection.canWipe = tokenProperties.canWipe;
+        nftCollection.canPause = tokenProperties.canPause;
+        nftCollection.canTransferRole = tokenProperties.canTransferNFTCreateRole;
       }
 
       nftCollections.push(nftCollection);
