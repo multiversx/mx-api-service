@@ -21,6 +21,7 @@ import { TokenProperties } from "../tokens/entities/token.properties";
 import { EsdtService } from "src/common/esdt.service";
 import { NftQueryOptions } from "./entities/nft.query.options";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
+import { CollectionAccountFilter } from "./entities/collection.account.filter";
 
 @Injectable()
 export class NftService {
@@ -54,10 +55,8 @@ export class NftService {
     return ApiUtils.mergeObjects(new TokenProperties(), properties);
   }
 
-  async getNftCollections(queryPagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
-    const { from, size } = queryPagination;
-
-    let tokenCollections = await this.elasticService.getTokenCollections(from, size, filter.search, filter.type, undefined, filter.issuer, filter.identifiers);
+  async getNftCollections(pagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
+    let tokenCollections = await this.elasticService.getTokenCollections(pagination, filter);
 
     let nftCollections: NftCollection[] = [];
     for (let tokenCollection of tokenCollections) {
@@ -89,23 +88,12 @@ export class NftService {
   }
 
   async getNftCollection(collection: string): Promise<NftCollection | undefined> {
-    let tokenCollections = await this.elasticService.getTokenCollections(0, 1, undefined, undefined, collection, undefined, []);
-    if (tokenCollections.length === 0) {
-      return undefined;
+    let result = await this.getNftCollections({ from: 0, size: 1}, { collection });
+    if (result.length > 0) {
+      return result[0];
     }
 
-    let tokenCollection = tokenCollections[0];
-    let nftCollection = new NftCollection();
-    nftCollection.collection = tokenCollection.token;
-
-    ApiUtils.mergeObjects(nftCollection, tokenCollection);
-
-    let nft = await this.getTokenProperties(nftCollection.collection);
-    if (nft) {
-      ApiUtils.mergeObjects(nftCollection, nft);
-    }
-
-    return nftCollection;
+    return undefined;
   }
 
   private async getSftSupply(identifier: string): Promise<string> {
@@ -248,7 +236,7 @@ export class NftService {
       nfts.push(nft);
     }
 
-    await this.updateThumbnailUrlForNfts(nfts);
+    this.updateThumbnailUrlForNfts(nfts);
 
     for (let nft of nfts) {
       if (!nft.name || !nft.type) {
@@ -259,6 +247,7 @@ export class NftService {
           }
 
           if (!nft.type) {
+            // @ts-ignore
             nft.type = gatewayNft.type;
           }
         }
@@ -280,47 +269,87 @@ export class NftService {
     return await this.elasticService.getTokenCount(filter);
   }
 
-  async getCollectionsForAddress(address: string, queryPagination: QueryPagination): Promise<NftCollectionAccount[]> {
+  private async getFilteredCollectionsForAddress(address: string, filter: CollectionAccountFilter): Promise<NftCollectionAccount[]> {
     let esdtResult = await this.gatewayService.get(`address/${address}/registered-nfts`);
+    let rolesResult = await this.gatewayService.get(`address/${address}/esdts/roles`);
 
-    if (esdtResult.tokens.length === 0) {
+    let tokenIdentifiers = [...new Set([...esdtResult.tokens, ...Object.keys(rolesResult.roles)])];
+    if (tokenIdentifiers.length === 0) {
       return [];
     }
 
-    let filter = new CollectionFilter();
-    filter.identifiers = esdtResult.tokens;
-
-    let collections = await this.getNftCollections(queryPagination, filter);
-
-    let rolesResult = await this.gatewayService.get(`address/${address}/esdts/roles`);
     let roles = rolesResult.roles;
 
-    let result: NftCollectionAccount[] = [];
-    for (let collection of collections) {
-      let item = ApiUtils.mergeObjects<NftCollectionAccount>(new NftCollectionAccount(), collection)
-
-      let role = roles[collection.collection];
-      if (!role) {
+    let nftCollections: NftCollectionAccount[] = [];
+    for (let tokenIdentifier of tokenIdentifiers) {
+      let tokenProperties = await this.getTokenProperties(tokenIdentifier);
+      if (!tokenProperties) {
         continue;
       }
 
-      item.canCreate = role.includes('ESDTRoleNFTCreate');
-      item.canBurn = role.includes('ESDTRoleNFTBurn');
+      let nftCollection = new NftCollectionAccount();
+
+      // @ts-ignore
+      delete nftCollection.timestamp;
+
+      // @ts-ignore
+      nftCollection.type = tokenProperties.type;
+      nftCollection.name = tokenProperties.name;
+      nftCollection.collection = tokenIdentifier.split('-').slice(0, 2).join('-');
+      nftCollection.ticker = tokenIdentifier.split('-')[0];
+      nftCollection.canFreeze = tokenProperties.canFreeze;
+      nftCollection.canWipe = tokenProperties.canWipe;
+      nftCollection.canPause = tokenProperties.canPause;
+      nftCollection.canTransferRole = tokenProperties.canTransferNFTCreateRole;
+
+      let role = roles[tokenIdentifier];
+      nftCollection.canCreate = role ? role.includes('ESDTRoleNFTCreate') : false;
+      nftCollection.canBurn = role ? role.includes('ESDTRoleNFTBurn') : false;
       
-      if (item.type === NftType.SemiFungibleESDT) {
-        item.canAddQuantity = role.includes('ESDTRoleNFTAddQuantity');
+      if (nftCollection.type === NftType.SemiFungibleESDT) {
+        nftCollection.canAddQuantity = role ? role.includes('ESDTRoleNFTAddQuantity') : false;
       }
 
-      result.push(item);
+      nftCollections.push(nftCollection);
     }
 
-    return result;
+    if (filter.type !== undefined) {
+      nftCollections = nftCollections.filter(x => x.type === filter.type);
+    }
+
+    if (filter.search !== undefined) {
+      let searchLower = filter.search.toLowerCase();
+
+      nftCollections = nftCollections.filter(x => x.name.toLowerCase().includes(searchLower) || x.collection.toLowerCase().includes(searchLower));
+    }
+
+    if (filter.canCreate !== undefined) {
+      nftCollections = nftCollections.filter(x => x.canCreate === filter.canCreate);
+    }
+
+    if (filter.canBurn !== undefined) {
+      nftCollections = nftCollections.filter(x => x.canBurn === filter.canBurn);
+    }
+
+    if (filter.canAddQuantity !== undefined) {
+      nftCollections = nftCollections.filter(x => x.canAddQuantity === filter.canAddQuantity);
+    }
+
+    return nftCollections;
   }
 
-  async getCollectionCountForAddress(address: string): Promise<number> {
-    let esdtResult = await this.gatewayService.get(`address/${address}/registered-nfts`);
+  async getCollectionsForAddress(address: string, filter: CollectionAccountFilter, queryPagination: QueryPagination): Promise<NftCollectionAccount[]> {
+    let nftCollections = await this.getFilteredCollectionsForAddress(address, filter);
 
-    return esdtResult.tokens.length;
+    nftCollections = nftCollections.slice(queryPagination.from, queryPagination.from + queryPagination.size);
+
+    return nftCollections;
+  }
+
+  async getCollectionCountForAddress(address: string, filter: CollectionAccountFilter): Promise<number> {
+    let nftCollections = await this.getFilteredCollectionsForAddress(address, filter);
+    
+    return nftCollections.length;
   }
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<NftAccount[]> {
@@ -419,6 +448,9 @@ export class NftService {
       nft.uris = gatewayNft.uris.filter((x: any) => x);
       nft.name = gatewayNft.name;
 
+      // @ts-ignore
+      delete nft.timestamp;
+
       if (nft.uris && nft.uris.length > 0) {
         try {
           nft.url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(nft.uris[0]), this.NFT_THUMBNAIL_PREFIX);
@@ -428,7 +460,6 @@ export class NftService {
       }
 
       nft.attributes = gatewayNft.attributes;
-      nft.balance = gatewayNft.balance;
 
       if (gatewayNft.attributes) {
         nft.tags = this.nftExtendedAttributesService.getTags(gatewayNft.attributes);
@@ -440,10 +471,18 @@ export class NftService {
         }
       }
 
-      let gatewayNftDetails = await this.getTokenProperties(nft.collection);
-      if (gatewayNftDetails) {
-        nft.type = gatewayNftDetails.type;
-        nft.name = gatewayNftDetails.name;
+      let collectionDetails = await this.getTokenProperties(nft.collection);
+      if (collectionDetails) {
+        // @ts-ignore
+        nft.type = collectionDetails.type;
+
+        if (!nft.name) {
+          nft.name = collectionDetails.name;
+        }
+      }
+
+      if (nft.type === NftType.SemiFungibleESDT) {
+        nft.balance = gatewayNft.balance;
       }
 
       nfts.push(nft);

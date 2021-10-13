@@ -27,7 +27,7 @@ export class NftCollection {
   canWipe: boolean = false;
 
   @ApiProperty()
-  canPause: boolean = false;
+canPause: boolean = false;
   
   @ApiProperty()
   canTransferRole: boolean = false;

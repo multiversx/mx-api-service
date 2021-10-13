@@ -32,7 +32,7 @@ export class NftController {
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
 		@Query('issuer') issuer: string | undefined,
   ): Promise<NftCollection[]> {
-    return await this.nftService.getNftCollections({ from, size }, { search, type, issuer, identifiers: [] });
+    return await this.nftService.getNftCollections({ from, size }, { search, type, issuer });
   }
 
   @Get("/collections/count")
@@ -48,7 +48,7 @@ export class NftController {
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
 		@Query('issuer') issuer: string | undefined,
   ): Promise<number> {
-    return await this.nftService.getNftCollectionCount({ search, type, issuer, identifiers: [] });
+    return await this.nftService.getNftCollectionCount({ search, type, issuer });
   }
 
   @Get("/collections/c")
@@ -58,7 +58,7 @@ export class NftController {
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
 		@Query('issuer') issuer: string | undefined,
   ): Promise<number> {
-    return await this.nftService.getNftCollectionCount({ search, type, issuer, identifiers: [] });
+    return await this.nftService.getNftCollectionCount({ search, type, issuer });
   }
 
   @Get('/collections/:collection')

@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
+import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { AddressUtils } from "src/utils/address.utils";
 import { Constants } from "src/utils/constants";
@@ -100,7 +101,7 @@ export class EsdtService {
     return tokens;
   }
 
-  async getEsdtTokenProperties(identifier: string) {
+  async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | null> {
     const arg = Buffer.from(identifier, 'utf8').toString('hex');
 
     const tokenPropertiesEncoded = await this.vmQueryService.vmQuery(
@@ -110,6 +111,11 @@ export class EsdtService {
       [ arg ],
       true
     );
+
+    if (!tokenPropertiesEncoded) {
+      this.logger.error(`Could not fetch token properties for token with identifier '${identifier}'`);
+      return null;
+    }
 
     const tokenProperties = tokenPropertiesEncoded.map((encoded, index) =>
       Buffer.from(encoded, 'base64').toString(index === 2 ? 'hex' : undefined)
@@ -136,9 +142,10 @@ export class EsdtService {
       wiped,
     ] = tokenProperties;
 
-    const tokenProps = {
+    const tokenProps: TokenProperties = {
       identifier,
       name,
+      // @ts-ignore
       type,
       owner: AddressUtils.bech32Encode(owner),
       minted,
@@ -155,7 +162,7 @@ export class EsdtService {
       canAddSpecialRoles: TokenUtils.canBool(canAddSpecialRoles),
       canTransferNFTCreateRole: TokenUtils.canBool(canTransferNFTCreateRole),
       NFTCreateStopped: TokenUtils.canBool(NFTCreateStopped),
-      wiped: wiped.split('-').pop(),
+      wiped: wiped.split('-').pop() ?? '',
     };
 
     if (type === 'FungibleESDT') {
@@ -165,6 +172,7 @@ export class EsdtService {
       delete tokenProps.canTransferNFTCreateRole;
       // @ts-ignore
       delete tokenProps.NFTCreateStopped;
+      // @ts-ignore
       delete tokenProps.wiped;
     }
 
