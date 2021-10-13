@@ -15,7 +15,7 @@ export class NftCollection {
   ticker: string = '';
 
   @ApiProperty()
-  issuer: string = '';
+  owner: string = '';
 
   @ApiProperty()
   timestamp: number = 0;

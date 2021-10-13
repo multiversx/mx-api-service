@@ -265,8 +265,8 @@ export class ElasticService {
       mustQueries.push(QueryType.Match('token', token, QueryOperator.AND));
     }
 
-    if (issuer !== undefined) {
-      mustQueries.push(QueryType.Match('issuer', issuer));
+    if (filter.owner !== undefined) {
+      mustQueries.push(QueryType.Match('issuer', filter.owner));
     }
 
     let shouldQueries = [];
