@@ -55,10 +55,8 @@ export class NftService {
     return ApiUtils.mergeObjects(new TokenProperties(), properties);
   }
 
-  async getNftCollections(queryPagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
-    const { from, size } = queryPagination;
-
-    let tokenCollections = await this.elasticService.getTokenCollections(from, size, filter.search, filter.type, undefined, filter.issuer, filter.identifiers);
+  async getNftCollections(pagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
+    let tokenCollections = await this.elasticService.getTokenCollections(pagination, filter);
 
     let nftCollections: NftCollection[] = [];
     for (let tokenCollection of tokenCollections) {
