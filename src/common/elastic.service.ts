@@ -11,6 +11,8 @@ import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { QueryConditionOptions } from "./entities/elastic/query.condition.options";
+import { QueryPagination } from "./entities/query.pagination";
+import { CollectionFilter } from "src/endpoints/nfts/entities/collection.filter";
 
 @Injectable()
 export class ElasticService {
@@ -248,21 +250,21 @@ export class ElasticService {
     return await this.getDocumentCount('tokens', elasticQuery.toJson());
   }
 
-  async getTokenCollections(from: number, size: number, search: string | undefined, type: NftType | undefined, token: string | undefined, issuer: string | undefined, identifiers: string[]) {
+  async getTokenCollections(pagination: QueryPagination, filter: CollectionFilter) {
     let mustNotQueries = [];
     mustNotQueries.push(QueryType.Exists('identifier'));
 
     let mustQueries = [];
-    if (search !== undefined) {
-      mustQueries.push(QueryType.Wildcard('token', `*${search}*`));
+    if (filter.search !== undefined) {
+      mustQueries.push(QueryType.Wildcard('token', `*${filter.search}*`));
     }
 
-    if (type !== undefined) {
-      mustQueries.push(QueryType.Match('type', type));
+    if (filter.type !== undefined) {
+      mustQueries.push(QueryType.Match('type', filter.type));
     }
 
-    if (token !== undefined) {
-      mustQueries.push(QueryType.Match('token', token, QueryOperator.AND));
+    if (filter.collection !== undefined) {
+      mustQueries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
     }
 
     if (filter.owner !== undefined) {
@@ -270,18 +272,11 @@ export class ElasticService {
     }
 
     let shouldQueries = [];
-
-    if (identifiers.length > 0) {
-      for (let identifier of identifiers) {
-        shouldQueries.push(QueryType.Match('token', identifier, QueryOperator.AND));
-      }
-    } else {
-      shouldQueries.push(QueryType.Match('type', NftType.SemiFungibleESDT));
-      shouldQueries.push(QueryType.Match('type', NftType.NonFungibleESDT));
-    }
+    shouldQueries.push(QueryType.Match('type', NftType.SemiFungibleESDT));
+    shouldQueries.push(QueryType.Match('type', NftType.NonFungibleESDT));
 
     const elasticQuery = ElasticQuery.create()
-      .withPagination({ from, size})
+      .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
       .withCondition(QueryConditionOptions.must, mustQueries)
       .withCondition(QueryConditionOptions.should, shouldQueries)
