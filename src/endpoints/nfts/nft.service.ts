@@ -237,7 +237,7 @@ export class NftService {
       nfts.push(nft);
     }
 
-    await this.updateThumbnailUrlForNfts(nfts);
+    this.updateThumbnailUrlForNfts(nfts);
 
     for (let nft of nfts) {
       if (!nft.name || !nft.type) {
@@ -248,6 +248,7 @@ export class NftService {
           }
 
           if (!nft.type) {
+            // @ts-ignore
             nft.type = gatewayNft.type;
           }
         }
