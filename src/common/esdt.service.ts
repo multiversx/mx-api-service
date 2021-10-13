@@ -92,7 +92,7 @@ export class EsdtService {
 
     let tokens = await this.cachingService.batchProcess(
       tokensIdentifiers,
-      token => `tokenProperties:${token}`,
+      token => `token:${token}`,
       async (token: string) => await this.getEsdtTokenProperties(token),
       Constants.oneDay()
     );

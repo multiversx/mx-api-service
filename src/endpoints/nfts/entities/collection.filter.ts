@@ -4,5 +4,5 @@ export class CollectionFilter {
   collection?: string;
   search?: string;
   type?: NftType;
-  issuer?: string;
+  owner?: string;
 }

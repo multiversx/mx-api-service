@@ -40,9 +40,9 @@ export class NftService {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
   }
 
-  async getTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
+  async getCollectionProperties(identifier: string): Promise<TokenProperties | undefined> {
     let properties = await this.cachingService.getOrSetCache(
-      `nft:${identifier}`,
+      `collection:${identifier}`,
       async () => await this.esdtService.getEsdtTokenProperties(identifier),
       Constants.oneWeek(),
       Constants.oneDay()
@@ -67,12 +67,13 @@ export class NftService {
       nftCollection.ticker = tokenCollection.ticker;
       nftCollection.timestamp = tokenCollection.timestamp;
 
-      let tokenProperties = await this.getTokenProperties(nftCollection.collection);
-      if (tokenProperties) {
-        nftCollection.canFreeze = tokenProperties.canFreeze;
-        nftCollection.canWipe = tokenProperties.canWipe;
-        nftCollection.canPause = tokenProperties.canPause;
-        nftCollection.canTransferRole = tokenProperties.canTransferNFTCreateRole;
+      let collectionProperties = await this.getCollectionProperties(nftCollection.collection);
+      if (collectionProperties) {
+        nftCollection.canFreeze = collectionProperties.canFreeze;
+        nftCollection.canWipe = collectionProperties.canWipe;
+        nftCollection.canPause = collectionProperties.canPause;
+        nftCollection.canTransferRole = collectionProperties.canTransferNFTCreateRole;
+        nftCollection.owner = collectionProperties.owner;
       }
 
       nftCollections.push(nftCollection);
@@ -240,15 +241,15 @@ export class NftService {
 
     for (let nft of nfts) {
       if (!nft.name || !nft.type) {
-        let gatewayNft = await this.getTokenProperties(nft.collection);
-        if (gatewayNft) {
+        let collectionProperties = await this.getCollectionProperties(nft.collection);
+        if (collectionProperties) {
           if (!nft.name) {
-            nft.name = gatewayNft.name;
+            nft.name = collectionProperties.name;
           }
 
           if (!nft.type) {
             // @ts-ignore
-            nft.type = gatewayNft.type;
+            nft.type = collectionProperties.type;
           }
         }
       }
@@ -282,8 +283,8 @@ export class NftService {
 
     let nftCollections: NftCollectionAccount[] = [];
     for (let tokenIdentifier of tokenIdentifiers) {
-      let tokenProperties = await this.getTokenProperties(tokenIdentifier);
-      if (!tokenProperties) {
+      let collectionProperties = await this.getCollectionProperties(tokenIdentifier);
+      if (!collectionProperties) {
         continue;
       }
 
@@ -293,14 +294,15 @@ export class NftService {
       delete nftCollection.timestamp;
 
       // @ts-ignore
-      nftCollection.type = tokenProperties.type;
-      nftCollection.name = tokenProperties.name;
+      nftCollection.type = collectionProperties.type;
+      nftCollection.name = collectionProperties.name;
       nftCollection.collection = tokenIdentifier.split('-').slice(0, 2).join('-');
       nftCollection.ticker = tokenIdentifier.split('-')[0];
-      nftCollection.canFreeze = tokenProperties.canFreeze;
-      nftCollection.canWipe = tokenProperties.canWipe;
-      nftCollection.canPause = tokenProperties.canPause;
-      nftCollection.canTransferRole = tokenProperties.canTransferNFTCreateRole;
+      nftCollection.canFreeze = collectionProperties.canFreeze;
+      nftCollection.canWipe = collectionProperties.canWipe;
+      nftCollection.canPause = collectionProperties.canPause;
+      nftCollection.canTransferRole = collectionProperties.canTransferNFTCreateRole;
+      nftCollection.owner = collectionProperties.owner;
 
       let role = roles[tokenIdentifier];
       nftCollection.canCreate = role ? role.includes('ESDTRoleNFTCreate') : false;
@@ -323,6 +325,10 @@ export class NftService {
       nftCollections = nftCollections.filter(x => x.name.toLowerCase().includes(searchLower) || x.collection.toLowerCase().includes(searchLower));
     }
 
+    if (filter.owner !== undefined) {
+      nftCollections = nftCollections.filter(x => x.owner === filter.owner);
+    }
+
     if (filter.canCreate !== undefined) {
       nftCollections = nftCollections.filter(x => x.canCreate === filter.canCreate);
     }
@@ -337,7 +343,7 @@ export class NftService {
 
     return nftCollections;
   }
-
+  
   async getCollectionsForAddress(address: string, filter: CollectionAccountFilter, queryPagination: QueryPagination): Promise<NftCollectionAccount[]> {
     let nftCollections = await this.getFilteredCollectionsForAddress(address, filter);
 
@@ -348,7 +354,7 @@ export class NftService {
 
   async getCollectionCountForAddress(address: string, filter: CollectionAccountFilter): Promise<number> {
     let nftCollections = await this.getFilteredCollectionsForAddress(address, filter);
-    
+
     return nftCollections.length;
   }
 
@@ -471,7 +477,7 @@ export class NftService {
         }
       }
 
-      let collectionDetails = await this.getTokenProperties(nft.collection);
+      let collectionDetails = await this.getCollectionProperties(nft.collection);
       if (collectionDetails) {
         // @ts-ignore
         nft.type = collectionDetails.type;

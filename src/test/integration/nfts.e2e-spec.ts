@@ -107,7 +107,7 @@ describe.skip('Nft Service', () => {
 
   describe('Specific nft', () => {
     it(`should return a nft for a specific identifier`, async () => {
-      const nft = await nftService.getTokenProperties(nftIdentifier);
+      const nft = await nftService.getCollectionProperties(nftIdentifier);
 
       if (nft) {
         expect(nft.token).toBe(nftIdentifier);
@@ -115,7 +115,7 @@ describe.skip('Nft Service', () => {
     });
 
     it(`should throw 'NFT not found' error`, async () => {
-      await expect (nftService.getTokenProperties(nftIdentifier + 'a')).toBeUndefined();
+      await expect (nftService.getCollectionProperties(nftIdentifier + 'a')).toBeUndefined();
     });
   })
 });

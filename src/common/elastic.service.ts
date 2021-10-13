@@ -11,8 +11,8 @@ import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { QueryConditionOptions } from "./entities/elastic/query.condition.options";
-import { CollectionFilter } from "src/endpoints/nfts/entities/collection.filter";
 import { QueryPagination } from "./entities/query.pagination";
+import { CollectionFilter } from "src/endpoints/nfts/entities/collection.filter";
 
 @Injectable()
 export class ElasticService {
@@ -258,7 +258,7 @@ export class ElasticService {
     if (filter.collection !== undefined) {
       mustQueries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
     }
-
+    
     if (filter.search !== undefined) {
       mustQueries.push(QueryType.Wildcard('token', `*${filter.search}*`));
     }
@@ -267,12 +267,11 @@ export class ElasticService {
       mustQueries.push(QueryType.Match('type', filter.type));
     }
 
-    if (filter.issuer !== undefined) {
-      mustQueries.push(QueryType.Match('issuer', filter.issuer));
+    if (filter.owner !== undefined) {
+      mustQueries.push(QueryType.Match('issuer', filter.owner));
     }
 
     let shouldQueries = [];
-
     shouldQueries.push(QueryType.Match('type', NftType.SemiFungibleESDT));
     shouldQueries.push(QueryType.Match('type', NftType.NonFungibleESDT));
 
