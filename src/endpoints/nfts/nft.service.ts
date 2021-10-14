@@ -272,6 +272,17 @@ export class NftService {
     return await this.elasticService.getTokenCount(filter);
   }
 
+  async getCollectionForAddress(address: string, collection: string): Promise<NftCollectionAccount | undefined> {
+    let filter: CollectionAccountFilter = { collection };
+
+    let collections = await this.getFilteredCollectionsForAddress(address, filter);
+    if (collections.length === 0) {
+      return undefined;
+    }
+
+    return collections[0];
+  }
+
   private async getFilteredCollectionsForAddress(address: string, filter: CollectionAccountFilter): Promise<NftCollectionAccount[]> {
     let esdtResult = await this.gatewayService.get(`address/${address}/registered-nfts`);
     let rolesResult = await this.gatewayService.get(`address/${address}/esdts/roles`);
@@ -279,6 +290,14 @@ export class NftService {
     let tokenIdentifiers = [...new Set([...esdtResult.tokens, ...Object.keys(rolesResult.roles)])];
     if (tokenIdentifiers.length === 0) {
       return [];
+    }
+
+    if (filter.collection) {
+      if (!tokenIdentifiers.includes(filter.collection)) {
+        return [];
+      }
+
+      tokenIdentifiers = [ filter.collection ];
     }
 
     let roles = rolesResult.roles;
