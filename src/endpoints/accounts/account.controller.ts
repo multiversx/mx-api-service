@@ -18,7 +18,6 @@ import { WaitingListService } from '../waiting-list/waiting.list.service';
 import { StakeService } from '../stake/stake.service';
 import { NftService } from '../nfts/nft.service';
 import { NftCollectionAccount } from '../nfts/entities/nft.collection.account';
-import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
 
 @Controller()
 @ApiTags('accounts')
