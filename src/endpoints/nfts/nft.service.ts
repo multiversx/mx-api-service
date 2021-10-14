@@ -22,7 +22,6 @@ import { EsdtService } from "src/common/esdt.service";
 import { NftQueryOptions } from "./entities/nft.query.options";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
 import { CollectionAccountFilter } from "./entities/collection.account.filter";
-import { CollectionAccountOptions } from "./entities/collection.account.options";
 
 @Injectable()
 export class NftService {
@@ -57,6 +56,11 @@ export class NftService {
   }
 
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
+    if (filter.creator) {
+      let creatorResult = await this.gatewayService.get(`address/${filter.creator}/esdts-with-role/ESDTRoleNFTCreate`);
+      filter.identifiers = creatorResult.tokens;
+    }
+
     let tokenCollections = await this.elasticService.getTokenCollections(pagination, filter);
 
     let nftCollections: NftCollection[] = [];
@@ -288,7 +292,7 @@ export class NftService {
     let esdtResult = await this.gatewayService.get(`address/${address}/registered-nfts`);
     let rolesResult = await this.gatewayService.get(`address/${address}/esdts/roles`);
 
-    let tokenIdentifiers = [...new Set([...esdtResult.tokens, ...Object.keys(rolesResult.roles)])];
+    let tokenIdentifiers = esdtResult.tokens;
     if (tokenIdentifiers.length === 0) {
       return [];
     }
@@ -366,28 +370,10 @@ export class NftService {
     return nftCollections;
   }
   
-  async getCollectionsForAddress(address: string, filter: CollectionAccountFilter, pagination: QueryPagination, options?: CollectionAccountOptions): Promise<NftCollectionAccount[]> {
+  async getCollectionsForAddress(address: string, filter: CollectionAccountFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
     let collections = await this.getFilteredCollectionsForAddress(address, filter);
 
     collections = collections.slice(pagination.from, pagination.from + pagination.size);
-
-    if (options) {
-      if (options.withNfts) {
-        let nfts = await this.getNftsForAddressInternal(address, new NftFilter());
-
-        for (let collection of collections) {
-          let collectionNfts = nfts.filter(x => x.collection === collection.collection);
-
-          collection.nftCount = collectionNfts.length;
-
-          if (options.nftSize && options.nftSize > 0) {
-            collection.nfts = collectionNfts.slice(0, options.nftSize);
-          } else {
-            collection.nfts = collectionNfts;
-          }
-        }
-      }
-    }
 
     return collections;
   }

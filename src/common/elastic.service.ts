@@ -258,6 +258,10 @@ export class ElasticService {
     if (filter.collection !== undefined) {
       mustQueries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
     }
+
+    if (filter.identifiers !== undefined) {
+      mustQueries.push(QueryType.Should(filter.identifiers.map(identifier => QueryType.Match('token', identifier, QueryOperator.AND))));
+    }
     
     if (filter.search !== undefined) {
       mustQueries.push(QueryType.Wildcard('token', `*${filter.search}*`));
@@ -265,10 +269,6 @@ export class ElasticService {
 
     if (filter.type !== undefined) {
       mustQueries.push(QueryType.Match('type', filter.type));
-    }
-
-    if (filter.owner !== undefined) {
-      mustQueries.push(QueryType.Match('issuer', filter.owner));
     }
 
     let shouldQueries = [];
