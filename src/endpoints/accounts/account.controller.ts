@@ -18,6 +18,7 @@ import { WaitingListService } from '../waiting-list/waiting.list.service';
 import { StakeService } from '../stake/stake.service';
 import { NftService } from '../nfts/nft.service';
 import { NftCollectionAccount } from '../nfts/entities/nft.collection.account';
+import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
 
 @Controller()
 @ApiTags('accounts')
@@ -179,6 +180,8 @@ export class AccountController {
 	@ApiQuery({ name: 'canCreate', description: 'Filter by property canCreate (boolean)', required: false })
 	@ApiQuery({ name: 'canBurn', description: 'Filter by property canCreate (boolean)', required: false })
 	@ApiQuery({ name: 'canAddQuantity', description: 'Filter by property canAddQuantity (boolean)', required: false })
+	@ApiQuery({ name: 'withNfts', description: 'Return additional nfts', required: false })
+	@ApiQuery({ name: 'nftSize', description: 'Maximum number of nfts per collection entry', required: false })
   @ApiResponse({
     status: 200,
     description: 'The token collections of a given account',
@@ -199,9 +202,11 @@ export class AccountController {
     @Query('canCreate', new ParseOptionalBoolPipe) canCreate: boolean | undefined,
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn: boolean | undefined,
     @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity: boolean | undefined,
+		@Query('withNfts', new ParseOptionalBoolPipe) withNfts: boolean | undefined,
+		@Query('nftSize', new ParseOptionalIntPipe) nftSize: number | undefined,
   ): Promise<NftCollectionAccount[]> {
     try {
-      return await this.nftService.getCollectionsForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity }, { from, size });
+      return await this.nftService.getCollectionsForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity }, { from, size }, { withNfts, nftSize });
     } catch (error) {
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);

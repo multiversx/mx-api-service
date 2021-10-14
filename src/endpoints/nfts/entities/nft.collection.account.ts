@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { NftAccount } from "./nft.account";
 import { NftCollection } from "./nft.collection";
 
 export class NftCollectionAccount extends NftCollection {
@@ -10,4 +11,10 @@ export class NftCollectionAccount extends NftCollection {
 
   @ApiProperty()
   canAddQuantity?: boolean;
+
+  @ApiProperty()
+  nfts?: NftAccount[];
+
+  @ApiProperty()
+  nftCount?: number;
 }
