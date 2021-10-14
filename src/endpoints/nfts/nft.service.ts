@@ -22,7 +22,6 @@ import { EsdtService } from "src/common/esdt.service";
 import { NftQueryOptions } from "./entities/nft.query.options";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
 import { CollectionAccountFilter } from "./entities/collection.account.filter";
-import { CollectionAccountOptions } from "./entities/collection.account.options";
 
 @Injectable()
 export class NftService {
@@ -366,28 +365,10 @@ export class NftService {
     return nftCollections;
   }
   
-  async getCollectionsForAddress(address: string, filter: CollectionAccountFilter, pagination: QueryPagination, options?: CollectionAccountOptions): Promise<NftCollectionAccount[]> {
+  async getCollectionsForAddress(address: string, filter: CollectionAccountFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
     let collections = await this.getFilteredCollectionsForAddress(address, filter);
 
     collections = collections.slice(pagination.from, pagination.from + pagination.size);
-
-    if (options) {
-      if (options.withNfts) {
-        let nfts = await this.getNftsForAddressInternal(address, new NftFilter());
-
-        for (let collection of collections) {
-          let collectionNfts = nfts.filter(x => x.collection === collection.collection);
-
-          collection.nftCount = collectionNfts.length;
-
-          if (options.nftSize && options.nftSize > 0) {
-            collection.nfts = collectionNfts.slice(0, options.nftSize);
-          } else {
-            collection.nfts = collectionNfts;
-          }
-        }
-      }
-    }
 
     return collections;
   }
