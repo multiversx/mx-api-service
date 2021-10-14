@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, NotFoundException, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccountService } from './account.service';
 import { AccountDetailed } from './entities/account.detailed';
@@ -260,6 +260,32 @@ export class AccountController {
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return 0;
     }
+  }
+
+  @Get("/accounts/:address/collections/:collection")
+  @ApiResponse({
+    status: 200,
+    description: 'A specific NFT collection of a given account',
+    type: NftAccount,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Collection not found'
+  })
+  async getAccountCollection(
+    @Param('address') address: string,
+    @Param('collection') collection: string,
+  ): Promise<NftCollectionAccount> {
+    let result = await this.nftService.getCollectionForAddress(address, collection);
+    if (!result) {
+      throw new NotFoundException('Collection for given account not found');
+    }
+
+    return result;
   }
 
   @Get("/accounts/:address/tokens/:token")
