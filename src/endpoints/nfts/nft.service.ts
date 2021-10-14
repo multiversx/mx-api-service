@@ -74,7 +74,6 @@ export class NftService {
         nftCollection.canWipe = collectionProperties.canWipe;
         nftCollection.canPause = collectionProperties.canPause;
         nftCollection.canTransferRole = collectionProperties.canTransferNFTCreateRole;
-        nftCollection.owner = collectionProperties.owner;
       }
 
       nftCollections.push(nftCollection);
