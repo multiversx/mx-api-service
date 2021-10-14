@@ -24,21 +24,21 @@ export class NftController {
 	@ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
 	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
 	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
-	@ApiQuery({ name: 'owner', description: 'Filter by collection owner', required: false })
+	@ApiQuery({ name: 'creator', description: 'Filter NFTs where the given address has a creator role', required: false })
   async getNftCollections(
 		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-		@Query('owner') owner: string | undefined,
+		@Query('creator') creator: string | undefined,
   ): Promise<NftCollection[]> {
-    return await this.nftService.getNftCollections({ from, size }, { search, type, owner });
+    return await this.nftService.getNftCollections({ from, size }, { search, type, creator });
   }
 
   @Get("/collections/count")
 	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
 	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
-	@ApiQuery({ name: 'owner', description: 'Filter by collection owner', required: false })
+	@ApiQuery({ name: 'creator', description: 'Filter NFTs where the given address has a creator role', required: false })
   @ApiResponse({
     status: 200,
     description: 'The number of non-fungible and semi-fungible token collections available on the blockchain',
@@ -46,9 +46,9 @@ export class NftController {
   async getCollectionCount(
     @Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-		@Query('owner') owner: string | undefined,
+		@Query('creator') creator: string | undefined,
   ): Promise<number> {
-    return await this.nftService.getNftCollectionCount({ search, type, owner });
+    return await this.nftService.getNftCollectionCount({ search, type, creator });
   }
 
   @Get("/collections/c")
@@ -56,9 +56,9 @@ export class NftController {
   async getCollectionCountAlternative(
     @Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-		@Query('owner') owner: string | undefined,
+		@Query('creator') creator: string | undefined,
   ): Promise<number> {
-    return await this.nftService.getNftCollectionCount({ search, type, owner });
+    return await this.nftService.getNftCollectionCount({ search, type, creator });
   }
 
   @Get('/collections/:collection')
