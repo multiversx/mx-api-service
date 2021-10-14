@@ -104,7 +104,7 @@ export class TransactionProcessorService {
       return [];
     }
 
-    return await this.nodeService.getOwnerKeysForAddress(transaction.sender);
+    return await this.nodeService.deleteOwnersForAddressInCache(transaction.sender);
   }
 
   async getNewTransactions(): Promise<ShardTransaction[]> {
