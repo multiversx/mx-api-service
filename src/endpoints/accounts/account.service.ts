@@ -212,18 +212,25 @@ export class AccountService {
         ),
       ]);
 
-      let queueSize = '0';
-      results.forEach(([result], index) => {
-        if (index === 0) {
-          queueSize = Buffer.from(result, 'base64').toString();
-        } else {
-          const [found] = data.filter((x: any) => x.blsKey === queued[index - 1]);
+      let queueSize = '0'
 
-          found.queueIndex = Buffer.from(result, 'base64').toString();
-          found.queueSize = queueSize;
+      console.log({results});
+      results.forEach((result, index) => {
+        const queueNode = [result] ? result : undefined;
+        if (queueNode) {
+          if (index === 0) {
+            queueSize = Buffer.from(queueNode, 'base64').toString();
+          } else {
+            const [found] = data.filter((x: any) => x.blsKey === queued[index - 1]);
+  
+            found.queueIndex = queueNode ? Buffer.from(queueNode, 'base64').toString() : '0';
+            found.queueSize = queueSize;
+          }
         }
       });
     }
+
+    console.log({data});
 
     return data;
   }
