@@ -214,7 +214,6 @@ export class AccountService {
 
       let queueSize = '0'
 
-      console.log({results});
       results.forEach((result, index) => {
         const queueNode = [result] ? result : undefined;
         if (queueNode) {
@@ -229,8 +228,6 @@ export class AccountService {
         }
       });
     }
-
-    console.log({data});
 
     return data;
   }
