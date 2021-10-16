@@ -11,13 +11,15 @@ import { GatewayService } from "src/common/gateway.service";
 import { AddressUtils } from "src/utils/address.utils";
 import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { EventsGateway } from "src/websockets/events.gateway";
-import { ShardTransaction } from "./entities/shard.transaction";
 import { NodeService } from "src/endpoints/nodes/node.service";
+import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
+import { Constants } from "src/utils/constants";
 
 @Injectable()
 export class TransactionProcessorService {
   isProcessing: boolean = false;
   private readonly logger: Logger;
+  private transactionProcessor: TransactionProcessor = new TransactionProcessor();
 
   constructor(
       private readonly transactionService: TransactionService,
@@ -44,55 +46,67 @@ export class TransactionProcessorService {
       return;
     }
 
-    this.isProcessing = true;
     try {
-      let profiler = new PerformanceProfiler('Getting new transactions');
-      let newTransactions = await this.getNewTransactions();
-      profiler.stop();
-      if (newTransactions.length === 0) {
-        return;
-      }
+      await this.transactionProcessor.start({
+        gatewayUrl: this.apiConfigService.getGatewayUrl(),
+        maxLookBehind: this.apiConfigService.getTransactionProcessorMaxLookBehind(),
+        notifyEmptyBlocks: true,
+        onTransactionsReceived: async (shard, __, transactions, ___, blockHash) => {
+          let totalGasUsed = transactions.map(x => x.gasLimit ?? 0).reduce((a, b) => a + b, 0);
+          await this.cachingService.setCache(`blockGasUsed:${shard}:${blockHash}`, totalGasUsed, Constants.oneWeek());
 
-      profiler = new PerformanceProfiler('Processing new transactions');
-
-      this.logger.log(`New transactions: ${newTransactions.length}`);
-
-      let allInvalidatedKeys = [];
-
-      for (let transaction of newTransactions) {
-        // this.logger.log(`Transferred ${transaction.value} from ${transaction.sender} to ${transaction.receiver}`);
-
-        if (!AddressUtils.isSmartContractAddress(transaction.sender)) {
-          this.eventsGateway.onAccountBalanceChanged(transaction.sender);
+          if (transactions.length === 0) {
+            return;
+          }
+    
+          let profiler = new PerformanceProfiler('Processing new transactions');
+    
+          this.logger.log(`New transactions: ${transactions.length}`);
+    
+          let allInvalidatedKeys = [];
+    
+          for (let transaction of transactions) {
+            // this.logger.log(`Transferred ${transaction.value} from ${transaction.sender} to ${transaction.receiver}`);
+    
+            if (!AddressUtils.isSmartContractAddress(transaction.sender)) {
+              this.eventsGateway.onAccountBalanceChanged(transaction.sender);
+            }
+    
+            if (!AddressUtils.isSmartContractAddress(transaction.receiver)) {
+              this.eventsGateway.onAccountBalanceChanged(transaction.receiver);
+            }
+            
+            let invalidatedTransactionKeys = await this.cachingService.tryInvalidateTransaction(transaction);
+            let invalidatedTokenKeys = await this.cachingService.tryInvalidateTokens(transaction);
+            let invalidatedTokenProperties = await this.cachingService.tryInvalidateTokenProperties(transaction);
+            let invalidatedTokensOnAccountKeys = await this.cachingService.tryInvalidateTokensOnAccount(transaction);
+            let invalidatedTokenBalancesKeys = await this.cachingService.tryInvalidateTokenBalance(transaction);
+            let invalidatedOwnerKeys = await this.tryInvalidateOwner(transaction);
+    
+            allInvalidatedKeys.push(
+              ...invalidatedTransactionKeys, 
+              ...invalidatedTokenKeys, 
+              ...invalidatedTokenProperties,
+              ...invalidatedTokensOnAccountKeys, 
+              ...invalidatedTokenBalancesKeys,
+              ...invalidatedOwnerKeys
+            );
+          }
+    
+          let uniqueInvalidatedKeys = [...new Set(allInvalidatedKeys)];
+          if (uniqueInvalidatedKeys.length > 0) {
+            this.clientProxy.emit('deleteCacheKeys', uniqueInvalidatedKeys);
+          }
+    
+          profiler.stop();
+        },
+        getLastProcessedNonce: async (shardId) => {
+          return await this.shardService.getLastProcessedNonce(shardId);
+        },
+        setLastProcessedNonce: async (shardId, nonce) => {
+          await this.shardService.setLastProcessedNonce(shardId, nonce);
         }
-
-        if (!AddressUtils.isSmartContractAddress(transaction.receiver)) {
-          this.eventsGateway.onAccountBalanceChanged(transaction.receiver);
-        }
-        
-        let invalidatedTransactionKeys = await this.cachingService.tryInvalidateTransaction(transaction);
-        let invalidatedTokenKeys = await this.cachingService.tryInvalidateTokens(transaction);
-        let invalidatedTokenProperties = await this.cachingService.tryInvalidateTokenProperties(transaction);
-        let invalidatedTokensOnAccountKeys = await this.cachingService.tryInvalidateTokensOnAccount(transaction);
-        let invalidatedTokenBalancesKeys = await this.cachingService.tryInvalidateTokenBalance(transaction);
-        let invalidatedOwnerKeys = await this.tryInvalidateOwner(transaction);
-
-        allInvalidatedKeys.push(
-          ...invalidatedTransactionKeys, 
-          ...invalidatedTokenKeys, 
-          ...invalidatedTokenProperties,
-          ...invalidatedTokensOnAccountKeys, 
-          ...invalidatedTokenBalancesKeys,
-          ...invalidatedOwnerKeys
-        );
-      }
-
-      let uniqueInvalidatedKeys = [...new Set(allInvalidatedKeys)];
-      if (uniqueInvalidatedKeys.length > 0) {
-        this.clientProxy.emit('deleteCacheKeys', uniqueInvalidatedKeys);
-      }
-
-      profiler.stop();
+      });
     } finally {
       this.isProcessing = false;
     }

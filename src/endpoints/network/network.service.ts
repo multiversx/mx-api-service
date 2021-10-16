@@ -36,6 +36,14 @@ export class NetworkService {
   ) {}
 
   async getConstants(): Promise<NetworkConstants> {
+    return this.cachingService.getOrSetCache(
+      'constants',
+      async () => await this.getConstantsRaw(),
+      Constants.oneDay()
+    );
+  }
+
+  private async getConstantsRaw(): Promise<NetworkConstants> {
     const gatewayUrl = this.apiConfigService.getGatewayUrl();
 
     const {
