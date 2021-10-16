@@ -55,6 +55,7 @@ export class TransactionProcessorService {
           let totalGasUsed = transactions.map(x => x.gasLimit ?? 0).reduce((a, b) => a + b, 0);
           await this.cachingService.setCache(`blockGasUsed:${shard}:${blockHash}`, totalGasUsed, Constants.oneWeek());
 
+          transactions = transactions.filter(x => x.destinationShard === shard);
           if (transactions.length === 0) {
             return;
           }
