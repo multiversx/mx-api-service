@@ -16,4 +16,10 @@ export class AccountDetailed extends Account {
     
     @ApiProperty()
     username: string = '';
+
+    @ApiProperty()
+    developerReward: string = '';
+
+    @ApiProperty()
+    ownerAddress: string = '';
 }
