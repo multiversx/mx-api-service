@@ -52,7 +52,7 @@ export class AccountService {
       const [
         txCount,
         {
-          account: { nonce, balance, code, codeHash, rootHash, username },
+          account: { nonce, balance, code, codeHash, rootHash, username, developerReward, ownerAddress },
         },
       ] = await Promise.all([
         this.elasticService.getCount('transactions', elasticQuery),
@@ -61,7 +61,7 @@ export class AccountService {
 
       let shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
   
-      let result = { address, nonce, balance, code, codeHash, rootHash, txCount, username, shard };
+      let result: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount, username, shard, developerReward, ownerAddress };
   
       return result;
     } catch (error) {
