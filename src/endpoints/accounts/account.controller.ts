@@ -524,10 +524,13 @@ export class AccountController {
     status: 404,
     description: 'Account not found'
   })
+  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false  })
+  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false  })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false  })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false  })
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false  })
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false  })
+  @ApiQuery({ name: 'condition', description: 'Condition type (should/must)', required: false  })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false  })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false  })
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false  })
@@ -537,9 +540,12 @@ export class AccountController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
   async getAccountTransactions(
     @Param('address') address: string,
+    @Query('sender') sender: string = address, 
+    @Query('receiver') receiver: string = address, 
     @Query('token') token: string | undefined, 
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
+    @Query('condition', new ParseOptionalEnumPipe(QueryConditionOptions)) condition: QueryConditionOptions = QueryConditionOptions.should, 
     @Query('miniBlockHash') miniBlockHash: string | undefined, 
     @Query('hashes') hashes: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
@@ -550,9 +556,9 @@ export class AccountController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,) {
     try {
       return await this.transactionService.getTransactions({
-        sender: address,
-        receiver: address,
-        condition: QueryConditionOptions.should,
+        sender,
+        receiver,
+        condition,
         token,
         senderShard,
         receiverShard,
