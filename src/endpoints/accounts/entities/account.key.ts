@@ -12,4 +12,10 @@ export class AccountKey {
 
   @ApiProperty()
   rewardAddress: string = '';
+
+  @ApiProperty()
+  queueIndex?: string;
+
+  @ApiProperty()
+  queueSize?: string;
 }

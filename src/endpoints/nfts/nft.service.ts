@@ -74,6 +74,7 @@ export class NftService {
 
       let collectionProperties = await this.getCollectionProperties(nftCollection.collection);
       if (collectionProperties) {
+        nftCollection.owner = collectionProperties.owner;
         nftCollection.canFreeze = collectionProperties.canFreeze;
         nftCollection.canWipe = collectionProperties.canWipe;
         nftCollection.canPause = collectionProperties.canPause;
