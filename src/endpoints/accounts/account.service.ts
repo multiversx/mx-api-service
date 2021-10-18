@@ -127,15 +127,15 @@ export class AccountService {
       this.gatewayService.get(`network/status/${this.apiConfigService.getDelegationContractShardId()}`)
     ]);
 
-    const numBlocksBeforeUnBond = parseInt(this.decode(encodedNumBlocksBeforeUnBond));
+    const numBlocksBeforeUnBond = parseInt(BinaryUtils.base64ToBigInt(encodedNumBlocksBeforeUnBond).toString());
     const erdNonce = parseInt(erdNonceString);
 
     const data: AccountDeferred[] = encodedUserDeferredPaymentList.reduce((result: AccountDeferred[], _, index, array) => {
       if (index % 2 === 0) {
         const [encodedDeferredPayment, encodedUnstakedNonce] = array.slice(index, index + 2);
 
-        const deferredPayment = this.decode(encodedDeferredPayment);
-        const unstakedNonce = parseInt(this.decode(encodedUnstakedNonce));
+        const deferredPayment = BinaryUtils.base64ToBigInt(encodedDeferredPayment).toString();
+        const unstakedNonce = parseInt(BinaryUtils.base64ToBigInt(encodedUnstakedNonce).toString());
         const blocksLeft = Math.max(0, unstakedNonce + numBlocksBeforeUnBond - erdNonce);
         const secondsLeft = blocksLeft * 6; // 6 seconds per block
 
@@ -239,9 +239,4 @@ export class AccountService {
 
     return nodes;
   }
-
-  decode(value: string): string {
-    const hex = Buffer.from(value, 'base64').toString('hex');
-    return BigInt(hex ? '0x' + hex : hex).toString();
-  };
 }
