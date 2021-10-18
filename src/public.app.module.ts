@@ -62,7 +62,7 @@ const DailyRotateFile = require('winston-daily-rotate-file');
 import "./utils/extensions/array.extensions";
 import "./utils/extensions/date.extensions";
 import "./utils/extensions/number.extensions";
-import { NftExtendedAttributesService } from './common/nft.extendedattributes.service';
+import { NftExtendedAttributesService } from './endpoints/nfts/nft.extendedattributes.service';
 import { TransactionGetService } from './endpoints/transactions/transaction.get.service';
 import { TokenTransferService } from './endpoints/transactions/token.transfer.service';
 import { TransactionPriceService } from './endpoints/transactions/transaction.price.service';

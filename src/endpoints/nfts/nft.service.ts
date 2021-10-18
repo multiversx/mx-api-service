@@ -4,7 +4,7 @@ import { CachingService } from "src/common/caching.service";
 import { ElasticService } from "src/common/elastic.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayService } from "src/common/gateway.service";
-import { NftExtendedAttributesService } from "src/common/nft.extendedattributes.service";
+import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
 import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
