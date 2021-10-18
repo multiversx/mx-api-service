@@ -15,6 +15,7 @@ import { Constants } from 'src/utils/constants';
 import { AddressUtils } from 'src/utils/address.utils';
 import { ApiUtils } from 'src/utils/api.utils';
 import { BinaryUtils } from 'src/utils/binary.utils';
+import { AccountKey } from './entities/account.key';
 import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
 
 @Injectable()
@@ -121,15 +122,15 @@ export class AccountService {
       this.gatewayService.get(`network/status/${this.apiConfigService.getDelegationContractShardId()}`)
     ]);
 
-    const numBlocksBeforeUnBond = parseInt(this.decode(encodedNumBlocksBeforeUnBond));
+    const numBlocksBeforeUnBond = parseInt(BinaryUtils.base64ToBigInt(encodedNumBlocksBeforeUnBond).toString());
     const erdNonce = parseInt(erdNonceString);
 
     const data: AccountDeferred[] = encodedUserDeferredPaymentList.reduce((result: AccountDeferred[], _, index, array) => {
       if (index % 2 === 0) {
         const [encodedDeferredPayment, encodedUnstakedNonce] = array.slice(index, index + 2);
 
-        const deferredPayment = this.decode(encodedDeferredPayment);
-        const unstakedNonce = parseInt(this.decode(encodedUnstakedNonce));
+        const deferredPayment = BinaryUtils.base64ToBigInt(encodedDeferredPayment).toString();
+        const unstakedNonce = parseInt(BinaryUtils.base64ToBigInt(encodedUnstakedNonce).toString());
         const blocksLeft = Math.max(0, unstakedNonce + numBlocksBeforeUnBond - erdNonce);
         const secondsLeft = blocksLeft * 6; // 6 seconds per block
 
@@ -142,93 +143,95 @@ export class AccountService {
     return data;
   }
 
-  async getKeys(address: string): Promise<{ blsKey: string, stake: string, status: string, rewardAddress: string }[]> {
-    let publicKey = AddressUtils.bech32Decode(address);
-
-    const BlsKeysStatus = await this.vmQueryService.vmQuery(
+  private async getBlsKeysStatusForPublicKey(publicKey: string) {
+    return await this.vmQueryService.vmQuery(
       this.apiConfigService.getAuctionContractAddress(),
       'getBlsKeysStatus',
       this.apiConfigService.getAuctionContractAddress(),
       [ publicKey ],
     );
+  }
 
-    if (!BlsKeysStatus) {
+  private async getRewardAddressForNode(blsKey: string): Promise<string> {
+    const [encodedRewardsPublicKey] = await this.vmQueryService.vmQuery(
+      this.apiConfigService.getStakingContractAddress(),
+      'getRewardAddress',
+      undefined,
+      [ blsKey ],
+    );
+
+    const rewardsPublicKey = Buffer.from(encodedRewardsPublicKey, 'base64').toString();
+    const rewardAddress = AddressUtils.bech32Encode(rewardsPublicKey);
+
+    return rewardAddress;
+  }
+
+  async getKeys(address: string): Promise<AccountKey[]> {
+    let publicKey = AddressUtils.bech32Decode(address);
+
+    const blsKeysStatus = await this.getBlsKeysStatusForPublicKey(publicKey);
+    if (!blsKeysStatus) {
       return [];
     }
 
-    const queued: any = [];
+    const nodes: AccountKey[] = [];
+    for (let index = 0; index < blsKeysStatus.length; index+=2) {
+      const [encodedBlsKey, encodedStatus] = blsKeysStatus.slice(index, index + 2);
 
-    const data = BlsKeysStatus.reduce((result: any, _, index, array) => {
-      if (index % 2 === 0) {
-        const [encodedBlsKey, encodedStatus] = array.slice(index, index + 2);
+      const accountKey: AccountKey = new AccountKey;
+      accountKey.blsKey = BinaryUtils.padHex(Buffer.from(encodedBlsKey, 'base64').toString('hex'));
+      accountKey.status = Buffer.from(encodedStatus, 'base64').toString();
+      accountKey.stake = '2500000000000000000000';
 
-        const blsKey = BinaryUtils.padHex(Buffer.from(encodedBlsKey, 'base64').toString('hex'));
-        const status = Buffer.from(encodedStatus, 'base64').toString();
-        const stake = '2500000000000000000000';
+      nodes.push(accountKey);
+    }
 
-        if (status === 'queued') {
-          queued.push(blsKey);
-        }
+    if (nodes.length) {
+      const rewardAddress = await this.getRewardAddressForNode(nodes[0].blsKey);
 
-        result.push({ blsKey, stake, status });
+      for (let node of nodes) {
+        node.rewardAddress = rewardAddress;
       }
-      return result;
-    }, []);
+    }
 
-    if (data && data[0] && data[0].blsKey) {
-      const [encodedRewardsPublicKey] = await this.vmQueryService.vmQuery(
+    const queuedNodes: string[] = nodes
+      .filter((node: AccountKey) => node.status === 'queued')
+      .map(({blsKey}) => blsKey);
+
+    if (queuedNodes.length) {
+      const [queueSizeEncoded] = await this.vmQueryService.vmQuery(
         this.apiConfigService.getStakingContractAddress(),
-        'getRewardAddress',
-        undefined,
-        [ data[0].blsKey ],
+        'getQueueSize',
       );
 
-      const rewardsPublicKey = Buffer.from(encodedRewardsPublicKey, 'base64').toString();
-      const rewardAddress = AddressUtils.bech32Encode(rewardsPublicKey);
+      if (queueSizeEncoded) {
+        const queueSize = Buffer.from(queueSizeEncoded, 'base64').toString();
 
-      for (let [index, _] of data.entries()) {
-        data[index].rewardAddress = rewardAddress;
+        const queueIndexes = await Promise.all([
+          ...queuedNodes.map((blsKey: string) =>
+            this.vmQueryService.vmQuery(
+              this.apiConfigService.getStakingContractAddress(),
+              'getQueueIndex',
+              this.apiConfigService.getAuctionContractAddress(),
+              [ blsKey ],
+            )
+          ),
+        ]);
+
+        let index = 0;
+        for (let queueIndexEncoded of queueIndexes) {
+          if (queueIndexEncoded) {
+            const [found] = nodes.filter((x: AccountKey) => x.blsKey === queuedNodes[index]);
+    
+            found.queueIndex = Buffer.from(queueIndexEncoded[0], 'base64').toString();
+            found.queueSize = queueSize;
+  
+            index ++;
+          }
+        }
       }
     }
 
-    if (queued.length) {
-      const results = await Promise.all([
-        this.vmQueryService.vmQuery(
-          this.apiConfigService.getStakingContractAddress(),
-          'getQueueSize',
-        ),
-        ...queued.map((blsKey: string) =>
-          this.vmQueryService.vmQuery(
-            this.apiConfigService.getStakingContractAddress(),
-            'getQueueIndex',
-            this.apiConfigService.getAuctionContractAddress(),
-            [ blsKey ],
-          )
-        ),
-      ]);
-
-      let queueSize = '0'
-
-      results.forEach((result, index) => {
-        const queueNode = [result] ? result : undefined;
-        if (queueNode) {
-          if (index === 0) {
-            queueSize = Buffer.from(queueNode, 'base64').toString();
-          } else {
-            const [found] = data.filter((x: any) => x.blsKey === queued[index - 1]);
-  
-            found.queueIndex = queueNode ? Buffer.from(queueNode, 'base64').toString() : '0';
-            found.queueSize = queueSize;
-          }
-        }
-      });
-    }
-
-    return data;
+    return nodes;
   }
-
-  decode(value: string): string {
-    const hex = Buffer.from(value, 'base64').toString('hex');
-    return BigInt(hex ? '0x' + hex : hex).toString();
-  };
 }
