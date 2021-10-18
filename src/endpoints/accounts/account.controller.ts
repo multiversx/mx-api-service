@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, NotFoundException, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccountService } from './account.service';
 import { AccountDetailed } from './entities/account.detailed';
@@ -15,9 +15,9 @@ import { NftType } from '../nfts/entities/nft.type';
 import { ParseOptionalBoolPipe } from 'src/utils/pipes/parse.optional.bool.pipe';
 import { WaitingList } from '../waiting-list/entities/waiting.list';
 import { WaitingListService } from '../waiting-list/waiting.list.service';
-import { NftCollection } from '../nfts/entities/nft.collection';
 import { StakeService } from '../stake/stake.service';
 import { NftService } from '../nfts/nft.service';
+import { NftCollectionAccount } from '../nfts/entities/nft.collection.account';
 
 @Controller()
 @ApiTags('accounts')
@@ -173,10 +173,18 @@ export class AccountController {
   @Get("/accounts/:address/collections")
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
+	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
+	@ApiQuery({ name: 'owner', description: 'Filter by collection owner', required: false })
+	@ApiQuery({ name: 'canCreate', description: 'Filter by property canCreate (boolean)', required: false })
+	@ApiQuery({ name: 'canBurn', description: 'Filter by property canCreate (boolean)', required: false })
+	@ApiQuery({ name: 'canAddQuantity', description: 'Filter by property canAddQuantity (boolean)', required: false })
+	@ApiQuery({ name: 'withNfts', description: 'Return additional nfts', required: false })
+	@ApiQuery({ name: 'nftSize', description: 'Maximum number of nfts per collection entry', required: false })
   @ApiResponse({
     status: 200,
     description: 'The token collections of a given account',
-    type: NftCollection,
+    type: NftCollectionAccount,
     isArray: true
   })
   @ApiResponse({
@@ -186,10 +194,16 @@ export class AccountController {
   async getAccountCollections(
     @Param('address') address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
-    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number
-  ): Promise<NftCollection[]> {
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+		@Query('search') search: string | undefined,
+		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+    @Query('owner') owner: string | undefined,
+    @Query('canCreate', new ParseOptionalBoolPipe) canCreate: boolean | undefined,
+    @Query('canBurn', new ParseOptionalBoolPipe) canBurn: boolean | undefined,
+    @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity: boolean | undefined,
+  ): Promise<NftCollectionAccount[]> {
     try {
-      return await this.nftService.getCollectionsForAddress(address, { from, size });
+      return await this.nftService.getCollectionsForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity }, { from, size });
     } catch (error) {
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
@@ -198,6 +212,12 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/collections/count")
+	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
+	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
+	@ApiQuery({ name: 'owner', description: 'Filter by collection owner', required: false })
+	@ApiQuery({ name: 'canCreate', description: 'Filter by property canCreate (boolean)', required: false })
+	@ApiQuery({ name: 'canBurn', description: 'Filter by property canCreate (boolean)', required: false })
+	@ApiQuery({ name: 'canAddQuantity', description: 'Filter by property canAddQuantity (boolean)', required: false })
   @ApiResponse({
     status: 200,
     description: 'The number of token collections available on the blockchain for the given address',
@@ -206,9 +226,17 @@ export class AccountController {
     status: 404,
     description: 'Account not found'
   })
-  async getCollectionCount(@Param('address') address: string): Promise<number> {
+  async getCollectionCount(
+    @Param('address') address: string,
+		@Query('search') search: string | undefined,
+		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+    @Query('owner') owner: string | undefined,
+    @Query('canCreate', new ParseOptionalBoolPipe) canCreate: boolean | undefined,
+    @Query('canBurn', new ParseOptionalBoolPipe) canBurn: boolean | undefined,
+    @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity: boolean | undefined,
+  ): Promise<number> {
     try {
-      return await this.nftService.getCollectionCountForAddress(address);
+      return await this.nftService.getCollectionCountForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
     } catch (error) {
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
@@ -218,14 +246,48 @@ export class AccountController {
 
   @Get("/accounts/:address/collections/c")
   @ApiExcludeEndpoint()
-  async getCollectionCountAlternative(@Param('address') address: string): Promise<number> {
+  async getCollectionCountAlternative(
+    @Param('address') address: string,
+		@Query('search') search: string | undefined,
+		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+    @Query('owner') owner: string | undefined,
+    @Query('canCreate', new ParseOptionalBoolPipe) canCreate: boolean | undefined,
+    @Query('canBurn', new ParseOptionalBoolPipe) canBurn: boolean | undefined,
+    @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity: boolean | undefined,
+  ): Promise<number> {
     try {
-      return await this.nftService.getCollectionCountForAddress(address);
+      return await this.nftService.getCollectionCountForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
     } catch (error) {
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return 0;
     }
+  }
+
+  @Get("/accounts/:address/collections/:collection")
+  @ApiResponse({
+    status: 200,
+    description: 'A specific NFT collection of a given account',
+    type: NftAccount,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Collection not found'
+  })
+  async getAccountCollection(
+    @Param('address') address: string,
+    @Param('collection') collection: string,
+  ): Promise<NftCollectionAccount> {
+    let result = await this.nftService.getCollectionForAddress(address, collection);
+    if (!result) {
+      throw new NotFoundException('Collection for given account not found');
+    }
+
+    return result;
   }
 
   @Get("/accounts/:address/tokens/:token")
@@ -266,6 +328,7 @@ export class AccountController {
 	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
 	@ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
 	@ApiQuery({ name: 'withTimestamp', description: 'Add timestamp in the response structure', required: false })
+  @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false })
   @ApiResponse({
     status: 200,
     description: 'The non-fungible and semi-fungible tokens of a given account',
@@ -289,9 +352,10 @@ export class AccountController {
     @Query('creator') creator?: string,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
     @Query('withTimestamp', new ParseOptionalBoolPipe) withTimestamp?: boolean,
+    @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean,
   ): Promise<NftAccount[]> {
     try {
-      return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, collections, tags, creator, hasUris }, { withTimestamp });
+      return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, collections, tags, creator, hasUris }, { withTimestamp, withSupply });
     } catch (error) {
       this.logger.error(error);
       return [];

@@ -3,8 +3,6 @@ import { ElasticService } from "src/common/elastic.service";
 import { Round } from "./entities/round";
 import { RoundDetailed } from "./entities/round.detailed";
 import { RoundFilter } from "./entities/round.filter";
-import { ElasticPagination } from "src/common/entities/elastic/elastic.pagination";
-import { ElasticSortProperty } from "src/common/entities/elastic/elastic.sort.property";
 import { ElasticSortOrder } from "src/common/entities/elastic/elastic.sort.order";
 import { ElasticQuery } from "src/common/entities/elastic/elastic.query";
 import { AbstractQuery } from "src/common/entities/elastic/abstract.query";
@@ -45,27 +43,21 @@ export class RoundService {
   }
 
   async getRoundCount(filter: RoundFilter): Promise<number> {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.condition.must = await this.buildElasticRoundsFilter(filter)
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, await this.buildElasticRoundsFilter(filter));
 
-    return this.elasticService.getCount('rounds', elasticQueryAdapter);
+    return this.elasticService.getCount('rounds', elasticQuery);
   }
 
   async getRounds(filter: RoundFilter): Promise<Round[]> {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    
     const { from, size } = filter;
-    const pagination: ElasticPagination = { 
-      from, size 
-    };
-    elasticQueryAdapter.pagination = pagination;
 
-    elasticQueryAdapter.condition[filter.condition ?? QueryConditionOptions.must] = await this.buildElasticRoundsFilter(filter);
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from, size })
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
+      .withCondition(filter.condition ?? QueryConditionOptions.must, await this.buildElasticRoundsFilter(filter));
 
-    const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descending };
-    elasticQueryAdapter.sort = [timestamp];
-
-    let result = await this.elasticService.getList('rounds', 'round', elasticQueryAdapter);
+    let result = await this.elasticService.getList('rounds', 'round', elasticQuery);
 
     for (let item of result) {
       item.shard = item.shardId;

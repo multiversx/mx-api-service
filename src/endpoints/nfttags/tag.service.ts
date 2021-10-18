@@ -4,7 +4,6 @@ import { CachingService } from "src/common/caching.service";
 import { ElasticService } from "src/common/elastic.service";
 import { ElasticQuery } from "src/common/entities/elastic/elastic.query";
 import { ElasticSortOrder } from "src/common/entities/elastic/elastic.sort.order";
-import { ElasticSortProperty } from "src/common/entities/elastic/elastic.sort.property";
 import { ApiUtils } from "src/utils/api.utils";
 import { Constants } from "src/utils/constants";
 import { Tag } from "./entities/tag";
@@ -27,13 +26,11 @@ export class TagService {
   }
 
   async getNftTagsRaw(pagination: QueryPagination): Promise<Tag[]> {
-    const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-    elasticQueryAdapter.pagination = pagination;
-   
-    const count: ElasticSortProperty = { name: 'count', order: ElasticSortOrder.descending };
-    elasticQueryAdapter.sort = [count];
+    const elasticQuery = ElasticQuery.create()
+      .withPagination(pagination)
+      .withSort([{ name: 'count', order: ElasticSortOrder.descending }])
 
-    let result = await this.elasticService.getList('tags', 'tag', elasticQueryAdapter);
+    let result = await this.elasticService.getList('tags', 'tag', elasticQuery);
 
     let nftTags: Tag[] = result.map(item => ApiUtils.mergeObjects(new Tag(), item));
 

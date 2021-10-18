@@ -145,7 +145,7 @@ export class TransactionService {
       }
     }
 
-    if (queryOptions && queryOptions.withScResults) {
+    if (queryOptions && queryOptions.withScResults && elasticTransactions.some(x => x.hasScResults === true)) {
       // Add scResults to transaction details
 
       const elasticQuery = ElasticQuery.create()

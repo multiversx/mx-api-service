@@ -12,6 +12,7 @@ import { AddressUtils } from "src/utils/address.utils";
 import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { EventsGateway } from "src/websockets/events.gateway";
 import { ShardTransaction } from "./entities/shard.transaction";
+import { NodeService } from "src/endpoints/nodes/node.service";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -27,6 +28,7 @@ export class TransactionProcessorService {
       private readonly metricsService: MetricsService,
       @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
       private readonly shardService: ShardService,
+      private readonly nodeService: NodeService,
   ) {
     this.logger = new Logger(TransactionProcessorService.name);
   }
@@ -73,6 +75,7 @@ export class TransactionProcessorService {
         let invalidatedTokenProperties = await this.cachingService.tryInvalidateTokenProperties(transaction);
         let invalidatedTokensOnAccountKeys = await this.cachingService.tryInvalidateTokensOnAccount(transaction);
         let invalidatedTokenBalancesKeys = await this.cachingService.tryInvalidateTokenBalance(transaction);
+        let invalidatedOwnerKeys = await this.tryInvalidateOwner(transaction);
 
         allInvalidatedKeys.push(
           ...invalidatedTransactionKeys, 
@@ -80,6 +83,7 @@ export class TransactionProcessorService {
           ...invalidatedTokenProperties,
           ...invalidatedTokensOnAccountKeys, 
           ...invalidatedTokenBalancesKeys,
+          ...invalidatedOwnerKeys
         );
       }
 
@@ -92,6 +96,15 @@ export class TransactionProcessorService {
     } finally {
       this.isProcessing = false;
     }
+  }
+
+  async tryInvalidateOwner(transaction: ShardTransaction): Promise<string[]> {
+    let transactionFuncName = transaction.getDataFunctionName();
+    if (transactionFuncName !== 'mergeValidatorToDelegationWithWhitelist') {
+      return [];
+    }
+
+    return await this.nodeService.deleteOwnersForAddressInCache(transaction.sender);
   }
 
   async getNewTransactions(): Promise<ShardTransaction[]> {
