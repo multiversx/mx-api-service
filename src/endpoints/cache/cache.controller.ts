@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Logger, Param, Put, Query, UseGuards } from "@nestjs/common";
 import { ClientProxy, EventPattern } from "@nestjs/microservices";
 import { ApiResponse } from "@nestjs/swagger";
-import { CachingService } from "src/common/caching.service";
+import { CachingService } from "src/common/caching/caching.service";
 import { JwtAdminGuard } from "src/utils/guards/jwt.admin.guard";
 import { JwtAuthenticateGuard } from "src/utils/guards/jwt.authenticate.guard";
 import { CacheValue } from "./entities/cache.value";

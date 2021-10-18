@@ -3,19 +3,19 @@ import { Cron, CronExpression, SchedulerRegistry } from "@nestjs/schedule";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
-import { DataApiService } from "src/common/data.api.service";
 import { DataQuoteType } from "src/common/entities/data.quote.type";
-import { KeybaseService } from "src/common/keybase.service";
 import { Constants } from "src/utils/constants";
 import { Locker } from "src/utils/locker";
-import { CachingService } from "src/common/caching.service";
+import { CachingService } from "src/common/caching/caching.service";
 import { ClientProxy } from "@nestjs/microservices";
 import { ApiConfigService } from "src/common/api.config.service";
 import { NetworkService } from "src/endpoints/network/network.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
-import { GatewayService } from "src/common/gateway.service";
 import { EsdtService } from "src/common/esdt.service";
 import { CronJob } from "cron";
+import { KeybaseService } from "src/common/external-calls-services/keybase.service";
+import { DataApiService } from "src/common/external-calls-services/data.api.service";
+import { GatewayService } from "src/common/external-calls-services/gateway.service";
 
 @Injectable()
 export class CacheWarmerService {

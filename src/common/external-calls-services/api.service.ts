@@ -1,9 +1,9 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import axios, { AxiosRequestConfig } from "axios";
-import { ApiConfigService } from "./api.config.service";
-import { PerformanceProfiler } from "../utils/performance.profiler";
 import Agent from 'agentkeepalive';
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
+import { ApiConfigService } from "../api.config.service";
+import { PerformanceProfiler } from "src/utils/performance.profiler";
 
 @Injectable()
 export class ApiService {

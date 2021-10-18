@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Logger, Injectable } from '@nestjs/common';
-import { ApiConfigService } from './api.config.service';
+import { ApiConfigService } from '../api.config.service';
+import { ExtrasApiScamTransactionResult, ExtrasApiTransactionMinInfoDto } from '../external-dtos/extras-api';
 import { ApiService } from './api.service';
-import { ExtrasApiScamTransactionResult, ExtrasApiTransactionMinInfoDto } from './external-dtos/extras-api';
 
 @Injectable()
 export class ExtrasApiService {

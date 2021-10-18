@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "./api.config.service";
-import { ElasticService } from "./elastic.service";
+import { ElasticService } from "./external-calls-services/elastic.service";
 
 @Injectable()
 export class BlsService {

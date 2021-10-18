@@ -1,9 +1,7 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
-import { ElasticService } from '../../common/elastic.service';
-import { GatewayService } from '../../common/gateway.service';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
-import { CachingService } from 'src/common/caching.service';
+import { CachingService } from 'src/common/caching/caching.service';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { ApiConfigService } from 'src/common/api.config.service';
 import { AccountDeferred } from './entities/account.deferred';
@@ -17,6 +15,8 @@ import { ApiUtils } from 'src/utils/api.utils';
 import { BinaryUtils } from 'src/utils/binary.utils';
 import { AccountKey } from './entities/account.key';
 import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
+import { ElasticService } from 'src/common/external-calls-services/elastic.service';
+import { GatewayService } from 'src/common/external-calls-services/gateway.service';
 
 @Injectable()
 export class AccountService {

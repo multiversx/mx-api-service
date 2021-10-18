@@ -1,8 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import { ElasticService } from "src/common/elastic.service";
 import { Block } from "./entities/block";
 import { BlockDetailed } from "./entities/block.detailed";
-import { CachingService } from "src/common/caching.service";
+import { CachingService } from "src/common/caching/caching.service";
 import { BlockFilter } from "./entities/block.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { ElasticSortOrder } from "src/common/entities/elastic/elastic.sort.order";
@@ -13,6 +12,7 @@ import { QueryType } from "src/common/entities/elastic/query.type";
 import { Constants } from "src/utils/constants";
 import { ApiUtils } from "src/utils/api.utils";
 import { QueryConditionOptions } from "src/common/entities/elastic/query.condition.options";
+import { ElasticService } from "src/common/external-calls-services/elastic.service";
 
 @Injectable()
 export class BlockService {

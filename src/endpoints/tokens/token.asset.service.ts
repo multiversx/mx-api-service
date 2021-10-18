@@ -4,7 +4,7 @@ import { TokenAssets } from "src/endpoints/tokens/entities/token.assets";
 import { Constants } from "src/utils/constants";
 import { FileUtils } from "src/utils/file.utils";
 import { ApiConfigService } from "../../common/api.config.service";
-import { CachingService } from "../../common/caching.service";
+import { CachingService } from "../../common/caching/caching.service";
 const rimraf = require("rimraf");
 const path = require('path');
 const fs = require('fs');

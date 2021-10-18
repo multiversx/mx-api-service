@@ -1,5 +1,4 @@
 import { Injectable } from "@nestjs/common";
-import { ElasticService } from "src/common/elastic.service";
 import { Round } from "./entities/round";
 import { RoundDetailed } from "./entities/round.detailed";
 import { RoundFilter } from "./entities/round.filter";
@@ -11,6 +10,7 @@ import { QueryConditionOptions } from "src/common/entities/elastic/query.conditi
 import { QueryType } from "src/common/entities/elastic/query.type";
 import { RoundUtils } from "src/utils/round.utils";
 import { ApiUtils } from "src/utils/api.utils";
+import { ElasticService } from "src/common/external-calls-services/elastic.service";
 
 @Injectable()
 export class RoundService {

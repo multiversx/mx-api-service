@@ -1,5 +1,5 @@
 import { Test } from "@nestjs/testing";
-import { CachingService } from "src/common/caching.service";
+import { CachingService } from "src/common/caching/caching.service";
 import { KeybaseState } from "src/common/entities/keybase.state";
 import { Node } from "src/endpoints/nodes/entities/node";
 import { NodeFilter } from "src/endpoints/nodes/entities/node.filter";

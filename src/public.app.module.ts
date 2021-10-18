@@ -1,11 +1,7 @@
 import { CacheModule, Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import configuration from '../config/configuration';
 import { AccountController } from './endpoints/accounts/account.controller';
 import { AccountService } from './endpoints/accounts/account.service';
 import { ApiConfigService } from './common/api.config.service';
-import { ElasticService } from './common/elastic.service';
-import { GatewayService } from './common/gateway.service';
 import { NetworkController } from './endpoints/network/network.controller';
 import { NetworkService } from './endpoints/network/network.service';
 import { TransactionController } from './endpoints/transactions/transaction.controller';
@@ -22,21 +18,16 @@ import { RoundController } from './endpoints/rounds/round.controller';
 import { NodeController } from './endpoints/nodes/node.controller';
 import { NodeService } from './endpoints/nodes/node.service';
 import { VmQueryService } from './endpoints/vm.query/vm.query.service';
-import { CachingService } from './common/caching.service';
-import { KeybaseService } from './common/keybase.service';
 import { ProviderService } from './endpoints/providers/provider.service';
 import { ProviderController } from './endpoints/providers/provider.controller';
 import { StakeService } from './endpoints/stake/stake.service';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
-import { ApiService } from './common/api.service';
-import { ProfilerService } from './common/profiler.service';
 import { DelegationLegacyService } from './endpoints/delegation.legacy/delegation.legacy.service';
 import { DelegationLegacyController } from './endpoints/delegation.legacy/delegation.legacy.controller';
 import { StakeController } from './endpoints/stake/stake.controller';
 import { DelegationController } from './endpoints/delegation/delegation.controller';
 import { DelegationService } from './endpoints/delegation/delegation.service';
 import { VmQueryController } from './endpoints/vm.query/vm.query.controller';
-import { CacheConfigService } from './common/cache.config.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { ShardController } from './endpoints/shards/shard.controller';
 import { ShardService } from './endpoints/shards/shard.service';
@@ -47,15 +38,12 @@ import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { ProxyController } from './endpoints/proxy/proxy.controller';
 import { TokenAssetService } from './endpoints/tokens/token.asset.service';
-import { DataApiService } from './common/data.api.service';
 import { KeysController } from './endpoints/keys/keys.controller';
 import { KeysService } from './endpoints/keys/keys.service';
 import { WaitingListController } from './endpoints/waiting-list/waiting.list.controller';
 import { WaitingListService } from './endpoints/waiting-list/waiting.list.service';
-import { BlsService } from './common/bls.service';
 import { TagController } from './endpoints/nfttags/tag.controller';
 import { TagService } from './endpoints/nfttags/tag.service';
-import { ExtrasApiService } from './common/extras-api.service';
 import { TransactionScamCheckService } from './endpoints/transactions/scam-check/transaction-scam-check.service';
 import { PotentialScamTransactionChecker } from './endpoints/transactions/scam-check/potential-scam-transaction.checker';
 const DailyRotateFile = require('winston-daily-rotate-file');
@@ -67,15 +55,12 @@ import { TransactionGetService } from './endpoints/transactions/transaction.get.
 import { TokenTransferService } from './endpoints/transactions/token.transfer.service';
 import { TransactionPriceService } from './endpoints/transactions/transaction.price.service';
 import { NftService } from './endpoints/nfts/nft.service';
-import { EsdtService } from './common/esdt.service';
 import { UsernameController } from './endpoints/usernames/usernames.controller';
 import { UsernameService } from './endpoints/usernames/username.service';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      load: [configuration]
-    }),
     CacheModule.register(),
     WinstonModule.forRoot({
       level: 'verbose',
@@ -94,6 +79,7 @@ import { UsernameService } from './endpoints/usernames/username.service';
         }),
       ]
     }),
+    CommonModule,
   ],
   controllers: [
     NetworkController, AccountController, TransactionController, TokenController, BlockController,
@@ -104,20 +90,20 @@ import { UsernameService } from './endpoints/usernames/username.service';
     UsernameController,
   ],
   providers: [
-    NetworkService, ApiConfigService, AccountService, ElasticService, GatewayService, TransactionService,
+    NetworkService, ApiConfigService, AccountService, TransactionService,
     TokenService, BlockService, MiniBlockService, RoundService, NodeService, VmQueryService,
-    CachingService, KeybaseService, ProviderService,
-    StakeService, LoggingInterceptor, ApiService, ProfilerService, DelegationLegacyService,
-    DelegationService, CacheConfigService, CachingInterceptor, ShardService, MetricsService, IdentitiesService,
-    TokenAssetService, DataApiService, KeysService, WaitingListService, BlsService, TagService, ExtrasApiService,
+    ProviderService,
+    StakeService, LoggingInterceptor, DelegationLegacyService,
+    DelegationService, CachingInterceptor, ShardService, MetricsService, IdentitiesService,
+    TokenAssetService, KeysService, WaitingListService, TagService,
     TransactionScamCheckService, PotentialScamTransactionChecker, NftExtendedAttributesService,
     TransactionGetService, TokenTransferService,
-    TransactionPriceService, NftService, EsdtService, UsernameService,
+    TransactionPriceService, NftService, UsernameService,
   ],
   exports: [
-    ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService,
-    ShardService, IdentitiesService, ProviderService, KeybaseService, DataApiService, ApiService,
-    BlsService, NetworkService, AccountService, EsdtService,
+    RoundService, TransactionService, MetricsService, NodeService,
+    ShardService, IdentitiesService, ProviderService,
+    NetworkService, AccountService,
   ]
 })
 export class PublicAppModule { }

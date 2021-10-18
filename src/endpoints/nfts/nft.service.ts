@@ -1,9 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api.config.service";
-import { CachingService } from "src/common/caching.service";
-import { ElasticService } from "src/common/elastic.service";
+import { CachingService } from "src/common/caching/caching.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { GatewayService } from "src/common/gateway.service";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
 import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
@@ -22,6 +20,8 @@ import { EsdtService } from "src/common/esdt.service";
 import { NftQueryOptions } from "./entities/nft.query.options";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
 import { CollectionAccountFilter } from "./entities/collection.account.filter";
+import { GatewayService } from "src/common/external-calls-services/gateway.service";
+import { ElasticService } from "src/common/external-calls-services/elastic.service";
 
 @Injectable()
 export class NftService {

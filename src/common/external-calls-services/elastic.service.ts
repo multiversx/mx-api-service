@@ -1,18 +1,18 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
-import { ApiConfigService } from "./api.config.service";
 import { ApiService } from "./api.service";
-import { ElasticQuery } from "./entities/elastic/elastic.query";
-import { ElasticSortOrder } from "./entities/elastic/elastic.sort.order";
-import { QueryOperator } from "./entities/elastic/query.operator";
-import { QueryType } from "./entities/elastic/query.type";
 import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
-import { QueryConditionOptions } from "./entities/elastic/query.condition.options";
-import { QueryPagination } from "./entities/query.pagination";
 import { CollectionFilter } from "src/endpoints/nfts/entities/collection.filter";
+import { ApiConfigService } from "../api.config.service";
+import { ElasticQuery } from "../entities/elastic/elastic.query";
+import { QueryType } from "../entities/elastic/query.type";
+import { QueryOperator } from "../entities/elastic/query.operator";
+import { QueryConditionOptions } from "../entities/elastic/query.condition.options";
+import { ElasticSortOrder } from "../entities/elastic/elastic.sort.order";
+import { QueryPagination } from "../entities/query.pagination";
 
 @Injectable()
 export class ElasticService {

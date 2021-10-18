@@ -1,11 +1,11 @@
 import { CACHE_MANAGER, Inject, Injectable, Logger } from "@nestjs/common";
-import { ApiConfigService } from "./api.config.service";
+import { ApiConfigService } from "../api.config.service";
 const { promisify } = require('util');
 import { createClient } from 'redis';
 import asyncPool from 'tiny-async-pool';
 import { CachedFunction } from "src/crons/entities/cached.function";
 import { InvalidationFunction } from "src/crons/entities/invalidation.function";
-import { PerformanceProfiler } from "../utils/performance.profiler";
+import { PerformanceProfiler } from "../../utils/performance.profiler";
 import { ShardTransaction } from "src/crons/entities/shard.transaction";
 import { Cache } from "cache-manager";
 import { RoundService } from "src/endpoints/rounds/round.service";

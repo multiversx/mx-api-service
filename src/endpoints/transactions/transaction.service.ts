@@ -7,10 +7,8 @@ import { ElasticSortOrder } from 'src/common/entities/elastic/elastic.sort.order
 import { ElasticSortProperty } from 'src/common/entities/elastic/elastic.sort.property';
 import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
 import { QueryType } from 'src/common/entities/elastic/query.type';
-import { GatewayService } from 'src/common/gateway.service';
 import { AddressUtils } from 'src/utils/address.utils';
 import { ApiUtils } from 'src/utils/api.utils';
-import { ElasticService } from '../../common/elastic.service';
 import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
@@ -25,6 +23,8 @@ import { TransactionPriceService } from './transaction.price.service';
 import { TransactionQueryOptions } from './entities/transactions.query.options';
 import { SmartContractResult } from './entities/smart.contract.result';
 import { TermsQuery } from 'src/common/entities/elastic/terms.query';
+import { ElasticService } from 'src/common/external-calls-services/elastic.service';
+import { GatewayService } from 'src/common/external-calls-services/gateway.service';
 
 @Injectable()
 export class TransactionService {

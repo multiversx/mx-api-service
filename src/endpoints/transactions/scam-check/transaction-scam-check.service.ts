@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CachingService } from 'src/common/caching.service';
+import { CachingService } from 'src/common/caching/caching.service';
+import { ExtrasApiService } from 'src/common/external-calls-services/extras-api.service';
 import { ExtrasApiScamTransactionResult, ExtrasApiTransactionMinInfoDto } from 'src/common/external-dtos/extras-api';
-import { ExtrasApiService } from 'src/common/extras-api.service';
 import { Constants } from 'src/utils/constants';
 import { TransactionScamInfo } from '../entities/transaction-scam-info';
 import { mapTransactionScamTypeFromExtrasApi, TransactionScamType } from '../entities/transaction-scam-type.enum';

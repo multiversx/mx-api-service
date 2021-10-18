@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
-import { CachingService } from 'src/common/caching.service';
+import { CachingService } from 'src/common/caching/caching.service';
+import { ExtrasApiService } from 'src/common/external-calls-services/extras-api.service';
 import { ExtrasApiScamTransactionResult, ExtrasApiTransactionMinInfoDto, ExtrasApiTransactionScamType } from 'src/common/external-dtos/extras-api';
-import { ExtrasApiService } from 'src/common/extras-api.service';
 import { TransactionScamType } from '../entities/transaction-scam-type.enum';
 import { TransactionDetailed } from '../entities/transaction.detailed';
 import { PotentialScamTransactionChecker } from './potential-scam-transaction.checker';

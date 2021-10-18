@@ -1,11 +1,8 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Stats } from 'src/endpoints/network/entities/stats';
 import { ApiConfigService } from 'src/common/api.config.service';
-import { ApiService } from 'src/common/api.service';
-import { CachingService } from 'src/common/caching.service';
-import { DataApiService } from 'src/common/data.api.service';
+import { CachingService } from 'src/common/caching/caching.service';
 import { DataQuoteType } from 'src/common/entities/data.quote.type';
-import { GatewayService } from 'src/common/gateway.service';
 import { Constants } from 'src/utils/constants';
 import { NumberUtils } from 'src/utils/number.utils';
 import { AccountService } from '../accounts/account.service';
@@ -18,6 +15,9 @@ import { NetworkConstants } from './entities/constants';
 import { Economics } from './entities/economics';
 import { NetworkConfig } from './entities/network.config';
 import { StakeService } from '../stake/stake.service';
+import { GatewayService } from 'src/common/external-calls-services/gateway.service';
+import { DataApiService } from 'src/common/external-calls-services/data.api.service';
+import { ApiService } from 'src/common/external-calls-services/api.service';
 
 @Injectable()
 export class NetworkService {
