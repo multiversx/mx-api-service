@@ -18,7 +18,6 @@ import { WaitingListService } from '../waiting-list/waiting.list.service';
 import { StakeService } from '../stake/stake.service';
 import { NftService } from '../nfts/nft.service';
 import { NftCollectionAccount } from '../nfts/entities/nft.collection.account';
-import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
 import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
 import { TransactionStatus } from '../transactions/entities/transaction.status';
 import { TransactionService } from '../transactions/transaction.service';
@@ -540,12 +539,11 @@ export class AccountController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
   async getAccountTransactions(
     @Param('address') address: string,
-    @Query('sender') sender: string = address, 
-    @Query('receiver') receiver: string = address, 
+    @Query('sender') sender: string | undefined, 
+    @Query('receiver') receiver: string | undefined, 
     @Query('token') token: string | undefined, 
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
-    @Query('condition', new ParseOptionalEnumPipe(QueryConditionOptions)) condition: QueryConditionOptions = QueryConditionOptions.should, 
     @Query('miniBlockHash') miniBlockHash: string | undefined, 
     @Query('hashes') hashes: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
@@ -556,9 +554,8 @@ export class AccountController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,) {
     try {
       return await this.transactionService.getTransactions({
-        sender,
-        receiver,
-        condition,
+        sender: sender ?? address,
+        receiver: receiver ?? address,
         token,
         senderShard,
         receiverShard,
