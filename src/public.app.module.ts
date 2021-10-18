@@ -1,4 +1,4 @@
-import { CacheModule, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AccountController } from './endpoints/accounts/account.controller';
 import { AccountService } from './endpoints/accounts/account.service';
 import { ApiConfigService } from './common/api.config.service';
@@ -13,8 +13,6 @@ import { BlockService } from './endpoints/blocks/block.service';
 import { BlockController } from './endpoints/blocks/block.controller';
 import { MiniBlockService } from './endpoints/miniblocks/mini.block.service';
 import { MiniBlockController } from './endpoints/miniblocks/mini.block.controller';
-import { RoundService } from './endpoints/rounds/round.service';
-import { RoundController } from './endpoints/rounds/round.controller';
 import { NodeController } from './endpoints/nodes/node.controller';
 import { NodeService } from './endpoints/nodes/node.service';
 import { VmQueryService } from './endpoints/vm.query/vm.query.service';
@@ -31,7 +29,6 @@ import { VmQueryController } from './endpoints/vm.query/vm.query.controller';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { ShardController } from './endpoints/shards/shard.controller';
 import { ShardService } from './endpoints/shards/shard.service';
-import { MetricsService } from './endpoints/metrics/metrics.service';
 import { IdentitiesController } from './endpoints/identities/identities.controller';
 import { IdentitiesService } from './endpoints/identities/identities.service';
 import { WinstonModule } from 'nest-winston';
@@ -57,11 +54,12 @@ import { TransactionPriceService } from './endpoints/transactions/transaction.pr
 import { NftService } from './endpoints/nfts/nft.service';
 import { UsernameController } from './endpoints/usernames/usernames.controller';
 import { UsernameService } from './endpoints/usernames/username.service';
+import { RoundModule } from './endpoints/rounds/round.module';
 import { CommonModule } from './common/common.module';
+import { MetricsModule } from './endpoints/metrics/metrics.module';
 
 @Module({
   imports: [
-    CacheModule.register(),
     WinstonModule.forRoot({
       level: 'verbose',
       format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
@@ -80,10 +78,12 @@ import { CommonModule } from './common/common.module';
       ]
     }),
     CommonModule,
+    RoundModule,
+    MetricsModule
   ],
   controllers: [
     NetworkController, AccountController, TransactionController, TokenController, BlockController,
-    MiniBlockController, RoundController, NodeController, ProviderController,
+    MiniBlockController, NodeController, ProviderController,
     DelegationLegacyController, StakeController, DelegationController,
     VmQueryController, ShardController, IdentitiesController, ProxyController,
     KeysController, WaitingListController, TagController, NftController,
@@ -91,17 +91,17 @@ import { CommonModule } from './common/common.module';
   ],
   providers: [
     NetworkService, ApiConfigService, AccountService, TransactionService,
-    TokenService, BlockService, MiniBlockService, RoundService, NodeService, VmQueryService,
+    TokenService, BlockService, MiniBlockService, NodeService, VmQueryService,
     ProviderService,
     StakeService, LoggingInterceptor, DelegationLegacyService,
-    DelegationService, CachingInterceptor, ShardService, MetricsService, IdentitiesService,
+    DelegationService, CachingInterceptor, ShardService, IdentitiesService,
     TokenAssetService, KeysService, WaitingListService, TagService,
     TransactionScamCheckService, PotentialScamTransactionChecker, NftExtendedAttributesService,
     TransactionGetService, TokenTransferService,
     TransactionPriceService, NftService, UsernameService,
   ],
   exports: [
-    RoundService, TransactionService, MetricsService, NodeService,
+    TransactionService, NodeService,
     ShardService, IdentitiesService, ProviderService,
     NetworkService, AccountService,
   ]
