@@ -113,7 +113,7 @@ export class TransactionService {
 
     if (filter.before || filter.after) {
       elasticQuery
-        .withFilter([QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0)]);
+        .withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
     }
 
     let elasticTransactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
