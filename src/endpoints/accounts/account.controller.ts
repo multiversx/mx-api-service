@@ -18,6 +18,10 @@ import { WaitingListService } from '../waiting-list/waiting.list.service';
 import { StakeService } from '../stake/stake.service';
 import { NftService } from '../nfts/nft.service';
 import { NftCollectionAccount } from '../nfts/entities/nft.collection.account';
+import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
+import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
+import { TransactionStatus } from '../transactions/entities/transaction.status';
+import { TransactionService } from '../transactions/transaction.service';
 
 @Controller()
 @ApiTags('accounts')
@@ -31,6 +35,7 @@ export class AccountController {
     private readonly delegationLegacyService: DelegationLegacyService,
     private readonly waitingListService: WaitingListService,
     private readonly stakeService: StakeService,
+    private readonly transactionService: TransactionService,
   ) {
     this.logger = new Logger(AccountController.name);
   }
@@ -508,5 +513,61 @@ export class AccountController {
   })
   async getAccountWaitingList(@Param('address') address: string): Promise<WaitingList[]> {
     return await this.waitingListService.getWaitingListForAddress(address);
+  }
+
+  @Get("/accounts/:address/transactions")
+  @ApiResponse({
+    status: 200,
+    description: 'Transactions history informations for a given account',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false  })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false  })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false  })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false  })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false  })
+  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false  })
+  @ApiQuery({ name: 'search', description: 'Search in data object', required: false  })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+  async getAccountTransactions(
+    @Param('address') address: string,
+    @Query('token') token: string | undefined, 
+    @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
+    @Query('miniBlockHash') miniBlockHash: string | undefined, 
+    @Query('hashes') hashes: string | undefined, 
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
+    @Query('search') search: string | undefined,
+    @Query('before', ParseOptionalIntPipe) before: number | undefined, 
+    @Query('after', ParseOptionalIntPipe) after: number | undefined, 
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,) {
+    try {
+      return await this.transactionService.getTransactions({
+        sender: address,
+        receiver: address,
+        condition: QueryConditionOptions.should,
+        token,
+        senderShard,
+        receiverShard,
+        miniBlockHash,
+        hashes,
+        status,
+        search,
+        before,
+        after,
+        from,
+        size
+      });
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+    }
   }
 }
