@@ -1,20 +1,20 @@
 import { forwardRef, Module } from "@nestjs/common";
 import { CommonModule } from "src/common/common.module";
-import { RoundController } from "./round.controller";
-import { RoundService } from "./round.service";
+import { MiniBlockController } from "./mini.block.controller";
+import { MiniBlockService } from "./mini.block.service";
 
 @Module({
   imports: [
     forwardRef(() => CommonModule),
   ],
   controllers: [
-    RoundController,
+    MiniBlockController,
   ],
   providers: [
-    RoundService,
+    MiniBlockService,
   ],
   exports: [
-    RoundService,
+    MiniBlockService,
   ]
 })
-export class RoundModule { }
+export class MiniBlockModule { }

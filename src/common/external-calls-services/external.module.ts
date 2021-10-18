@@ -8,10 +8,14 @@ import { ExtrasApiService } from "./extras-api.service";
 import { GatewayService } from "./gateway.service";
 import { KeybaseService } from "./keybase.service";
 import { MetricsModule } from "../../endpoints/metrics/metrics.module"
+import { NodeModule } from "src/endpoints/nodes/node.module";
+import { ProviderModule } from "src/endpoints/providers/provider.module";
 
 @Module({
   imports: [
     ApiConfigModule, CachingModule, 
+    forwardRef(() => NodeModule),
+    forwardRef(() => ProviderModule),
     forwardRef(() => MetricsModule)
   ],
   providers: [
