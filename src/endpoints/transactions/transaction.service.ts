@@ -42,52 +42,63 @@ export class TransactionService {
     this.logger = new Logger(TransactionService.name);
   }
 
-  private buildTransactionFilterQuery(filter: TransactionFilter): AbstractQuery[] {
+  private buildTransactionFilterQuery(filter: TransactionFilter): { should: AbstractQuery[], must: AbstractQuery[] } {
 
-    const queries: AbstractQuery[] = [];
-    if (filter.sender) {
-      queries.push(QueryType.Match('sender', filter.sender));
+    const shouldQueries: AbstractQuery[] = [];
+    const mustQueries: AbstractQuery[] = [];
+
+    if (filter.sender === filter.receiver) {
+      shouldQueries.push(QueryType.Match('sender', filter.sender));
+      shouldQueries.push(QueryType.Match('receiver', filter.receiver));
     }
-
-    if (filter.receiver) {
-      queries.push(QueryType.Match('receiver', filter.receiver));
+    else {
+      if (filter.sender) {
+        mustQueries.push(QueryType.Match('sender', filter.sender));
+      }
+      if (filter.receiver) {
+        mustQueries.push(QueryType.Match('receiver', filter.receiver));
+      }
     }
 
     if (filter.token) {
-      queries.push(QueryType.Match('tokens', filter.token, QueryOperator.AND));
+      mustQueries.push(QueryType.Match('tokens', filter.token, QueryOperator.AND));
     }
 
     if (filter.senderShard !== undefined) {
-      queries.push(QueryType.Match('senderShard', filter.senderShard));
+      mustQueries.push(QueryType.Match('senderShard', filter.senderShard));
     }
 
     if (filter.receiverShard !== undefined) {
-      queries.push(QueryType.Match('receiverShard', filter.receiverShard));
+      mustQueries.push(QueryType.Match('receiverShard', filter.receiverShard));
     }
 
     if (filter.miniBlockHash) {
-      queries.push(QueryType.Match('miniBlockHash', filter.miniBlockHash));
+      mustQueries.push(QueryType.Match('miniBlockHash', filter.miniBlockHash));
     }
 
     if (filter.hashes) {
       const hashArray = filter.hashes.split(',');
-      queries.push(QueryType.Should(hashArray.map(hash => QueryType.Match('_id', hash))));
+      mustQueries.push(QueryType.Should(hashArray.map(hash => QueryType.Match('_id', hash))));
     }
 
     if (filter.status) {
-      queries.push(QueryType.Match('status', filter.status));
+      mustQueries.push(QueryType.Match('status', filter.status));
     }
 
     if (filter.search) {
-      queries.push(QueryType.Wildcard('data', `*${filter.search}*`));
+      mustQueries.push(QueryType.Wildcard('data', `*${filter.search}*`));
     }
 
-    return queries;
+    return {
+      should: shouldQueries,
+      must: mustQueries,
+    };
   }
 
   async getTransactionCount(filter: TransactionFilter): Promise<number> {
     const elasticQuery = ElasticQuery.create()
-      .withCondition(filter.condition ?? QueryConditionOptions.must, this.buildTransactionFilterQuery(filter));
+      .withCondition(QueryConditionOptions.must, this.buildTransactionFilterQuery(filter).must)
+      .withCondition(QueryConditionOptions.should, this.buildTransactionFilterQuery(filter).should)
 
     if (filter.before || filter.after) {
       elasticQuery
@@ -108,7 +119,8 @@ export class TransactionService {
 
     const elasticQuery = ElasticQuery.create()
       .withPagination(pagination)
-      .withCondition(filter.condition ?? QueryConditionOptions.must, this.buildTransactionFilterQuery(filter))
+      .withCondition(QueryConditionOptions.must, this.buildTransactionFilterQuery(filter).must)
+      .withCondition(QueryConditionOptions.should, this.buildTransactionFilterQuery(filter).should)
       .withSort([timestamp, nonce]);
 
     if (filter.before || filter.after) {
