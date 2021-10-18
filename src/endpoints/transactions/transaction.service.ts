@@ -42,12 +42,14 @@ export class TransactionService {
     this.logger = new Logger(TransactionService.name);
   }
 
+  private sameSenderAndReceiver(sender: string | undefined, receiver: string | undefined): boolean {
+    return sender !== undefined && receiver !== undefined && sender === receiver;
+  }
   private buildTransactionFilterQuery(filter: TransactionFilter): { should: AbstractQuery[], must: AbstractQuery[] } {
-
     const shouldQueries: AbstractQuery[] = [];
     const mustQueries: AbstractQuery[] = [];
 
-    if (filter.sender === filter.receiver) {
+    if (this.sameSenderAndReceiver(filter.sender, filter.receiver)) {
       shouldQueries.push(QueryType.Match('sender', filter.sender));
       shouldQueries.push(QueryType.Match('receiver', filter.receiver));
     }

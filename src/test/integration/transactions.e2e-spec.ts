@@ -137,9 +137,7 @@ describe('Transaction Service', () => {
                 transactionFilter.size = 25;
                 transactionFilter.after = 1625559108;
                 transactionFilter.sender = address;
-                // transactionFilter.receiver = address;
                 transactionFilter.status = TransactionStatus.success;
-                // transactionFilter.condition = QueryConditionOptions.should;
 
                 const transactionsList = await transactionService.getTransactions(transactionFilter);
                 expect(transactionsList).toBeInstanceOf(Array);
