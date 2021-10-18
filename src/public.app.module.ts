@@ -46,7 +46,7 @@ import { IdentitiesService } from './endpoints/identities/identities.service';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { ProxyController } from './endpoints/proxy/proxy.controller';
-import { TokenAssetService } from './common/token.asset.service';
+import { TokenAssetService } from './endpoints/tokens/token.asset.service';
 import { DataApiService } from './common/data.api.service';
 import { KeysController } from './endpoints/keys/keys.controller';
 import { KeysService } from './endpoints/keys/keys.service';

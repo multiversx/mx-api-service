@@ -6,7 +6,7 @@ import { join } from 'path';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { ApiConfigService } from './common/api.config.service';
 import { CachingService } from './common/caching.service';
-import { TokenAssetService } from './common/token.asset.service';
+import { TokenAssetService } from './endpoints/tokens/token.asset.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { FieldsInterceptor } from './interceptors/fields.interceptor';
 import { PrivateAppModule } from './private.app.module';
