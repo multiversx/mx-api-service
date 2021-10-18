@@ -22,6 +22,7 @@ import { EsdtService } from "src/common/esdt.service";
 import { NftQueryOptions } from "./entities/nft.query.options";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
 import { CollectionAccountFilter } from "./entities/collection.account.filter";
+import { ProxyService } from "../proxy/proxy.service";
 
 @Injectable()
 export class NftService {
@@ -30,6 +31,7 @@ export class NftService {
 
   constructor(
     private readonly gatewayService: GatewayService,
+    private readonly proxyService: ProxyService,
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly elasticService: ElasticService,
@@ -57,7 +59,9 @@ export class NftService {
 
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
     if (filter.creator) {
-      let creatorResult = await this.gatewayService.get(`address/${filter.creator}/esdts-with-role/ESDTRoleNFTCreate`);
+      let creatorResult = await (this.apiConfigService.getUseProxyFlag()
+        ? this.proxyService.getEsdtsWithRole(filter.creator, 'ESDTRoleNFTCreate')
+        : this.gatewayService.get(`address/${filter.creator}/esdts-with-role/ESDTRoleNFTCreate`));
       filter.identifiers = creatorResult.tokens;
     }
 
@@ -110,7 +114,7 @@ export class NftService {
   }
 
   private async getSftSupplyRaw(identifier: string): Promise<string> {
-    const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`);
+    const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`); // TODO switch to proxy service
 
     return supply;
   }
@@ -288,8 +292,12 @@ export class NftService {
   }
 
   private async getFilteredCollectionsForAddress(address: string, filter: CollectionAccountFilter): Promise<NftCollectionAccount[]> {
-    let esdtResult = await this.gatewayService.get(`address/${address}/registered-nfts`);
-    let rolesResult = await this.gatewayService.get(`address/${address}/esdts/roles`);
+    let esdtResult = await (this.apiConfigService.getUseProxyFlag()
+      ? this.proxyService.getRegisteredNfts(address)
+      : this.gatewayService.get(`address/${address}/registered-nfts`));
+    let rolesResult = await (this.apiConfigService.getUseProxyFlag()
+      ? this.proxyService.getEsdtsRoles(address)
+      : this.gatewayService.get(`address/${address}/esdts/roles`));
 
     let tokenIdentifiers = esdtResult.tokens;
     if (tokenIdentifiers.length === 0) {

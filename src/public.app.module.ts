@@ -70,6 +70,7 @@ import { NftService } from './endpoints/nfts/nft.service';
 import { EsdtService } from './common/esdt.service';
 import { UsernameController } from './endpoints/usernames/usernames.controller';
 import { UsernameService } from './endpoints/usernames/username.service';
+import { ProxyService } from './endpoints/proxy/proxy.service';
 
 @Module({
   imports: [
@@ -106,7 +107,7 @@ import { UsernameService } from './endpoints/usernames/username.service';
   providers: [
     NetworkService, ApiConfigService, AccountService, ElasticService, GatewayService, TransactionService,
     TokenService, BlockService, MiniBlockService, RoundService, NodeService, VmQueryService,
-    CachingService, KeybaseService, ProviderService,
+    CachingService, KeybaseService, ProviderService, ProxyService,
     StakeService, LoggingInterceptor, ApiService, ProfilerService, DelegationLegacyService,
     DelegationService, CacheConfigService, CachingInterceptor, ShardService, MetricsService, IdentitiesService,
     TokenAssetService, DataApiService, KeysService, WaitingListService, BlsService, TagService, ExtrasApiService,
@@ -115,7 +116,7 @@ import { UsernameService } from './endpoints/usernames/username.service';
     TransactionPriceService, NftService, EsdtService, UsernameService,
   ],
   exports: [
-    ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, MetricsService, NodeService,
+    ApiConfigService, RoundService, CachingService, TransactionService, GatewayService, ProxyService, MetricsService, NodeService,
     ShardService, IdentitiesService, ProviderService, KeybaseService, DataApiService, ApiService,
     BlsService, NetworkService, AccountService, EsdtService,
   ]

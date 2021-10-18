@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { MetricsService } from "src/endpoints/metrics/metrics.service";
+import { ProxyService } from "src/endpoints/proxy/proxy.service";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
@@ -16,6 +17,7 @@ export class EsdtService {
 
   constructor(
     private readonly gatewayService: GatewayService,
+    private readonly proxyService: ProxyService,
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
@@ -26,7 +28,9 @@ export class EsdtService {
 
   private async getAllEsdtsForAddressRaw(address: string): Promise<{ [ key: string]: any }> {
     try {
-      let esdtResult = await this.gatewayService.get(`address/${address}/esdt`);
+      let esdtResult = await (this.apiConfigService.getUseProxyFlag()
+        ? this.proxyService.getAllEsdts(address)
+        : this.gatewayService.get(`address/${address}/esdt`));
       return esdtResult.esdts;
     } catch (error: any) {
       let errorMessage = error?.response?.data?.error;
@@ -81,7 +85,9 @@ export class EsdtService {
   async getAllEsdtTokensRaw(): Promise<TokenDetailed[]> {
     let tokensIdentifiers: string[];
     try {
-      const getFungibleTokensResult = await this.gatewayService.get('network/esdt/fungible-tokens');
+      const getFungibleTokensResult = await (this.apiConfigService.getUseProxyFlag()
+        ? this.proxyService.getFungibleTokens()
+        : this.gatewayService.get('network/esdt/fungible-tokens'));
 
       tokensIdentifiers = getFungibleTokensResult.tokens;
     } catch (error) {

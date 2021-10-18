@@ -1,17 +1,17 @@
-export class Node {
+export class Observer {
   shardId: number = 0;
   address: string = '';
 }
 
 export class CircularQueueProvider {
-  private _nodes: Node[];
-  private _nodesMap: Map<number, Node[]>;
+  private _nodes: Observer[];
+  private _nodesMap: Map<number, Observer[]>;
   private _countersMap: Map<number, number>;
   private _counterForAllNodes: number;
 
-  constructor(nodes: Node[]) {
+  constructor(nodes: Observer[]) {
     if (nodes.length === 0) {
-      throw new Error('ErrEmptyObserversList');
+      throw new Error('Empty observers list');
     }
 
     this._nodesMap = this.initNodesMap(nodes);
@@ -20,10 +20,12 @@ export class CircularQueueProvider {
     this._countersMap = new Map();
   }
 
-  getNodesByShardId(shardId: number): Node[] {
+  getNodesByShardId(shardId: number): Observer[] {
     const nodesForShard = this._nodesMap.get(shardId) ?? [];
     if (nodesForShard.length === 0) {
-      throw new Error('ErrShardNotAvailable');
+      throw new Error(
+        "The specified shard ID does not exist in proxy's configuration",
+      );
     }
 
     const index = this.computeCounterForShard(shardId, nodesForShard.length);
@@ -31,7 +33,7 @@ export class CircularQueueProvider {
     return nodes;
   }
 
-  getAllNodes(): Node[] {
+  getAllNodes(): Observer[] {
     const index = this.computeCounterForNodes(this._nodes.length);
     const nodes = this.getArrayCycle(this._nodes, index);
     return nodes;
@@ -49,7 +51,7 @@ export class CircularQueueProvider {
     return this._counterForAllNodes;
   }
 
-  private initNodesMap(nodes: Node[]): Map<number, Node[]> {
+  private initNodesMap(nodes: Observer[]): Map<number, Observer[]> {
     const nodesMap = new Map();
     for (const node of nodes) {
       if (!nodesMap.has(node.shardId)) {
@@ -60,7 +62,7 @@ export class CircularQueueProvider {
     return nodesMap;
   }
 
-  private initAllNodes(nodesMap: Map<number, Node[]>): Node[] {
+  private initAllNodes(nodesMap: Map<number, Observer[]>): Observer[] {
     const allNodes = [];
     const sortedShards = Array.from(nodesMap.keys()).sort();
     const counterMap = new Map<number, number>(

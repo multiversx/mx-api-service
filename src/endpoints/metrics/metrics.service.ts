@@ -2,6 +2,7 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { register, Histogram, Gauge, collectDefaultMetrics } from 'prom-client';
 import { ApiConfigService } from "src/common/api.config.service";
 import { GatewayService } from "src/common/gateway.service";
+import { ProxyService } from "../proxy/proxy.service";
 
 @Injectable()
 export class MetricsService {
@@ -22,7 +23,9 @@ export class MetricsService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => GatewayService))
-    private readonly gatewayService: GatewayService
+    private readonly gatewayService: GatewayService,
+    @Inject(forwardRef(() => ProxyService))
+    private readonly proxyService: ProxyService
   ) {
     if (!MetricsService.apiCallsHistogram) {
       MetricsService.apiCallsHistogram = new Histogram({
@@ -167,7 +170,9 @@ export class MetricsService {
   }
 
   async getCurrentNonce(shardId: number): Promise<number> {
-    let shardInfo = await this.gatewayService.get(`network/status/${shardId}`);
+    let shardInfo = await (this.apiConfigService.getUseProxyFlag()
+      ? this.proxyService.getNetworkStatus(shardId)
+      : this.gatewayService.get(`network/status/${shardId}`));
     return shardInfo.status.erd_nonce;
   }
 }

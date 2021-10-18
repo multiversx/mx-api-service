@@ -16,6 +16,7 @@ import { AddressUtils } from 'src/utils/address.utils';
 import { ApiUtils } from 'src/utils/api.utils';
 import { BinaryUtils } from 'src/utils/binary.utils';
 import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
+import { ProxyService } from '../proxy/proxy.service';
 
 @Injectable()
 export class AccountService {
@@ -24,6 +25,7 @@ export class AccountService {
   constructor(
     private readonly elasticService: ElasticService, 
     private readonly gatewayService: GatewayService,
+    private readonly proxyService: ProxyService,
     @Inject(forwardRef(() => CachingService))
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
@@ -56,7 +58,9 @@ export class AccountService {
         },
       ] = await Promise.all([
         this.elasticService.getCount('transactions', elasticQuery),
-        this.gatewayService.get(`address/${address}`)
+        this.apiConfigService.getUseProxyFlag()
+          ? this.proxyService.getAccount(address)
+          : this.gatewayService.get(`address/${address}`)
       ]);
 
       let shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
@@ -118,7 +122,9 @@ export class AccountService {
         undefined,
         []
       ),
-      this.gatewayService.get(`network/status/${this.apiConfigService.getDelegationContractShardId()}`)
+      this.apiConfigService.getUseProxyFlag()
+        ? this.proxyService.getNetworkStatus(this.apiConfigService.getDelegationContractShardId())
+        : this.gatewayService.get(`network/status/${this.apiConfigService.getDelegationContractShardId()}`)
     ]);
 
     const numBlocksBeforeUnBond = parseInt(this.decode(encodedNumBlocksBeforeUnBond));

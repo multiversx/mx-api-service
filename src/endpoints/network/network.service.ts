@@ -1,7 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Stats } from 'src/endpoints/network/entities/stats';
 import { ApiConfigService } from 'src/common/api.config.service';
-import { ApiService } from 'src/common/api.service';
 import { CachingService } from 'src/common/caching.service';
 import { DataApiService } from 'src/common/data.api.service';
 import { DataQuoteType } from 'src/common/entities/data.quote.type';
@@ -18,6 +17,7 @@ import { NetworkConstants } from './entities/constants';
 import { Economics } from './entities/economics';
 import { NetworkConfig } from './entities/network.config';
 import { StakeService } from '../stake/stake.service';
+import { ProxyService } from '../proxy/proxy.service';
 
 @Injectable()
 export class NetworkService {
@@ -25,19 +25,17 @@ export class NetworkService {
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
+    private readonly proxyService: ProxyService,
     private readonly vmQueryService: VmQueryService,
     private readonly blockService: BlockService,
     private readonly accountService: AccountService,
     private readonly transactionService: TransactionService,
     private readonly dataApiService: DataApiService,
-    private readonly apiService: ApiService,
     @Inject(forwardRef( () => StakeService))
     private readonly stakeService: StakeService
   ) {}
 
   async getConstants(): Promise<NetworkConstants> {
-    const gatewayUrl = this.apiConfigService.getGatewayUrl();
-
     const {
       data: {
         data: {
@@ -52,7 +50,9 @@ export class NetworkService {
           },
         },
       },
-    } = await this.apiService.get(`${gatewayUrl}/network/config`);
+    } = await (this.apiConfigService.getUseProxyFlag()
+      ? this.proxyService.getNetworkConfig()
+      : this.gatewayService.get('network/config'));
 
     return {
       chainId,
@@ -72,8 +72,12 @@ export class NetworkService {
         status: { erd_rounds_passed_in_current_epoch },
       },
     ] = await Promise.all([
-      this.gatewayService.get('network/config'),
-      this.gatewayService.get('network/status/4294967295'),
+      this.apiConfigService.getUseProxyFlag()
+        ? this.proxyService.getNetworkConfig()
+        : this.gatewayService.get('network/config'),
+      this.apiConfigService.getUseProxyFlag()
+        ? this.proxyService.getNetworkStatus(this.apiConfigService.getMetaChainShardId())
+        : this.gatewayService.get(`network/status/${this.apiConfigService.getMetaChainShardId()}`),
     ]);
 
     const roundsPassed = erd_rounds_passed_in_current_epoch;
@@ -104,10 +108,12 @@ export class NetworkService {
       priceValue,
       marketCapValue,
     ] = await Promise.all([
-      this.gatewayService.get(
-        `address/${this.apiConfigService.getAuctionContractAddress()}`,
-      ),
-      this.gatewayService.get('network/economics'),
+      this.apiConfigService.getUseProxyFlag()
+        ? this.proxyService.getAccount(this.apiConfigService.getAuctionContractAddress())
+        : this.gatewayService.get(`address/${this.apiConfigService.getAuctionContractAddress()}`),
+      this.apiConfigService.getUseProxyFlag()
+        ? this.proxyService.getEconomics()
+        : this.gatewayService.get('network/economics'),
       this.vmQueryService.vmQuery(
         this.apiConfigService.getDelegationContractAddress(),
         'getTotalStakeByType',
@@ -166,8 +172,12 @@ export class NetworkService {
       accounts,
       transactions,
     ] = await Promise.all([
-      this.gatewayService.get('network/config'),
-      this.gatewayService.get(`network/status/${metaChainShard}`),
+      this.apiConfigService.getUseProxyFlag()
+        ? this.proxyService.getNetworkConfig()
+        : this.gatewayService.get('network/config'),
+      this.apiConfigService.getUseProxyFlag()
+        ? this.proxyService.getNetworkStatus(metaChainShard)
+        : this.gatewayService.get(`network/status/${metaChainShard}`),
       this.blockService.getBlocksCount(new BlockFilter()),
       this.accountService.getAccountsCount(),
       this.transactionService.getTransactionCount(new TransactionFilter()),
@@ -195,8 +205,10 @@ export class NetworkService {
     const stake = await this.stakeService.getGlobalStake();
     const {
       account: { balance: stakedBalance },
-    } = await this.gatewayService.get(
-      `address/${this.apiConfigService.getAuctionContractAddress()}`,
+    } = await (
+      this.apiConfigService.getUseProxyFlag()
+        ? this.proxyService.getAccount(this.apiConfigService.getAuctionContractAddress())
+        : this.gatewayService.get(`address/${this.apiConfigService.getAuctionContractAddress()}`)
     );
     let [activeStake] = await this.vmQueryService.vmQuery(
       this.apiConfigService.getDelegationContractAddress(),

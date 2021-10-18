@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { Observer } from "src/utils/circular-queue-provider";
 
 @Injectable()
 export class ApiConfigService {
@@ -138,6 +139,10 @@ export class ApiConfigService {
 
   getUseTracingFlag(): boolean {
     return this.configService.get<boolean>('flags.useTracing') ?? false;
+  }
+
+  getUseProxyFlag(): boolean {
+    return this.configService.get<boolean>('flags.useProxy') ?? false;
   }
 
   getProvidersUrl(): string {
@@ -310,5 +315,9 @@ export class ApiConfigService {
     }
 
     return mockPath;
+  }
+
+  getObservers(): Observer[] {
+    return this.configService.get<Observer[]>('observers') ?? [];
   }
 }
