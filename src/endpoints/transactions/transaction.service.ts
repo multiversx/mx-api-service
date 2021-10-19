@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ApiConfigService } from 'src/common/api.config.service';
 import { AbstractQuery } from 'src/common/entities/elastic/abstract.query';
-import { ElasticPagination } from 'src/common/entities/elastic/elastic.pagination';
 import { ElasticQuery } from 'src/common/entities/elastic/elastic.query';
 import { ElasticSortOrder } from 'src/common/entities/elastic/elastic.sort.order';
 import { ElasticSortProperty } from 'src/common/entities/elastic/elastic.sort.property';
@@ -25,6 +24,8 @@ import { TransactionPriceService } from './transaction.price.service';
 import { TransactionQueryOptions } from './entities/transactions.query.options';
 import { SmartContractResult } from './entities/smart.contract.result';
 import { TermsQuery } from 'src/common/entities/elastic/terms.query';
+import { TransactionLog } from './entities/transaction.log';
+import { QueryPagination } from 'src/common/entities/query.pagination';
 
 @Injectable()
 export class TransactionService {
@@ -42,93 +43,85 @@ export class TransactionService {
     this.logger = new Logger(TransactionService.name);
   }
 
-  private sameSenderAndReceiver(sender: string | undefined, receiver: string | undefined): boolean {
-    return sender !== undefined && receiver !== undefined && sender === receiver;
-  }
-  private buildTransactionFilterQuery(filter: TransactionFilter): { should: AbstractQuery[], must: AbstractQuery[] } {
-    const shouldQueries: AbstractQuery[] = [];
-    const mustQueries: AbstractQuery[] = [];
+  private buildTransactionFilterQuery(filter: TransactionFilter, address?: string): ElasticQuery {
+    let queries: AbstractQuery[] = [];
+    let shouldQueries: AbstractQuery[] = [];
+    let mustQueries: AbstractQuery[] = [];
 
-    if (this.sameSenderAndReceiver(filter.sender, filter.receiver)) {
-      shouldQueries.push(QueryType.Match('sender', filter.sender));
-      shouldQueries.push(QueryType.Match('receiver', filter.receiver));
+    if (address) {
+      shouldQueries.push(QueryType.Match('sender', address));
+      shouldQueries.push(QueryType.Match('receiver', address));
     }
-    else {
-      if (filter.sender) {
-        mustQueries.push(QueryType.Match('sender', filter.sender));
-      }
-      if (filter.receiver) {
-        mustQueries.push(QueryType.Match('receiver', filter.receiver));
-      }
+
+    if (filter.sender) {
+      queries.push(QueryType.Match('sender', filter.sender));
+    }
+
+    if (filter.receiver) {
+      queries.push(QueryType.Match('receiver', filter.receiver));
     }
 
     if (filter.token) {
-      mustQueries.push(QueryType.Match('tokens', filter.token, QueryOperator.AND));
+      queries.push(QueryType.Match('tokens', filter.token, QueryOperator.AND));
     }
 
     if (filter.senderShard !== undefined) {
-      mustQueries.push(QueryType.Match('senderShard', filter.senderShard));
+      queries.push(QueryType.Match('senderShard', filter.senderShard));
     }
 
     if (filter.receiverShard !== undefined) {
-      mustQueries.push(QueryType.Match('receiverShard', filter.receiverShard));
+      queries.push(QueryType.Match('receiverShard', filter.receiverShard));
     }
 
     if (filter.miniBlockHash) {
-      mustQueries.push(QueryType.Match('miniBlockHash', filter.miniBlockHash));
+      queries.push(QueryType.Match('miniBlockHash', filter.miniBlockHash));
     }
 
     if (filter.hashes) {
       const hashArray = filter.hashes.split(',');
-      mustQueries.push(QueryType.Should(hashArray.map(hash => QueryType.Match('_id', hash))));
+      queries.push(QueryType.Should(hashArray.map(hash => QueryType.Match('_id', hash))));
     }
 
     if (filter.status) {
-      mustQueries.push(QueryType.Match('status', filter.status));
+      queries.push(QueryType.Match('status', filter.status));
     }
 
     if (filter.search) {
-      mustQueries.push(QueryType.Wildcard('data', `*${filter.search}*`));
+      queries.push(QueryType.Wildcard('data', `*${filter.search}*`));
     }
 
-    return {
-      should: shouldQueries,
-      must: mustQueries,
-    };
+    if (filter.condition === QueryConditionOptions.should) {
+      shouldQueries = [...shouldQueries, ...queries];
+    } else {
+      mustQueries = queries;
+    }
+
+    let elasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.should, shouldQueries)
+      .withCondition(QueryConditionOptions.must, mustQueries);
+
+
+    if (filter.before || filter.after) {
+      elasticQuery = elasticQuery
+        .withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
+    }
+
+    return elasticQuery;
   }
 
   async getTransactionCount(filter: TransactionFilter): Promise<number> {
-    const elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, this.buildTransactionFilterQuery(filter).must)
-      .withCondition(QueryConditionOptions.should, this.buildTransactionFilterQuery(filter).should)
-
-    if (filter.before || filter.after) {
-      elasticQuery
-        .withFilter([QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0)]);
-    }
+    let elasticQuery = this.buildTransactionFilterQuery(filter);
 
     return await this.elasticService.getCount('transactions', elasticQuery);
   }
 
-  async getTransactions(filter: TransactionFilter, queryOptions?: TransactionQueryOptions): Promise<(Transaction | TransactionDetailed)[]> {
-    const { from, size } = filter;
-    const pagination: ElasticPagination = {
-      from, size
-    };
-
+  async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string): Promise<(Transaction | TransactionDetailed)[]> {
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descending };
     const nonce: ElasticSortProperty = { name: 'nonce', order: ElasticSortOrder.descending };
 
-    const elasticQuery = ElasticQuery.create()
-      .withPagination(pagination)
-      .withCondition(QueryConditionOptions.must, this.buildTransactionFilterQuery(filter).must)
-      .withCondition(QueryConditionOptions.should, this.buildTransactionFilterQuery(filter).should)
+    let elasticQuery = this.buildTransactionFilterQuery(filter, address)
+      .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
-
-    if (filter.before || filter.after) {
-      elasticQuery
-        .withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
-    }
 
     let elasticTransactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
 
@@ -159,7 +152,7 @@ export class TransactionService {
       }
     }
 
-    if (queryOptions && queryOptions.withScResults && elasticTransactions.some(x => x.hasScResults === true)) {
+    if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations) && elasticTransactions.some(x => x.hasScResults === true)) {
       // Add scResults to transaction details
 
       const elasticQuery = ElasticQuery.create()
@@ -178,7 +171,20 @@ export class TransactionService {
       for (let transaction of transactions) {
         const transactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), transaction);
         const transactionsScResults = scResults.filter(({originalTxHash}) => originalTxHash == transaction.txHash);
-        transactionDetailed.results = transactionsScResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+        
+        if (queryOptions.withScResults) {
+          transactionDetailed.results = transactionsScResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+        }
+
+        if (queryOptions.withOperations) {
+          const hashes: string[] = [transactionDetailed.txHash];
+          for (let scResult of transactionsScResults) {
+            hashes.push(scResult.hash);
+          }
+          const logs = await this.transactionGetService.getTransactionLogsFromElastic(hashes);
+          let transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
+          transactionDetailed.operations = this.tokenTransferService.getOperationsForTransactionLogs(transactionDetailed.txHash, transactionLogs);
+        }
 
         detailedTransactions.push(transactionDetailed);
       }
