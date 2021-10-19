@@ -1,3 +1,4 @@
+import { QueryConditionOptions } from "src/common/entities/elastic/query.condition.options"
 import { TransactionStatus } from "./transaction.status"
 
 export class TransactionFilter {
@@ -12,4 +13,6 @@ export class TransactionFilter {
     search?: string
     before?: number
     after?: number
+    condition?: QueryConditionOptions
+    self?: boolean
 }

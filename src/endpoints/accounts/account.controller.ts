@@ -529,7 +529,6 @@ export class AccountController {
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false  })
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false  })
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false  })
-  @ApiQuery({ name: 'condition', description: 'Condition type (should/must)', required: false  })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false  })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false  })
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false  })
@@ -537,6 +536,7 @@ export class AccountController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+  @ApiQuery({ name: 'self', description: 'Return self transactions for address', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
   async getAccountTransactions(
@@ -554,12 +554,13 @@ export class AccountController {
     @Query('after', ParseOptionalIntPipe) after: number | undefined, 
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('self', new ParseOptionalBoolPipe) self: boolean | undefined,
     @Query('withScResults', new ParseOptionalBoolPipe) withScResults: boolean | undefined,
     @Query('withOperations', new ParseOptionalBoolPipe) withOperations: boolean | undefined,) {
     try {
       return await this.transactionService.getTransactions({
-        sender: sender,
-        receiver: receiver,
+        sender: sender ?? address,
+        receiver: receiver ?? address,
         token,
         senderShard,
         receiverShard,
@@ -569,7 +570,8 @@ export class AccountController {
         search,
         before,
         after,
-      }, { from, size }, { sender: address, receiver: address }, { withScResults, withOperations });
+        self,
+      }, { from, size }, { withScResults, withOperations });
     } catch (error) {
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);

@@ -43,81 +43,102 @@ export class TransactionService {
     this.logger = new Logger(TransactionService.name);
   }
 
-  private buildTransactionFilterQuery(filter: TransactionFilter): AbstractQuery[] {
-    const result: AbstractQuery[] = [];
+  private buildTransactionFilterQuery(filter: TransactionFilter): { should: AbstractQuery[], must: AbstractQuery[] } {
+    let queries: AbstractQuery[] = [];
+    let shouldQueries: AbstractQuery[] = [];
+    let mustQueries: AbstractQuery[] = [];
 
-    if (filter.sender) {
-      result.push(QueryType.Match('sender', filter.sender));
-    }
-
-    if (filter.receiver) {
-      result.push(QueryType.Match('receiver', filter.receiver));
+    if (filter.sender && filter.receiver && filter.sender === filter.receiver) {
+    //Self transactions or all transactions for address
+      if (filter.self) {
+        if (filter.sender) {
+          queries.push(QueryType.Match('sender', filter.sender));
+        }
+    
+        if (filter.receiver) {
+          queries.push(QueryType.Match('receiver', filter.receiver));
+        }
+      }  else {
+        shouldQueries.push(QueryType.Match('sender', filter.sender));
+        shouldQueries.push(QueryType.Match('receiver', filter.receiver));
+      }
+    } else {
+      if (filter.sender) {
+        queries.push(QueryType.Match('sender', filter.sender));
+      }
+  
+      if (filter.receiver) {
+        queries.push(QueryType.Match('receiver', filter.receiver));
+      }
     }
 
     if (filter.token) {
-      result.push(QueryType.Match('tokens', filter.token, QueryOperator.AND));
+      queries.push(QueryType.Match('tokens', filter.token, QueryOperator.AND));
     }
 
     if (filter.senderShard !== undefined) {
-      result.push(QueryType.Match('senderShard', filter.senderShard));
+      queries.push(QueryType.Match('senderShard', filter.senderShard));
     }
 
     if (filter.receiverShard !== undefined) {
-      result.push(QueryType.Match('receiverShard', filter.receiverShard));
+      queries.push(QueryType.Match('receiverShard', filter.receiverShard));
     }
 
     if (filter.miniBlockHash) {
-      result.push(QueryType.Match('miniBlockHash', filter.miniBlockHash));
+      queries.push(QueryType.Match('miniBlockHash', filter.miniBlockHash));
     }
 
     if (filter.hashes) {
       const hashArray = filter.hashes.split(',');
-      result.push(QueryType.Should(hashArray.map(hash => QueryType.Match('_id', hash))));
+      queries.push(QueryType.Should(hashArray.map(hash => QueryType.Match('_id', hash))));
     }
 
     if (filter.status) {
-      result.push(QueryType.Match('status', filter.status));
+      queries.push(QueryType.Match('status', filter.status));
     }
 
     if (filter.search) {
-      result.push(QueryType.Wildcard('data', `*${filter.search}*`));
+      queries.push(QueryType.Wildcard('data', `*${filter.search}*`));
     }
 
-    return result;
+    if (filter.condition === QueryConditionOptions.should) {
+      shouldQueries = [...shouldQueries, ...queries];
+    } else {
+      mustQueries = queries;
+    }
+
+    return {
+      should: shouldQueries,
+      must: mustQueries
+    };
   }
 
-  async getTransactionCount(mustFilter: TransactionFilter, shouldFilter?: TransactionFilter): Promise<number> {
+  async getTransactionCount(filter: TransactionFilter): Promise<number> {
     let elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, this.buildTransactionFilterQuery(mustFilter));
+      .withCondition(QueryConditionOptions.must, this.buildTransactionFilterQuery(filter).must)
+      .withCondition(QueryConditionOptions.should, this.buildTransactionFilterQuery(filter).should);
 
-    if (shouldFilter) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.should, this.buildTransactionFilterQuery(mustFilter))
-    }
-
-    if (mustFilter.before || mustFilter.after) {
+    if (filter.before || filter.after) {
       elasticQuery = elasticQuery
-        .withFilter([QueryType.Range('timestamp', mustFilter.before ?? 0, mustFilter.after ?? 0)]);
+        .withFilter([QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0)]);
     }
 
     return await this.elasticService.getCount('transactions', elasticQuery);
   }
 
-  async getTransactions(mustFilter: TransactionFilter, pagination: QueryPagination, shouldFilter?: TransactionFilter, queryOptions?: TransactionQueryOptions): Promise<(Transaction | TransactionDetailed)[]> {
+  async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions): Promise<(Transaction | TransactionDetailed)[]> {
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descending };
     const nonce: ElasticSortProperty = { name: 'nonce', order: ElasticSortOrder.descending };
 
     let elasticQuery = ElasticQuery.create()
       .withPagination({ from: pagination.from, size: pagination.size })
-      .withCondition(QueryConditionOptions.must, this.buildTransactionFilterQuery(mustFilter))
+      .withCondition(QueryConditionOptions.must, this.buildTransactionFilterQuery(filter).must)
+      .withCondition(QueryConditionOptions.should, this.buildTransactionFilterQuery(filter).should)
       .withSort([timestamp, nonce]);
 
-    if (shouldFilter) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.should, this.buildTransactionFilterQuery(shouldFilter))
-    }
-
-    if (mustFilter.before || mustFilter.after) {
+    if (filter.before || filter.after) {
       elasticQuery
-        .withFilter([QueryType.Range('timestamp', mustFilter.before ?? Date.now(), mustFilter.after ?? 0)]);
+        .withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
     }
 
     let elasticTransactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
@@ -136,8 +157,8 @@ export class TransactionService {
       transactions.push(transaction);
     }
 
-    if (mustFilter.hashes) {
-      const txHashes: string[] = mustFilter.hashes.split(',');
+    if (filter.hashes) {
+      const txHashes: string[] = filter.hashes.split(',');
       const elasticHashes = elasticTransactions.map(({txHash}) => txHash);
       const missingHashes: string[] = txHashes.findMissingElements(elasticHashes);
       
