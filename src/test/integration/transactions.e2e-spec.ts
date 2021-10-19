@@ -6,6 +6,7 @@ import { TransactionService } from 'src/endpoints/transactions/transaction.servi
 import { TransactionFilter } from 'src/endpoints/transactions/entities/transaction.filter';
 import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
+import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
 
 describe('Transaction Service', () => {
     let transactionService: TransactionService;
@@ -116,7 +117,42 @@ describe('Transaction Service', () => {
                 }
             });
 
-            it(`should return a list with transactions for an address, in one date range, with success status`, async () => {
+            it(`should return transactions for an address`, async () => {
+                const address = transactionSender
+                const transactionFilter = new TransactionFilter();
+                transactionFilter.sender = address;
+                transactionFilter.receiver = address;
+                transactionFilter.condition = QueryConditionOptions.should;
+
+                const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+                expect(transactionsList).toBeInstanceOf(Array);
+    
+                for (let transaction of transactionsList) {
+                    expect(transaction).toHaveStructure(Object.keys(new Transaction()));
+                    if (transaction.sender !== address && transaction.receiver !== address) {
+                        expect(false);
+                    }
+                }
+            })
+
+            it(`should return transactions for an address with self transactions`, async () => {
+                const address = transactionSender
+                const transactionFilter = new TransactionFilter();
+                transactionFilter.sender = address;
+                transactionFilter.receiver = address;
+
+                const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+                expect(transactionsList).toBeInstanceOf(Array);
+    
+                for (let transaction of transactionsList) {
+                    expect(transaction).toHaveStructure(Object.keys(new Transaction()));
+                    if (transaction.sender !== address || transaction.receiver !== address) {
+                        expect(false);
+                    }
+                }
+            })
+
+            it(`should return a list with transactions where an address is sender, in one date range, with success status`, async () => {
                 const address = transactionSender
                 const transactionFilter = new TransactionFilter();
                 transactionFilter.after = 1625559108;
@@ -128,14 +164,13 @@ describe('Transaction Service', () => {
     
                 for (let transaction of transactionsList) {
                     expect(transaction).toHaveStructure(Object.keys(new Transaction()));
-                    if(transaction.sender !== address && transaction.receiver !== address)
-                    {
-                        expect(false);
-                    }
+                    expect(transaction.sender).toBe(address);
                     expect(transaction.timestamp).toBeGreaterThanOrEqual(transactionFilter.after);
                     expect(transaction.status).toBe(TransactionStatus.success);
                 }
             });
+
+
 
             it(`should return transactions with specific hashes`, async () => {
                 const hashes = '8149581fe858edf8971a73491ff4b26ce2532aa7951ffefafb7b7823ffacc182,56bdbc1a2e9e4dd60bb77c82a72c5b2b77ef51b8decf97f4024fa223b9b64777,INVALIDTXHASH';
