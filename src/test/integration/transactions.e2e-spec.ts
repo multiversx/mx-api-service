@@ -117,6 +117,30 @@ describe('Transaction Service', () => {
                 }
             });
 
+            it(`should return a list with transactions after one date`, async () => {
+                const transactionFilter = new TransactionFilter();
+                transactionFilter.after = 1625559108;
+                const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+                expect(transactionsList).toBeInstanceOf(Array);
+    
+                for (let transaction of transactionsList) {
+                    expect(transaction).toHaveStructure(Object.keys(new Transaction()));
+                    expect(transaction.timestamp).toBeGreaterThanOrEqual(transactionFilter.after);
+                }
+            });
+
+            it(`should return a list with transactions before one date`, async () => {
+                const transactionFilter = new TransactionFilter();
+                transactionFilter.before = 1625559108;
+                const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+                expect(transactionsList).toBeInstanceOf(Array);
+    
+                for (let transaction of transactionsList) {
+                    expect(transaction).toHaveStructure(Object.keys(new Transaction()));
+                    expect(transaction.timestamp).toBeLessThanOrEqual(transactionFilter.before);
+                }
+            });
+
             it(`should return transactions for an address`, async () => {
                 const address = transactionSender
                 const transactionFilter = new TransactionFilter();
