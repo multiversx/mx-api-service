@@ -15,14 +15,6 @@ function buildElasticIndexerSort(sorts: ElasticSortProperty[]): any[] {
   return sorts.map((sortProp: ElasticSortProperty) => ({[sortProp.name]: { order: sortProp.order}}));
 };
 
-function getConditionOption(condition: QueryCondition): QueryConditionOptions {
-  if (condition.should.length !== 0 && condition.must.length === 0) {
-    return QueryConditionOptions.should;
-  }
-
-  return QueryConditionOptions.must;
-}
-
 export class ElasticQuery {
   pagination: ElasticPagination | undefined = undefined;
   sort: ElasticSortProperty[] = [];
@@ -66,7 +58,6 @@ export class ElasticQuery {
 
   toJson() {
     const elasticSort = buildElasticIndexerSort(this.sort);
-    const elasticCondition = getConditionOption(this.condition);
   
     const elasticQuery = {
       ...this.pagination,
@@ -77,7 +68,7 @@ export class ElasticQuery {
           must: this.condition.must.map(query => query.getQuery()),
           should: this.condition.should.map(query => query.getQuery()),
           must_not: this.condition.must_not.map(query => query.getQuery()),
-          minimum_should_match: elasticCondition === QueryConditionOptions.should ? 1 : undefined,
+          minimum_should_match: this.condition.should.length !== 0 ? 1 : undefined,
         },
         terms: this.terms?.getQuery(),
       }
