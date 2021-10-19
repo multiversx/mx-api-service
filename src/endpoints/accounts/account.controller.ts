@@ -558,8 +558,8 @@ export class AccountController {
     @Query('withOperations', new ParseOptionalBoolPipe) withOperations: boolean | undefined,) {
     try {
       return await this.transactionService.getTransactions({
-        sender: sender ?? address,
-        receiver: receiver ?? address,
+        sender: sender,
+        receiver: receiver,
         token,
         senderShard,
         receiverShard,
@@ -569,9 +569,7 @@ export class AccountController {
         search,
         before,
         after,
-        from,
-        size
-      }, { withScResults, withOperations });
+      }, { from, size }, { sender: address, receiver: address }, { withScResults, withOperations });
     } catch (error) {
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);

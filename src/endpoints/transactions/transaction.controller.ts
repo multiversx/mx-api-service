@@ -35,7 +35,7 @@ export class TransactionController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
-  @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false })
+  @ApiQuery({ name: 'withScResults', description: 'Return results for transactions', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
   getTransactions(
     @Query('sender') sender: string | undefined, 
@@ -66,9 +66,7 @@ export class TransactionController {
         search,
         before,
         after,
-        from, 
-        size
-    }, { withScResults, withOperations });
+    }, { from, size }, undefined, { withScResults, withOperations });
   }
 
   @Get("/transactions/count")
@@ -83,8 +81,6 @@ export class TransactionController {
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false  })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
   getTransactionCount(
     @Query('sender') sender: string | undefined, 
     @Query('receiver') receiver: string | undefined, 
@@ -97,8 +93,6 @@ export class TransactionController {
     @Query('search') search: string | undefined, 
     @Query('before', ParseOptionalIntPipe) before: number | undefined, 
     @Query('after', ParseOptionalIntPipe) after: number | undefined, 
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
-    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<number> {
     return this.transactionService.getTransactionCount({
       sender, 
@@ -112,8 +106,6 @@ export class TransactionController {
       search,
       before,
       after,
-      from, 
-      size
     });  
   }
 
@@ -131,8 +123,6 @@ export class TransactionController {
     @Query('search') search: string | undefined, 
     @Query('before', ParseOptionalIntPipe) before: number | undefined, 
     @Query('after', ParseOptionalIntPipe) after: number | undefined, 
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
-    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<number> {
     return this.transactionService.getTransactionCount({
       sender, 
@@ -146,8 +136,6 @@ export class TransactionController {
       search,
       before,
       after,
-      from, 
-      size
     });  
   }
 

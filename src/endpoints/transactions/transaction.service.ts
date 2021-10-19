@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ApiConfigService } from 'src/common/api.config.service';
 import { AbstractQuery } from 'src/common/entities/elastic/abstract.query';
-import { ElasticPagination } from 'src/common/entities/elastic/elastic.pagination';
 import { ElasticQuery } from 'src/common/entities/elastic/elastic.query';
 import { ElasticSortOrder } from 'src/common/entities/elastic/elastic.sort.order';
 import { ElasticSortProperty } from 'src/common/entities/elastic/elastic.sort.property';
@@ -26,6 +25,7 @@ import { TransactionQueryOptions } from './entities/transactions.query.options';
 import { SmartContractResult } from './entities/smart.contract.result';
 import { TermsQuery } from 'src/common/entities/elastic/terms.query';
 import { TransactionLog } from './entities/transaction.log';
+import { QueryPagination } from 'src/common/entities/query.pagination';
 
 @Injectable()
 export class TransactionService {
@@ -43,92 +43,81 @@ export class TransactionService {
     this.logger = new Logger(TransactionService.name);
   }
 
-  private sameSenderAndReceiver(sender: string | undefined, receiver: string | undefined): boolean {
-    return sender !== undefined && receiver !== undefined && sender === receiver;
-  }
-  private buildTransactionFilterQuery(filter: TransactionFilter): { should: AbstractQuery[], must: AbstractQuery[] } {
-    const shouldQueries: AbstractQuery[] = [];
-    const mustQueries: AbstractQuery[] = [];
+  private buildTransactionFilterQuery(filter: TransactionFilter): AbstractQuery[] {
+    const result: AbstractQuery[] = [];
 
-    if (this.sameSenderAndReceiver(filter.sender, filter.receiver)) {
-      shouldQueries.push(QueryType.Match('sender', filter.sender));
-      shouldQueries.push(QueryType.Match('receiver', filter.receiver));
+    if (filter.sender) {
+      result.push(QueryType.Match('sender', filter.sender));
     }
-    else {
-      if (filter.sender) {
-        mustQueries.push(QueryType.Match('sender', filter.sender));
-      }
-      if (filter.receiver) {
-        mustQueries.push(QueryType.Match('receiver', filter.receiver));
-      }
+
+    if (filter.receiver) {
+      result.push(QueryType.Match('receiver', filter.receiver));
     }
 
     if (filter.token) {
-      mustQueries.push(QueryType.Match('tokens', filter.token, QueryOperator.AND));
+      result.push(QueryType.Match('tokens', filter.token, QueryOperator.AND));
     }
 
     if (filter.senderShard !== undefined) {
-      mustQueries.push(QueryType.Match('senderShard', filter.senderShard));
+      result.push(QueryType.Match('senderShard', filter.senderShard));
     }
 
     if (filter.receiverShard !== undefined) {
-      mustQueries.push(QueryType.Match('receiverShard', filter.receiverShard));
+      result.push(QueryType.Match('receiverShard', filter.receiverShard));
     }
 
     if (filter.miniBlockHash) {
-      mustQueries.push(QueryType.Match('miniBlockHash', filter.miniBlockHash));
+      result.push(QueryType.Match('miniBlockHash', filter.miniBlockHash));
     }
 
     if (filter.hashes) {
       const hashArray = filter.hashes.split(',');
-      mustQueries.push(QueryType.Should(hashArray.map(hash => QueryType.Match('_id', hash))));
+      result.push(QueryType.Should(hashArray.map(hash => QueryType.Match('_id', hash))));
     }
 
     if (filter.status) {
-      mustQueries.push(QueryType.Match('status', filter.status));
+      result.push(QueryType.Match('status', filter.status));
     }
 
     if (filter.search) {
-      mustQueries.push(QueryType.Wildcard('data', `*${filter.search}*`));
+      result.push(QueryType.Wildcard('data', `*${filter.search}*`));
     }
 
-    return {
-      should: shouldQueries,
-      must: mustQueries,
-    };
+    return result;
   }
 
-  async getTransactionCount(filter: TransactionFilter): Promise<number> {
-    const elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, this.buildTransactionFilterQuery(filter).must)
-      .withCondition(QueryConditionOptions.should, this.buildTransactionFilterQuery(filter).should)
+  async getTransactionCount(mustFilter: TransactionFilter, shouldFilter?: TransactionFilter): Promise<number> {
+    let elasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, this.buildTransactionFilterQuery(mustFilter));
 
-    if (filter.before || filter.after) {
-      elasticQuery
-        .withFilter([QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0)]);
+    if (shouldFilter) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.should, this.buildTransactionFilterQuery(mustFilter))
+    }
+
+    if (mustFilter.before || mustFilter.after) {
+      elasticQuery = elasticQuery
+        .withFilter([QueryType.Range('timestamp', mustFilter.before ?? 0, mustFilter.after ?? 0)]);
     }
 
     return await this.elasticService.getCount('transactions', elasticQuery);
   }
 
-  async getTransactions(filter: TransactionFilter, queryOptions?: TransactionQueryOptions): Promise<(Transaction | TransactionDetailed)[]> {
-    const { from, size } = filter;
-    const pagination: ElasticPagination = {
-      from, size
-    };
-
+  async getTransactions(mustFilter: TransactionFilter, pagination: QueryPagination, shouldFilter?: TransactionFilter, queryOptions?: TransactionQueryOptions): Promise<(Transaction | TransactionDetailed)[]> {
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descending };
     const nonce: ElasticSortProperty = { name: 'nonce', order: ElasticSortOrder.descending };
 
-    const elasticQuery = ElasticQuery.create()
-      .withPagination(pagination)
-      .withCondition(QueryConditionOptions.must, this.buildTransactionFilterQuery(filter).must)
-      .withCondition(QueryConditionOptions.should, this.buildTransactionFilterQuery(filter).should)
+    let elasticQuery = ElasticQuery.create()
+      .withPagination({ from: pagination.from, size: pagination.size })
+      .withCondition(QueryConditionOptions.must, this.buildTransactionFilterQuery(mustFilter))
       .withSort([timestamp, nonce]);
 
-    if (filter.before || filter.after) {
+    if (shouldFilter) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.should, this.buildTransactionFilterQuery(shouldFilter))
+    }
+
+    if (mustFilter.before || mustFilter.after) {
       elasticQuery
-        .withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
+        .withFilter([QueryType.Range('timestamp', mustFilter.before ?? Date.now(), mustFilter.after ?? 0)]);
     }
 
     let elasticTransactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
@@ -147,8 +136,8 @@ export class TransactionService {
       transactions.push(transaction);
     }
 
-    if (filter.hashes) {
-      const txHashes: string[] = filter.hashes.split(',');
+    if (mustFilter.hashes) {
+      const txHashes: string[] = mustFilter.hashes.split(',');
       const elasticHashes = elasticTransactions.map(({txHash}) => txHash);
       const missingHashes: string[] = txHashes.findMissingElements(elasticHashes);
       

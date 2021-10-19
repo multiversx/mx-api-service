@@ -25,10 +25,8 @@ describe('Transaction Service', () => {
         transactionService = moduleRef.get<TransactionService>(TransactionService);
 
         const transactionFilter = new TransactionFilter();
-        transactionFilter.from = 0;
-        transactionFilter.size = 1;
 
-        let transactions = await transactionService.getTransactions(transactionFilter);
+        let transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 1});
         expect(transactions).toHaveLength(1);
 
         let transaction = transactions[0];
@@ -41,9 +39,7 @@ describe('Transaction Service', () => {
     describe('Transactions list', () => {
         it('transactions should have txHash, sender and receiver', async () => {
             const transactionFilter = new TransactionFilter();
-            transactionFilter.from = 0;
-            transactionFilter.size = 25;
-            const transactionsList = await transactionService.getTransactions(transactionFilter);
+            const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
 
             for (let transaction of transactionsList) {
                 expect(transaction).toHaveProperty('txHash');
@@ -55,9 +51,7 @@ describe('Transaction Service', () => {
         describe('Transactions pagination', () => {
             it(`should return a list with 25 transactions`, async () => {
                 const transactionFilter = new TransactionFilter();
-                transactionFilter.from = 0;
-                transactionFilter.size = 25;
-                const transactionsList = await transactionService.getTransactions(transactionFilter);
+                const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
     
                 expect(transactionsList).toBeInstanceOf(Array);
                 expect(transactionsList).toHaveLength(25);
@@ -69,9 +63,7 @@ describe('Transaction Service', () => {
     
             it(`should return a list with 100 transactions`, async () => {
                 const transactionFilter = new TransactionFilter();
-                transactionFilter.from = 0;
-                transactionFilter.size = 100;
-                const transactionsList = await transactionService.getTransactions(transactionFilter);
+                const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 100 });
 
                 expect(transactionsList).toBeInstanceOf(Array);
                 expect(transactionsList).toHaveLength(100);
@@ -85,11 +77,9 @@ describe('Transaction Service', () => {
         describe('Transactions filters', () => {
             it(`should return a list of transactions between two accounts`, async () => {
                 const transactionFilter = new TransactionFilter();
-                transactionFilter.from = 0;
-                transactionFilter.size = 25;
                 transactionFilter.sender = transactionSender;
                 transactionFilter.receiver = transactionReceiver;
-                const transactionsList = await transactionService.getTransactions(transactionFilter);
+                const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
 
                 expect(transactionsList).toBeInstanceOf(Array);
     
@@ -102,10 +92,8 @@ describe('Transaction Service', () => {
     
             it(`should return a list with pending transactions`, async () => {
                 const transactionFilter = new TransactionFilter();
-                transactionFilter.from = 0;
-                transactionFilter.size = 25;
                 transactionFilter.status = TransactionStatus.pending;
-                const transactionsList = await transactionService.getTransactions(transactionFilter);
+                const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
                 expect(transactionsList).toBeInstanceOf(Array);
 
                 for (let transaction of transactionsList) {
@@ -116,11 +104,9 @@ describe('Transaction Service', () => {
 
             it(`should return a list with transactions in one date range`, async () => {
                 const transactionFilter = new TransactionFilter();
-                transactionFilter.from = 0;
-                transactionFilter.size = 25;
                 transactionFilter.before = 1625559162;
                 transactionFilter.after = 1625559108;
-                const transactionsList = await transactionService.getTransactions(transactionFilter);
+                const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
                 expect(transactionsList).toBeInstanceOf(Array);
     
                 for (let transaction of transactionsList) {
@@ -133,13 +119,11 @@ describe('Transaction Service', () => {
             it(`should return a list with transactions for an address, in one date range, with success status`, async () => {
                 const address = transactionSender
                 const transactionFilter = new TransactionFilter();
-                transactionFilter.from = 0;
-                transactionFilter.size = 25;
                 transactionFilter.after = 1625559108;
                 transactionFilter.sender = address;
                 transactionFilter.status = TransactionStatus.success;
 
-                const transactionsList = await transactionService.getTransactions(transactionFilter);
+                const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
                 expect(transactionsList).toBeInstanceOf(Array);
     
                 for (let transaction of transactionsList) {
@@ -156,11 +140,9 @@ describe('Transaction Service', () => {
             it(`should return transactions with specific hashes`, async () => {
                 const hashes = '8149581fe858edf8971a73491ff4b26ce2532aa7951ffefafb7b7823ffacc182,56bdbc1a2e9e4dd60bb77c82a72c5b2b77ef51b8decf97f4024fa223b9b64777,INVALIDTXHASH';
                 const transactionFilter = new TransactionFilter();
-                transactionFilter.from = 0;
-                transactionFilter.size = 25;
                 transactionFilter.hashes = hashes;
 
-                const transactionsList = await transactionService.getTransactions(transactionFilter);
+                const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
                 expect(transactionsList).toHaveLength(2);
                 const transactionsHashes = transactionsList.map(({txHash}) => txHash);
                 expect(hashes.split(',').toString()).not.toStrictEqual(transactionsHashes.toString());

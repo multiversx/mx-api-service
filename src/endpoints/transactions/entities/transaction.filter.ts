@@ -1,16 +1,15 @@
-import { QueryPagination } from "src/common/entities/query.pagination"
 import { TransactionStatus } from "./transaction.status"
 
-export class TransactionFilter extends QueryPagination{
-    sender: string | undefined
-    receiver: string | undefined
-    token: string | undefined
-    senderShard: number | undefined
-    receiverShard: number | undefined
-    miniBlockHash: string | undefined
-    hashes: string | undefined
-    status: TransactionStatus | undefined
-    search: string | undefined
-    before: number | undefined
-    after: number | undefined
+export class TransactionFilter {
+    sender?: string
+    receiver?: string
+    token?: string
+    senderShard?: number
+    receiverShard?: number
+    miniBlockHash?: string
+    hashes?: string
+    status?: TransactionStatus
+    search?: string
+    before?: number
+    after?: number
 }
