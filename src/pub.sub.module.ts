@@ -6,7 +6,7 @@ import { CachingModule } from './common/caching/caching.module';
 
 @Module({
   imports: [
-    ApiConfigModule,
+    forwardRef(() => ApiConfigModule),
     forwardRef(() => CachingModule)
   ],
   providers: [
