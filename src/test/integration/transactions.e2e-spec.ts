@@ -140,9 +140,8 @@ describe('Transaction Service', () => {
                 const transactionFilter = new TransactionFilter();
                 transactionFilter.sender = address;
                 transactionFilter.receiver = address;
-                transactionFilter.self = true;
 
-                const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+                const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 }, undefined, address);
                 expect(transactionsList).toBeInstanceOf(Array);
     
                 for (let transaction of transactionsList) {

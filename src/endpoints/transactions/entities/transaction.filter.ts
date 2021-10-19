@@ -14,5 +14,4 @@ export class TransactionFilter {
     before?: number
     after?: number
     condition?: QueryConditionOptions
-    self?: boolean
 }

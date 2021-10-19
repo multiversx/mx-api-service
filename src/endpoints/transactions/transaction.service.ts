@@ -43,33 +43,22 @@ export class TransactionService {
     this.logger = new Logger(TransactionService.name);
   }
 
-  private buildTransactionFilterQuery(filter: TransactionFilter): { should: AbstractQuery[], must: AbstractQuery[] } {
+  private buildTransactionFilterQuery(filter: TransactionFilter, address?: string): ElasticQuery {
     let queries: AbstractQuery[] = [];
     let shouldQueries: AbstractQuery[] = [];
     let mustQueries: AbstractQuery[] = [];
 
-    if (filter.sender && filter.receiver && filter.sender === filter.receiver) {
-    //Self transactions or all transactions for address
-      if (filter.self) {
-        if (filter.sender) {
-          queries.push(QueryType.Match('sender', filter.sender));
-        }
-    
-        if (filter.receiver) {
-          queries.push(QueryType.Match('receiver', filter.receiver));
-        }
-      }  else {
-        shouldQueries.push(QueryType.Match('sender', filter.sender));
-        shouldQueries.push(QueryType.Match('receiver', filter.receiver));
-      }
-    } else {
-      if (filter.sender) {
-        queries.push(QueryType.Match('sender', filter.sender));
-      }
-  
-      if (filter.receiver) {
-        queries.push(QueryType.Match('receiver', filter.receiver));
-      }
+    if (address) {
+      shouldQueries.push(QueryType.Match('sender', address));
+      shouldQueries.push(QueryType.Match('receiver', address));
+    }
+
+    if (filter.sender) {
+      queries.push(QueryType.Match('sender', filter.sender));
+    }
+
+    if (filter.receiver) {
+      queries.push(QueryType.Match('receiver', filter.receiver));
     }
 
     if (filter.token) {
@@ -107,39 +96,32 @@ export class TransactionService {
       mustQueries = queries;
     }
 
-    return {
-      should: shouldQueries,
-      must: mustQueries
-    };
-  }
-
-  async getTransactionCount(filter: TransactionFilter): Promise<number> {
     let elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, this.buildTransactionFilterQuery(filter).must)
-      .withCondition(QueryConditionOptions.should, this.buildTransactionFilterQuery(filter).should);
+      .withCondition(QueryConditionOptions.should, shouldQueries)
+      .withCondition(QueryConditionOptions.must, mustQueries);
+
 
     if (filter.before || filter.after) {
       elasticQuery = elasticQuery
-        .withFilter([QueryType.Range('timestamp', filter.before ?? 0, filter.after ?? 0)]);
+        .withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
     }
+
+    return elasticQuery;
+  }
+
+  async getTransactionCount(filter: TransactionFilter): Promise<number> {
+    let elasticQuery = this.buildTransactionFilterQuery(filter);
 
     return await this.elasticService.getCount('transactions', elasticQuery);
   }
 
-  async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions): Promise<(Transaction | TransactionDetailed)[]> {
+  async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string): Promise<(Transaction | TransactionDetailed)[]> {
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descending };
     const nonce: ElasticSortProperty = { name: 'nonce', order: ElasticSortOrder.descending };
 
-    let elasticQuery = ElasticQuery.create()
+    let elasticQuery = this.buildTransactionFilterQuery(filter, address)
       .withPagination({ from: pagination.from, size: pagination.size })
-      .withCondition(QueryConditionOptions.must, this.buildTransactionFilterQuery(filter).must)
-      .withCondition(QueryConditionOptions.should, this.buildTransactionFilterQuery(filter).should)
       .withSort([timestamp, nonce]);
-
-    if (filter.before || filter.after) {
-      elasticQuery
-        .withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
-    }
 
     let elasticTransactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
 

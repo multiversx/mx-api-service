@@ -536,7 +536,6 @@ export class AccountController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
-  @ApiQuery({ name: 'self', description: 'Return self transactions for address', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
   async getAccountTransactions(
@@ -554,13 +553,12 @@ export class AccountController {
     @Query('after', ParseOptionalIntPipe) after: number | undefined, 
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('self', new ParseOptionalBoolPipe) self: boolean | undefined,
     @Query('withScResults', new ParseOptionalBoolPipe) withScResults: boolean | undefined,
     @Query('withOperations', new ParseOptionalBoolPipe) withOperations: boolean | undefined,) {
     try {
       return await this.transactionService.getTransactions({
-        sender: sender ?? address,
-        receiver: receiver ?? address,
+        sender,
+        receiver,
         token,
         senderShard,
         receiverShard,
@@ -570,8 +568,7 @@ export class AccountController {
         search,
         before,
         after,
-        self,
-      }, { from, size }, { withScResults, withOperations });
+      }, { from, size }, { withScResults, withOperations }, address);
     } catch (error) {
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);

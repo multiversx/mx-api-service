@@ -70,21 +70,20 @@ export class TransactionController {
         before,
         after,
         condition,
-        self: sender === receiver && condition !== QueryConditionOptions.should
     }, { from, size }, { withScResults, withOperations });
   }
 
   @Get("/transactions/count")
-  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false  })
-  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false  })
-  @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false  })
-  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false  })
-  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false  })
-  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false  })
-  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false  })
-  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false  })
-  @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false  })
-  @ApiQuery({ name: 'search', description: 'Search in data object', required: false  })
+  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
+  @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false })
+  @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false, deprecated: true })
+  @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   getTransactionCount(
