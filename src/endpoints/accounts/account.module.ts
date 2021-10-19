@@ -4,6 +4,7 @@ import { DelegationLegacyModule } from "../delegation.legacy/delegation.legacy.m
 import { NftModule } from "../nfts/nft.module";
 import { StakeModule } from "../stake/stake.module";
 import { TokenModule } from "../tokens/token.module";
+import { TransactionModule } from "../transactions/transaction.module";
 import { VmQueryModule } from "../vm.query/vm.query.module";
 import { WaitingListModule } from "../waiting-list/waiting.list.module";
 import { AccountController } from "./account.controller";
@@ -18,6 +19,7 @@ import { AccountService } from "./account.service";
     forwardRef(() => DelegationLegacyModule),
     forwardRef(() => WaitingListModule),
     forwardRef(() => StakeModule),
+    forwardRef(() => TransactionModule),
   ],
   controllers: [
     AccountController,
