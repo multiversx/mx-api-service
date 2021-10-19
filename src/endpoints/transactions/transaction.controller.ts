@@ -36,6 +36,7 @@ export class TransactionController {
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions (it activates only if in filter are some hashes)', required: false })
+  @ApiQuery({ name: 'withOperations', description: 'Return scResults for transactions (it activates only if in filter are some hashes)', required: false })
   getTransactions(
     @Query('sender') sender: string | undefined, 
     @Query('receiver') receiver: string | undefined, 
@@ -51,6 +52,7 @@ export class TransactionController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('withScResults', new ParseOptionalBoolPipe) withScResults: boolean | undefined,
+    @Query('withOperations', new ParseOptionalBoolPipe) withOperations: boolean | undefined,
   ): Promise<Transaction[]> {
     return this.transactionService.getTransactions({
         sender, 
@@ -66,7 +68,7 @@ export class TransactionController {
         after,
         from, 
         size
-    }, { withScResults });
+    }, { withScResults, withOperations });
   }
 
   @Get("/transactions/count")

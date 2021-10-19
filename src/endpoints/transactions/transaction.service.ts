@@ -25,6 +25,7 @@ import { TransactionPriceService } from './transaction.price.service';
 import { TransactionQueryOptions } from './entities/transactions.query.options';
 import { SmartContractResult } from './entities/smart.contract.result';
 import { TermsQuery } from 'src/common/entities/elastic/terms.query';
+import { TransactionLog } from './entities/transaction.log';
 
 @Injectable()
 export class TransactionService {
@@ -159,7 +160,7 @@ export class TransactionService {
       }
     }
 
-    if (queryOptions && queryOptions.withScResults && elasticTransactions.some(x => x.hasScResults === true)) {
+    if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations) && elasticTransactions.some(x => x.hasScResults === true)) {
       // Add scResults to transaction details
 
       const elasticQuery = ElasticQuery.create()
@@ -178,7 +179,20 @@ export class TransactionService {
       for (let transaction of transactions) {
         const transactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), transaction);
         const transactionsScResults = scResults.filter(({originalTxHash}) => originalTxHash == transaction.txHash);
-        transactionDetailed.results = transactionsScResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+        
+        if (queryOptions.withScResults) {
+          transactionDetailed.results = transactionsScResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+        }
+
+        if (queryOptions.withOperations) {
+          const hashes: string[] = [transactionDetailed.txHash];
+          for (let scResult of transactionsScResults) {
+            hashes.push(scResult.hash);
+          }
+          const logs = await this.transactionGetService.getTransactionLogsFromElastic(hashes);
+          let transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
+          transactionDetailed.operations = this.tokenTransferService.getOperationsForTransactionLogs(transactionDetailed.txHash, transactionLogs);
+        }
 
         detailedTransactions.push(transactionDetailed);
       }
