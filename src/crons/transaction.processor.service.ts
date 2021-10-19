@@ -197,17 +197,15 @@ export class TransactionProcessorService {
 
   async getLastTimestamp() {
     let transactionQuery = new TransactionFilter();
-    transactionQuery.size = 1;
 
-    let transactions = await this.transactionService.getTransactions(transactionQuery);
+    let transactions = await this.transactionService.getTransactions(transactionQuery, { from: 0, size: 1 });
     return transactions[0].timestamp;
   }
 
   async getTransactions(timestamp: number) {
     let transactionQuery = new TransactionFilter();
     transactionQuery.after = timestamp;
-    transactionQuery.size = 1000;
 
-    return await this.transactionService.getTransactions(transactionQuery);
+    return await this.transactionService.getTransactions(transactionQuery, { from: 0, size: 1000 });
   }
 }

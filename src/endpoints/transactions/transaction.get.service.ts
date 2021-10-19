@@ -44,6 +44,37 @@ export class TransactionGetService {
     return transactions.firstOrUndefined();
   }
 
+  async getTransactionLogsFromElastic(hashes: string[]): Promise<any[]> {
+    let queries = [];
+    for (let hash of hashes) {
+      queries.push(QueryType.Match('_id', hash));
+    }
+
+    const elasticQueryLogs = ElasticQuery.create()
+      .withPagination({ from: 0, size: 100})
+      .withCondition(QueryConditionOptions.should, queries);
+
+    return await this.elasticService.getLogsForTransactionHashes(elasticQueryLogs);
+  }
+
+  async getTransactionScResultsFromElastic(txHash: string): Promise<SmartContractResult[]> {
+    const originalTxHashQuery = QueryType.Match('originalTxHash', txHash);
+      const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
+
+      const elasticQuerySc = ElasticQuery.create()
+        .withPagination({ from: 0, size: 100 })
+        .withSort([timestamp])
+        .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
+
+      let scResults = await this.elasticService.getList('scresults', 'scHash', elasticQuerySc);
+      for (let scResult of scResults) {
+        scResult.hash = scResult.scHash;
+        delete scResult.scHash;
+      }
+
+      return scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult))      
+  }
+
   async tryGetTransactionFromElastic(txHash: string): Promise<TransactionDetailed | null> {
     try {
       const result = await this.elasticService.getItem('transactions', 'txHash', txHash);
@@ -67,24 +98,12 @@ export class TransactionGetService {
 
       if (!this.apiConfigService.getUseLegacyElastic()) {
       //Elastic query for scResults
-        const originalTxHashQuery = QueryType.Match('originalTxHash', txHash);
-        const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
-
-        const elasticQuerySc = ElasticQuery.create()
-          .withPagination({ from: 0, size: 100 })
-          .withSort([timestamp])
-          .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
-
         if (result.hasScResults === true) {
-          let scResults = await this.elasticService.getList('scresults', 'scHash', elasticQuerySc);
-          for (let scResult of scResults) {
-            scResult.hash = scResult.scHash;
+          transactionDetailed.results = await this.getTransactionScResultsFromElastic(transactionDetailed.txHash);
+
+          for (let scResult of transactionDetailed.results) {
             hashes.push(scResult.hash);
-
-            delete scResult.scHash;
           }
-
-          transactionDetailed.results = scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
         }
       
       //Elastic query for receipts
@@ -100,16 +119,8 @@ export class TransactionGetService {
         }
 
       //Elastic query for logs
-        let queries = [];
-        for (let hash of hashes) {
-          queries.push(QueryType.Match('_id', hash));
-        }
-        const elasticQueryLogs = ElasticQuery.create()
-          .withPagination({ from: 0, size: 100})
-          .withCondition(QueryConditionOptions.should, queries);
-
-        let logs: any[] = await this.elasticService.getLogsForTransactionHashes(elasticQueryLogs);
-        let transactionLogs = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
+        const logs = await this.getTransactionLogsFromElastic(hashes);
+        let transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
 
         transactionDetailed.operations = this.tokenTransferService.getOperationsForTransactionLogs(txHash, transactionLogs);
 
