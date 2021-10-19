@@ -109,8 +109,8 @@ export class TransactionService {
     return elasticQuery;
   }
 
-  async getTransactionCount(filter: TransactionFilter): Promise<number> {
-    let elasticQuery = this.buildTransactionFilterQuery(filter);
+  async getTransactionCount(filter: TransactionFilter, address?: string): Promise<number> {
+    let elasticQuery = this.buildTransactionFilterQuery(filter, address);
 
     return await this.elasticService.getCount('transactions', elasticQuery);
   }
