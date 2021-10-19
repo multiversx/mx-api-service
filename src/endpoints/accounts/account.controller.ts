@@ -575,7 +575,7 @@ export class AccountController {
     }
   }
 
-  @Get("/account/:address/transactions/count")
+  @Get("/accounts/:address/transactions/count")
   @ApiResponse({
     status: 200,
     description: 'Transactions count history informations for a given account',
