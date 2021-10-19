@@ -10,9 +10,8 @@ import { TokenAssetService } from './endpoints/tokens/token.asset.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { FieldsInterceptor } from './interceptors/fields.interceptor';
 import { PrivateAppModule } from './private.app.module';
-import { TransactionProcessorModule } from './transaction.processor.module';
 import { MetricsService } from './endpoints/metrics/metrics.service';
-import { CacheWarmerModule } from './cache.warmer.module';
+import { CacheWarmerModule } from './crons/cache.warmer.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { PubSubModule } from './pub.sub.module';
 import { Logger, NestInterceptor } from '@nestjs/common';
@@ -23,6 +22,7 @@ import { CleanupInterceptor } from './interceptors/cleanup.interceptor';
 import { RedisClient } from 'redis';
 import { ExtractInterceptor } from './interceptors/extract.interceptor';
 import { JwtAuthenticateGuard } from './interceptors/access.interceptor';
+import { TransactionProcessorModule } from './crons/transaction.processor.module';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
