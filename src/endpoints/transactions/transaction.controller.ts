@@ -35,8 +35,8 @@ export class TransactionController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
-  @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions (it activates only if in filter are some hashes)', required: false })
-  @ApiQuery({ name: 'withOperations', description: 'Return scResults for transactions (it activates only if in filter are some hashes)', required: false })
+  @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false })
+  @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
   getTransactions(
     @Query('sender') sender: string | undefined, 
     @Query('receiver') receiver: string | undefined, 
