@@ -328,7 +328,6 @@ export class NftService {
       nftCollection.canWipe = collectionProperties.canWipe;
       nftCollection.canPause = collectionProperties.canPause;
       nftCollection.canTransferRole = collectionProperties.canTransferNFTCreateRole;
-      nftCollection.owner = collectionProperties.owner;
 
       let role = roles[tokenIdentifier];
       nftCollection.canCreate = role ? role.includes('ESDTRoleNFTCreate') : false;
