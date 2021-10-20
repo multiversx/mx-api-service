@@ -1,6 +1,6 @@
 import { Test } from "@nestjs/testing";
 import { CachingService } from "src/common/caching/caching.service";
-import { KeybaseState } from "src/common/entities/keybase.state";
+import { KeybaseState } from "src/common/keybase/entities/keybase.state";
 import { Node } from "src/endpoints/nodes/entities/node";
 import { NodeFilter } from "src/endpoints/nodes/entities/node.filter";
 import { NodeSort } from "src/endpoints/nodes/entities/node.sort";
