@@ -11,7 +11,7 @@ import { AddressUtils } from "src/utils/address.utils";
 import { NodesInfos } from "./entities/nodes.infos";
 import { DelegationData } from "./entities/delegation.data";
 import { ApiService } from "src/common/external/api.service";
-import { KeybaseService } from "src/common/key-validation/keybase.service";
+import { KeybaseService } from "src/common/keybase/keybase.service";
 
 @Injectable()
 export class ProviderService {

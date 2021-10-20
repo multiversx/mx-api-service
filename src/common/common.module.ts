@@ -4,7 +4,7 @@ import { BlsModule } from "./bls.module";
 import { CachingModule } from "./caching/caching.module";
 import { EsdtModule } from "./esdt.module";
 import { ExternalModule } from "./external/external.module";
-import { KeybaseModule } from "./key-validation/keybase.module";
+import { KeybaseModule } from "./keybase/keybase.module";
 import { MetricsModule } from "./metrics/metrics.module";
 
 @Module({
