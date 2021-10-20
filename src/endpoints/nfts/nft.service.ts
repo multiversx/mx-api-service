@@ -398,11 +398,11 @@ export class NftService {
   }
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<NftAccount[]> {
-    const { from, size }  = queryPagination;
+    const { from, size } = queryPagination;
 
     let nfts = await this.getNftsForAddressInternal(address, filter);
 
-    nfts = nfts.splice(from, from + size);
+    nfts = nfts.slice(from, from + size);
 
     if (queryOptions && queryOptions.withTimestamp) {
       let identifiers = nfts.map(x => x.identifier);

@@ -63,6 +63,10 @@ export class AccountService {
       let shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
   
       let result: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount, username, shard, developerReward, ownerAddress };
+
+      if (result.code) {
+        result.deployedAt = await this.getAccountDeployedAt(address);
+      }
   
       return result;
     } catch (error) {
@@ -70,6 +74,33 @@ export class AccountService {
       this.logger.error(`Error when getting account details for address '${address}'`);
       return null;
     }
+  }
+
+  async getAccountDeployedAt(address: string): Promise<number | undefined> {
+    return await this.cachingService.getOrSetCache(
+      `accountDeployedAt:${address}`,
+      async () => await this.getAccountDeployedAtRaw(address),
+      Constants.oneWeek()
+    );
+  }
+
+  async getAccountDeployedAtRaw(address: string): Promise<number | undefined> {
+    let scDeploy = await this.elasticService.getItem('scdeploys', '_id', address);
+    if (!scDeploy) {
+      return undefined;
+    }
+
+    let txHash = scDeploy.deployTxHash;
+    if (!txHash) {
+      return undefined;
+    }
+
+    let transaction = await this.elasticService.getItem('transactions', '_id', txHash);
+    if (!transaction) {
+      return undefined;
+    }
+
+    return transaction.timestamp;
   }
 
   async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
