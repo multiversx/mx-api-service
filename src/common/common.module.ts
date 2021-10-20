@@ -5,6 +5,7 @@ import { CachingModule } from "./caching/caching.module";
 import { EsdtModule } from "./esdt.module";
 import { ExternalModule } from "./external-calls-services/external.module";
 import { KeybaseModule } from "./key-validation/keybase.module";
+import { MetricsModule } from "./metrics/metrics.module";
 import { ProfilerModule } from "./profiler.module";
 
 
@@ -17,10 +18,11 @@ import { ProfilerModule } from "./profiler.module";
     forwardRef(() => EsdtModule), 
     forwardRef(() => ProfilerModule),
     forwardRef(() => KeybaseModule),
+    forwardRef(() => MetricsModule),
   ],
   exports: [
     ApiConfigModule, CachingModule, ExternalModule, BlsModule, EsdtModule, ProfilerModule,
-    KeybaseModule,
+    KeybaseModule, MetricsModule
   ]
 })
 export class CommonModule { }

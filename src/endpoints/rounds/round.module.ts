@@ -1,10 +1,12 @@
-import { forwardRef, Module } from "@nestjs/common";
-import { CommonModule } from "src/common/common.module";
+import { Module } from "@nestjs/common";
+import { BlsModule } from "src/common/bls.module";
+import { ElasticModule } from "src/common/external-calls-services/elastic.module";
 import { RoundService } from "./round.service";
 
 @Module({
   imports: [
-    forwardRef(() => CommonModule),
+    ElasticModule,
+    BlsModule
   ],
   providers: [
     RoundService,

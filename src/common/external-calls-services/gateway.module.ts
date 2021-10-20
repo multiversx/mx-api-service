@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { ApiConfigModule } from "../api.config.module";
 import { ApiModule } from "./api.module";
 import { GatewayService } from "./gateway.service";
@@ -7,7 +7,7 @@ import { GatewayService } from "./gateway.service";
 @Module({
   imports: [
     ApiConfigModule,
-    ApiModule,
+    forwardRef(() => ApiModule),
   ],
   providers: [
     GatewayService
