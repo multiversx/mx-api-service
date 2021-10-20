@@ -13,7 +13,6 @@ import { PrivateAppModule } from './private.app.module';
 import { MetricsService } from './common/metrics/metrics.service';
 import { CacheWarmerModule } from './crons/cache.warmer.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { PubSubModule } from './pub.sub.module';
 import { Logger, NestInterceptor } from '@nestjs/common';
 import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
@@ -23,6 +22,7 @@ import { RedisClient } from 'redis';
 import { ExtractInterceptor } from './interceptors/extract.interceptor';
 import { JwtAuthenticateGuard } from './interceptors/access.interceptor';
 import { TransactionProcessorModule } from './crons/transaction.processor.module';
+import { MicroserviceModule } from './microservice.module';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
@@ -105,7 +105,7 @@ async function bootstrap() {
   let logger = new Logger('Bootstrapper');
 
   const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
-    PubSubModule,
+    MicroserviceModule,
     {
       transport: Transport.REDIS,
       options: {

@@ -1,6 +1,6 @@
 import { CacheModule, forwardRef, Module } from "@nestjs/common";
 import { RoundModule } from "src/endpoints/rounds/round.module";
-import { PubSubModule } from "src/pub.sub.module";
+import { MicroserviceModule } from "src/microservice.module";
 import { ApiConfigModule } from "../api.config.module";
 import { CacheConfigService } from "./cache.config.service";
 import { CachingService } from "./caching.service";
@@ -10,7 +10,7 @@ import { CachingService } from "./caching.service";
     CacheModule.register(),
     ApiConfigModule,
     forwardRef(() => RoundModule),
-    forwardRef(() => PubSubModule),
+    forwardRef(() => MicroserviceModule),
   ],
   providers: [
     CachingService, CacheConfigService,

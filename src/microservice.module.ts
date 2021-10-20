@@ -6,8 +6,8 @@ import { CachingModule } from './common/caching/caching.module';
 
 @Module({
   imports: [
-    forwardRef(() => ApiConfigModule),
-    forwardRef(() => CachingModule)
+    ApiConfigModule,
+    forwardRef(() => CachingModule),
   ],
   providers: [
     {
@@ -30,26 +30,6 @@ import { CachingModule } from './common/caching/caching.module';
       inject: [ ApiConfigService ]
     }
   ],
-  exports: [
-    {
-      provide: 'PUBSUB_SERVICE',
-      useFactory: (apiConfigService: ApiConfigService) => {
-        let clientOptions: ClientOptions = {
-          transport: Transport.REDIS,
-          options: {
-            url: `redis://${apiConfigService.getRedisUrl()}:6379`,
-            retryDelay: 1000,
-            retryAttempts: 10,
-            retry_strategy: function(_: any) {
-              return 1000;
-            },
-          }
-        };
-
-        return ClientProxyFactory.create(clientOptions);
-      },
-      inject: [ ApiConfigService ]
-    }
-  ]
+  exports: [ 'PUBSUB_SERVICE' ]
 })
-export class PubSubModule {}
+export class MicroserviceModule {}
