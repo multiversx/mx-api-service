@@ -6,8 +6,6 @@ import { EsdtModule } from "./esdt.module";
 import { ExternalModule } from "./external-calls-services/external.module";
 import { KeybaseModule } from "./key-validation/keybase.module";
 import { MetricsModule } from "./metrics/metrics.module";
-import { ProfilerModule } from "./profiler.module";
-
 
 @Module({
   imports: [
@@ -16,12 +14,11 @@ import { ProfilerModule } from "./profiler.module";
     forwardRef(() => ExternalModule), 
     forwardRef(() => BlsModule), 
     forwardRef(() => EsdtModule), 
-    forwardRef(() => ProfilerModule),
     forwardRef(() => KeybaseModule),
     forwardRef(() => MetricsModule),
   ],
   exports: [
-    ApiConfigModule, CachingModule, ExternalModule, BlsModule, EsdtModule, ProfilerModule,
+    ApiConfigModule, CachingModule, ExternalModule, BlsModule, EsdtModule,
     KeybaseModule, MetricsModule
   ]
 })
