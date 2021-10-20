@@ -12,7 +12,7 @@ import { ApiUtils } from 'src/utils/api.utils';
 import { BinaryUtils } from 'src/utils/binary.utils';
 import { AccountKey } from './entities/account.key';
 import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
-import { GatewayService } from 'src/common/external/gateway.service';
+import { GatewayService } from 'src/common/gateway/gateway.service';
 import { ElasticService } from 'src/common/elastic/elastic.service';
 import { QueryType } from 'src/common/elastic/entities/query.type';
 import { ElasticQuery } from 'src/common/elastic/entities/elastic.query';

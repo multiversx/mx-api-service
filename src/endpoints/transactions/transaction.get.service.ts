@@ -6,7 +6,7 @@ import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order
 import { ElasticSortProperty } from "src/common/elastic/entities/elastic.sort.property";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { QueryType } from "src/common/elastic/entities/query.type";
-import { GatewayService } from "src/common/external/gateway.service";
+import { GatewayService } from "src/common/gateway/gateway.service";
 import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { SmartContractResult } from "./entities/smart.contract.result";

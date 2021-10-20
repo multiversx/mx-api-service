@@ -3,7 +3,7 @@ import { ApiModule } from "../network/api.module";
 import { DataApiModule } from "./data.api.module";
 import { ElasticModule } from "../elastic/elastic.module";
 import { ExtrasApiModule } from "./extras.api.module";
-import { GatewayModule } from "./gateway.module";
+import { GatewayModule } from "../gateway/gateway.module";
 
 @Module({
   imports: [

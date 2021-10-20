@@ -8,7 +8,7 @@ import { Constants } from "src/utils/constants";
 import { TokenUtils } from "src/utils/tokens.utils";
 import { ApiConfigService } from "./api.config.service";
 import { CachingService } from "./caching/caching.service";
-import { GatewayService } from "./external/gateway.service";
+import { GatewayService } from "./gateway/gateway.service";
 import { GENESIS_TIMESTAMP_SERVICE, IGenesisTimestamp } from "./genesis.timestamp";
 
 @Injectable()

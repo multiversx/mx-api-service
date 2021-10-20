@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { CachingService } from "src/common/caching/caching.service";
-import { GatewayService } from "src/common/external/gateway.service";
+import { GatewayService } from "src/common/gateway/gateway.service";
 import { GENESIS_TIMESTAMP_SERVICE, IGenesisTimestamp } from "src/common/genesis.timestamp";
 import { Constants } from "src/utils/constants";
 

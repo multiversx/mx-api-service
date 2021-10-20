@@ -16,7 +16,7 @@ import { TokenTransferService } from './token.transfer.service';
 import { TransactionPriceService } from './transaction.price.service';
 import { TransactionQueryOptions } from './entities/transactions.query.options';
 import { SmartContractResult } from './entities/smart.contract.result';
-import { GatewayService } from 'src/common/external/gateway.service';
+import { GatewayService } from 'src/common/gateway/gateway.service';
 import { TransactionLog } from './entities/transaction.log';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { ElasticService } from 'src/common/elastic/elastic.service';
