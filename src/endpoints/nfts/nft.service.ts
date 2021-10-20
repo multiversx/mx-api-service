@@ -16,12 +16,12 @@ import { NftFilter } from "./entities/nft.filter";
 import { NftOwner } from "./entities/nft.owner";
 import { NftType } from "./entities/nft.type";
 import { TokenProperties } from "../tokens/entities/token.properties";
-import { EsdtService } from "src/common/esdt.service";
 import { NftQueryOptions } from "./entities/nft.query.options";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
 import { CollectionAccountFilter } from "./entities/collection.account.filter";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
+import { EsdtService } from "../esdt/esdt.service";
 
 @Injectable()
 export class NftService {

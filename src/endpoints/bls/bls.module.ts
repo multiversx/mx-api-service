@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
-import { ApiConfigModule } from "./api-config/api.config.module";
+import { ApiConfigModule } from "../../common/api-config/api.config.module";
 import { BlsService } from "./bls.service";
-import { ElasticModule } from "./elastic/elastic.module";
-import { ExternalModule } from "./external/external.module";
+import { ElasticModule } from "../../common/elastic/elastic.module";
+import { ExternalModule } from "../../common/external/external.module";
 
 
 @Module({

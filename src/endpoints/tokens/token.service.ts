@@ -7,7 +7,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { ApiUtils } from "src/utils/api.utils";
 import { TokenFilter } from "./entities/token.filter";
 import { TokenUtils } from "src/utils/tokens.utils";
-import { EsdtService } from "src/common/esdt.service";
+import { EsdtService } from "../esdt/esdt.service";
 
 @Injectable()
 export class TokenService {

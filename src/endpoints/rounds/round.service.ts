@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { Round } from "./entities/round";
 import { RoundDetailed } from "./entities/round.detailed";
 import { RoundFilter } from "./entities/round.filter";
-import { BlsService } from "src/common/bls.service";
+import { BlsService } from "src/endpoints/bls/bls.service";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { RoundUtils } from "src/utils/round.utils";
 import { ApiUtils } from "src/utils/api.utils";

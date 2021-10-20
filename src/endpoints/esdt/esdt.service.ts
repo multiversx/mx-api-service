@@ -6,10 +6,10 @@ import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { AddressUtils } from "src/utils/address.utils";
 import { Constants } from "src/utils/constants";
 import { TokenUtils } from "src/utils/tokens.utils";
-import { ApiConfigService } from "./api-config/api.config.service";
-import { CachingService } from "./caching/caching.service";
-import { GatewayService } from "./gateway/gateway.service";
-import { GENESIS_TIMESTAMP_SERVICE, GenesisTimestampInterface } from "../utils/genesis.timestamp.interface";
+import { ApiConfigService } from "../../common/api-config/api.config.service";
+import { CachingService } from "../../common/caching/caching.service";
+import { GatewayService } from "../../common/gateway/gateway.service";
+import { GENESIS_TIMESTAMP_SERVICE, GenesisTimestampInterface } from "../../utils/genesis.timestamp.interface";
 
 @Injectable()
 export class EsdtService {

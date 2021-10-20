@@ -4,7 +4,7 @@ import { Observable, of, throwError } from "rxjs";
 import { catchError, tap } from 'rxjs/operators';
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { CachingService } from "src/common/caching/caching.service";
-import { GENESIS_TIMESTAMP_SERVICE, IGenesisTimestamp } from "src/common/genesis.timestamp";
+import { GenesisTimestampInterface, GENESIS_TIMESTAMP_SERVICE } from "src/utils/genesis.timestamp.interface";
 
 @Injectable()
 export class CachingInterceptor implements NestInterceptor {
@@ -15,7 +15,7 @@ export class CachingInterceptor implements NestInterceptor {
     private readonly httpAdapterHost: HttpAdapterHost,
     private readonly metricsService: MetricsService,
     @Inject(GENESIS_TIMESTAMP_SERVICE)
-    private readonly genesisTimestampService: IGenesisTimestamp
+    private readonly genesisTimestampService: GenesisTimestampInterface
   ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {

@@ -1,8 +1,10 @@
 import { forwardRef, Module } from "@nestjs/common";
 import { AccountModule } from "./accounts/account.module";
 import { BlockModule } from "./blocks/block.module";
+import { BlsModule } from "./bls/bls.module";
 import { DelegationLegacyModule } from "./delegation.legacy/delegation.legacy.module";
 import { DelegationModule } from "./delegation/delegation.module";
+import { EsdtModule } from "./esdt/esdt.module";
 import { IdentitiesModule } from "./identities/identities.module";
 import { KeysModule } from "./keys/keys.module";
 import { MiniBlockModule } from "./miniblocks/miniblock.module";
@@ -44,12 +46,14 @@ import { WaitingListModule } from "./waiting-list/waiting.list.module";
     forwardRef(() => UsernameModule),
     forwardRef(() => VmQueryModule),
     forwardRef(() => WaitingListModule),
+    forwardRef(() => EsdtModule),
+    forwardRef(() => BlsModule),
   ],
   exports: [
     AccountModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
     MiniBlockModule, NetworkModule, NftModule, TagModule, NodeModule, ProviderModule,
     RoundModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
-    WaitingListModule,
+    WaitingListModule, EsdtModule, BlsModule
   ]
 })
 export class EndpointsServicesModule { }

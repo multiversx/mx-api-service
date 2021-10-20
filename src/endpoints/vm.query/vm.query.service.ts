@@ -1,8 +1,8 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { CachingService } from "src/common/caching/caching.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { GENESIS_TIMESTAMP_SERVICE, IGenesisTimestamp } from "src/common/genesis.timestamp";
 import { Constants } from "src/utils/constants";
+import { GenesisTimestampInterface, GENESIS_TIMESTAMP_SERVICE } from "src/utils/genesis.timestamp.interface";
 
 @Injectable()
 export class VmQueryService {
@@ -12,7 +12,7 @@ export class VmQueryService {
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
     @Inject(GENESIS_TIMESTAMP_SERVICE)
-    private readonly genesisTimestampService: IGenesisTimestamp
+    private readonly genesisTimestampService: GenesisTimestampInterface
   ) {
     this.logger = new Logger(VmQueryService.name);
   }

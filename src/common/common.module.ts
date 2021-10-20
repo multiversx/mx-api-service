@@ -1,9 +1,7 @@
 import { forwardRef, Module } from "@nestjs/common";
 import { ApiConfigModule } from "./api-config/api.config.module";
-import { BlsModule } from "./bls.module";
 import { CachingModule } from "./caching/caching.module";
 import { ElasticModule } from "./elastic/elastic.module";
-import { EsdtModule } from "./esdt.module";
 import { ExternalModule } from "./external/external.module";
 import { GatewayModule } from "./gateway/gateway.module";
 import { KeybaseModule } from "./keybase/keybase.module";
@@ -17,15 +15,13 @@ import { ApiModule } from "./network/api.module";
     forwardRef(() => ApiModule),
     forwardRef(() => ElasticModule),
     forwardRef(() => GatewayModule),  
-    forwardRef(() => ExternalModule), 
-    forwardRef(() => BlsModule), 
-    forwardRef(() => EsdtModule), 
+    forwardRef(() => ExternalModule),  
     forwardRef(() => KeybaseModule),
     forwardRef(() => MetricsModule),
   ],
   exports: [
     ApiConfigModule, CachingModule, ApiModule, ElasticModule, GatewayModule, ExternalModule,
-    BlsModule, EsdtModule, KeybaseModule, MetricsModule,
+    KeybaseModule, MetricsModule,
   ]
 })
 export class CommonModule { }

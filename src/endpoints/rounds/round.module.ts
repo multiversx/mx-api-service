@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
-import { BlsModule } from "src/common/bls.module";
 import { CachingModule } from "src/common/caching/caching.module";
 import { ElasticModule } from "src/common/elastic/elastic.module";
+import { BlsModule } from "../bls/bls.module";
 import { RoundService } from "./round.service";
 
 @Module({

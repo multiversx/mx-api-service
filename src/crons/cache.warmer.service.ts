@@ -10,12 +10,12 @@ import { ClientProxy } from "@nestjs/microservices";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NetworkService } from "src/endpoints/network/network.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
-import { EsdtService } from "src/common/esdt.service";
 import { CronJob } from "cron";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { DataApiService } from "src/common/external/data.api.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { DataQuoteType } from "src/common/external/entities/data.quote.type";
+import { EsdtService } from "src/endpoints/esdt/esdt.service";
 
 @Injectable()
 export class CacheWarmerService {

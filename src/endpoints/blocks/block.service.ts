@@ -4,7 +4,7 @@ import { BlockDetailed } from "./entities/block.detailed";
 import { CachingService } from "src/common/caching/caching.service";
 import { BlockFilter } from "./entities/block.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { BlsService } from "src/common/bls.service";
+import { BlsService } from "src/endpoints/bls/bls.service";
 import { Constants } from "src/utils/constants";
 import { ApiUtils } from "src/utils/api.utils";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
