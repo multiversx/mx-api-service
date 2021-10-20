@@ -7,16 +7,16 @@ import { QueryConditionOptions } from "src/common/elastic/entities/query.conditi
 import { RoundUtils } from "src/utils/round.utils";
 import { ApiUtils } from "src/utils/api.utils";
 import { ElasticService } from "src/common/elastic/elastic.service";
-import { IGenesisTimestamp } from "src/common/genesis.timestamp";
 import { Constants } from "src/utils/constants";
 import { CachingService } from "src/common/caching/caching.service";
 import { AbstractQuery } from "src/common/elastic/entities/abstract.query";
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
+import { GenesisTimestampInterface } from "src/utils/genesis.timestamp.interface";
 
 @Injectable()
-export class RoundService implements IGenesisTimestamp{
+export class RoundService implements GenesisTimestampInterface{
   private readonly logger: Logger
   constructor(
     private readonly elasticService: ElasticService,
