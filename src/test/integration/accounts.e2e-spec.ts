@@ -76,7 +76,7 @@ describe('Account Service', () => {
             it(`should return a detailed account with account address`, async () => {
                 const accountDetailed = await accountService.getAccount(accountAddress);
                 expect(accountDetailed).toBeDefined();
-                expect(accountDetailed!.address).toStrictEqual(accountAddress);
+                expect(accountDetailed?.address).toStrictEqual(accountAddress);
             });
     
             it(`should throw 'Account not found' error`, async () => {
