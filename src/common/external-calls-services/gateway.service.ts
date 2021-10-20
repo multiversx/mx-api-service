@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api.config.service";
 import { ApiService } from "./api.service";
 
@@ -6,6 +6,7 @@ import { ApiService } from "./api.service";
 export class GatewayService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
+    @Inject(forwardRef(() => ApiService))
     private readonly apiService: ApiService
   ) {}
 

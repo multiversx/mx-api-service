@@ -1,4 +1,4 @@
-import { forwardRef, Module } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { NodeModule } from "src/endpoints/nodes/node.module";
 import { ProviderModule } from "src/endpoints/providers/provider.module";
 import { ApiConfigModule } from "../api.config.module";
@@ -12,8 +12,8 @@ import { KeybaseService } from "./keybase.service";
     ApiConfigModule,
     CachingModule,
     ApiModule,
-    forwardRef(() => NodeModule),
-    forwardRef(() => ProviderModule),
+    NodeModule,
+    ProviderModule,
 
   ],
   providers: [
