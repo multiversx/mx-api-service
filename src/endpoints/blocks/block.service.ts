@@ -4,15 +4,15 @@ import { BlockDetailed } from "./entities/block.detailed";
 import { CachingService } from "src/common/caching/caching.service";
 import { BlockFilter } from "./entities/block.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { ElasticSortOrder } from "src/common/entities/elastic/elastic.sort.order";
-import { ElasticQuery } from "src/common/entities/elastic/elastic.query";
-import { AbstractQuery } from "src/common/entities/elastic/abstract.query";
 import { BlsService } from "src/common/bls.service";
-import { QueryType } from "src/common/entities/elastic/query.type";
 import { Constants } from "src/utils/constants";
 import { ApiUtils } from "src/utils/api.utils";
-import { QueryConditionOptions } from "src/common/entities/elastic/query.condition.options";
-import { ElasticService } from "src/common/external/elastic.service";
+import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
+import { ElasticService } from "src/common/elastic/elastic.service";
+import { AbstractQuery } from "src/common/elastic/entities/abstract.query";
+import { QueryType } from "src/common/elastic/entities/query.type";
+import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
+import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 
 @Injectable()
 export class BlockService {

@@ -1,4 +1,4 @@
-import { QueryConditionOptions } from "src/common/entities/elastic/query.condition.options"
+import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options"
 import { TransactionStatus } from "./transaction.status"
 
 export class TransactionFilter {

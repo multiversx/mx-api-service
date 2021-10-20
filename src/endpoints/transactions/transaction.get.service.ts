@@ -1,11 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api.config.service";
-import { ElasticQuery } from "src/common/entities/elastic/elastic.query";
-import { ElasticSortOrder } from "src/common/entities/elastic/elastic.sort.order";
-import { ElasticSortProperty } from "src/common/entities/elastic/elastic.sort.property";
-import { QueryConditionOptions } from "src/common/entities/elastic/query.condition.options";
-import { QueryType } from "src/common/entities/elastic/query.type";
-import { ElasticService } from "src/common/external/elastic.service";
+import { ElasticService } from "src/common/elastic/elastic.service";
+import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
+import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
+import { ElasticSortProperty } from "src/common/elastic/entities/elastic.sort.property";
+import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
+import { QueryType } from "src/common/elastic/entities/query.type";
 import { GatewayService } from "src/common/external/gateway.service";
 import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";

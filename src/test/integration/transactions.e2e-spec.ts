@@ -6,7 +6,7 @@ import { TransactionService } from 'src/endpoints/transactions/transaction.servi
 import { TransactionFilter } from 'src/endpoints/transactions/entities/transaction.filter';
 import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
-import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
+import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 
 describe('Transaction Service', () => {
     let transactionService: TransactionService;

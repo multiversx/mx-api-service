@@ -1,11 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ApiConfigService } from 'src/common/api.config.service';
-import { AbstractQuery } from 'src/common/entities/elastic/abstract.query';
-import { ElasticQuery } from 'src/common/entities/elastic/elastic.query';
-import { ElasticSortOrder } from 'src/common/entities/elastic/elastic.sort.order';
-import { ElasticSortProperty } from 'src/common/entities/elastic/elastic.sort.property';
-import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
-import { QueryType } from 'src/common/entities/elastic/query.type';
+import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 import { AddressUtils } from 'src/utils/address.utils';
 import { ApiUtils } from 'src/utils/api.utils';
 import { Transaction } from './entities/transaction';
@@ -13,7 +8,7 @@ import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
 import { TransactionFilter } from './entities/transaction.filter';
 import { TransactionSendResult } from './entities/transaction.send.result';
-import { QueryOperator } from 'src/common/entities/elastic/query.operator';
+import { QueryOperator } from 'src/common/elastic/entities/query.operator';
 import { TransactionScamCheckService } from './scam-check/transaction.scam.check.service';
 import { TransactionScamInfo } from './entities/transaction.scam.info';
 import { TransactionGetService } from './transaction.get.service';
@@ -21,11 +16,16 @@ import { TokenTransferService } from './token.transfer.service';
 import { TransactionPriceService } from './transaction.price.service';
 import { TransactionQueryOptions } from './entities/transactions.query.options';
 import { SmartContractResult } from './entities/smart.contract.result';
-import { TermsQuery } from 'src/common/entities/elastic/terms.query';
-import { ElasticService } from 'src/common/external/elastic.service';
 import { GatewayService } from 'src/common/external/gateway.service';
 import { TransactionLog } from './entities/transaction.log';
 import { QueryPagination } from 'src/common/entities/query.pagination';
+import { ElasticService } from 'src/common/elastic/elastic.service';
+import { ElasticQuery } from 'src/common/elastic/entities/elastic.query';
+import { AbstractQuery } from 'src/common/elastic/entities/abstract.query';
+import { QueryType } from 'src/common/elastic/entities/query.type';
+import { ElasticSortProperty } from 'src/common/elastic/entities/elastic.sort.property';
+import { ElasticSortOrder } from 'src/common/elastic/entities/elastic.sort.order';
+import { TermsQuery } from 'src/common/elastic/entities/terms.query';
 
 @Injectable()
 export class TransactionService {

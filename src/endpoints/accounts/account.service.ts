@@ -6,17 +6,17 @@ import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { ApiConfigService } from 'src/common/api.config.service';
 import { AccountDeferred } from './entities/account.deferred';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { ElasticSortOrder } from 'src/common/entities/elastic/elastic.sort.order';
-import { ElasticQuery } from 'src/common/entities/elastic/elastic.query';
-import { QueryType } from 'src/common/entities/elastic/query.type';
 import { Constants } from 'src/utils/constants';
 import { AddressUtils } from 'src/utils/address.utils';
 import { ApiUtils } from 'src/utils/api.utils';
 import { BinaryUtils } from 'src/utils/binary.utils';
 import { AccountKey } from './entities/account.key';
-import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
-import { ElasticService } from 'src/common/external/elastic.service';
+import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 import { GatewayService } from 'src/common/external/gateway.service';
+import { ElasticService } from 'src/common/elastic/elastic.service';
+import { QueryType } from 'src/common/elastic/entities/query.type';
+import { ElasticQuery } from 'src/common/elastic/entities/elastic.query';
+import { ElasticSortOrder } from 'src/common/elastic/entities/elastic.sort.order';
 
 @Injectable()
 export class AccountService {
