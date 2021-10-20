@@ -2,7 +2,7 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nes
 import { HttpAdapterHost } from "@nestjs/core";
 import { Observable, of, throwError } from "rxjs";
 import { catchError, tap } from 'rxjs/operators';
-import { MetricsService } from "src/endpoints/metrics/metrics.service";
+import { MetricsService } from "src/common/metrics/metrics.service";
 import { CachingService } from "src/common/caching/caching.service";
 
 @Injectable()

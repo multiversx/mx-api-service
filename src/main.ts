@@ -10,7 +10,7 @@ import { TokenAssetService } from './endpoints/tokens/token.asset.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { FieldsInterceptor } from './interceptors/fields.interceptor';
 import { PrivateAppModule } from './private.app.module';
-import { MetricsService } from './endpoints/metrics/metrics.service';
+import { MetricsService } from './common/metrics/metrics.service';
 import { CacheWarmerModule } from './crons/cache.warmer.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { PubSubModule } from './pub.sub.module';

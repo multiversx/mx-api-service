@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { MetricsService } from "src/endpoints/metrics/metrics.service";
+import { MetricsService } from "src/common/metrics/metrics.service";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";

@@ -3,9 +3,9 @@ import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservi
 import { ApiConfigModule } from './common/api.config.module';
 import { ApiConfigService } from './common/api.config.service';
 import { CachingModule } from './common/caching/caching.module';
-import { CacheController } from './endpoints/cache/cache.controller';
-import { MetricsController } from './endpoints/metrics/metrics.controller';
-import { MetricsModule } from './endpoints/metrics/metrics.module';
+import { CacheController } from './common/caching/cache.controller';
+import { MetricsController } from './common/metrics/metrics.controller';
+import { MetricsModule } from './common/metrics/metrics.module';
 import { PubSubModule } from './pub.sub.module';
 
 @Module({
