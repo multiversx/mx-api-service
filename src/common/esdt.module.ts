@@ -9,7 +9,7 @@ import { ElasticModule } from "./elastic/elastic.module";
 import { EsdtService } from "./esdt.service";
 import { ExternalModule } from "./external/external.module";
 import { GatewayModule } from "./gateway/gateway.module";
-import { GENESIS_TIMESTAMP_SERVICE } from "./genesis.timestamp";
+import { GENESIS_TIMESTAMP_SERVICE } from "../utils/genesis.timestamp.interface";
 
 
 @Module({
