@@ -4,7 +4,7 @@ import { AccountController } from "./accounts/account.controller";
 import { BlockController } from "./blocks/block.controller";
 import { DelegationLegacyController } from "./delegation.legacy/delegation.legacy.controller";
 import { DelegationController } from "./delegation/delegation.controller";
-import { EndpointsServicesModule } from "./enpoints.services.module";
+import { EndpointsServicesModule } from "./endpoints.services.module";
 import { IdentitiesController } from "./identities/identities.controller";
 import { KeysController } from "./keys/keys.controller";
 import { MiniBlockController } from "./miniblocks/mini.block.controller";
