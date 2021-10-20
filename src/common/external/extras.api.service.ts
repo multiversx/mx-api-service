@@ -1,6 +1,6 @@
 import { Logger, Injectable } from '@nestjs/common';
 import { ApiConfigService } from '../api.config.service';
-import { ApiService } from './api.service';
+import { ApiService } from '../network/api.service';
 import { TransactionScamResult } from './entities/transaction.scam.result';
 import { TransactionScamMinInfo } from './entities/transaction.scam.min.info';
 

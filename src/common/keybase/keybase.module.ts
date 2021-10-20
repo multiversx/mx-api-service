@@ -3,7 +3,7 @@ import { NodeModule } from "src/endpoints/nodes/node.module";
 import { ProviderModule } from "src/endpoints/providers/provider.module";
 import { ApiConfigModule } from "../api.config.module";
 import { CachingModule } from "../caching/caching.module";
-import { ApiModule } from "../external/api.module";
+import { ApiModule } from "../network/api.module";
 import { KeybaseService } from "./keybase.service";
 
 

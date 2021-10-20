@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
-import { ApiService } from "../external/api.service";
+import { ApiService } from "../network/api.service";
 import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";

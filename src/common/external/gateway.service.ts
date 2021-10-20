@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api.config.service";
-import { ApiService } from "./api.service";
+import { ApiService } from "../network/api.service";
 
 @Injectable()
 export class GatewayService {

@@ -1,5 +1,5 @@
 import { forwardRef, Module } from "@nestjs/common";
-import { ApiModule } from "./api.module";
+import { ApiModule } from "../network/api.module";
 import { DataApiModule } from "./data.api.module";
 import { ElasticModule } from "../elastic/elastic.module";
 import { ExtrasApiModule } from "./extras.api.module";
