@@ -9,7 +9,7 @@ import { TokenUtils } from "src/utils/tokens.utils";
 import { ApiConfigService } from "./api-config/api.config.service";
 import { CachingService } from "./caching/caching.service";
 import { GatewayService } from "./gateway/gateway.service";
-import { GENESIS_TIMESTAMP_SERVICE, IGenesisTimestamp } from "./genesis.timestamp";
+import { GENESIS_TIMESTAMP_SERVICE, GenesisTimestampInterface } from "../utils/genesis.timestamp.interface";
 
 @Injectable()
 export class EsdtService {
@@ -22,7 +22,7 @@ export class EsdtService {
     private readonly vmQueryService: VmQueryService,
     private readonly metricsService: MetricsService,
     @Inject(GENESIS_TIMESTAMP_SERVICE)
-    private readonly genesisTimestampService: IGenesisTimestamp
+    private readonly genesisTimestampService: GenesisTimestampInterface
   ) {
     this.logger = new Logger(EsdtService.name);
   }
