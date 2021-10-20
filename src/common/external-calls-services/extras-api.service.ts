@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Logger, Injectable } from '@nestjs/common';
+import { Logger, Injectable } from '@nestjs/common';
 import { ApiConfigService } from '../api.config.service';
 import { ExtrasApiScamTransactionResult, ExtrasApiTransactionMinInfoDto } from '../external-dtos/extras-api';
 import { ApiService } from './api.service';
@@ -9,7 +9,6 @@ export class ExtrasApiService {
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    @Inject(forwardRef(() => ApiService))
     private readonly apiService: ApiService
   ) {
     this.logger = new Logger(ExtrasApiService.name);

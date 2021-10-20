@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
 import { ApiService } from "./api.service";
 import { PerformanceProfiler } from "src/utils/performance.profiler";
@@ -20,7 +20,6 @@ export class ElasticService {
 
   constructor(
     private apiConfigService: ApiConfigService,
-    @Inject(forwardRef(() => ApiService))
     private readonly apiService: ApiService,
     private readonly metricsService: MetricsService
   ) {
