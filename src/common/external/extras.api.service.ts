@@ -1,7 +1,8 @@
 import { Logger, Injectable } from '@nestjs/common';
 import { ApiConfigService } from '../api.config.service';
-import { ExtrasApiScamTransactionResult, ExtrasApiTransactionMinInfoDto } from '../external-dtos/extras-api';
 import { ApiService } from './api.service';
+import { TransactionScamResult } from './entities/transaction.scam.result';
+import { TransactionScamMinInfo } from './entities/transaction.scam.min.info';
 
 @Injectable()
 export class ExtrasApiService {
@@ -23,7 +24,7 @@ export class ExtrasApiService {
     return await this.apiService.post(`${url}/${route}`, data);
   }
 
-  async checkScamTransaction(transactionMinInfoDto: ExtrasApiTransactionMinInfoDto): Promise<ExtrasApiScamTransactionResult | null> {
+  async checkScamTransaction(transactionMinInfoDto: TransactionScamMinInfo): Promise<TransactionScamResult | null> {
     try {
       let result = await this.post('transactions/check-scam', transactionMinInfoDto);
       return result?.data;

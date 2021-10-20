@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CachingService } from 'src/common/caching/caching.service';
-import { ExtrasApiService } from 'src/common/external/extras-api.service';
-import { ExtrasApiScamTransactionResult, ExtrasApiTransactionMinInfoDto } from 'src/common/external-dtos/extras-api';
+import { TransactionScamResult } from 'src/common/external/entities/transaction.scam.result';
+import { TransactionScamMinInfo } from 'src/common/external/entities/transaction.scam.min.info';
+import { ExtrasApiService } from 'src/common/external/extras.api.service';
 import { Constants } from 'src/utils/constants';
-import { TransactionScamInfo } from '../entities/transaction-scam-info';
-import { mapTransactionScamTypeFromExtrasApi, TransactionScamType } from '../entities/transaction-scam-type.enum';
+import { TransactionScamInfo } from '../entities/transaction.scam.info';
 import { TransactionDetailed } from '../entities/transaction.detailed';
-import { PotentialScamTransactionChecker } from './potential-scam-transaction.checker';
+import { PotentialScamTransactionChecker } from './potential.scam.transaction.checker';
+import { TransactionScamType } from 'src/common/external/entities/transaction.scam.type';
 
 @Injectable()
 export class TransactionScamCheckService {
@@ -39,9 +40,8 @@ export class TransactionScamCheckService {
     }
   }
 
-  private buildResult(result: ExtrasApiScamTransactionResult): TransactionScamInfo | undefined {
-    const { type: extrasApiType, info } = result;
-    const type = mapTransactionScamTypeFromExtrasApi(extrasApiType);
+  private buildResult(result: TransactionScamResult): TransactionScamInfo | undefined {
+    const { type, info } = result;
 
     if (type === TransactionScamType.none) {
       return;
@@ -53,14 +53,14 @@ export class TransactionScamCheckService {
     };
   }
 
-  private async loadScamTransactionResult(transaction: TransactionDetailed): Promise<ExtrasApiScamTransactionResult | null> {
+  private async loadScamTransactionResult(transaction: TransactionDetailed): Promise<TransactionScamResult | null> {
     const input = this.buildExtrasApiTransactionMinInfoDto(transaction);
     return await this.cachingService.getOrSetCache(
       `scam-info.${transaction.txHash}`,
       () => this.extrasApiService.checkScamTransaction(input), Constants.oneMinute() * 5);
   }
 
-  private buildExtrasApiTransactionMinInfoDto(transaction: TransactionDetailed): ExtrasApiTransactionMinInfoDto {
+  private buildExtrasApiTransactionMinInfoDto(transaction: TransactionDetailed): TransactionScamMinInfo {
     return {
       data: transaction.data,
       receiver: transaction.receiver,

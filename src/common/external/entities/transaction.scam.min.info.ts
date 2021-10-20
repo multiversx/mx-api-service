@@ -1,4 +1,4 @@
-export class ExtrasApiTransactionMinInfoDto {
+export class TransactionScamMinInfo {
   sender: string = '';
   receiver: string = '';
   data: string = '';

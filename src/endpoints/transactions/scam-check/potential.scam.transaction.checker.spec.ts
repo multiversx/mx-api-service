@@ -1,6 +1,6 @@
 import { SmartContractResult } from "../entities/smart.contract.result";
 import { TransactionDetailed } from "../entities/transaction.detailed";
-import { PotentialScamTransactionChecker } from "./potential-scam-transaction.checker";
+import { PotentialScamTransactionChecker } from "./potential.scam.transaction.checker";
 
 
 describe('PotentialScamTransactionChecker', () => {
