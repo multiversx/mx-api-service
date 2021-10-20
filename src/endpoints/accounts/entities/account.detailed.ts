@@ -22,4 +22,7 @@ export class AccountDetailed extends Account {
 
     @ApiProperty()
     ownerAddress: string = '';
+
+    @ApiProperty()
+    deployedAt?: number;
 }
