@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { CachingService } from "src/common/caching/caching.service";
-import { KeybaseIdentity } from "src/common/entities/keybase.identity";
+import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { Constants } from "src/utils/constants";
 import { Node } from "../nodes/entities/node";

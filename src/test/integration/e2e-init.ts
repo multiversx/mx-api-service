@@ -1,7 +1,7 @@
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
-import { KeybaseIdentity } from "src/common/entities/keybase.identity";
+import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";

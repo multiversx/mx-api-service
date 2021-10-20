@@ -5,9 +5,9 @@ import { ApiUtils } from "src/utils/api.utils";
 import { Constants } from "src/utils/constants";
 import { ApiConfigService } from "../api.config.service";
 import { CachingService } from "../caching/caching.service";
-import { Keybase } from "../entities/keybase";
-import { KeybaseIdentity } from "../entities/keybase.identity";
-import { KeybaseState } from "../entities/keybase.state";
+import { Keybase } from "./entities/keybase";
+import { KeybaseIdentity } from "./entities/keybase.identity";
+import { KeybaseState } from "./entities/keybase.state";
 import { ApiService } from "../external/api.service";
 
 @Injectable()
