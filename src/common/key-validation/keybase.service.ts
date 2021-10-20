@@ -1,4 +1,4 @@
-import { forwardRef, HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { ApiUtils } from "src/utils/api.utils";
@@ -8,7 +8,7 @@ import { CachingService } from "../caching/caching.service";
 import { Keybase } from "../entities/keybase";
 import { KeybaseIdentity } from "../entities/keybase.identity";
 import { KeybaseState } from "../entities/keybase.state";
-import { ApiService } from "./api.service";
+import { ApiService } from "../external-calls-services/api.service";
 
 @Injectable()
 export class KeybaseService {
@@ -18,9 +18,7 @@ export class KeybaseService {
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly apiService: ApiService,
-    @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
-    @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService
   ) {
     this.logger = new Logger(KeybaseService.name);

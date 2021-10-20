@@ -16,7 +16,7 @@ import { KeybaseState } from "src/common/entities/keybase.state";
 import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
 import { GatewayService } from "src/common/external-calls-services/gateway.service";
-import { KeybaseService } from "src/common/external-calls-services/keybase.service";
+import { KeybaseService } from "src/common/key-validation/keybase.service";
 
 @Injectable()
 export class NodeService {

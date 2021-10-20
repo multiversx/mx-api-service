@@ -13,7 +13,7 @@ import { NetworkService } from "src/endpoints/network/network.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { EsdtService } from "src/common/esdt.service";
 import { CronJob } from "cron";
-import { KeybaseService } from "src/common/external-calls-services/keybase.service";
+import { KeybaseService } from "src/common/key-validation/keybase.service";
 import { DataApiService } from "src/common/external-calls-services/data.api.service";
 import { GatewayService } from "src/common/external-calls-services/gateway.service";
 
