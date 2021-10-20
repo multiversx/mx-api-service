@@ -1,7 +1,7 @@
 import { ApiUtils } from "src/utils/api.utils";
 import { AbstractQuery } from "./abstract.query"
 import { ElasticPagination } from "./elastic.pagination"
-import { ElasticSortProperty } from "../../entities/elastic/elastic.sort.property"
+import { ElasticSortProperty } from "./elastic.sort.property";
 import { QueryCondition } from "./query.condition"
 import { QueryConditionOptions } from "./query.condition.options";
 import { RangeQuery } from "./range.query";

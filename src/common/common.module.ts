@@ -24,8 +24,8 @@ import { ApiModule } from "./network/api.module";
     forwardRef(() => MetricsModule),
   ],
   exports: [
-    ApiConfigModule, CachingModule, ExternalModule, BlsModule, EsdtModule,
-    KeybaseModule, MetricsModule
+    ApiConfigModule, CachingModule, ApiModule, ElasticModule, GatewayModule, ExternalModule,
+    BlsModule, EsdtModule, KeybaseModule, MetricsModule,
   ]
 })
 export class CommonModule { }

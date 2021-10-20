@@ -3,7 +3,6 @@ import { Cron, CronExpression, SchedulerRegistry } from "@nestjs/schedule";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
-import { DataQuoteType } from "src/common/entities/data.quote.type";
 import { Constants } from "src/utils/constants";
 import { Locker } from "src/utils/locker";
 import { CachingService } from "src/common/caching/caching.service";
@@ -15,7 +14,8 @@ import { EsdtService } from "src/common/esdt.service";
 import { CronJob } from "cron";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { DataApiService } from "src/common/external/data.api.service";
-import { GatewayService } from "src/common/external/gateway.service";
+import { GatewayService } from "src/common/gateway/gateway.service";
+import { DataQuoteType } from "src/common/external/entities/data.quote.type";
 
 @Injectable()
 export class CacheWarmerService {

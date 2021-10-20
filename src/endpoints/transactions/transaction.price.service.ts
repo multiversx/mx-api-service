@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
-import { DataQuoteType } from "src/common/entities/data.quote.type";
 import { DataApiService } from "src/common/external/data.api.service";
+import { DataQuoteType } from "src/common/external/entities/data.quote.type";
 import { Constants } from "src/utils/constants";
 import { TransactionDetailed } from "./entities/transaction.detailed";
 

@@ -5,7 +5,7 @@ import { Shard } from "./entities/shard";
 import { CachingService } from "src/common/caching/caching.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { Constants } from "src/utils/constants";
-import { GatewayService } from "src/common/external/gateway.service";
+import { GatewayService } from "src/common/gateway/gateway.service";
 
 @Injectable()
 export class ShardService {

@@ -12,11 +12,11 @@ import { StakeService } from "../stake/stake.service";
 import { SortOrder } from "src/common/entities/sort.order";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockService } from "../blocks/block.service";
-import { KeybaseState } from "src/common/entities/keybase.state";
 import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
-import { GatewayService } from "src/common/external/gateway.service";
 import { KeybaseService } from "src/common/keybase/keybase.service";
+import { GatewayService } from "src/common/gateway/gateway.service";
+import { KeybaseState } from "src/common/keybase/entities/keybase.state";
 
 @Injectable()
 export class NodeService {

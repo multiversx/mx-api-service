@@ -5,7 +5,7 @@ import { VmQueryRequest } from "../vm.query/entities/vm.query.request";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { Constants } from "src/utils/constants";
-import { GatewayService } from "src/common/external/gateway.service";
+import { GatewayService } from "src/common/gateway/gateway.service";
 
 @Controller()
 @ApiTags('proxy')
