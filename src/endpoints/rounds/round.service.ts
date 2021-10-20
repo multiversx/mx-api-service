@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { Round } from "./entities/round";
 import { RoundDetailed } from "./entities/round.detailed";
 import { RoundFilter } from "./entities/round.filter";
@@ -11,13 +11,20 @@ import { QueryType } from "src/common/entities/elastic/query.type";
 import { RoundUtils } from "src/utils/round.utils";
 import { ApiUtils } from "src/utils/api.utils";
 import { ElasticService } from "src/common/external/elastic.service";
+import { IGenesisTimestamp } from "src/common/genesis.timestamp";
+import { Constants } from "src/utils/constants";
+import { CachingService } from "src/common/caching/caching.service";
 
 @Injectable()
-export class RoundService {
+export class RoundService implements IGenesisTimestamp{
+  private readonly logger: Logger
   constructor(
     private readonly elasticService: ElasticService,
-    private readonly blsService: BlsService
-  ) {}
+    private readonly blsService: BlsService,
+    private readonly cachingService: CachingService,
+  ) {
+    this.logger = new Logger(RoundService.name);
+  }
 
   private async buildElasticRoundsFilter(filter: RoundFilter): Promise<AbstractQuery[]> {
     const queries: AbstractQuery[] = [];
@@ -76,5 +83,36 @@ export class RoundService {
     result.signers = result.signersIndexes.map((index: number) => publicKeys[index]);
 
     return ApiUtils.mergeObjects(new RoundDetailed(), result);
+  }
+
+  async getSecondsRemainingUntilNextRound(): Promise<number> {
+    let genesisTimestamp = await this.getGenesisTimestamp();
+    let currentTimestamp = Math.round(Date.now() / 1000);
+
+    let result = 6 - (currentTimestamp - genesisTimestamp) % 6;
+    if (result === 6) {
+      result = 0;
+    }
+
+    return result;
+  }
+
+  private async getGenesisTimestamp(): Promise<number> {
+    return await this.cachingService.getOrSetCache(
+      'genesisTimestamp',
+      async () => await this.getGenesisTimestampRaw(),
+      Constants.oneWeek(),
+      Constants.oneWeek()
+    );
+  }
+
+  private async getGenesisTimestampRaw(): Promise<number> {
+    try {
+      let round = await this.getRound(0, 1);
+      return round.timestamp;
+    } catch (error) {
+      this.logger.error(error);
+      return 0;
+    }
   }
 }

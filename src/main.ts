@@ -23,6 +23,7 @@ import { ExtractInterceptor } from './interceptors/extract.interceptor';
 import { JwtAuthenticateGuard } from './interceptors/access.interceptor';
 import { TransactionProcessorModule } from './crons/transaction.processor.module';
 import { MicroserviceModule } from './microservice.module';
+import { RoundService } from './endpoints/rounds/round.service';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
@@ -36,6 +37,8 @@ async function bootstrap() {
   let httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
   let metricsService = publicApp.get<MetricsService>(MetricsService);
   let tokenAssetService = publicApp.get<TokenAssetService>(TokenAssetService);
+  let roundService = publicApp.get<RoundService>(RoundService);
+
 
   if (apiConfigService.getIsAuthActive()) {
     publicApp.useGlobalGuards(new JwtAuthenticateGuard(apiConfigService));
@@ -54,7 +57,7 @@ async function bootstrap() {
   globalInterceptors.push(new LoggingInterceptor(metricsService));
 
   if (apiConfigService.getUseRequestCachingFlag()) {
-    globalInterceptors.push(new CachingInterceptor(cachingService, httpAdapterHostService, metricsService));
+    globalInterceptors.push(new CachingInterceptor(cachingService, httpAdapterHostService, metricsService, roundService));
   }
   
   globalInterceptors.push(new FieldsInterceptor());

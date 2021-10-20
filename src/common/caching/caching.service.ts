@@ -8,8 +8,6 @@ import { InvalidationFunction } from "src/crons/entities/invalidation.function";
 import { PerformanceProfiler } from "../../utils/performance.profiler";
 import { ShardTransaction } from "src/crons/entities/shard.transaction";
 import { Cache } from "cache-manager";
-import { RoundService } from "src/endpoints/rounds/round.service";
-import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 
@@ -98,7 +96,6 @@ export class CachingService {
     private readonly configService: ApiConfigService,
     @Inject(CACHE_MANAGER)
     cache: Cache,
-    private readonly roundService: RoundService,
   ) {
     CachingService.cache = cache;
     this.logger = new Logger(CachingService.name);
@@ -526,37 +523,6 @@ export class CachingService {
     }
 
     return false;
-  }
-
-  async getSecondsRemainingUntilNextRound(): Promise<number> {
-    let genesisTimestamp = await this.getGenesisTimestamp();
-    let currentTimestamp = Math.round(Date.now() / 1000);
-
-    let result = 6 - (currentTimestamp - genesisTimestamp) % 6;
-    if (result === 6) {
-      result = 0;
-    }
-
-    return result;
-  }
-
-  private async getGenesisTimestamp(): Promise<number> {
-    return await this.getOrSetCache(
-      'genesisTimestamp',
-      async () => await this.getGenesisTimestampRaw(),
-      Constants.oneWeek(),
-      Constants.oneWeek()
-    );
-  }
-
-  private async getGenesisTimestampRaw(): Promise<number> {
-    try {
-      let round = await this.roundService.getRound(0, 1);
-      return round.timestamp;
-    } catch (error) {
-      this.logger.error(error);
-      return 0;
-    }
   }
 
   async flushDb(): Promise<any> {

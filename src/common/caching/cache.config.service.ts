@@ -1,14 +1,15 @@
-import { CacheModuleOptions, CacheOptionsFactory, Injectable } from "@nestjs/common";
-import { CachingService } from "./caching.service";
+import { CacheModuleOptions, CacheOptionsFactory, Inject, Injectable } from "@nestjs/common";
+import { GENESIS_TIMESTAMP_SERVICE, IGenesisTimestamp } from "../genesis.timestamp";
 
 @Injectable()
 export class CacheConfigService implements CacheOptionsFactory {
   constructor(
-    private readonly cachingService: CachingService
+    @Inject(GENESIS_TIMESTAMP_SERVICE)
+    private readonly genesisTimestampService: IGenesisTimestamp
   ) {}
 
   async createCacheOptions(): Promise<CacheModuleOptions> {
-    let ttl = await this.cachingService.getSecondsRemainingUntilNextRound();
+    let ttl = await this.genesisTimestampService.getSecondsRemainingUntilNextRound();
     
     return {
       ttl,

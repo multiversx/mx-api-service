@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
@@ -9,6 +9,7 @@ import { TokenUtils } from "src/utils/tokens.utils";
 import { ApiConfigService } from "./api.config.service";
 import { CachingService } from "./caching/caching.service";
 import { GatewayService } from "./external/gateway.service";
+import { GENESIS_TIMESTAMP_SERVICE, IGenesisTimestamp } from "./genesis.timestamp";
 
 @Injectable()
 export class EsdtService {
@@ -20,6 +21,8 @@ export class EsdtService {
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
     private readonly metricsService: MetricsService,
+    @Inject(GENESIS_TIMESTAMP_SERVICE)
+    private readonly genesisTimestampService: IGenesisTimestamp
   ) {
     this.logger = new Logger(EsdtService.name);
   }
@@ -64,7 +67,7 @@ export class EsdtService {
       delete this.pendingRequestsDictionary[address];
     }
 
-    let ttl = await this.cachingService.getSecondsRemainingUntilNextRound();
+    let ttl = await this.genesisTimestampService.getSecondsRemainingUntilNextRound();
 
     await this.cachingService.setCacheLocal(`address:${address}:esdts`, esdts, ttl);
     return esdts;
