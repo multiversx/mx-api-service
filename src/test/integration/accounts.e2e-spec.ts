@@ -77,7 +77,6 @@ describe('Account Service', () => {
             it(`should return a detailed account with account address`, async () => {
                 const accountDetailed = await accountService.getAccount(accountAddress);
                 expect(accountDetailed).toBeDefined();
-                expect(accountDetailed).toHaveStructure(Object.keys(new AccountDetailed()));
                 expect(accountDetailed!.address).toStrictEqual(accountAddress);
             });
     
