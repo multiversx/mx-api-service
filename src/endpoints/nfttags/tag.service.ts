@@ -6,7 +6,7 @@ import { ElasticSortOrder } from "src/common/entities/elastic/elastic.sort.order
 import { ApiUtils } from "src/utils/api.utils";
 import { Constants } from "src/utils/constants";
 import { Tag } from "./entities/tag";
-import { ElasticService } from "src/common/external-calls-services/elastic.service";
+import { ElasticService } from "src/common/external/elastic.service";
 
 @Injectable()
 export class TagService {

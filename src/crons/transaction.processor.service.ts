@@ -12,7 +12,7 @@ import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { EventsGateway } from "src/websockets/events.gateway";
 import { ShardTransaction } from "./entities/shard.transaction";
 import { NodeService } from "src/endpoints/nodes/node.service";
-import { GatewayService } from "src/common/external-calls-services/gateway.service";
+import { GatewayService } from "src/common/external/gateway.service";
 
 @Injectable()
 export class TransactionProcessorService {

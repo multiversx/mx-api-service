@@ -12,7 +12,7 @@ import { QueryType } from "src/common/entities/elastic/query.type";
 import { Constants } from "src/utils/constants";
 import { ApiUtils } from "src/utils/api.utils";
 import { QueryConditionOptions } from "src/common/entities/elastic/query.condition.options";
-import { ElasticService } from "src/common/external-calls-services/elastic.service";
+import { ElasticService } from "src/common/external/elastic.service";
 
 @Injectable()
 export class BlockService {

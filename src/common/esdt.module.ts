@@ -4,7 +4,7 @@ import { VmQueryModule } from "src/endpoints/vm.query/vm.query.module";
 import { ApiConfigModule } from "./api.config.module";
 import { CachingModule } from "./caching/caching.module";
 import { EsdtService } from "./esdt.service";
-import { ExternalModule } from "./external-calls-services/external.module";
+import { ExternalModule } from "./external/external.module";
 
 
 @Module({

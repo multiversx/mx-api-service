@@ -15,8 +15,8 @@ import { ApiUtils } from 'src/utils/api.utils';
 import { BinaryUtils } from 'src/utils/binary.utils';
 import { AccountKey } from './entities/account.key';
 import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
-import { ElasticService } from 'src/common/external-calls-services/elastic.service';
-import { GatewayService } from 'src/common/external-calls-services/gateway.service';
+import { ElasticService } from 'src/common/external/elastic.service';
+import { GatewayService } from 'src/common/external/gateway.service';
 
 @Injectable()
 export class AccountService {

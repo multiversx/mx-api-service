@@ -8,7 +8,7 @@ import { Constants } from "src/utils/constants";
 import { TokenUtils } from "src/utils/tokens.utils";
 import { ApiConfigService } from "./api.config.service";
 import { CachingService } from "./caching/caching.service";
-import { GatewayService } from "./external-calls-services/gateway.service";
+import { GatewayService } from "./external/gateway.service";
 
 @Injectable()
 export class EsdtService {

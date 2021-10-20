@@ -3,7 +3,7 @@ import { ApiConfigModule } from "./api.config.module";
 import { BlsModule } from "./bls.module";
 import { CachingModule } from "./caching/caching.module";
 import { EsdtModule } from "./esdt.module";
-import { ExternalModule } from "./external-calls-services/external.module";
+import { ExternalModule } from "./external/external.module";
 import { KeybaseModule } from "./key-validation/keybase.module";
 import { MetricsModule } from "./metrics/metrics.module";
 

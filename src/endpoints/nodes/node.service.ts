@@ -15,7 +15,7 @@ import { BlockService } from "../blocks/block.service";
 import { KeybaseState } from "src/common/entities/keybase.state";
 import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
-import { GatewayService } from "src/common/external-calls-services/gateway.service";
+import { GatewayService } from "src/common/external/gateway.service";
 import { KeybaseService } from "src/common/key-validation/keybase.service";
 
 @Injectable()

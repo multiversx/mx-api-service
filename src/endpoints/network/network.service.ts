@@ -15,9 +15,9 @@ import { NetworkConstants } from './entities/constants';
 import { Economics } from './entities/economics';
 import { NetworkConfig } from './entities/network.config';
 import { StakeService } from '../stake/stake.service';
-import { GatewayService } from 'src/common/external-calls-services/gateway.service';
-import { DataApiService } from 'src/common/external-calls-services/data.api.service';
-import { ApiService } from 'src/common/external-calls-services/api.service';
+import { GatewayService } from 'src/common/external/gateway.service';
+import { DataApiService } from 'src/common/external/data.api.service';
+import { ApiService } from 'src/common/external/api.service';
 
 @Injectable()
 export class NetworkService {

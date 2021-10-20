@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { register, Histogram, Gauge, collectDefaultMetrics } from 'prom-client';
 import { ApiConfigService } from "src/common/api.config.service";
-import { GatewayService } from "src/common/external-calls-services/gateway.service";
+import { GatewayService } from "src/common/external/gateway.service";
 
 @Injectable()
 export class MetricsService {

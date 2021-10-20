@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ApiService } from "src/common/external-calls-services/api.service";
+import { ApiService } from "src/common/external/api.service";
 import { NftMetadata } from "src/endpoints/nfts/entities/nft.metadata";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";

@@ -22,8 +22,8 @@ import { TransactionPriceService } from './transaction.price.service';
 import { TransactionQueryOptions } from './entities/transactions.query.options';
 import { SmartContractResult } from './entities/smart.contract.result';
 import { TermsQuery } from 'src/common/entities/elastic/terms.query';
-import { ElasticService } from 'src/common/external-calls-services/elastic.service';
-import { GatewayService } from 'src/common/external-calls-services/gateway.service';
+import { ElasticService } from 'src/common/external/elastic.service';
+import { GatewayService } from 'src/common/external/gateway.service';
 import { TransactionLog } from './entities/transaction.log';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 

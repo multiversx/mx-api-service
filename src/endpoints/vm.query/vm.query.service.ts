@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { CachingService } from "src/common/caching/caching.service";
-import { GatewayService } from "src/common/external-calls-services/gateway.service";
+import { GatewayService } from "src/common/external/gateway.service";
 import { Constants } from "src/utils/constants";
 
 @Injectable()

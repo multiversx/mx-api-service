@@ -20,8 +20,8 @@ import { EsdtService } from "src/common/esdt.service";
 import { NftQueryOptions } from "./entities/nft.query.options";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
 import { CollectionAccountFilter } from "./entities/collection.account.filter";
-import { GatewayService } from "src/common/external-calls-services/gateway.service";
-import { ElasticService } from "src/common/external-calls-services/elastic.service";
+import { GatewayService } from "src/common/external/gateway.service";
+import { ElasticService } from "src/common/external/elastic.service";
 
 @Injectable()
 export class NftService {

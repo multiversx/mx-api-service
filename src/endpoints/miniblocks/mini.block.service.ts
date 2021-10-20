@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ElasticService } from "src/common/external-calls-services/elastic.service";
+import { ElasticService } from "src/common/external/elastic.service";
 import { ApiUtils } from "src/utils/api.utils";
 import { MiniBlockDetailed } from "./entities/mini.block.detailed";
 

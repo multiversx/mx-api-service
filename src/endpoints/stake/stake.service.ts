@@ -11,7 +11,7 @@ import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
 import { NetworkService } from "../network/network.service";
 import { RoundUtils } from "src/utils/round.utils";
-import { GatewayService } from "src/common/external-calls-services/gateway.service";
+import { GatewayService } from "src/common/external/gateway.service";
 
 @Injectable()
 export class StakeService {

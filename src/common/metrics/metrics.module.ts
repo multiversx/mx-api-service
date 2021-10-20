@@ -1,6 +1,6 @@
 import { forwardRef, Module } from "@nestjs/common";
 import { ApiConfigModule } from "../api.config.module";
-import { GatewayModule } from "../external-calls-services/gateway.module";
+import { GatewayModule } from "../external/gateway.module";
 import { MetricsService } from "./metrics.service";
 
 @Module({

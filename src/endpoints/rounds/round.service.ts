@@ -10,7 +10,7 @@ import { QueryConditionOptions } from "src/common/entities/elastic/query.conditi
 import { QueryType } from "src/common/entities/elastic/query.type";
 import { RoundUtils } from "src/utils/round.utils";
 import { ApiUtils } from "src/utils/api.utils";
-import { ElasticService } from "src/common/external-calls-services/elastic.service";
+import { ElasticService } from "src/common/external/elastic.service";
 
 @Injectable()
 export class RoundService {

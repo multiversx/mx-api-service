@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { BlsModule } from "src/common/bls.module";
-import { ElasticModule } from "src/common/external-calls-services/elastic.module";
+import { ElasticModule } from "src/common/external/elastic.module";
 import { RoundService } from "./round.service";
 
 @Module({

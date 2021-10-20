@@ -10,7 +10,7 @@ import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
 import { NodesInfos } from "./entities/nodes.infos";
 import { DelegationData } from "./entities/delegation.data";
-import { ApiService } from "src/common/external-calls-services/api.service";
+import { ApiService } from "src/common/external/api.service";
 import { KeybaseService } from "src/common/key-validation/keybase.service";
 
 @Injectable()
