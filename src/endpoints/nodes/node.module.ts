@@ -4,7 +4,6 @@ import { BlockModule } from "../blocks/block.module";
 import { ProviderModule } from "../providers/provider.module";
 import { StakeModule } from "../stake/stake.module";
 import { VmQueryModule } from "../vm.query/vm.query.module";
-import { NodeController } from "./node.controller";
 import { NodeService } from "./node.service";
 
 @Module({
@@ -14,9 +13,6 @@ import { NodeService } from "./node.service";
     forwardRef(() => VmQueryModule),
     forwardRef(() => BlockModule),
     forwardRef(() => StakeModule),
-  ],
-  controllers: [
-    NodeController,
   ],
   providers: [
     NodeService,

@@ -1,5 +1,4 @@
 import { CacheModule, forwardRef, Module } from "@nestjs/common";
-import { CacheController } from "src/endpoints/cache/cache.controller";
 import { RoundModule } from "src/endpoints/rounds/round.module";
 import { PubSubModule } from "src/pub.sub.module";
 import { ApiConfigModule } from "../api.config.module";
@@ -12,9 +11,6 @@ import { CachingService } from "./caching.service";
     ApiConfigModule,
     forwardRef(() => RoundModule),
     forwardRef(() => PubSubModule),
-  ],
-  controllers: [
-    CacheController,
   ],
   providers: [
     CachingService, CacheConfigService,

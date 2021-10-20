@@ -7,7 +7,6 @@ import { TokenModule } from "../tokens/token.module";
 import { TransactionModule } from "../transactions/transaction.module";
 import { VmQueryModule } from "../vm.query/vm.query.module";
 import { WaitingListModule } from "../waiting-list/waiting.list.module";
-import { AccountController } from "./account.controller";
 import { AccountService } from "./account.service";
 
 @Module({
@@ -20,9 +19,6 @@ import { AccountService } from "./account.service";
     forwardRef(() => WaitingListModule),
     forwardRef(() => StakeModule),
     forwardRef(() => TransactionModule),
-  ],
-  controllers: [
-    AccountController,
   ],
   providers: [
     AccountService,

@@ -6,7 +6,8 @@ import "./utils/extensions/array.extensions";
 import "./utils/extensions/date.extensions";
 import "./utils/extensions/number.extensions";
 import { CommonModule } from './common/common.module';
-import { EndpointsModule } from  './endpoints/enpoints.module';
+import { EndpointsServicesModule } from  './endpoints/enpoints.services.module';
+import { EndpointsControllersModule } from './endpoints/endpoints.controllers.module';
 
 @Module({
   imports: [
@@ -28,11 +29,12 @@ import { EndpointsModule } from  './endpoints/enpoints.module';
       ]
     }),
     forwardRef(() => CommonModule),
-    forwardRef(() => EndpointsModule),
+    forwardRef(() => EndpointsServicesModule),
+    EndpointsControllersModule,
   ],
   exports: [
     CommonModule,
-    EndpointsModule,
+    EndpointsServicesModule,
   ]
 })
 export class PublicAppModule { }

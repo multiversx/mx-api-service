@@ -5,7 +5,6 @@ import { BlockModule } from "../blocks/block.module";
 import { StakeModule } from "../stake/stake.module";
 import { TransactionModule } from "../transactions/transaction.module";
 import { VmQueryModule } from "../vm.query/vm.query.module";
-import { NetworkController } from "./network.controller";
 import { NetworkService } from "./network.service";
 
 @Module({
@@ -16,9 +15,6 @@ import { NetworkService } from "./network.service";
     forwardRef(() => AccountModule),
     forwardRef(() => TransactionModule),
     forwardRef(() => StakeModule),
-  ],
-  controllers: [
-    NetworkController,
   ],
   providers: [
     NetworkService,
