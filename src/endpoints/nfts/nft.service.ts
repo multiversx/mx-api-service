@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api.config.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";

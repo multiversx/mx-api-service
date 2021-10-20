@@ -3,7 +3,7 @@ import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
 import { CachingService } from 'src/common/caching/caching.service';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
-import { ApiConfigService } from 'src/common/api.config.service';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { AccountDeferred } from './entities/account.deferred';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { Constants } from 'src/utils/constants';

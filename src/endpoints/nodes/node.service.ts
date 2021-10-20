@@ -4,7 +4,7 @@ import { NodeType } from "./entities/node.type";
 import { NodeStatus } from "./entities/node.status";
 import { Queue } from "./entities/queue";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
-import { ApiConfigService } from "src/common/api.config.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { NodeFilter } from "./entities/node.filter";
 import { ProviderService } from "../providers/provider.service";

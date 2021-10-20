@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api.config.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";

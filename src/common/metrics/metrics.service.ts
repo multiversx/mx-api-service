@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { register, Histogram, Gauge, collectDefaultMetrics } from 'prom-client';
-import { ApiConfigService } from "src/common/api.config.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GatewayService } from "src/common/external/gateway.service";
 
 @Injectable()

@@ -4,7 +4,7 @@ import { PublicAppModule } from './public.app.module';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
-import { ApiConfigService } from './common/api.config.service';
+import { ApiConfigService } from './common/api-config/api.config.service';
 import { CachingService } from './common/caching/caching.service';
 import { TokenAssetService } from './endpoints/tokens/token.asset.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';

@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Stats } from 'src/endpoints/network/entities/stats';
-import { ApiConfigService } from 'src/common/api.config.service';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { CachingService } from 'src/common/caching/caching.service';
 import { DataQuoteType } from 'src/common/entities/data.quote.type';
 import { Constants } from 'src/utils/constants';

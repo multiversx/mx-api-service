@@ -1,5 +1,5 @@
 import { forwardRef, Module } from "@nestjs/common";
-import { ApiConfigModule } from "../api.config.module";
+import { ApiConfigModule } from "../api-config/api.config.module";
 import { ApiModule } from "../network/api.module";
 import { GatewayService } from "./gateway.service";
 

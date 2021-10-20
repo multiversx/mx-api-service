@@ -6,7 +6,7 @@ import { MetricsService } from "src/common/metrics/metrics.service";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { CollectionFilter } from "src/endpoints/nfts/entities/collection.filter";
-import { ApiConfigService } from "../api.config.service";
+import { ApiConfigService } from "../api-config/api.config.service";
 import { ElasticQuery } from "./entities/elastic.query";
 import { QueryType } from "./entities/query.type";
 import { QueryOperator } from "./entities/query.operator";

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ApiConfigService } from 'src/common/api.config.service';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 import { AddressUtils } from 'src/utils/address.utils';
 import { ApiUtils } from 'src/utils/api.utils';

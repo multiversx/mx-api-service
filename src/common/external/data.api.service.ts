@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ApiConfigService } from "../api.config.service";
+import { ApiConfigService } from "../api-config/api.config.service";
 import { DataQuoteType } from "./entities/data.quote.type";
 import { ApiService } from "../network/api.service";
 

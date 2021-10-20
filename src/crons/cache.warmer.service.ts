@@ -8,7 +8,7 @@ import { Constants } from "src/utils/constants";
 import { Locker } from "src/utils/locker";
 import { CachingService } from "src/common/caching/caching.service";
 import { ClientProxy } from "@nestjs/microservices";
-import { ApiConfigService } from "src/common/api.config.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NetworkService } from "src/endpoints/network/network.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { EsdtService } from "src/common/esdt.service";

@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { ApiConfigService } from "../api.config.service";
+import { ApiConfigService } from "../api-config/api.config.service";
 import { ApiService } from "../network/api.service";
 
 @Injectable()

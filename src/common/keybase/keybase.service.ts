@@ -3,7 +3,7 @@ import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { ApiUtils } from "src/utils/api.utils";
 import { Constants } from "src/utils/constants";
-import { ApiConfigService } from "../api.config.service";
+import { ApiConfigService } from "../api-config/api.config.service";
 import { CachingService } from "../caching/caching.service";
 import { Keybase } from "./entities/keybase";
 import { KeybaseIdentity } from "./entities/keybase.identity";

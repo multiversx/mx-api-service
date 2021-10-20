@@ -5,7 +5,7 @@ import { MetricsService } from "src/common/metrics/metrics.service";
 import { ShardService } from "src/endpoints/shards/shard.service";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
-import { ApiConfigService } from "src/common/api.config.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { AddressUtils } from "src/utils/address.utils";
 import { PerformanceProfiler } from "src/utils/performance.profiler";

@@ -4,7 +4,7 @@ import { NftMetadata } from "src/endpoints/nfts/entities/nft.metadata";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
 import { TokenUtils } from "src/utils/tokens.utils";
-import { ApiConfigService } from "../../common/api.config.service";
+import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { CachingService } from "../../common/caching/caching.service";
 
 @Injectable()

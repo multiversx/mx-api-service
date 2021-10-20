@@ -4,7 +4,7 @@ import { CacheController } from './common/caching/cache.controller';
 import { MetricsController } from './common/metrics/metrics.controller';
 import { MetricsModule } from './common/metrics/metrics.module';
 import { MicroserviceModule } from './microservice.module';
-import { ApiConfigModule } from './common/api.config.module';
+import { ApiConfigModule } from './common/api-config/api.config.module';
 
 @Module({
   imports: [

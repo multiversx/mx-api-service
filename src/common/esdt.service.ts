@@ -6,7 +6,7 @@ import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { AddressUtils } from "src/utils/address.utils";
 import { Constants } from "src/utils/constants";
 import { TokenUtils } from "src/utils/tokens.utils";
-import { ApiConfigService } from "./api.config.service";
+import { ApiConfigService } from "./api-config/api.config.service";
 import { CachingService } from "./caching/caching.service";
 import { GatewayService } from "./gateway/gateway.service";
 import { GENESIS_TIMESTAMP_SERVICE, IGenesisTimestamp } from "./genesis.timestamp";

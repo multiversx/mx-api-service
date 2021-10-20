@@ -1,5 +1,5 @@
 import { CACHE_MANAGER, Inject, Injectable, Logger } from "@nestjs/common";
-import { ApiConfigService } from "../api.config.service";
+import { ApiConfigService } from "../api-config/api.config.service";
 const { promisify } = require('util');
 import { createClient } from 'redis';
 import asyncPool from 'tiny-async-pool';

@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import axios, { AxiosRequestConfig } from "axios";
 import Agent from 'agentkeepalive';
 import { MetricsService } from "src/common/metrics/metrics.service";
-import { ApiConfigService } from "../api.config.service";
+import { ApiConfigService } from "../api-config/api.config.service";
 import { PerformanceProfiler } from "src/utils/performance.profiler";
 
 @Injectable()
