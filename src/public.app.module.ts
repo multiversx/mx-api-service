@@ -5,7 +5,7 @@ import "./utils/extensions/number.extensions";
 import { CommonModule } from './common/common.module';
 import { EndpointsServicesModule } from  './endpoints/endpoints.services.module';
 import { EndpointsControllersModule } from './endpoints/endpoints.controllers.module';
-import { LoggingModule } from './logging.module';
+import { LoggingModule } from './common/logging.module';
 
 @Module({
   imports: [
