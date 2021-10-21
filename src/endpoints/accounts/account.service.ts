@@ -64,7 +64,7 @@ export class AccountService {
   
       let result: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount, username, shard, developerReward, ownerAddress };
 
-      if (result.code) {
+      if (result.code && !this.apiConfigService.getUseLegacyElastic()) {
         result.deployedAt = await this.getAccountDeployedAt(address);
       }
   
