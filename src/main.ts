@@ -22,8 +22,8 @@ import { RedisClient } from 'redis';
 import { ExtractInterceptor } from './interceptors/extract.interceptor';
 import { JwtAuthenticateGuard } from './interceptors/access.interceptor';
 import { TransactionProcessorModule } from './crons/transaction.processor.module';
-import { MicroserviceModule } from './microservice.module';
 import { RoundService } from './endpoints/rounds/round.service';
+import { MicroserviceModule } from './common/microservice.module';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);

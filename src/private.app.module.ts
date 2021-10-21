@@ -3,8 +3,8 @@ import { CachingModule } from './common/caching/caching.module';
 import { CacheController } from './common/caching/cache.controller';
 import { MetricsController } from './common/metrics/metrics.controller';
 import { MetricsModule } from './common/metrics/metrics.module';
-import { MicroserviceModule } from './microservice.module';
 import { ApiConfigModule } from './common/api-config/api.config.module';
+import { MicroserviceModule } from './common/microservice.module';
 
 @Module({
   imports: [
