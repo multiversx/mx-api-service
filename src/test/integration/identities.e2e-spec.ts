@@ -1,5 +1,5 @@
 import { Test } from "@nestjs/testing";
-import { ApiConfigService } from "src/common/api.config.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { Identity } from "src/endpoints/identities/entities/identity";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { Provider } from "src/endpoints/providers/entities/provider";

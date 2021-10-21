@@ -1,18 +1,18 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
-import { MetricsService } from "src/endpoints/metrics/metrics.service";
+import { MetricsService } from "src/common/metrics/metrics.service";
 import { ShardService } from "src/endpoints/shards/shard.service";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
-import { ApiConfigService } from "src/common/api.config.service";
-import { CachingService } from "src/common/caching.service";
-import { GatewayService } from "src/common/gateway.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { CachingService } from "src/common/caching/caching.service";
 import { AddressUtils } from "src/utils/address.utils";
 import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { EventsGateway } from "src/websockets/events.gateway";
 import { ShardTransaction } from "./entities/shard.transaction";
 import { NodeService } from "src/endpoints/nodes/node.service";
+import { GatewayService } from "src/common/gateway/gateway.service";
 
 @Injectable()
 export class TransactionProcessorService {

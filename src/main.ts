@@ -4,17 +4,15 @@ import { PublicAppModule } from './public.app.module';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
-import { ApiConfigService } from './common/api.config.service';
-import { CachingService } from './common/caching.service';
-import { TokenAssetService } from './common/token.asset.service';
+import { ApiConfigService } from './common/api-config/api.config.service';
+import { CachingService } from './common/caching/caching.service';
+import { TokenAssetService } from './endpoints/tokens/token.asset.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { FieldsInterceptor } from './interceptors/fields.interceptor';
 import { PrivateAppModule } from './private.app.module';
-import { TransactionProcessorModule } from './transaction.processor.module';
-import { MetricsService } from './endpoints/metrics/metrics.service';
-import { CacheWarmerModule } from './cache.warmer.module';
+import { MetricsService } from './common/metrics/metrics.service';
+import { CacheWarmerModule } from './crons/cache.warmer.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { PubSubModule } from './pub.sub.module';
 import { Logger, NestInterceptor } from '@nestjs/common';
 import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
@@ -23,6 +21,9 @@ import { CleanupInterceptor } from './interceptors/cleanup.interceptor';
 import { RedisClient } from 'redis';
 import { ExtractInterceptor } from './interceptors/extract.interceptor';
 import { JwtAuthenticateGuard } from './interceptors/access.interceptor';
+import { TransactionProcessorModule } from './crons/transaction.processor.module';
+import { RoundService } from './endpoints/rounds/round.service';
+import { MicroserviceModule } from './common/microservice.module';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
@@ -36,6 +37,8 @@ async function bootstrap() {
   let httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
   let metricsService = publicApp.get<MetricsService>(MetricsService);
   let tokenAssetService = publicApp.get<TokenAssetService>(TokenAssetService);
+  let roundService = publicApp.get<RoundService>(RoundService);
+
 
   if (apiConfigService.getIsAuthActive()) {
     publicApp.useGlobalGuards(new JwtAuthenticateGuard(apiConfigService));
@@ -54,7 +57,7 @@ async function bootstrap() {
   globalInterceptors.push(new LoggingInterceptor(metricsService));
 
   if (apiConfigService.getUseRequestCachingFlag()) {
-    globalInterceptors.push(new CachingInterceptor(cachingService, httpAdapterHostService, metricsService));
+    globalInterceptors.push(new CachingInterceptor(cachingService, httpAdapterHostService, metricsService, roundService));
   }
   
   globalInterceptors.push(new FieldsInterceptor());
@@ -105,7 +108,7 @@ async function bootstrap() {
   let logger = new Logger('Bootstrapper');
 
   const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
-    PubSubModule,
+    MicroserviceModule,
     {
       transport: Transport.REDIS,
       options: {

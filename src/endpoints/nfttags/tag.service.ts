@@ -1,12 +1,12 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { CachingService } from "src/common/caching.service";
-import { ElasticService } from "src/common/elastic.service";
-import { ElasticQuery } from "src/common/entities/elastic/elastic.query";
-import { ElasticSortOrder } from "src/common/entities/elastic/elastic.sort.order";
+import { CachingService } from "src/common/caching/caching.service";
 import { ApiUtils } from "src/utils/api.utils";
 import { Constants } from "src/utils/constants";
 import { Tag } from "./entities/tag";
+import { ElasticService } from "src/common/elastic/elastic.service";
+import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
+import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 
 @Injectable()
 export class TagService {

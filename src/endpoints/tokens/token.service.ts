@@ -2,12 +2,12 @@ import { Injectable, Logger } from "@nestjs/common";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
 import { TokenDetailed } from "./entities/token.detailed";
-import { TokenAssetService } from "src/common/token.asset.service";
+import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { ApiUtils } from "src/utils/api.utils";
 import { TokenFilter } from "./entities/token.filter";
 import { TokenUtils } from "src/utils/tokens.utils";
-import { EsdtService } from "src/common/esdt.service";
+import { EsdtService } from "../esdt/esdt.service";
 
 @Injectable()
 export class TokenService {

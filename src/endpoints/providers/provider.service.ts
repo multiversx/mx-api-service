@@ -1,17 +1,17 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api.config.service";
-import { CachingService } from "src/common/caching.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { CachingService } from "src/common/caching/caching.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Provider } from "src/endpoints/providers/entities/provider";
 import { ProviderConfig } from "./entities/provider.config";
 import { NodeService } from "../nodes/node.service";
 import { ProviderFilter } from "src/endpoints/providers/entities/provider.filter";
-import { ApiService } from "src/common/api.service";
-import { KeybaseService } from "src/common/keybase.service";
 import { Constants } from "src/utils/constants";
 import { AddressUtils } from "src/utils/address.utils";
 import { NodesInfos } from "./entities/nodes.infos";
 import { DelegationData } from "./entities/delegation.data";
+import { KeybaseService } from "src/common/keybase/keybase.service";
+import { ApiService } from "src/common/network/api.service";
 
 @Injectable()
 export class ProviderService {

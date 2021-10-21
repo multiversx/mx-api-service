@@ -1,10 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api.config.service";
-import { CachingService } from "src/common/caching.service";
-import { ElasticService } from "src/common/elastic.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { CachingService } from "src/common/caching/caching.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { GatewayService } from "src/common/gateway.service";
-import { NftExtendedAttributesService } from "src/common/nft.extendedattributes.service";
+import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
 import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
@@ -18,10 +16,12 @@ import { NftFilter } from "./entities/nft.filter";
 import { NftOwner } from "./entities/nft.owner";
 import { NftType } from "./entities/nft.type";
 import { TokenProperties } from "../tokens/entities/token.properties";
-import { EsdtService } from "src/common/esdt.service";
 import { NftQueryOptions } from "./entities/nft.query.options";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
 import { CollectionAccountFilter } from "./entities/collection.account.filter";
+import { GatewayService } from "src/common/gateway/gateway.service";
+import { ElasticService } from "src/common/elastic/elastic.service";
+import { EsdtService } from "../esdt/esdt.service";
 
 @Injectable()
 export class NftService {

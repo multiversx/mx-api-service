@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, Logger } from "@nestjs/common";
 import { verify } from 'jsonwebtoken';
-import { ApiConfigService } from "src/common/api.config.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Injectable()
 export class JwtAuthenticateGuard implements CanActivate {
