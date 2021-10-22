@@ -37,22 +37,16 @@ export class NetworkService {
 
   async getConstants(): Promise<NetworkConstants> {
     const {
-      data: {
-        data: {
-          config: {
-            erd_chain_id: chainId,
-            // erd_denomination: denomination,
-            erd_gas_per_data_byte: gasPerDataByte,
-            erd_min_gas_limit: minGasLimit,
-            erd_min_gas_price: minGasPrice,
-            erd_min_transaction_version: minTransactionVersion,
-            // erd_round_duration: roundDuration,
-          },
-        },
+      config: {
+        erd_chain_id: chainId,
+        // erd_denomination: denomination,
+        erd_gas_per_data_byte: gasPerDataByte,
+        erd_min_gas_limit: minGasLimit,
+        erd_min_gas_price: minGasPrice,
+        erd_min_transaction_version: minTransactionVersion,
+        // erd_round_duration: roundDuration,
       },
-    } = await (this.apiConfigService.getUseProxyFlag()
-      ? this.proxyService.getNetworkConfig()
-      : this.gatewayService.get('network/config'));
+    } = await this.proxyService.getNetworkConfig();
 
     return {
       chainId,
@@ -72,12 +66,8 @@ export class NetworkService {
         status: { erd_rounds_passed_in_current_epoch },
       },
     ] = await Promise.all([
-      this.apiConfigService.getUseProxyFlag()
-        ? this.proxyService.getNetworkConfig()
-        : this.gatewayService.get('network/config'),
-      this.apiConfigService.getUseProxyFlag()
-        ? this.proxyService.getNetworkStatus(this.apiConfigService.getMetaChainShardId())
-        : this.gatewayService.get(`network/status/${this.apiConfigService.getMetaChainShardId()}`),
+      this.proxyService.getNetworkConfig(),
+      this.proxyService.getNetworkStatus(this.apiConfigService.getMetaChainShardId())
     ]);
 
     const roundsPassed = erd_rounds_passed_in_current_epoch;
@@ -108,12 +98,8 @@ export class NetworkService {
       priceValue,
       marketCapValue,
     ] = await Promise.all([
-      this.apiConfigService.getUseProxyFlag()
-        ? this.proxyService.getAccount(this.apiConfigService.getAuctionContractAddress())
-        : this.gatewayService.get(`address/${this.apiConfigService.getAuctionContractAddress()}`),
-      this.apiConfigService.getUseProxyFlag()
-        ? this.proxyService.getEconomics()
-        : this.gatewayService.get('network/economics'),
+      this.proxyService.getAccount(this.apiConfigService.getAuctionContractAddress()),
+      this.proxyService.getEconomics(),
       this.vmQueryService.vmQuery(
         this.apiConfigService.getDelegationContractAddress(),
         'getTotalStakeByType',
@@ -172,12 +158,8 @@ export class NetworkService {
       accounts,
       transactions,
     ] = await Promise.all([
-      this.apiConfigService.getUseProxyFlag()
-        ? this.proxyService.getNetworkConfig()
-        : this.gatewayService.get('network/config'),
-      this.apiConfigService.getUseProxyFlag()
-        ? this.proxyService.getNetworkStatus(metaChainShard)
-        : this.gatewayService.get(`network/status/${metaChainShard}`),
+      this.proxyService.getNetworkConfig(),
+      this.proxyService.getNetworkStatus(metaChainShard),
       this.blockService.getBlocksCount(new BlockFilter()),
       this.accountService.getAccountsCount(),
       this.transactionService.getTransactionCount(new TransactionFilter()),
@@ -205,11 +187,7 @@ export class NetworkService {
     const stake = await this.stakeService.getGlobalStake();
     const {
       account: { balance: stakedBalance },
-    } = await (
-      this.apiConfigService.getUseProxyFlag()
-        ? this.proxyService.getAccount(this.apiConfigService.getAuctionContractAddress())
-        : this.gatewayService.get(`address/${this.apiConfigService.getAuctionContractAddress()}`)
-    );
+    } = await this.proxyService.getAccount(this.apiConfigService.getAuctionContractAddress());
     let [activeStake] = await this.vmQueryService.vmQuery(
       this.apiConfigService.getDelegationContractAddress(),
       'getTotalActiveStake',

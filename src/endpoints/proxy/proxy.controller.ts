@@ -6,12 +6,14 @@ import { VmQueryRequest } from "../vm.query/entities/vm.query.request";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { CachingService } from "src/common/caching.service";
 import { Constants } from "src/utils/constants";
+import { ProxyService } from "./proxy.service";
 
 @Controller()
 @ApiTags('proxy')
 export class ProxyController {
   constructor(
     private readonly gatewayService: GatewayService,
+    private readonly proxyService: ProxyService,
     private readonly vmQueryService: VmQueryService,
     private readonly cachingService: CachingService,
   ) {}
@@ -19,31 +21,31 @@ export class ProxyController {
   @Get('/address/:address')
   @ApiExcludeEndpoint()
   async getAddress(@Res() res: Response, @Param('address') address: string) {
-    await this.gatewayGet(res, `address/${address}`);
+    await this.proxyResponse(res, this.proxyService.getAccountRaw(address));
   }
 
   @Get('/address/:address/balance')
   @ApiExcludeEndpoint()
   async getAddressBalance(@Res() res: Response, @Param('address') address: string) {
-    await this.gatewayGet(res, `address/${address}/balance`);
+    await this.proxyResponse(res, this.proxyService.getBalanceRaw(address));
   }
 
   @Get('/address/:address/nonce')
   @ApiExcludeEndpoint()
   async getAddressNonce(@Res() res: Response, @Param('address') address: string) {
-    await this.gatewayGet(res, `address/${address}/nonce`);
+    await this.proxyResponse(res, this.proxyService.getNonceRaw(address));
   }
 
   @Get('/address/:address/shard')
   @ApiExcludeEndpoint()
   async getAddressShard(@Res() res: Response, @Param('address') address: string) {
-    await this.gatewayGet(res, `address/${address}/shard`);
+    await this.proxyResponse(res, this.proxyService.getShardRaw(address));
   }
 
   @Get('/address/:address/storage/:key')
   @ApiExcludeEndpoint()
   async getAddressStorageKey(@Res() res: Response, @Param('address') address: string, @Param('key') key: string) {
-    await this.gatewayGet(res, `address/${address}/storage/${key}`);
+    await this.proxyResponse(res, this.proxyService.getStorageValueRaw(address, key));
   }
 
   @Get('/address/:address/transactions')
@@ -55,7 +57,7 @@ export class ProxyController {
   @Get('/address/:address/esdt')
   @ApiExcludeEndpoint()
   async getAddressEsdt(@Res() res: Response, @Param('address') address: string) {
-    await this.gatewayGet(res, `address/${address}/esdt`);
+    await this.proxyResponse(res, this.proxyService.getAllEsdtsRaw(address));
   }
 
   @Post('/transaction/send')
@@ -148,19 +150,19 @@ export class ProxyController {
   @Get('/network/status/:shard')
   @ApiExcludeEndpoint()
   async getNetworkStatusShard(@Res() res: Response, @Param('shard') shard: string) {
-    await this.gatewayGet(res, `network/status/${shard}`);
+    await this.proxyResponse(res, this.proxyService.getNetworkStatusRaw(Number(shard)));
   }
 
   @Get('/network/config')
   @ApiExcludeEndpoint()
   async getNetworkConfig(@Res() res: Response) {
-    await this.gatewayGet(res, 'network/config');
+    await this.proxyResponse(res, this.proxyService.getNetworkConfigRaw());
   }
 
   @Get('/network/economics')
   @ApiExcludeEndpoint()
   async getNetworkEconomics(@Res() res: Response) {
-    await this.gatewayGet(res, 'network/economics');
+    await this.proxyResponse(res, this.proxyService.getEconomicsRaw());
   }
 
   @Get('/network/total-staked')
@@ -256,6 +258,19 @@ export class ProxyController {
     try {
       let result = await this.gatewayService.createRaw(url, data);
       res.json(result.data);
+    } catch (error: any) {
+      res.status(HttpStatus.BAD_REQUEST).json(error.response.data).send();
+    }
+  }
+
+  private async proxyResponse(@Res() res: Response, promise: Promise<any>) {
+    try {
+      const result = await promise;
+      if (result?.code === 'successful') {
+        res.json(result);
+      } else {
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(result).send();
+      }
     } catch (error: any) {
       res.status(HttpStatus.BAD_REQUEST).json(error.response.data).send();
     }

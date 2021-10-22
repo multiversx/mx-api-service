@@ -414,9 +414,7 @@ export class NodeService {
     ] = await Promise.all([
       this.gatewayService.get('node/heartbeatstatus'),
       this.gatewayService.get('validator/statistics'),
-      this.apiConfigService.getUseProxyFlag()
-        ? this.proxyService.getNetworkConfig()
-        : this.gatewayService.get('network/config'),
+      this.proxyService.getNetworkConfig()
     ]);
 
     let nodes: Node[] = [];

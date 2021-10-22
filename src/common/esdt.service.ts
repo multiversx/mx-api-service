@@ -9,14 +9,12 @@ import { Constants } from "src/utils/constants";
 import { TokenUtils } from "src/utils/tokens.utils";
 import { ApiConfigService } from "./api.config.service";
 import { CachingService } from "./caching.service";
-import { GatewayService } from "./gateway.service";
 
 @Injectable()
 export class EsdtService {
   private readonly logger: Logger
 
   constructor(
-    private readonly gatewayService: GatewayService,
     private readonly proxyService: ProxyService,
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
@@ -28,9 +26,7 @@ export class EsdtService {
 
   private async getAllEsdtsForAddressRaw(address: string): Promise<{ [ key: string]: any }> {
     try {
-      let esdtResult = await (this.apiConfigService.getUseProxyFlag()
-        ? this.proxyService.getAllEsdts(address)
-        : this.gatewayService.get(`address/${address}/esdt`));
+      let esdtResult = await this.proxyService.getAllEsdts(address);
       return esdtResult.esdts;
     } catch (error: any) {
       let errorMessage = error?.response?.data?.error;
@@ -85,10 +81,7 @@ export class EsdtService {
   async getAllEsdtTokensRaw(): Promise<TokenDetailed[]> {
     let tokensIdentifiers: string[];
     try {
-      const getFungibleTokensResult = await (this.apiConfigService.getUseProxyFlag()
-        ? this.proxyService.getFungibleTokens()
-        : this.gatewayService.get('network/esdt/fungible-tokens'));
-
+      const getFungibleTokensResult = await this.proxyService.getFungibleTokens();
       tokensIdentifiers = getFungibleTokensResult.tokens;
     } catch (error) {
       this.logger.error('Error when getting fungible tokens from gateway');

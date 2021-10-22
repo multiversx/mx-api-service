@@ -1,7 +1,6 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api.config.service";
 import { CachingService } from "src/common/caching.service";
-import { GatewayService } from "src/common/gateway.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { NodeStatus } from "../nodes/entities/node.status";
 import { NodeType } from "../nodes/entities/node.type";
@@ -25,7 +24,6 @@ export class StakeService {
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
-    private readonly gatewayService: GatewayService,
     private readonly networkService: NetworkService,
   ) {
     this.logger = new Logger(StakeService.name);
@@ -51,9 +49,7 @@ export class StakeService {
       },
     ] = await Promise.all([
       this.getValidators(),
-      this.apiConfigService.getUseProxyFlag()
-        ? this.proxyService.getEconomics()
-        : this.gatewayService.get('network/economics'),
+      this.proxyService.getEconomics()
     ]);
 
     const totalStaked = BigInt(BigInt(totalBaseStaked) + BigInt(totalTopUp)).toString();

@@ -1,6 +1,5 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { ElasticService } from '../../common/elastic.service';
-import { GatewayService } from '../../common/gateway.service';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
 import { CachingService } from 'src/common/caching.service';
@@ -24,7 +23,6 @@ export class AccountService {
 
   constructor(
     private readonly elasticService: ElasticService, 
-    private readonly gatewayService: GatewayService,
     private readonly proxyService: ProxyService,
     @Inject(forwardRef(() => CachingService))
     private readonly cachingService: CachingService,
@@ -58,9 +56,7 @@ export class AccountService {
         },
       ] = await Promise.all([
         this.elasticService.getCount('transactions', elasticQuery),
-        this.apiConfigService.getUseProxyFlag()
-          ? this.proxyService.getAccount(address)
-          : this.gatewayService.get(`address/${address}`)
+        this.proxyService.getAccount(address)
       ]);
 
       let shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
@@ -122,9 +118,7 @@ export class AccountService {
         undefined,
         []
       ),
-      this.apiConfigService.getUseProxyFlag()
-        ? this.proxyService.getNetworkStatus(this.apiConfigService.getDelegationContractShardId())
-        : this.gatewayService.get(`network/status/${this.apiConfigService.getDelegationContractShardId()}`)
+      this.proxyService.getNetworkStatus(this.apiConfigService.getDelegationContractShardId())
     ]);
 
     const numBlocksBeforeUnBond = parseInt(this.decode(encodedNumBlocksBeforeUnBond));
