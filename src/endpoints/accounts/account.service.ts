@@ -65,7 +65,10 @@ export class AccountService {
       let result: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount, username, shard, developerReward, ownerAddress };
 
       if (result.code && !this.apiConfigService.getUseLegacyElastic()) {
-        result.deployedAt = await this.getAccountDeployedAt(address);
+        const deployedAt = await this.getAccountDeployedAt(address);
+        if (deployedAt) {
+          result.deployedAt = deployedAt;
+        }
       }
   
       return result;
@@ -76,7 +79,7 @@ export class AccountService {
     }
   }
 
-  async getAccountDeployedAt(address: string): Promise<number | undefined> {
+  async getAccountDeployedAt(address: string): Promise<number | null> {
     return await this.cachingService.getOrSetCache(
       `accountDeployedAt:${address}`,
       async () => await this.getAccountDeployedAtRaw(address),
@@ -84,20 +87,21 @@ export class AccountService {
     );
   }
 
-  async getAccountDeployedAtRaw(address: string): Promise<number | undefined> {
+  async getAccountDeployedAtRaw(address: string): Promise<number | null> {
     let scDeploy = await this.elasticService.getItem('scdeploys', '_id', address);
+    console.log({scDeploy});
     if (!scDeploy) {
-      return undefined;
+      return null;
     }
 
     let txHash = scDeploy.deployTxHash;
     if (!txHash) {
-      return undefined;
+      return null;
     }
 
     let transaction = await this.elasticService.getItem('transactions', '_id', txHash);
     if (!transaction) {
-      return undefined;
+      return null;
     }
 
     return transaction.timestamp;

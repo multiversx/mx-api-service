@@ -187,7 +187,7 @@ export class NodeService {
   }
 
   async getAllNodes(): Promise<Node[]> {
-    return await this.cachingService.getOrSetCache('nodes', async () => await this.getAllNodesRaw(), Constants.oneHour(), Constants.oneMinute());
+    return await this.cachingService.getOrSetCache('nodes', async () => await this.getAllNodesRaw(), Constants.oneHour());
   }
 
   private processQueuedNodes(nodes: Node[], queue: Queue[]) {
