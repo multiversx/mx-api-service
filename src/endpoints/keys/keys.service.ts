@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api.config.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { KeyUnbondPeriod } from "./entities/key.unbond.period";
 

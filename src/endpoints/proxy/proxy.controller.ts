@@ -1,11 +1,11 @@
 import { Body, Controller, Get, HttpStatus, Param, Post, Query, Res } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { GatewayService } from "src/common/gateway.service";
 import { Response } from 'express';
 import { VmQueryRequest } from "../vm.query/entities/vm.query.request";
 import { VmQueryService } from "../vm.query/vm.query.service";
-import { CachingService } from "src/common/caching.service";
+import { CachingService } from "src/common/caching/caching.service";
 import { Constants } from "src/utils/constants";
+import { GatewayService } from "src/common/gateway/gateway.service";
 import { ProxyService } from "./proxy.service";
 
 @Controller()

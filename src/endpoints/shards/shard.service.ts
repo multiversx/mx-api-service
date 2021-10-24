@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { NodeService } from "../nodes/node.service";
 import { NodeStatus } from "../nodes/entities/node.status";
 import { Shard } from "./entities/shard";
-import { CachingService } from "src/common/caching.service";
+import { CachingService } from "src/common/caching/caching.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { Constants } from "src/utils/constants";
 import { ProxyService } from "../proxy/proxy.service";

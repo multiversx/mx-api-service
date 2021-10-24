@@ -1,6 +1,6 @@
 import { Body, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
+import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 import { ParseOptionalBoolPipe } from 'src/utils/pipes/parse.optional.bool.pipe';
 import { ParseOptionalEnumPipe } from 'src/utils/pipes/parse.optional.enum.pipe';
 import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
@@ -32,12 +32,13 @@ export class TransactionController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false  })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false  })
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false  })
-  @ApiQuery({ name: 'condition', description: 'Condition type (should/must)', required: false  })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
-  @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions (it activates only if in filter are some hashes)', required: false })
+  @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false  })
+  @ApiQuery({ name: 'withScResults', description: 'Return results for transactions', required: false })
+  @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
   getTransactions(
     @Query('sender') sender: string | undefined, 
     @Query('receiver') receiver: string | undefined, 
@@ -48,12 +49,13 @@ export class TransactionController {
     @Query('hashes') hashes: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
     @Query('search') search: string | undefined, 
-    @Query('condition', new ParseOptionalEnumPipe(QueryConditionOptions)) condition: QueryConditionOptions | undefined, 
+    @Query('condition') condition: QueryConditionOptions | undefined, 
     @Query('before', ParseOptionalIntPipe) before: number | undefined, 
     @Query('after', ParseOptionalIntPipe) after: number | undefined, 
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('withScResults', new ParseOptionalBoolPipe) withScResults: boolean | undefined,
+    @Query('withOperations', new ParseOptionalBoolPipe) withOperations: boolean | undefined,
   ): Promise<Transaction[]> {
     return this.transactionService.getTransactions({
         sender, 
@@ -65,29 +67,25 @@ export class TransactionController {
         hashes,
         status,
         search,
-        condition,
         before,
         after,
-        from, 
-        size
-    }, { withScResults });
+        condition,
+    }, { from, size }, { withScResults, withOperations });
   }
 
   @Get("/transactions/count")
-  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false  })
-  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false  })
-  @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false  })
-  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false  })
-  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false  })
-  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false  })
-  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false  })
-  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false  })
-  @ApiQuery({ name: 'search', description: 'Search in data object', required: false  })
-  @ApiQuery({ name: 'condition', description: 'Condition type (should/must)', required: false  })
+  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
+  @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false })
+  @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false, deprecated: true })
+  @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
   getTransactionCount(
     @Query('sender') sender: string | undefined, 
     @Query('receiver') receiver: string | undefined, 
@@ -98,11 +96,9 @@ export class TransactionController {
     @Query('hashes') hashes: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
     @Query('search') search: string | undefined, 
-    @Query('condition', new ParseOptionalEnumPipe(QueryConditionOptions)) condition: QueryConditionOptions | undefined, 
+    @Query('condition') condition: QueryConditionOptions | undefined,
     @Query('before', ParseOptionalIntPipe) before: number | undefined, 
     @Query('after', ParseOptionalIntPipe) after: number | undefined, 
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
-    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<number> {
     return this.transactionService.getTransactionCount({
       sender, 
@@ -114,11 +110,9 @@ export class TransactionController {
       hashes,
       status,
       search,
-      condition,
       before,
       after,
-      from, 
-      size
+      condition,
     });  
   }
 
@@ -134,11 +128,9 @@ export class TransactionController {
     @Query('hashes') hashes: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
     @Query('search') search: string | undefined, 
-    @Query('condition', new ParseOptionalEnumPipe(QueryConditionOptions)) condition: QueryConditionOptions | undefined, 
+    @Query('condition') condition: QueryConditionOptions | undefined,
     @Query('before', ParseOptionalIntPipe) before: number | undefined, 
     @Query('after', ParseOptionalIntPipe) after: number | undefined, 
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
-    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<number> {
     return this.transactionService.getTransactionCount({
       sender, 
@@ -150,11 +142,9 @@ export class TransactionController {
       hashes,
       status,
       search,
-      condition,
       before,
       after,
-      from, 
-      size
+      condition
     });  
   }
 
