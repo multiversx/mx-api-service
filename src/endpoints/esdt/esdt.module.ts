@@ -10,11 +10,12 @@ import { EsdtService } from "./esdt.service";
 import { ExternalModule } from "../../common/external/external.module";
 import { GatewayModule } from "../../common/gateway/gateway.module";
 import { GENESIS_TIMESTAMP_SERVICE } from "../../utils/genesis.timestamp.interface";
+import { ProxyModule } from "../proxy/proxy.module";
 
 
 @Module({
   imports: [
-    ApiConfigModule, ExternalModule, CachingModule, BlsModule, ElasticModule, GatewayModule,
+    ApiConfigModule, ExternalModule, CachingModule, BlsModule, ElasticModule, GatewayModule, ProxyModule,
     forwardRef(() => VmQueryModule),
     forwardRef(() => MetricsModule),
   ],

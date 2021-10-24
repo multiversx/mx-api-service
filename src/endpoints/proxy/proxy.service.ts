@@ -6,9 +6,9 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { ApiConfigService } from 'src/common/api.config.service';
-import { ApiService } from 'src/common/api.service';
-import { GatewayService } from 'src/common/gateway.service';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { ApiService } from 'src/common/network/api.service';
+import { GatewayService } from 'src/common/gateway/gateway.service';
 import { AddressUtils } from 'src/utils/address.utils';
 import {
   CircularQueueProvider,
