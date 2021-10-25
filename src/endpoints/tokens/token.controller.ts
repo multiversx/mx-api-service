@@ -1,5 +1,6 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { TokenAccount } from "./entities/token.account";
 import { TokenDetailed } from "./entities/token.detailed";
 import { TokenService } from "./token.service";
 
@@ -78,5 +79,41 @@ export class TokenController {
     }
 
     return token;
+  }
+
+  @Get("/tokens/:identifier/accounts")
+  @ApiResponse({
+    status: 200,
+    description: 'The specific token accounts available on the blockchain',
+    type: TokenAccount,
+    isArray: true
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Token not found'
+  })
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+  getTokenAccounts(
+    @Param('identifier') identifier: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+  ): Promise<TokenAccount[]> {
+    return this.tokenService.getTokenAccounts({from, size}, identifier);
+  }
+
+  @Get("/tokens/:identifier/accounts/count")
+  @ApiResponse({
+    status: 200,
+    description: 'The number of specific token accounts available on the blockchain',
+  })
+    @ApiResponse({
+    status: 404,
+    description: 'Token not found'
+  })
+  getTokenAccountsCount(
+    @Param('identifier') identifier: string,
+  ): Promise<number> {
+    return this.tokenService.getTokenAccountsCount(identifier);
   }
 }
