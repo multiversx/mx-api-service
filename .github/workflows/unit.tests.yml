@@ -27,12 +27,12 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm test
-      - name: Collect code coverage
-        run: npm run test:cov
-      - uses: codecov/codecov-action@v2
-        with:
-          files: ./coverage/unit/clover.xml
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: true
-          verbose: true
+      # - name: Collect code coverage
+      #   run: npm run test:cov
+      # - uses: codecov/codecov-action@v2
+      #   with:
+      #     files: ./coverage/unit/clover.xml
+      #     flags: unittests
+      #     name: codecov-umbrella
+      #     fail_ci_if_error: true
+      #     verbose: true
