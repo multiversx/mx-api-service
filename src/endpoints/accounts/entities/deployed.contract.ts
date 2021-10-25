@@ -1,5 +1,5 @@
 export class DeployedContract {
-  contract: string = "";
+  address: string = "";
   deployTxHash: string = "";
   timestamp: number = 0;
 }

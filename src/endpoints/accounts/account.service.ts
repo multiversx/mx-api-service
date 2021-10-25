@@ -273,10 +273,17 @@ export class AccountService {
 
   async getAccountContracts(address: string): Promise<DeployedContract[]> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)]);
+      .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)])
+      .withSort([ { name: 'timestamp', order: ElasticSortOrder.descending } ]);
 
-      const accountDeployedContracts = await this.elasticService.getList('scdeploys', "contract", elasticQuery);
+    const accountDeployedContracts = await this.elasticService.getList('scdeploys', "contract", elasticQuery);
 
-      return accountDeployedContracts.map((deployedContract) => ApiUtils.mergeObjects(new DeployedContract(), deployedContract));
+    const accounts: DeployedContract[] = accountDeployedContracts.map(contract => ({
+      address: contract.contract,
+      deployTxHash: contract.deployTxHash,
+      timestamp: contract.timestamp
+    }))
+
+    return accounts;
   }
 }
