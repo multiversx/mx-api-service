@@ -21,6 +21,7 @@ import { NftCollectionAccount } from '../nfts/entities/nft.collection.account';
 import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
 import { TransactionStatus } from '../transactions/entities/transaction.status';
 import { TransactionService } from '../transactions/transaction.service';
+import { DeployedContract } from './entities/deployed.contract';
 
 @Controller()
 @ApiTags('accounts')
@@ -622,5 +623,19 @@ export class AccountController {
       before,
       after,
     }, address);  
+  }
+
+  @Get("/accounts/:address/contracts")
+  @ApiResponse({
+    status: 200,
+    description: 'The details of a given account',
+    type: DeployedContract
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  getAccountContracts(@Param('address') address: string): Promise<DeployedContract[]> {
+    return this.accountService.getAccountContracts(address);;
   }
 }
