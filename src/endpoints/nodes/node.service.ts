@@ -63,6 +63,14 @@ export class NodeService {
   }
 
   async getNodeVersions(): Promise<NodeVersions> {
+    return this.cachingService.getOrSetCache(
+      'nodeVersions',
+      async () => await this.getNodeVersionsRaw(),
+      Constants.oneMinute()
+    );
+  }
+
+  async getNodeVersionsRaw(): Promise<NodeVersions> {
     let allNodes = await this.getAllNodes();
 
     const data = allNodes
