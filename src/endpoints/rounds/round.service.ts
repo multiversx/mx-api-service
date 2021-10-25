@@ -59,10 +59,17 @@ export class RoundService implements GenesisTimestampInterface{
   async getRounds(filter: RoundFilter): Promise<Round[]> {
     const { from, size } = filter;
 
-    const elasticQuery = ElasticQuery.create()
+    let elasticQuery = ElasticQuery.create()
       .withPagination({ from, size })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
       .withCondition(filter.condition ?? QueryConditionOptions.must, await this.buildElasticRoundsFilter(filter));
+
+    // if (!filter.epoch) {
+      let before = Math.round(Date.now() / 1000) + Constants.oneMinute();
+      let after = Math.round(Date.now() / 1000) - Constants.oneDay();
+
+      elasticQuery = elasticQuery.withFilter([ QueryType.Range('timestamp', before, after) ]);
+    // }
 
     let result = await this.elasticService.getList('rounds', 'round', elasticQuery);
 
