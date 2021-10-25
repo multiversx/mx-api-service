@@ -91,6 +91,9 @@ export class CacheWarmerService {
     await Locker.lock('Providers invalidations', async () => {
       let providers = await this.providerService.getAllProvidersRaw();
       await this.invalidateKey('providers', providers, Constants.oneHour());
+
+      let providersWithStakeInformation = await this.providerService.getProvidersWithStakeInformationRaw();
+      await this.invalidateKey('providersWithStakeInformation', providersWithStakeInformation, Constants.oneHour());
     }, true);
   }
 

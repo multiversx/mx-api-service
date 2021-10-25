@@ -66,7 +66,15 @@ export class ProviderService {
     return nodesInfos;
   }
 
-  async getProviders(query: ProviderFilter): Promise<Provider[]> {
+  async getProvidersWithStakeInformation(): Promise<Provider[]> {
+    return await this.cachingService.getOrSetCache(
+      'providersWithStakeInformation',
+      async () => await this.getProvidersWithStakeInformationRaw(),
+      Constants.oneHour()
+    );
+  }
+
+  async getProvidersWithStakeInformationRaw(): Promise<Provider[]> {
     let providers = await this.getAllProviders();
     let nodes = await this.nodeService.getAllNodes();
 
@@ -101,10 +109,6 @@ export class ProviderService {
       delete element.owner;
     });
 
-    if (query.identity) {
-      providers = providers.filter((provider) => provider.identity === query.identity);
-    }
-
     providers.sort((a, b) => {
       let aSort = a.locked && a.locked !== '0' ? parseInt(a.locked.slice(0, -18)) : 0;
       let bSort = b.locked && b.locked !== '0' ? parseInt(b.locked.slice(0, -18)) : 0;
@@ -113,6 +117,16 @@ export class ProviderService {
     });
 
     providers = providers.filter(provider => provider.numNodes > 0 && provider.stake !== '0');
+
+    return providers;
+  }
+
+  async getProviders(query: ProviderFilter): Promise<Provider[]> {
+    let providers = await this.getProvidersWithStakeInformation();
+
+    if (query.identity) {
+      providers = providers.filter((provider) => provider.identity === query.identity);
+    }
 
     return providers;
   }

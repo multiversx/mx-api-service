@@ -145,6 +145,15 @@ export class CachingService {
     return await CachingService.cache.get<T>(key);
   }
 
+  async refreshCacheLocal<T>(key: string, ttl: number = this.configService.getCacheTtl()): Promise<T | undefined> {
+    let value = await this.getCacheRemote<T>(key);
+    if (value) {
+      await this.setCacheLocal<T>(key, value, ttl);
+    }
+
+    return value;
+  }
+
   public async getCache<T>(key: string): Promise<T | undefined> {
     let value = await this.getCacheLocal<T>(key);
     if (value) {

@@ -73,10 +73,16 @@ export class CacheController {
 
   @EventPattern('deleteCacheKeys')
   async deleteCacheKey(keys: string[]) {
-    this.logger.log(`Deleting cache keys ${keys}`);
 
     for (let key of keys) {
-      await this.cachingService.deleteInCacheLocal(key);
+      if (['nodes', 'allEsdtTokens', 'identities', 'providers', 'providersWithStakeInformation', 'keybases', 
+           'identityProfilesKeybases', 'currentPrice', 'economics', 'accounts:0:25', 'heartbeatstatus'].includes(key)) {
+        this.logger.log(`Soft Deleting cache key ${key}`);
+        await this.cachingService.refreshCacheLocal(key);
+      } else {
+        this.logger.log(`Hard Deleting cache key ${key}`);
+        await this.cachingService.deleteInCacheLocal(key);
+      }
     }
   }
 }
