@@ -12,7 +12,6 @@ import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { EventsGateway } from "src/websockets/events.gateway";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
-import { Constants } from "src/utils/constants";
 import { GatewayService } from "src/common/gateway/gateway.service";
 
 @Injectable()
@@ -50,19 +49,14 @@ export class TransactionProcessorService {
       await this.transactionProcessor.start({
         gatewayUrl: this.apiConfigService.getGatewayUrl(),
         maxLookBehind: this.apiConfigService.getTransactionProcessorMaxLookBehind(),
-        notifyEmptyBlocks: true,
-        onTransactionsReceived: async (shard, __, transactions, ___, blockHash) => {
-          let totalGasUsed = transactions.map(x => x.gasLimit ?? 0).reduce((a, b) => a + b, 0);
-          await this.cachingService.setCache(`blockGasUsed:${shard}:${blockHash}`, totalGasUsed, Constants.oneWeek());
-
-          transactions = transactions.filter(x => x.destinationShard === shard);
+        onTransactionsReceived: async (shard, nonce, transactions) => {
           if (transactions.length === 0) {
             return;
           }
     
           let profiler = new PerformanceProfiler('Processing new transactions');
     
-          this.logger.log(`New transactions: ${transactions.length}`);
+          this.logger.log(`New transactions: ${transactions.length} for shard ${shard} and nonce ${nonce}`);
     
           let allInvalidatedKeys = [];
     

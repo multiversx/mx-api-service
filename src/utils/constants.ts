@@ -22,6 +22,4 @@ export class Constants {
   static oneMonth(): number {
     return Constants.oneDay() * 30;
   }
-
-  static maxGasPerTransaction: number = 1500000000;
 }

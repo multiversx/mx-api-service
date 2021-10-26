@@ -6,10 +6,10 @@ import asyncPool from 'tiny-async-pool';
 import { CachedFunction } from "src/crons/entities/cached.function";
 import { InvalidationFunction } from "src/crons/entities/invalidation.function";
 import { PerformanceProfiler } from "../../utils/performance.profiler";
-import { ShardTransaction } from "src/crons/entities/shard.transaction";
 import { Cache } from "cache-manager";
 import { AddressUtils } from "src/utils/address.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
+import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 
 @Injectable()
 export class CachingService {
