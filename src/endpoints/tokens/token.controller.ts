@@ -152,6 +152,7 @@ export class TokenController {
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false })
+  @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
   async getTokenTransactions(
     @Param('identifier') identifier: string,
     @Query('sender') sender: string | undefined, 
@@ -167,6 +168,7 @@ export class TokenController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('withScResults', new ParseOptionalBoolPipe) withScResults: boolean | undefined,
+    @Query('withOperations', new ParseOptionalBoolPipe) withOperations: boolean | undefined,
   ) {
     try {
       return await this.transactionService.getTransactions({
@@ -181,7 +183,7 @@ export class TokenController {
         search,
         before,
         after,
-      }, { from, size }, { withScResults, withOperations: true });
+      }, { from, size }, { withScResults, withOperations });
     } catch (error) {
       this.logger.error(error);
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
