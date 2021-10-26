@@ -79,6 +79,10 @@ export class NftService {
         nftCollection.canWipe = collectionProperties.canWipe;
         nftCollection.canPause = collectionProperties.canPause;
         nftCollection.canTransferRole = collectionProperties.canTransferNFTCreateRole;
+
+        if (nftCollection.type === NftType.MetaESDT) {
+          nftCollection.decimals = collectionProperties.decimals;
+        }
       }
 
       nftCollections.push(nftCollection);
@@ -526,7 +530,7 @@ export class NftService {
         }
       }
 
-      if (nft.type === NftType.SemiFungibleESDT) {
+      if ([ NftType.SemiFungibleESDT, NftType.MetaESDT ].includes(nft.type)) {
         nft.balance = gatewayNft.balance;
       }
 
