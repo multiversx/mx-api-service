@@ -551,7 +551,9 @@ export class NftService {
       return undefined;
     }
 
-    nft.supply = await this.getSftSupply(identifier);
+    if (nft.type === NftType.SemiFungibleESDT) {
+      nft.supply = await this.getSftSupply(identifier);
+    }
 
     return nft;
   }
