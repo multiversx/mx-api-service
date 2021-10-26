@@ -22,6 +22,7 @@ import { CollectionAccountFilter } from "./entities/collection.account.filter";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { EsdtService } from "../esdt/esdt.service";
+import { TokenAssetService } from "../tokens/token.asset.service";
 
 @Injectable()
 export class NftService {
@@ -35,6 +36,7 @@ export class NftService {
     private readonly elasticService: ElasticService,
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     private readonly esdtService: EsdtService,
+    private readonly tokenAssetService: TokenAssetService,
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -82,6 +84,7 @@ export class NftService {
 
         if (nftCollection.type === NftType.MetaESDT) {
           nftCollection.decimals = collectionProperties.decimals;
+          nftCollection.assets = await this.tokenAssetService.getAssets(nftCollection.collection);
         }
       }
 
