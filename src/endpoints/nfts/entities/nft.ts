@@ -53,4 +53,7 @@ export class Nft {
 
   @ApiProperty()
   supply?: string;
+
+  @ApiProperty()
+  decimals?: number;
 }

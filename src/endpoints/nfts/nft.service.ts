@@ -276,6 +276,10 @@ export class NftService {
             // @ts-ignore
             nft.type = collectionProperties.type;
           }
+
+          if (nft.type === NftType.MetaESDT) {
+            nft.decimals = collectionProperties.decimals;
+          }
         }
       }
     }
@@ -524,6 +528,10 @@ export class NftService {
       if (collectionDetails) {
         // @ts-ignore
         nft.type = collectionDetails.type;
+
+        if (nft.type === NftType.MetaESDT) {
+          nft.decimals = collectionDetails.decimals;
+        }
 
         if (!nft.name) {
           nft.name = collectionDetails.name;
