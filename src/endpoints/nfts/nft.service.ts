@@ -22,6 +22,7 @@ import { CollectionAccountFilter } from "./entities/collection.account.filter";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { EsdtService } from "../esdt/esdt.service";
+import { TokenAssetService } from "../tokens/token.asset.service";
 
 @Injectable()
 export class NftService {
@@ -35,6 +36,7 @@ export class NftService {
     private readonly elasticService: ElasticService,
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     private readonly esdtService: EsdtService,
+    private readonly tokenAssetService: TokenAssetService,
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -82,6 +84,7 @@ export class NftService {
 
         if (nftCollection.type === NftType.MetaESDT) {
           nftCollection.decimals = collectionProperties.decimals;
+          nftCollection.assets = await this.tokenAssetService.getAssets(nftCollection.collection);
         }
       }
 
@@ -99,7 +102,7 @@ export class NftService {
 
   async getNftCollection(collection: string): Promise<NftCollection | undefined> {
     let result = await this.getNftCollections({ from: 0, size: 1}, { collection });
-    if (result.length > 0) {
+    if (result.length > 0 && result[0].collection.toLowerCase() === collection.toLowerCase()) {
       return result[0];
     }
 
@@ -554,7 +557,16 @@ export class NftService {
 
   async getNftForAddress(address: string, identifier: string): Promise<NftAccount | undefined> {
     let nfts = await this.getNftsForAddressInternal(address, new NftFilter());
-    return nfts.find(x => x.identifier === identifier);
+    let nft = nfts.find(x => x.identifier === identifier);
+    if (!nft) {
+      return undefined;
+    }
+
+    if (nft.type === NftType.SemiFungibleESDT) {
+      nft.supply = await this.getSftSupply(identifier);
+    }
+
+    return nft;
   }
 
 }
