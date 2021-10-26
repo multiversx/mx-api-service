@@ -90,7 +90,6 @@ export class AccountService {
 
   async getAccountDeployedAtRaw(address: string): Promise<number | null> {
     let scDeploy = await this.elasticService.getItem('scdeploys', '_id', address);
-    console.log({scDeploy});
     if (!scDeploy) {
       return null;
     }
