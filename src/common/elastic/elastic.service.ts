@@ -238,6 +238,7 @@ export class ElasticService {
     let shouldQueries = [];
     shouldQueries.push(QueryType.Match('type', NftType.SemiFungibleESDT));
     shouldQueries.push(QueryType.Match('type', NftType.NonFungibleESDT));
+    shouldQueries.push(QueryType.Match('type', NftType.MetaESDT));
 
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from: 0, size: 0})
@@ -273,6 +274,7 @@ export class ElasticService {
     let shouldQueries = [];
     shouldQueries.push(QueryType.Match('type', NftType.SemiFungibleESDT));
     shouldQueries.push(QueryType.Match('type', NftType.NonFungibleESDT));
+    shouldQueries.push(QueryType.Match('type', NftType.MetaESDT));
 
     const elasticQuery = ElasticQuery.create()
       .withPagination(pagination)
