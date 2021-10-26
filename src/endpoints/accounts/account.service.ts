@@ -1,22 +1,23 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
-import { ElasticService } from '../../common/elastic.service';
-import { GatewayService } from '../../common/gateway.service';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
-import { CachingService } from 'src/common/caching.service';
+import { CachingService } from 'src/common/caching/caching.service';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
-import { ApiConfigService } from 'src/common/api.config.service';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { AccountDeferred } from './entities/account.deferred';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { ElasticSortOrder } from 'src/common/entities/elastic/elastic.sort.order';
-import { ElasticQuery } from 'src/common/entities/elastic/elastic.query';
-import { QueryType } from 'src/common/entities/elastic/query.type';
 import { Constants } from 'src/utils/constants';
 import { AddressUtils } from 'src/utils/address.utils';
 import { ApiUtils } from 'src/utils/api.utils';
 import { BinaryUtils } from 'src/utils/binary.utils';
 import { AccountKey } from './entities/account.key';
-import { QueryConditionOptions } from 'src/common/entities/elastic/query.condition.options';
+import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
+import { GatewayService } from 'src/common/gateway/gateway.service';
+import { ElasticService } from 'src/common/elastic/elastic.service';
+import { QueryType } from 'src/common/elastic/entities/query.type';
+import { ElasticQuery } from 'src/common/elastic/entities/elastic.query';
+import { ElasticSortOrder } from 'src/common/elastic/entities/elastic.sort.order';
+import { DeployedContract } from './entities/deployed.contract';
 
 @Injectable()
 export class AccountService {
@@ -63,6 +64,13 @@ export class AccountService {
       let shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
   
       let result: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount, username, shard, developerReward, ownerAddress };
+
+      if (result.code && !this.apiConfigService.getUseLegacyElastic()) {
+        const deployedAt = await this.getAccountDeployedAt(address);
+        if (deployedAt) {
+          result.deployedAt = deployedAt;
+        }
+      }
   
       return result;
     } catch (error) {
@@ -70,6 +78,33 @@ export class AccountService {
       this.logger.error(`Error when getting account details for address '${address}'`);
       return null;
     }
+  }
+
+  async getAccountDeployedAt(address: string): Promise<number | null> {
+    return await this.cachingService.getOrSetCache(
+      `accountDeployedAt:${address}`,
+      async () => await this.getAccountDeployedAtRaw(address),
+      Constants.oneWeek()
+    );
+  }
+
+  async getAccountDeployedAtRaw(address: string): Promise<number | null> {
+    let scDeploy = await this.elasticService.getItem('scdeploys', '_id', address);
+    if (!scDeploy) {
+      return null;
+    }
+
+    let txHash = scDeploy.deployTxHash;
+    if (!txHash) {
+      return null;
+    }
+
+    let transaction = await this.elasticService.getItem('transactions', '_id', txHash);
+    if (!transaction) {
+      return null;
+    }
+
+    return transaction.timestamp;
   }
 
   async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
@@ -233,5 +268,21 @@ export class AccountService {
     }
 
     return nodes;
+  }
+
+  async getAccountContracts(address: string): Promise<DeployedContract[]> {
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)])
+      .withSort([ { name: 'timestamp', order: ElasticSortOrder.descending } ]);
+
+    const accountDeployedContracts = await this.elasticService.getList('scdeploys', "contract", elasticQuery);
+
+    const accounts: DeployedContract[] = accountDeployedContracts.map(contract => ({
+      address: contract.contract,
+      deployTxHash: contract.deployTxHash,
+      timestamp: contract.timestamp
+    }))
+
+    return accounts;
   }
 }

@@ -1,10 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api.config.service";
-import { CachingService } from "src/common/caching.service";
-import { ElasticService } from "src/common/elastic.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { CachingService } from "src/common/caching/caching.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { GatewayService } from "src/common/gateway.service";
-import { NftExtendedAttributesService } from "src/common/nft.extendedattributes.service";
+import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
 import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
@@ -18,10 +16,12 @@ import { NftFilter } from "./entities/nft.filter";
 import { NftOwner } from "./entities/nft.owner";
 import { NftType } from "./entities/nft.type";
 import { TokenProperties } from "../tokens/entities/token.properties";
-import { EsdtService } from "src/common/esdt.service";
 import { NftQueryOptions } from "./entities/nft.query.options";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
 import { CollectionAccountFilter } from "./entities/collection.account.filter";
+import { GatewayService } from "src/common/gateway/gateway.service";
+import { ElasticService } from "src/common/elastic/elastic.service";
+import { EsdtService } from "../esdt/esdt.service";
 
 @Injectable()
 export class NftService {
@@ -79,6 +79,10 @@ export class NftService {
         nftCollection.canWipe = collectionProperties.canWipe;
         nftCollection.canPause = collectionProperties.canPause;
         nftCollection.canTransferRole = collectionProperties.canTransferNFTCreateRole;
+
+        if (nftCollection.type === NftType.MetaESDT) {
+          nftCollection.decimals = collectionProperties.decimals;
+        }
       }
 
       nftCollections.push(nftCollection);
@@ -188,8 +192,22 @@ export class NftService {
     }
 
     await this.applyNftDistribution(nft.identifier, nft);
+    this.applyNftSupply(nft);
 
     return nft;
+  }
+
+  applyNftSupply(nft: NftDetailed) {
+    if (!nft.owners) {
+      return;
+    }
+
+    let supply = BigInt(0);
+    for (let owner of nft.owners) {
+      supply = supply + BigInt(owner.balance);
+    }
+
+    nft.supply = supply.toString();
   }
 
   async getNftsInternal(from: number, size: number, filter: NftFilter, identifier: string | undefined): Promise<Nft[]> {
@@ -328,7 +346,6 @@ export class NftService {
       nftCollection.canWipe = collectionProperties.canWipe;
       nftCollection.canPause = collectionProperties.canPause;
       nftCollection.canTransferRole = collectionProperties.canTransferNFTCreateRole;
-      nftCollection.owner = collectionProperties.owner;
 
       let role = roles[tokenIdentifier];
       nftCollection.canCreate = role ? role.includes('ESDTRoleNFTCreate') : false;
@@ -385,11 +402,11 @@ export class NftService {
   }
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<NftAccount[]> {
-    const { from, size }  = queryPagination;
+    const { from, size } = queryPagination;
 
     let nfts = await this.getNftsForAddressInternal(address, filter);
 
-    nfts = nfts.splice(from, from + size);
+    nfts = nfts.slice(from, from + size);
 
     if (queryOptions && queryOptions.withTimestamp) {
       let identifiers = nfts.map(x => x.identifier);
@@ -513,7 +530,7 @@ export class NftService {
         }
       }
 
-      if (nft.type === NftType.SemiFungibleESDT) {
+      if ([ NftType.SemiFungibleESDT, NftType.MetaESDT ].includes(nft.type)) {
         nft.balance = gatewayNft.balance;
       }
 

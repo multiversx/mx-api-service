@@ -1,4 +1,5 @@
 export enum NftType {
   NonFungibleESDT = 'NonFungibleESDT',
-  SemiFungibleESDT = 'SemiFungibleESDT'
+  SemiFungibleESDT = 'SemiFungibleESDT',
+  MetaESDT = 'MetaESDT',
 }

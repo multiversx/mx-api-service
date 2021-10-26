@@ -1,19 +1,18 @@
 import { Injectable } from "@nestjs/common";
-import { ElasticService } from "src/common/elastic.service";
 import { Block } from "./entities/block";
 import { BlockDetailed } from "./entities/block.detailed";
-import { CachingService } from "src/common/caching.service";
+import { CachingService } from "src/common/caching/caching.service";
 import { BlockFilter } from "./entities/block.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { ElasticSortOrder } from "src/common/entities/elastic/elastic.sort.order";
-import { ElasticQuery } from "src/common/entities/elastic/elastic.query";
-import { AbstractQuery } from "src/common/entities/elastic/abstract.query";
-import { BlsService } from "src/common/bls.service";
-import { QueryType } from "src/common/entities/elastic/query.type";
+import { BlsService } from "src/endpoints/bls/bls.service";
 import { Constants } from "src/utils/constants";
 import { ApiUtils } from "src/utils/api.utils";
-import { QueryConditionOptions } from "src/common/entities/elastic/query.condition.options";
-import { GatewayService } from "src/common/gateway.service";
+import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
+import { ElasticService } from "src/common/elastic/elastic.service";
+import { AbstractQuery } from "src/common/elastic/entities/abstract.query";
+import { QueryType } from "src/common/elastic/entities/query.type";
+import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
+import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 
 @Injectable()
 export class BlockService {
@@ -21,7 +20,6 @@ export class BlockService {
     private readonly elasticService: ElasticService,
     private readonly cachingService: CachingService,
     private readonly blsService: BlsService,
-    private readonly gatewayService: GatewayService,
   ) {}
 
   private async buildElasticBlocksFilter (filter: BlockFilter): Promise<AbstractQuery[]> {
@@ -80,8 +78,6 @@ export class BlockService {
 
     for (let item of result) {
       item.shard = item.shardId;
-      item.gasUsed = await this.getBlockGasUsed(item.shard, item.hash);
-      item.gasUsedPercentage = (item.gasUsed / Constants.maxGasPerTransaction * 100).toRounded(2);
     }
 
     let blocks = [];
@@ -123,38 +119,8 @@ export class BlockService {
     result.shard = result.shardId;
     result.proposer = publicKeys[result.proposer];
     result.validators = result.validators.map((validator: number) => publicKeys[validator]);
-    result.gasUsed = await this.getBlockGasUsed(result.shard, hash);
-    result.gasUsedPercentage = (result.gasUsed / Constants.maxGasPerTransaction * 100).toRounded(2);
 
     return ApiUtils.mergeObjects(new BlockDetailed(), result);
-  }
-
-  private async getBlockGasUsed(shard: number, hash: string): Promise<number> {
-    return this.cachingService.getOrSetCache(
-      `blockGasUsed:${shard}:${hash}`,
-      async () => await this.getBlockGasUsedRaw(shard, hash),
-      Constants.oneWeek()
-    )
-  }
-
-  private async getBlockGasUsedRaw(shard: number, hash: string): Promise<number> {
-    let result = await this.gatewayService.get(`block/${shard}/by-hash/${hash}?withTxs=true`);
-
-    if (!result || !result.block) {
-      return 0;
-    }
-
-    if (result.block.miniBlocks === undefined) {
-      return 0;
-    }
-
-    const totalGasUsed = result.block.miniBlocks
-      .selectMany((x: any) => x.transactions)
-      .filter((x: any) => x.gasLimit > 0)
-      .map((x: any) => Number(x.gasLimit))
-      .reduce((a: number, b: number) => a + b, 0)
-
-    return totalGasUsed;
   }
 
   async getCurrentEpoch(): Promise<number> {

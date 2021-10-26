@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { CachingService } from "src/common/caching.service";
+import { CachingService } from "src/common/caching/caching.service";
 import { AddressUtils } from "src/utils/address.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";

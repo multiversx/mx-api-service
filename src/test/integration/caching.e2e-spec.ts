@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { CachingService } from 'src/common/caching.service';
+import { CachingService } from 'src/common/caching/caching.service';
 import { PublicAppModule } from 'src/public.app.module';
 import { Constants } from 'src/utils/constants';
 import Initializer from './e2e-init';

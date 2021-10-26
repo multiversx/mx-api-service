@@ -1,7 +1,8 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { CachingService } from "src/common/caching.service";
-import { GatewayService } from "src/common/gateway.service";
+import { Inject, Injectable, Logger } from "@nestjs/common";
+import { CachingService } from "src/common/caching/caching.service";
+import { GatewayService } from "src/common/gateway/gateway.service";
 import { Constants } from "src/utils/constants";
+import { GenesisTimestampInterface, GENESIS_TIMESTAMP_SERVICE } from "src/utils/genesis.timestamp.interface";
 
 @Injectable()
 export class VmQueryService {
@@ -9,14 +10,16 @@ export class VmQueryService {
 
   constructor(
     private readonly cachingService: CachingService,
-    private readonly gatewayService: GatewayService
+    private readonly gatewayService: GatewayService,
+    @Inject(GENESIS_TIMESTAMP_SERVICE)
+    private readonly genesisTimestampService: GenesisTimestampInterface
   ) {
     this.logger = new Logger(VmQueryService.name);
   }
 
   private async computeTtls(contract: string, func: string): Promise<{localTtl: number, remoteTtl: number}> {
     let isCachingQueryFunction = await this.cachingService.isCachingQueryFunction(contract, func);
-    let secondsRemainingUntilNextRound = await this.cachingService.getSecondsRemainingUntilNextRound();
+    let secondsRemainingUntilNextRound = await this.genesisTimestampService.getSecondsRemainingUntilNextRound();
 
     let localTtl = isCachingQueryFunction ? Constants.oneHour() : secondsRemainingUntilNextRound;
 

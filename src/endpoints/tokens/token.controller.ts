@@ -1,12 +1,24 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
+import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
+import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
+import { TransactionStatus } from "../transactions/entities/transaction.status";
+import { TransactionService } from "../transactions/transaction.service";
+import { TokenAccount } from "./entities/token.account";
 import { TokenDetailed } from "./entities/token.detailed";
 import { TokenService } from "./token.service";
 
 @Controller()
 @ApiTags('tokens')
 export class TokenController {
-  constructor(private readonly tokenService: TokenService) {}
+  private readonly logger: Logger
+  constructor(
+    private readonly tokenService: TokenService,
+    private readonly transactionService: TransactionService,
+    ) {
+      this.logger = new Logger(TokenController.name);
+    }
 
   @Get("/tokens")
   @ApiResponse({
@@ -78,5 +90,156 @@ export class TokenController {
     }
 
     return token;
+  }
+
+  @Get("/tokens/:identifier/accounts")
+  @ApiResponse({
+    status: 200,
+    description: 'The specific token accounts available on the blockchain',
+    type: TokenAccount,
+    isArray: true
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Token not found'
+  })
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+  getTokenAccounts(
+    @Param('identifier') identifier: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+  ): Promise<TokenAccount[]> {
+    return this.tokenService.getTokenAccounts({from, size}, identifier);
+  }
+
+  @Get("/tokens/:identifier/accounts/count")
+  @ApiResponse({
+    status: 200,
+    description: 'The number of specific token accounts available on the blockchain',
+  })
+    @ApiResponse({
+    status: 404,
+    description: 'Token not found'
+  })
+  getTokenAccountsCount(
+    @Param('identifier') identifier: string,
+  ): Promise<number> {
+    return this.tokenService.getTokenAccountsCount(identifier);
+  }
+
+
+  @Get("/tokens/:identifier/transactions")
+  @ApiResponse({
+    status: 200,
+    description: 'The specific token transactions history on the blockchain',
+    isArray: true
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Token not found'
+  })
+  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false  })
+  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false  })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false  })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false  })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false  })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false  })
+  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false  })
+  @ApiQuery({ name: 'search', description: 'Search in data object', required: false  })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+  @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false })
+  @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
+  async getTokenTransactions(
+    @Param('identifier') identifier: string,
+    @Query('sender') sender: string | undefined, 
+    @Query('receiver') receiver: string | undefined, 
+    @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
+    @Query('miniBlockHash') miniBlockHash: string | undefined, 
+    @Query('hashes') hashes: string | undefined, 
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
+    @Query('search') search: string | undefined,
+    @Query('before', ParseOptionalIntPipe) before: number | undefined, 
+    @Query('after', ParseOptionalIntPipe) after: number | undefined, 
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('withScResults', new ParseOptionalBoolPipe) withScResults: boolean | undefined,
+    @Query('withOperations', new ParseOptionalBoolPipe) withOperations: boolean | undefined,
+  ) {
+    try {
+      return await this.transactionService.getTransactions({
+        sender,
+        receiver,
+        token: identifier,
+        senderShard,
+        receiverShard,
+        miniBlockHash,
+        hashes,
+        status,
+        search,
+        before,
+        after,
+      }, { from, size }, { withScResults, withOperations });
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  @Get("/tokens/:identifier/transactions/count")
+  @ApiResponse({
+    status: 200,
+    description: 'The specific token transactions count on the blockchain',
+    isArray: true
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Token not found'
+  })
+  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false  })
+  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false  })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false  })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false  })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false  })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false  })
+  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false  })
+  @ApiQuery({ name: 'search', description: 'Search in data object', required: false  })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  async getTokenTransactionsCount(
+    @Param('identifier') identifier: string,
+    @Query('sender') sender: string | undefined, 
+    @Query('receiver') receiver: string | undefined, 
+    @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
+    @Query('miniBlockHash') miniBlockHash: string | undefined, 
+    @Query('hashes') hashes: string | undefined, 
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
+    @Query('search') search: string | undefined,
+    @Query('before', ParseOptionalIntPipe) before: number | undefined, 
+    @Query('after', ParseOptionalIntPipe) after: number | undefined, 
+  ) {
+    try {
+      return await this.transactionService.getTransactionCount({
+        sender,
+        receiver,
+        token: identifier,
+        senderShard,
+        receiverShard,
+        miniBlockHash,
+        hashes,
+        status,
+        search,
+        before,
+        after,
+      });
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+    }
   }
 }
