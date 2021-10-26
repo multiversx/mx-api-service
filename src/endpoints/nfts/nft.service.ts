@@ -99,7 +99,7 @@ export class NftService {
 
   async getNftCollection(collection: string): Promise<NftCollection | undefined> {
     let result = await this.getNftCollections({ from: 0, size: 1}, { collection });
-    if (result.length > 0) {
+    if (result.length > 0 && result[0].collection.toLowerCase() === collection.toLowerCase()) {
       return result[0];
     }
 
@@ -546,7 +546,16 @@ export class NftService {
 
   async getNftForAddress(address: string, identifier: string): Promise<NftAccount | undefined> {
     let nfts = await this.getNftsForAddressInternal(address, new NftFilter());
-    return nfts.find(x => x.identifier === identifier);
+    let nft = nfts.find(x => x.identifier === identifier);
+    if (!nft) {
+      return undefined;
+    }
+
+    if (nft.type === NftType.SemiFungibleESDT) {
+      nft.supply = await this.getSftSupply(identifier);
+    }
+
+    return nft;
   }
 
 }
