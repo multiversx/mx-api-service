@@ -31,4 +31,7 @@ export class NftCollection {
   
   @ApiProperty()
   canTransferRole: boolean = false;
+
+  @ApiProperty()
+  decimals?: number;
 }
