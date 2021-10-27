@@ -17,6 +17,7 @@ import { ElasticService } from 'src/common/elastic/elastic.service';
 import { QueryType } from 'src/common/elastic/entities/query.type';
 import { ElasticQuery } from 'src/common/elastic/entities/elastic.query';
 import { ElasticSortOrder } from 'src/common/elastic/entities/elastic.sort.order';
+import { DeployedContract } from './entities/deployed.contract';
 
 @Injectable()
 export class AccountService {
@@ -89,7 +90,6 @@ export class AccountService {
 
   async getAccountDeployedAtRaw(address: string): Promise<number | null> {
     let scDeploy = await this.elasticService.getItem('scdeploys', '_id', address);
-    console.log({scDeploy});
     if (!scDeploy) {
       return null;
     }
@@ -268,5 +268,21 @@ export class AccountService {
     }
 
     return nodes;
+  }
+
+  async getAccountContracts(address: string): Promise<DeployedContract[]> {
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)])
+      .withSort([ { name: 'timestamp', order: ElasticSortOrder.descending } ]);
+
+    const accountDeployedContracts = await this.elasticService.getList('scdeploys', "contract", elasticQuery);
+
+    const accounts: DeployedContract[] = accountDeployedContracts.map(contract => ({
+      address: contract.contract,
+      deployTxHash: contract.deployTxHash,
+      timestamp: contract.timestamp
+    }))
+
+    return accounts;
   }
 }

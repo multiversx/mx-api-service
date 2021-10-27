@@ -6,10 +6,10 @@ import asyncPool from 'tiny-async-pool';
 import { CachedFunction } from "src/crons/entities/cached.function";
 import { InvalidationFunction } from "src/crons/entities/invalidation.function";
 import { PerformanceProfiler } from "../../utils/performance.profiler";
-import { ShardTransaction } from "src/crons/entities/shard.transaction";
 import { Cache } from "cache-manager";
 import { AddressUtils } from "src/utils/address.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
+import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 
 @Injectable()
 export class CachingService {
@@ -143,6 +143,15 @@ export class CachingService {
 
   async getCacheLocal<T>(key: string): Promise<T | undefined> {
     return await CachingService.cache.get<T>(key);
+  }
+
+  async refreshCacheLocal<T>(key: string, ttl: number = this.configService.getCacheTtl()): Promise<T | undefined> {
+    let value = await this.getCacheRemote<T>(key);
+    if (value) {
+      await this.setCacheLocal<T>(key, value, ttl);
+    }
+
+    return value;
   }
 
   public async getCache<T>(key: string): Promise<T | undefined> {

@@ -16,7 +16,7 @@ function buildElasticIndexerSort(sorts: ElasticSortProperty[]): any[] {
 };
 
 export class ElasticQuery {
-  pagination: ElasticPagination | undefined = undefined;
+  pagination?: ElasticPagination;
   sort: ElasticSortProperty[] = [];
   filter: AbstractQuery[] = [];
   condition: QueryCondition = new QueryCondition();

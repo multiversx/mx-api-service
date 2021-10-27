@@ -2,12 +2,16 @@ import { forwardRef, Module } from '@nestjs/common';
 import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { ApiConfigModule } from './api-config/api.config.module';
 import { ApiConfigService } from './api-config/api.config.service';
+import { CacheController } from './caching/cache.controller';
 import { CachingModule } from './caching/caching.module';
 
 @Module({
   imports: [
     ApiConfigModule,
     forwardRef(() => CachingModule),
+  ],
+  controllers: [
+    CacheController,
   ],
   providers: [
     {

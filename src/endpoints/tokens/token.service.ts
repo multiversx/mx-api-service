@@ -8,6 +8,12 @@ import { ApiUtils } from "src/utils/api.utils";
 import { TokenFilter } from "./entities/token.filter";
 import { TokenUtils } from "src/utils/tokens.utils";
 import { EsdtService } from "../esdt/esdt.service";
+import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
+import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
+import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
+import { QueryType } from "src/common/elastic/entities/query.type";
+import { ElasticService } from "src/common/elastic/elastic.service";
+import { TokenAccount } from "./entities/token.account";
 
 @Injectable()
 export class TokenService {
@@ -16,6 +22,7 @@ export class TokenService {
   constructor(
     private readonly tokenAssetService: TokenAssetService,
     private readonly esdtService: EsdtService,
+    private readonly elasticService: ElasticService,
   ) {
     this.logger = new Logger(TokenService.name);
   }
@@ -154,5 +161,25 @@ export class TokenService {
     }
 
     return tokensWithBalance;
+  }
+
+  async getTokenAccounts(pagination: QueryPagination, identifier: string): Promise<TokenAccount[]> {
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withPagination(pagination)
+      .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
+      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier)]);
+
+    const tokenAccounts = await this.elasticService.getList("accountsesdt", identifier, elasticQuery);
+
+    return tokenAccounts.map((tokenAccount) => ApiUtils.mergeObjects(new TokenAccount(), tokenAccount));
+  }
+
+  async getTokenAccountsCount(identifier: string): Promise<number> {
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier)]);
+
+    const count = await this.elasticService.getCount("accountsesdt", elasticQuery);
+
+    return count;
   }
 }
