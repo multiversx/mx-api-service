@@ -17,6 +17,7 @@ import { ElasticSortOrder } from "./entities/elastic.sort.order";
 @Injectable()
 export class ElasticService {
   private readonly url: string;
+  private readonly mexUrl: string;
 
   constructor(
     private apiConfigService: ApiConfigService,
@@ -24,6 +25,7 @@ export class ElasticService {
     private readonly metricsService: MetricsService
   ) {
     this.url = apiConfigService.getElasticUrl();
+    this.mexUrl = apiConfigService.getMexUrl();
   }
 
   async getCount(collection: string, elasticQuery: ElasticQuery | undefined = undefined) {
@@ -64,8 +66,8 @@ export class ElasticService {
     return { ...item, ..._source };
   };
 
-  async getList(collection: string, key: string, elasticQuery: ElasticQuery): Promise<any[]> {
-    const url = `${this.url}/${collection}/_search`;
+  async getList(collection: string, key: string, elasticQuery: ElasticQuery, useMaxIndexer: boolean = false): Promise<any[]> {
+    const url = `${useMaxIndexer ? this.mexUrl : this.url}/${collection}/_search`;
 
     let profiler = new PerformanceProfiler();
 
