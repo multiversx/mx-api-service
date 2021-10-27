@@ -41,7 +41,7 @@ export class ProxyService {
   }
 
   async getAccountRaw(address: string): Promise<ProxyResponse> {
-    if (!this.apiConfigService.getUseProxyFlag()) {
+    if (this.apiConfigService.getUseProxyFlag()) {
       const { data } = await this.gatewayService.getRaw(`address/${address}`);
       return data;
     }
@@ -54,7 +54,7 @@ export class ProxyService {
   }
 
   async getBalanceRaw(address: string): Promise<ProxyResponse> {
-    if (!this.apiConfigService.getUseProxyFlag()) {
+    if (this.apiConfigService.getUseProxyFlag()) {
       const { data } = await this.gatewayService.getRaw(
         `address/${address}/balance`,
       );
@@ -68,7 +68,7 @@ export class ProxyService {
   }
 
   async getNonceRaw(address: string): Promise<ProxyResponse> {
-    if (!this.apiConfigService.getUseProxyFlag()) {
+    if (this.apiConfigService.getUseProxyFlag()) {
       const { data } = await this.gatewayService.getRaw(
         `address/${address}/balance`,
       );
@@ -85,7 +85,7 @@ export class ProxyService {
     address: string,
     key: string,
   ): Promise<ProxyResponse> {
-    if (!this.apiConfigService.getUseProxyFlag()) {
+    if (this.apiConfigService.getUseProxyFlag()) {
       const { data } = await this.gatewayService.getRaw(
         `address/${address}/key/${key}`,
       );
@@ -103,7 +103,7 @@ export class ProxyService {
   }
 
   async getShardRaw(address: string): Promise<ProxyResponse> {
-    if (!this.apiConfigService.getUseProxyFlag()) {
+    if (this.apiConfigService.getUseProxyFlag()) {
       const { data } = await this.gatewayService.getRaw(
         `address/${address}/shard`,
       );
@@ -127,13 +127,13 @@ export class ProxyService {
     }
   }
 
-  async getAllEsdts(address: string): Promise<{ esdts: any }> {
-    const { data } = await this.getAllEsdtsRaw(address);
+  async getEsdtTokens(address: string): Promise<{ esdts: any }> {
+    const { data } = await this.getEsdtTokensRaw(address);
     return data;
   }
 
-  async getAllEsdtsRaw(address: string): Promise<ProxyResponse> {
-    if (!this.apiConfigService.getUseProxyFlag()) {
+  async getEsdtTokensRaw(address: string): Promise<ProxyResponse> {
+    if (this.apiConfigService.getUseProxyFlag()) {
       const { data } = await this.gatewayService.getRaw(
         `address/${address}/esdt`,
       );
@@ -147,13 +147,34 @@ export class ProxyService {
     });
   }
 
+  async getEsdtTokenRaw(
+    address: string,
+    tokenIdentifier: string,
+  ): Promise<ProxyResponse> {
+    if (this.apiConfigService.getUseProxyFlag()) {
+      const { data } = await this.gatewayService.getRaw(
+        `address/${address}/esdt/${tokenIdentifier}`,
+      );
+      return data;
+    }
+
+    const observers = this.getObserversForAddress(address);
+    const { data } = await this.getRaw(
+      `/address/${address}/esdt/${tokenIdentifier}`,
+      observers,
+    );
+    return ProxyResponse.withSuccess({
+      tokenData: data?.tokenData,
+    });
+  }
+
   async getEsdtsRoles(address: string): Promise<{ roles: any }> {
     const { data } = await this.getEsdtsRolesRaw(address);
     return data;
   }
 
   async getEsdtsRolesRaw(address: string): Promise<ProxyResponse> {
-    if (!this.apiConfigService.getUseProxyFlag()) {
+    if (this.apiConfigService.getUseProxyFlag()) {
       const { data } = await this.gatewayService.getRaw(
         `address/${address}/esdts/roles`,
       );
@@ -172,13 +193,35 @@ export class ProxyService {
     });
   }
 
+  async getEsdtNftTokenRaw(
+    address: string,
+    tokenIdentifier: string,
+    nonce: number,
+  ): Promise<ProxyResponse> {
+    if (this.apiConfigService.getUseProxyFlag()) {
+      const { data } = await this.gatewayService.getRaw(
+        `address/${address}/nft/${tokenIdentifier}/nonce/${nonce}`,
+      );
+      return data;
+    }
+
+    const observers = this.getObserversForAddress(address);
+    const { data } = await this.getRaw(
+      `/address/${address}/nft/${tokenIdentifier}/nonce/${nonce}`,
+      observers,
+    );
+    return ProxyResponse.withSuccess({
+      tokenData: data?.tokenData,
+    });
+  }
+
   async getRegisteredNfts(address: string): Promise<{ tokens: any[] }> {
     const { data } = await this.getRegisteredNftsRaw(address);
     return data;
   }
 
   async getRegisteredNftsRaw(address: string): Promise<ProxyResponse> {
-    if (!this.apiConfigService.getUseProxyFlag()) {
+    if (this.apiConfigService.getUseProxyFlag()) {
       const { data } = await this.gatewayService.getRaw(
         `address/${address}/registered-nfts`,
       );
@@ -209,7 +252,7 @@ export class ProxyService {
     address: string,
     role: string,
   ): Promise<ProxyResponse> {
-    if (!this.apiConfigService.getUseProxyFlag()) {
+    if (this.apiConfigService.getUseProxyFlag()) {
       const { data } = await this.gatewayService.getRaw(
         `address/${address}/esdts-with-role/${role}`,
       );
@@ -234,7 +277,7 @@ export class ProxyService {
   }
 
   async getNetworkConfigRaw(): Promise<ProxyResponse> {
-    if (!this.apiConfigService.getUseProxyFlag()) {
+    if (this.apiConfigService.getUseProxyFlag()) {
       const { data } = await this.gatewayService.getRaw('network/config');
       return data;
     }
@@ -252,7 +295,7 @@ export class ProxyService {
   }
 
   async getNetworkStatusRaw(shardId: number): Promise<ProxyResponse> {
-    if (!this.apiConfigService.getUseProxyFlag()) {
+    if (this.apiConfigService.getUseProxyFlag()) {
       const { data } = await this.gatewayService.getRaw(
         `network/status/${shardId}`,
       );
@@ -272,7 +315,7 @@ export class ProxyService {
   }
 
   async getEconomicsRaw(): Promise<ProxyResponse> {
-    if (!this.apiConfigService.getUseProxyFlag()) {
+    if (this.apiConfigService.getUseProxyFlag()) {
       const { data } = await this.gatewayService.getRaw('network/economics');
       return data;
     }
@@ -292,7 +335,7 @@ export class ProxyService {
   }
 
   async getFungibleTokensRaw(): Promise<ProxyResponse> {
-    if (!this.apiConfigService.getUseProxyFlag()) {
+    if (this.apiConfigService.getUseProxyFlag()) {
       const { data } = await this.gatewayService.getRaw(
         'network/esdt/fungible-tokens',
       );

@@ -57,7 +57,28 @@ export class ProxyController {
   @Get('/address/:address/esdt')
   @ApiExcludeEndpoint()
   async getAddressEsdt(@Res() res: Response, @Param('address') address: string) {
-    await this.proxyResponse(res, this.proxyService.getAllEsdtsRaw(address));
+    await this.proxyResponse(res, this.proxyService.getEsdtTokensRaw(address));
+  }
+
+  @Get('/address/:address/esdt/:tokenIdentifier')
+  @ApiExcludeEndpoint()
+  async getAddressEsdtToken(
+    @Res() res: Response,
+    @Param('address') address: string,
+    @Param('tokenIdentifier') tokenIdentifier: string,
+  ) {
+    await this.proxyResponse(res, this.proxyService.getEsdtTokenRaw(address, tokenIdentifier));
+  }
+
+  @Get('/address/:address/nft/:tokenIdentifier/nonce/:nonce')
+  @ApiExcludeEndpoint()
+  async getAddressEsdtNftToken(
+    @Res() res: Response,
+    @Param('address') address: string,
+    @Param('tokenIdentifier') tokenIdentifier: string,
+    @Param('nonce') nonce: number,
+  ) {
+    await this.proxyResponse(res, this.proxyService.getEsdtNftTokenRaw(address, tokenIdentifier, nonce));
   }
 
   @Post('/transaction/send')

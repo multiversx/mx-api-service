@@ -29,7 +29,7 @@ export class EsdtService {
 
   private async getAllEsdtsForAddressRaw(address: string): Promise<{ [ key: string]: any }> {
     try {
-      let esdtResult = await this.proxyService.getAllEsdts(address);
+      let esdtResult = await this.proxyService.getEsdtTokens(address);
       return esdtResult.esdts;
     } catch (error: any) {
       let errorMessage = error?.response?.data?.error;
