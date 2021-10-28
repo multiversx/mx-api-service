@@ -7,6 +7,7 @@ import { DelegationController } from "./delegation/delegation.controller";
 import { EndpointsServicesModule } from "./endpoints.services.module";
 import { IdentitiesController } from "./identities/identities.controller";
 import { KeysController } from "./keys/keys.controller";
+import { MexController } from "./mex/mex.controller";
 import { MiniBlockController } from "./miniblocks/mini.block.controller";
 import { NetworkController } from "./network/network.controller";
 import { NftController } from "./nfts/nft.controller";
@@ -33,7 +34,7 @@ import { WaitingListController } from "./waiting-list/waiting.list.controller";
   ],
   controllers: [
     AccountController, BlockController, DelegationController, DelegationLegacyController, IdentitiesController,
-    KeysController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
+    KeysController, MexController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
     ProviderController, ProxyController, RoundController, ShardController, StakeController, StakeController,
     TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
   ],
