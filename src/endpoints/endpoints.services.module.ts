@@ -7,6 +7,7 @@ import { DelegationModule } from "./delegation/delegation.module";
 import { EsdtModule } from "./esdt/esdt.module";
 import { IdentitiesModule } from "./identities/identities.module";
 import { KeysModule } from "./keys/keys.module";
+import { MexModule } from "./mex/mex.module";
 import { MiniBlockModule } from "./miniblocks/miniblock.module";
 import { NetworkModule } from "./network/network.module";
 import { NftModule } from "./nfts/nft.module";
@@ -31,6 +32,7 @@ import { WaitingListModule } from "./waiting-list/waiting.list.module";
     forwardRef(() => DelegationLegacyModule), 
     forwardRef(() => IdentitiesModule), 
     forwardRef(() => KeysModule),
+    forwardRef(() => MexModule),
     forwardRef(() => MiniBlockModule),
     forwardRef(() => NetworkModule),
     forwardRef(() => NftModule),
@@ -51,7 +53,7 @@ import { WaitingListModule } from "./waiting-list/waiting.list.module";
   ],
   exports: [
     AccountModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
-    MiniBlockModule, NetworkModule, NftModule, TagModule, NodeModule, ProviderModule,
+    MexModule, MiniBlockModule, NetworkModule, NftModule, TagModule, NodeModule, ProviderModule,
     RoundModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
     WaitingListModule, EsdtModule, BlsModule
   ]

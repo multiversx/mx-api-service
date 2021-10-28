@@ -32,6 +32,15 @@ export class ApiConfigService {
     return elasticUrls[Math.floor(Math.random() * elasticUrls.length)];
   }
 
+  getMexUrl(): string {
+    const mexUrls = this.configService.get<string[]>('urls.mex');
+    if (mexUrls) {
+      return mexUrls[Math.floor(Math.random() * mexUrls.length)]
+    }
+
+    return "";
+  }
+
   getEsdtContractAddress(): string {
     const address = this.configService.get<string>('contracts.esdt');
     if (!address) {

@@ -21,6 +21,8 @@ urls:
     - 'https://testnet-api.elrond.com'
   elastic:
     - 'https://index.elrond.com'
+  mex:
+    - 'https://mex-indexer.elrond.com'
   gateway:
     - 'https://gateway.elrond.com'
   redis: '127.0.0.1'
