@@ -14,6 +14,7 @@ import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { TransactionUtils } from "src/utils/transaction.utils";
+import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -31,6 +32,7 @@ export class TransactionProcessorService {
       @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
       private readonly shardService: ShardService,
       private readonly nodeService: NodeService,
+      private readonly nftExtendedAttributesService: NftExtendedAttributesService,
   ) {
     this.logger = new Logger(TransactionProcessorService.name);
   }
@@ -70,6 +72,14 @@ export class TransactionProcessorService {
     
             if (!AddressUtils.isSmartContractAddress(transaction.receiver)) {
               this.eventsGateway.onAccountBalanceChanged(transaction.receiver);
+            }
+
+            if (transaction.data) {
+              if (TransactionUtils.isESDTNFTCreateTramsaction(transaction.data)) {
+                const metadata: string = TransactionUtils.extractNFTMetadata(transaction.data);
+
+                this.nftExtendedAttributesService.getExtendedAttributesFromMetadata(metadata);
+              }
             }
             
             let invalidatedTransactionKeys = await this.cachingService.tryInvalidateTransaction(transaction);
