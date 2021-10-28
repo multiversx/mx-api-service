@@ -13,6 +13,7 @@ import { EventsGateway } from "src/websockets/events.gateway";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { GatewayService } from "src/common/gateway/gateway.service";
+import { TransactionUtils } from "src/utils/transaction.utils";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -77,6 +78,7 @@ export class TransactionProcessorService {
             let invalidatedTokensOnAccountKeys = await this.cachingService.tryInvalidateTokensOnAccount(transaction);
             let invalidatedTokenBalancesKeys = await this.cachingService.tryInvalidateTokenBalance(transaction);
             let invalidatedOwnerKeys = await this.tryInvalidateOwner(transaction);
+            let invalidatedCollectionPropertiesKeys = await this.tryInvalidateCollectionProperties(transaction);
     
             allInvalidatedKeys.push(
               ...invalidatedTransactionKeys, 
@@ -84,7 +86,8 @@ export class TransactionProcessorService {
               ...invalidatedTokenProperties,
               ...invalidatedTokensOnAccountKeys, 
               ...invalidatedTokenBalancesKeys,
-              ...invalidatedOwnerKeys
+              ...invalidatedOwnerKeys,
+              ...invalidatedCollectionPropertiesKeys
             );
           }
     
@@ -114,6 +117,18 @@ export class TransactionProcessorService {
     }
 
     return await this.nodeService.deleteOwnersForAddressInCache(transaction.sender);
+  }
+
+  async tryInvalidateCollectionProperties(transaction: ShardTransaction): Promise<string[]> {
+    if (transaction.data) {
+      if (TransactionUtils.isChangeSFTToMetaESDTTransaction(transaction.data)) {
+        const collectionIdentifier: string = TransactionUtils.extractCollectionIdentifier(transaction.data);
+
+        return [`collection:${collectionIdentifier}`];
+      }
+    }
+
+    return [];
   }
 
   async getNewTransactions(): Promise<ShardTransaction[]> {
