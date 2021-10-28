@@ -34,7 +34,7 @@ export class MexService {
 
     const mexForAddress: MexWeek[] = [];
 
-    for (let week = 1; week <= 10; week++) {
+    for (let week = 1; week <= 12; week++) {
       const snapshotCollection = [2].includes(week) ? 
         `snapshot-week-${week}-v2`
         : `snapshot-week-${week}`;
