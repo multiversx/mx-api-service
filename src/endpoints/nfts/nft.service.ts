@@ -23,6 +23,7 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { EsdtService } from "../esdt/esdt.service";
 import { TokenAssetService } from "../tokens/token.asset.service";
+import { GatewayNft } from "./entities/gateway.nft";
 
 @Injectable()
 export class NftService {
@@ -482,23 +483,39 @@ export class NftService {
     return nfts;
   }
 
-  async getNftsForAddressInternal(address: string, filter: NftFilter): Promise<NftAccount[]> {
-    let esdts = await this.esdtService.getAllEsdtsForAddress(address);
+  async getGatewayNfts(address: string, filter: NftFilter): Promise<GatewayNft[]> {
+    if (filter.identifiers !== undefined) {
+      let identifiers = filter.identifiers.split(',');
+      if (identifiers.length === 1) {
+        let identifier = identifiers[0];
+        const collectionIdentifier = identifier.split('-').slice(0, 2).join('-');
+        const nonce = parseInt(identifier.split('-')[2], 16);
 
-    let gatewayNfts = Object.values(esdts).map(x => x as any);
+        const { tokenData: gatewayNft } = await this.gatewayService.get(`address/${address}/nft/${collectionIdentifier}/nonce/${nonce}`);
+
+        return [ gatewayNft ];
+      } 
+      
+      if (identifiers.length > 1) {
+        let esdts = await this.esdtService.getAllEsdtsForAddress(address);
+        return Object.values(esdts).map(x => x as any).filter(x => identifiers.includes(x.tokenIdentifier));
+      }
+    }
+
+    let esdts = await this.esdtService.getAllEsdtsForAddress(address);
+    return Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
+  }
+
+  async getNftsForAddressInternal(address: string, filter: NftFilter): Promise<NftAccount[]> {
+    let gatewayNfts = await this.getGatewayNfts(address, filter);
 
     let nfts: NftAccount[] = [];
 
     for (let gatewayNft of gatewayNfts) {
-      let components = gatewayNft.tokenIdentifier.split('-');
-      if (components.length !== 3) {
-        continue;
-      }
-
       let nft = new NftAccount();
       nft.identifier = gatewayNft.tokenIdentifier;
       nft.collection = gatewayNft.tokenIdentifier.split('-').slice(0, 2).join('-');
-      nft.nonce = parseInt('0x' + gatewayNft.tokenIdentifier.split('-')[2]);
+      nft.nonce = gatewayNft.nonce;
       nft.creator = gatewayNft.creator;
       nft.royalties = Number(gatewayNft.royalties) / 100; // 10.000 => 100%
       nft.uris = gatewayNft.uris.filter((x: any) => x);
@@ -556,11 +573,15 @@ export class NftService {
   }
 
   async getNftForAddress(address: string, identifier: string): Promise<NftAccount | undefined> {
-    let nfts = await this.getNftsForAddressInternal(address, new NftFilter());
-    let nft = nfts.find(x => x.identifier === identifier);
-    if (!nft) {
+    let filter = new NftFilter();
+    filter.identifiers = identifier;
+
+    let nfts = await this.getNftsForAddressInternal(address, filter);
+    if (nfts.length === 0) {
       return undefined;
     }
+
+    let nft = nfts[0];
 
     if (nft.type === NftType.SemiFungibleESDT) {
       nft.supply = await this.getSftSupply(identifier);
