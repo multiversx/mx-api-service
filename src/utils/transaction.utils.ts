@@ -5,8 +5,8 @@ export class TransactionUtils {
     return BinaryUtils.base64Decode(data).startsWith('changeSFTToMetaESDT@');
   }
 
-  static isESDTNFTCreateTramsaction(data: string) {
-    return BinaryUtils.base64Decode(data).startsWith('ESDTNFTCreateTramsaction@');
+  static isESDTNFTCreateTransaction(data: string) {
+    return BinaryUtils.base64Decode(data).startsWith('ESDTNFTCreateTransaction@');
   }
 
   static extractCollectionIdentifier(data: string) {

@@ -75,7 +75,7 @@ export class TransactionProcessorService {
             }
 
             if (transaction.data) {
-              if (TransactionUtils.isESDTNFTCreateTramsaction(transaction.data)) {
+              if (TransactionUtils.isESDTNFTCreateTransaction(transaction.data)) {
                 const metadata: string = TransactionUtils.extractNFTMetadata(transaction.data);
 
                 this.nftExtendedAttributesService.getExtendedAttributesFromMetadata(metadata);
