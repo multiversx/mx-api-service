@@ -6,7 +6,7 @@ export class TransactionUtils {
   }
 
   static isESDTNFTCreateTransaction(data: string) {
-    return BinaryUtils.base64Decode(data).startsWith('ESDTNFTCreateTransaction@');
+    return BinaryUtils.base64Decode(data).startsWith('ESDTNFTCreate@');
   }
 
   static extractCollectionIdentifier(data: string) {
