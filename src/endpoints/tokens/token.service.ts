@@ -14,6 +14,7 @@ import { QueryConditionOptions } from "src/common/elastic/entities/query.conditi
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { TokenAccount } from "./entities/token.account";
+import { QueryOperator } from "src/common/elastic/entities/query.operator";
 
 @Injectable()
 export class TokenService {
@@ -167,7 +168,7 @@ export class TokenService {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withPagination(pagination)
       .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
-      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier)]);
+      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
 
     const tokenAccounts = await this.elasticService.getList("accountsesdt", identifier, elasticQuery);
 
@@ -176,7 +177,7 @@ export class TokenService {
 
   async getTokenAccountsCount(identifier: string): Promise<number> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier)]);
+      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
 
     const count = await this.elasticService.getCount("accountsesdt", elasticQuery);
 
