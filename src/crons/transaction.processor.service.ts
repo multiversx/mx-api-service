@@ -15,6 +15,7 @@ import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transacti
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { TransactionUtils } from "src/utils/transaction.utils";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
+import { BinaryUtils } from "src/utils/binary.utils";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -75,10 +76,11 @@ export class TransactionProcessorService {
             }
 
             if (transaction.data) {
-              if (TransactionUtils.isESDTNFTCreateTransaction(transaction.data)) {
-                const metadata: string = TransactionUtils.extractNFTMetadata(transaction.data);
+              const metadataResult = TransactionUtils.tryExtractNftMetadataFromNftCreateTransaction(transaction);
+              if (metadataResult) {
+                this.logger.log(`Detected NFT Create for collection with identifier '${metadataResult.collection}'. Raw attributes: '${metadataResult.attributes}'`);
 
-                this.nftExtendedAttributesService.getExtendedAttributesFromMetadata(metadata);
+                this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(BinaryUtils.base64Encode(metadataResult.attributes));
               }
             }
             
@@ -130,20 +132,21 @@ export class TransactionProcessorService {
   }
 
   async tryInvalidateCollectionProperties(transaction: ShardTransaction): Promise<string[]> {
-    if (transaction.data) {
-      if (TransactionUtils.isChangeSFTToMetaESDTTransaction(transaction.data)) {
-        const collectionIdentifier: string = TransactionUtils.extractCollectionIdentifier(transaction.data);
-
-        this.logger.log(`Change SFT to Meta ESDT transaction detected for collection '${collectionIdentifier}'`);
-
-        const key = `collection:${collectionIdentifier}`;
-        await this.cachingService.deleteInCache(key);
-
-        return [ key ];
-      }
+    if (!transaction.data) {
+      return [];
     }
 
-    return [];
+    const collectionIdentifier = TransactionUtils.tryExtractCollectionIdentifierFromChangeSftToMetaEsdTransaction(transaction);
+    if (!collectionIdentifier) {
+      return [];
+    }
+
+    this.logger.log(`Change SFT to Meta ESDT transaction detected for collection '${collectionIdentifier}'`);
+
+    const key = `collection:${collectionIdentifier}`;
+    await this.cachingService.deleteInCache(key);
+
+    return [ key ];
   }
 
   async getNewTransactions(): Promise<ShardTransaction[]> {

@@ -251,13 +251,7 @@ export class NftService {
         }
 
         if (elasticNftData.metadata) {
-          try {
-            nft.metadata = await this.nftExtendedAttributesService.getExtendedAttributesFromMetadata(elasticNftData.metadata);
-          } catch (error) {
-            this.logger.error(`Error when getting extended attributes for NFT '${nft.identifier}'`);
-            this.logger.error(error);
-            nft.metadata = undefined;
-          }
+          nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromMetadata(elasticNftData.metadata);
         } else {
           nft.metadata = undefined;
         }
@@ -538,12 +532,7 @@ export class NftService {
 
       if (gatewayNft.attributes) {
         nft.tags = this.nftExtendedAttributesService.getTags(gatewayNft.attributes);
-        try {
-          nft.metadata = await this.nftExtendedAttributesService.getExtendedAttributesFromRawAttributes(gatewayNft.attributes);
-        } catch (error) {
-          this.logger.error(`Could not get extended attributes for nft '${nft.identifier}'`);
-          this.logger.error(error);
-        }
+        nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(gatewayNft.attributes);
       }
 
       let collectionDetails = await this.getCollectionProperties(nft.collection);
