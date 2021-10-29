@@ -1,3 +1,4 @@
+import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { AddressUtils } from "src/utils/address.utils";
 import { TransactionUtils } from "src/utils/transaction.utils";
 
@@ -17,32 +18,34 @@ describe('API utils', () => {
   });
 
   describe('Transaction Utils', () => {
-    it('is cahngeSFTToMetaESDT transaction', () => {
-      expect(TransactionUtils.isChangeSFTToMetaESDTTransaction('dGVzdFRyYW5zYWN0aW9u')).toBeFalsy();
-      expect(TransactionUtils.isChangeSFTToMetaESDTTransaction('dGVzdFRyYW5zYWN0aW9uQA==')).toBeFalsy();
-      expect(TransactionUtils.isChangeSFTToMetaESDTTransaction('Y2hhbmdlU0ZUVG9NZXRhRVNEVA==')).toBeFalsy();
-      expect(TransactionUtils.isChangeSFTToMetaESDTTransaction('Y2hhbmdlU0ZUVG9NZXRhRVNEVEA=')).toBeTruthy();
+    it('tryExtractCollectionIdentifierFromChangeSftToMetaEsdTransaction', () => {
+      let transaction = new ShardTransaction();
+      transaction.data = 'dGVzdFRyYW5zYWN0aW9u';
+      expect(TransactionUtils.tryExtractCollectionIdentifierFromChangeSftToMetaEsdTransaction(transaction)).toBeUndefined();
+      transaction = new ShardTransaction();
+      transaction.data = 'dGVzdFRyYW5zYWN0aW9uQA==';
+      expect(TransactionUtils.tryExtractCollectionIdentifierFromChangeSftToMetaEsdTransaction(transaction)).toBeUndefined();
+      transaction = new ShardTransaction();
+      transaction.data = 'Y2hhbmdlU0ZUVG9NZXRhRVNEVA==';
+      expect(TransactionUtils.tryExtractCollectionIdentifierFromChangeSftToMetaEsdTransaction(transaction)).toBeUndefined();
+      transaction = new ShardTransaction();
+      transaction.data = 'Y2hhbmdlU0ZUVG9NZXRhRVNEVEA0NTQ3NGM0NDRkNDU1ODQ2MmQzNjM3NjE2MzM0MzlAMTJAOWFhNjNj';
+      expect(TransactionUtils.tryExtractCollectionIdentifierFromChangeSftToMetaEsdTransaction(transaction)).toEqual('EGLDMEXF-67ac49');
     });
 
-    it('is esdt nft create transaction', () => {
-      expect(TransactionUtils.isESDTNFTCreateTransaction('dGVzdFRyYW5zYWN0aW9u')).toBeFalsy();
-      expect(TransactionUtils.isESDTNFTCreateTransaction('dGVzdFRyYW5zYWN0aW9uQA==')).toBeFalsy();
-      expect(TransactionUtils.isESDTNFTCreateTransaction('Y2hhbmdlU0ZUVG9NZXRhRVNEVA==')).toBeFalsy();
-      expect(TransactionUtils.isESDTNFTCreateTransaction('Y2hhbmdlU0ZUVG9NZXRhRVNEVEA=')).toBeFalsy();
-      expect(TransactionUtils.isESDTNFTCreateTransaction('RVNEVE5GVENyZWF0ZQ==')).toBeFalsy();
-      expect(TransactionUtils.isESDTNFTCreateTransaction('RVNEVE5GVENyZWF0ZUA=')).toBeTruthy();
-    });
-
-    it('extract collection identifier', () => {
-      expect(TransactionUtils.extractCollectionIdentifier(
-        'RVNEVE5GVENyZWF0ZUA1MjU1NGU0ZjRlNDUyZDM2NjYzMjM1MzkzNUAwMUA0ZTQ2NTQ1NDQ1NTM1NEAwOWM0QDUxNmQ1MjczNWEzNzc1NTA1NjYxNzQzNTZhNjkzMzY3NzA1NzQxNTg0ZDY0NzM0ZTcwNGQzOTUzNzk2NjYyNGM2MzQ1NGE3ODZmMzYzODRlNzA1NTM5MzE1NjZlQDc0NjE2NzczM2E0MzYxNmUyMDQ5MjA2ZDY5NmU3NDIwNmQ3NTZjNzQ2OTcwNmM2NTNiNmQ2NTc0NjE2NDYxNzQ2MTNhNTE2ZDU5NjE3MzYzNjY0NzM1NGQ0ZDM1Nzg3NDc5NmEzOTZiNTU1YTU0Nzc2Njc2NGQzMTc5MzQ3MDU2NTQ2NzMzNjc1MTc1NzY1NjU3Njk3MDZmNzIzNjUzMzlANjg3NDc0NzA3MzNhMmYyZjY5NzA2NjczMmU2OTZmMmY2OTcwNjY3MzJmNTE2ZDUyNzM1YTM3NzU1MDU2NjE3NDM1NmE2OTMzNjc3MDU3NDE1ODRkNjQ3MzRlNzA0ZDM5NTM3OTY2NjI0YzYzNDU0YTc4NmYzNjM4NGU3MDU1MzkzMTU2NmU=')
-      ).toStrictEqual('RUNONE-6f2595');
-    });
-
-    it('extract nft metadata', () => {
-      expect(TransactionUtils.extractNFTMetadata(
-        'RVNEVE5GVENyZWF0ZUA1MjU1NGU0ZjRlNDUyZDM2NjYzMjM1MzkzNUAwMUA0ZTQ2NTQ1NDQ1NTM1NEAwOWM0QDUxNmQ1MjczNWEzNzc1NTA1NjYxNzQzNTZhNjkzMzY3NzA1NzQxNTg0ZDY0NzM0ZTcwNGQzOTUzNzk2NjYyNGM2MzQ1NGE3ODZmMzYzODRlNzA1NTM5MzE1NjZlQDc0NjE2NzczM2E0MzYxNmUyMDQ5MjA2ZDY5NmU3NDIwNmQ3NTZjNzQ2OTcwNmM2NTNiNmQ2NTc0NjE2NDYxNzQ2MTNhNTE2ZDU5NjE3MzYzNjY0NzM1NGQ0ZDM1Nzg3NDc5NmEzOTZiNTU1YTU0Nzc2Njc2NGQzMTc5MzQ3MDU2NTQ2NzMzNjc1MTc1NzY1NjU3Njk3MDZmNzIzNjUzMzlANjg3NDc0NzA3MzNhMmYyZjY5NzA2NjczMmU2OTZmMmY2OTcwNjY3MzJmNTE2ZDUyNzM1YTM3NzU1MDU2NjE3NDM1NmE2OTMzNjc3MDU3NDE1ODRkNjQ3MzRlNzA0ZDM5NTM3OTY2NjI0YzYzNDU0YTc4NmYzNjM4NGU3MDU1MzkzMTU2NmU=')
-      ).toStrictEqual('QmRsZ7uPVat5ji3gpWAXMdsNpM9SyfbLcEJxo68NpU91Vn');
+    it('tryExtractNftMetadataFromNftCreateTransaction', () => {
+      let transaction = new ShardTransaction();
+      transaction.data = 'dGVzdFRyYW5zYWN0aW9u';
+      expect(TransactionUtils.tryExtractNftMetadataFromNftCreateTransaction(transaction)).toBeUndefined();
+      transaction = new ShardTransaction();
+      transaction.data = 'dGVzdFRyYW5zYWN0aW9uQA==';
+      expect(TransactionUtils.tryExtractNftMetadataFromNftCreateTransaction(transaction)).toBeUndefined();
+      transaction = new ShardTransaction();
+      transaction.data = 'Y2hhbmdlU0ZUVG9NZXRhRVNEVA==';
+      expect(TransactionUtils.tryExtractNftMetadataFromNftCreateTransaction(transaction)).toBeUndefined();
+      transaction = new ShardTransaction();
+      transaction.data = 'RVNEVE5GVENyZWF0ZUA0ZTQ2NTQyZDM4MzEzMTM4Mzc2NkAwMUA0NDY1NjE2Y0BANTE2ZDU5NDc2MTZkNDE0YjMxNWE2MjU2NmE2ZDRjMzk1NTM5NDc3ODY2Nzg2MjU0NDg2YTQ3NzMzNzc0MzUzNTY0NDY3MTRhNWE0YTQyNGE3MTUzNmY2NTZiNjFANzQ2MTY3NzMzYTYxNzI3MjZmNzcyYzc3NzI2ZjZlNjcyYzczNjk2NzZlNjE2YzJjNzA2NTcyNjM2NTZlNzQyYzZjNjk2NTNiNmQ2NTc0NjE2NDYxNzQ2MTNhNTE2ZDYxNzI3MDZlNDQzNjZiNDY0NTRhNjg0NzQxNWEzNzZiNGQ1OTc5MzE3NzQ4NjI0MzczNTA1MTc5NjQ3MTYyNjE1OTMzNDE1ODZkNTczMTQ4Mzk2YTYyNjJANjg3NDc0NzA3MzNhMmYyZjY5NzA2NjczMmU2OTZmMmY2OTcwNjY3MzJmNTE2ZDU5NDc2MTZkNDE0YjMxNWE2MjU2NmE2ZDRjMzk1NTM5NDc3ODY2Nzg2MjU0NDg2YTQ3NzMzNzc0MzUzNTY0NDY3MTRhNWE0YTQyNGE3MTUzNmY2NTZiNjE=';
+      expect(TransactionUtils.tryExtractNftMetadataFromNftCreateTransaction(transaction)).toMatchObject({ collection: 'NFT-81187f', attributes: 'tags:arrow,wrong,signal,percent,lie;metadata:QmarpnD6kFEJhGAZ7kMYy1wHbCsPQydqbaY3AXmW1H9jbb'});
     });
   });
 });
