@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { ApiService } from "src/common/network/api.service";
 import { NftMetadata } from "src/endpoints/nfts/entities/nft.metadata";
 import { BinaryUtils } from "src/utils/binary.utils";
@@ -9,19 +9,43 @@ import { CachingService } from "../../common/caching/caching.service";
 
 @Injectable()
 export class NftExtendedAttributesService {
+  private readonly logger: Logger;
+
   constructor(
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
     private readonly apiService: ApiService,
-  ) {}
+  ) {
+    this.logger = new Logger(NftExtendedAttributesService.name);
+  }
 
-  async getExtendedAttributesFromRawAttributes(attributes: string): Promise<NftMetadata | undefined> {
-    let metadata = this.getMetadata(attributes);
+  async tryGetExtendedAttributesFromBase64EncodedAttributes(attributes: string): Promise<NftMetadata | undefined> {
+    try {
+      return await this.getExtendedAttributesFromBase64EncodedAttributes(attributes);
+    } catch (error) {
+      this.logger.error(`Could not get extended attributes from raw attributes '${attributes}'`);
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
+  async getExtendedAttributesFromBase64EncodedAttributes(attributes: string): Promise<NftMetadata | undefined> {
+    let metadata = this.getMetadataFromBase64EncodedAttributes(attributes);
     if (metadata === undefined) {
       return undefined;
     }
 
     return this.getExtendedAttributesFromMetadata(metadata);
+  }
+
+  async tryGetExtendedAttributesFromMetadata(metadata: string): Promise<NftMetadata | undefined> {
+    try {
+      return await this.getExtendedAttributesFromMetadata(metadata);
+    } catch (error) {
+      this.logger.error(`Error when getting extended attributes from metadata '${metadata}'`);
+      this.logger.error(error);
+      return undefined;
+    }
   }
 
   async getExtendedAttributesFromMetadata(metadata: string): Promise<NftMetadata | undefined> {
@@ -61,7 +85,7 @@ export class NftExtendedAttributesService {
     return match.groups['tags'].split(',');
   }
 
-  private getMetadata(attributes: string): string | undefined {
+  private getMetadataFromBase64EncodedAttributes(attributes: string): string | undefined {
     let decodedAttributes = BinaryUtils.base64Decode(attributes);
     let match = decodedAttributes.match(/metadata:(?<metadata>[\w]*)/);
     if (!match || !match.groups) {

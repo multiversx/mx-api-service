@@ -13,6 +13,9 @@ import { EventsGateway } from "src/websockets/events.gateway";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { GatewayService } from "src/common/gateway/gateway.service";
+import { TransactionUtils } from "src/utils/transaction.utils";
+import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
+import { BinaryUtils } from "src/utils/binary.utils";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -30,6 +33,7 @@ export class TransactionProcessorService {
       @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
       private readonly shardService: ShardService,
       private readonly nodeService: NodeService,
+      private readonly nftExtendedAttributesService: NftExtendedAttributesService,
   ) {
     this.logger = new Logger(TransactionProcessorService.name);
   }
@@ -70,6 +74,15 @@ export class TransactionProcessorService {
             if (!AddressUtils.isSmartContractAddress(transaction.receiver)) {
               this.eventsGateway.onAccountBalanceChanged(transaction.receiver);
             }
+
+            if (transaction.data) {
+              const metadataResult = TransactionUtils.tryExtractNftMetadataFromNftCreateTransaction(transaction);
+              if (metadataResult) {
+                this.logger.log(`Detected NFT Create for collection with identifier '${metadataResult.collection}'. Raw attributes: '${metadataResult.attributes}'`);
+
+                this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(BinaryUtils.base64Encode(metadataResult.attributes));
+              }
+            }
             
             let invalidatedTransactionKeys = await this.cachingService.tryInvalidateTransaction(transaction);
             let invalidatedTokenKeys = await this.cachingService.tryInvalidateTokens(transaction);
@@ -77,6 +90,7 @@ export class TransactionProcessorService {
             let invalidatedTokensOnAccountKeys = await this.cachingService.tryInvalidateTokensOnAccount(transaction);
             let invalidatedTokenBalancesKeys = await this.cachingService.tryInvalidateTokenBalance(transaction);
             let invalidatedOwnerKeys = await this.tryInvalidateOwner(transaction);
+            let invalidatedCollectionPropertiesKeys = await this.tryInvalidateCollectionProperties(transaction);
     
             allInvalidatedKeys.push(
               ...invalidatedTransactionKeys, 
@@ -84,7 +98,8 @@ export class TransactionProcessorService {
               ...invalidatedTokenProperties,
               ...invalidatedTokensOnAccountKeys, 
               ...invalidatedTokenBalancesKeys,
-              ...invalidatedOwnerKeys
+              ...invalidatedOwnerKeys,
+              ...invalidatedCollectionPropertiesKeys
             );
           }
     
@@ -114,6 +129,24 @@ export class TransactionProcessorService {
     }
 
     return await this.nodeService.deleteOwnersForAddressInCache(transaction.sender);
+  }
+
+  async tryInvalidateCollectionProperties(transaction: ShardTransaction): Promise<string[]> {
+    if (!transaction.data) {
+      return [];
+    }
+
+    const collectionIdentifier = TransactionUtils.tryExtractCollectionIdentifierFromChangeSftToMetaEsdTransaction(transaction);
+    if (!collectionIdentifier) {
+      return [];
+    }
+
+    this.logger.log(`Change SFT to Meta ESDT transaction detected for collection '${collectionIdentifier}'`);
+
+    const key = `collection:${collectionIdentifier}`;
+    await this.cachingService.deleteInCache(key);
+
+    return [ key ];
   }
 
   async getNewTransactions(): Promise<ShardTransaction[]> {
