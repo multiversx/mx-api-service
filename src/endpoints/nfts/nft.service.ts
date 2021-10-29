@@ -361,6 +361,8 @@ export class NftService {
       
       if (nftCollection.type === NftType.SemiFungibleESDT) {
         nftCollection.canAddQuantity = role ? role.includes('ESDTRoleNFTAddQuantity') : false;
+      } else if (nftCollection.type === NftType.MetaESDT) {
+        nftCollection.decimals = collectionProperties.decimals;
       }
 
       nftCollections.push(nftCollection);

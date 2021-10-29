@@ -134,7 +134,12 @@ export class TransactionProcessorService {
       if (TransactionUtils.isChangeSFTToMetaESDTTransaction(transaction.data)) {
         const collectionIdentifier: string = TransactionUtils.extractCollectionIdentifier(transaction.data);
 
-        return [`collection:${collectionIdentifier}`];
+        this.logger.log(`Change SFT to Meta ESDT transaction detected for collection '${collectionIdentifier}'`);
+
+        const key = `collection:${collectionIdentifier}`;
+        await this.cachingService.deleteInCache(key);
+
+        return [ key ];
       }
     }
 
