@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { TokenAssets } from "./token.assets";
 
 export class Token {
     @ApiProperty()
@@ -6,6 +7,9 @@ export class Token {
 
     @ApiProperty()
     name: string = '';
+
+    @ApiProperty()
+    ticker: string = '';
 
     @ApiProperty()
     owner: string = '';
@@ -21,4 +25,7 @@ export class Token {
 
     @ApiProperty()
     isPaused: boolean = false;
+
+    @ApiProperty()
+    assets?: TokenAssets;
 }

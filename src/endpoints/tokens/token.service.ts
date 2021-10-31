@@ -32,7 +32,7 @@ export class TokenService {
     let tokens = await this.esdtService.getAllEsdtTokens();
     let token = tokens.find(x => x.identifier === identifier);
     if (token) {
-      token.assets = await this.tokenAssetService.getAssets(token.identifier);
+      await this.applyAssetsAndTicker(token);
 
       return ApiUtils.mergeObjects(new TokenDetailed(), token);
     }
@@ -48,10 +48,20 @@ export class TokenService {
     tokens = tokens.slice(from, from + size);
 
     for (let token of tokens) {
-      token.assets = await this.tokenAssetService.getAssets(token.identifier);
+      await this.applyAssetsAndTicker(token);
     }
 
     return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
+  }
+
+  async applyAssetsAndTicker(token: Token) {
+    token.assets = await this.tokenAssetService.getAssets(token.identifier);
+
+      if (token.assets) {
+        token.ticker = token.identifier.split('-')[0];
+      } else {
+        token.ticker = token.identifier;
+      }
   }
 
   async getFilteredTokens(filter: TokenFilter): Promise<TokenDetailed[]> {
@@ -103,7 +113,7 @@ export class TokenService {
     tokens = tokens.slice(from, from + size);
 
     for (let token of tokens) {
-      token.assets = await this.tokenAssetService.getAssets(token.identifier);
+      await this.applyAssetsAndTicker(token);
     }
 
     return tokens.map(token => ApiUtils.mergeObjects(new TokenWithBalance(), token));
@@ -117,7 +127,7 @@ export class TokenService {
       return undefined;
     }
 
-    foundToken.assets = await this.tokenAssetService.getAssets(tokenIdentifier);
+    await this.applyAssetsAndTicker(foundToken);
 
     return foundToken;
   }
