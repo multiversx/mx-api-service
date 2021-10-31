@@ -57,11 +57,11 @@ export class TokenService {
   async applyAssetsAndTicker(token: Token) {
     token.assets = await this.tokenAssetService.getAssets(token.identifier);
 
-      if (token.assets) {
-        token.ticker = token.identifier.split('-')[0];
-      } else {
-        token.ticker = token.identifier;
-      }
+    if (token.assets) {
+      token.ticker = token.identifier.split('-')[0];
+    } else {
+      token.ticker = token.identifier;
+    }
   }
 
   async getFilteredTokens(filter: TokenFilter): Promise<TokenDetailed[]> {

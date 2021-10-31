@@ -27,5 +27,5 @@ export class Token {
     isPaused: boolean = false;
 
     @ApiProperty()
-    assets?: TokenAssets;
+    assets: TokenAssets | undefined = undefined;
 }
