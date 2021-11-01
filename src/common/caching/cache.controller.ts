@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Logger, Param, Put, Query, UseGuards } from "@nestjs/common";
-import { ClientProxy, EventPattern } from "@nestjs/microservices";
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Param, Put, Query, UseGuards } from "@nestjs/common";
+import { ClientProxy } from "@nestjs/microservices";
 import { ApiResponse } from "@nestjs/swagger";
 import { CachingService } from "src/common/caching/caching.service";
 import { JwtAdminGuard } from "src/utils/guards/jwt.admin.guard";
@@ -8,14 +8,11 @@ import { CacheValue } from "./entities/cache.value";
 
 @Controller()
 export class CacheController {
-  private readonly logger: Logger
 
   constructor(
     private readonly cachingService: CachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
-  ) {
-    this.logger = new Logger(CacheController.name);
-  }
+  ) { }
 
 
   @UseGuards(JwtAuthenticateGuard, JwtAdminGuard)
@@ -69,20 +66,5 @@ export class CacheController {
     @Query('keys') keys: string | undefined,
   ): Promise<string[]> {
     return await this.cachingService.getKeys(keys);
-  }
-
-  @EventPattern('deleteCacheKeys')
-  async deleteCacheKey(keys: string[]) {
-
-    for (let key of keys) {
-      if (['nodes', 'allEsdtTokens', 'identities', 'providers', 'providersWithStakeInformation', 'keybases', 
-           'identityProfilesKeybases', 'currentPrice', 'economics', 'accounts:0:25', 'heartbeatstatus'].includes(key)) {
-        this.logger.log(`Soft Deleting cache key ${key}`);
-        await this.cachingService.refreshCacheLocal(key);
-      } else {
-        this.logger.log(`Hard Deleting cache key ${key}`);
-        await this.cachingService.deleteInCacheLocal(key);
-      }
-    }
   }
 }
