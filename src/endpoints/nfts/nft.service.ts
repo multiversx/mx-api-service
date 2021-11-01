@@ -72,7 +72,6 @@ export class NftService {
       nftCollection.name = tokenCollection.name;
       nftCollection.type = tokenCollection.type;
       nftCollection.collection = tokenCollection.token;
-      nftCollection.ticker = tokenCollection.ticker;
       nftCollection.timestamp = tokenCollection.timestamp;
 
       let collectionProperties = await this.getCollectionProperties(nftCollection.collection);
@@ -88,6 +87,8 @@ export class NftService {
           nftCollection.assets = await this.tokenAssetService.getAssets(nftCollection.collection);
         }
       }
+
+      nftCollection.ticker = nftCollection.assets ? tokenCollection.ticker : nftCollection.collection;
 
       nftCollections.push(nftCollection);
     }
@@ -357,7 +358,10 @@ export class NftService {
         nftCollection.canAddQuantity = role ? role.includes('ESDTRoleNFTAddQuantity') : false;
       } else if (nftCollection.type === NftType.MetaESDT) {
         nftCollection.decimals = collectionProperties.decimals;
+        nftCollection.assets = await this.tokenAssetService.getAssets(nftCollection.collection);
       }
+
+      nftCollection.ticker = nftCollection.assets ? tokenIdentifier.split('-')[0] : nftCollection.collection;
 
       nftCollections.push(nftCollection);
     }
