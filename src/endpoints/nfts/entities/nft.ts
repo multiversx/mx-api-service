@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { TokenAssets } from "src/endpoints/tokens/entities/token.assets";
 import { NftMetadata } from "./nft.metadata";
 import { NftType } from "./nft.type";
 
@@ -56,4 +57,7 @@ export class Nft {
 
   @ApiProperty()
   decimals?: number;
+
+  @ApiProperty()
+  assets?: TokenAssets;
 }

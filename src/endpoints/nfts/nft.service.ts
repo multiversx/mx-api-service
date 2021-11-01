@@ -129,7 +129,13 @@ export class NftService {
     const { from, size } = queryPagination;
 
     let nfts =  await this.getNftsInternal(from, size, filter, undefined);
-    
+
+    if (queryOptions && queryOptions.withAssets) {
+      for (let nft of nfts) {
+        nft.assets = await this.tokenAssetService.getAssets(nft.collection);
+      }
+    }
+
     if (queryOptions && queryOptions.withOwner) {
       const accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nfts.map(({identifier}) => identifier));
 
@@ -198,6 +204,8 @@ export class NftService {
 
     await this.applyNftDistribution(nft.identifier, nft);
     this.applyNftSupply(nft);
+
+    nft.assets = await this.tokenAssetService.getAssets(nft.collection);
 
     return nft;
   }
@@ -416,6 +424,12 @@ export class NftService {
 
     nfts = nfts.slice(from, from + size);
 
+    if (queryOptions && queryOptions.withAssets) {
+      for (let nft of nfts) {
+        nft.assets = await this.tokenAssetService.getAssets(nft.collection);
+      }
+    }
+
     if (queryOptions && queryOptions.withTimestamp) {
       let identifiers = nfts.map(x => x.identifier);
       let elasticNfts = await this.elasticService.getTokensByIdentifiers(identifiers);
@@ -449,7 +463,7 @@ export class NftService {
     if (filter.search) {
       let searchLower = filter.search.toLowerCase();
 
-      nfts = nfts.filter(x => x.name.toLowerCase().includes(searchLower));
+      nfts = nfts.filter(x => x.name.toLowerCase().includes(searchLower) || x.identifier.toLowerCase().includes(searchLower));
     }
 
     if (filter.type) {
@@ -492,6 +506,9 @@ export class NftService {
         const nonce = parseInt(identifier.split('-')[2], 16);
 
         const { tokenData: gatewayNft } = await this.gatewayService.get(`address/${address}/nft/${collectionIdentifier}/nonce/${nonce}`);
+
+        // normalizing tokenIdentifier since it doesn't contain the nonce in this particular scenario
+        gatewayNft.tokenIdentifier = identifier;
 
         return [ gatewayNft ];
       } 
@@ -581,6 +598,8 @@ export class NftService {
     if (nft.type === NftType.SemiFungibleESDT) {
       nft.supply = await this.getSftSupply(identifier);
     }
+
+    nft.assets = await this.tokenAssetService.getAssets(nft.collection);
 
     return nft;
   }
