@@ -130,8 +130,10 @@ export class NftService {
 
     let nfts =  await this.getNftsInternal(from, size, filter, undefined);
 
-    for (let nft of nfts) {
-      nft.assets = await this.tokenAssetService.getAssets(nft.collection);
+    if (queryOptions && queryOptions.withAssets) {
+      for (let nft of nfts) {
+        nft.assets = await this.tokenAssetService.getAssets(nft.collection);
+      }
     }
 
     if (queryOptions && queryOptions.withOwner) {
@@ -420,8 +422,10 @@ export class NftService {
 
     nfts = nfts.slice(from, from + size);
 
-    for (let nft of nfts) {
-      nft.assets = await this.tokenAssetService.getAssets(nft.collection);
+    if (queryOptions && queryOptions.withAssets) {
+      for (let nft of nfts) {
+        nft.assets = await this.tokenAssetService.getAssets(nft.collection);
+      }
     }
 
     if (queryOptions && queryOptions.withTimestamp) {
