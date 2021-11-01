@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { CachingService } from "src/common/caching/caching.service";
+import { CacheKey } from "src/common/caching/entities/cache.key";
 import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { Constants } from "src/utils/constants";
@@ -33,7 +34,11 @@ export class IdentitiesService {
   }
 
   async getAllIdentities(): Promise<Identity[]> {
-    return this.cachingService.getOrSetCache('identities', async () => await this.getAllIdentitiesRaw(), Constants.oneMinute() * 15);
+    return this.cachingService.getOrSetCache(
+      CacheKey.Identities().key, 
+      async () => await this.getAllIdentitiesRaw(), 
+      CacheKey.Identities().ttl
+    );
   }
 
   private computeTotalStakeAndTopUp(nodes: Node[]): NodesInfos {

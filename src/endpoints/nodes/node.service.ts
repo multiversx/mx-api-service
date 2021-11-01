@@ -17,6 +17,7 @@ import { AddressUtils } from "src/utils/address.utils";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
+import { CacheKey } from "src/common/caching/entities/cache.key";
 
 @Injectable()
 export class NodeService {
@@ -195,7 +196,11 @@ export class NodeService {
   }
 
   async getAllNodes(): Promise<Node[]> {
-    return await this.cachingService.getOrSetCache('nodes', async () => await this.getAllNodesRaw(), Constants.oneHour());
+    return await this.cachingService.getOrSetCache(
+      CacheKey.Nodes().key, 
+      async () => await this.getAllNodesRaw(), 
+      CacheKey.Nodes().ttl
+    );
   }
 
   private processQueuedNodes(nodes: Node[], queue: Queue[]) {

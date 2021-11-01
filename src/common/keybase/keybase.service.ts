@@ -9,6 +9,7 @@ import { Keybase } from "./entities/keybase";
 import { KeybaseIdentity } from "./entities/keybase.identity";
 import { KeybaseState } from "./entities/keybase.state";
 import { ApiService } from "../network/api.service";
+import { CacheKey } from "../caching/entities/cache.key";
 
 @Injectable()
 export class KeybaseService {
@@ -137,17 +138,17 @@ export class KeybaseService {
 
   async getCachedIdentityProfilesKeybases(): Promise<KeybaseIdentity[]> {
     return await this.cachingService.getOrSetCache(
-      'identityProfilesKeybases',
+      CacheKey.IdentityProfilesKeybases().key,
       async () => await this.getIdentitiesProfilesAgainstCache(),
-      Constants.oneHour()
+      CacheKey.IdentityProfilesKeybases().ttl
     );
   }
 
   async getCachedNodesAndProvidersKeybases(): Promise<{ [key: string]: KeybaseState } | undefined> {
     return await this.cachingService.getOrSetCache(
-      'keybases',
+      CacheKey.Keybases().key,
       async () => await this.confirmKeybasesAgainstCache(),
-      Constants.oneHour()
+      CacheKey.Keybases().ttl
     );
   }
 

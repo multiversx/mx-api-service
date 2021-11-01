@@ -1,7 +1,7 @@
 import { Constants } from "src/utils/constants";
 
 export class CacheKey {
-  key?: string;
+  key: string = "";
   ttl: number = Constants.oneSecond() * 6;
 
   static Nodes(): CacheKey {
