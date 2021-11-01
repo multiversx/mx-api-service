@@ -129,7 +129,11 @@ export class NftService {
     const { from, size } = queryPagination;
 
     let nfts =  await this.getNftsInternal(from, size, filter, undefined);
-    
+
+    for (let nft of nfts) {
+      nft.assets = await this.tokenAssetService.getAssets(nft.collection);
+    }
+
     if (queryOptions && queryOptions.withOwner) {
       const accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nfts.map(({identifier}) => identifier));
 
@@ -415,6 +419,10 @@ export class NftService {
     let nfts = await this.getNftsForAddressInternal(address, filter);
 
     nfts = nfts.slice(from, from + size);
+
+    for (let nft of nfts) {
+      nft.assets = await this.tokenAssetService.getAssets(nft.collection);
+    }
 
     if (queryOptions && queryOptions.withTimestamp) {
       let identifiers = nfts.map(x => x.identifier);
