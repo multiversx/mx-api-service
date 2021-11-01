@@ -46,10 +46,24 @@ export class CacheKey {
     }
   }
 
+  static KeybaseConfirmation(keybase: string): CacheKey {
+    return {
+      key: `keybase:${keybase}`,
+      ttl:  Constants.oneMonth() * 6
+    }
+  }
+
   static IdentityProfilesKeybases(): CacheKey {
     return {
       key: 'identityProfilesKeybases',
       ttl: Constants.oneHour()
+    }
+  }
+
+  static IdentityProfile(key: string): CacheKey {
+    return {
+      key: `identityProfile:${key}`,
+      ttl: Constants.oneMonth() * 6
     }
   }
 
@@ -71,6 +85,34 @@ export class CacheKey {
     return {
       key: 'accounts:0:25',
       ttl:  Constants.oneMinute() * 2
+    }
+  }
+
+  static ShardAndEpochBlses(shard: any, epoch: any): CacheKey {
+    return {
+      key: `${shard}_${epoch}`,
+      ttl: Constants.oneWeek(),
+    }
+  }
+
+  static OwnerByEpochAndBls(bls: string, epoch: number): CacheKey {
+    return {
+      key: `owner:${epoch}:${bls}`,
+      ttl: Constants.oneDay(),
+    }
+  }
+
+  static ShardNonce(shard: number): CacheKey {
+    return {
+      key: `shardNonce:${shard}`,
+      ttl: Number.MAX_SAFE_INTEGER,
+    }
+  }
+
+  static TokenAssets(): CacheKey {
+    return {
+      key: 'tokenAssets',
+      ttl: Constants.oneDay(),
     }
   }
 }
