@@ -130,11 +130,10 @@ export class NftService {
 
     let nfts =  await this.getNftsInternal(from, size, filter, undefined);
 
-    if (queryOptions && queryOptions.withAssets) {
-      for (let nft of nfts) {
-        nft.assets = await this.tokenAssetService.getAssets(nft.collection);
-      }
+    for (let nft of nfts) {
+      nft.assets = await this.tokenAssetService.getAssets(nft.collection);
     }
+   
 
     if (queryOptions && queryOptions.withOwner) {
       const accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nfts.map(({identifier}) => identifier));
@@ -286,6 +285,10 @@ export class NftService {
 
           if (nft.type === NftType.MetaESDT) {
             nft.decimals = collectionProperties.decimals;
+            // @ts-ignore
+            delete nft.royalties;
+            // @ts-ignore
+            delete nft.uris;
           }
         }
       }
@@ -424,10 +427,8 @@ export class NftService {
 
     nfts = nfts.slice(from, from + size);
 
-    if (queryOptions && queryOptions.withAssets) {
-      for (let nft of nfts) {
-        nft.assets = await this.tokenAssetService.getAssets(nft.collection);
-      }
+    for (let nft of nfts) {
+      nft.assets = await this.tokenAssetService.getAssets(nft.collection);
     }
 
     if (queryOptions && queryOptions.withTimestamp) {
@@ -563,6 +564,10 @@ export class NftService {
 
         if (nft.type === NftType.MetaESDT) {
           nft.decimals = collectionDetails.decimals;
+          // @ts-ignore
+          delete nft.royalties;
+          // @ts-ignore
+          delete nft.uris;
         }
 
         if (!nft.name) {
