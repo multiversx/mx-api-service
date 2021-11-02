@@ -6,7 +6,7 @@ import { CachingService } from "src/common/caching/caching.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { Constants } from "src/utils/constants";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { CacheKey } from "src/common/caching/entities/cache.key";
+import { CacheInfo } from "src/common/caching/entities/cache.key";
 
 @Injectable()
 export class ShardService {
@@ -64,11 +64,11 @@ export class ShardService {
   }
 
   async getLastProcessedNonce(shardId: number): Promise<number | undefined> {
-    return await this.cachingService.getCache<number>(CacheKey.ShardNonce(shardId).key);
+    return await this.cachingService.getCache<number>(CacheInfo.ShardNonce(shardId).key);
   }
 
   async setLastProcessedNonce(shardId: number, nonce: number): Promise<number> {
-    return await this.cachingService.setCache<number>(CacheKey.ShardNonce(shardId).key, nonce, CacheKey.ShardNonce(shardId).ttl);
+    return await this.cachingService.setCache<number>(CacheInfo.ShardNonce(shardId).key, nonce, CacheInfo.ShardNonce(shardId).ttl);
   }
 
   async getCurrentNonces(): Promise<number[]> {

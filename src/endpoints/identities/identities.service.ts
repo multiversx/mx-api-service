@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { CachingService } from "src/common/caching/caching.service";
-import { CacheKey } from "src/common/caching/entities/cache.key";
+import { CacheInfo } from "src/common/caching/entities/cache.key";
 import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { Node } from "../nodes/entities/node";
@@ -34,9 +34,9 @@ export class IdentitiesService {
 
   async getAllIdentities(): Promise<Identity[]> {
     return this.cachingService.getOrSetCache(
-      CacheKey.Identities().key, 
+      CacheInfo.Identities().key, 
       async () => await this.getAllIdentitiesRaw(), 
-      CacheKey.Identities().ttl
+      CacheInfo.Identities().ttl
     );
   }
 

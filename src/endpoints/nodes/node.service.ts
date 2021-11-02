@@ -17,7 +17,7 @@ import { AddressUtils } from "src/utils/address.utils";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
-import { CacheKey } from "src/common/caching/entities/cache.key";
+import { CacheInfo } from "src/common/caching/entities/cache.key";
 
 @Injectable()
 export class NodeService {
@@ -197,9 +197,9 @@ export class NodeService {
 
   async getAllNodes(): Promise<Node[]> {
     return await this.cachingService.getOrSetCache(
-      CacheKey.Nodes().key, 
+      CacheInfo.Nodes().key, 
       async () => await this.getAllNodesRaw(), 
-      CacheKey.Nodes().ttl
+      CacheInfo.Nodes().ttl
     );
   }
 
@@ -305,7 +305,7 @@ export class NodeService {
   }
 
   async getOwners(blses: string[], epoch: number) {
-    const keys = blses.map((bls) => CacheKey.OwnerByEpochAndBls(bls, epoch).key);
+    const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(bls, epoch).key);
 
     let cached = await this.cachingService.batchGetCache(keys);
 
@@ -334,7 +334,7 @@ export class NodeService {
 
       const fastWarm = this.apiConfigService.getIsFastWarmerCronActive();
       const params = {
-        keys: Object.keys(owners).map((bls) => CacheKey.OwnerByEpochAndBls(bls, epoch).key),
+        keys: Object.keys(owners).map((bls) => CacheInfo.OwnerByEpochAndBls(bls, epoch).key),
         values: Object.values(owners),
         ttls: new Array(Object.keys(owners).length).fill(fastWarm ? 60 : Constants.oneDay()), // 1 minute or 24h
       };

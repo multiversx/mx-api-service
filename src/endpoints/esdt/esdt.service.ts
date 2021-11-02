@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { CacheKey } from "src/common/caching/entities/cache.key";
+import { CacheInfo } from "src/common/caching/entities/cache.key";
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
@@ -76,9 +76,9 @@ export class EsdtService {
 
   async getAllEsdtTokens(): Promise<TokenDetailed[]> {
     return this.cachingService.getOrSetCache(
-      CacheKey.AllEsdtTokens().key,
+      CacheInfo.AllEsdtTokens().key,
       async () => await this.getAllEsdtTokensRaw(),
-      CacheKey.AllEsdtTokens().ttl
+      CacheInfo.AllEsdtTokens().ttl
     );
   }
 

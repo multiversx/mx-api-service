@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
-import { CacheKey } from "src/common/caching/entities/cache.key";
+import { CacheInfo } from "src/common/caching/entities/cache.key";
 import { DataApiService } from "src/common/external/data.api.service";
 import { DataQuoteType } from "src/common/external/entities/data.quote.type";
 import { Constants } from "src/utils/constants";
@@ -45,9 +45,9 @@ export class TransactionPriceService {
 
   private async getTransactionPriceToday(): Promise<number | undefined> {
     return await this.cachingService.getOrSetCache(
-      CacheKey.CurrentPrice().key,
+      CacheInfo.CurrentPrice().key,
       async () => await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price),
-      CacheKey.CurrentPrice().ttl
+      CacheInfo.CurrentPrice().ttl
     );
   }
 

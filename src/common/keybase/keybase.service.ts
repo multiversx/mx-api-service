@@ -9,7 +9,7 @@ import { Keybase } from "./entities/keybase";
 import { KeybaseIdentity } from "./entities/keybase.identity";
 import { KeybaseState } from "./entities/keybase.state";
 import { ApiService } from "../network/api.service";
-import { CacheKey } from "../caching/entities/cache.key";
+import { CacheInfo } from "../caching/entities/cache.info";
 
 @Injectable()
 export class KeybaseService {
@@ -64,7 +64,7 @@ export class KeybaseService {
 
     const keybasesArr: Keybase[] = [...keybaseProvidersArr, ...keybasesNodesArr];
 
-    let keybaseGetPromises = keybasesArr.map(keybase => this.cachingService.getCache<boolean>(CacheKey.KeybaseConfirmation(keybase.key).key));
+    let keybaseGetPromises = keybasesArr.map(keybase => this.cachingService.getCache<boolean>(CacheInfo.KeybaseConfirmation(keybase.key).key));
     let keybaseGetResults = await Promise.all(keybaseGetPromises);
 
     let confirmedKeybases = keybasesArr.zip<(boolean | undefined), KeybaseState>(keybaseGetResults, (first, second) => ({ identity: first.identity, confirmed: second ?? false }));
@@ -88,7 +88,7 @@ export class KeybaseService {
       ...new Set(nodes.filter(({ identity }) => !!identity).map(({ identity }) => identity)),
     ].filter(x => x !== null).map(x => x ?? '');
 
-    let keybaseGetPromises = keys.map(key => this.cachingService.getCache<KeybaseIdentity>(CacheKey.IdentityProfile(key).key));
+    let keybaseGetPromises = keys.map(key => this.cachingService.getCache<KeybaseIdentity>(CacheInfo.IdentityProfile(key).key));
     let keybaseGetResults = await Promise.all(keybaseGetPromises);
 
     // @ts-ignore
@@ -108,7 +108,7 @@ export class KeybaseService {
 
     await this.cachingService.batchProcess(
       keybasesArr,
-      keybase => CacheKey.KeybaseConfirmation(keybase.key).key,
+      keybase => CacheInfo.KeybaseConfirmation(keybase.key).key,
       async (keybase) => await this.confirmKeybase(keybase),
       Constants.oneMonth() * 6,
       true
@@ -129,7 +129,7 @@ export class KeybaseService {
 
     await this.cachingService.batchProcess(
       keys,
-      key => CacheKey.IdentityProfile(key).key,
+      key => CacheInfo.IdentityProfile(key).key,
       async key => await this.getProfile(key),
       Constants.oneMonth() * 6,
       true
@@ -138,17 +138,17 @@ export class KeybaseService {
 
   async getCachedIdentityProfilesKeybases(): Promise<KeybaseIdentity[]> {
     return await this.cachingService.getOrSetCache(
-      CacheKey.IdentityProfilesKeybases().key,
+      CacheInfo.IdentityProfilesKeybases().key,
       async () => await this.getIdentitiesProfilesAgainstCache(),
-      CacheKey.IdentityProfilesKeybases().ttl
+      CacheInfo.IdentityProfilesKeybases().ttl
     );
   }
 
   async getCachedNodesAndProvidersKeybases(): Promise<{ [key: string]: KeybaseState } | undefined> {
     return await this.cachingService.getOrSetCache(
-      CacheKey.Keybases().key,
+      CacheInfo.Keybases().key,
       async () => await this.confirmKeybasesAgainstCache(),
-      CacheKey.Keybases().ttl
+      CacheInfo.Keybases().ttl
     );
   }
 
@@ -181,7 +181,7 @@ export class KeybaseService {
         return false
       }
 
-      const cachedConfirmation = await this.cachingService.getCache<boolean>(CacheKey.KeybaseConfirmation(keybase.key).key);
+      const cachedConfirmation = await this.cachingService.getCache<boolean>(CacheInfo.KeybaseConfirmation(keybase.key).key);
       return cachedConfirmation !== undefined && cachedConfirmation !== null ? cachedConfirmation : false;
     }
   };
@@ -215,7 +215,7 @@ export class KeybaseService {
 
       return null;
     } catch (error: any) {
-      const cachedIdentityProfile = await this.cachingService.getCache<KeybaseIdentity>(CacheKey.IdentityProfile(identity).key)
+      const cachedIdentityProfile = await this.cachingService.getCache<KeybaseIdentity>(CacheInfo.IdentityProfile(identity).key)
       return cachedIdentityProfile ? cachedIdentityProfile : null;
     }
   };

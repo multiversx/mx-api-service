@@ -16,7 +16,7 @@ import { DataApiService } from "src/common/external/data.api.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { DataQuoteType } from "src/common/external/entities/data.quote.type";
 import { EsdtService } from "src/endpoints/esdt/esdt.service";
-import { CacheKey } from "src/common/caching/entities/cache.key";
+import { CacheInfo } from "src/common/caching/entities/cache.key";
 
 @Injectable()
 export class CacheWarmerService {
@@ -68,7 +68,7 @@ export class CacheWarmerService {
   async handleNodeInvalidations() {
     await Locker.lock('Nodes invalidations', async () => {
       let nodes = await this.nodeService.getAllNodesRaw();
-      await this.invalidateKey(CacheKey.Nodes().key, nodes, CacheKey.Nodes().ttl);
+      await this.invalidateKey(CacheInfo.Nodes().key, nodes, CacheInfo.Nodes().ttl);
     }, true);
   }
 
@@ -76,14 +76,14 @@ export class CacheWarmerService {
   async handleEsdtTokenInvalidations() {
     await Locker.lock('Esdt tokens invalidations', async () => {
       let tokens = await this.esdtService.getAllEsdtTokensRaw();
-      await this.invalidateKey(CacheKey.AllEsdtTokens().key, tokens, CacheKey.AllEsdtTokens().ttl);
+      await this.invalidateKey(CacheInfo.AllEsdtTokens().key, tokens, CacheInfo.AllEsdtTokens().ttl);
     }, true);
   }
 
   async handleIdentityInvalidations() {
     await Locker.lock('Identities invalidations', async () => {
       let identities = await this.identitiesService.getAllIdentitiesRaw();
-      await this.invalidateKey(CacheKey.Identities().key, identities, CacheKey.Identities().ttl);
+      await this.invalidateKey(CacheInfo.Identities().key, identities, CacheInfo.Identities().ttl);
     }, true);
   }
 
@@ -91,10 +91,10 @@ export class CacheWarmerService {
   async handleProviderInvalidations() {
     await Locker.lock('Providers invalidations', async () => {
       let providers = await this.providerService.getAllProvidersRaw();
-      await this.invalidateKey(CacheKey.Providers().key, providers, CacheKey.Providers().ttl);
+      await this.invalidateKey(CacheInfo.Providers().key, providers, CacheInfo.Providers().ttl);
 
       let providersWithStakeInformation = await this.providerService.getProvidersWithStakeInformationRaw();
-      await this.invalidateKey(CacheKey.ProvidersWithStakeInformation().key, providersWithStakeInformation, CacheKey.ProvidersWithStakeInformation().ttl);
+      await this.invalidateKey(CacheInfo.ProvidersWithStakeInformation().key, providersWithStakeInformation, CacheInfo.ProvidersWithStakeInformation().ttl);
     }, true);
   }
 
@@ -103,8 +103,8 @@ export class CacheWarmerService {
       let nodesAndProvidersKeybases = await this.keybaseService.confirmKeybasesAgainstCache();
       let identityProfilesKeybases = await this.keybaseService.getIdentitiesProfilesAgainstCache();
       await Promise.all([
-        this.invalidateKey(CacheKey.Keybases().key, nodesAndProvidersKeybases, CacheKey.Keybases().ttl),
-        this.invalidateKey(CacheKey.IdentityProfilesKeybases().key, identityProfilesKeybases, CacheKey.IdentityProfilesKeybases().ttl)
+        this.invalidateKey(CacheInfo.Keybases().key, nodesAndProvidersKeybases, CacheInfo.Keybases().ttl),
+        this.invalidateKey(CacheInfo.IdentityProfilesKeybases().key, identityProfilesKeybases, CacheInfo.IdentityProfilesKeybases().ttl)
       ]);
 
       await this.handleNodeInvalidations();
@@ -127,7 +127,7 @@ export class CacheWarmerService {
     if (this.apiConfigService.getDataUrl()) {
       await Locker.lock('Current price invalidations', async () => {
         let currentPrice = await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price);
-        await this.invalidateKey(CacheKey.CurrentPrice().key, currentPrice, CacheKey.CurrentPrice().ttl);
+        await this.invalidateKey(CacheInfo.CurrentPrice().key, currentPrice, CacheInfo.CurrentPrice().ttl);
       }, true);
     }
   }
@@ -136,7 +136,7 @@ export class CacheWarmerService {
   async handleEconomicsInvalidations() {
     await Locker.lock('Economics invalidations', async () => {
       let economics = await this.networkService.getEconomicsRaw();
-      await this.invalidateKey(CacheKey.Economics().key, economics, CacheKey.Economics().ttl);
+      await this.invalidateKey(CacheInfo.Economics().key, economics, CacheInfo.Economics().ttl);
     }, true);
   }
 
@@ -144,7 +144,7 @@ export class CacheWarmerService {
   async handleAccountInvalidations() {
     await Locker.lock('Accounts invalidations', async () => {
       let accounts = await this.accountService.getAccountsRaw({ from: 0, size: 25 });
-      await this.invalidateKey(CacheKey.Top25Accounts().key, accounts, CacheKey.Top25Accounts().ttl);
+      await this.invalidateKey(CacheInfo.Top25Accounts().key, accounts, CacheInfo.Top25Accounts().ttl);
     }, true);
   }
 

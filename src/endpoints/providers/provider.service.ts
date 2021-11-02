@@ -12,7 +12,7 @@ import { NodesInfos } from "./entities/nodes.infos";
 import { DelegationData } from "./entities/delegation.data";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { ApiService } from "src/common/network/api.service";
-import { CacheKey } from "src/common/caching/entities/cache.key";
+import { CacheInfo } from "src/common/caching/entities/cache.key";
 
 @Injectable()
 export class ProviderService {
@@ -69,9 +69,9 @@ export class ProviderService {
 
   async getProvidersWithStakeInformation(): Promise<Provider[]> {
     return await this.cachingService.getOrSetCache(
-      CacheKey.ProvidersWithStakeInformation().key,
+      CacheInfo.ProvidersWithStakeInformation().key,
       async () => await this.getProvidersWithStakeInformationRaw(),
-      CacheKey.ProvidersWithStakeInformation().ttl
+      CacheInfo.ProvidersWithStakeInformation().ttl
     );
   }
 
@@ -153,9 +153,9 @@ export class ProviderService {
 
   async getAllProviders(): Promise<Provider[]> {
     return await this.cachingService.getOrSetCache(
-      CacheKey.Providers().key, 
+      CacheInfo.Providers().key, 
       async () => await this.getAllProvidersRaw(), 
-      CacheKey.Providers().ttl
+      CacheInfo.Providers().ttl
     );
   }
 
