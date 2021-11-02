@@ -60,4 +60,7 @@ export class Nft {
 
   @ApiProperty()
   assets?: TokenAssets;
+
+  @ApiProperty()
+  ticker?: string;
 }
