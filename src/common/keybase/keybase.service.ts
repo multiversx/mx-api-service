@@ -138,17 +138,17 @@ export class KeybaseService {
 
   async getCachedIdentityProfilesKeybases(): Promise<KeybaseIdentity[]> {
     return await this.cachingService.getOrSetCache(
-      CacheInfo.IdentityProfilesKeybases().key,
+      CacheInfo.IdentityProfilesKeybases.key,
       async () => await this.getIdentitiesProfilesAgainstCache(),
-      CacheInfo.IdentityProfilesKeybases().ttl
+      CacheInfo.IdentityProfilesKeybases.ttl
     );
   }
 
   async getCachedNodesAndProvidersKeybases(): Promise<{ [key: string]: KeybaseState } | undefined> {
     return await this.cachingService.getOrSetCache(
-      CacheInfo.Keybases().key,
+      CacheInfo.Keybases.key,
       async () => await this.confirmKeybasesAgainstCache(),
-      CacheInfo.Keybases().ttl
+      CacheInfo.Keybases.ttl
     );
   }
 

@@ -45,9 +45,9 @@ export class TransactionPriceService {
 
   private async getTransactionPriceToday(): Promise<number | undefined> {
     return await this.cachingService.getOrSetCache(
-      CacheInfo.CurrentPrice().key,
+      CacheInfo.CurrentPrice.key,
       async () => await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price),
-      CacheInfo.CurrentPrice().ttl
+      CacheInfo.CurrentPrice.ttl
     );
   }
 

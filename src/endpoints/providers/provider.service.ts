@@ -69,9 +69,9 @@ export class ProviderService {
 
   async getProvidersWithStakeInformation(): Promise<Provider[]> {
     return await this.cachingService.getOrSetCache(
-      CacheInfo.ProvidersWithStakeInformation().key,
+      CacheInfo.ProvidersWithStakeInformation.key,
       async () => await this.getProvidersWithStakeInformationRaw(),
-      CacheInfo.ProvidersWithStakeInformation().ttl
+      CacheInfo.ProvidersWithStakeInformation.ttl
     );
   }
 
@@ -153,9 +153,9 @@ export class ProviderService {
 
   async getAllProviders(): Promise<Provider[]> {
     return await this.cachingService.getOrSetCache(
-      CacheInfo.Providers().key, 
+      CacheInfo.Providers.key, 
       async () => await this.getAllProvidersRaw(), 
-      CacheInfo.Providers().ttl
+      CacheInfo.Providers.ttl
     );
   }
 

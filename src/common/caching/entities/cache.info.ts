@@ -4,46 +4,34 @@ export class CacheInfo {
   key: string = "";
   ttl: number = Constants.oneSecond() * 6;
 
-  static Nodes(): CacheInfo {
-    return {
-      key: 'nodes',
-      ttl: Constants.oneHour()
-    }
+  static Nodes: CacheInfo = {
+    key: 'nodes',
+    ttl: Constants.oneHour()
   }
 
-  static AllEsdtTokens(): CacheInfo {
-    return {
-      key: 'allEsdtTokens',
-      ttl: Constants.oneHour()
-    }
+  static AllEsdtTokens: CacheInfo = {
+    key: 'allEsdtTokens',
+    ttl: Constants.oneHour()
   }
 
-  static Identities(): CacheInfo {
-    return {
-      key: 'identities',
-      ttl: Constants.oneMinute() * 15
-    }
+  static Identities: CacheInfo = {
+    key: 'identities',
+    ttl: Constants.oneMinute() * 15
   }
 
-  static Providers(): CacheInfo {
-    return {
-      key: 'providers',
-      ttl: Constants.oneHour()
-    }
+  static Providers: CacheInfo = {
+    key: 'providers',
+    ttl: Constants.oneHour()
   }
 
-  static ProvidersWithStakeInformation(): CacheInfo {
-    return {
-      key: 'providersWithStakeInformation',
-      ttl: Constants.oneHour()
-    }
+  static ProvidersWithStakeInformation: CacheInfo = {
+    key: 'providersWithStakeInformation',
+    ttl: Constants.oneHour()
   }
 
-  static Keybases(): CacheInfo {
-    return {
-      key: 'keybases',
-      ttl: Constants.oneHour()
-    }
+  static Keybases: CacheInfo = {
+    key: 'keybases',
+    ttl: Constants.oneHour()
   }
 
   static KeybaseConfirmation(keybase: string): CacheInfo {
@@ -53,11 +41,9 @@ export class CacheInfo {
     }
   }
 
-  static IdentityProfilesKeybases(): CacheInfo {
-    return {
-      key: 'identityProfilesKeybases',
-      ttl: Constants.oneHour()
-    }
+  static IdentityProfilesKeybases: CacheInfo = {
+    key: 'identityProfilesKeybases',
+    ttl: Constants.oneHour()
   }
 
   static IdentityProfile(key: string): CacheInfo {
@@ -67,25 +53,19 @@ export class CacheInfo {
     }
   }
 
-  static CurrentPrice(): CacheInfo {
-    return {
-      key: 'currentPrice',
-      ttl: Constants.oneHour()
-    }
+  static CurrentPrice: CacheInfo = {
+    key: 'currentPrice',
+    ttl: Constants.oneHour()
   }
 
-  static Economics(): CacheInfo {
-    return {
-      key: 'economics',
-      ttl:  Constants.oneMinute() * 10
-    }
+  static Economics: CacheInfo = {
+    key: 'economics',
+    ttl:  Constants.oneMinute() * 10
   }
 
-  static Top25Accounts(): CacheInfo {
-    return {
-      key: 'accounts:0:25',
-      ttl:  Constants.oneMinute() * 2
-    }
+  static Top25Accounts: CacheInfo = {
+    key: 'accounts:0:25',
+    ttl:  Constants.oneMinute() * 2
   }
 
   static ShardAndEpochBlses(shard: any, epoch: any): CacheInfo {
@@ -109,10 +89,8 @@ export class CacheInfo {
     }
   }
 
-  static TokenAssets(): CacheInfo {
-    return {
-      key: 'tokenAssets',
-      ttl: Constants.oneDay(),
-    }
+  static TokenAssets: CacheInfo = {
+    key: 'tokenAssets',
+    ttl: Constants.oneDay(),
   }
 }

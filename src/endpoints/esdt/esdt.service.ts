@@ -76,9 +76,9 @@ export class EsdtService {
 
   async getAllEsdtTokens(): Promise<TokenDetailed[]> {
     return this.cachingService.getOrSetCache(
-      CacheInfo.AllEsdtTokens().key,
+      CacheInfo.AllEsdtTokens.key,
       async () => await this.getAllEsdtTokensRaw(),
-      CacheInfo.AllEsdtTokens().ttl
+      CacheInfo.AllEsdtTokens.ttl
     );
   }
 

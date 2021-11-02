@@ -94,9 +94,9 @@ export class NetworkService {
 
   async getEconomics(): Promise<Economics> {
     return this.cachingService.getOrSetCache(
-      CacheInfo.Economics().key,
+      CacheInfo.Economics.key,
       async () => await this.getEconomicsRaw(),
-      CacheInfo.Economics().ttl,
+      CacheInfo.Economics.ttl,
     );
   }
 

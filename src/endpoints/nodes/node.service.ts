@@ -197,9 +197,9 @@ export class NodeService {
 
   async getAllNodes(): Promise<Node[]> {
     return await this.cachingService.getOrSetCache(
-      CacheInfo.Nodes().key, 
+      CacheInfo.Nodes.key, 
       async () => await this.getAllNodesRaw(), 
-      CacheInfo.Nodes().ttl
+      CacheInfo.Nodes.ttl
     );
   }
 
