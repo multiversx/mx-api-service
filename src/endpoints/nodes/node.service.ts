@@ -17,7 +17,7 @@ import { AddressUtils } from "src/utils/address.utils";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
-import { CacheInfo } from "src/common/caching/entities/cache.key";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 
 @Injectable()
 export class NodeService {

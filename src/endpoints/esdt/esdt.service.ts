@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { CacheInfo } from "src/common/caching/entities/cache.key";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";

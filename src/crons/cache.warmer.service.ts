@@ -16,7 +16,7 @@ import { DataApiService } from "src/common/external/data.api.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { DataQuoteType } from "src/common/external/entities/data.quote.type";
 import { EsdtService } from "src/endpoints/esdt/esdt.service";
-import { CacheInfo } from "src/common/caching/entities/cache.key";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 
 @Injectable()
 export class CacheWarmerService {

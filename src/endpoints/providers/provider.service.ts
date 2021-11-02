@@ -12,7 +12,7 @@ import { NodesInfos } from "./entities/nodes.infos";
 import { DelegationData } from "./entities/delegation.data";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { ApiService } from "src/common/network/api.service";
-import { CacheInfo } from "src/common/caching/entities/cache.key";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 
 @Injectable()
 export class ProviderService {

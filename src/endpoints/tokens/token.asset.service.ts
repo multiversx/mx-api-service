@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import simpleGit, {SimpleGit, SimpleGitOptions} from 'simple-git';
-import { CacheInfo } from "src/common/caching/entities/cache.key";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { TokenAssets } from "src/endpoints/tokens/entities/token.assets";
 import { FileUtils } from "src/utils/file.utils";
 import { ApiConfigService } from "../../common/api-config/api.config.service";

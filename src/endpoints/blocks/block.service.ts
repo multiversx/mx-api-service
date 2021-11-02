@@ -13,7 +13,7 @@ import { AbstractQuery } from "src/common/elastic/entities/abstract.query";
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
-import { CacheInfo } from "src/common/caching/entities/cache.key";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 
 @Injectable()
 export class BlockService {
