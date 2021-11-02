@@ -567,7 +567,7 @@ export class NftService {
           // @ts-ignore
           delete nft.royalties;
           // @ts-ignore
-          delete nft.uris
+          delete nft.uris;
         }
 
         if (!nft.name) {
