@@ -131,7 +131,7 @@ export class NftService {
     let nfts =  await this.getNftsInternal(from, size, filter, undefined);
 
     for (let nft of nfts) {
-      nft.assets = await this.tokenAssetService.getAssets(nft.collection);
+      await this.applyAssetsAndTicker(nft);
     }
    
 
@@ -189,6 +189,16 @@ export class NftService {
     }
   }
 
+  async applyAssetsAndTicker(token: Nft) {
+    token.assets = await this.tokenAssetService.getAssets(token.collection);
+
+    if (token.assets) {
+      token.ticker = token.collection.split('-')[0];
+    } else {
+      token.ticker = token.collection;
+    }
+  }
+
   async getSingleNft(identifier: string): Promise<NftDetailed | undefined> {
     let nfts = await this.getNftsInternal(0, 1, new NftFilter(), identifier);
     if (nfts.length === 0) {
@@ -204,7 +214,7 @@ export class NftService {
     await this.applyNftDistribution(nft.identifier, nft);
     this.applyNftSupply(nft);
 
-    nft.assets = await this.tokenAssetService.getAssets(nft.collection);
+    await this.applyAssetsAndTicker(nft);
 
     return nft;
   }
@@ -428,7 +438,7 @@ export class NftService {
     nfts = nfts.slice(from, from + size);
 
     for (let nft of nfts) {
-      nft.assets = await this.tokenAssetService.getAssets(nft.collection);
+      await this.applyAssetsAndTicker(nft);
     }
 
     if (queryOptions && queryOptions.withTimestamp) {
