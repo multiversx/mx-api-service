@@ -1,3 +1,4 @@
+
 import { ApiProperty } from "@nestjs/swagger";
 
 export class AccountKey {
@@ -12,4 +13,10 @@ export class AccountKey {
 
   @ApiProperty()
   rewardAddress: string = '';
+
+  @ApiProperty()
+  queueIndex?: string;
+
+  @ApiProperty()
+  queueSize?: string;
 }
