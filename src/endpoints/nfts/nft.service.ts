@@ -308,7 +308,7 @@ export class NftService {
   }
 
   updateThumbnailUrlForNfts(nfts: Nft[]) {
-    let mediaNfts = nfts.filter(nft => nft.uris.filter(uri => uri).length > 0);
+    let mediaNfts = nfts.filter(nft => nft.type !== NftType.MetaESDT && nft.uris.filter(uri => uri).length > 0);
     for (let mediaNft of mediaNfts) {
       mediaNft.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${mediaNft.identifier}`;
     }
