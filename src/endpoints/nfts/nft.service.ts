@@ -286,6 +286,10 @@ export class NftService {
 
           if (nft.type === NftType.MetaESDT) {
             nft.decimals = collectionProperties.decimals;
+            // @ts-ignore
+            delete nft.royalties;
+            // @ts-ignore
+            delete nft.uris;
           }
         }
       }
@@ -563,6 +567,10 @@ export class NftService {
 
         if (nft.type === NftType.MetaESDT) {
           nft.decimals = collectionDetails.decimals;
+          // @ts-ignore
+          delete nft.royalties;
+          // @ts-ignore
+          delete nft.uris
         }
 
         if (!nft.name) {
