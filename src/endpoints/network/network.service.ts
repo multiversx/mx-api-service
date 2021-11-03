@@ -18,6 +18,7 @@ import { DataApiService } from 'src/common/external/data.api.service';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { ApiService } from 'src/common/network/api.service';
 import { DataQuoteType } from 'src/common/external/entities/data.quote.type';
+import { CacheInfo } from 'src/common/caching/entities/cache.info';
 
 @Injectable()
 export class NetworkService {
@@ -93,9 +94,9 @@ export class NetworkService {
 
   async getEconomics(): Promise<Economics> {
     return this.cachingService.getOrSetCache(
-      'economics',
+      CacheInfo.Economics.key,
       async () => await this.getEconomicsRaw(),
-      Constants.oneMinute() * 10,
+      CacheInfo.Economics.ttl,
     );
   }
 
