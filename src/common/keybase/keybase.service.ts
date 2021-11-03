@@ -105,14 +105,47 @@ export class KeybaseService {
 
     const keybasesArr: Keybase[] = [...keybaseProvidersArr, ...keybasesNodesArr];
 
-    await this.cachingService.batchProcess(
-      keybasesArr,
-      keybase => `keybase:${keybase.key}`,
-      async (keybase) => await this.confirmKeybase(keybase),
-      Constants.oneMonth() * 6,
-      true
-    );
+    const identities = new Set([...keybasesArr.map((keybase) => keybase.identity)]);
+
+    await Promise.all(Array.from(identities).map((identity) => this.confirmKeybasesAgainstKeybasePubForIdentity(identity)));
   }
+
+  async confirmKeybasesAgainstKeybasePubForIdentity(identity: string | undefined): Promise<void> {
+    const isKeybaseUp = await this.isKeybaseUp();
+    if (!isKeybaseUp || !identity) {
+      return;
+    }
+
+    try {
+      const { data } = await this.apiService.get(`https://keybase.pub/${identity}/elrond`, 100000);
+
+      const nodesRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/[0-9a-f]{192}", 'g')
+      const blses: string[] = [];
+      for (let keybaseUrl of data.match(nodesRegex) || []) {
+        const bls = keybaseUrl.match(/[0-9a-f]{192}/)[0];
+        blses.push(bls);
+      }
+  
+      const providersRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{13}", 'g');
+      const addresses: string[] = [];
+      for (let keybaseUrl of data.match(providersRegex) || []) {
+        const bls = keybaseUrl.match(/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{13}/)[0];
+        addresses.push(bls);
+      }
+  
+      await this.cachingService.batchProcess(
+        [...blses, ...addresses],
+        key => `keybase:${key}`,
+        async () => await true,
+        Constants.oneMonth() * 6,
+        true
+      );
+    } catch(error) {
+      this.logger.log(`Keybases not found for identity ${identity}`);
+    }
+    
+  }
+
 
   async confirmIdentityProfilesAgainstKeybasePub(): Promise<void> {
     const isKeybaseUp = await this.isKeybaseUp();
