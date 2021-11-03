@@ -104,6 +104,10 @@ export class ElasticService {
   }
 
   async getAccountEsdtByIdentifiers(identifiers: string[]) {
+    if (identifiers.length === 0) {
+      return [];
+    }
+
     const queries = identifiers.map((identifier) => QueryType.Match('identifier', identifier, QueryOperator.AND));
 
     const elasticQuery = ElasticQuery.create()
