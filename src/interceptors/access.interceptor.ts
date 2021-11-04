@@ -1,6 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, Logger } from "@nestjs/common";
 import { verify } from 'jsonwebtoken';
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { HealthCheckController } from "src/endpoints/health-check/health.check.controller";
 
 @Injectable()
 export class JwtAuthenticateGuard implements CanActivate {
@@ -16,6 +17,10 @@ export class JwtAuthenticateGuard implements CanActivate {
     context: ExecutionContext,
   ): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
+
+    if (context.getClass().name === HealthCheckController.name) {
+      return true;
+    }
 
     let authorization: string = request.headers['authorization'];
     if (!authorization) {
