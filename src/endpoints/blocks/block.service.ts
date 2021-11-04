@@ -13,6 +13,7 @@ import { AbstractQuery } from "src/common/elastic/entities/abstract.query";
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 
 @Injectable()
 export class BlockService {
@@ -95,12 +96,11 @@ export class BlockService {
     // eslint-disable-next-line no-unused-vars
     let { shardId: shard, epoch, proposer, validators, searchOrder, ...rest } = item;
 
-    let key = `${shard}_${epoch}`;
-    let blses: any = await this.cachingService.getCacheLocal(key);
+    let blses: any = await this.cachingService.getCacheLocal(CacheInfo.ShardAndEpochBlses(shard, epoch).key);
     if (!blses) {
       blses = await this.blsService.getPublicKeys(shard, epoch);
 
-      await this.cachingService.setCacheLocal(key, blses, Constants.oneWeek());
+      await this.cachingService.setCacheLocal(CacheInfo.ShardAndEpochBlses(shard, epoch).key, blses, CacheInfo.ShardAndEpochBlses(shard, epoch).ttl);
     }
   
     proposer = blses[proposer];
