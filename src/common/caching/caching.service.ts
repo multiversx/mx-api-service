@@ -10,6 +10,7 @@ import { Cache } from "cache-manager";
 import { AddressUtils } from "src/utils/address.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
+import { MetricsService } from "../metrics/metrics.service";
 
 @Injectable()
 export class CachingService {
@@ -96,6 +97,7 @@ export class CachingService {
     private readonly configService: ApiConfigService,
     @Inject(CACHE_MANAGER)
     cache: Cache,
+    private readonly metricsService: MetricsService,
   ) {
     CachingService.cache = cache;
     this.logger = new Logger(CachingService.name);
@@ -138,11 +140,31 @@ export class CachingService {
   };
 
   async setCacheLocal<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
-    return await CachingService.cache.set<T>(key, value, { ttl });
+    let profiler = new PerformanceProfiler();
+
+    let result = await CachingService.cache.set<T>(key, value, { ttl });
+
+    profiler.stop();
+
+    if (profiler.duration >= 2) {
+      this.metricsService.setSlowLocalCacheKeyDuration(key, 'write', profiler.duration);
+    }
+
+    return result;
   }
 
   async getCacheLocal<T>(key: string): Promise<T | undefined> {
-    return await CachingService.cache.get<T>(key);
+    let profiler = new PerformanceProfiler();
+
+    let result = await CachingService.cache.get<T>(key);
+
+    profiler.stop();
+
+    if (profiler.duration >= 2) {
+      this.metricsService.setSlowLocalCacheKeyDuration(key, 'read', profiler.duration);
+    }
+
+    return result;
   }
 
   async refreshCacheLocal<T>(key: string, ttl: number = this.configService.getCacheTtl()): Promise<T | undefined> {
