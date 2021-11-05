@@ -293,15 +293,9 @@ export class AccountService {
       .withCondition(QueryConditionOptions.should, [QueryType.Match("sender", address), QueryType.Match("receiver", address)])
       .withSort([ { name: 'timestamp', order: ElasticSortOrder.descending } ]);
 
-    let scResultsElastic = await this.elasticService.getList('scresults', 'hash', elasticQuery);
-    let scResults: SmartContractResult[] = [];
-    for (let scResult of scResultsElastic) {
-      scResult = ApiUtils.mergeObjects(new SmartContractResult(), scResult);
-     
-      scResults.push(scResult);
-    }
+    let elasticResult = await this.elasticService.getList('scresults', 'hash', elasticQuery);
 
-    return scResults;
+    return elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult))
   }
 
   async getAccountScResultsCount(address: string): Promise<SmartContractResult[]> {
