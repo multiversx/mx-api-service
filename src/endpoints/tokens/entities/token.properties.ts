@@ -15,12 +15,6 @@ export class TokenProperties {
   owner: string = '';
 
   @ApiProperty()
-  minted: string = '';
-
-  @ApiProperty()
-  burnt: string = '';
-
-  @ApiProperty()
   wiped: string = '';
 
   @ApiProperty()

@@ -15,12 +15,6 @@ export class Token {
     owner: string = '';
 
     @ApiProperty()
-    minted: string = '';
-
-    @ApiProperty()
-    burnt: string = '';
-
-    @ApiProperty()
     decimals: number = 0;
 
     @ApiProperty()
