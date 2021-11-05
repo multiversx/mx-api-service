@@ -22,6 +22,7 @@ import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
 import { TransactionStatus } from '../transactions/entities/transaction.status';
 import { TransactionService } from '../transactions/transaction.service';
 import { DeployedContract } from './entities/deployed.contract';
+import { SmartContractResult } from '../transactions/entities/smart.contract.result';
 
 @Controller()
 @ApiTags('accounts')
@@ -628,7 +629,7 @@ export class AccountController {
   @Get("/accounts/:address/contracts")
   @ApiResponse({
     status: 200,
-    description: 'The details of a given account',
+    description: 'All deployed contracts for a given account',
     type: DeployedContract
   })
   @ApiResponse({
@@ -637,5 +638,41 @@ export class AccountController {
   })
   getAccountContracts(@Param('address') address: string): Promise<DeployedContract[]> {
     return this.accountService.getAccountContracts(address);;
+  }
+
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+  @Get("/accounts/:address/sc-results")
+  @ApiResponse({
+    status: 200,
+    description: 'All smart contract results for a given account',
+    type: SmartContractResult
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  getAccountScResults(
+    @Param('address') address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<SmartContractResult[]> {
+    return this.accountService.getAccountScResults(address, {from, size});
+  }
+
+  @Get("/accounts/:address/sc-results/count")
+  @ApiResponse({
+    status: 200,
+    description: 'The all smart contract results for a given account',
+    type: SmartContractResult
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  getAccountScResultsCount(
+    @Param('address') address: string,
+  ): Promise<SmartContractResult[]> {
+    return this.accountService.getAccountScResultsCount(address);
   }
 }
