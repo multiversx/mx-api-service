@@ -129,6 +129,8 @@ export class EsdtService {
       name,
       type,
       owner,
+      minted,
+      burnt,
       decimals,
       isPaused,
       canUpgrade,
@@ -150,6 +152,8 @@ export class EsdtService {
       // @ts-ignore
       type,
       owner: AddressUtils.bech32Encode(owner),
+      minted,
+      burnt,
       decimals: parseInt(decimals.split('-').pop() ?? '0'),
       isPaused: TokenUtils.canBool(isPaused),
       canUpgrade: TokenUtils.canBool(canUpgrade),
