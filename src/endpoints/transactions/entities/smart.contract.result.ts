@@ -6,6 +6,9 @@ export class SmartContractResult {
     hash: string = '';
 
     @ApiProperty()
+    timestamp: number = 0;
+
+    @ApiProperty()
     nonce: number = 0;
 
     @ApiProperty()
