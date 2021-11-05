@@ -304,4 +304,10 @@ export class AccountService {
 
     return await this.elasticService.getCount('scresults', elasticQuery);
   }
+
+  async getAccountScResult(_: string, scHash: string): Promise<SmartContractResult> {
+    const scResult =  await this.elasticService.getItem('scresults', 'hash', scHash);
+
+    return ApiUtils.mergeObjects(new SmartContractResult(), scResult);
+  }
 }
