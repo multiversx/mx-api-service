@@ -142,20 +142,6 @@ export class NftService {
     }
   }
 
-  private async getSftSupply(identifier: string): Promise<string> {
-    return await this.cachingService.getOrSetCache(
-      `tokenSupply:${identifier}`,
-      async () => await this.getSftSupplyRaw(identifier),
-      Constants.oneHour()
-    );
-  }
-
-  private async getSftSupplyRaw(identifier: string): Promise<string> {
-    const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`);
-
-    return supply;
-  }
-
   async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[] | NftDetailed[]> {
     const { from, size } = queryPagination;
 
@@ -187,7 +173,7 @@ export class NftService {
     if (queryOptions && queryOptions.withSupply) {
       for (let nft of nfts) {
         if (nft.type === NftType.SemiFungibleESDT) {
-          nft.supply = await this.getSftSupply(nft.identifier);
+          nft.supply = await this.esdtService.getTokenSupply(nft.identifier);
         }
       }
     }
@@ -487,7 +473,7 @@ export class NftService {
     if (queryOptions && queryOptions.withSupply) {
       for (let nft of nfts) {
         if (nft.type === NftType.SemiFungibleESDT) {
-          nft.supply = await this.getSftSupply(nft.identifier);
+          nft.supply = await this.esdtService.getTokenSupply(nft.identifier);
         }
       }
     }
@@ -642,7 +628,7 @@ export class NftService {
     let nft = nfts[0];
 
     if (nft.type === NftType.SemiFungibleESDT) {
-      nft.supply = await this.getSftSupply(identifier);
+      nft.supply = await this.esdtService.getTokenSupply(identifier);
     }
 
     nft.assets = await this.tokenAssetService.getAssets(nft.collection);
