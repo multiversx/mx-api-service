@@ -663,7 +663,7 @@ export class AccountController {
   @Get("/accounts/:address/sc-results/count")
   @ApiResponse({
     status: 200,
-    description: 'The all smart contract results for a given account',
+    description: 'The count of all smart contract results for a given account',
     type: SmartContractResult
   })
   @ApiResponse({
@@ -674,5 +674,22 @@ export class AccountController {
     @Param('address') address: string,
   ): Promise<SmartContractResult[]> {
     return this.accountService.getAccountScResultsCount(address);
+  }
+
+  @Get("/accounts/:address/sc-results/:scHash")
+  @ApiResponse({
+    status: 200,
+    description: 'The specific smart contract results for a given account',
+    type: SmartContractResult
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  getAccountScResult(
+    @Param('address') address: string,
+    @Param('scHash') scHash: string,
+  ): Promise<SmartContractResult> {
+    return this.accountService.getAccountScResult(address, scHash);
   }
 }
