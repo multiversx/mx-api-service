@@ -29,12 +29,13 @@ export class LocalCacheService {
       return undefined;
     }
 
-    if (cacheValue.expires > new Date().getTime()) {
+    let now = new Date().getTime();
+    if (cacheValue.expires < now) {
       delete this.dictionary[key];
       return undefined;
     }
 
-    return cacheValue.value;
+      return cacheValue.value;
   }
 
   deleteCacheKey(key: string) {
