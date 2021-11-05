@@ -1,7 +1,6 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { CachingService } from "src/common/caching/caching.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { Constants } from "src/utils/constants";
 import { GenesisTimestampInterface, GENESIS_TIMESTAMP_SERVICE } from "src/utils/genesis.timestamp.interface";
 
 @Injectable()
@@ -17,17 +16,14 @@ export class VmQueryService {
     this.logger = new Logger(VmQueryService.name);
   }
 
-  private async computeTtls(contract: string, func: string): Promise<{localTtl: number, remoteTtl: number}> {
-    let isCachingQueryFunction = await this.cachingService.isCachingQueryFunction(contract, func);
+  private async computeTtls(): Promise<{localTtl: number, remoteTtl: number}> {
     let secondsRemainingUntilNextRound = await this.genesisTimestampService.getSecondsRemainingUntilNextRound();
 
-    let localTtl = isCachingQueryFunction ? Constants.oneHour() : secondsRemainingUntilNextRound;
-
     // no need to store value remotely just to evict it one second later
-    let remoteTtl = localTtl > 1 ? localTtl : 0;
+    let remoteTtl = secondsRemainingUntilNextRound > 1 ? secondsRemainingUntilNextRound : 0;
 
     return {
-      localTtl,
+      localTtl: secondsRemainingUntilNextRound,
       remoteTtl,
     }
   }
@@ -42,7 +38,7 @@ export class VmQueryService {
       key += `@${args.join('@')}`;
     }
 
-    const { localTtl, remoteTtl } = await this.computeTtls(contract, func);
+    const { localTtl, remoteTtl } = await this.computeTtls();
 
     return await this.cachingService.getOrSetCache(
       key,
@@ -68,7 +64,7 @@ export class VmQueryService {
         result = await this.vmQueryRaw(contract, func, caller, args);
       } else {
         
-        const { localTtl, remoteTtl } = await this.computeTtls(contract, func);
+        const { localTtl, remoteTtl } = await this.computeTtls();
         
         result = await this.cachingService.getOrSetCache(
           key,
