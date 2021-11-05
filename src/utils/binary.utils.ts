@@ -37,6 +37,10 @@ export class BinaryUtils {
     return Buffer.from(str, 'base64').toString('hex');
   }
 
+  static stringToHex(str: string): string {
+    return Buffer.from(str).toString('hex');
+  }
+
   static tryBase64ToAddress(str: string): string | undefined {
     try {
       return this.base64ToAddress(str);

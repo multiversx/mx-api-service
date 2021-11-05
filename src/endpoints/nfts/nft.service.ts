@@ -24,6 +24,8 @@ import { ElasticService } from "src/common/elastic/elastic.service";
 import { EsdtService } from "../esdt/esdt.service";
 import { TokenAssetService } from "../tokens/token.asset.service";
 import { GatewayNft } from "./entities/gateway.nft";
+import { VmQueryService } from "../vm.query/vm.query.service";
+import { AddresCollectionRoles } from "./entities/address.collection.roles";
 
 @Injectable()
 export class NftService {
@@ -38,6 +40,7 @@ export class NftService {
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     private readonly esdtService: EsdtService,
     private readonly tokenAssetService: TokenAssetService,
+    private readonly vmQueryService: VmQueryService,
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -104,11 +107,31 @@ export class NftService {
 
   async getNftCollection(collection: string): Promise<NftCollection | undefined> {
     let result = await this.getNftCollections({ from: 0, size: 1}, { collection });
+    let nftCollection;
     if (result.length > 0 && result[0].collection.toLowerCase() === collection.toLowerCase()) {
-      return result[0];
+      nftCollection = result[0];
+
+      const collectionRolesEncoded = await this.vmQueryService.vmQuery(
+        this.apiConfigService.getEsdtContractAddress(), 
+        'getSpecialRoles', 
+        undefined, 
+        [BinaryUtils.stringToHex(collection)]
+      );
+
+      if (collectionRolesEncoded) {
+        for (let rolesForAddressEncoded of collectionRolesEncoded) {
+          const rolesForAddressDecoded = BinaryUtils.base64Decode(rolesForAddressEncoded);
+
+          const roleForAddress = new AddresCollectionRoles();
+          roleForAddress.address = rolesForAddressDecoded.split(':')[0];
+          roleForAddress.roles = rolesForAddressDecoded.split(':')[1].split(',');
+
+          nftCollection.roles.push(roleForAddress);
+        }
+      }
     }
 
-    return undefined;
+    return nftCollection;
   }
 
   private async getSftSupply(identifier: string): Promise<string> {
