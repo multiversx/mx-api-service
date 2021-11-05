@@ -1,4 +1,4 @@
-import { CacheModule, forwardRef, Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { RoundService } from "src/endpoints/rounds/round.service";
 import { ApiConfigModule } from "../api-config/api.config.module";
 import { BlsModule } from "../../endpoints/bls/bls.module";
@@ -12,7 +12,6 @@ import { LocalCacheService as LocalCacheService } from "./local.cache.service";
 
 @Module({
   imports: [
-    CacheModule.register(),
     ApiConfigModule,
     forwardRef(() => MicroserviceModule),
     ElasticModule,
