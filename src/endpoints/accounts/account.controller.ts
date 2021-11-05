@@ -676,7 +676,6 @@ export class AccountController {
     return this.accountService.getAccountScResultsCount(address);
   }
 
-
   @Get("/accounts/:address/sc-results/:scHash")
   @ApiResponse({
     status: 200,
