@@ -18,6 +18,9 @@ import { QueryType } from 'src/common/elastic/entities/query.type';
 import { ElasticQuery } from 'src/common/elastic/entities/elastic.query';
 import { ElasticSortOrder } from 'src/common/elastic/entities/elastic.sort.order';
 import { DeployedContract } from './entities/deployed.contract';
+import { SmartContractResult } from '../transactions/entities/smart.contract.result';
+import { TransactionGetService } from '../transactions/transaction.get.service';
+import { TransactionLog } from '../transactions/entities/transaction.log';
 
 @Injectable()
 export class AccountService {
@@ -29,7 +32,8 @@ export class AccountService {
     @Inject(forwardRef(() => CachingService))
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
-    private readonly apiConfigService: ApiConfigService
+    private readonly apiConfigService: ApiConfigService,
+    private readonly transactionGetService: TransactionGetService,
   ) {
     this.logger = new Logger(AccountService.name);
   }
@@ -284,5 +288,23 @@ export class AccountService {
     }))
 
     return accounts;
+  }
+
+  async getAccountScResults(address: string): Promise<SmartContractResult[]> {
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.should, [QueryType.Match("sender", address), QueryType.Match("receiver", address)])
+      .withSort([ { name: 'timestamp', order: ElasticSortOrder.descending } ]);
+
+    let scResultsElastic = await this.elasticService.getList('scresults', 'hash', elasticQuery);
+    let scResults: SmartContractResult[] = [];
+    for (let scResult of scResultsElastic) {
+      scResult = ApiUtils.mergeObjects(new SmartContractResult(), scResult);
+      const logs = await this.transactionGetService.getTransactionLogsFromElastic([scResult.hash]);
+
+      scResult.logs = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
+
+      scResults.push(scResult);
+    }
+    return scResults;
   }
 }
