@@ -28,7 +28,7 @@ export class CachingService {
 
   constructor(
     private readonly configService: ApiConfigService,
-    private readonly localCache: LocalCacheService,
+    private readonly localCacheService: LocalCacheService,
   ) {
     this.logger = new Logger(CachingService.name);
   }
@@ -70,11 +70,11 @@ export class CachingService {
   };
 
   async setCacheLocal<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
-    return await this.localCache.setCacheValue<T>(key, value, ttl);
+    return await this.localCacheService.setCacheValue<T>(key, value, ttl);
   }
 
   async getCacheLocal<T>(key: string): Promise<T | undefined> {
-    return await this.localCache.getCacheValue<T>(key);
+    return await this.localCacheService.getCacheValue<T>(key);
   }
 
   async refreshCacheLocal<T>(key: string, ttl: number = this.configService.getCacheTtl()): Promise<T | undefined> {
@@ -286,8 +286,7 @@ export class CachingService {
   }
 
   async deleteInCacheLocal(key: string) {
-    // await CachingService.cache.del(key);
-    this.localCache.deleteCacheKey(key);
+    this.localCacheService.deleteCacheKey(key);
   }
 
   async deleteInCache(key: string): Promise<string[]> {
@@ -296,16 +295,12 @@ export class CachingService {
     if (key.includes('*')) {
       let allKeys = await this.asyncKeys(key);
       for (let key of allKeys) {
-        // this.logger.log(`Invalidating key ${key}`);
-        // await CachingService.cache.del(key);
-        this.localCache.deleteCacheKey(key);
+        this.localCacheService.deleteCacheKey(key);
         await this.asyncDel(key);
         invalidatedKeys.push(key);
       }
     } else {
-      // this.logger.log(`Invalidating key ${key}`);
-      // await CachingService.cache.del(key);
-      this.localCache.deleteCacheKey(key);
+      this.localCacheService.deleteCacheKey(key);
       await this.asyncDel(key);
       invalidatedKeys.push(key);
     }
