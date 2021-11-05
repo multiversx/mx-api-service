@@ -629,7 +629,7 @@ export class AccountController {
   @Get("/accounts/:address/contracts")
   @ApiResponse({
     status: 200,
-    description: 'The all deployed contracts for a given account',
+    description: 'All deployed contracts for a given account',
     type: DeployedContract
   })
   @ApiResponse({
@@ -645,7 +645,7 @@ export class AccountController {
   @Get("/accounts/:address/sc-results")
   @ApiResponse({
     status: 200,
-    description: 'The all smart contract results for a given account',
+    description: 'All smart contract results for a given account',
     type: SmartContractResult
   })
   @ApiResponse({
