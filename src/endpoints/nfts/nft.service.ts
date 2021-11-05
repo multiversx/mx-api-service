@@ -24,6 +24,8 @@ import { ElasticService } from "src/common/elastic/elastic.service";
 import { EsdtService } from "../esdt/esdt.service";
 import { TokenAssetService } from "../tokens/token.asset.service";
 import { GatewayNft } from "./entities/gateway.nft";
+import { VmQueryService } from "../vm.query/vm.query.service";
+import { AddresCollectionRoles } from "./entities/address.collection.roles";
 
 @Injectable()
 export class NftService {
@@ -38,6 +40,7 @@ export class NftService {
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     private readonly esdtService: EsdtService,
     private readonly tokenAssetService: TokenAssetService,
+    private readonly vmQueryService: VmQueryService,
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -104,25 +107,39 @@ export class NftService {
 
   async getNftCollection(collection: string): Promise<NftCollection | undefined> {
     let result = await this.getNftCollections({ from: 0, size: 1}, { collection });
-    if (result.length > 0 && result[0].collection.toLowerCase() === collection.toLowerCase()) {
-      return result[0];
+    if (result.length === 0 || result[0].collection.toLowerCase() !== collection.toLowerCase()) {
+      return undefined;
     }
 
-    return undefined;
+    let nftCollection = result[0];
+
+    await this.applySpecialRoles(nftCollection);
+
+    return nftCollection;
   }
 
-  private async getSftSupply(identifier: string): Promise<string> {
-    return await this.cachingService.getOrSetCache(
-      `tokenSupply:${identifier}`,
-      async () => await this.getSftSupplyRaw(identifier),
-      Constants.oneHour()
+  private async applySpecialRoles(nftCollection: NftCollection) {
+    const collectionRolesEncoded = await this.vmQueryService.vmQuery(
+      this.apiConfigService.getEsdtContractAddress(), 
+      'getSpecialRoles', 
+      undefined, 
+      [ BinaryUtils.stringToHex(nftCollection.collection) ]
     );
-  }
 
-  private async getSftSupplyRaw(identifier: string): Promise<string> {
-    const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`);
+    if (!collectionRolesEncoded) {
+      return;
+    }
 
-    return supply;
+    for (let rolesForAddressEncoded of collectionRolesEncoded) {
+      const rolesForAddressDecoded = BinaryUtils.base64Decode(rolesForAddressEncoded);
+      const components = rolesForAddressDecoded.split(':');
+
+      const roleForAddress = new AddresCollectionRoles();
+      roleForAddress.address = components[0];
+      roleForAddress.roles = components[1].split(',');
+
+      nftCollection.roles.push(roleForAddress);
+    }
   }
 
   async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[] | NftDetailed[]> {
@@ -156,7 +173,7 @@ export class NftService {
     if (queryOptions && queryOptions.withSupply) {
       for (let nft of nfts) {
         if (nft.type === NftType.SemiFungibleESDT) {
-          nft.supply = await this.getSftSupply(nft.identifier);
+          nft.supply = await this.esdtService.getTokenSupply(nft.identifier);
         }
       }
     }
@@ -456,7 +473,7 @@ export class NftService {
     if (queryOptions && queryOptions.withSupply) {
       for (let nft of nfts) {
         if (nft.type === NftType.SemiFungibleESDT) {
-          nft.supply = await this.getSftSupply(nft.identifier);
+          nft.supply = await this.esdtService.getTokenSupply(nft.identifier);
         }
       }
     }
@@ -478,7 +495,9 @@ export class NftService {
     }
 
     if (filter.type) {
-      nfts = nfts.filter(x => x.type === filter.type);
+      let types = filter.type.split(',');
+
+      nfts = nfts.filter(x => types.includes(x.type));
     }
 
     if (filter.collection) {
@@ -611,7 +630,7 @@ export class NftService {
     let nft = nfts[0];
 
     if (nft.type === NftType.SemiFungibleESDT) {
-      nft.supply = await this.getSftSupply(identifier);
+      nft.supply = await this.esdtService.getTokenSupply(identifier);
     }
 
     nft.assets = await this.tokenAssetService.getAssets(nft.collection);

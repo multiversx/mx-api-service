@@ -59,20 +59,16 @@ export class TransactionGetService {
 
   async getTransactionScResultsFromElastic(txHash: string): Promise<SmartContractResult[]> {
     const originalTxHashQuery = QueryType.Match('originalTxHash', txHash);
-      const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
+    const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
 
-      const elasticQuerySc = ElasticQuery.create()
-        .withPagination({ from: 0, size: 100 })
-        .withSort([timestamp])
-        .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
+    const elasticQuerySc = ElasticQuery.create()
+      .withPagination({ from: 0, size: 100 })
+      .withSort([timestamp])
+      .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
 
-      let scResults = await this.elasticService.getList('scresults', 'scHash', elasticQuerySc);
-      for (let scResult of scResults) {
-        scResult.hash = scResult.scHash;
-        delete scResult.scHash;
-      }
+    let scResults = await this.elasticService.getList('scresults', 'hash', elasticQuerySc);
 
-      return scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult))      
+    return scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));      
   }
 
   async tryGetTransactionFromElastic(txHash: string): Promise<TransactionDetailed | null> {

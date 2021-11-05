@@ -129,8 +129,6 @@ export class EsdtService {
       name,
       type,
       owner,
-      minted,
-      burnt,
       decimals,
       isPaused,
       canUpgrade,
@@ -152,8 +150,6 @@ export class EsdtService {
       // @ts-ignore
       type,
       owner: AddressUtils.bech32Encode(owner),
-      minted,
-      burnt,
       decimals: parseInt(decimals.split('-').pop() ?? '0'),
       isPaused: TokenUtils.canBool(isPaused),
       canUpgrade: TokenUtils.canBool(canUpgrade),
@@ -182,4 +178,18 @@ export class EsdtService {
 
     return tokenProps;
   };
+
+  async getTokenSupply(identifier: string): Promise<string> {
+    return await this.cachingService.getOrSetCache(
+      `tokenSupply:${identifier}`,
+      async () => await this.getTokenSupplyRaw(identifier),
+      Constants.oneHour()
+    );
+  }
+
+  private async getTokenSupplyRaw(identifier: string): Promise<string> {
+    const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`);
+
+    return supply;
+  }
 }

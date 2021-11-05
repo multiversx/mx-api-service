@@ -1,4 +1,4 @@
-import { CacheModule, forwardRef, Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { RoundService } from "src/endpoints/rounds/round.service";
 import { ApiConfigModule } from "../api-config/api.config.module";
 import { BlsModule } from "../../endpoints/bls/bls.module";
@@ -7,17 +7,19 @@ import { GENESIS_TIMESTAMP_SERVICE } from "../../utils/genesis.timestamp.interfa
 import { CacheConfigService } from "./cache.config.service";
 import { CachingService } from "./caching.service";
 import { MicroserviceModule } from "../microservice.module";
+import { MetricsModule } from "../metrics/metrics.module";
+import { LocalCacheService as LocalCacheService } from "./local.cache.service";
 
 @Module({
   imports: [
-    CacheModule.register(),
     ApiConfigModule,
     forwardRef(() => MicroserviceModule),
     ElasticModule,
-    BlsModule
+    BlsModule,
+    MetricsModule,
   ],
   providers: [
-    CachingService, CacheConfigService,
+    CachingService, CacheConfigService, LocalCacheService,
     {
       useClass: RoundService,
       provide: GENESIS_TIMESTAMP_SERVICE

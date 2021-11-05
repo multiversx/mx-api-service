@@ -42,8 +42,8 @@ export class DelegationService {
 
     const { stake, topUp } = nodes.reduce(
       (accumulator, { stake, topUp }) => {
-        accumulator.stake += BigInt(stake);
-        accumulator.topUp += BigInt(topUp);
+        accumulator.stake += stake ? BigInt(stake) : BigInt(0);
+        accumulator.topUp += topUp ? BigInt(topUp) : BigInt(0);
 
         return accumulator;
       },

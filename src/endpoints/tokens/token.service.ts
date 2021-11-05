@@ -34,6 +34,8 @@ export class TokenService {
     if (token) {
       await this.applyAssetsAndTicker(token);
 
+      token.supply = await this.esdtService.getTokenSupply(identifier);
+
       return ApiUtils.mergeObjects(new TokenDetailed(), token);
     }
 
@@ -119,17 +121,19 @@ export class TokenService {
     return tokens.map(token => ApiUtils.mergeObjects(new TokenWithBalance(), token));
   }
 
-  async getTokenForAddress(address: string, tokenIdentifier: string): Promise<TokenWithBalance | undefined> {
+  async getTokenForAddress(address: string, identifier: string): Promise<TokenWithBalance | undefined> {
     let allTokens = await this.getAllTokensForAddress(address, new TokenFilter());
 
-    let foundToken = allTokens.find(x => x.identifier === tokenIdentifier);
-    if (!foundToken) {
+    let token = allTokens.find(x => x.identifier === identifier);
+    if (!token) {
       return undefined;
     }
 
-    await this.applyAssetsAndTicker(foundToken);
+    await this.applyAssetsAndTicker(token);
 
-    return foundToken;
+    token.supply = await this.esdtService.getTokenSupply(identifier);
+
+    return token;
   }
 
   async getAllTokensForAddress(address: string, filter: TokenFilter): Promise<TokenWithBalance[]> {
