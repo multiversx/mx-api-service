@@ -1,4 +1,4 @@
-import { CACHE_MANAGER, Inject, Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 const { promisify } = require('util');
 import { createClient } from 'redis';
@@ -6,11 +6,11 @@ import asyncPool from 'tiny-async-pool';
 import { CachedFunction } from "src/crons/entities/cached.function";
 import { InvalidationFunction } from "src/crons/entities/invalidation.function";
 import { PerformanceProfiler } from "../../utils/performance.profiler";
-import { Cache } from "cache-manager";
 import { AddressUtils } from "src/utils/address.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { MetricsService } from "../metrics/metrics.service";
+import { LocalCacheService } from "./local.cache.service";
 
 @Injectable()
 export class CachingService {
@@ -89,17 +89,13 @@ export class CachingService {
   private asyncDel = promisify(this.client.del).bind(this.client);
   private asyncKeys = promisify(this.client.keys).bind(this.client);
 
-  private static cache: Cache;
-
   private readonly logger: Logger
 
   constructor(
     private readonly configService: ApiConfigService,
-    @Inject(CACHE_MANAGER)
-    cache: Cache,
     private readonly metricsService: MetricsService,
+    private readonly localCache: LocalCacheService,
   ) {
-    CachingService.cache = cache;
     this.logger = new Logger(CachingService.name);
   }
 
@@ -142,7 +138,8 @@ export class CachingService {
   async setCacheLocal<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
     let profiler = new PerformanceProfiler();
 
-    let result = await CachingService.cache.set<T>(key, value, { ttl });
+    // let result = await CachingService.cache.set<T>(key, value, { ttl });
+    let result = this.localCache.setCacheValue<T>(key, value, ttl);
 
     profiler.stop();
 
@@ -156,7 +153,8 @@ export class CachingService {
   async getCacheLocal<T>(key: string): Promise<T | undefined> {
     let profiler = new PerformanceProfiler();
 
-    let result = await CachingService.cache.get<T>(key);
+    // let result = await CachingService.cache.get<T>(key);
+    let result = this.localCache.getCacheValue<T>(key);
 
     profiler.stop();
 
@@ -376,7 +374,8 @@ export class CachingService {
   }
 
   async deleteInCacheLocal(key: string) {
-    await CachingService.cache.del(key);
+    // await CachingService.cache.del(key);
+    this.localCache.deleteCacheKey(key);
   }
 
   async deleteInCache(key: string): Promise<string[]> {
@@ -386,13 +385,15 @@ export class CachingService {
       let allKeys = await this.asyncKeys(key);
       for (let key of allKeys) {
         // this.logger.log(`Invalidating key ${key}`);
-        await CachingService.cache.del(key);
+        // await CachingService.cache.del(key);
+        this.localCache.deleteCacheKey(key);
         await this.asyncDel(key);
         invalidatedKeys.push(key);
       }
     } else {
       // this.logger.log(`Invalidating key ${key}`);
-      await CachingService.cache.del(key);
+      // await CachingService.cache.del(key);
+      this.localCache.deleteCacheKey(key);
       await this.asyncDel(key);
       invalidatedKeys.push(key);
     }

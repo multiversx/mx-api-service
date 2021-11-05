@@ -8,6 +8,7 @@ import { CacheConfigService } from "./cache.config.service";
 import { CachingService } from "./caching.service";
 import { MicroserviceModule } from "../microservice.module";
 import { MetricsModule } from "../metrics/metrics.module";
+import { LocalCacheService as LocalCacheService } from "./local.cache.service";
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { MetricsModule } from "../metrics/metrics.module";
     MetricsModule,
   ],
   providers: [
-    CachingService, CacheConfigService,
+    CachingService, CacheConfigService, LocalCacheService,
     {
       useClass: RoundService,
       provide: GENESIS_TIMESTAMP_SERVICE
