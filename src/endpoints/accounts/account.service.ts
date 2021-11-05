@@ -290,8 +290,9 @@ export class AccountService {
     return accounts;
   }
 
-  async getAccountScResults(address: string): Promise<SmartContractResult[]> {
+  async getAccountScResults(address: string, pagination: QueryPagination): Promise<SmartContractResult[]> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withPagination(pagination)
       .withCondition(QueryConditionOptions.should, [QueryType.Match("sender", address), QueryType.Match("receiver", address)])
       .withSort([ { name: 'timestamp', order: ElasticSortOrder.descending } ]);
 

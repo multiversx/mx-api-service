@@ -640,6 +640,8 @@ export class AccountController {
     return this.accountService.getAccountContracts(address);;
   }
 
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
   @Get("/accounts/:address/sc-results")
   @ApiResponse({
     status: 200,
@@ -650,7 +652,11 @@ export class AccountController {
     status: 404,
     description: 'Account not found'
   })
-  getAccountScResults(@Param('address') address: string): Promise<SmartContractResult[]> {
-    return this.accountService.getAccountScResults(address);;
+  getAccountScResults(
+    @Param('address') address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<SmartContractResult[]> {
+    return this.accountService.getAccountScResults(address, {from, size});;
   }
 }
