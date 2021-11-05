@@ -103,7 +103,7 @@ export class NftController {
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('search') search: string | undefined,
 		@Query('identifiers') identifiers: string | undefined,
-		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+		@Query('type') type: string | undefined,
 		@Query('collection') collection: string | undefined,
 		@Query('tags') tags: string | undefined,
 		@Query('creator') creator: string | undefined,
@@ -121,7 +121,7 @@ export class NftController {
   })
   @ApiQuery({ name: 'search', description: 'Search by token name', required: false })
 	@ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
-	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
+	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
 	@ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
 	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
 	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
@@ -129,7 +129,7 @@ export class NftController {
   async getNftCount(
     @Query('search') search: string | undefined,
 		@Query('identifiers') identifiers: string | undefined,
-		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+		@Query('type') type: string | undefined,
 		@Query('collection') collection: string | undefined,
 		@Query('tags') tags: string | undefined,
 		@Query('creator') creator: string | undefined,

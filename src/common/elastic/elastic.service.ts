@@ -179,7 +179,8 @@ export class ElasticService {
     }
 
     if (filter.type !== undefined) {
-      queries.push(QueryType.Match('type', filter.type));
+      let types = filter.type.split(',');
+      queries.push(QueryType.Should(types.map(type => QueryType.Match('type', type))));
     }
 
     if (identifier !== undefined) {
