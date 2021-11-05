@@ -3,8 +3,6 @@ import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { ShardService } from "src/endpoints/shards/shard.service";
-import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
-import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { AddressUtils } from "src/utils/address.utils";
@@ -12,7 +10,6 @@ import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { EventsGateway } from "src/websockets/events.gateway";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
-import { GatewayService } from "src/common/gateway/gateway.service";
 import { TransactionUtils } from "src/utils/transaction.utils";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
 import { BinaryUtils } from "src/utils/binary.utils";
@@ -24,10 +21,8 @@ export class TransactionProcessorService {
   private transactionProcessor: TransactionProcessor = new TransactionProcessor();
 
   constructor(
-      private readonly transactionService: TransactionService,
       private readonly cachingService: CachingService,
       private readonly eventsGateway: EventsGateway,
-      private readonly gatewayService: GatewayService,
       private readonly apiConfigService: ApiConfigService,
       private readonly metricsService: MetricsService,
       @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
