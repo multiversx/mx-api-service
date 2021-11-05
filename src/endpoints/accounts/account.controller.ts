@@ -657,6 +657,22 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<SmartContractResult[]> {
-    return this.accountService.getAccountScResults(address, {from, size});;
+    return this.accountService.getAccountScResults(address, {from, size});
+  }
+
+  @Get("/accounts/:address/sc-results/count")
+  @ApiResponse({
+    status: 200,
+    description: 'The all smart contract results for a given account',
+    type: SmartContractResult
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  getAccountScResultsCount(
+    @Param('address') address: string,
+  ): Promise<SmartContractResult[]> {
+    return this.accountService.getAccountScResultsCount(address);
   }
 }
