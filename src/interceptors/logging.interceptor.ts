@@ -38,17 +38,13 @@ export class LoggingInterceptor implements NestInterceptor {
     return next
       .handle()
       .pipe(
-        tap((result) => {
+        tap(() => {
           profiler.stop();
 
           const http = context.switchToHttp();
           const res = http.getResponse();
 
-          if (result !== undefined) {
-            this.metricsService.setApiCall(apiFunction, res.statusCode, profiler.duration, JSON.stringify(result).length);
-          } else {
-            this.metricsService.setApiCall(apiFunction, res.statusCode, profiler.duration, 0);
-          }
+          this.metricsService.setApiCall(apiFunction, res.statusCode, profiler.duration, 0);
         }),
         catchError(err => {
           profiler.stop();
