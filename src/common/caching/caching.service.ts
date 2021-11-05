@@ -1,15 +1,13 @@
-import { CACHE_MANAGER, Inject, Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 const { promisify } = require('util');
 import { createClient } from 'redis';
 import asyncPool from 'tiny-async-pool';
-import { CachedFunction } from "src/crons/entities/cached.function";
-import { InvalidationFunction } from "src/crons/entities/invalidation.function";
 import { PerformanceProfiler } from "../../utils/performance.profiler";
-import { Cache } from "cache-manager";
 import { AddressUtils } from "src/utils/address.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
+import { LocalCacheService } from "./local.cache.service";
 
 @Injectable()
 export class CachingService {
@@ -17,87 +15,21 @@ export class CachingService {
   private asyncSet = promisify(this.client.set).bind(this.client);
   private asyncGet = promisify(this.client.get).bind(this.client);
   private asyncFlushDb = promisify(this.client.flushdb).bind(this.client);
-  // private asyncMSet = promisify(this.client.mset).bind(this.client);
   private asyncMGet = promisify(this.client.mget).bind(this.client);
   private asyncMulti = (commands: any[]) => {
     const multi = this.client.multi(commands);
     return promisify(multi.exec).call(multi);
   };
-    
-  caching: { [key: string] : CachedFunction[] } = {
-    // 'erd1qqqqqqqqqqqqqpgqta8u7qyngjttwu9cmh7uvskaentglrqlerms7a3gys': [
-    //   { 
-    //     funcName: 'getQuorum', 
-    //     invalidations: [
-    //       {
-    //         funcName: 'performAction',
-    //         args: []
-    //       }
-    //     ]
-    //   },
-    //   { 
-    //     funcName: 'getNumBoardMembers', 
-    //     invalidations: [
-    //       {
-    //         funcName: 'performAction',
-    //         args: []
-    //       }
-    //     ]
-    //   },
-    //   { 
-    //     funcName: 'getNumProposers', 
-    //     invalidations: [
-    //       {
-    //         funcName: 'performAction',
-    //         args: []
-    //       }
-    //     ]
-    //   },
-    //   { 
-    //     funcName: 'userRole', 
-    //     invalidations: [
-    //       {
-    //         funcName: 'performAction',
-    //         args: [
-    //           { index: undefined, value: '*' }
-    //         ]
-    //       }
-    //     ]
-    //   },
-    //   { 
-    //     funcName: 'getPendingActionFullInfo', 
-    //     invalidations: [
-    //       {
-    //         funcName: '*',
-    //         args: []
-    //       },
-    //     ]
-    //   },
-    // ],
-    // 'erd1qqqqqqqqqqqqqpgqjsq7r0vsemjxxyruh4scgut3jgc6dtasermsq7ejx9': [
-    //   {
-    //     funcName: 'getMultisigContractName',
-    //     invalidations: []
-    //   }
-    // ],
-    // '/uYNe6O98aIOSpF57HocNxS4JQ7FILx6+N7MEN3oAQY=': [
-
-    // ]
-  };
 
   private asyncDel = promisify(this.client.del).bind(this.client);
   private asyncKeys = promisify(this.client.keys).bind(this.client);
-
-  private static cache: Cache;
 
   private readonly logger: Logger
 
   constructor(
     private readonly configService: ApiConfigService,
-    @Inject(CACHE_MANAGER)
-    cache: Cache,
+    private readonly localCacheService: LocalCacheService,
   ) {
-    CachingService.cache = cache;
     this.logger = new Logger(CachingService.name);
   }
 
@@ -138,11 +70,11 @@ export class CachingService {
   };
 
   async setCacheLocal<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
-    return await CachingService.cache.set<T>(key, value, { ttl });
+    return await this.localCacheService.setCacheValue<T>(key, value, ttl);
   }
 
   async getCacheLocal<T>(key: string): Promise<T | undefined> {
-    return await CachingService.cache.get<T>(key);
+    return await this.localCacheService.getCacheValue<T>(key);
   }
 
   async refreshCacheLocal<T>(key: string, ttl: number = this.configService.getCacheTtl()): Promise<T | undefined> {
@@ -354,7 +286,7 @@ export class CachingService {
   }
 
   async deleteInCacheLocal(key: string) {
-    await CachingService.cache.del(key);
+    this.localCacheService.deleteCacheKey(key);
   }
 
   async deleteInCache(key: string): Promise<string[]> {
@@ -363,14 +295,12 @@ export class CachingService {
     if (key.includes('*')) {
       let allKeys = await this.asyncKeys(key);
       for (let key of allKeys) {
-        // this.logger.log(`Invalidating key ${key}`);
-        await CachingService.cache.del(key);
+        this.localCacheService.deleteCacheKey(key);
         await this.asyncDel(key);
         invalidatedKeys.push(key);
       }
     } else {
-      // this.logger.log(`Invalidating key ${key}`);
-      await CachingService.cache.del(key);
+      this.localCacheService.deleteCacheKey(key);
       await this.asyncDel(key);
       invalidatedKeys.push(key);
     }
@@ -451,11 +381,6 @@ export class CachingService {
       return [];
     }
 
-    let cachedFunctions = await this.getCachedFunctions(transaction.receiver);
-    if (!cachedFunctions) {
-      return [];
-    }
-
     if (transaction.data === undefined) {
       return [];
     }
@@ -467,71 +392,15 @@ export class CachingService {
       return [];
     }
 
-    let keys: string[] = [];
-
-    for (let cachedFunction of cachedFunctions) {
-      for (let invalidation of cachedFunction.invalidations) {
-        if (invalidation.funcName === transactionFuncName || invalidation.funcName === "*") {
-          let key = this.getInvalidationKey(cachedFunction.funcName, invalidation, transactionArgs);
-          keys.push(key);
-        }
-      }
-    }
+    let keys = [];
 
     // if transaction target is ESDT SC and functionName is "issue", kick out 'allEsdtTokens' key
     if (transaction.receiver === this.configService.getEsdtContractAddress() && transactionFuncName === 'issue') {
-      this.deleteInCache('allEsdtTokens');
+      await this.deleteInCache('allEsdtTokens');
+      keys.push('allEsdtTokens')
     }
 
     return keys;
-  }
-
-  private getInvalidationKey(funcName: string, invalidationFunction: InvalidationFunction, transactionArgs: string[]) {
-    let argComponents: string[] = [];
-
-    for (let arg of invalidationFunction.args) {
-      if (arg.index !== undefined) {
-        argComponents.push(transactionArgs[arg.index]);
-      } else if (arg.value !== undefined) {
-        argComponents.push(arg.value);
-      }
-    }
-
-    let result = funcName;
-    if (argComponents.length > 0) {
-      result += '@' + argComponents.join('@');
-    }
-
-    return result;
-  }
-
-  async getCachedFunctions(contract: string): Promise<CachedFunction[] | undefined> {
-    let cachedFunctions = this.caching[contract];
-    // if (!cachedFunctions) {
-    //   let accountCodeHash = await this.accountService.getAccountCodeHash(contract);
-    //   if (!accountCodeHash) {
-    //     return [];
-    //   }
-
-    //   cachedFunctions = this.caching[accountCodeHash];
-    // }
-
-    return cachedFunctions;
-  }
-
-  async isCachingQueryFunction(contract: string, func: string): Promise<boolean> {
-    let cachedFunctions = await this.getCachedFunctions(contract);
-    if (!cachedFunctions) {
-      return false;
-    }
-
-    for (let cachedFunction of cachedFunctions) {
-      if (cachedFunction.funcName === func) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   async flushDb(): Promise<any> {

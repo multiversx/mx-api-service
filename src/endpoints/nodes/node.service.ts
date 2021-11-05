@@ -18,6 +18,7 @@ import { KeybaseService } from "src/common/keybase/keybase.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { Stake } from "../stake/entities/stake";
 
 @Injectable()
 export class NodeService {
@@ -278,13 +279,11 @@ export class NodeService {
 
     for (let node of nodes) {
       if (node.type === 'validator') {
-        const stake = stakes.find(({ bls }) => bls === node.bls);
+        const stake = stakes.find(({ bls }) => bls === node.bls) || new Stake();
 
-        if (stake) {
-          node.stake = stake.stake;
-          node.topUp = stake.topUp;
-          node.locked = stake.locked;
-        }
+        node.stake = stake.stake;
+        node.topUp = stake.topUp;
+        node.locked = stake.locked;
       }
     }
   }
