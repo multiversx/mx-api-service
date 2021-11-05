@@ -495,7 +495,9 @@ export class NftService {
     }
 
     if (filter.type) {
-      nfts = nfts.filter(x => x.type === filter.type);
+      let types = filter.type.split(',');
+
+      nfts = nfts.filter(x => types.includes(x.type));
     }
 
     if (filter.collection) {
