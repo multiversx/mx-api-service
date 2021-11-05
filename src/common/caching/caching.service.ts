@@ -3,13 +3,10 @@ import { ApiConfigService } from "../api-config/api.config.service";
 const { promisify } = require('util');
 import { createClient } from 'redis';
 import asyncPool from 'tiny-async-pool';
-import { CachedFunction } from "src/crons/entities/cached.function";
-import { InvalidationFunction } from "src/crons/entities/invalidation.function";
 import { PerformanceProfiler } from "../../utils/performance.profiler";
 import { AddressUtils } from "src/utils/address.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
-import { MetricsService } from "../metrics/metrics.service";
 import { LocalCacheService } from "./local.cache.service";
 
 @Injectable()
@@ -18,72 +15,10 @@ export class CachingService {
   private asyncSet = promisify(this.client.set).bind(this.client);
   private asyncGet = promisify(this.client.get).bind(this.client);
   private asyncFlushDb = promisify(this.client.flushdb).bind(this.client);
-  // private asyncMSet = promisify(this.client.mset).bind(this.client);
   private asyncMGet = promisify(this.client.mget).bind(this.client);
   private asyncMulti = (commands: any[]) => {
     const multi = this.client.multi(commands);
     return promisify(multi.exec).call(multi);
-  };
-    
-  caching: { [key: string] : CachedFunction[] } = {
-    // 'erd1qqqqqqqqqqqqqpgqta8u7qyngjttwu9cmh7uvskaentglrqlerms7a3gys': [
-    //   { 
-    //     funcName: 'getQuorum', 
-    //     invalidations: [
-    //       {
-    //         funcName: 'performAction',
-    //         args: []
-    //       }
-    //     ]
-    //   },
-    //   { 
-    //     funcName: 'getNumBoardMembers', 
-    //     invalidations: [
-    //       {
-    //         funcName: 'performAction',
-    //         args: []
-    //       }
-    //     ]
-    //   },
-    //   { 
-    //     funcName: 'getNumProposers', 
-    //     invalidations: [
-    //       {
-    //         funcName: 'performAction',
-    //         args: []
-    //       }
-    //     ]
-    //   },
-    //   { 
-    //     funcName: 'userRole', 
-    //     invalidations: [
-    //       {
-    //         funcName: 'performAction',
-    //         args: [
-    //           { index: undefined, value: '*' }
-    //         ]
-    //       }
-    //     ]
-    //   },
-    //   { 
-    //     funcName: 'getPendingActionFullInfo', 
-    //     invalidations: [
-    //       {
-    //         funcName: '*',
-    //         args: []
-    //       },
-    //     ]
-    //   },
-    // ],
-    // 'erd1qqqqqqqqqqqqqpgqjsq7r0vsemjxxyruh4scgut3jgc6dtasermsq7ejx9': [
-    //   {
-    //     funcName: 'getMultisigContractName',
-    //     invalidations: []
-    //   }
-    // ],
-    // '/uYNe6O98aIOSpF57HocNxS4JQ7FILx6+N7MEN3oAQY=': [
-
-    // ]
   };
 
   private asyncDel = promisify(this.client.del).bind(this.client);
@@ -93,7 +28,6 @@ export class CachingService {
 
   constructor(
     private readonly configService: ApiConfigService,
-    private readonly metricsService: MetricsService,
     private readonly localCache: LocalCacheService,
   ) {
     this.logger = new Logger(CachingService.name);
@@ -136,33 +70,11 @@ export class CachingService {
   };
 
   async setCacheLocal<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
-    let profiler = new PerformanceProfiler();
-
-    // let result = await CachingService.cache.set<T>(key, value, { ttl });
-    let result = this.localCache.setCacheValue<T>(key, value, ttl);
-
-    profiler.stop();
-
-    if (profiler.duration >= 2) {
-      this.metricsService.setSlowLocalCacheKeyDuration(key, 'write', profiler.duration);
-    }
-
-    return result;
+    return await this.localCache.setCacheValue<T>(key, value, ttl);
   }
 
   async getCacheLocal<T>(key: string): Promise<T | undefined> {
-    let profiler = new PerformanceProfiler();
-
-    // let result = await CachingService.cache.get<T>(key);
-    let result = this.localCache.getCacheValue<T>(key);
-
-    profiler.stop();
-
-    if (profiler.duration >= 2) {
-      this.metricsService.setSlowLocalCacheKeyDuration(key, 'read', profiler.duration);
-    }
-
-    return result;
+    return await this.localCache.getCacheValue<T>(key);
   }
 
   async refreshCacheLocal<T>(key: string, ttl: number = this.configService.getCacheTtl()): Promise<T | undefined> {
@@ -474,11 +386,6 @@ export class CachingService {
       return [];
     }
 
-    let cachedFunctions = await this.getCachedFunctions(transaction.receiver);
-    if (!cachedFunctions) {
-      return [];
-    }
-
     if (transaction.data === undefined) {
       return [];
     }
@@ -490,71 +397,15 @@ export class CachingService {
       return [];
     }
 
-    let keys: string[] = [];
-
-    for (let cachedFunction of cachedFunctions) {
-      for (let invalidation of cachedFunction.invalidations) {
-        if (invalidation.funcName === transactionFuncName || invalidation.funcName === "*") {
-          let key = this.getInvalidationKey(cachedFunction.funcName, invalidation, transactionArgs);
-          keys.push(key);
-        }
-      }
-    }
+    let keys = [];
 
     // if transaction target is ESDT SC and functionName is "issue", kick out 'allEsdtTokens' key
     if (transaction.receiver === this.configService.getEsdtContractAddress() && transactionFuncName === 'issue') {
-      this.deleteInCache('allEsdtTokens');
+      await this.deleteInCache('allEsdtTokens');
+      keys.push('allEsdtTokens')
     }
 
     return keys;
-  }
-
-  private getInvalidationKey(funcName: string, invalidationFunction: InvalidationFunction, transactionArgs: string[]) {
-    let argComponents: string[] = [];
-
-    for (let arg of invalidationFunction.args) {
-      if (arg.index !== undefined) {
-        argComponents.push(transactionArgs[arg.index]);
-      } else if (arg.value !== undefined) {
-        argComponents.push(arg.value);
-      }
-    }
-
-    let result = funcName;
-    if (argComponents.length > 0) {
-      result += '@' + argComponents.join('@');
-    }
-
-    return result;
-  }
-
-  async getCachedFunctions(contract: string): Promise<CachedFunction[] | undefined> {
-    let cachedFunctions = this.caching[contract];
-    // if (!cachedFunctions) {
-    //   let accountCodeHash = await this.accountService.getAccountCodeHash(contract);
-    //   if (!accountCodeHash) {
-    //     return [];
-    //   }
-
-    //   cachedFunctions = this.caching[accountCodeHash];
-    // }
-
-    return cachedFunctions;
-  }
-
-  async isCachingQueryFunction(contract: string, func: string): Promise<boolean> {
-    let cachedFunctions = await this.getCachedFunctions(contract);
-    if (!cachedFunctions) {
-      return false;
-    }
-
-    for (let cachedFunction of cachedFunctions) {
-      if (cachedFunction.funcName === func) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   async flushDb(): Promise<any> {

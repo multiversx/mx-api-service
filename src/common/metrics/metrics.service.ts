@@ -17,7 +17,6 @@ export class MetricsService {
   private static lastProcessedNonceGauge: Gauge<string>;
   private static pendingApiHitGauge: Gauge<string>;
   private static cachedApiHitGauge: Gauge<string>;
-  private static slowLocalCacheKeysHistogram: Histogram<string>;
   private static isDefaultMetricsRegistered: boolean = false;
 
   constructor(
@@ -110,15 +109,6 @@ export class MetricsService {
       });
     }
 
-    if (!MetricsService.slowLocalCacheKeysHistogram) {
-      MetricsService.slowLocalCacheKeysHistogram = new Histogram({
-        name: 'slow_local_cache_keys',
-        help: 'Number of slow local cache keys',
-        labelNames: [ 'key', 'operation' ],
-        buckets: [ ]
-      });
-    }
-
     if (!MetricsService.isDefaultMetricsRegistered) {
       MetricsService.isDefaultMetricsRegistered = true;
       collectDefaultMetrics();
@@ -156,10 +146,6 @@ export class MetricsService {
 
   incrementCachedApiHit(endpoint: string) {
     MetricsService.cachedApiHitGauge.inc({ endpoint });
-  }
-
-  setSlowLocalCacheKeyDuration(key: string, operation: string, duration: number) {
-    MetricsService.slowLocalCacheKeysHistogram.labels(key, operation).observe(duration);
   }
 
   async getMetrics(): Promise<string> {
