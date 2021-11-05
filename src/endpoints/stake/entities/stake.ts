@@ -1,6 +1,6 @@
 export class Stake {
   bls: string = '';
-  stake: string = '';
-  topUp: string = '';
-  locked: string = '';
+  stake: string = '0';
+  topUp: string = '0';
+  locked: string = '0';
 }
