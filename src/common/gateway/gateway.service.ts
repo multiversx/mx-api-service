@@ -12,7 +12,7 @@ export class GatewayService {
 
   async get(url: string, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     let result = await this.getRaw(url, errorHandler);
-    return result.data.data;
+    return result?.data?.data;
   }
 
   async getRaw(url: string, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
@@ -21,7 +21,7 @@ export class GatewayService {
 
   async create(url: string, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     let result = await this.createRaw(url, data, errorHandler);
-    return result.data.data;
+    return result?.data?.data;
   }
 
   async createRaw(url: string, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
