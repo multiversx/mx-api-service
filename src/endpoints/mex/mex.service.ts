@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
@@ -15,6 +16,7 @@ export class MexService {
   constructor(
     private readonly elasticService: ElasticService,
     private readonly cachingService: CachingService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   async getMexForAddress(address: string): Promise<MexWeek[]> {
@@ -40,15 +42,15 @@ export class MexService {
         : `snapshot-week-${week}`;
       const mexRewardsCollection =  `mex-week-${week}-v3`;
 
-      const snapshots = await this.elasticService.getList(snapshotCollection, 'snapshot', elasticQuery, true);
-      const mex = await this.elasticService.getList(mexRewardsCollection, 'mex', elasticQuery, true);
+      const snapshots = await this.elasticService.getList(snapshotCollection, 'snapshot', elasticQuery, this.apiConfigService.getMexUrl());
+      const mex = await this.elasticService.getList(mexRewardsCollection, 'mex', elasticQuery, this.apiConfigService.getMexUrl());
 
       let undelegates = [];
 
       if (week === 1) {
         const undelegatedCollection = `undelegated-week-1-v2`;
 
-        undelegates = await this.elasticService.getList(undelegatedCollection, 'undelegated', elasticQuery, true);
+        undelegates = await this.elasticService.getList(undelegatedCollection, 'undelegated', elasticQuery, this.apiConfigService.getMexUrl());
       }
 
       for (let day = 0; day < 7; day++) {
