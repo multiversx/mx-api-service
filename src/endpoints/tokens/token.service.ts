@@ -32,11 +32,13 @@ export class TokenService {
     let tokens = await this.esdtService.getAllEsdtTokens();
     let token = tokens.find(x => x.identifier === identifier);
     if (token) {
+      token = ApiUtils.mergeObjects(new TokenDetailed(), token);
+
       await this.applyAssetsAndTicker(token);
 
       token.supply = await this.esdtService.getTokenSupply(identifier);
 
-      return ApiUtils.mergeObjects(new TokenDetailed(), token);
+      return token;
     }
 
     return undefined;
@@ -128,6 +130,8 @@ export class TokenService {
     if (!token) {
       return undefined;
     }
+
+    token = ApiUtils.mergeObjects(new TokenWithBalance(), token);
 
     await this.applyAssetsAndTicker(token);
 
