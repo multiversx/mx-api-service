@@ -552,6 +552,8 @@ export class NftService {
   async getNftsForAddressInternal(address: string, filter: NftFilter): Promise<NftAccount[]> {
     let gatewayNfts = await this.getGatewayNfts(address, filter);
 
+    gatewayNfts.sort((a: GatewayNft, b: GatewayNft) => a.tokenIdentifier.localeCompare(b.tokenIdentifier, 'en', { sensitivity: 'base' }));
+
     let nfts: NftAccount[] = [];
 
     for (let gatewayNft of gatewayNfts) {
