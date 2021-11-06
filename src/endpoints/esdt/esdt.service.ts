@@ -184,14 +184,6 @@ export class EsdtService {
   };
 
   async getTokenSupply(identifier: string): Promise<string> {
-    return await this.cachingService.getOrSetCache(
-      `tokenSupply:${identifier}`,
-      async () => await this.getTokenSupplyRaw(identifier),
-      Constants.oneHour()
-    );
-  }
-
-  private async getTokenSupplyRaw(identifier: string): Promise<string> {
     const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`);
 
     return supply;
