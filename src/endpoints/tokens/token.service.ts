@@ -116,11 +116,13 @@ export class TokenService {
 
     tokens = tokens.slice(from, from + size);
 
+    tokens = tokens.map(token => ApiUtils.mergeObjects(new TokenWithBalance(), token));
+
     for (let token of tokens) {
       await this.applyAssetsAndTicker(token);
     }
 
-    return tokens.map(token => ApiUtils.mergeObjects(new TokenWithBalance(), token));
+    return tokens;
   }
 
   async getTokenForAddress(address: string, identifier: string): Promise<TokenWithBalance | undefined> {
