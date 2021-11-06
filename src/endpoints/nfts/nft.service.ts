@@ -258,7 +258,6 @@ export class NftService {
       let nft = new Nft();
       nft.identifier = elasticNft.identifier;
       nft.collection = elasticNft.token;
-      nft.type = elasticNft.type;
       nft.nonce = parseInt('0x' + nft.identifier.split('-')[2]);
       nft.timestamp = elasticNft.timestamp;
 
@@ -298,25 +297,22 @@ export class NftService {
     this.updateThumbnailUrlForNfts(nfts);
 
     for (let nft of nfts) {
-      if (!nft.name || !nft.type) {
-        let collectionProperties = await this.getCollectionProperties(nft.collection);
-        if (collectionProperties) {
-          if (!nft.name) {
-            nft.name = collectionProperties.name;
-          }
+      let collectionProperties = await this.getCollectionProperties(nft.collection);
 
-          if (!nft.type) {
-            // @ts-ignore
-            nft.type = collectionProperties.type;
-          }
+      if (collectionProperties) {
+        if (!nft.name) {
+          nft.name = collectionProperties.name;
+        }
 
-          if (nft.type === NftType.MetaESDT) {
-            nft.decimals = collectionProperties.decimals;
-            // @ts-ignore
-            delete nft.royalties;
-            // @ts-ignore
-            delete nft.uris;
-          }
+        // @ts-ignore
+        nft.type = collectionProperties.type;
+
+        if (nft.type === NftType.MetaESDT) {
+          nft.decimals = collectionProperties.decimals;
+          // @ts-ignore
+          delete nft.royalties;
+          // @ts-ignore
+          delete nft.uris;
         }
       }
     }
