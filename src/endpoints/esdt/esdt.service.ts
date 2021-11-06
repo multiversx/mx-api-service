@@ -29,17 +29,20 @@ export class EsdtService {
   }
 
   private async getAllEsdtsForAddressRaw(address: string): Promise<{ [ key: string]: any }> {
-    try {
-      let esdtResult = await this.gatewayService.get(`address/${address}/esdt`);
-      return esdtResult.esdts;
-    } catch (error: any) {
+    let esdtResult = await this.gatewayService.get(`address/${address}/esdt`, async (error) => {
       let errorMessage = error?.response?.data?.error;
       if (errorMessage && errorMessage.includes('account was not found')) {
-        return {};
+        return true;
       }
-      
-      throw error;
+
+      return false;
+    });
+
+    if (!esdtResult) {
+      return {};
     }
+
+    return esdtResult.esdts;
   }
 
   private pendingRequestsDictionary: { [ key: string]: any; } = {};

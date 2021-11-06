@@ -171,14 +171,20 @@ export class KeybaseService {
           ? `https://keybase.pub/${keybase.identity}/elrond/${keybase.key}`
           : `https://keybase.pub/${keybase.identity}/elrond/${this.apiConfigService.getNetwork()}/${keybase.key}`;
   
-      this.logger.log(`Fetching keybase for identity ${keybase.identity} and key ${keybase.key}`);
+      // this.logger.log(`Fetching keybase for identity ${keybase.identity} and key ${keybase.key}`);
 
-      const { status } = await this.apiService.head(url);
+      const { status } = await this.apiService.head(url, undefined, async (error) => {
+        if (error.response?.status === HttpStatus.NOT_FOUND) {
+          throw error;
+        }
+
+        return false;
+      });
       return status === HttpStatus.OK;
     } catch (error: any) {
       if (error.response?.status === HttpStatus.NOT_FOUND) {
         this.logger.log(`Keybase not found for identity ${keybase.identity} and key ${keybase.key}`);
-        return false
+        return false;
       }
 
       const cachedConfirmation = await this.cachingService.getCache<boolean>(CacheInfo.KeybaseConfirmation(keybase.key).key);
