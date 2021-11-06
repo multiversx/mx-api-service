@@ -105,6 +105,7 @@ export class AccountController {
     try {
       return await this.accountService.getDeferredAccount(address);
     } catch(error) {
+      this.logger.error(`Error in getAccountDeferred for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
@@ -139,6 +140,7 @@ export class AccountController {
     try {
       return await this.tokenService.getTokensForAddress(address, { from, size }, { search, name, identifier, identifiers });
     } catch (error) {
+      this.logger.error(`Error in getAccountTokens for address ${address}`);
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return [];
@@ -158,6 +160,7 @@ export class AccountController {
     try {
       return await this.tokenService.getTokenCountForAddress(address);
     } catch (error) {
+      this.logger.error(`Error in getTokenCount for address ${address}`);
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return 0;
@@ -170,6 +173,7 @@ export class AccountController {
     try {
       return await this.tokenService.getTokenCountForAddress(address);
     } catch (error) {
+      this.logger.error(`Error in getTokenCount for address ${address}`);
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return 0;
@@ -211,6 +215,7 @@ export class AccountController {
     try {
       return await this.nftService.getCollectionsForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity }, { from, size });
     } catch (error) {
+      this.logger.error(`Error in getAccountCollections for address ${address}`);
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return [];
@@ -244,6 +249,7 @@ export class AccountController {
     try {
       return await this.nftService.getCollectionCountForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
     } catch (error) {
+      this.logger.error(`Error in getCollectionCount for address ${address}`);
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return 0;
@@ -264,6 +270,7 @@ export class AccountController {
     try {
       return await this.nftService.getCollectionCountForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
     } catch (error) {
+      this.logger.error(`Error in getCollectionCountAlternative for address ${address}`);
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return 0;
@@ -363,6 +370,7 @@ export class AccountController {
     try {
       return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, collections, tags, creator, hasUris }, { withTimestamp, withSupply });
     } catch (error) {
+      this.logger.error(`Error in getAccountNfts for address ${address}`);
       this.logger.error(error);
       return [];
     }
@@ -397,6 +405,7 @@ export class AccountController {
     try {
       return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, tags, creator, hasUris });
     } catch (error) {
+      this.logger.error(`Error in getNftCount for address ${address}`);
       this.logger.error(error);
       return 0;
     }
@@ -417,6 +426,7 @@ export class AccountController {
     try {
       return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, tags, creator, hasUris });
     } catch (error) {
+      this.logger.error(`Error in getNftCountAlternative for address ${address}`);
       this.logger.error(error);
       return 0;
     }
@@ -461,6 +471,7 @@ export class AccountController {
     try {
       return await this.stakeService.getStakeForAddress(address);
     } catch (error) {
+      this.logger.error(`Error in getAccountStake for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
