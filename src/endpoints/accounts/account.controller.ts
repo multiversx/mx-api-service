@@ -491,6 +491,7 @@ export class AccountController {
     try {
       return await this.delegationLegacyService.getDelegationForAddress(address);
     } catch (error) {
+      this.logger.error(`Error in getAccountDelegationLegacy for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
@@ -511,6 +512,7 @@ export class AccountController {
     try {
       return await this.accountService.getKeys(address);
     } catch (error) {
+      this.logger.error(`Error in getAccountKeys for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
@@ -583,6 +585,7 @@ export class AccountController {
         after,
       }, { from, size }, { withScResults, withOperations }, address);
     } catch (error) {
+      this.logger.error(`Error in getAccountTransactions for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
