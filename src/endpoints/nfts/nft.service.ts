@@ -229,7 +229,8 @@ export class NftService {
     }
 
     await this.applyNftDistribution(nft.identifier, nft);
-    this.applyNftSupply(nft);
+
+    nft.supply = await this.esdtService.getTokenSupply(nft.collection);
 
     await this.applyAssetsAndTicker(nft);
 

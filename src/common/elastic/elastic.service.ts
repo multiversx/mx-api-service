@@ -109,7 +109,7 @@ export class ElasticService {
     const queries = identifiers.map((identifier) => QueryType.Match('identifier', identifier, QueryOperator.AND));
 
     const elasticQuery = ElasticQuery.create()
-      .withPagination({ from: 0, size: 10000 })
+      .withPagination({ from: 0, size: 100 })
       .withCondition(QueryConditionOptions.should, queries);
 
     const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
