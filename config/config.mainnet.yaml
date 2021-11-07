@@ -1,6 +1,6 @@
 network: 'mainnet'
 metaChainShardId: 4294967295
-useLegacyElastic: true
+useLegacyElastic: false
 api:
   public: true
   private: true
@@ -20,7 +20,7 @@ urls:
     - 'https://devnet-api.elrond.com'
     - 'https://testnet-api.elrond.com'
   elastic:
-    - 'https://index.elrond.com'
+    - 'https://new-index.elrond.com'
   mex:
     - 'https://mex-indexer.elrond.com'
   gateway:
