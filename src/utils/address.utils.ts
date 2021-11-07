@@ -1,4 +1,5 @@
 import { Address } from "@elrondnetwork/erdjs";
+import { Logger } from "@nestjs/common";
 
 export class AddressUtils {
   static bech32Encode(publicKey: string) {
@@ -30,7 +31,18 @@ export class AddressUtils {
   };
   
   static isSmartContractAddress(address: string): boolean {
-    return new Address(address).isContractAddress();
+    if (address.toLowerCase() === 'metachain') {
+      return true;
+    }
+
+    try {
+      return new Address(address).isContractAddress();
+    } catch (error) {
+      let logger = new Logger(AddressUtils.name);
+      logger.error(`Error when determining whether address '${address}' is a smart contract address`);
+      logger.error(error);
+      return false;
+    }
   }
 
   private static isAddressOfMetachain(pubKey: Buffer) {
