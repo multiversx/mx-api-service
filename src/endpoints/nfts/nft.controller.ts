@@ -2,6 +2,7 @@ import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Pa
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
+import { EsdtService } from "../esdt/esdt.service";
 import { Nft } from "./entities/nft";
 import { NftCollection } from "./entities/nft.collection";
 import { NftDetailed } from "./entities/nft.detailed";
@@ -11,7 +12,10 @@ import { NftService } from "./nft.service";
 @Controller()
 @ApiTags('nfts')
 export class NftController {
-  constructor(private readonly nftService: NftService) {}
+  constructor(
+    private readonly nftService: NftService,
+    private readonly esdtService: EsdtService,
+  ) {}
 
   @Get("/collections")
   @ApiResponse({
@@ -169,5 +173,21 @@ export class NftController {
     }
 
     return token;
+  }
+
+  @Get('/nfts/:identifier/supply')
+  @ApiResponse({
+    status: 200,
+    description: 'Non-fungible / semi-fungible token supply',
+    type: Nft,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Token not found'
+  })
+  async getNftSupply(@Param('identifier') identifier: string): Promise<{ supply: string }> {
+    let supply = await this.esdtService.getTokenSupply(identifier);
+
+    return { supply };
   }
 }
