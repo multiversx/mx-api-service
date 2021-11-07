@@ -197,7 +197,19 @@ export class ProxyController {
   @Get('/validator/statistics')
   @ApiExcludeEndpoint()
   async getValidatorStatistics(@Res() res: Response) {
-    await this.gatewayGet(res, 'validator/statistics');
+    try {
+      let heartbeat = await this.cachingService.getOrSetCache(
+        'validatorstatistics',
+        async () => {
+          const result = await this.gatewayService.getRaw('validator/statistics');
+          return result.data;
+        },
+        Constants.oneMinute(),
+      );
+      res.json(heartbeat);
+    } catch (error: any) {
+      res.status(HttpStatus.BAD_REQUEST).json(error.response.data).send();
+    }
   }
 
   @Get('/block/:shard/by-nonce/:nonce')
