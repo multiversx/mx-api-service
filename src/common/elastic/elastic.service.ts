@@ -115,6 +115,7 @@ export class ElasticService {
     const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
 
     let result = documents.map((document: any) => this.formatItem(document, 'identifier'));
+    result = result.filter((x: any) => !x.address.includes('pending-'));
     result.reverse();
 
     return result;
