@@ -237,19 +237,6 @@ export class NftService {
     return nft;
   }
 
-  applyNftSupply(nft: NftDetailed) {
-    if (!nft.owners) {
-      return;
-    }
-
-    let supply = BigInt(0);
-    for (let owner of nft.owners) {
-      supply = supply + BigInt(owner.balance);
-    }
-
-    nft.supply = supply.toString();
-  }
-
   async getNftsInternal(from: number, size: number, filter: NftFilter, identifier: string | undefined): Promise<Nft[]> {
     let elasticNfts = await this.elasticService.getTokens(from, size, filter, identifier);
 

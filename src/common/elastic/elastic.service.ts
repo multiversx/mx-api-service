@@ -110,6 +110,7 @@ export class ElasticService {
 
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from: 0, size: 100 })
+      .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
       .withCondition(QueryConditionOptions.should, queries);
 
     const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
