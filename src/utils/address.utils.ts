@@ -30,7 +30,7 @@ export class AddressUtils {
   };
   
   static isSmartContractAddress(address: string): boolean {
-    return address.includes('qqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqq');
+    return new Address(address).isContractAddress();
   }
 
   private static isAddressOfMetachain(pubKey: Buffer) {
