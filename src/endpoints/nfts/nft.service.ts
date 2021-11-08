@@ -11,7 +11,6 @@ import { CollectionFilter } from "./entities/collection.filter";
 import { Nft } from "./entities/nft";
 import { NftAccount } from "./entities/nft.account";
 import { NftCollection } from "./entities/nft.collection";
-import { NftDetailed } from "./entities/nft.detailed";
 import { NftFilter } from "./entities/nft.filter";
 import { NftOwner } from "./entities/nft.owner";
 import { NftType } from "./entities/nft.type";
@@ -142,7 +141,7 @@ export class NftService {
     }
   }
 
-  async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[] | NftDetailed[]> {
+  async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[]> {
     const { from, size } = queryPagination;
 
     let nfts =  await this.getNftsInternal(from, size, filter, undefined);
@@ -151,9 +150,10 @@ export class NftService {
       await this.applyAssetsAndTicker(nft);
     }
    
-
     if (queryOptions && queryOptions.withOwner) {
-      const accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nfts.map(({identifier}) => identifier));
+      let nonFungibleNftIdentifiers = nfts.filter(x => x.type === NftType.NonFungibleESDT).map(x => x.identifier);
+
+      const accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nonFungibleNftIdentifiers);
 
       for (let nft of nfts) {
         if (nft.type === NftType.NonFungibleESDT) {
@@ -161,11 +161,6 @@ export class NftService {
           if (accountEsdt) {
             nft.owner = accountEsdt.address;
           }
-        } else if (nft.type === NftType.SemiFungibleESDT) {
-          nft.balance = accountsEsdts.filter((x: any) => x.identifier === nft.identifier)
-          .map((x: any) => BigInt(x.balance))
-          .reduce((previous: BigInt, current: BigInt) => previous.valueOf() + current.valueOf(), BigInt(0))
-          .toString();
         }
       }
     }
@@ -180,29 +175,13 @@ export class NftService {
     
     return nfts;
   }
-  
-  private async applyNftDistribution(identifier: string, nftDetailed: NftDetailed): Promise<void> {
-    let accountsEsdt = await this.elasticService.getAccountEsdtByIdentifier(identifier);
-    if (accountsEsdt.length === 0) {
-      return;
-    }
 
-    if (nftDetailed.type === NftType.NonFungibleESDT) {
-      nftDetailed.owner = accountsEsdt[0].address;
-
-      // @ts-ignore
-      delete nftDetailed.owners;
-    } else {
-      nftDetailed.owners = accountsEsdt.map((esdt: any) => {
-        let owner = new NftOwner();
-        owner.address = esdt.address;
-        owner.balance = esdt.balance;
-
-        return owner;
-      });
-
-      // @ts-ignore
-      delete nftDetailed.owner;
+  private async applyNftOwner(nft: Nft): Promise<void> {
+    if (nft.type === NftType.NonFungibleESDT) {
+      let accountsEsdt = await this.elasticService.getAccountEsdtByIdentifier(nft.identifier);
+      if (accountsEsdt.length > 0) {
+        nft.owner = accountsEsdt[0].address;
+      }
     }
   }
 
@@ -216,37 +195,48 @@ export class NftService {
     }
   }
 
-  async getSingleNft(identifier: string): Promise<NftDetailed | undefined> {
+  async getSingleNft(identifier: string): Promise<Nft | undefined> {
     let nfts = await this.getNftsInternal(0, 1, new NftFilter(), identifier);
     if (nfts.length === 0) {
       return undefined;
     }
 
-    let nft: NftDetailed = ApiUtils.mergeObjects(new NftDetailed(), nfts[0]);
+    let nft: Nft = ApiUtils.mergeObjects(new Nft(), nfts[0]);
 
     if (nft.identifier.toLowerCase() !== identifier.toLowerCase()) {
       return undefined;
     }
 
-    await this.applyNftDistribution(nft.identifier, nft);
-    this.applyNftSupply(nft);
+    nft.supply = await this.esdtService.getTokenSupply(nft.identifier);
+
+    await this.applyNftOwner(nft);
 
     await this.applyAssetsAndTicker(nft);
 
     return nft;
   }
 
-  applyNftSupply(nft: NftDetailed) {
-    if (!nft.owners) {
+  async getNftOwners(identifier: string, pagination: QueryPagination): Promise<NftOwner[] | undefined> {
+    let accountsEsdt = await this.elasticService.getAccountEsdtByIdentifier(identifier);
+    if (accountsEsdt.length === 0) {
       return;
     }
 
-    let supply = BigInt(0);
-    for (let owner of nft.owners) {
-      supply = supply + BigInt(owner.balance);
-    }
+    const { from, size } = pagination;
+    accountsEsdt = accountsEsdt.slice(from, from + size);
+    
+    return accountsEsdt.map((esdt: any) => {
+      let owner = new NftOwner();
+      owner.address = esdt.address;
+      owner.balance = esdt.balance;
 
-    nft.supply = supply.toString();
+      return owner;
+    });
+  }
+
+  async getNftOwnersCount(identifier: string): Promise<number> {
+    let accountsEsdt = await this.elasticService.getAccountEsdtByIdentifier(identifier);
+    return accountsEsdt.length;
   }
 
   async getNftsInternal(from: number, size: number, filter: NftFilter, identifier: string | undefined): Promise<Nft[]> {
@@ -258,7 +248,6 @@ export class NftService {
       let nft = new Nft();
       nft.identifier = elasticNft.identifier;
       nft.collection = elasticNft.token;
-      nft.type = elasticNft.type;
       nft.nonce = parseInt('0x' + nft.identifier.split('-')[2]);
       nft.timestamp = elasticNft.timestamp;
 
@@ -298,25 +287,22 @@ export class NftService {
     this.updateThumbnailUrlForNfts(nfts);
 
     for (let nft of nfts) {
-      if (!nft.name || !nft.type) {
-        let collectionProperties = await this.getCollectionProperties(nft.collection);
-        if (collectionProperties) {
-          if (!nft.name) {
-            nft.name = collectionProperties.name;
-          }
+      let collectionProperties = await this.getCollectionProperties(nft.collection);
 
-          if (!nft.type) {
-            // @ts-ignore
-            nft.type = collectionProperties.type;
-          }
+      if (collectionProperties) {
+        if (!nft.name) {
+          nft.name = collectionProperties.name;
+        }
 
-          if (nft.type === NftType.MetaESDT) {
-            nft.decimals = collectionProperties.decimals;
-            // @ts-ignore
-            delete nft.royalties;
-            // @ts-ignore
-            delete nft.uris;
-          }
+        // @ts-ignore
+        nft.type = collectionProperties.type;
+
+        if (nft.type === NftType.MetaESDT) {
+          nft.decimals = collectionProperties.decimals;
+          // @ts-ignore
+          delete nft.royalties;
+          // @ts-ignore
+          delete nft.uris;
         }
       }
     }
@@ -555,6 +541,8 @@ export class NftService {
 
   async getNftsForAddressInternal(address: string, filter: NftFilter): Promise<NftAccount[]> {
     let gatewayNfts = await this.getGatewayNfts(address, filter);
+
+    gatewayNfts.sort((a: GatewayNft, b: GatewayNft) => a.tokenIdentifier.localeCompare(b.tokenIdentifier, 'en', { sensitivity: 'base' }));
 
     let nfts: NftAccount[] = [];
 

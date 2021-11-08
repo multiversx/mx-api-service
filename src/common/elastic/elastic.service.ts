@@ -17,7 +17,6 @@ import { ElasticSortOrder } from "./entities/elastic.sort.order";
 @Injectable()
 export class ElasticService {
   private readonly url: string;
-  private readonly mexUrl: string;
 
   constructor(
     private apiConfigService: ApiConfigService,
@@ -25,7 +24,6 @@ export class ElasticService {
     private readonly metricsService: MetricsService
   ) {
     this.url = apiConfigService.getElasticUrl();
-    this.mexUrl = apiConfigService.getMexUrl();
   }
 
   async getCount(collection: string, elasticQuery: ElasticQuery | undefined = undefined) {
@@ -66,8 +64,8 @@ export class ElasticService {
     return { ...item, ..._source };
   };
 
-  async getList(collection: string, key: string, elasticQuery: ElasticQuery, useMaxIndexer: boolean = false): Promise<any[]> {
-    const url = `${useMaxIndexer ? this.mexUrl : this.url}/${collection}/_search`;
+  async getList(collection: string, key: string, elasticQuery: ElasticQuery, overrideUrl?: string): Promise<any[]> {
+    const url = `${overrideUrl ?? this.url}/${collection}/_search`;
 
     let profiler = new PerformanceProfiler();
 
@@ -111,13 +109,14 @@ export class ElasticService {
     const queries = identifiers.map((identifier) => QueryType.Match('identifier', identifier, QueryOperator.AND));
 
     const elasticQuery = ElasticQuery.create()
-      .withPagination({ from: 0, size: 10000 })
+      .withPagination({ from: 0, size: 100 })
+      .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
       .withCondition(QueryConditionOptions.should, queries);
 
     const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
 
     let result = documents.map((document: any) => this.formatItem(document, 'identifier'));
-    result.reverse();
+    result = result.filter((x: any) => !x.address.includes('pending-'));
 
     return result;
   }

@@ -15,6 +15,7 @@ import { TagModule } from "./nfttags/tag.module";
 import { NodeModule } from "./nodes/node.module";
 import { ProviderModule } from "./providers/provider.module";
 import { RoundModule } from "./rounds/round.module";
+import { SmartContractResultModule } from "./sc-results/scresult.module";
 import { ShardModule } from "./shards/shard.module";
 import { StakeModule } from "./stake/stake.module";
 import { TokenModule } from "./tokens/token.module";
@@ -40,6 +41,7 @@ import { WaitingListModule } from "./waiting-list/waiting.list.module";
     forwardRef(() => NodeModule),
     forwardRef(() => ProviderModule),
     forwardRef(() => RoundModule),
+    forwardRef(() => SmartContractResultModule),
     forwardRef(() => ShardModule),
     forwardRef(() => StakeModule),
     forwardRef(() => TokenModule),
@@ -54,7 +56,7 @@ import { WaitingListModule } from "./waiting-list/waiting.list.module";
   exports: [
     AccountModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
     MexModule, MiniBlockModule, NetworkModule, NftModule, TagModule, NodeModule, ProviderModule,
-    RoundModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
+    RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
     WaitingListModule, EsdtModule, BlsModule
   ]
 })

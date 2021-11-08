@@ -1,4 +1,4 @@
-import { SmartContractResult } from "../entities/smart.contract.result";
+import { SmartContractResult } from "../../sc-results/entities/smart.contract.result";
 import { TransactionDetailed } from "../entities/transaction.detailed";
 import { PotentialScamTransactionChecker } from "./potential.scam.transaction.checker";
 

@@ -22,7 +22,8 @@ import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
 import { TransactionStatus } from '../transactions/entities/transaction.status';
 import { TransactionService } from '../transactions/transaction.service';
 import { DeployedContract } from './entities/deployed.contract';
-import { SmartContractResult } from '../transactions/entities/smart.contract.result';
+import { SmartContractResult } from '../sc-results/entities/smart.contract.result';
+import { SmartContractResultService } from '../sc-results/scresult.service';
 
 @Controller()
 @ApiTags('accounts')
@@ -37,6 +38,7 @@ export class AccountController {
     private readonly waitingListService: WaitingListService,
     private readonly stakeService: StakeService,
     private readonly transactionService: TransactionService,
+    private readonly scResultService: SmartContractResultService
   ) {
     this.logger = new Logger(AccountController.name);
   }
@@ -105,6 +107,7 @@ export class AccountController {
     try {
       return await this.accountService.getDeferredAccount(address);
     } catch(error) {
+      this.logger.error(`Error in getAccountDeferred for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
@@ -139,6 +142,7 @@ export class AccountController {
     try {
       return await this.tokenService.getTokensForAddress(address, { from, size }, { search, name, identifier, identifiers });
     } catch (error) {
+      this.logger.error(`Error in getAccountTokens for address ${address}`);
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return [];
@@ -158,6 +162,7 @@ export class AccountController {
     try {
       return await this.tokenService.getTokenCountForAddress(address);
     } catch (error) {
+      this.logger.error(`Error in getTokenCount for address ${address}`);
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return 0;
@@ -170,6 +175,7 @@ export class AccountController {
     try {
       return await this.tokenService.getTokenCountForAddress(address);
     } catch (error) {
+      this.logger.error(`Error in getTokenCount for address ${address}`);
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return 0;
@@ -211,6 +217,7 @@ export class AccountController {
     try {
       return await this.nftService.getCollectionsForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity }, { from, size });
     } catch (error) {
+      this.logger.error(`Error in getAccountCollections for address ${address}`);
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return [];
@@ -244,6 +251,7 @@ export class AccountController {
     try {
       return await this.nftService.getCollectionCountForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
     } catch (error) {
+      this.logger.error(`Error in getCollectionCount for address ${address}`);
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return 0;
@@ -264,6 +272,7 @@ export class AccountController {
     try {
       return await this.nftService.getCollectionCountForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
     } catch (error) {
+      this.logger.error(`Error in getCollectionCountAlternative for address ${address}`);
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return 0;
@@ -363,6 +372,7 @@ export class AccountController {
     try {
       return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, collections, tags, creator, hasUris }, { withTimestamp, withSupply });
     } catch (error) {
+      this.logger.error(`Error in getAccountNfts for address ${address}`);
       this.logger.error(error);
       return [];
     }
@@ -397,6 +407,7 @@ export class AccountController {
     try {
       return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, tags, creator, hasUris });
     } catch (error) {
+      this.logger.error(`Error in getNftCount for address ${address}`);
       this.logger.error(error);
       return 0;
     }
@@ -417,6 +428,7 @@ export class AccountController {
     try {
       return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, tags, creator, hasUris });
     } catch (error) {
+      this.logger.error(`Error in getNftCountAlternative for address ${address}`);
       this.logger.error(error);
       return 0;
     }
@@ -461,6 +473,7 @@ export class AccountController {
     try {
       return await this.stakeService.getStakeForAddress(address);
     } catch (error) {
+      this.logger.error(`Error in getAccountStake for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
@@ -480,6 +493,7 @@ export class AccountController {
     try {
       return await this.delegationLegacyService.getDelegationForAddress(address);
     } catch (error) {
+      this.logger.error(`Error in getAccountDelegationLegacy for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
@@ -500,6 +514,7 @@ export class AccountController {
     try {
       return await this.accountService.getKeys(address);
     } catch (error) {
+      this.logger.error(`Error in getAccountKeys for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
@@ -572,6 +587,7 @@ export class AccountController {
         after,
       }, { from, size }, { withScResults, withOperations }, address);
     } catch (error) {
+      this.logger.error(`Error in getAccountTransactions for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
@@ -657,7 +673,7 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<SmartContractResult[]> {
-    return this.accountService.getAccountScResults(address, {from, size});
+    return this.scResultService.getAccountScResults(address, {from, size});
   }
 
   @Get("/accounts/:address/sc-results/count")
@@ -673,7 +689,7 @@ export class AccountController {
   getAccountScResultsCount(
     @Param('address') address: string,
   ): Promise<SmartContractResult[]> {
-    return this.accountService.getAccountScResultsCount(address);
+    return this.scResultService.getAccountScResultsCount(address);
   }
 
   @Get("/accounts/:address/sc-results/:scHash")
@@ -687,9 +703,9 @@ export class AccountController {
     description: 'Account not found'
   })
   getAccountScResult(
-    @Param('address') address: string,
+    @Param('address') _: string,
     @Param('scHash') scHash: string,
   ): Promise<SmartContractResult> {
-    return this.accountService.getAccountScResult(address, scHash);
+    return this.scResultService.getScResult(scHash);
   }
 }
