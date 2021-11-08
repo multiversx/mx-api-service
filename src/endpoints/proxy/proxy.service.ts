@@ -10,12 +10,10 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { ApiService } from 'src/common/network/api.service';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { AddressUtils } from 'src/utils/address.utils';
-import {
-  CircularQueueProvider,
-  Observer,
-} from 'src/utils/circular-queue-provider';
+import { CircularQueueProvider } from 'src/utils/circular-queue-provider';
 import { Account } from './entities/account';
 import { ProxyResponse } from './entities/proxy.response';
+import { Observer } from './entities/observer';
 
 @Injectable()
 export class ProxyService {

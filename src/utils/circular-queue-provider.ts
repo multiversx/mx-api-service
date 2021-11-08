@@ -1,7 +1,4 @@
-export class Observer {
-  shardId: number = 0;
-  address: string = '';
-}
+import { Observer } from 'src/endpoints/proxy/entities/observer';
 
 export class CircularQueueProvider {
   private _nodes: Observer[];

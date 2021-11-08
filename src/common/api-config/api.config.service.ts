@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { Observer } from "src/utils/circular-queue-provider";
+import { Observer } from "src/endpoints/proxy/entities/observer";
 
 @Injectable()
 export class ApiConfigService {
