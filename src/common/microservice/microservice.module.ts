@@ -1,9 +1,9 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservices';
-import { ApiConfigModule } from './api-config/api.config.module';
-import { ApiConfigService } from './api-config/api.config.service';
-import { CachingModule } from './caching/caching.module';
-import { MicroserviceController } from './caching/microservice.controller';
+import { ApiConfigModule } from '../api-config/api.config.module';
+import { ApiConfigService } from '../api-config/api.config.service';
+import { CachingModule } from '../caching/caching.module';
+import { MicroserviceController } from './microservice.controller';
 
 @Module({
   imports: [

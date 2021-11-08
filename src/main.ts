@@ -23,7 +23,7 @@ import { ExtractInterceptor } from './interceptors/extract.interceptor';
 import { JwtAuthenticateGuard } from './interceptors/access.interceptor';
 import { TransactionProcessorModule } from './crons/transaction.processor.module';
 import { RoundService } from './endpoints/rounds/round.service';
-import { MicroserviceModule } from './common/microservice.module';
+import { MicroserviceModule } from './common/microservice/microservice.module';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
