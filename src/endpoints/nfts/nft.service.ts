@@ -210,13 +210,15 @@ export class NftService {
     return nft;
   }
 
-  async getNftOwners(identifier: string): Promise<NftOwner[] | undefined> {
+  async getNftOwners(identifier: string, pagination: QueryPagination): Promise<NftOwner[] | undefined> {
     let accountsEsdt = await this.elasticService.getAccountEsdtByIdentifier(identifier);
     if (accountsEsdt.length === 0) {
       return;
     }
 
-
+    const { from, size } = pagination;
+    accountsEsdt = accountsEsdt.slice(from, from + size);
+    
     return accountsEsdt.map((esdt: any) => {
       let owner = new NftOwner();
       owner.address = esdt.address;

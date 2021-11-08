@@ -202,8 +202,14 @@ export class NftController {
     status: 404,
     description: 'Token not found'
   })
-  async getNftOwners(@Param('identifier') identifier: string): Promise<NftOwner[]> {
-    let owners = await this.nftService.getNftOwners(identifier);
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+	@ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  async getNftOwners(
+    @Param('identifier') identifier: string,
+  	@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<NftOwner[]> {
+    let owners = await this.nftService.getNftOwners(identifier, { from, size });
 
     if (owners === undefined) {
       throw new HttpException('NFT not found', HttpStatus.NOT_FOUND);
