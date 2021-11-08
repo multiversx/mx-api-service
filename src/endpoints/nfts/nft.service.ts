@@ -151,9 +151,10 @@ export class NftService {
       await this.applyAssetsAndTicker(nft);
     }
    
-
     if (queryOptions && queryOptions.withOwner) {
-      const accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nfts.map(({identifier}) => identifier));
+      let nonFungibleNftIdentifiers = nfts.filter(x => x.type === NftType.NonFungibleESDT).map(x => x.identifier);
+
+      const accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nonFungibleNftIdentifiers);
 
       for (let nft of nfts) {
         if (nft.type === NftType.NonFungibleESDT) {
@@ -161,11 +162,6 @@ export class NftService {
           if (accountEsdt) {
             nft.owner = accountEsdt.address;
           }
-        } else if (nft.type === NftType.SemiFungibleESDT) {
-          nft.balance = accountsEsdts.filter((x: any) => x.identifier === nft.identifier)
-          .map((x: any) => BigInt(x.balance))
-          .reduce((previous: BigInt, current: BigInt) => previous.valueOf() + current.valueOf(), BigInt(0))
-          .toString();
         }
       }
     }
