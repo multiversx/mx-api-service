@@ -9,10 +9,11 @@ import { QueryType } from "src/common/elastic/entities/query.type";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
-import { SmartContractResult } from "./entities/smart.contract.result";
+import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
 import { Transaction } from "./entities/transaction";
 import { TransactionDetailed } from "./entities/transaction.detailed";
 import { TransactionLog } from "./entities/transaction.log";
+import { TransactionOperation } from "./entities/transaction.operation";
 import { TransactionReceipt } from "./entities/transaction.receipt";
 import { TokenTransferService } from "./token.transfer.service";
 
@@ -59,20 +60,16 @@ export class TransactionGetService {
 
   async getTransactionScResultsFromElastic(txHash: string): Promise<SmartContractResult[]> {
     const originalTxHashQuery = QueryType.Match('originalTxHash', txHash);
-      const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
+    const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
 
-      const elasticQuerySc = ElasticQuery.create()
-        .withPagination({ from: 0, size: 100 })
-        .withSort([timestamp])
-        .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
+    const elasticQuerySc = ElasticQuery.create()
+      .withPagination({ from: 0, size: 100 })
+      .withSort([timestamp])
+      .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
 
-      let scResults = await this.elasticService.getList('scresults', 'scHash', elasticQuerySc);
-      for (let scResult of scResults) {
-        scResult.hash = scResult.scHash;
-        delete scResult.scHash;
-      }
+    let scResults = await this.elasticService.getList('scresults', 'hash', elasticQuerySc);
 
-      return scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult))      
+    return scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));      
   }
 
   async tryGetTransactionFromElastic(txHash: string): Promise<TransactionDetailed | null> {
@@ -124,6 +121,8 @@ export class TransactionGetService {
 
         transactionDetailed.operations = this.tokenTransferService.getOperationsForTransactionLogs(txHash, transactionLogs);
 
+        transactionDetailed.operations = this.trimOperations(transactionDetailed.operations);
+
         for (let log of logs) {
           if (log._id === txHash) {
             transactionDetailed.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
@@ -142,6 +141,28 @@ export class TransactionGetService {
       this.logger.error(error);
       return null;
     }
+  }
+
+  private trimOperations(operations: TransactionOperation[]): TransactionOperation[] {
+    let result: TransactionOperation[] = [];
+
+    for (let operation of operations) {
+      let identicalOperations = result.filter(x => 
+        x.sender === operation.sender && 
+        x.receiver === operation.receiver && 
+        x.collection === operation.collection &&
+        x.identifier === operation.identifier &&
+        x.type === operation.type
+      );
+
+      if (identicalOperations.length > 0) {
+        continue;
+      }
+
+      result.push(operation);
+    }
+
+    return result;
   }
 
   async tryGetTransactionFromGatewayForList(txHash: string) {

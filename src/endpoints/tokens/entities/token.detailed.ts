@@ -22,4 +22,7 @@ export class TokenDetailed extends Token {
   
   @ApiProperty()
   canWipe: boolean = false;
+
+  @ApiProperty()
+  supply: string | undefined = undefined;
 }

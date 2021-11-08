@@ -16,7 +16,7 @@ export class Token {
 
     @ApiProperty()
     minted: string = '';
-
+  
     @ApiProperty()
     burnt: string = '';
 

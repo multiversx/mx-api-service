@@ -29,7 +29,7 @@ export class AccountService {
     @Inject(forwardRef(() => CachingService))
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
-    private readonly apiConfigService: ApiConfigService
+    private readonly apiConfigService: ApiConfigService,
   ) {
     this.logger = new Logger(AccountService.name);
   }

@@ -1,5 +1,9 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { ElasticService } from "src/common/elastic/elastic.service";
+import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
+import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
+import { QueryType } from "src/common/elastic/entities/query.type";
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
@@ -23,23 +27,70 @@ export class EsdtService {
     private readonly vmQueryService: VmQueryService,
     private readonly metricsService: MetricsService,
     @Inject(GENESIS_TIMESTAMP_SERVICE)
-    private readonly genesisTimestampService: GenesisTimestampInterface
+    private readonly genesisTimestampService: GenesisTimestampInterface,
+    private readonly elasticService: ElasticService,
   ) {
     this.logger = new Logger(EsdtService.name);
   }
 
   private async getAllEsdtsForAddressRaw(address: string): Promise<{ [ key: string]: any }> {
-    try {
-      let esdtResult = await this.gatewayService.get(`address/${address}/esdt`);
-      return esdtResult.esdts;
-    } catch (error: any) {
+    if (AddressUtils.isSmartContractAddress(address)) {
+      return this.getAllEsdtsForAddressFromElastic(address);
+    }
+
+    return this.getAllEsdtsForAddressFromGateway(address);
+  }
+
+  private async getAllEsdtsForAddressFromElastic(address: string): Promise<{ [ key: string]: any }> {
+    let elasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, [ QueryType.Match('address', address) ])
+      .withPagination({ from: 0, size: 10000 });
+
+    let esdts = await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
+
+    let result: { [ key: string]: any } = {};
+
+    for (let esdt of esdts) {
+      let isToken = esdt.tokenNonce === undefined;
+
+      if (isToken) {
+        result[esdt.token] = {
+          balance: esdt.balance,
+          tokenIdentifier: esdt.token,
+        };
+      } else {
+        result[esdt.identifier] = {
+          attributes: esdt.data.attributes,
+          balance: esdt.balance,
+          creator: esdt.data.creator,
+          name: esdt.data.name,
+          nonce: esdt.tokenNonce,
+          royalties: esdt.data.royalties,
+          tokenIdentifier: esdt.identifier,
+          uris: esdt.data.uris,
+        };
+      }
+    }
+
+    return result;
+  }
+
+  // @ts-ignore
+  private async getAllEsdtsForAddressFromGateway(address: string): Promise<{ [ key: string]: any }> {
+    let esdtResult = await this.gatewayService.get(`address/${address}/esdt`, async (error) => {
       let errorMessage = error?.response?.data?.error;
       if (errorMessage && errorMessage.includes('account was not found')) {
-        return {};
+        return true;
       }
-      
-      throw error;
+
+      return false;
+    });
+
+    if (!esdtResult) {
+      return {};
     }
+
+    return esdtResult.esdts;
   }
 
   private pendingRequestsDictionary: { [ key: string]: any; } = {};
@@ -182,4 +233,10 @@ export class EsdtService {
 
     return tokenProps;
   };
+
+  async getTokenSupply(identifier: string): Promise<string> {
+    const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`);
+
+    return supply;
+  }
 }

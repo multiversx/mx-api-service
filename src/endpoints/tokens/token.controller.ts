@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
@@ -86,7 +86,7 @@ export class TokenController {
   async getToken(@Param('identifier') identifier: string): Promise<TokenDetailed> {
     let token = await this.tokenService.getToken(identifier);
     if (token === undefined) {
-      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Token not found');
     }
 
     return token;

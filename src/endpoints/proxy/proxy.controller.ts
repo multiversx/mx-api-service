@@ -55,7 +55,14 @@ export class ProxyController {
   @Get('/address/:address/esdt')
   @ApiExcludeEndpoint()
   async getAddressEsdt(@Res() res: Response, @Param('address') address: string) {
-    await this.gatewayGet(res, `address/${address}/esdt`);
+    await this.gatewayGet(res, `address/${address}/esdt`, undefined, async (error) => {
+      const message = error.response?.data?.error;
+      if (message && message.includes('account was not found')) {
+        throw error;
+      }
+
+      return false;
+    });
   }
 
   @Post('/transaction/send')
@@ -190,7 +197,19 @@ export class ProxyController {
   @Get('/validator/statistics')
   @ApiExcludeEndpoint()
   async getValidatorStatistics(@Res() res: Response) {
-    await this.gatewayGet(res, 'validator/statistics');
+    try {
+      let heartbeat = await this.cachingService.getOrSetCache(
+        'validatorstatistics',
+        async () => {
+          const result = await this.gatewayService.getRaw('validator/statistics');
+          return result.data;
+        },
+        Constants.oneMinute(),
+      );
+      res.json(heartbeat);
+    } catch (error: any) {
+      res.status(HttpStatus.BAD_REQUEST).json(error.response.data).send();
+    }
   }
 
   @Get('/block/:shard/by-nonce/:nonce')
@@ -239,13 +258,13 @@ export class ProxyController {
     await this.gatewayGet(res, `hyperblock/by-hash/${hash}`);
   }
 
-  private async gatewayGet(@Res() res: Response, url: string, params: any = undefined) {
+  private async gatewayGet(@Res() res: Response, url: string, params: any = undefined, errorHandler?: (error: any) => Promise<boolean>) {
     if (params) {
       url += '?' + Object.keys(params).filter(key => params[key] !== undefined).map(key => `${key}=${params[key]}`).join('&')
     }
 
     try {
-      let result = await this.gatewayService.getRaw(url);
+      let result = await this.gatewayService.getRaw(url, errorHandler);
       res.json(result.data);
     } catch (error: any) {
       res.status(HttpStatus.BAD_REQUEST).json(error.response.data).send();

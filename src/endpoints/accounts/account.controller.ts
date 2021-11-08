@@ -22,6 +22,8 @@ import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
 import { TransactionStatus } from '../transactions/entities/transaction.status';
 import { TransactionService } from '../transactions/transaction.service';
 import { DeployedContract } from './entities/deployed.contract';
+import { SmartContractResult } from '../sc-results/entities/smart.contract.result';
+import { SmartContractResultService } from '../sc-results/scresult.service';
 
 @Controller()
 @ApiTags('accounts')
@@ -36,6 +38,7 @@ export class AccountController {
     private readonly waitingListService: WaitingListService,
     private readonly stakeService: StakeService,
     private readonly transactionService: TransactionService,
+    private readonly scResultService: SmartContractResultService
   ) {
     this.logger = new Logger(AccountController.name);
   }
@@ -104,6 +107,7 @@ export class AccountController {
     try {
       return await this.accountService.getDeferredAccount(address);
     } catch(error) {
+      this.logger.error(`Error in getAccountDeferred for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
@@ -138,6 +142,7 @@ export class AccountController {
     try {
       return await this.tokenService.getTokensForAddress(address, { from, size }, { search, name, identifier, identifiers });
     } catch (error) {
+      this.logger.error(`Error in getAccountTokens for address ${address}`);
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return [];
@@ -157,6 +162,7 @@ export class AccountController {
     try {
       return await this.tokenService.getTokenCountForAddress(address);
     } catch (error) {
+      this.logger.error(`Error in getTokenCount for address ${address}`);
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return 0;
@@ -169,6 +175,7 @@ export class AccountController {
     try {
       return await this.tokenService.getTokenCountForAddress(address);
     } catch (error) {
+      this.logger.error(`Error in getTokenCount for address ${address}`);
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return 0;
@@ -210,6 +217,7 @@ export class AccountController {
     try {
       return await this.nftService.getCollectionsForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity }, { from, size });
     } catch (error) {
+      this.logger.error(`Error in getAccountCollections for address ${address}`);
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return [];
@@ -243,6 +251,7 @@ export class AccountController {
     try {
       return await this.nftService.getCollectionCountForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
     } catch (error) {
+      this.logger.error(`Error in getCollectionCount for address ${address}`);
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return 0;
@@ -263,6 +272,7 @@ export class AccountController {
     try {
       return await this.nftService.getCollectionCountForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
     } catch (error) {
+      this.logger.error(`Error in getCollectionCountAlternative for address ${address}`);
       this.logger.error(error);
       // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       return 0;
@@ -326,7 +336,7 @@ export class AccountController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
 	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
 	@ApiQuery({ name: 'identifiers', description: 'Filter by identifiers, comma-separated', required: false })
-	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
+	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
 	@ApiQuery({ name: 'collection', description: 'Get all tokens by token collection. Deprecated, replaced by collections parameter', required: false, deprecated: true })
 	@ApiQuery({ name: 'collections', description: 'Get all tokens by token collections, comma-separated', required: false })
 	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
@@ -350,7 +360,7 @@ export class AccountController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
     @Query('identifiers') identifiers?: string,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
+    @Query('type') type?: string,
     @Query('collection') collection?: string,
     @Query('collections') collections?: string,
     @Query('tags') tags?: string,
@@ -362,6 +372,7 @@ export class AccountController {
     try {
       return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, collections, tags, creator, hasUris }, { withTimestamp, withSupply });
     } catch (error) {
+      this.logger.error(`Error in getAccountNfts for address ${address}`);
       this.logger.error(error);
       return [];
     }
@@ -370,7 +381,7 @@ export class AccountController {
   @Get("/accounts/:address/nfts/count")
 	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
 	@ApiQuery({ name: 'identifiers', description: 'Filter by identifiers, comma-separated', required: false })
-	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
+	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
 	@ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
 	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
 	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
@@ -387,7 +398,7 @@ export class AccountController {
     @Param('address') address: string,
 		@Query('identifiers') identifiers: string | undefined,
 		@Query('search') search: string | undefined,
-		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+		@Query('type') type: string | undefined,
 		@Query('collection') collection: string | undefined,
 		@Query('tags') tags: string | undefined,
 		@Query('creator') creator: string | undefined,
@@ -396,6 +407,7 @@ export class AccountController {
     try {
       return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, tags, creator, hasUris });
     } catch (error) {
+      this.logger.error(`Error in getNftCount for address ${address}`);
       this.logger.error(error);
       return 0;
     }
@@ -407,7 +419,7 @@ export class AccountController {
     @Param('address') address: string,
 		@Query('search') search: string | undefined,
 		@Query('identifiers') identifiers: string | undefined,
-		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+		@Query('type') type: string | undefined,
 		@Query('collection') collection: string | undefined,
 		@Query('tags') tags: string | undefined,
 		@Query('creator') creator: string | undefined,
@@ -416,6 +428,7 @@ export class AccountController {
     try {
       return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, tags, creator, hasUris });
     } catch (error) {
+      this.logger.error(`Error in getNftCountAlternative for address ${address}`);
       this.logger.error(error);
       return 0;
     }
@@ -460,6 +473,7 @@ export class AccountController {
     try {
       return await this.stakeService.getStakeForAddress(address);
     } catch (error) {
+      this.logger.error(`Error in getAccountStake for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
@@ -479,6 +493,7 @@ export class AccountController {
     try {
       return await this.delegationLegacyService.getDelegationForAddress(address);
     } catch (error) {
+      this.logger.error(`Error in getAccountDelegationLegacy for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
@@ -499,6 +514,7 @@ export class AccountController {
     try {
       return await this.accountService.getKeys(address);
     } catch (error) {
+      this.logger.error(`Error in getAccountKeys for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
@@ -571,6 +587,7 @@ export class AccountController {
         after,
       }, { from, size }, { withScResults, withOperations }, address);
     } catch (error) {
+      this.logger.error(`Error in getAccountTransactions for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
@@ -628,7 +645,7 @@ export class AccountController {
   @Get("/accounts/:address/contracts")
   @ApiResponse({
     status: 200,
-    description: 'The details of a given account',
+    description: 'All deployed contracts for a given account',
     type: DeployedContract
   })
   @ApiResponse({
@@ -637,5 +654,58 @@ export class AccountController {
   })
   getAccountContracts(@Param('address') address: string): Promise<DeployedContract[]> {
     return this.accountService.getAccountContracts(address);;
+  }
+
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+  @Get("/accounts/:address/sc-results")
+  @ApiResponse({
+    status: 200,
+    description: 'All smart contract results for a given account',
+    type: SmartContractResult
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  getAccountScResults(
+    @Param('address') address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<SmartContractResult[]> {
+    return this.scResultService.getAccountScResults(address, {from, size});
+  }
+
+  @Get("/accounts/:address/sc-results/count")
+  @ApiResponse({
+    status: 200,
+    description: 'The count of all smart contract results for a given account',
+    type: SmartContractResult
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  getAccountScResultsCount(
+    @Param('address') address: string,
+  ): Promise<SmartContractResult[]> {
+    return this.scResultService.getAccountScResultsCount(address);
+  }
+
+  @Get("/accounts/:address/sc-results/:scHash")
+  @ApiResponse({
+    status: 200,
+    description: 'The specific smart contract results for a given account',
+    type: SmartContractResult
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  getAccountScResult(
+    @Param('address') _: string,
+    @Param('scHash') scHash: string,
+  ): Promise<SmartContractResult> {
+    return this.scResultService.getScResult(scHash);
   }
 }

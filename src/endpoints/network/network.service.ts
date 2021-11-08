@@ -194,10 +194,6 @@ export class NetworkService {
     };
   }
 
-  async getValidatorStatistics(): Promise<any> {
-    return await this.gatewayService.get('validator/statistics');
-  }
-
   async getApr(): Promise<{ apr: number; topUpApr: number; baseApr: number }> {
     const stats = await this.getStats();
     const config = await this.getNetworkConfig();

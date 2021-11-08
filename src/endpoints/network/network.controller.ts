@@ -41,18 +41,4 @@ export class NetworkController {
   async getStats(): Promise<Stats> {
     return await this.networkService.getStats();
   }
-
-  @Get("/validator/statistics")
-  @ApiResponse({
-    status: 200,
-    description: 'Validator statistics',
-  })
-  async getValidatorStatistics() {
-    let statistics = await this.networkService.getValidatorStatistics();
-
-    return {
-      code: 'successful',
-      data: statistics
-    };
-  }
 }

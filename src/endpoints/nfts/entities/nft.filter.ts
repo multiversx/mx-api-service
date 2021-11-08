@@ -1,9 +1,7 @@
-import { NftType } from "./nft.type";
-
 export class NftFilter {
   search?: string;
   identifiers?: string;
-  type?: NftType;
+  type?: string;
   collection?: string;
   collections?: string;
   tags?: string;

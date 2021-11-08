@@ -18,6 +18,7 @@ import { ProviderController } from "./providers/provider.controller";
 import { ProxyController } from "./proxy/proxy.controller";
 import { ProxyModule } from "./proxy/proxy.module";
 import { RoundController } from "./rounds/round.controller";
+import { SmartContractResultController } from "./sc-results/scresult.controller";
 import { ShardController } from "./shards/shard.controller";
 import { StakeController } from "./stake/stake.controller";
 import { TokenController } from "./tokens/token.controller";
@@ -36,7 +37,7 @@ import { WaitingListController } from "./waiting-list/waiting.list.controller";
   controllers: [
     AccountController, BlockController, DelegationController, DelegationLegacyController, IdentitiesController,
     KeysController, MexController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
-    ProviderController, ProxyController, RoundController, ShardController, StakeController, StakeController,
+    ProviderController, ProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
     TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
     HealthCheckController,
   ],
