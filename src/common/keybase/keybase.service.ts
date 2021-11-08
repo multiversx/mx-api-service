@@ -166,12 +166,6 @@ export class KeybaseService {
       return false;
     }
 
-    const cachedConfirmation = await this.cachingService.getCache<boolean>(CacheInfo.KeybaseConfirmation(keybase.key).key);
-    const isKeybaseUp = await this.isKeybaseUp();
-    if (!isKeybaseUp) {
-      return cachedConfirmation !== undefined && cachedConfirmation !== null ? cachedConfirmation : false;
-    }
-
     try {
       const url = this.apiConfigService.getNetwork() === 'mainnet'
           ? `https://keybase.pub/${keybase.identity}/elrond/${keybase.key}`
@@ -187,6 +181,7 @@ export class KeybaseService {
         return false
       }
 
+      const cachedConfirmation = await this.cachingService.getCache<boolean>(CacheInfo.KeybaseConfirmation(keybase.key).key);
       return cachedConfirmation !== undefined && cachedConfirmation !== null ? cachedConfirmation : false;
     }
   };
