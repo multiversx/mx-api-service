@@ -5,7 +5,6 @@ import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe"
 import { EsdtService } from "../esdt/esdt.service";
 import { Nft } from "./entities/nft";
 import { NftCollection } from "./entities/nft.collection";
-import { NftDetailed } from "./entities/nft.detailed";
 import { NftOwner } from "./entities/nft.owner";
 import { NftType } from "./entities/nft.type";
 import { NftService } from "./nft.service";
@@ -115,7 +114,7 @@ export class NftController {
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
     @Query('withOwner', new ParseOptionalBoolPipe) withOwner: boolean | undefined,
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply: boolean | undefined,
-  ): Promise<Nft[] | NftDetailed[]> {
+  ): Promise<Nft[]> {
     return await this.nftService.getNfts({ from, size }, { search, identifiers, type, collection, tags, creator, hasUris }, { withOwner, withSupply });
   }
 

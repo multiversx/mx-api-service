@@ -11,7 +11,6 @@ import { CollectionFilter } from "./entities/collection.filter";
 import { Nft } from "./entities/nft";
 import { NftAccount } from "./entities/nft.account";
 import { NftCollection } from "./entities/nft.collection";
-import { NftDetailed } from "./entities/nft.detailed";
 import { NftFilter } from "./entities/nft.filter";
 import { NftOwner } from "./entities/nft.owner";
 import { NftType } from "./entities/nft.type";
@@ -142,7 +141,7 @@ export class NftService {
     }
   }
 
-  async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[] | NftDetailed[]> {
+  async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[]> {
     const { from, size } = queryPagination;
 
     let nfts =  await this.getNftsInternal(from, size, filter, undefined);
@@ -177,6 +176,15 @@ export class NftService {
     return nfts;
   }
 
+  private async applyNftOwner(nft: Nft): Promise<void> {
+    if (nft.type === NftType.NonFungibleESDT) {
+      let accountsEsdt = await this.elasticService.getAccountEsdtByIdentifier(nft.identifier);
+      if (accountsEsdt.length > 0) {
+        nft.owner = accountsEsdt[0].address;
+      }
+    }
+  }
+
   async applyAssetsAndTicker(token: Nft) {
     token.assets = await this.tokenAssetService.getAssets(token.collection);
 
@@ -187,19 +195,21 @@ export class NftService {
     }
   }
 
-  async getSingleNft(identifier: string): Promise<NftDetailed | undefined> {
+  async getSingleNft(identifier: string): Promise<Nft | undefined> {
     let nfts = await this.getNftsInternal(0, 1, new NftFilter(), identifier);
     if (nfts.length === 0) {
       return undefined;
     }
 
-    let nft: NftDetailed = ApiUtils.mergeObjects(new NftDetailed(), nfts[0]);
+    let nft: Nft = ApiUtils.mergeObjects(new Nft(), nfts[0]);
 
     if (nft.identifier.toLowerCase() !== identifier.toLowerCase()) {
       return undefined;
     }
 
     nft.supply = await this.esdtService.getTokenSupply(nft.identifier);
+
+    await this.applyNftOwner(nft);
 
     await this.applyAssetsAndTicker(nft);
 
