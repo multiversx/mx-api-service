@@ -9,7 +9,7 @@ import { QueryType } from "src/common/elastic/entities/query.type";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
-import { SmartContractResult } from "./entities/smart.contract.result";
+import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
 import { Transaction } from "./entities/transaction";
 import { TransactionDetailed } from "./entities/transaction.detailed";
 import { TransactionLog } from "./entities/transaction.log";

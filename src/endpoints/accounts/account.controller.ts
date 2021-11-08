@@ -22,7 +22,8 @@ import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
 import { TransactionStatus } from '../transactions/entities/transaction.status';
 import { TransactionService } from '../transactions/transaction.service';
 import { DeployedContract } from './entities/deployed.contract';
-import { SmartContractResult } from '../transactions/entities/smart.contract.result';
+import { SmartContractResult } from '../sc-results/entities/smart.contract.result';
+import { SmartContractResultService } from '../sc-results/scresult.service';
 
 @Controller()
 @ApiTags('accounts')
@@ -37,6 +38,7 @@ export class AccountController {
     private readonly waitingListService: WaitingListService,
     private readonly stakeService: StakeService,
     private readonly transactionService: TransactionService,
+    private readonly scResultService: SmartContractResultService
   ) {
     this.logger = new Logger(AccountController.name);
   }
@@ -671,7 +673,7 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<SmartContractResult[]> {
-    return this.accountService.getAccountScResults(address, {from, size});
+    return this.scResultService.getAccountScResults(address, {from, size});
   }
 
   @Get("/accounts/:address/sc-results/count")
@@ -687,7 +689,7 @@ export class AccountController {
   getAccountScResultsCount(
     @Param('address') address: string,
   ): Promise<SmartContractResult[]> {
-    return this.accountService.getAccountScResultsCount(address);
+    return this.scResultService.getAccountScResultsCount(address);
   }
 
   @Get("/accounts/:address/sc-results/:scHash")
@@ -701,9 +703,9 @@ export class AccountController {
     description: 'Account not found'
   })
   getAccountScResult(
-    @Param('address') address: string,
+    @Param('address') _: string,
     @Param('scHash') scHash: string,
   ): Promise<SmartContractResult> {
-    return this.accountService.getAccountScResult(address, scHash);
+    return this.scResultService.getScResult(scHash);
   }
 }
