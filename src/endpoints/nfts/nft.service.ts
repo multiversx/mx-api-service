@@ -226,6 +226,11 @@ export class NftService {
     });
   }
 
+  async getNftOwnersCount(identifier: string): Promise<number> {
+    let accountsEsdt = await this.elasticService.getAccountEsdtByIdentifier(identifier);
+    return accountsEsdt.length;
+  }
+
   async getNftsInternal(from: number, size: number, filter: NftFilter, identifier: string | undefined): Promise<Nft[]> {
     let elasticNfts = await this.elasticService.getTokens(from, size, filter, identifier);
 

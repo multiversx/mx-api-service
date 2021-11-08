@@ -211,4 +211,16 @@ export class NftController {
 
     return owners;
   }
+
+  @Get('/nfts/:identifier/owners/count')
+  @ApiResponse({
+    status: 200,
+    description: 'Non-fungible / semi-fungible token owners count',
+    type: Number,
+  })
+  async getNftOwnersCount(@Param('identifier') identifier: string): Promise<number> {
+    let ownersCount = await this.nftService.getNftOwnersCount(identifier);
+
+    return ownersCount;
+  }
 }
