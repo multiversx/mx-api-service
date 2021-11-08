@@ -1,6 +1,6 @@
 import { Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { SmartContractResult } from "../transactions/entities/smart.contract.result";
+import { SmartContractResult } from "./entities/smart.contract.result";
 import { SmartContractResultService } from "./scresult.service";
 
 @Controller()

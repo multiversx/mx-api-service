@@ -22,7 +22,7 @@ import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
 import { TransactionStatus } from '../transactions/entities/transaction.status';
 import { TransactionService } from '../transactions/transaction.service';
 import { DeployedContract } from './entities/deployed.contract';
-import { SmartContractResult } from '../transactions/entities/smart.contract.result';
+import { SmartContractResult } from '../sc-results/entities/smart.contract.result';
 import { SmartContractResultService } from '../sc-results/scresult.service';
 
 @Controller()

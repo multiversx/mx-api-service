@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { TransactionLog } from "./transaction.log";
+import { TransactionLog } from "../../transactions/entities/transaction.log";
 
 export class SmartContractResult {
     @ApiProperty()

@@ -7,7 +7,7 @@ import { QueryConditionOptions } from "src/common/elastic/entities/query.conditi
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { ApiUtils } from "src/utils/api.utils";
-import { SmartContractResult } from "../transactions/entities/smart.contract.result";
+import { SmartContractResult } from "./entities/smart.contract.result";
 
 @Injectable()
 export class SmartContractResultService {

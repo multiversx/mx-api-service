@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SmartContractResult } from './smart.contract.result';
+import { SmartContractResult } from '../../sc-results/entities/smart.contract.result';
 import { Transaction } from './transaction';
 import { TransactionReceipt } from './transaction.receipt';
 import { TransactionLog } from './transaction.log';
