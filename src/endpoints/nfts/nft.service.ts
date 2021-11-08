@@ -180,31 +180,6 @@ export class NftService {
     
     return nfts;
   }
-  
-  private async applyNftDistribution(identifier: string, nftDetailed: NftDetailed): Promise<void> {
-    let accountsEsdt = await this.elasticService.getAccountEsdtByIdentifier(identifier);
-    if (accountsEsdt.length === 0) {
-      return;
-    }
-
-    if (nftDetailed.type === NftType.NonFungibleESDT) {
-      nftDetailed.owner = accountsEsdt[0].address;
-
-      // @ts-ignore
-      delete nftDetailed.owners;
-    } else {
-      nftDetailed.owners = accountsEsdt.map((esdt: any) => {
-        let owner = new NftOwner();
-        owner.address = esdt.address;
-        owner.balance = esdt.balance;
-
-        return owner;
-      });
-
-      // @ts-ignore
-      delete nftDetailed.owner;
-    }
-  }
 
   async applyAssetsAndTicker(token: Nft) {
     token.assets = await this.tokenAssetService.getAssets(token.collection);
@@ -228,13 +203,27 @@ export class NftService {
       return undefined;
     }
 
-    await this.applyNftDistribution(nft.identifier, nft);
-
     nft.supply = await this.esdtService.getTokenSupply(nft.identifier);
 
     await this.applyAssetsAndTicker(nft);
 
     return nft;
+  }
+
+  async getNftOwners(identifier: string): Promise<NftOwner[] | undefined> {
+    let accountsEsdt = await this.elasticService.getAccountEsdtByIdentifier(identifier);
+    if (accountsEsdt.length === 0) {
+      return;
+    }
+
+
+    return accountsEsdt.map((esdt: any) => {
+      let owner = new NftOwner();
+      owner.address = esdt.address;
+      owner.balance = esdt.balance;
+
+      return owner;
+    });
   }
 
   async getNftsInternal(from: number, size: number, filter: NftFilter, identifier: string | undefined): Promise<Nft[]> {

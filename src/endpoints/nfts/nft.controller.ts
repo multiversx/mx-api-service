@@ -6,6 +6,7 @@ import { EsdtService } from "../esdt/esdt.service";
 import { Nft } from "./entities/nft";
 import { NftCollection } from "./entities/nft.collection";
 import { NftDetailed } from "./entities/nft.detailed";
+import { NftOwner } from "./entities/nft.owner";
 import { NftType } from "./entities/nft.type";
 import { NftService } from "./nft.service";
 
@@ -189,5 +190,25 @@ export class NftController {
     let supply = await this.esdtService.getTokenSupply(identifier);
 
     return { supply };
+  }
+
+  @Get('/nfts/:identifier/owners')
+  @ApiResponse({
+    status: 200,
+    description: 'Non-fungible / semi-fungible token owners',
+    type: NftOwner,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Token not found'
+  })
+  async getNftOwners(@Param('identifier') identifier: string): Promise<NftOwner[]> {
+    let owners = await this.nftService.getNftOwners(identifier);
+
+    if (owners === undefined) {
+      throw new HttpException('NFT not found', HttpStatus.NOT_FOUND);
+    }
+
+    return owners;
   }
 }
