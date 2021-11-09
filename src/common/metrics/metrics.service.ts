@@ -1,11 +1,13 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { register, Histogram, Gauge } from 'prom-client';
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { CachingService } from "../caching/caching.service";
+import { CacheInfo } from "../caching/entities/cache.info";
 import { GatewayService } from "../gateway/gateway.service";
 
 @Injectable()
 export class MetricsService {
-  shards: number[] = [ 0, 1, 2, 4294967295 ];
+  shards: Promise<number[]>;
 
   private readonly apiCallsHistogram: Histogram<string> | undefined;
   private readonly pendingRequestsHistogram: Gauge<string> | undefined;
@@ -17,15 +19,22 @@ export class MetricsService {
   private readonly lastProcessedNonceGauge: Gauge<string> | undefined;
   private readonly pendingApiHitGauge: Gauge<string> | undefined;
   private readonly cachedApiHitGauge: Gauge<string> | undefined;
-  private static areMetricsInitialize: boolean = false;
+  private static areMetricsInitialized: boolean = false;
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => GatewayService))
-    private readonly gatewayService: GatewayService
+    private readonly gatewayService: GatewayService,
+    private readonly cachingService: CachingService,
   ) {
-    if (!MetricsService.areMetricsInitialize) {
-      MetricsService.areMetricsInitialize = true;
+    this.shards = this.cachingService.getOrSetCache(
+      CacheInfo.NumShards.key,
+      async() => await this.gatewayService.getShards(),
+      CacheInfo.NumShards.ttl
+    );
+
+    if (!MetricsService.areMetricsInitialized) {
+      MetricsService.areMetricsInitialized = true;
       this.apiCallsHistogram = new Histogram({
         name: 'api',
         help: 'API Calls',
@@ -129,7 +138,7 @@ export class MetricsService {
   async getMetrics(): Promise<string> {
     if (this.apiConfigService.getIsTransactionProcessorCronActive()) {
       let currentNonces = await this.getCurrentNonces();
-      for (let [index, shardId] of this.shards.entries()) {
+      for (let [index, shardId] of (await this.shards).entries()) {
         this.currentNonceGauge?.set({ shardId }, currentNonces[index]);
       }
     }
@@ -139,7 +148,7 @@ export class MetricsService {
 
   private async getCurrentNonces(): Promise<number[]> {
     return await Promise.all(
-      this.shards.map(shard => this.getCurrentNonce(shard))
+      (await this.shards).map(shard => this.getCurrentNonce(shard))
     );
   }
 
