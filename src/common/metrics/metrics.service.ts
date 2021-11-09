@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { register, Histogram, Gauge, collectDefaultMetrics } from 'prom-client';
+import { register, Histogram, Gauge } from 'prom-client';
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GatewayService } from "../gateway/gateway.service";
 
@@ -7,155 +7,132 @@ import { GatewayService } from "../gateway/gateway.service";
 export class MetricsService {
   shards: number[] = [ 0, 1, 2, 4294967295 ];
 
-  private static apiCallsHistogram: Histogram<string>;
-  private static pendingRequestsHistogram: Gauge<string>;
-  private static externalCallsHistogram: Histogram<string>;
-  private static elasticDurationHistogram: Histogram<string>;
-  private static elasticTookHistogram: Histogram<string>;
-  private static apiResponseSizeHistogram: Histogram<string>;
-  private static currentNonceGauge: Gauge<string>;
-  private static lastProcessedNonceGauge: Gauge<string>;
-  private static pendingApiHitGauge: Gauge<string>;
-  private static cachedApiHitGauge: Gauge<string>;
-  private static isDefaultMetricsRegistered: boolean = false;
+  private readonly apiCallsHistogram: Histogram<string> | undefined;
+  private readonly pendingRequestsHistogram: Gauge<string> | undefined;
+  private readonly externalCallsHistogram: Histogram<string> | undefined;
+  private readonly elasticDurationHistogram: Histogram<string> | undefined;
+  private readonly elasticTookHistogram: Histogram<string> | undefined;
+  private readonly apiResponseSizeHistogram: Histogram<string> | undefined;
+  private readonly currentNonceGauge: Gauge<string> | undefined;
+  private readonly lastProcessedNonceGauge: Gauge<string> | undefined;
+  private readonly pendingApiHitGauge: Gauge<string> | undefined;
+  private readonly cachedApiHitGauge: Gauge<string> | undefined;
+  private static areMetricsInitialize: boolean = false;
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => GatewayService))
     private readonly gatewayService: GatewayService
   ) {
-    if (!MetricsService.apiCallsHistogram) {
-      MetricsService.apiCallsHistogram = new Histogram({
+    if (!MetricsService.areMetricsInitialize) {
+      MetricsService.areMetricsInitialize = true;
+      this.apiCallsHistogram = new Histogram({
         name: 'api',
         help: 'API Calls',
         labelNames: [ 'endpoint', 'code' ],
         buckets: [ ]
       });
-    }
-
-    if (!MetricsService.pendingRequestsHistogram) {
-      MetricsService.pendingRequestsHistogram = new Gauge({
+     
+      this.pendingRequestsHistogram = new Gauge({
         name: 'pending_requests',
         help: 'Pending requests',
         labelNames: [ 'endpoint' ],
       });
-    }
-
-    if (!MetricsService.externalCallsHistogram) {
-      MetricsService.externalCallsHistogram = new Histogram({
+      
+      this.externalCallsHistogram = new Histogram({
         name: 'external_apis',
         help: 'External Calls',
         labelNames: [ 'system' ],
         buckets: [ ]
       });
-    }
-
-    if (!MetricsService.elasticDurationHistogram) {
-      MetricsService.elasticDurationHistogram = new Histogram({
+      
+      this.elasticDurationHistogram = new Histogram({
         name: 'elastic_duration',
         help: 'Elastic Duration',
         labelNames: [ 'index' ],
         buckets: [ ]
       });
-    }
-
-    if (!MetricsService.elasticTookHistogram) {
-      MetricsService.elasticTookHistogram = new Histogram({
+      
+      this.elasticTookHistogram = new Histogram({
         name: 'elastic_took',
         help: 'Elastic Took',
         labelNames: [ 'index' ],
         buckets: [ ]
       });
-    }
-
-    if (!MetricsService.apiResponseSizeHistogram) {
-      MetricsService.apiResponseSizeHistogram = new Histogram({
+      
+      this.apiResponseSizeHistogram = new Histogram({
         name: 'api_response_size',
         help: 'API Response size',
         labelNames: [ 'endpoint' ],
         buckets: [ ]
       });
-    }
-
-    if (!MetricsService.currentNonceGauge) {
-      MetricsService.currentNonceGauge = new Gauge({
+  
+      this.currentNonceGauge = new Gauge({
         name: 'current_nonce',
         help: 'Current nonce of the given shard',
         labelNames: [ 'shardId' ]
       });
-    }
-
-    if (!MetricsService.lastProcessedNonceGauge) {
-      MetricsService.lastProcessedNonceGauge = new Gauge({
+    
+      this.lastProcessedNonceGauge = new Gauge({
         name: 'last_processed_nonce',
         help: 'Last processed nonce of the given shard',
         labelNames: [ 'shardId' ]
       });
-    }
-
-    if (!MetricsService.pendingApiHitGauge) {
-      MetricsService.pendingApiHitGauge = new Gauge({
+    
+      this.pendingApiHitGauge = new Gauge({
         name: 'pending_api_hits',
         help: 'Number of hits for pending API calls',
         labelNames: [ 'endpoint' ]
       });
-    }
-
-    if (!MetricsService.cachedApiHitGauge) {
-      MetricsService.cachedApiHitGauge = new Gauge({
+    
+      this.cachedApiHitGauge = new Gauge({
         name: 'cached_api_hits',
         help: 'Number of hits for cached API calls',
         labelNames: [ 'endpoint' ]
       });
     }
-
-    if (!MetricsService.isDefaultMetricsRegistered) {
-      MetricsService.isDefaultMetricsRegistered = true;
-      collectDefaultMetrics();
-    }
   }
 
   setApiCall(endpoint: string, status: number, duration: number, responseSize: number) {
-    MetricsService.apiCallsHistogram.labels(endpoint, status.toString()).observe(duration);
-    MetricsService.apiResponseSizeHistogram.labels(endpoint).observe(responseSize);
+    this.apiCallsHistogram?.labels(endpoint, status.toString()).observe(duration);
+    this.apiResponseSizeHistogram?.labels(endpoint).observe(responseSize);
   }
 
   setPendingRequestsCount(count: number) {
-    MetricsService.pendingRequestsHistogram.set(count);
+    this.pendingRequestsHistogram?.set(count);
   }
 
   setExternalCall(system: string, duration: number) {
-    MetricsService.externalCallsHistogram.labels(system).observe(duration);
+    this.externalCallsHistogram?.labels(system).observe(duration);
   }
 
   setElasticDuration(index: string, duration: number) {
-    MetricsService.elasticDurationHistogram.labels(index).observe(duration);
+    this.elasticDurationHistogram?.labels(index).observe(duration);
   }
 
   setElasticTook(index: string, took: number) {
-    MetricsService.elasticTookHistogram.labels(index).observe(took);
+    this.elasticTookHistogram?.labels(index).observe(took);
   }
 
   setLastProcessedNonce(shardId: number, nonce: number) {
-    MetricsService.lastProcessedNonceGauge.set({ shardId }, nonce);
+    this.lastProcessedNonceGauge?.set({ shardId }, nonce);
   }
 
   incrementPendingApiHit(endpoint: string) {
-    MetricsService.pendingApiHitGauge.inc({ endpoint });
+    this.pendingApiHitGauge?.inc({ endpoint });
   }
 
   incrementCachedApiHit(endpoint: string) {
-    MetricsService.cachedApiHitGauge.inc({ endpoint });
+    this.cachedApiHitGauge?.inc({ endpoint });
   }
 
   async getMetrics(): Promise<string> {
     if (this.apiConfigService.getIsTransactionProcessorCronActive()) {
       let currentNonces = await this.getCurrentNonces();
       for (let [index, shardId] of this.shards.entries()) {
-        MetricsService.currentNonceGauge.set({ shardId }, currentNonces[index]);
+        this.currentNonceGauge?.set({ shardId }, currentNonces[index]);
       }
     }
-
 
     return register.metrics();
   }
