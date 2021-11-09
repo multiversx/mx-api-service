@@ -1,5 +1,6 @@
 import { forwardRef, Module } from "@nestjs/common";
 import { CommonModule } from "src/common/common.module";
+import { CollectionModule } from "../collections/collection.module";
 import { DelegationLegacyModule } from "../delegation.legacy/delegation.legacy.module";
 import { NftModule } from "../nfts/nft.module";
 import { SmartContractResultModule } from "../sc-results/scresult.module";
@@ -21,6 +22,7 @@ import { AccountService } from "./account.service";
     forwardRef(() => StakeModule),
     forwardRef(() => TransactionModule),
     forwardRef(() => SmartContractResultModule),
+    forwardRef(() => CollectionModule),
   ],
   providers: [
     AccountService,
