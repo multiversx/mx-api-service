@@ -96,7 +96,7 @@ export class KeybaseService {
   }
 
   async confirmKeybasesAgainstKeybasePub(): Promise<void> {
-    const isKeybaseUp = await this.isKeybaseUp();
+    const isKeybaseUp = await this.isKeybasePubUp();
     if (!isKeybaseUp) {
       return;
     }
@@ -112,12 +112,14 @@ export class KeybaseService {
   }
 
   async confirmKeybasesAgainstKeybasePubForIdentity(identity: string): Promise<void> {
-    const { data: html } = await this.apiService.get(`https://keybase.pub/${identity}/elrond`, 100000, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
+    const result = await this.apiService.get(`https://keybase.pub/${identity}/elrond`, 100000, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
 
-    if (!html) {
+    if (!result) {
       this.logger.log(`For identity '${identity}', no keybase.pub entry was found`);
       return;
     }
+
+    const html = result.data;
 
     const nodesRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/[0-9a-f]{192}", 'g')
     const blses: string[] = [];
@@ -145,8 +147,8 @@ export class KeybaseService {
   }
 
 
-  async confirmIdentityProfilesAgainstKeybasePub(): Promise<void> {
-    const isKeybaseUp = await this.isKeybaseUp();
+  async confirmIdentityProfilesAgainstKeybaseIo(): Promise<void> {
+    const isKeybaseUp = await this.isKeybaseIoUp();
     if (!isKeybaseUp) {
       return;
     }
@@ -182,11 +184,22 @@ export class KeybaseService {
     );
   }
 
-  async isKeybaseUp(): Promise<boolean> {
+  async isKeybasePubUp(): Promise<boolean> {
     try {
       const { status } = await this.apiService.head('https://keybase.pub');
       return status === HttpStatus.OK;
     } catch (error) {
+      this.logger.error('It seems that keybase.pub is down');
+      return false;
+    }
+  }
+
+  async isKeybaseIoUp(): Promise<boolean> {
+    try {
+      const { status } = await this.apiService.head('https://keybase.io');
+      return status === HttpStatus.OK;
+    } catch (error) {
+      this.logger.error('It seems that keybase.io is down');
       return false;
     }
   }
