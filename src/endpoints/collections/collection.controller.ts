@@ -1,7 +1,7 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
-import { NftCollection } from "../nfts/entities/nft.collection";
+import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
 import { CollectionService } from "./collection.service";
 

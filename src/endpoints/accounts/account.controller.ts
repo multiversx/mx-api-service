@@ -17,7 +17,6 @@ import { WaitingList } from '../waiting-list/entities/waiting.list';
 import { WaitingListService } from '../waiting-list/waiting.list.service';
 import { StakeService } from '../stake/stake.service';
 import { NftService } from '../nfts/nft.service';
-import { NftCollectionAccount } from '../nfts/entities/nft.collection.account';
 import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
 import { TransactionStatus } from '../transactions/entities/transaction.status';
 import { TransactionService } from '../transactions/transaction.service';
@@ -25,6 +24,7 @@ import { DeployedContract } from './entities/deployed.contract';
 import { SmartContractResult } from '../sc-results/entities/smart.contract.result';
 import { SmartContractResultService } from '../sc-results/scresult.service';
 import { CollectionService } from '../collections/collection.service';
+import { NftCollectionAccount } from '../collections/entities/nft.collection.account';
 
 @Controller()
 @ApiTags('accounts')

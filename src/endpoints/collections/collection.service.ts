@@ -8,15 +8,15 @@ import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
 import { EsdtService } from "../esdt/esdt.service";
-import { AddresCollectionRoles } from "../nfts/entities/address.collection.roles";
-import { CollectionAccountFilter } from "../nfts/entities/collection.account.filter";
-import { CollectionFilter } from "../nfts/entities/collection.filter";
-import { NftCollection } from "../nfts/entities/nft.collection";
-import { NftCollectionAccount } from "../nfts/entities/nft.collection.account";
+import { AddresCollectionRoles } from "./entities/address.collection.roles";
+import { CollectionAccountFilter } from "./entities/collection.account.filter";
+import { CollectionFilter } from "./entities/collection.filter";
+import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
 import { TokenProperties } from "../tokens/entities/token.properties";
 import { TokenAssetService } from "../tokens/token.asset.service";
 import { VmQueryService } from "../vm.query/vm.query.service";
+import { NftCollectionAccount } from "./entities/nft.collection.account";
 
 @Injectable()
 export class CollectionService {
