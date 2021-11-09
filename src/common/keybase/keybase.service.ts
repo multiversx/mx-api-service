@@ -84,9 +84,7 @@ export class KeybaseService {
   async getIdentitiesProfilesAgainstCache(): Promise<KeybaseIdentity[]> {
     let nodes = await this.nodeService.getAllNodes();
 
-    let keys = [
-      ...new Set(nodes.filter(({ identity }) => !!identity).map(({ identity }) => identity)),
-    ].filter(x => x !== null).map(x => x ?? '');
+    let keys = nodes.map((node) => node.identity).distinct().map((x) => x ?? '');
 
     let keybaseGetPromises = keys.map(key => this.cachingService.getCache<KeybaseIdentity>(CacheInfo.IdentityProfile(key).key));
     let keybaseGetResults = await Promise.all(keybaseGetPromises);
@@ -155,9 +153,7 @@ export class KeybaseService {
     
     let nodes = await this.nodeService.getAllNodes();
 
-    let keys = [
-      ...new Set(nodes.filter(({ identity }) => !!identity).map(({ identity }) => identity)),
-    ].filter(x => x !== null).map(x => x ?? '');
+    let keys = nodes.map((node) => node.identity).distinct().map(x => x ?? '');
 
     await this.cachingService.batchProcess(
       keys,
