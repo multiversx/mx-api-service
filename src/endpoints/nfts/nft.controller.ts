@@ -4,7 +4,6 @@ import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe"
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { EsdtService } from "../esdt/esdt.service";
 import { Nft } from "./entities/nft";
-import { NftCollection } from "./entities/nft.collection";
 import { NftOwner } from "./entities/nft.owner";
 import { NftType } from "./entities/nft.type";
 import { NftService } from "./nft.service";
@@ -16,73 +15,6 @@ export class NftController {
     private readonly nftService: NftService,
     private readonly esdtService: EsdtService,
   ) {}
-
-  @Get("/collections")
-  @ApiResponse({
-    status: 200,
-    description: 'List non-fungible and semi-fungible token collections',
-    type: NftCollection,
-    isArray: true
-  })
-	@ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-	@ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
-	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
-	@ApiQuery({ name: 'creator', description: 'Filter NFTs where the given address has a creator role', required: false })
-  async getNftCollections(
-		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
-		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-		@Query('search') search: string | undefined,
-		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-		@Query('creator') creator: string | undefined,
-  ): Promise<NftCollection[]> {
-    return await this.nftService.getNftCollections({ from, size }, { search, type, creator });
-  }
-
-  @Get("/collections/count")
-	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
-	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
-	@ApiQuery({ name: 'creator', description: 'Filter NFTs where the given address has a creator role', required: false })
-  @ApiResponse({
-    status: 200,
-    description: 'The number of non-fungible and semi-fungible token collections available on the blockchain',
-  })
-  async getCollectionCount(
-    @Query('search') search: string | undefined,
-		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-		@Query('creator') creator: string | undefined,
-  ): Promise<number> {
-    return await this.nftService.getNftCollectionCount({ search, type, creator });
-  }
-
-  @Get("/collections/c")
-  @ApiExcludeEndpoint()
-  async getCollectionCountAlternative(
-    @Query('search') search: string | undefined,
-		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-		@Query('creator') creator: string | undefined,
-  ): Promise<number> {
-    return await this.nftService.getNftCollectionCount({ search, type, creator });
-  }
-
-  @Get('/collections/:collection')
-  @ApiResponse({
-    status: 200,
-    description: 'Non-fungible / semi-fungible token collection details',
-    type: NftCollection,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Token collection not found'
-  })
-  async getNftCollection(@Param('collection') collection: string): Promise<NftCollection> {
-    let token = await this.nftService.getNftCollection(collection);
-    if (token === undefined) {
-      throw new HttpException('NFT collection not found', HttpStatus.NOT_FOUND);
-    }
-
-    return token;
-  }
 
   @Get("/nfts")
   @ApiResponse({

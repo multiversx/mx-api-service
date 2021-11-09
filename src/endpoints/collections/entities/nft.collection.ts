@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { TokenAssets } from "src/endpoints/tokens/entities/token.assets";
 import { AddresCollectionRoles } from "./address.collection.roles";
-import { NftType } from "./nft.type";
+import { NftType } from "../../nfts/entities/nft.type";
 
 export class NftCollection {
   @ApiProperty()

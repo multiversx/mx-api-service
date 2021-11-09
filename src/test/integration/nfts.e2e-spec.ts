@@ -1,4 +1,5 @@
 import { Test } from "@nestjs/testing";
+import { CollectionService } from "src/endpoints/collections/collection.service";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
@@ -9,6 +10,7 @@ import Initializer from "./e2e-init";
 
 describe.skip('Nft Service', () => {
   let nftService: NftService;
+  let collectionService: CollectionService;
   let nftCreator: string;
   let nftIdentifier: string;
 
@@ -22,6 +24,7 @@ describe.skip('Nft Service', () => {
     }).compile();
 
     nftService = moduleRef.get<NftService>(NftService);
+    collectionService = moduleRef.get<CollectionService>(CollectionService);
 
     let nfts = await nftService.getNfts({from: 0, size: 1}, new NftFilter());
     expect(nfts).toHaveLength(1);
@@ -107,7 +110,7 @@ describe.skip('Nft Service', () => {
 
   describe('Specific nft', () => {
     it(`should return a nft for a specific identifier`, async () => {
-      const nft = await nftService.getCollectionProperties(nftIdentifier);
+      const nft = await collectionService.getCollectionProperties(nftIdentifier);
 
       if (nft) {
         expect(nft.token).toBe(nftIdentifier);
@@ -115,7 +118,7 @@ describe.skip('Nft Service', () => {
     });
 
     it(`should throw 'NFT not found' error`, async () => {
-      await expect (nftService.getCollectionProperties(nftIdentifier + 'a')).toBeUndefined();
+      await expect (collectionService.getCollectionProperties(nftIdentifier + 'a')).toBeUndefined();
     });
   })
 });
