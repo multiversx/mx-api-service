@@ -17,13 +17,14 @@ import { WaitingList } from '../waiting-list/entities/waiting.list';
 import { WaitingListService } from '../waiting-list/waiting.list.service';
 import { StakeService } from '../stake/stake.service';
 import { NftService } from '../nfts/nft.service';
-import { NftCollectionAccount } from '../nfts/entities/nft.collection.account';
 import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
 import { TransactionStatus } from '../transactions/entities/transaction.status';
 import { TransactionService } from '../transactions/transaction.service';
 import { DeployedContract } from './entities/deployed.contract';
 import { SmartContractResult } from '../sc-results/entities/smart.contract.result';
 import { SmartContractResultService } from '../sc-results/scresult.service';
+import { CollectionService } from '../collections/collection.service';
+import { NftCollectionAccount } from '../collections/entities/nft.collection.account';
 
 @Controller()
 @ApiTags('accounts')
@@ -38,7 +39,8 @@ export class AccountController {
     private readonly waitingListService: WaitingListService,
     private readonly stakeService: StakeService,
     private readonly transactionService: TransactionService,
-    private readonly scResultService: SmartContractResultService
+    private readonly scResultService: SmartContractResultService,
+    private readonly collectionService: CollectionService,
   ) {
     this.logger = new Logger(AccountController.name);
   }
@@ -215,7 +217,7 @@ export class AccountController {
     @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity: boolean | undefined,
   ): Promise<NftCollectionAccount[]> {
     try {
-      return await this.nftService.getCollectionsForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity }, { from, size });
+      return await this.collectionService.getCollectionsForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity }, { from, size });
     } catch (error) {
       this.logger.error(`Error in getAccountCollections for address ${address}`);
       this.logger.error(error);
@@ -249,7 +251,7 @@ export class AccountController {
     @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity: boolean | undefined,
   ): Promise<number> {
     try {
-      return await this.nftService.getCollectionCountForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
+      return await this.collectionService.getCollectionCountForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
     } catch (error) {
       this.logger.error(`Error in getCollectionCount for address ${address}`);
       this.logger.error(error);
@@ -270,7 +272,7 @@ export class AccountController {
     @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity: boolean | undefined,
   ): Promise<number> {
     try {
-      return await this.nftService.getCollectionCountForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
+      return await this.collectionService.getCollectionCountForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
     } catch (error) {
       this.logger.error(`Error in getCollectionCountAlternative for address ${address}`);
       this.logger.error(error);
@@ -297,7 +299,7 @@ export class AccountController {
     @Param('address') address: string,
     @Param('collection') collection: string,
   ): Promise<NftCollectionAccount> {
-    let result = await this.nftService.getCollectionForAddress(address, collection);
+    let result = await this.collectionService.getCollectionForAddress(address, collection);
     if (!result) {
       throw new NotFoundException('Collection for given account not found');
     }

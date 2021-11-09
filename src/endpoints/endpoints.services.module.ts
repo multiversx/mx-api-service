@@ -2,6 +2,7 @@ import { forwardRef, Module } from "@nestjs/common";
 import { AccountModule } from "./accounts/account.module";
 import { BlockModule } from "./blocks/block.module";
 import { BlsModule } from "./bls/bls.module";
+import { CollectionModule } from "./collections/collection.module";
 import { DelegationLegacyModule } from "./delegation.legacy/delegation.legacy.module";
 import { DelegationModule } from "./delegation/delegation.module";
 import { EsdtModule } from "./esdt/esdt.module";
@@ -29,6 +30,7 @@ import { WaitingListModule } from "./waiting-list/waiting.list.module";
   imports: [
     forwardRef(() => AccountModule), 
     forwardRef(() => BlockModule), 
+    forwardRef(() => CollectionModule),
     forwardRef(() => DelegationModule), 
     forwardRef(() => DelegationLegacyModule), 
     forwardRef(() => IdentitiesModule), 
@@ -54,7 +56,7 @@ import { WaitingListModule } from "./waiting-list/waiting.list.module";
     forwardRef(() => BlsModule),
   ],
   exports: [
-    AccountModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
+    AccountModule, CollectionModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
     MexModule, MiniBlockModule, NetworkModule, NftModule, TagModule, NodeModule, ProviderModule,
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
     WaitingListModule, EsdtModule, BlsModule
