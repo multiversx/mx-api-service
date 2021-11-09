@@ -48,14 +48,7 @@ export class TransactionProcessorService {
       await this.transactionProcessor.start({
         gatewayUrl: this.apiConfigService.getGatewayUrl(),
         maxLookBehind: this.apiConfigService.getTransactionProcessorMaxLookBehind(),
-        notifyEmptyBlocks: true,
         onTransactionsReceived: async (shard, nonce, transactions) => {
-          this.metricsService.setLastProcessedNonce(shard, nonce);
-
-          if (transactions.length === 0) {
-            return;
-          }
-    
           let profiler = new PerformanceProfiler('Processing new transactions');
     
           this.logger.log(`New transactions: ${transactions.length} for shard ${shard} and nonce ${nonce}`);
@@ -112,6 +105,7 @@ export class TransactionProcessorService {
           return await this.shardService.getLastProcessedNonce(shardId);
         },
         setLastProcessedNonce: async (shardId, nonce) => {
+          this.metricsService.setLastProcessedNonce(shardId, nonce);
           await this.shardService.setLastProcessedNonce(shardId, nonce);
         }
       });
