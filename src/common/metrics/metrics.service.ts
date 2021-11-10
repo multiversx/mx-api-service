@@ -1,9 +1,8 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { register, Histogram, Gauge } from 'prom-client';
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CachingService } from "../caching/caching.service";
-import { CacheInfo } from "../caching/entities/cache.info";
 import { GatewayService } from "../gateway/gateway.service";
+import { ProtocolService } from "../protocol/protocol.service";
 
 @Injectable()
 export class MetricsService {
@@ -25,13 +24,9 @@ export class MetricsService {
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => GatewayService))
     private readonly gatewayService: GatewayService,
-    private readonly cachingService: CachingService,
+    private readonly protocolService: ProtocolService
   ) {
-    this.shards = this.cachingService.getOrSetCache(
-      CacheInfo.NumShards.key,
-      async() => await this.gatewayService.getShards(),
-      CacheInfo.NumShards.ttl
-    );
+    this.shards = this.protocolService.getNumShards();
 
     if (!MetricsService.areMetricsInitialized) {
       MetricsService.areMetricsInitialized = true;

@@ -27,17 +27,4 @@ export class GatewayService {
   async createRaw(url: string, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     return await this.apiService.post(`${this.apiConfigService.getGatewayUrl()}/${url}`, data, undefined, errorHandler);
   }
-
-  async getShards(): Promise<number[]> {
-    let networkConfig = await this.get('network/config');
-    let shardCount = networkConfig.config.erd_num_shards_without_meta;
-
-    let result = [];
-    for (let i = 0; i < shardCount; i++) {
-      result.push(i);
-    }
-
-    result.push(4294967295);
-    return result;
-  }
 }

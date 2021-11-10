@@ -6,6 +6,7 @@ import { CachingService } from "src/common/caching/caching.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { ProtocolService } from "src/common/protocol/protocol.service";
 
 @Injectable()
 export class ShardService {
@@ -14,13 +15,10 @@ export class ShardService {
   constructor(
     private readonly nodeService: NodeService,
     private readonly cachingService: CachingService,
-    private readonly gatewayService: GatewayService
+    private readonly gatewayService: GatewayService,
+    private readonly protocolService: ProtocolService
   ) { 
-    this.shards = this.cachingService.getOrSetCache(
-      CacheInfo.NumShards.key,
-      async() => await this.gatewayService.getShards(),
-      CacheInfo.NumShards.ttl
-    );
+    this.shards = this.protocolService.getNumShards();
   }
 
   async getShards(queryPagination: QueryPagination): Promise<Shard[]> {
