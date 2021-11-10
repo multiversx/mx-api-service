@@ -273,7 +273,7 @@ export class NodeService {
     .filter(({ type }) => type === NodeType.validator)
     .map(({ owner, provider }) => (provider ? provider : owner));
 
-    addresses = [...new Set(addresses)];
+    addresses = addresses.distinct();
 
     const stakes = await this.stakeService.getStakes(addresses);
 
@@ -429,9 +429,9 @@ export class NodeService {
 
     let nodes: Node[] = [];
 
-    const blses = [
-      ...new Set([...Object.keys(statistics), ...heartbeats.map((item: any) => item.publicKey)]),
-    ];
+    const blses = 
+      [...Object.keys(statistics), ...heartbeats.map((item: any) => item.publicKey)].distinct();
+    
 
     for (const bls of blses) {
       const heartbeat = heartbeats.find((beat: any) => beat.publicKey === bls) || {};

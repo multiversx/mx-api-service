@@ -94,7 +94,7 @@ export class TransactionProcessorService {
             );
           }
     
-          let uniqueInvalidatedKeys = [...new Set(allInvalidatedKeys)];
+          let uniqueInvalidatedKeys = allInvalidatedKeys.distinct();
           if (uniqueInvalidatedKeys.length > 0) {
             this.clientProxy.emit('deleteCacheKeys', uniqueInvalidatedKeys);
           }

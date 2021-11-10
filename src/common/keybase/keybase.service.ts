@@ -84,9 +84,7 @@ export class KeybaseService {
   async getIdentitiesProfilesAgainstCache(): Promise<KeybaseIdentity[]> {
     let nodes = await this.nodeService.getAllNodes();
 
-    let keys = [
-      ...new Set(nodes.filter(({ identity }) => !!identity).map(({ identity }) => identity)),
-    ].filter(x => x !== null).map(x => x ?? '');
+    let keys = nodes.map((node) => node.identity).distinct().map((x) => x ?? '');
 
     let keybaseGetPromises = keys.map(key => this.cachingService.getCache<KeybaseIdentity>(CacheInfo.IdentityProfile(key).key));
     let keybaseGetResults = await Promise.all(keybaseGetPromises);
@@ -96,36 +94,66 @@ export class KeybaseService {
   }
 
   async confirmKeybasesAgainstKeybasePub(): Promise<void> {
-    const isKeybaseUp = await this.isKeybaseUp();
+    const isKeybaseUp = await this.isKeybasePubUp();
     if (!isKeybaseUp) {
       return;
     }
 
-    const keybaseProvidersArr: Keybase[] = await this.getProvidersKeybasesRaw();
-    const keybasesNodesArr: Keybase[] = await this.getNodesKeybasesRaw();
+    const providerKeybases: Keybase[] = await this.getProvidersKeybasesRaw();
+    const nodeKeybases: Keybase[] = await this.getNodesKeybasesRaw();
 
-    const keybasesArr: Keybase[] = [...keybaseProvidersArr, ...keybasesNodesArr];
+    const allKeybases: Keybase[] = [...providerKeybases, ...nodeKeybases];
+
+    const distinctIdentities = allKeybases.map(x => x.identity ?? '').filter(x => x !== '').distinct();
+
+    await Promise.all(distinctIdentities.map(identity => this.confirmKeybasesAgainstKeybasePubForIdentity(identity)));
+  }
+
+  async confirmKeybasesAgainstKeybasePubForIdentity(identity: string): Promise<void> {
+    const result = await this.apiService.get(`https://keybase.pub/${identity}/elrond`, 100000, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
+
+    if (!result) {
+      this.logger.log(`For identity '${identity}', no keybase.pub entry was found`);
+      return;
+    }
+
+    const html = result.data;
+
+    const nodesRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/[0-9a-f]{192}", 'g')
+    const blses: string[] = [];
+    for (let keybaseUrl of html.match(nodesRegex) || []) {
+      const bls = keybaseUrl.match(/[0-9a-f]{192}/)[0];
+      blses.push(bls);
+    }
+
+    const providersRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{13}", 'g');
+    const addresses: string[] = [];
+    for (let keybaseUrl of html.match(providersRegex) || []) {
+      const bls = keybaseUrl.match(/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{13}/)[0];
+      addresses.push(bls);
+    }
+
+    this.logger.log(`For identity '${identity}', found ${blses.length} blses and addresses ${addresses}`);
 
     await this.cachingService.batchProcess(
-      keybasesArr,
-      keybase => CacheInfo.KeybaseConfirmation(keybase.key).key,
-      async (keybase) => await this.confirmKeybase(keybase),
+      [...blses, ...addresses],
+      key => `keybase:${key}`,
+      async () => await true,
       Constants.oneMonth() * 6,
       true
     );
   }
 
-  async confirmIdentityProfilesAgainstKeybasePub(): Promise<void> {
-    const isKeybaseUp = await this.isKeybaseUp();
+
+  async confirmIdentityProfilesAgainstKeybaseIo(): Promise<void> {
+    const isKeybaseUp = await this.isKeybaseIoUp();
     if (!isKeybaseUp) {
       return;
     }
     
     let nodes = await this.nodeService.getAllNodes();
 
-    let keys = [
-      ...new Set(nodes.filter(({ identity }) => !!identity).map(({ identity }) => identity)),
-    ].filter(x => x !== null).map(x => x ?? '');
+    let keys = nodes.map((node) => node.identity).distinct().map(x => x ?? '');
 
     await this.cachingService.batchProcess(
       keys,
@@ -152,11 +180,22 @@ export class KeybaseService {
     );
   }
 
-  async isKeybaseUp(): Promise<boolean> {
+  async isKeybasePubUp(): Promise<boolean> {
     try {
       const { status } = await this.apiService.head('https://keybase.pub');
       return status === HttpStatus.OK;
     } catch (error) {
+      this.logger.error('It seems that keybase.pub is down');
+      return false;
+    }
+  }
+
+  async isKeybaseIoUp(): Promise<boolean> {
+    try {
+      const { status } = await this.apiService.head('https://keybase.io');
+      return status === HttpStatus.OK;
+    } catch (error) {
+      this.logger.error('It seems that keybase.io is down');
       return false;
     }
   }
