@@ -17,6 +17,12 @@ import { EsdtService } from "../esdt/esdt.service";
 import { TokenAssetService } from "../tokens/token.asset.service";
 import { GatewayNft } from "./entities/gateway.nft";
 import { CollectionService } from "../collections/collection.service";
+import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
+import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
+import { QueryType } from "src/common/elastic/entities/query.type";
+import { QueryOperator } from "src/common/elastic/entities/query.operator";
+import { CachingService } from "src/common/caching/caching.service";
+import { Constants } from "src/utils/constants";
 
 @Injectable()
 export class NftService {
@@ -31,6 +37,7 @@ export class NftService {
     private readonly esdtService: EsdtService,
     private readonly tokenAssetService: TokenAssetService,
     private readonly collectionService: CollectionService,
+    private readonly cachingService: CachingService,
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -129,11 +136,6 @@ export class NftService {
     });
   }
 
-  async getNftOwnersCount(identifier: string): Promise<number> {
-    let accountsEsdt = await this.elasticService.getAccountEsdtByIdentifier(identifier);
-    return accountsEsdt.length;
-  }
-
   async getNftsInternal(from: number, size: number, filter: NftFilter, identifier: string | undefined): Promise<Nft[]> {
     let elasticNfts = await this.elasticService.getTokens(from, size, filter, identifier);
 
@@ -203,6 +205,21 @@ export class NftService {
     }
 
     return nfts;
+  }
+
+  async getNftOwnersCount(identifier: string): Promise<number> {
+    return this.cachingService.getOrSetCache(
+      `nftOwnerCount:${identifier}`,
+      async () => await this.getNftOwnersCountRaw(identifier),
+      Constants.oneMinute()
+    );
+  }
+
+  async getNftOwnersCountRaw(identifier: string): Promise<number> {
+    const elasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, [ QueryType.Match('identifier', identifier, QueryOperator.AND) ]);
+
+    return await this.elasticService.getCount('accountsesdt', elasticQuery);
   }
 
   updateThumbnailUrlForNfts(nfts: Nft[]) {
