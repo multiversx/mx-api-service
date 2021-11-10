@@ -86,8 +86,8 @@ export class ElasticService {
     return documents.map((document: any) => this.formatItem(document, key));
   };
 
-  async getAccountEsdtByIdentifier(identifier: string) {
-    return this.getAccountEsdtByIdentifiers([ identifier ]);
+  async getAccountEsdtByIdentifier(identifier: string, pagination?: QueryPagination) {
+    return this.getAccountEsdtByIdentifiers([ identifier ], pagination);
   }
 
   async getTokensByIdentifiers(identifiers: string[]) {
@@ -103,15 +103,22 @@ export class ElasticService {
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
 
-  async getAccountEsdtByIdentifiers(identifiers: string[]) {
+  async getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination) {
     if (identifiers.length === 0) {
       return [];
     }
 
     const queries = identifiers.map((identifier) => QueryType.Match('identifier', identifier, QueryOperator.AND));
 
-    const elasticQuery = ElasticQuery.create()
-      .withPagination({ from: 0, size: 100 })
+    let elasticQuery = ElasticQuery.create();
+
+    if (pagination) {
+      elasticQuery = elasticQuery.withPagination({ from: pagination.from, size: pagination.size });
+    } else {
+      elasticQuery = elasticQuery.withPagination({ from: 0, size: 100 });
+    }
+      
+    elasticQuery = elasticQuery
       .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
       .withCondition(QueryConditionOptions.should, queries);
 
