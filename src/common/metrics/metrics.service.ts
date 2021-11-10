@@ -2,11 +2,10 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { register, Histogram, Gauge, collectDefaultMetrics } from 'prom-client';
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GatewayService } from "../gateway/gateway.service";
+import { ProtocolService } from "../protocol/protocol.service";
 
 @Injectable()
 export class MetricsService {
-  shards: number[] = [ 0, 1, 2, 4294967295 ];
-
   private static apiCallsHistogram: Histogram<string>;
   private static pendingRequestsHistogram: Gauge<string>;
   private static externalCallsHistogram: Histogram<string>;
@@ -22,7 +21,8 @@ export class MetricsService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => GatewayService))
-    private readonly gatewayService: GatewayService
+    private readonly gatewayService: GatewayService,
+    private readonly protocolService: ProtocolService,
   ) {
     if (!MetricsService.apiCallsHistogram) {
       MetricsService.apiCallsHistogram = new Histogram({
@@ -149,9 +149,10 @@ export class MetricsService {
   }
 
   async getMetrics(): Promise<string> {
+    let shardIds = await this.protocolService.getShardIds();
     if (this.apiConfigService.getIsTransactionProcessorCronActive()) {
       let currentNonces = await this.getCurrentNonces();
-      for (let [index, shardId] of this.shards.entries()) {
+      for (let [index, shardId] of shardIds.entries()) {
         MetricsService.currentNonceGauge.set({ shardId }, currentNonces[index]);
       }
     }
@@ -161,8 +162,9 @@ export class MetricsService {
   }
 
   private async getCurrentNonces(): Promise<number[]> {
+    let shardIds = await this.protocolService.getShardIds();
     return await Promise.all(
-      this.shards.map(shard => this.getCurrentNonce(shard))
+      shardIds.map(shardId => this.getCurrentNonce(shardId))
     );
   }
 

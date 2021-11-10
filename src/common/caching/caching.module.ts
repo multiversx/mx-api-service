@@ -1,14 +1,13 @@
 import { forwardRef, Module } from "@nestjs/common";
-import { RoundService } from "src/endpoints/rounds/round.service";
 import { ApiConfigModule } from "../api-config/api.config.module";
 import { BlsModule } from "../../endpoints/bls/bls.module";
 import { ElasticModule } from "../elastic/elastic.module";
-import { GENESIS_TIMESTAMP_SERVICE } from "../../utils/genesis.timestamp.interface";
 import { CacheConfigService } from "./cache.config.service";
 import { CachingService } from "./caching.service";
 import { MicroserviceModule } from "../microservice/microservice.module";
 import { MetricsModule } from "../metrics/metrics.module";
 import { LocalCacheService } from "./local.cache.service";
+import { ProtocolModule } from "../protocol/protocol.module";
 
 @Module({
   imports: [
@@ -16,14 +15,11 @@ import { LocalCacheService } from "./local.cache.service";
     forwardRef(() => MicroserviceModule),
     ElasticModule,
     BlsModule,
-    MetricsModule,
+    forwardRef(() => MetricsModule),
+    forwardRef(() => ProtocolModule)
   ],
   providers: [
     CachingService, CacheConfigService, LocalCacheService,
-    {
-      useClass: RoundService,
-      provide: GENESIS_TIMESTAMP_SERVICE
-    }
   ],
   exports: [
     CachingService, CacheConfigService,

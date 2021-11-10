@@ -1,7 +1,7 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { CachingService } from "src/common/caching/caching.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { GenesisTimestampInterface, GENESIS_TIMESTAMP_SERVICE } from "src/utils/genesis.timestamp.interface";
+import { ProtocolService } from "src/common/protocol/protocol.service";
 
 @Injectable()
 export class VmQueryService {
@@ -10,14 +10,13 @@ export class VmQueryService {
   constructor(
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
-    @Inject(GENESIS_TIMESTAMP_SERVICE)
-    private readonly genesisTimestampService: GenesisTimestampInterface
+    private readonly protocolService: ProtocolService,
   ) {
     this.logger = new Logger(VmQueryService.name);
   }
 
   private async computeTtls(): Promise<{localTtl: number, remoteTtl: number}> {
-    let secondsRemainingUntilNextRound = await this.genesisTimestampService.getSecondsRemainingUntilNextRound();
+    let secondsRemainingUntilNextRound = await this.protocolService.getSecondsRemainingUntilNextRound();
 
     // no need to store value remotely just to evict it one second later
     let remoteTtl = secondsRemainingUntilNextRound > 1 ? secondsRemainingUntilNextRound : 0;

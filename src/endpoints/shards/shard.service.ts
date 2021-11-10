@@ -4,18 +4,13 @@ import { NodeStatus } from "../nodes/entities/node.status";
 import { Shard } from "./entities/shard";
 import { CachingService } from "src/common/caching/caching.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { Constants } from "src/utils/constants";
-import { GatewayService } from "src/common/gateway/gateway.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 
 @Injectable()
 export class ShardService {
-  shards: number[] = [ 0, 1, 2, 4294967295 ];
-
   constructor(
     private readonly nodeService: NodeService,
     private readonly cachingService: CachingService,
-    private readonly gatewayService: GatewayService
   ) {}
 
   async getShards(queryPagination: QueryPagination): Promise<Shard[]> {
@@ -28,9 +23,9 @@ export class ShardService {
 
   async getAllShards(): Promise<Shard[]> {
     return this.cachingService.getOrSetCache(
-      'shards',
+      CacheInfo.ActiveShards.key,
       async () => await this.getAllShardsRaw(),
-      Constants.oneMinute()
+      CacheInfo.ActiveShards.ttl
     );
   }
 
@@ -56,30 +51,5 @@ export class ShardService {
         activeValidators: activeShardValidators.length,
       };
     });
-  }
-
-  async getCurrentNonce(shardId: number): Promise<number> {
-    let shardInfo = await this.gatewayService.get(`network/status/${shardId}`);
-    return shardInfo.status.erd_nonce;
-  }
-
-  async getLastProcessedNonce(shardId: number): Promise<number | undefined> {
-    return await this.cachingService.getCache<number>(CacheInfo.ShardNonce(shardId).key);
-  }
-
-  async setLastProcessedNonce(shardId: number, nonce: number): Promise<number> {
-    return await this.cachingService.setCache<number>(CacheInfo.ShardNonce(shardId).key, nonce, CacheInfo.ShardNonce(shardId).ttl);
-  }
-
-  async getCurrentNonces(): Promise<number[]> {
-    return await Promise.all(
-      this.shards.map(shard => this.getCurrentNonce(shard))
-    );
-  }
-
-  async getLastProcessedNonces(): Promise<(number | undefined)[]> {
-    return await Promise.all(
-      this.shards.map(shard => this.getLastProcessedNonce(shard))
-    );
   }
 }

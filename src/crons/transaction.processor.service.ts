@@ -2,7 +2,6 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
 import { MetricsService } from "src/common/metrics/metrics.service";
-import { ShardService } from "src/endpoints/shards/shard.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { AddressUtils } from "src/utils/address.utils";
@@ -13,6 +12,7 @@ import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transacti
 import { TransactionUtils } from "src/utils/transaction.utils";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
 import { BinaryUtils } from "src/utils/binary.utils";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -26,7 +26,6 @@ export class TransactionProcessorService {
       private readonly apiConfigService: ApiConfigService,
       private readonly metricsService: MetricsService,
       @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
-      private readonly shardService: ShardService,
       private readonly nodeService: NodeService,
       private readonly nftExtendedAttributesService: NftExtendedAttributesService,
   ) {
@@ -102,11 +101,11 @@ export class TransactionProcessorService {
           profiler.stop();
         },
         getLastProcessedNonce: async (shardId) => {
-          return await this.shardService.getLastProcessedNonce(shardId);
+          return await this.cachingService.getCache<number>(CacheInfo.ShardNonce(shardId).key);
         },
         setLastProcessedNonce: async (shardId, nonce) => {
           this.metricsService.setLastProcessedNonce(shardId, nonce);
-          await this.shardService.setLastProcessedNonce(shardId, nonce);
+          await this.cachingService.setCache<number>(CacheInfo.ShardNonce(shardId).key, nonce, CacheInfo.ShardNonce(shardId).ttl);
         }
       });
     } finally {

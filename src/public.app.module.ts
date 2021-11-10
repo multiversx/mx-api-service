@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import "./utils/extensions/array.extensions";
 import "./utils/extensions/date.extensions";
 import "./utils/extensions/number.extensions";
@@ -10,8 +10,8 @@ import { LoggingModule } from './common/logging/logging.module';
 @Module({
   imports: [
     LoggingModule,
-    forwardRef(() => CommonModule),
-    forwardRef(() => EndpointsServicesModule),
+    CommonModule,
+    EndpointsServicesModule,
     EndpointsControllersModule,
   ],
   exports: [
