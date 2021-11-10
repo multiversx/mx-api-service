@@ -6,8 +6,6 @@ import { ProtocolService } from "../protocol/protocol.service";
 
 @Injectable()
 export class MetricsService {
-  shards?: Promise<number[]>;
-
   private readonly apiCallsHistogram: Histogram<string> | undefined;
   private readonly pendingRequestsHistogram: Gauge<string> | undefined;
   private readonly externalCallsHistogram: Histogram<string> | undefined;
@@ -129,10 +127,10 @@ export class MetricsService {
   }
 
   async getMetrics(): Promise<string> {
-    this.shards = this.protocolService.getNumShards();
+    let shardIds = await this.protocolService.getShardIds();
     if (this.apiConfigService.getIsTransactionProcessorCronActive()) {
       let currentNonces = await this.getCurrentNonces();
-      for (let [index, shardId] of (await this.shards).entries()) {
+      for (let [index, shardId] of shardIds.entries()) {
         this.currentNonceGauge?.set({ shardId }, currentNonces[index]);
       }
     }
@@ -141,10 +139,10 @@ export class MetricsService {
   }
 
   private async getCurrentNonces(): Promise<number[]> {
-    this.shards = this.protocolService.getNumShards();
+    let shardIds = await this.protocolService.getShardIds();
 
     return await Promise.all(
-      (await this.shards).map(shard => this.getCurrentNonce(shard))
+      shardIds.map(shard => this.getCurrentNonce(shard))
     );
   }
 

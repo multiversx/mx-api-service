@@ -17,15 +17,15 @@ export class ProtocolService {
     this.logger = new Logger(ProtocolService.name);
   }
 
-  async getNumShards(): Promise<number[]> {
+  async getShardIds(): Promise<number[]> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.NumShards.key,
-      async () => await this.getNumShardsRaw(),
+      async () => await this.getShardIdsRaw(),
       CacheInfo.NumShards.ttl,
     )
   }
 
-  private async getNumShardsRaw(): Promise<number[]> {
+  private async getShardIdsRaw(): Promise<number[]> {
     let networkConfig = await this.gatewayService.get('network/config');
     let shardCount = networkConfig.config.erd_num_shards_without_meta;
 

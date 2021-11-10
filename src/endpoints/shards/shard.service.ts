@@ -10,14 +10,12 @@ import { ProtocolService } from "src/common/protocol/protocol.service";
 
 @Injectable()
 export class ShardService {
-  shards?: Promise<number[]>;
-
   constructor(
     private readonly nodeService: NodeService,
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
     private readonly protocolService: ProtocolService
-  ) { }
+  ) {}
 
   async getShards(queryPagination: QueryPagination): Promise<Shard[]> {
     const { from, size } = queryPagination;
@@ -73,16 +71,16 @@ export class ShardService {
   }
 
   async getCurrentNonces(): Promise<number[]> {
-    this.shards = this.protocolService.getNumShards();
+    let shardIds = await this.protocolService.getShardIds();
     return await Promise.all(
-     (await this.shards).map(shard => this.getCurrentNonce(shard))
+     shardIds.map(shard => this.getCurrentNonce(shard))
     );
   }
 
   async getLastProcessedNonces(): Promise<(number | undefined)[]> {
-    this.shards = this.protocolService.getNumShards();
+    let shardIds = await this.protocolService.getShardIds();
     return await Promise.all(
-      (await this.shards).map(shard => this.getLastProcessedNonce(shard))
+      shardIds.map(shard => this.getLastProcessedNonce(shard))
     );
   }
 }
