@@ -32,7 +32,7 @@ export class DelegationService {
     let nodes = await this.nodeService.getAllNodes();
     let providerAddresses = nodes.map(node => node.provider ? node.provider : node.owner);
 
-    providerAddresses = [...new Set(providerAddresses)];
+    providerAddresses = providerAddresses.distinct();
 
     // @ts-ignore
     const minDelegationHex = Buffer.from(configsBase64.pop(), 'base64').toString('hex');

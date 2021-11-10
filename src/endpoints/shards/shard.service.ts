@@ -47,7 +47,7 @@ export class ShardService {
         [ NodeStatus.eligible, NodeStatus.waiting, NodeStatus.leaving ].includes(status ?? NodeStatus.unknown)
     );
 
-    const shards = [...new Set(validators.map(({ shard }) => shard).filter(shard => shard !== undefined).map(shard => shard!!))];
+    const shards = validators.map(({ shard }) => shard).filter(shard => shard !== undefined).map(shard => shard!!).distinct();
 
     return shards.map((shard) => {
       const shardValidators = validators.filter((node) => node.shard === shard);
