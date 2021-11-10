@@ -63,6 +63,25 @@ Array.prototype.findMissingElements = function<T>(second: T[]) {
   return missing;
 }
 
+Array.prototype.distinct = function<T>(): T[] {
+  return [...new Set(this)];
+}
+
+Array.prototype.distinctBy = function<TCollection, TResult>(predicate: (element: TCollection) => TResult): TCollection[] {
+  let distinctProjections: TResult[] = [];
+  let result: TCollection[] = [];
+
+  for (let element of this) {
+    let projection = predicate(element);
+    if (!distinctProjections.includes(projection)) {
+      distinctProjections.push(projection);
+      result.push(element);
+    }
+  }
+
+  return result;
+}
+
 declare interface Array<T> {
   groupBy(predicate: (item: T) => any): any;
   selectMany<TOUT>(predicate: (item: T) => TOUT[]): TOUT[];
@@ -70,4 +89,6 @@ declare interface Array<T> {
   zip<TSecond, TResult>(second: TSecond[], predicate: (first: T, second: TSecond) => TResult): TResult[];
   remove(element: T): number;
   findMissingElements<T>(second: T[]): T[];
+  distinct(): T[];
+  distinctBy<TResult>(predicate: (element: T) => TResult): T[];
 }
