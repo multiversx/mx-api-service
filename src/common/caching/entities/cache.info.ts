@@ -9,6 +9,22 @@ export class CacheInfo {
     ttl: Constants.oneHour()
   }
 
+  static NumShards: CacheInfo = {
+    key: 'numShards',
+    ttl: Constants.oneWeek()
+  }
+
+
+  static GenesisTimestamp: CacheInfo = {
+    key: 'genesisTimestamp',
+    ttl: Constants.oneWeek()
+  }
+
+  static ActiveShards: CacheInfo = {
+    key: 'shards',
+    ttl: Constants.oneMinute()
+  }
+
   static AllEsdtTokens: CacheInfo = {
     key: 'allEsdtTokens',
     ttl: Constants.oneHour()

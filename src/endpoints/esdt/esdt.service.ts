@@ -1,10 +1,11 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { MetricsService } from "src/common/metrics/metrics.service";
+import { ProtocolService } from "src/common/protocol/protocol.service";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
@@ -14,7 +15,6 @@ import { TokenUtils } from "src/utils/tokens.utils";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { CachingService } from "../../common/caching/caching.service";
 import { GatewayService } from "../../common/gateway/gateway.service";
-import { GENESIS_TIMESTAMP_SERVICE, GenesisTimestampInterface } from "../../utils/genesis.timestamp.interface";
 
 @Injectable()
 export class EsdtService {
@@ -26,8 +26,7 @@ export class EsdtService {
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
     private readonly metricsService: MetricsService,
-    @Inject(GENESIS_TIMESTAMP_SERVICE)
-    private readonly genesisTimestampService: GenesisTimestampInterface,
+    private readonly protocolService: ProtocolService,
     private readonly elasticService: ElasticService,
   ) {
     this.logger = new Logger(EsdtService.name);
@@ -119,7 +118,7 @@ export class EsdtService {
       delete this.pendingRequestsDictionary[address];
     }
 
-    let ttl = await this.genesisTimestampService.getSecondsRemainingUntilNextRound();
+    let ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
 
     await this.cachingService.setCacheLocal(`address:${address}:esdts`, esdts, ttl);
     return esdts;

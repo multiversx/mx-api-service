@@ -22,8 +22,8 @@ import { RedisClient } from 'redis';
 import { ExtractInterceptor } from './interceptors/extract.interceptor';
 import { JwtAuthenticateGuard } from './interceptors/access.interceptor';
 import { TransactionProcessorModule } from './crons/transaction.processor.module';
-import { RoundService } from './endpoints/rounds/round.service';
 import { MicroserviceModule } from './common/microservice/microservice.module';
+import { ProtocolService } from './common/protocol/protocol.service';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
@@ -37,7 +37,7 @@ async function bootstrap() {
   let httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
   let metricsService = publicApp.get<MetricsService>(MetricsService);
   let tokenAssetService = publicApp.get<TokenAssetService>(TokenAssetService);
-  let roundService = publicApp.get<RoundService>(RoundService);
+  let protocolService = publicApp.get<ProtocolService>(ProtocolService);
 
 
   if (apiConfigService.getIsAuthActive()) {
@@ -57,7 +57,7 @@ async function bootstrap() {
   globalInterceptors.push(new LoggingInterceptor(metricsService));
 
   if (apiConfigService.getUseRequestCachingFlag()) {
-    globalInterceptors.push(new CachingInterceptor(cachingService, httpAdapterHostService, metricsService, roundService));
+    globalInterceptors.push(new CachingInterceptor(cachingService, httpAdapterHostService, metricsService, protocolService));
   }
   
   globalInterceptors.push(new FieldsInterceptor());

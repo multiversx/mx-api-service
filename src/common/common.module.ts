@@ -7,6 +7,7 @@ import { GatewayModule } from "./gateway/gateway.module";
 import { KeybaseModule } from "./keybase/keybase.module";
 import { MetricsModule } from "./metrics/metrics.module";
 import { ApiModule } from "./network/api.module";
+import { ProtocolModule } from "./protocol/protocol.module";
 
 @Module({
   imports: [
@@ -18,10 +19,11 @@ import { ApiModule } from "./network/api.module";
     forwardRef(() => ExternalModule),  
     forwardRef(() => KeybaseModule),
     forwardRef(() => MetricsModule),
+    forwardRef(() => ProtocolModule),
   ],
   exports: [
     ApiConfigModule, CachingModule, ApiModule, ElasticModule, GatewayModule, ExternalModule,
-    KeybaseModule, MetricsModule,
+    KeybaseModule, MetricsModule, ProtocolModule
   ]
 })
 export class CommonModule { }

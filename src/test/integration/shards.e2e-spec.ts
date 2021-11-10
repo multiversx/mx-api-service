@@ -36,13 +36,5 @@ describe('Shard Service', () => {
         expect(shard).toHaveStructure(Object.keys(new Shard()));
       }
     });
-
-    it('all last processed nonces should be numbers', async () => {
-      const processedNonces = await shardService.getLastProcessedNonces();
-
-      for (let processedNonce of processedNonces) {
-        expect(processedNonce).toBeDefined();
-      }
-    });
   });
 });

@@ -141,7 +141,7 @@ export class IdentitiesService {
     const providers = identity.nodes
       .map((x: Node) => x.provider)
       .filter((provider: string | null) => !!provider);
-    stakeInfo.providers = [...new Set(providers)];
+    stakeInfo.providers = providers.distinct();
 
     stakeInfo.distribution = this.getStakeDistributionForIdentity(locked, identity);
 
