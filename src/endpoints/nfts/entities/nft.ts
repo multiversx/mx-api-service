@@ -38,6 +38,9 @@ export class Nft {
   url: string = '';
 
   @ApiProperty()
+  isUrlSupported: boolean = false;
+
+  @ApiProperty()
   thumbnailUrl: string = '';
 
   @ApiProperty()

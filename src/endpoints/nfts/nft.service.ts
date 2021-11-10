@@ -169,6 +169,8 @@ export class NftService {
           }
         }
 
+        nft.isUrlSupported = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
+
         if (elasticNftData.metadata) {
           nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromMetadata(elasticNftData.metadata);
         } else {
@@ -349,6 +351,8 @@ export class NftService {
           this.logger.error(error);
         }
       }
+
+      nft.isUrlSupported = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
 
       nft.attributes = gatewayNft.attributes;
 
