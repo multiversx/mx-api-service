@@ -169,7 +169,7 @@ export class NftService {
           }
         }
 
-        nft.isUrlSupported = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
+        nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
 
         if (elasticNftData.metadata) {
           nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromMetadata(elasticNftData.metadata);
@@ -352,7 +352,7 @@ export class NftService {
         }
       }
 
-      nft.isUrlSupported = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
+      nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
 
       nft.attributes = gatewayNft.attributes;
 

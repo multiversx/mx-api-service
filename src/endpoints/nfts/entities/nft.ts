@@ -38,7 +38,7 @@ export class Nft {
   url: string = '';
 
   @ApiProperty()
-  isUrlSupported: boolean = false;
+  isWhitelistedStorage: boolean = false;
 
   @ApiProperty()
   thumbnailUrl: string = '';
