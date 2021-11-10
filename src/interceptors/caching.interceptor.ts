@@ -1,10 +1,10 @@
-import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor } from "@nestjs/common";
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nestjs/common";
 import { HttpAdapterHost } from "@nestjs/core";
 import { Observable, of, throwError } from "rxjs";
 import { catchError, tap } from 'rxjs/operators';
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { CachingService } from "src/common/caching/caching.service";
-import { GenesisTimestampInterface, GENESIS_TIMESTAMP_SERVICE } from "src/utils/genesis.timestamp.interface";
+import { ProtocolService } from "src/common/protocol/protocol.service";
 
 @Injectable()
 export class CachingInterceptor implements NestInterceptor {
@@ -14,8 +14,7 @@ export class CachingInterceptor implements NestInterceptor {
     private readonly cachingService: CachingService,
     private readonly httpAdapterHost: HttpAdapterHost,
     private readonly metricsService: MetricsService,
-    @Inject(GENESIS_TIMESTAMP_SERVICE)
-    private readonly genesisTimestampService: GenesisTimestampInterface
+    private readonly protocolService: ProtocolService,
   ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
@@ -56,7 +55,7 @@ export class CachingInterceptor implements NestInterceptor {
             pendingRequestResolver(result);
             this.metricsService.setPendingRequestsCount(Object.keys(this.pendingRequestsDictionary).length);
 
-            let ttl = await this.genesisTimestampService.getSecondsRemainingUntilNextRound();
+            let ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
 
             await this.cachingService.setCacheLocal(cacheKey!!, result, ttl);
           }),

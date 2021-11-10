@@ -1,15 +1,14 @@
-import { CacheModuleOptions, CacheOptionsFactory, Inject, Injectable } from "@nestjs/common";
-import { GENESIS_TIMESTAMP_SERVICE, GenesisTimestampInterface } from "../../utils/genesis.timestamp.interface";
+import { CacheModuleOptions, CacheOptionsFactory, Injectable } from "@nestjs/common";
+import { ProtocolService } from "../protocol/protocol.service";
 
 @Injectable()
 export class CacheConfigService implements CacheOptionsFactory {
   constructor(
-    @Inject(GENESIS_TIMESTAMP_SERVICE)
-    private readonly genesisTimestampService: GenesisTimestampInterface
+    private readonly protocolService: ProtocolService,
   ) {}
 
   async createCacheOptions(): Promise<CacheModuleOptions> {
-    let ttl = await this.genesisTimestampService.getSecondsRemainingUntilNextRound();
+    let ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
     
     return {
       ttl,

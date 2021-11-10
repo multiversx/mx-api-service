@@ -14,6 +14,12 @@ export class CacheInfo {
     ttl: Constants.oneWeek()
   }
 
+
+  static GenesisTimestamp: CacheInfo = {
+    key: 'genesisTimestamp',
+    ttl: Constants.oneWeek()
+  }
+
   static ActiveShards: CacheInfo = {
     key: 'shards',
     ttl: Constants.oneMinute()

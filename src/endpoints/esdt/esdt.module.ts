@@ -1,6 +1,5 @@
 import { forwardRef, Module } from "@nestjs/common";
 import { MetricsModule } from "src/common/metrics/metrics.module";
-import { RoundService } from "src/endpoints/rounds/round.service";
 import { VmQueryModule } from "src/endpoints/vm.query/vm.query.module";
 import { ApiConfigModule } from "../../common/api-config/api.config.module";
 import { BlsModule } from "../bls/bls.module";
@@ -9,7 +8,7 @@ import { ElasticModule } from "../../common/elastic/elastic.module";
 import { EsdtService } from "./esdt.service";
 import { ExternalModule } from "../../common/external/external.module";
 import { GatewayModule } from "../../common/gateway/gateway.module";
-import { GENESIS_TIMESTAMP_SERVICE } from "../../utils/genesis.timestamp.interface";
+import { ProtocolModule } from "src/common/protocol/protocol.module";
 
 
 @Module({
@@ -17,12 +16,9 @@ import { GENESIS_TIMESTAMP_SERVICE } from "../../utils/genesis.timestamp.interfa
     ApiConfigModule, ExternalModule, CachingModule, BlsModule, ElasticModule, GatewayModule,
     forwardRef(() => VmQueryModule),
     forwardRef(() => MetricsModule),
+    ProtocolModule,
   ],
   providers: [
-    {
-      useClass: RoundService,
-      provide: GENESIS_TIMESTAMP_SERVICE
-    },
     EsdtService
   ],
   exports: [
