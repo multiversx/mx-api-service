@@ -148,7 +148,8 @@ export class EsdtService {
       tokensIdentifiers,
       token => `token:${token}`,
       async (token: string) => await this.getEsdtTokenProperties(token),
-      Constants.oneDay()
+      Constants.oneDay(),
+      true
     );
 
     // @ts-ignore
