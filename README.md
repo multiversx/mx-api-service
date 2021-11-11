@@ -4,6 +4,7 @@ REST API facade facilitating the interactions with the Elrond blockchain.
 
 1. Run `npm install` in the project directory
 2. Optionally make edits to `config.yaml` or create `config.custom.yaml`
+3. Run `npm run init` in the project directory (to create default plugins structure)
 
 ## Available Scripts
 
