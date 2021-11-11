@@ -1,6 +1,6 @@
 import { forwardRef, Module } from "@nestjs/common";
 import { CommonModule } from "src/common/common.module";
-import { PluginsModule } from "src/plugins/plugins.module";
+import { PluginModule } from "src/plugins/plugin.module";
 import { PotentialScamTransactionChecker } from "./scam-check/potential.scam.transaction.checker";
 import { TransactionScamCheckService } from "./scam-check/transaction.scam.check.service";
 import { TokenTransferService } from "./token.transfer.service";
@@ -11,7 +11,7 @@ import { TransactionService } from "./transaction.service";
 @Module({
   imports: [
     forwardRef(() => CommonModule),
-    PluginsModule,
+    PluginModule,
   ],
   providers: [
     TokenTransferService, TransactionGetService, TransactionPriceService, TransactionService, TransactionScamCheckService, PotentialScamTransactionChecker

@@ -26,7 +26,7 @@ import { QueryType } from 'src/common/elastic/entities/query.type';
 import { ElasticSortProperty } from 'src/common/elastic/entities/elastic.sort.property';
 import { ElasticSortOrder } from 'src/common/elastic/entities/elastic.sort.order';
 import { TermsQuery } from 'src/common/elastic/entities/terms.query';
-import { PluginService } from 'src/plugins/plugin.service';
+import { PluginService } from 'src/common/plugins/plugin.service';
 
 @Injectable()
 export class TransactionService {
