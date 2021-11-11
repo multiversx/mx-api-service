@@ -56,4 +56,128 @@ describe('Array Extensions', () => {
       ])
     });
   });
+
+  describe('Find Missing Elements', () => {
+    expect([1,2,3,4].findMissingElements([1, 2])).toEqual([3, 4]);
+    expect([1, 2].findMissingElements([1, 2])).toEqual([]);
+    expect([1, 2].findMissingElements([1, 2, 3, 4])).toEqual([]);
+    expect([1, 2, 3, 4].findMissingElements([5, 6, 7, 8])).toEqual([1, 2, 3, 4]);
+    expect([1, 2, 3, 4, 5, 6].findMissingElements([2, 4, 6])).toEqual([1, 3, 5]);
+  });
+
+  describe('Remove', () => {
+    const array = ['a', 'b', 'c', 'd'];
+    expect(array.remove('b')).toEqual(1);
+    expect(array).toEqual(['a', 'c', 'd']);
+
+    expect(array.remove('x')).toEqual(-1);
+    expect(array).toEqual(['a', 'c', 'd']);
+  });
+
+  describe('First Or Undefined', () => {
+    const array = [
+      {
+        a: 'a'
+      },
+      {
+        a: 'b'
+      },
+      {
+        b: 'b'
+      },
+      {
+        c: 'c'
+      },
+    ];
+
+    expect(array.firstOrUndefined((x) => x.a !== undefined)).toEqual({ a: 'a' });
+    expect(array.firstOrUndefined((x) => x.a === 'b')).toEqual({ a: 'b' });
+    expect(array.firstOrUndefined((x) => x.a === 'c')).toBeUndefined();
+    expect(array.firstOrUndefined()).toEqual({
+      a: 'a'
+    })
+  });
+
+  describe('Select Many', () => {
+    const array = [
+      {
+        a: 'a',
+        pets: [
+          'a', 'b'
+        ]
+      },
+      {
+        a: 'b',
+        pets: [
+          'c', 'd'
+        ]
+      },
+      {
+        b: 'b',
+        pets: [
+          'a', 'b'
+        ]
+      },
+      {
+        c: 'c',
+        pets: [
+          'c', 'd'
+        ]
+      },
+    ];
+
+    expect(array.selectMany((item) => item.pets)).toEqual(['a', 'b', 'c', 'd', 'a', 'b', 'c', 'd']);
+  });
+
+  describe('Group By', () => {
+    const array = [
+      {
+        a: 'a',
+        pets: [
+          'a', 'b'
+        ]
+      },
+      {
+        a: 'b',
+        pets: [
+          'c', 'd'
+        ]
+      },
+      {
+        b: 'b',
+        pets: [
+          'a', 'b'
+        ]
+      },
+      {
+        c: 'c',
+        pets: [
+          'c', 'd'
+        ]
+      },
+    ]
+
+    expect(array.groupBy((item) => item.a)).toEqual({ 
+    a: [{
+      a: 'a',
+      pets: [
+        'a', 'b'
+      ]
+    }],
+    b: [{
+        a: 'b',
+        pets: [
+          'c', 'd'
+      ]
+    }],
+    undefined: [
+      {
+        c: 'c',
+        pets: [
+          'c', 'd'
+        ]
+      },
+    ]
+    });
+  });
 });
