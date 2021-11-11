@@ -36,7 +36,7 @@
     "copy-testnet-config:nix": "cp ./config/config.testnet.yaml ./config/config.yaml",
     "copy-mainnet-config:nix": "cp ./config/config.mainnet.yaml ./config/config.yaml",
     "copy-custom-config:nix": "cp ./config/config.custom.yaml ./config/config.yaml",
-    "init:windows": "mkdir .\\src\\plugins & copy .\\src\\plugins.template\\plugin.module.ts.template .\\src\\plugins\\plugin.module.ts",
+    "init:windows": "rimraf src/plugins && mkdir .\\src\\plugins & copy .\\src\\plugins.template\\plugin.module.ts.template .\\src\\plugins\\plugin.module.ts",
     "copy-devnet-config:windows": "copy  .\\config\\config.devnet.yaml .\\config\\config.yaml",
     "copy-testnet-config:windows": "copy  .\\config\\config.testnet.yaml .\\config\\config.yaml",
     "copy-mainnet-config:windows": "copy  .\\config\\config.mainnet.yaml .\\config\\config.yaml",
