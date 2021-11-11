@@ -172,6 +172,12 @@ describe('Array Extensions', () => {
     }],
     undefined: [
       {
+        b: 'b',
+        pets: [
+          'a', 'b'
+        ]
+      },
+      {
         c: 'c',
         pets: [
           'c', 'd'
