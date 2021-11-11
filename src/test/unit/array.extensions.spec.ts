@@ -1,3 +1,4 @@
+import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import '../../utils/extensions/array.extensions';
 
 describe('Array Extensions', () => { 
@@ -130,60 +131,51 @@ describe('Array Extensions', () => {
   });
 
   describe('Group By', () => {
-    const array = [
-      {
-        a: 'a',
-        pets: [
-          'a', 'b'
-        ]
-      },
-      {
-        a: 'b',
-        pets: [
-          'c', 'd'
-        ]
-      },
-      {
-        b: 'b',
-        pets: [
-          'a', 'b'
-        ]
-      },
-      {
-        c: 'c',
-        pets: [
-          'c', 'd'
-        ]
-      },
-    ]
+    const transaction1: Transaction = new Transaction();
+    transaction1.sender = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40'
+    transaction1.receiver = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9lllllsf3mp40'
 
-    expect(array.groupBy((item) => item.a)).toEqual({ 
-    a: [{
-      a: 'a',
-      pets: [
-        'a', 'b'
-      ]
-    }],
-    b: [{
-        a: 'b',
-        pets: [
-          'c', 'd'
-      ]
-    }],
-    undefined: [
-      {
-        b: 'b',
-        pets: [
-          'a', 'b'
-        ]
-      },
-      {
-        c: 'c',
-        pets: [
-          'c', 'd'
-        ]
-      },
-    ]
+    const transaction2: Transaction = new Transaction();
+    transaction2.sender = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40'
+    transaction2.receiver = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9lllllsf3mp40'
+
+    const transaction3: Transaction = new Transaction();
+    transaction3.sender = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40'
+    transaction3.receiver = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9ldavllcf3mp40'
+
+    const array = [ transaction1, transaction2, transaction3]
+
+    expect(array.groupBy((item) => item.sender)).toEqual({
+      'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40': [transaction1, transaction2, transaction3]
+    });
+
+    expect(array.groupBy((item) => item.receiver)).toEqual({
+      'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9ldavllcf3mp40': [transaction3],
+      'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9lllllsf3mp40': [transaction1, transaction2]
     });
   });
+
+  describe('Zip', () => {
+    const keys = ['a', 'b', 'c', 'd'];
+    const confirmations = [false, true, false, true];
+
+    expect(keys.zip(confirmations, (first, second) => ({key: first, confirmed: second}))).toEqual([
+      {
+        key: 'a',
+        confirmed: false
+      },
+      {
+        key: 'b',
+        confirmed: true
+      },
+      {
+        key: 'c',
+        confirmed: false
+      },
+      {
+        key: 'd',
+        confirmed: true
+      }
+    ]);
+  })
 });
