@@ -31,7 +31,7 @@
     "copy-testnet-config": "run-script-os",
     "copy-devnet-config": "run-script-os",
     "copy-custom-config": "run-script-os",
-    "init:nix": "mkdir -p src/plugins & cp -n src/plugins.template/plugin.module.ts.template src/plugins/plugin.module.ts 2>/dev/null || :",
+    "init:nix": "rimraf src/plugins && mkdir src/plugins && cp src/plugins.template/plugin.module.ts.template src/plugins/plugin.module.ts",
     "copy-devnet-config:nix": "cp ./config/config.devnet.yaml ./config/config.yaml",
     "copy-testnet-config:nix": "cp ./config/config.testnet.yaml ./config/config.yaml",
     "copy-mainnet-config:nix": "cp ./config/config.mainnet.yaml ./config/config.yaml",
