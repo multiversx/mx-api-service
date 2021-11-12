@@ -1,3 +1,4 @@
+import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import '../../utils/extensions/array.extensions';
 
 describe('Array Extensions', () => { 
@@ -56,4 +57,125 @@ describe('Array Extensions', () => {
       ])
     });
   });
+
+  describe('Find Missing Elements', () => {
+    expect([1,2,3,4].findMissingElements([1, 2])).toEqual([3, 4]);
+    expect([1, 2].findMissingElements([1, 2])).toEqual([]);
+    expect([1, 2].findMissingElements([1, 2, 3, 4])).toEqual([]);
+    expect([1, 2, 3, 4].findMissingElements([5, 6, 7, 8])).toEqual([1, 2, 3, 4]);
+    expect([1, 2, 3, 4, 5, 6].findMissingElements([2, 4, 6])).toEqual([1, 3, 5]);
+  });
+
+  describe('Remove', () => {
+    const array = ['a', 'b', 'c', 'd'];
+    expect(array.remove('b')).toEqual(1);
+    expect(array).toEqual(['a', 'c', 'd']);
+
+    expect(array.remove('x')).toEqual(-1);
+    expect(array).toEqual(['a', 'c', 'd']);
+  });
+
+  describe('First Or Undefined', () => {
+    const array = [
+      {
+        a: 'a'
+      },
+      {
+        a: 'b'
+      },
+      {
+        b: 'b'
+      },
+      {
+        c: 'c'
+      },
+    ];
+
+    expect(array.firstOrUndefined((x) => x.a !== undefined)).toEqual({ a: 'a' });
+    expect(array.firstOrUndefined((x) => x.a === 'b')).toEqual({ a: 'b' });
+    expect(array.firstOrUndefined((x) => x.a === 'c')).toBeUndefined();
+    expect(array.firstOrUndefined()).toEqual({
+      a: 'a'
+    })
+  });
+
+  describe('Select Many', () => {
+    const array = [
+      {
+        a: 'a',
+        pets: [
+          'a', 'b'
+        ]
+      },
+      {
+        a: 'b',
+        pets: [
+          'c', 'd'
+        ]
+      },
+      {
+        b: 'b',
+        pets: [
+          'a', 'b'
+        ]
+      },
+      {
+        c: 'c',
+        pets: [
+          'c', 'd'
+        ]
+      },
+    ];
+
+    expect(array.selectMany((item) => item.pets)).toEqual(['a', 'b', 'c', 'd', 'a', 'b', 'c', 'd']);
+  });
+
+  describe('Group By', () => {
+    const transaction1: Transaction = new Transaction();
+    transaction1.sender = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40'
+    transaction1.receiver = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9lllllsf3mp40'
+
+    const transaction2: Transaction = new Transaction();
+    transaction2.sender = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40'
+    transaction2.receiver = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9lllllsf3mp40'
+
+    const transaction3: Transaction = new Transaction();
+    transaction3.sender = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40'
+    transaction3.receiver = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9ldavllcf3mp40'
+
+    const array = [ transaction1, transaction2, transaction3]
+
+    expect(array.groupBy((item) => item.sender)).toEqual({
+      'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40': [transaction1, transaction2, transaction3]
+    });
+
+    expect(array.groupBy((item) => item.receiver)).toEqual({
+      'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9ldavllcf3mp40': [transaction3],
+      'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9lllllsf3mp40': [transaction1, transaction2]
+    });
+  });
+
+  describe('Zip', () => {
+    const keys = ['a', 'b', 'c', 'd'];
+    const confirmations = [false, true, false, true];
+
+    expect(keys.zip(confirmations, (first, second) => ({key: first, confirmed: second}))).toEqual([
+      {
+        key: 'a',
+        confirmed: false
+      },
+      {
+        key: 'b',
+        confirmed: true
+      },
+      {
+        key: 'c',
+        confirmed: false
+      },
+      {
+        key: 'd',
+        confirmed: true
+      }
+    ]);
+  })
 });
