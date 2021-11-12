@@ -17,6 +17,7 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { DataQuoteType } from "src/common/external/entities/data.quote.type";
 import { EsdtService } from "src/endpoints/esdt/esdt.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -34,6 +35,7 @@ export class CacheWarmerService {
     private readonly accountService: AccountService,
     private readonly gatewayService: GatewayService,
     private readonly schedulerRegistry: SchedulerRegistry,
+    private readonly tokenAssetService: TokenAssetService,
   ) { 
     this.configCronJob(
       'handleKeybaseAgainstKeybasePubInvalidations', 
@@ -153,6 +155,15 @@ export class CacheWarmerService {
     await Locker.lock('Heartbeatstatus invalidations', async () => {
       let result = await this.gatewayService.getRaw('node/heartbeatstatus');
       await this.invalidateKey('heartbeatstatus', result.data, Constants.oneMinute() * 2);
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleTokenAssetsInvalidations() {
+    await Locker.lock('Token assets invalidations', async () => {
+      await this.tokenAssetService.checkout();
+      let assets = await this.tokenAssetService.getAllAssetsRaw();
+      await this.invalidateKey(CacheInfo.TokenAssets.key, assets, CacheInfo.TokenAssets.ttl);
     }, true);
   }
 

@@ -78,11 +78,18 @@ export class TokenAssetService {
     return 'tokens';
   }
 
-  private async readAssets() {
-    // read all folders from dist/repos/assets/tokens (token identifiers)
+  async getAllAssets(): Promise<{ [key: string] : TokenAssets }> {
+    return this.cachingService.getOrSetCache(
+      CacheInfo.TokenAssets.key,
+      async () => await this.getAllAssetsRaw(),
+      CacheInfo.TokenAssets.ttl
+    );
+  }
+
+  async getAllAssetsRaw(): Promise<{ [key: string] : TokenAssets }> {
     let tokensPath = this.getTokensPath();
     if (!fs.existsSync(tokensPath)) {
-      return await this.cachingService.setCache(CacheInfo.TokenAssets.key, {}, CacheInfo.TokenAssets.ttl);
+      return {}
     }
     
     let tokenIdentifiers = FileUtils.getDirectories(tokensPath);
@@ -94,22 +101,12 @@ export class TokenAssetService {
       assets[tokenIdentifier] = this.readAssetDetails(tokenIdentifier, tokenPath);
     }
 
-    // create a dictionary with the being the token identifier and the value the TokenAssets entity and store it in the cache
-    return await this.cachingService.setCache(CacheInfo.TokenAssets.key, assets, CacheInfo.TokenAssets.ttl);
-  }
-
-  private async getOrReadAssets() {
-    let assets = await this.cachingService.getCache<{ [key: string] : TokenAssets }>(CacheInfo.TokenAssets.key);
-    if (!assets) {
-      assets = await this.readAssets();
-    }
-
     return assets;
   }
 
   async getAssets(tokenIdentifier: string): Promise<TokenAssets> {
     // get the dictionary from the local cache
-    let assets = await this.getOrReadAssets();
+    let assets = await this.getAllAssets();
 
     // if the tokenIdentifier key exists in the dictionary, return the associated value, else undefined
     return assets[tokenIdentifier];
