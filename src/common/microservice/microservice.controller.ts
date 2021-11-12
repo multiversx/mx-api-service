@@ -2,6 +2,7 @@ import { Controller, Logger } from "@nestjs/common";
 import { EventPattern } from "@nestjs/microservices";
 import { MiniBlockController } from "src/endpoints/miniblocks/mini.block.controller";
 import { CachingService } from "../caching/caching.service";
+import { CacheInfo } from "../caching/entities/cache.info";
 
 @Controller()
 export class MicroserviceController {
@@ -17,7 +18,9 @@ export class MicroserviceController {
 
     for (let key of keys) {
       if (['nodes', 'allEsdtTokens', 'identities', 'providers', 'providersWithStakeInformation', 'keybases', 
-           'identityProfilesKeybases', 'currentPrice', 'economics', 'accounts:0:25', 'heartbeatstatus'].includes(key)) {
+           'identityProfilesKeybases', 'currentPrice', 'economics', 'accounts:0:25', 'heartbeatstatus', 
+           CacheInfo.TokenAssets.key
+          ].includes(key)) {
         this.logger.log(`Soft Deleting cache key ${key}`);
         await this.cachingService.refreshCacheLocal(key);
       } else {
