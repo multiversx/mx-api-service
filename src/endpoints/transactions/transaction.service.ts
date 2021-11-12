@@ -226,6 +226,13 @@ export class TransactionService {
         this.logger.error(`Error when fetching transaction price for transaction with hash '${txHash}'`);
         this.logger.error(error);
       }
+
+      try {
+        await this.pluginsService.processTransaction(transaction);
+      } catch (error) {
+        this.logger.error(`Unhandled error when processing plugin transaction for transaction with hash '${transaction.txHash}'`);
+        this.logger.error(error);
+      }
     }
 
     return transaction;
