@@ -25,6 +25,7 @@ import { SmartContractResult } from '../sc-results/entities/smart.contract.resul
 import { SmartContractResultService } from '../sc-results/scresult.service';
 import { CollectionService } from '../collections/collection.service';
 import { NftCollectionAccount } from '../collections/entities/nft.collection.account';
+import { ParseAddressPipe } from 'src/utils/pipes/parse.address.pipe';
 
 @Controller()
 @ApiTags('accounts')
@@ -86,7 +87,7 @@ export class AccountController {
     status: 404,
     description: 'Account not found'
   })
-  async getAccountDetails(@Param('address') address: string): Promise<AccountDetailed> {
+  async getAccountDetails(@Param('address', ParseAddressPipe) address: string): Promise<AccountDetailed> {
     let account = await this.accountService.getAccount(address);
     if (!account) {
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
@@ -105,7 +106,7 @@ export class AccountController {
     status: 404,
     description: 'Account not found'
   })
-  async getAccountDeferred(@Param('address') address: string): Promise<AccountDeferred[]> {
+  async getAccountDeferred(@Param('address', ParseAddressPipe) address: string): Promise<AccountDeferred[]> {
     try {
       return await this.accountService.getDeferredAccount(address);
     } catch(error) {
@@ -133,7 +134,7 @@ export class AccountController {
     description: 'Account not found'
   })
   async getAccountTokens(
-    @Param('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search: string | undefined,
@@ -160,7 +161,7 @@ export class AccountController {
     status: 404,
     description: 'Account not found'
   })
-  async getTokenCount(@Param('address') address: string): Promise<number> {
+  async getTokenCount(@Param('address', ParseAddressPipe) address: string): Promise<number> {
     try {
       return await this.tokenService.getTokenCountForAddress(address);
     } catch (error) {
@@ -173,7 +174,7 @@ export class AccountController {
 
   @Get("/accounts/:address/tokens/c")
   @ApiExcludeEndpoint()
-  async getTokenCountAlternative(@Param('address') address: string): Promise<number> {
+  async getTokenCountAlternative(@Param('address', ParseAddressPipe) address: string): Promise<number> {
     try {
       return await this.tokenService.getTokenCountForAddress(address);
     } catch (error) {
@@ -206,7 +207,7 @@ export class AccountController {
     description: 'Account not found'
   })
   async getAccountCollections(
-    @Param('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('search') search: string | undefined,
@@ -242,7 +243,7 @@ export class AccountController {
     description: 'Account not found'
   })
   async getCollectionCount(
-    @Param('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
 		@Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
     @Query('owner') owner: string | undefined,
@@ -263,7 +264,7 @@ export class AccountController {
   @Get("/accounts/:address/collections/c")
   @ApiExcludeEndpoint()
   async getCollectionCountAlternative(
-    @Param('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
 		@Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
     @Query('owner') owner: string | undefined,
@@ -296,7 +297,7 @@ export class AccountController {
     description: 'Collection not found'
   })
   async getAccountCollection(
-    @Param('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
     @Param('collection') collection: string,
   ): Promise<NftCollectionAccount> {
     let result = await this.collectionService.getCollectionForAddress(address, collection);
@@ -322,7 +323,7 @@ export class AccountController {
     description: 'Token not found'
   })
   async getAccountToken(
-    @Param('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
     @Param('token') token: string,
   ): Promise<TokenWithBalance> {
     let result = await this.tokenService.getTokenForAddress(address, token);
@@ -357,7 +358,7 @@ export class AccountController {
     description: 'Account not found'
   })
   async getAccountNfts(
-    @Param('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
@@ -397,7 +398,7 @@ export class AccountController {
     description: 'Account not found'
   })
   async getNftCount(
-    @Param('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
 		@Query('identifiers') identifiers: string | undefined,
 		@Query('search') search: string | undefined,
 		@Query('type') type: string | undefined,
@@ -418,7 +419,7 @@ export class AccountController {
   @Get("/accounts/:address/nfts/c")
   @ApiExcludeEndpoint()
   async getNftCountAlternative(
-    @Param('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
 		@Query('search') search: string | undefined,
 		@Query('identifiers') identifiers: string | undefined,
 		@Query('type') type: string | undefined,
@@ -451,7 +452,7 @@ export class AccountController {
     description: 'Token not found'
   })
   async getAccountNft(
-    @Param('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
     @Param('nft') nft: string,
   ): Promise<NftAccount> {
     let result = await this.nftService.getNftForAddress(address, nft);
@@ -471,7 +472,7 @@ export class AccountController {
     status: 404,
     description: 'Account not found'
   })
-  async getAccountStake(@Param('address') address: string) {
+  async getAccountStake(@Param('address', ParseAddressPipe) address: string) {
     try {
       return await this.stakeService.getStakeForAddress(address);
     } catch (error) {
@@ -491,7 +492,7 @@ export class AccountController {
     status: 404,
     description: 'Account not found'
   })
-  async getAccountDelegationLegacy(@Param('address') address: string): Promise<AccountDelegationLegacy> {
+  async getAccountDelegationLegacy(@Param('address', ParseAddressPipe) address: string): Promise<AccountDelegationLegacy> {
     try {
       return await this.delegationLegacyService.getDelegationForAddress(address);
     } catch (error) {
@@ -512,7 +513,7 @@ export class AccountController {
     status: 404,
     description: 'Account not found'
   })
-  async getAccountKeys(@Param('address') address: string): Promise<AccountKey[]> {
+  async getAccountKeys(@Param('address', ParseAddressPipe) address: string): Promise<AccountKey[]> {
     try {
       return await this.accountService.getKeys(address);
     } catch (error) {
@@ -529,7 +530,7 @@ export class AccountController {
     type: WaitingList,
     isArray: true
   })
-  async getAccountWaitingList(@Param('address') address: string): Promise<WaitingList[]> {
+  async getAccountWaitingList(@Param('address', ParseAddressPipe) address: string): Promise<WaitingList[]> {
     return await this.waitingListService.getWaitingListForAddress(address);
   }
 
@@ -558,7 +559,7 @@ export class AccountController {
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
   async getAccountTransactions(
-    @Param('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
     @Query('sender') sender: string | undefined, 
     @Query('receiver') receiver: string | undefined, 
     @Query('token') token: string | undefined, 
@@ -616,7 +617,7 @@ export class AccountController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getAccountTransactionsCount(
-    @Param('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
     @Query('sender') sender: string | undefined, 
     @Query('receiver') receiver: string | undefined, 
     @Query('token') token: string | undefined, 
@@ -654,7 +655,7 @@ export class AccountController {
     status: 404,
     description: 'Account not found'
   })
-  getAccountContracts(@Param('address') address: string): Promise<DeployedContract[]> {
+  getAccountContracts(@Param('address', ParseAddressPipe) address: string): Promise<DeployedContract[]> {
     return this.accountService.getAccountContracts(address);;
   }
 
@@ -671,7 +672,7 @@ export class AccountController {
     description: 'Account not found'
   })
   getAccountScResults(
-    @Param('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<SmartContractResult[]> {
@@ -689,7 +690,7 @@ export class AccountController {
     description: 'Account not found'
   })
   getAccountScResultsCount(
-    @Param('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
   ): Promise<SmartContractResult[]> {
     return this.scResultService.getAccountScResultsCount(address);
   }
@@ -705,7 +706,7 @@ export class AccountController {
     description: 'Account not found'
   })
   getAccountScResult(
-    @Param('address') _: string,
+    @Param('address', ParseAddressPipe) _: string,
     @Param('scHash') scHash: string,
   ): Promise<SmartContractResult> {
     return this.scResultService.getScResult(scHash);

@@ -80,8 +80,8 @@ export class RoundController {
       description: 'Round not found'
     })
     async getBlock(
-      @Param('shard') shard: number,
-      @Param('round') round: number
+      @Param('shard', ParseOptionalIntPipe) shard: number,
+      @Param('round', ParseOptionalIntPipe) round: number
     ): Promise<RoundDetailed> {
       try {
         return await this.roundService.getRound(shard, round);

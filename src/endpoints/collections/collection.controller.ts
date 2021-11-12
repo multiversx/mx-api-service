@@ -4,6 +4,7 @@ import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe"
 import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
 import { CollectionService } from "./collection.service";
+import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 
 @Controller()
 @ApiTags('collections')
@@ -29,7 +30,7 @@ export class CollectionController {
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-		@Query('creator') creator: string | undefined,
+		@Query('creator', ParseAddressPipe) creator: string | undefined,
   ): Promise<NftCollection[]> {
     return await this.collectionService.getNftCollections({ from, size }, { search, type, creator });
   }
@@ -45,7 +46,7 @@ export class CollectionController {
   async getCollectionCount(
     @Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-		@Query('creator') creator: string | undefined,
+		@Query('creator', ParseAddressPipe) creator: string | undefined,
   ): Promise<number> {
     return await this.collectionService.getNftCollectionCount({ search, type, creator });
   }
@@ -55,7 +56,7 @@ export class CollectionController {
   async getCollectionCountAlternative(
     @Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-		@Query('creator') creator: string | undefined,
+		@Query('creator', ParseAddressPipe) creator: string | undefined,
   ): Promise<number> {
     return await this.collectionService.getNftCollectionCount({ search, type, creator });
   }

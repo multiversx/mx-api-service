@@ -349,7 +349,7 @@ export class NftService {
       nft.nonce = gatewayNft.nonce;
       nft.creator = gatewayNft.creator;
       nft.royalties = Number(gatewayNft.royalties) / 100; // 10.000 => 100%
-      nft.uris = gatewayNft.uris.filter((x: any) => x);
+      nft.uris = gatewayNft.uris ? gatewayNft.uris.filter((x: any) => x) : [];
       nft.name = gatewayNft.name;
 
       // @ts-ignore

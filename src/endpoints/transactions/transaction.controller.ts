@@ -1,6 +1,7 @@
 import { Body, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
+import { ParseAddressPipe } from 'src/utils/pipes/parse.address.pipe';
 import { ParseOptionalBoolPipe } from 'src/utils/pipes/parse.optional.bool.pipe';
 import { ParseOptionalEnumPipe } from 'src/utils/pipes/parse.optional.enum.pipe';
 import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
@@ -40,8 +41,8 @@ export class TransactionController {
   @ApiQuery({ name: 'withScResults', description: 'Return results for transactions', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
   getTransactions(
-    @Query('sender') sender: string | undefined, 
-    @Query('receiver') receiver: string | undefined, 
+    @Query('sender', ParseAddressPipe) sender: string | undefined, 
+    @Query('receiver', ParseAddressPipe) receiver: string | undefined, 
     @Query('token') token: string | undefined, 
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
@@ -87,8 +88,8 @@ export class TransactionController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   getTransactionCount(
-    @Query('sender') sender: string | undefined, 
-    @Query('receiver') receiver: string | undefined, 
+    @Query('sender', ParseAddressPipe) sender: string | undefined, 
+    @Query('receiver', ParseAddressPipe) receiver: string | undefined, 
     @Query('token') token: string | undefined, 
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
@@ -119,8 +120,8 @@ export class TransactionController {
   @Get("/transactions/c")
   @ApiExcludeEndpoint()
   getTransactionCountAlternative(
-    @Query('sender') sender: string | undefined, 
-    @Query('receiver') receiver: string | undefined, 
+    @Query('sender', ParseAddressPipe) sender: string | undefined, 
+    @Query('receiver', ParseAddressPipe) receiver: string | undefined, 
     @Query('token') token: string | undefined, 
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
