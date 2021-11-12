@@ -42,6 +42,23 @@ export class AccountService {
     );
   }
 
+  async getAccountUsername(address: string): Promise<string | null> {
+    return this.cachingService.getOrSetCache(
+      `account:${address}:username`,
+      async () => await this.getAccountUsernameRaw(address),
+      Constants.oneWeek()
+    )
+  }
+
+  async getAccountUsernameRaw(address: string): Promise<string | null> {
+    let account = await this.getAccount(address);
+    if (!account) {
+      return null;
+    }
+
+    return account.username;
+  }
+
   async getAccount(address: string): Promise<AccountDetailed | null> {
     const queries = [
       QueryType.Match('sender', address),

@@ -9,9 +9,9 @@ import { NftService } from "./nft.service";
 @Module({
   imports: [
     forwardRef(() => CommonModule),
-    EsdtModule,
-    TokenModule,
-    CollectionModule
+    forwardRef(() => EsdtModule),
+    forwardRef(() => TokenModule),
+    forwardRef(() => CollectionModule)
   ],
   providers: [
     NftService, NftExtendedAttributesService

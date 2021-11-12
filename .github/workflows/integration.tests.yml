@@ -42,6 +42,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
       - run: npm ci
+      - name: Initialize
+        run: npm run init
       - name: Run integration tests
         run: |
           if ${{ github.ref == 'refs/heads/main' }}; then

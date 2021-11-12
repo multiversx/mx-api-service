@@ -26,6 +26,7 @@ import { QueryType } from 'src/common/elastic/entities/query.type';
 import { ElasticSortProperty } from 'src/common/elastic/entities/elastic.sort.property';
 import { ElasticSortOrder } from 'src/common/elastic/entities/elastic.sort.order';
 import { TermsQuery } from 'src/common/elastic/entities/terms.query';
+import { PluginService } from 'src/common/plugins/plugin.service';
 
 @Injectable()
 export class TransactionService {
@@ -39,6 +40,7 @@ export class TransactionService {
     private readonly transactionScamCheckService: TransactionScamCheckService,
     private readonly transactionGetService: TransactionGetService,
     private readonly tokenTransferService: TokenTransferService,
+    private readonly pluginsService: PluginService,
   ) {
     this.logger = new Logger(TransactionService.name);
   }
@@ -192,6 +194,15 @@ export class TransactionService {
       return detailedTransactions;
     }
 
+    for (let transaction of transactions) {
+      try {
+        await this.pluginsService.processTransaction(transaction);
+      } catch (error) {
+        this.logger.error(`Unhandled error when processing plugin transaction for transaction with hash '${transaction.txHash}'`);
+        this.logger.error(error);
+      }
+    }
+
     return transactions;
   }
 
@@ -213,6 +224,13 @@ export class TransactionService {
         transaction.scamInfo = scamInfo;
       } catch(error) {
         this.logger.error(`Error when fetching transaction price for transaction with hash '${txHash}'`);
+        this.logger.error(error);
+      }
+
+      try {
+        await this.pluginsService.processTransaction(transaction);
+      } catch (error) {
+        this.logger.error(`Unhandled error when processing plugin transaction for transaction with hash '${transaction.txHash}'`);
         this.logger.error(error);
       }
     }
