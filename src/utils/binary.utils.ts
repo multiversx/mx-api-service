@@ -56,6 +56,14 @@ export class BinaryUtils {
   static hexToString(hex: string): string {
     return Buffer.from(hex, 'hex').toString('ascii');
   }
+
+  static hexToNumber(hex: string): number {
+    return parseInt(hex, 16);
+  }
+
+  static hexToBigInt(hex: string): BigInt {
+    return BigInt('0x' + hex);
+  }
   
   static padHex(value: string): string {
     return (value.length % 2 ? '0' + value : value);

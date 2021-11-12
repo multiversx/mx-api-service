@@ -195,7 +195,12 @@ export class TransactionService {
     }
 
     for (let transaction of transactions) {
-      this.pluginsService.processTransaction(transaction);
+      try {
+        await this.pluginsService.processTransaction(transaction);
+      } catch (error) {
+        this.logger.error(`Unhandled error when processing plugin transaction for transaction with hash '${transaction.txHash}'`);
+        this.logger.error(error);
+      }
     }
 
     return transactions;

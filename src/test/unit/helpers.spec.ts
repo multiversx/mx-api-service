@@ -1,5 +1,4 @@
 import { ApiUtils } from 'src/utils/api.utils';
-import { NumberUtils } from 'src/utils/number.utils';
 
 describe('API helpers', () => {
   describe('Cleanup API response helper', () => {
@@ -100,12 +99,6 @@ describe('API helpers', () => {
       ApiUtils.cleanupApiValueRecursively(testObject);
 
       expect(testObject).toMatchObject(testObject);
-    });
-
-    it('should return a denomination value', () => {
-      expect(NumberUtils.denominateFloat('50000000100000000000')).toEqual(
-        '50.000000100000000000',
-      );
     });
   });
 });
