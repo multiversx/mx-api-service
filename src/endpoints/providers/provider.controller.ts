@@ -3,6 +3,7 @@ import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Node } from "src/endpoints/nodes/entities/node";
 import { ProviderService } from "./provider.service";
 import { Provider } from "./entities/provider";
+import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 
 @Controller()
 @ApiTags('providers')
@@ -37,7 +38,7 @@ export class ProviderController {
     status: 404,
     description: 'Provider not found'
   })
-  async getProvider(@Param('address') address: string): Promise<Provider> {
+  async getProvider(@Param('address', ParseAddressPipe) address: string): Promise<Provider> {
     let provider = await this.providerService.getProvider(address);
     if (provider === undefined) {
       throw new HttpException(`Provider '${address}' not found`, HttpStatus.NOT_FOUND);

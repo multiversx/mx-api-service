@@ -6,6 +6,7 @@ import { VmQueryService } from "../vm.query/vm.query.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { Constants } from "src/utils/constants";
 import { GatewayService } from "src/common/gateway/gateway.service";
+import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 
 @Controller()
 @ApiTags('proxy')
@@ -18,43 +19,43 @@ export class ProxyController {
 
   @Get('/address/:address')
   @ApiExcludeEndpoint()
-  async getAddress(@Res() res: Response, @Param('address') address: string) {
+  async getAddress(@Res() res: Response, @Param('address', ParseAddressPipe) address: string) {
     await this.gatewayGet(res, `address/${address}`);
   }
 
   @Get('/address/:address/balance')
   @ApiExcludeEndpoint()
-  async getAddressBalance(@Res() res: Response, @Param('address') address: string) {
+  async getAddressBalance(@Res() res: Response, @Param('address', ParseAddressPipe) address: string) {
     await this.gatewayGet(res, `address/${address}/balance`);
   }
 
   @Get('/address/:address/nonce')
   @ApiExcludeEndpoint()
-  async getAddressNonce(@Res() res: Response, @Param('address') address: string) {
+  async getAddressNonce(@Res() res: Response, @Param('address', ParseAddressPipe) address: string) {
     await this.gatewayGet(res, `address/${address}/nonce`);
   }
 
   @Get('/address/:address/shard')
   @ApiExcludeEndpoint()
-  async getAddressShard(@Res() res: Response, @Param('address') address: string) {
+  async getAddressShard(@Res() res: Response, @Param('address', ParseAddressPipe) address: string) {
     await this.gatewayGet(res, `address/${address}/shard`);
   }
 
   @Get('/address/:address/storage/:key')
   @ApiExcludeEndpoint()
-  async getAddressStorageKey(@Res() res: Response, @Param('address') address: string, @Param('key') key: string) {
+  async getAddressStorageKey(@Res() res: Response, @Param('address', ParseAddressPipe) address: string, @Param('key') key: string) {
     await this.gatewayGet(res, `address/${address}/storage/${key}`);
   }
 
   @Get('/address/:address/transactions')
   @ApiExcludeEndpoint()
-  async getAddressTransactions(@Res() res: Response, @Param('address') address: string) {
+  async getAddressTransactions(@Res() res: Response, @Param('address', ParseAddressPipe) address: string) {
     await this.gatewayGet(res, `address/${address}/transactions`);
   }
 
   @Get('/address/:address/esdt')
   @ApiExcludeEndpoint()
-  async getAddressEsdt(@Res() res: Response, @Param('address') address: string) {
+  async getAddressEsdt(@Res() res: Response, @Param('address', ParseAddressPipe) address: string) {
     await this.gatewayGet(res, `address/${address}/esdt`, undefined, async (error) => {
       const message = error.response?.data?.error;
       if (message && message.includes('account was not found')) {

@@ -1,5 +1,6 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { EsdtService } from "../esdt/esdt.service";
@@ -42,7 +43,7 @@ export class NftController {
 		@Query('type') type: string | undefined,
 		@Query('collection') collection: string | undefined,
 		@Query('tags') tags: string | undefined,
-		@Query('creator') creator: string | undefined,
+		@Query('creator', ParseAddressPipe) creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
     @Query('withOwner', new ParseOptionalBoolPipe) withOwner: boolean | undefined,
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply: boolean | undefined,
@@ -68,7 +69,7 @@ export class NftController {
 		@Query('type') type: string | undefined,
 		@Query('collection') collection: string | undefined,
 		@Query('tags') tags: string | undefined,
-		@Query('creator') creator: string | undefined,
+		@Query('creator', ParseAddressPipe) creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<number> {
     return await this.nftService.getNftCount({ search, identifiers, type, collection, tags, creator, hasUris });
@@ -82,7 +83,7 @@ export class NftController {
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
 		@Query('collection') collection: string | undefined,
 		@Query('tags') tags: string | undefined,
-		@Query('creator') creator: string | undefined,
+		@Query('creator', ParseAddressPipe) creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<number> {
     return await this.nftService.getNftCount({ search, identifiers, type, collection, tags, creator, hasUris });

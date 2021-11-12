@@ -1,5 +1,6 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
@@ -155,8 +156,8 @@ export class TokenController {
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
   async getTokenTransactions(
     @Param('identifier') identifier: string,
-    @Query('sender') sender: string | undefined, 
-    @Query('receiver') receiver: string | undefined, 
+    @Query('sender', ParseAddressPipe) sender: string | undefined, 
+    @Query('receiver', ParseAddressPipe) receiver: string | undefined, 
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
     @Query('miniBlockHash') miniBlockHash: string | undefined, 
@@ -212,8 +213,8 @@ export class TokenController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getTokenTransactionsCount(
     @Param('identifier') identifier: string,
-    @Query('sender') sender: string | undefined, 
-    @Query('receiver') receiver: string | undefined, 
+    @Query('sender', ParseAddressPipe) sender: string | undefined, 
+    @Query('receiver', ParseAddressPipe) receiver: string | undefined, 
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
     @Query('miniBlockHash') miniBlockHash: string | undefined, 
