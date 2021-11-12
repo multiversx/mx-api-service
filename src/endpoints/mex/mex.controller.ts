@@ -1,5 +1,6 @@
 import { Controller, Get, HttpException, HttpStatus, Param } from "@nestjs/common";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { MexWeek } from "./entities/mex.week";
 import { MexService } from "./mex.service";
 
@@ -18,7 +19,7 @@ export class MexController {
     status: 404,
     description: 'Address not found'
   })
-  async getMexForAddress(@Param('address') address: string): Promise<MexWeek[]> {
+  async getMexForAddress(@Param('address', ParseAddressPipe) address: string): Promise<MexWeek[]> {
     let mex = await this.mexService.getMexForAddress(address);
     if (!mex) {
       throw new HttpException('Address not found', HttpStatus.NOT_FOUND);

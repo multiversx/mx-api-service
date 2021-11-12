@@ -10,6 +10,7 @@ import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { Response } from 'express';
 import { SortOrder } from "src/common/entities/sort.order";
 import { NodeSort } from "./entities/node.sort";
+import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 
 @Controller()
 @ApiTags('nodes')
@@ -47,7 +48,7 @@ export class NodeController {
 		@Query('issues', ParseOptionalBoolPipe) issues: boolean | undefined,
 		@Query('identity') identity: string | undefined,
 		@Query('provider') provider: string | undefined,
-		@Query('owner') owner: string | undefined,
+		@Query('owner', ParseAddressPipe) owner: string | undefined,
 		@Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort: NodeSort | undefined,
 		@Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
 	): Promise<Node[]> {
@@ -90,7 +91,7 @@ export class NodeController {
 		@Query('issues', ParseOptionalBoolPipe) issues: boolean | undefined,
 		@Query('identity') identity: string | undefined,
 		@Query('provider') provider: string | undefined,
-		@Query('owner', ParseOptionalIntPipe) owner: string | undefined,
+		@Query('owner', ParseAddressPipe) owner: string | undefined,
 		@Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort: NodeSort | undefined,
 		@Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
 	): Promise<number> {
@@ -108,7 +109,7 @@ export class NodeController {
 		@Query('issues', ParseOptionalBoolPipe) issues: boolean | undefined,
 		@Query('identity') identity: string | undefined,
 		@Query('provider') provider: string | undefined,
-		@Query('owner', ParseOptionalIntPipe) owner: string | undefined,
+		@Query('owner', ParseAddressPipe) owner: string | undefined,
 		@Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort: NodeSort | undefined,
 		@Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
 	): Promise<number> {
