@@ -53,9 +53,7 @@ export class TokenAssetService {
     let json = JSON.parse(jsonContents);
 
     return {
-      website: json.website,
-      description: json.description,
-      status: json.status,
+      ...json,
       pngUrl: this.getImageUrl(tokenIdentifier, 'logo.png'),
       svgUrl: this.getImageUrl(tokenIdentifier, 'logo.svg'),
     };
