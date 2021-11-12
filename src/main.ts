@@ -24,6 +24,7 @@ import { JwtAuthenticateGuard } from './interceptors/access.interceptor';
 import { TransactionProcessorModule } from './crons/transaction.processor.module';
 import { MicroserviceModule } from './common/microservice/microservice.module';
 import { ProtocolService } from './common/protocol/protocol.service';
+import { PaginationInterceptor } from './interceptors/pagination.interceptor';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
@@ -63,6 +64,7 @@ async function bootstrap() {
   globalInterceptors.push(new FieldsInterceptor());
   globalInterceptors.push(new ExtractInterceptor());
   globalInterceptors.push(new CleanupInterceptor());
+  globalInterceptors.push(new PaginationInterceptor());
   
 
   publicApp.useGlobalInterceptors(...globalInterceptors);
