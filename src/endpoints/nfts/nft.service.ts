@@ -322,6 +322,10 @@ export class NftService {
         // normalizing tokenIdentifier since it doesn't contain the nonce in this particular scenario
         gatewayNft.tokenIdentifier = identifier;
 
+        if (gatewayNft.balance === '0') {
+          return [];
+        }
+
         return [ gatewayNft ];
       } 
       
