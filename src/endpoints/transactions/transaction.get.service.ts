@@ -156,7 +156,7 @@ export class TransactionGetService {
       );
 
       if (identicalOperations.length > 0) {
-        continue;
+        result.remove(identicalOperations[0]);
       }
 
       result.push(operation);
