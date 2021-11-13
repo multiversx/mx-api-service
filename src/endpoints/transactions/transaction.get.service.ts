@@ -152,7 +152,8 @@ export class TransactionGetService {
         x.receiver === operation.receiver && 
         x.collection === operation.collection &&
         x.identifier === operation.identifier &&
-        x.type === operation.type
+        x.type === operation.type &&
+        x.action === 'transfer'
       );
 
       if (identicalOperations.length > 0) {
