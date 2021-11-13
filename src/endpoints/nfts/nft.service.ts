@@ -16,7 +16,6 @@ import { ElasticService } from "src/common/elastic/elastic.service";
 import { EsdtService } from "../esdt/esdt.service";
 import { TokenAssetService } from "../tokens/token.asset.service";
 import { GatewayNft } from "./entities/gateway.nft";
-import { CollectionService } from "../collections/collection.service";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { QueryType } from "src/common/elastic/entities/query.type";
@@ -36,7 +35,6 @@ export class NftService {
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     private readonly esdtService: EsdtService,
     private readonly tokenAssetService: TokenAssetService,
-    private readonly collectionService: CollectionService,
     private readonly cachingService: CachingService,
   ) {
     this.logger = new Logger(NftService.name);
@@ -180,7 +178,7 @@ export class NftService {
     this.updateThumbnailUrlForNfts(nfts);
 
     for (let nft of nfts) {
-      let collectionProperties = await this.collectionService.getCollectionProperties(nft.collection);
+      let collectionProperties = await this.esdtService.getEsdtTokenProperties(nft.collection);
 
       if (collectionProperties) {
         if (!nft.name) {
@@ -376,7 +374,7 @@ export class NftService {
         nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(gatewayNft.attributes);
       }
 
-      let collectionDetails = await this.collectionService.getCollectionProperties(nft.collection);
+      let collectionDetails = await this.esdtService.getEsdtTokenProperties(nft.collection);
       if (collectionDetails) {
         // @ts-ignore
         nft.type = collectionDetails.type;

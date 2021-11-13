@@ -107,18 +107,4 @@ describe.skip('Nft Service', () => {
       expect(nftCount).toBeInstanceOf(Number);
     });
   })
-
-  describe('Specific nft', () => {
-    it(`should return a nft for a specific identifier`, async () => {
-      const nft = await collectionService.getCollectionProperties(nftIdentifier);
-
-      if (nft) {
-        expect(nft.token).toBe(nftIdentifier);
-      }
-    });
-
-    it(`should throw 'NFT not found' error`, async () => {
-      await expect (collectionService.getCollectionProperties(nftIdentifier + 'a')).toBeUndefined();
-    });
-  })
 });

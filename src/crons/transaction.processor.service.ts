@@ -134,7 +134,7 @@ export class TransactionProcessorService {
 
     this.logger.log(`Change SFT to Meta ESDT transaction detected for collection '${collectionIdentifier}'`);
 
-    const key = `collection:${collectionIdentifier}`;
+    const key = `esdt:${collectionIdentifier}`;
     await this.cachingService.deleteInCache(key);
 
     return [ key ];

@@ -146,8 +146,8 @@ export class EsdtService {
 
     let tokens = await this.cachingService.batchProcess(
       tokensIdentifiers,
-      token => `token:${token}`,
-      async (token: string) => await this.getEsdtTokenProperties(token),
+      token => `esdt:${token}`,
+      async (token: string) => await this.getEsdtTokenPropertiesRaw(token),
       Constants.oneDay(),
       true
     );
@@ -156,7 +156,22 @@ export class EsdtService {
     return tokens;
   }
 
-  async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | null> {
+  async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
+    let properties = await this.cachingService.getOrSetCache(
+      `esdt:${identifier}`,
+      async () => await this.getEsdtTokenPropertiesRaw(identifier),
+      Constants.oneWeek(),
+      Constants.oneDay()
+    );
+
+    if (!properties) {
+      return undefined;
+    }
+    
+    return properties;
+  }
+
+  async getEsdtTokenPropertiesRaw(identifier: string): Promise<TokenProperties | null> {
     const arg = Buffer.from(identifier, 'utf8').toString('hex');
 
     const tokenPropertiesEncoded = await this.vmQueryService.vmQuery(
