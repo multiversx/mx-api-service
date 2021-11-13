@@ -82,6 +82,10 @@ Array.prototype.distinctBy = function<TCollection, TResult>(predicate: (element:
   return result;
 }
 
+Array.prototype.all = function<T>(predicate: (item: T) => boolean): boolean {
+  return !this.some(x => !predicate(x));
+}
+
 declare interface Array<T> {
   groupBy(predicate: (item: T) => any): any;
   selectMany<TOUT>(predicate: (item: T) => TOUT[]): TOUT[];
@@ -91,4 +95,5 @@ declare interface Array<T> {
   findMissingElements<T>(second: T[]): T[];
   distinct(): T[];
   distinctBy<TResult>(predicate: (element: T) => TResult): T[];
+  all(predicate: (item: T) => boolean): boolean;
 }

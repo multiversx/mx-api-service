@@ -1,19 +1,15 @@
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CachingService } from "src/common/caching/caching.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
-import { Constants } from "src/utils/constants";
 import { EsdtService } from "../esdt/esdt.service";
 import { AddresCollectionRoles } from "./entities/address.collection.roles";
 import { CollectionAccountFilter } from "./entities/collection.account.filter";
 import { CollectionFilter } from "./entities/collection.filter";
 import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
-import { TokenProperties } from "../tokens/entities/token.properties";
 import { TokenAssetService } from "../tokens/token.asset.service";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
@@ -23,27 +19,11 @@ export class CollectionService {
   constructor(
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: CachingService,
     private readonly elasticService: ElasticService,
     private readonly esdtService: EsdtService,
     private readonly tokenAssetService: TokenAssetService,
     private readonly vmQueryService: VmQueryService,
   ) { }
-
-  async getCollectionProperties(identifier: string): Promise<TokenProperties | undefined> {
-    let properties = await this.cachingService.getOrSetCache(
-      `collection:${identifier}`,
-      async () => await this.esdtService.getEsdtTokenProperties(identifier),
-      Constants.oneWeek(),
-      Constants.oneDay()
-    );
-
-    if (!properties) {
-      return undefined;
-    }
-
-    return ApiUtils.mergeObjects(new TokenProperties(), properties);
-  }
 
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
     if (filter.creator) {
@@ -61,7 +41,7 @@ export class CollectionService {
       nftCollection.collection = tokenCollection.token;
       nftCollection.timestamp = tokenCollection.timestamp;
 
-      let collectionProperties = await this.getCollectionProperties(nftCollection.collection);
+      let collectionProperties = await this.esdtService.getEsdtTokenProperties(nftCollection.collection);
       if (collectionProperties) {
         nftCollection.owner = collectionProperties.owner;
         nftCollection.canFreeze = collectionProperties.canFreeze;
@@ -158,7 +138,7 @@ export class CollectionService {
 
     let nftCollections: NftCollectionAccount[] = [];
     for (let tokenIdentifier of tokenIdentifiers) {
-      let collectionProperties = await this.getCollectionProperties(tokenIdentifier);
+      let collectionProperties = await this.esdtService.getEsdtTokenProperties(tokenIdentifier);
       if (!collectionProperties) {
         continue;
       }
