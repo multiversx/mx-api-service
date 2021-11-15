@@ -1,5 +1,6 @@
 import { Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ParseHashPipe } from "src/utils/pipes/parse.hash.pipe";
 import { SmartContractResult } from "./entities/smart.contract.result";
 import { SmartContractResultService } from "./scresult.service";
 
@@ -43,7 +44,7 @@ export class SmartContractResultController {
     status: 404,
     description: 'Smart contract result not found'
   })
-  getScResult(@Param('scHash') scHash: string): Promise<SmartContractResult> {
+  getScResult(@Param('scHash', ParseHashPipe) scHash: string): Promise<SmartContractResult> {
     return this.scResultService.getScResult(scHash);
   }
 }

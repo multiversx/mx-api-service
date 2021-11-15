@@ -1,5 +1,6 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ParseHashPipe } from "src/utils/pipes/parse.hash.pipe";
 import { ParseOptionalIntPipe as ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { BlockService } from "./block.service";
 import { Block } from "./entities/block";
@@ -26,8 +27,8 @@ export class BlockController {
     @ApiQuery({ name: 'nonce', description: 'Filter by nonce', required: false  })
     getBlocks(
       @Query('shard', ParseOptionalIntPipe) shard: number | undefined, 
-      @Query('proposer') proposer: string | undefined,
-      @Query('validator') validator: string | undefined,
+      @Query('proposer', ParseHashPipe) proposer: string | undefined,
+      @Query('validator', ParseHashPipe) validator: string | undefined,
       @Query('epoch', ParseOptionalIntPipe) epoch: number | undefined,
       @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
       @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -48,8 +49,8 @@ export class BlockController {
     @ApiQuery({ name: 'nonce', description: 'Filter by nonce', required: false  })
     getBlocksCount(
       @Query('shard', ParseOptionalIntPipe) shard: number | undefined, 
-      @Query('proposer') proposer: string | undefined,
-      @Query('validator') validator: string | undefined,
+      @Query('proposer', ParseHashPipe) proposer: string | undefined,
+      @Query('validator', ParseHashPipe) validator: string | undefined,
       @Query('epoch', ParseOptionalIntPipe) epoch: number | undefined,
       @Query('nonce', ParseOptionalIntPipe) nonce: number | undefined,
     ): Promise<number> {
@@ -60,8 +61,8 @@ export class BlockController {
     @ApiExcludeEndpoint()
     getBlocksCountAlternative(
       @Query('shard', ParseOptionalIntPipe) shard: number | undefined, 
-      @Query('proposer') proposer: string | undefined,
-      @Query('validator') validator: string | undefined,
+      @Query('proposer', ParseHashPipe) proposer: string | undefined,
+      @Query('validator', ParseHashPipe) validator: string | undefined,
       @Query('epoch', ParseOptionalIntPipe) epoch: number | undefined,
       @Query('nonce', ParseOptionalIntPipe) nonce: number | undefined,
     ): Promise<number> {
@@ -78,7 +79,7 @@ export class BlockController {
       status: 404,
       description: 'Block not found'
     })
-    async getBlock(@Param('hash') hash: string): Promise<BlockDetailed> {
+    async getBlock(@Param('hash', ParseHashPipe) hash: string): Promise<BlockDetailed> {
       try {
         return await this.blockService.getBlock(hash);
       } catch {

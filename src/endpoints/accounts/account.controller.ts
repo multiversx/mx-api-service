@@ -26,6 +26,7 @@ import { SmartContractResultService } from '../sc-results/scresult.service';
 import { CollectionService } from '../collections/collection.service';
 import { NftCollectionAccount } from '../collections/entities/nft.collection.account';
 import { ParseAddressPipe } from 'src/utils/pipes/parse.address.pipe';
+import { ParseHashPipe } from 'src/utils/pipes/parse.hash.pipe';
 
 @Controller()
 @ApiTags('accounts')
@@ -212,7 +213,7 @@ export class AccountController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-    @Query('owner') owner: string | undefined,
+    @Query('owner', ParseAddressPipe) owner: string | undefined,
     @Query('canCreate', new ParseOptionalBoolPipe) canCreate: boolean | undefined,
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn: boolean | undefined,
     @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity: boolean | undefined,
@@ -246,7 +247,7 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
 		@Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-    @Query('owner') owner: string | undefined,
+    @Query('owner', ParseAddressPipe) owner: string | undefined,
     @Query('canCreate', new ParseOptionalBoolPipe) canCreate: boolean | undefined,
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn: boolean | undefined,
     @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity: boolean | undefined,
@@ -267,7 +268,7 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
 		@Query('search') search: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-    @Query('owner') owner: string | undefined,
+    @Query('owner', ParseAddressPipe) owner: string | undefined,
     @Query('canCreate', new ParseOptionalBoolPipe) canCreate: boolean | undefined,
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn: boolean | undefined,
     @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity: boolean | undefined,
@@ -367,7 +368,7 @@ export class AccountController {
     @Query('collection') collection?: string,
     @Query('collections') collections?: string,
     @Query('tags') tags?: string,
-    @Query('creator') creator?: string,
+    @Query('creator', ParseAddressPipe) creator?: string,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
     @Query('withTimestamp', new ParseOptionalBoolPipe) withTimestamp?: boolean,
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean,
@@ -404,7 +405,7 @@ export class AccountController {
 		@Query('type') type: string | undefined,
 		@Query('collection') collection: string | undefined,
 		@Query('tags') tags: string | undefined,
-		@Query('creator') creator: string | undefined,
+		@Query('creator', ParseAddressPipe) creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
     ): Promise<number> {
     try {
@@ -425,7 +426,7 @@ export class AccountController {
 		@Query('type') type: string | undefined,
 		@Query('collection') collection: string | undefined,
 		@Query('tags') tags: string | undefined,
-		@Query('creator') creator: string | undefined,
+		@Query('creator', ParseAddressPipe) creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
     ): Promise<number> {
     try {
@@ -560,12 +561,12 @@ export class AccountController {
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
   async getAccountTransactions(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('sender') sender: string | undefined, 
-    @Query('receiver') receiver: string | undefined, 
+    @Query('sender', ParseAddressPipe) sender: string | undefined, 
+    @Query('receiver', ParseAddressPipe) receiver: string | undefined, 
     @Query('token') token: string | undefined, 
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
-    @Query('miniBlockHash') miniBlockHash: string | undefined, 
+    @Query('miniBlockHash', ParseHashPipe) miniBlockHash: string | undefined, 
     @Query('hashes') hashes: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
     @Query('search') search: string | undefined,
@@ -618,12 +619,12 @@ export class AccountController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getAccountTransactionsCount(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('sender') sender: string | undefined, 
-    @Query('receiver') receiver: string | undefined, 
+    @Query('sender', ParseAddressPipe) sender: string | undefined, 
+    @Query('receiver', ParseAddressPipe) receiver: string | undefined, 
     @Query('token') token: string | undefined, 
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
-    @Query('miniBlockHash') miniBlockHash: string | undefined, 
+    @Query('miniBlockHash', ParseHashPipe) miniBlockHash: string | undefined, 
     @Query('hashes') hashes: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
     @Query('search') search: string | undefined, 
@@ -707,7 +708,7 @@ export class AccountController {
   })
   getAccountScResult(
     @Param('address', ParseAddressPipe) _: string,
-    @Param('scHash') scHash: string,
+    @Param('scHash', ParseHashPipe) scHash: string,
   ): Promise<SmartContractResult> {
     return this.scResultService.getScResult(scHash);
   }

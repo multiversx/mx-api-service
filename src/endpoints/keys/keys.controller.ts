@@ -1,5 +1,6 @@
 import { Controller, Get, HttpException, HttpStatus, Param } from "@nestjs/common";
 import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ParseHashPipe } from "src/utils/pipes/parse.hash.pipe";
 import { KeyUnbondPeriod } from "./entities/key.unbond.period";
 import { KeysService } from "./keys.service";
 
@@ -16,7 +17,7 @@ export class KeysController {
 	})
 	@ApiQuery({ name: 'key', description: 'The BLS key of the node', required: true })
 	async getKeyUnbondPeriod(
-		@Param('key') key: string
+		@Param('key', ParseHashPipe) key: string
 	): Promise<KeyUnbondPeriod> {
     let result = await this.keysService.getKeyUnbondPeriod(key);
     if (!result) {
