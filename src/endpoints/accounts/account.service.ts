@@ -70,17 +70,19 @@ export class AccountService {
     try {
       const [
         txCount,
+        scrCount,
         {
           account: { nonce, balance, code, codeHash, rootHash, username, developerReward, ownerAddress },
         },
       ] = await Promise.all([
         this.elasticService.getCount('transactions', elasticQuery),
+        this.elasticService.getCount('scresults', elasticQuery),
         this.gatewayService.get(`address/${address}`)
       ]);
 
       let shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
   
-      let result: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount, username, shard, developerReward, ownerAddress };
+      let result: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, username, shard, developerReward, ownerAddress };
 
       if (result.code && !this.apiConfigService.getUseLegacyElastic()) {
         const deployedAt = await this.getAccountDeployedAt(address);
