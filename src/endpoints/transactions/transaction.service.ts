@@ -190,12 +190,7 @@ export class TransactionService {
     }
 
     for (let transaction of transactions) {
-      try {
-        await this.pluginsService.processTransaction(transaction);
-      } catch (error) {
-        this.logger.error(`Unhandled error when processing plugin transaction for transaction with hash '${transaction.txHash}'`);
-        this.logger.error(error);
-      }
+      await this.processTransaction(transaction);
     }
 
     return transactions;
@@ -209,23 +204,11 @@ export class TransactionService {
     }
 
     if (transaction !== null) {
-      try {
-        const [price] = await Promise.all([
-          this.transactionPriceService.getTransactionPrice(transaction),
-        ]);
-
-        transaction.price = price;
-      } catch (error) {
-        this.logger.error(`Error when fetching transaction price for transaction with hash '${txHash}'`);
-        this.logger.error(error);
-      }
-
-      try {
-        await this.pluginsService.processTransaction(transaction);
-      } catch (error) {
-        this.logger.error(`Unhandled error when processing plugin transaction for transaction with hash '${transaction.txHash}'`);
-        this.logger.error(error);
-      }
+      const [price] = await Promise.all([
+        this.getTransactionPrice(transaction),
+        this.processTransaction(transaction),
+      ]);
+      transaction.price = price;
     }
 
     return transaction;
@@ -253,5 +236,24 @@ export class TransactionService {
       senderShard,
       status: 'Pending',
     };
+  }
+
+  private async getTransactionPrice(transaction: TransactionDetailed): Promise<number | undefined> {
+    try {
+      return await this.transactionPriceService.getTransactionPrice(transaction);
+    } catch (error) {
+      this.logger.error(`Error when fetching transaction price for transaction with hash '${transaction.txHash}'`);
+      this.logger.error(error);
+      return;
+    }
+  }
+
+  private async processTransaction(transaction: Transaction | TransactionDetailed): Promise<void> {
+    try {
+      await this.pluginsService.processTransaction(transaction);
+    } catch (error) {
+      this.logger.error(`Unhandled error when processing plugin transaction for transaction with hash '${transaction.txHash}'`);
+      this.logger.error(error);
+    }
   }
 }
