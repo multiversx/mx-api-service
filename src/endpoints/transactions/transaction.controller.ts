@@ -6,6 +6,7 @@ import { ParseHashPipe } from 'src/utils/pipes/parse.hash.pipe';
 import { ParseOptionalBoolPipe } from 'src/utils/pipes/parse.optional.bool.pipe';
 import { ParseOptionalEnumPipe } from 'src/utils/pipes/parse.optional.enum.pipe';
 import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
+import { ParseTransactionHashPipe } from 'src/utils/pipes/parse.transaction.hash.pipe';
 import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
@@ -161,7 +162,7 @@ export class TransactionController {
     status: 404,
     description: 'Transaction not found'
   })
-  async getTransaction(@Param('txHash', ParseHashPipe) txHash: string): Promise<TransactionDetailed> {
+  async getTransaction(@Param('txHash', ParseTransactionHashPipe) txHash: string): Promise<TransactionDetailed> {
     let transaction = await this.transactionService.getTransaction(txHash);
     if (transaction === null) {
       throw new HttpException('Transaction not found', HttpStatus.NOT_FOUND);

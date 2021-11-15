@@ -4,6 +4,11 @@ import { ArgumentMetadata, HttpException, HttpStatus, PipeTransform } from "@nes
 const HASH_SIZE = 64;
 
 export class ParseHashPipe implements PipeTransform<string | undefined, Promise<string | undefined>> {
+    private entity: string;
+    constructor(entity: string) {
+      this.entity = entity;
+    }
+
     transform(value: string | undefined, _: ArgumentMetadata): Promise<string | undefined> {
         return new Promise(resolve => {
             if (value === undefined || value === '') {
@@ -17,7 +22,7 @@ export class ParseHashPipe implements PipeTransform<string | undefined, Promise<
               }
               return resolve(value);
             } catch(error){
-              throw new HttpException(`Validation failed (a hash with length ${HASH_SIZE} is expected)`, HttpStatus.BAD_REQUEST);
+              throw new HttpException(`Validation failed (a valid hash with size ${HASH_SIZE} for ${this.entity} is expected)`, HttpStatus.BAD_REQUEST);
             }
         });
     }

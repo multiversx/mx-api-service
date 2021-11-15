@@ -27,6 +27,7 @@ import { CollectionService } from '../collections/collection.service';
 import { NftCollectionAccount } from '../collections/entities/nft.collection.account';
 import { ParseAddressPipe } from 'src/utils/pipes/parse.address.pipe';
 import { ParseHashPipe } from 'src/utils/pipes/parse.hash.pipe';
+import { ParseTransactionHashPipe } from 'src/utils/pipes/parse.transaction.hash.pipe';
 
 @Controller()
 @ApiTags('accounts')
@@ -708,7 +709,7 @@ export class AccountController {
   })
   async getAccountScResult(
     @Param('address', ParseAddressPipe) _: string,
-    @Param('scHash', ParseHashPipe) scHash: string,
+    @Param('scHash', ParseTransactionHashPipe) scHash: string,
   ): Promise<SmartContractResult> {
     let scResult = await this.scResultService.getScResult(scHash);
     if (!scResult) {

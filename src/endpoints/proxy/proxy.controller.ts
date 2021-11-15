@@ -8,6 +8,7 @@ import { Constants } from "src/utils/constants";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseHashPipe } from "src/utils/pipes/parse.hash.pipe";
+import { ParseTransactionHashPipe } from "src/utils/pipes/parse.transaction.hash.pipe";
 
 @Controller()
 @ApiTags('proxy')
@@ -103,7 +104,7 @@ export class ProxyController {
   @ApiQuery({ name: 'withResults', description: 'Include results which correspond to the hash', required: false })
   async getTransaction(
     @Res() res: Response, 
-    @Param('hash', ParseHashPipe) hash: string,
+    @Param('hash', ParseTransactionHashPipe) hash: string,
     @Query('sender', ParseAddressPipe) sender: string | undefined,
     @Query('withResults') withResults: string | undefined,
   ) {
@@ -115,7 +116,7 @@ export class ProxyController {
   @ApiQuery({ name: 'sender', description: 'Sender', required: false })
   async getTransactionStatus(
     @Res() res: Response, 
-    @Param('hash', ParseHashPipe) hash: string,
+    @Param('hash', ParseTransactionHashPipe) hash: string,
     @Query('sender', ParseAddressPipe) sender: string,
   ) {
     await this.gatewayGet(res, `transaction/${hash}/status`, { sender });
