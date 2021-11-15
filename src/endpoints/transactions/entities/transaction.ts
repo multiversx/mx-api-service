@@ -53,10 +53,13 @@ export class Transaction {
   data: string = '';
 
   @ApiProperty()
-  tokenIdentifier?: string;
+  tokenIdentifier: string | undefined = undefined;
 
   @ApiProperty()
-  tokenValue?: string;
+  tokenValue: string | undefined = undefined;
+
+  @ApiProperty()
+  action: any | undefined = undefined;
 
   getDate(): Date | undefined {
     if (this.timestamp) {

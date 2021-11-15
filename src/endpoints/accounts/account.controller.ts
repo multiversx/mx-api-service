@@ -705,10 +705,15 @@ export class AccountController {
     status: 404,
     description: 'Account not found'
   })
-  getAccountScResult(
+  async getAccountScResult(
     @Param('address', ParseAddressPipe) _: string,
     @Param('scHash') scHash: string,
   ): Promise<SmartContractResult> {
-    return this.scResultService.getScResult(scHash);
+    let scResult = await this.scResultService.getScResult(scHash);
+    if (!scResult) {
+      throw new NotFoundException('Smart contract result not found');
+    }
+
+    return scResult;
   }
 }
