@@ -7,6 +7,8 @@ import { CachingService } from "src/common/caching/caching.service";
 import { Constants } from "src/utils/constants";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
+import { ParseTransactionHashPipe } from "src/utils/pipes/parse.transaction.hash.pipe";
+import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
 
 @Controller()
 @ApiTags('proxy')
@@ -102,8 +104,8 @@ export class ProxyController {
   @ApiQuery({ name: 'withResults', description: 'Include results which correspond to the hash', required: false })
   async getTransaction(
     @Res() res: Response, 
-    @Param('hash') hash: string,
-    @Query('sender') sender: string | undefined,
+    @Param('hash', ParseTransactionHashPipe) hash: string,
+    @Query('sender', ParseAddressPipe) sender: string | undefined,
     @Query('withResults') withResults: string | undefined,
   ) {
     await this.gatewayGet(res, `transaction/${hash}`, { sender, withResults });
@@ -114,8 +116,8 @@ export class ProxyController {
   @ApiQuery({ name: 'sender', description: 'Sender', required: false })
   async getTransactionStatus(
     @Res() res: Response, 
-    @Param('hash') hash: string,
-    @Query('sender') sender: string,
+    @Param('hash', ParseTransactionHashPipe) hash: string,
+    @Query('sender', ParseAddressPipe) sender: string,
   ) {
     await this.gatewayGet(res, `transaction/${hash}/status`, { sender });
   }
@@ -255,7 +257,7 @@ export class ProxyController {
 
   @Get('/hyperblock/by-hash/:hash')
   @ApiExcludeEndpoint()
-  async getHyperblockByHash(@Res() res: Response, @Param('hash') hash: number) {
+  async getHyperblockByHash(@Res() res: Response, @Param('hash', ParseBlockHashPipe) hash: number) {
     await this.gatewayGet(res, `hyperblock/by-hash/${hash}`);
   }
 

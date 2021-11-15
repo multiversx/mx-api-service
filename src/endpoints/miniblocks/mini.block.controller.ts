@@ -1,5 +1,6 @@
 import { Controller, Get, HttpException, HttpStatus, Param } from "@nestjs/common";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
 import { MiniBlockDetailed } from "./entities/mini.block.detailed";
 import { MiniBlockService } from "./mini.block.service";
 
@@ -18,7 +19,7 @@ export class MiniBlockController {
     status: 404,
     description: 'Miniblock not found'
   })
-  async getBlock(@Param('miniBlockHash') miniBlockHash: string): Promise<MiniBlockDetailed> {
+  async getBlock(@Param('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string): Promise<MiniBlockDetailed> {
     try {
       return await this.miniBlockService.getMiniBlock(miniBlockHash);
     } catch {
