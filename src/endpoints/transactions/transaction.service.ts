@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 import { AddressUtils } from 'src/utils/address.utils';
 import { ApiUtils } from 'src/utils/api.utils';
@@ -9,8 +8,6 @@ import { TransactionDetailed } from './entities/transaction.detailed';
 import { TransactionFilter } from './entities/transaction.filter';
 import { TransactionSendResult } from './entities/transaction.send.result';
 import { QueryOperator } from 'src/common/elastic/entities/query.operator';
-import { TransactionScamCheckService } from './scam-check/transaction.scam.check.service';
-import { TransactionScamInfo } from './entities/transaction.scam.info';
 import { TransactionGetService } from './transaction.get.service';
 import { TokenTransferService } from './token.transfer.service';
 import { TransactionPriceService } from './transaction.price.service';
@@ -35,9 +32,7 @@ export class TransactionService {
   constructor(
     private readonly elasticService: ElasticService,
     private readonly gatewayService: GatewayService,
-    private readonly apiConfigService: ApiConfigService,
     private readonly transactionPriceService: TransactionPriceService,
-    private readonly transactionScamCheckService: TransactionScamCheckService,
     private readonly transactionGetService: TransactionGetService,
     private readonly tokenTransferService: TokenTransferService,
     private readonly pluginsService: PluginService,
@@ -143,9 +138,9 @@ export class TransactionService {
 
     if (filter.hashes) {
       const txHashes: string[] = filter.hashes.split(',');
-      const elasticHashes = elasticTransactions.map(({txHash}) => txHash);
+      const elasticHashes = elasticTransactions.map(({ txHash }) => txHash);
       const missingHashes: string[] = txHashes.findMissingElements(elasticHashes);
-      
+
       let gatewayTransactions = await Promise.all(missingHashes.map((txHash) => this.transactionGetService.tryGetTransactionFromGatewayForList(txHash)));
       for (let gatewayTransaction of gatewayTransactions) {
         if (gatewayTransaction) {
@@ -159,7 +154,7 @@ export class TransactionService {
 
       const elasticQuery = ElasticQuery.create()
         .withPagination({ from: 0, size: 10000 })
-        .withSort([{ name: 'timestamp' , order: ElasticSortOrder.ascending }])
+        .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
         .withTerms(new TermsQuery('originalTxHash', elasticTransactions.filter(x => x.hasScResults === true).map(x => x.txHash)));
 
       let scResults = await this.elasticService.getList('scresults', 'scHash', elasticQuery);
@@ -172,8 +167,8 @@ export class TransactionService {
       const detailedTransactions: TransactionDetailed[] = [];
       for (let transaction of transactions) {
         const transactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), transaction);
-        const transactionsScResults = scResults.filter(({originalTxHash}) => originalTxHash == transaction.txHash);
-        
+        const transactionsScResults = scResults.filter(({ originalTxHash }) => originalTxHash == transaction.txHash);
+
         if (queryOptions.withScResults) {
           transactionDetailed.results = transactionsScResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
         }
@@ -195,12 +190,7 @@ export class TransactionService {
     }
 
     for (let transaction of transactions) {
-      try {
-        await this.pluginsService.processTransaction(transaction);
-      } catch (error) {
-        this.logger.error(`Unhandled error when processing plugin transaction for transaction with hash '${transaction.txHash}'`);
-        this.logger.error(error);
-      }
+      await this.processTransaction(transaction);
     }
 
     return transactions;
@@ -214,25 +204,11 @@ export class TransactionService {
     }
 
     if (transaction !== null) {
-      try {
-        const [price, scamInfo] = await Promise.all([
-          this.transactionPriceService.getTransactionPrice(transaction),
-          this.getScamInfo(transaction),
-        ]);
-
-        transaction.price = price;
-        transaction.scamInfo = scamInfo;
-      } catch(error) {
-        this.logger.error(`Error when fetching transaction price for transaction with hash '${txHash}'`);
-        this.logger.error(error);
-      }
-
-      try {
-        await this.pluginsService.processTransaction(transaction);
-      } catch (error) {
-        this.logger.error(`Unhandled error when processing plugin transaction for transaction with hash '${transaction.txHash}'`);
-        this.logger.error(error);
-      }
+      const [price] = await Promise.all([
+        this.getTransactionPrice(transaction),
+        this.processTransaction(transaction),
+      ]);
+      transaction.price = price;
     }
 
     return transaction;
@@ -262,12 +238,22 @@ export class TransactionService {
     };
   }
 
-  private async getScamInfo(transaction: TransactionDetailed): Promise<TransactionScamInfo | undefined> {
-    let extrasApiUrl = this.apiConfigService.getExtrasApiUrl();
-    if (!extrasApiUrl) {
-      return undefined;
+  private async getTransactionPrice(transaction: TransactionDetailed): Promise<number | undefined> {
+    try {
+      return await this.transactionPriceService.getTransactionPrice(transaction);
+    } catch (error) {
+      this.logger.error(`Error when fetching transaction price for transaction with hash '${transaction.txHash}'`);
+      this.logger.error(error);
+      return;
     }
+  }
 
-    return await this.transactionScamCheckService.getScamInfo(transaction);
+  private async processTransaction(transaction: Transaction | TransactionDetailed): Promise<void> {
+    try {
+      await this.pluginsService.processTransaction(transaction);
+    } catch (error) {
+      this.logger.error(`Unhandled error when processing plugin transaction for transaction with hash '${transaction.txHash}'`);
+      this.logger.error(error);
+    }
   }
 }

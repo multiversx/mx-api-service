@@ -5,6 +5,10 @@ import { ConfigService } from "@nestjs/config";
 export class ApiConfigService {
   constructor(private readonly configService: ConfigService) { }
 
+  getConfig<T>(configKey: string): T | undefined {
+    return this.configService.get<T>(configKey);
+  }
+
   getApiUrls(): string[] {
     const apiUrls = this.configService.get<string[]>('urls.api');
     if (!apiUrls) {
@@ -298,10 +302,6 @@ export class ApiConfigService {
 
   getAccessAddress(): string {
     return this.configService.get<string>('security.accessAddress') ?? '';
-  }
-
-  getExtrasApiUrl(): string | undefined {
-    return this.configService.get<string>('urls.extras');
   }
 
   getMockKeybases(): boolean | undefined {
