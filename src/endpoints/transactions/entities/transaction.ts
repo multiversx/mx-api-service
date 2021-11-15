@@ -51,12 +51,15 @@ export class Transaction {
 
   @ApiProperty()
   data: string = '';
+  
+  @ApiProperty()
+  tokenIdentifier: string | undefined = undefined;
 
   @ApiProperty()
-  tokenIdentifier?: string;
+  tokenValue: string | undefined = undefined;
 
   @ApiProperty()
-  tokenValue?: string;
+  action: any | undefined = undefined;
 
   getDate(): Date | undefined {
     if (this.timestamp) {
