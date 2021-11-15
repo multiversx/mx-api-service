@@ -61,6 +61,9 @@ export class Transaction {
   @ApiProperty()
   action: any | undefined = undefined;
 
+  @ApiProperty()
+  scamInfo: any | undefined = undefined;
+
   getDate(): Date | undefined {
     if (this.timestamp) {
       return new Date(this.timestamp * 1000);
