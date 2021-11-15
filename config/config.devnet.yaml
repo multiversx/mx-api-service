@@ -2,19 +2,18 @@ network: 'devnet'
 metaChainShardId: 4294967295
 api:
   public: true
-  private: false
+  private: true
   auth: false
 cron:
-  transactionProcessor: false
+  transactionProcessor: true
   transactionProcessorMaxLookBehind: 100
-  cacheWarmer: false
-  fastWarm: false
+  cacheWarmer: true
+  fastWarm: true
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true
   useTracing: false
 urls:
-  extras: 'https://devnet-extras-api.elrond.com'
   api:
     - 'https://devnet-api.elrond.com'
     - 'https://testnet-api.elrond.com'
