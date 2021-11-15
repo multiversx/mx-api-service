@@ -58,6 +58,9 @@ export class Transaction {
   @ApiProperty()
   tokenValue?: string;
 
+  @ApiProperty()
+  action: any | undefined = undefined;
+
   getDate(): Date | undefined {
     if (this.timestamp) {
       return new Date(this.timestamp * 1000);
