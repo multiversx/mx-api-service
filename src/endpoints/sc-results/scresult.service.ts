@@ -37,8 +37,11 @@ export class SmartContractResultService {
     return elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult))
   }
 
-  async getScResult(scHash: string): Promise<SmartContractResult> {
-    const scResult =  await this.elasticService.getItem('scresults', 'hash', scHash);
+  async getScResult(scHash: string): Promise<SmartContractResult | undefined> {
+    const scResult = await this.elasticService.getItem('scresults', 'hash', scHash);
+    if (!scResult) {
+      return undefined;
+    }
 
     return ApiUtils.mergeObjects(new SmartContractResult(), scResult);
   }
