@@ -1,5 +1,6 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
 import { ParseHashPipe } from "src/utils/pipes/parse.hash.pipe";
 import { ParseOptionalIntPipe as ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { BlockService } from "./block.service";
@@ -79,7 +80,7 @@ export class BlockController {
       status: 404,
       description: 'Block not found'
     })
-    async getBlock(@Param('hash', ParseHashPipe) hash: string): Promise<BlockDetailed> {
+    async getBlock(@Param('hash', ParseBlockHashPipe) hash: string): Promise<BlockDetailed> {
       try {
         return await this.blockService.getBlock(hash);
       } catch {
