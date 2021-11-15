@@ -1,5 +1,4 @@
 import { Test } from "@nestjs/testing";
-import { CollectionService } from "src/endpoints/collections/collection.service";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
@@ -10,7 +9,6 @@ import Initializer from "./e2e-init";
 
 describe.skip('Nft Service', () => {
   let nftService: NftService;
-  let collectionService: CollectionService;
   let nftCreator: string;
   let nftIdentifier: string;
 
@@ -24,7 +22,6 @@ describe.skip('Nft Service', () => {
     }).compile();
 
     nftService = moduleRef.get<NftService>(NftService);
-    collectionService = moduleRef.get<CollectionService>(CollectionService);
 
     let nfts = await nftService.getNfts({from: 0, size: 1}, new NftFilter());
     expect(nfts).toHaveLength(1);

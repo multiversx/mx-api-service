@@ -18,7 +18,7 @@ urls:
     - 'https://devnet-api.elrond.com'
     - 'https://testnet-api.elrond.com'
   elastic:
-    - 'https://index.elrond.com'
+    - 'https://new-index.elrond.com'
   gateway:
     - 'https://gateway.elrond.com'
   redis: '127.0.0.1'
