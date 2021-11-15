@@ -11,7 +11,7 @@ import { Response } from 'express';
 import { SortOrder } from "src/common/entities/sort.order";
 import { NodeSort } from "./entities/node.sort";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
-import { ParseHashPipe } from "src/utils/pipes/parse.hash.pipe";
+import { ParseBlsHashPipe } from "src/utils/pipes/parse.bls.hash.pipe";
 
 @Controller()
 @ApiTags('nodes')
@@ -127,7 +127,7 @@ export class NodeController {
     status: 404,
     description: 'Node not found'
   })
-  async getNode(@Param('bls', ParseHashPipe) bls: string): Promise<Node> {
+  async getNode(@Param('bls', ParseBlsHashPipe) bls: string): Promise<Node> {
     let provider = await this.nodeService.getNode(bls);
     if (provider === undefined) {
       throw new HttpException('Node not found', HttpStatus.NOT_FOUND);

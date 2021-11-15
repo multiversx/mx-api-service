@@ -26,8 +26,8 @@ import { SmartContractResultService } from '../sc-results/scresult.service';
 import { CollectionService } from '../collections/collection.service';
 import { NftCollectionAccount } from '../collections/entities/nft.collection.account';
 import { ParseAddressPipe } from 'src/utils/pipes/parse.address.pipe';
-import { ParseHashPipe } from 'src/utils/pipes/parse.hash.pipe';
 import { ParseTransactionHashPipe } from 'src/utils/pipes/parse.transaction.hash.pipe';
+import { ParseBlockHashPipe } from 'src/utils/pipes/parse.block.hash.pipe';
 
 @Controller()
 @ApiTags('accounts')
@@ -567,7 +567,7 @@ export class AccountController {
     @Query('token') token: string | undefined, 
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
-    @Query('miniBlockHash', ParseHashPipe) miniBlockHash: string | undefined, 
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined, 
     @Query('hashes') hashes: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
     @Query('search') search: string | undefined,
@@ -625,7 +625,7 @@ export class AccountController {
     @Query('token') token: string | undefined, 
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
-    @Query('miniBlockHash', ParseHashPipe) miniBlockHash: string | undefined, 
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined, 
     @Query('hashes') hashes: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
     @Query('search') search: string | undefined, 

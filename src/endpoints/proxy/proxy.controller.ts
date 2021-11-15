@@ -7,7 +7,6 @@ import { CachingService } from "src/common/caching/caching.service";
 import { Constants } from "src/utils/constants";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
-import { ParseHashPipe } from "src/utils/pipes/parse.hash.pipe";
 import { ParseTransactionHashPipe } from "src/utils/pipes/parse.transaction.hash.pipe";
 import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
 

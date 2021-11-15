@@ -1,7 +1,7 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
-import { ParseHashPipe } from "src/utils/pipes/parse.hash.pipe";
+import { ParseBlsHashPipe } from "src/utils/pipes/parse.bls.hash.pipe";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { Round } from "./entities/round";
@@ -28,7 +28,7 @@ export class RoundController {
     getRounds(
       @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
       @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
-      @Query("validator", ParseHashPipe) validator: string | undefined,
+      @Query("validator", ParseBlsHashPipe) validator: string | undefined,
       @Query('condition', new ParseOptionalEnumPipe(QueryConditionOptions)) condition: QueryConditionOptions | undefined, 
       @Query("shard", new ParseOptionalIntPipe) shard: number | undefined,
       @Query("epoch", new ParseOptionalIntPipe) epoch: number | undefined,
@@ -49,7 +49,7 @@ export class RoundController {
     getRoundCount(
       @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
       @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
-      @Query("validator", ParseHashPipe) validator: string | undefined,
+      @Query("validator", ParseBlsHashPipe) validator: string | undefined,
       @Query('condition', new ParseOptionalEnumPipe(QueryConditionOptions)) condition: QueryConditionOptions | undefined, 
       @Query("shard", new ParseOptionalIntPipe) shard: number | undefined,
       @Query("epoch", new ParseOptionalIntPipe) epoch: number | undefined,
@@ -62,7 +62,7 @@ export class RoundController {
     getRoundCountAlternative(
       @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
       @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
-      @Query("validator", ParseHashPipe) validator: string | undefined,
+      @Query("validator", ParseBlsHashPipe) validator: string | undefined,
       @Query('condition', new ParseOptionalEnumPipe(QueryConditionOptions)) condition: QueryConditionOptions | undefined, 
       @Query("shard", new ParseOptionalIntPipe) shard: number | undefined,
       @Query("epoch", new ParseOptionalIntPipe) epoch: number | undefined,
