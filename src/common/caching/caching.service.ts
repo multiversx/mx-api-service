@@ -81,6 +81,8 @@ export class CachingService {
     let value = await this.getCacheRemote<T>(key);
     if (value) {
       await this.setCacheLocal<T>(key, value, ttl);
+    } else {
+      await this.deleteInCacheLocal(key);
     }
 
     return value;
