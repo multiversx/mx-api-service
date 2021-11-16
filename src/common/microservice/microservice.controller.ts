@@ -10,7 +10,7 @@ export class MicroserviceController {
   constructor(
     private readonly cachingService: CachingService,
   ) {
-    this.logger = new Logger(MiniBlockController.name);
+    this.logger = new Logger(MicroserviceController.name);
    }
 
   @EventPattern('deleteCacheKeys')
