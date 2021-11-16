@@ -120,7 +120,6 @@ export class TransactionGetService {
         let transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
 
         transactionDetailed.operations = this.tokenTransferService.getOperationsForTransactionLogs(txHash, transactionLogs);
-
         transactionDetailed.operations = this.trimOperations(transactionDetailed.operations);
 
         for (let log of logs) {
@@ -157,7 +156,11 @@ export class TransactionGetService {
       );
 
       if (identicalOperations.length > 0) {
-        result.remove(identicalOperations[0]);
+        if (BigInt(identicalOperations[0].value) > BigInt(operation.value)) {
+          result.remove(identicalOperations[0]);
+        } else {
+          continue;
+        }
       }
 
       result.push(operation);
