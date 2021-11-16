@@ -1,6 +1,5 @@
 import { Controller, Logger } from "@nestjs/common";
 import { EventPattern } from "@nestjs/microservices";
-import { MiniBlockController } from "src/endpoints/miniblocks/mini.block.controller";
 import { CachingService } from "../caching/caching.service";
 import { CacheInfo } from "../caching/entities/cache.info";
 
