@@ -1,6 +1,5 @@
 import { Controller, Logger } from "@nestjs/common";
 import { EventPattern } from "@nestjs/microservices";
-import { MiniBlockController } from "src/endpoints/miniblocks/mini.block.controller";
 import { CachingService } from "../caching/caching.service";
 import { CacheInfo } from "../caching/entities/cache.info";
 
@@ -10,7 +9,7 @@ export class MicroserviceController {
   constructor(
     private readonly cachingService: CachingService,
   ) {
-    this.logger = new Logger(MiniBlockController.name);
+    this.logger = new Logger(MicroserviceController.name);
    }
 
   @EventPattern('deleteCacheKeys')
