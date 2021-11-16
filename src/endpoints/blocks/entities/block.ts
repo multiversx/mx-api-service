@@ -39,4 +39,16 @@ export class Block {
 
     @ApiProperty()
     txCount: number = 0;
+
+    @ApiProperty()
+    gasConsumed: number = 0;
+
+    @ApiProperty()
+    gasRefunded: number = 0;
+
+    @ApiProperty()
+    gasPenalized: number = 0;
+
+    @ApiProperty()
+    maxGasLimit: number = 0;
 }
