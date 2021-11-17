@@ -21,43 +21,43 @@ export class ProxyController {
   @Get('/address/:address')
   @ApiExcludeEndpoint()
   async getAddress(@Param('address', ParseAddressPipe) address: string) {
-    await this.gatewayGet(`address/${address}`);
+    return await this.gatewayGet(`address/${address}`);
   }
 
   @Get('/address/:address/balance')
   @ApiExcludeEndpoint()
   async getAddressBalance(@Param('address', ParseAddressPipe) address: string) {
-    await this.gatewayGet(`address/${address}/balance`);
+    return await this.gatewayGet(`address/${address}/balance`);
   }
 
   @Get('/address/:address/nonce')
   @ApiExcludeEndpoint()
   async getAddressNonce(@Param('address', ParseAddressPipe) address: string) {
-    await this.gatewayGet(`address/${address}/nonce`);
+    return await this.gatewayGet(`address/${address}/nonce`);
   }
 
   @Get('/address/:address/shard')
   @ApiExcludeEndpoint()
   async getAddressShard(@Param('address', ParseAddressPipe) address: string) {
-    await this.gatewayGet(`address/${address}/shard`);
+    return await this.gatewayGet(`address/${address}/shard`);
   }
 
   @Get('/address/:address/storage/:key')
   @ApiExcludeEndpoint()
   async getAddressStorageKey(@Param('address', ParseAddressPipe) address: string, @Param('key') key: string) {
-    await this.gatewayGet(`address/${address}/storage/${key}`);
+    return await this.gatewayGet(`address/${address}/storage/${key}`);
   }
 
   @Get('/address/:address/transactions')
   @ApiExcludeEndpoint()
   async getAddressTransactions(@Param('address', ParseAddressPipe) address: string) {
-    await this.gatewayGet(`address/${address}/transactions`);
+    return await this.gatewayGet(`address/${address}/transactions`);
   }
 
   @Get('/address/:address/esdt')
   @ApiExcludeEndpoint()
   async getAddressEsdt(@Param('address', ParseAddressPipe) address: string) {
-    await this.gatewayGet(`address/${address}/esdt`, undefined, async (error) => {
+    return await this.gatewayGet(`address/${address}/esdt`, undefined, async (error) => {
       const message = error.response?.data?.error;
       if (message && message.includes('account was not found')) {
         throw error;
@@ -70,31 +70,31 @@ export class ProxyController {
   @Post('/transaction/send')
   @ApiExcludeEndpoint()
   async transactionSend(@Body() body: any) {
-    await this.gatewayPost('transaction/send', body);
+    return await this.gatewayPost('transaction/send', body);
   }
 
   @Post('/transaction/simulate')
   @ApiExcludeEndpoint()
   async transactionSimulate(@Body() body: any) {
-    await this.gatewayPost('transaction/simulate', body);
+    return await this.gatewayPost('transaction/simulate', body);
   }
 
   @Post('/transaction/send-multiple')
   @ApiExcludeEndpoint()
   async transactionSendMultiple(@Body() body: any) {
-    await this.gatewayPost('transaction/send-multiple', body);
+    return await this.gatewayPost('transaction/send-multiple', body);
   }
 
   @Post('/transaction/send-user-funds')
   @ApiExcludeEndpoint()
   async transactionSendUserFunds(@Body() body: any) {
-    await this.gatewayPost('transaction/send-user-funds', body);
+    return await this.gatewayPost('transaction/send-user-funds', body);
   }
 
   @Post('/transaction/cost')
   @ApiExcludeEndpoint()
   async transactionCost(@Body() body: any) {
-    await this.gatewayPost('transaction/cost', body);
+    return await this.gatewayPost('transaction/cost', body);
   }
 
   @Get('/transaction/:hash')
@@ -106,7 +106,7 @@ export class ProxyController {
     @Query('sender', ParseAddressPipe) sender: string | undefined,
     @Query('withResults') withResults: string | undefined,
   ) {
-    await this.gatewayGet(`transaction/${hash}`, { sender, withResults });
+    return await this.gatewayGet(`transaction/${hash}`, { sender, withResults });
   }
 
   @Get('/transaction/:hash/status')
@@ -116,25 +116,25 @@ export class ProxyController {
     @Param('hash', ParseTransactionHashPipe) hash: string,
     @Query('sender', ParseAddressPipe) sender: string,
   ) {
-    await this.gatewayGet(`transaction/${hash}/status`, { sender });
+    return await this.gatewayGet(`transaction/${hash}/status`, { sender });
   }
 
   @Post('/vm-values/hex')
   @ApiExcludeEndpoint()
   async vmValuesHex(@Body() body: any) {
-    await this.gatewayPost('vm-values/hex', body);
+    return await this.gatewayPost('vm-values/hex', body);
   }
 
   @Post('/vm-values/string')
   @ApiExcludeEndpoint()
   async vmValuesString(@Body() body: any) {
-    await this.gatewayPost('vm-values/string', body);
+    return await this.gatewayPost('vm-values/string', body);
   }
 
   @Post('/vm-values/int')
   @ApiExcludeEndpoint()
   async vmValuesInt(@Body() body: any) {
-    await this.gatewayPost('vm-values/int', body);
+    return await this.gatewayPost('vm-values/int', body);
   }
 
   @Post('/vm-values/query')
@@ -154,25 +154,25 @@ export class ProxyController {
   @Get('/network/status/:shard')
   @ApiExcludeEndpoint()
   async getNetworkStatusShard(@Param('shard') shard: string) {
-    await this.gatewayGet(`network/status/${shard}`);
+    return await this.gatewayGet(`network/status/${shard}`);
   }
 
   @Get('/network/config')
   @ApiExcludeEndpoint()
   async getNetworkConfig() {
-    await this.gatewayGet('network/config');
+    return await this.gatewayGet('network/config');
   }
 
   @Get('/network/economics')
   @ApiExcludeEndpoint()
   async getNetworkEconomics() {
-    await this.gatewayGet('network/economics');
+    return await this.gatewayGet('network/economics');
   }
 
   @Get('/network/total-staked')
   @ApiExcludeEndpoint()
   async getNetworkTotalStaked() {
-    await this.gatewayGet('network/total-staked');
+    return await this.gatewayGet('network/total-staked');
   }
 
   @Get('/node/heartbeatstatus')
@@ -217,7 +217,7 @@ export class ProxyController {
     @Param('nonce') nonce: number,
     @Query('withTxs') withTxs: string | undefined,
   ) {
-    await this.gatewayGet(`block/${shard}/by-nonce/${nonce}`, { withTxs });
+    return await this.gatewayGet(`block/${shard}/by-nonce/${nonce}`, { withTxs });
   }
 
   @Get('/block/:shard/by-hash/:hash')
@@ -228,7 +228,7 @@ export class ProxyController {
     @Param('hash') hash: number,
     @Query('withTxs') withTxs: string | undefined,
   ) {
-    await this.gatewayGet(`block/${shard}/by-hash/${hash}`, { withTxs });
+    return await this.gatewayGet(`block/${shard}/by-hash/${hash}`, { withTxs });
   }
 
   @Get('/block-atlas/:shard/:nonce')
@@ -237,19 +237,19 @@ export class ProxyController {
     @Param('shard') shard: string,
     @Param('nonce') nonce: number,
   ) {
-    await this.gatewayGet(`block-atlas/${shard}/${nonce}`);
+    return await this.gatewayGet(`block-atlas/${shard}/${nonce}`);
   }
 
   @Get('/hyperblock/by-nonce/:nonce')
   @ApiExcludeEndpoint()
   async getHyperblockByNonce(@Param('nonce') nonce: number) {
-    await this.gatewayGet(`hyperblock/by-nonce/${nonce}`);
+    return await this.gatewayGet(`hyperblock/by-nonce/${nonce}`);
   }
 
   @Get('/hyperblock/by-hash/:hash')
   @ApiExcludeEndpoint()
   async getHyperblockByHash(@Param('hash', ParseBlockHashPipe) hash: number) {
-    await this.gatewayGet(`hyperblock/by-hash/${hash}`);
+    return await this.gatewayGet(`hyperblock/by-hash/${hash}`);
   }
 
   private async gatewayGet(url: string, params: any = undefined, errorHandler?: (error: any) => Promise<boolean>) {
