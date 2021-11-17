@@ -2,10 +2,10 @@ import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { AddressUtils } from "src/utils/address.utils";
-import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { WaitingList } from "./entities/waiting.list";
+import { NumberUtils } from 'src/utils/number.utils';
 
 @Injectable()
 export class WaitingListService {
@@ -53,8 +53,8 @@ export class WaitingListService {
 
         const publicKey = Buffer.from(publicKeyEncoded, 'base64').toString('hex');
         const address = AddressUtils.bech32Encode(publicKey);
-        const value = BinaryUtils.hexToBigInt(valueEncoded).toString();
-        const nonce = BinaryUtils.hexToNumber(nonceEncoded);
+        const value = NumberUtils.numberDecode(valueEncoded);
+        const nonce = parseInt(NumberUtils.numberDecode(nonceEncoded));
 
         let waitingList: WaitingList = { address, value, nonce, rank: 0 };
 
