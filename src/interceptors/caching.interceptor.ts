@@ -1,4 +1,4 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nestjs/common";
+import { CallHandler, ExecutionContext, HttpException, Injectable, NestInterceptor } from "@nestjs/common";
 import { HttpAdapterHost } from "@nestjs/core";
 import { Observable, of, throwError } from "rxjs";
 import { catchError, tap } from 'rxjs/operators';
@@ -28,7 +28,12 @@ export class CachingInterceptor implements NestInterceptor {
       if (pendingRequest) {
         let result = await pendingRequest;
         this.metricsService.incrementPendingApiHit(apiFunction);
-        return of(result);
+
+        if (result instanceof HttpException) {
+          return throwError(() => result);
+        } else {
+          return of(result);
+        }
       }
 
       let cachedValue = await this.cachingService.getCacheLocal(cacheKey);
@@ -38,30 +43,26 @@ export class CachingInterceptor implements NestInterceptor {
       }
 
       let pendingRequestResolver: (value: any) => null;
-      let pendingRequestReject: (value: any) => null;
-      this.pendingRequestsDictionary[cacheKey] = new Promise((resolve, reject) => {
+      this.pendingRequestsDictionary[cacheKey] = new Promise((resolve) => {
         // @ts-ignore
         pendingRequestResolver = resolve;
-
-        // @ts-ignore
-        pendingRequestReject = reject;
       });
 
       return next
         .handle()
         .pipe(
-          tap(async (result) => {
+          tap(async (result: any) => {
             delete this.pendingRequestsDictionary[cacheKey ?? ''];
             pendingRequestResolver(result);
             this.metricsService.setPendingRequestsCount(Object.keys(this.pendingRequestsDictionary).length);
-
+    
             let ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
-
+    
             await this.cachingService.setCacheLocal(cacheKey!!, result, ttl);
           }),
-          catchError(err => {
+          catchError((err) => {
             delete this.pendingRequestsDictionary[cacheKey ?? ''];
-            pendingRequestReject(err);
+            pendingRequestResolver(err);
             this.metricsService.setPendingRequestsCount(Object.keys(this.pendingRequestsDictionary).length);
 
             return throwError(() => err);
