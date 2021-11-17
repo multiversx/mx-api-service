@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query, Res } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { Node } from "src/endpoints/nodes/entities/node";
@@ -7,7 +7,6 @@ import { NodeType } from "./entities/node.type";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { NodeStatus } from "./entities/node.status";
 import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
-import { Response } from 'express';
 import { SortOrder } from "src/common/entities/sort.order";
 import { NodeSort } from "./entities/node.sort";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
@@ -61,10 +60,8 @@ export class NodeController {
 		status: 200,
 		description: 'The node versions available on the blockchain',
 	})
-	async getNodeVersions(@Res() res: Response) {
-		let nodeVersions = await this.nodeService.getNodeVersions();
-
-		res.status(HttpStatus.OK).json(nodeVersions);
+	async getNodeVersions() {
+		return await this.nodeService.getNodeVersions();
 	}
 
 	@Get("/nodes/count")
