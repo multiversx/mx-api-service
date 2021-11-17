@@ -13,7 +13,7 @@ export class UsernameService {
     private readonly cachingService: CachingService,
   ) { }
 
-  private async computeAddressForUsername(username: string): Promise<string | null> {
+  private async getUsernameAddress(username: string): Promise<string | null> {
     try {
       const contract = UsernameUtils.getContractAddress(username);
       const encoded = UsernameUtils.encodeUsername(username);
@@ -31,10 +31,10 @@ export class UsernameService {
     return null;
   }
 
-  async getUsernameAddress(username: string): Promise<string | null> {
+  async getUsernameAddressRaw(username: string): Promise<string | null> {
     return await this.cachingService.getOrSetCache(
       UsernameUtils.normalizeUsername(username),
-      async () => await this.computeAddressForUsername(username),
+      async () => await this.getUsernameAddress(username),
       Constants.oneWeek()
     )
   }
