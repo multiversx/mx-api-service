@@ -13,7 +13,7 @@ export class UsernameService {
     private readonly cachingService: CachingService,
   ) { }
 
-  private async computeAddressForUsername(username: string): Promise<string | boolean> {
+  private async computeAddressForUsername(username: string): Promise<string | null> {
     try {
       const contract = UsernameUtils.getContractAddress(username);
       const encoded = UsernameUtils.encodeUsername(username);
@@ -25,13 +25,13 @@ export class UsernameService {
         return AddressUtils.bech32Encode(publicKey);
       }
     } catch (error) {
-      return false;
+      return null;
     }
 
-    return false;
+    return null;
   }
 
-  async getUsernameAddress(username: string) {
+  async getUsernameAddress(username: string): Promise<string | null> {
     return await this.cachingService.getOrSetCache(
       UsernameUtils.normalizeUsername(username),
       async () => await this.computeAddressForUsername(username),
