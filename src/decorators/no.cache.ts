@@ -1,4 +1,5 @@
-export const NoCache = (): MethodDecorator => (_, __, descriptor: any) => {
-  Reflect.defineMetadata('caching', NoCache.name, descriptor.value);
-  return descriptor;
-};
+import { DecoratorUtils } from "src/utils/decorator.utils";
+
+export class NoCacheOptions {}
+
+export const NoCache = DecoratorUtils.registerMethodDecorator(NoCacheOptions);

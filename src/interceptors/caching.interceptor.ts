@@ -5,7 +5,8 @@ import { catchError, tap } from 'rxjs/operators';
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
-import { NoCache } from "src/decorators/no.cache";
+import { NoCacheOptions } from "src/decorators/no.cache";
+import { DecoratorUtils } from "src/utils/decorator.utils";
 
 @Injectable()
 export class CachingInterceptor implements NestInterceptor {
@@ -21,8 +22,8 @@ export class CachingInterceptor implements NestInterceptor {
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     let apiFunction = context.getClass().name + '.' + context.getHandler().name;
 
-    let cachingMetadata = Reflect.getOwnMetadata('caching', context.getHandler());
-    if (cachingMetadata === NoCache.name) {
+    let cachingMetadata = DecoratorUtils.getMethodDecorator(NoCacheOptions, context.getHandler());
+    if (cachingMetadata) {
       return next.handle();
     }
 
