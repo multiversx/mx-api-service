@@ -64,6 +64,27 @@ describe.skip('Token Service', () => {
           expect(token.name).toBe(tokenName);
         }
       });
+
+      it(`should return a list with nfts that has identifiers`, async () => {
+        const tokenFilter = new TokenFilter();
+        tokenFilter.identifiers = ['MSFT-532e00', 'EWLD-e23800', 'invalidIdentifier']
+        const tokensList = await tokenService.getTokens({from: 0, size: 25}, tokenFilter);
+        expect(tokensList).toBeInstanceOf(Array);
+
+        expect(tokensList.length).toEqual(2);
+        const nftsIdentifiers = tokensList.map((nft) => nft.identifier);
+        expect(nftsIdentifiers.includes('MSFT-532e00')).toBeTruthy();
+        expect(nftsIdentifiers.includes('EWLD-e23800')).toBeTruthy();
+      });
+
+      it(`should return an empty tokens list`, async () => {
+        const tokenFilter = new TokenFilter();
+        tokenFilter.identifiers = ['LKFARM-9d1ea8-8fb5', 'LKFARM-9d1ea8-8fb6']
+        const tokensList = await tokenService.getTokens({from: 0, size: 25}, tokenFilter);
+        expect(tokensList).toBeInstanceOf(Array);
+
+        expect(tokensList.length).toEqual(0);
+      });
     });
   });
 
