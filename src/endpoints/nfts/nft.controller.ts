@@ -1,6 +1,7 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
+import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { EsdtService } from "../esdt/esdt.service";
@@ -39,10 +40,10 @@ export class NftController {
 		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('search') search: string | undefined,
-		@Query('identifiers') identifiers: string | undefined,
+		@Query('identifiers', ParseArrayPipe) identifiers: string | undefined,
 		@Query('type') type: string | undefined,
 		@Query('collection') collection: string | undefined,
-		@Query('tags') tags: string | undefined,
+		@Query('tags', ParseArrayPipe) tags: string | undefined,
 		@Query('creator', ParseAddressPipe) creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
     @Query('withOwner', new ParseOptionalBoolPipe) withOwner: boolean | undefined,
@@ -65,10 +66,10 @@ export class NftController {
 	@ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
   async getNftCount(
     @Query('search') search: string | undefined,
-		@Query('identifiers') identifiers: string | undefined,
+		@Query('identifiers', ParseArrayPipe) identifiers: string | undefined,
 		@Query('type') type: string | undefined,
 		@Query('collection') collection: string | undefined,
-		@Query('tags') tags: string | undefined,
+		@Query('tags', ParseArrayPipe) tags: string | undefined,
 		@Query('creator', ParseAddressPipe) creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<number> {
@@ -79,10 +80,10 @@ export class NftController {
   @ApiExcludeEndpoint()
   async getNftCountAlternative(
     @Query('search') search: string | undefined,
-		@Query('identifiers') identifiers: string | undefined,
+		@Query('identifiers', ParseArrayPipe) identifiers: string | undefined,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
 		@Query('collection') collection: string | undefined,
-		@Query('tags') tags: string | undefined,
+		@Query('tags', ParseArrayPipe) tags: string | undefined,
 		@Query('creator', ParseAddressPipe) creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<number> {
