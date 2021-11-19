@@ -90,7 +90,7 @@ export class TokenService {
     }
 
     if (filter.identifiers) {
-      const identifierArray = filter.identifiers.split(',').map(identifier => identifier.toLowerCase());
+      const identifierArray = filter.identifiers.map(identifier => identifier.toLowerCase());
 
       tokens = tokens.filter(token => identifierArray.includes(token.identifier.toLowerCase()));
     }

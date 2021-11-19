@@ -275,7 +275,7 @@ export class NftService {
     }
 
     if (filter.type) {
-      let types = filter.type.split(',');
+      let types = filter.type;
 
       nfts = nfts.filter(x => types.includes(x.type));
     }
@@ -285,12 +285,12 @@ export class NftService {
     }
 
     if (filter.collections) {
-      const collectionArray = filter.collections.split(',');
-      nfts = nfts.filter(x => collectionArray.includes(x.collection));
+      let collectionsArray = filter.collections;
+      nfts = nfts.filter(x => collectionsArray.includes(x.collection));
     }
 
     if (filter.tags) {
-      let tagsArray = filter.tags.split(',');
+      let tagsArray = filter.tags;
       nfts = nfts.filter(nft => tagsArray.filter(tag => nft.tags.includes(tag)).length === tagsArray.length);
     }
 
@@ -309,7 +309,7 @@ export class NftService {
 
   async getGatewayNfts(address: string, filter: NftFilter): Promise<GatewayNft[]> {
     if (filter.identifiers !== undefined) {
-      let identifiers = filter.identifiers.split(',');
+      let identifiers = filter.identifiers;
       if (identifiers.length === 1) {
         let identifier = identifiers[0];
         const collectionIdentifier = identifier.split('-').slice(0, 2).join('-');
@@ -408,7 +408,7 @@ export class NftService {
 
   async getNftForAddress(address: string, identifier: string): Promise<NftAccount | undefined> {
     let filter = new NftFilter();
-    filter.identifiers = identifier;
+    filter.identifiers = [identifier];
 
     let nfts = await this.getNftsForAddressInternal(address, filter);
     if (nfts.length === 0) {

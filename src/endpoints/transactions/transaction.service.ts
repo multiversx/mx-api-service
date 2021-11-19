@@ -75,8 +75,7 @@ export class TransactionService {
     }
 
     if (filter.hashes) {
-      const hashArray = filter.hashes.split(',');
-      queries.push(QueryType.Should(hashArray.map(hash => QueryType.Match('_id', hash))));
+      queries.push(QueryType.Should(filter.hashes.map(hash => QueryType.Match('_id', hash))));
     }
 
     if (filter.status) {
@@ -137,7 +136,7 @@ export class TransactionService {
     }
 
     if (filter.hashes) {
-      const txHashes: string[] = filter.hashes.split(',');
+      const txHashes: string[] = filter.hashes;
       const elasticHashes = elasticTransactions.map(({ txHash }) => txHash);
       const missingHashes: string[] = txHashes.findMissingElements(elasticHashes);
 

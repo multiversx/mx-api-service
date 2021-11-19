@@ -2,8 +2,8 @@ import { ArgumentMetadata, HttpException, HttpStatus, PipeTransform } from "@nes
 
 const MAX_ARRAY_SIZE = 1024;
 
-export class ParseArrayPipe implements PipeTransform<string | undefined, Promise<string | undefined>> {
-    transform(value: string | undefined, _: ArgumentMetadata): Promise<string | undefined> {
+export class ParseArrayPipe implements PipeTransform<string | undefined, Promise<string[] | undefined>> {
+    transform(value: string | undefined, _: ArgumentMetadata): Promise<string[] | undefined> {
         return new Promise(resolve => {
             if (value === undefined || value === '') {
                 return resolve(undefined);
@@ -14,7 +14,7 @@ export class ParseArrayPipe implements PipeTransform<string | undefined, Promise
               throw new HttpException(`Validation failed (less than ${MAX_ARRAY_SIZE} comma separated values expected)`, HttpStatus.BAD_REQUEST);
             }
             else {
-              resolve(value);
+              resolve(valueArray);
             }
         });
     }
