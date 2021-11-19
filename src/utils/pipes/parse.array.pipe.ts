@@ -13,7 +13,9 @@ export class ParseArrayPipe implements PipeTransform<string | undefined, Promise
             if (valueArray.length > MAX_ARRAY_SIZE) {
               throw new HttpException(`Validation failed (less than ${MAX_ARRAY_SIZE} comma separated values expected)`, HttpStatus.BAD_REQUEST);
             }
-          
+            else {
+              resolve(value);
+            }
         });
     }
 }
