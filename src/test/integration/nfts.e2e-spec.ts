@@ -94,6 +94,27 @@ describe.skip('Nft Service', () => {
             expect(nft.creator).toBe(nftCreator);
         }
       });
+
+      it(`should return a list with nfts that has identifiers`, async () => {
+        const nftFilter = new NftFilter();
+        nftFilter.identifiers = ['LKFARM-9d1ea8-8f6b', 'LKLP-03a2fa-4cc9', 'invalidIdentifier']
+        const nftsList = await nftService.getNfts({from: 0, size: 25}, nftFilter);
+        expect(nftsList).toBeInstanceOf(Array);
+
+        expect(nftsList.length).toEqual(2);
+        const nftsIdentifiers = nftsList.map((nft) => nft.identifier);
+        expect(nftsIdentifiers.includes('LKFARM-9d1ea8-8f6b')).toBeTruthy();
+        expect(nftsIdentifiers.includes('LKLP-03a2fa-4cc9')).toBeTruthy();
+      });
+
+      it(`should return a empty nfts list`, async () => {
+        const nftFilter = new NftFilter();
+        nftFilter.identifiers = ['MSFT-532e00']
+        const nftsList = await nftService.getNfts({from: 0, size: 25}, nftFilter);
+        expect(nftsList).toBeInstanceOf(Array);
+
+        expect(nftsList.length).toEqual(0);
+      });
     });
   });
 
