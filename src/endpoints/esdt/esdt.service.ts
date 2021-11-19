@@ -45,8 +45,6 @@ export class EsdtService {
       .withCondition(QueryConditionOptions.must, [ QueryType.Match('address', address) ])
       .withPagination({ from: 0, size: 10000 });
 
-    console.log('get from elastic');
-
     let esdts = await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
 
     let result: { [ key: string]: any } = {};
