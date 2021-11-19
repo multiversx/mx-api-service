@@ -25,6 +25,7 @@ import { TransactionProcessorModule } from './crons/transaction.processor.module
 import { MicroserviceModule } from './common/microservice/microservice.module';
 import { ProtocolService } from './common/protocol/protocol.service';
 import { PaginationInterceptor } from './interceptors/pagination.interceptor';
+import { LogRequestsInterceptor } from './interceptors/log.requests.interceptor';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create(PublicAppModule);
@@ -59,6 +60,10 @@ async function bootstrap() {
 
   if (apiConfigService.getUseRequestCachingFlag()) {
     globalInterceptors.push(new CachingInterceptor(cachingService, httpAdapterHostService, metricsService, protocolService));
+  }
+
+  if (apiConfigService.getUseRequestLoggingFlag()) {
+    globalInterceptors.push(new LogRequestsInterceptor(httpAdapterHostService));
   }
   
   globalInterceptors.push(new FieldsInterceptor());

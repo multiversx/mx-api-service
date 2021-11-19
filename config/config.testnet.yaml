@@ -13,6 +13,7 @@ flags:
   useRequestCaching: true
   useKeepAliveAgent: true
   useTracing: false
+  useRequestLogging: false
 urls:
   api:
     - 'https://testnet-api.elrond.com'
