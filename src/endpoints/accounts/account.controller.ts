@@ -192,7 +192,7 @@ export class AccountController {
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
 	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
-	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
+	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
 	@ApiQuery({ name: 'owner', description: 'Filter by collection owner', required: false })
 	@ApiQuery({ name: 'canCreate', description: 'Filter by property canCreate (boolean)', required: false })
 	@ApiQuery({ name: 'canBurn', description: 'Filter by property canCreate (boolean)', required: false })
@@ -232,7 +232,7 @@ export class AccountController {
 
   @Get("/accounts/:address/collections/count")
 	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
-	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
+	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
 	@ApiQuery({ name: 'owner', description: 'Filter by collection owner', required: false })
 	@ApiQuery({ name: 'canCreate', description: 'Filter by property canCreate (boolean)', required: false })
 	@ApiQuery({ name: 'canBurn', description: 'Filter by property canCreate (boolean)', required: false })

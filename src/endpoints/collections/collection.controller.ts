@@ -23,7 +23,7 @@ export class CollectionController {
 	@ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
 	@ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
 	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
-	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
+	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
 	@ApiQuery({ name: 'creator', description: 'Filter NFTs where the given address has a creator role', required: false })
   async getNftCollections(
 		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
@@ -37,7 +37,7 @@ export class CollectionController {
 
   @Get("/collections/count")
 	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
-	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
+	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
 	@ApiQuery({ name: 'creator', description: 'Filter NFTs where the given address has a creator role', required: false })
   @ApiResponse({
     status: 200,
