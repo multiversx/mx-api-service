@@ -28,6 +28,7 @@ import { NftCollectionAccount } from '../collections/entities/nft.collection.acc
 import { ParseAddressPipe } from 'src/utils/pipes/parse.address.pipe';
 import { ParseTransactionHashPipe } from 'src/utils/pipes/parse.transaction.hash.pipe';
 import { ParseBlockHashPipe } from 'src/utils/pipes/parse.block.hash.pipe';
+import { ParseArrayPipe } from 'src/utils/pipes/parse.array.pipe';
 
 @Controller()
 @ApiTags('accounts')
@@ -142,7 +143,7 @@ export class AccountController {
     @Query('search') search: string | undefined,
 		@Query('name') name: string | undefined,
 		@Query('identifier') identifier: string | undefined,
-    @Query('identifiers') identifiers?: string,
+    @Query('identifiers', ParseArrayPipe) identifiers?: string,
   ): Promise<TokenWithBalance[]> {
     try {
       return await this.tokenService.getTokensForAddress(address, { from, size }, { search, name, identifier, identifiers });
@@ -364,11 +365,11 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
-    @Query('identifiers') identifiers?: string,
+    @Query('identifiers', ParseArrayPipe) identifiers?: string,
     @Query('type') type?: string,
     @Query('collection') collection?: string,
-    @Query('collections') collections?: string,
-    @Query('tags') tags?: string,
+    @Query('collections', ParseArrayPipe) collections?: string,
+    @Query('tags', ParseArrayPipe) tags?: string,
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
     @Query('withTimestamp', new ParseOptionalBoolPipe) withTimestamp?: boolean,
@@ -401,11 +402,11 @@ export class AccountController {
   })
   async getNftCount(
     @Param('address', ParseAddressPipe) address: string,
-		@Query('identifiers') identifiers: string | undefined,
+		@Query('identifiers', ParseArrayPipe) identifiers: string | undefined,
 		@Query('search') search: string | undefined,
 		@Query('type') type: string | undefined,
 		@Query('collection') collection: string | undefined,
-		@Query('tags') tags: string | undefined,
+		@Query('tags', ParseArrayPipe) tags: string | undefined,
 		@Query('creator', ParseAddressPipe) creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
     ): Promise<number> {
@@ -423,10 +424,10 @@ export class AccountController {
   async getNftCountAlternative(
     @Param('address', ParseAddressPipe) address: string,
 		@Query('search') search: string | undefined,
-		@Query('identifiers') identifiers: string | undefined,
+		@Query('identifiers', ParseArrayPipe) identifiers: string | undefined,
 		@Query('type') type: string | undefined,
 		@Query('collection') collection: string | undefined,
-		@Query('tags') tags: string | undefined,
+		@Query('tags', ParseArrayPipe) tags: string | undefined,
 		@Query('creator', ParseAddressPipe) creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
     ): Promise<number> {
@@ -568,7 +569,7 @@ export class AccountController {
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined, 
-    @Query('hashes') hashes: string | undefined, 
+    @Query('hashes', ParseArrayPipe) hashes: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
     @Query('search') search: string | undefined,
     @Query('before', ParseOptionalIntPipe) before: number | undefined, 
@@ -626,7 +627,7 @@ export class AccountController {
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined, 
-    @Query('hashes') hashes: string | undefined, 
+    @Query('hashes', ParseArrayPipe) hashes: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
     @Query('search') search: string | undefined, 
     @Query('before', ParseOptionalIntPipe) before: number | undefined, 

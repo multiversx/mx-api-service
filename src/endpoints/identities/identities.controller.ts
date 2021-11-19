@@ -1,5 +1,6 @@
 import { Controller,  Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
 import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
 import { Identity } from "./entities/identity";
 import { IdentitiesService } from "./identities.service";
 
@@ -17,7 +18,7 @@ export class IdentitiesController {
 	})
 	@ApiQuery({ name: 'identities', description: 'Filter by comma-separated list of identities', required: false })
 	async getIdentities(
-		@Query('identities') identities: string | undefined
+		@Query('identities', ParseArrayPipe) identities: string | undefined
 	): Promise<Identity[]> {
     let identityArray = identities ? identities.split(',') : [];
 

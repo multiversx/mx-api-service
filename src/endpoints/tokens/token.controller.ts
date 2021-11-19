@@ -1,6 +1,7 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
+import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
 import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
@@ -41,7 +42,7 @@ export class TokenController {
 		@Query('search') search: string | undefined,
 		@Query('name') name: string | undefined,
 		@Query('identifier') identifier: string | undefined,
-		@Query('identifiers') identifiers: string | undefined,
+		@Query('identifiers', ParseArrayPipe) identifiers: string | undefined,
   ): Promise<TokenDetailed[]> {
     return await this.tokenService.getTokens({ from, size }, { search, name, identifier, identifiers });
   }
@@ -59,7 +60,7 @@ export class TokenController {
     @Query('search') search: string | undefined,
 		@Query('name') name: string | undefined,
 		@Query('identifier') identifier: string | undefined,
-		@Query('identifiers') identifiers: string | undefined,
+		@Query('identifiers', ParseArrayPipe) identifiers: string | undefined,
     ): Promise<number> {
     return await this.tokenService.getTokenCount({ search, name, identifier, identifiers });
   }
@@ -70,7 +71,7 @@ export class TokenController {
     @Query('search') search: string | undefined,
 		@Query('name') name: string | undefined,
 		@Query('identifier') identifier: string | undefined,
-		@Query('identifiers') identifiers: string | undefined,
+		@Query('identifiers', ParseArrayPipe) identifiers: string | undefined,
     ): Promise<number> {
     return await this.tokenService.getTokenCount({ search, name, identifier, identifiers });
   }
@@ -162,7 +163,7 @@ export class TokenController {
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined, 
-    @Query('hashes') hashes: string | undefined, 
+    @Query('hashes', ParseArrayPipe) hashes: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
     @Query('search') search: string | undefined,
     @Query('before', ParseOptionalIntPipe) before: number | undefined, 
@@ -219,7 +220,7 @@ export class TokenController {
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined, 
-    @Query('hashes') hashes: string | undefined, 
+    @Query('hashes', ParseArrayPipe) hashes: string | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
     @Query('search') search: string | undefined,
     @Query('before', ParseOptionalIntPipe) before: number | undefined, 
