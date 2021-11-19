@@ -224,7 +224,7 @@ export class NftService {
   }
 
   async getNftCount(filter: NftFilter): Promise<number> {
-    return await this.elasticService.getTokenCount(filter);
+    return await this.elasticService.getNftTokensCount(filter);
   }
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<NftAccount[]> {

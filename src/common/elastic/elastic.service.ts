@@ -181,8 +181,6 @@ export class ElasticService {
   private buildElasticNftFilter(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
     let queries = [];
     queries.push(QueryType.Exists('identifier'));
-    let mustNotQueries = [];
-    mustNotQueries.push(QueryType.Match('type', 'FungibleESDT'));
 
     if (filter.search !== undefined) {
       queries.push(QueryType.Wildcard('token', `*${filter.search}*`));
@@ -227,7 +225,7 @@ export class ElasticService {
       .withPagination({ from, size })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
       .withCondition(QueryConditionOptions.must, queries)
-      .withCondition(QueryConditionOptions.mustNot, mustNotQueries);
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('type', 'FungibleESDT')]);
 
     return elasticQuery;
   }
@@ -322,7 +320,7 @@ export class ElasticService {
     return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
   }
 
-  async getTokenCount(filter: NftFilter): Promise<number> {
+  async getNftTokensCount(filter: NftFilter): Promise<number> {
     let query = await this.buildElasticNftFilter(0, 0, filter, undefined);
 
     return await this.getDocumentCount('tokens', query.toJson());
