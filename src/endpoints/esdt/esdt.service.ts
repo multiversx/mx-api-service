@@ -45,6 +45,8 @@ export class EsdtService {
       .withCondition(QueryConditionOptions.must, [ QueryType.Match('address', address) ])
       .withPagination({ from: 0, size: 10000 });
 
+    console.log('get from elastic');
+
     let esdts = await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
 
     let result: { [ key: string]: any } = {};
@@ -59,14 +61,14 @@ export class EsdtService {
         };
       } else {
         result[esdt.identifier] = {
-          attributes: esdt.data.attributes,
+          attributes: esdt.data?.attributes,
           balance: esdt.balance,
-          creator: esdt.data.creator,
-          name: esdt.data.name,
+          creator: esdt.data?.creator,
+          name: esdt.data?.name,
           nonce: esdt.tokenNonce,
-          royalties: esdt.data.royalties,
+          royalties: esdt.data?.royalties,
           tokenIdentifier: esdt.identifier,
-          uris: esdt.data.uris,
+          uris: esdt.data?.uris,
         };
       }
     }

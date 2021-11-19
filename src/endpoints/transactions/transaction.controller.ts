@@ -1,4 +1,4 @@
-import { Body, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 import { ParseAddressPipe } from 'src/utils/pipes/parse.address.pipe';
@@ -178,6 +178,14 @@ export class TransactionController {
     type: TransactionSendResult
   })
   async createTransaction(@Body() transaction: TransactionCreate): Promise<TransactionSendResult> {
+    if (!transaction.sender) {
+      throw new BadRequestException('Sender must be provided');
+    }
+
+    if (!transaction.receiver) {
+      throw new BadRequestException('Receiver must be provided');
+    }
+
     let result = await this.transactionService.createTransaction(transaction);
 
     if (typeof result === 'string' || result instanceof String) {
