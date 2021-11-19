@@ -187,8 +187,7 @@ export class ElasticService {
     }
 
     if (filter.type !== undefined) {
-      let types = filter.type.split(',');
-      queries.push(QueryType.Should(types.map(type => QueryType.Match('type', type))));
+      queries.push(QueryType.Match('type', filter.type));
     }
 
     if (identifier !== undefined) {
@@ -204,7 +203,7 @@ export class ElasticService {
     }
 
     if (filter.tags) {
-      let tagArray = filter.tags.split(',');
+      let tagArray = filter.tags;
       if (tagArray.length > 0) {
         for (let tag of tagArray) {
           queries.push(QueryType.Nested("data", { "data.tags": tag }));
@@ -217,7 +216,7 @@ export class ElasticService {
     }
 
     if (filter.identifiers) {
-      let identifiers = filter.identifiers.split(',');
+      let identifiers = filter.identifiers;
       queries.push(QueryType.Should(identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
     }
 
