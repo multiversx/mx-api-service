@@ -184,10 +184,6 @@ export class CollectionService {
       nftCollections = nftCollections.filter(x => x.name.toLowerCase().includes(searchLower) || x.collection.toLowerCase().includes(searchLower));
     }
 
-    if (filter.owner !== undefined) {
-      nftCollections = nftCollections.filter(x => x.owner === filter.owner);
-    }
-
     if (filter.canCreate !== undefined) {
       nftCollections = nftCollections.filter(x => x.canCreate === filter.canCreate);
     }
