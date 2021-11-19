@@ -4,9 +4,13 @@ import { LocalCacheValue } from "./entities/local.cache.value";
 
 @Injectable()
 export class LocalCacheService {
-  private readonly dictionary: { [ key: string ]: LocalCacheValue } = {};
+  private static dictionary: { [ key: string ]: LocalCacheValue } = {};
 
   private lastPruneTime: number = new Date().getTime();
+
+  getDictionary() {
+    return LocalCacheService.dictionary;
+  }
 
   setCacheValue<T>(key: string, value: T, ttl: number): T {
     if (this.needsPrune()) {
@@ -15,7 +19,7 @@ export class LocalCacheService {
 
     let expires = new Date().getTime() + (ttl * 1000);
 
-    this.dictionary[key] = {
+    LocalCacheService.dictionary[key] = {
       value,
       expires
     };
@@ -24,14 +28,14 @@ export class LocalCacheService {
   }
 
   getCacheValue<T>(key: string): T | undefined {
-    let cacheValue = this.dictionary[key];
+    let cacheValue = this.getDictionary()[key];
     if (!cacheValue) {
       return undefined;
     }
 
     let now = new Date().getTime();
     if (cacheValue.expires < now) {
-      delete this.dictionary[key];
+      delete this.getDictionary()[key];
       return undefined;
     }
 
@@ -39,7 +43,7 @@ export class LocalCacheService {
   }
 
   deleteCacheKey(key: string) {
-    delete this.dictionary[key];
+    delete this.getDictionary()[key];
   }
 
   needsPrune() {
@@ -52,16 +56,16 @@ export class LocalCacheService {
 
     let profiler = new PerformanceProfiler();
 
-    let keys = Object.keys(this.dictionary);
+    let keys = Object.keys(this.getDictionary());
 
     for (let key of keys) {
-      let value = this.dictionary[key];
+      let value = this.getDictionary()[key];
       if (value.expires < now) {
-        delete this.dictionary[key];
+        delete this.getDictionary()[key];
       }
     }
 
-    let keysAfter = Object.keys(this.dictionary);
+    let keysAfter = Object.keys(this.getDictionary());
 
     profiler.stop(`Local cache prune. Deleted ${keys.length - keysAfter.length} keys. Total keys in cache: ${keysAfter.length}`, true);
   }
