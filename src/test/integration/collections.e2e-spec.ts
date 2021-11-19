@@ -1,8 +1,6 @@
 import { Test } from "@nestjs/testing";
 import { CollectionService } from "src/endpoints/collections/collection.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
-import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
-import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
@@ -39,10 +37,6 @@ describe('Collection Service', () => {
 
         expect(collectionsList).toBeInstanceOf(Array);
         expect(collectionsList).toHaveLength(25);
-
-        for (let nft of collectionsList) {
-          expect(nft).toHaveStructure(Object.keys(new NftCollection()));
-        }
       });
 
       it(`should return a list with 10 nfts collections`, async () => {
@@ -51,8 +45,6 @@ describe('Collection Service', () => {
         expect(collectionsList).toHaveLength(10);
 
         for (let nftCollection of collectionsList) {
-          expect(nftCollection).toHaveStructure(Object.keys(new Nft()));
-
           expect(nftCollection.owner).toBeDefined();
           expect(nftCollection.collection).toBeDefined();
         }
@@ -67,7 +59,6 @@ describe('Collection Service', () => {
         expect(nftsCollections).toBeInstanceOf(Array);
 
         for (let nftCollection of nftsCollections) {
-          expect(nftCollection).toHaveStructure(Object.keys(new NftCollection()));
           expect(nftCollection.collection).toBe(collectionIdentifier); 
         }
       });
@@ -79,8 +70,7 @@ describe('Collection Service', () => {
         expect(collectionsList).toBeInstanceOf(Array);
 
         for (let nftCollection of collectionsList) {
-            expect(nftCollection).toHaveStructure(Object.keys(new Nft()));
-            expect(nftCollection.type).toBe(NftType.SemiFungibleESDT);
+          expect(nftCollection.type).toBe(NftType.SemiFungibleESDT);
         }
       });
 
@@ -91,8 +81,7 @@ describe('Collection Service', () => {
         expect(collectionsList).toBeInstanceOf(Array);
 
         for (let nft of collectionsList) {
-            expect(nft).toHaveStructure(Object.keys(new Nft()));
-            expect(nft.owner).toBe(collectionCreator);
+          expect(nft.owner).toBe(collectionCreator);
         }
       });
 

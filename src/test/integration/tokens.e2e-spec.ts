@@ -1,6 +1,5 @@
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
-import { TokenDetailed } from 'src/endpoints/tokens/entities/token.detailed';
 import { TokenService } from 'src/endpoints/tokens/token.service';
 import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
@@ -37,20 +36,12 @@ describe('Token Service', () => {
 
         expect(tokensList).toBeInstanceOf(Array);
         expect(tokensList).toHaveLength(25);
-
-        for (let token of tokensList) {
-          expect(token).toHaveStructure(Object.keys(new TokenDetailed()));
-        }
       });
 
       it(`should return a list with 10 tokens`, async () => {
         const tokensList = await tokenService.getTokens({from: 0, size: 10}, new TokenFilter());
         expect(tokensList).toBeInstanceOf(Array);
         expect(tokensList).toHaveLength(10);
-
-        for (let token of tokensList) {
-          expect(token).toHaveStructure(Object.keys(new TokenDetailed()));
-        }
       });
     })
 
@@ -60,7 +51,6 @@ describe('Token Service', () => {
         expect(tokensList).toBeInstanceOf(Array);
 
         for (let token of tokensList) {
-          expect(token).toHaveStructure(Object.keys(new TokenDetailed()));
           expect(token.name).toBe(tokenName);
         }
       });
@@ -107,7 +97,7 @@ describe('Token Service', () => {
     });
 
     it(`should throw 'Token not found' error`, async () => {
-      await expect(tokenService.getToken(tokenIdentifier + 'a')).toBeUndefined();
+      expect(await tokenService.getToken(tokenIdentifier + 'a')).toBeUndefined();
     });
   })
 });

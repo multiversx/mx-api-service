@@ -1,5 +1,4 @@
 import { Test } from "@nestjs/testing";
-import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftService } from "src/endpoints/nfts/nft.service";
@@ -38,10 +37,6 @@ describe('Nft Service', () => {
 
         expect(nftsList).toBeInstanceOf(Array);
         expect(nftsList).toHaveLength(25);
-
-        for (let nft of nftsList) {
-          expect(nft).toHaveStructure(Object.keys(new Nft()));
-        }
       });
 
       it(`should return a list with 10 nfts`, async () => {
@@ -50,8 +45,6 @@ describe('Nft Service', () => {
         expect(nftsList).toHaveLength(10);
 
         for (let nft of nftsList) {
-          expect(nft).toHaveStructure(Object.keys(new Nft()));
-
           expect(nft.creator).toBeDefined();
           expect(nft.identifier).toBeDefined();
         }
@@ -66,7 +59,6 @@ describe('Nft Service', () => {
         expect(nftsList).toBeInstanceOf(Array);
 
         for (let nft of nftsList) {
-          expect(nft).toHaveStructure(Object.keys(new Nft()));
           expect(nft.identifier).toBe(nftIdentifier); 
         }
       });
@@ -78,8 +70,7 @@ describe('Nft Service', () => {
         expect(nftsList).toBeInstanceOf(Array);
 
         for (let nft of nftsList) {
-            expect(nft).toHaveStructure(Object.keys(new Nft()));
-            expect(nft.type).toBe(NftType.SemiFungibleESDT);
+          expect(nft.type).toBe(NftType.SemiFungibleESDT);
         }
       });
 
@@ -90,8 +81,7 @@ describe('Nft Service', () => {
         expect(nftsList).toBeInstanceOf(Array);
 
         for (let nft of nftsList) {
-            expect(nft).toHaveStructure(Object.keys(new Nft()));
-            expect(nft.creator).toBe(nftCreator);
+          expect(nft.creator).toBe(nftCreator);
         }
       });
 
