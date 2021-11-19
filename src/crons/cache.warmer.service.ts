@@ -168,10 +168,8 @@ export class CacheWarmerService {
   }
 
   private async invalidateKey(key: string, data: any, ttl: number) {
-    await Promise.all([
-      this.cachingService.setCache(key, data, ttl),
-      this.deleteCacheKey(key),
-    ]);
+    await this.cachingService.setCache(key, data, ttl);
+    await this.deleteCacheKey(key);
   }
 
   private async deleteCacheKey(key: string) {
