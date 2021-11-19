@@ -11,5 +11,5 @@
     "./src/**/*.(t|j)s"
   ],
   "coverageDirectory": "./coverage/e2e",
-  "testTimeout": "30000"
+  "testTimeout": 30000
 }
