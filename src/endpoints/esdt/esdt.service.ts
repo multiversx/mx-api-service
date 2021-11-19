@@ -59,14 +59,14 @@ export class EsdtService {
         };
       } else {
         result[esdt.identifier] = {
-          attributes: esdt.data.attributes,
+          attributes: esdt.data?.attributes,
           balance: esdt.balance,
-          creator: esdt.data.creator,
-          name: esdt.data.name,
+          creator: esdt.data?.creator,
+          name: esdt.data?.name,
           nonce: esdt.tokenNonce,
-          royalties: esdt.data.royalties,
+          royalties: esdt.data?.royalties,
           tokenIdentifier: esdt.identifier,
-          uris: esdt.data.uris,
+          uris: esdt.data?.uris,
         };
       }
     }

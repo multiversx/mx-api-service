@@ -70,6 +70,14 @@ export class ProxyController {
   @Post('/transaction/send')
   @ApiExcludeEndpoint()
   async transactionSend(@Body() body: any) {
+    if (!body.sender) {
+      throw new BadRequestException('Sender must be provided');
+    }
+
+    if (!body.receiver) {
+      throw new BadRequestException('Receiver must be provided');
+    }
+
     return await this.gatewayPost('transaction/send', body);
   }
 

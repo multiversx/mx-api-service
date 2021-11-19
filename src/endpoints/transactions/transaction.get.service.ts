@@ -179,7 +179,22 @@ export class TransactionGetService {
 
   async tryGetTransactionFromGateway(txHash: string, queryInElastic: boolean = true): Promise<TransactionDetailed | null> {
     try {
-      const { transaction } = await this.gatewayService.get(`transaction/${txHash}?withResults=true`);
+      let transactionResult = await this.gatewayService.get(`transaction/${txHash}?withResults=true`, async (error) => {
+        if (error.response.data.error === 'transaction not found') {
+          return true;
+        }
+
+        return false;
+      });
+
+      if (!transactionResult) {
+        return null;
+      }
+
+      let transaction = transactionResult.transaction;
+      if (!transaction) {
+        return null;
+      }
 
       if (transaction.status === 'pending' && queryInElastic) {
         let existingTransaction = await this.tryGetTransactionFromElasticBySenderAndNonce(transaction.sender, transaction.nonce);
