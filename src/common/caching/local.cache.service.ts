@@ -28,14 +28,16 @@ export class LocalCacheService {
   }
 
   getCacheValue<T>(key: string): T | undefined {
-    let cacheValue = this.getDictionary()[key];
+    let dictionary = this.getDictionary();
+
+    let cacheValue = dictionary[key];
     if (!cacheValue) {
       return undefined;
     }
 
     let now = new Date().getTime();
     if (cacheValue.expires < now) {
-      delete this.getDictionary()[key];
+      delete dictionary[key];
       return undefined;
     }
 
@@ -43,7 +45,9 @@ export class LocalCacheService {
   }
 
   deleteCacheKey(key: string) {
-    delete this.getDictionary()[key];
+    let dictionary = this.getDictionary();
+
+    delete dictionary[key];
   }
 
   needsPrune() {
@@ -51,21 +55,23 @@ export class LocalCacheService {
   }
 
   prune() {
+    let dictionary = this.getDictionary();
+
     let now = new Date().getTime();
     this.lastPruneTime = now;
 
     let profiler = new PerformanceProfiler();
 
-    let keys = Object.keys(this.getDictionary());
+    let keys = Object.keys(dictionary);
 
     for (let key of keys) {
-      let value = this.getDictionary()[key];
+      let value = dictionary[key];
       if (value.expires < now) {
-        delete this.getDictionary()[key];
+        delete dictionary[key];
       }
     }
 
-    let keysAfter = Object.keys(this.getDictionary());
+    let keysAfter = Object.keys(dictionary);
 
     profiler.stop(`Local cache prune. Deleted ${keys.length - keysAfter.length} keys. Total keys in cache: ${keysAfter.length}`, true);
   }
