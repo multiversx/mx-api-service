@@ -6,7 +6,7 @@ import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 import { TokenFilter } from 'src/endpoints/tokens/entities/token.filter';
 
-describe.skip('Token Service', () => {
+describe('Token Service', () => {
   let tokenService: TokenService;
   let tokenName: string;
   let tokenIdentifier: string;
