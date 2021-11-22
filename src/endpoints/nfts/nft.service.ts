@@ -22,6 +22,7 @@ import { QueryType } from "src/common/elastic/entities/query.type";
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { CachingService } from "src/common/caching/caching.service";
 import { Constants } from "src/utils/constants";
+import { NftMedia } from "./entities/nft.media";
 
 @Injectable()
 export class NftService {
@@ -155,16 +156,6 @@ export class NftService {
           nft.tags = elasticNftData.tags;
         }
 
-        if (nft.uris && nft.uris.length > 0) {
-          try {
-            nft.url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(nft.uris[0]), this.NFT_THUMBNAIL_PREFIX);
-          } catch (error) {
-            this.logger.error(error);
-          }
-        }
-
-        nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
-
         if (elasticNftData.metadata) {
           nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromMetadata(elasticNftData.metadata);
         } else {
@@ -174,8 +165,6 @@ export class NftService {
 
       nfts.push(nft);
     }
-
-    this.updateThumbnailUrlForNfts(nfts);
 
     for (let nft of nfts) {
       let collectionProperties = await this.esdtService.getEsdtTokenProperties(nft.collection);
@@ -194,9 +183,14 @@ export class NftService {
           delete nft.royalties;
           // @ts-ignore
           delete nft.uris;
+        } else {
+          this.uploadMediaUrlForNft(nft);
+          nft.isWhitelistedStorage = nft.media[0].url.startsWith(this.NFT_THUMBNAIL_PREFIX);
         }
       }
     }
+
+    this.uploadMediaThumbnailUrlForNfts(nfts);
 
     return nfts;
   }
@@ -216,10 +210,13 @@ export class NftService {
     return await this.elasticService.getCount('accountsesdt', elasticQuery);
   }
 
-  updateThumbnailUrlForNfts(nfts: Nft[]) {
+  uploadMediaThumbnailUrlForNfts(nfts: Nft[]) {
     let mediaNfts = nfts.filter(nft => nft.type !== NftType.MetaESDT && nft.uris.filter(uri => uri).length > 0);
     for (let mediaNft of mediaNfts) {
-      mediaNft.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${mediaNft.identifier}`;
+      for (let media of mediaNft.media) {
+        const urlHash = media.url.split('/')[5];
+        media.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${mediaNft.collection}-${urlHash}`
+      }
     }
   }
 
@@ -337,6 +334,22 @@ export class NftService {
     return Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
   }
 
+  uploadMediaUrlForNft(nft: Nft) {
+    if (nft.uris && nft.uris.length > 0) {
+      try {
+        for (let uri of nft.uris) {
+          if (uri !== '') {
+            const nftMedia = new NftMedia();
+            nftMedia.url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(uri), this.NFT_THUMBNAIL_PREFIX);
+            nft.media.push(nftMedia);
+          }
+        }
+      } catch (error) {
+        this.logger.error(error);
+      }
+    }
+  }
+
   async getNftsForAddressInternal(address: string, filter: NftFilter): Promise<NftAccount[]> {
     let gatewayNfts = await this.getGatewayNfts(address, filter);
 
@@ -357,16 +370,6 @@ export class NftService {
       // @ts-ignore
       delete nft.timestamp;
 
-      if (nft.uris && nft.uris.length > 0) {
-        try {
-          nft.url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(nft.uris[0]), this.NFT_THUMBNAIL_PREFIX);
-        } catch (error) {
-          this.logger.error(error);
-        }
-      }
-
-      nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
-
       nft.attributes = gatewayNft.attributes;
 
       if (gatewayNft.attributes) {
@@ -385,6 +388,10 @@ export class NftService {
           delete nft.royalties;
           // @ts-ignore
           delete nft.uris;
+        } else {
+          this.uploadMediaUrlForNft(nft);
+
+          nft.isWhitelistedStorage = nft.media[0].url.startsWith(this.NFT_THUMBNAIL_PREFIX);
         }
 
         if (!nft.name) {
@@ -401,7 +408,7 @@ export class NftService {
 
     nfts = await this.filterNfts(filter, nfts);
 
-    this.updateThumbnailUrlForNfts(nfts);
+    this.uploadMediaThumbnailUrlForNfts(nfts);
 
     return nfts;
   }
