@@ -76,7 +76,7 @@ export class AccountService {
         },
       ] = await Promise.all([
         this.elasticService.getCount('transactions', elasticQuery),
-        this.elasticService.getCount('scresults', elasticQuery),
+        this.getAccountScResults(elasticQuery),
         this.gatewayService.get(`address/${address}`)
       ]);
 
@@ -97,6 +97,14 @@ export class AccountService {
       this.logger.error(`Error when getting account details for address '${address}'`);
       return null;
     }
+  }
+
+  private async getAccountScResults(query: ElasticQuery): Promise<number> {
+    if (this.apiConfigService.getUseLegacyElastic()) {
+      return 0;
+    }
+
+    return await this.elasticService.getCount('scresults', query);
   }
 
   async getAccountDeployedAt(address: string): Promise<number | null> {
