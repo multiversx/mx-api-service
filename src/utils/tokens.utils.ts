@@ -12,4 +12,11 @@ export class TokenUtils {
   static computeNftUri(uri: string, prefix: string) {
     return ApiUtils.replaceUri(uri, 'https://ipfs.io/ipfs', prefix);
   }
+
+  static getUrlHash(url: string) {
+    if (url.split('/').length !== 6) {
+      return undefined;
+    }
+    return url.split('/')[5];
+  }
 }

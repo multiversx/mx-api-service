@@ -214,8 +214,7 @@ export class NftService {
     let mediaNfts = nfts.filter(nft => nft.type !== NftType.MetaESDT && nft.uris.filter(uri => uri).length > 0);
     for (let mediaNft of mediaNfts) {
       for (let media of mediaNft.media) {
-        const urlHash = media.url.split('/')[5];
-        media.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${mediaNft.collection}-${urlHash}`
+        media.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${mediaNft.collection}-${TokenUtils.getUrlHash(media.url)}`
       }
     }
   }
