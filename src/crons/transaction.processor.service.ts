@@ -103,7 +103,7 @@ export class TransactionProcessorService {
             this.clientProxy.emit('deleteCacheKeys', uniqueInvalidatedKeys);
           }
           
-          await this.cachingService.batchDelCache(txCountInvalidationKeys);
+          await this.cachingService.batchDelCache(txCountInvalidationKeys.distinct());
           profiler.stop();
         },
         getLastProcessedNonce: async (shardId) => {

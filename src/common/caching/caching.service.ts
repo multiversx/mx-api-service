@@ -228,26 +228,8 @@ export class CachingService {
       this.deleteInCacheLocal(key);
     }
 
-    const chunks = this.getChunks(
-      keys.map((key, index) => {
-        const element: any = {};
-        element[key] = index;
-        return element;
-      }, 25)
-    );
-  
-    const dels = [];
-  
-    for (const chunk of chunks) {
-      const chunkKeys = chunk.map((element: any) => Object.keys(element)[0]);
-  
-      dels.push(
-        ...chunkKeys.map((key: string) => {
-          return ['del', key];
-        })
-      );
-    }
-  
+    const dels = keys.map(key => ['del', key]);
+
     await this.asyncMulti(dels);
   }
 
