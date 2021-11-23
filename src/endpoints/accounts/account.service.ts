@@ -18,6 +18,7 @@ import { QueryType } from 'src/common/elastic/entities/query.type';
 import { ElasticQuery } from 'src/common/elastic/entities/elastic.query';
 import { ElasticSortOrder } from 'src/common/elastic/entities/elastic.sort.order';
 import { DeployedContract } from './entities/deployed.contract';
+import { CacheInfo } from 'src/common/caching/entities/cache.info';
 
 @Injectable()
 export class AccountService {
@@ -75,7 +76,7 @@ export class AccountService {
           account: { nonce, balance, code, codeHash, rootHash, username, developerReward, ownerAddress },
         },
       ] = await Promise.all([
-        this.elasticService.getCount('transactions', elasticQuery),
+        this.getTxCount(address),
         this.getAccountScResults(elasticQuery),
         this.gatewayService.get(`address/${address}`)
       ]);
@@ -97,6 +98,25 @@ export class AccountService {
       this.logger.error(`Error when getting account details for address '${address}'`);
       return null;
     }
+  }
+
+  async getTxCount(address: string): Promise<number> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.TxCount(address).key,
+      async() => await this.getTxCountRaw(address),
+      CacheInfo.TxCount(address).ttl
+    )
+  }
+  
+  async getTxCountRaw(address: string): Promise<number> {
+    const queries = [
+      QueryType.Match('sender', address),
+      QueryType.Match('receiver', address),
+    ];
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.should, queries);
+
+    return await this.elasticService.getCount('transactions', elasticQuery);
   }
 
   private async getAccountScResults(query: ElasticQuery): Promise<number> {

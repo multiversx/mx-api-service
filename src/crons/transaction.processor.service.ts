@@ -56,13 +56,15 @@ export class TransactionProcessorService {
     
           for (let transaction of transactions) {
             // this.logger.log(`Transferred ${transaction.value} from ${transaction.sender} to ${transaction.receiver}`);
-    
+          
             if (!AddressUtils.isSmartContractAddress(transaction.sender)) {
               this.eventsGateway.onAccountBalanceChanged(transaction.sender);
+              this.clientProxy.emit('txCountChanged', transaction.sender);
             }
     
             if (!AddressUtils.isSmartContractAddress(transaction.receiver)) {
               this.eventsGateway.onAccountBalanceChanged(transaction.receiver);
+              this.clientProxy.emit('txCountChanged', transaction.receiver);
             }
 
             if (transaction.data) {
