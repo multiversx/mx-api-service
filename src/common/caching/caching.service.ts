@@ -223,6 +223,34 @@ export class CachingService {
     await this.asyncMulti(sets);
   };
 
+  async batchDelCache(keys: string[]) {
+    for (let key of keys) {
+      this.deleteInCacheLocal(key);
+    }
+
+    const chunks = this.getChunks(
+      keys.map((key, index) => {
+        const element: any = {};
+        element[key] = index;
+        return element;
+      }, 25)
+    );
+  
+    const dels = [];
+  
+    for (const chunk of chunks) {
+      const chunkKeys = chunk.map((element: any) => Object.keys(element)[0]);
+  
+      dels.push(
+        ...chunkKeys.map((key: string) => {
+          return ['del', key];
+        })
+      );
+    }
+  
+    await this.asyncMulti(dels);
+  }
+
   private getChunks<T>(array: T[], size = 25): T[][] {
     return array.reduce((result: T[][], item, current) => {
       const index = Math.floor(current / size);
