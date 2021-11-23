@@ -10,8 +10,6 @@ import { EventsGateway } from "src/websockets/events.gateway";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { TransactionUtils } from "src/utils/transaction.utils";
-import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
-import { BinaryUtils } from "src/utils/binary.utils";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 
 @Injectable()
@@ -27,7 +25,7 @@ export class TransactionProcessorService {
       private readonly metricsService: MetricsService,
       @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
       private readonly nodeService: NodeService,
-      private readonly nftExtendedAttributesService: NftExtendedAttributesService,
+      // private readonly nftExtendedAttributesService: NftExtendedAttributesService,
   ) {
     this.logger = new Logger(TransactionProcessorService.name);
   }
