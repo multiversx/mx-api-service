@@ -18,6 +18,7 @@ import { QueryType } from 'src/common/elastic/entities/query.type';
 import { ElasticQuery } from 'src/common/elastic/entities/elastic.query';
 import { ElasticSortOrder } from 'src/common/elastic/entities/elastic.sort.order';
 import { DeployedContract } from './entities/deployed.contract';
+import { TransactionService } from '../transactions/transaction.service';
 
 @Injectable()
 export class AccountService {
@@ -30,6 +31,7 @@ export class AccountService {
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
+    private readonly transactionService: TransactionService,
   ) {
     this.logger = new Logger(AccountService.name);
   }
@@ -75,7 +77,7 @@ export class AccountService {
           account: { nonce, balance, code, codeHash, rootHash, username, developerReward, ownerAddress },
         },
       ] = await Promise.all([
-        this.elasticService.getCount('transactions', elasticQuery),
+        this.transactionService.getTransactionCountForAddress(address),
         this.getAccountScResults(elasticQuery),
         this.gatewayService.get(`address/${address}`)
       ]);

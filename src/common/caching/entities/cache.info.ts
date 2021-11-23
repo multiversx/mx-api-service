@@ -57,6 +57,13 @@ export class CacheInfo {
     }
   }
 
+  static TxCount(address: string): CacheInfo {
+    return {
+      key: `txCount:${address}`,
+      ttl: Constants.oneSecond() * 30
+    }
+  }
+
   static IdentityProfilesKeybases: CacheInfo = {
     key: 'identityProfilesKeybases',
     ttl: Constants.oneHour()
