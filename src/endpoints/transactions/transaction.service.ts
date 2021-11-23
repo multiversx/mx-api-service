@@ -130,7 +130,17 @@ export class TransactionService {
     return await this.elasticService.getCount('transactions', elasticQuery);
   }
 
-  private isTransactionCountQuery(filter: TransactionFilter) {
+  private isTransactionCountQueryWithAddressOnly(filter: TransactionFilter, address?: string) {
+    if (!address) {
+      return false;
+    }
+
+    let filterToCompareWith: TransactionFilter = {};
+
+    return JSON.stringify(filter) === JSON.stringify(filterToCompareWith);
+  }
+
+  private isTransactionCountQueryWithSenderAndReceiver(filter: TransactionFilter) {
     if (!filter.sender || !filter.receiver) {
       return false;
     }
@@ -149,8 +159,12 @@ export class TransactionService {
   }
 
   async getTransactionCount(filter: TransactionFilter, address?: string): Promise<number> {
-    if (address || this.isTransactionCountQuery(filter)) {
-      return this.getTransactionCountForAddress(address ?? filter.sender ?? '');
+    if (this.isTransactionCountQueryWithAddressOnly(filter, address)) {
+      return this.getTransactionCountForAddress(address ?? '');
+    }
+
+    if (this.isTransactionCountQueryWithSenderAndReceiver(filter)) {
+      return this.getTransactionCountForAddress(filter.sender ?? '');
     }
 
     let elasticQuery = this.buildTransactionFilterQuery(filter, address);
