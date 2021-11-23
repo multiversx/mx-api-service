@@ -52,8 +52,6 @@ export class TransactionProcessorService {
     
           let allInvalidatedKeys = [];
 
-          let txCountInvalidationKeys = [];
-    
           for (let transaction of transactions) {
             // this.logger.log(`Transferred ${transaction.value} from ${transaction.sender} to ${transaction.receiver}`);
           
@@ -91,17 +89,17 @@ export class TransactionProcessorService {
               ...invalidatedOwnerKeys,
               ...invalidatedCollectionPropertiesKeys
             );
-
-            txCountInvalidationKeys.push(CacheInfo.TxCount(transaction.sender).key);
-            txCountInvalidationKeys.push(CacheInfo.TxCount(transaction.receiver).key);
           }
     
           let uniqueInvalidatedKeys = allInvalidatedKeys.distinct();
           if (uniqueInvalidatedKeys.length > 0) {
             this.clientProxy.emit('deleteCacheKeys', uniqueInvalidatedKeys);
           }
+
+          let distinctSendersAndReceivers = transactions.selectMany(transaction => [ transaction.sender, transaction.receiver ]).distinct();
+          let txCountInvalidationKeys = distinctSendersAndReceivers.map(address => CacheInfo.TxCount(address).key);
+          await this.cachingService.batchDelCache(txCountInvalidationKeys);
           
-          await this.cachingService.batchDelCache(txCountInvalidationKeys.distinct());
           profiler.stop();
         },
         getLastProcessedNonce: async (shardId) => {
