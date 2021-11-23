@@ -60,7 +60,7 @@ export class CacheInfo {
   static TxCount(address: string): CacheInfo {
     return {
       key: `txCount:${address}`,
-      ttl: Constants.oneHour()
+      ttl: Constants.oneSecond() * 30
     }
   }
 
