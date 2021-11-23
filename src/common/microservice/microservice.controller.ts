@@ -28,11 +28,4 @@ export class MicroserviceController {
       }
     }
   }
-
-  @EventPattern('txCountChanged')
-  async deleteTxCountForAddress(address: string) {
-    const key = CacheInfo.TxCount(address).key;
-    this.logger.log(`Hard Deleting cache key ${key}`);
-    await this.cachingService.deleteInCacheLocal(key);
-  }
 }
