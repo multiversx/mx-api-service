@@ -159,6 +159,9 @@ describe('Transaction Service', () => {
                         expect(false);
                     }
                 }
+
+                const accountTransactionsList = await transactionService.getTransactions(new TransactionFilter(), { from: 0, size: 25 }, undefined, address);
+                expect(transactionsList).toEqual(accountTransactionsList);
             })
 
             it(`should return transactions for an address with self transactions`, async () => {
@@ -268,8 +271,8 @@ describe('Transaction Service', () => {
             if (transaction) {
              expect(transaction.txHash).toBe(detailedTransactionHash);
              expect(Object.keys(transaction)).toContain(TransactionOptionalFieldOption.results);
-             expect(Object.keys(transaction)).toContain(TransactionOptionalFieldOption.receipt);
-             expect(Object.keys(transaction)).not.toContain(TransactionOptionalFieldOption.logs);
+             expect(Object.keys(transaction)).not.toContain(TransactionOptionalFieldOption.receipt);
+             expect(Object.keys(transaction)).toContain(TransactionOptionalFieldOption.logs);
             }
             else {
              expect(false);
