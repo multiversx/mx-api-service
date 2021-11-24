@@ -223,6 +223,16 @@ export class CachingService {
     await this.asyncMulti(sets);
   };
 
+  async batchDelCache(keys: string[]) {
+    for (let key of keys) {
+      this.deleteInCacheLocal(key);
+    }
+
+    const dels = keys.map(key => ['del', key]);
+
+    await this.asyncMulti(dels);
+  }
+
   private getChunks<T>(array: T[], size = 25): T[][] {
     return array.reduce((result: T[][], item, current) => {
       const index = Math.floor(current / size);

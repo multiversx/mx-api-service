@@ -33,11 +33,7 @@ export class EsdtService {
   }
 
   private async getAllEsdtsForAddressRaw(address: string): Promise<{ [ key: string]: any }> {
-    if (AddressUtils.isSmartContractAddress(address)) {
-      return this.getAllEsdtsForAddressFromElastic(address);
-    }
-
-    return this.getAllEsdtsForAddressFromGateway(address);
+    return this.getAllEsdtsForAddressFromElastic(address);
   }
 
   private async getAllEsdtsForAddressFromElastic(address: string): Promise<{ [ key: string]: any }> {
