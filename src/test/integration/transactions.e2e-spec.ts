@@ -276,14 +276,14 @@ describe('Transaction Service', () => {
         });
 
 
-        it(`should return a transaction for a specific hash with results and logs optional field`, async () => {
+        it(`should return a transaction for a specific hash with results and logs optional fields`, async () => {
             const transaction = await transactionService.getTransaction(detailedTransactionHash, [TransactionOptionalFieldOption.results, TransactionOptionalFieldOption.logs]);
 
             if (transaction) {
              expect(transaction.txHash).toBe(detailedTransactionHash);
              expect(transaction.results).toBeDefined();
              expect(transaction.receipt).toBeUndefined();
-             expect(transaction.logs).toBeDefined();
+             expect(transaction.operations).toBeDefined();
             }
             else {
              expect(false);
