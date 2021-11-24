@@ -7,12 +7,14 @@ import { TransactionFilter } from 'src/endpoints/transactions/entities/transacti
 import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
+import { TransactionOptionalFieldOption } from 'src/endpoints/transactions/entities/transaction.optional.field.options';
 
 describe('Transaction Service', () => {
     let transactionService: TransactionService;
     let transactionHash: string;
     let transactionSender: string;
     let transactionReceiver: string;
+    let detailedTransactionHash: string = '18128acfd3f19f7a747ccf02bc866e95aa2db92af44fed2f9ed2c2102223b462';
 
     beforeAll(async () => {
       await Initializer.initialize();
@@ -224,6 +226,53 @@ describe('Transaction Service', () => {
 
             if (transaction) {
              expect(transaction.txHash).toBe(transactionHash);
+            }
+            else {
+             expect(false);
+            }
+        });
+
+        it(`should return a transaction for a specific hash without optional fields`, async () => {
+            const transaction = await transactionService.getTransaction(detailedTransactionHash);
+
+            if (transaction) {
+             expect(transaction.txHash).toBe(detailedTransactionHash);
+             expect(Object.keys(transaction)).not.toContain(TransactionOptionalFieldOption.results);
+             expect(Object.keys(transaction)).not.toContain(TransactionOptionalFieldOption.receipt);
+             expect(Object.keys(transaction)).not.toContain(TransactionOptionalFieldOption.logs);
+            }
+            else {
+             expect(false);
+            }
+        });
+
+
+        it(`should return a transaction for a specific hash with results optional field`, async () => {
+            const transaction = await transactionService.getTransaction(detailedTransactionHash, [TransactionOptionalFieldOption.results]);
+
+            if (transaction) {
+             expect(transaction.txHash).toBe(detailedTransactionHash);
+             expect(Object.keys(transaction)).toContain(TransactionOptionalFieldOption.results);
+             expect(Object.keys(transaction)).not.toContain(TransactionOptionalFieldOption.receipt);
+             expect(Object.keys(transaction)).not.toContain(TransactionOptionalFieldOption.logs);
+            }
+            else {
+             expect(false);
+            }
+        });
+
+
+        it(`should return a transaction for a specific hash with results and logs optional field`, async () => {
+            const transaction = await transactionService.getTransaction(detailedTransactionHash, [TransactionOptionalFieldOption.results, TransactionOptionalFieldOption.logs]);
+
+            if (transaction) {
+             expect(transaction.txHash).toBe(detailedTransactionHash);
+             expect(Object.keys(transaction)).toContain(TransactionOptionalFieldOption.results);
+             expect(Object.keys(transaction)).toContain(TransactionOptionalFieldOption.receipt);
+             expect(Object.keys(transaction)).not.toContain(TransactionOptionalFieldOption.logs);
+            }
+            else {
+             expect(false);
             }
         });
 
