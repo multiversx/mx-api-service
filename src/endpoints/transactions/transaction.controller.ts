@@ -163,8 +163,12 @@ export class TransactionController {
     status: 404,
     description: 'Transaction not found'
   })
-  async getTransaction(@Param('txHash', ParseTransactionHashPipe) txHash: string): Promise<TransactionDetailed> {
-    let transaction = await this.transactionService.getTransaction(txHash);
+  @ApiQuery({ name: 'optionalFields', description: 'Filter by a comma-separated list of transaction optional fields', required: false })
+  async getTransaction(
+    @Param('txHash', ParseTransactionHashPipe) txHash: string,
+    @Query('optionalFields', ParseArrayPipe) optionalFields: string[] | undefined, 
+  ): Promise<TransactionDetailed> {
+    let transaction = await this.transactionService.getTransaction(txHash, optionalFields);
     if (transaction === null) {
       throw new HttpException('Transaction not found', HttpStatus.NOT_FOUND);
     }
