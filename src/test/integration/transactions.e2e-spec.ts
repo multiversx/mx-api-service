@@ -251,7 +251,7 @@ describe('Transaction Service', () => {
 
             if (transaction) {
              expect(transaction.txHash).toBe(detailedTransactionHash);
-             expect(transaction.results).toBeUndefined();
+             expect(transaction.results).toEqual([]);
              expect(transaction.receipt).toBeUndefined();
              expect(transaction.logs).toBeUndefined();
             }
