@@ -10,8 +10,6 @@ import { EventsGateway } from "src/websockets/events.gateway";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { TransactionUtils } from "src/utils/transaction.utils";
-import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
-import { BinaryUtils } from "src/utils/binary.utils";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 
 @Injectable()
@@ -27,7 +25,7 @@ export class TransactionProcessorService {
       private readonly metricsService: MetricsService,
       @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
       private readonly nodeService: NodeService,
-      private readonly nftExtendedAttributesService: NftExtendedAttributesService,
+      // private readonly nftExtendedAttributesService: NftExtendedAttributesService,
   ) {
     this.logger = new Logger(TransactionProcessorService.name);
   }
@@ -53,10 +51,10 @@ export class TransactionProcessorService {
           this.logger.log(`New transactions: ${transactions.length} for shard ${shard} and nonce ${nonce}`);
     
           let allInvalidatedKeys = [];
-    
+
           for (let transaction of transactions) {
             // this.logger.log(`Transferred ${transaction.value} from ${transaction.sender} to ${transaction.receiver}`);
-    
+          
             if (!AddressUtils.isSmartContractAddress(transaction.sender)) {
               this.eventsGateway.onAccountBalanceChanged(transaction.sender);
             }
@@ -70,7 +68,7 @@ export class TransactionProcessorService {
               if (metadataResult) {
                 this.logger.log(`Detected NFT Create for collection with identifier '${metadataResult.collection}'. Raw attributes: '${metadataResult.attributes}'`);
 
-                this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(BinaryUtils.base64Encode(metadataResult.attributes));
+                // this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(BinaryUtils.base64Encode(metadataResult.attributes));
               }
             }
             
@@ -97,7 +95,11 @@ export class TransactionProcessorService {
           if (uniqueInvalidatedKeys.length > 0) {
             this.clientProxy.emit('deleteCacheKeys', uniqueInvalidatedKeys);
           }
-    
+
+          let distinctSendersAndReceivers = transactions.selectMany(transaction => [ transaction.sender, transaction.receiver ]).distinct();
+          let txCountInvalidationKeys = distinctSendersAndReceivers.map(address => CacheInfo.TxCount(address).key);
+          await this.cachingService.batchDelCache(txCountInvalidationKeys);
+          
           profiler.stop();
         },
         getLastProcessedNonce: async (shardId) => {

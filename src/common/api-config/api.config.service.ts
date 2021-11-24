@@ -145,6 +145,10 @@ export class ApiConfigService {
     return this.configService.get<boolean>('flags.useRequestCaching') ?? true;
   }
 
+  getUseRequestLoggingFlag(): boolean {
+    return this.configService.get<boolean>('flags.useRequestLogging') ?? false;
+  }
+
   getUseKeepAliveAgentFlag(): boolean {
     return this.configService.get<boolean>('flags.useKeepAliveAgent') ?? true;
   }
