@@ -251,9 +251,9 @@ describe('Transaction Service', () => {
 
             if (transaction) {
              expect(transaction.txHash).toBe(detailedTransactionHash);
-             expect(Object.keys(transaction)).not.toContain(TransactionOptionalFieldOption.results);
-             expect(Object.keys(transaction)).not.toContain(TransactionOptionalFieldOption.receipt);
-             expect(Object.keys(transaction)).not.toContain(TransactionOptionalFieldOption.logs);
+             expect(transaction.results).toBeUndefined();
+             expect(transaction.receipt).toBeUndefined();
+             expect(transaction.logs).toBeUndefined();
             }
             else {
              expect(false);
@@ -266,9 +266,9 @@ describe('Transaction Service', () => {
 
             if (transaction) {
              expect(transaction.txHash).toBe(detailedTransactionHash);
-             expect(Object.keys(transaction)).toContain(TransactionOptionalFieldOption.results);
-             expect(Object.keys(transaction)).not.toContain(TransactionOptionalFieldOption.receipt);
-             expect(Object.keys(transaction)).not.toContain(TransactionOptionalFieldOption.logs);
+             expect(transaction.results).toBeDefined();
+             expect(transaction.receipt).toBeUndefined();
+             expect(transaction.logs).toBeUndefined();
             }
             else {
              expect(false);
@@ -281,9 +281,9 @@ describe('Transaction Service', () => {
 
             if (transaction) {
              expect(transaction.txHash).toBe(detailedTransactionHash);
-             expect(Object.keys(transaction)).toContain(TransactionOptionalFieldOption.results);
-             expect(Object.keys(transaction)).not.toContain(TransactionOptionalFieldOption.receipt);
-             expect(Object.keys(transaction)).toContain(TransactionOptionalFieldOption.logs);
+             expect(transaction.results).toBeDefined();
+             expect(transaction.receipt).toBeUndefined();
+             expect(transaction.logs).toBeDefined();
             }
             else {
              expect(false);
