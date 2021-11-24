@@ -199,8 +199,6 @@ describe('Transaction Service', () => {
                 }
             });
 
-
-
             it(`should return transactions with specific hashes`, async () => {
                 const hashes = '8149581fe858edf8971a73491ff4b26ce2532aa7951ffefafb7b7823ffacc182,56bdbc1a2e9e4dd60bb77c82a72c5b2b77ef51b8decf97f4024fa223b9b64777,INVALIDTXHASH';
                 const transactionFilter = new TransactionFilter();
@@ -210,7 +208,20 @@ describe('Transaction Service', () => {
                 expect(transactionsList).toHaveLength(2);
                 const transactionsHashes = transactionsList.map(({txHash}) => txHash);
                 expect(hashes.split(',').toString()).not.toStrictEqual(transactionsHashes.toString());
-            })
+            });
+
+            it(`should return transactions with all token transactions`, async () => {
+                const token = 'QWT-46ac01';
+                const transactionFilter = new TransactionFilter();
+                transactionFilter.token = token;
+               
+
+                const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+                for (let transaction of transactionsList) {
+                    expect(transaction.tokenIdentifier).toBeDefined();
+                    expect(transaction.tokenIdentifier).toEqual('QWT-46ac01');
+                }
+            });
         })
     
     });
