@@ -10,6 +10,7 @@ import { ParseTransactionHashPipe } from "src/utils/pipes/parse.transaction.hash
 import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { PerformanceProfiler } from "src/utils/performance.profiler";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Controller()
 @ApiTags('proxy')
@@ -19,6 +20,7 @@ export class ProxyController {
     private readonly vmQueryService: VmQueryService,
     private readonly cachingService: CachingService,
     private readonly metricsService: MetricsService,
+    private readonly apiConfigService: ApiConfigService,
   ) {}
 
   @Get('/address/:address')
@@ -163,7 +165,9 @@ export class ProxyController {
     } finally {
       profiler.stop();
 
-      this.metricsService.setVmQuery(query.scAddress, query.funcName, profiler.duration);
+      if (this.apiConfigService.getUseVmQueryTracingFlag()) {
+        this.metricsService.setVmQuery(query.scAddress, query.funcName, profiler.duration);
+      }
     }
   }
 
