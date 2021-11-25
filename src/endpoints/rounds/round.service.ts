@@ -7,17 +7,18 @@ import { QueryConditionOptions } from "src/common/elastic/entities/query.conditi
 import { RoundUtils } from "src/utils/round.utils";
 import { ApiUtils } from "src/utils/api.utils";
 import { ElasticService } from "src/common/elastic/elastic.service";
-import { Constants } from "src/utils/constants";
 import { AbstractQuery } from "src/common/elastic/entities/abstract.query";
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Injectable()
 export class RoundService {
   constructor(
     private readonly elasticService: ElasticService,
     private readonly blsService: BlsService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   private async buildElasticRoundsFilter(filter: RoundFilter): Promise<AbstractQuery[]> {
@@ -28,10 +29,10 @@ export class RoundService {
       queries.push(shardIdQuery);
     }
 
-    // if (filter.epoch !== undefined) {
-    //   const epochQuery = QueryType.Match('epoch', filter.epoch);
-    //   queries.push(epochQuery);
-    // }
+    if (filter.epoch !== undefined && !this.apiConfigService.getUseLegacyElastic()) {
+      const epochQuery = QueryType.Match('epoch', filter.epoch);
+      queries.push(epochQuery);
+    }
     
     if (filter.validator !== undefined && filter.shard !== undefined && filter.epoch !== undefined) {
       const index = await this.blsService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
@@ -57,13 +58,6 @@ export class RoundService {
       .withPagination({ from, size })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
       .withCondition(filter.condition ?? QueryConditionOptions.must, await this.buildElasticRoundsFilter(filter));
-
-    // if (!filter.epoch) {
-      let before = Math.round(Date.now() / 1000) + Constants.oneMinute();
-      let after = Math.round(Date.now() / 1000) - Constants.oneDay();
-
-      elasticQuery = elasticQuery.withFilter([ QueryType.Range('timestamp', before, after) ]);
-    // }
 
     let result = await this.elasticService.getList('rounds', 'round', elasticQuery);
 
