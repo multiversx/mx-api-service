@@ -142,7 +142,7 @@ export class TransactionGetService {
     }
   }
 
-  private trimOperations(operations: TransactionOperation[]): TransactionOperation[] {
+  trimOperations(operations: TransactionOperation[]): TransactionOperation[] {
     let result: TransactionOperation[] = [];
 
     for (let operation of operations) {

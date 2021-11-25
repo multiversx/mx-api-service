@@ -241,6 +241,8 @@ export class TransactionService {
           const logs = await this.transactionGetService.getTransactionLogsFromElastic(hashes);
           let transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
           transactionDetailed.operations = this.tokenTransferService.getOperationsForTransactionLogs(transactionDetailed.txHash, transactionLogs);
+
+          transactionDetailed.operations = this.transactionGetService.trimOperations(transactionDetailed.operations);
         }
 
         detailedTransactions.push(transactionDetailed);
