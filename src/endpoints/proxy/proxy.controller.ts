@@ -8,6 +8,9 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseTransactionHashPipe } from "src/utils/pipes/parse.transaction.hash.pipe";
 import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
+import { MetricsService } from "src/common/metrics/metrics.service";
+import { PerformanceProfiler } from "src/utils/performance.profiler";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { Response } from "express";
 import { NoCache } from "src/decorators/no.cache";
 
@@ -18,6 +21,8 @@ export class ProxyController {
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
     private readonly cachingService: CachingService,
+    private readonly metricsService: MetricsService,
+    private readonly apiConfigService: ApiConfigService,
   ) {}
 
   @Get('/address/:address')
@@ -153,11 +158,18 @@ export class ProxyController {
     status: 201,
     description: 'Returns the result of the query (legacy)',
   })
-  async queryLegacy(@Body() query: VmQueryRequest, ) {
+  async queryLegacy(@Body() query: VmQueryRequest) {
+    let profiler = new PerformanceProfiler();
     try {
       return await this.vmQueryService.vmQueryFullResult(query.scAddress, query.funcName, query.caller, query.args);
     } catch (error: any) {
       throw new BadRequestException(error.response.data);
+    } finally {
+      profiler.stop();
+
+      if (this.apiConfigService.getUseVmQueryTracingFlag()) {
+        this.metricsService.setVmQuery(query.scAddress, query.funcName, profiler.duration);
+      }
     }
   }
 

@@ -14,6 +14,7 @@ flags:
   useKeepAliveAgent: true
   useTracing: false
   useRequestLogging: false
+  useVmQueryTracing: false
 urls:
   api:
     - 'https://devnet-api.elrond.com'

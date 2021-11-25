@@ -157,6 +157,10 @@ export class ApiConfigService {
     return this.configService.get<boolean>('flags.useTracing') ?? false;
   }
 
+  getUseVmQueryTracingFlag(): boolean {
+    return this.configService.get<boolean>('flags.useVmQueryTracing') ?? false;
+  }
+
   getProvidersUrl(): string {
     let providerUrl = this.configService.get<string>('urls.providers');
     if (!providerUrl) {

@@ -7,6 +7,7 @@ import { ProtocolService } from "../protocol/protocol.service";
 @Injectable()
 export class MetricsService {
   private static apiCallsHistogram: Histogram<string>;
+  private static vmQueriesHistogram: Histogram<string>;
   private static pendingRequestsHistogram: Gauge<string>;
   private static externalCallsHistogram: Histogram<string>;
   private static elasticDurationHistogram: Histogram<string>;
@@ -29,6 +30,15 @@ export class MetricsService {
         name: 'api',
         help: 'API Calls',
         labelNames: [ 'endpoint', 'code' ],
+        buckets: [ ]
+      });
+    }
+
+    if (!MetricsService.vmQueriesHistogram) {
+      MetricsService.vmQueriesHistogram = new Histogram({
+        name: 'vm_query',
+        help: 'VM Queries',
+        labelNames: [ 'address', 'function' ],
         buckets: [ ]
       });
     }
@@ -118,6 +128,10 @@ export class MetricsService {
   setApiCall(endpoint: string, status: number, duration: number, responseSize: number) {
     MetricsService.apiCallsHistogram.labels(endpoint, status.toString()).observe(duration);
     MetricsService.apiResponseSizeHistogram.labels(endpoint).observe(responseSize);
+  }
+
+  setVmQuery(address: string, func: string, duration: number) {
+    MetricsService.vmQueriesHistogram.labels(address, func).observe(duration);
   }
 
   setPendingRequestsCount(count: number) {
