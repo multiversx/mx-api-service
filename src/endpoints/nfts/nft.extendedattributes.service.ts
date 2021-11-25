@@ -1,7 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ApiService } from "src/common/network/api.service";
 import { NftMetadata } from "src/endpoints/nfts/entities/nft.metadata";
-import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
 import { MatchUtils } from "src/utils/match.utils";
 import { TokenUtils } from "src/utils/tokens.utils";
