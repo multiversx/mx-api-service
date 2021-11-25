@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Param, Post, Query, Res } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { VmQueryRequest } from "../vm.query/entities/vm.query.request";
 import { VmQueryService } from "../vm.query/vm.query.service";
@@ -8,6 +8,8 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseTransactionHashPipe } from "src/utils/pipes/parse.transaction.hash.pipe";
 import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
+import { Response } from "express";
+import { NoCache } from "src/decorators/no.cache";
 
 @Controller()
 @ApiTags('proxy')
@@ -185,9 +187,10 @@ export class ProxyController {
 
   @Get('/node/heartbeatstatus')
   @ApiExcludeEndpoint()
-  async getNodeHeartbeatStatus() {
+  @NoCache()
+  async getNodeHeartbeatStatus(@Res() res: Response) {
     try {
-      return await this.cachingService.getOrSetCache(
+      let heartbeatStatus = await this.cachingService.getOrSetCache(
         'heartbeatstatus',
         async () => {
           const result = await this.gatewayService.getRaw('node/heartbeatstatus');
@@ -195,6 +198,8 @@ export class ProxyController {
         },
         Constants.oneMinute() * 2,
       );
+
+      res.type('application/json').send(heartbeatStatus);
     } catch (error: any) {
       throw new BadRequestException(error.response.data);
     }
@@ -202,16 +207,19 @@ export class ProxyController {
 
   @Get('/validator/statistics')
   @ApiExcludeEndpoint()
-  async getValidatorStatistics() {
+  @NoCache()
+  async getValidatorStatistics(@Res() res: Response) {
     try {
-      return await this.cachingService.getOrSetCache(
+      let validatorStatistics = await this.cachingService.getOrSetCache(
         'validatorstatistics',
         async () => {
           const result = await this.gatewayService.getRaw('validator/statistics');
           return result.data;
         },
-        Constants.oneMinute(),
+        Constants.oneMinute() * 2,
       );
+
+      res.type('application/json').send(validatorStatistics);
     } catch (error: any) {
       throw new BadRequestException(error.response.data);
     }
