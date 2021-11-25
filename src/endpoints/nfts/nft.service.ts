@@ -44,7 +44,7 @@ export class NftService {
   async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[]> {
     const { from, size } = queryPagination;
 
-    let nfts =  await this.getNftsInternal(from, size, filter, undefined);
+    let nfts =  await this.getNftsInternal(from, size, filter, undefined, queryOptions);
 
     for (let nft of nfts) {
       await this.applyAssetsAndTicker(nft);
@@ -128,7 +128,7 @@ export class NftService {
     });
   }
 
-  async getNftsInternal(from: number, size: number, filter: NftFilter, identifier: string | undefined): Promise<Nft[]> {
+  async getNftsInternal(from: number, size: number, filter: NftFilter, identifier: string | undefined, queryOptions?: NftQueryOptions): Promise<Nft[]> {
     let elasticNfts = await this.elasticService.getTokens(from, size, filter, identifier);
 
     let nfts: Nft[] = [];
@@ -165,11 +165,14 @@ export class NftService {
 
         nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
 
-        // if (elasticNftData.metadata) {
-        //   nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromMetadata(elasticNftData.metadata);
-        // } else {
-        //   nft.metadata = undefined;
-        // }
+        if (queryOptions && queryOptions.withMetadata) {
+          if (elasticNftData.metadata) {
+            nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromMetadata(elasticNftData.metadata);
+          } else {
+            nft.metadata = undefined;
+          }
+        }
+        
       }
 
       nfts.push(nft);
@@ -230,7 +233,7 @@ export class NftService {
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<NftAccount[]> {
     const { from, size } = queryPagination;
 
-    let nfts = await this.getNftsForAddressInternal(address, filter);
+    let nfts = await this.getNftsForAddressInternal(address, filter, queryOptions);
 
     nfts = nfts.slice(from, from + size);
 
@@ -337,7 +340,7 @@ export class NftService {
     return Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
   }
 
-  async getNftsForAddressInternal(address: string, filter: NftFilter): Promise<NftAccount[]> {
+  async getNftsForAddressInternal(address: string, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<NftAccount[]> {
     let gatewayNfts = await this.getGatewayNfts(address, filter);
 
     gatewayNfts.sort((a: GatewayNft, b: GatewayNft) => a.tokenIdentifier.localeCompare(b.tokenIdentifier, 'en', { sensitivity: 'base' }));
@@ -371,7 +374,9 @@ export class NftService {
 
       if (gatewayNft.attributes) {
         nft.tags = this.nftExtendedAttributesService.getTags(gatewayNft.attributes);
-        // nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(gatewayNft.attributes);
+        if (queryOptions && queryOptions.withMetadata) {
+          nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(gatewayNft.attributes);
+        }
       }
 
       let collectionDetails = await this.esdtService.getEsdtTokenProperties(nft.collection);
