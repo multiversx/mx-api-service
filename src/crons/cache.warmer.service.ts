@@ -18,6 +18,7 @@ import { DataQuoteType } from "src/common/external/entities/data.quote.type";
 import { EsdtService } from "src/endpoints/esdt/esdt.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
+import { PluginService } from "src/common/plugins/plugin.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -36,6 +37,7 @@ export class CacheWarmerService {
     private readonly gatewayService: GatewayService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly tokenAssetService: TokenAssetService,
+    private readonly pluginService: PluginService,
   ) { 
     this.configCronJob(
       'handleKeybaseAgainstKeybasePubInvalidations', 
@@ -173,6 +175,11 @@ export class CacheWarmerService {
       let assets = await this.tokenAssetService.getAllAssetsRaw();
       await this.invalidateKey(CacheInfo.TokenAssets.key, assets, CacheInfo.TokenAssets.ttl);
     }, true);
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleCronPlugins() {
+    await this.pluginService.handleEveryMinuteCron();
   }
 
   private async invalidateKey(key: string, data: any, ttl: number) {
