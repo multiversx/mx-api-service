@@ -4,7 +4,7 @@ import { LocalCacheValue } from "./entities/local.cache.value";
 
 @Injectable()
 export class LocalCacheService {
-  private readonly dictionary: { [ key: string ]: LocalCacheValue } = {};
+  private static readonly dictionary: { [ key: string ]: LocalCacheValue } = {};
 
   private lastPruneTime: number = new Date().getTime();
 
@@ -15,7 +15,7 @@ export class LocalCacheService {
 
     let expires = new Date().getTime() + (ttl * 1000);
 
-    this.dictionary[key] = {
+    LocalCacheService.dictionary[key] = {
       value,
       expires
     };
@@ -24,14 +24,14 @@ export class LocalCacheService {
   }
 
   getCacheValue<T>(key: string): T | undefined {
-    let cacheValue = this.dictionary[key];
+    let cacheValue = LocalCacheService.dictionary[key];
     if (!cacheValue) {
       return undefined;
     }
 
     let now = new Date().getTime();
     if (cacheValue.expires < now) {
-      delete this.dictionary[key];
+      delete LocalCacheService.dictionary[key];
       return undefined;
     }
 
@@ -39,7 +39,7 @@ export class LocalCacheService {
   }
 
   deleteCacheKey(key: string) {
-    delete this.dictionary[key];
+    delete LocalCacheService.dictionary[key];
   }
 
   needsPrune() {
@@ -52,16 +52,16 @@ export class LocalCacheService {
 
     let profiler = new PerformanceProfiler();
 
-    let keys = Object.keys(this.dictionary);
+    let keys = Object.keys(LocalCacheService.dictionary);
 
     for (let key of keys) {
-      let value = this.dictionary[key];
+      let value = LocalCacheService.dictionary[key];
       if (value.expires < now) {
-        delete this.dictionary[key];
+        delete LocalCacheService.dictionary[key];
       }
     }
 
-    let keysAfter = Object.keys(this.dictionary);
+    let keysAfter = Object.keys(LocalCacheService.dictionary);
 
     profiler.stop(`Local cache prune. Deleted ${keys.length - keysAfter.length} keys. Total keys in cache: ${keysAfter.length}`, true);
   }
