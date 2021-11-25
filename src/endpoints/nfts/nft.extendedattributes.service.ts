@@ -31,6 +31,7 @@ export class NftExtendedAttributesService {
 
   async getExtendedAttributesFromBase64EncodedAttributes(attributes: string): Promise<NftMetadata | undefined> {
     let metadata = this.getMetadataFromBase64EncodedAttributes(attributes);
+    console.log(metadata);
     if (metadata === undefined) {
       return undefined;
     }
@@ -87,7 +88,7 @@ export class NftExtendedAttributesService {
 
   private getMetadataFromBase64EncodedAttributes(attributes: string): string | undefined {
     let decodedAttributes = BinaryUtils.base64Decode(attributes);
-    let match = decodedAttributes.match(/metadata:(?<metadata>[\w]*)/);
+    let match = decodedAttributes.match(/metadata:(?<metadata>[\w\/\.]*)/);
     if (!match || !match.groups) {
       return undefined;
     }
