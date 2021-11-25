@@ -165,11 +165,11 @@ export class NftService {
 
         nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
 
-        if (elasticNftData.metadata) {
-          nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromMetadata(elasticNftData.metadata);
-        } else {
-          nft.metadata = undefined;
-        }
+        // if (elasticNftData.metadata) {
+        //   nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromMetadata(elasticNftData.metadata);
+        // } else {
+        //   nft.metadata = undefined;
+        // }
       }
 
       nfts.push(nft);
