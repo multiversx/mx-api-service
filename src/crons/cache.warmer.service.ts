@@ -154,7 +154,15 @@ export class CacheWarmerService {
   async handleHeartbeatStatusInvalidations() {
     await Locker.lock('Heartbeatstatus invalidations', async () => {
       let result = await this.gatewayService.getRaw('node/heartbeatstatus');
-      await this.invalidateKey('heartbeatstatus', result.data, Constants.oneMinute() * 2);
+      await this.invalidateKey('heartbeatstatus', JSON.stringify(result.data), Constants.oneMinute() * 2);
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleValidatorStatisticsInvalidations() {
+    await Locker.lock('Validator statistics invalidations', async () => {
+      let result = await this.gatewayService.getRaw('validator/statistics');
+      await this.invalidateKey('validatorstatistics', JSON.stringify(result.data), Constants.oneMinute() * 2);
     }, true);
   }
 
@@ -168,13 +176,11 @@ export class CacheWarmerService {
   }
 
   private async invalidateKey(key: string, data: any, ttl: number) {
-    await Promise.all([
-      this.cachingService.setCache(key, data, ttl),
-      this.deleteCacheKey(key),
-    ]);
+    await this.cachingService.setCache(key, data, ttl);
+    await this.refreshCacheKey(key, ttl);
   }
 
-  private async deleteCacheKey(key: string) {
-    await this.clientProxy.emit('deleteCacheKeys', [ key ]);
+  private async refreshCacheKey(key: string, ttl: number) {
+    await this.clientProxy.emit('refreshCacheKey', { key, ttl });
   }
 }
