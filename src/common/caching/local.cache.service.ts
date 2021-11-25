@@ -6,7 +6,7 @@ import { LocalCacheValue } from "./entities/local.cache.value";
 export class LocalCacheService {
   private static readonly dictionary: { [ key: string ]: LocalCacheValue } = {};
 
-  private lastPruneTime: number = new Date().getTime();
+  private static lastPruneTime: number = new Date().getTime();
 
   setCacheValue<T>(key: string, value: T, ttl: number): T {
     if (this.needsPrune()) {
@@ -43,12 +43,12 @@ export class LocalCacheService {
   }
 
   needsPrune() {
-    return new Date().getTime() > this.lastPruneTime + 60000;
+    return new Date().getTime() > LocalCacheService.lastPruneTime + 60000;
   }
 
   prune() {
     let now = new Date().getTime();
-    this.lastPruneTime = now;
+    LocalCacheService.lastPruneTime = now;
 
     let profiler = new PerformanceProfiler();
 
