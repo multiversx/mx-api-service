@@ -328,12 +328,12 @@ export class NftService {
       } 
       
       if (identifiers.length > 1) {
-        let esdts = await this.esdtService.getAllEsdtsForAddress(address);
+        let esdts = await this.esdtService.getAllEsdtsForAddress(address, { from: 0, size: 10000 });
         return Object.values(esdts).map(x => x as any).filter(x => identifiers.includes(x.tokenIdentifier));
       }
     }
 
-    let esdts = await this.esdtService.getAllEsdtsForAddress(address);
+    let esdts = await this.esdtService.getAllEsdtsForAddress(address, { from: 0, size: 10000 });
     return Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
   }
 
