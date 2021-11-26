@@ -19,6 +19,7 @@ import { ElasticQuery } from 'src/common/elastic/entities/elastic.query';
 import { ElasticSortOrder } from 'src/common/elastic/entities/elastic.sort.order';
 import { DeployedContract } from './entities/deployed.contract';
 import { TransactionService } from '../transactions/transaction.service';
+import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 
 @Injectable()
 export class AccountService {
@@ -79,7 +80,7 @@ export class AccountService {
       ] = await Promise.all([
         this.transactionService.getTransactionCountForAddress(address),
         this.getAccountScResults(elasticQuery),
-        this.gatewayService.get(`address/${address}`)
+        this.gatewayService.get(`address/${address}`, GatewayComponentRequest.addressDetails)
       ]);
 
       let shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
@@ -183,7 +184,7 @@ export class AccountService {
         undefined,
         []
       ),
-      this.gatewayService.get(`network/status/${this.apiConfigService.getDelegationContractShardId()}`)
+      this.gatewayService.get(`network/status/${this.apiConfigService.getDelegationContractShardId()}`, GatewayComponentRequest.networkStatus)
     ]);
 
     const numBlocksBeforeUnBond = parseInt(BinaryUtils.base64ToBigInt(encodedNumBlocksBeforeUnBond).toString());
