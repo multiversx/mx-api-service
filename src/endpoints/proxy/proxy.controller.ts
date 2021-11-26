@@ -13,6 +13,7 @@ import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { Response } from "express";
 import { NoCache } from "src/decorators/no.cache";
+import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 
 @Controller()
 @ApiTags('proxy')
@@ -28,43 +29,43 @@ export class ProxyController {
   @Get('/address/:address')
   @ApiExcludeEndpoint()
   async getAddress(@Param('address', ParseAddressPipe) address: string) {
-    return await this.gatewayGet(`address/${address}`);
+    return await this.gatewayGet(`address/${address}`, GatewayComponentRequest.addressDetails);
   }
 
   @Get('/address/:address/balance')
   @ApiExcludeEndpoint()
   async getAddressBalance(@Param('address', ParseAddressPipe) address: string) {
-    return await this.gatewayGet(`address/${address}/balance`);
+    return await this.gatewayGet(`address/${address}/balance`, GatewayComponentRequest.addressDetails);
   }
 
   @Get('/address/:address/nonce')
   @ApiExcludeEndpoint()
   async getAddressNonce(@Param('address', ParseAddressPipe) address: string) {
-    return await this.gatewayGet(`address/${address}/nonce`);
+    return await this.gatewayGet(`address/${address}/nonce`, GatewayComponentRequest.addressDetails);
   }
 
   @Get('/address/:address/shard')
   @ApiExcludeEndpoint()
   async getAddressShard(@Param('address', ParseAddressPipe) address: string) {
-    return await this.gatewayGet(`address/${address}/shard`);
+    return await this.gatewayGet(`address/${address}/shard`, GatewayComponentRequest.addressDetails);
   }
 
   @Get('/address/:address/storage/:key')
   @ApiExcludeEndpoint()
   async getAddressStorageKey(@Param('address', ParseAddressPipe) address: string, @Param('key') key: string) {
-    return await this.gatewayGet(`address/${address}/storage/${key}`);
+    return await this.gatewayGet(`address/${address}/storage/${key}`, GatewayComponentRequest.addressDetails);
   }
 
   @Get('/address/:address/transactions')
   @ApiExcludeEndpoint()
   async getAddressTransactions(@Param('address', ParseAddressPipe) address: string) {
-    return await this.gatewayGet(`address/${address}/transactions`);
+    return await this.gatewayGet(`address/${address}/transactions`, GatewayComponentRequest.addressDetails);
   }
 
   @Get('/address/:address/esdt')
   @ApiExcludeEndpoint()
   async getAddressEsdt(@Param('address', ParseAddressPipe) address: string) {
-    return await this.gatewayGet(`address/${address}/esdt`, undefined, async (error) => {
+    return await this.gatewayGet(`address/${address}/esdt`, GatewayComponentRequest.addressDetails, undefined, async (error) => {
       const message = error.response?.data?.error;
       if (message && message.includes('account was not found')) {
         throw error;
@@ -85,31 +86,31 @@ export class ProxyController {
       throw new BadRequestException('Receiver must be provided');
     }
 
-    return await this.gatewayPost('transaction/send', body);
+    return await this.gatewayPost('transaction/send', GatewayComponentRequest.sendTransaction, body);
   }
 
   @Post('/transaction/simulate')
   @ApiExcludeEndpoint()
   async transactionSimulate(@Body() body: any) {
-    return await this.gatewayPost('transaction/simulate', body);
+    return await this.gatewayPost('transaction/simulate', GatewayComponentRequest.sendTransaction, body);
   }
 
   @Post('/transaction/send-multiple')
   @ApiExcludeEndpoint()
   async transactionSendMultiple(@Body() body: any) {
-    return await this.gatewayPost('transaction/send-multiple', body);
+    return await this.gatewayPost('transaction/send-multiple', GatewayComponentRequest.sendTransaction, body);
   }
 
   @Post('/transaction/send-user-funds')
   @ApiExcludeEndpoint()
   async transactionSendUserFunds(@Body() body: any) {
-    return await this.gatewayPost('transaction/send-user-funds', body);
+    return await this.gatewayPost('transaction/send-user-funds', GatewayComponentRequest.sendTransaction, body);
   }
 
   @Post('/transaction/cost')
   @ApiExcludeEndpoint()
   async transactionCost(@Body() body: any) {
-    return await this.gatewayPost('transaction/cost', body);
+    return await this.gatewayPost('transaction/cost', GatewayComponentRequest.sendTransaction, body);
   }
 
   @Get('/transaction/:hash')
@@ -121,7 +122,7 @@ export class ProxyController {
     @Query('sender', ParseAddressPipe) sender: string | undefined,
     @Query('withResults') withResults: string | undefined,
   ) {
-    return await this.gatewayGet(`transaction/${hash}`, { sender, withResults });
+    return await this.gatewayGet(`transaction/${hash}`, GatewayComponentRequest.transactionDetails, { sender, withResults });
   }
 
   @Get('/transaction/:hash/status')
@@ -131,25 +132,25 @@ export class ProxyController {
     @Param('hash', ParseTransactionHashPipe) hash: string,
     @Query('sender', ParseAddressPipe) sender: string,
   ) {
-    return await this.gatewayGet(`transaction/${hash}/status`, { sender });
+    return await this.gatewayGet(`transaction/${hash}/status`, GatewayComponentRequest.transactionDetails, { sender });
   }
 
   @Post('/vm-values/hex')
   @ApiExcludeEndpoint()
   async vmValuesHex(@Body() body: any) {
-    return await this.gatewayPost('vm-values/hex', body);
+    return await this.gatewayPost('vm-values/hex', GatewayComponentRequest.vmQuery, body);
   }
 
   @Post('/vm-values/string')
   @ApiExcludeEndpoint()
   async vmValuesString(@Body() body: any) {
-    return await this.gatewayPost('vm-values/string', body);
+    return await this.gatewayPost('vm-values/string', GatewayComponentRequest.vmQuery, body);
   }
 
   @Post('/vm-values/int')
   @ApiExcludeEndpoint()
   async vmValuesInt(@Body() body: any) {
-    return await this.gatewayPost('vm-values/int', body);
+    return await this.gatewayPost('vm-values/int', GatewayComponentRequest.vmQuery, body);
   }
 
   @Post('/vm-values/query')
@@ -176,25 +177,25 @@ export class ProxyController {
   @Get('/network/status/:shard')
   @ApiExcludeEndpoint()
   async getNetworkStatusShard(@Param('shard') shard: string) {
-    return await this.gatewayGet(`network/status/${shard}`);
+    return await this.gatewayGet(`network/status/${shard}`, GatewayComponentRequest.networkStatus);
   }
 
   @Get('/network/config')
   @ApiExcludeEndpoint()
   async getNetworkConfig() {
-    return await this.gatewayGet('network/config');
+    return await this.gatewayGet('network/config', GatewayComponentRequest.networkConfig);
   }
 
   @Get('/network/economics')
   @ApiExcludeEndpoint()
   async getNetworkEconomics() {
-    return await this.gatewayGet('network/economics');
+    return await this.gatewayGet('network/economics', GatewayComponentRequest.networkEconomics);
   }
 
   @Get('/network/total-staked')
   @ApiExcludeEndpoint()
   async getNetworkTotalStaked() {
-    return await this.gatewayGet('network/total-staked');
+    return await this.gatewayGet('network/total-staked', GatewayComponentRequest.networkTotalStaked);
   }
 
   @Get('/node/heartbeatstatus')
@@ -205,7 +206,7 @@ export class ProxyController {
       let heartbeatStatus = await this.cachingService.getOrSetCache(
         'heartbeatstatus',
         async () => {
-          const result = await this.gatewayService.getRaw('node/heartbeatstatus');
+          const result = await this.gatewayService.getRaw('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat);
           return result.data;
         },
         Constants.oneMinute() * 2,
@@ -225,7 +226,7 @@ export class ProxyController {
       let validatorStatistics = await this.cachingService.getOrSetCache(
         'validatorstatistics',
         async () => {
-          const result = await this.gatewayService.getRaw('validator/statistics');
+          const result = await this.gatewayService.getRaw('validator/statistics', GatewayComponentRequest.validatorStatistics);
           return result.data;
         },
         Constants.oneMinute() * 2,
@@ -245,7 +246,7 @@ export class ProxyController {
     @Param('nonce') nonce: number,
     @Query('withTxs') withTxs: string | undefined,
   ) {
-    return await this.gatewayGet(`block/${shard}/by-nonce/${nonce}`, { withTxs });
+    return await this.gatewayGet(`block/${shard}/by-nonce/${nonce}`, GatewayComponentRequest.blockDetails, { withTxs });
   }
 
   @Get('/block/:shard/by-hash/:hash')
@@ -256,7 +257,7 @@ export class ProxyController {
     @Param('hash') hash: number,
     @Query('withTxs') withTxs: string | undefined,
   ) {
-    return await this.gatewayGet(`block/${shard}/by-hash/${hash}`, { withTxs });
+    return await this.gatewayGet(`block/${shard}/by-hash/${hash}`, GatewayComponentRequest.blockDetails, { withTxs });
   }
 
   @Get('/block-atlas/:shard/:nonce')
@@ -265,37 +266,37 @@ export class ProxyController {
     @Param('shard') shard: string,
     @Param('nonce') nonce: number,
   ) {
-    return await this.gatewayGet(`block-atlas/${shard}/${nonce}`);
+    return await this.gatewayGet(`block-atlas/${shard}/${nonce}`, GatewayComponentRequest.blockAtlas);
   }
 
   @Get('/hyperblock/by-nonce/:nonce')
   @ApiExcludeEndpoint()
   async getHyperblockByNonce(@Param('nonce') nonce: number) {
-    return await this.gatewayGet(`hyperblock/by-nonce/${nonce}`);
+    return await this.gatewayGet(`hyperblock/by-nonce/${nonce}`, GatewayComponentRequest.hyperblockDetails);
   }
 
   @Get('/hyperblock/by-hash/:hash')
   @ApiExcludeEndpoint()
   async getHyperblockByHash(@Param('hash', ParseBlockHashPipe) hash: number) {
-    return await this.gatewayGet(`hyperblock/by-hash/${hash}`);
+    return await this.gatewayGet(`hyperblock/by-hash/${hash}`, GatewayComponentRequest.hyperblockDetails);
   }
 
-  private async gatewayGet(url: string, params: any = undefined, errorHandler?: (error: any) => Promise<boolean>) {
+  private async gatewayGet(url: string, component: string, params: any = undefined, errorHandler?: (error: any) => Promise<boolean>) {
     if (params) {
       url += '?' + Object.keys(params).filter(key => params[key] !== undefined).map(key => `${key}=${params[key]}`).join('&')
     }
 
     try {
-      let result = await this.gatewayService.getRaw(url, errorHandler);
+      let result = await this.gatewayService.getRaw(url, component, errorHandler);
       return result.data;
     } catch (error: any) {
       throw new BadRequestException(error.response.data);
     }
   }
 
-  private async gatewayPost(url: string, data: any) {
+  private async gatewayPost(url: string, component: string, data: any) {
     try {
-      let result = await this.gatewayService.createRaw(url, data);
+      let result = await this.gatewayService.createRaw(url, component, data);
       return result.data;
     } catch (error: any) {
       throw new BadRequestException(error.response.data);

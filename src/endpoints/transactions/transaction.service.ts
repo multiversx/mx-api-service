@@ -27,6 +27,7 @@ import { PluginService } from 'src/common/plugins/plugin.service';
 import { CachingService } from 'src/common/caching/caching.service';
 import { CacheInfo } from 'src/common/caching/entities/cache.info';
 import { Constants } from 'src/utils/constants';
+import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 
 @Injectable()
 export class TransactionService {
@@ -282,7 +283,7 @@ export class TransactionService {
 
     let txHash: string;
     try {
-      let result = await this.gatewayService.create('transaction/send', transaction);
+      let result = await this.gatewayService.create('transaction/send', GatewayComponentRequest.sendTransaction, transaction);
       txHash = result.txHash;
     } catch (error: any) {
       this.logger.error(error);
