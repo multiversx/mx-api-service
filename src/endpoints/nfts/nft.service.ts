@@ -316,7 +316,7 @@ export class NftService {
         const collectionIdentifier = identifier.split('-').slice(0, 2).join('-');
         const nonce = parseInt(identifier.split('-')[2], 16);
 
-        const { tokenData: gatewayNft } = await this.gatewayService.get(`address/${address}/nft/${collectionIdentifier}/nonce/${nonce}`, GatewayComponentRequest.addressDetails);
+        const { tokenData: gatewayNft } = await this.gatewayService.get(`address/${address}/nft/${collectionIdentifier}/nonce/${nonce}`, GatewayComponentRequest.addressNftByNonce);
 
         // normalizing tokenIdentifier since it doesn't contain the nonce in this particular scenario
         gatewayNft.tokenIdentifier = identifier;

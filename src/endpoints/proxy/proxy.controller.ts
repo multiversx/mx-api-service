@@ -35,31 +35,31 @@ export class ProxyController {
   @Get('/address/:address/balance')
   @ApiExcludeEndpoint()
   async getAddressBalance(@Param('address', ParseAddressPipe) address: string) {
-    return await this.gatewayGet(`address/${address}/balance`, GatewayComponentRequest.addressDetails);
+    return await this.gatewayGet(`address/${address}/balance`, GatewayComponentRequest.addressBalance);
   }
 
   @Get('/address/:address/nonce')
   @ApiExcludeEndpoint()
   async getAddressNonce(@Param('address', ParseAddressPipe) address: string) {
-    return await this.gatewayGet(`address/${address}/nonce`, GatewayComponentRequest.addressDetails);
+    return await this.gatewayGet(`address/${address}/nonce`, GatewayComponentRequest.addressNonce);
   }
 
   @Get('/address/:address/shard')
   @ApiExcludeEndpoint()
   async getAddressShard(@Param('address', ParseAddressPipe) address: string) {
-    return await this.gatewayGet(`address/${address}/shard`, GatewayComponentRequest.addressDetails);
+    return await this.gatewayGet(`address/${address}/shard`, GatewayComponentRequest.addressShard);
   }
 
   @Get('/address/:address/storage/:key')
   @ApiExcludeEndpoint()
   async getAddressStorageKey(@Param('address', ParseAddressPipe) address: string, @Param('key') key: string) {
-    return await this.gatewayGet(`address/${address}/storage/${key}`, GatewayComponentRequest.addressDetails);
+    return await this.gatewayGet(`address/${address}/storage/${key}`, GatewayComponentRequest.addressStorage);
   }
 
   @Get('/address/:address/transactions')
   @ApiExcludeEndpoint()
   async getAddressTransactions(@Param('address', ParseAddressPipe) address: string) {
-    return await this.gatewayGet(`address/${address}/transactions`, GatewayComponentRequest.addressDetails);
+    return await this.gatewayGet(`address/${address}/transactions`, GatewayComponentRequest.addressTransactions);
   }
 
   @Get('/address/:address/esdt')
@@ -92,25 +92,25 @@ export class ProxyController {
   @Post('/transaction/simulate')
   @ApiExcludeEndpoint()
   async transactionSimulate(@Body() body: any) {
-    return await this.gatewayPost('transaction/simulate', GatewayComponentRequest.sendTransaction, body);
+    return await this.gatewayPost('transaction/simulate', GatewayComponentRequest.simulateTransaction, body);
   }
 
   @Post('/transaction/send-multiple')
   @ApiExcludeEndpoint()
   async transactionSendMultiple(@Body() body: any) {
-    return await this.gatewayPost('transaction/send-multiple', GatewayComponentRequest.sendTransaction, body);
+    return await this.gatewayPost('transaction/send-multiple', GatewayComponentRequest.sendTransactionMultiple, body);
   }
 
   @Post('/transaction/send-user-funds')
   @ApiExcludeEndpoint()
   async transactionSendUserFunds(@Body() body: any) {
-    return await this.gatewayPost('transaction/send-user-funds', GatewayComponentRequest.sendTransaction, body);
+    return await this.gatewayPost('transaction/send-user-funds', GatewayComponentRequest.sendUserFunds, body);
   }
 
   @Post('/transaction/cost')
   @ApiExcludeEndpoint()
   async transactionCost(@Body() body: any) {
-    return await this.gatewayPost('transaction/cost', GatewayComponentRequest.sendTransaction, body);
+    return await this.gatewayPost('transaction/cost', GatewayComponentRequest.transactionCost, body);
   }
 
   @Get('/transaction/:hash')
@@ -246,7 +246,7 @@ export class ProxyController {
     @Param('nonce') nonce: number,
     @Query('withTxs') withTxs: string | undefined,
   ) {
-    return await this.gatewayGet(`block/${shard}/by-nonce/${nonce}`, GatewayComponentRequest.blockDetails, { withTxs });
+    return await this.gatewayGet(`block/${shard}/by-nonce/${nonce}`, GatewayComponentRequest.blockByNonce, { withTxs });
   }
 
   @Get('/block/:shard/by-hash/:hash')
@@ -257,7 +257,7 @@ export class ProxyController {
     @Param('hash') hash: number,
     @Query('withTxs') withTxs: string | undefined,
   ) {
-    return await this.gatewayGet(`block/${shard}/by-hash/${hash}`, GatewayComponentRequest.blockDetails, { withTxs });
+    return await this.gatewayGet(`block/${shard}/by-hash/${hash}`, GatewayComponentRequest.blockByHash, { withTxs });
   }
 
   @Get('/block-atlas/:shard/:nonce')
@@ -272,16 +272,16 @@ export class ProxyController {
   @Get('/hyperblock/by-nonce/:nonce')
   @ApiExcludeEndpoint()
   async getHyperblockByNonce(@Param('nonce') nonce: number) {
-    return await this.gatewayGet(`hyperblock/by-nonce/${nonce}`, GatewayComponentRequest.hyperblockDetails);
+    return await this.gatewayGet(`hyperblock/by-nonce/${nonce}`, GatewayComponentRequest.hyperblockByNonce);
   }
 
   @Get('/hyperblock/by-hash/:hash')
   @ApiExcludeEndpoint()
   async getHyperblockByHash(@Param('hash', ParseBlockHashPipe) hash: number) {
-    return await this.gatewayGet(`hyperblock/by-hash/${hash}`, GatewayComponentRequest.hyperblockDetails);
+    return await this.gatewayGet(`hyperblock/by-hash/${hash}`, GatewayComponentRequest.hyperblockByHash);
   }
 
-  private async gatewayGet(url: string, component: string, params: any = undefined, errorHandler?: (error: any) => Promise<boolean>) {
+  private async gatewayGet(url: string, component: GatewayComponentRequest, params: any = undefined, errorHandler?: (error: any) => Promise<boolean>) {
     if (params) {
       url += '?' + Object.keys(params).filter(key => params[key] !== undefined).map(key => `${key}=${params[key]}`).join('&')
     }
@@ -294,7 +294,7 @@ export class ProxyController {
     }
   }
 
-  private async gatewayPost(url: string, component: string, data: any) {
+  private async gatewayPost(url: string, component: GatewayComponentRequest, data: any) {
     try {
       let result = await this.gatewayService.createRaw(url, component, data);
       return result.data;

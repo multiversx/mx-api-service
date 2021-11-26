@@ -3,6 +3,7 @@ import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { MetricsService } from "../metrics/metrics.service";
 import { ApiService } from "../network/api.service";
+import { GatewayComponentRequest } from "./entities/gateway.component.request";
 
 @Injectable()
 export class GatewayService {
@@ -14,7 +15,7 @@ export class GatewayService {
     private readonly metricsService: MetricsService,
   ) {}
 
-  async get(url: string, component: string, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
+  async get(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     let profiler = new PerformanceProfiler();
     try {
       let result = await this.getRaw(url, component, errorHandler);
@@ -26,7 +27,7 @@ export class GatewayService {
     }
   }
  
-  async getRaw(url: string, component: string, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
+  async getRaw(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     let profiler = new PerformanceProfiler();
     try {
       return await this.apiService.get(`${this.apiConfigService.getGatewayUrl()}/${url}`, undefined, errorHandler);
@@ -37,7 +38,7 @@ export class GatewayService {
     }
   }
 
-  async create(url: string, component: string, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
+  async create(url: string, component: GatewayComponentRequest, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     let profiler = new PerformanceProfiler();
     try {
       let result = await this.createRaw(url, component, data, errorHandler);
@@ -50,7 +51,7 @@ export class GatewayService {
     }
   }
 
-  async createRaw(url: string, component: string, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
+  async createRaw(url: string, component: GatewayComponentRequest, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
 
     let profiler = new PerformanceProfiler();
     try {

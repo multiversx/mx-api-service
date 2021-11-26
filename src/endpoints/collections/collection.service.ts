@@ -28,7 +28,7 @@ export class CollectionService {
 
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
     if (filter.creator) {
-      let creatorResult = await this.gatewayService.get(`address/${filter.creator}/esdts-with-role/ESDTRoleNFTCreate`, GatewayComponentRequest.addressEsdt);
+      let creatorResult = await this.gatewayService.get(`address/${filter.creator}/esdts-with-role/ESDTRoleNFTCreate`, GatewayComponentRequest.addressEsdtWithRole);
       filter.identifiers = creatorResult.tokens;
     }
 
@@ -120,7 +120,7 @@ export class CollectionService {
 
   private async getFilteredCollectionsForAddress(address: string, filter: CollectionAccountFilter): Promise<NftCollectionAccount[]> {
     let esdtResult = await this.gatewayService.get(`address/${address}/registered-nfts`, GatewayComponentRequest.addressNfts);
-    let rolesResult = await this.gatewayService.get(`address/${address}/esdts/roles`, GatewayComponentRequest.addressEsdt);
+    let rolesResult = await this.gatewayService.get(`address/${address}/esdts/roles`, GatewayComponentRequest.addressEsdtAllRoles);
 
     let tokenIdentifiers = esdtResult.tokens;
     if (tokenIdentifiers.length === 0) {

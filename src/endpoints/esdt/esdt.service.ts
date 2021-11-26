@@ -133,7 +133,7 @@ export class EsdtService {
   async getAllEsdtTokensRaw(): Promise<TokenDetailed[]> {
     let tokensIdentifiers: string[];
     try {
-      const getFungibleTokensResult = await this.gatewayService.get('network/esdt/fungible-tokens', GatewayComponentRequest.networkEsdt);
+      const getFungibleTokensResult = await this.gatewayService.get('network/esdt/fungible-tokens', GatewayComponentRequest.allFungibleTokens);
 
       tokensIdentifiers = getFungibleTokensResult.tokens;
     } catch (error) {
@@ -248,7 +248,7 @@ export class EsdtService {
   };
 
   async getTokenSupply(identifier: string): Promise<string> {
-    const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.networkEsdt);
+    const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
 
     return supply;
   }
