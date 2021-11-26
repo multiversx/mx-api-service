@@ -154,7 +154,7 @@ export class ElasticService {
   async getAccountEsdtByAddressAndIdentifier(address: string, identifier: string) {
     const queries = [
       QueryType.Match('address', address),
-      QueryType.Match('identifier', identifier, QueryOperator.AND),
+      QueryType.Match('token', identifier, QueryOperator.AND),
     ]
 
     const elasticQuery = ElasticQuery.create()

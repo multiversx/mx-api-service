@@ -123,20 +123,29 @@ export class TokenService {
   }
 
   async getTokenForAddress(address: string, identifier: string): Promise<TokenWithBalance | undefined> {
-    let allTokens = await this.getAllTokensForAddress(address, new TokenFilter(), new ElasticPagination());
-
-    let token = allTokens.find(x => x.identifier === identifier);
-    if (!token) {
+    const tokenFilter = new TokenFilter();
+    tokenFilter.identifier = identifier;
+    let tokens = await this.getFilteredTokens(tokenFilter);
+    let token;
+    if (tokens.length > 0) {
+      token = tokens[0];
+    }
+    else {
       return undefined;
     }
 
-    token = ApiUtils.mergeObjects(new TokenWithBalance(), token);
+    let esdt = await this.elasticService.getAccountEsdtByAddressAndIdentifier(address, identifier);
+    let tokenWithBalance = {
+      ...token,
+      ...esdt
+    }
+    tokenWithBalance = ApiUtils.mergeObjects(new TokenWithBalance(), tokenWithBalance);
 
-    await this.applyAssetsAndTicker(token);
+    await this.applyAssetsAndTicker(tokenWithBalance);
 
-    token.supply = await this.esdtService.getTokenSupply(identifier);
+    tokenWithBalance.supply = await this.esdtService.getTokenSupply(identifier);
 
-    return token;
+    return tokenWithBalance;
   }
 
   async getAllTokensForAddress(address: string, filter: TokenFilter, queryPagination: QueryPagination): Promise<TokenWithBalance[]> {
