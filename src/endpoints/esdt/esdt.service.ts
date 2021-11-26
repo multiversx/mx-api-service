@@ -40,7 +40,8 @@ export class EsdtService {
   private async getAllEsdtsForAddressFromElastic(address: string, queryPagination: QueryPagination): Promise<{ [ key: string]: any }> {
     let elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [ QueryType.Match('address', address) ])
-      .withPagination(queryPagination);
+      .withPagination(queryPagination)
+      .withCondition(QueryConditionOptions.mustNot, [ QueryType.Match('address', 'pending') ]);
 
     let esdts = await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
 

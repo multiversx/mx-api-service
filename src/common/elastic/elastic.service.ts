@@ -120,12 +120,12 @@ export class ElasticService {
       
     elasticQuery = elasticQuery
       .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
+      .withCondition(QueryConditionOptions.mustNot, [ QueryType.Match('address', 'pending') ])
       .withCondition(QueryConditionOptions.should, queries);
 
     const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
 
     let result = documents.map((document: any) => this.formatItem(document, 'identifier'));
-    result = result.filter((x: any) => !x.address.includes('pending-'));
 
     return result;
   }
