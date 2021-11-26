@@ -124,20 +124,19 @@ export class TokenService {
     const tokenFilter = new TokenFilter();
     tokenFilter.identifier = identifier;
     let tokens = await this.getFilteredTokens(tokenFilter);
-    let token;
-    if (tokens.length > 0) {
-      token = tokens[0];
-    }
-    else {
+    if (!tokens.length) {
       return undefined;
     }
 
+    let token = tokens[0];
     let esdt = await this.elasticService.getAccountEsdtByAddressAndIdentifier(address, identifier);
     let tokenWithBalance = {
+      ...esdt,
       ...token,
-      ...esdt
     }
     tokenWithBalance = ApiUtils.mergeObjects(new TokenWithBalance(), tokenWithBalance);
+
+    tokenWithBalance.identifier = token.identifier;
 
     await this.applyTickerFromAssets(tokenWithBalance);
 
