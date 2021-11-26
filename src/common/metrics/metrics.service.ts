@@ -158,7 +158,7 @@ export class MetricsService {
   }
 
   setGatewayDuration(name: string, duration: number) {
-    MetricsService.elasticDurationHistogram.labels(name).observe(duration);
+    MetricsService.gatewayDurationHistogram.labels(name).observe(duration);
   }
 
   setElasticTook(index: string, took: number) {
@@ -185,7 +185,6 @@ export class MetricsService {
         MetricsService.currentNonceGauge.set({ shardId }, currentNonces[index]);
       }
     }
-
 
     return register.metrics();
   }
