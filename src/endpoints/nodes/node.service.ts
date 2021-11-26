@@ -19,6 +19,7 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { Stake } from "../stake/entities/stake";
+import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 
 @Injectable()
 export class NodeService {
@@ -422,9 +423,9 @@ export class NodeService {
       { statistics },
       { config }
     ] = await Promise.all([
-      this.gatewayService.get('node/heartbeatstatus'),
-      this.gatewayService.get('validator/statistics'),
-      this.gatewayService.get('network/config')
+      this.gatewayService.get('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat),
+      this.gatewayService.get('validator/statistics', GatewayComponentRequest.validatorStatistics),
+      this.gatewayService.get('network/config', GatewayComponentRequest.networkConfig)
     ]);
 
     let nodes: Node[] = [];

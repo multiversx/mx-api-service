@@ -2,6 +2,7 @@ import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { CachingService } from "../caching/caching.service";
 import { CacheInfo } from "../caching/entities/cache.info";
 import { ElasticService } from "../elastic/elastic.service";
+import { GatewayComponentRequest } from "../gateway/entities/gateway.component.request";
 import { GatewayService } from "../gateway/gateway.service";
 
 @Injectable()
@@ -26,7 +27,7 @@ export class ProtocolService {
   }
 
   private async getShardIdsRaw(): Promise<number[]> {
-    let networkConfig = await this.gatewayService.get('network/config');
+    let networkConfig = await this.gatewayService.get('network/config', GatewayComponentRequest.networkConfig);
     let shardCount = networkConfig.config.erd_num_shards_without_meta;
 
     let result = [];
