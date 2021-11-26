@@ -9,11 +9,13 @@ import { EsdtService } from "./esdt.service";
 import { ExternalModule } from "../../common/external/external.module";
 import { GatewayModule } from "../../common/gateway/gateway.module";
 import { ProtocolModule } from "src/common/protocol/protocol.module";
+import { TokenModule } from "../tokens/token.module";
 
 
 @Module({
   imports: [
     ApiConfigModule, ExternalModule, CachingModule, BlsModule, ElasticModule, GatewayModule,
+    TokenModule,
     forwardRef(() => VmQueryModule),
     forwardRef(() => MetricsModule),
     ProtocolModule,

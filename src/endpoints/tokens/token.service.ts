@@ -2,7 +2,6 @@ import { Injectable, Logger } from "@nestjs/common";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
 import { TokenDetailed } from "./entities/token.detailed";
-import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { ApiUtils } from "src/utils/api.utils";
 import { TokenFilter } from "./entities/token.filter";
@@ -22,7 +21,6 @@ export class TokenService {
   private readonly logger: Logger
 
   constructor(
-    private readonly tokenAssetService: TokenAssetService,
     private readonly esdtService: EsdtService,
     private readonly elasticService: ElasticService,
   ) {
@@ -35,7 +33,7 @@ export class TokenService {
     if (token) {
       token = ApiUtils.mergeObjects(new TokenDetailed(), token);
 
-      await this.applyAssetsAndTicker(token);
+      await this.applyTickerFromAssets(token);
 
       token.supply = await this.esdtService.getTokenSupply(identifier);
 
@@ -53,15 +51,13 @@ export class TokenService {
     tokens = tokens.slice(from, from + size);
 
     for (let token of tokens) {
-      await this.applyAssetsAndTicker(token);
+      await this.applyTickerFromAssets(token);
     }
 
     return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
   }
 
-  async applyAssetsAndTicker(token: Token) {
-    token.assets = await this.tokenAssetService.getAssets(token.identifier);
-
+  async applyTickerFromAssets(token: Token) {
     if (token.assets) {
       token.ticker = token.identifier.split('-')[0];
     } else {
@@ -95,6 +91,8 @@ export class TokenService {
 
       tokens = tokens.filter(token => identifierArray.includes(token.identifier.toLowerCase()));
     }
+
+    tokens = [ ...tokens.filter((token) => token.assets), ...tokens ].distinctBy((token: TokenDetailed) => token.identifier);
     
     return tokens;
   }
@@ -116,7 +114,7 @@ export class TokenService {
     tokens = tokens.map(token => ApiUtils.mergeObjects(new TokenWithBalance(), token));
 
     for (let token of tokens) {
-      await this.applyAssetsAndTicker(token);
+      await this.applyTickerFromAssets(token);
     }
 
     return tokens;
@@ -141,7 +139,7 @@ export class TokenService {
     }
     tokenWithBalance = ApiUtils.mergeObjects(new TokenWithBalance(), tokenWithBalance);
 
-    await this.applyAssetsAndTicker(tokenWithBalance);
+    await this.applyTickerFromAssets(tokenWithBalance);
 
     tokenWithBalance.supply = await this.esdtService.getTokenSupply(identifier);
 
