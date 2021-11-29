@@ -114,7 +114,15 @@ export class NftService {
 
     await this.applyAssetsAndTicker(nft);
 
+    await this.applyNftMetadata(nft);
+
     return nft;
+  }
+
+  async applyNftMetadata(nft: Nft) {
+    if (nft.attributes) {
+      nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(nft.attributes);
+    }
   }
 
   async getNftOwners(identifier: string, pagination: QueryPagination): Promise<NftOwner[] | undefined> {
@@ -376,7 +384,7 @@ export class NftService {
       if (gatewayNft.attributes) {
         nft.tags = this.nftExtendedAttributesService.getTags(gatewayNft.attributes);
         if (queryOptions && queryOptions.withMetadata) {
-          nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(gatewayNft.attributes);
+          await this.applyNftMetadata(nft);
         }
       }
 
@@ -428,6 +436,8 @@ export class NftService {
     }
 
     nft.assets = await this.tokenAssetService.getAssets(nft.collection);
+
+    await this.applyNftMetadata(nft);
 
     return nft;
   }
