@@ -149,16 +149,23 @@ export class EsdtService {
     let tokensPropertiesAndAssets = await this.cachingService.batchProcess(
       tokensIdentifiers,
       token => `esdt:${token}`,
-      async (token: string) => {
-        let tokenProperties =  await this.getEsdtTokenPropertiesRaw(token)
-        let tokenAssets = await this.tokenAssetService.getAssets(token)
-        return ApiUtils.mergeObjects(new TokenDetailed(), { ...tokenProperties, assets: tokenAssets})
-      },
+      async (identifier: string) => await this.getEsdtTokenPropertiesAndAssets(identifier),
       Constants.oneDay(),
       true
     );
 
     return tokensPropertiesAndAssets;
+  }
+
+  async getEsdtTokenPropertiesAndAssets(identifier: string): Promise<TokenDetailed | null> {
+    let tokenProperties =  await this.getEsdtTokenPropertiesRaw(identifier);
+    if (!tokenProperties) {
+      return null;
+    }
+
+    let tokenAssets = await this.tokenAssetService.getAssets(identifier);
+
+    return ApiUtils.mergeObjects(new TokenDetailed(), { ...tokenProperties, assets: tokenAssets});
   }
 
   async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
