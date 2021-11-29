@@ -154,7 +154,7 @@ export class EsdtService {
       true
     );
 
-    return tokensPropertiesAndAssets;
+    return tokensPropertiesAndAssets.filter(x => x !== null).map(x => x!);
   }
 
   async getEsdtTokenPropertiesAndAssets(identifier: string): Promise<TokenDetailed | null> {
