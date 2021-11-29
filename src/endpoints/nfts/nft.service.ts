@@ -23,6 +23,7 @@ import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { CachingService } from "src/common/caching/caching.service";
 import { Constants } from "src/utils/constants";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import asyncPool from "tiny-async-pool";
 
 @Injectable()
 export class NftService {
@@ -179,20 +180,24 @@ export class NftService {
 
         nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
 
-        if (queryOptions && queryOptions.withMetadata) {
-          if (elasticNftData.metadata) {
-            nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromMetadata(elasticNftData.metadata);
-          } else {
-            nft.metadata = undefined;
-          }
-        }
-        
+        if (elasticNftData.metadata) {
+          nft.attributes = BinaryUtils.base64Encode(`metadata:${elasticNftData.metadata}`);
+        } 
       }
 
       nfts.push(nft);
     }
 
+    if (queryOptions && queryOptions.withMetadata) {
+      await asyncPool(
+        this.apiConfigService.getPoolLimit(), 
+        nfts,
+        async nft => await this.applyNftMetadata(nft)
+      );
+    }
+
     this.updateThumbnailUrlForNfts(nfts);
+
 
     for (let nft of nfts) {
       let collectionProperties = await this.esdtService.getEsdtTokenProperties(nft.collection);
@@ -388,9 +393,6 @@ export class NftService {
 
       if (gatewayNft.attributes) {
         nft.tags = this.nftExtendedAttributesService.getTags(gatewayNft.attributes);
-        if (queryOptions && queryOptions.withMetadata) {
-          await this.applyNftMetadata(nft);
-        }
       }
 
       let collectionDetails = await this.esdtService.getEsdtTokenProperties(nft.collection);
@@ -421,6 +423,14 @@ export class NftService {
     nfts = await this.filterNfts(filter, nfts);
 
     this.updateThumbnailUrlForNfts(nfts);
+
+    if (queryOptions && queryOptions.withMetadata) {
+      await asyncPool(
+        this.apiConfigService.getPoolLimit(), 
+        nfts,
+        async nft => await this.applyNftMetadata(nft)
+      );
+    }
 
     return nfts;
   }
