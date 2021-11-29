@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { CachingService } from "src/common/caching/caching.service";
+import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 
@@ -92,6 +93,7 @@ export class VmQueryService {
 
     let result = await this.gatewayService.createRaw(
       'vm-values/query',
+      GatewayComponentRequest.vmQuery,
       payload,
     );
 

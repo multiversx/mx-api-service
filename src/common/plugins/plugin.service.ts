@@ -3,7 +3,7 @@ import { Transaction } from "src/endpoints/transactions/entities/transaction";
 
 @Injectable()
 export class PluginService {
-  async processTransaction(_: Transaction): Promise<void> {
-    return;
-  }
+  async processTransaction(_: Transaction): Promise<void> {}
+
+  async handleEveryMinuteCron(): Promise<void> {}
 }

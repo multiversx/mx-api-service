@@ -18,6 +18,8 @@ import { DataQuoteType } from "src/common/external/entities/data.quote.type";
 import { EsdtService } from "src/endpoints/esdt/esdt.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
+import { PluginService } from "src/common/plugins/plugin.service";
+import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 
 @Injectable()
 export class CacheWarmerService {
@@ -36,6 +38,7 @@ export class CacheWarmerService {
     private readonly gatewayService: GatewayService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly tokenAssetService: TokenAssetService,
+    private readonly pluginService: PluginService,
   ) { 
     this.configCronJob(
       'handleKeybaseAgainstKeybasePubInvalidations', 
@@ -153,7 +156,7 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleHeartbeatStatusInvalidations() {
     await Locker.lock('Heartbeatstatus invalidations', async () => {
-      let result = await this.gatewayService.getRaw('node/heartbeatstatus');
+      let result = await this.gatewayService.getRaw('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat);
       await this.invalidateKey('heartbeatstatus', JSON.stringify(result.data), Constants.oneMinute() * 2);
     }, true);
   }
@@ -161,7 +164,7 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleValidatorStatisticsInvalidations() {
     await Locker.lock('Validator statistics invalidations', async () => {
-      let result = await this.gatewayService.getRaw('validator/statistics');
+      let result = await this.gatewayService.getRaw('validator/statistics', GatewayComponentRequest.validatorStatistics);
       await this.invalidateKey('validatorstatistics', JSON.stringify(result.data), Constants.oneMinute() * 2);
     }, true);
   }
@@ -173,6 +176,11 @@ export class CacheWarmerService {
       let assets = await this.tokenAssetService.getAllAssetsRaw();
       await this.invalidateKey(CacheInfo.TokenAssets.key, assets, CacheInfo.TokenAssets.ttl);
     }, true);
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleCronPlugins() {
+    await this.pluginService.handleEveryMinuteCron();
   }
 
   private async invalidateKey(key: string, data: any, ttl: number) {

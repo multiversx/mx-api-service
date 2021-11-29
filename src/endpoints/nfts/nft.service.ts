@@ -22,6 +22,7 @@ import { QueryType } from "src/common/elastic/entities/query.type";
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { CachingService } from "src/common/caching/caching.service";
 import { Constants } from "src/utils/constants";
+import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 
 @Injectable()
 export class NftService {
@@ -318,7 +319,7 @@ export class NftService {
         const collectionIdentifier = identifier.split('-').slice(0, 2).join('-');
         const nonce = parseInt(identifier.split('-')[2], 16);
 
-        const { tokenData: gatewayNft } = await this.gatewayService.get(`address/${address}/nft/${collectionIdentifier}/nonce/${nonce}`);
+        const { tokenData: gatewayNft } = await this.gatewayService.get(`address/${address}/nft/${collectionIdentifier}/nonce/${nonce}`, GatewayComponentRequest.addressNftByNonce);
 
         // normalizing tokenIdentifier since it doesn't contain the nonce in this particular scenario
         gatewayNft.tokenIdentifier = identifier;

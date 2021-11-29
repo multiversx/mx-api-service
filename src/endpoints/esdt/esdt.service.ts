@@ -4,6 +4,7 @@ import { ElasticService } from "src/common/elastic/elastic.service";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { QueryType } from "src/common/elastic/entities/query.type";
+import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
@@ -39,6 +40,7 @@ export class EsdtService {
   private async getAllEsdtsForAddressFromElastic(address: string): Promise<{ [ key: string]: any }> {
     let elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [ QueryType.Match('address', address) ])
+      .withCondition(QueryConditionOptions.mustNot, [ QueryType.Match('address', 'pending') ])
       .withPagination({ from: 0, size: 10000 });
 
     let esdts = await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
@@ -72,7 +74,7 @@ export class EsdtService {
 
   // @ts-ignore
   private async getAllEsdtsForAddressFromGateway(address: string): Promise<{ [ key: string]: any }> {
-    let esdtResult = await this.gatewayService.get(`address/${address}/esdt`, async (error) => {
+    let esdtResult = await this.gatewayService.get(`address/${address}/esdt`, GatewayComponentRequest.addressEsdt, async (error) => {
       let errorMessage = error?.response?.data?.error;
       if (errorMessage && errorMessage.includes('account was not found')) {
         return true;
@@ -131,7 +133,7 @@ export class EsdtService {
   async getAllEsdtTokensRaw(): Promise<TokenDetailed[]> {
     let tokensIdentifiers: string[];
     try {
-      const getFungibleTokensResult = await this.gatewayService.get('network/esdt/fungible-tokens');
+      const getFungibleTokensResult = await this.gatewayService.get('network/esdt/fungible-tokens', GatewayComponentRequest.allFungibleTokens);
 
       tokensIdentifiers = getFungibleTokensResult.tokens;
     } catch (error) {
@@ -246,7 +248,7 @@ export class EsdtService {
   };
 
   async getTokenSupply(identifier: string): Promise<string> {
-    const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`);
+    const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
 
     return supply;
   }

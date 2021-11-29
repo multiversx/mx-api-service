@@ -1,6 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { register, Histogram, Gauge, collectDefaultMetrics } from 'prom-client';
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { GatewayComponentRequest } from "../gateway/entities/gateway.component.request";
 import { GatewayService } from "../gateway/gateway.service";
 import { ProtocolService } from "../protocol/protocol.service";
 
@@ -11,6 +12,7 @@ export class MetricsService {
   private static pendingRequestsHistogram: Gauge<string>;
   private static externalCallsHistogram: Histogram<string>;
   private static elasticDurationHistogram: Histogram<string>;
+  private static gatewayDurationHistogram: Histogram<string>;
   private static elasticTookHistogram: Histogram<string>;
   private static apiResponseSizeHistogram: Histogram<string>;
   private static currentNonceGauge: Gauge<string>;
@@ -65,6 +67,15 @@ export class MetricsService {
         name: 'elastic_duration',
         help: 'Elastic Duration',
         labelNames: [ 'index' ],
+        buckets: [ ]
+      });
+    }
+
+    if (!MetricsService.gatewayDurationHistogram) {
+      MetricsService.gatewayDurationHistogram = new Histogram({
+        name: 'gateway_duration',
+        help: 'Gateway Duration',
+        labelNames: [ 'endpoint' ],
         buckets: [ ]
       });
     }
@@ -146,6 +157,10 @@ export class MetricsService {
     MetricsService.elasticDurationHistogram.labels(index).observe(duration);
   }
 
+  setGatewayDuration(name: string, duration: number) {
+    MetricsService.gatewayDurationHistogram.labels(name).observe(duration);
+  }
+
   setElasticTook(index: string, took: number) {
     MetricsService.elasticTookHistogram.labels(index).observe(took);
   }
@@ -171,7 +186,6 @@ export class MetricsService {
       }
     }
 
-
     return register.metrics();
   }
 
@@ -183,7 +197,7 @@ export class MetricsService {
   }
 
   async getCurrentNonce(shardId: number): Promise<number> {
-    let shardInfo = await this.gatewayService.get(`network/status/${shardId}`);
+    let shardInfo = await this.gatewayService.get(`network/status/${shardId}`, GatewayComponentRequest.networkStatus);
     return shardInfo.status.erd_nonce;
   }
 }
