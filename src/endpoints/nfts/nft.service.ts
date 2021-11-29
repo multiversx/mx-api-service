@@ -121,7 +121,12 @@ export class NftService {
 
   async applyNftMetadata(nft: Nft) {
     if (nft.attributes) {
-      nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(nft.attributes);
+      try {
+        nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(nft.attributes);
+      } catch (error) {
+        this.logger.error(error);
+        this.logger.error(`Error when getting metadata for nft with identifier '${nft.identifier}'`);
+      }
     }
   }
 
