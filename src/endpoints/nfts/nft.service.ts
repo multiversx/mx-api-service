@@ -23,6 +23,7 @@ import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { CachingService } from "src/common/caching/caching.service";
 import { Constants } from "src/utils/constants";
 import { NftMedia } from "./entities/nft.media";
+import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 
 @Injectable()
 export class NftService {
@@ -155,12 +156,6 @@ export class NftService {
         if (elasticNftData.tags) {
           nft.tags = elasticNftData.tags;
         }
-
-        if (elasticNftData.metadata) {
-          nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromMetadata(elasticNftData.metadata);
-        } else {
-          nft.metadata = undefined;
-        }
       }
 
       nfts.push(nft);
@@ -185,7 +180,9 @@ export class NftService {
           delete nft.uris;
         } else {
           this.uploadMediaUrlForNft(nft);
-          nft.isWhitelistedStorage = nft.media[0].url.startsWith(this.NFT_THUMBNAIL_PREFIX);
+          if (nft.media.length) {
+            nft.isWhitelistedStorage = nft.media[0].url.startsWith(this.NFT_THUMBNAIL_PREFIX);
+          }
         }
       }
     }
@@ -311,7 +308,7 @@ export class NftService {
         const collectionIdentifier = identifier.split('-').slice(0, 2).join('-');
         const nonce = parseInt(identifier.split('-')[2], 16);
 
-        const { tokenData: gatewayNft } = await this.gatewayService.get(`address/${address}/nft/${collectionIdentifier}/nonce/${nonce}`);
+        const { tokenData: gatewayNft } = await this.gatewayService.get(`address/${address}/nft/${collectionIdentifier}/nonce/${nonce}`, GatewayComponentRequest.addressNftByNonce);
 
         // normalizing tokenIdentifier since it doesn't contain the nonce in this particular scenario
         gatewayNft.tokenIdentifier = identifier;
@@ -324,12 +321,12 @@ export class NftService {
       } 
       
       if (identifiers.length > 1) {
-        let esdts = await this.esdtService.getAllEsdtsForAddress(address);
+        let esdts = await this.esdtService.getAllEsdtsForAddress(address, { from: 0, size: 10000 });
         return Object.values(esdts).map(x => x as any).filter(x => identifiers.includes(x.tokenIdentifier));
       }
     }
 
-    let esdts = await this.esdtService.getAllEsdtsForAddress(address);
+    let esdts = await this.esdtService.getAllEsdtsForAddress(address, { from: 0, size: 10000 });
     return Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
   }
 
@@ -373,7 +370,7 @@ export class NftService {
 
       if (gatewayNft.attributes) {
         nft.tags = this.nftExtendedAttributesService.getTags(gatewayNft.attributes);
-        nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(gatewayNft.attributes);
+        // nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(gatewayNft.attributes);
       }
 
       let collectionDetails = await this.esdtService.getEsdtTokenProperties(nft.collection);
@@ -389,8 +386,9 @@ export class NftService {
           delete nft.uris;
         } else {
           this.uploadMediaUrlForNft(nft);
-
-          nft.isWhitelistedStorage = nft.media[0].url.startsWith(this.NFT_THUMBNAIL_PREFIX);
+          if (nft.media.length) {
+            nft.isWhitelistedStorage = nft.media[0].url.startsWith(this.NFT_THUMBNAIL_PREFIX);
+          }
         }
 
         if (!nft.name) {

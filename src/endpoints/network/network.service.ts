@@ -19,6 +19,7 @@ import { GatewayService } from 'src/common/gateway/gateway.service';
 import { ApiService } from 'src/common/network/api.service';
 import { DataQuoteType } from 'src/common/external/entities/data.quote.type';
 import { CacheInfo } from 'src/common/caching/entities/cache.info';
+import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 
 @Injectable()
 export class NetworkService {
@@ -81,8 +82,8 @@ export class NetworkService {
         status: { erd_rounds_passed_in_current_epoch },
       },
     ] = await Promise.all([
-      this.gatewayService.get('network/config'),
-      this.gatewayService.get('network/status/4294967295'),
+      this.gatewayService.get('network/config', GatewayComponentRequest.networkConfig),
+      this.gatewayService.get('network/status/4294967295', GatewayComponentRequest.networkStatus),
     ]);
 
     const roundsPassed = erd_rounds_passed_in_current_epoch;
@@ -115,8 +116,9 @@ export class NetworkService {
     ] = await Promise.all([
       this.gatewayService.get(
         `address/${this.apiConfigService.getAuctionContractAddress()}`,
+        GatewayComponentRequest.addressDetails
       ),
-      this.gatewayService.get('network/economics'),
+      this.gatewayService.get('network/economics', GatewayComponentRequest.networkEconomics),
       this.vmQueryService.vmQuery(
         this.apiConfigService.getDelegationContractAddress(),
         'getTotalStakeByType',
@@ -175,8 +177,8 @@ export class NetworkService {
       accounts,
       transactions,
     ] = await Promise.all([
-      this.gatewayService.get('network/config'),
-      this.gatewayService.get(`network/status/${metaChainShard}`),
+      this.gatewayService.get('network/config', GatewayComponentRequest.networkConfig),
+      this.gatewayService.get(`network/status/${metaChainShard}`, GatewayComponentRequest.networkStatus),
       this.blockService.getBlocksCount(new BlockFilter()),
       this.accountService.getAccountsCount(),
       this.transactionService.getTransactionCount(new TransactionFilter()),
@@ -202,6 +204,7 @@ export class NetworkService {
       account: { balance: stakedBalance },
     } = await this.gatewayService.get(
       `address/${this.apiConfigService.getAuctionContractAddress()}`,
+      GatewayComponentRequest.addressDetails
     );
     let [activeStake] = await this.vmQueryService.vmQuery(
       this.apiConfigService.getDelegationContractAddress(),

@@ -102,7 +102,7 @@ export class TokenAssetService {
     return assets;
   }
 
-  async getAssets(tokenIdentifier: string): Promise<TokenAssets> {
+  async getAssets(tokenIdentifier: string): Promise<TokenAssets | undefined> {
     // get the dictionary from the local cache
     let assets = await this.getAllAssets();
 

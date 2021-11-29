@@ -8,7 +8,7 @@ import { TokenService } from "./token.service";
 @Module({
   imports: [
     forwardRef(() => CommonModule),
-    EsdtModule,
+    forwardRef(() => EsdtModule),
     TransactionModule,
   ],
   providers: [

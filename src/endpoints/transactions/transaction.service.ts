@@ -24,6 +24,10 @@ import { ElasticSortProperty } from 'src/common/elastic/entities/elastic.sort.pr
 import { ElasticSortOrder } from 'src/common/elastic/entities/elastic.sort.order';
 import { TermsQuery } from 'src/common/elastic/entities/terms.query';
 import { PluginService } from 'src/common/plugins/plugin.service';
+import { CachingService } from 'src/common/caching/caching.service';
+import { CacheInfo } from 'src/common/caching/entities/cache.info';
+import { Constants } from 'src/utils/constants';
+import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 
 @Injectable()
 export class TransactionService {
@@ -36,6 +40,7 @@ export class TransactionService {
     private readonly transactionGetService: TransactionGetService,
     private readonly tokenTransferService: TokenTransferService,
     private readonly pluginsService: PluginService,
+    private readonly cachingService: CachingService,
   ) {
     this.logger = new Logger(TransactionService.name);
   }
@@ -106,7 +111,63 @@ export class TransactionService {
     return elasticQuery;
   }
 
+  async getTransactionCountForAddress(address: string): Promise<number> {
+      return await this.cachingService.getOrSetCache(
+      CacheInfo.TxCount(address).key,
+      async() => await this.getTransactionCountForAddressRaw(address),
+      CacheInfo.TxCount(address).ttl,
+      Constants.oneSecond(),
+    )
+  }
+  
+  async getTransactionCountForAddressRaw(address: string): Promise<number> {
+    const queries = [
+      QueryType.Match('sender', address),
+      QueryType.Match('receiver', address),
+    ];
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.should, queries);
+
+    return await this.elasticService.getCount('transactions', elasticQuery);
+  }
+
+  private isTransactionCountQueryWithAddressOnly(filter: TransactionFilter, address?: string) {
+    if (!address) {
+      return false;
+    }
+
+    let filterToCompareWith: TransactionFilter = {};
+
+    return JSON.stringify(filter) === JSON.stringify(filterToCompareWith);
+  }
+
+  private isTransactionCountQueryWithSenderAndReceiver(filter: TransactionFilter) {
+    if (!filter.sender || !filter.receiver) {
+      return false;
+    }
+
+    if (filter.sender !== filter.receiver) {
+      return false;
+    }
+
+    let filterToCompareWith: TransactionFilter = { 
+      sender: filter.sender, 
+      receiver: filter.receiver,
+      condition: QueryConditionOptions.should,
+    };
+
+    return JSON.stringify(filter) === JSON.stringify(filterToCompareWith);
+  }
+
   async getTransactionCount(filter: TransactionFilter, address?: string): Promise<number> {
+    if (this.isTransactionCountQueryWithAddressOnly(filter, address)) {
+      return this.getTransactionCountForAddress(address ?? '');
+    }
+
+    if (this.isTransactionCountQueryWithSenderAndReceiver(filter)) {
+      return this.getTransactionCountForAddress(filter.sender ?? '');
+    }
+
     let elasticQuery = this.buildTransactionFilterQuery(filter, address);
 
     return await this.elasticService.getCount('transactions', elasticQuery);
@@ -181,6 +242,8 @@ export class TransactionService {
           const logs = await this.transactionGetService.getTransactionLogsFromElastic(hashes);
           let transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
           transactionDetailed.operations = this.tokenTransferService.getOperationsForTransactionLogs(transactionDetailed.txHash, transactionLogs);
+
+          transactionDetailed.operations = this.transactionGetService.trimOperations(transactionDetailed.operations);
         }
 
         detailedTransactions.push(transactionDetailed);
@@ -220,7 +283,7 @@ export class TransactionService {
 
     let txHash: string;
     try {
-      let result = await this.gatewayService.create('transaction/send', transaction);
+      let result = await this.gatewayService.create('transaction/send', GatewayComponentRequest.sendTransaction, transaction);
       txHash = result.txHash;
     } catch (error: any) {
       this.logger.error(error);
