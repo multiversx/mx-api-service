@@ -258,8 +258,8 @@ export class TransactionService {
     return transactions;
   }
 
-  async getTransaction(txHash: string, optionalFields?: string[]): Promise<TransactionDetailed | null> {
-    let transaction = await this.transactionGetService.tryGetTransactionFromElastic(txHash, optionalFields);
+  async getTransaction(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
+    let transaction = await this.transactionGetService.tryGetTransactionFromElastic(txHash, fields);
 
     if (transaction === null) {
       transaction = await this.transactionGetService.tryGetTransactionFromGateway(txHash);

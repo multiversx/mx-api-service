@@ -74,7 +74,7 @@ export class TransactionGetService {
     return scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));      
   }
 
-  async tryGetTransactionFromElastic(txHash: string, optionalFields?: string[]): Promise<TransactionDetailed | null> {
+  async tryGetTransactionFromElastic(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
     try {
       const result = await this.elasticService.getItem('transactions', 'txHash', txHash);
       if (!result) {
@@ -96,8 +96,8 @@ export class TransactionGetService {
       hashes.push(txHash);
 
       if (!this.apiConfigService.getUseLegacyElastic()) {
-      //Elastic query for scResults
-        if (result.hasScResults === true && optionalFields && optionalFields.includes(TransactionOptionalFieldOption.results)) {
+        if (result.hasScResults === true && (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.results))) {
+          this.logger.log(`Getting sc results`);
           transactionDetailed.results = await this.getTransactionScResultsFromElastic(transactionDetailed.txHash);
 
           for (let scResult of transactionDetailed.results) {
@@ -105,8 +105,8 @@ export class TransactionGetService {
           }
         }
         
-        if (optionalFields && optionalFields.includes(TransactionOptionalFieldOption.receipt)) {
-        //Elastic query for receipts
+        if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.receipt)) {
+          this.logger.log(`Getting receipts`);
           const receiptHashQuery = QueryType.Match('receiptHash', txHash);
           const elasticQueryReceipts = ElasticQuery.create()
             .withPagination({ from: 0, size: 1})
@@ -119,8 +119,8 @@ export class TransactionGetService {
           }
         }
 
-        if (optionalFields && optionalFields.includes(TransactionOptionalFieldOption.logs)) {
-        //Elastic query for logs
+        if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs)) {
+          this.logger.log(`Getting logs`);
           const logs = await this.getTransactionLogsFromElastic(hashes);
           let transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
 
