@@ -6,6 +6,7 @@ import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order
 import { ElasticSortProperty } from "src/common/elastic/entities/elastic.sort.property";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { QueryType } from "src/common/elastic/entities/query.type";
+import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
@@ -147,7 +148,7 @@ export class TransactionGetService {
     }
   }
 
-  private trimOperations(operations: TransactionOperation[]): TransactionOperation[] {
+  trimOperations(operations: TransactionOperation[]): TransactionOperation[] {
     let result: TransactionOperation[] = [];
 
     for (let operation of operations) {
@@ -184,7 +185,7 @@ export class TransactionGetService {
 
   async tryGetTransactionFromGateway(txHash: string, queryInElastic: boolean = true): Promise<TransactionDetailed | null> {
     try {
-      let transactionResult = await this.gatewayService.get(`transaction/${txHash}?withResults=true`, async (error) => {
+      let transactionResult = await this.gatewayService.get(`transaction/${txHash}?withResults=true`, GatewayComponentRequest.transactionDetails, async (error) => {
         if (error.response.data.error === 'transaction not found') {
           return true;
         }

@@ -9,6 +9,9 @@ export class Round {
 
     @ApiProperty()
     shard: number = 0;
+
+    @ApiProperty()
+    epoch: number = 0;
     
     @ApiProperty()
     timestamp: number = 0;

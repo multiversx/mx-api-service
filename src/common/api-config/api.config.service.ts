@@ -126,7 +126,7 @@ export class ApiConfigService {
   }
 
   getPoolLimit(): number {
-    return this.configService.get<number>('caching.poolLimit') ?? 10;
+    return this.configService.get<number>('caching.poolLimit') ?? 100;
   }
 
   getProcessTtl(): number {
@@ -155,6 +155,10 @@ export class ApiConfigService {
 
   getUseTracingFlag(): boolean {
     return this.configService.get<boolean>('flags.useTracing') ?? false;
+  }
+
+  getUseVmQueryTracingFlag(): boolean {
+    return this.configService.get<boolean>('flags.useVmQueryTracing') ?? false;
   }
 
   getProvidersUrl(): string {

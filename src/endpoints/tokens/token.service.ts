@@ -2,7 +2,6 @@ import { Injectable, Logger } from "@nestjs/common";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
 import { TokenDetailed } from "./entities/token.detailed";
-import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { ApiUtils } from "src/utils/api.utils";
 import { TokenFilter } from "./entities/token.filter";
@@ -21,7 +20,6 @@ export class TokenService {
   private readonly logger: Logger
 
   constructor(
-    private readonly tokenAssetService: TokenAssetService,
     private readonly esdtService: EsdtService,
     private readonly elasticService: ElasticService,
   ) {
@@ -34,7 +32,7 @@ export class TokenService {
     if (token) {
       token = ApiUtils.mergeObjects(new TokenDetailed(), token);
 
-      await this.applyAssetsAndTicker(token);
+      await this.applyTickerFromAssets(token);
 
       token.supply = await this.esdtService.getTokenSupply(identifier);
 
@@ -52,15 +50,13 @@ export class TokenService {
     tokens = tokens.slice(from, from + size);
 
     for (let token of tokens) {
-      await this.applyAssetsAndTicker(token);
+      await this.applyTickerFromAssets(token);
     }
 
     return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
   }
 
-  async applyAssetsAndTicker(token: Token) {
-    token.assets = await this.tokenAssetService.getAssets(token.identifier);
-
+  async applyTickerFromAssets(token: Token) {
     if (token.assets) {
       token.ticker = token.identifier.split('-')[0];
     } else {
@@ -94,6 +90,8 @@ export class TokenService {
 
       tokens = tokens.filter(token => identifierArray.includes(token.identifier.toLowerCase()));
     }
+
+    tokens = [ ...tokens.filter((token) => token.assets), ...tokens ].distinctBy((token: TokenDetailed) => token.identifier);
     
     return tokens;
   }
@@ -109,37 +107,42 @@ export class TokenService {
     return tokens.length;
   }
 
-  async getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
-    const { from, size } = queryPagination;
-    
+  async getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {    
     let tokens = await this.getAllTokensForAddress(address, filter);
 
-    tokens = tokens.slice(from, from + size);
-
+    tokens = tokens.slice(queryPagination.from, queryPagination.from + queryPagination.size);
     tokens = tokens.map(token => ApiUtils.mergeObjects(new TokenWithBalance(), token));
 
     for (let token of tokens) {
-      await this.applyAssetsAndTicker(token);
+      await this.applyTickerFromAssets(token);
     }
 
     return tokens;
   }
 
   async getTokenForAddress(address: string, identifier: string): Promise<TokenWithBalance | undefined> {
-    let allTokens = await this.getAllTokensForAddress(address, new TokenFilter());
-
-    let token = allTokens.find(x => x.identifier === identifier);
-    if (!token) {
+    const tokenFilter = new TokenFilter();
+    tokenFilter.identifier = identifier;
+    let tokens = await this.getFilteredTokens(tokenFilter);
+    if (!tokens.length) {
       return undefined;
     }
 
-    token = ApiUtils.mergeObjects(new TokenWithBalance(), token);
+    let token = tokens[0];
+    let esdt = await this.elasticService.getAccountEsdtByAddressAndIdentifier(address, identifier);
+    let tokenWithBalance = {
+      ...esdt,
+      ...token,
+    }
+    tokenWithBalance = ApiUtils.mergeObjects(new TokenWithBalance(), tokenWithBalance);
 
-    await this.applyAssetsAndTicker(token);
+    tokenWithBalance.identifier = token.identifier;
 
-    token.supply = await this.esdtService.getTokenSupply(identifier);
+    await this.applyTickerFromAssets(tokenWithBalance);
 
-    return token;
+    tokenWithBalance.supply = await this.esdtService.getTokenSupply(identifier);
+
+    return tokenWithBalance;
   }
 
   async getAllTokensForAddress(address: string, filter: TokenFilter): Promise<TokenWithBalance[]> {

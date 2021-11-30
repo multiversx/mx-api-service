@@ -1,20 +1,23 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { QueryType } from "src/common/elastic/entities/query.type";
+import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
-import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { AddressUtils } from "src/utils/address.utils";
+import { ApiUtils } from "src/utils/api.utils";
 import { Constants } from "src/utils/constants";
 import { TokenUtils } from "src/utils/tokens.utils";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { CachingService } from "../../common/caching/caching.service";
 import { GatewayService } from "../../common/gateway/gateway.service";
+import { TokenDetailed } from "../tokens/entities/token.detailed";
+import { TokenAssetService } from "../tokens/token.asset.service";
 
 @Injectable()
 export class EsdtService {
@@ -28,6 +31,8 @@ export class EsdtService {
     private readonly metricsService: MetricsService,
     private readonly protocolService: ProtocolService,
     private readonly elasticService: ElasticService,
+    @Inject(forwardRef(() => TokenAssetService))
+    private readonly tokenAssetService: TokenAssetService,
   ) {
     this.logger = new Logger(EsdtService.name);
   }
@@ -39,6 +44,7 @@ export class EsdtService {
   private async getAllEsdtsForAddressFromElastic(address: string): Promise<{ [ key: string]: any }> {
     let elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [ QueryType.Match('address', address) ])
+      .withCondition(QueryConditionOptions.mustNot, [ QueryType.Match('address', 'pending') ])
       .withPagination({ from: 0, size: 10000 });
 
     let esdts = await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
@@ -47,7 +53,6 @@ export class EsdtService {
 
     for (let esdt of esdts) {
       let isToken = esdt.tokenNonce === undefined;
-
       if (isToken) {
         result[esdt.token] = {
           balance: esdt.balance,
@@ -72,7 +77,7 @@ export class EsdtService {
 
   // @ts-ignore
   private async getAllEsdtsForAddressFromGateway(address: string): Promise<{ [ key: string]: any }> {
-    let esdtResult = await this.gatewayService.get(`address/${address}/esdt`, async (error) => {
+    let esdtResult = await this.gatewayService.get(`address/${address}/esdt`, GatewayComponentRequest.addressEsdt, async (error) => {
       let errorMessage = error?.response?.data?.error;
       if (errorMessage && errorMessage.includes('account was not found')) {
         return true;
@@ -131,7 +136,7 @@ export class EsdtService {
   async getAllEsdtTokensRaw(): Promise<TokenDetailed[]> {
     let tokensIdentifiers: string[];
     try {
-      const getFungibleTokensResult = await this.gatewayService.get('network/esdt/fungible-tokens');
+      const getFungibleTokensResult = await this.gatewayService.get('network/esdt/fungible-tokens', GatewayComponentRequest.allFungibleTokens);
 
       tokensIdentifiers = getFungibleTokensResult.tokens;
     } catch (error) {
@@ -140,16 +145,26 @@ export class EsdtService {
       return [];
     }
 
-    let tokens = await this.cachingService.batchProcess(
+    let tokensPropertiesAndAssets = await this.cachingService.batchProcess(
       tokensIdentifiers,
       token => `esdt:${token}`,
-      async (token: string) => await this.getEsdtTokenPropertiesRaw(token),
+      async (identifier: string) => await this.getEsdtTokenPropertiesAndAssets(identifier),
       Constants.oneDay(),
       true
     );
 
-    // @ts-ignore
-    return tokens;
+    return tokensPropertiesAndAssets.filter(x => x !== null).map(x => x!);
+  }
+
+  async getEsdtTokenPropertiesAndAssets(identifier: string): Promise<TokenDetailed | null> {
+    let tokenProperties =  await this.getEsdtTokenPropertiesRaw(identifier);
+    if (!tokenProperties) {
+      return null;
+    }
+
+    let tokenAssets = await this.tokenAssetService.getAssets(identifier);
+
+    return ApiUtils.mergeObjects(new TokenDetailed(), { ...tokenProperties, assets: tokenAssets});
   }
 
   async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
@@ -246,7 +261,7 @@ export class EsdtService {
   };
 
   async getTokenSupply(identifier: string): Promise<string> {
-    const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`);
+    const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
 
     return supply;
   }

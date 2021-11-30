@@ -1,5 +1,6 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { ApiConfigModule } from "../api-config/api.config.module";
+import { MetricsModule } from "../metrics/metrics.module";
 import { ApiModule } from "../network/api.module";
 import { GatewayService } from "./gateway.service";
 
@@ -8,6 +9,7 @@ import { GatewayService } from "./gateway.service";
   imports: [
     ApiConfigModule,
     ApiModule,
+    forwardRef(() => MetricsModule),
   ],
   providers: [
     GatewayService
