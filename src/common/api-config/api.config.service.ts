@@ -126,7 +126,7 @@ export class ApiConfigService {
   }
 
   getPoolLimit(): number {
-    return this.configService.get<number>('caching.poolLimit') ?? 10;
+    return this.configService.get<number>('caching.poolLimit') ?? 100;
   }
 
   getProcessTtl(): number {
