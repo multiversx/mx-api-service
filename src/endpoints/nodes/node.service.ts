@@ -37,14 +37,14 @@ export class NodeService {
     private readonly blockService: BlockService,
   ) {}
 
-  private getIssues(node: Node, version: string): string[] {
+  private getIssues(node: Node, version: string | undefined): string[] {
     const issues: string[] = [];
   
     // if (node.totalUpTimeSec === 0) {
     //   issues.push('offlineSinceGenesis'); // Offline since genesis
     // }
   
-    if (version !== node.version) {
+    if (version && version !== node.version) {
       issues.push('versionMismatch'); // Outdated client version
     }
   
