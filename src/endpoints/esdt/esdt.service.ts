@@ -4,7 +4,6 @@ import { ElasticService } from "src/common/elastic/elastic.service";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { QueryType } from "src/common/elastic/entities/query.type";
-import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
@@ -38,15 +37,15 @@ export class EsdtService {
     this.logger = new Logger(EsdtService.name);
   }
 
-  private async getAllEsdtsForAddressRaw(address: string, queryPagination:  QueryPagination): Promise<{ [ key: string]: any }> {
-    return this.getAllEsdtsForAddressFromElastic(address, queryPagination);
+  private async getAllEsdtsForAddressRaw(address: string): Promise<{ [ key: string]: any }> {
+    return this.getAllEsdtsForAddressFromElastic(address);
   }
 
-  private async getAllEsdtsForAddressFromElastic(address: string, queryPagination: QueryPagination): Promise<{ [ key: string]: any }> {
+  private async getAllEsdtsForAddressFromElastic(address: string): Promise<{ [ key: string]: any }> {
     let elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [ QueryType.Match('address', address) ])
-      .withPagination(queryPagination)
-      .withCondition(QueryConditionOptions.mustNot, [ QueryType.Match('address', 'pending') ]);
+      .withCondition(QueryConditionOptions.mustNot, [ QueryType.Match('address', 'pending') ])
+      .withPagination({ from: 0, size: 10000 });
 
     let esdts = await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
 
@@ -96,7 +95,7 @@ export class EsdtService {
 
   private pendingRequestsDictionary: { [ key: string]: any; } = {};
   
-  async getAllEsdtsForAddress(address: string, queryPagination: QueryPagination): Promise<{ [ key: string]: any }> {
+  async getAllEsdtsForAddress(address: string): Promise<{ [ key: string]: any }> {
     let pendingRequest = this.pendingRequestsDictionary[address];
     if (pendingRequest) {
       let result = await pendingRequest;
@@ -110,7 +109,7 @@ export class EsdtService {
       return cachedValue;
     }
 
-    pendingRequest = this.getAllEsdtsForAddressRaw(address, queryPagination);
+    pendingRequest = this.getAllEsdtsForAddressRaw(address);
     this.pendingRequestsDictionary[address] = pendingRequest;
 
     let esdts: { [ key: string]: any };
