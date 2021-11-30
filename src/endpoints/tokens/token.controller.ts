@@ -131,7 +131,6 @@ export class TokenController {
     return this.tokenService.getTokenAccountsCount(identifier);
   }
 
-
   @Get("/tokens/:identifier/transactions")
   @ApiResponse({
     status: 200,
