@@ -26,13 +26,16 @@ import { MicroserviceModule } from './common/microservice/microservice.module';
 import { ProtocolService } from './common/protocol/protocol.service';
 import { PaginationInterceptor } from './interceptors/pagination.interceptor';
 import { LogRequestsInterceptor } from './interceptors/log.requests.interceptor';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const publicApp = await NestFactory.create(PublicAppModule);
+  const publicApp = await NestFactory.create<NestExpressApplication>(PublicAppModule);
   publicApp.use(bodyParser.json({limit: '1mb'}));
   publicApp.use(requestIp.mw());
   publicApp.enableCors();
   publicApp.useLogger(publicApp.get(WINSTON_MODULE_NEST_PROVIDER));
+  publicApp.disable('etag');
+  publicApp.disable('x-powered-by');
 
   let apiConfigService = publicApp.get<ApiConfigService>(ApiConfigService);
   let cachingService = publicApp.get<CachingService>(CachingService);
@@ -40,7 +43,6 @@ async function bootstrap() {
   let metricsService = publicApp.get<MetricsService>(MetricsService);
   let tokenAssetService = publicApp.get<TokenAssetService>(TokenAssetService);
   let protocolService = publicApp.get<ProtocolService>(ProtocolService);
-
 
   if (apiConfigService.getIsAuthActive()) {
     publicApp.useGlobalGuards(new JwtAuthenticateGuard(apiConfigService));
