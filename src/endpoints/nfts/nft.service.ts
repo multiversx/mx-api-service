@@ -144,7 +144,7 @@ export class NftService {
   }
 
   async getNftsInternal(from: number, size: number, filter: NftFilter, identifier: string | undefined, queryOptions?: NftQueryOptions): Promise<Nft[]> {
-    let elasticNfts = await this.elasticService.getTokens(from, size, filter, identifier);
+    let elasticNfts = await this.elasticService.getNftTokens(from, size, filter, identifier);
 
     let nfts: Nft[] = [];
 
