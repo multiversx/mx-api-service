@@ -76,7 +76,7 @@ export class TokenService {
     if (filter.name) {
       let nameLower = filter.name.toLowerCase();
 
-      tokens = tokens.filter(token => token.name.toLowerCase().includes(nameLower));
+      tokens = tokens.filter(token => token.name.toLowerCase() === nameLower);
     }
 
     if (filter.identifier) {
