@@ -171,12 +171,6 @@ export class NftService {
           nft.tags = elasticNftData.tags;
         }
 
-        this.uploadMediaUrlForNft(nft);
-
-        if (nft.media.length) {
-          nft.isWhitelistedStorage = nft.media[0].url.startsWith(this.NFT_THUMBNAIL_PREFIX);
-        }
-        
         if (elasticNftData.metadata) {
           nft.attributes = BinaryUtils.base64Encode(`metadata:${elasticNftData.metadata}`);
         } 
