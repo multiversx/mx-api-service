@@ -349,6 +349,7 @@ export class AccountController {
 	@ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
 	@ApiQuery({ name: 'withTimestamp', description: 'Add timestamp in the response structure', required: false })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false })
+  @ApiQuery({ name: 'withMetadata', description: 'Return metadata for nfts', required: false })
   @ApiResponse({
     status: 200,
     description: 'The non-fungible and semi-fungible tokens of a given account',
@@ -373,9 +374,10 @@ export class AccountController {
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
     @Query('withTimestamp', new ParseOptionalBoolPipe) withTimestamp?: boolean,
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean,
+    @Query('withMetadata', new ParseOptionalBoolPipe) withMetadata?: boolean | undefined,
   ): Promise<NftAccount[]> {
     try {
-      return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, collections, tags, creator, hasUris }, { withTimestamp, withSupply });
+      return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, collections, tags, creator, hasUris }, { withTimestamp, withSupply, withMetadata });
     } catch (error) {
       this.logger.error(`Error in getAccountNfts for address ${address}`);
       this.logger.error(error);

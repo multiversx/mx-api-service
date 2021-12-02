@@ -1,5 +1,6 @@
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { AddressUtils } from "src/utils/address.utils";
+import { MatchUtils } from "src/utils/match.utils";
 import { TransactionUtils } from "src/utils/transaction.utils";
 
 describe('API utils', () => { 
@@ -48,4 +49,33 @@ describe('API utils', () => {
       expect(TransactionUtils.tryExtractNftMetadataFromNftCreateTransaction(transaction)).toMatchObject({ collection: 'NFT-81187f', attributes: 'tags:arrow,wrong,signal,percent,lie;metadata:QmarpnD6kFEJhGAZ7kMYy1wHbCsPQydqbaY3AXmW1H9jbb'});
     });
   });
+
+  describe('Match Utils', () => {
+    it('getTagsFromBase64Attributes', () => {
+      let match = MatchUtils.getTagsFromBase64Attributes('bWV0YWRhdGE6');
+      expect(match).toBeNull();
+
+      match = MatchUtils.getTagsFromBase64Attributes('bWV0YWRhdGE6YXNkYWRzYTt0YWdzOjEsMiwzLDQ=');
+      expect(match).toBeDefined();
+      if (match?.groups) {
+        expect(match.groups['tags']).toEqual('1,2,3,4');
+      }
+    })
+    it('getMetadataFromBase64Attributes', () => {
+      let match = MatchUtils.getMetadataFromBase64Attributes('bWV0YWRhdGE6dGVzdDt0YWdzOjEsMiwzLDQ=');
+      expect(match).toBeDefined();
+      if (match?.groups) {
+        expect(match.groups['metadata']).toEqual('test');
+      }
+
+      match = MatchUtils.getMetadataFromBase64Attributes('bWV0YWRhdGE6dGVzdC93aXRoLjt0YWdzOjEsMiwzLDQ=');
+      expect(match).toBeDefined();
+      if (match?.groups) {
+        expect(match.groups['metadata']).toEqual('test/with.');
+      }
+
+      match = MatchUtils.getMetadataFromBase64Attributes('dGFnczoxLDIsMyw0');
+      expect(match).toBeNull();
+    })
+  })
 });

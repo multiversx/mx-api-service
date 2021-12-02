@@ -14,7 +14,6 @@ import { QueryType } from "src/common/elastic/entities/query.type";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { TokenAccount } from "./entities/token.account";
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
-import { ElasticPagination } from "src/common/elastic/entities/elastic.pagination";
 
 @Injectable()
 export class TokenService {
@@ -104,13 +103,14 @@ export class TokenService {
   }
 
   async getTokenCountForAddress(address: string): Promise<number> {
-    let tokens = await this.getAllTokensForAddress(address, new TokenFilter(), new ElasticPagination());
+    let tokens = await this.getAllTokensForAddress(address, new TokenFilter());
     return tokens.length;
   }
 
   async getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {    
-    let tokens = await this.getAllTokensForAddress(address, filter, queryPagination);
+    let tokens = await this.getAllTokensForAddress(address, filter);
 
+    tokens = tokens.slice(queryPagination.from, queryPagination.from + queryPagination.size);
     tokens = tokens.map(token => ApiUtils.mergeObjects(new TokenWithBalance(), token));
 
     for (let token of tokens) {
@@ -145,7 +145,7 @@ export class TokenService {
     return tokenWithBalance;
   }
 
-  async getAllTokensForAddress(address: string, filter: TokenFilter, queryPagination: QueryPagination): Promise<TokenWithBalance[]> {
+  async getAllTokensForAddress(address: string, filter: TokenFilter): Promise<TokenWithBalance[]> {
     let tokens = await this.getFilteredTokens(filter);
 
     let tokensIndexed: { [index: string]: Token } = {};
@@ -153,7 +153,7 @@ export class TokenService {
       tokensIndexed[token.identifier] = token;
     }
 
-    let esdts = await this.esdtService.getAllEsdtsForAddress(address, queryPagination);
+    let esdts = await this.esdtService.getAllEsdtsForAddress(address);
 
     let tokensWithBalance: TokenWithBalance[] = [];
 

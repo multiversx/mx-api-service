@@ -1,8 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
+import { MetricsService } from "src/common/metrics/metrics.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
+import { PerformanceProfiler } from "src/utils/performance.profiler";
 
 @Injectable()
 export class VmQueryService {
@@ -12,6 +15,8 @@ export class VmQueryService {
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
     private readonly protocolService: ProtocolService,
+    private readonly apiConfigService: ApiConfigService,
+    private readonly metricsService: MetricsService,
   ) {
     this.logger = new Logger(VmQueryService.name);
   }
@@ -91,12 +96,22 @@ export class VmQueryService {
       args: args,
     };
 
-    let result = await this.gatewayService.createRaw(
-      'vm-values/query',
-      GatewayComponentRequest.vmQuery,
-      payload,
-    );
+    let profiler = new PerformanceProfiler();
 
-    return result.data;
+    try {
+      let result = await this.gatewayService.createRaw(
+        'vm-values/query',
+        GatewayComponentRequest.vmQuery,
+        payload,
+      );
+
+      return result.data;
+    } finally {
+      profiler.stop();
+
+      if (this.apiConfigService.getUseVmQueryTracingFlag()) {
+        this.metricsService.setVmQuery(contract, func, profiler.duration);
+      }
+    }
   };
 }
