@@ -281,6 +281,8 @@ export class TransactionService {
     const receiverShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.receiver));
     const senderShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.sender));
 
+    await this.pluginsService.processTransactionSend(transaction);
+
     let txHash: string;
     try {
       let result = await this.gatewayService.create('transaction/send', GatewayComponentRequest.sendTransaction, transaction);

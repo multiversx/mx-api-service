@@ -6,4 +6,6 @@ export class PluginService {
   async processTransaction(_: Transaction): Promise<void> {}
 
   async handleEveryMinuteCron(): Promise<void> {}
+
+  async processTransactionSend(_: any): Promise<void> {}
 }
