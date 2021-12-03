@@ -281,7 +281,10 @@ export class TransactionService {
     const receiverShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.receiver));
     const senderShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.sender));
 
-    await this.pluginsService.processTransactionSend(transaction);
+    let pluginTransaction = await this.pluginsService.processTransactionSend(transaction);
+    if (pluginTransaction) {
+      return pluginTransaction;
+    }
 
     let txHash: string;
     try {

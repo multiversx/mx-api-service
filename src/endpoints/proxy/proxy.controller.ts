@@ -83,7 +83,10 @@ export class ProxyController {
       throw new BadRequestException('Receiver must be provided');
     }
 
-    await this.pluginService.processTransactionSend(body);
+    let pluginTransaction = await this.pluginService.processTransactionSend(body);
+    if (pluginTransaction) {
+      return pluginTransaction;
+    }
 
     return await this.gatewayPost('transaction/send', GatewayComponentRequest.sendTransaction, body);
   }
