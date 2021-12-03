@@ -51,11 +51,11 @@ export class CachingService {
     if (pendingGetRemote) {
       return await pendingGetRemote;
     } else {
-      pendingGetRemote = promise();
-
-      this.pendingPromises[key] = pendingGetRemote;
-
       try {
+        pendingGetRemote = promise();
+  
+        this.pendingPromises[key] = pendingGetRemote;
+
         return await pendingGetRemote;
       } finally {
         delete this.pendingPromises[key];
