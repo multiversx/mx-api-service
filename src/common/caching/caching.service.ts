@@ -63,7 +63,7 @@ export class CachingService {
   }
 
   public async getCacheRemote<T>(key: string): Promise<T | undefined> {
-    let response = await this.executeWithPendingPromise<string | undefined>(key, () => this.asyncGet(key));
+    let response = await this.executeWithPendingPromise<string | undefined>(`caching:get:${key}`, async () => await this.asyncGet(key));
     if (response === undefined) {
       return undefined;
     }
@@ -287,7 +287,7 @@ export class CachingService {
       return cached;
     }
 
-    let value = await this.executeWithPendingPromise(key, promise);
+    let value = await this.executeWithPendingPromise(`caching:set:${key}`, promise);
     profiler.stop(`Cache miss for key ${key}`);
 
     if (localTtl > 0) {
