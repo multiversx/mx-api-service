@@ -43,24 +43,27 @@ export class CachingService {
     return value;
   };
 
-  pendingGetRemotes: { [key: string]: Promise<any> } = {};
+  pendingPromises: { [key: string]: Promise<any> } = {};
+
+  private async executeWithPendingPromise<T>(key: string, promise: () => Promise<T>): Promise<T> {
+    let pendingGetRemote = this.pendingPromises[key];
+    if (pendingGetRemote) {
+      return await pendingGetRemote;
+    } else {
+      try {
+        pendingGetRemote = promise();
+  
+        this.pendingPromises[key] = pendingGetRemote;
+
+        return await pendingGetRemote;
+      } finally {
+        delete this.pendingPromises[key];
+      }
+    }
+  }
 
   public async getCacheRemote<T>(key: string): Promise<T | undefined> {
-    let response;
-
-    let pendingGetRemote = this.pendingGetRemotes[key];
-    if (pendingGetRemote) {
-      response = await pendingGetRemote;
-    } else {
-      pendingGetRemote = this.asyncGet(key);
-
-      this.pendingGetRemotes[key] = pendingGetRemote;
-
-      response = await pendingGetRemote;
-
-      delete this.pendingGetRemotes[key];
-    }
-
+    let response = await this.executeWithPendingPromise<string | undefined>(`caching:get:${key}`, async () => await this.asyncGet(key));
     if (response === undefined) {
       return undefined;
     }
@@ -284,7 +287,7 @@ export class CachingService {
       return cached;
     }
 
-    let value = await promise();
+    let value = await this.executeWithPendingPromise(`caching:set:${key}`, promise);
     profiler.stop(`Cache miss for key ${key}`);
 
     if (localTtl > 0) {
