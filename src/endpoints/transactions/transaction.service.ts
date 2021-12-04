@@ -249,7 +249,7 @@ export class TransactionService {
         detailedTransactions.push(transactionDetailed);
       }
 
-      return detailedTransactions;
+      transactions = detailedTransactions;
     }
 
     for (let transaction of transactions) {
