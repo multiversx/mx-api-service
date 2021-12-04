@@ -11,6 +11,7 @@ import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
 import { Response } from "express";
 import { NoCache } from "src/decorators/no.cache";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { PluginService } from "src/common/plugins/plugin.service";
 
 @Controller()
 @ApiTags('proxy')
@@ -19,6 +20,7 @@ export class ProxyController {
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
     private readonly cachingService: CachingService,
+    private readonly pluginService: PluginService,
   ) {}
 
   @Get('/address/:address')
@@ -79,6 +81,11 @@ export class ProxyController {
 
     if (!body.receiver) {
       throw new BadRequestException('Receiver must be provided');
+    }
+
+    let pluginTransaction = await this.pluginService.processTransactionSend(body);
+    if (pluginTransaction) {
+      return pluginTransaction;
     }
 
     return await this.gatewayPost('transaction/send', GatewayComponentRequest.sendTransaction, body);

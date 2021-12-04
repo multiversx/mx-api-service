@@ -249,7 +249,7 @@ export class TransactionService {
         detailedTransactions.push(transactionDetailed);
       }
 
-      return detailedTransactions;
+      transactions = detailedTransactions;
     }
 
     for (let transaction of transactions) {
@@ -280,6 +280,11 @@ export class TransactionService {
   async createTransaction(transaction: TransactionCreate): Promise<TransactionSendResult | string> {
     const receiverShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.receiver));
     const senderShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.sender));
+
+    let pluginTransaction = await this.pluginsService.processTransactionSend(transaction);
+    if (pluginTransaction) {
+      return pluginTransaction;
+    }
 
     let txHash: string;
     try {
