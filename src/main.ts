@@ -56,7 +56,7 @@ async function bootstrap() {
 
   const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
   httpServer.keepAliveTimeout = apiConfigService.getServerTimeout();
-  httpServer.headersTimeout = apiConfigService.getAxiosTimeout(); //`keepAliveTimeout + server's expected response time`
+  httpServer.headersTimeout = apiConfigService.getHeadersTimeout(); //`keepAliveTimeout + server's expected response time`
 
   await tokenAssetService.checkout();
 
