@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
@@ -24,6 +24,7 @@ import { CachingService } from "src/common/caching/caching.service";
 import { Constants } from "src/utils/constants";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import asyncPool from "tiny-async-pool";
+import { PluginService } from "src/common/plugins/plugin.service";
 
 @Injectable()
 export class NftService {
@@ -38,6 +39,8 @@ export class NftService {
     private readonly esdtService: EsdtService,
     private readonly tokenAssetService: TokenAssetService,
     private readonly cachingService: CachingService,
+    @Inject(forwardRef(() => PluginService))
+    private readonly pluginService: PluginService,
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -73,6 +76,10 @@ export class NftService {
           nft.supply = await this.esdtService.getTokenSupply(nft.identifier);
         }
       }
+    }
+
+    for (let nft of nfts) {
+      await this.pluginService.processNft(nft);
     }
     
     return nfts;
@@ -116,6 +123,8 @@ export class NftService {
     await this.applyAssetsAndTicker(nft);
 
     await this.applyNftMetadata(nft);
+
+    await this.pluginService.processNft(nft);
 
     return nft;
   }
@@ -278,6 +287,10 @@ export class NftService {
           nft.supply = await this.esdtService.getTokenSupply(nft.identifier);
         }
       }
+    }
+
+    for (let nft of nfts) {
+      await this.pluginService.processNft(nft);
     }
 
     return nfts;
@@ -453,6 +466,8 @@ export class NftService {
     nft.assets = await this.tokenAssetService.getAssets(nft.collection);
 
     await this.applyNftMetadata(nft);
+
+    await this.pluginService.processNft(nft);
 
     return nft;
   }

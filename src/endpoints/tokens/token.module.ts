@@ -9,7 +9,7 @@ import { TokenService } from "./token.service";
   imports: [
     forwardRef(() => CommonModule),
     forwardRef(() => EsdtModule),
-    TransactionModule,
+    forwardRef(() => TransactionModule),
   ],
   providers: [
     TokenAssetService, TokenService
