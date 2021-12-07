@@ -103,7 +103,7 @@ describe('Nft Service', () => {
       it(`should return a list with nfts that has identifiers`, async () => {
         const nftFilter = new NftFilter();
         nftFilter.identifiers =
-          'LKFARM-9d1ea8-8f6b,LKLP-03a2fa-4cc9,invalidIdentifier,';
+          'LKFARM-9d1ea8-8f6b,LKLP-03a2fa-4cc9,invalidIdentifier';
 
         const nftsList = await nftService.getNfts(
           { from: 0, size: 25 },

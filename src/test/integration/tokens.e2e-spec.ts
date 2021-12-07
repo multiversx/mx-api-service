@@ -69,7 +69,7 @@ describe('Token Service', () => {
 
       it(`should return a list with nfts that has identifiers`, async () => {
         const tokenFilter = new TokenFilter();
-        tokenFilter.identifiers = 'MSFT-532e00,EWLD-e23800,invalidIdentifier,';
+        tokenFilter.identifiers = 'MSFT-532e00,EWLD-e23800,invalidIdentifier';
 
         const tokensList = await tokenService.getTokens(
           { from: 0, size: 25 },
