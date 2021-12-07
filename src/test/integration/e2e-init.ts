@@ -1,14 +1,16 @@
-import { Test } from "@nestjs/testing";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CachingService } from "src/common/caching/caching.service";
-import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
-import { KeybaseService } from "src/common/keybase/keybase.service";
-import { NodeService } from "src/endpoints/nodes/node.service";
-import { ProviderService } from "src/endpoints/providers/provider.service";
-import { PublicAppModule } from "src/public.app.module";
-import { Constants } from "src/utils/constants";
-import { FileUtils } from "src/utils/file.utils";
-import "../../utils/extensions/jest.extensions";
+import { Test } from '@nestjs/testing';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { CachingService } from 'src/common/caching/caching.service';
+import { CacheInfo } from 'src/common/caching/entities/cache.info';
+import { KeybaseIdentity } from 'src/common/keybase/entities/keybase.identity';
+import { KeybaseService } from 'src/common/keybase/keybase.service';
+import { EsdtService } from 'src/endpoints/esdt/esdt.service';
+import { NodeService } from 'src/endpoints/nodes/node.service';
+import { ProviderService } from 'src/endpoints/providers/provider.service';
+import { PublicAppModule } from 'src/public.app.module';
+import { Constants } from 'src/utils/constants';
+import { FileUtils } from 'src/utils/file.utils';
+import '../../utils/extensions/jest.extensions';
 
 export default class Initializer {
   private static cachingService: CachingService;
@@ -19,38 +21,73 @@ export default class Initializer {
       imports: [PublicAppModule],
     }).compile();
 
-    Initializer.cachingService = publicAppModule.get<CachingService>(CachingService);
-    Initializer.apiConfigService = publicAppModule.get<ApiConfigService>(ApiConfigService);
+    Initializer.cachingService =
+      publicAppModule.get<CachingService>(CachingService);
+    Initializer.apiConfigService =
+      publicAppModule.get<ApiConfigService>(ApiConfigService);
     const keybaseService = publicAppModule.get<KeybaseService>(KeybaseService);
     const nodeService = publicAppModule.get<NodeService>(NodeService);
-    const providerService = publicAppModule.get<ProviderService>(ProviderService);
-    
+    const providerService =
+      publicAppModule.get<ProviderService>(ProviderService);
+    const esdtService = publicAppModule.get<EsdtService>(EsdtService);
+
     if (Initializer.apiConfigService.getMockKeybases()) {
-      jest.spyOn(KeybaseService.prototype, "confirmKeybase").mockImplementation(jest.fn(async() => true));
-      jest.spyOn(KeybaseService.prototype, "getProfile").mockImplementation(jest.fn(async() => new KeybaseIdentity()));
+      jest
+        .spyOn(KeybaseService.prototype, 'confirmKeybase')
+        .mockImplementation(jest.fn(async () => true));
+      jest
+        .spyOn(KeybaseService.prototype, 'getProfile')
+        .mockImplementation(jest.fn(async () => new KeybaseIdentity()));
     }
 
     if (Initializer.apiConfigService.getMockNodes()) {
       const MOCK_PATH = Initializer.apiConfigService.getMockPath();
-      const heartbeat = FileUtils.parseJSONFile(`${MOCK_PATH}heartbeat.mock.json`);
-      jest.spyOn(NodeService.prototype, "getHeartbeat").mockImplementation(jest.fn(async() => heartbeat));
+      const heartbeat = FileUtils.parseJSONFile(
+        `${MOCK_PATH}heartbeat.mock.json`,
+      );
+      jest
+        .spyOn(NodeService.prototype, 'getHeartbeat')
+        .mockImplementation(jest.fn(async () => heartbeat));
 
       const queue = FileUtils.parseJSONFile(`${MOCK_PATH}queue.mock.json`);
-      jest.spyOn(NodeService.prototype, "getQueue").mockImplementation(jest.fn(async() => queue));
+      jest
+        .spyOn(NodeService.prototype, 'getQueue')
+        .mockImplementation(jest.fn(async () => queue));
     }
 
-    let isInitialized = await Initializer.cachingService.getCacheRemote<boolean>('isInitialized');
+    let isInitialized =
+      await Initializer.cachingService.getCacheRemote<boolean>('isInitialized');
     if (isInitialized === true) {
       return;
     }
 
-    await this.execute('Flushing db', async () => await Initializer.cachingService.flushDb());
+    await this.execute(
+      'Flushing db',
+      async () => await Initializer.cachingService.flushDb(),
+    );
 
-    await this.fetch('keybases', async () => await keybaseService.confirmKeybasesAgainstCache());
-    await this.fetch('nodes', async () => await nodeService.getAllNodesRaw());
-    await this.fetch('providers', async () => await providerService.getAllProvidersRaw());
+    await this.fetch(
+      CacheInfo.Keybases.key,
+      async () => await keybaseService.confirmKeybasesAgainstCache(),
+    );
+    await this.fetch(
+      CacheInfo.Nodes.key,
+      async () => await nodeService.getAllNodesRaw(),
+    );
+    await this.fetch(
+      CacheInfo.Providers.key,
+      async () => await providerService.getAllProvidersRaw(),
+    );
+    await this.fetch(
+      CacheInfo.AllEsdtTokens.key,
+      async () => await esdtService.getAllEsdtTokensRaw(),
+    );
 
-    await Initializer.cachingService.setCacheRemote<boolean>('isInitialized', true, Constants.oneHour());
+    await Initializer.cachingService.setCacheRemote<boolean>(
+      'isInitialized',
+      true,
+      Constants.oneHour(),
+    );
   }
 
   private static async fetch<T>(key: string, promise: () => Promise<T>) {
@@ -62,11 +99,18 @@ export default class Initializer {
     });
   }
 
-  private static async execute(description: string, promise: () => Promise<any>) {
+  private static async execute(
+    description: string,
+    promise: () => Promise<any>,
+  ) {
     console.log(`${new Date().toISOString().substr(11, 8)}: ${description}`);
     let start = Date.now();
     await promise();
     let duration = ((Date.now() - start) / 1000).toFixed(2);
-    console.log(`${new Date().toISOString().substr(11, 8)}: ${description} completed. Duration: ${duration}s`);
+    console.log(
+      `${new Date()
+        .toISOString()
+        .substr(11, 8)}: ${description} completed. Duration: ${duration}s`,
+    );
   }
 }
