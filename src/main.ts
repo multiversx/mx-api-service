@@ -29,8 +29,10 @@ import { LogRequestsInterceptor } from './interceptors/log.requests.interceptor'
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const publicApp = await NestFactory.create<NestExpressApplication>(PublicAppModule);
-  publicApp.use(bodyParser.json({limit: '1mb'}));
+  const publicApp = await NestFactory.create<NestExpressApplication>(
+    PublicAppModule,
+  );
+  publicApp.use(bodyParser.json({ limit: '1mb' }));
   publicApp.use(requestIp.mw());
   publicApp.enableCors();
   publicApp.useLogger(publicApp.get(WINSTON_MODULE_NEST_PROVIDER));
@@ -51,9 +53,10 @@ async function bootstrap() {
   if (apiConfigService.getUseTracingFlag()) {
     require('dd-trace').init();
   }
-  
+
   const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
-  httpServer.keepalive = true;
+  httpServer.keepAliveTimeout = apiConfigService.getServerTimeout();
+  httpServer.headersTimeout = apiConfigService.getHeadersTimeout(); //`keepAliveTimeout + server's expected response time`
 
   await tokenAssetService.checkout();
 
@@ -61,28 +64,36 @@ async function bootstrap() {
   globalInterceptors.push(new LoggingInterceptor(metricsService));
 
   if (apiConfigService.getUseRequestCachingFlag()) {
-    globalInterceptors.push(new CachingInterceptor(cachingService, httpAdapterHostService, metricsService, protocolService));
+    globalInterceptors.push(
+      new CachingInterceptor(
+        cachingService,
+        httpAdapterHostService,
+        metricsService,
+        protocolService,
+      ),
+    );
   }
 
   if (apiConfigService.getUseRequestLoggingFlag()) {
     globalInterceptors.push(new LogRequestsInterceptor(httpAdapterHostService));
   }
-  
+
   globalInterceptors.push(new FieldsInterceptor());
   globalInterceptors.push(new ExtractInterceptor());
   globalInterceptors.push(new CleanupInterceptor());
   globalInterceptors.push(new PaginationInterceptor());
-  
 
   publicApp.useGlobalInterceptors(...globalInterceptors);
-  const description = readFileSync(join(__dirname, '..', 'docs', 'swagger.md'), 'utf8');
+  const description = readFileSync(
+    join(__dirname, '..', 'docs', 'swagger.md'),
+    'utf8',
+  );
 
   let documentBuilder = new DocumentBuilder()
     .setTitle('Elrond API')
     .setDescription(description)
     .setVersion('1.0.0')
     .setExternalDoc('Elrond Docs', 'https://docs.elrond.com');
-
 
   let apiUrls = apiConfigService.getApiUrls();
   for (let apiUrl of apiUrls) {
@@ -124,35 +135,40 @@ async function bootstrap() {
         url: `redis://${apiConfigService.getRedisUrl()}:6379`,
         retryAttempts: 100,
         retryDelay: 1000,
-        retry_strategy: function(_: any) {
+        retry_strategy: function (_: any) {
           return 1000;
         },
-      }
+      },
     },
   );
   pubSubApp.listen();
 
   logger.log(`Public API active: ${apiConfigService.getIsPublicApiActive()}`);
   logger.log(`Private API active: ${apiConfigService.getIsPrivateApiActive()}`);
-  logger.log(`Transaction processor active: ${apiConfigService.getIsTransactionProcessorCronActive()}`);
-  logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
+  logger.log(
+    `Transaction processor active: ${apiConfigService.getIsTransactionProcessorCronActive()}`,
+  );
+  logger.log(
+    `Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`,
+  );
 }
 
 bootstrap();
 
 RedisClient.prototype.on_error = function (err: any) {
   if (this.closing) {
-      return;
+    return;
   }
 
-  err.message = 'Redis connection to ' + this.address + ' failed - ' + err.message;
+  err.message =
+    'Redis connection to ' + this.address + ' failed - ' + err.message;
   // debug(err.message);
   this.connected = false;
   this.ready = false;
 
   // Only emit the error if the retry_strategy option is not set
   if (!this.options.retry_strategy) {
-      // this.emit('error', err);
+    // this.emit('error', err);
   }
   // 'error' events get turned into exceptions if they aren't listened for. If the user handled this error
   // then we should try to reconnect.

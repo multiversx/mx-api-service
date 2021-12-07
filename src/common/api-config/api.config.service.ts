@@ -1,9 +1,9 @@
-import { Injectable } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ApiConfigService {
-  constructor(private readonly configService: ConfigService) { }
+  constructor(private readonly configService: ConfigService) {}
 
   getConfig<T>(configKey: string): T | undefined {
     return this.configService.get<T>(configKey);
@@ -39,10 +39,10 @@ export class ApiConfigService {
   getMexUrl(): string {
     const mexUrls = this.configService.get<string[]>('urls.mex');
     if (mexUrls) {
-      return mexUrls[Math.floor(Math.random() * mexUrls.length)]
+      return mexUrls[Math.floor(Math.random() * mexUrls.length)];
     }
 
-    return "";
+    return '';
   }
 
   getEsdtContractAddress(): string {
@@ -82,7 +82,9 @@ export class ApiConfigService {
   }
 
   getDelegationContractShardId(): number {
-    const shardId = this.configService.get<number>('contracts.delegationShardId');
+    const shardId = this.configService.get<number>(
+      'contracts.delegationShardId',
+    );
     if (!shardId) {
       throw new Error('No delegation contract shard ID present');
     }
@@ -91,7 +93,9 @@ export class ApiConfigService {
   }
 
   getDelegationManagerContractAddress(): string {
-    const address = this.configService.get<string>('contracts.delegationManager');
+    const address = this.configService.get<string>(
+      'contracts.delegationManager',
+    );
     if (!address) {
       throw new Error('No delegation manager contract present');
     }
@@ -134,11 +138,17 @@ export class ApiConfigService {
   }
 
   getAxiosTimeout(): number {
-    return this.configService.get<number>('keepAliveTimeout.downstream') ?? 61000;
+    return (
+      this.configService.get<number>('keepAliveTimeout.downstream') ?? 61000
+    );
   }
 
   getServerTimeout(): number {
     return this.configService.get<number>('keepAliveTimeout.upstream') ?? 60000;
+  }
+
+  getHeadersTimeout(): number {
+    return this.getServerTimeout() + 1000;
   }
 
   getUseRequestCachingFlag(): boolean {
@@ -175,7 +185,9 @@ export class ApiConfigService {
   }
 
   getIsTransactionProcessorCronActive(): boolean {
-    let isCronActive = this.configService.get<boolean>('cron.transactionProcessor');
+    let isCronActive = this.configService.get<boolean>(
+      'cron.transactionProcessor',
+    );
     if (isCronActive === undefined) {
       throw new Error('No cron.transactionProcessor flag present');
     }
@@ -184,7 +196,9 @@ export class ApiConfigService {
   }
 
   getTransactionProcessorMaxLookBehind(): number {
-    let transactionProcessorMaxLookBehind = this.configService.get<number>('cron.transactionProcessorMaxLookBehind');
+    let transactionProcessorMaxLookBehind = this.configService.get<number>(
+      'cron.transactionProcessorMaxLookBehind',
+    );
     if (transactionProcessorMaxLookBehind === undefined) {
       throw new Error('No cron.transactionProcessorMaxLookBehind flag present');
     }
