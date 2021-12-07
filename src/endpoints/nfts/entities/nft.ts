@@ -66,4 +66,7 @@ export class Nft {
 
   @ApiProperty()
   ticker?: string;
+
+  @ApiProperty()
+  scamInfo: any | undefined = undefined;
 }
