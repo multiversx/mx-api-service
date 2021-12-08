@@ -1,19 +1,34 @@
-import { CallHandler, ExecutionContext, HttpStatus, Injectable, Logger, NestInterceptor } from "@nestjs/common";
+import { CallHandler, ExecutionContext, HttpStatus, Injectable, NestInterceptor } from "@nestjs/common";
 import { Observable, throwError } from "rxjs";
 import { catchError, tap } from 'rxjs/operators';
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { ProxyController } from "src/endpoints/proxy/proxy.controller";
 import { TransactionController } from "src/endpoints/transactions/transaction.controller";
 import { PerformanceProfiler } from "src/utils/performance.profiler";
+import winston from "winston";
+import DailyRotateFile from "winston-daily-rotate-file";
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  private readonly logger: Logger
+  private readonly transactionLogger: winston.Logger;
 
   constructor(
     private readonly metricsService: MetricsService,
   ) {
-    this.logger = new Logger(LoggingInterceptor.name);
+    this.transactionLogger = winston.createLogger({
+      transports: [
+        new DailyRotateFile({
+          filename: 'application-%DATE%.log',
+          datePattern: 'YYYY-MM-DD-HH',
+          zippedArchive: true,
+          maxSize: '20m',
+          maxFiles: '14d',
+          createSymlink: true,
+          dirname: 'dist/logs',
+          symlinkName: 'application.log'
+        })
+      ]
+    })
   }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
@@ -27,7 +42,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const isSendTransactionCall = context.getClass().name === ProxyController.name && context.getHandler().name === 'transactionSend';
 
     if (isCreateTransactionCall || isSendTransactionCall) {
-      this.logger.log({
+      this.transactionLogger.info({
         apiFunction,
         body: request.body,
         userAgent: request.headers['user-agent'],
