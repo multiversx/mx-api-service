@@ -195,7 +195,7 @@ export class ElasticService {
       queries.push(QueryType.Match('identifier', identifier, QueryOperator.AND));
     }
 
-    if (filter.collection !== undefined) {
+    if (filter.collection !== undefined && filter.collection !== '') {
       queries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
     }
 
