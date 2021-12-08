@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Query, Res } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Logger, Param, Post, Query, Res } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { VmQueryRequest } from "../vm.query/entities/vm.query.request";
 import { VmQueryService } from "../vm.query/vm.query.service";
@@ -16,12 +16,16 @@ import { PluginService } from "src/common/plugins/plugin.service";
 @Controller()
 @ApiTags('proxy')
 export class ProxyController {
+  private readonly logger: Logger
+
   constructor(
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
     private readonly cachingService: CachingService,
     private readonly pluginService: PluginService,
-  ) {}
+  ) {
+    this.logger = new Logger(ProxyController.name);
+  }
 
   @Get('/address/:address')
   @ApiExcludeEndpoint()
@@ -285,7 +289,13 @@ export class ProxyController {
       let result = await this.gatewayService.getRaw(url, component, errorHandler);
       return result.data;
     } catch (error: any) {
-      throw new BadRequestException(error.response.data);
+      if (error.response) {
+        throw new BadRequestException(error.response.data);
+      }
+
+      this.logger.error(`Unhandled exception when calling gateway url '${url}'`);
+      this.logger.error(error);
+      throw new BadRequestException(`Unhandled exception when calling gateway url '${url}'`);
     }
   }
 
@@ -294,7 +304,13 @@ export class ProxyController {
       let result = await this.gatewayService.createRaw(url, component, data);
       return result.data;
     } catch (error: any) {
-      throw new BadRequestException(error.response.data);
+      if (error.response) {
+        throw new BadRequestException(error.response.data);
+      }
+
+      this.logger.error(`Unhandled exception when calling gateway url '${url}'`);
+      this.logger.error(error);
+      throw new BadRequestException(`Unhandled exception when calling gateway url '${url}'`);
     }
   }
 }
