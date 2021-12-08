@@ -294,7 +294,6 @@ export class ProxyController {
       }
 
       this.logger.error(`Unhandled exception when calling gateway url '${url}'`);
-      this.logger.error(error);
       throw new BadRequestException(`Unhandled exception when calling gateway url '${url}'`);
     }
   }
@@ -309,7 +308,6 @@ export class ProxyController {
       }
 
       this.logger.error(`Unhandled exception when calling gateway url '${url}'`);
-      this.logger.error(error);
       throw new BadRequestException(`Unhandled exception when calling gateway url '${url}'`);
     }
   }
