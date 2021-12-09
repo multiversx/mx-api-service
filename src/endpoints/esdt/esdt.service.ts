@@ -37,19 +37,19 @@ export class EsdtService {
     this.logger = new Logger(EsdtService.name);
   }
 
-  private async getAllEsdtsForAddressRaw(address: string): Promise<{ [ key: string]: any }> {
+  private async getAllEsdtsForAddressRaw(address: string): Promise<{ [key: string]: any }> {
     return this.getAllEsdtsForAddressFromElastic(address);
   }
 
-  private async getAllEsdtsForAddressFromElastic(address: string): Promise<{ [ key: string]: any }> {
+  private async getAllEsdtsForAddressFromElastic(address: string): Promise<{ [key: string]: any }> {
     let elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, [ QueryType.Match('address', address) ])
-      .withCondition(QueryConditionOptions.mustNot, [ QueryType.Match('address', 'pending') ])
+      .withCondition(QueryConditionOptions.must, [QueryType.Match('address', address)])
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
       .withPagination({ from: 0, size: 10000 });
 
     let esdts = await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
 
-    let result: { [ key: string]: any } = {};
+    let result: { [key: string]: any } = {};
 
     for (let esdt of esdts) {
       let isToken = esdt.tokenNonce === undefined;
@@ -76,7 +76,7 @@ export class EsdtService {
   }
 
   // @ts-ignore
-  private async getAllEsdtsForAddressFromGateway(address: string): Promise<{ [ key: string]: any }> {
+  private async getAllEsdtsForAddressFromGateway(address: string): Promise<{ [key: string]: any }> {
     let esdtResult = await this.gatewayService.get(`address/${address}/esdt`, GatewayComponentRequest.addressEsdt, async (error) => {
       let errorMessage = error?.response?.data?.error;
       if (errorMessage && errorMessage.includes('account was not found')) {
@@ -93,9 +93,9 @@ export class EsdtService {
     return esdtResult.esdts;
   }
 
-  private pendingRequestsDictionary: { [ key: string]: any; } = {};
-  
-  async getAllEsdtsForAddress(address: string): Promise<{ [ key: string]: any }> {
+  private pendingRequestsDictionary: { [key: string]: any; } = {};
+
+  async getAllEsdtsForAddress(address: string): Promise<{ [key: string]: any }> {
     let pendingRequest = this.pendingRequestsDictionary[address];
     if (pendingRequest) {
       let result = await pendingRequest;
@@ -103,7 +103,7 @@ export class EsdtService {
       return result;
     }
 
-    let cachedValue = await this.cachingService.getCacheLocal<{ [ key: string]: any }>(`address:${address}:esdts`);
+    let cachedValue = await this.cachingService.getCacheLocal<{ [key: string]: any }>(`address:${address}:esdts`);
     if (cachedValue) {
       this.metricsService.incrementCachedApiHit('Gateway.AccountEsdts');
       return cachedValue;
@@ -112,7 +112,7 @@ export class EsdtService {
     pendingRequest = this.getAllEsdtsForAddressRaw(address);
     this.pendingRequestsDictionary[address] = pendingRequest;
 
-    let esdts: { [ key: string]: any };
+    let esdts: { [key: string]: any };
     try {
       esdts = await pendingRequest;
     } finally {
@@ -157,14 +157,14 @@ export class EsdtService {
   }
 
   async getEsdtTokenPropertiesAndAssets(identifier: string): Promise<TokenDetailed | null> {
-    let tokenProperties =  await this.getEsdtTokenPropertiesRaw(identifier);
+    let tokenProperties = await this.getEsdtTokenPropertiesRaw(identifier);
     if (!tokenProperties) {
       return null;
     }
 
     let tokenAssets = await this.tokenAssetService.getAssets(identifier);
 
-    return ApiUtils.mergeObjects(new TokenDetailed(), { ...tokenProperties, assets: tokenAssets});
+    return ApiUtils.mergeObjects(new TokenDetailed(), { ...tokenProperties, assets: tokenAssets });
   }
 
   async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
@@ -178,7 +178,7 @@ export class EsdtService {
     if (!properties) {
       return undefined;
     }
-    
+
     return properties;
   }
 
@@ -189,7 +189,7 @@ export class EsdtService {
       this.apiConfigService.getEsdtContractAddress(),
       'getTokenProperties',
       undefined,
-      [ arg ],
+      [arg],
       true
     );
 
