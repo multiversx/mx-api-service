@@ -16,7 +16,7 @@ import { TransactionDetailed } from "./entities/transaction.detailed";
 import { TransactionLog } from "./entities/transaction.log";
 import { TransactionOperation } from "./entities/transaction.operation";
 import { TransactionReceipt } from "./entities/transaction.receipt";
-import { TokenTransferService } from "./token.transfer.service";
+import { TokenTransferService } from "../tokens/token.transfer.service";
 
 @Injectable()
 export class TransactionGetService {
@@ -53,7 +53,7 @@ export class TransactionGetService {
     }
 
     const elasticQueryLogs = ElasticQuery.create()
-      .withPagination({ from: 0, size: 100})
+      .withPagination({ from: 0, size: 100 })
       .withCondition(QueryConditionOptions.should, queries);
 
     return await this.elasticService.getLogsForTransactionHashes(elasticQueryLogs);
@@ -70,7 +70,7 @@ export class TransactionGetService {
 
     let scResults = await this.elasticService.getList('scresults', 'hash', elasticQuerySc);
 
-    return scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));      
+    return scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
   }
 
   async tryGetTransactionFromElastic(txHash: string): Promise<TransactionDetailed | null> {
@@ -95,7 +95,7 @@ export class TransactionGetService {
       hashes.push(txHash);
 
       if (!this.apiConfigService.getUseLegacyElastic()) {
-      //Elastic query for scResults
+        //Elastic query for scResults
         if (result.hasScResults === true) {
           transactionDetailed.results = await this.getTransactionScResultsFromElastic(transactionDetailed.txHash);
 
@@ -103,11 +103,11 @@ export class TransactionGetService {
             hashes.push(scResult.hash);
           }
         }
-      
-      //Elastic query for receipts
+
+        //Elastic query for receipts
         const receiptHashQuery = QueryType.Match('receiptHash', txHash);
         const elasticQueryReceipts = ElasticQuery.create()
-          .withPagination({ from: 0, size: 1})
+          .withPagination({ from: 0, size: 1 })
           .withCondition(QueryConditionOptions.must, [receiptHashQuery])
 
         let receipts = await this.elasticService.getList('receipts', 'receiptHash', elasticQueryReceipts);
@@ -116,11 +116,11 @@ export class TransactionGetService {
           transactionDetailed.receipt = ApiUtils.mergeObjects(new TransactionReceipt(), receipt);
         }
 
-      //Elastic query for logs
+        //Elastic query for logs
         const logs = await this.getTransactionLogsFromElastic(hashes);
         let transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
 
-        transactionDetailed.operations = this.tokenTransferService.getOperationsForTransactionLogs(txHash, transactionLogs);
+        transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransactionLogs(txHash, transactionLogs);
         transactionDetailed.operations = this.trimOperations(transactionDetailed.operations);
 
         for (let log of logs) {
@@ -147,9 +147,9 @@ export class TransactionGetService {
     let result: TransactionOperation[] = [];
 
     for (let operation of operations) {
-      let identicalOperations = result.filter(x => 
-        x.sender === operation.sender && 
-        x.receiver === operation.receiver && 
+      let identicalOperations = result.filter(x =>
+        x.sender === operation.sender &&
+        x.receiver === operation.receiver &&
         x.collection === operation.collection &&
         x.identifier === operation.identifier &&
         x.type === operation.type &&
@@ -173,7 +173,7 @@ export class TransactionGetService {
   async tryGetTransactionFromGatewayForList(txHash: string) {
     const gatewayTransaction = await this.tryGetTransactionFromGateway(txHash, false);
     if (gatewayTransaction) {
-      return ApiUtils.mergeObjects(new Transaction(), gatewayTransaction);  
+      return ApiUtils.mergeObjects(new Transaction(), gatewayTransaction);
     }
     return undefined; //invalid hash 
   }

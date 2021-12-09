@@ -15,4 +15,6 @@ export class TransactionOperation {
   sender: string = '';
 
   receiver: string = '';
+
+  decimals?: number;
 }
