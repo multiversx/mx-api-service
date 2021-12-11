@@ -347,6 +347,7 @@ export class AccountController {
 	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
 	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
 	@ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
+	@ApiQuery({ name: 'includeFlagged', description: 'Include NFTs that are flagged or not', required: false })
 	@ApiQuery({ name: 'withTimestamp', description: 'Add timestamp in the response structure', required: false })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false })
   @ApiQuery({ name: 'withMetadata', description: 'Return metadata for nfts', required: false })
@@ -372,12 +373,13 @@ export class AccountController {
     @Query('tags') tags?: string,
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
+    @Query('includeFlagged', new ParseOptionalBoolPipe) includeFlagged?: boolean,
     @Query('withTimestamp', new ParseOptionalBoolPipe) withTimestamp?: boolean,
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean,
     @Query('withMetadata', new ParseOptionalBoolPipe) withMetadata?: boolean | undefined,
   ): Promise<NftAccount[]> {
     try {
-      return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, collections, tags, creator, hasUris }, { withTimestamp, withSupply, withMetadata });
+      return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, collections, tags, creator, hasUris, includeFlagged }, { withTimestamp, withSupply, withMetadata });
     } catch (error) {
       this.logger.error(`Error in getAccountNfts for address ${address}`);
       this.logger.error(error);
@@ -393,6 +395,7 @@ export class AccountController {
 	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
 	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
 	@ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
+	@ApiQuery({ name: 'includeFlagged', description: 'Include NFTs that are flagged or not', required: false })
   @ApiResponse({
     status: 200,
     description: 'The number of non-fungible and semi-fungible tokens available on the blockchain for the given address',
@@ -410,9 +413,10 @@ export class AccountController {
 		@Query('tags') tags: string | undefined,
 		@Query('creator', ParseAddressPipe) creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
-    ): Promise<number> {
+    @Query('includeFlagged', new ParseOptionalBoolPipe) includeFlagged?: boolean,
+  ): Promise<number> {
     try {
-      return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, tags, creator, hasUris });
+      return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, tags, creator, hasUris, includeFlagged });
     } catch (error) {
       this.logger.error(`Error in getNftCount for address ${address}`);
       this.logger.error(error);
@@ -431,9 +435,10 @@ export class AccountController {
 		@Query('tags') tags: string | undefined,
 		@Query('creator', ParseAddressPipe) creator: string | undefined,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
-    ): Promise<number> {
+    @Query('includeFlagged', new ParseOptionalBoolPipe) includeFlagged?: boolean,
+  ): Promise<number> {
     try {
-      return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, tags, creator, hasUris });
+      return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, tags, creator, hasUris, includeFlagged });
     } catch (error) {
       this.logger.error(`Error in getNftCountAlternative for address ${address}`);
       this.logger.error(error);
