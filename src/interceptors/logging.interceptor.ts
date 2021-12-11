@@ -17,6 +17,17 @@ export class LoggingInterceptor implements NestInterceptor {
     private readonly metricsService: MetricsService,
   ) {
     this.transactionLogger = winston.createLogger({
+      format: winston.format.json({ replacer: (key: string, value: any) => {
+          if (key === '') {
+            return {
+              ...value.message,
+              level: value.level
+            };
+          }
+
+          return value;
+        } 
+      }),
       transports: [
         new DailyRotateFile({
           filename: 'application-%DATE%.log',
