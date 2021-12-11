@@ -29,7 +29,7 @@ export class Nft {
   creator: string = '';
 
   @ApiProperty()
-  royalties?: number;
+  royalties: number | undefined = undefined;
 
   @ApiProperty()
   uris: string[] = [];
