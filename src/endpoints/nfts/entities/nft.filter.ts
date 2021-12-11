@@ -7,4 +7,5 @@ export class NftFilter {
   tags?: string;
   creator?: string;
   hasUris?: boolean;
+  includeFlagged?: boolean;
 }
