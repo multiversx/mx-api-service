@@ -293,6 +293,8 @@ export class NftService {
       await this.pluginService.processNft(nft);
     }
 
+    nfts = nfts.filter(x => !x.scamInfo);
+
     return nfts;
   }
 
