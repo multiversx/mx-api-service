@@ -15,7 +15,7 @@ export class NftController {
   constructor(
     private readonly nftService: NftService,
     private readonly esdtService: EsdtService,
-  ) {}
+  ) { }
 
   @Get("/nfts")
   @ApiResponse({
@@ -24,28 +24,28 @@ export class NftController {
     type: Nft,
     isArray: true
   })
-	@ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-	@ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
-	@ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
-	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
-	@ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
-	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
-	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
-	@ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
+  @ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
+  @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
+  @ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
+  @ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
+  @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
+  @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
   @ApiQuery({ name: 'withOwner', description: 'Return owner where type = NonFungibleESDT', required: false })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false })
   @ApiQuery({ name: 'withMetadata', description: 'Return metadata for nfts', required: false })
   async getNfts(
-		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
-		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-		@Query('search') search: string | undefined,
-		@Query('identifiers') identifiers: string | undefined,
-		@Query('type') type: string | undefined,
-		@Query('collection') collection: string | undefined,
-		@Query('tags') tags: string | undefined,
-		@Query('creator', ParseAddressPipe) creator: string | undefined,
-		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('search') search: string | undefined,
+    @Query('identifiers') identifiers: string | undefined,
+    @Query('type') type: string | undefined,
+    @Query('collection') collection: string | undefined,
+    @Query('tags') tags: string | undefined,
+    @Query('creator', ParseAddressPipe) creator: string | undefined,
+    @Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
     @Query('withOwner', new ParseOptionalBoolPipe) withOwner?: boolean | undefined,
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean | undefined,
     @Query('withMetadata', new ParseOptionalBoolPipe) withMetadata?: boolean | undefined,
@@ -58,21 +58,21 @@ export class NftController {
     status: 200,
     description: 'The number of non-fungible and semi-fungible tokens available on the blockchain',
   })
-  @ApiQuery({ name: 'search', description: 'Search by token name', required: false })
-	@ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
-	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
-	@ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
-	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
-	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
-	@ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
+  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
+  @ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
+  @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
+  @ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
+  @ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
+  @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
+  @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
   async getNftCount(
     @Query('search') search: string | undefined,
-		@Query('identifiers') identifiers: string | undefined,
-		@Query('type') type: string | undefined,
-		@Query('collection') collection: string | undefined,
-		@Query('tags') tags: string | undefined,
-		@Query('creator', ParseAddressPipe) creator: string | undefined,
-		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
+    @Query('identifiers') identifiers: string | undefined,
+    @Query('type') type: string | undefined,
+    @Query('collection') collection: string | undefined,
+    @Query('tags') tags: string | undefined,
+    @Query('creator', ParseAddressPipe) creator: string | undefined,
+    @Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<number> {
     return await this.nftService.getNftCount({ search, identifiers, type, collection, tags, creator, hasUris });
   }
@@ -81,12 +81,12 @@ export class NftController {
   @ApiExcludeEndpoint()
   async getNftCountAlternative(
     @Query('search') search: string | undefined,
-		@Query('identifiers') identifiers: string | undefined,
-		@Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-		@Query('collection') collection: string | undefined,
-		@Query('tags') tags: string | undefined,
-		@Query('creator', ParseAddressPipe) creator: string | undefined,
-		@Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
+    @Query('identifiers') identifiers: string | undefined,
+    @Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+    @Query('collection') collection: string | undefined,
+    @Query('tags') tags: string | undefined,
+    @Query('creator', ParseAddressPipe) creator: string | undefined,
+    @Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<number> {
     return await this.nftService.getNftCount({ search, identifiers, type, collection, tags, creator, hasUris });
   }
@@ -137,11 +137,11 @@ export class NftController {
     description: 'Token not found'
   })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-	@ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   async getNftOwners(
     @Param('identifier') identifier: string,
-  	@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
-		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<NftOwner[]> {
     let owners = await this.nftService.getNftOwners(identifier, { from, size });
 
