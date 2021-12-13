@@ -233,7 +233,7 @@ export class ElasticService {
     return elasticQuery;
   }
 
-  async getNftTokens(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
+  async getNfts(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
     let elasticQuery = await this.buildElasticNftFilter(from, size, filter, identifier);
 
     let documents = await this.getDocuments('tokens', elasticQuery.toJson());
@@ -323,7 +323,7 @@ export class ElasticService {
     return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
   }
 
-  async getNftTokensCount(filter: NftFilter): Promise<number> {
+  async getNftCount(filter: NftFilter): Promise<number> {
     let query = await this.buildElasticNftFilter(0, 0, filter, undefined);
 
     return await this.getDocumentCount('tokens', query.toJson());
