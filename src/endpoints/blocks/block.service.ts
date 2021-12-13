@@ -120,6 +120,8 @@ export class BlockService {
       let publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);
       result.proposer = publicKeys[result.proposer];
       result.validators = result.validators.map((validator: number) => publicKeys[validator]);
+    } else {
+      result.validators = [];
     }
 
     return ApiUtils.mergeObjects(new BlockDetailed(), result);
