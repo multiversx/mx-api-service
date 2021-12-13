@@ -116,7 +116,7 @@ export class BlockService {
     let result = await this.elasticService.getItem('blocks', 'hash', hash);
     result.shard = result.shardId;
 
-    if (result.epoch > 0) {
+    if (result.round > 0) {
       let publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);
       result.proposer = publicKeys[result.proposer];
       result.validators = result.validators.map((validator: number) => publicKeys[validator]);
