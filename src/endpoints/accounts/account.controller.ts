@@ -191,7 +191,7 @@ export class AccountController {
   @Get("/accounts/:address/collections")
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
-	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
+	@ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
 	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
 	@ApiQuery({ name: 'owner', description: 'Filter by collection owner', required: false })
 	@ApiQuery({ name: 'canCreate', description: 'Filter by property canCreate (boolean)', required: false })
@@ -231,7 +231,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/collections/count")
-	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
+	@ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
 	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
 	@ApiQuery({ name: 'owner', description: 'Filter by collection owner', required: false })
 	@ApiQuery({ name: 'canCreate', description: 'Filter by property canCreate (boolean)', required: false })
@@ -415,13 +415,14 @@ export class AccountController {
 		@Query('type') type?: NftType,
 		@Query('collection') collection?: string,
     @Query('collections', ParseArrayPipe) collections?: string[],
+    @Query('name') name?: string,
 		@Query('tags', ParseArrayPipe) tags?: string[],
 		@Query('creator', ParseAddressPipe) creator?: string,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseOptionalBoolPipe) includeFlagged?: boolean,
   ): Promise<number> {
     try {
-      return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, collections, tags, creator, hasUris, includeFlagged });
+      return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged });
     } catch (error) {
       this.logger.error(`Error in getNftCount for address ${address}`);
       this.logger.error(error);
@@ -437,6 +438,7 @@ export class AccountController {
 		@Query('identifiers', ParseArrayPipe) identifiers?: string[],
 		@Query('type') type?: NftType,
 		@Query('collection') collection?: string,
+    @Query('collections', ParseArrayPipe) collections?: string[],
     @Query('name') name?: string,
 		@Query('tags', ParseArrayPipe) tags?: string[],
 		@Query('creator', ParseAddressPipe) creator?: string,
@@ -444,7 +446,7 @@ export class AccountController {
     @Query('includeFlagged', new ParseOptionalBoolPipe) includeFlagged?: boolean,
   ): Promise<number> {
     try {
-      return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, name, tags, creator, hasUris, includeFlagged });
+      return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged });
     } catch (error) {
       this.logger.error(`Error in getNftCountAlternative for address ${address}`);
       this.logger.error(error);
