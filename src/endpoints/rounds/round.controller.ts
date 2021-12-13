@@ -80,7 +80,7 @@ export class RoundController {
       status: 404,
       description: 'Round not found'
     })
-    async getBlock(
+    async getRound(
       @Param('shard', ParseOptionalIntPipe) shard: number,
       @Param('round', ParseOptionalIntPipe) round: number
     ): Promise<RoundDetailed> {

@@ -7,6 +7,8 @@ export class NftFilter {
   collection?: string;
   collections?: string[];
   tags?: string[];
+  name?: string;
   creator?: string;
   hasUris?: boolean;
+  includeFlagged?: boolean;
 }

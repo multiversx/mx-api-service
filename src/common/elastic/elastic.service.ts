@@ -62,7 +62,7 @@ export class ElasticService {
     const { _id, _source } = document;
     const item: any = {};
     item[key] = _id;
-  
+
     return { ...item, ..._source };
   };
 
@@ -87,11 +87,11 @@ export class ElasticService {
   };
 
   async getAccountEsdtByIdentifier(identifier: string, pagination?: QueryPagination) {
-    return this.getAccountEsdtByIdentifiers([ identifier ], pagination);
+    return this.getAccountEsdtByIdentifiers([identifier], pagination);
   }
 
   async getTokensByIdentifiers(identifiers: string[]) {
-    const queries = identifiers.map(identifier => 
+    const queries = identifiers.map(identifier =>
       QueryType.Match('identifier', identifier, QueryOperator.AND)
     );
 
@@ -117,10 +117,10 @@ export class ElasticService {
     } else {
       elasticQuery = elasticQuery.withPagination({ from: 0, size: 100 });
     }
-      
+
     elasticQuery = elasticQuery
       .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
-      .withCondition(QueryConditionOptions.mustNot, [ QueryType.Match('address', 'pending') ])
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
       .withCondition(QueryConditionOptions.should, queries);
 
     const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
@@ -158,7 +158,7 @@ export class ElasticService {
     ]
 
     const elasticQuery = ElasticQuery.create()
-      .withPagination({ from: 0, size: 1})
+      .withPagination({ from: 0, size: 1 })
       .withCondition(QueryConditionOptions.must, queries);
 
     let documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
@@ -194,8 +194,12 @@ export class ElasticService {
       queries.push(QueryType.Match('identifier', identifier, QueryOperator.AND));
     }
 
-    if (filter.collection !== undefined) {
+    if (filter.collection !== undefined && filter.collection !== '') {
       queries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
+    }
+
+    if (filter.name !== undefined && filter.name !== '') {
+      queries.push(QueryType.Nested('data', { "data.name": filter.name }));
     }
 
     if (filter.hasUris !== undefined) {
@@ -256,7 +260,7 @@ export class ElasticService {
     shouldQueries.push(QueryType.Match('type', NftType.MetaESDT));
 
     const elasticQuery = ElasticQuery.create()
-      .withPagination({ from: 0, size: 0})
+      .withPagination({ from: 0, size: 0 })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
       .withCondition(QueryConditionOptions.must, mustQueries)
       .withCondition(QueryConditionOptions.should, shouldQueries)
@@ -277,7 +281,7 @@ export class ElasticService {
     if (filter.identifiers !== undefined) {
       mustQueries.push(QueryType.Should(filter.identifiers.map(identifier => QueryType.Match('token', identifier, QueryOperator.AND))));
     }
-    
+
     if (filter.search !== undefined) {
       mustQueries.push(QueryType.Wildcard('token', `*${filter.search}*`));
     }

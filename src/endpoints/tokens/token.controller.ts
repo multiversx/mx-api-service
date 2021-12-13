@@ -19,9 +19,9 @@ export class TokenController {
   constructor(
     private readonly tokenService: TokenService,
     private readonly transactionService: TransactionService,
-    ) {
-      this.logger = new Logger(TokenController.name);
-    }
+  ) {
+    this.logger = new Logger(TokenController.name);
+  }
 
   @Get("/tokens")
   @ApiResponse({
@@ -30,12 +30,12 @@ export class TokenController {
     type: TokenDetailed,
     isArray: true
   })
-	@ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-	@ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-	@ApiQuery({ name: 'search', description: 'Search by token name / identifier', required: false })
-	@ApiQuery({ name: 'name', description: 'Search by token name', required: false })
-	@ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
-	@ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
+  @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
+  @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
+  @ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
   async getTokens(
 		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -52,10 +52,10 @@ export class TokenController {
     status: 200,
     description: 'The number of tokens available on the blockchain',
   })
-  @ApiQuery({ name: 'search', description: 'Filter tokens by token name', required: false })
-	@ApiQuery({ name: 'name', description: 'Search by token name', required: false })
-	@ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
-	@ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
+  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
+  @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
+  @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
+  @ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
   async getTokenCount(
     @Query('search') search: string | undefined,
 		@Query('name') name: string | undefined,
@@ -107,13 +107,13 @@ export class TokenController {
     description: 'Token not found'
   })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   getTokenAccounts(
     @Param('identifier') identifier: string,
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<TokenAccount[]> {
-    return this.tokenService.getTokenAccounts({from, size}, identifier);
+    return this.tokenService.getTokenAccounts({ from, size }, identifier);
   }
 
   @Get("/tokens/:identifier/accounts/count")
@@ -121,7 +121,7 @@ export class TokenController {
     status: 200,
     description: 'The number of specific token accounts available on the blockchain',
   })
-    @ApiResponse({
+  @ApiResponse({
     status: 404,
     description: 'Token not found'
   })
@@ -141,33 +141,33 @@ export class TokenController {
     status: 404,
     description: 'Token not found'
   })
-  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false  })
-  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false  })
-  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false  })
-  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false  })
-  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false  })
-  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false  })
-  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false  })
-  @ApiQuery({ name: 'search', description: 'Search in data object', required: false  })
+  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false })
+  @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
   async getTokenTransactions(
     @Param('identifier') identifier: string,
-    @Query('sender', ParseAddressPipe) sender: string | undefined, 
-    @Query('receiver', ParseAddressPipe) receiver: string | undefined, 
-    @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
+    @Query('sender', ParseAddressPipe) sender: string | undefined,
+    @Query('receiver', ParseAddressPipe) receiver: string | undefined,
+    @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined,
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined, 
     @Query('hashes', ParseArrayPipe) hashes: string[] | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
     @Query('search') search: string | undefined,
-    @Query('before', ParseOptionalIntPipe) before: number | undefined, 
-    @Query('after', ParseOptionalIntPipe) after: number | undefined, 
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query('before', ParseOptionalIntPipe) before: number | undefined,
+    @Query('after', ParseOptionalIntPipe) after: number | undefined,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('withScResults', new ParseOptionalBoolPipe) withScResults: boolean | undefined,
     @Query('withOperations', new ParseOptionalBoolPipe) withOperations: boolean | undefined,
@@ -202,28 +202,28 @@ export class TokenController {
     status: 404,
     description: 'Token not found'
   })
-  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false  })
-  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false  })
-  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false  })
-  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false  })
-  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false  })
-  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false  })
-  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false  })
-  @ApiQuery({ name: 'search', description: 'Search in data object', required: false  })
+  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false })
+  @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getTokenTransactionsCount(
     @Param('identifier') identifier: string,
-    @Query('sender', ParseAddressPipe) sender: string | undefined, 
-    @Query('receiver', ParseAddressPipe) receiver: string | undefined, 
-    @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
+    @Query('sender', ParseAddressPipe) sender: string | undefined,
+    @Query('receiver', ParseAddressPipe) receiver: string | undefined,
+    @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined,
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined, 
     @Query('hashes', ParseArrayPipe) hashes: string[] | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
     @Query('search') search: string | undefined,
-    @Query('before', ParseOptionalIntPipe) before: number | undefined, 
-    @Query('after', ParseOptionalIntPipe) after: number | undefined, 
+    @Query('before', ParseOptionalIntPipe) before: number | undefined,
+    @Query('after', ParseOptionalIntPipe) after: number | undefined,
   ) {
     try {
       return await this.transactionService.getTransactionCount({

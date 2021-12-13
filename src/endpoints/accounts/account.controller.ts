@@ -57,12 +57,12 @@ export class AccountController {
     isArray: true
   })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   getAccounts(
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<Account[]> {
-    return this.accountService.getAccounts({from, size});
+    return this.accountService.getAccounts({ from, size });
   }
 
   @Get("/accounts/count")
@@ -112,7 +112,7 @@ export class AccountController {
   async getAccountDeferred(@Param('address', ParseAddressPipe) address: string): Promise<AccountDeferred[]> {
     try {
       return await this.accountService.getDeferredAccount(address);
-    } catch(error) {
+    } catch (error) {
       this.logger.error(`Error in getAccountDeferred for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
@@ -122,9 +122,9 @@ export class AccountController {
   @Get("/accounts/:address/tokens")
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  @ApiQuery({ name: 'search', description: 'Search by token name / identifier', required: false })
-	@ApiQuery({ name: 'name', description: 'Search by token name', required: false })
-	@ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
+  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
+  @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
+  @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'A comma-separated list of identifiers to filter by', required: false })
   @ApiResponse({
     status: 200,
@@ -138,7 +138,7 @@ export class AccountController {
   })
   async getAccountTokens(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
 		@Query('name') name?: string,
@@ -211,7 +211,7 @@ export class AccountController {
   })
   async getAccountCollections(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('search') search?: string,
 		@Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
@@ -339,16 +339,18 @@ export class AccountController {
 
   @Get("/accounts/:address/nfts")
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
-	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
-	@ApiQuery({ name: 'identifiers', description: 'Filter by identifiers, comma-separated', required: false })
-	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
-	@ApiQuery({ name: 'collection', description: 'Get all tokens by token collection. Deprecated, replaced by collections parameter', required: false, deprecated: true })
-	@ApiQuery({ name: 'collections', description: 'Get all tokens by token collections, comma-separated', required: false })
-	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
-	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
-	@ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
-	@ApiQuery({ name: 'withTimestamp', description: 'Add timestamp in the response structure', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
+  @ApiQuery({ name: 'identifiers', description: 'Filter by identifiers, comma-separated', required: false })
+  @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
+  @ApiQuery({ name: 'collection', description: 'Get all tokens by token collection. Deprecated, replaced by collections parameter', required: false, deprecated: true })
+  @ApiQuery({ name: 'collections', description: 'Get all tokens by token collections, comma-separated', required: false })
+  @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
+  @ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
+  @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
+  @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
+  @ApiQuery({ name: 'includeFlagged', description: 'Include NFTs that are flagged or not', required: false })
+  @ApiQuery({ name: 'withTimestamp', description: 'Add timestamp in the response structure', required: false })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false })
   @ApiQuery({ name: 'withMetadata', description: 'Return metadata for nfts', required: false })
   @ApiResponse({
@@ -363,22 +365,24 @@ export class AccountController {
   })
   async getAccountNfts(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('type') type?: NftType,
     @Query('collection') collection?: string,
     @Query('collections', ParseArrayPipe) collections?: string[],
+    @Query('name') name?: string,
     @Query('tags', ParseArrayPipe) tags?: string[],
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
+    @Query('includeFlagged', new ParseOptionalBoolPipe) includeFlagged?: boolean,
     @Query('withTimestamp', new ParseOptionalBoolPipe) withTimestamp?: boolean,
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean,
     @Query('withMetadata', new ParseOptionalBoolPipe) withMetadata?: boolean,
   ): Promise<NftAccount[]> {
     try {
-      return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, collections, tags, creator, hasUris }, { withTimestamp, withSupply, withMetadata });
+      return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }, { withTimestamp, withSupply, withMetadata });
     } catch (error) {
       this.logger.error(`Error in getAccountNfts for address ${address}`);
       this.logger.error(error);
@@ -395,6 +399,7 @@ export class AccountController {
 	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
 	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
 	@ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
+  @ApiQuery({ name: 'includeFlagged', description: 'Include NFTs that are flagged or not', required: false })
   @ApiResponse({
     status: 200,
     description: 'The number of non-fungible and semi-fungible tokens available on the blockchain for the given address',
@@ -413,9 +418,10 @@ export class AccountController {
 		@Query('tags', ParseArrayPipe) tags?: string[],
 		@Query('creator', ParseAddressPipe) creator?: string,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
-    ): Promise<number> {
+    @Query('includeFlagged', new ParseOptionalBoolPipe) includeFlagged?: boolean,
+  ): Promise<number> {
     try {
-      return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, collections, tags, creator, hasUris });
+      return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, collections, tags, creator, hasUris, includeFlagged });
     } catch (error) {
       this.logger.error(`Error in getNftCount for address ${address}`);
       this.logger.error(error);
@@ -431,12 +437,14 @@ export class AccountController {
 		@Query('identifiers', ParseArrayPipe) identifiers?: string[],
 		@Query('type') type?: NftType,
 		@Query('collection') collection?: string,
+    @Query('name') name?: string,
 		@Query('tags', ParseArrayPipe) tags?: string[],
 		@Query('creator', ParseAddressPipe) creator?: string,
 		@Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
-    ): Promise<number> {
+    @Query('includeFlagged', new ParseOptionalBoolPipe) includeFlagged?: boolean,
+  ): Promise<number> {
     try {
-      return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, tags, creator, hasUris });
+      return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, name, tags, creator, hasUris, includeFlagged });
     } catch (error) {
       this.logger.error(`Error in getNftCountAlternative for address ${address}`);
       this.logger.error(error);
@@ -638,18 +646,18 @@ export class AccountController {
     @Query('after', ParseOptionalIntPipe) after?: number, 
   ): Promise<number> {
     return await this.transactionService.getTransactionCount({
-      sender, 
-      receiver, 
+      sender,
+      receiver,
       token,
-      senderShard, 
-      receiverShard, 
+      senderShard,
+      receiverShard,
       miniBlockHash,
       hashes,
       status,
       search,
       before,
       after,
-    }, address);  
+    }, address);
   }
 
   @Get("/accounts/:address/contracts")
@@ -666,8 +674,8 @@ export class AccountController {
     return this.accountService.getAccountContracts(address);;
   }
 
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @Get("/accounts/:address/sc-results")
   @ApiResponse({
     status: 200,
@@ -680,10 +688,10 @@ export class AccountController {
   })
   getAccountScResults(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<SmartContractResult[]> {
-    return this.scResultService.getAccountScResults(address, {from, size});
+    return this.scResultService.getAccountScResults(address, { from, size });
   }
 
   @Get("/accounts/:address/sc-results/count")

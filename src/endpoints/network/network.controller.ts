@@ -10,12 +10,12 @@ import { Stats } from 'src/endpoints/network/entities/stats';
 export class NetworkController {
   constructor(
     private readonly networkService: NetworkService
-  ) {}
+  ) { }
 
   @Get("/constants")
   @ApiResponse({
     status: 200,
-    description: 'The constants',
+    description: 'The network constants',
     type: NetworkConstants
   })
   getConstants(): Promise<NetworkConstants> {

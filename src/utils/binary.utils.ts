@@ -62,6 +62,10 @@ export class BinaryUtils {
   }
 
   static hexToBigInt(hex: string): BigInt {
+    if (!hex) {
+      return BigInt(0);
+    }
+
     return BigInt('0x' + hex);
   }
   
