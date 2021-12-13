@@ -30,6 +30,7 @@ export class NftController {
   @ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
   @ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
+  @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
   @ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
   @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
@@ -43,6 +44,7 @@ export class NftController {
     @Query('identifiers') identifiers: string | undefined,
     @Query('type') type: string | undefined,
     @Query('collection') collection: string | undefined,
+    @Query('name') name: string | undefined,
     @Query('tags') tags: string | undefined,
     @Query('creator', ParseAddressPipe) creator: string | undefined,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
@@ -50,7 +52,7 @@ export class NftController {
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean | undefined,
     @Query('withMetadata', new ParseOptionalBoolPipe) withMetadata?: boolean | undefined,
   ): Promise<Nft[]> {
-    return await this.nftService.getNfts({ from, size }, { search, identifiers, type, collection, tags, creator, hasUris }, { withOwner, withSupply, withMetadata });
+    return await this.nftService.getNfts({ from, size }, { search, identifiers, type, collection, name, tags, creator, hasUris }, { withOwner, withSupply, withMetadata });
   }
 
   @Get("/nfts/count")
@@ -62,6 +64,7 @@ export class NftController {
   @ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
   @ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
+  @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
   @ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
   @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
@@ -70,11 +73,12 @@ export class NftController {
     @Query('identifiers') identifiers: string | undefined,
     @Query('type') type: string | undefined,
     @Query('collection') collection: string | undefined,
+    @Query('name') name: string | undefined,
     @Query('tags') tags: string | undefined,
     @Query('creator', ParseAddressPipe) creator: string | undefined,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<number> {
-    return await this.nftService.getNftCount({ search, identifiers, type, collection, tags, creator, hasUris });
+    return await this.nftService.getNftCount({ search, identifiers, type, collection, name, tags, creator, hasUris });
   }
 
   @Get("/nfts/c")
@@ -84,11 +88,12 @@ export class NftController {
     @Query('identifiers') identifiers: string | undefined,
     @Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
     @Query('collection') collection: string | undefined,
+    @Query('name') name: string | undefined,
     @Query('tags') tags: string | undefined,
     @Query('creator', ParseAddressPipe) creator: string | undefined,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<number> {
-    return await this.nftService.getNftCount({ search, identifiers, type, collection, tags, creator, hasUris });
+    return await this.nftService.getNftCount({ search, identifiers, type, collection, name, tags, creator, hasUris });
   }
 
   @Get('/nfts/:identifier')

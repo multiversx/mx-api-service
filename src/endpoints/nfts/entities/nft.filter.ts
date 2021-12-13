@@ -3,6 +3,7 @@ export class NftFilter {
   identifiers?: string;
   type?: string;
   collection?: string;
+  name?: string;
   collections?: string;
   tags?: string;
   creator?: string;
