@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { CommonModule } from "src/common/common.module";
+import { PluginModule } from "src/plugins/plugin.module";
 import { AccountController } from "./accounts/account.controller";
 import { BlockController } from "./blocks/block.controller";
 import { CollectionController } from "./collections/collection.controller";
@@ -34,6 +35,7 @@ import { WaitingListController } from "./waiting-list/waiting.list.controller";
     CommonModule,
     EndpointsServicesModule,
     ProxyModule, 
+    PluginModule,
   ],
   controllers: [
     AccountController, BlockController, CollectionController, DelegationController, DelegationLegacyController, IdentitiesController,

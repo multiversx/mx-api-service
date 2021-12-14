@@ -114,11 +114,15 @@ export class BlockService {
 
   async getBlock(hash: string): Promise<BlockDetailed> {
     let result = await this.elasticService.getItem('blocks', 'hash', hash);
-
-    let publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);
     result.shard = result.shardId;
-    result.proposer = publicKeys[result.proposer];
-    result.validators = result.validators.map((validator: number) => publicKeys[validator]);
+
+    if (result.round > 0) {
+      let publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);
+      result.proposer = publicKeys[result.proposer];
+      result.validators = result.validators.map((validator: number) => publicKeys[validator]);
+    } else {
+      result.validators = [];
+    }
 
     return ApiUtils.mergeObjects(new BlockDetailed(), result);
   }

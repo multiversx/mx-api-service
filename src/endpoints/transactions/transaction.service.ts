@@ -249,7 +249,7 @@ export class TransactionService {
         detailedTransactions.push(transactionDetailed);
       }
 
-      return detailedTransactions;
+      transactions = detailedTransactions;
     }
 
     for (let transaction of transactions) {
@@ -281,13 +281,18 @@ export class TransactionService {
     const receiverShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.receiver));
     const senderShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.sender));
 
+    let pluginTransaction = await this.pluginsService.processTransactionSend(transaction);
+    if (pluginTransaction) {
+      return pluginTransaction;
+    }
+
     let txHash: string;
     try {
       let result = await this.gatewayService.create('transaction/send', GatewayComponentRequest.sendTransaction, transaction);
       txHash = result.txHash;
     } catch (error: any) {
       this.logger.error(error);
-      return error.response.data.error;
+      return error.response.error;
     }
 
     // TODO: pending alignment
