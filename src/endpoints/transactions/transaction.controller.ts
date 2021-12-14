@@ -2,6 +2,7 @@ import { BadRequestException, Body, Controller, DefaultValuePipe, Get, HttpExcep
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 import { ParseAddressPipe } from 'src/utils/pipes/parse.address.pipe';
+import { ParseArrayPipe } from 'src/utils/pipes/parse.array.pipe';
 import { ParseBlockHashPipe } from 'src/utils/pipes/parse.block.hash.pipe';
 import { ParseOptionalBoolPipe } from 'src/utils/pipes/parse.optional.bool.pipe';
 import { ParseOptionalEnumPipe } from 'src/utils/pipes/parse.optional.enum.pipe';
@@ -49,7 +50,7 @@ export class TransactionController {
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined, 
-    @Query('hashes') hashes: string | undefined, 
+    @Query('hashes', ParseArrayPipe) hashes: string[] | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
     @Query('search') search: string | undefined, 
     @Query('condition') condition: QueryConditionOptions | undefined, 
@@ -96,7 +97,7 @@ export class TransactionController {
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined, 
-    @Query('hashes') hashes: string | undefined, 
+    @Query('hashes', ParseArrayPipe) hashes: string[] | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
     @Query('search') search: string | undefined, 
     @Query('condition') condition: QueryConditionOptions | undefined,
@@ -128,7 +129,7 @@ export class TransactionController {
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined, 
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined, 
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined, 
-    @Query('hashes') hashes: string | undefined, 
+    @Query('hashes', ParseArrayPipe) hashes: string[] | undefined, 
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
     @Query('search') search: string | undefined, 
     @Query('condition') condition: QueryConditionOptions | undefined,
@@ -162,8 +163,11 @@ export class TransactionController {
     status: 404,
     description: 'Transaction not found'
   })
-  async getTransaction(@Param('txHash', ParseTransactionHashPipe) txHash: string): Promise<TransactionDetailed> {
-    let transaction = await this.transactionService.getTransaction(txHash);
+  async getTransaction(
+    @Param('txHash', ParseTransactionHashPipe) txHash: string,
+    @Query('fields', ParseArrayPipe) fields?: string[], 
+  ): Promise<TransactionDetailed> {
+    let transaction = await this.transactionService.getTransaction(txHash, fields);
     if (transaction === null) {
       throw new HttpException('Transaction not found', HttpStatus.NOT_FOUND);
     }

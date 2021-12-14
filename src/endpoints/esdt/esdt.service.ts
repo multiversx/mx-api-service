@@ -157,7 +157,7 @@ export class EsdtService {
   }
 
   async getEsdtTokenPropertiesAndAssets(identifier: string): Promise<TokenDetailed | null> {
-    let tokenProperties =  await this.getEsdtTokenPropertiesRaw(identifier);
+    let tokenProperties = await this.getEsdtTokenPropertiesRaw(identifier);
     if (!tokenProperties) {
       return null;
     }

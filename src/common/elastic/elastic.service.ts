@@ -187,8 +187,7 @@ export class ElasticService {
     }
 
     if (filter.type !== undefined) {
-      let types = filter.type.split(',');
-      queries.push(QueryType.Should(types.map(type => QueryType.Match('type', type))));
+      queries.push(QueryType.Match('type', filter.type));
     }
 
     if (identifier !== undefined) {
@@ -208,7 +207,7 @@ export class ElasticService {
     }
 
     if (filter.tags) {
-      let tagArray = filter.tags.split(',');
+      let tagArray = filter.tags;
       if (tagArray.length > 0) {
         for (let tag of tagArray) {
           queries.push(QueryType.Nested("data", { "data.tags": tag }));
@@ -221,19 +220,20 @@ export class ElasticService {
     }
 
     if (filter.identifiers) {
-      let identifiers = filter.identifiers.split(',');
+      let identifiers = filter.identifiers;
       queries.push(QueryType.Should(identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
     }
 
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from, size })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
-      .withCondition(QueryConditionOptions.must, queries);
+      .withCondition(QueryConditionOptions.must, queries)
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('type', 'FungibleESDT')]);
 
     return elasticQuery;
   }
 
-  async getTokens(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
+  async getNfts(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
     let elasticQuery = await this.buildElasticNftFilter(from, size, filter, identifier);
 
     let documents = await this.getDocuments('tokens', elasticQuery.toJson());
@@ -323,7 +323,7 @@ export class ElasticService {
     return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
   }
 
-  async getTokenCount(filter: NftFilter): Promise<number> {
+  async getNftCount(filter: NftFilter): Promise<number> {
     let query = await this.buildElasticNftFilter(0, 0, filter, undefined);
 
     return await this.getDocumentCount('tokens', query.toJson());

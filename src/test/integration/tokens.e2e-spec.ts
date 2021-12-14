@@ -1,12 +1,11 @@
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
-import { TokenDetailed } from 'src/endpoints/tokens/entities/token.detailed';
 import { TokenService } from 'src/endpoints/tokens/token.service';
 import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 import { TokenFilter } from 'src/endpoints/tokens/entities/token.filter';
 
-describe.skip('Token Service', () => {
+describe('Token Service', () => {
   let tokenService: TokenService;
   let tokenName: string;
   let tokenIdentifier: string;
@@ -37,20 +36,12 @@ describe.skip('Token Service', () => {
 
         expect(tokensList).toBeInstanceOf(Array);
         expect(tokensList).toHaveLength(25);
-
-        for (let token of tokensList) {
-          expect(token).toHaveStructure(Object.keys(new TokenDetailed()));
-        }
       });
 
       it(`should return a list with 10 tokens`, async () => {
         const tokensList = await tokenService.getTokens({from: 0, size: 10}, new TokenFilter());
         expect(tokensList).toBeInstanceOf(Array);
         expect(tokensList).toHaveLength(10);
-
-        for (let token of tokensList) {
-          expect(token).toHaveStructure(Object.keys(new TokenDetailed()));
-        }
       });
     })
 
@@ -60,9 +51,29 @@ describe.skip('Token Service', () => {
         expect(tokensList).toBeInstanceOf(Array);
 
         for (let token of tokensList) {
-          expect(token).toHaveStructure(Object.keys(new TokenDetailed()));
           expect(token.name).toBe(tokenName);
         }
+      });
+
+      it(`should return a list with nfts that has identifiers`, async () => {
+        const tokenFilter = new TokenFilter();
+        tokenFilter.identifiers = ['MSFT-532e00', 'EWLD-e23800', 'invalidIdentifier']
+        const tokensList = await tokenService.getTokens({from: 0, size: 25}, tokenFilter);
+        expect(tokensList).toBeInstanceOf(Array);
+
+        expect(tokensList.length).toEqual(2);
+        const nftsIdentifiers = tokensList.map((nft) => nft.identifier);
+        expect(nftsIdentifiers.includes('MSFT-532e00')).toBeTruthy();
+        expect(nftsIdentifiers.includes('EWLD-e23800')).toBeTruthy();
+      });
+
+      it(`should return an empty tokens list`, async () => {
+        const tokenFilter = new TokenFilter();
+        tokenFilter.identifiers = ['LKFARM-9d1ea8-8fb5', 'LKFARM-9d1ea8-8fb6']
+        const tokensList = await tokenService.getTokens({from: 0, size: 25}, tokenFilter);
+        expect(tokensList).toBeInstanceOf(Array);
+
+        expect(tokensList.length).toEqual(0);
       });
     });
   });
@@ -86,7 +97,7 @@ describe.skip('Token Service', () => {
     });
 
     it(`should throw 'Token not found' error`, async () => {
-      await expect(tokenService.getToken(tokenIdentifier + 'a')).toBeUndefined();
+      expect(await tokenService.getToken(tokenIdentifier + 'a')).toBeUndefined();
     });
   })
 });
