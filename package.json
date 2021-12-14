@@ -62,7 +62,7 @@
     "@nestjs/websockets": "^8.0.11",
     "agentkeepalive": "^4.1.4",
     "anchorme": "^2.1.2",
-    "axios": "^0.22.0",
+    "axios": "^0.24.0",
     "bignumber.js": "^9.0.1",
     "crypto-js": "^4.1.1",
     "csrf": "^3.1.0",

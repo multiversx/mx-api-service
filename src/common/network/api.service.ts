@@ -77,16 +77,18 @@ export class ApiService {
       
       if (!handled) {
         let logger = new Logger(ApiService.name);
-        logger.error({
+        let customError = {
           method: 'GET',
           url,
           response: error.response?.data,
           status: error.response?.status,
           message: error.message,
           name: error.name,
-        });
+        };
 
-        throw error;
+        logger.error(customError);
+
+        throw customError;
       }
     } finally {
       profiler.stop();
@@ -108,8 +110,7 @@ export class ApiService {
       } 
       
       if (!handled) {
-        let logger = new Logger(ApiService.name);
-        logger.error({
+        let customError = {
           method: 'POST',
           url,
           body: data,
@@ -117,9 +118,12 @@ export class ApiService {
           status: error.response?.status,
           message: error.message,
           name: error.name,
-        });
+        };
 
-        throw error;
+        let logger = new Logger(ApiService.name);
+        logger.error(customError);
+
+        throw customError;
       }
     } finally {
       profiler.stop();
@@ -141,17 +145,19 @@ export class ApiService {
       } 
       
       if (!handled) {
-        let logger = new Logger(ApiService.name);
-        logger.error({
+        let customError = {
           method: 'HEAD',
           url,
           response: error.response?.data,
           status: error.response?.status,
           message: error.message,
           name: error.name,
-        });
+        };
 
-        throw error;
+        let logger = new Logger(ApiService.name);
+        logger.error(customError);
+
+        throw customError;
       }
     } finally {
       profiler.stop();

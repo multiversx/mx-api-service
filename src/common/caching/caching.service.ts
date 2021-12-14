@@ -4,7 +4,6 @@ const { promisify } = require('util');
 import { createClient } from 'redis';
 import asyncPool from 'tiny-async-pool';
 import { PerformanceProfiler } from "../../utils/performance.profiler";
-import { AddressUtils } from "src/utils/address.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { LocalCacheService } from "./local.cache.service";
@@ -44,24 +43,27 @@ export class CachingService {
     return value;
   };
 
-  pendingGetRemotes: { [key: string]: Promise<any> } = {};
+  pendingPromises: { [key: string]: Promise<any> } = {};
+
+  private async executeWithPendingPromise<T>(key: string, promise: () => Promise<T>): Promise<T> {
+    let pendingGetRemote = this.pendingPromises[key];
+    if (pendingGetRemote) {
+      return await pendingGetRemote;
+    } else {
+      try {
+        pendingGetRemote = promise();
+  
+        this.pendingPromises[key] = pendingGetRemote;
+
+        return await pendingGetRemote;
+      } finally {
+        delete this.pendingPromises[key];
+      }
+    }
+  }
 
   public async getCacheRemote<T>(key: string): Promise<T | undefined> {
-    let response;
-
-    let pendingGetRemote = this.pendingGetRemotes[key];
-    if (pendingGetRemote) {
-      response = await pendingGetRemote;
-    } else {
-      pendingGetRemote = this.asyncGet(key);
-
-      this.pendingGetRemotes[key] = pendingGetRemote;
-
-      response = await pendingGetRemote;
-
-      delete this.pendingGetRemotes[key];
-    }
-
+    let response = await this.executeWithPendingPromise<string | undefined>(`caching:get:${key}`, async () => await this.asyncGet(key));
     if (response === undefined) {
       return undefined;
     }
@@ -285,7 +287,7 @@ export class CachingService {
       return cached;
     }
 
-    let value = await promise();
+    let value = await this.executeWithPendingPromise(`caching:set:${key}`, promise);
     profiler.stop(`Cache miss for key ${key}`);
 
     if (localTtl > 0) {
@@ -319,33 +321,6 @@ export class CachingService {
     }
 
     return invalidatedKeys;
-  }
-
-  async tryInvalidateTransaction(transaction: ShardTransaction): Promise<string[]> {
-    let keys = await this.getInvalidationKeys(transaction);
-    let invalidatedKeys = [];
-    for (let key of keys) {
-      let invalidationKey = `vm-query:${transaction.receiver}:${key}`;
-      let invalidated = await this.deleteInCache(invalidationKey);
-      invalidatedKeys.push(...invalidated);
-    }
-
-    return invalidatedKeys;
-  }
-
-  async tryInvalidateTokens(transaction: ShardTransaction): Promise<string[]> {
-    if (transaction.receiver !== this.configService.getEsdtContractAddress()) {
-      return [];
-    }
-
-    let transactionFuncName = transaction.getDataFunctionName();
-
-    // if transaction target is ESDT SC and functionName is "issue", kick out 'allEsdtTokens' key
-    if (transactionFuncName === 'issue') {
-      return await this.deleteInCache('allEsdtTokens');
-    }
-
-    return [];
   }
 
   async tryInvalidateTokenProperties(transaction: ShardTransaction): Promise<string[]> {
@@ -387,33 +362,6 @@ export class CachingService {
     }
 
     return [];
-  }
-
-  private async getInvalidationKeys(transaction: ShardTransaction): Promise<string[]> {
-    if (!AddressUtils.isSmartContractAddress(transaction.receiver)) {
-      return [];
-    }
-
-    if (transaction.data === undefined) {
-      return [];
-    }
-
-    let transactionFuncName = transaction.getDataFunctionName();
-    let transactionArgs = transaction.getDataArgs();
-
-    if (!transactionFuncName || !transactionArgs) {
-      return [];
-    }
-
-    let keys = [];
-
-    // if transaction target is ESDT SC and functionName is "issue", kick out 'allEsdtTokens' key
-    if (transaction.receiver === this.configService.getEsdtContractAddress() && transactionFuncName === 'issue') {
-      await this.deleteInCache('allEsdtTokens');
-      keys.push('allEsdtTokens')
-    }
-
-    return keys;
   }
 
   async flushDb(): Promise<any> {
