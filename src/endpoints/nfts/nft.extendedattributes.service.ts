@@ -71,16 +71,20 @@ export class NftExtendedAttributesService {
   }
 
   async getFilePropertiesFromIpfs(ipfsUri: string): Promise<{ contentType: string, contentLength: number } | undefined> {
-    const ipfsResponse = await this.apiService.head(ipfsUri, this.IPFS_REQUEST_TIMEOUT);
-    if (ipfsResponse.status === HttpStatus.OK) {
-      const { headers } = ipfsResponse;
-      const contentType = headers['content-type'];
-      const contentLength = headers['content-length'] / 1000;
+    try {
+      const ipfsResponse = await this.apiService.head(ipfsUri, this.IPFS_REQUEST_TIMEOUT);
+      if (ipfsResponse.status === HttpStatus.OK) {
+        const { headers } = ipfsResponse;
+        const contentType = headers['content-type'];
+        const contentLength = headers['content-length'] / 1000;
 
-      return this.isContentAccepted(contentType, contentLength) ? { contentType, contentLength } : undefined
+        return this.isContentAccepted(contentType, contentLength) ? { contentType, contentLength } : undefined
+      }
+      return undefined;
     }
-
-    return undefined;
+    catch (error) {
+      return undefined;
+    }
   }
 
   private isContentAccepted(contentType: MediaMimeTypeEnum, contentLength: number) {
