@@ -5,5 +5,5 @@ export class TokenFilter {
 
   identifier?: string;
   
-  identifiers?: string;
+  identifiers?: string[];
 }
