@@ -196,8 +196,6 @@ export class NftService {
       );
     }
 
-    this.updateMediaThumbnailUrlForNfts(nfts);
-
     for (let nft of nfts) {
       let collectionProperties = await this.esdtService.getEsdtTokenProperties(nft.collection);
 
@@ -216,15 +214,13 @@ export class NftService {
           // @ts-ignore
           delete nft.uris;
         } else {
-          this.updateMediaUrlForNft(nft);
+          nft.media = await this.getMediaForNft(nft);
           if (nft.media.length) {
             nft.isWhitelistedStorage = nft.media[0].url.startsWith(this.NFT_THUMBNAIL_PREFIX);
           }
         }
       }
     }
-
-    this.updateMediaThumbnailUrlForNfts(nfts);
 
     return nfts;
   }
@@ -242,15 +238,6 @@ export class NftService {
       .withCondition(QueryConditionOptions.must, [QueryType.Match('identifier', identifier, QueryOperator.AND)]);
 
     return await this.elasticService.getCount('accountsesdt', elasticQuery);
-  }
-
-  updateMediaThumbnailUrlForNfts(nfts: Nft[]) {
-    let mediaNfts = nfts.filter(nft => nft.type !== NftType.MetaESDT && nft.uris.filter(uri => uri).length > 0);
-    for (let mediaNft of mediaNfts) {
-      for (let media of mediaNft.media) {
-        media.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${mediaNft.collection}-${TokenUtils.getUrlHash(media.url)}`
-      }
-    }
   }
 
   async getNftCount(filter: NftFilter): Promise<number> {
@@ -381,20 +368,38 @@ export class NftService {
     return Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
   }
 
-  updateMediaUrlForNft(nft: Nft) {
+  async getMediaForNft(nft: Nft): Promise<NftMedia[]> {
+    return await this.cachingService.getOrSetCache(
+      `nftMedia:${nft.identifier}`,
+      async () => await this.getMediaForNftRaw(nft),
+      Constants.oneWeek(),
+      Constants.oneDay()
+    )
+  }
+
+  async getMediaForNftRaw(nft: Nft): Promise<NftMedia[]> {
+    const mediaArray: NftMedia[] = [];
     if (nft.uris && nft.uris.length > 0) {
       try {
         for (let uri of nft.uris) {
           if (uri !== '') {
             const nftMedia = new NftMedia();
             nftMedia.url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(uri), this.NFT_THUMBNAIL_PREFIX);
-            nft.media.push(nftMedia);
+            nftMedia.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${nft.collection}-${TokenUtils.getUrlHash(nftMedia.url)}`
+            const fileProperties = await this.nftExtendedAttributesService.getFilePropertiesFromIpfs(BinaryUtils.base64Decode(uri));
+            if (fileProperties) {
+              nftMedia.fileType = fileProperties.contentType;
+              nftMedia.fileSize = `${fileProperties.contentLength} kb`;
+            }
+            mediaArray.push(nftMedia);
           }
         }
       } catch (error) {
         this.logger.error(error);
       }
     }
+
+    return mediaArray;
   }
 
   async getNftsForAddressInternal(address: string, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<NftAccount[]> {
@@ -435,7 +440,7 @@ export class NftService {
           // @ts-ignore
           delete nft.uris;
         } else {
-          this.updateMediaUrlForNft(nft);
+          nft.media = await this.getMediaForNft(nft);
           if (nft.media.length) {
             nft.isWhitelistedStorage = nft.media[0].url.startsWith(this.NFT_THUMBNAIL_PREFIX);
           }
@@ -454,8 +459,6 @@ export class NftService {
     }
 
     nfts = await this.filterNfts(filter, nfts);
-
-    this.updateMediaThumbnailUrlForNfts(nfts);
 
     if (queryOptions && queryOptions.withMetadata) {
       await asyncPool(
