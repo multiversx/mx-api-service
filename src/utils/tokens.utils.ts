@@ -14,9 +14,9 @@ export class TokenUtils {
   }
 
   static getUrlHash(url: string) {
-    if (url.split('/').length < 6) {
+    if (url.split('/').length < 7) {
       return undefined;
     }
-    return url.split('/')[5];
+    return `${url.split('/')[5]}-${url.split('/')[6]}`;
   }
 }
