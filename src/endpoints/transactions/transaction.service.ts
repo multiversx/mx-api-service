@@ -292,7 +292,7 @@ export class TransactionService {
       txHash = result.txHash;
     } catch (error: any) {
       this.logger.error(error);
-      return error.response.data.error;
+      return error.response.error;
     }
 
     // TODO: pending alignment
