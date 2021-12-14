@@ -1,4 +1,4 @@
-import { CallHandler, ExecutionContext, HttpStatus, Injectable, NestInterceptor } from "@nestjs/common";
+import { CallHandler, ExecutionContext, HttpStatus, Injectable, Logger, NestInterceptor } from "@nestjs/common";
 import { Observable, throwError } from "rxjs";
 import { catchError, tap } from 'rxjs/operators';
 import { MetricsService } from "src/common/metrics/metrics.service";
@@ -11,11 +11,23 @@ import DailyRotateFile from "winston-daily-rotate-file";
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
   private readonly transactionLogger: winston.Logger;
+  private readonly logger: Logger;
 
   constructor(
     private readonly metricsService: MetricsService,
   ) {
     this.transactionLogger = winston.createLogger({
+      format: winston.format.json({ replacer: (key: string, value: any) => {
+          if (key === '') {
+            return {
+              ...value.message,
+              level: value.level
+            };
+          }
+
+          return value;
+        } 
+      }),
       transports: [
         new DailyRotateFile({
           filename: 'application-%DATE%.log',
@@ -28,7 +40,9 @@ export class LoggingInterceptor implements NestInterceptor {
           symlinkName: 'application.log'
         })
       ]
-    })
+    });
+
+    this.logger = new Logger(LoggingInterceptor.name);
   }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
@@ -42,12 +56,15 @@ export class LoggingInterceptor implements NestInterceptor {
     const isSendTransactionCall = context.getClass().name === ProxyController.name && context.getHandler().name === 'transactionSend';
 
     if (isCreateTransactionCall || isSendTransactionCall) {
-      this.transactionLogger.info({
+      let logBody = {
         apiFunction,
         body: request.body,
         userAgent: request.headers['user-agent'],
         clientIp: request.headers['x-forwarded-for'] || request.headers['x-real-ip'] || request.socket.remoteAddress
-      });
+      };
+
+      this.transactionLogger.info(logBody);
+      this.logger.log(logBody);
     }
 
     return next

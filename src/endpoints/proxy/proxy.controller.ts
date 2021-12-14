@@ -271,7 +271,15 @@ export class ProxyController {
   @Get('/hyperblock/by-nonce/:nonce')
   @ApiExcludeEndpoint()
   async getHyperblockByNonce(@Param('nonce') nonce: number) {
-    return await this.gatewayGet(`hyperblock/by-nonce/${nonce}`, GatewayComponentRequest.hyperblockByNonce);
+    try {
+      return await this.cachingService.getOrSetCache(
+        `hyperblock/by-nonce/${nonce}`,
+        async () =>  await this.gatewayGet(`hyperblock/by-nonce/${nonce}`, GatewayComponentRequest.hyperblockByNonce),
+        Constants.oneDay(),
+      );
+    } catch (error: any) {
+      throw new BadRequestException(error.response.data);
+    }
   }
 
   @Get('/hyperblock/by-hash/:hash')
