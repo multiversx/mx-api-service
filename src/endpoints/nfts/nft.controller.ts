@@ -27,7 +27,7 @@ export class NftController {
   })
 	@ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
 	@ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
+	@ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
 	@ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
 	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
 	@ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
