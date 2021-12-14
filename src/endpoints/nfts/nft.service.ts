@@ -196,8 +196,7 @@ export class NftService {
       );
     }
 
-    this.uploadMediaThumbnailUrlForNfts(nfts);
-
+    this.updateMediaThumbnailUrlForNfts(nfts);
 
     for (let nft of nfts) {
       let collectionProperties = await this.esdtService.getEsdtTokenProperties(nft.collection);
@@ -217,7 +216,7 @@ export class NftService {
           // @ts-ignore
           delete nft.uris;
         } else {
-          this.uploadMediaUrlForNft(nft);
+          this.updateMediaUrlForNft(nft);
           if (nft.media.length) {
             nft.isWhitelistedStorage = nft.media[0].url.startsWith(this.NFT_THUMBNAIL_PREFIX);
           }
@@ -225,7 +224,7 @@ export class NftService {
       }
     }
 
-    this.uploadMediaThumbnailUrlForNfts(nfts);
+    this.updateMediaThumbnailUrlForNfts(nfts);
 
     return nfts;
   }
@@ -245,7 +244,7 @@ export class NftService {
     return await this.elasticService.getCount('accountsesdt', elasticQuery);
   }
 
-  uploadMediaThumbnailUrlForNfts(nfts: Nft[]) {
+  updateMediaThumbnailUrlForNfts(nfts: Nft[]) {
     let mediaNfts = nfts.filter(nft => nft.type !== NftType.MetaESDT && nft.uris.filter(uri => uri).length > 0);
     for (let mediaNft of mediaNfts) {
       for (let media of mediaNft.media) {
@@ -382,7 +381,7 @@ export class NftService {
     return Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
   }
 
-  uploadMediaUrlForNft(nft: Nft) {
+  updateMediaUrlForNft(nft: Nft) {
     if (nft.uris && nft.uris.length > 0) {
       try {
         for (let uri of nft.uris) {
@@ -436,7 +435,7 @@ export class NftService {
           // @ts-ignore
           delete nft.uris;
         } else {
-          this.uploadMediaUrlForNft(nft);
+          this.updateMediaUrlForNft(nft);
           if (nft.media.length) {
             nft.isWhitelistedStorage = nft.media[0].url.startsWith(this.NFT_THUMBNAIL_PREFIX);
           }
@@ -456,7 +455,7 @@ export class NftService {
 
     nfts = await this.filterNfts(filter, nfts);
 
-    this.uploadMediaThumbnailUrlForNfts(nfts);
+    this.updateMediaThumbnailUrlForNfts(nfts);
 
     if (queryOptions && queryOptions.withMetadata) {
       await asyncPool(
