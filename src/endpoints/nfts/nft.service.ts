@@ -213,14 +213,15 @@ export class NftService {
           delete nft.royalties;
           // @ts-ignore
           delete nft.uris;
-        } else {
-          nft.media = await this.getMediaForNft(nft);
-          if (nft.media.length) {
-            nft.isWhitelistedStorage = nft.media[0].url.startsWith(this.NFT_THUMBNAIL_PREFIX);
-          }
         }
       }
     }
+
+    await asyncPool(
+      this.apiConfigService.getPoolLimit(),
+      nfts.filter((nft) => nft.type !== NftType.MetaESDT),
+      async nft => await this.applyNftMedia(nft)
+    );
 
     return nfts;
   }
@@ -439,11 +440,6 @@ export class NftService {
           delete nft.royalties;
           // @ts-ignore
           delete nft.uris;
-        } else {
-          nft.media = await this.getMediaForNft(nft);
-          if (nft.media.length) {
-            nft.isWhitelistedStorage = nft.media[0].url.startsWith(this.NFT_THUMBNAIL_PREFIX);
-          }
         }
 
         if (!nft.name) {
@@ -468,7 +464,20 @@ export class NftService {
       );
     }
 
+    await asyncPool(
+      this.apiConfigService.getPoolLimit(),
+      nfts.filter((nft) => nft.type !== NftType.MetaESDT),
+      async nft => await this.applyNftMedia(nft)
+    );
+
     return nfts;
+  }
+
+  private async applyNftMedia(nft: Nft) {
+    nft.media = await this.getMediaForNft(nft);
+    if (nft.media.length) {
+      nft.isWhitelistedStorage = nft.media[0].url.startsWith(this.NFT_THUMBNAIL_PREFIX);
+    }
   }
 
   async getNftForAddress(address: string, identifier: string): Promise<NftAccount | undefined> {

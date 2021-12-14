@@ -12,7 +12,7 @@ import { MediaMimeTypeEnum } from "./entities/media.mime.type";
 export class NftExtendedAttributesService {
   private readonly logger: Logger;
   private readonly IPFS_REQUEST_TIMEOUT = 10000;
-  private readonly MAX_CONTENT_LENGTH = 16;
+  private readonly MAX_CONTENT_LENGTH = 16000;
 
   constructor(
     private readonly cachingService: CachingService,
