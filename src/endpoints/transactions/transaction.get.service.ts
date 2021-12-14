@@ -97,7 +97,6 @@ export class TransactionGetService {
 
       if (!this.apiConfigService.getUseLegacyElastic()) {
         if (result.hasScResults === true && (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.results))) {
-          this.logger.log(`Getting sc results`);
           transactionDetailed.results = await this.getTransactionScResultsFromElastic(transactionDetailed.txHash);
 
           for (let scResult of transactionDetailed.results) {
@@ -106,7 +105,6 @@ export class TransactionGetService {
         }
         
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.receipt)) {
-          this.logger.log(`Getting receipts`);
           const receiptHashQuery = QueryType.Match('receiptHash', txHash);
           const elasticQueryReceipts = ElasticQuery.create()
             .withPagination({ from: 0, size: 1})
@@ -120,7 +118,6 @@ export class TransactionGetService {
         }
 
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs)) {
-          this.logger.log(`Getting logs`);
           const logs = await this.getTransactionLogsFromElastic(hashes);
           let transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
 
