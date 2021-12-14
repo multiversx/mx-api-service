@@ -391,11 +391,12 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/nfts/count")
-	@ApiQuery({ name: 'search', description: 'Search by token name', required: false })
+	@ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
 	@ApiQuery({ name: 'identifiers', description: 'Filter by identifiers, comma-separated', required: false })
 	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
 	@ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
 	@ApiQuery({ name: 'collections', description: 'Get all tokens by token collections, comma-separated', required: false })
+  @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
 	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
 	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
 	@ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
@@ -560,9 +561,9 @@ export class AccountController {
     status: 404,
     description: 'Account not found'
   })
-  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
@@ -591,7 +592,8 @@ export class AccountController {
     @Query('before', ParseOptionalIntPipe) before?: number, 
     @Query('after', ParseOptionalIntPipe) after?: number, 
     @Query('withScResults', new ParseOptionalBoolPipe) withScResults?: boolean,
-    @Query('withOperations', new ParseOptionalBoolPipe) withOperations?: boolean,) {
+    @Query('withOperations', new ParseOptionalBoolPipe) withOperations?: boolean,
+  ) {
     try {
       return await this.transactionService.getTransactions({
         sender,
