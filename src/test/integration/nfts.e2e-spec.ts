@@ -1,10 +1,10 @@
-import { Test } from '@nestjs/testing';
-import { NftFilter } from 'src/endpoints/nfts/entities/nft.filter';
-import { NftType } from 'src/endpoints/nfts/entities/nft.type';
-import { NftService } from 'src/endpoints/nfts/nft.service';
-import { PublicAppModule } from 'src/public.app.module';
-import { Constants } from 'src/utils/constants';
-import Initializer from './e2e-init';
+import { Test } from "@nestjs/testing";
+import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
+import { NftType } from "src/endpoints/nfts/entities/nft.type";
+import { NftService } from "src/endpoints/nfts/nft.service";
+import { PublicAppModule } from "src/public.app.module";
+import { Constants } from "src/utils/constants";
+import Initializer from "./e2e-init";
 
 describe('Nft Service', () => {
   let nftService: NftService;
@@ -102,13 +102,8 @@ describe('Nft Service', () => {
 
       it(`should return a list with nfts that has identifiers`, async () => {
         const nftFilter = new NftFilter();
-        nftFilter.identifiers =
-          'LKFARM-9d1ea8-8f6b,LKLP-03a2fa-4cc9,invalidIdentifier';
-
-        const nftsList = await nftService.getNfts(
-          { from: 0, size: 25 },
-          nftFilter,
-        );
+        nftFilter.identifiers = ['LKFARM-9d1ea8-8f6b', 'LKLP-03a2fa-4cc9', 'invalidIdentifier']
+        const nftsList = await nftService.getNfts({ from: 0, size: 25 }, nftFilter);
         expect(nftsList).toBeInstanceOf(Array);
 
         expect(nftsList.length).toEqual(2);
@@ -119,11 +114,8 @@ describe('Nft Service', () => {
 
       it(`should return a empty nfts list`, async () => {
         const nftFilter = new NftFilter();
-        nftFilter.identifiers = 'MSFT-532e00';
-        const nftsList = await nftService.getNfts(
-          { from: 0, size: 25 },
-          nftFilter,
-        );
+        nftFilter.identifiers = ['MSFT-532e00']
+        const nftsList = await nftService.getNfts({ from: 0, size: 25 }, nftFilter);
         expect(nftsList).toBeInstanceOf(Array);
 
         expect(nftsList.length).toEqual(0);
