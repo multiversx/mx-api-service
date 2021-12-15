@@ -15,6 +15,7 @@ import { Transaction } from "./entities/transaction";
 import { TransactionDetailed } from "./entities/transaction.detailed";
 import { TransactionLog } from "./entities/transaction.log";
 import { TransactionOperation } from "./entities/transaction.operation";
+import { TransactionOptionalFieldOption } from "./entities/transaction.optional.field.options";
 import { TransactionReceipt } from "./entities/transaction.receipt";
 import { TokenTransferService } from "../tokens/token.transfer.service";
 
@@ -73,7 +74,7 @@ export class TransactionGetService {
     return scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
   }
 
-  async tryGetTransactionFromElastic(txHash: string): Promise<TransactionDetailed | null> {
+  async tryGetTransactionFromElastic(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
     try {
       const result = await this.elasticService.getItem('transactions', 'txHash', txHash);
       if (!result) {
@@ -95,8 +96,7 @@ export class TransactionGetService {
       hashes.push(txHash);
 
       if (!this.apiConfigService.getUseLegacyElastic()) {
-        //Elastic query for scResults
-        if (result.hasScResults === true) {
+        if (result.hasScResults === true && (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.results))) {
           transactionDetailed.results = await this.getTransactionScResultsFromElastic(transactionDetailed.txHash);
 
           for (let scResult of transactionDetailed.results) {
@@ -104,33 +104,35 @@ export class TransactionGetService {
           }
         }
 
-        //Elastic query for receipts
-        const receiptHashQuery = QueryType.Match('receiptHash', txHash);
-        const elasticQueryReceipts = ElasticQuery.create()
-          .withPagination({ from: 0, size: 1 })
-          .withCondition(QueryConditionOptions.must, [receiptHashQuery])
+        if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.receipt)) {
+          const receiptHashQuery = QueryType.Match('receiptHash', txHash);
+          const elasticQueryReceipts = ElasticQuery.create()
+            .withPagination({ from: 0, size: 1 })
+            .withCondition(QueryConditionOptions.must, [receiptHashQuery])
 
-        let receipts = await this.elasticService.getList('receipts', 'receiptHash', elasticQueryReceipts);
-        if (receipts.length > 0) {
-          let receipt = receipts[0];
-          transactionDetailed.receipt = ApiUtils.mergeObjects(new TransactionReceipt(), receipt);
+          let receipts = await this.elasticService.getList('receipts', 'receiptHash', elasticQueryReceipts);
+          if (receipts.length > 0) {
+            let receipt = receipts[0];
+            transactionDetailed.receipt = ApiUtils.mergeObjects(new TransactionReceipt(), receipt);
+          }
         }
 
-        //Elastic query for logs
-        const logs = await this.getTransactionLogsFromElastic(hashes);
-        let transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
+        if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs)) {
+          const logs = await this.getTransactionLogsFromElastic(hashes);
+          let transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
 
-        transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransactionLogs(txHash, transactionLogs);
-        transactionDetailed.operations = this.trimOperations(transactionDetailed.operations);
+          transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransactionLogs(txHash, transactionLogs);
+          transactionDetailed.operations = this.trimOperations(transactionDetailed.operations);
 
-        for (let log of logs) {
-          if (log._id === txHash) {
-            transactionDetailed.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
-          }
-          else {
-            const foundScResult = transactionDetailed.results.find(({ hash }) => log._id === hash);
-            if (foundScResult) {
-              foundScResult.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
+          for (let log of logs) {
+            if (log._id === txHash) {
+              transactionDetailed.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
+            }
+            else {
+              const foundScResult = transactionDetailed.results.find(({ hash }) => log._id === hash);
+              if (foundScResult) {
+                foundScResult.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
+              }
             }
           }
         }

@@ -123,4 +123,18 @@ export class CacheInfo {
       ttl: Constants.oneDay()
     }
   }
+
+  static EsdtProperties(identifier: string): CacheInfo {
+    return {
+      key: `esdt:${identifier}`,
+      ttl: Constants.oneDay(),
+    }
+  }
+
+  static EsdtAssets(identifier: string): CacheInfo {
+    return {
+      key: `esdt:assets:${identifier}`,
+      ttl: Constants.oneDay(),
+    }
+  }
 }

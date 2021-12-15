@@ -16,6 +16,7 @@ import { TokenUtils } from "src/utils/tokens.utils";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { CachingService } from "../../common/caching/caching.service";
 import { GatewayService } from "../../common/gateway/gateway.service";
+import { TokenAssets } from "../tokens/entities/token.assets";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { TokenAssetService } from "../tokens/token.asset.service";
 
@@ -145,34 +146,35 @@ export class EsdtService {
       return [];
     }
 
-    let tokensPropertiesAndAssets = await this.cachingService.batchProcess(
+    let tokensProperties = await this.cachingService.batchProcess(
       tokensIdentifiers,
-      token => `esdt:${token}`,
-      async (identifier: string) => await this.getEsdtTokenPropertiesAndAssets(identifier),
+      token => CacheInfo.EsdtProperties(token).key,
+      async (identifier: string) => await this.getEsdtTokenPropertiesRaw(identifier),
       Constants.oneDay(),
       true
     );
 
-    return tokensPropertiesAndAssets.filter(x => x !== null).map(x => x!);
+    let tokensAssets = await this.cachingService.batchProcess(
+      tokensIdentifiers,
+      token => CacheInfo.EsdtAssets(token).key,
+      async (identifier: string) => await this.getEsdtTokenAssetsRaw(identifier),
+      Constants.oneDay(),
+      true
+    );
+
+    return tokensProperties.zip(tokensAssets, (first, second) => ApiUtils.mergeObjects(new TokenDetailed, { ...first, assets: second }));
   }
 
-  async getEsdtTokenPropertiesAndAssets(identifier: string): Promise<TokenDetailed | null> {
-    let tokenProperties = await this.getEsdtTokenPropertiesRaw(identifier);
-    if (!tokenProperties) {
-      return null;
-    }
-
-    let tokenAssets = await this.tokenAssetService.getAssets(identifier);
-
-    return ApiUtils.mergeObjects(new TokenDetailed(), { ...tokenProperties, assets: tokenAssets });
+  async getEsdtTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
+    return await this.tokenAssetService.getAssets(identifier);
   }
 
   async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
     let properties = await this.cachingService.getOrSetCache(
-      `esdt:${identifier}`,
+      CacheInfo.EsdtProperties(identifier).key,
       async () => await this.getEsdtTokenPropertiesRaw(identifier),
       Constants.oneWeek(),
-      Constants.oneDay()
+      CacheInfo.EsdtProperties(identifier).ttl
     );
 
     if (!properties) {

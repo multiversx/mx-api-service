@@ -7,12 +7,14 @@ import { TransactionFilter } from 'src/endpoints/transactions/entities/transacti
 import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
+import { TransactionOptionalFieldOption } from 'src/endpoints/transactions/entities/transaction.optional.field.options';
 
 describe('Transaction Service', () => {
     let transactionService: TransactionService;
     let transactionHash: string;
     let transactionSender: string;
     let transactionReceiver: string;
+    let detailedTransactionHash: string = '18128acfd3f19f7a747ccf02bc866e95aa2db92af44fed2f9ed2c2102223b462';
 
     beforeAll(async () => {
       await Initializer.initialize();
@@ -157,6 +159,9 @@ describe('Transaction Service', () => {
                         expect(false);
                     }
                 }
+
+                const accountTransactionsList = await transactionService.getTransactions(new TransactionFilter(), { from: 0, size: 25 }, undefined, address);
+                expect(transactionsList).toEqual(accountTransactionsList);
             })
 
             it(`should return transactions for an address with self transactions`, async () => {
@@ -194,18 +199,29 @@ describe('Transaction Service', () => {
                 }
             });
 
-
-
             it(`should return transactions with specific hashes`, async () => {
                 const hashes = '8149581fe858edf8971a73491ff4b26ce2532aa7951ffefafb7b7823ffacc182,56bdbc1a2e9e4dd60bb77c82a72c5b2b77ef51b8decf97f4024fa223b9b64777,INVALIDTXHASH';
                 const transactionFilter = new TransactionFilter();
-                transactionFilter.hashes = hashes;
+                transactionFilter.hashes = hashes.split(',');
 
                 const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
                 expect(transactionsList).toHaveLength(2);
                 const transactionsHashes = transactionsList.map(({txHash}) => txHash);
                 expect(hashes.split(',').toString()).not.toStrictEqual(transactionsHashes.toString());
-            })
+            });
+
+            it(`should return transactions with all token transactions`, async () => {
+                const token = 'QWT-46ac01';
+                const transactionFilter = new TransactionFilter();
+                transactionFilter.token = token;
+               
+
+                const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+                for (let transaction of transactionsList) {
+                    expect(transaction.tokenIdentifier).toBeDefined();
+                    expect(transaction.tokenIdentifier).toEqual('QWT-46ac01');
+                }
+            });
         })
     
     });
@@ -224,6 +240,53 @@ describe('Transaction Service', () => {
 
             if (transaction) {
              expect(transaction.txHash).toBe(transactionHash);
+            }
+            else {
+             expect(false);
+            }
+        });
+
+        it(`should return a transaction for a specific hash without optional fields`, async () => {
+            const transaction = await transactionService.getTransaction(detailedTransactionHash);
+
+            if (transaction) {
+             expect(transaction.txHash).toBe(detailedTransactionHash);
+             expect(transaction.results).toEqual([]);
+             expect(transaction.receipt).toBeUndefined();
+             expect(transaction.logs).toBeUndefined();
+            }
+            else {
+             expect(false);
+            }
+        });
+
+
+        it(`should return a transaction for a specific hash with results optional field`, async () => {
+            const transaction = await transactionService.getTransaction(detailedTransactionHash, [TransactionOptionalFieldOption.results]);
+
+            if (transaction) {
+             expect(transaction.txHash).toBe(detailedTransactionHash);
+             expect(transaction.results).toBeDefined();
+             expect(transaction.receipt).toBeUndefined();
+             expect(transaction.logs).toBeUndefined();
+            }
+            else {
+             expect(false);
+            }
+        });
+
+
+        it(`should return a transaction for a specific hash with results and logs optional fields`, async () => {
+            const transaction = await transactionService.getTransaction(detailedTransactionHash, [TransactionOptionalFieldOption.results, TransactionOptionalFieldOption.logs]);
+
+            if (transaction) {
+             expect(transaction.txHash).toBe(detailedTransactionHash);
+             expect(transaction.results).toBeDefined();
+             expect(transaction.receipt).toBeUndefined();
+             expect(transaction.operations).toBeDefined();
+            }
+            else {
+             expect(false);
             }
         });
 

@@ -87,7 +87,7 @@ export class TokenAssetService {
   async getAllAssetsRaw(): Promise<{ [key: string] : TokenAssets }> {
     let tokensPath = this.getTokensPath();
     if (!fs.existsSync(tokensPath)) {
-      return {}
+      return {};
     }
     
     let tokenIdentifiers = FileUtils.getDirectories(tokensPath);

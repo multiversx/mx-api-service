@@ -10,5 +10,6 @@
   "collectCoverageFrom": [
     "./src/**/*.(t|j)s"
   ],
-  "coverageDirectory": "./coverage/e2e"
+  "coverageDirectory": "./coverage/e2e",
+  "testTimeout": 60000
 }

@@ -76,7 +76,7 @@ export class TokenService {
     if (filter.name) {
       let nameLower = filter.name.toLowerCase();
 
-      tokens = tokens.filter(token => token.name.toLowerCase().includes(nameLower));
+      tokens = tokens.filter(token => token.name.toLowerCase() === nameLower);
     }
 
     if (filter.identifier) {
@@ -86,7 +86,7 @@ export class TokenService {
     }
 
     if (filter.identifiers) {
-      const identifierArray = filter.identifiers.split(',').map(identifier => identifier.toLowerCase());
+      const identifierArray = filter.identifiers.map(identifier => identifier.toLowerCase());
 
       tokens = tokens.filter(token => identifierArray.includes(token.identifier.toLowerCase()));
     }
