@@ -49,7 +49,7 @@
     "copy-e2e-mocked-mainnet-config:windows": "copy .\\config\\config.e2e-mocked.mainnet.yaml .\\config\\config.yaml"
   },
   "dependencies": {
-    "@elrondnetwork/erdjs": "^8.0.0",
+    "@elrondnetwork/erdjs": "^5.0.1",
     "@elrondnetwork/transaction-processor": "^0.1.17",
     "@nestjs/bull": "^0.4.2",
     "@nestjs/common": "^8.0.11",
