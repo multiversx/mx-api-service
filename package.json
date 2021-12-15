@@ -65,6 +65,7 @@
     "anchorme": "^2.1.2",
     "axios": "^0.24.0",
     "bignumber.js": "^9.0.1",
+    "bull": "^3.29.3",
     "crypto-js": "^4.1.1",
     "csrf": "^3.1.0",
     "js-yaml": "^4.1.0",
