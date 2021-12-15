@@ -15,6 +15,7 @@ import { BinaryUtils } from "src/utils/binary.utils";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { TransactionStatus } from "src/endpoints/transactions/entities/transaction.status";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
+import { NftService } from "src/endpoints/nfts/nft.service";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -30,7 +31,8 @@ export class TransactionProcessorService {
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly nodeService: NodeService,
     private readonly pluginService: PluginService,
-    private readonly transactionService: TransactionService
+    private readonly transactionService: TransactionService,
+    private readonly nftService: NftService,
     // private readonly nftExtendedAttributesService: NftExtendedAttributesService,
   ) {
     this.logger = new Logger(TransactionProcessorService.name);
@@ -138,7 +140,13 @@ export class TransactionProcessorService {
 
     const nftIdentifier = transactionDetailed.operations[0].identifier;
 
-    await this.pluginService.generateThumbnails(nftIdentifier);
+    if (!nftIdentifier) {
+      return;
+    }
+
+    const nft = await this.nftService.getSingleNft(nftIdentifier);
+
+    await this.pluginService.processNftCreated(nft);
   }
 
   async tryInvalidateOwner(transaction: ShardTransaction): Promise<string[]> {

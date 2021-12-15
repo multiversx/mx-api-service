@@ -27,11 +27,13 @@ export class GenerateThumbnailService {
     await asyncPool(
       this.apiConfigService.getPoolLimit(),
       nfts,
-      async (nft: Nft) => await this.pluginService.generateThumbnails(nft.identifier)
+      async (nft: Nft) => await this.pluginService.processNftCreated(nft)
     );
   }
 
   async generateThumbnailsForNft(identifier: string): Promise<void> {
-    await this.pluginService.generateThumbnails(identifier);
+    const nft = await this.nftService.getSingleNft(identifier);
+
+    await this.pluginService.processNftCreated(nft);
   }
 }

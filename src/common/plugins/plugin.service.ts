@@ -12,5 +12,5 @@ export class PluginService {
 
   async processNft(_: Nft): Promise<void> { }
 
-  async generateThumbnails(_: string): Promise<void> { }
+  async processNftCreated(_: Nft | undefined): Promise<void> { }
 }
