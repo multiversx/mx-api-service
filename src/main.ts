@@ -27,6 +27,7 @@ import { ProtocolService } from './common/protocol/protocol.service';
 import { PaginationInterceptor } from './interceptors/pagination.interceptor';
 import { LogRequestsInterceptor } from './interceptors/log.requests.interceptor';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { QueueWorkerModule } from './queues/queue.worker.module';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create<NestExpressApplication>(
@@ -125,6 +126,11 @@ async function bootstrap() {
     await processorApp.listen(6001);
   }
 
+  if (apiConfigService.getIsQueueWorkerCronActive()) {
+    const queueWorkerApp = await NestFactory.create(QueueWorkerModule);
+    await queueWorkerApp.listen(8000);
+  }
+
   let logger = new Logger('Bootstrapper');
 
   const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
@@ -151,6 +157,7 @@ async function bootstrap() {
   logger.log(
     `Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`,
   );
+  logger.log(`Queue worker active: ${apiConfigService.getIsQueueWorkerCronActive()}`);
 }
 
 bootstrap();

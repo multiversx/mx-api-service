@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ApiConfigService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) { }
 
   getConfig<T>(configKey: string): T | undefined {
     return this.configService.get<T>(configKey);
@@ -213,6 +213,15 @@ export class ApiConfigService {
     }
 
     return isCronActive;
+  }
+
+  getIsQueueWorkerCronActive(): boolean {
+    let isQueueWorkerActive = this.configService.get<boolean>('cron.queueWorker');
+    if (isQueueWorkerActive === undefined) {
+      throw new Error('No queue worker cron flag present');
+    }
+
+    return isQueueWorkerActive;
   }
 
   getIsFastWarmerCronActive(): boolean {
