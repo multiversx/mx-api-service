@@ -23,7 +23,6 @@ import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { CachingService } from "src/common/caching/caching.service";
 import { Constants } from "src/utils/constants";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
-import asyncPool from "tiny-async-pool";
 import { PluginService } from "src/common/plugins/plugin.service";
 
 @Injectable()
@@ -49,7 +48,7 @@ export class NftService {
   async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[]> {
     const { from, size } = queryPagination;
 
-    let nfts = await this.getNftsInternal(from, size, filter, undefined, queryOptions);
+    let nfts = await this.getNftsInternal(from, size, filter, undefined);
 
     for (let nft of nfts) {
       await this.applyAssetsAndTicker(nft);
@@ -122,22 +121,9 @@ export class NftService {
 
     await this.applyAssetsAndTicker(nft);
 
-    await this.applyNftMetadata(nft);
-
     await this.pluginService.processNft(nft);
 
     return nft;
-  }
-
-  async applyNftMetadata(nft: Nft) {
-    if (nft.attributes) {
-      try {
-        nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(nft.attributes);
-      } catch (error) {
-        this.logger.error(error);
-        this.logger.error(`Error when getting metadata for nft with identifier '${nft.identifier}'`);
-      }
-    }
   }
 
   async getNftOwners(identifier: string, pagination: QueryPagination): Promise<NftOwner[] | undefined> {
@@ -152,7 +138,7 @@ export class NftService {
     });
   }
 
-  async getNftsInternal(from: number, size: number, filter: NftFilter, identifier: string | undefined, queryOptions?: NftQueryOptions): Promise<Nft[]> {
+  async getNftsInternal(from: number, size: number, filter: NftFilter, identifier: string | undefined): Promise<Nft[]> {
     let elasticNfts = await this.elasticService.getNfts(from, size, filter, identifier);
 
     let nfts: Nft[] = [];
@@ -197,17 +183,6 @@ export class NftService {
       nfts.push(nft);
     }
 
-    if (queryOptions && queryOptions.withMetadata) {
-      await asyncPool(
-        this.apiConfigService.getPoolLimit(),
-        nfts,
-        async nft => await this.applyNftMetadata(nft)
-      );
-    }
-
-    this.updateThumbnailUrlForNfts(nfts);
-
-
     for (let nft of nfts) {
       let collectionProperties = await this.esdtService.getEsdtTokenProperties(nft.collection);
 
@@ -247,13 +222,6 @@ export class NftService {
     return await this.elasticService.getCount('accountsesdt', elasticQuery);
   }
 
-  updateThumbnailUrlForNfts(nfts: Nft[]) {
-    let mediaNfts = nfts.filter(nft => nft.type !== NftType.MetaESDT && nft.uris.filter(uri => uri).length > 0);
-    for (let mediaNft of mediaNfts) {
-      mediaNft.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${mediaNft.identifier}`;
-    }
-  }
-
   async getNftCount(filter: NftFilter): Promise<number> {
     return await this.elasticService.getNftCount(filter);
   }
@@ -261,7 +229,7 @@ export class NftService {
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<NftAccount[]> {
     const { from, size } = queryPagination;
 
-    let nfts = await this.getNftsForAddressInternal(address, filter, queryOptions);
+    let nfts = await this.getNftsForAddressInternal(address, filter);
 
     nfts = nfts.slice(from, from + size);
 
@@ -382,7 +350,7 @@ export class NftService {
     return Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
   }
 
-  async getNftsForAddressInternal(address: string, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<NftAccount[]> {
+  async getNftsForAddressInternal(address: string, filter: NftFilter): Promise<NftAccount[]> {
     let gatewayNfts = await this.getGatewayNfts(address, filter);
 
     gatewayNfts.sort((a: GatewayNft, b: GatewayNft) => a.tokenIdentifier.localeCompare(b.tokenIdentifier, 'en', { sensitivity: 'base' }));
@@ -445,16 +413,6 @@ export class NftService {
 
     nfts = await this.filterNfts(filter, nfts);
 
-    this.updateThumbnailUrlForNfts(nfts);
-
-    if (queryOptions && queryOptions.withMetadata) {
-      await asyncPool(
-        this.apiConfigService.getPoolLimit(),
-        nfts,
-        async nft => await this.applyNftMetadata(nft)
-      );
-    }
-
     return nfts;
   }
 
@@ -474,8 +432,6 @@ export class NftService {
     }
 
     nft.assets = await this.tokenAssetService.getAssets(nft.collection);
-
-    await this.applyNftMetadata(nft);
 
     await this.pluginService.processNft(nft);
 

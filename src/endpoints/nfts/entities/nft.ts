@@ -39,7 +39,7 @@ export class Nft {
   url: string = '';
 
   @ApiProperty()
-  media: NftMedia[] = [];
+  media: NftMedia[] | undefined = undefined;
 
   @ApiProperty()
   isWhitelistedStorage: boolean = false;
