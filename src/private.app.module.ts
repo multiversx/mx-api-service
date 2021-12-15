@@ -6,6 +6,8 @@ import { MetricsModule } from './common/metrics/metrics.module';
 import { ApiConfigModule } from './common/api-config/api.config.module';
 import { MicroserviceModule } from './common/microservice/microservice.module';
 import { HealthCheckController } from './endpoints/health-check/health.check.controller';
+import { GenerateThumbnailController } from './endpoints/generate-thumbnails/generate.controller';
+import { GenerateThumbnailModule } from './endpoints/generate-thumbnails/generate.thumbnail.module';
 
 @Module({
   imports: [
@@ -13,11 +15,13 @@ import { HealthCheckController } from './endpoints/health-check/health.check.con
     CachingModule,
     MetricsModule,
     MicroserviceModule,
+    GenerateThumbnailModule,
   ],
   controllers: [
     MetricsController,
     CacheController,
     HealthCheckController,
+    GenerateThumbnailController
   ],
 })
-export class PrivateAppModule {}
+export class PrivateAppModule { }

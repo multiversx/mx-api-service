@@ -12,4 +12,18 @@ export class TokenUtils {
   static computeNftUri(uri: string, prefix: string) {
     return ApiUtils.replaceUri(uri, 'https://ipfs.io/ipfs', prefix);
   }
+
+  static getUrlHash(url: string) {
+    if (url.split('/').length < 7) {
+      return undefined;
+    }
+    return `${url.split('/')[5]}-${url.split('/')[6]}`;
+  }
+
+  static getThumbnailUrl(nftIdentifier: string, fileUrl: string) {
+    const collectionIdentifier = nftIdentifier.split('-').slice(0, 2).join('-');
+    const urlHash = TokenUtils.getUrlHash(fileUrl);
+
+    return `${collectionIdentifier}-${urlHash}`;
+  }
 }

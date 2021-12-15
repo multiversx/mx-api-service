@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { NftThumbnailQueueModule } from './nft.thumbnail/nft.thumbnail.queue.module';
+import { PluginModule } from 'src/plugins/plugin.module';
 
 @Module({
   imports: [
-    NftThumbnailQueueModule,
+    PluginModule,
   ],
   controllers: [],
   providers: [],

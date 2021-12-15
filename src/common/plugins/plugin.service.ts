@@ -4,11 +4,13 @@ import { Transaction } from "src/endpoints/transactions/entities/transaction";
 
 @Injectable()
 export class PluginService {
-  async processTransaction(_: Transaction): Promise<void> {}
+  async processTransaction(_: Transaction): Promise<void> { }
 
-  async handleEveryMinuteCron(): Promise<void> {}
+  async handleEveryMinuteCron(): Promise<void> { }
 
-  async processTransactionSend(_: any): Promise<any> {}
+  async processTransactionSend(_: any): Promise<any> { }
 
-  async processNft(_: Nft): Promise<void> {}
+  async processNft(_: Nft): Promise<void> { }
+
+  async generateThumbnails(_: Nft | undefined): Promise<void> { }
 }

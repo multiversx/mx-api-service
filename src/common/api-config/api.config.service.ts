@@ -184,6 +184,15 @@ export class ApiConfigService {
     return this.configService.get<string>('urls.dataUrl');
   }
 
+  getTempUrl(): string {
+    const tmpUrl = this.configService.get<string>('urls.tmp');
+    if (!tmpUrl) {
+      throw new Error("No tmp url present");
+    }
+
+    return tmpUrl;
+  }
+
   getIsTransactionProcessorCronActive(): boolean {
     let isCronActive = this.configService.get<boolean>(
       'cron.transactionProcessor',
@@ -253,6 +262,60 @@ export class ApiConfigService {
 
   getIsAuthActive(): boolean {
     return this.configService.get<boolean>('api.auth') ?? false;
+  }
+
+  getImageWidth(): number {
+    const imageWidth = this.configService.get<number>('image.width');
+    if (!imageWidth) {
+      throw new Error('No imageWidth present');
+    }
+
+    return imageWidth;
+  }
+
+  getImageHeight(): number {
+    const imageHeight = this.configService.get<number>('image.height');
+    if (!imageHeight) {
+      throw new Error('No imageHeight present');
+    }
+
+    return imageHeight;
+  }
+
+  getImageType(): string {
+    const imageType = this.configService.get<string>('image.type');
+    if (!imageType) {
+      throw new Error('No imageType present');
+    }
+
+    return imageType;
+  }
+
+  getAwsS3KeyId(): string {
+    const s3KeyId = this.configService.get<string>('aws.s3KeyId');
+    if (!s3KeyId) {
+      throw new Error('No s3KeyId present');
+    }
+
+    return s3KeyId;
+  }
+
+  getAwsS3Secret(): string {
+    const s3Secret = this.configService.get<string>('aws.s3Secret');
+    if (!s3Secret) {
+      throw new Error('No s3Secret present');
+    }
+
+    return s3Secret;
+  }
+
+  getAwsS3Bucket(): string {
+    const s3Bucket = this.configService.get<string>('aws.s3Bucket');
+    if (!s3Bucket) {
+      throw new Error('No s3Bucket present');
+    }
+
+    return s3Bucket;
   }
 
   getMetaChainShardId(): number {
