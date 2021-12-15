@@ -11,6 +11,10 @@ import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { TransactionUtils } from "src/utils/transaction.utils";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { BinaryUtils } from "src/utils/binary.utils";
+import { PluginService } from "src/common/plugins/plugin.service";
+import { TransactionStatus } from "src/endpoints/transactions/entities/transaction.status";
+import { TransactionService } from "src/endpoints/transactions/transaction.service";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -19,13 +23,15 @@ export class TransactionProcessorService {
   private transactionProcessor: TransactionProcessor = new TransactionProcessor();
 
   constructor(
-      private readonly cachingService: CachingService,
-      private readonly eventsGateway: EventsGateway,
-      private readonly apiConfigService: ApiConfigService,
-      private readonly metricsService: MetricsService,
-      @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
-      private readonly nodeService: NodeService,
-      // private readonly nftExtendedAttributesService: NftExtendedAttributesService,
+    private readonly cachingService: CachingService,
+    private readonly eventsGateway: EventsGateway,
+    private readonly apiConfigService: ApiConfigService,
+    private readonly metricsService: MetricsService,
+    @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
+    private readonly nodeService: NodeService,
+    private readonly pluginService: PluginService,
+    private readonly transactionService: TransactionService
+    // private readonly nftExtendedAttributesService: NftExtendedAttributesService,
   ) {
     this.logger = new Logger(TransactionProcessorService.name);
   }
@@ -47,18 +53,18 @@ export class TransactionProcessorService {
         maxLookBehind: this.apiConfigService.getTransactionProcessorMaxLookBehind(),
         onTransactionsReceived: async (shard, nonce, transactions) => {
           let profiler = new PerformanceProfiler('Processing new transactions');
-    
+
           this.logger.log(`New transactions: ${transactions.length} for shard ${shard} and nonce ${nonce}`);
-    
+
           let allInvalidatedKeys = [];
 
           for (let transaction of transactions) {
             // this.logger.log(`Transferred ${transaction.value} from ${transaction.sender} to ${transaction.receiver}`);
-          
+
             if (!AddressUtils.isSmartContractAddress(transaction.sender)) {
               this.eventsGateway.onAccountBalanceChanged(transaction.sender);
             }
-    
+
             if (!AddressUtils.isSmartContractAddress(transaction.receiver)) {
               this.eventsGateway.onAccountBalanceChanged(transaction.receiver);
             }
@@ -71,31 +77,33 @@ export class TransactionProcessorService {
                 // this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(BinaryUtils.base64Encode(metadataResult.attributes));
               }
             }
-            
+
+            this.tryHandleNftCreate(transaction);
+
             let invalidatedTokenProperties = await this.cachingService.tryInvalidateTokenProperties(transaction);
             let invalidatedTokensOnAccountKeys = await this.cachingService.tryInvalidateTokensOnAccount(transaction);
             let invalidatedTokenBalancesKeys = await this.cachingService.tryInvalidateTokenBalance(transaction);
             let invalidatedOwnerKeys = await this.tryInvalidateOwner(transaction);
             let invalidatedCollectionPropertiesKeys = await this.tryInvalidateCollectionProperties(transaction);
-    
+
             allInvalidatedKeys.push(
               ...invalidatedTokenProperties,
-              ...invalidatedTokensOnAccountKeys, 
+              ...invalidatedTokensOnAccountKeys,
               ...invalidatedTokenBalancesKeys,
               ...invalidatedOwnerKeys,
               ...invalidatedCollectionPropertiesKeys
             );
           }
-    
+
           let uniqueInvalidatedKeys = allInvalidatedKeys.distinct();
           if (uniqueInvalidatedKeys.length > 0) {
             this.clientProxy.emit('deleteCacheKeys', uniqueInvalidatedKeys);
           }
 
-          let distinctSendersAndReceivers = transactions.selectMany(transaction => [ transaction.sender, transaction.receiver ]).distinct();
+          let distinctSendersAndReceivers = transactions.selectMany(transaction => [transaction.sender, transaction.receiver]).distinct();
           let txCountInvalidationKeys = distinctSendersAndReceivers.map(address => CacheInfo.TxCount(address).key);
           await this.cachingService.batchDelCache(txCountInvalidationKeys);
-          
+
           profiler.stop();
         },
         getLastProcessedNonce: async (shardId) => {
@@ -109,6 +117,28 @@ export class TransactionProcessorService {
     } finally {
       this.isProcessing = false;
     }
+  }
+
+  private async tryHandleNftCreate(transaction: ShardTransaction) {
+    if (transaction.receiver !== transaction.sender || !transaction.data || transaction.status !== TransactionStatus.success) {
+      return;
+    }
+
+    let data = BinaryUtils.base64Decode(transaction.data);
+    if (!data.startsWith('ESDTNFTCreate@')) {
+      return;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    let transactionDetailed = await this.transactionService.getTransaction(transaction.hash);
+    if (!transactionDetailed || !transactionDetailed.operations || transactionDetailed.operations.length === 0) {
+      return;
+    }
+
+    const nftIdentifier = transactionDetailed.operations[0].identifier;
+
+    await this.pluginService.generateThumbnails(nftIdentifier);
   }
 
   async tryInvalidateOwner(transaction: ShardTransaction): Promise<string[]> {
@@ -135,6 +165,6 @@ export class TransactionProcessorService {
     const key = `esdt:${collectionIdentifier}`;
     await this.cachingService.deleteInCache(key);
 
-    return [ key ];
+    return [key];
   }
 }

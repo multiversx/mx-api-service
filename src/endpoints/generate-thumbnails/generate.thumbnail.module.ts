@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import { PluginModule } from "src/plugins/plugin.module";
 import { NftModule } from "../nfts/nft.module";
@@ -8,7 +8,7 @@ import { GenerateThumbnailService } from "./generate.service";
   imports: [
     ApiConfigModule,
     PluginModule,
-    NftModule,
+    forwardRef(() => NftModule),
   ],
   providers: [
     GenerateThumbnailService,

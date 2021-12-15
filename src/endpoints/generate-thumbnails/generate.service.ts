@@ -1,6 +1,5 @@
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { ApiService } from "src/common/network/api.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import asyncPool from "tiny-async-pool";
 import { Nft } from "../nfts/entities/nft";
@@ -28,13 +27,11 @@ export class GenerateThumbnailService {
     await asyncPool(
       this.apiConfigService.getPoolLimit(),
       nfts,
-      async (nft: Nft) => await this.pluginService.generateThumbnails(nft)
+      async (nft: Nft) => await this.pluginService.generateThumbnails(nft.identifier)
     );
   }
 
   async generateThumbnailsForNft(identifier: string): Promise<void> {
-    const nft: Nft | undefined = await this.nftService.getSingleNft(identifier);
-
-    await this.pluginService.generateThumbnails(nft);
+    await this.pluginService.generateThumbnails(identifier);
   }
 }

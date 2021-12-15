@@ -25,14 +25,6 @@ aws:
   s3KeyId: ''
   s3Secret: ''
   s3Bucket: 'media.elrond.com'
-image:
-  width: 600
-  height: 600
-  type: 'png'
-aws:
-  s3KeyId: ''
-  s3Secret: ''
-  s3Bucket: 'media.elrond.com'
 urls:
   api:
     - 'https://api.elrond.com'
