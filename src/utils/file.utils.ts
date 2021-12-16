@@ -1,5 +1,5 @@
-import { readdirSync, readFileSync } from 'fs';
-import { readFile, stat, unlink, writeFile } from 'fs/promises';
+const { readdirSync, readFileSync } = require('fs');
+const { readFile, stat, unlink, writeFile } = require('fs').promises;
 import { Logger } from '@nestjs/common';
 
 export class FileUtils {
