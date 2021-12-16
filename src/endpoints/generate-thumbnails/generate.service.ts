@@ -19,8 +19,7 @@ export class GenerateThumbnailService {
     let nfts;
     if (collection) {
       nfts = await this.nftService.getNfts({ from: 0, size: GENERATE_MAX_SIZE }, { collection })
-    }
-    else {
+    } else {
       nfts = await this.nftService.getNfts({ from: 0, size: GENERATE_MAX_SIZE }, new NftFilter());
     }
 
