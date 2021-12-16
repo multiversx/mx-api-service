@@ -70,6 +70,7 @@
     "crypto-js": "^4.1.1",
     "csrf": "^3.1.0",
     "fluent-ffmpeg": "^2.1.2",
+    "dd-trace": "^1.6.0",
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^8.5.1",
     "nest-winston": "^1.6.1",
