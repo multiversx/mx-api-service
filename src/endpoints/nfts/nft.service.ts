@@ -78,6 +78,8 @@ export class NftService {
     }
 
     for (let nft of nfts) {
+      await this.applyMedia(nft);
+      await this.applyMetadata(nft);
       await this.pluginService.processNft(nft);
     }
 
@@ -121,9 +123,21 @@ export class NftService {
 
     await this.applyAssetsAndTicker(nft);
 
+    await this.applyMedia(nft);
+
+    await this.applyMetadata(nft);
+
     await this.pluginService.processNft(nft);
 
     return nft;
+  }
+
+  async applyMedia(nft: Nft) {
+    nft.media = await this.cachingService.getCache(`nftMedia:${nft.identifier}`);
+  }
+
+  async applyMetadata(nft: Nft) {
+    nft.metadata = await this.cachingService.getCache(`nftMetadata:${nft.identifier}`);
   }
 
   async getNftOwners(identifier: string, pagination: QueryPagination): Promise<NftOwner[] | undefined> {
@@ -258,6 +272,8 @@ export class NftService {
     }
 
     for (let nft of nfts) {
+      await this.applyMedia(nft);
+      await this.applyMetadata(nft);
       await this.pluginService.processNft(nft);
     }
 
@@ -433,6 +449,9 @@ export class NftService {
 
     nft.assets = await this.tokenAssetService.getAssets(nft.collection);
 
+
+    await this.applyMedia(nft);
+    await this.applyMetadata(nft);
     await this.pluginService.processNft(nft);
 
     return nft;

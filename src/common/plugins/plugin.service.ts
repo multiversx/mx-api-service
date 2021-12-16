@@ -11,6 +11,4 @@ export class PluginService {
   async processTransactionSend(_: any): Promise<any> { }
 
   async processNft(_: Nft): Promise<void> { }
-
-  async processNftCreated(_: Nft | undefined): Promise<void> { }
 }

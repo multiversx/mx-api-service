@@ -6,7 +6,7 @@ import { MetricsModule } from './common/metrics/metrics.module';
 import { ApiConfigModule } from './common/api-config/api.config.module';
 import { MicroserviceModule } from './common/microservice/microservice.module';
 import { HealthCheckController } from './endpoints/health-check/health.check.controller';
-import { GenerateThumbnailController } from './endpoints/generate-thumbnails/generate.controller';
+import { GenerateThumbnailController } from './endpoints/generate-thumbnails/generate.thumbnail.controller';
 import { GenerateThumbnailModule } from './endpoints/generate-thumbnails/generate.thumbnail.module';
 
 @Module({

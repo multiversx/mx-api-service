@@ -12,10 +12,10 @@ import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transacti
 import { TransactionUtils } from "src/utils/transaction.utils";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { BinaryUtils } from "src/utils/binary.utils";
-import { PluginService } from "src/common/plugins/plugin.service";
 import { TransactionStatus } from "src/endpoints/transactions/entities/transaction.status";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
+import { NftWorkerService } from "src/queues/nft.worker/nft.worker.service";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -30,7 +30,7 @@ export class TransactionProcessorService {
     private readonly metricsService: MetricsService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly nodeService: NodeService,
-    private readonly pluginService: PluginService,
+    private readonly nftWorkerService: NftWorkerService,
     private readonly transactionService: TransactionService,
     private readonly nftService: NftService,
     // private readonly nftExtendedAttributesService: NftExtendedAttributesService,
@@ -146,7 +146,7 @@ export class TransactionProcessorService {
 
     const nft = await this.nftService.getSingleNft(nftIdentifier);
 
-    await this.pluginService.processNftCreated(nft);
+    await this.nftWorkerService.addNftQueueJob(nft);
   }
 
   async tryInvalidateOwner(transaction: ShardTransaction): Promise<string[]> {

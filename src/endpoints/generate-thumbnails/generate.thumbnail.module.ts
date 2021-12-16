@@ -1,13 +1,13 @@
 import { forwardRef, Module } from "@nestjs/common";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
-import { PluginModule } from "src/plugins/plugin.module";
+import { NftWorkerModule } from "src/queues/nft.worker/nft.worker.module";
 import { NftModule } from "../nfts/nft.module";
-import { GenerateThumbnailService } from "./generate.service";
+import { GenerateThumbnailService } from "./generate.thumbnail.service";
 
 @Module({
   imports: [
     ApiConfigModule,
-    PluginModule,
+    NftWorkerModule,
     forwardRef(() => NftModule),
   ],
   providers: [

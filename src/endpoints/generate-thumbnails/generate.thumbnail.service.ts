@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { PluginService } from "src/common/plugins/plugin.service";
+import { NftWorkerService } from "src/queues/nft.worker/nft.worker.service";
 import asyncPool from "tiny-async-pool";
 import { Nft } from "../nfts/entities/nft";
 import { NftFilter } from "../nfts/entities/nft.filter";
@@ -11,7 +11,7 @@ const GENERATE_MAX_SIZE = 10000;
 export class GenerateThumbnailService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly pluginService: PluginService,
+    private readonly nftWorkerService: NftWorkerService,
     private readonly nftService: NftService,
   ) { }
 
@@ -26,13 +26,13 @@ export class GenerateThumbnailService {
     await asyncPool(
       this.apiConfigService.getPoolLimit(),
       nfts,
-      async (nft: Nft) => await this.pluginService.processNftCreated(nft)
+      async (nft: Nft) => await this.nftWorkerService.addNftQueueJob(nft)
     );
   }
 
   async generateThumbnailsForNft(identifier: string): Promise<void> {
     const nft = await this.nftService.getSingleNft(identifier);
 
-    await this.pluginService.processNftCreated(nft);
+    await this.nftWorkerService.addNftQueueJob(nft);
   }
 }

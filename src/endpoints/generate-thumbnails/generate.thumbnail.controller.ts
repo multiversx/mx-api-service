@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Query } from "@nestjs/common";
-import { GenerateThumbnailService } from "./generate.service";
+import { GenerateThumbnailService } from "./generate.thumbnail.service";
 
 @Controller()
 export class GenerateThumbnailController {
