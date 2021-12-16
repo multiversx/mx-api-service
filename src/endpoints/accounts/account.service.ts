@@ -26,7 +26,7 @@ export class AccountService {
   private readonly logger: Logger
 
   constructor(
-    private readonly elasticService: ElasticService, 
+    private readonly elasticService: ElasticService,
     private readonly gatewayService: GatewayService,
     @Inject(forwardRef(() => CachingService))
     private readonly cachingService: CachingService,
@@ -84,7 +84,7 @@ export class AccountService {
       ]);
 
       let shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
-  
+
       let result: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, username, shard, developerReward, ownerAddress };
 
       if (result.code && !this.apiConfigService.getUseLegacyElastic()) {
@@ -93,7 +93,7 @@ export class AccountService {
           result.deployedAt = deployedAt;
         }
       }
-  
+
       return result;
     } catch (error) {
       this.logger.error(error);
@@ -167,7 +167,7 @@ export class AccountService {
 
     let [
       encodedUserDeferredPaymentList,
-      [ encodedNumBlocksBeforeUnBond ],
+      [encodedNumBlocksBeforeUnBond],
       {
         status: { erd_nonce: erdNonceString },
       },
@@ -176,7 +176,7 @@ export class AccountService {
         this.apiConfigService.getDelegationContractAddress(),
         'getUserDeferredPaymentList',
         undefined,
-        [ publicKey ]
+        [publicKey]
       ),
       this.vmQueryService.vmQuery(
         this.apiConfigService.getDelegationContractAddress(),
@@ -213,7 +213,7 @@ export class AccountService {
       this.apiConfigService.getAuctionContractAddress(),
       'getBlsKeysStatus',
       this.apiConfigService.getAuctionContractAddress(),
-      [ publicKey ],
+      [publicKey],
     );
   }
 
@@ -222,7 +222,7 @@ export class AccountService {
       this.apiConfigService.getStakingContractAddress(),
       'getRewardAddress',
       undefined,
-      [ blsKey ],
+      [blsKey],
     );
 
     const rewardsPublicKey = Buffer.from(encodedRewardsPublicKey, 'base64').toString();
@@ -240,7 +240,7 @@ export class AccountService {
     }
 
     const nodes: AccountKey[] = [];
-    for (let index = 0; index < blsKeysStatus.length; index+=2) {
+    for (let index = 0; index < blsKeysStatus.length; index += 2) {
       const [encodedBlsKey, encodedStatus] = blsKeysStatus.slice(index, index + 2);
 
       const accountKey: AccountKey = new AccountKey;
@@ -261,7 +261,7 @@ export class AccountService {
 
     const queuedNodes: string[] = nodes
       .filter((node: AccountKey) => node.status === 'queued')
-      .map(({blsKey}) => blsKey);
+      .map(({ blsKey }) => blsKey);
 
     if (queuedNodes.length) {
       const [queueSizeEncoded] = await this.vmQueryService.vmQuery(
@@ -278,7 +278,7 @@ export class AccountService {
               this.apiConfigService.getStakingContractAddress(),
               'getQueueIndex',
               this.apiConfigService.getAuctionContractAddress(),
-              [ blsKey ],
+              [blsKey],
             )
           ),
         ]);
@@ -287,11 +287,11 @@ export class AccountService {
         for (let queueIndexEncoded of queueIndexes) {
           if (queueIndexEncoded) {
             const [found] = nodes.filter((x: AccountKey) => x.blsKey === queuedNodes[index]);
-    
+
             found.queueIndex = Buffer.from(queueIndexEncoded[0], 'base64').toString();
             found.queueSize = queueSize;
-  
-            index ++;
+
+            index++;
           }
         }
       }
@@ -303,7 +303,7 @@ export class AccountService {
   async getAccountContracts(address: string): Promise<DeployedContract[]> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)])
-      .withSort([ { name: 'timestamp', order: ElasticSortOrder.descending } ]);
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
     const accountDeployedContracts = await this.elasticService.getList('scdeploys', "contract", elasticQuery);
 
@@ -314,5 +314,12 @@ export class AccountService {
     }))
 
     return accounts;
+  }
+
+  async getAccountContractsCount(address: string): Promise<number> {
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)])
+
+    return await this.elasticService.getCount('scdeploys', elasticQuery);
   }
 }
