@@ -5,6 +5,8 @@ import { CacheWarmerService } from './cache.warmer.service';
 import { EndpointsServicesModule } from '../endpoints/endpoints.services.module';
 import { MicroserviceModule } from 'src/common/microservice/microservice.module';
 import { PluginModule } from 'src/plugins/plugin.module';
+import { CollectionModule } from 'src/endpoints/collections/collection.module';
+import { GenerateThumbnailModule } from 'src/endpoints/generate-thumbnails/generate.thumbnail.module';
 
 @Module({
   imports: [
@@ -13,9 +15,11 @@ import { PluginModule } from 'src/plugins/plugin.module';
     forwardRef(() => EndpointsServicesModule),
     MicroserviceModule,
     PluginModule,
+    GenerateThumbnailModule,
+    CollectionModule,
   ],
   providers: [
     CacheWarmerService,
   ],
 })
-export class CacheWarmerModule {}
+export class CacheWarmerModule { }

@@ -20,6 +20,9 @@ import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { CollectionService } from "src/endpoints/collections/collection.service";
+import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
+import { GenerateThumbnailService } from "src/endpoints/generate-thumbnails/generate.thumbnail.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -39,25 +42,27 @@ export class CacheWarmerService {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly tokenAssetService: TokenAssetService,
     private readonly pluginService: PluginService,
-  ) { 
+    private readonly generateThumbnailService: GenerateThumbnailService,
+    private readonly collectionService: CollectionService,
+  ) {
     this.configCronJob(
-      'handleKeybaseAgainstKeybasePubInvalidations', 
-      CronExpression.EVERY_MINUTE, 
-      CronExpression.EVERY_30_MINUTES, 
+      'handleKeybaseAgainstKeybasePubInvalidations',
+      CronExpression.EVERY_MINUTE,
+      CronExpression.EVERY_30_MINUTES,
       async () => await this.handleKeybaseAgainstKeybasePubInvalidations()
     );
 
     this.configCronJob(
-      'handleKeybaseAgainstCacheInvalidations', 
-      CronExpression.EVERY_MINUTE, 
-      CronExpression.EVERY_10_MINUTES, 
+      'handleKeybaseAgainstCacheInvalidations',
+      CronExpression.EVERY_MINUTE,
+      CronExpression.EVERY_10_MINUTES,
       async () => await this.handleKeybaseAgainstCacheInvalidations()
     );
 
     this.configCronJob(
-      'handleIdentityInvalidations', 
-      CronExpression.EVERY_MINUTE, 
-      CronExpression.EVERY_5_MINUTES, 
+      'handleIdentityInvalidations',
+      CronExpression.EVERY_MINUTE,
+      CronExpression.EVERY_5_MINUTES,
       async () => await this.handleIdentityInvalidations()
     );
   }
@@ -74,6 +79,16 @@ export class CacheWarmerService {
     await Locker.lock('Nodes invalidations', async () => {
       let nodes = await this.nodeService.getAllNodesRaw();
       await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  async handleNftWorker() {
+    await Locker.lock('Nft worker invalidations', async () => {
+      let collections = await this.collectionService.getNftCollections({ from: 0, size: 10000 }, new CollectionFilter());
+      for (let collection of collections) {
+        await this.generateThumbnailService.generateThumbnails(collection.ticker);
+      }
     }, true);
   }
 
@@ -122,7 +137,7 @@ export class CacheWarmerService {
     await Locker.lock('Keybase against keybase.pub / keybase.io invalidations', async () => {
       await this.keybaseService.confirmKeybasesAgainstKeybasePub();
       await this.keybaseService.confirmIdentityProfilesAgainstKeybaseIo();
-      
+
       await this.handleKeybaseAgainstCacheInvalidations();
     }, true);
   }
