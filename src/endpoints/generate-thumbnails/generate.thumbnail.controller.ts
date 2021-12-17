@@ -21,7 +21,7 @@ export class GenerateThumbnailController {
     if (generateRequest.identifier) {
       await this.generateThumbnailService.generateThumbnailsForNft(generateRequest.identifier);
 
-      return `Generate thumbnails jobs  for nft ${generateRequest.identifier} started!`;
+      return `Generate thumbnails jobs for nft ${generateRequest.identifier} started!`;
     }
 
     throw new HttpException('Provide an identifier or a collection to generate thumbnails for', HttpStatus.BAD_REQUEST);

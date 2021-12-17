@@ -15,7 +15,7 @@ import { BinaryUtils } from "src/utils/binary.utils";
 import { TransactionStatus } from "src/endpoints/transactions/entities/transaction.status";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
-import { NftWorkerService } from "src/queues/nft.worker/nft.worker.service";
+import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
 
 @Injectable()
 export class TransactionProcessorService {

@@ -27,7 +27,7 @@ import { ProtocolService } from './common/protocol/protocol.service';
 import { PaginationInterceptor } from './interceptors/pagination.interceptor';
 import { LogRequestsInterceptor } from './interceptors/log.requests.interceptor';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { QueueWorkerModule } from './queues/queue.worker.module';
+import { QueueWorkerModule } from './queue.worker/queue.worker.module';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create<NestExpressApplication>(

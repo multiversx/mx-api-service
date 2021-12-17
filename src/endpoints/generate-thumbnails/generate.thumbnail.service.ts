@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { NftWorkerService } from "src/queues/nft.worker/nft.worker.service";
+import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
 import asyncPool from "tiny-async-pool";
 import { Nft } from "../nfts/entities/nft";
 import { NftFilter } from "../nfts/entities/nft.filter";
