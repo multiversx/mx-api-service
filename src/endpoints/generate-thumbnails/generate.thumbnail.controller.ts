@@ -1,4 +1,5 @@
-import { Controller, Get, Param, Query } from "@nestjs/common";
+import { Body, Controller, HttpException, HttpStatus, Post } from "@nestjs/common";
+import { GenerateThumbnailRequest } from "./entities/generate.thumbnail.request";
 import { GenerateThumbnailService } from "./generate.thumbnail.service";
 
 @Controller()
@@ -7,21 +8,22 @@ export class GenerateThumbnailController {
     private readonly generateThumbnailService: GenerateThumbnailService
   ) { }
 
-  @Get("/generate-thumbnails")
+  @Post("/generate-thumbnails")
   async generateThumbnails(
-    @Query('collection') collection?: string,
+    @Body() generateRequest: GenerateThumbnailRequest,
   ): Promise<string> {
-    await this.generateThumbnailService.generateThumbnails(collection);
 
-    return 'Thumbnails generated for 10000 nfts';
-  }
+    if (generateRequest.collection) {
+      await this.generateThumbnailService.generateThumbnails(generateRequest.collection);
 
-  @Get("/generate-thumbnails/:identifier")
-  async generateThumbnailsForNft(
-    @Param('identifier') nftIdentifier: string,
-  ): Promise<string> {
-    await this.generateThumbnailService.generateThumbnailsForNft(nftIdentifier);
+      return `Generate thumbnails jobs for collection ${generateRequest.collection} started!`;
+    }
+    if (generateRequest.identifier) {
+      await this.generateThumbnailService.generateThumbnailsForNft(generateRequest.identifier);
 
-    return `Thumbnails generated for nft ${nftIdentifier}`;
+      return `Generate thumbnails jobs  for nft ${generateRequest.identifier} started!`;
+    }
+
+    throw new HttpException('Provide an identifier or a collection to generate thumbnails for', HttpStatus.BAD_REQUEST);
   }
 }
