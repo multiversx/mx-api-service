@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { CachingService } from "src/common/caching/caching.service";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftMetadata } from "src/endpoints/nfts/entities/nft.metadata";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
@@ -19,9 +20,9 @@ export class NftMetadataService {
 
   async fetchMetadata(nft: Nft, forceRefresh: boolean = false) {
     let metadata = await this.cachingService.getOrSetCache(
-      `nftMetadata:${nft.identifier}`,
+      CacheInfo.NftMetadata(nft.identifier).key,
       async () => await this.fetchMetadataRaw(nft),
-      Constants.oneMonth() * 12,
+      CacheInfo.NftMetadata(nft.identifier).ttl,
       Constants.oneDay(),
       forceRefresh
     );

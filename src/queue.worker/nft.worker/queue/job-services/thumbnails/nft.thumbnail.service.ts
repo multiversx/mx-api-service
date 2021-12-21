@@ -142,11 +142,28 @@ export class NftThumbnailService {
     }
   }
 
+  async hasThumbnailGenerated(identifier: string, fileUrl: string): Promise<boolean> {
+    const urlIdentifier = TokenUtils.getThumbnailUrlIdentifier(identifier, fileUrl);
+    const url = this.getFullThumbnailUrl(urlIdentifier);
+
+    let hasThumbnail = true;
+    await this.apiService.head(url, { skipRedirects: true }, async (error) => {
+      if (error.response?.status === HttpStatus.FOUND) {
+        hasThumbnail = false;
+        return true;
+      }
+
+      return false;
+    });
+
+    return hasThumbnail;
+  }
+
   async generateThumbnail(nft: Nft, fileUrl: string, fileType: string, forceRefresh: boolean = false): Promise<GenerateThumbnailResult> {
     let nftIdentifier = nft.identifier;
     const urlHash = TokenUtils.getUrlHash(fileUrl);
 
-    this.logger.log(`Generating thumbnails for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+    this.logger.log(`Generating thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
 
     if (!fileUrl || !fileUrl.startsWith('https://')) {
       this.logger.log(`NFT with identifier '${nftIdentifier}' and url hash '${urlHash}' has no urls`);
@@ -158,15 +175,10 @@ export class NftThumbnailService {
 
     const urlIdentifier = TokenUtils.getThumbnailUrlIdentifier(nftIdentifier, fileUrl);
     if (!forceRefresh) {
-      const url = this.getFullThumbnailUrl(urlIdentifier);
-      try {
-        const response = await this.apiService.head(url, { skipRedirects: true });
-        if (response.status === HttpStatus.OK) {
-          this.logger.log(`Thumbnail already generated for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
-          return GenerateThumbnailResult.success;
-        }
-      } catch (error) {
-        // we will attempt to extract thumbnail
+      const hasThumbnailGenerated = await this.hasThumbnailGenerated(nftIdentifier, fileUrl);
+      if (hasThumbnailGenerated) {
+        this.logger.log(`Thumbnail already generated for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+        return GenerateThumbnailResult.success;
       }
     }
 

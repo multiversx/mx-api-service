@@ -1,6 +1,7 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { ApiService } from "src/common/network/api.service";
 import { MediaMimeTypeEnum } from "src/endpoints/nfts/entities/media.mime.type";
 import { Nft } from "src/endpoints/nfts/entities/nft";
@@ -28,9 +29,9 @@ export class NftMediaService {
 
   async fetchMedia(nft: Nft, forceRefresh: boolean = false) {
     let media = await this.cachingService.getOrSetCache(
-      `nftMedia:${nft.identifier}`,
+      CacheInfo.NftMedia(nft.identifier).key,
       async () => await this.fetchMediaRaw(nft),
-      Constants.oneMonth() * 12,
+      CacheInfo.NftMedia(nft.identifier).ttl,
       Constants.oneDay(),
       forceRefresh
     );
