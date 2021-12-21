@@ -16,6 +16,7 @@ import { TransactionStatus } from "src/endpoints/transactions/entities/transacti
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
+import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -146,7 +147,7 @@ export class TransactionProcessorService {
 
     const nft = await this.nftService.getSingleNft(nftIdentifier);
 
-    await this.nftWorkerService.addProcessNftQueueJob(nft);
+    await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
   }
 
   async tryInvalidateOwner(transaction: ShardTransaction): Promise<string[]> {

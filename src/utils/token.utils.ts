@@ -18,7 +18,7 @@ export class TokenUtils {
     return crypto.SHA256(url).toString().slice(0, 8);
   }
 
-  static getThumbnailUrl(nftIdentifier: string, fileUrl: string) {
+  static getThumbnailUrlIdentifier(nftIdentifier: string, fileUrl: string) {
     const collectionIdentifier = nftIdentifier.split('-').slice(0, 2).join('-');
     const urlHash = TokenUtils.getUrlHash(fileUrl);
 

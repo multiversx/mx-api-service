@@ -3,6 +3,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { Job } from "bull";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
+import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 import { NftMediaService } from "./job-services/media/nft.media.service";
 import { NftMetadataService } from "./job-services/metadata/nft.metadata.service";
 import { NftThumbnailService } from "./job-services/thumbnails/nft.thumbnail.service";
@@ -21,22 +22,23 @@ export class NftQueueService {
   }
 
   @Process({ concurrency: 4 })
-  async onNftCreated(job: Job<{ identifier: string, nft: Nft }>) {
+  async onNftCreated(job: Job<{ identifier: string, nft: Nft, settings: ProcessNftSettings }>) {
     this.logger.log({ type: 'consumer', jobId: job.id, identifier: job.data.identifier, attemptsMade: job.attemptsMade });
 
     let nft = job.data.nft;
+    let settings = job.data.settings;
 
-    await this.nftMetadataService.fetchMetadata(nft);
-    await this.nftMediaService.fetchMedia(nft);
+    await this.nftMetadataService.fetchMetadata(nft, settings.forceRefreshMetadata);
+    await this.nftMediaService.fetchMedia(nft, settings.forceRefreshMedia);
 
     if (nft.media) {
-      await Promise.all(nft.media.map(media => this.generateThumbnail(nft, media)));
+      await Promise.all(nft.media.map(media => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
     }
   }
 
-  private async generateThumbnail(nft: Nft, media: NftMedia): Promise<void> {
+  private async generateThumbnail(nft: Nft, media: NftMedia, forceRefresh: boolean = false): Promise<void> {
     try {
-      await this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType);
+      await this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType, forceRefresh);
     } catch (error) {
       this.logger.error(`An unhandled exception occurred when generating thumbnail for nft with identifier '${nft.identifier}' and url '${media.url}'`);
       this.logger.error(error);

@@ -23,6 +23,7 @@ import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.com
 import { CollectionService } from "src/endpoints/collections/collection.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { ProcessNftsService } from "src/endpoints/process-nfts/process.nfts.service";
+import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 
 @Injectable()
 export class CacheWarmerService {
@@ -87,7 +88,7 @@ export class CacheWarmerService {
     await Locker.lock('Nft worker invalidations', async () => {
       let collections = await this.collectionService.getNftCollections({ from: 0, size: 10000 }, new CollectionFilter());
       for (let collection of collections) {
-        await this.generateThumbnailService.processCollection(collection.ticker);
+        await this.generateThumbnailService.processCollection(collection.ticker, new ProcessNftSettings());
       }
     }, true);
   }

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import axios from "axios";
 import sharp, { fit } from 'sharp';
 import ffmpeg from 'fluent-ffmpeg'
@@ -11,6 +11,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GenerateThumbnailResult } from "./entities/generate.thumbnail.result";
 import { ThumbnailType } from "./entities/thumbnail.type";
 import { AWSService } from "./aws.service";
+import { ApiService } from "src/common/network/api.service";
 
 @Injectable()
 export class NftThumbnailService {
@@ -21,6 +22,7 @@ export class NftThumbnailService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly awsService: AWSService,
+    private readonly apiService: ApiService,
   ) {
     this.logger = new Logger(NftThumbnailService.name);
   }
@@ -140,7 +142,7 @@ export class NftThumbnailService {
     }
   }
 
-  async generateThumbnail(nft: Nft, fileUrl: string, fileType: string): Promise<GenerateThumbnailResult> {
+  async generateThumbnail(nft: Nft, fileUrl: string, fileType: string, forceRefresh: boolean = false): Promise<GenerateThumbnailResult> {
     let nftIdentifier = nft.identifier;
     const urlHash = TokenUtils.getUrlHash(fileUrl);
 
@@ -154,12 +156,24 @@ export class NftThumbnailService {
     const fileResult: any = await axios.get(fileUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS });
     const file = fileResult.data;
 
-    const thumbnailUrl = TokenUtils.getThumbnailUrl(nftIdentifier, fileUrl);
+    const urlIdentifier = TokenUtils.getThumbnailUrlIdentifier(nftIdentifier, fileUrl);
+    if (!forceRefresh) {
+      const url = this.getFullThumbnailUrl(urlIdentifier);
+      try {
+        const response = await this.apiService.head(url);
+        if (response.status === HttpStatus.OK) {
+          this.logger.log(`Thumbnail already generated for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+          return GenerateThumbnailResult.success;
+        }
+      } catch (error) {
+        // we will attempt to extract thumbnail
+      }
+    }
 
     if (ThumbnailType.isAudio(fileType)) {
       const thumbnail = await this.extractThumbnailFromAudio(file, nftIdentifier);
       if (thumbnail) {
-        await this.uploadThumbnail(thumbnailUrl, thumbnail, 'image/png');
+        await this.uploadThumbnail(urlIdentifier, thumbnail, 'image/png');
         this.logger.log(`Successfully generated audio thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
         return GenerateThumbnailResult.success;
       } else {
@@ -169,7 +183,7 @@ export class NftThumbnailService {
     } else if (ThumbnailType.isImage(fileType)) {
       const thumbnail = await this.extractThumbnailFromImage(file);
       if (thumbnail) {
-        await this.uploadThumbnail(thumbnailUrl, thumbnail, fileType);
+        await this.uploadThumbnail(urlIdentifier, thumbnail, fileType);
         this.logger.log(`Successfully generated image thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
         return GenerateThumbnailResult.success;
       } else {
@@ -179,7 +193,7 @@ export class NftThumbnailService {
     } else if (ThumbnailType.isVideo(fileType)) {
       const thumbnail = await this.extractThumbnailFromVideo(file, nftIdentifier);
       if (thumbnail) {
-        await this.uploadThumbnail(thumbnailUrl, thumbnail, 'image/png');
+        await this.uploadThumbnail(urlIdentifier, thumbnail, 'image/png');
         this.logger.log(`Successfully generated video thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
         return GenerateThumbnailResult.success;
       } else {
@@ -192,7 +206,17 @@ export class NftThumbnailService {
     }
   }
 
-  async uploadThumbnail(thumbnailUrl: string, buffer: Buffer, fileType: string): Promise<void> {
-    await this.awsService.uploadToS3(`${this.STANDARD_PATH}/${thumbnailUrl}`, buffer, fileType);
+  async uploadThumbnail(urlIdentifier: string, buffer: Buffer, fileType: string): Promise<void> {
+    const url = this.getThumbnailUrlSuffix(urlIdentifier);
+    await this.awsService.uploadToS3(url, buffer, fileType);
+  }
+
+  private getFullThumbnailUrl(urlIdentifier: string): string {
+    const suffix = this.getThumbnailUrlSuffix(urlIdentifier);
+    return `${this.apiConfigService.getMediaUrl()}/${suffix}`;
+  }
+
+  private getThumbnailUrlSuffix(urlIdentifier: string): string {
+    return `${this.STANDARD_PATH}/${urlIdentifier}`;
   }
 }

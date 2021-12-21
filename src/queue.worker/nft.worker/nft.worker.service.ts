@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { InjectQueue } from "@nestjs/bull";
 import { Queue } from "bull";
 import { Nft } from "src/endpoints/nfts/entities/nft";
+import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 
 @Injectable()
 export class NftWorkerService {
@@ -13,18 +14,18 @@ export class NftWorkerService {
     this.logger = new Logger(NftWorkerService.name);
   }
 
-  async addProcessNftQueueJob(nft: Nft | undefined): Promise<void> {
+  async addProcessNftQueueJob(nft: Nft | undefined, settings: ProcessNftSettings): Promise<void> {
     if (!nft) {
       return;
     }
 
-    const job = await this.nftQueue.add({ identifier: nft.identifier, nft }, {
+    const job = await this.nftQueue.add({ identifier: nft.identifier, nft, settings }, {
       priority: 1000,
       attempts: 3,
       timeout: 60000,
       removeOnComplete: true
     });
 
-    this.logger.log({ type: 'producer', jobId: job.id, identifier: job.data.identifier });
+    this.logger.log({ type: 'producer', jobId: job.id, identifier: job.data.identifier, settings });
   }
 }
