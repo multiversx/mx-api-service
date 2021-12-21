@@ -15,7 +15,6 @@ import { TokenUtils } from "src/utils/token.utils";
 export class NftMediaService {
   private readonly logger: Logger;
   private readonly IPFS_REQUEST_TIMEOUT = Constants.oneSecond() * 30 * 1000;
-  private readonly MAX_CONTENT_LENGTH = 16000;
   private readonly NFT_THUMBNAIL_PREFIX;
 
   constructor(
@@ -45,10 +44,13 @@ export class NftMediaService {
       let fileProperties: { contentType: string, contentLength: number } | undefined = undefined;
         
       try {
+        this.logger.log(`Started fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
         fileProperties = await this.getFilePropertiesFromIpfs(BinaryUtils.base64Decode(uri));
+        this.logger.log(`Completed fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
       } catch (error) {
-        this.logger.error(`Unexpected error when fetching media for nft '${nft.identifier}' and uri '${uri}'`);
+        this.logger.error(`Unexpected error when fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
         this.logger.error(error);
+        throw error;
       }
       
       if (!fileProperties) {
@@ -73,24 +75,25 @@ export class NftMediaService {
     nft.media = mediaArray;
   }
 
-  private async getFilePropertiesFromIpfs(ipfsUri: string): Promise<{ contentType: string, contentLength: number } | undefined> {
-    try {
-      const ipfsResponse = await this.apiService.head(ipfsUri, this.IPFS_REQUEST_TIMEOUT);
-      if (ipfsResponse.status === HttpStatus.OK) {
-        const { headers } = ipfsResponse;
-        const contentType = headers['content-type'];
-        const contentLength = headers['content-length'];
+  private async getFilePropertiesFromIpfs(uri: string): Promise<{ contentType: string, contentLength: number } | undefined> {
+    const response = await this.apiService.head(uri, this.IPFS_REQUEST_TIMEOUT);
+    if (response.status !== HttpStatus.OK) {
+      this.logger.error(`Unexpected http status code '${response.status}' while fetching file properties from uri '${uri}'`);
+      return undefined;
+    }
 
-        return this.isContentAccepted(contentType, contentLength) ? { contentType, contentLength } : undefined
-      }
+    const { headers } = response;
+    const contentType = headers['content-type'];
+    const contentLength = Number(headers['content-length']);
+
+    if (!this.isContentAccepted(contentType)) {
       return undefined;
     }
-    catch (error) {
-      return undefined;
-    }
+
+    return { contentType, contentLength };
   }
 
-  private isContentAccepted(contentType: MediaMimeTypeEnum, contentLength: number) {
-    return Object.values(MediaMimeTypeEnum).includes(contentType) && contentLength <= this.MAX_CONTENT_LENGTH;
+  private isContentAccepted(contentType: MediaMimeTypeEnum) {
+    return Object.values(MediaMimeTypeEnum).includes(contentType);
   }
 }
