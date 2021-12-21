@@ -165,7 +165,6 @@ export class TokenService {
       let esdt = esdts[tokenIdentifier];
       let token = tokensIndexed[tokenIdentifier];
       if (!token) {
-        this.logger.log(`Could not find token with identifier ${tokenIdentifier} for address ${address}`);
         continue;
       }
 
