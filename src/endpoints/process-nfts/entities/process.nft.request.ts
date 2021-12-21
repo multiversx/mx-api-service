@@ -4,4 +4,5 @@ export class ProcessNftRequest {
   forceRefreshMedia?: boolean;
   forceRefreshMetadata?: boolean;
   forceRefreshThumbnail?: boolean;
+  skipRefreshThumbnail?: boolean;
 }

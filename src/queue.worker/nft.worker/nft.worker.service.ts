@@ -43,21 +43,21 @@ export class NftWorkerService {
   private async needsProcessing(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
     if (!settings.forceRefreshMedia) {
       let mediaKey = CacheInfo.NftMedia(nft.identifier).key;
-      let hasMediaValue = await this.cachingService.getKeys(mediaKey);
-      if (!hasMediaValue) {
+      let mediaKeyResult = await this.cachingService.getKeys(mediaKey);
+      if (mediaKeyResult.length === 0) {
         return true;
       }
     }
 
     if (!settings.forceRefreshMetadata) {
       let metadataKey = CacheInfo.NftMetadata(nft.identifier).key;
-      let hasMetadataValue = await this.cachingService.getKeys(metadataKey);
-      if (!hasMetadataValue) {
+      let metadataKeyResult = await this.cachingService.getKeys(metadataKey);
+      if (metadataKeyResult.length === 0) {
         return true;
       }
     }
 
-    if (!settings.forceRefreshThumbnail) {
+    if (!settings.forceRefreshThumbnail && !settings.skipRefreshThumbnail) {
       if (nft.media) {
         for (let media of nft.media) {
           let hasThumbnailGenerated = await this.nftThumbnailService.hasThumbnailGenerated(nft.identifier, media.url);

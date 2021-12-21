@@ -17,6 +17,7 @@ export class ProcessNftsController {
       forceRefreshMedia: generateRequest.forceRefreshMedia ?? false,
       forceRefreshMetadata: generateRequest.forceRefreshMetadata ?? false,
       forceRefreshThumbnail: generateRequest.forceRefreshThumbnail ?? false,
+      skipRefreshThumbnail: generateRequest.skipRefreshThumbnail ?? false
     }
 
     if (generateRequest.collection) {
