@@ -3,5 +3,5 @@ export class ProcessNftRequest {
   identifier?: string;
   forceRefreshMedia?: boolean;
   forceRefreshMetadata?: boolean;
-  forceRefreshThumbnail?: boolean;
+  excludeThumbnail?: boolean;
 }

@@ -11,18 +11,18 @@ export class ProcessNftsController {
 
   @Post("/nfts/process")
   async generateThumbnails(
-    @Body() generateRequest: ProcessNftRequest,
+    @Body() processNftRequest: ProcessNftRequest,
   ): Promise<void> {
     let settings: ProcessNftSettings = {
-      forceRefreshMedia: generateRequest.forceRefreshMedia ?? false,
-      forceRefreshMetadata: generateRequest.forceRefreshMetadata ?? false,
-      forceRefreshThumbnail: generateRequest.forceRefreshThumbnail ?? false,
+      forceRefreshMedia: processNftRequest.forceRefreshMedia ?? false,
+      forceRefreshMetadata: processNftRequest.forceRefreshMetadata ?? false,
+      excludeThumbnail: processNftRequest.excludeThumbnail ?? false,
     }
 
-    if (generateRequest.collection) {
-      await this.generateThumbnailService.processCollection(generateRequest.collection, settings);
-    } else if (generateRequest.identifier) {
-      await this.generateThumbnailService.processNft(generateRequest.identifier, settings);
+    if (processNftRequest.collection) {
+      await this.generateThumbnailService.processCollection(processNftRequest.collection, settings);
+    } else if (processNftRequest.identifier) {
+      await this.generateThumbnailService.processNft(processNftRequest.identifier, settings);
     } else {
       throw new HttpException('Provide an identifier or a collection to generate thumbnails for', HttpStatus.BAD_REQUEST);
     }
