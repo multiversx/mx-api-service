@@ -86,7 +86,7 @@ export class NftMediaService {
   }
 
   private async getFilePropertiesFromIpfs(uri: string): Promise<{ contentType: string, contentLength: number } | undefined> {
-    const response = await this.apiService.head(uri, this.IPFS_REQUEST_TIMEOUT);
+    const response = await this.apiService.head(uri, { timeout: this.IPFS_REQUEST_TIMEOUT });
     if (response.status !== HttpStatus.OK) {
       this.logger.error(`Unexpected http status code '${response.status}' while fetching file properties from uri '${uri}'`);
       return undefined;

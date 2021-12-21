@@ -4,6 +4,7 @@ import Agent from 'agentkeepalive';
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { PerformanceProfiler } from "src/utils/performance.profiler";
+import { ApiSettings } from "./entities/api.settings";
 
 @Injectable()
 export class ApiService {
@@ -35,8 +36,9 @@ export class ApiService {
   }
 
 
-  private getConfig(timeout: number | undefined): AxiosRequestConfig {
-    timeout = timeout || this.defaultTimeout;
+  private getConfig(settings: ApiSettings): AxiosRequestConfig {
+    const timeout = settings.timeout || this.defaultTimeout;
+    const maxRedirects = settings.skipRedirects === true ? 0 : undefined;
 
     let headers = {};
 
@@ -48,6 +50,7 @@ export class ApiService {
 
     return {
       timeout,
+      maxRedirects,
       httpAgent: this.getKeepAliveAgent(),
       headers,
       transformResponse: [ 
@@ -62,13 +65,11 @@ export class ApiService {
     };
   }
 
-  async get(url: string, timeout: number | undefined = undefined, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
-    timeout = timeout || this.defaultTimeout;
-
+  async get(url: string, settings: ApiSettings = new ApiSettings(), errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     let profiler = new PerformanceProfiler();
 
     try {
-      return await axios.get(url, this.getConfig(timeout));
+      return await axios.get(url, this.getConfig(settings));
     } catch (error: any) {
       let handled = false;
       if (errorHandler) {
@@ -96,13 +97,11 @@ export class ApiService {
     }
   }
 
-  async post(url: string, data: any, timeout: number | undefined = undefined, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
-    timeout = timeout || this.defaultTimeout;
-
+  async post(url: string, data: any, settings: ApiSettings = new ApiSettings(), errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     let profiler = new PerformanceProfiler();
     
     try {
-      return await axios.post(url, data, this.getConfig(timeout));
+      return await axios.post(url, data, this.getConfig(settings));
     } catch (error: any) {
       let handled = false;
       if (errorHandler) {
@@ -131,13 +130,11 @@ export class ApiService {
     }
   }
 
-  async head(url: string, timeout: number | undefined = undefined, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
-    timeout = timeout || this.defaultTimeout;
-
+  async head(url: string, settings: ApiSettings = new ApiSettings(), errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     let profiler = new PerformanceProfiler();
 
     try {
-      return await axios.head(url, this.getConfig(timeout));
+      return await axios.head(url, this.getConfig(settings));
     } catch (error: any) {
       let handled = false;
       if (errorHandler) {
