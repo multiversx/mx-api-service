@@ -1,4 +1,4 @@
-export class GenerateThumbnailRequest {
+export class ProcessNftRequest {
   collection?: string;
   identifier?: string;
 }

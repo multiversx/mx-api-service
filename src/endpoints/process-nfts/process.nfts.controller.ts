@@ -1,5 +1,5 @@
 import { Body, Controller, HttpException, HttpStatus, Post } from "@nestjs/common";
-import { GenerateThumbnailRequest } from "./entities/generate.thumbnail.request";
+import { ProcessNftRequest } from "./entities/generate.thumbnail.request";
 import { ProcessNftsService } from "./process.nfts.service";
 
 @Controller()
@@ -10,7 +10,7 @@ export class ProcessNftsController {
 
   @Post("/nfts/process")
   async generateThumbnails(
-    @Body() generateRequest: GenerateThumbnailRequest,
+    @Body() generateRequest: ProcessNftRequest,
   ): Promise<void> {
     if (generateRequest.collection) {
       await this.generateThumbnailService.processCollection(generateRequest.collection);
