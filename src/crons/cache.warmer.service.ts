@@ -87,8 +87,10 @@ export class CacheWarmerService {
   async handleNftWorker() {
     await Locker.lock('Nft worker invalidations', async () => {
       let collections = await this.collectionService.getNftCollections({ from: 0, size: 10000 }, new CollectionFilter());
+      const processNftSettings: ProcessNftSettings = new ProcessNftSettings();
+      processNftSettings.excludeThumbnail = true;
       for (let collection of collections) {
-        await this.generateThumbnailService.processCollection(collection.ticker, new ProcessNftSettings());
+        await this.generateThumbnailService.processCollection(collection.ticker, processNftSettings);
       }
     }, true);
   }

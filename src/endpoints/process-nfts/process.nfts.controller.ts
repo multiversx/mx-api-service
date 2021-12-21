@@ -6,7 +6,7 @@ import { ProcessNftsService } from "./process.nfts.service";
 @Controller()
 export class ProcessNftsController {
   constructor(
-    private readonly generateThumbnailService: ProcessNftsService
+    private readonly processNftService: ProcessNftsService,
   ) { }
 
   @Post("/nfts/process")
@@ -19,10 +19,13 @@ export class ProcessNftsController {
       excludeThumbnail: processNftRequest.excludeThumbnail ?? false,
     }
 
-    if (processNftRequest.collection) {
-      await this.generateThumbnailService.processCollection(processNftRequest.collection, settings);
+    if (processNftRequest.allCollections) {
+      await this.processNftService.processAllCollections(settings);
+    }
+    else if (processNftRequest.collection) {
+      await this.processNftService.processCollection(processNftRequest.collection, settings);
     } else if (processNftRequest.identifier) {
-      await this.generateThumbnailService.processNft(processNftRequest.identifier, settings);
+      await this.processNftService.processNft(processNftRequest.identifier, settings);
     } else {
       throw new HttpException('Provide an identifier or a collection to generate thumbnails for', HttpStatus.BAD_REQUEST);
     }
