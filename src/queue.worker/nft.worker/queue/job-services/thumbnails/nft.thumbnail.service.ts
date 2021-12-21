@@ -160,7 +160,7 @@ export class NftThumbnailService {
     if (!forceRefresh) {
       const url = this.getFullThumbnailUrl(urlIdentifier);
       try {
-        const response = await this.apiService.head(url);
+        const response = await this.apiService.head(url, { skipRedirects: true });
         if (response.status === HttpStatus.OK) {
           this.logger.log(`Thumbnail already generated for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
           return GenerateThumbnailResult.success;
