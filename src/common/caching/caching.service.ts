@@ -265,26 +265,28 @@ export class CachingService {
     return result;
   };
 
-  async getOrSetCache<T>(key: string, promise: () => Promise<T>, remoteTtl: number = this.configService.getCacheTtl(), localTtl: number | undefined = undefined): Promise<T> {
+  async getOrSetCache<T>(key: string, promise: () => Promise<T>, remoteTtl: number = this.configService.getCacheTtl(), localTtl: number | undefined = undefined, forceRefresh: boolean = false): Promise<T> {
     if (!localTtl) {
       localTtl = remoteTtl / 2;
     }
 
     let profiler = new PerformanceProfiler(`vmQuery:${key}`);
 
-    let cachedValue = await this.getCacheLocal<T>(key);
-    if (cachedValue !== undefined) {
-      profiler.stop(`Local Cache hit for key ${key}`);
-      return cachedValue;
-    }
+    if (!forceRefresh) {
+      let cachedValue = await this.getCacheLocal<T>(key);
+      if (cachedValue !== undefined) {
+        profiler.stop(`Local Cache hit for key ${key}`);
+        return cachedValue;
+      }
 
-    let cached = await this.getCacheRemote<T>(key);
-    if (cached !== undefined && cached !== null) {
-      profiler.stop(`Remote Cache hit for key ${key}`);
+      let cached = await this.getCacheRemote<T>(key);
+      if (cached !== undefined && cached !== null) {
+        profiler.stop(`Remote Cache hit for key ${key}`);
 
-      // we only set ttl to half because we don't know what the real ttl of the item is and we want it to work good in most scenarios
-      await this.setCacheLocal<T>(key, cached, localTtl);
-      return cached;
+        // we only set ttl to half because we don't know what the real ttl of the item is and we want it to work good in most scenarios
+        await this.setCacheLocal<T>(key, cached, localTtl);
+        return cached;
+      }
     }
 
     let value = await this.executeWithPendingPromise(`caching:set:${key}`, promise);

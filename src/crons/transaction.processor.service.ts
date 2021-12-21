@@ -146,7 +146,7 @@ export class TransactionProcessorService {
 
     const nft = await this.nftService.getSingleNft(nftIdentifier);
 
-    await this.nftWorkerService.addNftQueueJob(nft);
+    await this.nftWorkerService.addProcessNftQueueJob(nft);
   }
 
   async tryInvalidateOwner(transaction: ShardTransaction): Promise<string[]> {

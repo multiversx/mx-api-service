@@ -35,6 +35,12 @@ export class NftQueueService {
   }
 
   private async generateThumbnail(nft: Nft, media: NftMedia): Promise<void> {
-    await this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType);
+    try {
+      await this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType);
+    } catch (error) {
+      this.logger.error(`An unhandled exception occurred when generating thumbnail for nft with identifier '${nft.identifier}' and url '${media.url}'`);
+      this.logger.error(error);
+      throw error;
+    }
   }
 }

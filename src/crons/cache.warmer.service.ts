@@ -22,7 +22,7 @@ import { PluginService } from "src/common/plugins/plugin.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { CollectionService } from "src/endpoints/collections/collection.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
-import { GenerateThumbnailService } from "src/endpoints/generate-thumbnails/generate.thumbnail.service";
+import { ProcessNftsService } from "src/endpoints/process-nfts/process.nfts.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -42,7 +42,7 @@ export class CacheWarmerService {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly tokenAssetService: TokenAssetService,
     private readonly pluginService: PluginService,
-    private readonly generateThumbnailService: GenerateThumbnailService,
+    private readonly generateThumbnailService: ProcessNftsService,
     private readonly collectionService: CollectionService,
   ) {
     this.configCronJob(
@@ -87,7 +87,7 @@ export class CacheWarmerService {
     await Locker.lock('Nft worker invalidations', async () => {
       let collections = await this.collectionService.getNftCollections({ from: 0, size: 10000 }, new CollectionFilter());
       for (let collection of collections) {
-        await this.generateThumbnailService.generateThumbnails(collection.ticker);
+        await this.generateThumbnailService.processCollection(collection.ticker);
       }
     }, true);
   }

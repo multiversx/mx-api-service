@@ -26,13 +26,29 @@ export class NftMediaService {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset'
   }
 
-  async fetchMedia(nft: Nft) {
-    if (nft.type === NftType.MetaESDT) {
+  async fetchMedia(nft: Nft, forceRefresh: boolean = false) {
+    let media = await this.cachingService.getOrSetCache(
+      `nftMedia:${nft.identifier}`,
+      async () => await this.fetchMediaRaw(nft),
+      Constants.oneMonth() * 12,
+      Constants.oneDay(),
+      forceRefresh
+    );
+
+    if (!media) {
       return;
     }
 
+    nft.media = media;
+  }
+
+  async fetchMediaRaw(nft: Nft): Promise<NftMedia[] | null> {
+    if (nft.type === NftType.MetaESDT) {
+      return null;
+    }
+
     if (!nft.uris) {
-      return;
+      return null;
     }
 
     const mediaArray: NftMedia[] = [];
@@ -66,13 +82,7 @@ export class NftMediaService {
       mediaArray.push(nftMedia);
     }
 
-    await this.cachingService.setCache(
-      `nftMedia:${nft.identifier}`,
-      mediaArray,
-      Constants.oneMonth() * 12,
-    );
-
-    nft.media = mediaArray;
+    return mediaArray;
   }
 
   private async getFilePropertiesFromIpfs(uri: string): Promise<{ contentType: string, contentLength: number } | undefined> {

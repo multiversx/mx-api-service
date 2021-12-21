@@ -174,7 +174,7 @@ export class NftThumbnailService {
         return GenerateThumbnailResult.success;
       } else {
         this.logger.log(`Thumbnail could not be generated from image for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
-        return GenerateThumbnailResult.couldNotExtractThumbnail
+        return GenerateThumbnailResult.couldNotExtractThumbnail;
       }
     } else if (ThumbnailType.isVideo(fileType)) {
       const thumbnail = await this.extractThumbnailFromVideo(file, nftIdentifier);
@@ -184,7 +184,7 @@ export class NftThumbnailService {
         return GenerateThumbnailResult.success;
       } else {
         this.logger.log(`Thumbnail could not be generated from video for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
-        return GenerateThumbnailResult.couldNotExtractThumbnail
+        return GenerateThumbnailResult.couldNotExtractThumbnail;
       }
     } else {
       this.logger.log(`Could not determine file type for NFT with identifier '${nftIdentifier}' and file type '${fileType}' and url hash '${urlHash}'`);

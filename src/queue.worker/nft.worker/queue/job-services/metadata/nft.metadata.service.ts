@@ -17,30 +17,36 @@ export class NftMetadataService {
     this.logger = new Logger(NftMetadataService.name);
   }
 
-  async fetchMetadata(nft: Nft) {
-    if (!nft.attributes) {
+  async fetchMetadata(nft: Nft, forceRefresh: boolean = false) {
+    let metadata = await this.cachingService.getOrSetCache(
+      `nftMetadata:${nft.identifier}`,
+      async () => await this.fetchMetadataRaw(nft),
+      Constants.oneMonth() * 12,
+      Constants.oneDay(),
+      forceRefresh
+    );
+    
+    if (!metadata) {
       return;
     }
 
-    this.logger.log(`Started fetching metadata for nft with identifier '${nft.identifier}'`);
+    nft.metadata = metadata;
+  }
 
-    let nftMetadata: NftMetadata | undefined;
+  async fetchMetadataRaw(nft: Nft): Promise<NftMetadata | null> {
+    if (!nft.attributes) {
+      return null;
+    }
+
     try {
-      nftMetadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(nft.attributes);
+      this.logger.log(`Started fetching metadata for nft with identifier '${nft.identifier}'`);
+      let nftMetadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(nft.attributes);
+      this.logger.log(`Completed fetching metadata for nft with identifier '${nft.identifier}'`);
+      return nftMetadata ?? null;
     } catch (error) {
       this.logger.error(error);
       this.logger.error(`Error when fetching metadata for nft with identifier '${nft.identifier}'`);
-      return;
+      throw error;
     }
-
-    await this.cachingService.setCache(
-      `nftMetadata:${nft.identifier}`,
-      nftMetadata ?? null,
-      Constants.oneMonth() * 12,
-    );
-
-    this.logger.log(`Completed fetching metadata for nft with identifier '${nft.identifier}'`);
-
-    nft.metadata = nftMetadata;
   }
 }

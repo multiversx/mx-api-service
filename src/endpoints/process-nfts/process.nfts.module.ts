@@ -2,7 +2,7 @@ import { forwardRef, Module } from "@nestjs/common";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import { NftWorkerModule } from "src/queue.worker/nft.worker/nft.worker.module";
 import { NftModule } from "../nfts/nft.module";
-import { GenerateThumbnailService } from "./generate.thumbnail.service";
+import { ProcessNftsService } from "./process.nfts.service";
 
 @Module({
   imports: [
@@ -11,10 +11,10 @@ import { GenerateThumbnailService } from "./generate.thumbnail.service";
     forwardRef(() => NftModule),
   ],
   providers: [
-    GenerateThumbnailService,
+    ProcessNftsService,
   ],
   exports: [
-    GenerateThumbnailService,
+    ProcessNftsService,
   ]
 })
-export class GenerateThumbnailModule { }
+export class ProcessNftsModule { }

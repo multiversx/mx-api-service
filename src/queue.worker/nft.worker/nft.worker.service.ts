@@ -13,7 +13,7 @@ export class NftWorkerService {
     this.logger = new Logger(NftWorkerService.name);
   }
 
-  async addNftQueueJob(nft: Nft | undefined): Promise<void> {
+  async addProcessNftQueueJob(nft: Nft | undefined): Promise<void> {
     if (!nft) {
       return;
     }
