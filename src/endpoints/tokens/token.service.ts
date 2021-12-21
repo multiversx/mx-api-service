@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
 import { TokenDetailed } from "./entities/token.detailed";
@@ -17,14 +17,11 @@ import { QueryOperator } from "src/common/elastic/entities/query.operator";
 
 @Injectable()
 export class TokenService {
-  private readonly logger: Logger
 
   constructor(
     private readonly esdtService: EsdtService,
     private readonly elasticService: ElasticService,
-  ) {
-    this.logger = new Logger(TokenService.name);
-  }
+  ) { }
 
   async getToken(identifier: string): Promise<TokenDetailed | undefined> {
     let tokens = await this.esdtService.getAllEsdtTokens();
