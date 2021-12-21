@@ -45,8 +45,7 @@ export class NftMediaService {
       let fileProperties: { contentType: string, contentLength: number } | undefined = undefined;
         
       try {
-        let url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(uri), this.NFT_THUMBNAIL_PREFIX);
-        fileProperties = await this.getFilePropertiesFromIpfs(url);
+        fileProperties = await this.getFilePropertiesFromIpfs(BinaryUtils.base64Decode(uri));
       } catch (error) {
         this.logger.error(`Unexpected error when fetching media for nft '${nft.identifier}' and uri '${uri}'`);
         this.logger.error(error);
@@ -80,7 +79,7 @@ export class NftMediaService {
       if (ipfsResponse.status === HttpStatus.OK) {
         const { headers } = ipfsResponse;
         const contentType = headers['content-type'];
-        const contentLength = headers['content-length'] / 1000;
+        const contentLength = headers['content-length'];
 
         return this.isContentAccepted(contentType, contentLength) ? { contentType, contentLength } : undefined
       }
