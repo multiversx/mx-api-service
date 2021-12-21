@@ -11,19 +11,13 @@ export class GenerateThumbnailController {
   @Post("/generate-thumbnails")
   async generateThumbnails(
     @Body() generateRequest: GenerateThumbnailRequest,
-  ): Promise<string> {
-
+  ): Promise<void> {
     if (generateRequest.collection) {
       await this.generateThumbnailService.generateThumbnails(generateRequest.collection);
-
-      return `Generate thumbnails jobs for collection ${generateRequest.collection} started!`;
-    }
-    if (generateRequest.identifier) {
+    } else if (generateRequest.identifier) {
       await this.generateThumbnailService.generateThumbnailsForNft(generateRequest.identifier);
-
-      return `Generate thumbnails jobs for nft ${generateRequest.identifier} started!`;
+    } else {
+      throw new HttpException('Provide an identifier or a collection to generate thumbnails for', HttpStatus.BAD_REQUEST);
     }
-
-    throw new HttpException('Provide an identifier or a collection to generate thumbnails for', HttpStatus.BAD_REQUEST);
   }
 }

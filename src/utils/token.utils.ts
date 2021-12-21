@@ -1,4 +1,5 @@
 import { ApiUtils } from "./api.utils";
+import * as crypto from 'crypto-js';
 
 export class TokenUtils {
   static isEsdt(tokenIdentifier: string) {
@@ -14,10 +15,7 @@ export class TokenUtils {
   }
 
   static getUrlHash(url: string) {
-    if (url.split('/').length < 7) {
-      return undefined;
-    }
-    return `${url.split('/')[5]}-${url.split('/')[6]}`;
+    return crypto.SHA256(url).toString().slice(0, 8);
   }
 
   static getThumbnailUrl(nftIdentifier: string, fileUrl: string) {

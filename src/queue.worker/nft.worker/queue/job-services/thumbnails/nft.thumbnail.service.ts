@@ -4,7 +4,7 @@ import sharp, { fit } from 'sharp';
 import ffmpeg from 'fluent-ffmpeg'
 import path from "path";
 import { Nft } from "src/endpoints/nfts/entities/nft";
-import { TokenUtils } from "src/utils/tokens.utils";
+import { TokenUtils } from "src/utils/token.utils";
 import { Constants } from "src/utils/constants";
 import { FileUtils } from "src/utils/file.utils";
 import { ApiConfigService } from "src/common/api-config/api.config.service";

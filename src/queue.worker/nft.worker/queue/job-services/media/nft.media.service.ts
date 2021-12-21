@@ -8,7 +8,7 @@ import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
-import { TokenUtils } from "src/utils/tokens.utils";
+import { TokenUtils } from "src/utils/token.utils";
 
 
 @Injectable()
@@ -45,7 +45,8 @@ export class NftMediaService {
       let fileProperties: { contentType: string, contentLength: number } | undefined = undefined;
         
       try {
-        fileProperties = await this.getFilePropertiesFromIpfs(BinaryUtils.base64Decode(uri));
+        let url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(uri), this.NFT_THUMBNAIL_PREFIX);
+        fileProperties = await this.getFilePropertiesFromIpfs(url);
       } catch (error) {
         this.logger.error(`Unexpected error when fetching media for nft '${nft.identifier}' and uri '${uri}'`);
         this.logger.error(error);
@@ -67,7 +68,7 @@ export class NftMediaService {
     await this.cachingService.setCache(
       `nftMedia:${nft.identifier}`,
       mediaArray,
-      Constants.oneWeek()
+      Constants.oneMonth() * 12,
     );
 
     nft.media = mediaArray;

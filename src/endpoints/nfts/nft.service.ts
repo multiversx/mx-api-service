@@ -4,7 +4,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
 import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
-import { TokenUtils } from "src/utils/tokens.utils";
+import { TokenUtils } from "src/utils/token.utils";
 import { Nft } from "./entities/nft";
 import { NftAccount } from "./entities/nft.account";
 import { NftFilter } from "./entities/nft.filter";

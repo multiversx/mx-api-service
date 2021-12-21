@@ -3,10 +3,8 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
 import asyncPool from "tiny-async-pool";
 import { Nft } from "../nfts/entities/nft";
-import { NftFilter } from "../nfts/entities/nft.filter";
 import { NftService } from "../nfts/nft.service";
 
-const GENERATE_MAX_SIZE = 10000;
 @Injectable()
 export class GenerateThumbnailService {
   constructor(
@@ -15,13 +13,8 @@ export class GenerateThumbnailService {
     private readonly nftService: NftService,
   ) { }
 
-  async generateThumbnails(collection?: string): Promise<void> {
-    let nfts;
-    if (collection) {
-      nfts = await this.nftService.getNfts({ from: 0, size: GENERATE_MAX_SIZE }, { collection })
-    } else {
-      nfts = await this.nftService.getNfts({ from: 0, size: GENERATE_MAX_SIZE }, new NftFilter());
-    }
+  async generateThumbnails(collection: string): Promise<void> {
+    let nfts = await this.nftService.getNfts({ from: 0, size: 10000 }, { collection });
 
     await asyncPool(
       this.apiConfigService.getPoolLimit(),

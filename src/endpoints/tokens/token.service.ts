@@ -5,7 +5,7 @@ import { TokenDetailed } from "./entities/token.detailed";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { ApiUtils } from "src/utils/api.utils";
 import { TokenFilter } from "./entities/token.filter";
-import { TokenUtils } from "src/utils/tokens.utils";
+import { TokenUtils } from "src/utils/token.utils";
 import { EsdtService } from "../esdt/esdt.service";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
