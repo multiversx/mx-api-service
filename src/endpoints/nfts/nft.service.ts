@@ -327,9 +327,9 @@ export class NftService {
     }
 
     if (filter.hasUris === true) {
-      nfts = nfts.filter(x => x.uris.length > 0);
+      nfts = nfts.filter(x => x.uris && x.uris.length > 0);
     } else if (filter.hasUris === false) {
-      nfts = nfts.filter(x => x.uris.length === 0);
+      nfts = nfts.filter(x => x.uris && x.uris.length === 0);
     }
 
     return nfts;
