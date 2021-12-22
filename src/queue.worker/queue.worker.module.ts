@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { NftWorkerModule } from './nft.worker/nft.worker.module';
+import { NftQueueModule } from './nft.worker/queue/nft.queue.module';
 
 @Module({
   imports: [
-    NftWorkerModule,
+    NftQueueModule,
   ],
   controllers: [],
   providers: [],
