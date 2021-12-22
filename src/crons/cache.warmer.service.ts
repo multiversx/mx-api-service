@@ -83,18 +83,6 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_1AM)
-  async handleNftWorker() {
-    await Locker.lock('Nft worker invalidations', async () => {
-      let collections = await this.collectionService.getNftCollections({ from: 0, size: 10000 }, new CollectionFilter());
-      const processNftSettings: ProcessNftSettings = new ProcessNftSettings();
-      processNftSettings.excludeThumbnail = true;
-      for (let collection of collections) {
-        await this.generateThumbnailService.processCollection(collection.ticker, processNftSettings);
-      }
-    }, true);
-  }
-
   @Cron(CronExpression.EVERY_MINUTE)
   async handleEsdtTokenInvalidations() {
     await Locker.lock('Esdt tokens invalidations', async () => {
