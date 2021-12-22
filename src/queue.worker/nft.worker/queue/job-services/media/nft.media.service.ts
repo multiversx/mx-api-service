@@ -62,7 +62,12 @@ export class NftMediaService {
         
       try {
         this.logger.log(`Started fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
-        fileProperties = await this.getFilePropertiesFromIpfs(BinaryUtils.base64Decode(uri));
+        let url = BinaryUtils.base64Decode(uri);
+        if (url.startsWith('https://ipfs.io/ipfs')) {
+          url = url.replace('https://ipfs.io/ipfs', 'https://gateway.pinata.cloud/ipfs');
+        }
+
+        fileProperties = await this.getFilePropertiesFromIpfs(url);
         this.logger.log(`Completed fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
       } catch (error) {
         this.logger.error(`Unexpected error when fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
