@@ -27,23 +27,23 @@ export class NftMediaService {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset'
   }
 
-  async fetchMedia(nft: Nft, forceRefresh: boolean = false) {
+  async getMedia(nft: Nft, forceRefresh: boolean = false): Promise<NftMedia[] | undefined> {
     let media = await this.cachingService.getOrSetCache(
       CacheInfo.NftMedia(nft.identifier).key,
-      async () => await this.fetchMediaRaw(nft),
+      async () => await this.getMediaRaw(nft),
       CacheInfo.NftMedia(nft.identifier).ttl,
       Constants.oneDay(),
       forceRefresh
     );
 
     if (!media) {
-      return;
+      return undefined;
     }
 
-    nft.media = media;
+    return media;
   }
 
-  async fetchMediaRaw(nft: Nft): Promise<NftMedia[] | null> {
+  async getMediaRaw(nft: Nft): Promise<NftMedia[] | null> {
     if (nft.type === NftType.MetaESDT) {
       return null;
     }

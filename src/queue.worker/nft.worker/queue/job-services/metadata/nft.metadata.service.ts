@@ -18,23 +18,23 @@ export class NftMetadataService {
     this.logger = new Logger(NftMetadataService.name);
   }
 
-  async fetchMetadata(nft: Nft, forceRefresh: boolean = false) {
+  async getMetadata(nft: Nft, forceRefresh: boolean = false): Promise<NftMetadata | undefined> {
     let metadata = await this.cachingService.getOrSetCache(
       CacheInfo.NftMetadata(nft.identifier).key,
-      async () => await this.fetchMetadataRaw(nft),
+      async () => await this.getMetadataRaw(nft),
       CacheInfo.NftMetadata(nft.identifier).ttl,
       Constants.oneDay(),
       forceRefresh
     );
     
     if (!metadata) {
-      return;
+      return undefined;
     }
 
-    nft.metadata = metadata;
+    return metadata;
   }
 
-  async fetchMetadataRaw(nft: Nft): Promise<NftMetadata | null> {
+  async getMetadataRaw(nft: Nft): Promise<NftMetadata | null> {
     if (!nft.attributes) {
       return null;
     }
