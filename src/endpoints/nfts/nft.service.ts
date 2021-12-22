@@ -25,6 +25,7 @@ import { Constants } from "src/utils/constants";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { NftMetadataService } from "src/queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.service";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 
 @Injectable()
 export class NftService {
@@ -136,7 +137,7 @@ export class NftService {
   }
 
   private async applyMedia(nft: Nft) {
-    nft.media = await this.cachingService.getCache(`nftMedia:${nft.identifier}`);
+    nft.media = await this.cachingService.getCache(CacheInfo.NftMedia(nft.identifier).key);
   }
 
   private async applyMetadata(nft: Nft) {

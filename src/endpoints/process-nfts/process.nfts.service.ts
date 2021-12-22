@@ -26,7 +26,8 @@ export class ProcessNftsService {
     let nfts = await this.nftService.getNfts({ from: 0, size: 10000 }, { collection });
 
     await asyncPool(
-      this.apiConfigService.getPoolLimit(),
+      // this.apiConfigService.getPoolLimit(),
+      1,
       nfts,
       async (nft: Nft) => await this.nftWorkerService.addProcessNftQueueJob(nft, settings)
     );
