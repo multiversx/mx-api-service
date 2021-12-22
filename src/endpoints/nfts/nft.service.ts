@@ -25,6 +25,7 @@ import { Constants } from "src/utils/constants";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { NftMetadataService } from "src/queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.service";
+import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.service";
 
 @Injectable()
 export class NftService {
@@ -42,6 +43,7 @@ export class NftService {
     @Inject(forwardRef(() => PluginService))
     private readonly pluginService: PluginService,
     private readonly nftMetadataService: NftMetadataService,
+    private readonly nftMediaService: NftMediaService,
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -136,11 +138,21 @@ export class NftService {
   }
 
   private async applyMedia(nft: Nft) {
-    nft.media = await this.cachingService.getCache(`nftMedia:${nft.identifier}`);
+    try {
+      nft.media = await this.nftMediaService.getMedia(nft);
+    } catch (error) {
+      this.logger.error(`Unexpected error when applying media for nft with identifier '${nft.identifier}'`);
+      this.logger.error(error);
+    }
   }
 
   private async applyMetadata(nft: Nft) {
-    nft.metadata = await this.nftMetadataService.getMetadata(nft);
+    try {
+      nft.metadata = await this.nftMetadataService.getMetadata(nft);
+    } catch (error) {
+      this.logger.error(`Unexpected error when applying metadata for nft with identifier '${nft.identifier}'`);
+      this.logger.error(error);
+    }
   }
 
   async getNftOwners(identifier: string, pagination: QueryPagination): Promise<NftOwner[] | undefined> {
