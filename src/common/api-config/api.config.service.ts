@@ -358,6 +358,10 @@ export class ApiConfigService {
     return mediaUrl;
   }
 
+  getMediaInternalUrl(): string | undefined {
+    return this.configService.get<string>('urls.mediaInternal');
+  }
+
   getExternalMediaUrl(): string {
     let mediaUrl = this.getMediaUrl();
     if (mediaUrl.endsWith('.')) {

@@ -1,6 +1,7 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { ApiService } from "src/common/network/api.service";
 import { MediaMimeTypeEnum } from "src/endpoints/nfts/entities/media.mime.type";
 import { Nft } from "src/endpoints/nfts/entities/nft";
@@ -28,9 +29,9 @@ export class NftMediaService {
 
   async fetchMedia(nft: Nft, forceRefresh: boolean = false) {
     let media = await this.cachingService.getOrSetCache(
-      `nftMedia:${nft.identifier}`,
+      CacheInfo.NftMedia(nft.identifier).key,
       async () => await this.fetchMediaRaw(nft),
-      Constants.oneMonth() * 12,
+      CacheInfo.NftMedia(nft.identifier).ttl,
       Constants.oneDay(),
       forceRefresh
     );
@@ -57,7 +58,7 @@ export class NftMediaService {
         continue;
       }
 
-      let fileProperties: { contentType: string, contentLength: number } | undefined = undefined;
+      let fileProperties: { contentType: string, contentLength: number } | null = null;
         
       try {
         this.logger.log(`Started fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
@@ -85,11 +86,19 @@ export class NftMediaService {
     return mediaArray;
   }
 
-  private async getFilePropertiesFromIpfs(uri: string): Promise<{ contentType: string, contentLength: number } | undefined> {
-    const response = await this.apiService.head(uri, this.IPFS_REQUEST_TIMEOUT);
+  private async getFilePropertiesFromIpfs(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
+    return this.cachingService.getOrSetCache(
+      CacheInfo.NftMediaProperties(uri).key,
+      async () => await this.getFilePropertiesFromIpfsRaw(uri),
+      CacheInfo.NftMediaProperties(uri).ttl
+    );
+  }
+
+  private async getFilePropertiesFromIpfsRaw(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
+    const response = await this.apiService.head(uri, { timeout: this.IPFS_REQUEST_TIMEOUT });
     if (response.status !== HttpStatus.OK) {
       this.logger.error(`Unexpected http status code '${response.status}' while fetching file properties from uri '${uri}'`);
-      return undefined;
+      return null;
     }
 
     const { headers } = response;
@@ -97,7 +106,7 @@ export class NftMediaService {
     const contentLength = Number(headers['content-length']);
 
     if (!this.isContentAccepted(contentType)) {
-      return undefined;
+      return null;
     }
 
     return { contentType, contentLength };

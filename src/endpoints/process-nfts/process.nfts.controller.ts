@@ -16,13 +16,11 @@ export class ProcessNftsController {
     let settings: ProcessNftSettings = {
       forceRefreshMedia: processNftRequest.forceRefreshMedia ?? false,
       forceRefreshMetadata: processNftRequest.forceRefreshMetadata ?? false,
-      excludeThumbnail: processNftRequest.excludeThumbnail ?? false,
+      forceRefreshThumbnail: processNftRequest.forceRefreshThumbnail ?? false,
+      skipRefreshThumbnail: processNftRequest.skipRefreshThumbnail ?? false
     }
 
-    if (processNftRequest.allCollections) {
-      await this.processNftService.processAllCollections(settings);
-    }
-    else if (processNftRequest.collection) {
+    if (processNftRequest.collection) {
       await this.processNftService.processCollection(processNftRequest.collection, settings);
     } else if (processNftRequest.identifier) {
       await this.processNftService.processNft(processNftRequest.identifier, settings);

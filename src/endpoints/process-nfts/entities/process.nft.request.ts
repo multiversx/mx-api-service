@@ -3,6 +3,6 @@ export class ProcessNftRequest {
   identifier?: string;
   forceRefreshMedia?: boolean;
   forceRefreshMetadata?: boolean;
-  excludeThumbnail?: boolean;
-  allCollections?: boolean;
+  forceRefreshThumbnail?: boolean;
+  skipRefreshThumbnail?: boolean;
 }

@@ -71,7 +71,7 @@ export class NftExtendedAttributesService {
     let ipfsUri = `https://ipfs.io/ipfs/${metadata}`;
     let processedIpfsUri = TokenUtils.computeNftUri(ipfsUri, this.apiConfigService.getMediaUrl() + '/nfts/asset');
 
-    let result = await this.apiService.get(processedIpfsUri, 5000);
+    let result = await this.apiService.get(processedIpfsUri, { timeout: 5000 });
     return result.data;
   }
 

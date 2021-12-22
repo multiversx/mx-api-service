@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import axios from "axios";
 import sharp, { fit } from 'sharp';
 import ffmpeg from 'fluent-ffmpeg'
@@ -11,6 +11,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GenerateThumbnailResult } from "./entities/generate.thumbnail.result";
 import { ThumbnailType } from "./entities/thumbnail.type";
 import { AWSService } from "./aws.service";
+import { ApiService } from "src/common/network/api.service";
 
 @Injectable()
 export class NftThumbnailService {
@@ -21,6 +22,7 @@ export class NftThumbnailService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly awsService: AWSService,
+    private readonly apiService: ApiService,
   ) {
     this.logger = new Logger(NftThumbnailService.name);
   }
@@ -140,11 +142,28 @@ export class NftThumbnailService {
     }
   }
 
-  async generateThumbnail(nft: Nft, fileUrl: string, fileType: string): Promise<GenerateThumbnailResult> {
+  async hasThumbnailGenerated(identifier: string, fileUrl: string): Promise<boolean> {
+    const urlIdentifier = TokenUtils.getThumbnailUrlIdentifier(identifier, fileUrl);
+    const url = this.getFullThumbnailUrl(urlIdentifier);
+
+    let hasThumbnail = true;
+    await this.apiService.head(url, { skipRedirects: true }, async (error) => {
+      if (error.response?.status === HttpStatus.NOT_FOUND || error.response?.status === HttpStatus.FOUND) {
+        hasThumbnail = false;
+        return true;
+      }
+
+      return false;
+    });
+
+    return hasThumbnail;
+  }
+
+  async generateThumbnail(nft: Nft, fileUrl: string, fileType: string, forceRefresh: boolean = false): Promise<GenerateThumbnailResult> {
     let nftIdentifier = nft.identifier;
     const urlHash = TokenUtils.getUrlHash(fileUrl);
 
-    this.logger.log(`Generating thumbnails for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+    this.logger.log(`Generating thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
 
     if (!fileUrl || !fileUrl.startsWith('https://')) {
       this.logger.log(`NFT with identifier '${nftIdentifier}' and url hash '${urlHash}' has no urls`);
@@ -155,6 +174,13 @@ export class NftThumbnailService {
     const file = fileResult.data;
 
     const urlIdentifier = TokenUtils.getThumbnailUrlIdentifier(nftIdentifier, fileUrl);
+    if (!forceRefresh) {
+      const hasThumbnailGenerated = await this.hasThumbnailGenerated(nftIdentifier, fileUrl);
+      if (hasThumbnailGenerated) {
+        this.logger.log(`Thumbnail already generated for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+        return GenerateThumbnailResult.success;
+      }
+    }
 
     if (ThumbnailType.isAudio(fileType)) {
       const thumbnail = await this.extractThumbnailFromAudio(file, nftIdentifier);
@@ -195,6 +221,13 @@ export class NftThumbnailService {
   async uploadThumbnail(urlIdentifier: string, buffer: Buffer, fileType: string): Promise<void> {
     const url = this.getThumbnailUrlSuffix(urlIdentifier);
     await this.awsService.uploadToS3(url, buffer, fileType);
+  }
+
+  private getFullThumbnailUrl(urlIdentifier: string): string {
+    const suffix = this.getThumbnailUrlSuffix(urlIdentifier);
+    const mediaUrl = this.apiConfigService.getMediaInternalUrl() ?? this.apiConfigService.getMediaUrl();
+
+    return `${mediaUrl}/${suffix}`;
   }
 
   private getThumbnailUrlSuffix(urlIdentifier: string): string {

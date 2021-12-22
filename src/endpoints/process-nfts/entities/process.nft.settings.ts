@@ -1,5 +1,6 @@
 export class ProcessNftSettings {
   forceRefreshMedia: boolean = false;
   forceRefreshMetadata: boolean = false;
-  excludeThumbnail: boolean = false;
+  forceRefreshThumbnail: boolean = false;
+  skipRefreshThumbnail: boolean = false;
 }
