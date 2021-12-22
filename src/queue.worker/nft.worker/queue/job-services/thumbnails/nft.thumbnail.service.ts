@@ -12,6 +12,7 @@ import { GenerateThumbnailResult } from "./entities/generate.thumbnail.result";
 import { ThumbnailType } from "./entities/thumbnail.type";
 import { AWSService } from "./aws.service";
 import { ApiService } from "src/common/network/api.service";
+import { ApiSettings } from "src/common/network/entities/api.settings";
 
 @Injectable()
 export class NftThumbnailService {
@@ -147,8 +148,8 @@ export class NftThumbnailService {
     const url = this.getFullThumbnailUrl(urlIdentifier);
 
     let hasThumbnail = true;
-    await this.apiService.get(url, { skipRedirects: true }, async (error) => {
-      if (error.response?.status === HttpStatus.FOUND) {
+    await this.apiService.head(url, new ApiSettings(), async (error) => {
+      if (error.response?.status === HttpStatus.NOT_FOUND) {
         hasThumbnail = false;
         return true;
       }
@@ -225,7 +226,9 @@ export class NftThumbnailService {
 
   private getFullThumbnailUrl(urlIdentifier: string): string {
     const suffix = this.getThumbnailUrlSuffix(urlIdentifier);
-    return `${this.apiConfigService.getMediaUrl()}/${suffix}`;
+    const mediaUrl = this.apiConfigService.getMediaInternalUrl() ?? this.apiConfigService.getMediaUrl();
+
+    return `${mediaUrl}/${suffix}`;
   }
 
   private getThumbnailUrlSuffix(urlIdentifier: string): string {

@@ -58,7 +58,7 @@ export class NftMediaService {
         continue;
       }
 
-      let fileProperties: { contentType: string, contentLength: number } | undefined = undefined;
+      let fileProperties: { contentType: string, contentLength: number } | null = null;
         
       try {
         this.logger.log(`Started fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
@@ -86,11 +86,19 @@ export class NftMediaService {
     return mediaArray;
   }
 
-  private async getFilePropertiesFromIpfs(uri: string): Promise<{ contentType: string, contentLength: number } | undefined> {
+  private async getFilePropertiesFromIpfs(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
+    return this.cachingService.getOrSetCache(
+      CacheInfo.NftMediaProperties(uri).key,
+      async () => await this.getFilePropertiesFromIpfsRaw(uri),
+      CacheInfo.NftMediaProperties(uri).ttl
+    );
+  }
+
+  private async getFilePropertiesFromIpfsRaw(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
     const response = await this.apiService.head(uri, { timeout: this.IPFS_REQUEST_TIMEOUT });
     if (response.status !== HttpStatus.OK) {
       this.logger.error(`Unexpected http status code '${response.status}' while fetching file properties from uri '${uri}'`);
-      return undefined;
+      return null;
     }
 
     const { headers } = response;
@@ -98,7 +106,7 @@ export class NftMediaService {
     const contentLength = Number(headers['content-length']);
 
     if (!this.isContentAccepted(contentType)) {
-      return undefined;
+      return null;
     }
 
     return { contentType, contentLength };

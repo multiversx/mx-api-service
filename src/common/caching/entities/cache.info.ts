@@ -144,4 +144,11 @@ export class CacheInfo {
       ttl: Constants.oneMonth() * 12,
     }
   }
+
+  static NftMediaProperties(uri: string): CacheInfo {
+    return {
+      key: `nftMediaProperties:${uri}`,
+      ttl: Constants.oneHour(),
+    }
+  }
 }
