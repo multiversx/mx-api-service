@@ -33,15 +33,20 @@ export class NftWorkerService {
     }
     this.logger.log('after needs processing');
 
-    const job = await this.nftQueue.add({ identifier: nft.identifier, nft, settings }, {
-      priority: 1000,
-      attempts: 3,
-      timeout: 60000,
-      removeOnComplete: true
-    });
+    try {
+      const job = await this.nftQueue.add({ identifier: nft.identifier, nft, settings }, {
+        priority: 1000,
+        attempts: 3,
+        timeout: 60000,
+        removeOnComplete: true
+      });
+      this.logger.log({ type: 'producer', jobId: job.id, identifier: job.data.identifier, settings });
+    } catch (error) {
+      this.logger.error(error);
+    }
+
     this.logger.log('after adding to queue');
 
-    this.logger.log({ type: 'producer', jobId: job.id, identifier: job.data.identifier, settings });
   }
 
   private async needsProcessing(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
