@@ -97,6 +97,8 @@ export class NftService {
   }
 
   private async processNft(nft: Nft) {
+    nft.thumbnailUrl = 'https://media.elrond.com/nfts/thumbnail/default.png';
+
     await Promise.all([
       this.applyMedia(nft),
       this.applyMetadata(nft),
