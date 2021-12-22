@@ -41,7 +41,7 @@ urls:
 caching:
   cacheTtl: 6
   processTtl: 600
-  poolLimit: 10
+  poolLimit: 50
 keepAliveTimeout:
   downstream: 61000
   upstream: 60000
