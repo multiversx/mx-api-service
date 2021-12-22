@@ -664,6 +664,9 @@ export class AccountController {
     }, address);
   }
 
+
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @Get("/accounts/:address/contracts")
   @ApiResponse({
     status: 200,
@@ -674,8 +677,12 @@ export class AccountController {
     status: 404,
     description: 'Account not found'
   })
-  getAccountContracts(@Param('address', ParseAddressPipe) address: string): Promise<DeployedContract[]> {
-    return this.accountService.getAccountContracts(address);;
+  getAccountContracts(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<DeployedContract[]> {
+    return this.accountService.getAccountContracts({ from, size }, address);;
   }
 
   @Get("/accounts/:address/contracts/count")

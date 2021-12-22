@@ -300,8 +300,9 @@ export class AccountService {
     return nodes;
   }
 
-  async getAccountContracts(address: string): Promise<DeployedContract[]> {
+  async getAccountContracts(pagination: QueryPagination, address: string): Promise<DeployedContract[]> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withPagination(pagination)
       .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)])
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
