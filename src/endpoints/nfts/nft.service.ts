@@ -97,13 +97,23 @@ export class NftService {
   }
 
   private async processNft(nft: Nft) {
-    nft.thumbnailUrl = 'https://media.elrond.com/nfts/thumbnail/default.png';
-
     await Promise.all([
       this.applyMedia(nft),
       this.applyMetadata(nft),
       this.pluginService.processNft(nft),
-    ])
+    ]);
+
+    if (!nft.media) {
+      nft.media = [
+        {
+          url: 'https://media.elrond.com/nfts/thumbnail/default.png',
+          originalUrl: 'https://media.elrond.com/nfts/thumbnail/default.png',
+          thumbnailUrl: 'https://media.elrond.com/nfts/thumbnail/default.png',
+          fileType: 'image/png',
+          fileSize: 29512
+        }
+      ]
+    }
   }
   async applyAssetsAndTicker(token: Nft) {
     token.assets = await this.tokenAssetService.getAssets(token.collection);
