@@ -5,8 +5,6 @@ import { CacheWarmerService } from './cache.warmer.service';
 import { EndpointsServicesModule } from '../endpoints/endpoints.services.module';
 import { MicroserviceModule } from 'src/common/microservice/microservice.module';
 import { PluginModule } from 'src/plugins/plugin.module';
-import { CollectionModule } from 'src/endpoints/collections/collection.module';
-import { ProcessNftsModule } from 'src/endpoints/process-nfts/process.nfts.module';
 
 @Module({
   imports: [
@@ -15,8 +13,6 @@ import { ProcessNftsModule } from 'src/endpoints/process-nfts/process.nfts.modul
     forwardRef(() => EndpointsServicesModule),
     MicroserviceModule,
     PluginModule,
-    ProcessNftsModule,
-    CollectionModule,
   ],
   providers: [
     CacheWarmerService,

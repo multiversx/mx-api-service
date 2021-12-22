@@ -20,10 +20,6 @@ import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
-import { CollectionService } from "src/endpoints/collections/collection.service";
-import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
-import { ProcessNftsService } from "src/endpoints/process-nfts/process.nfts.service";
-import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 
 @Injectable()
 export class CacheWarmerService {
@@ -43,8 +39,6 @@ export class CacheWarmerService {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly tokenAssetService: TokenAssetService,
     private readonly pluginService: PluginService,
-    private readonly generateThumbnailService: ProcessNftsService,
-    private readonly collectionService: CollectionService,
   ) {
     this.configCronJob(
       'handleKeybaseAgainstKeybasePubInvalidations',
