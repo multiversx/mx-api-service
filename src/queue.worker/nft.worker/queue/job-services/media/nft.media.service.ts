@@ -76,6 +76,7 @@ export class NftMediaService {
 
       const nftMedia = new NftMedia();
       nftMedia.url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(uri), this.NFT_THUMBNAIL_PREFIX);
+      nftMedia.originalUrl = BinaryUtils.base64Decode(uri);
       nftMedia.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${nft.collection}-${TokenUtils.getUrlHash(nftMedia.url)}`
       nftMedia.fileType = fileProperties.contentType;
       nftMedia.fileSize = fileProperties.contentLength;
