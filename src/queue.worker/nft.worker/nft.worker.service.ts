@@ -24,11 +24,14 @@ export class NftWorkerService {
       return;
     }
 
+    this.logger.log('before needs processing');
+
     let needsProcessing = await this.needsProcessing(nft, settings);
     if (!needsProcessing) {
       this.logger.log(`No processing is needed for nft with identifier '${nft.identifier}'`);
       return;
     }
+    this.logger.log('after needs processing');
 
     const job = await this.nftQueue.add({ identifier: nft.identifier, nft, settings }, {
       priority: 1000,
@@ -36,6 +39,7 @@ export class NftWorkerService {
       timeout: 60000,
       removeOnComplete: true
     });
+    this.logger.log('after adding to queue');
 
     this.logger.log({ type: 'producer', jobId: job.id, identifier: job.data.identifier, settings });
   }
