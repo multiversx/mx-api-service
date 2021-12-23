@@ -1,4 +1,4 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { S3 } from "@aws-sdk/client-s3";
 import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 
@@ -12,7 +12,7 @@ export class AWSService {
   }
 
   public async uploadToS3(path: string, buffer: Buffer, type: string): Promise<string> {
-    const s3 = new S3Client({
+    const s3 = new S3({
       credentials: {
         accessKeyId: this.apiConfigService.getAwsS3KeyId(),
         secretAccessKey: this.apiConfigService.getAwsS3Secret(),
@@ -21,14 +21,12 @@ export class AWSService {
     });
 
     try {
-      let command = new PutObjectCommand({
+      await s3.putObject({
         Bucket: this.apiConfigService.getAwsS3Bucket(),
         Key: path,
         Body: buffer,
         ContentType: type,
       });
-
-      await s3.send(command);
     } catch (err) {
       this.logger.log(`Error when uploading thumbnail to S3 for path '${path}'`);
       this.logger.error(err);
