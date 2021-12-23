@@ -318,6 +318,15 @@ export class ApiConfigService {
     return s3Bucket;
   }
 
+  getAwsS3Region(): string {
+    const s3Region = this.configService.get<string>('aws.s3Region');
+    if (!s3Region) {
+      throw new Error('No s3Region present');
+    }
+
+    return s3Region;
+  }
+
   getMetaChainShardId(): number {
     let metaChainShardId = this.configService.get<number>('metaChainShardId');
     if (metaChainShardId === undefined) {

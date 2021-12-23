@@ -24,6 +24,7 @@ aws:
   s3KeyId: ''
   s3Secret: ''
   s3Bucket: 'devnet-media.elrond.com'
+  s3Region: ''
 urls:
   api:
     - 'https://devnet-api.elrond.com'

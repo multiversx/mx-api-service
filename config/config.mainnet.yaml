@@ -25,6 +25,7 @@ aws:
   s3KeyId: ''
   s3Secret: ''
   s3Bucket: 'media.elrond.com'
+  s3Region: ''
 urls:
   api:
     - 'https://api.elrond.com'
