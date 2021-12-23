@@ -24,6 +24,7 @@ aws:
   s3KeyId: ''
   s3Secret: ''
   s3Bucket: 'testnet-media.elrond.com'
+  s3Region: ''
 urls:
   api:
     - 'https://testnet-api.elrond.com'
