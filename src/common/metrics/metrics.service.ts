@@ -14,7 +14,6 @@ export class MetricsService {
   private static elasticDurationHistogram: Histogram<string>;
   private static gatewayDurationHistogram: Histogram<string>;
   private static elasticTookHistogram: Histogram<string>;
-  private static apiResponseSizeHistogram: Histogram<string>;
   private static currentNonceGauge: Gauge<string>;
   private static lastProcessedNonceGauge: Gauge<string>;
   private static pendingApiHitGauge: Gauge<string>;
@@ -89,15 +88,6 @@ export class MetricsService {
       });
     }
 
-    if (!MetricsService.apiResponseSizeHistogram) {
-      MetricsService.apiResponseSizeHistogram = new Histogram({
-        name: 'api_response_size',
-        help: 'API Response size',
-        labelNames: [ 'endpoint' ],
-        buckets: [ ]
-      });
-    }
-
     if (!MetricsService.currentNonceGauge) {
       MetricsService.currentNonceGauge = new Gauge({
         name: 'current_nonce',
@@ -136,9 +126,8 @@ export class MetricsService {
     }
   }
 
-  setApiCall(endpoint: string, status: number, duration: number, responseSize: number) {
+  setApiCall(endpoint: string, status: number, duration: number) {
     MetricsService.apiCallsHistogram.labels(endpoint, status.toString()).observe(duration);
-    MetricsService.apiResponseSizeHistogram.labels(endpoint).observe(responseSize);
   }
 
   setVmQuery(address: string, func: string, duration: number) {
