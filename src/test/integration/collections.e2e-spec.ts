@@ -8,7 +8,6 @@ import Initializer from "./e2e-init";
 
 describe('Collection Service', () => {
   let collectionService: CollectionService;
-  let collectionCreator: string | undefined = undefined;
   let collectionIdentifier: string;
 
   beforeAll(async () => {
@@ -26,7 +25,6 @@ describe('Collection Service', () => {
     expect(collections).toHaveLength(1);
 
     let nftCollection = collections[0];
-    collectionCreator = nftCollection.owner;
     collectionIdentifier = nftCollection.collection;
   });
 
