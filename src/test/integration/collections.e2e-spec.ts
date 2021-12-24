@@ -73,18 +73,6 @@ describe('Collection Service', () => {
           expect(nftCollection.type).toBe(NftType.SemiFungibleESDT);
         }
       });
-
-      it(`should return a list with all nfts collections of the creator`, async () => {
-        const collectionFilter = new CollectionFilter();
-        collectionFilter.creator = collectionCreator;
-        const collectionsList = await collectionService.getNftCollections({from: 0, size: 25}, collectionFilter);
-        expect(collectionsList).toBeInstanceOf(Array);
-
-        for (let nft of collectionsList) {
-          expect(nft.owner).toBe(collectionCreator);
-        }
-      });
-
     });
   });
 
