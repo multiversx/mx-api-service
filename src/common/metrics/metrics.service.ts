@@ -14,6 +14,7 @@ export class MetricsService {
   private static elasticDurationHistogram: Histogram<string>;
   private static gatewayDurationHistogram: Histogram<string>;
   private static elasticTookHistogram: Histogram<string>;
+  private static redisDurationHistogram: Histogram<string>;
   private static currentNonceGauge: Gauge<string>;
   private static lastProcessedNonceGauge: Gauge<string>;
   private static pendingApiHitGauge: Gauge<string>;
@@ -88,6 +89,15 @@ export class MetricsService {
       });
     }
 
+    if (!MetricsService.redisDurationHistogram) {
+      MetricsService.redisDurationHistogram = new Histogram({
+        name: 'redis_duration',
+        help: 'Redis Duration',
+        labelNames: [ 'action' ],
+        buckets: [ ]
+      });
+    }
+
     if (!MetricsService.currentNonceGauge) {
       MetricsService.currentNonceGauge = new Gauge({
         name: 'current_nonce',
@@ -152,6 +162,10 @@ export class MetricsService {
 
   setElasticTook(index: string, took: number) {
     MetricsService.elasticTookHistogram.labels(index).observe(took);
+  }
+
+  setRedisDuration(action: string, duration: number) {
+    MetricsService.redisDurationHistogram.labels(action).observe(duration);
   }
 
   setLastProcessedNonce(shardId: number, nonce: number) {
