@@ -76,13 +76,13 @@ export class LoggingInterceptor implements NestInterceptor {
           const http = context.switchToHttp();
           const res = http.getResponse();
 
-          this.metricsService.setApiCall(apiFunction, res.statusCode, profiler.duration, 0);
+          this.metricsService.setApiCall(apiFunction, res.statusCode, profiler.duration);
         }),
         catchError(err => {
           profiler.stop();
 
           let statusCode = err.status ?? HttpStatus.INTERNAL_SERVER_ERROR;
-          this.metricsService.setApiCall(apiFunction, statusCode, profiler.duration, 0);
+          this.metricsService.setApiCall(apiFunction, statusCode, profiler.duration);
           
           return throwError(() => err);
         })

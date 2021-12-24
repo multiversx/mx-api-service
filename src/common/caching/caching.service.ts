@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 const { promisify } = require('util');
 import { createClient } from 'redis';
@@ -7,6 +7,7 @@ import { PerformanceProfiler } from "../../utils/performance.profiler";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { LocalCacheService } from "./local.cache.service";
+import { MetricsService } from "../metrics/metrics.service";
 
 @Injectable()
 export class CachingService {
@@ -28,18 +29,33 @@ export class CachingService {
   constructor(
     private readonly configService: ApiConfigService,
     private readonly localCacheService: LocalCacheService,
+    @Inject(forwardRef(() => MetricsService))
+    private readonly metricsService: MetricsService,
   ) {
     this.logger = new Logger(CachingService.name);
   }
 
   public async getKeys(key: string | undefined) {
+    let profiler = new PerformanceProfiler();
     if (key) {
-      return await this.asyncKeys(key);
+      try {
+        return await this.asyncKeys(key);
+      } finally {
+        profiler.stop();
+        this.metricsService.setRedisDuration('KEYS', profiler.duration);
+      }
     }
   }
 
   public async setCacheRemote<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
-    await this.asyncSet(key, JSON.stringify(value), 'EX', ttl ?? this.configService.getCacheTtl());
+    let profiler = new PerformanceProfiler();
+    try {
+      await this.asyncSet(key, JSON.stringify(value), 'EX', ttl ?? this.configService.getCacheTtl());
+    } finally {
+      profiler.stop();
+      this.metricsService.setRedisDuration('SET', profiler.duration);
+    }
+    
     return value;
   };
 
@@ -63,7 +79,16 @@ export class CachingService {
   }
 
   public async getCacheRemote<T>(key: string): Promise<T | undefined> {
-    let response = await this.executeWithPendingPromise<string | undefined>(`caching:get:${key}`, async () => await this.asyncGet(key));
+    let profiler = new PerformanceProfiler();
+
+    let response: string | undefined;
+    try {
+      response = await this.executeWithPendingPromise<string | undefined>(`caching:get:${key}`, async () => await this.asyncGet(key));
+    } finally {
+      profiler.stop();
+      this.metricsService.setRedisDuration('GET', profiler.duration);
+    }
+
     if (response === undefined) {
       return undefined;
     }
@@ -222,7 +247,13 @@ export class CachingService {
       );
     }
   
-    await this.asyncMulti(sets);
+    let profiler = new PerformanceProfiler();
+    try {
+      await this.asyncMulti(sets);
+    } finally {
+      profiler.stop();
+      this.metricsService.setRedisDuration('MSET', profiler.duration);
+    }
   };
 
   async batchDelCache(keys: string[]) {
@@ -232,7 +263,13 @@ export class CachingService {
 
     const dels = keys.map(key => ['del', key]);
 
-    await this.asyncMulti(dels);
+    let profiler = new PerformanceProfiler();
+    try {
+      await this.asyncMulti(dels);
+    } finally {
+      profiler.stop();
+      this.metricsService.setRedisDuration('MDEL', profiler.duration);
+    }
   }
 
   private getChunks<T>(array: T[], size = 25): T[][] {
@@ -255,7 +292,15 @@ export class CachingService {
     const result = [];
   
     for (const chunkKeys of chunks) {
-      let chunkValues = await this.asyncMGet(chunkKeys);
+      let chunkValues: any;
+
+      let profiler = new PerformanceProfiler();
+      try {
+        chunkValues = await this.asyncMGet(chunkKeys);
+      } finally {
+        profiler.stop();
+        this.metricsService.setRedisDuration('MGET', profiler.duration);
+      }
   
       chunkValues = chunkValues.map((value: any) => (value ? JSON.parse(value) : null));
   
@@ -310,15 +355,31 @@ export class CachingService {
     let invalidatedKeys = [];
 
     if (key.includes('*')) {
-      let allKeys = await this.asyncKeys(key);
+      let allKeys = await this.getKeys(key);
       for (let key of allKeys) {
         this.localCacheService.deleteCacheKey(key);
-        await this.asyncDel(key);
+
+        let profiler = new PerformanceProfiler();
+        try {
+          await this.asyncDel(key);
+        } finally {
+          profiler.stop();
+          this.metricsService.setRedisDuration('DEL', profiler.duration);
+        }
+
         invalidatedKeys.push(key);
       }
     } else {
       this.localCacheService.deleteCacheKey(key);
-      await this.asyncDel(key);
+
+      let profiler = new PerformanceProfiler();
+      try {
+        await this.asyncDel(key);
+      } finally {
+        profiler.stop();
+        this.metricsService.setRedisDuration('DEL', profiler.duration);
+      }
+
       invalidatedKeys.push(key);
     }
 
