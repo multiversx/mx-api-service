@@ -37,12 +37,16 @@ export class ApiConfigService {
   }
 
   getMexUrl(): string {
-    const mexUrls = this.configService.get<string[]>('urls.mex');
+    const mexUrls = this.configService.get<string>('urls.mex');
     if (mexUrls) {
       return mexUrls[Math.floor(Math.random() * mexUrls.length)];
     }
 
     return '';
+  }
+
+  getIpfsUrl(): string {
+    return this.configService.get<string>('urls.ipfs') ?? 'https://ipfs.io/ipfs';
   }
 
   getEsdtContractAddress(): string {

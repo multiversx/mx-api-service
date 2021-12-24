@@ -62,10 +62,7 @@ export class NftMediaService {
         
       try {
         this.logger.log(`Started fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
-        let url = BinaryUtils.base64Decode(uri);
-        if (url.startsWith('https://ipfs.io/ipfs')) {
-          url = url.replace('https://ipfs.io/ipfs', 'https://gateway.pinata.cloud/ipfs');
-        }
+        let url = this.getUrl(uri);
 
         fileProperties = await this.getFilePropertiesFromIpfs(url);
         this.logger.log(`Completed fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
@@ -90,6 +87,19 @@ export class NftMediaService {
     }
 
     return mediaArray;
+  }
+
+  private getUrl(nftUri: string): string {
+    let url = BinaryUtils.base64Decode(nftUri);
+    if (url.startsWith('https://ipfs.io/ipfs')) {
+      url = url.replace('https://ipfs.io/ipfs', this.apiConfigService.getIpfsUrl());
+    }
+
+    if (url.startsWith('ipfs://')) {
+      url = url.replace('ipfs://', this.apiConfigService.getIpfsUrl() + '/');
+    }
+
+    return url;
   }
 
   private async getFilePropertiesFromIpfs(uri: string): Promise<{ contentType: string, contentLength: number } | null> {

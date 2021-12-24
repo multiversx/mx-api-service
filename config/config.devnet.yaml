@@ -39,6 +39,7 @@ urls:
   media: 'https://devnet-media.elrond.com'
   nftThumbnails: 'https://devnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
+  ipfs: 'https://ipfs.io/ipfs'
 caching:
   cacheTtl: 6
   processTtl: 600
