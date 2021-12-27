@@ -9,12 +9,22 @@ cron:
   transactionProcessorMaxLookBehind: 100
   cacheWarmer: true
   fastWarm: true
+  queueWorker: true
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true
   useTracing: false
   useRequestLogging: false
   useVmQueryTracing: false
+image:
+  width: 600
+  height: 600
+  type: 'png'
+aws:
+  s3KeyId: ''
+  s3Secret: ''
+  s3Bucket: 'devnet-media.elrond.com'
+  s3Region: ''
 urls:
   api:
     - 'https://devnet-api.elrond.com'
@@ -28,10 +38,12 @@ urls:
   providers: 'https://devnet-delegation.maiarbrowser.com/providers'
   media: 'https://devnet-media.elrond.com'
   nftThumbnails: 'https://devnet-media.elrond.com/nfts/thumbnail'
+  tmp: '/tmp'
+  ipfs: 'https://ipfs.io/ipfs'
 caching:
   cacheTtl: 6
   processTtl: 600
-  poolLimit: 10
+  poolLimit: 50
 keepAliveTimeout:
   downstream: 61000
   upstream: 60000

@@ -130,4 +130,25 @@ export class CacheInfo {
       ttl: Constants.oneDay(),
     }
   }
+
+  static NftMetadata(identifier: string): CacheInfo {
+    return {
+      key: `nftMetadata:${identifier}`,
+      ttl: Constants.oneMonth() * 12,
+    }
+  }
+
+  static NftMedia(identifier: string): CacheInfo {
+    return {
+      key: `nftMedia:${identifier}`,
+      ttl: Constants.oneMonth() * 12,
+    }
+  }
+
+  static NftMediaProperties(uri: string): CacheInfo {
+    return {
+      key: `nftMediaProperties:${uri}`,
+      ttl: Constants.oneHour(),
+    }
+  }
 }

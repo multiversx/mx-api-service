@@ -3,7 +3,7 @@ import { ApiService } from "src/common/network/api.service";
 import { NftMetadata } from "src/endpoints/nfts/entities/nft.metadata";
 import { Constants } from "src/utils/constants";
 import { MatchUtils } from "src/utils/match.utils";
-import { TokenUtils } from "src/utils/tokens.utils";
+import { TokenUtils } from "src/utils/token.utils";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { CachingService } from "../../common/caching/caching.service";
 
@@ -71,7 +71,7 @@ export class NftExtendedAttributesService {
     let ipfsUri = `https://ipfs.io/ipfs/${metadata}`;
     let processedIpfsUri = TokenUtils.computeNftUri(ipfsUri, this.apiConfigService.getMediaUrl() + '/nfts/asset');
 
-    let result = await this.apiService.get(processedIpfsUri, 5000);
+    let result = await this.apiService.get(processedIpfsUri, { timeout: 5000 });
     return result.data;
   }
 
