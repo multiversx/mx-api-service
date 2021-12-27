@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ApiConfigService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) { }
 
   getConfig<T>(configKey: string): T | undefined {
     return this.configService.get<T>(configKey);
@@ -37,12 +37,16 @@ export class ApiConfigService {
   }
 
   getMexUrl(): string {
-    const mexUrls = this.configService.get<string[]>('urls.mex');
+    const mexUrls = this.configService.get<string>('urls.mex');
     if (mexUrls) {
       return mexUrls[Math.floor(Math.random() * mexUrls.length)];
     }
 
     return '';
+  }
+
+  getIpfsUrl(): string {
+    return this.configService.get<string>('urls.ipfs') ?? 'https://ipfs.io/ipfs';
   }
 
   getEsdtContractAddress(): string {
@@ -184,6 +188,15 @@ export class ApiConfigService {
     return this.configService.get<string>('urls.dataUrl');
   }
 
+  getTempUrl(): string {
+    const tmpUrl = this.configService.get<string>('urls.tmp');
+    if (!tmpUrl) {
+      throw new Error("No tmp url present");
+    }
+
+    return tmpUrl;
+  }
+
   getIsTransactionProcessorCronActive(): boolean {
     let isCronActive = this.configService.get<boolean>(
       'cron.transactionProcessor',
@@ -215,6 +228,15 @@ export class ApiConfigService {
     return isCronActive;
   }
 
+  getIsQueueWorkerCronActive(): boolean {
+    let isQueueWorkerActive = this.configService.get<boolean>('cron.queueWorker');
+    if (isQueueWorkerActive === undefined) {
+      throw new Error('No queue worker cron flag present');
+    }
+
+    return isQueueWorkerActive;
+  }
+
   getIsFastWarmerCronActive(): boolean {
     let isCronActive = this.configService.get<boolean>('cron.fastWarm');
     if (isCronActive === undefined) {
@@ -244,6 +266,69 @@ export class ApiConfigService {
 
   getIsAuthActive(): boolean {
     return this.configService.get<boolean>('api.auth') ?? false;
+  }
+
+  getImageWidth(): number {
+    const imageWidth = this.configService.get<number>('image.width');
+    if (!imageWidth) {
+      throw new Error('No imageWidth present');
+    }
+
+    return imageWidth;
+  }
+
+  getImageHeight(): number {
+    const imageHeight = this.configService.get<number>('image.height');
+    if (!imageHeight) {
+      throw new Error('No imageHeight present');
+    }
+
+    return imageHeight;
+  }
+
+  getImageType(): string {
+    const imageType = this.configService.get<string>('image.type');
+    if (!imageType) {
+      throw new Error('No imageType present');
+    }
+
+    return imageType;
+  }
+
+  getAwsS3KeyId(): string {
+    const s3KeyId = this.configService.get<string>('aws.s3KeyId');
+    if (!s3KeyId) {
+      throw new Error('No s3KeyId present');
+    }
+
+    return s3KeyId;
+  }
+
+  getAwsS3Secret(): string {
+    const s3Secret = this.configService.get<string>('aws.s3Secret');
+    if (!s3Secret) {
+      throw new Error('No s3Secret present');
+    }
+
+    return s3Secret;
+  }
+
+  getAwsS3Bucket(): string {
+    const s3Bucket = this.configService.get<string>('aws.s3Bucket');
+    if (!s3Bucket) {
+      throw new Error('No s3Bucket present');
+    }
+
+    return s3Bucket;
+  }
+
+  getAwsS3Region(): string {
+    const s3Region = this.configService.get<string>('aws.s3Region');
+    if (!s3Region) {
+      throw new Error('No s3Region present');
+    }
+
+    return s3Region;
   }
 
   getMetaChainShardId(): number {
@@ -284,6 +369,10 @@ export class ApiConfigService {
     }
 
     return mediaUrl;
+  }
+
+  getMediaInternalUrl(): string | undefined {
+    return this.configService.get<string>('urls.mediaInternal');
   }
 
   getExternalMediaUrl(): string {

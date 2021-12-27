@@ -12,7 +12,7 @@ import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { AddressUtils } from "src/utils/address.utils";
 import { ApiUtils } from "src/utils/api.utils";
 import { Constants } from "src/utils/constants";
-import { TokenUtils } from "src/utils/tokens.utils";
+import { TokenUtils } from "src/utils/token.utils";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { CachingService } from "../../common/caching/caching.service";
 import { GatewayService } from "../../common/gateway/gateway.service";

@@ -10,6 +10,7 @@ import { KeybaseIdentity } from "./entities/keybase.identity";
 import { KeybaseState } from "./entities/keybase.state";
 import { ApiService } from "../network/api.service";
 import { CacheInfo } from "../caching/entities/cache.info";
+import { ApiSettings } from "../network/entities/api.settings";
 
 @Injectable()
 export class KeybaseService {
@@ -110,7 +111,7 @@ export class KeybaseService {
   }
 
   async confirmKeybasesAgainstKeybasePubForIdentity(identity: string): Promise<void> {
-    const result = await this.apiService.get(`https://keybase.pub/${identity}/elrond`, 100000, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
+    const result = await this.apiService.get(`https://keybase.pub/${identity}/elrond`, { timeout: 100000 }, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
 
     if (!result) {
       this.logger.log(`For identity '${identity}', no keybase.pub entry was found`);
@@ -212,7 +213,7 @@ export class KeybaseService {
   
       // this.logger.log(`Fetching keybase for identity ${keybase.identity} and key ${keybase.key}`);
 
-      const { status } = await this.apiService.head(url, undefined, async (error) => {
+      const { status } = await this.apiService.head(url, new ApiSettings(), async (error) => {
         if (error.response?.status === HttpStatus.NOT_FOUND) {
           throw error;
         }

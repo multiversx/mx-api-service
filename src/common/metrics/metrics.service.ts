@@ -14,7 +14,7 @@ export class MetricsService {
   private static elasticDurationHistogram: Histogram<string>;
   private static gatewayDurationHistogram: Histogram<string>;
   private static elasticTookHistogram: Histogram<string>;
-  private static apiResponseSizeHistogram: Histogram<string>;
+  private static redisDurationHistogram: Histogram<string>;
   private static currentNonceGauge: Gauge<string>;
   private static lastProcessedNonceGauge: Gauge<string>;
   private static pendingApiHitGauge: Gauge<string>;
@@ -89,11 +89,11 @@ export class MetricsService {
       });
     }
 
-    if (!MetricsService.apiResponseSizeHistogram) {
-      MetricsService.apiResponseSizeHistogram = new Histogram({
-        name: 'api_response_size',
-        help: 'API Response size',
-        labelNames: [ 'endpoint' ],
+    if (!MetricsService.redisDurationHistogram) {
+      MetricsService.redisDurationHistogram = new Histogram({
+        name: 'redis_duration',
+        help: 'Redis Duration',
+        labelNames: [ 'action' ],
         buckets: [ ]
       });
     }
@@ -136,9 +136,8 @@ export class MetricsService {
     }
   }
 
-  setApiCall(endpoint: string, status: number, duration: number, responseSize: number) {
+  setApiCall(endpoint: string, status: number, duration: number) {
     MetricsService.apiCallsHistogram.labels(endpoint, status.toString()).observe(duration);
-    MetricsService.apiResponseSizeHistogram.labels(endpoint).observe(responseSize);
   }
 
   setVmQuery(address: string, func: string, duration: number) {
@@ -163,6 +162,10 @@ export class MetricsService {
 
   setElasticTook(index: string, took: number) {
     MetricsService.elasticTookHistogram.labels(index).observe(took);
+  }
+
+  setRedisDuration(action: string, duration: number) {
+    MetricsService.redisDurationHistogram.labels(action).observe(duration);
   }
 
   setLastProcessedNonce(shardId: number, nonce: number) {
