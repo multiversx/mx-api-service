@@ -38,8 +38,12 @@ export class EsdtService {
     this.logger = new Logger(EsdtService.name);
   }
 
-  private async getAllEsdtsForAddressRaw(address: string): Promise<{ [ key: string]: any }> {
-    return this.getAllEsdtsForAddressFromElastic(address);
+  private async getAllEsdtsForAddressRaw(address: string): Promise<{ [key: string]: any }> {
+    if (AddressUtils.isSmartContractAddress(address)) {
+      return this.getAllEsdtsForAddressFromElastic(address);
+    }
+
+    return this.getAllEsdtsForAddressFromGateway(address);
   }
 
   private async getAllEsdtsForAddressFromElastic(address: string): Promise<{ [ key: string]: any }> {
