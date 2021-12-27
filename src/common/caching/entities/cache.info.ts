@@ -117,9 +117,9 @@ export class CacheInfo {
     ttl: Constants.oneDay(),
   }
 
-  static TransactionActionProperties(identifier: string): CacheInfo {
+  static TokenTransferProperties(identifier: string): CacheInfo {
     return {
-      key: `transaction:action:properties:v2:${identifier}`,
+      key: `token:transfer:properties:${identifier}`,
       ttl: Constants.oneDay()
     }
   }

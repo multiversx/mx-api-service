@@ -10,6 +10,8 @@ export class TransactionOperation {
 
   collection?: string;
 
+  name?: string;
+
   value: string = '';
 
   sender: string = '';
