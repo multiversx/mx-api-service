@@ -37,10 +37,6 @@ export class NftWorkerService {
       return;
     }
 
-    // if (nft.media && !settings.skipRefreshThumbnail) {
-    //   await Promise.all(nft.media.map(media => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
-    // }
-
     const job = await this.nftQueue.add({ identifier: nft.identifier, nft, settings }, {
       priority: 1000,
       attempts: 3,
@@ -49,21 +45,6 @@ export class NftWorkerService {
     });
     this.logger.log({ type: 'producer', jobId: job.id, identifier: job.data.identifier, settings });
   }
-
-  // private async generateThumbnail(nft: Nft, media: NftMedia, excludeThumbnail: boolean = false): Promise<void> {
-  //   try {
-  //     if (!excludeThumbnail) {
-  //       await this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType);
-  //     } else {
-  //       const urlHash = TokenUtils.getUrlHash(media.url);
-  //       this.logger.log(`Skip generating thumbnail for NFT with identifier '${nft.identifier}' and url hash '${urlHash}'`);
-  //     }
-  //   } catch (error) {
-  //     this.logger.error(`An unhandled exception occurred when generating thumbnail for nft with identifier '${nft.identifier}' and url '${media.url}'`);
-  //     this.logger.error(error);
-  //     throw error;
-  //   }
-  // }
 
   private async needsProcessing(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
     if (!settings.forceRefreshMedia) {
