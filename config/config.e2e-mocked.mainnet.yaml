@@ -28,8 +28,8 @@ urls:
 database:
   host: 'localhost'
   port: 3306
-  username: 'user'
-  password: 'password'
+  username: 'root'
+  password: 'root'
   name: 'api'
 caching:
   cacheTtl: 6
