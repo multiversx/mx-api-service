@@ -74,6 +74,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^8.5.1",
+    "mysql2": "^2.3.3",
     "nest-winston": "^1.6.2",
     "node-object-hash": "^2.3.10",
     "prom-client": "^14.0.1",
