@@ -9,7 +9,7 @@ import { TransactionFilter } from './entities/transaction.filter';
 import { TransactionSendResult } from './entities/transaction.send.result';
 import { QueryOperator } from 'src/common/elastic/entities/query.operator';
 import { TransactionGetService } from './transaction.get.service';
-import { TokenTransferService } from './token.transfer.service';
+import { TokenTransferService } from '../tokens/token.transfer.service';
 import { TransactionPriceService } from './transaction.price.service';
 import { TransactionQueryOptions } from './entities/transactions.query.options';
 import { SmartContractResult } from '../sc-results/entities/smart.contract.result';
@@ -111,14 +111,14 @@ export class TransactionService {
   }
 
   async getTransactionCountForAddress(address: string): Promise<number> {
-      return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       CacheInfo.TxCount(address).key,
-      async() => await this.getTransactionCountForAddressRaw(address),
+      async () => await this.getTransactionCountForAddressRaw(address),
       CacheInfo.TxCount(address).ttl,
       Constants.oneSecond(),
     )
   }
-  
+
   async getTransactionCountForAddressRaw(address: string): Promise<number> {
     const queries = [
       QueryType.Match('sender', address),
@@ -149,8 +149,8 @@ export class TransactionService {
       return false;
     }
 
-    let filterToCompareWith: TransactionFilter = { 
-      sender: filter.sender, 
+    let filterToCompareWith: TransactionFilter = {
+      sender: filter.sender,
       receiver: filter.receiver,
       condition: QueryConditionOptions.should,
     };
@@ -240,7 +240,7 @@ export class TransactionService {
           }
           const logs = await this.transactionGetService.getTransactionLogsFromElastic(hashes);
           let transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
-          transactionDetailed.operations = this.tokenTransferService.getOperationsForTransactionLogs(transactionDetailed.txHash, transactionLogs);
+          transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransactionLogs(transactionDetailed.txHash, transactionLogs);
 
           transactionDetailed.operations = this.transactionGetService.trimOperations(transactionDetailed.operations);
         }

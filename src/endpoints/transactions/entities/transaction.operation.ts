@@ -10,9 +10,13 @@ export class TransactionOperation {
 
   collection?: string;
 
+  name?: string;
+
   value: string = '';
 
   sender: string = '';
 
   receiver: string = '';
+
+  decimals?: number;
 }

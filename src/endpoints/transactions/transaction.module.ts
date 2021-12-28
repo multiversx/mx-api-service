@@ -1,7 +1,7 @@
 import { forwardRef, Module } from "@nestjs/common";
 import { CommonModule } from "src/common/common.module";
 import { PluginModule } from "src/plugins/plugin.module";
-import { TokenTransferService } from "./token.transfer.service";
+import { TokenModule } from "../tokens/token.module";
 import { TransactionGetService } from "./transaction.get.service";
 import { TransactionPriceService } from "./transaction.price.service";
 import { TransactionService } from "./transaction.service";
@@ -10,12 +10,13 @@ import { TransactionService } from "./transaction.service";
   imports: [
     forwardRef(() => CommonModule),
     forwardRef(() => PluginModule),
+    forwardRef(() => TokenModule),
   ],
   providers: [
-    TokenTransferService, TransactionGetService, TransactionPriceService, TransactionService,
+    TransactionGetService, TransactionPriceService, TransactionService,
   ],
   exports: [
-    TokenTransferService, TransactionGetService, TransactionPriceService, TransactionService,
+    TransactionGetService, TransactionPriceService, TransactionService,
   ]
 })
 export class TransactionModule { }

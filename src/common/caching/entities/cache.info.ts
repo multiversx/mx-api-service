@@ -53,7 +53,7 @@ export class CacheInfo {
   static KeybaseConfirmation(keybase: string): CacheInfo {
     return {
       key: `keybase:${keybase}`,
-      ttl:  Constants.oneMonth() * 6
+      ttl: Constants.oneMonth() * 6
     }
   }
 
@@ -83,12 +83,12 @@ export class CacheInfo {
 
   static Economics: CacheInfo = {
     key: 'economics',
-    ttl:  Constants.oneMinute() * 10
+    ttl: Constants.oneMinute() * 10
   }
 
   static Top25Accounts: CacheInfo = {
     key: 'accounts:0:25',
-    ttl:  Constants.oneMinute() * 2
+    ttl: Constants.oneMinute() * 2
   }
 
   static ShardAndEpochBlses(shard: any, epoch: any): CacheInfo {
@@ -115,6 +115,13 @@ export class CacheInfo {
   static TokenAssets: CacheInfo = {
     key: 'tokenAssets',
     ttl: Constants.oneDay(),
+  }
+
+  static TokenTransferProperties(identifier: string): CacheInfo {
+    return {
+      key: `token:transfer:properties:${identifier}`,
+      ttl: Constants.oneDay()
+    }
   }
 
   static EsdtProperties(identifier: string): CacheInfo {
