@@ -29,9 +29,14 @@ export class NftQueueService {
     let nft = job.data.nft;
     let settings = job.data.settings;
 
-    this.nftMetadataService.setMetadata(nft);
+    if (settings.forceRefreshMetadata || !nft.metadata) {
+      this.nftMetadataService.setMetadata(nft);
+    }
     nft.metadata = await this.nftMetadataService.getMetadata(nft);
-    this.nftMediaService.setMedia(nft);
+
+    if (settings.forceRefreshMedia || !nft.media) {
+      this.nftMediaService.setMedia(nft);
+    }
     nft.media = await this.nftMediaService.getMedia(nft);
 
     if (nft.media && !settings.skipRefreshThumbnail) {
