@@ -151,7 +151,7 @@ export class TokenTransferService {
     }
 
     if (properties.type === 'FungibleESDT') {
-      result.token = properties.type;
+      result.token = identifier;
     } else {
       result.collection = identifier;
     }
