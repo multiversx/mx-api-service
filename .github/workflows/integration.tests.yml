@@ -2,6 +2,10 @@
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
 name: Integration tests
+env:
+  DB_DATABASE: api
+  DB_USER: user
+  DB_PASSWORD: password
 
 on:
   push:
@@ -35,6 +39,10 @@ jobs:
           - 6379:6379
 
     steps:
+      - name: Set up MySQL
+        run: |
+          sudo /etc/init.d/mysql start
+          mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
