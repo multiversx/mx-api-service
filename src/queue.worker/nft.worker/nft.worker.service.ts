@@ -6,15 +6,15 @@ import { NftMetadataService } from "./queue/job-services/metadata/nft.metadata.s
 import { NftMediaService } from "./queue/job-services/media/nft.media.service";
 // import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 // import { TokenUtils } from "src/utils/token.utils";
-import { InjectQueue } from "@nestjs/bull";
-import { Queue } from "bull";
+// import { InjectQueue } from "@nestjs/bull";
+// import { Queue } from "bull";
 
 @Injectable()
 export class NftWorkerService {
   private readonly logger: Logger;
 
   constructor(
-    @InjectQueue('nftQueue') private nftQueue: Queue,
+    // @InjectQueue('nftQueue') private nftQueue: Queue,
     private readonly nftThumbnailService: NftThumbnailService,
     private readonly nftMetadataService: NftMetadataService,
     private readonly nftMediaService: NftMediaService,
@@ -36,13 +36,20 @@ export class NftWorkerService {
       return;
     }
 
-    const job = await this.nftQueue.add({ identifier: nft.identifier, nft, settings }, {
-      priority: 1000,
-      attempts: 3,
-      timeout: 60000,
-      removeOnComplete: true
-    });
-    this.logger.log({ type: 'producer', jobId: job.id, identifier: job.data.identifier, settings });
+    await this.nftMetadataService.refreshMetadata(nft);
+    await this.nftMediaService.refreshMedia(nft);
+
+    if (nft.media) {
+      await Promise.all(nft.media.map((media: any) => this.nftThumbnailService.generateThumbnail(nft, media.fileUrl, media.fileType)));
+    }
+
+    // const job = await this.nftQueue.add({ identifier: nft.identifier, nft, settings }, {
+    //   priority: 1000,
+    //   attempts: 3,
+    //   timeout: 60000,
+    //   removeOnComplete: true
+    // });
+    // this.logger.log({ type: 'producer', jobId: job.id, identifier: job.data.identifier, settings });
   }
 
   private async needsProcessing(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
