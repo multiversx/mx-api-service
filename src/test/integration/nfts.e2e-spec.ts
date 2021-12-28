@@ -6,7 +6,7 @@ import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 import Initializer from "./e2e-init";
 
-describe.skip('Nft Service', () => {
+describe('Nft Service', () => {
   let nftService: NftService;
   let nftCreator: string;
   let nftIdentifier: string;
