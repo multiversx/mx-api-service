@@ -6,6 +6,8 @@ import { MetricsModule } from './common/metrics/metrics.module';
 import { ApiConfigModule } from './common/api-config/api.config.module';
 import { MicroserviceModule } from './common/microservice/microservice.module';
 import { HealthCheckController } from './endpoints/health-check/health.check.controller';
+import { ProcessNftsController } from './endpoints/process-nfts/process.nfts.controller';
+import { ProcessNftsModule } from './endpoints/process-nfts/process.nfts.module';
 
 @Module({
   imports: [
@@ -13,11 +15,13 @@ import { HealthCheckController } from './endpoints/health-check/health.check.con
     CachingModule,
     MetricsModule,
     MicroserviceModule,
+    ProcessNftsModule,
   ],
   controllers: [
     MetricsController,
     CacheController,
     HealthCheckController,
+    ProcessNftsController
   ],
 })
-export class PrivateAppModule {}
+export class PrivateAppModule { }

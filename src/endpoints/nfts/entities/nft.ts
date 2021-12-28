@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { TokenAssets } from "src/endpoints/tokens/entities/token.assets";
+import { NftMedia } from "./nft.media";
 import { NftMetadata } from "./nft.metadata";
 import { NftType } from "./nft.type";
 
@@ -36,6 +37,9 @@ export class Nft {
 
   @ApiProperty()
   url: string = '';
+
+  @ApiProperty()
+  media: NftMedia[] | undefined = undefined;
 
   @ApiProperty()
   isWhitelistedStorage: boolean = false;

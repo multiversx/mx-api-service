@@ -39,25 +39,25 @@ export class CacheWarmerService {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly tokenAssetService: TokenAssetService,
     private readonly pluginService: PluginService,
-  ) { 
+  ) {
     this.configCronJob(
-      'handleKeybaseAgainstKeybasePubInvalidations', 
-      CronExpression.EVERY_MINUTE, 
-      CronExpression.EVERY_30_MINUTES, 
+      'handleKeybaseAgainstKeybasePubInvalidations',
+      CronExpression.EVERY_MINUTE,
+      CronExpression.EVERY_30_MINUTES,
       async () => await this.handleKeybaseAgainstKeybasePubInvalidations()
     );
 
     this.configCronJob(
-      'handleKeybaseAgainstCacheInvalidations', 
-      CronExpression.EVERY_MINUTE, 
-      CronExpression.EVERY_10_MINUTES, 
+      'handleKeybaseAgainstCacheInvalidations',
+      CronExpression.EVERY_MINUTE,
+      CronExpression.EVERY_10_MINUTES,
       async () => await this.handleKeybaseAgainstCacheInvalidations()
     );
 
     this.configCronJob(
-      'handleIdentityInvalidations', 
-      CronExpression.EVERY_MINUTE, 
-      CronExpression.EVERY_5_MINUTES, 
+      'handleIdentityInvalidations',
+      CronExpression.EVERY_MINUTE,
+      CronExpression.EVERY_5_MINUTES,
       async () => await this.handleIdentityInvalidations()
     );
   }
@@ -122,7 +122,7 @@ export class CacheWarmerService {
     await Locker.lock('Keybase against keybase.pub / keybase.io invalidations', async () => {
       await this.keybaseService.confirmKeybasesAgainstKeybasePub();
       await this.keybaseService.confirmIdentityProfilesAgainstKeybaseIo();
-      
+
       await this.handleKeybaseAgainstCacheInvalidations();
     }, true);
   }

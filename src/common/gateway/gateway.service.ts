@@ -3,6 +3,7 @@ import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { MetricsService } from "../metrics/metrics.service";
 import { ApiService } from "../network/api.service";
+import { ApiSettings } from "../network/entities/api.settings";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
 
 @Injectable()
@@ -32,7 +33,7 @@ export class GatewayService {
     let profiler = new PerformanceProfiler();
 
     try {
-      return await this.apiService.get(`${this.apiConfigService.getGatewayUrl()}/${url}`, undefined, errorHandler);
+      return await this.apiService.get(`${this.apiConfigService.getGatewayUrl()}/${url}`, new ApiSettings(), errorHandler);
     } finally  {
       profiler.stop();
 
@@ -58,7 +59,7 @@ export class GatewayService {
     let profiler = new PerformanceProfiler();
 
     try {
-      return await this.apiService.post(`${this.apiConfigService.getGatewayUrl()}/${url}`, data, undefined, errorHandler);
+      return await this.apiService.post(`${this.apiConfigService.getGatewayUrl()}/${url}`, data, new ApiSettings(), errorHandler);
     } finally  {
       profiler.stop();
 

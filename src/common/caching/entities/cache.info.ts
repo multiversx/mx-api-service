@@ -53,7 +53,7 @@ export class CacheInfo {
   static KeybaseConfirmation(keybase: string): CacheInfo {
     return {
       key: `keybase:${keybase}`,
-      ttl:  Constants.oneMonth() * 6
+      ttl: Constants.oneMonth() * 6
     }
   }
 
@@ -83,12 +83,12 @@ export class CacheInfo {
 
   static Economics: CacheInfo = {
     key: 'economics',
-    ttl:  Constants.oneMinute() * 10
+    ttl: Constants.oneMinute() * 10
   }
 
   static Top25Accounts: CacheInfo = {
     key: 'accounts:0:25',
-    ttl:  Constants.oneMinute() * 2
+    ttl: Constants.oneMinute() * 2
   }
 
   static ShardAndEpochBlses(shard: any, epoch: any): CacheInfo {
@@ -117,6 +117,13 @@ export class CacheInfo {
     ttl: Constants.oneDay(),
   }
 
+  static TokenTransferProperties(identifier: string): CacheInfo {
+    return {
+      key: `token:transfer:properties:${identifier}`,
+      ttl: Constants.oneDay()
+    }
+  }
+
   static EsdtProperties(identifier: string): CacheInfo {
     return {
       key: `esdt:${identifier}`,
@@ -128,6 +135,27 @@ export class CacheInfo {
     return {
       key: `esdt:assets:${identifier}`,
       ttl: Constants.oneDay(),
+    }
+  }
+
+  static NftMetadata(identifier: string): CacheInfo {
+    return {
+      key: `nftMetadata:${identifier}`,
+      ttl: Constants.oneMonth() * 12,
+    }
+  }
+
+  static NftMedia(identifier: string): CacheInfo {
+    return {
+      key: `nftMedia:${identifier}`,
+      ttl: Constants.oneMonth() * 12,
+    }
+  }
+
+  static NftMediaProperties(uri: string): CacheInfo {
+    return {
+      key: `nftMediaProperties:${uri}`,
+      ttl: Constants.oneHour(),
     }
   }
 }

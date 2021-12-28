@@ -141,8 +141,8 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
-		@Query('name') name?: string,
-		@Query('identifier') identifier?: string,
+    @Query('name') name?: string,
+    @Query('identifier') identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
   ): Promise<TokenWithBalance[]> {
     try {
@@ -190,15 +190,15 @@ export class AccountController {
 
   @Get("/accounts/:address/collections")
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
-	@ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
-	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
-	@ApiQuery({ name: 'owner', description: 'Filter by collection owner', required: false })
-	@ApiQuery({ name: 'canCreate', description: 'Filter by property canCreate (boolean)', required: false })
-	@ApiQuery({ name: 'canBurn', description: 'Filter by property canCreate (boolean)', required: false })
-	@ApiQuery({ name: 'canAddQuantity', description: 'Filter by property canAddQuantity (boolean)', required: false })
-	@ApiQuery({ name: 'withNfts', description: 'Return additional nfts', required: false })
-	@ApiQuery({ name: 'nftSize', description: 'Maximum number of nfts per collection entry', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
+  @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
+  @ApiQuery({ name: 'owner', description: 'Filter by collection owner', required: false })
+  @ApiQuery({ name: 'canCreate', description: 'Filter by property canCreate (boolean)', required: false })
+  @ApiQuery({ name: 'canBurn', description: 'Filter by property canCreate (boolean)', required: false })
+  @ApiQuery({ name: 'canAddQuantity', description: 'Filter by property canAddQuantity (boolean)', required: false })
+  @ApiQuery({ name: 'withNfts', description: 'Return additional nfts', required: false })
+  @ApiQuery({ name: 'nftSize', description: 'Maximum number of nfts per collection entry', required: false })
   @ApiResponse({
     status: 200,
     description: 'The token collections of a given account',
@@ -213,8 +213,8 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-		@Query('search') search?: string,
-		@Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
+    @Query('search') search?: string,
+    @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
     @Query('owner', ParseAddressPipe) owner?: string,
     @Query('canCreate', new ParseOptionalBoolPipe) canCreate?: boolean,
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
@@ -231,12 +231,12 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/collections/count")
-	@ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
-	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
-	@ApiQuery({ name: 'owner', description: 'Filter by collection owner', required: false })
-	@ApiQuery({ name: 'canCreate', description: 'Filter by property canCreate (boolean)', required: false })
-	@ApiQuery({ name: 'canBurn', description: 'Filter by property canCreate (boolean)', required: false })
-	@ApiQuery({ name: 'canAddQuantity', description: 'Filter by property canAddQuantity (boolean)', required: false })
+  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
+  @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
+  @ApiQuery({ name: 'owner', description: 'Filter by collection owner', required: false })
+  @ApiQuery({ name: 'canCreate', description: 'Filter by property canCreate (boolean)', required: false })
+  @ApiQuery({ name: 'canBurn', description: 'Filter by property canCreate (boolean)', required: false })
+  @ApiQuery({ name: 'canAddQuantity', description: 'Filter by property canAddQuantity (boolean)', required: false })
   @ApiResponse({
     status: 200,
     description: 'The number of token collections available on the blockchain for the given address',
@@ -247,8 +247,8 @@ export class AccountController {
   })
   async getCollectionCount(
     @Param('address', ParseAddressPipe) address: string,
-		@Query('search') search?: string,
-		@Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
+    @Query('search') search?: string,
+    @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
     @Query('owner', ParseAddressPipe) owner?: string,
     @Query('canCreate', new ParseOptionalBoolPipe) canCreate?: boolean,
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
@@ -268,8 +268,8 @@ export class AccountController {
   @ApiExcludeEndpoint()
   async getCollectionCountAlternative(
     @Param('address', ParseAddressPipe) address: string,
-		@Query('search') search?: string,
-		@Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
+    @Query('search') search?: string,
+    @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
     @Query('owner', ParseAddressPipe) owner?: string,
     @Query('canCreate', new ParseOptionalBoolPipe) canCreate?: boolean,
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
@@ -391,15 +391,15 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/nfts/count")
-	@ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
-	@ApiQuery({ name: 'identifiers', description: 'Filter by identifiers, comma-separated', required: false })
-	@ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
-	@ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
-	@ApiQuery({ name: 'collections', description: 'Get all tokens by token collections, comma-separated', required: false })
+  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
+  @ApiQuery({ name: 'identifiers', description: 'Filter by identifiers, comma-separated', required: false })
+  @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
+  @ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
+  @ApiQuery({ name: 'collections', description: 'Get all tokens by token collections, comma-separated', required: false })
   @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
-	@ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
-	@ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
-	@ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
+  @ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
+  @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
+  @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
   @ApiQuery({ name: 'includeFlagged', description: 'Include NFTs that are flagged or not', required: false })
   @ApiResponse({
     status: 200,
@@ -411,15 +411,15 @@ export class AccountController {
   })
   async getNftCount(
     @Param('address', ParseAddressPipe) address: string,
-		@Query('identifiers', ParseArrayPipe) identifiers?: string[],
-		@Query('search') search?: string,
-		@Query('type') type?: NftType,
-		@Query('collection') collection?: string,
+    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('search') search?: string,
+    @Query('type') type?: NftType,
+    @Query('collection') collection?: string,
     @Query('collections', ParseArrayPipe) collections?: string[],
     @Query('name') name?: string,
-		@Query('tags', ParseArrayPipe) tags?: string[],
-		@Query('creator', ParseAddressPipe) creator?: string,
-		@Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
+    @Query('tags', ParseArrayPipe) tags?: string[],
+    @Query('creator', ParseAddressPipe) creator?: string,
+    @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseOptionalBoolPipe) includeFlagged?: boolean,
   ): Promise<number> {
     try {
@@ -435,15 +435,15 @@ export class AccountController {
   @ApiExcludeEndpoint()
   async getNftCountAlternative(
     @Param('address', ParseAddressPipe) address: string,
-		@Query('search') search?: string,
-		@Query('identifiers', ParseArrayPipe) identifiers?: string[],
-		@Query('type') type?: NftType,
-		@Query('collection') collection?: string,
+    @Query('search') search?: string,
+    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('type') type?: NftType,
+    @Query('collection') collection?: string,
     @Query('collections', ParseArrayPipe) collections?: string[],
     @Query('name') name?: string,
-		@Query('tags', ParseArrayPipe) tags?: string[],
-		@Query('creator', ParseAddressPipe) creator?: string,
-		@Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
+    @Query('tags', ParseArrayPipe) tags?: string[],
+    @Query('creator', ParseAddressPipe) creator?: string,
+    @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseOptionalBoolPipe) includeFlagged?: boolean,
   ): Promise<number> {
     try {
@@ -578,19 +578,19 @@ export class AccountController {
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
   async getAccountTransactions(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('sender', ParseAddressPipe) sender?: string, 
-    @Query('receiver', ParseAddressPipe) receiver?: string, 
-    @Query('token') token?: string, 
-    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number, 
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('token') token?: string,
+    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
-    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string, 
-    @Query('hashes', ParseArrayPipe) hashes?: string[], 
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus, 
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
-    @Query('before', ParseOptionalIntPipe) before?: number, 
-    @Query('after', ParseOptionalIntPipe) after?: number, 
+    @Query('before', ParseOptionalIntPipe) before?: number,
+    @Query('after', ParseOptionalIntPipe) after?: number,
     @Query('withScResults', new ParseOptionalBoolPipe) withScResults?: boolean,
     @Query('withOperations', new ParseOptionalBoolPipe) withOperations?: boolean,
   ) {
@@ -637,17 +637,17 @@ export class AccountController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getAccountTransactionsCount(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('sender', ParseAddressPipe) sender?: string, 
-    @Query('receiver', ParseAddressPipe) receiver?: string, 
-    @Query('token') token?: string, 
-    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number, 
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number, 
-    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string, 
-    @Query('hashes', ParseArrayPipe) hashes?: string[], 
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus, 
-    @Query('search') search?: string, 
-    @Query('before', ParseOptionalIntPipe) before?: number, 
-    @Query('after', ParseOptionalIntPipe) after?: number, 
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('token') token?: string,
+    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('search') search?: string,
+    @Query('before', ParseOptionalIntPipe) before?: number,
+    @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
     return await this.transactionService.getTransactionCount({
       sender,
@@ -664,6 +664,9 @@ export class AccountController {
     }, address);
   }
 
+
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @Get("/accounts/:address/contracts")
   @ApiResponse({
     status: 200,
@@ -674,8 +677,26 @@ export class AccountController {
     status: 404,
     description: 'Account not found'
   })
-  getAccountContracts(@Param('address', ParseAddressPipe) address: string): Promise<DeployedContract[]> {
-    return this.accountService.getAccountContracts(address);;
+  getAccountContracts(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<DeployedContract[]> {
+    return this.accountService.getAccountContracts({ from, size }, address);;
+  }
+
+  @Get("/accounts/:address/contracts/count")
+  @ApiResponse({
+    status: 200,
+    description: 'All deployed contracts for a given account',
+    type: DeployedContract
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found'
+  })
+  getAccountContractsCount(@Param('address', ParseAddressPipe) address: string): Promise<number> {
+    return this.accountService.getAccountContractsCount(address);;
   }
 
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })

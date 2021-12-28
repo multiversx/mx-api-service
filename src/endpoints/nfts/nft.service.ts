@@ -4,7 +4,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
 import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
-import { TokenUtils } from "src/utils/tokens.utils";
+import { TokenUtils } from "src/utils/token.utils";
 import { Nft } from "./entities/nft";
 import { NftAccount } from "./entities/nft.account";
 import { NftFilter } from "./entities/nft.filter";
@@ -23,8 +23,9 @@ import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { CachingService } from "src/common/caching/caching.service";
 import { Constants } from "src/utils/constants";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
-import asyncPool from "tiny-async-pool";
 import { PluginService } from "src/common/plugins/plugin.service";
+import { NftMetadataService } from "src/queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.service";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 
 @Injectable()
 export class NftService {
@@ -41,6 +42,7 @@ export class NftService {
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => PluginService))
     private readonly pluginService: PluginService,
+    private readonly nftMetadataService: NftMetadataService,
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -49,7 +51,7 @@ export class NftService {
   async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[]> {
     const { from, size } = queryPagination;
 
-    let nfts = await this.getNftsInternal(from, size, filter, undefined, queryOptions);
+    let nfts = await this.getNftsInternal(from, size, filter, undefined);
 
     for (let nft of nfts) {
       await this.applyAssetsAndTicker(nft);
@@ -79,7 +81,7 @@ export class NftService {
     }
 
     for (let nft of nfts) {
-      await this.pluginService.processNft(nft);
+      await this.processNft(nft);
     }
 
     return nfts;
@@ -94,6 +96,25 @@ export class NftService {
     }
   }
 
+  private async processNft(nft: Nft) {
+    await Promise.all([
+      this.applyMedia(nft),
+      this.applyMetadata(nft),
+      this.pluginService.processNft(nft),
+    ]);
+
+    if (!nft.media && nft.type !== NftType.MetaESDT) {
+      nft.media = [
+        {
+          url: 'https://media.elrond.com/nfts/thumbnail/default.png',
+          originalUrl: 'https://media.elrond.com/nfts/thumbnail/default.png',
+          thumbnailUrl: 'https://media.elrond.com/nfts/thumbnail/default.png',
+          fileType: 'image/png',
+          fileSize: 29512
+        }
+      ]
+    }
+  }
   async applyAssetsAndTicker(token: Nft) {
     token.assets = await this.tokenAssetService.getAssets(token.collection);
 
@@ -122,22 +143,17 @@ export class NftService {
 
     await this.applyAssetsAndTicker(nft);
 
-    await this.applyNftMetadata(nft);
-
-    await this.pluginService.processNft(nft);
+    await this.processNft(nft);
 
     return nft;
   }
 
-  async applyNftMetadata(nft: Nft) {
-    if (nft.attributes) {
-      try {
-        nft.metadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(nft.attributes);
-      } catch (error) {
-        this.logger.error(error);
-        this.logger.error(`Error when getting metadata for nft with identifier '${nft.identifier}'`);
-      }
-    }
+  private async applyMedia(nft: Nft) {
+    nft.media = await this.cachingService.getCache(CacheInfo.NftMedia(nft.identifier).key);
+  }
+
+  private async applyMetadata(nft: Nft) {
+    nft.metadata = await this.nftMetadataService.getMetadata(nft);
   }
 
   async getNftOwners(identifier: string, pagination: QueryPagination): Promise<NftOwner[] | undefined> {
@@ -152,7 +168,7 @@ export class NftService {
     });
   }
 
-  async getNftsInternal(from: number, size: number, filter: NftFilter, identifier: string | undefined, queryOptions?: NftQueryOptions): Promise<Nft[]> {
+  async getNftsInternal(from: number, size: number, filter: NftFilter, identifier: string | undefined): Promise<Nft[]> {
     let elasticNfts = await this.elasticService.getNfts(from, size, filter, identifier);
 
     let nfts: Nft[] = [];
@@ -197,17 +213,6 @@ export class NftService {
       nfts.push(nft);
     }
 
-    if (queryOptions && queryOptions.withMetadata) {
-      await asyncPool(
-        this.apiConfigService.getPoolLimit(),
-        nfts,
-        async nft => await this.applyNftMetadata(nft)
-      );
-    }
-
-    this.updateThumbnailUrlForNfts(nfts);
-
-
     for (let nft of nfts) {
       let collectionProperties = await this.esdtService.getEsdtTokenProperties(nft.collection);
 
@@ -247,13 +252,6 @@ export class NftService {
     return await this.elasticService.getCount('accountsesdt', elasticQuery);
   }
 
-  updateThumbnailUrlForNfts(nfts: Nft[]) {
-    let mediaNfts = nfts.filter(nft => nft.type !== NftType.MetaESDT && nft.uris.filter(uri => uri).length > 0);
-    for (let mediaNft of mediaNfts) {
-      mediaNft.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${mediaNft.identifier}`;
-    }
-  }
-
   async getNftCount(filter: NftFilter): Promise<number> {
     return await this.elasticService.getNftCount(filter);
   }
@@ -261,7 +259,7 @@ export class NftService {
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<NftAccount[]> {
     const { from, size } = queryPagination;
 
-    let nfts = await this.getNftsForAddressInternal(address, filter, queryOptions);
+    let nfts = await this.getNftsForAddressInternal(address, filter);
 
     nfts = nfts.slice(from, from + size);
 
@@ -290,7 +288,7 @@ export class NftService {
     }
 
     for (let nft of nfts) {
-      await this.pluginService.processNft(nft);
+      await this.processNft(nft);
     }
 
     if (filter.includeFlagged !== true) {
@@ -344,9 +342,9 @@ export class NftService {
     }
 
     if (filter.hasUris === true) {
-      nfts = nfts.filter(x => x.uris.length > 0);
+      nfts = nfts.filter(x => x.uris && x.uris.length > 0);
     } else if (filter.hasUris === false) {
-      nfts = nfts.filter(x => x.uris.length === 0);
+      nfts = nfts.filter(x => x.uris && x.uris.length === 0);
     }
 
     return nfts;
@@ -382,7 +380,7 @@ export class NftService {
     return Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
   }
 
-  async getNftsForAddressInternal(address: string, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<NftAccount[]> {
+  async getNftsForAddressInternal(address: string, filter: NftFilter): Promise<NftAccount[]> {
     let gatewayNfts = await this.getGatewayNfts(address, filter);
 
     gatewayNfts.sort((a: GatewayNft, b: GatewayNft) => a.tokenIdentifier.localeCompare(b.tokenIdentifier, 'en', { sensitivity: 'base' }));
@@ -445,16 +443,6 @@ export class NftService {
 
     nfts = await this.filterNfts(filter, nfts);
 
-    this.updateThumbnailUrlForNfts(nfts);
-
-    if (queryOptions && queryOptions.withMetadata) {
-      await asyncPool(
-        this.apiConfigService.getPoolLimit(),
-        nfts,
-        async nft => await this.applyNftMetadata(nft)
-      );
-    }
-
     return nfts;
   }
 
@@ -475,9 +463,7 @@ export class NftService {
 
     nft.assets = await this.tokenAssetService.getAssets(nft.collection);
 
-    await this.applyNftMetadata(nft);
-
-    await this.pluginService.processNft(nft);
+    await this.processNft(nft);
 
     return nft;
   }
