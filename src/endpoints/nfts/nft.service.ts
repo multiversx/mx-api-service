@@ -25,7 +25,7 @@ import { Constants } from "src/utils/constants";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { NftMetadataService } from "src/queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.service";
 
 @Injectable()
 export class NftService {
@@ -43,6 +43,7 @@ export class NftService {
     @Inject(forwardRef(() => PluginService))
     private readonly pluginService: PluginService,
     private readonly nftMetadataService: NftMetadataService,
+    private readonly nftMediaService: NftMediaService,
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -149,7 +150,7 @@ export class NftService {
   }
 
   private async applyMedia(nft: Nft) {
-    nft.media = await this.cachingService.getCache(CacheInfo.NftMedia(nft.identifier).key);
+    nft.media = await this.nftMediaService.getMedia(nft);
   }
 
   private async applyMetadata(nft: Nft) {

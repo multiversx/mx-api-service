@@ -6,5 +6,14 @@ export class NftMetadataDb {
   id?: string;
 
   @Column()
-  json?: string;
+  description: string = '';
+
+  @Column()
+  fileType: string = '';
+
+  @Column()
+  fileUri: string = '';
+
+  @Column()
+  fileName: string = '';
 }

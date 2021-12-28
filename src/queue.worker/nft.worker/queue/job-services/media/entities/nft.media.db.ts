@@ -3,8 +3,23 @@ import { Column, Entity, PrimaryColumn } from 'typeorm';
 @Entity()
 export class NftMediaDb {
   @PrimaryColumn()
-  id?: string;
+  urlHash?: string;
 
   @Column()
-  json?: string;
+  nftIdentifier?: string;
+
+  @Column()
+  url: string = '';
+
+  @Column()
+  originalUrl: string = '';
+
+  @Column()
+  thumbnailUrl: string = '';
+
+  @Column()
+  fileType: string = '';
+
+  @Column()
+  fileSize: number = 0;
 }

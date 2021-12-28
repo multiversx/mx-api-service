@@ -29,10 +29,12 @@ export class NftQueueService {
     let nft = job.data.nft;
     let settings = job.data.settings;
 
-    await this.nftMetadataService.setMetadata(nft);
+    this.nftMetadataService.setMetadata(nft);
     nft.metadata = await this.nftMetadataService.getMetadata(nft);
-    await this.nftMediaService.setMedia(nft);
+    this.nftMediaService.setMedia(nft);
     nft.media = await this.nftMediaService.getMedia(nft);
+
+
 
     if (nft.media && !settings.skipRefreshThumbnail) {
       await Promise.all(nft.media.map(media => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
