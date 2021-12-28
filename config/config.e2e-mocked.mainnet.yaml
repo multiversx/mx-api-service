@@ -25,6 +25,12 @@ urls:
   providers: 'https://internal-delegation-api.elrond.com/providers'
   media: 'https://media.elrond.com'
   nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
+database:
+  host: 'localhost'
+  port: 3306
+  username: 'user'
+  password: 'password'
+  name: 'api'
 caching:
   cacheTtl: 6
   processTtl: 600
