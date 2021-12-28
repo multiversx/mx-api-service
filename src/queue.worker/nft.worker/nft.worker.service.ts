@@ -36,7 +36,7 @@ export class NftWorkerService {
       return;
     }
 
-    nft.metadata = await this.nftMetadataService.getMetadata(nft, settings.forceRefreshMetadata);
+    nft.metadata = await this.nftMetadataService.getMetadata(nft);
     nft.media = await this.nftMediaService.getMedia(nft);
 
     if (nft.media && !settings.skipRefreshThumbnail) {

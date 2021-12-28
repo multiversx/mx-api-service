@@ -29,7 +29,8 @@ export class NftQueueService {
     let nft = job.data.nft;
     let settings = job.data.settings;
 
-    nft.metadata = await this.nftMetadataService.getMetadata(nft, settings.forceRefreshMetadata);
+    await this.nftMetadataService.setMetadata(nft);
+    nft.metadata = await this.nftMetadataService.getMetadata(nft);
     await this.nftMediaService.setMedia(nft);
     nft.media = await this.nftMediaService.getMedia(nft);
 
