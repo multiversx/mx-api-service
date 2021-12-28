@@ -150,11 +150,11 @@ export class NftService {
   }
 
   private async applyMedia(nft: Nft) {
-    nft.media = await this.nftMediaService.getMedia(nft);
+    nft.media = await this.nftMediaService.getMedia(nft) ?? undefined;
   }
 
   private async applyMetadata(nft: Nft) {
-    nft.metadata = await this.nftMetadataService.getMetadata(nft);
+    nft.metadata = await this.nftMetadataService.getMetadata(nft) ?? undefined;
   }
 
   async getNftOwners(identifier: string, pagination: QueryPagination): Promise<NftOwner[] | undefined> {

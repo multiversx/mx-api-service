@@ -1,9 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { CachingService } from "src/common/caching/caching.service";
 import { Nft } from "src/endpoints/nfts/entities/nft";
-import { NftMetadata } from "src/endpoints/nfts/entities/nft.metadata";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
-import { ApiUtils } from "src/utils/api.utils";
+import { Constants } from "src/utils/constants";
 import { Repository } from "typeorm";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
 
@@ -16,38 +16,47 @@ export class NftMetadataService {
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     @InjectRepository(NftMetadataDb)
     private readonly nftMetadataRepository: Repository<NftMetadataDb>,
+    private readonly cachingService: CachingService,
   ) {
     this.logger = new Logger(NftMetadataService.name);
   }
 
-  async getMetadata(nft: Nft): Promise<NftMetadata | undefined> {
+  async getMetadataFromDb(nft: Nft): Promise<any> {
     let metadataDb: NftMetadataDb | undefined = await this.nftMetadataRepository.findOne({ id: nft.identifier });
-
     if (!metadataDb) {
-      return undefined;
+      return null;
     }
 
-    return ApiUtils.mergeObjects(new NftMetadataDb(), metadataDb);
+    return metadataDb.content;
   }
 
-  async setMetadata(nft: Nft): Promise<void> {
+  async getMetadata(nft: Nft): Promise<any> {
+    return this.cachingService.getOrSetCache(
+      `metadata:${nft.identifier}`,
+      async () => await this.getMetadataFromDb(nft),
+      Constants.oneHour()
+    );
+  }
+
+  async refreshMetadata(nft: Nft): Promise<void> {
     const metadataRaw = await this.getMetadataRaw(nft);
-    if (metadataRaw) {
-      let metadataDb: NftMetadataDb = new NftMetadataDb();
-      metadataDb = ApiUtils.mergeObjects(new NftMetadataDb(), metadataRaw)
-      metadataDb.id = nft.identifier;
+    if (!metadataRaw) {
+      return;
+    }
 
-      const found = await this.nftMetadataRepository.findOne({ id: nft.identifier });
+    let metadataDb: NftMetadataDb = new NftMetadataDb();
+    metadataDb.id = nft.identifier;
+    metadataDb.content = metadataRaw;
 
-      if (!found) {
-        await this.nftMetadataRepository.save(metadataDb);
-      } else {
-        await this.nftMetadataRepository.update({ id: nft.identifier }, metadataDb)
-      }
+    const found = await this.nftMetadataRepository.findOne({ id: nft.identifier });
+    if (!found) {
+      await this.nftMetadataRepository.save(metadataDb);
+    } else {
+      await this.nftMetadataRepository.update({ id: nft.identifier }, metadataDb)
     }
   }
 
-  async getMetadataRaw(nft: Nft): Promise<NftMetadata | null> {
+  async getMetadataRaw(nft: Nft): Promise<any> {
     if (!nft.attributes) {
       return null;
     }

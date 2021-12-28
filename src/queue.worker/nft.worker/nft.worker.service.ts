@@ -27,8 +27,8 @@ export class NftWorkerService {
       return;
     }
 
-    nft.metadata = await this.nftMetadataService.getMetadata(nft);
-    nft.media = await this.nftMediaService.getMedia(nft);
+    nft.metadata = await this.nftMetadataService.getMetadata(nft) ?? undefined;
+    nft.media = await this.nftMediaService.getMedia(nft) ?? undefined;
 
     let needsProcessing = await this.needsProcessing(nft, settings);
     if (!needsProcessing) {

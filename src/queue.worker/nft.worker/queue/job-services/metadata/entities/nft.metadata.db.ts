@@ -1,19 +1,10 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-@Entity()
+@Entity('nft_metadata')
 export class NftMetadataDb {
   @PrimaryColumn()
   id?: string;
 
-  @Column()
-  description: string = '';
-
-  @Column()
-  fileType: string = '';
-
-  @Column()
-  fileUri: string = '';
-
-  @Column()
-  fileName: string = '';
+  @Column('json')
+  content: any;
 }

@@ -8,7 +8,6 @@ import { MediaMimeTypeEnum } from "src/endpoints/nfts/entities/media.mime.type";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
-import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
 import { TokenUtils } from "src/utils/token.utils";
@@ -33,39 +32,38 @@ export class NftMediaService {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset'
   }
 
-  async getMedia(nft: Nft): Promise<NftMedia[] | undefined> {
-    let mediaDbArray: NftMediaDb[] | undefined = await this.nftMediaRepository.find({ nftIdentifier: nft.identifier });
-
-    if (!mediaDbArray) {
-      return undefined;
+  async getMediaFromDb(nft: Nft): Promise<NftMedia[] | null> {
+    let media: NftMediaDb | undefined = await this.nftMediaRepository.findOne({ id: nft.identifier });
+    if (!media) {
+      return null;
     }
 
-    let mediaArray: NftMedia[] = [];
-    for (let mediaDb of mediaDbArray) {
-      let media: NftMedia = new NftMedia();
-      media = ApiUtils.mergeObjects(new NftMedia(), mediaDb);
-
-      mediaArray.push(media);
-    }
-    return mediaArray;
+    return media.content;
   }
 
-  async setMedia(nft: Nft): Promise<void> {
-    const mediaRaw = await this.getMediaRaw(nft);
-    if (mediaRaw) {
-      for (let media of mediaRaw) {
-        let mediaDb: NftMediaDb = new NftMediaDb();
-        mediaDb = ApiUtils.mergeObjects(new NftMediaDb(), media);
-        mediaDb.nftIdentifier = nft.identifier;
-        mediaDb.urlHash = `${nft.collection}-${TokenUtils.getUrlHash(media.url)}`;
-        const found = await this.nftMediaRepository.findOne({ urlHash: mediaDb.urlHash })
+  async getMedia(nft: Nft): Promise<NftMedia[] | null> {
+    return await this.cachingService.getOrSetCache(
+      `nftMedia:${nft.identifier}`,
+      async () => await this.getMediaFromDb(nft),
+      Constants.oneHour(),
+    );
+  }
 
-        if (!found) {
-          await this.nftMediaRepository.save(mediaDb);
-        } else {
-          await this.nftMediaRepository.update({ urlHash: mediaDb.urlHash }, mediaDb)
-        }
-      }
+  async refreshMedia(nft: Nft): Promise<void> {
+    const mediaRaw = await this.getMediaRaw(nft);
+    if (!mediaRaw) {
+      return;
+    }
+
+    let media = new NftMediaDb();
+    media.id = nft.identifier;
+    media.content = mediaRaw;
+
+    const found = await this.nftMediaRepository.findOne({ id: nft.identifier })
+    if (!found) {
+      await this.nftMediaRepository.save(media);
+    } else {
+      await this.nftMediaRepository.update({ id: nft.identifier }, media)
     }
   }
 
