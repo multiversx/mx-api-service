@@ -21,7 +21,7 @@ describe('Collection Service', () => {
 
     collectionService = moduleRef.get<CollectionService>(CollectionService);
 
-    let collections = await collectionService.getNftCollections({from: 0, size: 1}, new CollectionFilter());
+    let collections = await collectionService.getNftCollections({ from: 0, size: 1 }, new CollectionFilter());
     expect(collections).toHaveLength(1);
 
     let nftCollection = collections[0];
@@ -31,14 +31,14 @@ describe('Collection Service', () => {
   describe('Collections list', () => {
     describe('Collections pagination', () => {
       it(`should return a list with 25 nfts collections`, async () => {
-        const collectionsList = await collectionService.getNftCollections({from: 0, size: 25}, new CollectionFilter());
+        const collectionsList = await collectionService.getNftCollections({ from: 0, size: 25 }, new CollectionFilter());
 
         expect(collectionsList).toBeInstanceOf(Array);
         expect(collectionsList).toHaveLength(25);
       });
 
       it(`should return a list with 10 nfts collections`, async () => {
-        const collectionsList = await collectionService.getNftCollections({from: 0, size: 10}, new CollectionFilter());
+        const collectionsList = await collectionService.getNftCollections({ from: 0, size: 10 }, new CollectionFilter());
         expect(collectionsList).toBeInstanceOf(Array);
         expect(collectionsList).toHaveLength(10);
 
@@ -53,18 +53,18 @@ describe('Collection Service', () => {
       it(`should return a list with all nfts within a collection`, async () => {
         const collectionFilter = new CollectionFilter();
         collectionFilter.collection = collectionIdentifier;
-        const nftsCollections = await collectionService.getNftCollections({from: 0, size: 25}, collectionFilter);
+        const nftsCollections = await collectionService.getNftCollections({ from: 0, size: 25 }, collectionFilter);
         expect(nftsCollections).toBeInstanceOf(Array);
 
         for (let nftCollection of nftsCollections) {
-          expect(nftCollection.collection).toBe(collectionIdentifier); 
+          expect(nftCollection.collection).toBe(collectionIdentifier);
         }
       });
 
       it(`should return a list with SemiFungibleESDT collections`, async () => {
         const collectionFilter = new CollectionFilter();
         collectionFilter.type = NftType.SemiFungibleESDT;
-        const collectionsList = await collectionService.getNftCollections({from: 0, size: 25}, collectionFilter);
+        const collectionsList = await collectionService.getNftCollections({ from: 0, size: 25 }, collectionFilter);
         expect(collectionsList).toBeInstanceOf(Array);
 
         for (let nftCollection of collectionsList) {
