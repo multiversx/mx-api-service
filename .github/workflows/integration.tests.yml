@@ -49,9 +49,9 @@ jobs:
         options: --health-cmd "mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 10
 
     steps:
-      # - name: Set up MySQL
-      #   run: |
-      #     sudo /etc/init.d/mysql start
+      - name: Set up MySQL
+        run: |
+          sudo /etc/init.d/mysql start
       #     mysql -e 'CREATE DATABASE IF NOT EXISTS ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
