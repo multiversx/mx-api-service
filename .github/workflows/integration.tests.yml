@@ -4,7 +4,7 @@
 name: Integration tests
 env:
   DB_DATABASE: api
-  DB_USER: user
+  DB_USER: root
   DB_PASSWORD: password
 
 on:
@@ -37,12 +37,21 @@ jobs:
         ports:
           # Maps port 6379 on service container to the host
           - 6379:6379
+      mysql:
+        image: mysql:5.7
+        options: >-
+          --health-cmd="mysqladmin ping" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 3
+        ports:
+          - 3306
 
     steps:
       - name: Set up MySQL
         run: |
           sudo /etc/init.d/mysql start
-          mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
+          mysql -e 'CREATE DATABASE IF NOT EXISTS ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
