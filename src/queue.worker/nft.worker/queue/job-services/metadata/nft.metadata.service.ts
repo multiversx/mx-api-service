@@ -1,11 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { CachingService } from "src/common/caching/caching.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftMetadata } from "src/endpoints/nfts/entities/nft.metadata";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
-import { Constants } from "src/utils/constants";
 import { Repository } from "typeorm";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
 
@@ -16,7 +13,6 @@ export class NftMetadataService {
 
   constructor(
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
-    private readonly cachingService: CachingService,
     @InjectRepository(NftMetadataDb)
     private readonly nftMetadataRepository: Repository<NftMetadataDb>,
   ) {
