@@ -4,7 +4,7 @@
 name: Integration tests
 env:
   DB_DATABASE: api
-  DB_USER: root
+  DB_USER: user
   DB_PASSWORD: password
 
 on:
@@ -39,6 +39,11 @@ jobs:
           - 6379:6379
       mysql:
         image: mysql:8
+        env:
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: api
         ports:
           - 3306
         options: --health-cmd "mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 10
