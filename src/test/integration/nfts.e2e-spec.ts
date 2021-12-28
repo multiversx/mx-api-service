@@ -6,7 +6,7 @@ import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 import Initializer from "./e2e-init";
 
-describe('Nft Service', () => {
+describe.skip('Nft Service', () => {
   let nftService: NftService;
   let nftCreator: string;
   let nftIdentifier: string;
@@ -22,7 +22,7 @@ describe('Nft Service', () => {
 
     nftService = moduleRef.get<NftService>(NftService);
 
-    let nfts = await nftService.getNfts({from: 0, size: 1}, new NftFilter());
+    let nfts = await nftService.getNfts({ from: 0, size: 1 }, new NftFilter());
     expect(nfts).toHaveLength(1);
 
     let nft = nfts[0];
@@ -33,14 +33,14 @@ describe('Nft Service', () => {
   describe('Nfts list', () => {
     describe('Nfts pagination', () => {
       it(`should return a list with 25 nfts`, async () => {
-        const nftsList = await nftService.getNfts({from: 0, size: 25}, new NftFilter());
+        const nftsList = await nftService.getNfts({ from: 0, size: 25 }, new NftFilter());
 
         expect(nftsList).toBeInstanceOf(Array);
         expect(nftsList).toHaveLength(25);
       });
 
       it(`should return a list with 10 nfts`, async () => {
-        const nftsList = await nftService.getNfts({from: 0, size: 10}, new NftFilter());
+        const nftsList = await nftService.getNfts({ from: 0, size: 10 }, new NftFilter());
         expect(nftsList).toBeInstanceOf(Array);
         expect(nftsList).toHaveLength(10);
 
@@ -55,18 +55,18 @@ describe('Nft Service', () => {
       it(`should return a list with all nfts within a collection`, async () => {
         const nftFilter = new NftFilter();
         nftFilter.collection = nftIdentifier;
-        const nftsList = await nftService.getNfts({from: 0, size: 25}, nftFilter);
+        const nftsList = await nftService.getNfts({ from: 0, size: 25 }, nftFilter);
         expect(nftsList).toBeInstanceOf(Array);
 
         for (let nft of nftsList) {
-          expect(nft.identifier).toBe(nftIdentifier); 
+          expect(nft.identifier).toBe(nftIdentifier);
         }
       });
 
       it(`should return a list with SemiFungibleESDT tokens`, async () => {
         const nftFilter = new NftFilter();
         nftFilter.type = NftType.SemiFungibleESDT;
-        const nftsList = await nftService.getNfts({from: 0, size: 25}, nftFilter);
+        const nftsList = await nftService.getNfts({ from: 0, size: 25 }, nftFilter);
         expect(nftsList).toBeInstanceOf(Array);
 
         for (let nft of nftsList) {
@@ -77,7 +77,7 @@ describe('Nft Service', () => {
       it(`should return a list with all nfts of the creator`, async () => {
         const nftFilter = new NftFilter();
         nftFilter.creator = nftCreator;
-        const nftsList = await nftService.getNfts({from: 0, size: 25}, nftFilter);
+        const nftsList = await nftService.getNfts({ from: 0, size: 25 }, nftFilter);
         expect(nftsList).toBeInstanceOf(Array);
 
         for (let nft of nftsList) {
@@ -88,7 +88,7 @@ describe('Nft Service', () => {
       it(`should return a list with nfts that has identifiers`, async () => {
         const nftFilter = new NftFilter();
         nftFilter.identifiers = ['LKFARM-9d1ea8-8f6b', 'LKLP-03a2fa-4cc9', 'invalidIdentifier']
-        const nftsList = await nftService.getNfts({from: 0, size: 25}, nftFilter);
+        const nftsList = await nftService.getNfts({ from: 0, size: 25 }, nftFilter);
         expect(nftsList).toBeInstanceOf(Array);
 
         expect(nftsList.length).toEqual(2);
@@ -100,7 +100,7 @@ describe('Nft Service', () => {
       it(`should return a empty nfts list`, async () => {
         const nftFilter = new NftFilter();
         nftFilter.identifiers = ['MSFT-532e00']
-        const nftsList = await nftService.getNfts({from: 0, size: 25}, nftFilter);
+        const nftsList = await nftService.getNfts({ from: 0, size: 25 }, nftFilter);
         expect(nftsList).toBeInstanceOf(Array);
 
         expect(nftsList.length).toEqual(0);
