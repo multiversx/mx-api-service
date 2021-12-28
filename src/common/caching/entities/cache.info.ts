@@ -119,7 +119,7 @@ export class CacheInfo {
 
   static TokenTransferProperties(identifier: string): CacheInfo {
     return {
-      key: `token:transfer:properties:${identifier}`,
+      key: `token:transfer:properties:v2:${identifier}`,
       ttl: Constants.oneDay()
     }
   }
