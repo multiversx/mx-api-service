@@ -30,7 +30,6 @@ export class NftWorkerService {
     nft.metadata = await this.nftMetadataService.getMetadata(nft);
     nft.media = await this.nftMediaService.getMedia(nft);
 
-    console.log(nft);
     let needsProcessing = await this.needsProcessing(nft, settings);
     if (!needsProcessing) {
       this.logger.log(`No processing is needed for nft with identifier '${nft.identifier}'`);
