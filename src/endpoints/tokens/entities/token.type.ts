@@ -1,5 +1,6 @@
 export enum TokenType {
   FungibleESDT = 'FungibleESDT',
   NonFungibleESDT = 'NonFungibleESDT',
-  SemiFungibleESDT = 'SemiFungibleESDT'
+  SemiFungibleESDT = 'SemiFungibleESDT',
+  MetaESDT = 'MetaESDT',
 }

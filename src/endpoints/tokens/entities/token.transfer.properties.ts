@@ -1,5 +1,7 @@
+import { TokenType } from "./token.type";
+
 export class TokenTransferProperties {
-  type: string = '';
+  type: TokenType = TokenType.FungibleESDT;
   token?: string;
   collection?: string;
   identifier?: string;

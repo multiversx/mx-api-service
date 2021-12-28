@@ -104,6 +104,7 @@ export class TokenTransferService {
       let properties = await this.getTokenTransferProperties(identifier, nonce);
       let decimals = properties ? properties.decimals : undefined;
       let name = properties ? properties.name : undefined;
+      let esdtType = properties ? properties.type : undefined;
 
       let collection: string | undefined = undefined;
       if (nonce) {
@@ -113,7 +114,7 @@ export class TokenTransferService {
 
       let type = nonce ? TransactionOperationType.nft : TransactionOperationType.esdt;
 
-      return { action, type, collection, identifier, name, sender: event.address, receiver, value, decimals };
+      return { action, type, esdtType, collection, identifier, name, sender: event.address, receiver, value, decimals };
     } catch (error) {
       this.logger.error(`Error when parsing NFT transaction log for tx hash '${txHash}' with action '${action}' and topics: ${event.topics}`);
       this.logger.error(error);
@@ -150,7 +151,7 @@ export class TokenTransferService {
     }
 
     if (properties.type === 'FungibleESDT') {
-      result.token = properties.type;
+      result.token = identifier;
     } else {
       result.collection = identifier;
     }
