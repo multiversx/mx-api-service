@@ -16,6 +16,9 @@ import { DatabaseService } from "./database.service";
         entities: [NftMetadataDb, NftMediaDb],
         keepConnectionAlive: true,
         synchronize: true,
+        extra: {
+          connectionLimit: 4
+        }
       }),
       inject: [ApiConfigService],
     }),
