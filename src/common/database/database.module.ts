@@ -15,6 +15,9 @@ import { ApiConfigService } from "../api-config/api.config.service";
         entities: [NftMetadataDb, NftMediaDb],
         keepConnectionAlive: true,
         synchronize: true,
+        extra: {
+          connectionLimit: 4
+        }
       }),
       inject: [ApiConfigService],
     })
