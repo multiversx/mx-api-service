@@ -41,11 +41,7 @@ export class NftWorkerService {
     }
 
     if (nft.media && !settings.skipRefreshThumbnail) {
-      for (let media of nft.media) {
-        await this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType);
-      }
-
-      // await Promise.all(nft.media.map((media: any) => this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType)));
+      await Promise.all(nft.media.map((media: any) => this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType)));
     }
 
     // const job = await this.nftQueue.add({ identifier: nft.identifier, nft, settings }, {
