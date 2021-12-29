@@ -65,6 +65,12 @@ export class NftMediaService {
     } else {
       await this.nftMediaRepository.update({ id: nft.identifier }, media)
     }
+
+    await this.cachingService.setCache(
+      CacheInfo.NftMedia(nft.identifier).key,
+      mediaRaw,
+      CacheInfo.NftMedia(nft.identifier).ttl
+    )
   }
 
   private async getMediaRaw(nft: Nft): Promise<NftMedia[] | null> {

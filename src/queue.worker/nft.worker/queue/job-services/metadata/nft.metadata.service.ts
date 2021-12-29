@@ -54,6 +54,12 @@ export class NftMetadataService {
     } else {
       await this.nftMetadataRepository.update({ id: nft.identifier }, metadataDb)
     }
+
+    await this.cachingService.setCache(
+      CacheInfo.NftMetadata(nft.identifier).key,
+      metadataRaw,
+      CacheInfo.NftMetadata(nft.identifier).ttl
+    )
   }
 
   async getMetadataRaw(nft: Nft): Promise<any> {
