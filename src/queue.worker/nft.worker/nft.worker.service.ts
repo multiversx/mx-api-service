@@ -33,11 +33,11 @@ export class NftWorkerService {
     }
 
     if (settings.forceRefreshMetadata || !nft.metadata) {
-      this.nftMetadataService.refreshMetadata(nft);
+      await this.nftMetadataService.refreshMetadata(nft);
     }
 
     if (settings.forceRefreshMedia || !nft.media) {
-      this.nftMediaService.refreshMedia(nft);
+      await this.nftMediaService.refreshMedia(nft);
     }
 
     if (nft.media && !settings.skipRefreshThumbnail) {
