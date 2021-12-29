@@ -1,11 +1,10 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { PersistenceInterface } from "src/common/persistence/persistence.interface";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
-import { Repository } from "typeorm";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
 
 
@@ -15,20 +14,11 @@ export class NftMetadataService {
 
   constructor(
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
-    @InjectRepository(NftMetadataDb)
-    private readonly nftMetadataRepository: Repository<NftMetadataDb>,
+    @Inject('PersistenceService')
+    private readonly persistenceService: PersistenceInterface,
     private readonly cachingService: CachingService,
   ) {
     this.logger = new Logger(NftMetadataService.name);
-  }
-
-  async getMetadataFromDb(nft: Nft): Promise<any> {
-    let metadataDb: NftMetadataDb | undefined = await this.nftMetadataRepository.findOne({ id: nft.identifier });
-    if (!metadataDb) {
-      return null;
-    }
-
-    return metadataDb.content;
   }
 
   async getOrRefreshMetadata(nft: Nft): Promise<any> {
@@ -47,7 +37,7 @@ export class NftMetadataService {
   async getMetadata(nft: Nft): Promise<any> {
     return this.cachingService.getOrSetCache(
       CacheInfo.NftMetadata(nft.identifier).key,
-      async () => await this.getMetadataFromDb(nft),
+      async () => await this.persistenceService.getMetadata(nft.identifier),
       CacheInfo.NftMetadata(nft.identifier).ttl
     );
   }
@@ -62,12 +52,7 @@ export class NftMetadataService {
     metadataDb.id = nft.identifier;
     metadataDb.content = metadataRaw;
 
-    const found = await this.nftMetadataRepository.findOne({ id: nft.identifier });
-    if (!found) {
-      await this.nftMetadataRepository.save(metadataDb);
-    } else {
-      await this.nftMetadataRepository.update({ id: nft.identifier }, metadataDb)
-    }
+    await this.persistenceService.setMetadata(nft.identifier, metadataDb);
 
     await this.cachingService.setCache(
       CacheInfo.NftMetadata(nft.identifier).key,
