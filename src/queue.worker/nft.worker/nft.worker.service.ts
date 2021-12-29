@@ -40,7 +40,7 @@ export class NftWorkerService {
     await this.nftMediaService.refreshMedia(nft);
 
     if (nft.media) {
-      await Promise.all(nft.media.map((media: any) => this.nftThumbnailService.generateThumbnail(nft, media.fileUrl, media.fileType)));
+      await Promise.all(nft.media.map((media: any) => this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType)));
     }
 
     // const job = await this.nftQueue.add({ identifier: nft.identifier, nft, settings }, {
