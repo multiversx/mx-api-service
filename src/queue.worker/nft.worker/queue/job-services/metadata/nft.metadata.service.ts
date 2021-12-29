@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { CachingService } from "src/common/caching/caching.service";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
 import { Constants } from "src/utils/constants";
@@ -32,9 +33,9 @@ export class NftMetadataService {
 
   async getMetadata(nft: Nft): Promise<any> {
     return this.cachingService.getOrSetCache(
-      `metadata:${nft.identifier}`,
+      CacheInfo.NftMetadata(nft.identifier).key,
       async () => await this.getMetadataFromDb(nft),
-      Constants.oneHour()
+      CacheInfo.NftMetadata(nft.identifier).ttl
     );
   }
 

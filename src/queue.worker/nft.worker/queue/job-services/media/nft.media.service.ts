@@ -43,9 +43,9 @@ export class NftMediaService {
 
   async getMedia(nft: Nft): Promise<NftMedia[] | null> {
     return await this.cachingService.getOrSetCache(
-      `nftMedia:${nft.identifier}`,
+      CacheInfo.NftMedia(nft.identifier).key,
       async () => await this.getMediaFromDb(nft),
-      Constants.oneHour(),
+      CacheInfo.NftMedia(nft.identifier).ttl,
     );
   }
 
