@@ -22,6 +22,6 @@ import { DatabaseService } from "./database.service";
     TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb])
   ],
   providers: [DatabaseService],
-  exports: [DatabaseService]
+  exports: [DatabaseService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb])]
 })
 export class DatabaseModule { }
