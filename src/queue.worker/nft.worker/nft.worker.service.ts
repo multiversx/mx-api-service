@@ -53,19 +53,19 @@ export class NftWorkerService {
   }
 
   private async needsProcessing(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
-    if (!settings.forceRefreshMedia) {
-      if (!nft.media || nft.media.length === 0) {
-        return true;
-      }
+    if (settings.forceRefreshMedia || settings.forceRefreshMetadata || settings.forceRefreshThumbnail) {
+      return true;
     }
 
-    if (!settings.forceRefreshMetadata) {
-      if (!nft.metadata) {
-        return true;
-      }
+    if (!nft.media || nft.media.length === 0) {
+      return true;
     }
 
-    if (!settings.forceRefreshThumbnail && !settings.skipRefreshThumbnail) {
+    if (!nft.metadata) {
+      return true;
+    }
+
+    if (!settings.skipRefreshThumbnail) {
       if (nft.media) {
         for (let media of nft.media) {
           let hasThumbnailGenerated = await this.nftThumbnailService.hasThumbnailGenerated(nft.identifier, media.url);
