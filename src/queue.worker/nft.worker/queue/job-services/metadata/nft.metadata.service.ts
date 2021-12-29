@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { Nft } from "src/endpoints/nfts/entities/nft";
+import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
 import { Repository } from "typeorm";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
@@ -31,7 +32,7 @@ export class NftMetadataService {
   }
 
   async getOrRefreshMetadata(nft: Nft): Promise<any> {
-    if (!nft.attributes) {
+    if (!nft.attributes || nft.type === NftType.MetaESDT) {
       return undefined;
     }
 
@@ -78,7 +79,7 @@ export class NftMetadataService {
   }
 
   async getMetadataRaw(nft: Nft): Promise<any> {
-    if (!nft.attributes) {
+    if (!nft.attributes || nft.type === NftType.MetaESDT) {
       return null;
     }
 
