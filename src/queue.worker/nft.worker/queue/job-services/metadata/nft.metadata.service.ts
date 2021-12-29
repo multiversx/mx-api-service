@@ -30,6 +30,19 @@ export class NftMetadataService {
     return metadataDb.content;
   }
 
+  async getOrRefreshMetadata(nft: Nft): Promise<any> {
+    if (!nft.attributes) {
+      return undefined;
+    }
+
+    let metadata = await this.getMetadata(nft);
+    if (!metadata) {
+      return await this.refreshMetadata(nft);
+    }
+
+    return metadata;
+  }
+
   async getMetadata(nft: Nft): Promise<any> {
     return this.cachingService.getOrSetCache(
       CacheInfo.NftMetadata(nft.identifier).key,
@@ -38,10 +51,10 @@ export class NftMetadataService {
     );
   }
 
-  async refreshMetadata(nft: Nft): Promise<void> {
-    const metadataRaw = await this.getMetadataRaw(nft);
+  async refreshMetadata(nft: Nft): Promise<any> {
+    let metadataRaw = await this.getMetadataRaw(nft);
     if (!metadataRaw) {
-      return;
+      metadataRaw = {};
     }
 
     let metadataDb: NftMetadataDb = new NftMetadataDb();
@@ -59,7 +72,9 @@ export class NftMetadataService {
       CacheInfo.NftMetadata(nft.identifier).key,
       metadataRaw,
       CacheInfo.NftMetadata(nft.identifier).ttl
-    )
+    );
+
+    return metadataRaw;
   }
 
   async getMetadataRaw(nft: Nft): Promise<any> {
