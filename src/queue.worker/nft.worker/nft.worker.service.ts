@@ -36,8 +36,13 @@ export class NftWorkerService {
       return;
     }
 
-    await this.nftMetadataService.refreshMetadata(nft);
-    await this.nftMediaService.refreshMedia(nft);
+    if (settings.forceRefreshMetadata || !nft.metadata) {
+      this.nftMetadataService.refreshMetadata(nft);
+    }
+
+    if (settings.forceRefreshMedia || !nft.media) {
+      this.nftMediaService.refreshMedia(nft);
+    }
 
     if (nft.media) {
       await Promise.all(nft.media.map((media: any) => this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType)));
