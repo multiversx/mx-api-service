@@ -4,7 +4,6 @@ import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
-import { Constants } from "src/utils/constants";
 import { Repository } from "typeorm";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
 
