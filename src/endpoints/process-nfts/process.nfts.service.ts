@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
+// import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
 import asyncPool from "tiny-async-pool";
 import { Nft } from "../nfts/entities/nft";
@@ -11,7 +11,7 @@ export class ProcessNftsService {
   private readonly logger: Logger;
 
   constructor(
-    private readonly apiConfigService: ApiConfigService,
+    // private readonly apiConfigService: ApiConfigService,
     private readonly nftWorkerService: NftWorkerService,
     private readonly nftService: NftService,
   ) {
