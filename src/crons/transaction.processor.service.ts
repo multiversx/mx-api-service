@@ -147,8 +147,9 @@ export class TransactionProcessorService {
       }
 
       const nft = await this.nftService.getSingleNft(nftIdentifier);
-
-      await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
+      if (nft) {
+        await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
+      }
     }
   }
 

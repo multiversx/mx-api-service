@@ -22,18 +22,14 @@ export class NftWorkerService {
     this.logger = new Logger(NftWorkerService.name);
   }
 
-  async addProcessNftQueueJob(nft: Nft | undefined, settings: ProcessNftSettings): Promise<void> {
-    if (!nft) {
-      return;
-    }
-
+  async addProcessNftQueueJob(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
     nft.metadata = await this.nftMetadataService.getMetadata(nft) ?? undefined;
     nft.media = await this.nftMediaService.getMedia(nft) ?? undefined;
 
     let needsProcessing = await this.needsProcessing(nft, settings);
     if (!needsProcessing) {
       this.logger.log(`No processing is needed for nft with identifier '${nft.identifier}'`);
-      return;
+      return false;
     }
 
     if (settings.forceRefreshMetadata || !nft.metadata) {
@@ -55,6 +51,8 @@ export class NftWorkerService {
     //   removeOnComplete: true
     // });
     // this.logger.log({ type: 'producer', jobId: job.id, identifier: job.data.identifier, settings });
+
+    return true;
   }
 
   private async needsProcessing(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
