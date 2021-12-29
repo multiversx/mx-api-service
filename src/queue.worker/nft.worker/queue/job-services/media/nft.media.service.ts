@@ -125,6 +125,10 @@ export class NftMediaService {
       url = url.replace('https://ipfs.io/ipfs', this.apiConfigService.getIpfsUrl());
     }
 
+    if (url.startsWith('https://gateway.pinata.cloud/ipfs')) {
+      url = url.replace('https://gateway.pinata.cloud/ipfs', this.apiConfigService.getIpfsUrl());
+    }
+
     if (url.startsWith('ipfs://')) {
       url = url.replace('ipfs://', this.apiConfigService.getIpfsUrl() + '/');
     }
