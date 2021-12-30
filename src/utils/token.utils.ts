@@ -11,7 +11,12 @@ export class TokenUtils {
   };
 
   static computeNftUri(uri: string, prefix: string) {
-    return ApiUtils.replaceUri(uri, 'https://ipfs.io/ipfs', prefix);
+    uri = ApiUtils.replaceUri(uri, 'https://ipfs.io/ipfs', prefix);
+    uri = ApiUtils.replaceUri(uri, 'https://gateway.pinata.cloud/ipfs', prefix);
+    uri = ApiUtils.replaceUri(uri, 'https://dweb.link/ipfs', prefix);
+    uri = ApiUtils.replaceUri(uri, 'ipfs:/', prefix);
+
+    return uri;
   }
 
   static getUrlHash(url: string) {
