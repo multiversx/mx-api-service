@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
-import { NftMediaDb } from "src/queue.worker/nft.worker/queue/job-services/media/entities/nft.media.db";
-import { NftMetadataDb } from "src/queue.worker/nft.worker/queue/job-services/metadata/entities/nft.metadata.db";
+import { NftMediaDb } from "src/common/persistence/database/entities/nft.media.db";
+import { NftMetadataDb } from "src/common/persistence/database/entities/nft.metadata.db";
 import { Repository } from "typeorm";
 import { PersistenceInterface } from "../persistence.interface";
 
