@@ -1,4 +1,5 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
@@ -10,6 +11,8 @@ import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
 import { TokenUtils } from "src/utils/token.utils";
+import { Repository } from "typeorm";
+import { NftMediaDb } from "./entities/nft.media.db";
 
 
 @Injectable()
@@ -22,28 +25,55 @@ export class NftMediaService {
     private readonly cachingService: CachingService,
     private readonly apiService: ApiService,
     private readonly apiConfigService: ApiConfigService,
+    @InjectRepository(NftMediaDb)
+    private readonly nftMediaRepository: Repository<NftMediaDb>,
   ) {
     this.logger = new Logger(NftMediaService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset'
   }
 
-  async getMedia(nft: Nft, forceRefresh: boolean = false): Promise<NftMedia[] | undefined> {
-    let media = await this.cachingService.getOrSetCache(
-      CacheInfo.NftMedia(nft.identifier).key,
-      async () => await this.getMediaRaw(nft),
-      CacheInfo.NftMedia(nft.identifier).ttl,
-      Constants.oneDay(),
-      forceRefresh
-    );
-
+  async getMediaFromDb(nft: Nft): Promise<NftMedia[] | null> {
+    let media: NftMediaDb | undefined = await this.nftMediaRepository.findOne({ id: nft.identifier });
     if (!media) {
-      return undefined;
+      return null;
     }
 
-    return media;
+    return media.content;
   }
 
-  async getMediaRaw(nft: Nft): Promise<NftMedia[] | null> {
+  async getMedia(nft: Nft): Promise<NftMedia[] | null> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.NftMedia(nft.identifier).key,
+      async () => await this.getMediaFromDb(nft),
+      CacheInfo.NftMedia(nft.identifier).ttl,
+    );
+  }
+
+  async refreshMedia(nft: Nft): Promise<void> {
+    const mediaRaw = await this.getMediaRaw(nft);
+    if (!mediaRaw) {
+      return;
+    }
+
+    let media = new NftMediaDb();
+    media.id = nft.identifier;
+    media.content = mediaRaw;
+
+    const found = await this.nftMediaRepository.findOne({ id: nft.identifier })
+    if (!found) {
+      await this.nftMediaRepository.save(media);
+    } else {
+      await this.nftMediaRepository.update({ id: nft.identifier }, media)
+    }
+
+    await this.cachingService.setCache(
+      CacheInfo.NftMedia(nft.identifier).key,
+      mediaRaw,
+      CacheInfo.NftMedia(nft.identifier).ttl
+    )
+  }
+
+  private async getMediaRaw(nft: Nft): Promise<NftMedia[] | null> {
     if (nft.type === NftType.MetaESDT) {
       return null;
     }
@@ -59,7 +89,7 @@ export class NftMediaService {
       }
 
       let fileProperties: { contentType: string, contentLength: number } | null = null;
-        
+
       try {
         this.logger.log(`Started fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
         let url = this.getUrl(uri);
@@ -71,7 +101,7 @@ export class NftMediaService {
         this.logger.error(error);
         throw error;
       }
-      
+
       if (!fileProperties) {
         continue;
       }
@@ -91,15 +121,8 @@ export class NftMediaService {
 
   private getUrl(nftUri: string): string {
     let url = BinaryUtils.base64Decode(nftUri);
-    if (url.startsWith('https://ipfs.io/ipfs')) {
-      url = url.replace('https://ipfs.io/ipfs', this.apiConfigService.getIpfsUrl());
-    }
 
-    if (url.startsWith('ipfs://')) {
-      url = url.replace('ipfs://', this.apiConfigService.getIpfsUrl() + '/');
-    }
-
-    return url;
+    return TokenUtils.computeNftUri(url, this.apiConfigService.getIpfsUrl());
   }
 
   private async getFilePropertiesFromIpfs(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
