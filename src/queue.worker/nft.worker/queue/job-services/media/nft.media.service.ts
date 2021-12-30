@@ -106,15 +106,8 @@ export class NftMediaService {
 
   private getUrl(nftUri: string): string {
     let url = BinaryUtils.base64Decode(nftUri);
-    if (url.startsWith('https://ipfs.io/ipfs')) {
-      url = url.replace('https://ipfs.io/ipfs', this.apiConfigService.getIpfsUrl());
-    }
 
-    if (url.startsWith('ipfs://')) {
-      url = url.replace('ipfs://', this.apiConfigService.getIpfsUrl() + '/');
-    }
-
-    return url;
+    return TokenUtils.computeNftUri(url, this.apiConfigService.getIpfsUrl());
   }
 
   private async getFilePropertiesFromIpfs(uri: string): Promise<{ contentType: string, contentLength: number } | null> {

@@ -32,13 +32,13 @@ export class NftQueueService {
     nft.metadata = await this.nftMetadataService.getMetadata(nft);
 
     if (settings.forceRefreshMetadata || !nft.metadata) {
-      this.nftMetadataService.refreshMetadata(nft);
+      await this.nftMetadataService.refreshMetadata(nft);
     }
 
     nft.media = await this.nftMediaService.getMedia(nft) ?? undefined;
 
     if (settings.forceRefreshMedia || !nft.media) {
-      this.nftMediaService.refreshMedia(nft);
+      await this.nftMediaService.refreshMedia(nft);
     }
 
     if (nft.media && !settings.skipRefreshThumbnail) {
