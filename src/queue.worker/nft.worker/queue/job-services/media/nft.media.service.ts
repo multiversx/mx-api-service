@@ -11,8 +11,6 @@ import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
 import { TokenUtils } from "src/utils/token.utils";
-import { NftMediaDb } from "./entities/nft.media.db";
-
 
 @Injectable()
 export class NftMediaService {
@@ -45,11 +43,7 @@ export class NftMediaService {
       return;
     }
 
-    let media = new NftMediaDb();
-    media.id = nft.identifier;
-    media.content = mediaRaw;
-
-    await this.persistenceService.setMedia(nft.identifier, media);
+    await this.persistenceService.setMedia(nft.identifier, mediaRaw);
 
     await this.cachingService.setCache(
       CacheInfo.NftMedia(nft.identifier).key,

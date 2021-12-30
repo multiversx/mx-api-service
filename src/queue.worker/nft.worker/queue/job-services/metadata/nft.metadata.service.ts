@@ -5,7 +5,6 @@ import { PersistenceInterface } from "src/common/persistence/persistence.interfa
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
-import { NftMetadataDb } from "./entities/nft.metadata.db";
 
 
 @Injectable()
@@ -48,11 +47,7 @@ export class NftMetadataService {
       metadataRaw = {};
     }
 
-    let metadataDb: NftMetadataDb = new NftMetadataDb();
-    metadataDb.id = nft.identifier;
-    metadataDb.content = metadataRaw;
-
-    await this.persistenceService.setMetadata(nft.identifier, metadataDb);
+    await this.persistenceService.setMetadata(nft.identifier, metadataRaw);
 
     await this.cachingService.setCache(
       CacheInfo.NftMetadata(nft.identifier).key,

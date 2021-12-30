@@ -4,11 +4,10 @@ import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { NftMediaDb } from "src/queue.worker/nft.worker/queue/job-services/media/entities/nft.media.db";
 import { NftMetadataDb } from "src/queue.worker/nft.worker/queue/job-services/metadata/entities/nft.metadata.db";
 import { Repository } from "typeorm";
-
+import { PersistenceInterface } from "../persistence.interface";
 
 @Injectable()
-export class DatabaseService {
-
+export class DatabaseService implements PersistenceInterface {
   constructor(
     @InjectRepository(NftMetadataDb)
     private readonly nftMetadataRepository: Repository<NftMetadataDb>,
@@ -25,12 +24,16 @@ export class DatabaseService {
     return metadataDb.content;
   }
 
-  async setMetadata(identifier: string, value: NftMetadataDb): Promise<void> {
+  async setMetadata(identifier: string, content: any): Promise<void> {
+    let metadata = new NftMetadataDb();
+    metadata.id = identifier;
+    metadata.content = content;
+
     const found = await this.nftMetadataRepository.findOne({ id: identifier });
     if (!found) {
-      await this.nftMetadataRepository.save(value);
+      await this.nftMetadataRepository.save(metadata);
     } else {
-      await this.nftMetadataRepository.update({ id: identifier }, value)
+      await this.nftMetadataRepository.update({ id: identifier }, metadata)
     }
   }
 
@@ -43,7 +46,11 @@ export class DatabaseService {
     return media.content;
   }
 
-  async setMedia(identifier: string, value: NftMediaDb): Promise<void> {
+  async setMedia(identifier: string, media: NftMedia[]): Promise<void> {
+    let value = new NftMediaDb();
+    value.id = identifier;
+    value.content = media;
+
     const found = await this.nftMediaRepository.findOne({ id: identifier });
     if (!found) {
       await this.nftMediaRepository.save(value);
