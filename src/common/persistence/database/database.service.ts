@@ -29,12 +29,7 @@ export class DatabaseService implements PersistenceInterface {
     metadata.id = identifier;
     metadata.content = content;
 
-    const found = await this.nftMetadataRepository.findOne({ id: identifier });
-    if (!found) {
-      await this.nftMetadataRepository.save(metadata);
-    } else {
-      await this.nftMetadataRepository.update({ id: identifier }, metadata)
-    }
+    await this.nftMetadataRepository.save(metadata);
   }
 
   async getMedia(identifier: string): Promise<NftMedia[] | null> {
@@ -51,11 +46,6 @@ export class DatabaseService implements PersistenceInterface {
     value.id = identifier;
     value.content = media;
 
-    const found = await this.nftMediaRepository.findOne({ id: identifier });
-    if (!found) {
-      await this.nftMediaRepository.save(value);
-    } else {
-      await this.nftMediaRepository.update({ id: identifier }, value)
-    }
+    await this.nftMediaRepository.save(value);
   }
 }
