@@ -9,7 +9,7 @@ REST API facade facilitating the interactions with the Elrond blockchain.
 ## Dependencies
 
 1. Redis Server is required to be installed [docs](https://redis.io/).
-2. MySQL Server is required to be installed [docs](https://dev.mysql.com/doc/refman/8.0/en/installing.html).
+2. MySQL Server is required to be installed [docs](https://dev.mysql.com/doc/refman/8.0/en/installing.html). This can be avoided by adding in the .env file the following: `PERSISTENCE=passthrough`.
 3. ffmpeg is required to be installed [docs](https://www.ffmpeg.org/download.html).
 
 ## Available Scripts
