@@ -37,10 +37,10 @@ export class NftMediaService {
     );
   }
 
-  async refreshMedia(nft: Nft): Promise<NftMedia[]> {
+  async refreshMedia(nft: Nft): Promise<NftMedia[] | undefined> {
     const mediaRaw = await this.getMediaRaw(nft);
     if (!mediaRaw) {
-      return [];
+      return undefined;
     }
 
     await this.persistenceService.setMedia(nft.identifier, mediaRaw);
