@@ -36,5 +36,14 @@ describe('Shard Service', () => {
         expect(shard).toHaveStructure(Object.keys(new Shard()));
       }
     });
+    describe('Shards List', ()=>{
+      describe('Get all shards',  ()=>{
+        it('should return a list of shards', async ()=>{
+          const shardList =  await shardService.getAllShards();
+          expect(shardList).toBeInstanceOf(Array);
+        })
+
+      })
+    })
   });
 });
