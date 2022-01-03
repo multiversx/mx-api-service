@@ -106,7 +106,7 @@ export class NftService {
   async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[]> {
     const { from, size } = queryPagination;
 
-    let nfts = await this.getNftsInternal(from, size, filter, undefined);
+    let nfts = await this.getNftsInternal(from, size, filter);
 
     for (let nft of nfts) {
       await this.applyAssetsAndTicker(nft);
@@ -223,7 +223,7 @@ export class NftService {
     });
   }
 
-  async getNftsInternal(from: number, size: number, filter: NftFilter, identifier: string | undefined): Promise<Nft[]> {
+  async getNftsInternal(from: number, size: number, filter: NftFilter, identifier?: string): Promise<Nft[]> {
     const elasticQuery = this.buildElasticNftFilter(filter, identifier)
     elasticQuery
       .withPagination({ from, size })
