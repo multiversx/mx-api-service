@@ -26,6 +26,7 @@ import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.com
 import { PluginService } from "src/common/plugins/plugin.service";
 import { NftMetadataService } from "src/queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.service";
 import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.service";
+import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 
 @Injectable()
 export class NftService {
@@ -223,7 +224,12 @@ export class NftService {
   }
 
   async getNftsInternal(from: number, size: number, filter: NftFilter, identifier: string | undefined): Promise<Nft[]> {
-    let elasticNfts = await this.elasticService.getNfts(from, size, filter, identifier);
+    const elasticQuery = this.buildElasticNftFilter(filter, identifier)
+    elasticQuery
+      .withPagination({ from, size })
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
+
+    let elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
 
     let nfts: Nft[] = [];
 

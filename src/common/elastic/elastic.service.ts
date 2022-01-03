@@ -3,7 +3,6 @@ import { TransactionLog } from "src/endpoints/transactions/entities/transaction.
 import { ApiService } from "../network/api.service";
 import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { MetricsService } from "src/common/metrics/metrics.service";
-import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { ElasticQuery } from "./entities/elastic.query";
@@ -176,69 +175,6 @@ export class ElasticService {
       .withCondition(QueryConditionOptions.must, queries);
 
     return await this.getDocumentCount('accountsesdt', elasticQuery.toJson());
-  }
-
-  private buildElasticNftFilter(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
-    let queries = [];
-    queries.push(QueryType.Exists('identifier'));
-
-    if (filter.search !== undefined) {
-      queries.push(QueryType.Wildcard('token', `*${filter.search}*`));
-    }
-
-    if (filter.type !== undefined) {
-      queries.push(QueryType.Match('type', filter.type));
-    }
-
-    if (identifier !== undefined) {
-      queries.push(QueryType.Match('identifier', identifier, QueryOperator.AND));
-    }
-
-    if (filter.collection !== undefined && filter.collection !== '') {
-      queries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
-    }
-
-    if (filter.name !== undefined && filter.name !== '') {
-      queries.push(QueryType.Nested('data', { "data.name": filter.name }));
-    }
-
-    if (filter.hasUris !== undefined) {
-      queries.push(QueryType.Nested('data', { "data.nonEmptyURIs": filter.hasUris }));
-    }
-
-    if (filter.tags) {
-      let tagArray = filter.tags;
-      if (tagArray.length > 0) {
-        for (let tag of tagArray) {
-          queries.push(QueryType.Nested("data", { "data.tags": tag }));
-        }
-      }
-    }
-
-    if (filter.creator !== undefined) {
-      queries.push(QueryType.Nested("data", { "data.creator": filter.creator }));
-    }
-
-    if (filter.identifiers) {
-      let identifiers = filter.identifiers;
-      queries.push(QueryType.Should(identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
-    }
-
-    const elasticQuery = ElasticQuery.create()
-      .withPagination({ from, size })
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
-      .withCondition(QueryConditionOptions.must, queries)
-      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('type', 'FungibleESDT')]);
-
-    return elasticQuery;
-  }
-
-  async getNfts(from: number, size: number, filter: NftFilter, identifier: string | undefined) {
-    let elasticQuery = await this.buildElasticNftFilter(from, size, filter, identifier);
-
-    let documents = await this.getDocuments('tokens', elasticQuery.toJson());
-
-    return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
 
   async getTokenCollectionCount(search: string | undefined, type: NftType | undefined) {
