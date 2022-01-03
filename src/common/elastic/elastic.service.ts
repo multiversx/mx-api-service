@@ -323,12 +323,6 @@ export class ElasticService {
     return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
   }
 
-  async getNftCount(filter: NftFilter): Promise<number> {
-    let query = await this.buildElasticNftFilter(0, 0, filter, undefined);
-
-    return await this.getDocumentCount('tokens', query.toJson());
-  }
-
   async getLogsForTransactionHashes(elasticQuery: ElasticQuery): Promise<TransactionLog[]> {
     return await this.getDocuments('logs', elasticQuery.toJson());
   }

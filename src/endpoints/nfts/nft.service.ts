@@ -49,6 +49,59 @@ export class NftService {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
   }
 
+  private buildElasticNftFilter(filter: NftFilter, identifier?: string) {
+    let queries = [];
+    queries.push(QueryType.Exists('identifier'));
+
+    if (filter.search !== undefined) {
+      queries.push(QueryType.Wildcard('token', `*${filter.search}*`));
+    }
+
+    if (filter.type !== undefined) {
+      queries.push(QueryType.Match('type', filter.type));
+    }
+
+    if (identifier !== undefined) {
+      queries.push(QueryType.Match('identifier', identifier, QueryOperator.AND));
+    }
+
+    if (filter.collection !== undefined && filter.collection !== '') {
+      queries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
+    }
+
+    if (filter.name !== undefined && filter.name !== '') {
+      queries.push(QueryType.Nested('data', { "data.name": filter.name }));
+    }
+
+    if (filter.hasUris !== undefined) {
+      queries.push(QueryType.Nested('data', { "data.nonEmptyURIs": filter.hasUris }));
+    }
+
+    if (filter.tags) {
+      let tagArray = filter.tags;
+      if (tagArray.length > 0) {
+        for (let tag of tagArray) {
+          queries.push(QueryType.Nested("data", { "data.tags": tag }));
+        }
+      }
+    }
+
+    if (filter.creator !== undefined) {
+      queries.push(QueryType.Nested("data", { "data.creator": filter.creator }));
+    }
+
+    if (filter.identifiers) {
+      let identifiers = filter.identifiers;
+      queries.push(QueryType.Should(identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
+    }
+
+    const elasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, queries)
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('type', 'FungibleESDT')]);
+
+    return elasticQuery;
+  }
+
   async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[]> {
     const { from, size } = queryPagination;
 
@@ -254,7 +307,9 @@ export class NftService {
   }
 
   async getNftCount(filter: NftFilter): Promise<number> {
-    return await this.elasticService.getNftCount(filter);
+    const elasticQuery = this.buildElasticNftFilter(filter);
+
+    return await this.elasticService.getCount('tokens', elasticQuery);
   }
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<NftAccount[]> {
