@@ -18,7 +18,20 @@ describe('Binary Utils', () => {
             expect(BinaryUtils.hexToNumber('616c696365526f62')).toStrictEqual(7020101794786340706);
         });
         it('Convert tryBase64 to address', () => {
-            expect(BinaryUtils.tryBase64ToAddress('erd1rf4hv70arudgzus0ymnnsnc4pml0jkywg2xjvzslg0mz4nn2tg7q7k0t6p')).toStrictEqual(undefined);
-        });//ToDo continue
+            expect(BinaryUtils.tryBase64ToAddress('erd1rf4hv70arudgzus0ymnnsnc4pml0jkywg2xjvzslg0mz4nn2tg7q7k0t6p')).toBeUndefined();
+        });
+        it('Convert String to padHex', () => {
+            expect(BinaryUtils.padHex('alice')).toStrictEqual('0alice');
+            expect(BinaryUtils.padHex('aliceRob')).toStrictEqual('aliceRob');
+        });
+        it('Convert hex to string', () => {
+            expect(BinaryUtils.hexToString('616c696365526f62')).toStrictEqual('aliceRob');
+        });
+
+        it('Convert TryBase64 to hex', () => {
+            expect(BinaryUtils.tryBase64ToHex('aliceRob')).toStrictEqual('6a589c791a1b');
+        }); //ToDo: Undefined case
+
+
     });
 });
