@@ -268,6 +268,56 @@ export class ApiConfigService {
     return this.configService.get<boolean>('api.auth') ?? false;
   }
 
+  getDatabaseHost(): string {
+    const databaseHost = this.configService.get<string>('database.host');
+    if (!databaseHost) {
+      throw new Error('No database.host present');
+    }
+
+    return databaseHost;
+  }
+
+  getDatabasePort(): number {
+    const databasePort = this.configService.get<number>('database.port');
+    if (!databasePort) {
+      throw new Error('No database.port present');
+    }
+
+    return databasePort;
+  }
+
+
+  getDatabaseUsername(): string | undefined {
+    const databaseUsername = this.configService.get<string>('database.username');
+
+    return databaseUsername;
+  }
+
+  getDatabasePassword(): string | undefined {
+    const databasePassword = this.configService.get<string>('database.password');
+
+    return databasePassword;
+  }
+
+  getDatabaseName(): string {
+    const databaseName = this.configService.get<string>('database.name');
+    if (!databaseName) {
+      throw new Error('No database.name present');
+    }
+
+    return databaseName;
+  }
+
+  getDatabaseConnection(): any {
+    return {
+      host: this.getDatabaseHost(),
+      port: this.getDatabasePort(),
+      username: this.getDatabaseUsername(),
+      password: this.getDatabasePassword(),
+      database: this.getDatabaseName(),
+    }
+  }
+
   getImageWidth(): number {
     const imageWidth = this.configService.get<number>('image.width');
     if (!imageWidth) {

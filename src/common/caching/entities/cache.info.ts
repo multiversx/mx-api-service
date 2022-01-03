@@ -141,14 +141,14 @@ export class CacheInfo {
   static NftMetadata(identifier: string): CacheInfo {
     return {
       key: `nftMetadata:${identifier}`,
-      ttl: Constants.oneMonth() * 12,
+      ttl: Constants.oneHour(),
     }
   }
 
   static NftMedia(identifier: string): CacheInfo {
     return {
       key: `nftMedia:${identifier}`,
-      ttl: Constants.oneMonth() * 12,
+      ttl: Constants.oneHour(),
     }
   }
 
