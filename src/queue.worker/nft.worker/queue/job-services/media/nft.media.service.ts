@@ -1,8 +1,9 @@
-import { HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { ApiService } from "src/common/network/api.service";
+import { PersistenceInterface } from "src/common/persistence/persistence.interface";
 import { MediaMimeTypeEnum } from "src/endpoints/nfts/entities/media.mime.type";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
@@ -10,7 +11,6 @@ import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
 import { TokenUtils } from "src/utils/token.utils";
-
 
 @Injectable()
 export class NftMediaService {
@@ -22,28 +22,39 @@ export class NftMediaService {
     private readonly cachingService: CachingService,
     private readonly apiService: ApiService,
     private readonly apiConfigService: ApiConfigService,
+    @Inject('PersistenceService')
+    private readonly persistenceService: PersistenceInterface,
   ) {
     this.logger = new Logger(NftMediaService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset'
   }
 
-  async getMedia(nft: Nft, forceRefresh: boolean = false): Promise<NftMedia[] | undefined> {
-    let media = await this.cachingService.getOrSetCache(
+  async getMedia(nft: Nft): Promise<NftMedia[] | null> {
+    return await this.cachingService.getOrSetCache(
       CacheInfo.NftMedia(nft.identifier).key,
-      async () => await this.getMediaRaw(nft),
+      async () => await this.persistenceService.getMedia(nft.identifier),
       CacheInfo.NftMedia(nft.identifier).ttl,
-      Constants.oneDay(),
-      forceRefresh
     );
+  }
 
-    if (!media) {
+  async refreshMedia(nft: Nft): Promise<NftMedia[] | undefined> {
+    const mediaRaw = await this.getMediaRaw(nft);
+    if (!mediaRaw) {
       return undefined;
     }
 
-    return media;
+    await this.persistenceService.setMedia(nft.identifier, mediaRaw);
+
+    await this.cachingService.setCache(
+      CacheInfo.NftMedia(nft.identifier).key,
+      mediaRaw,
+      CacheInfo.NftMedia(nft.identifier).ttl
+    );
+
+    return mediaRaw;
   }
 
-  async getMediaRaw(nft: Nft): Promise<NftMedia[] | null> {
+  private async getMediaRaw(nft: Nft): Promise<NftMedia[] | null> {
     if (nft.type === NftType.MetaESDT) {
       return null;
     }
@@ -59,7 +70,7 @@ export class NftMediaService {
       }
 
       let fileProperties: { contentType: string, contentLength: number } | null = null;
-        
+
       try {
         this.logger.log(`Started fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
         let url = this.getUrl(uri);
@@ -71,7 +82,7 @@ export class NftMediaService {
         this.logger.error(error);
         throw error;
       }
-      
+
       if (!fileProperties) {
         continue;
       }
@@ -91,15 +102,8 @@ export class NftMediaService {
 
   private getUrl(nftUri: string): string {
     let url = BinaryUtils.base64Decode(nftUri);
-    if (url.startsWith('https://ipfs.io/ipfs')) {
-      url = url.replace('https://ipfs.io/ipfs', this.apiConfigService.getIpfsUrl());
-    }
 
-    if (url.startsWith('ipfs://')) {
-      url = url.replace('ipfs://', this.apiConfigService.getIpfsUrl() + '/');
-    }
-
-    return url;
+    return TokenUtils.computeNftUri(url, this.apiConfigService.getIpfsUrl());
   }
 
   private async getFilePropertiesFromIpfs(uri: string): Promise<{ contentType: string, contentLength: number } | null> {

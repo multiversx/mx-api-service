@@ -19,7 +19,7 @@ export class NftExtendedAttributesService {
     this.logger = new Logger(NftExtendedAttributesService.name);
   }
 
-  async tryGetExtendedAttributesFromBase64EncodedAttributes(attributes: string): Promise<NftMetadata | undefined> {
+  async tryGetExtendedAttributesFromBase64EncodedAttributes(attributes: string): Promise<any> {
     try {
       return await this.getExtendedAttributesFromBase64EncodedAttributes(attributes);
     } catch (error) {
@@ -48,7 +48,7 @@ export class NftExtendedAttributesService {
     }
   }
 
-  async getExtendedAttributesFromMetadata(metadata: string): Promise<NftMetadata | undefined> {
+  async getExtendedAttributesFromMetadata(metadata: string): Promise<any> {
     let result = await this.cachingService.getOrSetCache<NftMetadata>(
       `nftExtendedAttributes:${metadata}`,
       async () => await this.getExtendedAttributesFromIpfs(metadata ?? ''),
@@ -67,7 +67,7 @@ export class NftExtendedAttributesService {
     return undefined;
   }
 
-  private async getExtendedAttributesFromIpfs(metadata: string): Promise<NftMetadata> {
+  private async getExtendedAttributesFromIpfs(metadata: string): Promise<any> {
     let ipfsUri = `https://ipfs.io/ipfs/${metadata}`;
     let processedIpfsUri = TokenUtils.computeNftUri(ipfsUri, this.apiConfigService.getMediaUrl() + '/nfts/asset');
 

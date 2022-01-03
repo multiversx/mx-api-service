@@ -25,7 +25,8 @@ import { Constants } from "src/utils/constants";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { NftMetadataService } from "src/queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.service";
+import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 
 @Injectable()
 export class NftService {
@@ -43,15 +44,69 @@ export class NftService {
     @Inject(forwardRef(() => PluginService))
     private readonly pluginService: PluginService,
     private readonly nftMetadataService: NftMetadataService,
+    private readonly nftMediaService: NftMediaService,
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
   }
 
+  private buildElasticNftFilter(filter: NftFilter, identifier?: string) {
+    let queries = [];
+    queries.push(QueryType.Exists('identifier'));
+
+    if (filter.search !== undefined) {
+      queries.push(QueryType.Wildcard('token', `*${filter.search}*`));
+    }
+
+    if (filter.type !== undefined) {
+      queries.push(QueryType.Match('type', filter.type));
+    }
+
+    if (identifier !== undefined) {
+      queries.push(QueryType.Match('identifier', identifier, QueryOperator.AND));
+    }
+
+    if (filter.collection !== undefined && filter.collection !== '') {
+      queries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
+    }
+
+    if (filter.name !== undefined && filter.name !== '') {
+      queries.push(QueryType.Nested('data', { "data.name": filter.name }));
+    }
+
+    if (filter.hasUris !== undefined) {
+      queries.push(QueryType.Nested('data', { "data.nonEmptyURIs": filter.hasUris }));
+    }
+
+    if (filter.tags) {
+      let tagArray = filter.tags;
+      if (tagArray.length > 0) {
+        for (let tag of tagArray) {
+          queries.push(QueryType.Nested("data", { "data.tags": tag }));
+        }
+      }
+    }
+
+    if (filter.creator !== undefined) {
+      queries.push(QueryType.Nested("data", { "data.creator": filter.creator }));
+    }
+
+    if (filter.identifiers) {
+      let identifiers = filter.identifiers;
+      queries.push(QueryType.Should(identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
+    }
+
+    const elasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, queries)
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('type', 'FungibleESDT')]);
+
+    return elasticQuery;
+  }
+
   async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[]> {
     const { from, size } = queryPagination;
 
-    let nfts = await this.getNftsInternal(from, size, filter, undefined);
+    let nfts = await this.getNftsInternal(from, size, filter);
 
     for (let nft of nfts) {
       await this.applyAssetsAndTicker(nft);
@@ -149,11 +204,11 @@ export class NftService {
   }
 
   private async applyMedia(nft: Nft) {
-    nft.media = await this.cachingService.getCache(CacheInfo.NftMedia(nft.identifier).key);
+    nft.media = await this.nftMediaService.getMedia(nft) ?? undefined;
   }
 
   private async applyMetadata(nft: Nft) {
-    nft.metadata = await this.nftMetadataService.getMetadata(nft);
+    nft.metadata = await this.nftMetadataService.getOrRefreshMetadata(nft);
   }
 
   async getNftOwners(identifier: string, pagination: QueryPagination): Promise<NftOwner[] | undefined> {
@@ -168,8 +223,13 @@ export class NftService {
     });
   }
 
-  async getNftsInternal(from: number, size: number, filter: NftFilter, identifier: string | undefined): Promise<Nft[]> {
-    let elasticNfts = await this.elasticService.getNfts(from, size, filter, identifier);
+  async getNftsInternal(from: number, size: number, filter: NftFilter, identifier?: string): Promise<Nft[]> {
+    const elasticQuery = this.buildElasticNftFilter(filter, identifier)
+    elasticQuery
+      .withPagination({ from, size })
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
+
+    let elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
 
     let nfts: Nft[] = [];
 
@@ -253,7 +313,9 @@ export class NftService {
   }
 
   async getNftCount(filter: NftFilter): Promise<number> {
-    return await this.elasticService.getNftCount(filter);
+    const elasticQuery = this.buildElasticNftFilter(filter);
+
+    return await this.elasticService.getCount('tokens', elasticQuery);
   }
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<NftAccount[]> {

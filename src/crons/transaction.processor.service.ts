@@ -132,22 +132,25 @@ export class TransactionProcessorService {
       return;
     }
 
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    if (this.apiConfigService.getIsQueueWorkerCronActive()) {
+      await new Promise(resolve => setTimeout(resolve, 5000));
 
-    let transactionDetailed = await this.transactionService.getTransaction(transaction.hash);
-    if (!transactionDetailed || !transactionDetailed.operations || transactionDetailed.operations.length === 0) {
-      return;
+      let transactionDetailed = await this.transactionService.getTransaction(transaction.hash);
+      if (!transactionDetailed || !transactionDetailed.operations || transactionDetailed.operations.length === 0) {
+        return;
+      }
+
+      const nftIdentifier = transactionDetailed.operations[0].identifier;
+
+      if (!nftIdentifier) {
+        return;
+      }
+
+      const nft = await this.nftService.getSingleNft(nftIdentifier);
+      if (nft) {
+        await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
+      }
     }
-
-    const nftIdentifier = transactionDetailed.operations[0].identifier;
-
-    if (!nftIdentifier) {
-      return;
-    }
-
-    const nft = await this.nftService.getSingleNft(nftIdentifier);
-
-    await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
   }
 
   async tryInvalidateOwner(transaction: ShardTransaction): Promise<string[]> {

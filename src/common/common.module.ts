@@ -11,12 +11,12 @@ import { ProtocolModule } from "./protocol/protocol.module";
 
 @Module({
   imports: [
-    forwardRef(() => ApiConfigModule), 
+    forwardRef(() => ApiConfigModule),
     forwardRef(() => CachingModule),
     forwardRef(() => ApiModule),
     forwardRef(() => ElasticModule),
-    forwardRef(() => GatewayModule),  
-    forwardRef(() => ExternalModule),  
+    forwardRef(() => GatewayModule),
+    forwardRef(() => ExternalModule),
     forwardRef(() => KeybaseModule),
     forwardRef(() => MetricsModule),
     forwardRef(() => ProtocolModule),
