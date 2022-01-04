@@ -87,19 +87,6 @@ export class ElasticService {
     return this.getAccountEsdtByIdentifiers([identifier], pagination);
   }
 
-  async getTokensByIdentifiers(identifiers: string[]) {
-    const queries = identifiers.map(identifier =>
-      QueryType.Match('identifier', identifier, QueryOperator.AND)
-    );
-
-    const elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.should, queries);
-
-    let documents = await this.getDocuments('tokens', elasticQuery.toJson());
-
-    return documents.map((document: any) => this.formatItem(document, 'identifier'));
-  }
-
   async getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination) {
     if (identifiers.length === 0) {
       return [];
