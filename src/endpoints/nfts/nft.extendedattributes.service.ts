@@ -56,15 +56,19 @@ export class NftExtendedAttributesService {
       Constants.oneDay()
     );
 
-    if (Object.keys(result).length > 0) {
-      if (result.fileUri) {
-        result.fileUri = TokenUtils.computeNftUri(result.fileUri, this.apiConfigService.getExternalMediaUrl() + '/nfts/asset');
-      }
-
-      return result;
+    if (!result) {
+      return undefined;
     }
 
-    return undefined;
+    if (Object.keys(result).length === 0) {
+      return undefined;
+    }
+
+    if (result.fileUri) {
+      result.fileUri = TokenUtils.computeNftUri(result.fileUri, this.apiConfigService.getExternalMediaUrl() + '/nfts/asset');
+    }
+
+    return result;
   }
 
   private async getExtendedAttributesFromIpfs(metadata: string): Promise<any> {
@@ -72,7 +76,14 @@ export class NftExtendedAttributesService {
     let processedIpfsUri = TokenUtils.computeNftUri(ipfsUri, this.apiConfigService.getMediaUrl() + '/nfts/asset');
 
     let result = await this.apiService.get(processedIpfsUri, { timeout: 5000 });
-    return result.data;
+
+    let data = result.data;
+
+    if (typeof data !== 'object' && !Array.isArray(data)) {
+      return null;
+    }
+
+    return data;
   }
 
   getTags(attributes: string): string[] {
