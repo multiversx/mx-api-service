@@ -26,17 +26,17 @@ export class TokenService {
   async getToken(identifier: string): Promise<TokenDetailed | undefined> {
     let tokens = await this.esdtService.getAllEsdtTokens();
     let token = tokens.find(x => x.identifier === identifier);
-    if (token) {
-      token = ApiUtils.mergeObjects(new TokenDetailed(), token);
-
-      await this.applyTickerFromAssets(token);
-
-      token.supply = await this.esdtService.getTokenSupply(identifier);
-
-      return token;
+    if (!token) {
+      return undefined;
     }
 
-    return undefined;
+    token = ApiUtils.mergeObjects(new TokenDetailed(), token);
+
+    await this.applyTickerFromAssets(token);
+
+    token.supply = await this.esdtService.getTokenSupply(identifier);
+
+    return token;
   }
 
   async getTokens(queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenDetailed[]> {
