@@ -175,22 +175,6 @@ export class ElasticService {
     return await this.getDocumentCount('accountsesdt', elasticQuery.toJson());
   }
 
-  async getTokenByIdentifier(identifier: string) {
-    const queries = [
-      QueryType.Exists('identifier'),
-      QueryType.Match('identifier', identifier, QueryOperator.AND),
-    ]
-
-    const elasticQuery = ElasticQuery.create()
-      .withPagination({ from: 0, size: 1 })
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
-      .withCondition(QueryConditionOptions.must, queries);
-
-    let documents = await this.getDocuments('tokens', elasticQuery.toJson());
-
-    return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
-  }
-
   async getLogsForTransactionHashes(elasticQuery: ElasticQuery): Promise<TransactionLog[]> {
     return await this.getDocuments('logs', elasticQuery.toJson());
   }
