@@ -331,7 +331,14 @@ export class NftService {
 
     if (queryOptions && queryOptions.withTimestamp) {
       let identifiers = nfts.map(x => x.identifier);
-      let elasticNfts = await this.elasticService.getTokensByIdentifiers(identifiers);
+      const queries = identifiers.map(identifier =>
+        QueryType.Match('identifier', identifier, QueryOperator.AND)
+      );
+
+      const elasticQuery = ElasticQuery.create()
+        .withCondition(QueryConditionOptions.should, queries);
+
+      let elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
 
       for (let nft of nfts) {
         let elasticNft = elasticNfts.find((x: any) => x.identifier === nft.identifier);

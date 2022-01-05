@@ -3,7 +3,6 @@ import { TransactionLog } from "src/endpoints/transactions/entities/transaction.
 import { ApiService } from "../network/api.service";
 import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { MetricsService } from "src/common/metrics/metrics.service";
-import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { ElasticQuery } from "./entities/elastic.query";
 import { QueryType } from "./entities/query.type";
@@ -11,7 +10,6 @@ import { QueryOperator } from "./entities/query.operator";
 import { QueryConditionOptions } from "./entities/query.condition.options";
 import { QueryPagination } from "../entities/query.pagination";
 import { ElasticSortOrder } from "./entities/elastic.sort.order";
-import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 
 @Injectable()
 export class ElasticService {
@@ -89,19 +87,6 @@ export class ElasticService {
     return this.getAccountEsdtByIdentifiers([identifier], pagination);
   }
 
-  async getTokensByIdentifiers(identifiers: string[]) {
-    const queries = identifiers.map(identifier =>
-      QueryType.Match('identifier', identifier, QueryOperator.AND)
-    );
-
-    const elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.should, queries);
-
-    let documents = await this.getDocuments('tokens', elasticQuery.toJson());
-
-    return documents.map((document: any) => this.formatItem(document, 'identifier'));
-  }
-
   async getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination) {
     if (identifiers.length === 0) {
       return [];
@@ -175,88 +160,6 @@ export class ElasticService {
       .withCondition(QueryConditionOptions.must, queries);
 
     return await this.getDocumentCount('accountsesdt', elasticQuery.toJson());
-  }
-
-  async getTokenCollectionCount(search: string | undefined, type: NftType | undefined) {
-    let mustNotQueries = [];
-    mustNotQueries.push(QueryType.Exists('identifier'));
-
-    let mustQueries = [];
-    if (search !== undefined) {
-      mustQueries.push(QueryType.Wildcard('token', `*${search}*`));
-    }
-
-    if (type !== undefined) {
-      mustQueries.push(QueryType.Match('type', type));
-    }
-
-    let shouldQueries = [];
-    shouldQueries.push(QueryType.Match('type', NftType.SemiFungibleESDT));
-    shouldQueries.push(QueryType.Match('type', NftType.NonFungibleESDT));
-    shouldQueries.push(QueryType.Match('type', NftType.MetaESDT));
-
-    const elasticQuery = ElasticQuery.create()
-      .withPagination({ from: 0, size: 0 })
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
-      .withCondition(QueryConditionOptions.must, mustQueries)
-      .withCondition(QueryConditionOptions.should, shouldQueries)
-      .withCondition(QueryConditionOptions.mustNot, mustNotQueries);
-
-    return await this.getDocumentCount('tokens', elasticQuery.toJson());
-  }
-
-  async getTokenCollections(pagination: QueryPagination, filter: CollectionFilter) {
-    let mustNotQueries = [];
-    mustNotQueries.push(QueryType.Exists('identifier'));
-
-    let mustQueries = [];
-    if (filter.collection !== undefined) {
-      mustQueries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
-    }
-
-    if (filter.identifiers !== undefined) {
-      mustQueries.push(QueryType.Should(filter.identifiers.map(identifier => QueryType.Match('token', identifier, QueryOperator.AND))));
-    }
-
-    if (filter.search !== undefined) {
-      mustQueries.push(QueryType.Wildcard('token', `*${filter.search}*`));
-    }
-
-    if (filter.type !== undefined) {
-      mustQueries.push(QueryType.Match('type', filter.type));
-    }
-
-    let shouldQueries = [];
-    shouldQueries.push(QueryType.Match('type', NftType.SemiFungibleESDT));
-    shouldQueries.push(QueryType.Match('type', NftType.NonFungibleESDT));
-    shouldQueries.push(QueryType.Match('type', NftType.MetaESDT));
-
-    const elasticQuery = ElasticQuery.create()
-      .withPagination(pagination)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
-      .withCondition(QueryConditionOptions.must, mustQueries)
-      .withCondition(QueryConditionOptions.should, shouldQueries)
-      .withCondition(QueryConditionOptions.mustNot, mustNotQueries);
-
-    let documents = await this.getDocuments('tokens', elasticQuery.toJson());
-
-    return documents.map((document: any) => this.formatItem(document, 'identifier'));
-  }
-
-  async getTokenByIdentifier(identifier: string) {
-    const queries = [
-      QueryType.Exists('identifier'),
-      QueryType.Match('identifier', identifier, QueryOperator.AND),
-    ]
-
-    const elasticQuery = ElasticQuery.create()
-      .withPagination({ from: 0, size: 1 })
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
-      .withCondition(QueryConditionOptions.must, queries);
-
-    let documents = await this.getDocuments('tokens', elasticQuery.toJson());
-
-    return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
   }
 
   async getLogsForTransactionHashes(elasticQuery: ElasticQuery): Promise<TransactionLog[]> {

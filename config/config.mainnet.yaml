@@ -32,7 +32,7 @@ urls:
     - 'https://devnet-api.elrond.com'
     - 'https://testnet-api.elrond.com'
   elastic:
-    - 'https://new-index.elrond.com'
+    - 'https://index.elrond.com'
   mex:
     - 'https://mex-indexer.elrond.com'
   gateway:
@@ -46,8 +46,8 @@ urls:
 database:
   host: 'localhost'
   port: 3306
-  username: 'user'
-  password: 'password'
+  username: 'root'
+  password: ''
   name: 'api'
 caching:
   cacheTtl: 6
