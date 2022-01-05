@@ -2,6 +2,7 @@ import { forwardRef, Module } from "@nestjs/common";
 import { CommonModule } from "src/common/common.module";
 import { AccountModule } from "../accounts/account.module";
 import { BlockModule } from "../blocks/block.module";
+import { NodeModule } from "../nodes/node.module";
 import { StakeModule } from "../stake/stake.module";
 import { TransactionModule } from "../transactions/transaction.module";
 import { VmQueryModule } from "../vm.query/vm.query.module";
@@ -15,6 +16,7 @@ import { NetworkService } from "./network.service";
     forwardRef(() => AccountModule),
     forwardRef(() => TransactionModule),
     forwardRef(() => StakeModule),
+    forwardRef(() => NodeModule),
   ],
   providers: [
     NetworkService,

@@ -20,6 +20,8 @@ import { ApiService } from 'src/common/network/api.service';
 import { DataQuoteType } from 'src/common/external/entities/data.quote.type';
 import { CacheInfo } from 'src/common/caching/entities/cache.info';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
+import { NodeService } from '../nodes/node.service';
+import { NodeFilter } from '../nodes/entities/node.filter';
 
 @Injectable()
 export class NetworkService {
@@ -33,9 +35,11 @@ export class NetworkService {
     private readonly transactionService: TransactionService,
     private readonly dataApiService: DataApiService,
     private readonly apiService: ApiService,
-    @Inject(forwardRef( () => StakeService))
-    private readonly stakeService: StakeService
-  ) {}
+    @Inject(forwardRef(() => StakeService))
+    private readonly stakeService: StakeService,
+    @Inject(forwardRef(() => NodeService))
+    private readonly nodeService: NodeService
+  ) { }
 
   async getConstants(): Promise<NetworkConstants> {
     return this.cachingService.getOrSetCache(
@@ -256,12 +260,37 @@ export class NetworkService {
     const baseReward =
       rewardsPerEpochWithoutProtocolSustainability - topUpReward;
 
-    const apr = (epochsInYear * (topUpReward + baseReward)) / networkTotalStake;
-
+    const apr = await this.computeAprOfElrondcomNodes(activeStake, stakePerNode, networkTopUpStake, topUpReward, networkBaseStake, baseReward, protocolSustainabilityRewards, epochsInYear);
     const topUpApr = (epochsInYear * topUpReward) / networkTopUpStake;
     const baseApr = (epochsInYear * baseReward) / networkBaseStake;
 
     return { apr, topUpApr, baseApr };
+  }
+
+  private async computeAprOfElrondcomNodes(activeStake: string, stakePerNode: number, networkTopUpStake: number, topUpReward: number, networkBaseStake: number, baseReward: number, protocolSustainabilityRewards: number, epochsInYear: number): Promise<number> {
+    const filter = new NodeFilter();
+    filter.identity = 'elrondcom';
+    const elrondcomNodes = await this.nodeService.getNodes({ from: 0, size: 10000 }, filter);
+    const allNodes = elrondcomNodes.filter((node: any) => node.status === 'eligible' || node.status === 'jailed' || node.status === 'queued')
+      .length;
+
+    const allActiveNodes = elrondcomNodes.filter((node: any) => node.status === 'eligible').length;
+
+    // based on validator total stake recalibrate the active nodes.
+    // it can happen that an user can unStake some tokens, but the node is still active until the epoch change
+    const validatorTotalStake = NumberUtils.denominateString(activeStake);
+    const actualNumberOfNodes = Math.min(Math.floor(validatorTotalStake / stakePerNode), allActiveNodes);
+    const validatorBaseStake = actualNumberOfNodes * stakePerNode;
+    const validatorTopUpStake = ((validatorTotalStake - allNodes * stakePerNode) / allNodes) * allActiveNodes;
+    const validatorTopUpReward =
+      networkTopUpStake > 0 ? (validatorTopUpStake / networkTopUpStake) * topUpReward : 0;
+    const validatorBaseReward = (validatorBaseStake / networkBaseStake) * baseReward;
+    const anualPercentageRate =
+      (epochsInYear * (validatorTopUpReward + validatorBaseReward)) / validatorTotalStake;
+
+    const apr = (anualPercentageRate * (1 - protocolSustainabilityRewards / 100 / 100) * 100);
+
+    return apr;
   }
 
   numberDecode(encoded: string): string {
