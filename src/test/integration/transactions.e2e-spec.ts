@@ -171,6 +171,9 @@ describe('Transaction Service', () => {
                 expect(transactionsList).toBeInstanceOf(Array);
     
                 for (let transaction of transactionsList) {
+                    delete transaction.action;
+                    delete transaction.scamInfo;
+
                     expect(transaction).toHaveStructure(Object.keys(new Transaction()));
                     if (transaction.sender !== address || transaction.receiver !== address) {
                         expect(false);
