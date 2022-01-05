@@ -9,6 +9,15 @@ export class AddressUtils {
   static bech32Decode(address: string) {
     return Address.fromBech32(address).hex();
   };
+
+  static isAddressValid(address: string): boolean {
+    try {
+      new Address(address);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
   
   static computeShard(hexPubKey: string) {
     let numShards = 3;
