@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
+import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { NftMediaDb } from "src/common/persistence/database/entities/nft.media.db";
 import { NftMetadataDb } from "src/common/persistence/database/entities/nft.metadata.db";
 import { ApiConfigModule } from "../../api-config/api.config.module";
@@ -10,16 +10,32 @@ import { DatabaseService } from "./database.service";
   imports: [
     TypeOrmModule.forRootAsync({
       imports: [ApiConfigModule],
-      useFactory: (apiConfigService: ApiConfigService) => ({
-        type: 'mysql',
-        ...apiConfigService.getDatabaseConnection(),
-        entities: [NftMetadataDb, NftMediaDb],
-        keepConnectionAlive: true,
-        synchronize: true,
-        extra: {
-          connectionLimit: 4
+      useFactory: (apiConfigService: ApiConfigService) => {
+        let replication = undefined;
+        let slaves = apiConfigService.getDatabaseSlaveConnections();
+        if (slaves.length > 0) {
+          replication = {
+            master: {
+              ...apiConfigService.getDatabaseConnection(),
+            },
+            slaves: apiConfigService.getDatabaseSlaveConnections(),
+          };
         }
-      }),
+
+        let options: TypeOrmModuleOptions = {
+          type: 'mysql',
+          entities: [NftMetadataDb, NftMediaDb],
+          ...apiConfigService.getDatabaseConnection(),
+          keepConnectionAlive: true,
+          synchronize: true,
+          extra: {
+            connectionLimit: 4
+          },
+          replication
+        };
+
+        return options;
+      },
       inject: [ApiConfigService],
     }),
     TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb])
