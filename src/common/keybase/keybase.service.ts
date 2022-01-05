@@ -11,6 +11,7 @@ import { KeybaseState } from "./entities/keybase.state";
 import { ApiService } from "../network/api.service";
 import { CacheInfo } from "../caching/entities/cache.info";
 import { ApiSettings } from "../network/entities/api.settings";
+import asyncPool from "tiny-async-pool";
 
 @Injectable()
 export class KeybaseService {
@@ -107,7 +108,11 @@ export class KeybaseService {
 
     const distinctIdentities = allKeybases.map(x => x.identity ?? '').filter(x => x !== '').distinct();
 
-    await Promise.all(distinctIdentities.map(identity => this.confirmKeybasesAgainstKeybasePubForIdentity(identity)));
+    await asyncPool(
+      10,
+      distinctIdentities,
+      identity => this.confirmKeybasesAgainstKeybasePubForIdentity(identity)
+    );
   }
 
   async confirmKeybasesAgainstKeybasePubForIdentity(identity: string): Promise<void> {

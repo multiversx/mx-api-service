@@ -148,7 +148,12 @@ export class TransactionProcessorService {
 
       const nft = await this.nftService.getSingleNft(nftIdentifier);
       if (nft) {
-        await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
+        try {
+          await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
+        } catch (error) {
+          this.logger.error(`Unexpected error when processing NFT queue for NFT with identifier '${nftIdentifier}'`);
+          this.logger.error(error);
+        }
       }
     }
   }
