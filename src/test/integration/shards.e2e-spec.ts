@@ -11,16 +11,13 @@ describe('Shard Service', () => {
 
   beforeAll(async () => {
     await Initializer.initialize();
-  }, Constants.oneHour() * 1000);
-
-  beforeEach(async () => {
     const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     shardService = publicAppModule.get<ShardService>(ShardService);
     shards = await shardService.getAllShards();
-  });
+  }, Constants.oneHour() * 1000);
 
   describe('Shards', () => {
     it('all shards should have shard, validators and activeValidators', async () => {

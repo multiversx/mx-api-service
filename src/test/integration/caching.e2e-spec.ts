@@ -9,15 +9,12 @@ describe('Caching Service', () => {
 
   beforeAll(async () => {
     await Initializer.initialize();
-  }, Constants.oneHour() * 1000);
-
-  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
-        imports: [PublicAppModule],
-      }).compile();
+      imports: [PublicAppModule],
+    }).compile();
 
     cachingService = moduleRef.get<CachingService>(CachingService);
-  });
+  }, Constants.oneHour() * 1000);
 
   describe('Cache Local', () => {
     //CRUD

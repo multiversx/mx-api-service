@@ -11,15 +11,12 @@ describe('WaitingListService', ()=>{
 
     beforeAll(async () => {
         await Initializer.initialize();
-    }, Constants.oneHour() * 1000);
-
-    beforeEach(async () => {
         const moduleRef = await Test.createTestingModule({
             imports: [PublicAppModule],
         }).compile();
 
         waitingListService = moduleRef.get<WaitingListService>(WaitingListService);
-    });
+    }, Constants.oneHour() * 1000);
 
     describe('Waiting List', ()=>{
         describe('getWaitingList',  ()=>{

@@ -12,16 +12,13 @@ describe('Rounds Service', () => {
 
   beforeAll(async () => {
     await Initializer.initialize();
-  }, Constants.oneHour() * 1000);
-
-  beforeEach(async () => {
     const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     roundService = publicAppModule.get<RoundService>(RoundService);
     rounds = await roundService.getRounds(new RoundFilter());
-  });
+  }, Constants.oneHour() * 1000);
 
   describe('Rounds', () => {
     it('all rounds should have round and shard', async () => {

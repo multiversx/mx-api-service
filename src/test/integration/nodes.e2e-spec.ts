@@ -23,9 +23,6 @@ describe('Node Service', () => {
 
   beforeAll(async () => {
     await Initializer.initialize();
-  }, Constants.oneHour() * 1000);
-
-  beforeEach(async () => {
     const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -33,10 +30,11 @@ describe('Node Service', () => {
     nodeService = publicAppModule.get<NodeService>(NodeService);
     cachingService = publicAppModule.get<CachingService>(CachingService);
     providerService = publicAppModule.get<ProviderService>(ProviderService);
+
     nodes = await nodeService.getAllNodes();
     providers = await providerService.getAllProviders();
     nodeSentinel = nodes[0];
-  });
+  }, Constants.oneHour() * 1000);
 
   describe('Nodes', () => {
     it('all nodes should have bls and type', async () => {

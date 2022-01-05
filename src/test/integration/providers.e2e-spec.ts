@@ -19,9 +19,6 @@ describe('Provider Service', () => {
 
   beforeAll(async () => {
     await Initializer.initialize();
-  }, Constants.oneHour() * 1000);
-
-  beforeEach(async () => {
     const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -32,7 +29,7 @@ describe('Provider Service', () => {
     providers = await providerService.getProviders(new ProviderFilter());
     identity = "istari_vision";
     providerSentinel = providers[0];
-  });
+  }, Constants.oneHour() * 1000);
 
   describe('Providers', () => {
     it('all providers should have provider address', async () => {

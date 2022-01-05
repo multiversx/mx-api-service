@@ -13,17 +13,15 @@ describe('Blocks Service', () => {
 
   beforeAll(async () => {
     await Initializer.initialize();
-  }, Constants.oneHour() * 1000);
-
-  beforeEach(async () => {
     const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
+
     }).compile();
 
     blocksService = publicAppModule.get<BlockService>(BlockService);
     blocks = await blocksService.getBlocks(new BlockFilter(), {from: 0, size: 25});
     blockSentinel = blocks[0];
-  });
+  }, Constants.oneHour() * 1000);
 
   describe('Blocks', () => {
     it('blocks should have hash, epoch and shard', async () => {

@@ -12,9 +12,6 @@ describe('Token Service', () => {
 
   beforeAll(async () => {
     await Initializer.initialize();
-  }, Constants.oneHour() * 1000);
-
-  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -30,7 +27,7 @@ describe('Token Service', () => {
     let token = tokens[0];
     tokenName = token.name;
     tokenIdentifier = token.identifier;
-  });
+  }, Constants.oneHour() * 1000);
 
   describe('Tokens list', () => {
     describe('Tokens pagination', () => {
