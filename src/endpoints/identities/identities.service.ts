@@ -1,8 +1,10 @@
 import { Injectable } from "@nestjs/common";
+import BigNumber from "bignumber.js";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
 import { KeybaseService } from "src/common/keybase/keybase.service";
+import { NetworkService } from "../network/network.service";
 import { Node } from "../nodes/entities/node";
 import { NodeService } from "../nodes/node.service";
 import { NodesInfos } from "../providers/entities/nodes.infos";
@@ -13,10 +15,11 @@ import { StakeInfo } from "./entities/stake.info";
 @Injectable()
 export class IdentitiesService {
   constructor(
-     private readonly nodeService: NodeService,
-     private readonly keybaseService: KeybaseService,
-     private readonly cachingService: CachingService,
-  ) {}
+    private readonly nodeService: NodeService,
+    private readonly keybaseService: KeybaseService,
+    private readonly cachingService: CachingService,
+    private readonly networkService: NetworkService
+  ) { }
 
   async getIdentity(identifier: string): Promise<Identity | undefined> {
     let identities = await this.getAllIdentities();
@@ -28,14 +31,14 @@ export class IdentitiesService {
     if (ids.length > 0) {
       identities = identities.filter(x => x.identity && ids.includes(x.identity));
     }
-    
+
     return identities;
   }
 
   async getAllIdentities(): Promise<Identity[]> {
     return this.cachingService.getOrSetCache(
-      CacheInfo.Identities.key, 
-      async () => await this.getAllIdentitiesRaw(), 
+      CacheInfo.Identities.key,
+      async () => await this.getAllIdentitiesRaw(),
       CacheInfo.Identities.ttl
     );
   }
@@ -66,7 +69,7 @@ export class IdentitiesService {
     return nodesInfo;
   }
 
-  private getStakeDistributionForIdentity(locked: bigint, identity: any): {[key:string]: number} {
+  private getStakeDistributionForIdentity(locked: bigint, identity: any): { [key: string]: number } {
     const distribution = identity.nodes.reduce((accumulator: any, current: any) => {
       const stake = current.stake ? BigInt(current.stake) : BigInt(0);
       const topUp = current.topUp ? BigInt(current.topUp) : BigInt(0);
@@ -95,7 +98,7 @@ export class IdentitiesService {
         distribution[key] = null;
       }
     });
-    
+
     if (distribution && Object.keys(distribution).length > 1) {
       const first = Object.keys(distribution)[0];
       const rest = Object.keys(distribution)
@@ -155,6 +158,7 @@ export class IdentitiesService {
 
   async getAllIdentitiesRaw(): Promise<Identity[]> {
     let nodes = await this.nodeService.getAllNodes();
+    const { baseApr, topUpApr } = await this.networkService.getApr()
 
     let keybaseIdentities: (KeybaseIdentity | undefined)[] = await this.keybaseService.getCachedIdentityProfilesKeybases();
 
@@ -180,7 +184,7 @@ export class IdentitiesService {
       if (found && node.identity && !!node.identity) {
         if (!found.nodes) {
           found.nodes = [];
-        }      
+        }
         found.nodes.push(node);
 
         if (!found.name) {
@@ -209,7 +213,7 @@ export class IdentitiesService {
         identity.location = identityDetailed.location;
 
         const stakeInfo = this.getStakeInfoForIdentity(identityDetailed, BigInt(parseInt(totalLocked)));
-        identity.score = stakeInfo.score ;
+        identity.score = stakeInfo.score;
         identity.validators = stakeInfo.validators
         identity.stake = stakeInfo.stake;
         identity.topUp = stakeInfo.topUp;
@@ -217,6 +221,12 @@ export class IdentitiesService {
         identity.distribution = stakeInfo.distribution;
         identity.providers = stakeInfo.providers;
         identity.stakePercent = stakeInfo.stakePercent;
+        if (identity.stake && identity.topUp) {
+          const stakeReturn = new BigNumber(identity.stake.slice(0, -18)).multipliedBy(new BigNumber(baseApr));
+          const topUpReturn = new BigNumber(identity.topUp.slice(0, -18)).multipliedBy(new BigNumber(topUpApr));
+          const annualReturn = stakeReturn.plus(topUpReturn);
+          identity.apr = new BigNumber(annualReturn).multipliedBy(100).div(identity.locked.slice(0, -18)).toString();
+        }
         return identity;
       }
       return new Identity();
