@@ -94,12 +94,10 @@ describe('Account Service', () => {
         });
 
         describe('Account userName based on Address', () => {
-            it('should return account username based on address ', async ()=>{
+            it('should return account username based on address ', async () => {
                 const accountUserName = await accountService.getAccountUsername(accountAddress);
                 expect(accountUserName).toBeDefined();
             });
         });
-
     });
-
 });

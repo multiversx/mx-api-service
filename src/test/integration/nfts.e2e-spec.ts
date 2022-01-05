@@ -13,9 +13,7 @@ describe('Nft Service', () => {
 
   beforeAll(async () => {
     await Initializer.initialize();
-  }, Constants.oneHour() * 1000);
 
-  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -28,7 +26,7 @@ describe('Nft Service', () => {
     let nft = nfts[0];
     nftCreator = nft.creator;
     nftIdentifier = nft.identifier;
-  });
+  }, Constants.oneHour() * 1000);
 
   describe('Nfts list', () => {
     describe('Nfts pagination', () => {

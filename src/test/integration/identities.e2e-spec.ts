@@ -28,7 +28,7 @@ describe('Identities Service', () => {
     providerService = publicAppModule.get<ProviderService>(ProviderService);
     apiConfigService = publicAppModule.get<ApiConfigService>(ApiConfigService);
     identities = await identityService.getAllIdentities();
-    providers = await providerService.getAllProviders();
+    providers = await providerService.getProvidersWithStakeInformation();
   });
 
   describe('Identities', () => {
@@ -77,7 +77,7 @@ describe('Identities Service', () => {
           if (provider.identity) {
             const providerIdentity = identities.find(({ identity }) => identity === provider.identity);
   
-            expect(providerIdentity).toBeDefined();
+            expect(providerIdentity?.identity).toStrictEqual(provider.identity);
             expect(providerIdentity).toHaveProperty('locked');
             expect(providerIdentity).toHaveProperty('name');
           }

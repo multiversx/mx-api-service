@@ -65,6 +65,8 @@ export default class Initializer {
       async () => await Initializer.cachingService.flushDb(),
     );
 
+    await this.execute('Confirm keybases against keybase.pub', async () => await keybaseService.confirmKeybasesAgainstKeybasePub());
+    await this.execute('Confirm keybase against keybase.io', async () => await keybaseService.confirmIdentityProfilesAgainstKeybaseIo());
     await this.fetch(CacheInfo.Keybases.key, async () => await keybaseService.confirmKeybasesAgainstCache());
     await this.fetch(CacheInfo.Nodes.key, async () => await nodeService.getAllNodesRaw());
     await this.fetch(CacheInfo.Providers.key, async () => await providerService.getAllProvidersRaw());
@@ -90,14 +92,12 @@ export default class Initializer {
     description: string,
     promise: () => Promise<any>,
   ) {
-    console.log(`${new Date().toISOString().substr(11, 8)}: ${description}`);
+    console.log(`${new Date().toISODateString()}: ${description}`);
     let start = Date.now();
     await promise();
     let duration = ((Date.now() - start) / 1000).toFixed(2);
     console.log(
-      `${new Date()
-        .toISOString()
-        .substr(11, 8)}: ${description} completed. Duration: ${duration}s`,
+      `${new Date().toISODateString()}: ${description} completed. Duration: ${duration}s`,
     );
   }
 }

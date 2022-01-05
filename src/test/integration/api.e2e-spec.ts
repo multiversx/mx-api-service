@@ -9,16 +9,13 @@ describe('API Config', ()=>{
 
     beforeAll(async () => {
         await Initializer.initialize();
-    }, Constants.oneHour() * 1000);
 
-    beforeEach(async () => {
         const moduleRef = await Test.createTestingModule({
             imports: [PublicAppModule],
         }).compile();
 
         apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
-
-    });
+    }, Constants.oneHour() * 1000);
 
     describe('Get Urls', ()=>{
         describe('getApiUrls', ()=>{
@@ -387,19 +384,7 @@ describe('API Config', ()=>{
             })
         });
     });
-   /* describe('Get Temp URL', ()=>{
-        describe('getTempUrl', ()=>{
-            it('should return temp url', async ()=>{
-                const getUrlsList =  apiConfigService.getTempUrl();
-                expect(getUrlsList).toBeInstanceOf(String);
-            })
-            it('should throw new Error', async ()=>{
-                const getUrlsList =  apiConfigService.getTempUrl();
-                if(!getUrlsList)
-                    expect(getUrlsList).toThrow('No temp url present');
-            })
-        });
-    });*/
+    
     describe('Get Is Transaction Processor Cron Active', ()=>{
         describe('getIsTransactionProcessorCronActive', ()=>{
             it('should return true', async ()=>{
@@ -446,19 +431,7 @@ describe('API Config', ()=>{
             })
         });
     });
-    /*describe('Get Is Queue Worker Active', ()=>{
-        describe('getIsQueueWorkerCronActive', ()=>{
-            it('should return queue worker', async ()=>{
-                const getUrlsList =  apiConfigService.getIsQueueWorkerCronActive();
-                expect(getUrlsList).toBeTruthy()
-            })
-            it('should throw new Error', async ()=>{
-                const getUrlsList =  apiConfigService.getIsQueueWorkerCronActive();
-                if(getUrlsList == undefined)
-                    expect(getUrlsList).toThrow('No queue worker cron flag present');
-            })
-        });
-    });*/
+    
     describe('Get Is Fast Warmer Cron Active', ()=>{
         describe('getIsFastWarmerCronActive', ()=>{
             it('should return fast warmer cron', async ()=>{
@@ -549,12 +522,7 @@ describe('API Config', ()=>{
         describe('getDatabasePassword', ()=>{
             it('should return database password', async ()=>{
                 const getUrlsList =  apiConfigService.getDatabasePassword();
-                expect(getUrlsList).toBe('root');
-            })
-            it('should throw new Error', async ()=>{
-                const getUrlsList =  apiConfigService.getDatabasePassword();
-                if(!getUrlsList)
-                    expect(getUrlsList).toThrow('No database password present');
+                expect(getUrlsList).toBe('');
             })
         });
     });
@@ -574,13 +542,8 @@ describe('API Config', ()=>{
     describe('Get Metachain Shard Id', ()=>{
         describe('getMetaChainShardId', ()=>{
             it('should return metachain shard id', async ()=>{
-                const getUrlsList =  apiConfigService.getMetaChainShardId();
+                const getUrlsList = apiConfigService.getMetaChainShardId();
                 expect(getUrlsList).toBe(4294967295);
-            })
-            it('should throw new Error', async ()=>{
-                const getUrlsList =  apiConfigService.getMetaChainShardId();
-                if(getUrlsList == undefined)
-                    expect(getUrlsList).toThrow('No metaChainShardId present');
             })
         });
     });

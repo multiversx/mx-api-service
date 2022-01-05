@@ -18,26 +18,23 @@ describe('Transaction Service', () => {
 
     beforeAll(async () => {
       await Initializer.initialize();
-    }, Constants.oneHour() * 1000);
-  
-    beforeEach(async () => {
+
       const moduleRef = await Test.createTestingModule({
           imports: [PublicAppModule],
         }).compile();
   
-        transactionService = moduleRef.get<TransactionService>(TransactionService);
+      transactionService = moduleRef.get<TransactionService>(TransactionService);
 
-        const transactionFilter = new TransactionFilter();
+      const transactionFilter = new TransactionFilter();
 
-        let transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 1});
-        expect(transactions).toHaveLength(1);
+      let transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 1});
+      expect(transactions).toHaveLength(1);
 
-        let transaction = transactions[0];
-        transactionHash = transaction.txHash;
-        transactionSender = transaction.sender;
-        transactionReceiver = transaction.receiver;
-
-    });
+      let transaction = transactions[0];
+      transactionHash = transaction.txHash;
+      transactionSender = transaction.sender;
+      transactionReceiver = transaction.receiver;
+    }, Constants.oneHour() * 1000);
 
     describe('Transactions list', () => {
         it('transactions should have txHash, sender and receiver', async () => {
