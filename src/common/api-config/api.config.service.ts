@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { DatabaseConnectionOptions } from '../persistence/database/entities/connection.options';
 
 @Injectable()
 export class ApiConfigService {
@@ -300,9 +301,9 @@ export class ApiConfigService {
   }
 
   getDatabaseName(): string {
-    const databaseName = this.configService.get<string>('database.name');
+    const databaseName = this.configService.get<string>('database.database');
     if (!databaseName) {
-      throw new Error('No database.name present');
+      throw new Error('No database.database present');
     }
 
     return databaseName;
@@ -316,6 +317,15 @@ export class ApiConfigService {
       password: this.getDatabasePassword(),
       database: this.getDatabaseName(),
     }
+  }
+
+  getDatabaseSlaveConnections(): DatabaseConnectionOptions[] {
+    let slaves = this.configService.get<DatabaseConnectionOptions[]>('database.slaves');
+    if (!slaves) {
+      return [];
+    }
+
+    return slaves;
   }
 
   getImageWidth(): number {
