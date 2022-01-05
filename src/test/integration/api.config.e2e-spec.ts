@@ -522,7 +522,7 @@ describe('API Config', ()=>{
         describe('getDatabasePassword', ()=>{
             it('should return database password', async ()=>{
                 const getUrlsList =  apiConfigService.getDatabasePassword();
-                expect(getUrlsList).toBe('');
+                expect(getUrlsList).toBe('root');
             })
         });
     });
