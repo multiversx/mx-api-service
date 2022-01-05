@@ -45,7 +45,8 @@ database:
   port: 3306
   username: 'root'
   password: 'root'
-  name: 'api'
+  database: 'api'
+
 caching:
   cacheTtl: 6
   processTtl: 600
