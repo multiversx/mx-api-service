@@ -50,7 +50,7 @@ export class CacheWarmerService {
     this.configCronJob(
       'handleKeybaseAgainstCacheInvalidations',
       CronExpression.EVERY_MINUTE,
-      CronExpression.EVERY_10_MINUTES,
+      CronExpression.EVERY_30_MINUTES,
       async () => await this.handleKeybaseAgainstCacheInvalidations()
     );
 
