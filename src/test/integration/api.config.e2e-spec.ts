@@ -637,34 +637,4 @@ describe('API Config', ()=>{
             })
         });
     });
-    describe('Get Mock Key Bases', ()=>{
-        describe('getMockKeybases', ()=>{
-            it('should return mock key bases', async ()=>{
-                const getUrlsList =  apiConfigService.getMockKeybases();
-                expect(getUrlsList).toBeFalsy();
-            })
-        });
-    });
-    describe('Get Mock Nodes', ()=>{
-        describe('getMockNodes', ()=>{
-            it('should return mock nodes', async ()=>{
-                const getUrlsList =  apiConfigService.getMockNodes();
-                expect(getUrlsList).toBeFalsy();
-            })
-        });
-    });
-    describe('Get Mock Path', ()=>{
-        describe('getMockPath', ()=>{
-            it('should return mock path', async ()=>{
-                const getUrlsList =  apiConfigService.getMockPath();
-                expect(getUrlsList).toBe('./src/test/mocks/');
-            })
-            it('should return an error', async ()=>{
-                const getUrlsList =  apiConfigService.getMockPath();
-                if(getUrlsList == undefined)
-                    expect(getUrlsList).toThrow('No mock path value present');
-            })
-        });
-    });
-
 })
