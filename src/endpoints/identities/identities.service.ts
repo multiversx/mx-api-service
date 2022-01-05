@@ -225,7 +225,8 @@ export class IdentitiesService {
           const stakeReturn = new BigNumber(identity.stake.slice(0, -18)).multipliedBy(new BigNumber(baseApr));
           const topUpReturn = new BigNumber(identity.topUp.slice(0, -18)).multipliedBy(new BigNumber(topUpApr));
           const annualReturn = stakeReturn.plus(topUpReturn);
-          identity.apr = new BigNumber(annualReturn).multipliedBy(100).div(identity.locked.slice(0, -18)).toString();
+          const aprStr = new BigNumber(annualReturn).multipliedBy(100).div(identity.locked.slice(0, -18)).toString();
+          identity.apr = Number(aprStr).toRounded(2);
         }
         return identity;
       }
