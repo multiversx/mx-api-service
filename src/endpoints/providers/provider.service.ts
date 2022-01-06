@@ -117,9 +117,13 @@ export class ProviderService {
       return bSort - aSort;
     });
 
-    providers = providers.filter(provider => provider.numNodes > 0 && provider.stake !== '0');
+    providers = providers.filter(provider => provider.numNodes > 0 && provider.stake !== '0' && this.isIdentityFormattedCorrectly(provider.identity ?? ''));
 
     return providers;
+  }
+
+  private isIdentityFormattedCorrectly(identity: string): boolean {
+    return /^[\w]*$/g.test(identity ?? '');
   }
 
   async getProviders(query: ProviderFilter): Promise<Provider[]> {

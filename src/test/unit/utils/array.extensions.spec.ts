@@ -1,7 +1,7 @@
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
-import '../../utils/extensions/array.extensions';
+import '../../../utils/extensions/array.extensions';
 
-describe('Array Extensions', () => { 
+describe('Array Extensions', () => {
   describe('Distinct', () => {
     it('String array', () => {
       expect(['hello', 'world'].distinct()).toEqual(['hello', 'world']);
@@ -32,10 +32,10 @@ describe('Array Extensions', () => {
         { name: 'world', username: 'worldhello' },
         { name: 'world', username: 'worldhello2' },
       ].distinctBy(x => x.name))
-      .toEqual([
-        { name: 'hello', username: 'helloworld' },
-        { name: 'world', username: 'worldhello' },
-      ])
+        .toEqual([
+          { name: 'hello', username: 'helloworld' },
+          { name: 'world', username: 'worldhello' },
+        ])
     });
 
     it('Distinct by Number', () => {
@@ -51,15 +51,15 @@ describe('Array Extensions', () => {
         { id: 2, username: 'two' },
         { id: 2, username: 'two2' },
       ].distinctBy(x => x.id))
-      .toEqual([
-        { id: 1, username: 'one' },
-        { id: 2, username: 'two' },
-      ])
+        .toEqual([
+          { id: 1, username: 'one' },
+          { id: 2, username: 'two' },
+        ])
     });
   });
 
   describe('Find Missing Elements', () => {
-    expect([1,2,3,4].findMissingElements([1, 2])).toEqual([3, 4]);
+    expect([1, 2, 3, 4].findMissingElements([1, 2])).toEqual([3, 4]);
     expect([1, 2].findMissingElements([1, 2])).toEqual([]);
     expect([1, 2].findMissingElements([1, 2, 3, 4])).toEqual([]);
     expect([1, 2, 3, 4].findMissingElements([5, 6, 7, 8])).toEqual([1, 2, 3, 4]);
@@ -143,7 +143,7 @@ describe('Array Extensions', () => {
     transaction3.sender = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40'
     transaction3.receiver = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9ldavllcf3mp40'
 
-    const array = [ transaction1, transaction2, transaction3]
+    const array = [transaction1, transaction2, transaction3]
 
     expect(array.groupBy((item) => item.sender)).toEqual({
       'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40': [transaction1, transaction2, transaction3]
@@ -159,7 +159,7 @@ describe('Array Extensions', () => {
     const keys = ['a', 'b', 'c', 'd'];
     const confirmations = [false, true, false, true];
 
-    expect(keys.zip(confirmations, (first, second) => ({key: first, confirmed: second}))).toEqual([
+    expect(keys.zip(confirmations, (first, second) => ({ key: first, confirmed: second }))).toEqual([
       {
         key: 'a',
         confirmed: false

@@ -17,9 +17,7 @@ describe('Identities Service', () => {
 
   beforeAll(async () => {
     await Initializer.initialize();
-  }, Constants.oneHour() * 1000);
 
-  beforeEach(async () => {
     const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -28,8 +26,8 @@ describe('Identities Service', () => {
     providerService = publicAppModule.get<ProviderService>(ProviderService);
     apiConfigService = publicAppModule.get<ApiConfigService>(ApiConfigService);
     identities = await identityService.getAllIdentities();
-    providers = await providerService.getAllProviders();
-  });
+    providers = await providerService.getProvidersWithStakeInformation();
+  }, Constants.oneHour() * 1000);
 
   describe('Identities', () => {
     it('all identities should have provider stake, topUp and locked', async () => {
@@ -45,12 +43,12 @@ describe('Identities Service', () => {
 
       while (index < identities.length) {
         expect(identities[index]).toBeDefined();
-        expect(identities[index-1]).toHaveProperty('locked');
+        expect(identities[index - 1]).toHaveProperty('locked');
         expect(identities[index]).toHaveProperty('locked');
-        if (identities[index].locked < identities[index-1].locked) {
+        if (identities[index].locked < identities[index - 1].locked) {
           expect(false);
         }
-        index ++;
+        index++;
       }
     });
 
@@ -76,8 +74,8 @@ describe('Identities Service', () => {
         for (let provider of providers) {
           if (provider.identity) {
             const providerIdentity = identities.find(({ identity }) => identity === provider.identity);
-  
-            expect(providerIdentity).toBeDefined();
+
+            expect(providerIdentity?.identity).toStrictEqual(provider.identity);
             expect(providerIdentity).toHaveProperty('locked');
             expect(providerIdentity).toHaveProperty('name');
           }

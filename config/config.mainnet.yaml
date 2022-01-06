@@ -49,6 +49,7 @@ database:
   username: 'root'
   password: 'root'
   database: 'api'
+
 caching:
   cacheTtl: 6
   processTtl: 600

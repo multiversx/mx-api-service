@@ -63,10 +63,15 @@ export class AccountService {
   }
 
   async getAccount(address: string): Promise<AccountDetailed | null> {
+    if (!AddressUtils.isAddressValid(address)) {
+      return null;
+    }
+
     const queries = [
       QueryType.Match('sender', address),
       QueryType.Match('receiver', address),
     ];
+
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.should, queries);
 

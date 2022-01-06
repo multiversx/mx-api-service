@@ -12,9 +12,6 @@ describe('Collection Service', () => {
 
   beforeAll(async () => {
     await Initializer.initialize();
-  }, Constants.oneHour() * 1000);
-
-  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -26,7 +23,7 @@ describe('Collection Service', () => {
 
     let nftCollection = collections[0];
     collectionIdentifier = nftCollection.collection;
-  });
+  }, Constants.oneHour() * 1000);
 
   describe('Collections list', () => {
     describe('Collections pagination', () => {

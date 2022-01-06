@@ -9,15 +9,12 @@ describe('Caching Service', () => {
 
   beforeAll(async () => {
     await Initializer.initialize();
-  }, Constants.oneHour() * 1000);
-
-  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
-        imports: [PublicAppModule],
-      }).compile();
+      imports: [PublicAppModule],
+    }).compile();
 
     cachingService = moduleRef.get<CachingService>(CachingService);
-  });
+  }, Constants.oneHour() * 1000);
 
   describe('Cache Local', () => {
     //CRUD
@@ -40,7 +37,7 @@ describe('Caching Service', () => {
       expect(cacheValue).toBe('test-update');
     });
 
-    it(`should return undefined because key is invalidated`, async() => {
+    it(`should return undefined because key is invalidated`, async () => {
       await cachingService.deleteInCache('test');
 
       const cacheValue = await cachingService.getCacheLocal('test');
@@ -58,10 +55,10 @@ describe('Caching Service', () => {
 
   describe('Batch process in chunks', () => {
     let input: Array<Number> = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-    let output: Array<String> = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15'];
+    let output: Array<String> = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15'];
     let emptyOutput: Array<any> = Array(15).fill(null);
     let cacheKeyFunction = (number: Number) => number.toString();
-    let handlerFunction = async(number: Number) => await number.toString();
+    let handlerFunction = async (number: Number) => await number.toString();
 
     it(`should return emptyOutput because keys aren't set`, async () => {
       const cacheValueChunks = await cachingService.batchGetCache(input.map((x) => cacheKeyFunction(x)));

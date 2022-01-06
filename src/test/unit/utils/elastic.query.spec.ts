@@ -12,13 +12,13 @@ describe('Elastic Query', () => {
     it('Should return undefined pagination', () => {
       expect(elasticQuery.pagination).toBeUndefined();
     });
-    
+
     it('Should return empty sort array', () => {
       expect(elasticQuery.sort.length).toEqual(0);
     });
 
     it('Should return empty filter array', () => {
-      expect(elasticQuery.filter.length).toEqual(0);   
+      expect(elasticQuery.filter.length).toEqual(0);
     });
 
     it('Should return empty conditions', () => {
@@ -62,7 +62,7 @@ describe('Elastic Query', () => {
 
     elasticQuery.withSort([{ name: 'test', order: ElasticSortOrder.descending }]);
     expect(elasticQuery.sort.length).toEqual(1);
-   
+
     expect(elasticQuery.toJson().sort.toString()).toStrictEqual([{ name: 'test', order: ElasticSortOrder.descending }].toString());
   });
 
@@ -72,7 +72,7 @@ describe('Elastic Query', () => {
     elasticQuery.withCondition(QueryConditionOptions.mustNot, [QueryType.Match('test', { test: 'test' })]);
     expect(elasticQuery.condition.must_not.length).toEqual(1);
     expect(elasticQuery.condition.must_not[0].getQuery()).toMatchObject({ match: { test: { test: 'test' } } });
-   
+
     expect(elasticQuery.toJson().query.bool.must_not).toBeDefined();
   });
 
@@ -87,7 +87,7 @@ describe('Elastic Query', () => {
     elasticQuery.withFilter([new RangeQuery('test', 100, 1)]);
     expect(elasticQuery.filter.length).toEqual(1);
     expect(elasticQuery.filter[0].getQuery()).toMatchObject({ range: { test: { lte: 100, gte: 1 } } });
-   
+
     expect(elasticQuery.toJson().query.bool.filter).toBeDefined();
   });
 
@@ -96,7 +96,7 @@ describe('Elastic Query', () => {
 
     elasticQuery.withTerms(new TermsQuery('test', ['a', 'b', 'c']));
     expect(elasticQuery.terms).toBeDefined();
-   
+
     expect(elasticQuery.toJson().query.terms).toBeDefined();
   });
 });

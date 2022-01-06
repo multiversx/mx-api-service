@@ -11,16 +11,13 @@ describe('Shard Service', () => {
 
   beforeAll(async () => {
     await Initializer.initialize();
-  }, Constants.oneHour() * 1000);
-
-  beforeEach(async () => {
     const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     shardService = publicAppModule.get<ShardService>(ShardService);
     shards = await shardService.getAllShards();
-  });
+  }, Constants.oneHour() * 1000);
 
   describe('Shards', () => {
     it('all shards should have shard, validators and activeValidators', async () => {
@@ -30,11 +27,20 @@ describe('Shard Service', () => {
         expect(shard).toHaveProperty('activeValidators');
       }
     });
-    
+
     it('all entities should have shard structure', async () => {
       for (let shard of shards) {
         expect(shard).toHaveStructure(Object.keys(new Shard()));
       }
     });
+    describe('Shards List', () => {
+      describe('Get all shards', () => {
+        it('should return a list of shards', async () => {
+          const shardList = await shardService.getAllShards();
+          expect(shardList).toBeInstanceOf(Array);
+        })
+
+      })
+    })
   });
 });

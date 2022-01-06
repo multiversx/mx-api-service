@@ -10,16 +10,13 @@ describe('Stake Service', () => {
 
   beforeAll(async () => {
     await Initializer.initialize();
-  }, Constants.oneHour() * 1000);
-
-  beforeEach(async () => {
     const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     stakeService = publicAppModule.get<StakeService>(StakeService);
     globalStake = await stakeService.getGlobalStake();
-  });
+  }, Constants.oneHour() * 1000);
 
   describe('Stake', () => {
     it('global stake should have totalValidators, activeValidators, queueSize and totalStaked', async () => {

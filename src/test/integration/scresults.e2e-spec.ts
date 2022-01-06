@@ -12,16 +12,11 @@ describe('Scresults Service', () => {
 
   beforeAll(async () => {
     await Initializer.initialize();
-  }, Constants.oneHour() * 1000);
-
-  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
-    scresultsService = moduleRef.get<SmartContractResultService>(
-      SmartContractResultService,
-    );
+    scresultsService = moduleRef.get<SmartContractResultService>(SmartContractResultService);
 
     let scresults = await scresultsService.getScResults({ from: 0, size: 1 });
     expect(scresults).toHaveLength(1);
@@ -29,7 +24,7 @@ describe('Scresults Service', () => {
     let scResult = scresults[0];
     accountAddress = scResult.sender;
     scHash = scresults[0].hash;
-  });
+  }, Constants.oneHour() * 1000);
 
   describe('Scresults list', () => {
     it('scresults should have hash, nonce and timestamp', async () => {
