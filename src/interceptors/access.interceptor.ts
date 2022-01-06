@@ -37,7 +37,7 @@ export class JwtAuthenticateGuard implements CanActivate {
           if (err) {
             reject(err);
           }
-        
+
           // @ts-ignore
           resolve(decoded.accessAddress);
         });

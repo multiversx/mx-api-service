@@ -17,7 +17,8 @@ export class LoggingInterceptor implements NestInterceptor {
     private readonly metricsService: MetricsService,
   ) {
     this.transactionLogger = winston.createLogger({
-      format: winston.format.json({ replacer: (key: string, value: any) => {
+      format: winston.format.json({
+        replacer: (key: string, value: any) => {
           if (key === '') {
             return {
               ...value.message,
@@ -26,7 +27,7 @@ export class LoggingInterceptor implements NestInterceptor {
           }
 
           return value;
-        }, 
+        },
       }),
       transports: [
         new DailyRotateFile({
@@ -83,7 +84,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
           const statusCode = err.status ?? HttpStatus.INTERNAL_SERVER_ERROR;
           this.metricsService.setApiCall(apiFunction, statusCode, profiler.duration);
-          
+
           return throwError(() => err);
         })
       );

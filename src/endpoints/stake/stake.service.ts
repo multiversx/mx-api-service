@@ -42,16 +42,16 @@ export class StakeService {
     const [
       validators,
       {
-        metrics: 
-        {   
+        metrics:
+        {
           erd_total_base_staked_value: totalBaseStaked,
-          erd_total_top_up_value: totalTopUp,        
+          erd_total_top_up_value: totalTopUp,
         },
       },
     ] = await Promise.all([this.getValidators(), this.gatewayService.get('network/economics', GatewayComponentRequest.networkEconomics)]);
 
     const totalStaked = BigInt(BigInt(totalBaseStaked) + BigInt(totalTopUp)).toString();
-    
+
     return { ...validators, totalStaked };
   }
 
@@ -63,14 +63,14 @@ export class StakeService {
       ),
       this.nodeService.getAllNodes(),
     ]);
-  
+
     return {
       totalValidators: nodes.filter(
-        ({ type, status }) => type === NodeType.validator && [ NodeStatus.eligible, NodeStatus.waiting ].includes(status ?? NodeStatus.unknown)
+        ({ type, status }) => type === NodeType.validator && [NodeStatus.eligible, NodeStatus.waiting].includes(status ?? NodeStatus.unknown)
       ).length,
       activeValidators: nodes.filter(
         ({ type, status, online }) =>
-          type === NodeType.validator && [ NodeStatus.eligible, NodeStatus.waiting ].includes(status ?? NodeStatus.unknown) && online === true
+          type === NodeType.validator && [NodeStatus.eligible, NodeStatus.waiting].includes(status ?? NodeStatus.unknown) && online === true
       ).length,
       queueSize: parseInt(Buffer.from(queueSize, 'base64').toString()),
     };
@@ -78,15 +78,15 @@ export class StakeService {
 
   async getStakes(addresses: string[]): Promise<Stake[]> {
     const stakes = await this.getAllStakesForNodes(addresses);
-  
+
     const value: Stake[] = [];
-  
+
     stakes.forEach(({ stake, topUp, locked, blses }) => {
       blses.forEach((bls) => {
         value.push({ bls, stake, topUp, locked });
       });
     });
-  
+
     return value;
   }
 
@@ -106,7 +106,7 @@ export class StakeService {
         this.apiConfigService.getAuctionContractAddress(),
         'getTotalStakedTopUpStakedBlsKeys',
         this.apiConfigService.getAuctionContractAddress(),
-        [ AddressUtils.bech32Decode(address) ],
+        [AddressUtils.bech32Decode(address)],
       );
     } catch (error) {
       this.logger.log(error);
@@ -123,7 +123,7 @@ export class StakeService {
         blses: [],
       };
     }
-  
+
     const [topUpBase64, stakedBase64, numNodesBase64, ...blsesBase64] = response || [];
 
     const topUpHex = Buffer.from(topUpBase64, 'base64').toString('hex');
@@ -131,14 +131,14 @@ export class StakeService {
 
     const stakedHex = Buffer.from(stakedBase64, 'base64').toString('hex');
     const totalStaked = BigInt(stakedHex ? '0x' + stakedHex : stakedHex) - totalTopUp;
-  
+
     const totalLocked = totalStaked + totalTopUp;
 
     const numNodesHex = Buffer.from(numNodesBase64, 'base64').toString('hex');
     const numNodes = BigInt(numNodesHex ? '0x' + numNodesHex : numNodesHex);
-  
+
     const blses = blsesBase64.map((nodeBase64) => Buffer.from(nodeBase64, 'base64').toString('hex'));
-  
+
     if (totalStaked.toString() === '0' && numNodes.toString() === '0') {
       return {
         topUp: '0',
@@ -152,7 +152,7 @@ export class StakeService {
       const topUp = String(totalTopUp / numNodes);
       const stake = String(totalStaked / numNodes);
       const locked = String(totalLocked / numNodes);
-  
+
       return {
         topUp,
         stake,
@@ -175,7 +175,7 @@ export class StakeService {
         this.apiConfigService.getAuctionContractAddress(),
         'getUnStakedTokensList',
         address,
-        [ AddressUtils.bech32Decode(address) ],
+        [AddressUtils.bech32Decode(address)],
       ),
     ]);
 

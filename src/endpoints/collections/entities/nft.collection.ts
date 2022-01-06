@@ -24,13 +24,13 @@ export class NftCollection {
 
   @ApiProperty()
   canFreeze: boolean = false;
-  
+
   @ApiProperty()
   canWipe: boolean = false;
 
   @ApiProperty()
   canPause: boolean = false;
-  
+
   @ApiProperty()
   canTransferRole: boolean = false;
 

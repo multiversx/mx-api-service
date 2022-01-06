@@ -11,6 +11,6 @@ export class EventsGateway {
   onAccountBalanceChanged(account: string) {
     // logger.log(`publishing websocket event balanceChanged:${account}`);
 
-    this.server?.emit(`balanceChanged:${account}`); 
+    this.server?.emit(`balanceChanged:${account}`);
   }
 }

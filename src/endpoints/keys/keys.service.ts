@@ -20,7 +20,7 @@ export class KeysService {
         this.apiConfigService.getStakingContractAddress(),
         'getRemainingUnBondPeriod',
         undefined,
-        [ key ]
+        [key]
       );
 
       let remainingUnBondPeriod = parseInt(Buffer.from(encoded[0], 'base64').toString('ascii'));

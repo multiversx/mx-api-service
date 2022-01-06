@@ -4,7 +4,7 @@ import { LocalCacheValue } from "./entities/local.cache.value";
 
 @Injectable()
 export class LocalCacheService {
-  private static readonly dictionary: { [ key: string ]: LocalCacheValue } = {};
+  private static readonly dictionary: { [key: string]: LocalCacheValue } = {};
 
   private static lastPruneTime: number = new Date().getTime();
 
@@ -35,7 +35,7 @@ export class LocalCacheService {
       return undefined;
     }
 
-      return cacheValue.value;
+    return cacheValue.value;
   }
 
   deleteCacheKey(key: string) {

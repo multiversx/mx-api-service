@@ -6,7 +6,7 @@ import { UsernameService } from "./username.service";
 @Controller()
 @ApiTags('usernames')
 export class UsernameController {
-  constructor(private readonly usernameService: UsernameService) {}
+  constructor(private readonly usernameService: UsernameService) { }
 
   @Get("/usernames/:username")
   @ApiResponse({

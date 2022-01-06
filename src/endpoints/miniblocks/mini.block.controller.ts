@@ -7,7 +7,7 @@ import { MiniBlockService } from "./mini.block.service";
 @Controller()
 @ApiTags('miniblocks')
 export class MiniBlockController {
-  constructor(private readonly miniBlockService: MiniBlockService) {}
+  constructor(private readonly miniBlockService: MiniBlockService) { }
 
   @Get("/miniblocks/:miniBlockHash")
   @ApiResponse({

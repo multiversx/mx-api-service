@@ -14,27 +14,27 @@ export class GatewayService {
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => MetricsService))
     private readonly metricsService: MetricsService,
-  ) {}
+  ) { }
 
   async get(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     const profiler = new PerformanceProfiler();
-    
+
     try {
       const result = await this.getRaw(url, component, errorHandler);
       return result?.data?.data;
-    } finally  {
+    } finally {
       profiler.stop();
 
       this.metricsService.setGatewayDuration(component, profiler.duration);
     }
   }
- 
+
   async getRaw(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     const profiler = new PerformanceProfiler();
 
     try {
       return await this.apiService.get(`${this.apiConfigService.getGatewayUrl()}/${url}`, new ApiSettings(), errorHandler);
-    } finally  {
+    } finally {
       profiler.stop();
 
       this.metricsService.setGatewayDuration(component, profiler.duration);
@@ -47,8 +47,8 @@ export class GatewayService {
     try {
       const result = await this.createRaw(url, component, data, errorHandler);
       return result?.data?.data;
-  
-    } finally  {
+
+    } finally {
       profiler.stop();
 
       this.metricsService.setGatewayDuration(component, profiler.duration);
@@ -60,7 +60,7 @@ export class GatewayService {
 
     try {
       return await this.apiService.post(`${this.apiConfigService.getGatewayUrl()}/${url}`, data, new ApiSettings(), errorHandler);
-    } finally  {
+    } finally {
       profiler.stop();
 
       this.metricsService.setGatewayDuration(component, profiler.duration);

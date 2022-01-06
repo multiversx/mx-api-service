@@ -10,7 +10,7 @@ export class DelegationLegacyService {
   constructor(
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService
-  ) {}
+  ) { }
 
   async getDelegation(): Promise<DelegationLegacy> {
     const [totalStakeByTypeEncoded, numUsersEncoded] = await Promise.all([
@@ -52,13 +52,13 @@ export class DelegationLegacyService {
         this.apiConfigService.getDelegationContractAddress(),
         'getUserStakeByType',
         undefined,
-        [ publicKey ]
+        [publicKey]
       ),
       this.vmQueryService.vmQuery(
         this.apiConfigService.getDelegationContractAddress(),
         'getClaimableRewards',
         undefined,
-        [ publicKey ]
+        [publicKey]
       ),
     ]);
 

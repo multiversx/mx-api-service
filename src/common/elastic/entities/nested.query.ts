@@ -10,7 +10,7 @@ export class NestedQuery extends AbstractQuery {
   }
 
   getQuery(): any {
-    return { 
+    return {
       nested: {
         path: this.key,
         query: {
@@ -19,7 +19,7 @@ export class NestedQuery extends AbstractQuery {
               QueryType.Match(Object.keys(this.value)[0], Object.values(this.value)[0]).getQuery(),
             ],
           },
-        }, 
+        },
       },
     };
   }

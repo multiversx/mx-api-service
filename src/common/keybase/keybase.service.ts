@@ -31,7 +31,7 @@ export class KeybaseService {
 
   private async getProvidersKeybasesRaw(): Promise<Keybase[]> {
     const providers = await this.providerService.getProviderAddresses();
-    const metadatas = await 
+    const metadatas = await
       this.cachingService.batchProcess(
         providers,
         address => `providerMetadata:${address}`,
@@ -156,7 +156,7 @@ export class KeybaseService {
     if (!isKeybaseUp) {
       return;
     }
-    
+
     const nodes = await this.nodeService.getAllNodes();
 
     const keys = nodes.map((node) => node.identity).distinct().map(x => x ?? '');
@@ -213,9 +213,9 @@ export class KeybaseService {
 
     try {
       const url = this.apiConfigService.getNetwork() === 'mainnet'
-          ? `https://keybase.pub/${keybase.identity}/elrond/${keybase.key}`
-          : `https://keybase.pub/${keybase.identity}/elrond/${this.apiConfigService.getNetwork()}/${keybase.key}`;
-  
+        ? `https://keybase.pub/${keybase.identity}/elrond/${keybase.key}`
+        : `https://keybase.pub/${keybase.identity}/elrond/${this.apiConfigService.getNetwork()}/${keybase.key}`;
+
       // this.logger.log(`Fetching keybase for identity ${keybase.identity} and key ${keybase.key}`);
 
       const { status } = await this.apiService.head(url, new ApiSettings(), async (error) => {
@@ -240,18 +240,18 @@ export class KeybaseService {
   async getProfile(identity: string): Promise<KeybaseIdentity | null> {
     try {
       const { status, data } = await this.apiService.get(`https://keybase.io/_/api/1.0/user/lookup.json?username=${identity}`);
-  
+
       if (status === HttpStatus.OK && data.status.code === 0) {
         const { profile, pictures } = data.them;
-  
+
         const { proofs_summary } = data.them || {};
         const { all } = proofs_summary || {};
-  
+
         const twitter = all.find((element: any) => element['proof_type'] === 'twitter');
         const website = all.find(
           (element: any) => element['proof_type'] === 'dns' || element['proof_type'] === 'generic_web_site'
         );
-  
+
         return {
           identity,
           name: profile && profile.full_name ? profile.full_name : undefined,

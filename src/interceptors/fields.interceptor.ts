@@ -23,17 +23,17 @@ export class FieldsInterceptor implements NestInterceptor {
               this.transformItem(result, fields);
             }
           }
-          
+
           return result;
         })
       );
   }
 
-  private transformItem(item: any, fields: string[]) {  
+  private transformItem(item: any, fields: string[]) {
     for (const key of Object.keys(item)) {
-      if (!fields.includes(key)) {    
+      if (!fields.includes(key)) {
         delete item[key];
-      } 
+      }
     }
   }
 }

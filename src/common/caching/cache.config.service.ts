@@ -5,11 +5,11 @@ import { ProtocolService } from "../protocol/protocol.service";
 export class CacheConfigService implements CacheOptionsFactory {
   constructor(
     private readonly protocolService: ProtocolService,
-  ) {}
+  ) { }
 
   async createCacheOptions(): Promise<CacheModuleOptions> {
     const ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
-    
+
     return {
       ttl,
     };

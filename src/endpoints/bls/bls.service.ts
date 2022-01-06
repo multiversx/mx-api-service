@@ -10,20 +10,20 @@ export class BlsService {
   constructor(
     private apiConfigService: ApiConfigService,
     private readonly elasticService: ElasticService,
-  ) { 
+  ) {
     this.url = this.apiConfigService.getElasticUrl();
   }
 
 
   public async getPublicKeys(shard: number, epoch: number) {
     const key = `${shard}_${epoch}`;
-  
+
     if (this.publicKeysCache[key]) {
       return this.publicKeysCache[key];
     }
-  
+
     const url = `${this.url}/validators/_search?q=_id:${key}`;
-  
+
     const result = await this.elasticService.get(url);
 
     const hits = result.data?.hits?.hits;
@@ -31,7 +31,7 @@ export class BlsService {
       const publicKeys = hits[0]._source.publicKeys;
 
       this.publicKeysCache[key] = publicKeys;
-    
+
       return publicKeys;
     }
 

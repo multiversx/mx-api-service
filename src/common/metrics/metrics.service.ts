@@ -31,8 +31,8 @@ export class MetricsService {
       MetricsService.apiCallsHistogram = new Histogram({
         name: 'api',
         help: 'API Calls',
-        labelNames: [ 'endpoint', 'code' ],
-        buckets: [ ],
+        labelNames: ['endpoint', 'code'],
+        buckets: [],
       });
     }
 
@@ -40,8 +40,8 @@ export class MetricsService {
       MetricsService.vmQueriesHistogram = new Histogram({
         name: 'vm_query',
         help: 'VM Queries',
-        labelNames: [ 'address', 'function' ],
-        buckets: [ ],
+        labelNames: ['address', 'function'],
+        buckets: [],
       });
     }
 
@@ -49,7 +49,7 @@ export class MetricsService {
       MetricsService.pendingRequestsHistogram = new Gauge({
         name: 'pending_requests',
         help: 'Pending requests',
-        labelNames: [ 'endpoint' ],
+        labelNames: ['endpoint'],
       });
     }
 
@@ -57,8 +57,8 @@ export class MetricsService {
       MetricsService.externalCallsHistogram = new Histogram({
         name: 'external_apis',
         help: 'External Calls',
-        labelNames: [ 'system' ],
-        buckets: [ ],
+        labelNames: ['system'],
+        buckets: [],
       });
     }
 
@@ -66,8 +66,8 @@ export class MetricsService {
       MetricsService.elasticDurationHistogram = new Histogram({
         name: 'elastic_duration',
         help: 'Elastic Duration',
-        labelNames: [ 'index' ],
-        buckets: [ ],
+        labelNames: ['index'],
+        buckets: [],
       });
     }
 
@@ -75,8 +75,8 @@ export class MetricsService {
       MetricsService.gatewayDurationHistogram = new Histogram({
         name: 'gateway_duration',
         help: 'Gateway Duration',
-        labelNames: [ 'endpoint' ],
-        buckets: [ ],
+        labelNames: ['endpoint'],
+        buckets: [],
       });
     }
 
@@ -84,8 +84,8 @@ export class MetricsService {
       MetricsService.elasticTookHistogram = new Histogram({
         name: 'elastic_took',
         help: 'Elastic Took',
-        labelNames: [ 'index' ],
-        buckets: [ ],
+        labelNames: ['index'],
+        buckets: [],
       });
     }
 
@@ -93,8 +93,8 @@ export class MetricsService {
       MetricsService.redisDurationHistogram = new Histogram({
         name: 'redis_duration',
         help: 'Redis Duration',
-        labelNames: [ 'action' ],
-        buckets: [ ],
+        labelNames: ['action'],
+        buckets: [],
       });
     }
 
@@ -102,7 +102,7 @@ export class MetricsService {
       MetricsService.currentNonceGauge = new Gauge({
         name: 'current_nonce',
         help: 'Current nonce of the given shard',
-        labelNames: [ 'shardId' ],
+        labelNames: ['shardId'],
       });
     }
 
@@ -110,7 +110,7 @@ export class MetricsService {
       MetricsService.lastProcessedNonceGauge = new Gauge({
         name: 'last_processed_nonce',
         help: 'Last processed nonce of the given shard',
-        labelNames: [ 'shardId' ],
+        labelNames: ['shardId'],
       });
     }
 
@@ -118,7 +118,7 @@ export class MetricsService {
       MetricsService.pendingApiHitGauge = new Gauge({
         name: 'pending_api_hits',
         help: 'Number of hits for pending API calls',
-        labelNames: [ 'endpoint' ],
+        labelNames: ['endpoint'],
       });
     }
 
@@ -126,7 +126,7 @@ export class MetricsService {
       MetricsService.cachedApiHitGauge = new Gauge({
         name: 'cached_api_hits',
         help: 'Number of hits for cached API calls',
-        labelNames: [ 'endpoint' ],
+        labelNames: ['endpoint'],
       });
     }
 

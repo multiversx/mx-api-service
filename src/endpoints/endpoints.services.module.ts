@@ -28,12 +28,12 @@ import { WaitingListModule } from "./waiting-list/waiting.list.module";
 
 @Module({
   imports: [
-    forwardRef(() => AccountModule), 
-    forwardRef(() => BlockModule), 
+    forwardRef(() => AccountModule),
+    forwardRef(() => BlockModule),
     forwardRef(() => CollectionModule),
-    forwardRef(() => DelegationModule), 
-    forwardRef(() => DelegationLegacyModule), 
-    forwardRef(() => IdentitiesModule), 
+    forwardRef(() => DelegationModule),
+    forwardRef(() => DelegationLegacyModule),
+    forwardRef(() => IdentitiesModule),
     forwardRef(() => KeysModule),
     forwardRef(() => MexModule),
     forwardRef(() => MiniBlockModule),

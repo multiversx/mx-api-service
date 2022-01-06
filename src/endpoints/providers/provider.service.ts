@@ -57,7 +57,7 @@ export class ProviderService {
         locked: BigInt('0'),
       }
     );
-    
+
     const nodesInfos: NodesInfos = new NodesInfos();
     nodesInfos.numNodes = results.numNodes;
     nodesInfos.stake = results.stake.toString();
@@ -79,14 +79,14 @@ export class ProviderService {
     let providers = await this.getAllProviders();
     const nodes = await this.nodeService.getAllNodes();
 
-    const nodesGroupedByProvider: { [key: string]: any[] } = nodes.groupBy(x => x.provider);    
+    const nodesGroupedByProvider: { [key: string]: any[] } = nodes.groupBy(x => x.provider);
 
     const providersDelegationData: DelegationData[] = await this.getDelegationProviders();
 
     providers.forEach((element) => {
       const providerAddress = element.provider;
 
-    // Delegation details for provider
+      // Delegation details for provider
       const delegationData: DelegationData | undefined = providersDelegationData.find((providerDelegationInfo: any) => providerDelegationInfo !== null && providerAddress === providerDelegationInfo.contract);
       if (delegationData) {
         if (delegationData.aprValue) {
@@ -98,7 +98,7 @@ export class ProviderService {
         }
       }
 
-    // Add Nodes details for provider
+      // Add Nodes details for provider
       const providerNodes = nodesGroupedByProvider[providerAddress] ?? [];
       const nodesInfos: NodesInfos = this.getNodesInfosForProvider(providerNodes);
       element.numNodes = nodesInfos.numNodes;
@@ -157,13 +157,13 @@ export class ProviderService {
 
   async getAllProviders(): Promise<Provider[]> {
     return await this.cachingService.getOrSetCache(
-      CacheInfo.Providers.key, 
-      async () => await this.getAllProvidersRaw(), 
+      CacheInfo.Providers.key,
+      async () => await this.getAllProvidersRaw(),
       CacheInfo.Providers.ttl
     );
   }
 
-  async getAllProvidersRaw() : Promise<Provider[]> {
+  async getAllProvidersRaw(): Promise<Provider[]> {
     const providers = await this.getProviderAddresses();
 
     const [configs, numUsers, cumulatedRewards] = await Promise.all([
@@ -203,7 +203,7 @@ export class ProviderService {
     });
 
     const providerKeybases = await this.keybaseService.getCachedNodesAndProvidersKeybases();
-    
+
     if (providerKeybases) {
       for (const providerAddress of providers) {
         const providerInfo = providerKeybases[providerAddress];
@@ -235,11 +235,11 @@ export class ProviderService {
     if (!providersBase64) {
       return [];
     }
-  
+
     const value = providersBase64.map((providerBase64) =>
       AddressUtils.bech32Encode(Buffer.from(providerBase64, 'base64').toString('hex'))
     );
-  
+
     return value;
   }
 
@@ -258,9 +258,9 @@ export class ProviderService {
       address,
       'getContractConfig',
     );
-  
+
     const owner = AddressUtils.bech32Encode(Buffer.from(ownerBase64, 'base64').toString('hex'));
-  
+
     const [serviceFee, delegationCap] = [
       // , initialOwnerFunds, createdNonce
       serviceFeeBase64,
@@ -271,7 +271,7 @@ export class ProviderService {
       const hex = base64 ? Buffer.from(base64, 'base64').toString('hex') : base64;
       return hex === null ? null : BigInt(hex ? '0x' + hex : hex).toString();
     });
-  
+
     // const [automaticActivation, changeableServiceFee, checkCapOnredelegate] = [
     //   automaticActivationBase64,
     //   changeableServiceFeeBase64,
@@ -279,7 +279,7 @@ export class ProviderService {
     // ].map((base64) => (Buffer.from(base64, 'base64').toString() === 'true' ? true : false));
 
     const serviceFeeString = String(parseInt(serviceFee ?? '0') / 10000);
-  
+
     return {
       owner,
       serviceFee: parseFloat(serviceFeeString),
@@ -298,38 +298,38 @@ export class ProviderService {
       address,
       'getMetaData',
     );
-  
+
     if (response) {
       try {
         const [name, website, identity] = response.map((base64) => {
-          if(base64) {
+          if (base64) {
             return Buffer.from(base64, 'base64').toString().trim().toLowerCase();
           }
           return "";
         });
-    
-        return { name, website, identity }; 
+
+        return { name, website, identity };
       } catch (error) {
         this.logger.error(`Could not get provider metadata for address '${address}'`);
         this.logger.error(error);
         return { name: null, website: null, identity: null };
       }
     }
-  
+
     return { name: null, website: null, identity: null };
   }
-  
+
   async getNumUsers(address: string) {
     const [base64] = await this.vmQueryService.vmQuery(
       address,
       'getNumUsers',
     );
-  
+
     if (base64) {
       const hex = Buffer.from(base64, 'base64').toString('hex');
       return Number(BigInt(hex ? '0x' + hex : hex));
     }
-  
+
     return null;
   }
 
@@ -339,12 +339,12 @@ export class ProviderService {
       'getTotalCumulatedRewards',
       'erd1qqqqqqqqqqqqqqqpqqqqqqqqlllllllllllllllllllllllllllsr9gav8',
     );
-  
+
     if (base64) {
       const hex = Buffer.from(base64, 'base64').toString('hex');
       return BigInt(hex ? '0x' + hex : hex).toString();
     }
-  
+
     return null;
   }
 }

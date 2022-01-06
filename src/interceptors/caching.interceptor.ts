@@ -10,14 +10,14 @@ import { DecoratorUtils } from "src/utils/decorator.utils";
 
 @Injectable()
 export class CachingInterceptor implements NestInterceptor {
-  private pendingRequestsDictionary: { [ key: string]: any; } = {};
+  private pendingRequestsDictionary: { [key: string]: any; } = {};
 
   constructor(
     private readonly cachingService: CachingService,
     private readonly httpAdapterHost: HttpAdapterHost,
     private readonly metricsService: MetricsService,
     private readonly protocolService: ProtocolService,
-  ) {}
+  ) { }
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const apiFunction = context.getClass().name + '.' + context.getHandler().name;
@@ -62,9 +62,9 @@ export class CachingInterceptor implements NestInterceptor {
             delete this.pendingRequestsDictionary[cacheKey ?? ''];
             pendingRequestResolver(result);
             this.metricsService.setPendingRequestsCount(Object.keys(this.pendingRequestsDictionary).length);
-    
+
             const ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
-    
+
             await this.cachingService.setCacheLocal(cacheKey ?? '', result, ttl);
           }),
           catchError((err) => {
@@ -81,13 +81,13 @@ export class CachingInterceptor implements NestInterceptor {
   }
 
   getCacheKey(context: ExecutionContext): string | undefined {
-      const httpAdapter = this.httpAdapterHost.httpAdapter;
+    const httpAdapter = this.httpAdapterHost.httpAdapter;
 
-      const request = context.getArgByIndex(0);
-      if (httpAdapter.getRequestMethod(request) !== 'GET') {
-          return undefined;
-      }
+    const request = context.getArgByIndex(0);
+    if (httpAdapter.getRequestMethod(request) !== 'GET') {
+      return undefined;
+    }
 
-      return httpAdapter.getRequestUrl(request);
+    return httpAdapter.getRequestUrl(request);
   }
 }

@@ -1,4 +1,4 @@
-Number.prototype.toRounded = function(digits: number): number {
+Number.prototype.toRounded = function (digits: number): number {
   return parseFloat(this.toFixed(digits));
 };
 

@@ -7,7 +7,7 @@ import { KeysService } from "./keys.service";
 @Controller()
 @ApiTags('keys')
 export class KeysController {
-	constructor(private readonly keysService: KeysService) {}
+	constructor(private readonly keysService: KeysService) { }
 
 	@Get("/keys/:key/unbond-period")
 	@ApiResponse({
@@ -19,11 +19,11 @@ export class KeysController {
 	async getKeyUnbondPeriod(
 		@Param('key', ParseBlsHashPipe) key: string
 	): Promise<KeyUnbondPeriod> {
-    const result = await this.keysService.getKeyUnbondPeriod(key);
-    if (!result) {
-      throw new HttpException('Key not found', HttpStatus.NOT_FOUND);
-    }
+		const result = await this.keysService.getKeyUnbondPeriod(key);
+		if (!result) {
+			throw new HttpException('Key not found', HttpStatus.NOT_FOUND);
+		}
 
-    return result;
+		return result;
 	}
 }

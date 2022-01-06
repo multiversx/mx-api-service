@@ -55,7 +55,7 @@ export class CachingService {
       profiler.stop();
       this.metricsService.setRedisDuration('SET', profiler.duration);
     }
-    
+
     return value;
   }
 
@@ -68,7 +68,7 @@ export class CachingService {
     } else {
       try {
         pendingGetRemote = promise();
-  
+
         this.pendingPromises[key] = pendingGetRemote;
 
         return await pendingGetRemote;
@@ -168,14 +168,14 @@ export class CachingService {
     } else {
       cached = await this.batchGetCache(keys);
     }
-  
+
     const missing = cached
       .map((element, index) => (element === null ? index : false))
       .filter((element) => element !== false)
       .map(element => element as number);
 
     let values: OUT[] = [];
-  
+
     if (missing.length) {
       values = await asyncPool(
         this.configService.getPoolLimit(),
@@ -188,7 +188,7 @@ export class CachingService {
         values,
         ttls: values.map((value) => (value ? ttl : Math.min(ttl, this.configService.getProcessTtl()))),
       };
-  
+
       await this.batchSetCache(params.keys, params.values, params.ttls);
     }
 
@@ -200,14 +200,14 @@ export class CachingService {
   private spreadTtl(ttl: number): number {
     const threshold = 300; // seconds after which to start spreading ttls
     const spread = 10; // percent ttls spread
-  
+
     if (ttl >= threshold) {
       const sign = Math.round(Math.random()) * 2 - 1;
       const amount = Math.floor(Math.random() * ((ttl * spread) / 100));
-  
+
       ttl = ttl + sign * amount;
     }
-  
+
     return ttl;
   }
 
@@ -225,7 +225,7 @@ export class CachingService {
       this.setCacheLocal(key, value, ttl);
     }
 
-  
+
     const chunks = this.getChunks(
       keys.map((key, index) => {
         const element: any = {};
@@ -233,20 +233,20 @@ export class CachingService {
         return element;
       }, 25)
     );
-  
+
     const sets = [];
-  
+
     for (const chunk of chunks) {
       const chunkKeys = chunk.map((element: any) => Object.keys(element)[0]);
       const chunkValues = chunk.map((element: any) => values[Object.values(element)[0] as number]);
-  
+
       sets.push(
         ...chunkKeys.map((key: string, index: number) => {
           return ['set', key, JSON.stringify(chunkValues[index]), 'ex', ttls[index]];
         })
       );
     }
-  
+
     const profiler = new PerformanceProfiler();
     try {
       await this.asyncMulti(sets);
@@ -275,22 +275,22 @@ export class CachingService {
   private getChunks<T>(array: T[], size = 25): T[][] {
     return array.reduce((result: T[][], item, current) => {
       const index = Math.floor(current / size);
-  
+
       if (!result[index]) {
         result[index] = [];
       }
-  
+
       result[index].push(item);
-  
+
       return result;
     }, []);
   }
-  
+
   async batchGetCache<T>(keys: string[]): Promise<T[]> {
     const chunks = this.getChunks(keys, 100);
-  
+
     const result = [];
-  
+
     for (const chunkKeys of chunks) {
       let chunkValues: any;
 
@@ -301,12 +301,12 @@ export class CachingService {
         profiler.stop();
         this.metricsService.setRedisDuration('MGET', profiler.duration);
       }
-  
+
       chunkValues = chunkValues.map((value: any) => (value ? JSON.parse(value) : null));
-  
+
       result.push(...chunkValues);
     }
-  
+
     return result;
   }
 

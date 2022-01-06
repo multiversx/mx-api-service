@@ -13,7 +13,7 @@ export class DelegationService {
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly nodeService: NodeService
-  ) {}
+  ) { }
 
   async getDelegation(): Promise<Delegation> {
     return this.cachingService.getOrSetCache(

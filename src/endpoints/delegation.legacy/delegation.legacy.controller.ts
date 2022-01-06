@@ -6,7 +6,7 @@ import { DelegationLegacy } from "./entities/delegation.legacy";
 @Controller()
 @ApiTags('delegation')
 export class DelegationLegacyController {
-  constructor(private readonly delegationLegacyService: DelegationLegacyService) {}
+  constructor(private readonly delegationLegacyService: DelegationLegacyService) { }
 
   @Get("/delegation-legacy")
   @ApiResponse({

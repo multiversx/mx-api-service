@@ -1,15 +1,15 @@
 export class ApiUtils {
   static mergeObjects<T>(obj1: T, obj2: any) {
     for (const key of Object.keys(obj2)) {
-        if (key in obj1) {
-            // @ts-ignore
-            obj1[key] = obj2[key];
-        }
+      if (key in obj1) {
+        // @ts-ignore
+        obj1[key] = obj2[key];
+      }
     }
-  
+
     return obj1;
   }
-  
+
   static cleanupApiValueRecursively(obj: any) {
     if (Array.isArray(obj)) {
       for (const item of obj) {
@@ -22,18 +22,18 @@ export class ApiUtils {
         if (typeof value === 'object' || Array.isArray(value)) {
           ApiUtils.cleanupApiValueRecursively(value);
         }
-  
+
         if (value === null || value === '' || value === undefined) {
           delete obj[key];
         }
-  
+
         //TODO: think about whether this is applicable everywhere
         if (Array.isArray(value) && value.length === 0) {
           delete obj[key];
         }
       }
     }
-  
+
     return obj;
   }
 
@@ -44,5 +44,5 @@ export class ApiUtils {
 
     return uri;
   }
-  
+
 }

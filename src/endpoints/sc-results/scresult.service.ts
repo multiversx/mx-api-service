@@ -12,7 +12,7 @@ import { SmartContractResult } from "./entities/smart.contract.result";
 @Injectable()
 export class SmartContractResultService {
   constructor(
-    private readonly elasticService: ElasticService, 
+    private readonly elasticService: ElasticService,
   ) { }
 
   private buildSmartContractResultFilterQuery(address?: string): ElasticQuery {
@@ -54,7 +54,7 @@ export class SmartContractResultService {
     const elasticQuery: ElasticQuery = this.buildSmartContractResultFilterQuery(address);
     elasticQuery
       .withPagination(pagination)
-      .withSort([ { name: 'timestamp', order: ElasticSortOrder.descending } ]);
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
     const elasticResult = await this.elasticService.getList('scresults', 'hash', elasticQuery);
 

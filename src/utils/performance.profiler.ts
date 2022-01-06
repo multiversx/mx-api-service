@@ -30,7 +30,7 @@ export class PerformanceProfiler {
 
   static async profile<T>(description: string, promise: Promise<T> | (() => Promise<T>)): Promise<T> {
     const profiler = new PerformanceProfiler();
-   
+
     try {
       if (promise instanceof Function) {
         return await promise();

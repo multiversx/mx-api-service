@@ -15,7 +15,7 @@ import { ParseBlsHashPipe } from "src/utils/pipes/parse.bls.hash.pipe";
 @Controller()
 @ApiTags('nodes')
 export class NodeController {
-	constructor(private readonly nodeService: NodeService) {}
+	constructor(private readonly nodeService: NodeService) { }
 
 	@Get("/nodes")
 	@ApiResponse({
@@ -38,7 +38,7 @@ export class NodeController {
 	@ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false })
 	@ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false })
 	async getNodes(
-		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
 		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('search') search: string | undefined,
 		@Query('online', ParseOptionalBoolPipe) online: boolean | undefined,
@@ -114,22 +114,22 @@ export class NodeController {
 		return this.nodeService.getNodeCount({ search, online, type, status, shard, issues, identity, provider, owner, sort, order });
 	}
 
-  @Get('/nodes/:bls')
-  @ApiResponse({
-    status: 200,
-    description: 'Node details',
-    type: Node,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Node not found',
-  })
-  async getNode(@Param('bls', ParseBlsHashPipe) bls: string): Promise<Node> {
-    const provider = await this.nodeService.getNode(bls);
-    if (provider === undefined) {
-      throw new HttpException('Node not found', HttpStatus.NOT_FOUND);
-    }
+	@Get('/nodes/:bls')
+	@ApiResponse({
+		status: 200,
+		description: 'Node details',
+		type: Node,
+	})
+	@ApiResponse({
+		status: 404,
+		description: 'Node not found',
+	})
+	async getNode(@Param('bls', ParseBlsHashPipe) bls: string): Promise<Node> {
+		const provider = await this.nodeService.getNode(bls);
+		if (provider === undefined) {
+			throw new HttpException('Node not found', HttpStatus.NOT_FOUND);
+		}
 
-    return provider;
-  }
+		return provider;
+	}
 }

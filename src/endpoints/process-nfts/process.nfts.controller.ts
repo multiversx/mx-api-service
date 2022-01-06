@@ -27,7 +27,7 @@ export class ProcessNftsController {
 
       const result: { [key: string]: boolean } = {};
       result[processNftRequest.identifier] = processed;
-      
+
       return result;
     } else {
       throw new HttpException('Provide an identifier or a collection to generate thumbnails for', HttpStatus.BAD_REQUEST);

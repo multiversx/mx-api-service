@@ -8,7 +8,7 @@ import { VmQueryService } from "./vm.query.service";
 export class VmQueryController {
   constructor(
     private readonly vmQueryService: VmQueryService
-  ) {}
+  ) { }
 
   @Post('/query')
   @ApiResponse({
@@ -21,8 +21,8 @@ export class VmQueryController {
       result = await this.vmQueryService.vmQueryFullResult(query.scAddress, query.funcName, query.caller, query.args);
     } catch (error: any) {
       throw new BadRequestException({
-        statusCode: HttpStatus.BAD_REQUEST, 
-        code: error.response.data.code, 
+        statusCode: HttpStatus.BAD_REQUEST,
+        code: error.response.data.code,
         message: error.response.data.error,
       });
     }
@@ -32,8 +32,8 @@ export class VmQueryController {
       return data;
     } else {
       throw new BadRequestException({
-        statusCode: HttpStatus.BAD_REQUEST, 
-        code: data.returnCode, 
+        statusCode: HttpStatus.BAD_REQUEST,
+        code: data.returnCode,
         message: data.returnMessage,
       });
     }

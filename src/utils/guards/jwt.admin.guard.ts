@@ -5,7 +5,7 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 export class JwtAdminGuard implements CanActivate {
   constructor(
     private readonly apiConfigService: ApiConfigService
-  ) {}
+  ) { }
 
   async canActivate(
     context: ExecutionContext,

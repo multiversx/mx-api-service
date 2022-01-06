@@ -9,7 +9,7 @@ export class MicroserviceController {
     private readonly cachingService: CachingService,
   ) {
     this.logger = new Logger(MicroserviceController.name);
-   }
+  }
 
   @EventPattern('deleteCacheKeys')
   async deleteCacheKey(keys: string[]) {

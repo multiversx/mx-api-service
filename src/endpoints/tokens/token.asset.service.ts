@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import simpleGit, {SimpleGit, SimpleGitOptions} from 'simple-git';
+import simpleGit, { SimpleGit, SimpleGitOptions } from 'simple-git';
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { TokenAssets } from "src/endpoints/tokens/entities/token.assets";
 import { FileUtils } from "src/utils/file.utils";
@@ -23,15 +23,15 @@ export class TokenAssetService {
   async checkout() {
     const localGitPath = 'dist/repos/assets';
     const logger = this.logger;
-    rimraf(localGitPath, function () { 
-      logger.log("done deleting"); 
+    rimraf(localGitPath, function () {
+      logger.log("done deleting");
 
       const options: Partial<SimpleGitOptions> = {
         baseDir: process.cwd(),
         binary: 'git',
         maxConcurrentProcesses: 6,
       };
-      
+
       // when setting all options in a single object
       const git: SimpleGit = simpleGit(options);
 
@@ -40,8 +40,8 @@ export class TokenAssetService {
         stderr.pipe(process.stderr);
 
         stdout.on('data', (data) => {
-            // Print data
-            logger.log(data.toString('utf8'));
+          // Print data
+          logger.log(data.toString('utf8'));
         });
       }).clone('https://github.com/ElrondNetwork/assets.git', localGitPath);
     });
@@ -76,7 +76,7 @@ export class TokenAssetService {
     return 'tokens';
   }
 
-  async getAllAssets(): Promise<{ [key: string] : TokenAssets }> {
+  async getAllAssets(): Promise<{ [key: string]: TokenAssets }> {
     return this.cachingService.getOrSetCache(
       CacheInfo.TokenAssets.key,
       async () => await this.getAllAssetsRaw(),
@@ -84,14 +84,14 @@ export class TokenAssetService {
     );
   }
 
-  async getAllAssetsRaw(): Promise<{ [key: string] : TokenAssets }> {
+  async getAllAssetsRaw(): Promise<{ [key: string]: TokenAssets }> {
     const tokensPath = this.getTokensPath();
     if (!fs.existsSync(tokensPath)) {
       return {};
     }
-    
+
     const tokenIdentifiers = FileUtils.getDirectories(tokensPath);
-    
+
     // for every folder, create a TokenAssets entity with the contents of info.json and the urls from github
     const assets: { [key: string]: TokenAssets } = {};
     for (const tokenIdentifier of tokenIdentifiers) {

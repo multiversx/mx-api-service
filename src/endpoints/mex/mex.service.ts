@@ -37,10 +37,10 @@ export class MexService {
     const mexForAddress: MexWeek[] = [];
 
     for (let week = 1; week <= 12; week++) {
-      const snapshotCollection = [2].includes(week) ? 
+      const snapshotCollection = [2].includes(week) ?
         `snapshot-week-${week}-v2`
         : `snapshot-week-${week}`;
-      const mexRewardsCollection =  `mex-week-${week}-v3`;
+      const mexRewardsCollection = `mex-week-${week}-v3`;
 
       const snapshots = await this.elasticService.getList(snapshotCollection, 'snapshot', elasticQuery, this.apiConfigService.getMexUrl());
       const mex = await this.elasticService.getList(mexRewardsCollection, 'mex', elasticQuery, this.apiConfigService.getMexUrl());

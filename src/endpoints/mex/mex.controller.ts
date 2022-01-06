@@ -7,7 +7,7 @@ import { MexService } from "./mex.service";
 @Controller()
 @ApiTags('mex')
 export class MexController {
-  constructor(private readonly mexService: MexService) {}
+  constructor(private readonly mexService: MexService) { }
 
   @Get('/mex/:address')
   @ApiResponse({

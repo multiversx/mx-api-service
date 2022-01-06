@@ -19,7 +19,7 @@ export class TokenDetailed extends Token {
 
   @ApiProperty()
   canFreeze: boolean = false;
-  
+
   @ApiProperty()
   canWipe: boolean = false;
 

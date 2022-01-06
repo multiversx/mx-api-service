@@ -13,7 +13,7 @@ export class WaitingListService {
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
-  ) {}
+  ) { }
 
   async getWaitingList(): Promise<WaitingList[]> {
     return await this.getFullWaitingList();
@@ -27,7 +27,7 @@ export class WaitingListService {
 
   async getWaitingListCount(): Promise<number> {
     const fullWaitingList = await this.getFullWaitingList();
-    
+
     return fullWaitingList.length;
   }
 

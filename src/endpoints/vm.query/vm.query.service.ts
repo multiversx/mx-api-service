@@ -21,7 +21,7 @@ export class VmQueryService {
     this.logger = new Logger(VmQueryService.name);
   }
 
-  private async computeTtls(): Promise<{localTtl: number, remoteTtl: number}> {
+  private async computeTtls(): Promise<{ localTtl: number, remoteTtl: number }> {
     const secondsRemainingUntilNextRound = await this.protocolService.getSecondsRemainingUntilNextRound();
 
     // no need to store value remotely just to evict it one second later
@@ -68,9 +68,9 @@ export class VmQueryService {
       if (skipCache) {
         result = await this.vmQueryRaw(contract, func, caller, args);
       } else {
-        
+
         const { localTtl, remoteTtl } = await this.computeTtls();
-        
+
         result = await this.cachingService.getOrSetCache(
           key,
           async () => await this.vmQueryRaw(contract, func, caller, args),
@@ -89,10 +89,10 @@ export class VmQueryService {
   }
 
   async vmQueryRaw(contract: string, func: string, caller: string | undefined, args: string[] = []): Promise<any> {
-    const payload = { 
-      scAddress: contract, 
-      FuncName: func, 
-      caller: caller, 
+    const payload = {
+      scAddress: contract,
+      FuncName: func,
+      caller: caller,
       args: args,
     };
 

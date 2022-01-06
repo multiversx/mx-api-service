@@ -56,8 +56,8 @@ export class ProtocolService {
     return await this.cachingService.getOrSetCache(
       CacheInfo.GenesisTimestamp.key,
       async () => await this.getGenesisTimestampRaw(),
-     CacheInfo.GenesisTimestamp.ttl,
-     CacheInfo.GenesisTimestamp.ttl,
+      CacheInfo.GenesisTimestamp.ttl,
+      CacheInfo.GenesisTimestamp.ttl,
     );
   }
 

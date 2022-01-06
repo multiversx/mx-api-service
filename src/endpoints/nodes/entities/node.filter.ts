@@ -4,8 +4,8 @@ import { NodeType } from "./node.type";
 import { NodeSort } from "./node.sort";
 
 export class NodeFilter {
-  search: string | undefined; 
-  online: boolean | undefined; 
+  search: string | undefined;
+  online: boolean | undefined;
   type: NodeType | undefined;
   status: NodeStatus | undefined;
   shard: number | undefined;

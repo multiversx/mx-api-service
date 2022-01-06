@@ -15,8 +15,8 @@ export class ApiService {
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => MetricsService))
     private readonly metricsService: MetricsService,
-  ) {}
-  
+  ) { }
+
   private getKeepAliveAgent(): Agent | undefined {
     if (this.keepaliveAgent === null) {
       if (this.apiConfigService.getUseKeepAliveAgentFlag()) {
@@ -53,14 +53,14 @@ export class ApiService {
       maxRedirects,
       httpAgent: this.getKeepAliveAgent(),
       headers,
-      transformResponse: [ 
+      transformResponse: [
         (data) => {
           try {
             return JSON.parse(data);
           } catch (error) {
             return data;
           }
-        },  
+        },
       ],
     };
   }
@@ -74,8 +74,8 @@ export class ApiService {
       let handled = false;
       if (errorHandler) {
         handled = await errorHandler(error);
-      } 
-      
+      }
+
       if (!handled) {
         const logger = new Logger(ApiService.name);
         const customError = {
@@ -99,15 +99,15 @@ export class ApiService {
 
   async post(url: string, data: any, settings: ApiSettings = new ApiSettings(), errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     const profiler = new PerformanceProfiler();
-    
+
     try {
       return await axios.post(url, data, this.getConfig(settings));
     } catch (error: any) {
       let handled = false;
       if (errorHandler) {
         handled = await errorHandler(error);
-      } 
-      
+      }
+
       if (!handled) {
         const customError = {
           method: 'POST',
@@ -139,8 +139,8 @@ export class ApiService {
       let handled = false;
       if (errorHandler) {
         handled = await errorHandler(error);
-      } 
-      
+      }
+
       if (!handled) {
         const customError = {
           method: 'HEAD',

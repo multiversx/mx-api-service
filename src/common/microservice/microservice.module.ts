@@ -23,7 +23,7 @@ import { MicroserviceController } from './microservice.controller';
             url: `redis://${apiConfigService.getRedisUrl()}:6379`,
             retryDelay: 1000,
             retryAttempts: 10,
-            retry_strategy: function(_: any) {
+            retry_strategy: function (_: any) {
               return 1000;
             },
           },
@@ -31,9 +31,9 @@ import { MicroserviceController } from './microservice.controller';
 
         return ClientProxyFactory.create(clientOptions);
       },
-      inject: [ ApiConfigService ],
+      inject: [ApiConfigService],
     },
   ],
-  exports: [ 'PUBSUB_SERVICE' ],
+  exports: ['PUBSUB_SERVICE'],
 })
-export class MicroserviceModule {}
+export class MicroserviceModule { }

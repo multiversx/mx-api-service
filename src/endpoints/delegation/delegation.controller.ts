@@ -8,7 +8,7 @@ import { Delegation } from "./entities/delegation";
 export class DelegationController {
   constructor(
     private readonly delegationService: DelegationService,
-  ) {}
+  ) { }
 
   @Get("/delegation")
   @ApiResponse({

@@ -7,10 +7,10 @@ import { SmartContractResultService } from "./scresult.service";
 @Controller()
 @ApiTags('sc-results')
 export class SmartContractResultController {
-	constructor(private readonly scResultService: SmartContractResultService) {}
+  constructor(private readonly scResultService: SmartContractResultService) { }
 
-	@ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false  })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @Get("/sc-results")
   @ApiResponse({
     status: 200,
@@ -18,10 +18,10 @@ export class SmartContractResultController {
     type: SmartContractResult,
   })
   getScResults(
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<SmartContractResult[]> {
-    return this.scResultService.getScResults({from, size});
+    return this.scResultService.getScResults({ from, size });
   }
 
   @Get("/sc-results/count")

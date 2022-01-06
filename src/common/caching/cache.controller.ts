@@ -42,7 +42,7 @@ export class CacheController {
   })
   async setCache(@Param('key') key: string, @Body() cacheValue: CacheValue) {
     await this.cachingService.setCacheRemote(key, cacheValue.value, cacheValue.ttl);
-    this.clientProxy.emit('deleteCacheKeys', [ key ]);
+    this.clientProxy.emit('deleteCacheKeys', [key]);
   }
 
   @UseGuards(JwtAuthenticateGuard, JwtAdminGuard)

@@ -20,7 +20,7 @@ export class LogRequestsInterceptor implements NestInterceptor {
           maxSize: '100m',
           maxFiles: '14d',
           dirname: 'dist/logs',
-          format:  winston.format.combine(
+          format: winston.format.combine(
             winston.format.timestamp(),
             winston.format.json(),
           ),
@@ -34,7 +34,7 @@ export class LogRequestsInterceptor implements NestInterceptor {
 
     const request = context.getArgByIndex(0);
     if (httpAdapter.getRequestMethod(request) !== 'GET') {
-        return next.handle();
+      return next.handle();
     }
 
     const url = httpAdapter.getRequestUrl(request);

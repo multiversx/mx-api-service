@@ -15,12 +15,12 @@ export class TagService {
     private readonly elasticService: ElasticService,
     @Inject(forwardRef(() => CachingService))
     private readonly cachingService: CachingService,
-  ){}
+  ) { }
 
   async getNftTags(pagination: QueryPagination): Promise<Tag[]> {
     return this.cachingService.getOrSetCache(
       'nftTags',
-      async() => await this.getNftTagsRaw(pagination),
+      async () => await this.getNftTagsRaw(pagination),
       Constants.oneHour(),
     );
   }

@@ -21,13 +21,13 @@ export class BlockService {
     private readonly elasticService: ElasticService,
     private readonly cachingService: CachingService,
     private readonly blsService: BlsService,
-  ) {}
+  ) { }
 
-  private async buildElasticBlocksFilter (filter: BlockFilter): Promise<AbstractQuery[]> {
+  private async buildElasticBlocksFilter(filter: BlockFilter): Promise<AbstractQuery[]> {
     const { shard, proposer, validator, epoch, nonce } = filter;
 
     const queries: AbstractQuery[] = [];
-    if  (nonce !== undefined) {
+    if (nonce !== undefined) {
       const nonceQuery = QueryType.Match("nonce", nonce);
       queries.push(nonceQuery);
     }
@@ -35,7 +35,7 @@ export class BlockService {
       const shardIdQuery = QueryType.Match('shardId', shard);
       queries.push(shardIdQuery);
     }
-    
+
     if (epoch !== undefined) {
       const epochQuery = QueryType.Match('epoch', epoch);
       queries.push(epochQuery);
@@ -69,7 +69,7 @@ export class BlockService {
 
   async getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<Block[]> {
     const { from, size } = queryPagination;
-    
+
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from, size })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
@@ -102,13 +102,13 @@ export class BlockService {
 
       await this.cachingService.setCacheLocal(CacheInfo.ShardAndEpochBlses(shard, epoch).key, blses, CacheInfo.ShardAndEpochBlses(shard, epoch).ttl);
     }
-  
+
     proposer = blses[proposer];
 
     if (validators) {
       validators = validators.map((index: number) => blses[index]);
     }
-  
+
     return { shard, epoch, proposer, validators, ...rest };
   }
 

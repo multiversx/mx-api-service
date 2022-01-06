@@ -58,16 +58,16 @@ export class TokenProperties {
 
   @ApiProperty()
   canFreeze: boolean = false;
-  
+
   @ApiProperty()
   canWipe: boolean = false;
-  
+
   @ApiProperty()
   canAddSpecialRoles: boolean = false;
-  
+
   @ApiProperty()
   canTransferNFTCreateRole: boolean = false;
-  
+
   @ApiProperty()
   NFTCreateStopped: boolean = false;
 }

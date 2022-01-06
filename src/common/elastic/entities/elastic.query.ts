@@ -12,7 +12,7 @@ function buildElasticIndexerSort(sorts: ElasticSortProperty[]): any[] {
     return [];
   }
 
-  return sorts.map((sortProp: ElasticSortProperty) => ({[sortProp.name]: { order: sortProp.order}}));
+  return sorts.map((sortProp: ElasticSortProperty) => ({ [sortProp.name]: { order: sortProp.order } }));
 }
 
 export class ElasticQuery {
@@ -25,7 +25,7 @@ export class ElasticQuery {
   static create(): ElasticQuery {
     return new ElasticQuery();
   }
-  
+
   withPagination(pagination: ElasticPagination): ElasticQuery {
     this.pagination = pagination;
 
@@ -58,7 +58,7 @@ export class ElasticQuery {
 
   toJson() {
     const elasticSort = buildElasticIndexerSort(this.sort);
-  
+
     const elasticQuery = {
       ...this.pagination,
       sort: elasticSort,
@@ -73,19 +73,19 @@ export class ElasticQuery {
         terms: this.terms?.getQuery(),
       },
     };
-  
+
     ApiUtils.cleanupApiValueRecursively(elasticQuery);
-  
+
     if (Object.keys(elasticQuery.query.bool).length === 0) {
       //@ts-ignore
       delete elasticQuery.query.bool;
-  
+
       if (!this.terms) {
         //@ts-ignore
         elasticQuery.query['match_all'] = {};
       }
     }
-    
+
     return elasticQuery;
   }
 }

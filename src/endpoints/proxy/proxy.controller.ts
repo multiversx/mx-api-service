@@ -274,7 +274,7 @@ export class ProxyController {
     try {
       return await this.cachingService.getOrSetCache(
         `hyperblock/by-nonce/${nonce}`,
-        async () =>  await this.gatewayGet(`hyperblock/by-nonce/${nonce}`, GatewayComponentRequest.hyperblockByNonce),
+        async () => await this.gatewayGet(`hyperblock/by-nonce/${nonce}`, GatewayComponentRequest.hyperblockByNonce),
         Constants.oneDay(),
       );
     } catch (error: any) {
