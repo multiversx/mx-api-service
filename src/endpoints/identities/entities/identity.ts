@@ -38,7 +38,7 @@ export class Identity {
   locked: string = '0';
 
   @ApiProperty()
-  distribution?: { [ index: string ]: number } = {};
+  distribution?: { [index: string]: number } = {};
 
   @ApiProperty()
   providers?: string[];
@@ -48,4 +48,7 @@ export class Identity {
 
   @ApiProperty()
   rank?: number;
+
+  @ApiProperty()
+  apr?: number;
 }
