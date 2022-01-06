@@ -10,6 +10,7 @@ cron:
   cacheWarmer: true
   fastWarm: true
   queueWorker: true
+  processNfts: true
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true
@@ -43,8 +44,8 @@ urls:
 database:
   host: 'localhost'
   port: 3306
-  username: 'root'
-  password: 'root'
+  username: 'user'
+  password: 'password'
   database: 'api'
 caching:
   cacheTtl: 6
