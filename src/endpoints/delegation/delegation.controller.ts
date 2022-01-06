@@ -8,13 +8,13 @@ import { Delegation } from "./entities/delegation";
 export class DelegationController {
   constructor(
     private readonly delegationService: DelegationService,
-  ) {}
+  ) { }
 
   @Get("/delegation")
   @ApiResponse({
     status: 200,
     description: 'The delegation details',
-    type: Delegation
+    type: Delegation,
   })
   async getDelegationDetails(): Promise<Delegation> {
     return await this.delegationService.getDelegation();

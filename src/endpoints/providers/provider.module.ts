@@ -15,6 +15,6 @@ import { ProviderService } from "./provider.service";
   ],
   exports: [
     ProviderService,
-  ]
+  ],
 })
 export class ProviderModule { }

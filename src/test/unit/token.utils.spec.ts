@@ -1,6 +1,6 @@
 import { TokenUtils } from "src/utils/token.utils";
 
-describe('Token Utils', () => { 
+describe('Token Utils', () => {
   describe('computeNftUri', () => {
     it('ipfs.io url works correctly', () => {
       expect(TokenUtils.computeNftUri('https://ipfs.io/ipfs/QmUUhAmBQKGkSqN775NZAAYUaqd8ssMadFg2UYSECSERz6', 'https://media.elrond.com/nfts/asset')).toStrictEqual('https://media.elrond.com/nfts/asset/QmUUhAmBQKGkSqN775NZAAYUaqd8ssMadFg2UYSECSERz6');

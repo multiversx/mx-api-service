@@ -13,6 +13,6 @@ import { KeysService } from "./keys.service";
   ],
   exports: [
     KeysService,
-  ]
+  ],
 })
 export class KeysModule { }

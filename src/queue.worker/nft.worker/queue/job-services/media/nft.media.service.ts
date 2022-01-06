@@ -26,7 +26,7 @@ export class NftMediaService {
     private readonly persistenceService: PersistenceInterface,
   ) {
     this.logger = new Logger(NftMediaService.name);
-    this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset'
+    this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
   }
 
   async getMedia(nft: Nft): Promise<NftMedia[] | null> {
@@ -64,7 +64,7 @@ export class NftMediaService {
     }
 
     const mediaArray: NftMedia[] = [];
-    for (let uri of nft.uris) {
+    for (const uri of nft.uris) {
       if (!uri) {
         continue;
       }
@@ -73,7 +73,7 @@ export class NftMediaService {
 
       try {
         this.logger.log(`Started fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
-        let url = this.getUrl(uri);
+        const url = this.getUrl(uri);
 
         fileProperties = await this.getFilePropertiesFromIpfs(url);
         this.logger.log(`Completed fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
@@ -90,7 +90,7 @@ export class NftMediaService {
       const nftMedia = new NftMedia();
       nftMedia.url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(uri), this.NFT_THUMBNAIL_PREFIX);
       nftMedia.originalUrl = BinaryUtils.base64Decode(uri);
-      nftMedia.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${nft.collection}-${TokenUtils.getUrlHash(nftMedia.url)}`
+      nftMedia.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${nft.collection}-${TokenUtils.getUrlHash(nftMedia.url)}`;
       nftMedia.fileType = fileProperties.contentType;
       nftMedia.fileSize = fileProperties.contentLength;
 
@@ -101,7 +101,7 @@ export class NftMediaService {
   }
 
   private getUrl(nftUri: string): string {
-    let url = BinaryUtils.base64Decode(nftUri);
+    const url = BinaryUtils.base64Decode(nftUri);
 
     return TokenUtils.computeNftUri(url, this.apiConfigService.getIpfsUrl());
   }

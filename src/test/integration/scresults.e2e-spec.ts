@@ -18,10 +18,10 @@ describe('Scresults Service', () => {
 
     scresultsService = moduleRef.get<SmartContractResultService>(SmartContractResultService);
 
-    let scresults = await scresultsService.getScResults({ from: 0, size: 1 });
+    const scresults = await scresultsService.getScResults({ from: 0, size: 1 });
     expect(scresults).toHaveLength(1);
 
-    let scResult = scresults[0];
+    const scResult = scresults[0];
     accountAddress = scResult.sender;
     scHash = scresults[0].hash;
   }, Constants.oneHour() * 1000);
@@ -32,7 +32,7 @@ describe('Scresults Service', () => {
         from: 0,
         size: 25,
       });
-      for (let scresult of scresultsList) {
+      for (const scresult of scresultsList) {
         expect(scresult).toHaveProperty('hash');
         expect(scresult).toHaveProperty('nonce');
         expect(scresult).toHaveProperty('timestamp');
@@ -48,7 +48,7 @@ describe('Scresults Service', () => {
       expect(scresultsList).toBeInstanceOf(Array);
       expect(scresultsList).toHaveLength(25);
 
-      for (let scresult of scresultsList) {
+      for (const scresult of scresultsList) {
         expect(scresult).toHaveStructure(
           Object.keys(new SmartContractResult()),
         );
@@ -63,7 +63,7 @@ describe('Scresults Service', () => {
       expect(scresultsList).toBeInstanceOf(Array);
       expect(scresultsList).toHaveLength(50);
 
-      for (let scresult of scresultsList) {
+      for (const scresult of scresultsList) {
         expect(scresult).toHaveStructure(
           Object.keys(new SmartContractResult()),
         );
@@ -80,7 +80,7 @@ describe('Scresults Service', () => {
 
       expect(scresultsList).toBeInstanceOf(Array);
 
-      for (let scresult of scresultsList) {
+      for (const scresult of scresultsList) {
         expect(scresult).toHaveStructure(
           Object.keys(new SmartContractResult()),
         );

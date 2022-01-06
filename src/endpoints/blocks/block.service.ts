@@ -21,13 +21,13 @@ export class BlockService {
     private readonly elasticService: ElasticService,
     private readonly cachingService: CachingService,
     private readonly blsService: BlsService,
-  ) {}
+  ) { }
 
-  private async buildElasticBlocksFilter (filter: BlockFilter): Promise<AbstractQuery[]> {
+  private async buildElasticBlocksFilter(filter: BlockFilter): Promise<AbstractQuery[]> {
     const { shard, proposer, validator, epoch, nonce } = filter;
 
     const queries: AbstractQuery[] = [];
-    if  (nonce !== undefined) {
+    if (nonce !== undefined) {
       const nonceQuery = QueryType.Match("nonce", nonce);
       queries.push(nonceQuery);
     }
@@ -35,20 +35,20 @@ export class BlockService {
       const shardIdQuery = QueryType.Match('shardId', shard);
       queries.push(shardIdQuery);
     }
-    
+
     if (epoch !== undefined) {
       const epochQuery = QueryType.Match('epoch', epoch);
       queries.push(epochQuery);
     }
 
     if (proposer && shard !== undefined && epoch !== undefined) {
-      let index = await this.blsService.getBlsIndex(proposer, shard, epoch);
+      const index = await this.blsService.getBlsIndex(proposer, shard, epoch);
       const proposerQuery = QueryType.Match('proposer', index);
       queries.push(proposerQuery);
     }
 
     if (validator && shard !== undefined && epoch !== undefined) {
-      let index = await this.blsService.getBlsIndex(validator, shard, epoch);
+      const index = await this.blsService.getBlsIndex(validator, shard, epoch);
       const validatorsQuery = QueryType.Match('validators', index);
       queries.push(validatorsQuery);
     }
@@ -69,22 +69,22 @@ export class BlockService {
 
   async getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<Block[]> {
     const { from, size } = queryPagination;
-    
+
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from, size })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
       .withCondition(QueryConditionOptions.must, await this.buildElasticBlocksFilter(filter));
 
-    let result = await this.elasticService.getList('blocks', 'hash', elasticQuery);
+    const result = await this.elasticService.getList('blocks', 'hash', elasticQuery);
 
-    for (let item of result) {
+    for (const item of result) {
       item.shard = item.shardId;
     }
 
-    let blocks = [];
+    const blocks = [];
 
-    for (let item of result) {
-      let block = await this.computeProposerAndValidators(item);
+    for (const item of result) {
+      const block = await this.computeProposerAndValidators(item);
 
       blocks.push(ApiUtils.mergeObjects(new Block(), block));
     }
@@ -93,8 +93,8 @@ export class BlockService {
   }
 
   async computeProposerAndValidators(item: any) {
-    // eslint-disable-next-line no-unused-vars
-    let { shardId: shard, epoch, proposer, validators, searchOrder, ...rest } = item;
+    const { shardId: shard, epoch, searchOrder, ...rest } = item;
+    let { proposer, validators } = item;
 
     let blses: any = await this.cachingService.getCacheLocal(CacheInfo.ShardAndEpochBlses(shard, epoch).key);
     if (!blses) {
@@ -102,22 +102,22 @@ export class BlockService {
 
       await this.cachingService.setCacheLocal(CacheInfo.ShardAndEpochBlses(shard, epoch).key, blses, CacheInfo.ShardAndEpochBlses(shard, epoch).ttl);
     }
-  
+
     proposer = blses[proposer];
 
     if (validators) {
       validators = validators.map((index: number) => blses[index]);
     }
-  
+
     return { shard, epoch, proposer, validators, ...rest };
-  };
+  }
 
   async getBlock(hash: string): Promise<BlockDetailed> {
-    let result = await this.elasticService.getItem('blocks', 'hash', hash);
+    const result = await this.elasticService.getItem('blocks', 'hash', hash);
     result.shard = result.shardId;
 
     if (result.round > 0) {
-      let publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);
+      const publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);
       result.proposer = publicKeys[result.proposer];
       result.validators = result.validators.map((validator: number) => publicKeys[validator]);
     } else {
@@ -128,7 +128,7 @@ export class BlockService {
   }
 
   async getCurrentEpoch(): Promise<number> {
-    let blocks = await this.getBlocks(new BlockFilter(), { from: 0, size: 1 });
+    const blocks = await this.getBlocks(new BlockFilter(), { from: 0, size: 1 });
     if (blocks.length === 0) {
       return -1;
     }

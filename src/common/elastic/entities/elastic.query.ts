@@ -1,8 +1,8 @@
 import { ApiUtils } from "src/utils/api.utils";
-import { AbstractQuery } from "./abstract.query"
-import { ElasticPagination } from "./elastic.pagination"
+import { AbstractQuery } from "./abstract.query";
+import { ElasticPagination } from "./elastic.pagination";
 import { ElasticSortProperty } from "./elastic.sort.property";
-import { QueryCondition } from "./query.condition"
+import { QueryCondition } from "./query.condition";
 import { QueryConditionOptions } from "./query.condition.options";
 import { RangeQuery } from "./range.query";
 import { TermsQuery } from "./terms.query";
@@ -12,8 +12,8 @@ function buildElasticIndexerSort(sorts: ElasticSortProperty[]): any[] {
     return [];
   }
 
-  return sorts.map((sortProp: ElasticSortProperty) => ({[sortProp.name]: { order: sortProp.order}}));
-};
+  return sorts.map((sortProp: ElasticSortProperty) => ({ [sortProp.name]: { order: sortProp.order } }));
+}
 
 export class ElasticQuery {
   pagination?: ElasticPagination;
@@ -25,7 +25,7 @@ export class ElasticQuery {
   static create(): ElasticQuery {
     return new ElasticQuery();
   }
-  
+
   withPagination(pagination: ElasticPagination): ElasticQuery {
     this.pagination = pagination;
 
@@ -58,7 +58,7 @@ export class ElasticQuery {
 
   toJson() {
     const elasticSort = buildElasticIndexerSort(this.sort);
-  
+
     const elasticQuery = {
       ...this.pagination,
       sort: elasticSort,
@@ -71,21 +71,21 @@ export class ElasticQuery {
           minimum_should_match: this.condition.should.length !== 0 ? 1 : undefined,
         },
         terms: this.terms?.getQuery(),
-      }
-    }
-  
+      },
+    };
+
     ApiUtils.cleanupApiValueRecursively(elasticQuery);
-  
+
     if (Object.keys(elasticQuery.query.bool).length === 0) {
       //@ts-ignore
       delete elasticQuery.query.bool;
-  
+
       if (!this.terms) {
         //@ts-ignore
-        elasticQuery.query['match_all'] = {}
+        elasticQuery.query['match_all'] = {};
       }
     }
-    
+
     return elasticQuery;
   }
 }

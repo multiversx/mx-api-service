@@ -4,11 +4,11 @@ import { Logger } from "@nestjs/common";
 export class AddressUtils {
   static bech32Encode(publicKey: string) {
     return Address.fromHex(publicKey).bech32();
-  };
+  }
 
   static bech32Decode(address: string) {
     return Address.fromBech32(address).hex();
-  };
+  }
 
   static isAddressValid(address: string): boolean {
     try {
@@ -20,11 +20,11 @@ export class AddressUtils {
   }
 
   static computeShard(hexPubKey: string) {
-    let numShards = 3;
-    let maskHigh = parseInt('11', 2);
-    let maskLow = parseInt('01', 2);
-    let pubKey = Buffer.from(hexPubKey, 'hex');
-    let lastByteOfPubKey = pubKey[31];
+    const numShards = 3;
+    const maskHigh = parseInt('11', 2);
+    const maskLow = parseInt('01', 2);
+    const pubKey = Buffer.from(hexPubKey, 'hex');
+    const lastByteOfPubKey = pubKey[31];
 
     if (AddressUtils.isAddressOfMetachain(pubKey)) {
       return 4294967295;
@@ -37,7 +37,7 @@ export class AddressUtils {
     }
 
     return shard;
-  };
+  }
 
   static isSmartContractAddress(address: string): boolean {
     if (address.toLowerCase() === 'metachain') {
@@ -47,7 +47,7 @@ export class AddressUtils {
     try {
       return new Address(address).isContractAddress();
     } catch (error) {
-      let logger = new Logger(AddressUtils.name);
+      const logger = new Logger(AddressUtils.name);
       logger.error(`Error when determining whether address '${address}' is a smart contract address`);
       logger.error(error);
       return false;
@@ -56,21 +56,21 @@ export class AddressUtils {
 
   private static isAddressOfMetachain(pubKey: Buffer) {
     // prettier-ignore
-    let metachainPrefix = Buffer.from([
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    const metachainPrefix = Buffer.from([
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     ]);
-    let pubKeyPrefix = pubKey.slice(0, metachainPrefix.length);
+    const pubKeyPrefix = pubKey.slice(0, metachainPrefix.length);
 
     if (pubKeyPrefix.equals(metachainPrefix)) {
       return true;
     }
 
-    let zeroAddress = Buffer.alloc(32).fill(0);
+    const zeroAddress = Buffer.alloc(32).fill(0);
 
     if (pubKey.equals(zeroAddress)) {
       return true;
     }
 
     return false;
-  };
+  }
 }

@@ -35,7 +35,7 @@ describe('Array Extensions', () => {
         .toEqual([
           { name: 'hello', username: 'helloworld' },
           { name: 'world', username: 'worldhello' },
-        ])
+        ]);
     });
 
     it('Distinct by Number', () => {
@@ -54,7 +54,7 @@ describe('Array Extensions', () => {
         .toEqual([
           { id: 1, username: 'one' },
           { id: 2, username: 'two' },
-        ])
+        ]);
     });
   });
 
@@ -78,16 +78,16 @@ describe('Array Extensions', () => {
   describe('First Or Undefined', () => {
     const array = [
       {
-        a: 'a'
+        a: 'a',
       },
       {
-        a: 'b'
+        a: 'b',
       },
       {
-        b: 'b'
+        b: 'b',
       },
       {
-        c: 'c'
+        c: 'c',
       },
     ];
 
@@ -95,8 +95,8 @@ describe('Array Extensions', () => {
     expect(array.firstOrUndefined((x) => x.a === 'b')).toEqual({ a: 'b' });
     expect(array.firstOrUndefined((x) => x.a === 'c')).toBeUndefined();
     expect(array.firstOrUndefined()).toEqual({
-      a: 'a'
-    })
+      a: 'a',
+    });
   });
 
   describe('Select Many', () => {
@@ -104,26 +104,26 @@ describe('Array Extensions', () => {
       {
         a: 'a',
         pets: [
-          'a', 'b'
-        ]
+          'a', 'b',
+        ],
       },
       {
         a: 'b',
         pets: [
-          'c', 'd'
-        ]
+          'c', 'd',
+        ],
       },
       {
         b: 'b',
         pets: [
-          'a', 'b'
-        ]
+          'a', 'b',
+        ],
       },
       {
         c: 'c',
         pets: [
-          'c', 'd'
-        ]
+          'c', 'd',
+        ],
       },
     ];
 
@@ -132,26 +132,26 @@ describe('Array Extensions', () => {
 
   describe('Group By', () => {
     const transaction1: Transaction = new Transaction();
-    transaction1.sender = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40'
-    transaction1.receiver = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9lllllsf3mp40'
+    transaction1.sender = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40';
+    transaction1.receiver = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9lllllsf3mp40';
 
     const transaction2: Transaction = new Transaction();
-    transaction2.sender = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40'
-    transaction2.receiver = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9lllllsf3mp40'
+    transaction2.sender = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40';
+    transaction2.receiver = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9lllllsf3mp40';
 
     const transaction3: Transaction = new Transaction();
-    transaction3.sender = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40'
-    transaction3.receiver = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9ldavllcf3mp40'
+    transaction3.sender = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40';
+    transaction3.receiver = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9ldavllcf3mp40';
 
-    const array = [transaction1, transaction2, transaction3]
+    const array = [transaction1, transaction2, transaction3];
 
     expect(array.groupBy((item) => item.sender)).toEqual({
-      'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40': [transaction1, transaction2, transaction3]
+      'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40': [transaction1, transaction2, transaction3],
     });
 
     expect(array.groupBy((item) => item.receiver)).toEqual({
       'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9ldavllcf3mp40': [transaction3],
-      'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9lllllsf3mp40': [transaction1, transaction2]
+      'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqaqqqqqqqqq9lllllsf3mp40': [transaction1, transaction2],
     });
   });
 
@@ -162,20 +162,20 @@ describe('Array Extensions', () => {
     expect(keys.zip(confirmations, (first, second) => ({ key: first, confirmed: second }))).toEqual([
       {
         key: 'a',
-        confirmed: false
+        confirmed: false,
       },
       {
         key: 'b',
-        confirmed: true
+        confirmed: true,
       },
       {
         key: 'c',
-        confirmed: false
+        confirmed: false,
       },
       {
         key: 'd',
-        confirmed: true
-      }
+        confirmed: true,
+      },
     ]);
-  })
+  });
 });

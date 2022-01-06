@@ -20,10 +20,10 @@ import { NftService } from "./nft.service";
     forwardRef(() => NftMediaModule),
   ],
   providers: [
-    NftService, NftExtendedAttributesService
+    NftService, NftExtendedAttributesService,
   ],
   exports: [
-    NftService, NftExtendedAttributesService
-  ]
+    NftService, NftExtendedAttributesService,
+  ],
 })
 export class NftModule { }

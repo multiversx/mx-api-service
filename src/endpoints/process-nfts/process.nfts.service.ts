@@ -19,16 +19,16 @@ export class ProcessNftsService {
   }
 
   async processCollection(collection: string, settings: ProcessNftSettings): Promise<{ [key: string]: boolean }> {
-    let nfts = await this.nftService.getNfts({ from: 0, size: 10000 }, { collection });
+    const nfts = await this.nftService.getNfts({ from: 0, size: 10000 }, { collection });
 
-    let results = await asyncPool(
+    const results = await asyncPool(
       this.apiConfigService.getPoolLimit(),
       nfts,
       async (nft: Nft) => await this.nftWorkerService.addProcessNftQueueJob(nft, settings)
     );
 
-    let result: { [key: string]: boolean } = {};
-    for (let [index, nft] of nfts.entries()) {
+    const result: { [key: string]: boolean } = {};
+    for (const [index, nft] of nfts.entries()) {
       result[nft.identifier] = results[index];
     }
 

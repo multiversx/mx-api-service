@@ -6,10 +6,10 @@ export class ShouldQuery extends AbstractQuery {
   }
 
   getQuery(): any {
-    return { 
+    return {
       bool: {
-        should: this.queries.map(query => query.getQuery())
-      }
+        should: this.queries.map(query => query.getQuery()),
+      },
     };
   }
 }

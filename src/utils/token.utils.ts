@@ -8,7 +8,7 @@ export class TokenUtils {
 
   static canBool(string: string) {
     return string.split('-').pop() === 'true';
-  };
+  }
 
   static computeNftUri(uri: string, prefix: string) {
     uri = ApiUtils.replaceUri(uri, 'https://ipfs.io/ipfs', prefix);

@@ -31,7 +31,7 @@ import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.com
 
 @Injectable()
 export class TransactionService {
-  private readonly logger: Logger
+  private readonly logger: Logger;
 
   constructor(
     private readonly elasticService: ElasticService,
@@ -46,7 +46,7 @@ export class TransactionService {
   }
 
   private buildTransactionFilterQuery(filter: TransactionFilter, address?: string): ElasticQuery {
-    let queries: AbstractQuery[] = [];
+    const queries: AbstractQuery[] = [];
     let shouldQueries: AbstractQuery[] = [];
     let mustQueries: AbstractQuery[] = [];
 
@@ -116,7 +116,7 @@ export class TransactionService {
       async () => await this.getTransactionCountForAddressRaw(address),
       CacheInfo.TxCount(address).ttl,
       Constants.oneSecond(),
-    )
+    );
   }
 
   async getTransactionCountForAddressRaw(address: string): Promise<number> {
@@ -135,7 +135,7 @@ export class TransactionService {
       return false;
     }
 
-    let filterToCompareWith: TransactionFilter = {};
+    const filterToCompareWith: TransactionFilter = {};
 
     return JSON.stringify(filter) === JSON.stringify(filterToCompareWith);
   }
@@ -149,7 +149,7 @@ export class TransactionService {
       return false;
     }
 
-    let filterToCompareWith: TransactionFilter = {
+    const filterToCompareWith: TransactionFilter = {
       sender: filter.sender,
       receiver: filter.receiver,
       condition: QueryConditionOptions.should,
@@ -167,7 +167,7 @@ export class TransactionService {
       return this.getTransactionCountForAddress(filter.sender ?? '');
     }
 
-    let elasticQuery = this.buildTransactionFilterQuery(filter, address);
+    const elasticQuery = this.buildTransactionFilterQuery(filter, address);
 
     return await this.elasticService.getCount('transactions', elasticQuery);
   }
@@ -176,18 +176,18 @@ export class TransactionService {
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descending };
     const nonce: ElasticSortProperty = { name: 'nonce', order: ElasticSortOrder.descending };
 
-    let elasticQuery = this.buildTransactionFilterQuery(filter, address)
+    const elasticQuery = this.buildTransactionFilterQuery(filter, address)
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
-    let elasticTransactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
+    const elasticTransactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
 
     let transactions: (Transaction | TransactionDetailed)[] = [];
 
-    for (let elasticTransaction of elasticTransactions) {
-      let transaction = ApiUtils.mergeObjects(new Transaction(), elasticTransaction);
+    for (const elasticTransaction of elasticTransactions) {
+      const transaction = ApiUtils.mergeObjects(new Transaction(), elasticTransaction);
 
-      let tokenTransfer = this.tokenTransferService.getTokenTransfer(elasticTransaction);
+      const tokenTransfer = this.tokenTransferService.getTokenTransfer(elasticTransaction);
       if (tokenTransfer) {
         transaction.tokenValue = tokenTransfer.tokenAmount;
         transaction.tokenIdentifier = tokenTransfer.tokenIdentifier;
@@ -201,8 +201,8 @@ export class TransactionService {
       const elasticHashes = elasticTransactions.map(({ txHash }) => txHash);
       const missingHashes: string[] = txHashes.findMissingElements(elasticHashes);
 
-      let gatewayTransactions = await Promise.all(missingHashes.map((txHash) => this.transactionGetService.tryGetTransactionFromGatewayForList(txHash)));
-      for (let gatewayTransaction of gatewayTransactions) {
+      const gatewayTransactions = await Promise.all(missingHashes.map((txHash) => this.transactionGetService.tryGetTransactionFromGatewayForList(txHash)));
+      for (const gatewayTransaction of gatewayTransactions) {
         if (gatewayTransaction) {
           transactions.push(gatewayTransaction);
         }
@@ -217,15 +217,15 @@ export class TransactionService {
         .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
         .withTerms(new TermsQuery('originalTxHash', elasticTransactions.filter(x => x.hasScResults === true).map(x => x.txHash)));
 
-      let scResults = await this.elasticService.getList('scresults', 'scHash', elasticQuery);
-      for (let scResult of scResults) {
+      const scResults = await this.elasticService.getList('scresults', 'scHash', elasticQuery);
+      for (const scResult of scResults) {
         scResult.hash = scResult.scHash;
 
         delete scResult.scHash;
       }
 
       const detailedTransactions: TransactionDetailed[] = [];
-      for (let transaction of transactions) {
+      for (const transaction of transactions) {
         const transactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), transaction);
         const transactionsScResults = scResults.filter(({ originalTxHash }) => originalTxHash == transaction.txHash);
 
@@ -235,11 +235,11 @@ export class TransactionService {
 
         if (queryOptions.withOperations) {
           const hashes: string[] = [transactionDetailed.txHash];
-          for (let scResult of transactionsScResults) {
+          for (const scResult of transactionsScResults) {
             hashes.push(scResult.hash);
           }
           const logs = await this.transactionGetService.getTransactionLogsFromElastic(hashes);
-          let transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
+          const transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
           transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransactionLogs(transactionDetailed.txHash, transactionLogs);
 
           transactionDetailed.operations = this.transactionGetService.trimOperations(transactionDetailed.operations);
@@ -251,7 +251,7 @@ export class TransactionService {
       transactions = detailedTransactions;
     }
 
-    for (let transaction of transactions) {
+    for (const transaction of transactions) {
       await this.processTransaction(transaction);
     }
 
@@ -280,14 +280,14 @@ export class TransactionService {
     const receiverShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.receiver));
     const senderShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.sender));
 
-    let pluginTransaction = await this.pluginsService.processTransactionSend(transaction);
+    const pluginTransaction = await this.pluginsService.processTransactionSend(transaction);
     if (pluginTransaction) {
       return pluginTransaction;
     }
 
     let txHash: string;
     try {
-      let result = await this.gatewayService.create('transaction/send', GatewayComponentRequest.sendTransaction, transaction);
+      const result = await this.gatewayService.create('transaction/send', GatewayComponentRequest.sendTransaction, transaction);
       txHash = result.txHash;
     } catch (error: any) {
       this.logger.error(error);

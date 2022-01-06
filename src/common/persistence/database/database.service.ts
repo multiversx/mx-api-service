@@ -8,7 +8,7 @@ import { PersistenceInterface } from "../persistence.interface";
 
 @Injectable()
 export class DatabaseService implements PersistenceInterface {
-  private readonly logger: Logger
+  private readonly logger: Logger;
 
   constructor(
     @InjectRepository(NftMetadataDb)
@@ -21,7 +21,7 @@ export class DatabaseService implements PersistenceInterface {
 
   async getMetadata(identifier: string): Promise<any | null> {
     try {
-      let metadataDb: NftMetadataDb | undefined = await this.nftMetadataRepository.findOne({ id: identifier });
+      const metadataDb: NftMetadataDb | undefined = await this.nftMetadataRepository.findOne({ id: identifier });
       if (!metadataDb) {
         return null;
       }
@@ -35,7 +35,7 @@ export class DatabaseService implements PersistenceInterface {
   }
 
   async setMetadata(identifier: string, content: any): Promise<void> {
-    let metadata = new NftMetadataDb();
+    const metadata = new NftMetadataDb();
     metadata.id = identifier;
     metadata.content = content;
 
@@ -44,7 +44,7 @@ export class DatabaseService implements PersistenceInterface {
 
   async getMedia(identifier: string): Promise<NftMedia[] | null> {
     try {
-      let media: NftMediaDb | undefined = await this.nftMediaRepository.findOne({ id: identifier });
+      const media: NftMediaDb | undefined = await this.nftMediaRepository.findOne({ id: identifier });
       if (!media) {
         return null;
       }
@@ -58,7 +58,7 @@ export class DatabaseService implements PersistenceInterface {
   }
 
   async setMedia(identifier: string, media: NftMedia[]): Promise<void> {
-    let value = new NftMediaDb();
+    const value = new NftMediaDb();
     value.id = identifier;
     value.content = media;
 

@@ -15,6 +15,6 @@ import { ShardService } from "./shard.service";
   ],
   exports: [
     ShardService,
-  ]
+  ],
 })
 export class ShardModule { }

@@ -14,7 +14,7 @@ export class DataApiService {
   ) {
     this.dataUrl = this.apiConfigService.getDataUrl();
     this.logger = new Logger(DataApiService.name);
-  };
+  }
 
   async getQuotesHistoricalTimestamp(type: DataQuoteType, timestamp: number): Promise<number | undefined> {
     if (!this.dataUrl) {

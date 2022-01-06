@@ -22,7 +22,7 @@ export class IdentitiesService {
   ) { }
 
   async getIdentity(identifier: string): Promise<Identity | undefined> {
-    let identities = await this.getAllIdentities();
+    const identities = await this.getAllIdentities();
     return identities.find(x => x.identity === identifier);
   }
 
@@ -63,7 +63,7 @@ export class IdentitiesService {
     nodesInfo.numNodes = nodes.length;
     nodesInfo.stake = totalStake.toString();
     nodesInfo.topUp = totalTopUp.toString();
-    let totalLocked = totalStake + totalTopUp;
+    const totalLocked = totalStake + totalTopUp;
     nodesInfo.locked = totalLocked.toString();
 
     return nodesInfo;
@@ -107,7 +107,7 @@ export class IdentitiesService {
       distribution[first] = parseFloat((1 - rest).toFixed(2));
     }
 
-    for (let key of Object.keys(distribution)) {
+    for (const key of Object.keys(distribution)) {
       if (distribution[key] === 0) {
         // @ts-ignore
         delete distribution[key];
@@ -157,14 +157,14 @@ export class IdentitiesService {
   }
 
   async getAllIdentitiesRaw(): Promise<Identity[]> {
-    let nodes = await this.nodeService.getAllNodes();
-    const { baseApr, topUpApr } = await this.networkService.getApr()
+    const nodes = await this.nodeService.getAllNodes();
+    const { baseApr, topUpApr } = await this.networkService.getApr();
 
-    let keybaseIdentities: (KeybaseIdentity | undefined)[] = await this.keybaseService.getCachedIdentityProfilesKeybases();
+    const keybaseIdentities: (KeybaseIdentity | undefined)[] = await this.keybaseService.getCachedIdentityProfilesKeybases();
 
-    let identitiesDetailed: IdentityDetailed[] = [];
+    const identitiesDetailed: IdentityDetailed[] = [];
 
-    for (let keybaseIdentity of keybaseIdentities) {
+    for (const keybaseIdentity of keybaseIdentities) {
       if (keybaseIdentity && keybaseIdentity.identity) {
         const identityDetailed = new IdentityDetailed();
         identityDetailed.avatar = keybaseIdentity.avatar;
@@ -178,7 +178,7 @@ export class IdentitiesService {
       }
     }
 
-    for (let node of nodes) {
+    for (const node of nodes) {
       const found = identitiesDetailed.find((identityDetailed) => identityDetailed.identity == node.identity);
 
       if (found && node.identity && !!node.identity) {
@@ -197,7 +197,7 @@ export class IdentitiesService {
         identityDetailed.nodes = [node];
         identitiesDetailed.push(identityDetailed);
       }
-    };
+    }
 
     const { locked: totalLocked } = this.computeTotalStakeAndTopUp(nodes);
 
@@ -214,7 +214,7 @@ export class IdentitiesService {
 
         const stakeInfo = this.getStakeInfoForIdentity(identityDetailed, BigInt(parseInt(totalLocked)));
         identity.score = stakeInfo.score;
-        identity.validators = stakeInfo.validators
+        identity.validators = stakeInfo.validators;
         identity.stake = stakeInfo.stake;
         identity.topUp = stakeInfo.topUp;
         identity.locked = stakeInfo.locked;

@@ -23,7 +23,7 @@ import { ProtocolModule } from "./protocol/protocol.module";
   ],
   exports: [
     ApiConfigModule, CachingModule, ApiModule, ElasticModule, GatewayModule, ExternalModule,
-    KeybaseModule, MetricsModule, ProtocolModule
-  ]
+    KeybaseModule, MetricsModule, ProtocolModule,
+  ],
 })
 export class CommonModule { }

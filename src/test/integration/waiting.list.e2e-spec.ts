@@ -22,15 +22,15 @@ describe('WaitingListService', () => {
       it('should return a list of waiting lists', async () => {
         const getList = await waitingListService.getWaitingList();
         expect(getList).toBeInstanceOf(Array);
-      })
-    })
+      });
+    });
   });
   describe('Waiting List For Address', () => {
     describe('getWaitingListForAddress', () => {
       it('should return a list of waitings for a specified address ', async () => {
         const getAddress = await waitingListService.getWaitingListForAddress(waitingListAddress);
         expect(getAddress).toBeInstanceOf(Array);
-      })
+      });
     });
   });
   describe('Waiting List Count', () => {
@@ -38,7 +38,7 @@ describe('WaitingListService', () => {
       it('should return count of lists', async () => {
         const gatWaitingList: Number = new Number(await waitingListService.getWaitingListCount());
         expect(gatWaitingList).toBeInstanceOf(Number);
-      })
-    })
+      });
+    });
   });
 });

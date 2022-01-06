@@ -21,7 +21,7 @@ import { ProcessNftsModule } from './endpoints/process-nfts/process.nfts.module'
     MetricsController,
     CacheController,
     HealthCheckController,
-    ProcessNftsController
+    ProcessNftsController,
   ],
 })
 export class PrivateAppModule { }

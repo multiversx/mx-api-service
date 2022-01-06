@@ -50,15 +50,15 @@ describe('Caching Service', () => {
     it(`should return 'test' value after key is set`, async () => {
       const cacheValue = await cachingService.getOrSetCache('test', async () => 'test', Constants.oneSecond());
       expect(cacheValue).toBe('test');
-    })
+    });
   });
 
   describe('Batch process in chunks', () => {
-    let input: Array<Number> = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-    let output: Array<String> = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15'];
-    let emptyOutput: Array<any> = Array(15).fill(null);
-    let cacheKeyFunction = (number: Number) => number.toString();
-    let handlerFunction = async (number: Number) => await number.toString();
+    const input: Array<Number> = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    const output: Array<String> = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15'];
+    const emptyOutput: Array<any> = Array(15).fill(null);
+    const cacheKeyFunction = (number: Number) => number.toString();
+    const handlerFunction = async (number: Number) => await number.toString();
 
     it(`should return emptyOutput because keys aren't set`, async () => {
       const cacheValueChunks = await cachingService.batchGetCache(input.map((x) => cacheKeyFunction(x)));

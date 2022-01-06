@@ -12,7 +12,7 @@ export class Round {
 
     @ApiProperty()
     epoch: number = 0;
-    
+
     @ApiProperty()
     timestamp: number = 0;
 }

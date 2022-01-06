@@ -16,7 +16,7 @@ import { CacheInfo } from "src/common/caching/entities/cache.info";
 
 @Injectable()
 export class ProviderService {
-  private readonly logger: Logger
+  private readonly logger: Logger;
 
   constructor(
     private readonly cachingService: CachingService,
@@ -32,8 +32,8 @@ export class ProviderService {
   }
 
   async getProvider(address: string): Promise<Provider | undefined> {
-    let query = new ProviderFilter();
-    let providers = await this.getProviders(query);
+    const query = new ProviderFilter();
+    const providers = await this.getProviders(query);
 
     return providers.find(x => x.provider === address);
   }
@@ -57,7 +57,7 @@ export class ProviderService {
         locked: BigInt('0'),
       }
     );
-    
+
     const nodesInfos: NodesInfos = new NodesInfos();
     nodesInfos.numNodes = results.numNodes;
     nodesInfos.stake = results.stake.toString();
@@ -77,16 +77,16 @@ export class ProviderService {
 
   async getProvidersWithStakeInformationRaw(): Promise<Provider[]> {
     let providers = await this.getAllProviders();
-    let nodes = await this.nodeService.getAllNodes();
+    const nodes = await this.nodeService.getAllNodes();
 
-    let nodesGroupedByProvider: { [key: string]: any[] } = nodes.groupBy(x => x.provider);    
+    const nodesGroupedByProvider: { [key: string]: any[] } = nodes.groupBy(x => x.provider);
 
-    let providersDelegationData: DelegationData[] = await this.getDelegationProviders();
+    const providersDelegationData: DelegationData[] = await this.getDelegationProviders();
 
     providers.forEach((element) => {
       const providerAddress = element.provider;
 
-    // Delegation details for provider
+      // Delegation details for provider
       const delegationData: DelegationData | undefined = providersDelegationData.find((providerDelegationInfo: any) => providerDelegationInfo !== null && providerAddress === providerDelegationInfo.contract);
       if (delegationData) {
         if (delegationData.aprValue) {
@@ -98,7 +98,7 @@ export class ProviderService {
         }
       }
 
-    // Add Nodes details for provider
+      // Add Nodes details for provider
       const providerNodes = nodesGroupedByProvider[providerAddress] ?? [];
       const nodesInfos: NodesInfos = this.getNodesInfosForProvider(providerNodes);
       element.numNodes = nodesInfos.numNodes;
@@ -111,8 +111,8 @@ export class ProviderService {
     });
 
     providers.sort((a, b) => {
-      let aSort = a.locked && a.locked !== '0' ? parseInt(a.locked.slice(0, -18)) : 0;
-      let bSort = b.locked && b.locked !== '0' ? parseInt(b.locked.slice(0, -18)) : 0;
+      const aSort = a.locked && a.locked !== '0' ? parseInt(a.locked.slice(0, -18)) : 0;
+      const bSort = b.locked && b.locked !== '0' ? parseInt(b.locked.slice(0, -18)) : 0;
 
       return bSort - aSort;
     });
@@ -157,13 +157,13 @@ export class ProviderService {
 
   async getAllProviders(): Promise<Provider[]> {
     return await this.cachingService.getOrSetCache(
-      CacheInfo.Providers.key, 
-      async () => await this.getAllProvidersRaw(), 
+      CacheInfo.Providers.key,
+      async () => await this.getAllProvidersRaw(),
       CacheInfo.Providers.ttl
     );
   }
 
-  async getAllProvidersRaw() : Promise<Provider[]> {
+  async getAllProvidersRaw(): Promise<Provider[]> {
     const providers = await this.getProviderAddresses();
 
     const [configs, numUsers, cumulatedRewards] = await Promise.all([
@@ -198,15 +198,15 @@ export class ProviderService {
         stake: '0',
         topUp: '0',
         locked: '0',
-        featured: false
+        featured: false,
       };
     });
 
-    let providerKeybases = await this.keybaseService.getCachedNodesAndProvidersKeybases();
-    
+    const providerKeybases = await this.keybaseService.getCachedNodesAndProvidersKeybases();
+
     if (providerKeybases) {
-      for (let providerAddress of providers) {
-        let providerInfo = providerKeybases[providerAddress];
+      for (const providerAddress of providers) {
+        const providerInfo = providerKeybases[providerAddress];
 
         if (providerInfo && providerInfo.confirmed) {
           const found = providersRaw.find(x => x.provider === providerAddress);
@@ -215,7 +215,7 @@ export class ProviderService {
           }
         }
       }
-    };
+    }
 
     return providersRaw;
   }
@@ -235,16 +235,16 @@ export class ProviderService {
     if (!providersBase64) {
       return [];
     }
-  
+
     const value = providersBase64.map((providerBase64) =>
       AddressUtils.bech32Encode(Buffer.from(providerBase64, 'base64').toString('hex'))
     );
-  
+
     return value;
-  };
+  }
 
   async getProviderConfig(address: string): Promise<ProviderConfig> {
-    let [
+    const [
       ownerBase64,
       serviceFeeBase64,
       delegationCapBase64,
@@ -258,9 +258,9 @@ export class ProviderService {
       address,
       'getContractConfig',
     );
-  
+
     const owner = AddressUtils.bech32Encode(Buffer.from(ownerBase64, 'base64').toString('hex'));
-  
+
     const [serviceFee, delegationCap] = [
       // , initialOwnerFunds, createdNonce
       serviceFeeBase64,
@@ -271,67 +271,67 @@ export class ProviderService {
       const hex = base64 ? Buffer.from(base64, 'base64').toString('hex') : base64;
       return hex === null ? null : BigInt(hex ? '0x' + hex : hex).toString();
     });
-  
+
     // const [automaticActivation, changeableServiceFee, checkCapOnredelegate] = [
     //   automaticActivationBase64,
     //   changeableServiceFeeBase64,
     //   checkCapOnredelegateBase64,
     // ].map((base64) => (Buffer.from(base64, 'base64').toString() === 'true' ? true : false));
 
-    let serviceFeeString = String(parseInt(serviceFee ?? '0') / 10000);
-  
+    const serviceFeeString = String(parseInt(serviceFee ?? '0') / 10000);
+
     return {
       owner,
       serviceFee: parseFloat(serviceFeeString),
       delegationCap: delegationCap ?? '0',
-      apr: 0
+      apr: 0,
       // initialOwnerFunds,
       // automaticActivation,
       // changeableServiceFee,
       // checkCapOnredelegate,
       // createdNonce: parseInt(createdNonce),
     };
-  };
+  }
 
   async getProviderMetadata(address: string) {
     const response = await this.vmQueryService.vmQuery(
       address,
       'getMetaData',
     );
-  
+
     if (response) {
       try {
         const [name, website, identity] = response.map((base64) => {
-          if(base64) {
+          if (base64) {
             return Buffer.from(base64, 'base64').toString().trim().toLowerCase();
           }
           return "";
         });
-    
-        return { name, website, identity }; 
+
+        return { name, website, identity };
       } catch (error) {
         this.logger.error(`Could not get provider metadata for address '${address}'`);
         this.logger.error(error);
         return { name: null, website: null, identity: null };
       }
     }
-  
+
     return { name: null, website: null, identity: null };
-  };
-  
+  }
+
   async getNumUsers(address: string) {
     const [base64] = await this.vmQueryService.vmQuery(
       address,
       'getNumUsers',
     );
-  
+
     if (base64) {
       const hex = Buffer.from(base64, 'base64').toString('hex');
       return Number(BigInt(hex ? '0x' + hex : hex));
     }
-  
+
     return null;
-  };
+  }
 
   async getCumulatedRewards(address: string): Promise<string | null> {
     const [base64] = await this.vmQueryService.vmQuery(
@@ -339,12 +339,12 @@ export class ProviderService {
       'getTotalCumulatedRewards',
       'erd1qqqqqqqqqqqqqqqpqqqqqqqqlllllllllllllllllllllllllllsr9gav8',
     );
-  
+
     if (base64) {
       const hex = Buffer.from(base64, 'base64').toString('hex');
       return BigInt(hex ? '0x' + hex : hex).toString();
     }
-  
+
     return null;
-  };
+  }
 }

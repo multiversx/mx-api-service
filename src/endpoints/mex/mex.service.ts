@@ -24,7 +24,7 @@ export class MexService {
       `mex:${address}`,
       async () => await this.getMexForAddressRaw(address),
       Constants.oneMonth()
-    )
+    );
   }
 
   async getMexForAddressRaw(address: string): Promise<MexWeek[]> {
@@ -32,15 +32,15 @@ export class MexService {
 
 
     const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, [QueryType.Match('address', address)])
+      .withCondition(QueryConditionOptions.must, [QueryType.Match('address', address)]);
 
     const mexForAddress: MexWeek[] = [];
 
     for (let week = 1; week <= 12; week++) {
-      const snapshotCollection = [2].includes(week) ? 
+      const snapshotCollection = [2].includes(week) ?
         `snapshot-week-${week}-v2`
         : `snapshot-week-${week}`;
-      const mexRewardsCollection =  `mex-week-${week}-v3`;
+      const mexRewardsCollection = `mex-week-${week}-v3`;
 
       const snapshots = await this.elasticService.getList(snapshotCollection, 'snapshot', elasticQuery, this.apiConfigService.getMexUrl());
       const mex = await this.elasticService.getList(mexRewardsCollection, 'mex', elasticQuery, this.apiConfigService.getMexUrl());

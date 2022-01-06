@@ -33,7 +33,7 @@ import { ParseArrayPipe } from 'src/utils/pipes/parse.array.pipe';
 @Controller()
 @ApiTags('accounts')
 export class AccountController {
-  private readonly logger: Logger
+  private readonly logger: Logger;
 
   constructor(
     private readonly accountService: AccountService,
@@ -54,7 +54,7 @@ export class AccountController {
     status: 200,
     description: 'The accounts available on the blockchain',
     type: Account,
-    isArray: true
+    isArray: true,
   })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -84,14 +84,14 @@ export class AccountController {
   @ApiResponse({
     status: 200,
     description: 'The details of a given account',
-    type: AccountDetailed
+    type: AccountDetailed,
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   async getAccountDetails(@Param('address', ParseAddressPipe) address: string): Promise<AccountDetailed> {
-    let account = await this.accountService.getAccount(address);
+    const account = await this.accountService.getAccount(address);
     if (!account) {
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
@@ -103,11 +103,11 @@ export class AccountController {
   @ApiResponse({
     status: 200,
     description: 'The deferred details of a given account',
-    type: AccountDeferred
+    type: AccountDeferred,
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   async getAccountDeferred(@Param('address', ParseAddressPipe) address: string): Promise<AccountDeferred[]> {
     try {
@@ -130,11 +130,11 @@ export class AccountController {
     status: 200,
     description: 'The tokens of a given account',
     type: TokenWithBalance,
-    isArray: true
+    isArray: true,
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   async getAccountTokens(
     @Param('address', ParseAddressPipe) address: string,
@@ -162,7 +162,7 @@ export class AccountController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   async getTokenCount(@Param('address', ParseAddressPipe) address: string): Promise<number> {
     try {
@@ -203,11 +203,11 @@ export class AccountController {
     status: 200,
     description: 'The token collections of a given account',
     type: NftCollectionAccount,
-    isArray: true
+    isArray: true,
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   async getAccountCollections(
     @Param('address', ParseAddressPipe) address: string,
@@ -243,7 +243,7 @@ export class AccountController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   async getCollectionCount(
     @Param('address', ParseAddressPipe) address: string,
@@ -293,17 +293,17 @@ export class AccountController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   @ApiResponse({
     status: 404,
-    description: 'Collection not found'
+    description: 'Collection not found',
   })
   async getAccountCollection(
     @Param('address', ParseAddressPipe) address: string,
     @Param('collection') collection: string,
   ): Promise<NftCollectionAccount> {
-    let result = await this.collectionService.getCollectionForAddress(address, collection);
+    const result = await this.collectionService.getCollectionForAddress(address, collection);
     if (!result) {
       throw new NotFoundException('Collection for given account not found');
     }
@@ -319,17 +319,17 @@ export class AccountController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   @ApiResponse({
     status: 404,
-    description: 'Token not found'
+    description: 'Token not found',
   })
   async getAccountToken(
     @Param('address', ParseAddressPipe) address: string,
     @Param('token') token: string,
   ): Promise<TokenWithBalance> {
-    let result = await this.tokenService.getTokenForAddress(address, token);
+    const result = await this.tokenService.getTokenForAddress(address, token);
     if (!result) {
       throw new HttpException('Token for given account not found', HttpStatus.NOT_FOUND);
     }
@@ -357,11 +357,11 @@ export class AccountController {
     status: 200,
     description: 'The non-fungible and semi-fungible tokens of a given account',
     type: NftAccount,
-    isArray: true
+    isArray: true,
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   async getAccountNfts(
     @Param('address', ParseAddressPipe) address: string,
@@ -407,7 +407,7 @@ export class AccountController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   async getNftCount(
     @Param('address', ParseAddressPipe) address: string,
@@ -463,17 +463,17 @@ export class AccountController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   @ApiResponse({
     status: 404,
-    description: 'Token not found'
+    description: 'Token not found',
   })
   async getAccountNft(
     @Param('address', ParseAddressPipe) address: string,
     @Param('nft') nft: string,
   ): Promise<NftAccount> {
-    let result = await this.nftService.getNftForAddress(address, nft);
+    const result = await this.nftService.getNftForAddress(address, nft);
     if (!result) {
       throw new HttpException('Token for given account not found', HttpStatus.NOT_FOUND);
     }
@@ -488,7 +488,7 @@ export class AccountController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   async getAccountStake(@Param('address', ParseAddressPipe) address: string) {
     try {
@@ -504,11 +504,11 @@ export class AccountController {
   @ApiResponse({
     status: 200,
     description: 'The legacy delegation details of a given account',
-    type: AccountDelegationLegacy
+    type: AccountDelegationLegacy,
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   async getAccountDelegationLegacy(@Param('address', ParseAddressPipe) address: string): Promise<AccountDelegationLegacy> {
     try {
@@ -525,11 +525,11 @@ export class AccountController {
     status: 200,
     description: 'The key details of a given account',
     type: AccountKey,
-    isArray: true
+    isArray: true,
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   async getAccountKeys(@Param('address', ParseAddressPipe) address: string): Promise<AccountKey[]> {
     try {
@@ -546,7 +546,7 @@ export class AccountController {
     status: 200,
     description: 'The waiting list of a given account',
     type: WaitingList,
-    isArray: true
+    isArray: true,
   })
   async getAccountWaitingList(@Param('address', ParseAddressPipe) address: string): Promise<WaitingList[]> {
     return await this.waitingListService.getWaitingListForAddress(address);
@@ -559,7 +559,7 @@ export class AccountController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -622,7 +622,7 @@ export class AccountController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
@@ -671,32 +671,32 @@ export class AccountController {
   @ApiResponse({
     status: 200,
     description: 'All deployed contracts for a given account',
-    type: DeployedContract
+    type: DeployedContract,
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   getAccountContracts(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<DeployedContract[]> {
-    return this.accountService.getAccountContracts({ from, size }, address);;
+    return this.accountService.getAccountContracts({ from, size }, address);
   }
 
   @Get("/accounts/:address/contracts/count")
   @ApiResponse({
     status: 200,
     description: 'All deployed contracts for a given account',
-    type: DeployedContract
+    type: DeployedContract,
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   getAccountContractsCount(@Param('address', ParseAddressPipe) address: string): Promise<number> {
-    return this.accountService.getAccountContractsCount(address);;
+    return this.accountService.getAccountContractsCount(address);
   }
 
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
@@ -705,11 +705,11 @@ export class AccountController {
   @ApiResponse({
     status: 200,
     description: 'All smart contract results for a given account',
-    type: SmartContractResult
+    type: SmartContractResult,
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   getAccountScResults(
     @Param('address', ParseAddressPipe) address: string,
@@ -723,11 +723,11 @@ export class AccountController {
   @ApiResponse({
     status: 200,
     description: 'The count of all smart contract results for a given account',
-    type: SmartContractResult
+    type: SmartContractResult,
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   getAccountScResultsCount(
     @Param('address', ParseAddressPipe) address: string,
@@ -739,17 +739,17 @@ export class AccountController {
   @ApiResponse({
     status: 200,
     description: 'The specific smart contract results for a given account',
-    type: SmartContractResult
+    type: SmartContractResult,
   })
   @ApiResponse({
     status: 404,
-    description: 'Account not found'
+    description: 'Account not found',
   })
   async getAccountScResult(
     @Param('address', ParseAddressPipe) _: string,
     @Param('scHash', ParseTransactionHashPipe) scHash: string,
   ): Promise<SmartContractResult> {
-    let scResult = await this.scResultService.getScResult(scHash);
+    const scResult = await this.scResultService.getScResult(scHash);
     if (!scResult) {
       throw new NotFoundException('Smart contract result not found');
     }

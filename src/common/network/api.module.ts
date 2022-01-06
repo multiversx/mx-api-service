@@ -7,13 +7,13 @@ import { ApiService } from "./api.service";
 @Module({
   imports: [
     ApiConfigModule,
-    forwardRef(() => MetricsModule)
+    forwardRef(() => MetricsModule),
   ],
   providers: [
-    ApiService
+    ApiService,
   ],
   exports: [
-    ApiService
-  ]
+    ApiService,
+  ],
 })
 export class ApiModule { }

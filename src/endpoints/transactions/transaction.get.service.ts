@@ -21,7 +21,7 @@ import { TokenTransferService } from "../tokens/token.transfer.service";
 
 @Injectable()
 export class TransactionGetService {
-  private readonly logger: Logger
+  private readonly logger: Logger;
 
   constructor(
     private readonly elasticService: ElasticService,
@@ -35,21 +35,21 @@ export class TransactionGetService {
   private async tryGetTransactionFromElasticBySenderAndNonce(sender: string, nonce: number): Promise<TransactionDetailed | undefined> {
     const queries = [
       QueryType.Match('sender', sender),
-      QueryType.Match('nonce', nonce)
+      QueryType.Match('nonce', nonce),
     ];
 
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from: 0, size: 1 })
       .withCondition(QueryConditionOptions.must, queries);
 
-    let transactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
+    const transactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
 
     return transactions.firstOrUndefined();
   }
 
   async getTransactionLogsFromElastic(hashes: string[]): Promise<any[]> {
-    let queries = [];
-    for (let hash of hashes) {
+    const queries = [];
+    for (const hash of hashes) {
       queries.push(QueryType.Match('_id', hash));
     }
 
@@ -69,7 +69,7 @@ export class TransactionGetService {
       .withSort([timestamp])
       .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
 
-    let scResults = await this.elasticService.getList('scresults', 'hash', elasticQuerySc);
+    const scResults = await this.elasticService.getList('scresults', 'hash', elasticQuerySc);
 
     return scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
   }
@@ -85,8 +85,8 @@ export class TransactionGetService {
         result.results = result.scResults;
       }
 
-      let transactionDetailed: TransactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), result);
-      let tokenTransfer = this.tokenTransferService.getTokenTransfer(result);
+      const transactionDetailed: TransactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), result);
+      const tokenTransfer = this.tokenTransferService.getTokenTransfer(result);
       if (tokenTransfer) {
         transactionDetailed.tokenValue = tokenTransfer.tokenAmount;
         transactionDetailed.tokenIdentifier = tokenTransfer.tokenIdentifier;
@@ -99,7 +99,7 @@ export class TransactionGetService {
         if (result.hasScResults === true && (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.results))) {
           transactionDetailed.results = await this.getTransactionScResultsFromElastic(transactionDetailed.txHash);
 
-          for (let scResult of transactionDetailed.results) {
+          for (const scResult of transactionDetailed.results) {
             hashes.push(scResult.hash);
           }
         }
@@ -108,23 +108,23 @@ export class TransactionGetService {
           const receiptHashQuery = QueryType.Match('receiptHash', txHash);
           const elasticQueryReceipts = ElasticQuery.create()
             .withPagination({ from: 0, size: 1 })
-            .withCondition(QueryConditionOptions.must, [receiptHashQuery])
+            .withCondition(QueryConditionOptions.must, [receiptHashQuery]);
 
-          let receipts = await this.elasticService.getList('receipts', 'receiptHash', elasticQueryReceipts);
+          const receipts = await this.elasticService.getList('receipts', 'receiptHash', elasticQueryReceipts);
           if (receipts.length > 0) {
-            let receipt = receipts[0];
+            const receipt = receipts[0];
             transactionDetailed.receipt = ApiUtils.mergeObjects(new TransactionReceipt(), receipt);
           }
         }
 
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs)) {
           const logs = await this.getTransactionLogsFromElastic(hashes);
-          let transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
+          const transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
 
           transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransactionLogs(txHash, transactionLogs);
           transactionDetailed.operations = this.trimOperations(transactionDetailed.operations);
 
-          for (let log of logs) {
+          for (const log of logs) {
             if (log._id === txHash) {
               transactionDetailed.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
             }
@@ -146,10 +146,10 @@ export class TransactionGetService {
   }
 
   trimOperations(operations: TransactionOperation[]): TransactionOperation[] {
-    let result: TransactionOperation[] = [];
+    const result: TransactionOperation[] = [];
 
-    for (let operation of operations) {
-      let identicalOperations = result.filter(x =>
+    for (const operation of operations) {
+      const identicalOperations = result.filter(x =>
         x.sender === operation.sender &&
         x.receiver === operation.receiver &&
         x.collection === operation.collection &&
@@ -182,7 +182,7 @@ export class TransactionGetService {
 
   async tryGetTransactionFromGateway(txHash: string, queryInElastic: boolean = true): Promise<TransactionDetailed | null> {
     try {
-      let transactionResult = await this.gatewayService.get(`transaction/${txHash}?withResults=true`, GatewayComponentRequest.transactionDetails, async (error) => {
+      const transactionResult = await this.gatewayService.get(`transaction/${txHash}?withResults=true`, GatewayComponentRequest.transactionDetails, async (error) => {
         if (error.response.data.error === 'transaction not found') {
           return true;
         }
@@ -194,13 +194,13 @@ export class TransactionGetService {
         return null;
       }
 
-      let transaction = transactionResult.transaction;
+      const transaction = transactionResult.transaction;
       if (!transaction) {
         return null;
       }
 
       if (transaction.status === 'pending' && queryInElastic) {
-        let existingTransaction = await this.tryGetTransactionFromElasticBySenderAndNonce(transaction.sender, transaction.nonce);
+        const existingTransaction = await this.tryGetTransactionFromElasticBySenderAndNonce(transaction.sender, transaction.nonce);
         if (existingTransaction && existingTransaction.txHash !== txHash) {
           return null;
         }
@@ -211,7 +211,7 @@ export class TransactionGetService {
       }
 
       if (transaction.smartContractResults) {
-        for (let smartContractResult of transaction.smartContractResults) {
+        for (const smartContractResult of transaction.smartContractResults) {
           smartContractResult.callType = smartContractResult.callType.toString();
           smartContractResult.value = smartContractResult.value.toString();
 
@@ -221,7 +221,7 @@ export class TransactionGetService {
         }
       }
 
-      let result = {
+      const result = {
         txHash: txHash,
         data: transaction.data,
         gasLimit: transaction.gasLimit,
@@ -241,7 +241,7 @@ export class TransactionGetService {
         timestamp: transaction.timestamp,
         scResults: transaction.smartContractResults ? transaction.smartContractResults.map((scResult: any) => ApiUtils.mergeObjects(new SmartContractResult(), scResult)) : [],
         receipt: transaction.receipt ? ApiUtils.mergeObjects(new TransactionReceipt(), transaction.receipt) : undefined,
-        logs: transaction.logs
+        logs: transaction.logs,
       };
 
       return ApiUtils.mergeObjects(new TransactionDetailed(), result);

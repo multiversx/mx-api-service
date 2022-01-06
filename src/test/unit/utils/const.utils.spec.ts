@@ -1,4 +1,4 @@
-import { Constants } from "src/utils/constants"
+import { Constants } from "src/utils/constants";
 
 describe('Constants Utils', () => {
     describe('Constants conversion', () => {

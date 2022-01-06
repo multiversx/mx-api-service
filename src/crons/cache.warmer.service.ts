@@ -64,7 +64,7 @@ export class CacheWarmerService {
 
   private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {
     const cronTime = this.apiConfigService.getIsFastWarmerCronActive() ? fastExpression : normalExpression;
-    const cronJob = new CronJob(cronTime, async () => await callback())
+    const cronJob = new CronJob(cronTime, async () => await callback());
     this.schedulerRegistry.addCronJob(name, cronJob);
     cronJob.start();
   }
@@ -72,7 +72,7 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleNodeInvalidations() {
     await Locker.lock('Nodes invalidations', async () => {
-      let nodes = await this.nodeService.getAllNodesRaw();
+      const nodes = await this.nodeService.getAllNodesRaw();
       await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
     }, true);
   }
@@ -80,14 +80,14 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleEsdtTokenInvalidations() {
     await Locker.lock('Esdt tokens invalidations', async () => {
-      let tokens = await this.esdtService.getAllEsdtTokensRaw();
+      const tokens = await this.esdtService.getAllEsdtTokensRaw();
       await this.invalidateKey(CacheInfo.AllEsdtTokens.key, tokens, CacheInfo.AllEsdtTokens.ttl);
     }, true);
   }
 
   async handleIdentityInvalidations() {
     await Locker.lock('Identities invalidations', async () => {
-      let identities = await this.identitiesService.getAllIdentitiesRaw();
+      const identities = await this.identitiesService.getAllIdentitiesRaw();
       await this.invalidateKey(CacheInfo.Identities.key, identities, CacheInfo.Identities.ttl);
     }, true);
   }
@@ -95,21 +95,21 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleProviderInvalidations() {
     await Locker.lock('Providers invalidations', async () => {
-      let providers = await this.providerService.getAllProvidersRaw();
+      const providers = await this.providerService.getAllProvidersRaw();
       await this.invalidateKey(CacheInfo.Providers.key, providers, CacheInfo.Providers.ttl);
 
-      let providersWithStakeInformation = await this.providerService.getProvidersWithStakeInformationRaw();
+      const providersWithStakeInformation = await this.providerService.getProvidersWithStakeInformationRaw();
       await this.invalidateKey(CacheInfo.ProvidersWithStakeInformation.key, providersWithStakeInformation, CacheInfo.ProvidersWithStakeInformation.ttl);
     }, true);
   }
 
   async handleKeybaseAgainstCacheInvalidations() {
     await Locker.lock('Keybase against cache invalidations', async () => {
-      let nodesAndProvidersKeybases = await this.keybaseService.confirmKeybasesAgainstCache();
-      let identityProfilesKeybases = await this.keybaseService.getIdentitiesProfilesAgainstCache();
+      const nodesAndProvidersKeybases = await this.keybaseService.confirmKeybasesAgainstCache();
+      const identityProfilesKeybases = await this.keybaseService.getIdentitiesProfilesAgainstCache();
       await Promise.all([
         this.invalidateKey(CacheInfo.Keybases.key, nodesAndProvidersKeybases, CacheInfo.Keybases.ttl),
-        this.invalidateKey(CacheInfo.IdentityProfilesKeybases.key, identityProfilesKeybases, CacheInfo.IdentityProfilesKeybases.ttl)
+        this.invalidateKey(CacheInfo.IdentityProfilesKeybases.key, identityProfilesKeybases, CacheInfo.IdentityProfilesKeybases.ttl),
       ]);
 
       await this.handleNodeInvalidations();
@@ -131,7 +131,7 @@ export class CacheWarmerService {
   async handleCurrentPriceInvalidations() {
     if (this.apiConfigService.getDataUrl()) {
       await Locker.lock('Current price invalidations', async () => {
-        let currentPrice = await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price);
+        const currentPrice = await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price);
         await this.invalidateKey(CacheInfo.CurrentPrice.key, currentPrice, CacheInfo.CurrentPrice.ttl);
       }, true);
     }
@@ -140,7 +140,7 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleEconomicsInvalidations() {
     await Locker.lock('Economics invalidations', async () => {
-      let economics = await this.networkService.getEconomicsRaw();
+      const economics = await this.networkService.getEconomicsRaw();
       await this.invalidateKey(CacheInfo.Economics.key, economics, CacheInfo.Economics.ttl);
     }, true);
   }
@@ -148,7 +148,7 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleAccountInvalidations() {
     await Locker.lock('Accounts invalidations', async () => {
-      let accounts = await this.accountService.getAccountsRaw({ from: 0, size: 25 });
+      const accounts = await this.accountService.getAccountsRaw({ from: 0, size: 25 });
       await this.invalidateKey(CacheInfo.Top25Accounts.key, accounts, CacheInfo.Top25Accounts.ttl);
     }, true);
   }
@@ -156,7 +156,7 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleHeartbeatStatusInvalidations() {
     await Locker.lock('Heartbeatstatus invalidations', async () => {
-      let result = await this.gatewayService.getRaw('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat);
+      const result = await this.gatewayService.getRaw('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat);
       await this.invalidateKey('heartbeatstatus', JSON.stringify(result.data), Constants.oneMinute() * 2);
     }, true);
   }
@@ -164,7 +164,7 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleValidatorStatisticsInvalidations() {
     await Locker.lock('Validator statistics invalidations', async () => {
-      let result = await this.gatewayService.getRaw('validator/statistics', GatewayComponentRequest.validatorStatistics);
+      const result = await this.gatewayService.getRaw('validator/statistics', GatewayComponentRequest.validatorStatistics);
       await this.invalidateKey('validatorstatistics', JSON.stringify(result.data), Constants.oneMinute() * 2);
     }, true);
   }
@@ -173,7 +173,7 @@ export class CacheWarmerService {
   async handleTokenAssetsInvalidations() {
     await Locker.lock('Token assets invalidations', async () => {
       await this.tokenAssetService.checkout();
-      let assets = await this.tokenAssetService.getAllAssetsRaw();
+      const assets = await this.tokenAssetService.getAllAssetsRaw();
       await this.invalidateKey(CacheInfo.TokenAssets.key, assets, CacheInfo.TokenAssets.ttl);
     }, true);
   }

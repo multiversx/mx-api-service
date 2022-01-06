@@ -13,21 +13,21 @@ export class WaitingListService {
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
-  ) {}
+  ) { }
 
   async getWaitingList(): Promise<WaitingList[]> {
     return await this.getFullWaitingList();
   }
 
   async getWaitingListForAddress(address: string): Promise<WaitingList[]> {
-    let fullWaitingList = await this.getFullWaitingList();
+    const fullWaitingList = await this.getFullWaitingList();
 
     return fullWaitingList.filter(x => x.address === address);
   }
 
   async getWaitingListCount(): Promise<number> {
-    let fullWaitingList = await this.getFullWaitingList();
-    
+    const fullWaitingList = await this.getFullWaitingList();
+
     return fullWaitingList.length;
   }
 
@@ -56,7 +56,7 @@ export class WaitingListService {
         const value = NumberUtils.numberDecode(valueEncoded);
         const nonce = parseInt(NumberUtils.numberDecode(nonceEncoded));
 
-        let waitingList: WaitingList = { address, value, nonce, rank: 0 };
+        const waitingList: WaitingList = { address, value, nonce, rank: 0 };
 
         // @ts-ignore
         result.push(waitingList);
@@ -65,7 +65,7 @@ export class WaitingListService {
       return result;
     }, []);
 
-    for (let [index, waitingListItem] of fullWaitingList.entries()) {
+    for (const [index, waitingListItem] of fullWaitingList.entries()) {
       waitingListItem.rank = index + 1;
     }
 

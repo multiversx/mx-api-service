@@ -9,7 +9,7 @@ import { PerformanceProfiler } from "src/utils/performance.profiler";
 
 @Injectable()
 export class VmQueryService {
-  private readonly logger: Logger
+  private readonly logger: Logger;
 
   constructor(
     private readonly cachingService: CachingService,
@@ -21,16 +21,16 @@ export class VmQueryService {
     this.logger = new Logger(VmQueryService.name);
   }
 
-  private async computeTtls(): Promise<{localTtl: number, remoteTtl: number}> {
-    let secondsRemainingUntilNextRound = await this.protocolService.getSecondsRemainingUntilNextRound();
+  private async computeTtls(): Promise<{ localTtl: number, remoteTtl: number }> {
+    const secondsRemainingUntilNextRound = await this.protocolService.getSecondsRemainingUntilNextRound();
 
     // no need to store value remotely just to evict it one second later
-    let remoteTtl = secondsRemainingUntilNextRound > 1 ? secondsRemainingUntilNextRound : 0;
+    const remoteTtl = secondsRemainingUntilNextRound > 1 ? secondsRemainingUntilNextRound : 0;
 
     return {
       localTtl: secondsRemainingUntilNextRound,
       remoteTtl,
-    }
+    };
   }
 
   async vmQueryFullResult(contract: string, func: string, caller: string | undefined = undefined, args: string[] = []): Promise<any> {
@@ -68,9 +68,9 @@ export class VmQueryService {
       if (skipCache) {
         result = await this.vmQueryRaw(contract, func, caller, args);
       } else {
-        
+
         const { localTtl, remoteTtl } = await this.computeTtls();
-        
+
         result = await this.cachingService.getOrSetCache(
           key,
           async () => await this.vmQueryRaw(contract, func, caller, args),
@@ -79,7 +79,7 @@ export class VmQueryService {
         );
       }
 
-      let data = result.data.data;
+      const data = result.data.data;
 
       return 'ReturnData' in data ? data.ReturnData : data.returnData;
     } catch (error: any) {
@@ -89,17 +89,17 @@ export class VmQueryService {
   }
 
   async vmQueryRaw(contract: string, func: string, caller: string | undefined, args: string[] = []): Promise<any> {
-    let payload = { 
-      scAddress: contract, 
-      FuncName: func, 
-      caller: caller, 
+    const payload = {
+      scAddress: contract,
+      FuncName: func,
+      caller: caller,
       args: args,
     };
 
-    let profiler = new PerformanceProfiler();
+    const profiler = new PerformanceProfiler();
 
     try {
-      let result = await this.gatewayService.createRaw(
+      const result = await this.gatewayService.createRaw(
         'vm-values/query',
         GatewayComponentRequest.vmQuery,
         payload,
@@ -113,5 +113,5 @@ export class VmQueryService {
         this.metricsService.setVmQuery(contract, func, profiler.duration);
       }
     }
-  };
+  }
 }

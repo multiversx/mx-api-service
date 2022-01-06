@@ -87,7 +87,7 @@ describe('API Config', () => {
       it('should return cache Ttl', async () => {
         const value = apiConfigService.getCacheTtl();
         expect(value).toBe(6);
-      })
+      });
 
       it('should return network', async () => {
         const value = apiConfigService.getNetwork();
@@ -97,7 +97,7 @@ describe('API Config', () => {
       it('should return pool limit', async () => {
         const value = apiConfigService.getPoolLimit();
         expect(value).toBe(10);
-      })
+      });
 
       it('should return process Ttl', async () => {
         const value = apiConfigService.getProcessTtl();
@@ -166,7 +166,7 @@ describe('API Config', () => {
 
       it('should return cache warmer cron active', async () => {
         const value = apiConfigService.getIsCacheWarmerCronActive();
-        expect(value).toBeTruthy()
+        expect(value).toBeTruthy();
       });
 
       it('should return fast warmer cron active', async () => {
@@ -257,7 +257,7 @@ describe('API Config', () => {
       it('should return access address', async () => {
         const value = apiConfigService.getAccessAddress();
         expect(value).toBe('');
-      })
+      });
     });
   });
-})
+});

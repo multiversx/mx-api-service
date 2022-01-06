@@ -18,10 +18,10 @@ describe('Collection Service', () => {
 
     collectionService = moduleRef.get<CollectionService>(CollectionService);
 
-    let collections = await collectionService.getNftCollections({ from: 0, size: 1 }, new CollectionFilter());
+    const collections = await collectionService.getNftCollections({ from: 0, size: 1 }, new CollectionFilter());
     expect(collections).toHaveLength(1);
 
-    let nftCollection = collections[0];
+    const nftCollection = collections[0];
     collectionIdentifier = nftCollection.collection;
   }, Constants.oneHour() * 1000);
 
@@ -39,12 +39,12 @@ describe('Collection Service', () => {
         expect(collectionsList).toBeInstanceOf(Array);
         expect(collectionsList).toHaveLength(10);
 
-        for (let nftCollection of collectionsList) {
+        for (const nftCollection of collectionsList) {
           expect(nftCollection.owner).toBeDefined();
           expect(nftCollection.collection).toBeDefined();
         }
       });
-    })
+    });
 
     describe('Collections filters', () => {
       it(`should return a list with all nfts within a collection`, async () => {
@@ -53,7 +53,7 @@ describe('Collection Service', () => {
         const nftsCollections = await collectionService.getNftCollections({ from: 0, size: 25 }, collectionFilter);
         expect(nftsCollections).toBeInstanceOf(Array);
 
-        for (let nftCollection of nftsCollections) {
+        for (const nftCollection of nftsCollections) {
           expect(nftCollection.collection).toBe(collectionIdentifier);
         }
       });
@@ -64,7 +64,7 @@ describe('Collection Service', () => {
         const collectionsList = await collectionService.getNftCollections({ from: 0, size: 25 }, collectionFilter);
         expect(collectionsList).toBeInstanceOf(Array);
 
-        for (let nftCollection of collectionsList) {
+        for (const nftCollection of collectionsList) {
           expect(nftCollection.type).toBe(NftType.SemiFungibleESDT);
         }
       });
@@ -77,5 +77,5 @@ describe('Collection Service', () => {
 
       expect(nftCount).toBeInstanceOf(Number);
     });
-  })
+  });
 });

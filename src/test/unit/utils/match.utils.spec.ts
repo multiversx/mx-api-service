@@ -10,7 +10,7 @@ describe('Match Utils', () => {
         if (match?.groups) {
             expect(match.groups['tags']).toEqual('1,2,3,4');
         }
-    })
+    });
     it('getMetadataFromBase64Attributes', () => {
         let match = MatchUtils.getMetadataFromBase64Attributes('bWV0YWRhdGE6dGVzdDt0YWdzOjEsMiwzLDQ=');
         expect(match).toBeDefined();
@@ -26,5 +26,5 @@ describe('Match Utils', () => {
 
         match = MatchUtils.getMetadataFromBase64Attributes('dGFnczoxLDIsMyw0');
         expect(match).toBeNull();
-    })
+    });
 });

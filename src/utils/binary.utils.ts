@@ -2,13 +2,13 @@ import { AddressUtils } from "./address.utils";
 
 function base64DecodeBinary(str: string): Buffer {
   return Buffer.from(str, 'base64');
-};
+}
 
 export class BinaryUtils {
   static base64Encode(str: string) {
     return Buffer.from(str).toString('base64');
-  };
-  
+  }
+
   static base64Decode(str: string): string {
     return base64DecodeBinary(str).toString('binary');
   }
@@ -24,7 +24,7 @@ export class BinaryUtils {
   static base64ToBigInt(str: string): BigInt {
     return BigInt('0x' + this.base64ToHex(str));
   }
-  
+
   static tryBase64ToHex(str: string): string | undefined {
     try {
       return this.base64ToHex(str);
@@ -32,7 +32,7 @@ export class BinaryUtils {
       return undefined;
     }
   }
-  
+
   static base64ToHex(str: string): string {
     return Buffer.from(str, 'base64').toString('hex');
   }
@@ -52,7 +52,7 @@ export class BinaryUtils {
   static base64ToAddress(str: string): string {
     return AddressUtils.bech32Encode(this.base64ToHex(str));
   }
-  
+
   static hexToString(hex: string): string {
     return Buffer.from(hex, 'hex').toString('ascii');
   }
@@ -68,7 +68,7 @@ export class BinaryUtils {
 
     return BigInt('0x' + hex);
   }
-  
+
   static padHex(value: string): string {
     return (value.length % 2 ? '0' + value : value);
   }

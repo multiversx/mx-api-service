@@ -15,6 +15,6 @@ import { IdentitiesService } from "./identities.service";
   ],
   exports: [
     IdentitiesService,
-  ]
+  ],
 })
 export class IdentitiesModule { }

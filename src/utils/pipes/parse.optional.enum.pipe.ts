@@ -1,7 +1,7 @@
 import { ArgumentMetadata, HttpException, HttpStatus, PipeTransform } from "@nestjs/common";
 
 export class ParseOptionalEnumPipe<T extends { [name: string]: any }> implements PipeTransform<string | undefined, Promise<string | undefined>> {
-  constructor(private readonly type: T) {}
+  constructor(private readonly type: T) { }
 
   transform(value: string | undefined, _: ArgumentMetadata): Promise<string | undefined> {
     return new Promise(resolve => {
@@ -19,7 +19,7 @@ export class ParseOptionalEnumPipe<T extends { [name: string]: any }> implements
   }
 
 
-	private getValues<T extends { [name: string]: any }>(value: T): string[] {
-		return Object.keys(value).map(key => value[key]).filter(value => typeof value === 'string') as string[];
-	}
+  private getValues<T extends { [name: string]: any }>(value: T): string[] {
+    return Object.keys(value).map(key => value[key]).filter(value => typeof value === 'string') as string[];
+  }
 }
