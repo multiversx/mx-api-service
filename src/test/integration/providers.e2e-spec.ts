@@ -33,19 +33,19 @@ describe('Provider Service', () => {
 
   describe('Providers', () => {
     it('all providers should have provider address', async () => {
-      for (let provider of providers) {
+      for (const provider of providers) {
         expect(provider).toHaveProperty('provider');
       }
     });
 
     it('all providers should have nodes', async () => {
-      for (let provider of providers) {
+      for (const provider of providers) {
         expect(provider.numNodes).toBeGreaterThan(0);
       }
     });
 
     it('providers with more than 30 nodes should have identity', async () => {
-      for (let provider of providers) {
+      for (const provider of providers) {
         if (provider.numNodes >= 30) {
           expect(provider).toHaveProperty('identity');
         }
@@ -72,10 +72,10 @@ describe('Provider Service', () => {
           validblocks: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq90llllslwfcr3',
           middlestakingfr: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqyhllllsv4k7x2',
           binance_staking: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc0llllsayxegu',
-          forbole: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq40llllsfjmn54'
-        }
+          forbole: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq40llllsfjmn54',
+        };
 
-        for (let identityVIP of Object.keys(vipProviders)) {
+        for (const identityVIP of Object.keys(vipProviders)) {
           const providerVIP = providers.find(({ identity }) => identity === identityVIP);
 
           expect(providerVIP?.provider).toStrictEqual(vipProviders[identityVIP]);
@@ -89,7 +89,7 @@ describe('Provider Service', () => {
       const providerKeybases: { [key: string]: KeybaseState } | undefined = await cachingService.getCache('providerKeybases');
       expect(providerKeybases).toBeDefined();
 
-      for (let provider of providers) {
+      for (const provider of providers) {
         if (providerKeybases) {
           if (providerKeybases[provider.provider] && providerKeybases[provider.provider].confirmed) {
             expect(provider.identity).toBe(providerKeybases[provider.provider].identity);
@@ -122,7 +122,7 @@ describe('Provider Service', () => {
       providersFilter.identity = identity;
       const identityProviders = await providerService.getProviders(providersFilter);
 
-      for (let provider of identityProviders) {
+      for (const provider of identityProviders) {
         expect(provider.identity).toStrictEqual(identity);
       }
     });

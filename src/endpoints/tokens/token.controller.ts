@@ -15,7 +15,7 @@ import { TokenService } from "./token.service";
 @Controller()
 @ApiTags('tokens')
 export class TokenController {
-  private readonly logger: Logger
+  private readonly logger: Logger;
   constructor(
     private readonly tokenService: TokenService,
     private readonly transactionService: TransactionService,
@@ -28,7 +28,7 @@ export class TokenController {
     status: 200,
     description: 'The list of tokens available on the blockchain',
     type: TokenDetailed,
-    isArray: true
+    isArray: true,
   })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -84,10 +84,10 @@ export class TokenController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Token not found'
+    description: 'Token not found',
   })
   async getToken(@Param('identifier') identifier: string): Promise<TokenDetailed> {
-    let token = await this.tokenService.getToken(identifier);
+    const token = await this.tokenService.getToken(identifier);
     if (token === undefined) {
       throw new NotFoundException('Token not found');
     }
@@ -100,11 +100,11 @@ export class TokenController {
     status: 200,
     description: 'The specific token accounts available on the blockchain',
     type: TokenAccount,
-    isArray: true
+    isArray: true,
   })
   @ApiResponse({
     status: 404,
-    description: 'Token not found'
+    description: 'Token not found',
   })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -123,7 +123,7 @@ export class TokenController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Token not found'
+    description: 'Token not found',
   })
   getTokenAccountsCount(
     @Param('identifier') identifier: string,
@@ -135,11 +135,11 @@ export class TokenController {
   @ApiResponse({
     status: 200,
     description: 'The specific token transactions history on the blockchain',
-    isArray: true
+    isArray: true,
   })
   @ApiResponse({
     status: 404,
-    description: 'Token not found'
+    description: 'Token not found',
   })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
@@ -196,11 +196,11 @@ export class TokenController {
   @ApiResponse({
     status: 200,
     description: 'The specific token transactions count on the blockchain',
-    isArray: true
+    isArray: true,
   })
   @ApiResponse({
     status: 404,
-    description: 'Token not found'
+    description: 'Token not found',
   })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })

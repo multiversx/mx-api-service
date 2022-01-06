@@ -11,6 +11,6 @@ import { MiniBlockService } from "./mini.block.service";
   ],
   exports: [
     MiniBlockService,
-  ]
+  ],
 })
 export class MiniBlockModule { }

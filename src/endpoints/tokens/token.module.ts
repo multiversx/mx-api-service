@@ -13,10 +13,10 @@ import { TokenTransferService } from "./token.transfer.service";
     forwardRef(() => NftModule),
   ],
   providers: [
-    TokenAssetService, TokenService, TokenTransferService
+    TokenAssetService, TokenService, TokenTransferService,
   ],
   exports: [
-    TokenAssetService, TokenService, TokenTransferService
-  ]
+    TokenAssetService, TokenService, TokenTransferService,
+  ],
 })
 export class TokenModule { }

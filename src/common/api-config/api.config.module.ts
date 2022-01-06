@@ -6,7 +6,7 @@ import { ApiConfigService } from "./api.config.service";
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [configuration]
+      load: [configuration],
     }),
   ],
   providers: [
@@ -14,6 +14,6 @@ import { ApiConfigService } from "./api.config.service";
   ],
   exports: [
     ApiConfigService,
-  ]
+  ],
 })
 export class ApiConfigModule { }

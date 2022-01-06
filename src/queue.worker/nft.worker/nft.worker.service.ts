@@ -26,7 +26,7 @@ export class NftWorkerService {
     nft.metadata = await this.nftMetadataService.getMetadata(nft) ?? undefined;
     nft.media = await this.nftMediaService.getMedia(nft) ?? undefined;
 
-    let needsProcessing = await this.needsProcessing(nft, settings);
+    const needsProcessing = await this.needsProcessing(nft, settings);
     if (!needsProcessing) {
       this.logger.log(`No processing is needed for nft with identifier '${nft.identifier}'`);
       return false;
@@ -70,8 +70,8 @@ export class NftWorkerService {
 
     if (!settings.skipRefreshThumbnail) {
       if (nft.media) {
-        for (let media of nft.media) {
-          let hasThumbnailGenerated = await this.nftThumbnailService.hasThumbnailGenerated(nft.identifier, media.url);
+        for (const media of nft.media) {
+          const hasThumbnailGenerated = await this.nftThumbnailService.hasThumbnailGenerated(nft.identifier, media.url);
           if (!hasThumbnailGenerated) {
             return true;
           }

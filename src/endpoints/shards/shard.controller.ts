@@ -13,7 +13,7 @@ export class ShardController {
 		status: 200,
 		description: 'The shards available on the blockchain',
 		type: Shard,
-		isArray: true
+		isArray: true,
 	})
 	@ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
 	@ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })

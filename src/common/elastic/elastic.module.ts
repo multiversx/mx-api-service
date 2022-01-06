@@ -9,13 +9,13 @@ import { ElasticService } from "./elastic.service";
   imports: [
     ApiConfigModule,
     ApiModule,
-    MetricsModule
+    MetricsModule,
   ],
   providers: [
-    ElasticService
+    ElasticService,
   ],
   exports: [
-    ElasticService
-  ]
+    ElasticService,
+  ],
 })
 export class ElasticModule { }

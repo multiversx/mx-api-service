@@ -22,17 +22,17 @@ describe('Account Service', () => {
     accountService = moduleRef.get<AccountService>(AccountService);
     delegationLegacyService = moduleRef.get<DelegationLegacyService>(DelegationLegacyService);
 
-    let accounts = await accountService.getAccounts({ from: 0, size: 1 });
+    const accounts = await accountService.getAccounts({ from: 0, size: 1 });
     expect(accounts).toHaveLength(1);
 
-    let account = accounts[0];
+    const account = accounts[0];
     accountAddress = account.address;
   }, Constants.oneHour() * 1000);
 
   describe('Accounts list', () => {
     it('accounts should have address, shard and nonce', async () => {
       const accountsList = await accountService.getAccounts({ from: 0, size: 25 });
-      for (let account of accountsList) {
+      for (const account of accountsList) {
         expect(account).toHaveProperty('address');
         expect(account).toHaveProperty('shard');
         expect(account).toHaveProperty('nonce');
@@ -45,7 +45,7 @@ describe('Account Service', () => {
       expect(accountsList).toBeInstanceOf(Array);
       expect(accountsList).toHaveLength(25);
 
-      for (let account of accountsList) {
+      for (const account of accountsList) {
         expect(account).toHaveStructure(Object.keys(new Account()));
       }
     });
@@ -55,7 +55,7 @@ describe('Account Service', () => {
       expect(accountsList).toBeInstanceOf(Array);
       expect(accountsList).toHaveLength(50);
 
-      for (let account of accountsList) {
+      for (const account of accountsList) {
         expect(account).toHaveStructure(Object.keys(new Account()));
       }
     });

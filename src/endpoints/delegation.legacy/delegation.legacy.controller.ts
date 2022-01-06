@@ -12,7 +12,7 @@ export class DelegationLegacyController {
   @ApiResponse({
     status: 200,
     description: 'The delegation legacy details',
-    type: DelegationLegacy
+    type: DelegationLegacy,
   })
   async getBlock(): Promise<DelegationLegacy> {
     return await this.delegationLegacyService.getDelegation();

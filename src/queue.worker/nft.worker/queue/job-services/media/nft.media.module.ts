@@ -14,10 +14,10 @@ import { PersistenceModule } from 'src/common/persistence/persistence.module';
   ],
   controllers: [],
   providers: [
-    NftMediaService
+    NftMediaService,
   ],
   exports: [
-    NftMediaService
-  ]
+    NftMediaService,
+  ],
 })
 export class NftMediaModule { }

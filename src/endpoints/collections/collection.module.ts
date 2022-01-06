@@ -13,10 +13,10 @@ import { CollectionService } from "./collection.service";
     TokenModule,
   ],
   providers: [
-    CollectionService
+    CollectionService,
   ],
   exports: [
-    CollectionService
-  ]
+    CollectionService,
+  ],
 })
 export class CollectionModule { }

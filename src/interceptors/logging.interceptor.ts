@@ -21,12 +21,12 @@ export class LoggingInterceptor implements NestInterceptor {
           if (key === '') {
             return {
               ...value.message,
-              level: value.level
+              level: value.level,
             };
           }
 
           return value;
-        } 
+        }, 
       }),
       transports: [
         new DailyRotateFile({
@@ -37,18 +37,18 @@ export class LoggingInterceptor implements NestInterceptor {
           maxFiles: '14d',
           createSymlink: true,
           dirname: 'dist/logs',
-          symlinkName: 'application.log'
-        })
-      ]
+          symlinkName: 'application.log',
+        }),
+      ],
     });
 
     this.logger = new Logger(LoggingInterceptor.name);
   }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    let apiFunction = context.getClass().name + '.' + context.getHandler().name;
+    const apiFunction = context.getClass().name + '.' + context.getHandler().name;
 
-    let profiler = new PerformanceProfiler(apiFunction);
+    const profiler = new PerformanceProfiler(apiFunction);
 
     const request = context.getArgByIndex(0);
 
@@ -56,11 +56,11 @@ export class LoggingInterceptor implements NestInterceptor {
     const isSendTransactionCall = context.getClass().name === ProxyController.name && context.getHandler().name === 'transactionSend';
 
     if (isCreateTransactionCall || isSendTransactionCall) {
-      let logBody = {
+      const logBody = {
         apiFunction,
         body: request.body,
         userAgent: request.headers['user-agent'],
-        clientIp: request.headers['x-forwarded-for'] || request.headers['x-real-ip'] || request.socket.remoteAddress
+        clientIp: request.headers['x-forwarded-for'] || request.headers['x-real-ip'] || request.socket.remoteAddress,
       };
 
       this.transactionLogger.info(logBody);
@@ -81,7 +81,7 @@ export class LoggingInterceptor implements NestInterceptor {
         catchError(err => {
           profiler.stop();
 
-          let statusCode = err.status ?? HttpStatus.INTERNAL_SERVER_ERROR;
+          const statusCode = err.status ?? HttpStatus.INTERNAL_SERVER_ERROR;
           this.metricsService.setApiCall(apiFunction, statusCode, profiler.duration);
           
           return throwError(() => err);

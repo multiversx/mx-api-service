@@ -8,19 +8,17 @@ expect.extend({
           return {
               pass: true,
               message: () => `expected ${objectSortedKeys} not to have structure ${expectedKeys} `,
-          }
+          };
       } 
       else {
           return {
               pass: false,
               message: () => `expected ${objectSortedKeys} to have structure ${expectedKeys} `,
-          }
+          };
       }
   },
 });
 
-declare namespace jest {
-  interface Matchers<R> {
-    toHaveStructure(received: any, keys: string[]): R;
-  }
+interface Matchers<R> {
+  toHaveStructure(received: any, keys: string[]): R;
 }

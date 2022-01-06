@@ -6,13 +6,13 @@ import { BlockService } from "./block.service";
 @Module({
   imports: [
     forwardRef(() => CommonModule),
-    BlsModule
+    BlsModule,
   ],
   providers: [
     BlockService,
   ],
   exports: [
     BlockService,
-  ]
+  ],
 })
 export class BlockModule { }

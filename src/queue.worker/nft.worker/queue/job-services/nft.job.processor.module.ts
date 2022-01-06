@@ -7,12 +7,12 @@ import { NftThumbnailModule } from './thumbnails/nft.thumbnail.module';
   imports: [
     NftMediaModule,
     NftMetadataModule,
-    NftThumbnailModule
+    NftThumbnailModule,
   ],
   exports: [
     NftMediaModule,
     NftMetadataModule,
-    NftThumbnailModule
-  ]
+    NftThumbnailModule,
+  ],
 })
 export class NftJobProcessorModule { }

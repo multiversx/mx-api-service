@@ -22,7 +22,7 @@ export class NodeController {
 		status: 200,
 		description: 'The nodes available on the blockchain',
 		type: Node,
-		isArray: true
+		isArray: true,
 	})
 	@ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
 	@ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -118,14 +118,14 @@ export class NodeController {
   @ApiResponse({
     status: 200,
     description: 'Node details',
-    type: Node
+    type: Node,
   })
   @ApiResponse({
     status: 404,
-    description: 'Node not found'
+    description: 'Node not found',
   })
   async getNode(@Param('bls', ParseBlsHashPipe) bls: string): Promise<Node> {
-    let provider = await this.nodeService.getNode(bls);
+    const provider = await this.nodeService.getNode(bls);
     if (provider === undefined) {
       throw new HttpException('Node not found', HttpStatus.NOT_FOUND);
     }

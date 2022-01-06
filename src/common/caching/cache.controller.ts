@@ -20,11 +20,11 @@ export class CacheController {
   @ApiResponse({
     status: 200,
     description: 'The cache value for one key',
-    type: String
+    type: String,
   })
   @ApiResponse({
     status: 404,
-    description: 'Key not found'
+    description: 'Key not found',
   })
   async getCache(@Param('key') key: string): Promise<unknown> {
     const value = await this.cachingService.getCacheRemote(key);
@@ -49,11 +49,11 @@ export class CacheController {
   @Delete("/caching/:key")
   @ApiResponse({
     status: 200,
-    description: 'Key has been deleted from cache'
+    description: 'Key has been deleted from cache',
   })
   @ApiResponse({
     status: 404,
-    description: 'Key not found'
+    description: 'Key not found',
   })
   async delCache(@Param('key') key: string) {
     const keys = await this.cachingService.deleteInCache(key);

@@ -12,10 +12,10 @@ import { NftMetadataService } from './nft.metadata.service';
   ],
   controllers: [],
   providers: [
-    NftMetadataService
+    NftMetadataService,
   ],
   exports: [
-    NftMetadataService
-  ]
+    NftMetadataService,
+  ],
 })
 export class NftMetadataModule { }

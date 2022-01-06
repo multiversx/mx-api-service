@@ -10,13 +10,13 @@ import { ProcessNftsService } from "./process.nfts.service";
     ApiConfigModule,
     NftWorkerModule,
     forwardRef(() => NftModule),
-    CollectionModule
+    CollectionModule,
   ],
   providers: [
     ProcessNftsService,
   ],
   exports: [
     ProcessNftsService,
-  ]
+  ],
 })
 export class ProcessNftsModule { }

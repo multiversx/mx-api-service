@@ -16,13 +16,13 @@ import { ProtocolModule } from "../protocol/protocol.module";
     ElasticModule,
     BlsModule,
     forwardRef(() => MetricsModule),
-    forwardRef(() => ProtocolModule)
+    forwardRef(() => ProtocolModule),
   ],
   providers: [
     CachingService, CacheConfigService, LocalCacheService,
   ],
   exports: [
     CachingService, CacheConfigService,
-  ]
+  ],
 })
 export class CachingModule { }

@@ -85,5 +85,5 @@ export class DelegationLegacyService {
   numberDecode(encoded: string) {
     const hex = Buffer.from(encoded, 'base64').toString('hex');
     return BigInt(hex ? '0x' + hex : hex).toString();
-  };
+  }
 }

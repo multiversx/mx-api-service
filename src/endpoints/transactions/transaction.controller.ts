@@ -25,7 +25,7 @@ export class TransactionController {
     status: 200,
     description: 'List transactions',
     type: Transaction,
-    isArray: true
+    isArray: true,
   })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false  })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false  })
@@ -148,7 +148,7 @@ export class TransactionController {
       search,
       before,
       after,
-      condition
+      condition,
     });  
   }
 
@@ -157,17 +157,17 @@ export class TransactionController {
     status: 200,
     description: 'Transaction details',
     type: TransactionDetailed,
-    isArray: true
+    isArray: true,
   })
   @ApiResponse({
     status: 404,
-    description: 'Transaction not found'
+    description: 'Transaction not found',
   })
   async getTransaction(
     @Param('txHash', ParseTransactionHashPipe) txHash: string,
     @Query('fields', ParseArrayPipe) fields?: string[], 
   ): Promise<TransactionDetailed> {
-    let transaction = await this.transactionService.getTransaction(txHash, fields);
+    const transaction = await this.transactionService.getTransaction(txHash, fields);
     if (transaction === null) {
       throw new HttpException('Transaction not found', HttpStatus.NOT_FOUND);
     }
@@ -179,7 +179,7 @@ export class TransactionController {
   @ApiResponse({
     status: 201,
     description: 'Create a transaction',
-    type: TransactionSendResult
+    type: TransactionSendResult,
   })
   async createTransaction(@Body() transaction: TransactionCreate): Promise<TransactionSendResult> {
     if (!transaction.sender) {
@@ -190,7 +190,7 @@ export class TransactionController {
       throw new BadRequestException('Receiver must be provided');
     }
 
-    let result = await this.transactionService.createTransaction(transaction);
+    const result = await this.transactionService.createTransaction(transaction);
 
     if (typeof result === 'string' || result instanceof String) {
       throw new HttpException(result, HttpStatus.BAD_REQUEST);

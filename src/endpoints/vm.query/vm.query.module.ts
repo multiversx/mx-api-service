@@ -9,10 +9,10 @@ import { VmQueryService } from "./vm.query.service";
     BlsModule,
   ],
   providers: [
-    VmQueryService
+    VmQueryService,
   ],
   exports: [
-    VmQueryService
-  ]
+    VmQueryService,
+  ],
 })
 export class VmQueryModule { }

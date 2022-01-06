@@ -15,7 +15,7 @@ import asyncPool from "tiny-async-pool";
 
 @Injectable()
 export class KeybaseService {
-  private readonly logger: Logger
+  private readonly logger: Logger;
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
@@ -49,7 +49,7 @@ export class KeybaseService {
   }
 
   private async getNodesKeybasesRaw(): Promise<Keybase[]> {
-    let nodes = await this.nodeService.getHeartbeat();
+    const nodes = await this.nodeService.getHeartbeat();
 
     const keybasesNodesArr: Keybase[] = nodes
       .filter((node) => !!node.identity)
@@ -66,16 +66,16 @@ export class KeybaseService {
 
     const keybasesArr: Keybase[] = [...keybaseProvidersArr, ...keybasesNodesArr];
 
-    let keybaseGetPromises = keybasesArr.map(keybase => this.cachingService.getCache<boolean>(CacheInfo.KeybaseConfirmation(keybase.key).key));
-    let keybaseGetResults = await Promise.all(keybaseGetPromises);
+    const keybaseGetPromises = keybasesArr.map(keybase => this.cachingService.getCache<boolean>(CacheInfo.KeybaseConfirmation(keybase.key).key));
+    const keybaseGetResults = await Promise.all(keybaseGetPromises);
 
-    let confirmedKeybases = keybasesArr.zip<(boolean | undefined), KeybaseState>(keybaseGetResults, (first, second) => ({ identity: first.identity, confirmed: second ?? false }));
+    const confirmedKeybases = keybasesArr.zip<(boolean | undefined), KeybaseState>(keybaseGetResults, (first, second) => ({ identity: first.identity, confirmed: second ?? false }));
 
-    let keybasesDict: { [key: string]: KeybaseState } = {};
-    for (let [index, confirmedKeybase] of confirmedKeybases.entries()) {
-      let key = keybasesArr[index].key;
+    const keybasesDict: { [key: string]: KeybaseState } = {};
+    for (const [index, confirmedKeybase] of confirmedKeybases.entries()) {
+      const key = keybasesArr[index].key;
       if (key !== undefined) {
-        let keybaseState = ApiUtils.mergeObjects(new KeybaseState(), confirmedKeybase);
+        const keybaseState = ApiUtils.mergeObjects(new KeybaseState(), confirmedKeybase);
         keybasesDict[key] = keybaseState;
       }
     }
@@ -84,12 +84,12 @@ export class KeybaseService {
   }
 
   async getIdentitiesProfilesAgainstCache(): Promise<KeybaseIdentity[]> {
-    let nodes = await this.nodeService.getAllNodes();
+    const nodes = await this.nodeService.getAllNodes();
 
-    let keys = nodes.map((node) => node.identity).distinct().map((x) => x ?? '');
+    const keys = nodes.map((node) => node.identity).distinct().map((x) => x ?? '');
 
-    let keybaseGetPromises = keys.map(key => this.cachingService.getCache<KeybaseIdentity>(CacheInfo.IdentityProfile(key).key));
-    let keybaseGetResults = await Promise.all(keybaseGetPromises);
+    const keybaseGetPromises = keys.map(key => this.cachingService.getCache<KeybaseIdentity>(CacheInfo.IdentityProfile(key).key));
+    const keybaseGetResults = await Promise.all(keybaseGetPromises);
 
     // @ts-ignore
     return keybaseGetResults.filter(x => x !== undefined && x !== null);
@@ -125,16 +125,16 @@ export class KeybaseService {
 
     const html = result.data;
 
-    const nodesRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/[0-9a-f]{192}", 'g')
+    const nodesRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/[0-9a-f]{192}", 'g');
     const blses: string[] = [];
-    for (let keybaseUrl of html.match(nodesRegex) || []) {
+    for (const keybaseUrl of html.match(nodesRegex) || []) {
       const bls = keybaseUrl.match(/[0-9a-f]{192}/)[0];
       blses.push(bls);
     }
 
     const providersRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{13}", 'g');
     const addresses: string[] = [];
-    for (let keybaseUrl of html.match(providersRegex) || []) {
+    for (const keybaseUrl of html.match(providersRegex) || []) {
       const bls = keybaseUrl.match(/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{13}/)[0];
       addresses.push(bls);
     }
@@ -157,9 +157,9 @@ export class KeybaseService {
       return;
     }
     
-    let nodes = await this.nodeService.getAllNodes();
+    const nodes = await this.nodeService.getAllNodes();
 
-    let keys = nodes.map((node) => node.identity).distinct().map(x => x ?? '');
+    const keys = nodes.map((node) => node.identity).distinct().map(x => x ?? '');
 
     await this.cachingService.batchProcess(
       keys,
@@ -235,7 +235,7 @@ export class KeybaseService {
       const cachedConfirmation = await this.cachingService.getCache<boolean>(CacheInfo.KeybaseConfirmation(keybase.key).key);
       return cachedConfirmation !== undefined && cachedConfirmation !== null ? cachedConfirmation : false;
     }
-  };
+  }
 
   async getProfile(identity: string): Promise<KeybaseIdentity | null> {
     try {
@@ -266,8 +266,8 @@ export class KeybaseService {
 
       return null;
     } catch (error: any) {
-      const cachedIdentityProfile = await this.cachingService.getCache<KeybaseIdentity>(CacheInfo.IdentityProfile(identity).key)
+      const cachedIdentityProfile = await this.cachingService.getCache<KeybaseIdentity>(CacheInfo.IdentityProfile(identity).key);
       return cachedIdentityProfile ? cachedIdentityProfile : null;
     }
-  };
+  }
 }

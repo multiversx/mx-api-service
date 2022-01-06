@@ -1,7 +1,7 @@
 import { SortOrder } from "src/common/entities/sort.order";
 import { NodeStatus } from "./node.status";
 import { NodeType } from "./node.type";
-import { NodeSort } from "./node.sort"
+import { NodeSort } from "./node.sort";
 
 export class NodeFilter {
   search: string | undefined; 

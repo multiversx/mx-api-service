@@ -13,11 +13,11 @@ export class MiniBlockController {
   @ApiResponse({
     status: 200,
     description: 'The details of a given MiniBlock',
-    type: MiniBlockDetailed
+    type: MiniBlockDetailed,
   })
   @ApiResponse({
     status: 404,
-    description: 'Miniblock not found'
+    description: 'Miniblock not found',
   })
   async getBlock(@Param('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string): Promise<MiniBlockDetailed> {
     try {

@@ -8,7 +8,7 @@ export class CacheConfigService implements CacheOptionsFactory {
   ) {}
 
   async createCacheOptions(): Promise<CacheModuleOptions> {
-    let ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
+    const ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
     
     return {
       ttl,

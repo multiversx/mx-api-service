@@ -1,4 +1,4 @@
-import { BinaryUtils } from "src/utils/binary.utils"
+import { BinaryUtils } from "src/utils/binary.utils";
 
 describe('Binary Utils', () => {
     describe('Based64Encode', () => {
@@ -15,7 +15,7 @@ describe('Binary Utils', () => {
             expect(BinaryUtils.stringToHex('aliceRob')).toStrictEqual('616c696365526f62');
         });
         it('Convert hex to number', () => {
-            expect(BinaryUtils.hexToNumber('616c696365526f62')).toStrictEqual(7020101794786340706);
+            expect(BinaryUtils.hexToNumber('616c69636552')).toStrictEqual(107118252483922);
         });
         it('Convert tryBase64 to address', () => {
             expect(BinaryUtils.tryBase64ToAddress('erd1rf4hv70arudgzus0ymnnsnc4pml0jkywg2xjvzslg0mz4nn2tg7q7k0t6p')).toBeUndefined();

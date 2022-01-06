@@ -6,7 +6,7 @@ import DailyRotateFile from "winston-daily-rotate-file";
 
 @Injectable()
 export class LogRequestsInterceptor implements NestInterceptor {
-  private readonly logger: winston.Logger
+  private readonly logger: winston.Logger;
 
   constructor(
     private readonly httpAdapterHost: HttpAdapterHost,
@@ -25,7 +25,7 @@ export class LogRequestsInterceptor implements NestInterceptor {
             winston.format.json(),
           ),
         }),
-      ]
+      ],
     });
   }
 
@@ -37,7 +37,7 @@ export class LogRequestsInterceptor implements NestInterceptor {
         return next.handle();
     }
 
-    let url = httpAdapter.getRequestUrl(request);
+    const url = httpAdapter.getRequestUrl(request);
 
     this.logger.info(url);
 

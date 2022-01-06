@@ -8,7 +8,7 @@ export class TransactionUtils {
       return undefined;
     }
 
-    let args = transaction.getDataArgs();
+    const args = transaction.getDataArgs();
     if (!args || args.length === 0) {
       return undefined;
     }
@@ -30,7 +30,7 @@ export class TransactionUtils {
       return undefined;
     }
 
-    let args = transaction.getDataArgs();
+    const args = transaction.getDataArgs();
     if (!args || args.length < 6) {
       return undefined;
     }

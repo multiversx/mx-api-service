@@ -11,6 +11,6 @@ export class TermsQuery extends AbstractQuery {
   getQuery(): any {
     return {
       [this.key]: this.value,
-    }
+    };
   }
 }

@@ -5,7 +5,7 @@ import { KeyUnbondPeriod } from "./entities/key.unbond.period";
 
 @Injectable()
 export class KeysService {
-  private readonly logger: Logger
+  private readonly logger: Logger;
 
   constructor(
     private readonly vmQueryService: VmQueryService,

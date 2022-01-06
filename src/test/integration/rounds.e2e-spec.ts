@@ -22,7 +22,7 @@ describe('Rounds Service', () => {
 
   describe('Rounds', () => {
     it('all rounds should have round and shard', async () => {
-      for (let round of rounds) {
+      for (const round of rounds) {
         expect(round).toHaveProperty('round');
         expect(round).toHaveProperty('shard');
         expect(round).not.toHaveProperty('shardId');
@@ -30,7 +30,7 @@ describe('Rounds Service', () => {
     });
 
     it('all entities should have round structure', async () => {
-      for (let round of rounds) {
+      for (const round of rounds) {
         expect(round).toHaveStructure(Object.keys(new Round()));
       }
     });
@@ -41,7 +41,7 @@ describe('Rounds Service', () => {
       roundFilter.epoch = 402;
 
       const roundsFiltered = await roundService.getRounds(roundFilter);
-      for (let round of roundsFiltered) {
+      for (const round of roundsFiltered) {
         expect(round.shard).toStrictEqual(roundFilter.shard);
       }
     });

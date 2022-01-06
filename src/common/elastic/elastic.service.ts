@@ -28,7 +28,7 @@ export class ElasticService {
   async getCount(collection: string, elasticQuery: ElasticQuery | undefined = undefined) {
     const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_count`;
 
-    let profiler = new PerformanceProfiler();
+    const profiler = new PerformanceProfiler();
 
     const result: any = await this.post(url, elasticQuery?.toJson());
 
@@ -36,24 +36,24 @@ export class ElasticService {
 
     this.metricsService.setElasticDuration(collection, profiler.duration);
 
-    let count = result.data.count;
+    const count = result.data.count;
 
     return count;
-  };
+  }
 
   async getItem(collection: string, key: string, identifier: string) {
     const url = `${this.url}/${collection}/_search?q=_id:${identifier}`;
-    let result = await this.get(url);
+    const result = await this.get(url);
 
-    let hits = result.data?.hits?.hits;
+    const hits = result.data?.hits?.hits;
     if (hits && hits.length > 0) {
-      let document = hits[0];
+      const document = hits[0];
 
       return this.formatItem(document, key);
     }
 
     return undefined;
-  };
+  }
 
   private formatItem(document: any, key: string) {
     const { _id, _source } = document;
@@ -61,12 +61,12 @@ export class ElasticService {
     item[key] = _id;
 
     return { ...item, ..._source };
-  };
+  }
 
   async getList(collection: string, key: string, elasticQuery: ElasticQuery, overrideUrl?: string): Promise<any[]> {
     const url = `${overrideUrl ?? this.url}/${collection}/_search`;
 
-    let profiler = new PerformanceProfiler();
+    const profiler = new PerformanceProfiler();
 
     const result = await this.post(url, elasticQuery.toJson());
 
@@ -74,14 +74,14 @@ export class ElasticService {
 
     this.metricsService.setElasticDuration(collection, profiler.duration);
 
-    let took = result.data.took;
+    const took = result.data.took;
     if (!isNaN(took)) {
       this.metricsService.setElasticTook(collection, took);
     }
 
-    let documents = result.data.hits.hits;
+    const documents = result.data.hits.hits;
     return documents.map((document: any) => this.formatItem(document, key));
-  };
+  }
 
   async getAccountEsdtByIdentifier(identifier: string, pagination?: QueryPagination) {
     return this.getAccountEsdtByIdentifiers([identifier], pagination);
@@ -109,7 +109,7 @@ export class ElasticService {
 
     const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
 
-    let result = documents.map((document: any) => this.formatItem(document, 'identifier'));
+    const result = documents.map((document: any) => this.formatItem(document, 'identifier'));
 
     return result;
   }
@@ -118,7 +118,7 @@ export class ElasticService {
     const queries = [
       QueryType.Match('address', address),
       QueryType.Exists('identifier'),
-    ]
+    ];
 
     if (token) {
       queries.push(
@@ -130,7 +130,7 @@ export class ElasticService {
       .withPagination({ from, size })
       .withCondition(QueryConditionOptions.must, queries);
 
-    let documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
+    const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
@@ -139,13 +139,13 @@ export class ElasticService {
     const queries = [
       QueryType.Match('address', address),
       QueryType.Match('token', identifier, QueryOperator.AND),
-    ]
+    ];
 
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from: 0, size: 1 })
       .withCondition(QueryConditionOptions.must, queries);
 
-    let documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
+    const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
 
     return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
   }
@@ -154,7 +154,7 @@ export class ElasticService {
     const queries = [
       QueryType.Match('address', address),
       QueryType.Exists('identifier'),
-    ]
+    ];
 
     const elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, queries);
@@ -175,15 +175,15 @@ export class ElasticService {
   }
 
   private async getDocuments(collection: string, body: any) {
-    let profiler = new PerformanceProfiler();
+    const profiler = new PerformanceProfiler();
 
-    let result = await this.post(`${this.url}/${collection}/_search`, body);
+    const result = await this.post(`${this.url}/${collection}/_search`, body);
 
     profiler.stop();
 
     this.metricsService.setElasticDuration(collection, profiler.duration);
 
-    let took = result.data.tookn;
+    const took = result.data.tookn;
     if (!isNaN(took)) {
       this.metricsService.setElasticTook(collection, took);
     }
@@ -192,16 +192,16 @@ export class ElasticService {
   }
 
   private async getDocumentCount(collection: string, body: any) {
-    let profiler = new PerformanceProfiler();
+    const profiler = new PerformanceProfiler();
 
     const {
       data: {
         hits: {
           total: {
-            value
-          }
-        }
-      }
+            value,
+          },
+        },
+      },
     } = await this.post(`${this.url}/${collection}/_search`, body);
 
     profiler.stop();

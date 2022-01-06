@@ -13,7 +13,7 @@ export class WaitingListController {
     status: 200,
     description: 'Waiting list',
     type: WaitingList,
-    isArray: true
+    isArray: true,
   })
   getWaitingList(): Promise<WaitingList[]> {
     return this.waitingListService.getWaitingList();

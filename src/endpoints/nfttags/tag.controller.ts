@@ -16,7 +16,7 @@ export class TagController {
     status: 200,
     description: 'The nft tags available',
     type: Tag,
-    isArray: true
+    isArray: true,
   })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
@@ -31,11 +31,11 @@ export class TagController {
   @ApiResponse({
     status: 200,
     description: 'The details of a given nft tag',
-    type: Tag
+    type: Tag,
   })
   @ApiResponse({
     status: 404,
-    description: 'Nft tag not found'
+    description: 'Nft tag not found',
   })
   async getAccountDetails(@Param('tag') tag: string): Promise<Tag> {
     try {

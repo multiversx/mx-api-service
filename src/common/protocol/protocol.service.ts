@@ -24,14 +24,14 @@ export class ProtocolService {
       CacheInfo.NumShards.key,
       async () => await this.getShardIdsRaw(),
       CacheInfo.NumShards.ttl,
-    )
+    );
   }
 
   private async getShardIdsRaw(): Promise<number[]> {
-    let networkConfig = await this.gatewayService.get('network/config', GatewayComponentRequest.networkConfig);
-    let shardCount = networkConfig.config.erd_num_shards_without_meta;
+    const networkConfig = await this.gatewayService.get('network/config', GatewayComponentRequest.networkConfig);
+    const shardCount = networkConfig.config.erd_num_shards_without_meta;
 
-    let result = [];
+    const result = [];
     for (let i = 0; i < shardCount; i++) {
       result.push(i);
     }
@@ -41,8 +41,8 @@ export class ProtocolService {
   }
 
   async getSecondsRemainingUntilNextRound(): Promise<number> {
-    let genesisTimestamp = await this.getGenesisTimestamp();
-    let currentTimestamp = Math.round(Date.now() / 1000);
+    const genesisTimestamp = await this.getGenesisTimestamp();
+    const currentTimestamp = Math.round(Date.now() / 1000);
 
     let result = 6 - (currentTimestamp - genesisTimestamp) % 6;
     if (result === 6) {
@@ -63,7 +63,7 @@ export class ProtocolService {
 
   private async getGenesisTimestampRaw(): Promise<number> {
     try {
-      let round = await this.elasticService.getItem('rounds', 'round', `${0}_${1}`)
+      const round = await this.elasticService.getItem('rounds', 'round', `${0}_${1}`);
       return round.timestamp;
     } catch (error) {
       this.logger.error(error);

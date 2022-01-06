@@ -12,13 +12,13 @@ export class ApiUtils {
   
   static cleanupApiValueRecursively(obj: any) {
     if (Array.isArray(obj)) {
-      for (let item of obj) {
+      for (const item of obj) {
         if (item && typeof item === 'object') {
           ApiUtils.cleanupApiValueRecursively(item);
         }
       }
     } else if (obj && typeof obj === 'object') {
-      for (let [key, value] of Object.entries(obj)) {
+      for (const [key, value] of Object.entries(obj)) {
         if (typeof value === 'object' || Array.isArray(value)) {
           ApiUtils.cleanupApiValueRecursively(value);
         }
@@ -34,7 +34,7 @@ export class ApiUtils {
       }
     }
   
-    return obj
+    return obj;
   }
 
   static replaceUri(uri: string, pattern: string, replacer: string): string {

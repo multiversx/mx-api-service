@@ -13,13 +13,13 @@ export class KeysController {
 	@ApiResponse({
 		status: 200,
 		description: 'The unbonding period remaining for the given BLS key',
-		type: KeyUnbondPeriod
+		type: KeyUnbondPeriod,
 	})
 	@ApiQuery({ name: 'key', description: 'The BLS key of the node', required: true })
 	async getKeyUnbondPeriod(
 		@Param('key', ParseBlsHashPipe) key: string
 	): Promise<KeyUnbondPeriod> {
-    let result = await this.keysService.getKeyUnbondPeriod(key);
+    const result = await this.keysService.getKeyUnbondPeriod(key);
     if (!result) {
       throw new HttpException('Key not found', HttpStatus.NOT_FOUND);
     }

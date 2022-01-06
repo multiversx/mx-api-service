@@ -11,10 +11,10 @@ import { NftThumbnailService } from './nft.thumbnail.service';
   ],
   controllers: [],
   providers: [
-    NftThumbnailService, AWSService
+    NftThumbnailService, AWSService,
   ],
   exports: [
-    NftThumbnailService
-  ]
+    NftThumbnailService,
+  ],
 })
 export class NftThumbnailModule { }

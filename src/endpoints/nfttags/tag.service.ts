@@ -22,23 +22,23 @@ export class TagService {
       'nftTags',
       async() => await this.getNftTagsRaw(pagination),
       Constants.oneHour(),
-    )
+    );
   }
 
   async getNftTagsRaw(pagination: QueryPagination): Promise<Tag[]> {
     const elasticQuery = ElasticQuery.create()
       .withPagination(pagination)
-      .withSort([{ name: 'count', order: ElasticSortOrder.descending }])
+      .withSort([{ name: 'count', order: ElasticSortOrder.descending }]);
 
-    let result = await this.elasticService.getList('tags', 'tag', elasticQuery);
+    const result = await this.elasticService.getList('tags', 'tag', elasticQuery);
 
-    let nftTags: Tag[] = result.map(item => ApiUtils.mergeObjects(new Tag(), item));
+    const nftTags: Tag[] = result.map(item => ApiUtils.mergeObjects(new Tag(), item));
 
     return nftTags;
   }
 
   async getNftTag(tag: string): Promise<Tag> {
-    let result = await this.elasticService.getItem('tags', 'tag', tag);
+    const result = await this.elasticService.getItem('tags', 'tag', tag);
 
     return ApiUtils.mergeObjects(new Tag(), result);
   }

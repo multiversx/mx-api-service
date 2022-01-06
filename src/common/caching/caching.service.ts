@@ -24,7 +24,7 @@ export class CachingService {
   private asyncDel = promisify(this.client.del).bind(this.client);
   private asyncKeys = promisify(this.client.keys).bind(this.client);
 
-  private readonly logger: Logger
+  private readonly logger: Logger;
 
   constructor(
     private readonly configService: ApiConfigService,
@@ -36,7 +36,7 @@ export class CachingService {
   }
 
   public async getKeys(key: string | undefined) {
-    let profiler = new PerformanceProfiler();
+    const profiler = new PerformanceProfiler();
     if (key) {
       try {
         return await this.asyncKeys(key);
@@ -48,7 +48,7 @@ export class CachingService {
   }
 
   public async setCacheRemote<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
-    let profiler = new PerformanceProfiler();
+    const profiler = new PerformanceProfiler();
     try {
       await this.asyncSet(key, JSON.stringify(value), 'EX', ttl ?? this.configService.getCacheTtl());
     } finally {
@@ -57,7 +57,7 @@ export class CachingService {
     }
     
     return value;
-  };
+  }
 
   pendingPromises: { [key: string]: Promise<any> } = {};
 
@@ -79,7 +79,7 @@ export class CachingService {
   }
 
   public async getCacheRemote<T>(key: string): Promise<T | undefined> {
-    let profiler = new PerformanceProfiler();
+    const profiler = new PerformanceProfiler();
 
     let response: string | undefined;
     try {
@@ -94,7 +94,7 @@ export class CachingService {
     }
 
     return JSON.parse(response);
-  };
+  }
 
   async setCacheLocal<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
     return await this.localCacheService.setCacheValue<T>(key, value, ttl);
@@ -105,7 +105,7 @@ export class CachingService {
   }
 
   async refreshCacheLocal<T>(key: string, ttl: number = this.configService.getCacheTtl()): Promise<T | undefined> {
-    let value = await this.getCacheRemote<T>(key);
+    const value = await this.getCacheRemote<T>(key);
     if (value) {
       await this.setCacheLocal<T>(key, value, ttl);
     } else {
@@ -117,7 +117,7 @@ export class CachingService {
   }
 
   public async getCache<T>(key: string): Promise<T | undefined> {
-    let value = await this.getCacheLocal<T>(key);
+    const value = await this.getCacheLocal<T>(key);
     if (value) {
       return value;
     }
@@ -132,17 +132,17 @@ export class CachingService {
   }
 
   async batchProcess<IN, OUT>(payload: IN[], cacheKeyFunction: (element: IN) => string, handler: (generator: IN) => Promise<OUT>, ttl: number = this.configService.getCacheTtl(), skipCache: boolean = false): Promise<OUT[]> {
-    let result: OUT[] = [];
+    const result: OUT[] = [];
 
-    let chunks = this.getChunks(payload, 100);
+    const chunks = this.getChunks(payload, 100);
 
-    for (let [_, chunk] of chunks.entries()) {
+    for (const [_, chunk] of chunks.entries()) {
       // this.logger.log(`Loading ${index + 1} / ${chunks.length} chunks`);
 
       let retries = 0;
       while (true) {
         try {
-          let processedChunk = await this.batchProcessChunk(chunk, cacheKeyFunction, handler, ttl, skipCache);
+          const processedChunk = await this.batchProcessChunk(chunk, cacheKeyFunction, handler, ttl, skipCache);
           result.push(...processedChunk);
           break;
         } catch (error) {
@@ -209,7 +209,7 @@ export class CachingService {
     }
   
     return ttl;
-  };
+  }
 
   async batchSetCache(keys: string[], values: any[], ttls: number[]) {
     if (!ttls) {
@@ -218,9 +218,9 @@ export class CachingService {
 
     ttls = ttls.map(ttl => this.spreadTtl(ttl));
 
-    for (let [index, key] of keys.entries()) {
-      let value = values[index];
-      let ttl = ttls[index];
+    for (const [index, key] of keys.entries()) {
+      const value = values[index];
+      const ttl = ttls[index];
 
       this.setCacheLocal(key, value, ttl);
     }
@@ -247,23 +247,23 @@ export class CachingService {
       );
     }
   
-    let profiler = new PerformanceProfiler();
+    const profiler = new PerformanceProfiler();
     try {
       await this.asyncMulti(sets);
     } finally {
       profiler.stop();
       this.metricsService.setRedisDuration('MSET', profiler.duration);
     }
-  };
+  }
 
   async batchDelCache(keys: string[]) {
-    for (let key of keys) {
+    for (const key of keys) {
       this.deleteInCacheLocal(key);
     }
 
     const dels = keys.map(key => ['del', key]);
 
-    let profiler = new PerformanceProfiler();
+    const profiler = new PerformanceProfiler();
     try {
       await this.asyncMulti(dels);
     } finally {
@@ -284,7 +284,7 @@ export class CachingService {
   
       return result;
     }, []);
-  };
+  }
   
   async batchGetCache<T>(keys: string[]): Promise<T[]> {
     const chunks = this.getChunks(keys, 100);
@@ -294,7 +294,7 @@ export class CachingService {
     for (const chunkKeys of chunks) {
       let chunkValues: any;
 
-      let profiler = new PerformanceProfiler();
+      const profiler = new PerformanceProfiler();
       try {
         chunkValues = await this.asyncMGet(chunkKeys);
       } finally {
@@ -308,23 +308,23 @@ export class CachingService {
     }
   
     return result;
-  };
+  }
 
   async getOrSetCache<T>(key: string, promise: () => Promise<T>, remoteTtl: number = this.configService.getCacheTtl(), localTtl: number | undefined = undefined, forceRefresh: boolean = false): Promise<T> {
     if (!localTtl) {
       localTtl = remoteTtl / 2;
     }
 
-    let profiler = new PerformanceProfiler(`vmQuery:${key}`);
+    const profiler = new PerformanceProfiler(`vmQuery:${key}`);
 
     if (!forceRefresh) {
-      let cachedValue = await this.getCacheLocal<T>(key);
+      const cachedValue = await this.getCacheLocal<T>(key);
       if (cachedValue !== undefined) {
         profiler.stop(`Local Cache hit for key ${key}`);
         return cachedValue;
       }
 
-      let cached = await this.getCacheRemote<T>(key);
+      const cached = await this.getCacheRemote<T>(key);
       if (cached !== undefined && cached !== null) {
         profiler.stop(`Remote Cache hit for key ${key}`);
 
@@ -334,7 +334,7 @@ export class CachingService {
       }
     }
 
-    let value = await this.executeWithPendingPromise(`caching:set:${key}`, promise);
+    const value = await this.executeWithPendingPromise(`caching:set:${key}`, promise);
     profiler.stop(`Cache miss for key ${key}`);
 
     if (localTtl > 0) {
@@ -352,14 +352,14 @@ export class CachingService {
   }
 
   async deleteInCache(key: string): Promise<string[]> {
-    let invalidatedKeys = [];
+    const invalidatedKeys = [];
 
     if (key.includes('*')) {
-      let allKeys = await this.getKeys(key);
-      for (let key of allKeys) {
+      const allKeys = await this.getKeys(key);
+      for (const key of allKeys) {
         this.localCacheService.deleteCacheKey(key);
 
-        let profiler = new PerformanceProfiler();
+        const profiler = new PerformanceProfiler();
         try {
           await this.asyncDel(key);
         } finally {
@@ -372,7 +372,7 @@ export class CachingService {
     } else {
       this.localCacheService.deleteCacheKey(key);
 
-      let profiler = new PerformanceProfiler();
+      const profiler = new PerformanceProfiler();
       try {
         await this.asyncDel(key);
       } finally {
@@ -391,12 +391,12 @@ export class CachingService {
       return [];
     }
 
-    let transactionFuncName = transaction.getDataFunctionName();
+    const transactionFuncName = transaction.getDataFunctionName();
 
     if (transactionFuncName === 'controlChanges') {
-      let args = transaction.getDataArgs();
+      const args = transaction.getDataArgs();
       if (args && args.length > 0) {
-        let tokenIdentifier = BinaryUtils.hexToString(args[0]);
+        const tokenIdentifier = BinaryUtils.hexToString(args[0]);
         this.logger.log(`Invalidating token properties for token ${tokenIdentifier}`);
         return await this.deleteInCache(`tokenProperties:${tokenIdentifier}`);
       }
@@ -414,9 +414,9 @@ export class CachingService {
   }
 
   async tryInvalidateTokenBalance(transaction: ShardTransaction): Promise<string[]> {
-    let transactionFuncName = transaction.getDataFunctionName();
+    const transactionFuncName = transaction.getDataFunctionName();
     if (transactionFuncName === 'ESDTTransfer') {
-      let invalidatedKeys = [];
+      const invalidatedKeys = [];
       let invalidated = await this.deleteInCache(`tokens:${transaction.sender}`);
       invalidatedKeys.push(...invalidated);
 

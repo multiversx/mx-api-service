@@ -12,7 +12,7 @@ import { NftThumbnailService } from "./job-services/thumbnails/nft.thumbnail.ser
 @Injectable()
 @Processor('nftQueue')
 export class NftQueueService {
-  private readonly logger: Logger
+  private readonly logger: Logger;
 
   constructor(
     private readonly nftMetadataService: NftMetadataService,
@@ -26,8 +26,8 @@ export class NftQueueService {
   async onNftCreated(job: Job<{ identifier: string, nft: Nft, settings: ProcessNftSettings }>) {
     this.logger.log({ type: 'consumer', jobId: job.id, identifier: job.data.identifier, attemptsMade: job.attemptsMade });
 
-    let nft = job.data.nft;
-    let settings = job.data.settings;
+    const nft = job.data.nft;
+    const settings = job.data.settings;
 
     nft.metadata = await this.nftMetadataService.getMetadata(nft);
 

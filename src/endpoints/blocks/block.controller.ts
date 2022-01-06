@@ -17,7 +17,7 @@ export class BlockController {
       status: 200,
       description: 'The blocks available on the blockchain',
       type: Block,
-      isArray: true
+      isArray: true,
     })
     @ApiQuery({ name: 'shard', description: 'Id of the shard the block belongs to', required: false })
     @ApiQuery({ name: 'proposer', description: 'Filter by proposer', required: false })
@@ -74,11 +74,11 @@ export class BlockController {
     @ApiResponse({
       status: 200,
       description: 'The details of a given block',
-      type: BlockDetailed
+      type: BlockDetailed,
     })
     @ApiResponse({
       status: 404,
-      description: 'Block not found'
+      description: 'Block not found',
     })
     async getBlock(@Param('hash', ParseBlockHashPipe) hash: string): Promise<BlockDetailed> {
       try {

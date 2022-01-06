@@ -74,7 +74,7 @@ export class StakeService {
       ).length,
       queueSize: parseInt(Buffer.from(queueSize, 'base64').toString()),
     };
-  };
+  }
 
   async getStakes(addresses: string[]): Promise<Stake[]> {
     const stakes = await this.getAllStakesForNodes(addresses);
@@ -88,7 +88,7 @@ export class StakeService {
     });
   
     return value;
-  };
+  }
 
   async getAllStakesForNodes(addresses: string[]) {
     return this.cachingService.batchProcess(
@@ -120,7 +120,7 @@ export class StakeService {
         locked: '0',
         numNodes: 0,
         address,
-        blses: []
+        blses: [],
       };
     }
   
@@ -162,7 +162,7 @@ export class StakeService {
         blses,
       };
     }
-  };
+  }
 
   async getStakeForAddress(address: string) {
     const [totalStakedEncoded, unStakedTokensListEncoded] = await Promise.all([

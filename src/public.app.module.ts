@@ -17,6 +17,6 @@ import { LoggingModule } from './common/logging/logging.module';
   exports: [
     CommonModule,
     EndpointsServicesModule,
-  ]
+  ],
 })
 export class PublicAppModule { }

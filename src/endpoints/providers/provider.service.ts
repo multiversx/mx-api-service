@@ -16,7 +16,7 @@ import { CacheInfo } from "src/common/caching/entities/cache.info";
 
 @Injectable()
 export class ProviderService {
-  private readonly logger: Logger
+  private readonly logger: Logger;
 
   constructor(
     private readonly cachingService: CachingService,
@@ -32,8 +32,8 @@ export class ProviderService {
   }
 
   async getProvider(address: string): Promise<Provider | undefined> {
-    let query = new ProviderFilter();
-    let providers = await this.getProviders(query);
+    const query = new ProviderFilter();
+    const providers = await this.getProviders(query);
 
     return providers.find(x => x.provider === address);
   }
@@ -77,11 +77,11 @@ export class ProviderService {
 
   async getProvidersWithStakeInformationRaw(): Promise<Provider[]> {
     let providers = await this.getAllProviders();
-    let nodes = await this.nodeService.getAllNodes();
+    const nodes = await this.nodeService.getAllNodes();
 
-    let nodesGroupedByProvider: { [key: string]: any[] } = nodes.groupBy(x => x.provider);    
+    const nodesGroupedByProvider: { [key: string]: any[] } = nodes.groupBy(x => x.provider);    
 
-    let providersDelegationData: DelegationData[] = await this.getDelegationProviders();
+    const providersDelegationData: DelegationData[] = await this.getDelegationProviders();
 
     providers.forEach((element) => {
       const providerAddress = element.provider;
@@ -111,8 +111,8 @@ export class ProviderService {
     });
 
     providers.sort((a, b) => {
-      let aSort = a.locked && a.locked !== '0' ? parseInt(a.locked.slice(0, -18)) : 0;
-      let bSort = b.locked && b.locked !== '0' ? parseInt(b.locked.slice(0, -18)) : 0;
+      const aSort = a.locked && a.locked !== '0' ? parseInt(a.locked.slice(0, -18)) : 0;
+      const bSort = b.locked && b.locked !== '0' ? parseInt(b.locked.slice(0, -18)) : 0;
 
       return bSort - aSort;
     });
@@ -198,15 +198,15 @@ export class ProviderService {
         stake: '0',
         topUp: '0',
         locked: '0',
-        featured: false
+        featured: false,
       };
     });
 
-    let providerKeybases = await this.keybaseService.getCachedNodesAndProvidersKeybases();
+    const providerKeybases = await this.keybaseService.getCachedNodesAndProvidersKeybases();
     
     if (providerKeybases) {
-      for (let providerAddress of providers) {
-        let providerInfo = providerKeybases[providerAddress];
+      for (const providerAddress of providers) {
+        const providerInfo = providerKeybases[providerAddress];
 
         if (providerInfo && providerInfo.confirmed) {
           const found = providersRaw.find(x => x.provider === providerAddress);
@@ -215,7 +215,7 @@ export class ProviderService {
           }
         }
       }
-    };
+    }
 
     return providersRaw;
   }
@@ -241,10 +241,10 @@ export class ProviderService {
     );
   
     return value;
-  };
+  }
 
   async getProviderConfig(address: string): Promise<ProviderConfig> {
-    let [
+    const [
       ownerBase64,
       serviceFeeBase64,
       delegationCapBase64,
@@ -278,20 +278,20 @@ export class ProviderService {
     //   checkCapOnredelegateBase64,
     // ].map((base64) => (Buffer.from(base64, 'base64').toString() === 'true' ? true : false));
 
-    let serviceFeeString = String(parseInt(serviceFee ?? '0') / 10000);
+    const serviceFeeString = String(parseInt(serviceFee ?? '0') / 10000);
   
     return {
       owner,
       serviceFee: parseFloat(serviceFeeString),
       delegationCap: delegationCap ?? '0',
-      apr: 0
+      apr: 0,
       // initialOwnerFunds,
       // automaticActivation,
       // changeableServiceFee,
       // checkCapOnredelegate,
       // createdNonce: parseInt(createdNonce),
     };
-  };
+  }
 
   async getProviderMetadata(address: string) {
     const response = await this.vmQueryService.vmQuery(
@@ -317,7 +317,7 @@ export class ProviderService {
     }
   
     return { name: null, website: null, identity: null };
-  };
+  }
   
   async getNumUsers(address: string) {
     const [base64] = await this.vmQueryService.vmQuery(
@@ -331,7 +331,7 @@ export class ProviderService {
     }
   
     return null;
-  };
+  }
 
   async getCumulatedRewards(address: string): Promise<string | null> {
     const [base64] = await this.vmQueryService.vmQuery(
@@ -346,5 +346,5 @@ export class ProviderService {
     }
   
     return null;
-  };
+  }
 }

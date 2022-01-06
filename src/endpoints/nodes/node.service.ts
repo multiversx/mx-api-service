@@ -53,15 +53,15 @@ export class NodeService {
     // }
   
     return issues;
-  };
+  }
 
   async getNode(bls: string): Promise<Node | undefined> {
-    let allNodes = await this.getAllNodes();
+    const allNodes = await this.getAllNodes();
     return allNodes.find(x => x.bls === bls);
   }
 
   async getNodeCount(query: NodeFilter): Promise<number> {
-    let allNodes = await this.getFilteredNodes(query);
+    const allNodes = await this.getFilteredNodes(query);
     return allNodes.length;
   }
 
@@ -74,7 +74,7 @@ export class NodeService {
   }
 
   async getNodeVersionsRaw(): Promise<NodeVersions> {
-    let allNodes = await this.getAllNodes();
+    const allNodes = await this.getAllNodes();
 
     const data = allNodes
       .filter(({ type }) => type === NodeType.validator)
@@ -102,7 +102,7 @@ export class NodeService {
     const totalSum = numbers.reduce((previous: number, current: number) => previous + current, 0);
     const largestNumber = numbers.sort((a: number, b: number) => b - a)[0];
 
-    for (let key of Object.keys(data)) {
+    for (const key of Object.keys(data)) {
       if (data[key] === largestNumber) {
         data[key] = parseFloat((largestNumber + 1 - totalSum).toFixed(2));
         break;
@@ -113,9 +113,9 @@ export class NodeService {
   }
 
   private async getFilteredNodes(query: NodeFilter): Promise<Node[]> {
-    let allNodes = await this.getAllNodes();
+    const allNodes = await this.getAllNodes();
 
-    let filteredNodes = allNodes.filter(node => {
+    const filteredNodes = allNodes.filter(node => {
       if (query.search !== undefined) {
         const nodeMatches = node.bls && node.bls.toLowerCase().includes(query.search.toLowerCase());
         const nameMatches = node.name && node.name.toLowerCase().includes(query.search.toLowerCase());
@@ -192,7 +192,7 @@ export class NodeService {
   async getNodes(queryPagination: QueryPagination, query: NodeFilter): Promise<Node[]> {
     const { from, size } = queryPagination;
 
-    let filteredNodes = await this.getFilteredNodes(query);
+    const filteredNodes = await this.getFilteredNodes(query);
 
     return filteredNodes.slice(from, from + size);
   }
@@ -206,7 +206,7 @@ export class NodeService {
   }
 
   private processQueuedNodes(nodes: Node[], queue: Queue[]) {
-    for (let queueItem of queue) {
+    for (const queueItem of queue) {
       const node = nodes.find(node => node.bls === queueItem.bls);
   
       if (node) {
@@ -214,7 +214,7 @@ export class NodeService {
         node.status = NodeStatus.queued;
         node.position = queueItem.position;
       } else {
-        let newNode = new Node();
+        const newNode = new Node();
         newNode.bls = queueItem.bls;
         newNode.position = queueItem.position;
         newNode.type = NodeType.validator;
@@ -229,7 +229,7 @@ export class NodeService {
     const keybases: { [key: string]: KeybaseState } | undefined = await this.keybaseService.getCachedNodesAndProvidersKeybases();
 
     if (keybases) {
-      for (let node of nodes) {
+      for (const node of nodes) {
         node.identity = undefined;
   
         if (keybases[node.bls] && keybases[node.bls].confirmed) {
@@ -244,7 +244,7 @@ export class NodeService {
     const epoch = await this.blockService.getCurrentEpoch();
     const owners = await this.getOwners(blses, epoch);
 
-    for (let [index, bls] of blses.entries()) {
+    for (const [index, bls] of blses.entries()) {
       const node = nodes.find(node => node.bls === bls);
       if (node) {
         node.owner = owners[index];
@@ -253,7 +253,7 @@ export class NodeService {
 
     const providers = await this.providerService.getAllProviders();
 
-    for (let node of nodes) {
+    for (const node of nodes) {
       if (node.type === NodeType.validator) {
         const provider = providers.find(({ provider }) => provider === node.owner);
 
@@ -278,7 +278,7 @@ export class NodeService {
 
     const stakes = await this.stakeService.getStakes(addresses);
 
-    for (let node of nodes) {
+    for (const node of nodes) {
       if (node.type === 'validator') {
         const stake = stakes.find(({ bls }) => bls === node.bls) || new Stake();
 
@@ -290,8 +290,8 @@ export class NodeService {
   }
 
   async getAllNodesRaw(): Promise<Node[]> {
-    let nodes = await this.getHeartbeat();
-    let queue = await this.getQueue();
+    const nodes = await this.getHeartbeat();
+    const queue = await this.getQueue();
 
     this.processQueuedNodes(nodes, queue);
 
@@ -307,14 +307,14 @@ export class NodeService {
   async getOwners(blses: string[], epoch: number) {
     const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(bls, epoch).key);
 
-    let cached = await this.cachingService.batchGetCache(keys);
+    const cached = await this.cachingService.batchGetCache(keys);
 
     const missing = cached
       .map((element, index) => (element === null ? index : false))
       .filter((element) => element !== false)
       .map(element => element as number);
 
-    let owners: any = {};
+    const owners: any = {};
 
     if (missing.length) {
       for (const index of missing) {
@@ -343,10 +343,10 @@ export class NodeService {
     }
 
     return blses.map((bls, index) => (missing.includes(index) ? owners[bls] : cached[index]));
-  };
+  }
 
   async getBlsOwner(bls: string): Promise<string | undefined> {
-    let result = await this.vmQueryService.vmQuery(
+    const result = await this.vmQueryService.vmQuery(
       this.apiConfigService.getStakingContractAddress(),
       'getOwner',
       this.apiConfigService.getAuctionContractAddress(),
@@ -360,7 +360,7 @@ export class NodeService {
     const [encodedOwnerBase64] = result;
   
     return AddressUtils.bech32Encode(Buffer.from(encodedOwnerBase64, 'base64').toString('hex'));
-  };
+  }
 
   async getOwnerBlses(owner: string): Promise<string[]> {
     const getBlsKeysStatusListEncoded = await this.vmQueryService.vmQuery(
@@ -385,7 +385,7 @@ export class NodeService {
   
       return result;
     }, []);
-  };
+  }
 
   async getQueue(): Promise<Queue[]> {
     const queueEncoded = await this.vmQueryService.vmQuery(
@@ -421,14 +421,14 @@ export class NodeService {
     const [
       { heartbeats },
       { statistics },
-      { config }
+      { config },
     ] = await Promise.all([
       this.gatewayService.get('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat),
       this.gatewayService.get('validator/statistics', GatewayComponentRequest.validatorStatistics),
-      this.gatewayService.get('network/config', GatewayComponentRequest.networkConfig)
+      this.gatewayService.get('network/config', GatewayComponentRequest.networkConfig),
     ]);
 
-    let nodes: Node[] = [];
+    const nodes: Node[] = [];
 
     const blses = 
       [...Object.keys(statistics), ...heartbeats.map((item: any) => item.publicKey)].distinct();
@@ -440,7 +440,7 @@ export class NodeService {
 
       const item = { ...heartbeat, ...statistic };
 
-      let {
+      const {
         nodeDisplayName: name,
         versionNumber: version,
         identity,
@@ -454,7 +454,6 @@ export class NodeService {
         numValidatorIgnoredSignatures: validatorIgnoredSignatures,
         totalUpTimeSec: uptimeSec,
         totalDownTimeSec: downtimeSec,
-        shardId: shard,
         receivedShardID,
         computedShardID,
         peerType,
@@ -462,6 +461,10 @@ export class NodeService {
         validatorStatus,
         nonce,
         numInstances: instances,
+      } = item;
+
+      let {
+        shardId: shard,
       } = item;
 
       if (shard === undefined) {
@@ -475,7 +478,7 @@ export class NodeService {
       let nodeType: NodeType | undefined = undefined;
       let nodeStatus: NodeStatus | undefined = undefined;
 
-      let status = validatorStatus ? validatorStatus : peerType;
+      const status = validatorStatus ? validatorStatus : peerType;
       nodeStatus = status;
 
       if (status === 'observer') {
@@ -517,7 +520,7 @@ export class NodeService {
         validatorIgnoredSignatures,
         validatorSuccess,
         issues: [],
-        position: 0
+        position: 0,
       };
 
       if (node.uptimeSec === 0 && item.downtimeSec === 0) {
@@ -542,13 +545,13 @@ export class NodeService {
   }
 
   async deleteOwnersForAddressInCache(address: string): Promise<string[]> {
-    let nodes = await this.getAllNodes();
-    let epoch = await this.blockService.getCurrentEpoch();
-    let keys = nodes
+    const nodes = await this.getAllNodes();
+    const epoch = await this.blockService.getCurrentEpoch();
+    const keys = nodes
       .filter(x => x.owner === address)
       .map(x => `owner:${epoch}:${x.bls}`);
 
-    for (let key of keys) {
+    for (const key of keys) {
       await this.cachingService.deleteInCache(key);
     }
 

@@ -32,7 +32,7 @@ describe('Elastic Query', () => {
     });
 
     it('Should return an match_all query', () => {
-      expect(elasticQuery.toJson()).toMatchObject({ query: { match_all: {} } })
+      expect(elasticQuery.toJson()).toMatchObject({ query: { match_all: {} } });
     });
   });
 

@@ -15,6 +15,6 @@ import { DelegationService } from "./delegation.service";
   ],
   exports: [
     DelegationService,
-  ]
+  ],
 })
 export class DelegationModule { }

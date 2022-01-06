@@ -59,7 +59,7 @@ import { WaitingListModule } from "./waiting-list/waiting.list.module";
     AccountModule, CollectionModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
     MexModule, MiniBlockModule, NetworkModule, NftModule, TagModule, NodeModule, ProviderModule,
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
-    WaitingListModule, EsdtModule, BlsModule
-  ]
+    WaitingListModule, EsdtModule, BlsModule,
+  ],
 })
 export class EndpointsServicesModule { }

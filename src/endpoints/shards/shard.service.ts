@@ -16,7 +16,7 @@ export class ShardService {
   async getShards(queryPagination: QueryPagination): Promise<Shard[]> {
     const { from, size } = queryPagination;
     
-    let allShards = await this.getAllShardsRaw();
+    const allShards = await this.getAllShardsRaw();
 
     return allShards.slice(from, from + size);
   }
@@ -30,7 +30,7 @@ export class ShardService {
   }
 
   async getAllShardsRaw(): Promise<Shard[]> {
-    let nodes = await this.nodeService.getAllNodes();
+    const nodes = await this.nodeService.getAllNodes();
 
     const validators = nodes.filter(
       ({ type, shard, status }) =>
@@ -39,7 +39,7 @@ export class ShardService {
         [ NodeStatus.eligible, NodeStatus.waiting, NodeStatus.leaving ].includes(status ?? NodeStatus.unknown)
     );
 
-    const shards = validators.map(({ shard }) => shard).filter(shard => shard !== undefined).map(shard => shard!!).distinct();
+    const shards = validators.map(({ shard }) => shard).filter(shard => shard !== undefined).map(shard => shard ?? 0).distinct();
 
     return shards.map((shard) => {
       const shardValidators = validators.filter((node) => node.shard === shard);

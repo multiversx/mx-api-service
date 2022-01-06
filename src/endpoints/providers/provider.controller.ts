@@ -15,7 +15,7 @@ export class ProviderController {
 		status: 200,
 		description: 'The providers available on the blockchain',
 		type: Node,
-		isArray: true
+		isArray: true,
 	})
 	@ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
 	@ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -32,14 +32,14 @@ export class ProviderController {
   @ApiResponse({
     status: 200,
     description: 'Provider details',
-    type: Provider
+    type: Provider,
   })
   @ApiResponse({
     status: 404,
-    description: 'Provider not found'
+    description: 'Provider not found',
   })
   async getProvider(@Param('address', ParseAddressPipe) address: string): Promise<Provider> {
-    let provider = await this.providerService.getProvider(address);
+    const provider = await this.providerService.getProvider(address);
     if (provider === undefined) {
       throw new HttpException(`Provider '${address}' not found`, HttpStatus.NOT_FOUND);
     }

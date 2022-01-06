@@ -17,7 +17,7 @@ import { MicroserviceController } from './microservice.controller';
     {
       provide: 'PUBSUB_SERVICE',
       useFactory: (apiConfigService: ApiConfigService) => {
-        let clientOptions: ClientOptions = {
+        const clientOptions: ClientOptions = {
           transport: Transport.REDIS,
           options: {
             url: `redis://${apiConfigService.getRedisUrl()}:6379`,
@@ -26,14 +26,14 @@ import { MicroserviceController } from './microservice.controller';
             retry_strategy: function(_: any) {
               return 1000;
             },
-          }
+          },
         };
 
         return ClientProxyFactory.create(clientOptions);
       },
-      inject: [ ApiConfigService ]
-    }
+      inject: [ ApiConfigService ],
+    },
   ],
-  exports: [ 'PUBSUB_SERVICE' ]
+  exports: [ 'PUBSUB_SERVICE' ],
 })
 export class MicroserviceModule {}

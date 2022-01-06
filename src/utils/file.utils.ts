@@ -26,7 +26,7 @@ export class FileUtils {
   }
 
   static async getFileSize(path: string): Promise<number> {
-    let statistics = await stat(path);
+    const statistics = await stat(path);
     return statistics.size;
   }
 
@@ -36,7 +36,7 @@ export class FileUtils {
       return true;
     } catch (error: any) {
       if (error.code !== 'ENOENT') {
-        let logger = new Logger(FileUtils.name);
+        const logger = new Logger(FileUtils.name);
         logger.error(`Unknown error when performing file exists check`);
         logger.error(error);
       }

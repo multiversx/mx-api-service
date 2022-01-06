@@ -9,10 +9,10 @@ import { WaitingListService } from "./waiting.list.service";
     forwardRef(() => VmQueryModule),
   ],
   providers: [
-    WaitingListService
+    WaitingListService,
   ],
   exports: [
-    WaitingListService
-  ]
+    WaitingListService,
+  ],
 })
 export class WaitingListModule { }

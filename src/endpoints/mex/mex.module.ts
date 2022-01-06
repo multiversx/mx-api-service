@@ -7,10 +7,10 @@ import { MexService } from "./mex.service";
     forwardRef(() => CommonModule),
   ],
   providers: [
-    MexService
+    MexService,
   ],
   exports: [
-    MexService
-  ]
+    MexService,
+  ],
 })
 export class MexModule { }

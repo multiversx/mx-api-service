@@ -3,6 +3,6 @@ import { PassThroughService } from "./pass.through.service";
 
 @Module({
   providers: [PassThroughService],
-  exports: [PassThroughService]
+  exports: [PassThroughService],
 })
 export class PassThroughModule { }

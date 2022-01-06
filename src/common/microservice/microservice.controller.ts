@@ -13,7 +13,7 @@ export class MicroserviceController {
 
   @EventPattern('deleteCacheKeys')
   async deleteCacheKey(keys: string[]) {
-    for (let key of keys) {
+    for (const key of keys) {
       this.logger.log(`Deleting local cache key ${key}`);
       await this.cachingService.deleteInCacheLocal(key);
     }

@@ -14,7 +14,7 @@ export class IdentitiesController {
 		status: 200,
 		description: 'The identities available on the blockchain',
 		type: Identity,
-		isArray: true
+		isArray: true,
 	})
 	@ApiQuery({ name: 'identities', description: 'Filter by comma-separated list of identities', required: false })
 	async getIdentities(
@@ -27,14 +27,14 @@ export class IdentitiesController {
   @ApiResponse({
     status: 200,
     description: 'Identity details',
-    type: Identity
+    type: Identity,
   })
   @ApiResponse({
     status: 404,
-    description: 'Identity not found'
+    description: 'Identity not found',
   })
   async getIdentity(@Param('identifier') identifier: string): Promise<Identity> {
-    let identity = await this.identitiesService.getIdentity(identifier);
+    const identity = await this.identitiesService.getIdentity(identifier);
     if (identity === undefined) {
       throw new HttpException('Identity not found', HttpStatus.NOT_FOUND);
     }

@@ -23,18 +23,18 @@ export class VmQueryController {
       throw new BadRequestException({
         statusCode: HttpStatus.BAD_REQUEST, 
         code: error.response.data.code, 
-        message: error.response.data.error
+        message: error.response.data.error,
       });
     }
 
-    let data = result.data.data;
+    const data = result.data.data;
     if (data.returnData !== null) {
       return data;
     } else {
       throw new BadRequestException({
         statusCode: HttpStatus.BAD_REQUEST, 
         code: data.returnCode, 
-        message: data.returnMessage
+        message: data.returnMessage,
       });
     }
   }

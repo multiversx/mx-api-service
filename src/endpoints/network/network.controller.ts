@@ -16,7 +16,7 @@ export class NetworkController {
   @ApiResponse({
     status: 200,
     description: 'The network constants',
-    type: NetworkConstants
+    type: NetworkConstants,
   })
   getConstants(): Promise<NetworkConstants> {
     return this.networkService.getConstants();
@@ -26,7 +26,7 @@ export class NetworkController {
   @ApiResponse({
     status: 200,
     description: 'The economics details',
-    type: Economics
+    type: Economics,
   })
   async getEconomics(): Promise<Economics> {
     return await this.networkService.getEconomics();
@@ -36,7 +36,7 @@ export class NetworkController {
   @ApiResponse({
     status: 200,
     description: 'The network statistics',
-    type: Stats
+    type: Stats,
   })
   async getStats(): Promise<Stats> {
     return await this.networkService.getStats();

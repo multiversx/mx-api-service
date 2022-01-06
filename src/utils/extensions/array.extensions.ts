@@ -8,7 +8,7 @@ Array.prototype.groupBy = function(predicate: Function, asArray = false) {
       result = Object.keys(result).map(key => {
           return {
               key: key,
-              values: result[key]
+              values: result[key],
           };
       });
   }
@@ -17,9 +17,9 @@ Array.prototype.groupBy = function(predicate: Function, asArray = false) {
 };
 
 Array.prototype.selectMany = function(predicate: Function) {
-  let result = [];
+  const result = [];
 
-  for (let item of this) {
+  for (const item of this) {
       result.push(...predicate(item));
   }
 
@@ -27,11 +27,15 @@ Array.prototype.selectMany = function(predicate: Function) {
 };
 
 Array.prototype.firstOrUndefined = function(predicate?: Function) {
-  let result = this;
-  if (predicate) {
-    result = this.filter(x => predicate(x));
+  if (!predicate) {
+    if (this.length > 0) {
+      return this[0];
+    }
+
+    return undefined;
   }
 
+  const result = this.filter(x => predicate(x));
   if (result.length > 0) {
     return result[0];
   }
@@ -44,35 +48,35 @@ Array.prototype.zip = function<TSecond, TResult>(second: TSecond[], predicate: F
 };
 
 Array.prototype.remove = function<T>(element: T): number {
-  let index = this.indexOf(element);
+  const index = this.indexOf(element);
   if (index >= 0) {
     this.splice(index, 1);
   }
 
   return index;
-}
+};
 
 Array.prototype.findMissingElements = function<T>(second: T[]) {
   const missing: T[] = [];
-  for (let item of this) {
+  for (const item of this) {
     if (!second.includes(item)) {
       missing.push(item);
     }
   }
 
   return missing;
-}
+};
 
 Array.prototype.distinct = function<T>(): T[] {
   return [...new Set(this)];
-}
+};
 
 Array.prototype.distinctBy = function<TCollection, TResult>(predicate: (element: TCollection) => TResult): TCollection[] {
-  let distinctProjections: TResult[] = [];
-  let result: TCollection[] = [];
+  const distinctProjections: TResult[] = [];
+  const result: TCollection[] = [];
 
-  for (let element of this) {
-    let projection = predicate(element);
+  for (const element of this) {
+    const projection = predicate(element);
     if (!distinctProjections.includes(projection)) {
       distinctProjections.push(projection);
       result.push(element);
@@ -80,11 +84,11 @@ Array.prototype.distinctBy = function<TCollection, TResult>(predicate: (element:
   }
 
   return result;
-}
+};
 
 Array.prototype.all = function<T>(predicate: (item: T) => boolean): boolean {
   return !this.some(x => !predicate(x));
-}
+};
 
 declare interface Array<T> {
   groupBy(predicate: (item: T) => any): any;

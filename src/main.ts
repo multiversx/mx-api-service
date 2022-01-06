@@ -40,12 +40,12 @@ async function bootstrap() {
   publicApp.disable('etag');
   publicApp.disable('x-powered-by');
 
-  let apiConfigService = publicApp.get<ApiConfigService>(ApiConfigService);
-  let cachingService = publicApp.get<CachingService>(CachingService);
-  let httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
-  let metricsService = publicApp.get<MetricsService>(MetricsService);
-  let tokenAssetService = publicApp.get<TokenAssetService>(TokenAssetService);
-  let protocolService = publicApp.get<ProtocolService>(ProtocolService);
+  const apiConfigService = publicApp.get<ApiConfigService>(ApiConfigService);
+  const cachingService = publicApp.get<CachingService>(CachingService);
+  const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
+  const metricsService = publicApp.get<MetricsService>(MetricsService);
+  const tokenAssetService = publicApp.get<TokenAssetService>(TokenAssetService);
+  const protocolService = publicApp.get<ProtocolService>(ProtocolService);
 
   if (apiConfigService.getIsAuthActive()) {
     publicApp.useGlobalGuards(new JwtAuthenticateGuard(apiConfigService));
@@ -61,7 +61,7 @@ async function bootstrap() {
 
   await tokenAssetService.checkout();
 
-  let globalInterceptors: NestInterceptor[] = [];
+  const globalInterceptors: NestInterceptor[] = [];
   globalInterceptors.push(new LoggingInterceptor(metricsService));
 
   if (apiConfigService.getUseRequestCachingFlag()) {
@@ -96,8 +96,8 @@ async function bootstrap() {
     .setVersion('1.0.0')
     .setExternalDoc('Elrond Docs', 'https://docs.elrond.com');
 
-  let apiUrls = apiConfigService.getApiUrls();
-  for (let apiUrl of apiUrls) {
+  const apiUrls = apiConfigService.getApiUrls();
+  for (const apiUrl of apiUrls) {
     documentBuilder = documentBuilder.addServer(apiUrl);
   }
 
@@ -117,12 +117,12 @@ async function bootstrap() {
   }
 
   if (apiConfigService.getIsTransactionProcessorCronActive()) {
-    let processorApp = await NestFactory.create(TransactionProcessorModule);
+    const processorApp = await NestFactory.create(TransactionProcessorModule);
     await processorApp.listen(5001);
   }
 
   if (apiConfigService.getIsCacheWarmerCronActive()) {
-    let processorApp = await NestFactory.create(CacheWarmerModule);
+    const processorApp = await NestFactory.create(CacheWarmerModule);
     await processorApp.listen(6001);
   }
 
@@ -131,7 +131,7 @@ async function bootstrap() {
     await queueWorkerApp.listen(8000);
   }
 
-  let logger = new Logger('Bootstrapper');
+  const logger = new Logger('Bootstrapper');
 
   const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
     MicroserviceModule,

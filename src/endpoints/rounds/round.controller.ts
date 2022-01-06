@@ -18,7 +18,7 @@ export class RoundController {
       status: 200,
       description: 'The rounds available on the blockchain',
       type: Round,
-      isArray: true
+      isArray: true,
     })
     @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
     @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false  })
@@ -74,11 +74,11 @@ export class RoundController {
     @ApiResponse({
       status: 200,
       description: 'The details of a given round',
-      type: RoundDetailed
+      type: RoundDetailed,
     })
     @ApiResponse({
       status: 404,
-      description: 'Round not found'
+      description: 'Round not found',
     })
     async getRound(
       @Param('shard', ParseOptionalIntPipe) shard: number,

@@ -17,10 +17,10 @@ export class MexController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Address not found'
+    description: 'Address not found',
   })
   async getMexForAddress(@Param('address', ParseAddressPipe) address: string): Promise<MexWeek[]> {
-    let mex = await this.mexService.getMexForAddress(address);
+    const mex = await this.mexService.getMexForAddress(address);
     if (!mex) {
       throw new HttpException('Address not found', HttpStatus.NOT_FOUND);
     }

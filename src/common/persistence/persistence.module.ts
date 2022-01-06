@@ -11,7 +11,7 @@ import { PassThroughService } from "./passthrough/pass.through.service";
   providers: [
     {
       provide: 'PersistenceService',
-      useClass: process.env.PERSISTENCE === 'passthrough' ? PassThroughService : DatabaseService
+      useClass: process.env.PERSISTENCE === 'passthrough' ? PassThroughService : DatabaseService,
     },
   ],
   exports: ['PersistenceService'],    

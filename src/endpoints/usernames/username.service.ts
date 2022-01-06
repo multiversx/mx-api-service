@@ -36,6 +36,6 @@ export class UsernameService {
       UsernameUtils.normalizeUsername(username),
       async () => await this.getUsernameAddress(username),
       Constants.oneWeek()
-    )
+    );
   }
 }

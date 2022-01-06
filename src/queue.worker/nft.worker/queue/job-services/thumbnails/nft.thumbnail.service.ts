@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import axios from "axios";
 import sharp, { fit } from 'sharp';
-import ffmpeg from 'fluent-ffmpeg'
+import ffmpeg from 'fluent-ffmpeg';
 import path from "path";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { TokenUtils } from "src/utils/token.utils";
@@ -75,7 +75,7 @@ export class NftThumbnailService {
       await new Promise(resolve => {
         ffmpeg(audioPath)
           .complexFilter([
-            { filter: 'showwavespic', options: { s: '600x600', colors: '#1f43f4' } }
+            { filter: 'showwavespic', options: { s: '600x600', colors: '#1f43f4' } },
           ])
           .frames(1)
           .saveToFile(outputPath)
@@ -97,8 +97,8 @@ export class NftThumbnailService {
   private async extractScreenshotFromVideo(buffer: Buffer, nftIdentifier: string): Promise<Buffer | undefined> {
     // we try to extract frames at 0, 10, 30 seconds, and we take the frame that has the biggest size
     // (i.e. the bigger the size, the more "crisp" an image should be, since it contains more details)
-    let frames = [0, 10, 30];
-    let filePaths = frames.map(x => path.join(this.apiConfigService.getTempUrl(), `${nftIdentifier}.screenshot.${x}.png`));
+    const frames = [0, 10, 30];
+    const filePaths = frames.map(x => path.join(this.apiConfigService.getTempUrl(), `${nftIdentifier}.screenshot.${x}.png`));
 
     const videoPath = path.join(this.apiConfigService.getTempUrl(), nftIdentifier);
     await FileUtils.writeFile(buffer, videoPath);
@@ -106,12 +106,12 @@ export class NftThumbnailService {
     try {
       let maxSizeIndex = -1;
       let maxSize = -1;
-      for (let [index, filePath] of filePaths.entries()) {
+      for (const [index, filePath] of filePaths.entries()) {
         await this.getScreenshot(videoPath, frames[index], filePath);
 
         const fileExists = await FileUtils.exists(filePath);
         if (fileExists) {
-          let fileSize = await FileUtils.getFileSize(filePath);
+          const fileSize = await FileUtils.getFileSize(filePath);
           if (fileSize > maxSize) {
             maxSize = fileSize;
             maxSizeIndex = index;
@@ -128,7 +128,7 @@ export class NftThumbnailService {
       this.logger.error({ error });
       return undefined;
     } finally {
-      for (let filePath of filePaths) {
+      for (const filePath of filePaths) {
         const fileExists = await FileUtils.exists(filePath);
         if (fileExists) {
           await FileUtils.deleteFile(filePath);
@@ -160,7 +160,7 @@ export class NftThumbnailService {
   }
 
   async generateThumbnail(nft: Nft, fileUrl: string, fileType: string, forceRefresh: boolean = false): Promise<GenerateThumbnailResult> {
-    let nftIdentifier = nft.identifier;
+    const nftIdentifier = nft.identifier;
     const urlHash = TokenUtils.getUrlHash(fileUrl);
 
     this.logger.log(`Generating thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);

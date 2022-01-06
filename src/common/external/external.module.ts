@@ -7,6 +7,6 @@ import { DataApiModule } from "./data.api.module";
   ],
   exports: [
     DataApiModule,
-  ]
+  ],
 })
 export class ExternalModule { }

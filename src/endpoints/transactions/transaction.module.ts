@@ -17,6 +17,6 @@ import { TransactionService } from "./transaction.service";
   ],
   exports: [
     TransactionGetService, TransactionPriceService, TransactionService,
-  ]
+  ],
 })
 export class TransactionModule { }

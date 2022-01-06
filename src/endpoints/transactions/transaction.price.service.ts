@@ -17,12 +17,12 @@ export class TransactionPriceService {
   ) { }
 
   async getTransactionPrice(transaction: TransactionDetailed): Promise<number | undefined> {
-    let dataUrl = this.apiConfigService.getDataUrl();
+    const dataUrl = this.apiConfigService.getDataUrl();
     if (!dataUrl) {
       return undefined;
     }
 
-    let transactionDate = transaction.getDate();
+    const transactionDate = transaction.getDate();
     if (!transactionDate) {
       return undefined;
     }

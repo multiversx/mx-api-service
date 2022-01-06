@@ -15,7 +15,7 @@ export class SmartContractResultController {
   @ApiResponse({
     status: 200,
     description: 'All smart contract results available on the blockchain',
-    type: SmartContractResult
+    type: SmartContractResult,
   })
   getScResults(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
@@ -28,7 +28,7 @@ export class SmartContractResultController {
   @ApiResponse({
     status: 200,
     description: 'The count of all smart contract results available on the blockchain',
-    type: SmartContractResult
+    type: SmartContractResult,
   })
   getScResultsCount(): Promise<number> {
     return this.scResultService.getScResultsCount();
@@ -38,14 +38,14 @@ export class SmartContractResultController {
   @ApiResponse({
     status: 200,
     description: 'The specific smart contract result',
-    type: SmartContractResult
+    type: SmartContractResult,
   })
   @ApiResponse({
     status: 404,
-    description: 'Smart contract result not found'
+    description: 'Smart contract result not found',
   })
   async getScResult(@Param('scHash', ParseTransactionHashPipe) scHash: string): Promise<SmartContractResult> {
-    let scResult = await this.scResultService.getScResult(scHash);
+    const scResult = await this.scResultService.getScResult(scHash);
     if (!scResult) {
       throw new NotFoundException('Smart contract result not found');
     }

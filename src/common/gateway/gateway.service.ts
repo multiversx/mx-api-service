@@ -17,10 +17,10 @@ export class GatewayService {
   ) {}
 
   async get(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
-    let profiler = new PerformanceProfiler();
+    const profiler = new PerformanceProfiler();
     
     try {
-      let result = await this.getRaw(url, component, errorHandler);
+      const result = await this.getRaw(url, component, errorHandler);
       return result?.data?.data;
     } finally  {
       profiler.stop();
@@ -30,7 +30,7 @@ export class GatewayService {
   }
  
   async getRaw(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
-    let profiler = new PerformanceProfiler();
+    const profiler = new PerformanceProfiler();
 
     try {
       return await this.apiService.get(`${this.apiConfigService.getGatewayUrl()}/${url}`, new ApiSettings(), errorHandler);
@@ -42,10 +42,10 @@ export class GatewayService {
   }
 
   async create(url: string, component: GatewayComponentRequest, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
-    let profiler = new PerformanceProfiler();
+    const profiler = new PerformanceProfiler();
 
     try {
-      let result = await this.createRaw(url, component, data, errorHandler);
+      const result = await this.createRaw(url, component, data, errorHandler);
       return result?.data?.data;
   
     } finally  {
@@ -56,7 +56,7 @@ export class GatewayService {
   }
 
   async createRaw(url: string, component: GatewayComponentRequest, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
-    let profiler = new PerformanceProfiler();
+    const profiler = new PerformanceProfiler();
 
     try {
       return await this.apiService.post(`${this.apiConfigService.getGatewayUrl()}/${url}`, data, new ApiSettings(), errorHandler);

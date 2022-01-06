@@ -42,13 +42,13 @@ export class BlockService {
     }
 
     if (proposer && shard !== undefined && epoch !== undefined) {
-      let index = await this.blsService.getBlsIndex(proposer, shard, epoch);
+      const index = await this.blsService.getBlsIndex(proposer, shard, epoch);
       const proposerQuery = QueryType.Match('proposer', index);
       queries.push(proposerQuery);
     }
 
     if (validator && shard !== undefined && epoch !== undefined) {
-      let index = await this.blsService.getBlsIndex(validator, shard, epoch);
+      const index = await this.blsService.getBlsIndex(validator, shard, epoch);
       const validatorsQuery = QueryType.Match('validators', index);
       queries.push(validatorsQuery);
     }
@@ -75,16 +75,16 @@ export class BlockService {
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
       .withCondition(QueryConditionOptions.must, await this.buildElasticBlocksFilter(filter));
 
-    let result = await this.elasticService.getList('blocks', 'hash', elasticQuery);
+    const result = await this.elasticService.getList('blocks', 'hash', elasticQuery);
 
-    for (let item of result) {
+    for (const item of result) {
       item.shard = item.shardId;
     }
 
-    let blocks = [];
+    const blocks = [];
 
-    for (let item of result) {
-      let block = await this.computeProposerAndValidators(item);
+    for (const item of result) {
+      const block = await this.computeProposerAndValidators(item);
 
       blocks.push(ApiUtils.mergeObjects(new Block(), block));
     }
@@ -93,8 +93,8 @@ export class BlockService {
   }
 
   async computeProposerAndValidators(item: any) {
-    // eslint-disable-next-line no-unused-vars
-    let { shardId: shard, epoch, proposer, validators, searchOrder, ...rest } = item;
+    const { shardId: shard, epoch, searchOrder, ...rest } = item;
+    let { proposer, validators } = item;
 
     let blses: any = await this.cachingService.getCacheLocal(CacheInfo.ShardAndEpochBlses(shard, epoch).key);
     if (!blses) {
@@ -110,14 +110,14 @@ export class BlockService {
     }
   
     return { shard, epoch, proposer, validators, ...rest };
-  };
+  }
 
   async getBlock(hash: string): Promise<BlockDetailed> {
-    let result = await this.elasticService.getItem('blocks', 'hash', hash);
+    const result = await this.elasticService.getItem('blocks', 'hash', hash);
     result.shard = result.shardId;
 
     if (result.round > 0) {
-      let publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);
+      const publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);
       result.proposer = publicKeys[result.proposer];
       result.validators = result.validators.map((validator: number) => publicKeys[validator]);
     } else {
@@ -128,7 +128,7 @@ export class BlockService {
   }
 
   async getCurrentEpoch(): Promise<number> {
-    let blocks = await this.getBlocks(new BlockFilter(), { from: 0, size: 1 });
+    const blocks = await this.getBlocks(new BlockFilter(), { from: 0, size: 1 });
     if (blocks.length === 0) {
       return -1;
     }

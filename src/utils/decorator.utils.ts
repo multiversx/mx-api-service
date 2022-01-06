@@ -24,7 +24,7 @@ export class DecoratorUtils {
   }
 
   private static getDecoratorOptions<T>(type: Type<T>, target: Object): T | undefined {
-    let metadata = Reflect.getOwnMetadata(type.name, target);
+    const metadata = Reflect.getOwnMetadata(type.name, target);
     if (!metadata) {
       return undefined;
     }

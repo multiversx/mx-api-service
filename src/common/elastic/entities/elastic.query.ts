@@ -1,8 +1,8 @@
 import { ApiUtils } from "src/utils/api.utils";
-import { AbstractQuery } from "./abstract.query"
-import { ElasticPagination } from "./elastic.pagination"
+import { AbstractQuery } from "./abstract.query";
+import { ElasticPagination } from "./elastic.pagination";
 import { ElasticSortProperty } from "./elastic.sort.property";
-import { QueryCondition } from "./query.condition"
+import { QueryCondition } from "./query.condition";
 import { QueryConditionOptions } from "./query.condition.options";
 import { RangeQuery } from "./range.query";
 import { TermsQuery } from "./terms.query";
@@ -13,7 +13,7 @@ function buildElasticIndexerSort(sorts: ElasticSortProperty[]): any[] {
   }
 
   return sorts.map((sortProp: ElasticSortProperty) => ({[sortProp.name]: { order: sortProp.order}}));
-};
+}
 
 export class ElasticQuery {
   pagination?: ElasticPagination;
@@ -71,8 +71,8 @@ export class ElasticQuery {
           minimum_should_match: this.condition.should.length !== 0 ? 1 : undefined,
         },
         terms: this.terms?.getQuery(),
-      }
-    }
+      },
+    };
   
     ApiUtils.cleanupApiValueRecursively(elasticQuery);
   
@@ -82,7 +82,7 @@ export class ElasticQuery {
   
       if (!this.terms) {
         //@ts-ignore
-        elasticQuery.query['match_all'] = {}
+        elasticQuery.query['match_all'] = {};
       }
     }
     

@@ -21,10 +21,10 @@ import { TokenModule } from "../tokens/token.module";
     ProtocolModule,
   ],
   providers: [
-    EsdtService
+    EsdtService,
   ],
   exports: [
-    EsdtService
-  ]
+    EsdtService,
+  ],
 })
 export class EsdtModule { }

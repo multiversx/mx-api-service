@@ -10,7 +10,7 @@ export class ExtractInterceptor implements NestInterceptor {
     return next
       .handle()
       .pipe(map(result => {
-          let extractArgument = request.query.extract;
+          const extractArgument = request.query.extract;
           if (extractArgument) {
             return result[extractArgument];
           }
