@@ -23,12 +23,6 @@ describe('API Config', () => {
         const getUrlsList = apiConfigService.getApiUrls();
         expect(getUrlsList).toBeInstanceOf(Array);
       })
-      it('should return No API urls present', async () => {
-        const getUrl = apiConfigService.getApiUrls();
-        if (!getUrl) {
-          expect(getUrl).toThrow('No API urls present')
-        }
-      })
     });
   });
   describe('Get Gateway URL', () => {
@@ -37,12 +31,6 @@ describe('API Config', () => {
         const getGateway = apiConfigService.getGatewayUrl();
         expect(getGateway).toBe('https://gateway.elrond.com');
       })
-      it('should return no gateway urls present', async () => {
-        const getGateway = apiConfigService.getGatewayUrl();
-        if (!getGateway) {
-          expect(getGateway).toThrow('No gateway urls present');
-        }
-      })
     });
   });
   describe('Get Elastic URL', () => {
@@ -50,12 +38,6 @@ describe('API Config', () => {
       it('should return elastic url', async () => {
         const getElastic = apiConfigService.getElasticUrl();
         expect(getElastic).toBe('https://index.elrond.com');
-      })
-      it('should return no elastic urls present', async () => {
-        const getElastic = apiConfigService.getElasticUrl();
-        if (!getElastic) {
-          expect(getElastic).toThrow('No elastic urls present');
-        }
       })
     });
   });
@@ -66,12 +48,6 @@ describe('API Config', () => {
         if (!getMex)
           expect(getMex).toBe('');
       })
-      it('should return Mex url', async () => {
-        const getMex = apiConfigService.getMexUrl();
-        if (getMex) {
-          expect(getMex).toBe('https://mex-indexer.elrond.com');
-        }
-      })
     });
   });
   describe('Get Ipfs URL', () => {
@@ -79,12 +55,6 @@ describe('API Config', () => {
       it('should return IPFS URL', async () => {
         const getIpfs = apiConfigService.getIpfsUrl();
         expect(getIpfs).toBe('https://ipfs.io/ipfs')
-      })
-      it('should return no IPFS url', async () => {
-        const getIpfs = apiConfigService.getIpfsUrl();
-        if (!getIpfs) {
-          expect(getIpfs).toThrow('No Ipfs Urls');
-        }
       })
     });
   });
@@ -374,12 +344,6 @@ describe('API Config', () => {
         const getProviders = apiConfigService.getProvidersUrl();
         expect(getProviders).toBe('https://internal-delegation-api.elrond.com/providers')
       })
-      it('should throw new Error', async () => {
-        const getProviders = apiConfigService.getProvidersUrl();
-        if (!getProviders) {
-          expect(getProviders).toThrow('No providers url present');
-        }
-      })
     });
   });
   describe('Get Data URL', () => {
@@ -606,12 +570,6 @@ describe('API Config', () => {
         const getMedia = apiConfigService.getMediaUrl();
         expect(getMedia).toBe('https://media.elrond.com');
       })
-      it('should return an error', async () => {
-        const getMedia = apiConfigService.getMediaUrl();
-        if (!getMedia) {
-          expect(getMedia).toThrow('No media url present');
-        }
-      })
     });
   });
 
@@ -642,12 +600,6 @@ describe('API Config', () => {
       it('should return nft thumbnails url', async () => {
         const getNftThumbnails = apiConfigService.getNftThumbnailsUrl();
         expect(getNftThumbnails).toBe('https://media.elrond.com/nfts/thumbnail');
-      })
-      it('should return an error', async () => {
-        const getNftThumbnails = apiConfigService.getNftThumbnailsUrl();
-        if (!getNftThumbnails) {
-          expect(getNftThumbnails).toThrow('No nft thumbnails url present');
-        }
       })
     });
   });
