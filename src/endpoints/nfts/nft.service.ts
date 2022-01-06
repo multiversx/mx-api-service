@@ -307,6 +307,7 @@ export class NftService {
 
   async getNftOwnersCountRaw(identifier: string): Promise<number> {
     const elasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
       .withCondition(QueryConditionOptions.must, [QueryType.Match('identifier', identifier, QueryOperator.AND)]);
 
     return await this.elasticService.getCount('accountsesdt', elasticQuery);
