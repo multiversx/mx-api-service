@@ -24,7 +24,7 @@ export class CacheController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Key not found',
+    description: 'Key not found'
   })
   async getCache(@Param('key') key: string): Promise<unknown> {
     const value = await this.cachingService.getCacheRemote(key);
