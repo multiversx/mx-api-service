@@ -1,4 +1,4 @@
-import{BinaryUtils} from "src/utils/binary.utils"
+import { BinaryUtils } from "src/utils/binary.utils"
 
 describe('Binary Utils', () => {
     describe('Based64Encode', () => {

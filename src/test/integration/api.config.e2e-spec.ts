@@ -1,10 +1,10 @@
-import {ApiConfigService} from "../../common/api-config/api.config.service";
+import { ApiConfigService } from "../../common/api-config/api.config.service";
 import Initializer from "./e2e-init";
-import {Constants} from "../../utils/constants";
-import {Test} from "@nestjs/testing";
-import {PublicAppModule} from "../../public.app.module";
+import { Constants } from "../../utils/constants";
+import { Test } from "@nestjs/testing";
+import { PublicAppModule } from "../../public.app.module";
 
-describe('API Config', ()=>{
+describe('API Config', () => {
   let apiConfigService: ApiConfigService;
 
   beforeAll(async () => {
@@ -17,58 +17,58 @@ describe('API Config', ()=>{
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
   }, Constants.oneHour() * 1000);
 
-  describe('Get Urls', ()=>{
-    describe('getApiUrls', ()=>{
-      it('should return a list of urls', async ()=>{
-        const getUrlsList =  apiConfigService.getApiUrls();
+  describe('Get Urls', () => {
+    describe('getApiUrls', () => {
+      it('should return a list of urls', async () => {
+        const getUrlsList = apiConfigService.getApiUrls();
         expect(getUrlsList).toBeInstanceOf(Array);
       })
-      it('should return No API urls present', async ()=>{
-        const getUrl =  apiConfigService.getApiUrls();
-        if(!getUrl) {
+      it('should return No API urls present', async () => {
+        const getUrl = apiConfigService.getApiUrls();
+        if (!getUrl) {
           expect(getUrl).toThrow('No API urls present')
         }
       })
     });
   });
-  describe('Get Gateway URL', ()=>{
-    describe('getGatewayUrl', ()=>{
-      it('should return gateway url', async ()=>{
-        const getGateway =  apiConfigService.getGatewayUrl();
+  describe('Get Gateway URL', () => {
+    describe('getGatewayUrl', () => {
+      it('should return gateway url', async () => {
+        const getGateway = apiConfigService.getGatewayUrl();
         expect(getGateway).toBe('https://gateway.elrond.com');
       })
-      it('should return no gateway urls present', async ()=>{
-        const getGateway =  apiConfigService.getGatewayUrl();
-        if(!getGateway) {
+      it('should return no gateway urls present', async () => {
+        const getGateway = apiConfigService.getGatewayUrl();
+        if (!getGateway) {
           expect(getGateway).toThrow('No gateway urls present');
         }
       })
     });
   });
-  describe('Get Elastic URL', ()=>{
-    describe('getElasticUrl', ()=>{
-      it('should return elastic url', async ()=>{
-        const getElastic =  apiConfigService.getElasticUrl();
+  describe('Get Elastic URL', () => {
+    describe('getElasticUrl', () => {
+      it('should return elastic url', async () => {
+        const getElastic = apiConfigService.getElasticUrl();
         expect(getElastic).toBe('https://index.elrond.com');
       })
-      it('should return no elastic urls present', async ()=>{
-        const getElastic =  apiConfigService.getElasticUrl();
-        if(!getElastic) {
+      it('should return no elastic urls present', async () => {
+        const getElastic = apiConfigService.getElasticUrl();
+        if (!getElastic) {
           expect(getElastic).toThrow('No elastic urls present');
         }
       })
     });
   });
-  describe('Get Mex URL', ()=>{
-    describe('getMexUrl', ()=>{
-      it('should return empty string', async ()=>{
-        const getMex =  apiConfigService.getMexUrl();
-        if(!getMex)
+  describe('Get Mex URL', () => {
+    describe('getMexUrl', () => {
+      it('should return empty string', async () => {
+        const getMex = apiConfigService.getMexUrl();
+        if (!getMex)
           expect(getMex).toBe('');
       })
-      it('should return Mex url', async ()=>{
-        const getMex =  apiConfigService.getMexUrl();
-        if(getMex) {
+      it('should return Mex url', async () => {
+        const getMex = apiConfigService.getMexUrl();
+        if (getMex) {
           expect(getMex).toBe('https://mex-indexer.elrond.com');
         }
       })
@@ -102,29 +102,29 @@ describe('API Config', ()=>{
       })
     });
   });
-  describe('Get Auction Contract Address', ()=>{
-    describe('getAuctionContractAddress', ()=>{
-      it('should return auction contract address', async ()=>{
-        const getAuction =  apiConfigService.getAuctionContractAddress();
+  describe('Get Auction Contract Address', () => {
+    describe('getAuctionContractAddress', () => {
+      it('should return auction contract address', async () => {
+        const getAuction = apiConfigService.getAuctionContractAddress();
         expect(getAuction).toBe('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l')
       })
-      it('should throw error', async ()=>{
-        const getAuction =  apiConfigService.getAuctionContractAddress();
-        if(!getAuction) {
+      it('should throw error', async () => {
+        const getAuction = apiConfigService.getAuctionContractAddress();
+        if (!getAuction) {
           expect(getAuction).toThrow('No auction contract present')
         }
       })
     });
   });
-  describe('Get Staking Contract Address', ()=>{
-    describe('getStakingContractAddress', ()=>{
-      it('should return staking contract address', async ()=>{
-        const getStaking =  apiConfigService.getStakingContractAddress();
+  describe('Get Staking Contract Address', () => {
+    describe('getStakingContractAddress', () => {
+      it('should return staking contract address', async () => {
+        const getStaking = apiConfigService.getStakingContractAddress();
         expect(getStaking).toBe('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7')
       })
-      it('should throw error', async ()=>{
-        const getStaking =  apiConfigService.getStakingContractAddress();
-        if(!getStaking) {
+      it('should throw error', async () => {
+        const getStaking = apiConfigService.getStakingContractAddress();
+        if (!getStaking) {
           expect(getStaking).toThrow('No Staking contract present')
         }
       })

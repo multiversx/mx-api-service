@@ -27,7 +27,7 @@ describe('Transaction Service', () => {
 
     const transactionFilter = new TransactionFilter();
 
-    let transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 1});
+    let transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 1 });
     expect(transactions).toHaveLength(1);
 
     let transaction = transactions[0];
@@ -206,7 +206,7 @@ describe('Transaction Service', () => {
 
         const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
         expect(transactionsList).toHaveLength(2);
-        const transactionsHashes = transactionsList.map(({txHash}) => txHash);
+        const transactionsHashes = transactionsList.map(({ txHash }) => txHash);
         expect(hashes.split(',').toString()).not.toStrictEqual(transactionsHashes.toString());
       });
 

@@ -27,16 +27,16 @@ describe('Shard Service', () => {
         expect(shard).toHaveProperty('activeValidators');
       }
     });
-    
+
     it('all entities should have shard structure', async () => {
       for (let shard of shards) {
         expect(shard).toHaveStructure(Object.keys(new Shard()));
       }
     });
-    describe('Shards List', ()=>{
-      describe('Get all shards',  ()=>{
-        it('should return a list of shards', async ()=>{
-          const shardList =  await shardService.getAllShards();
+    describe('Shards List', () => {
+      describe('Get all shards', () => {
+        it('should return a list of shards', async () => {
+          const shardList = await shardService.getAllShards();
           expect(shardList).toBeInstanceOf(Array);
         })
 

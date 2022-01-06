@@ -43,12 +43,12 @@ describe('Identities Service', () => {
 
       while (index < identities.length) {
         expect(identities[index]).toBeDefined();
-        expect(identities[index-1]).toHaveProperty('locked');
+        expect(identities[index - 1]).toHaveProperty('locked');
         expect(identities[index]).toHaveProperty('locked');
-        if (identities[index].locked < identities[index-1].locked) {
+        if (identities[index].locked < identities[index - 1].locked) {
           expect(false);
         }
-        index ++;
+        index++;
       }
     });
 
@@ -74,7 +74,7 @@ describe('Identities Service', () => {
         for (let provider of providers) {
           if (provider.identity) {
             const providerIdentity = identities.find(({ identity }) => identity === provider.identity);
-  
+
             expect(providerIdentity?.identity).toStrictEqual(provider.identity);
             expect(providerIdentity).toHaveProperty('locked');
             expect(providerIdentity).toHaveProperty('name');

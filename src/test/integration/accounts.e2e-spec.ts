@@ -22,7 +22,7 @@ describe('Account Service', () => {
     accountService = moduleRef.get<AccountService>(AccountService);
     delegationLegacyService = moduleRef.get<DelegationLegacyService>(DelegationLegacyService);
 
-    let accounts = await accountService.getAccounts({from: 0, size: 1});
+    let accounts = await accountService.getAccounts({ from: 0, size: 1 });
     expect(accounts).toHaveLength(1);
 
     let account = accounts[0];
@@ -31,7 +31,7 @@ describe('Account Service', () => {
 
   describe('Accounts list', () => {
     it('accounts should have address, shard and nonce', async () => {
-      const accountsList = await accountService.getAccounts({from: 0, size: 25});
+      const accountsList = await accountService.getAccounts({ from: 0, size: 25 });
       for (let account of accountsList) {
         expect(account).toHaveProperty('address');
         expect(account).toHaveProperty('shard');
@@ -40,7 +40,7 @@ describe('Account Service', () => {
     });
 
     it(`should return a list with 25 accounts`, async () => {
-      const accountsList = await accountService.getAccounts({from: 0, size: 25});
+      const accountsList = await accountService.getAccounts({ from: 0, size: 25 });
 
       expect(accountsList).toBeInstanceOf(Array);
       expect(accountsList).toHaveLength(25);
@@ -51,7 +51,7 @@ describe('Account Service', () => {
     });
 
     it(`should return a list with 50 accounts`, async () => {
-      const accountsList = await accountService.getAccounts({from: 0, size: 50});
+      const accountsList = await accountService.getAccounts({ from: 0, size: 50 });
       expect(accountsList).toBeInstanceOf(Array);
       expect(accountsList).toHaveLength(50);
 

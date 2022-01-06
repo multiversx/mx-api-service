@@ -28,7 +28,7 @@ describe('Rounds Service', () => {
         expect(round).not.toHaveProperty('shardId');
       }
     });
-    
+
     it('all entities should have round structure', async () => {
       for (let round of rounds) {
         expect(round).toHaveStructure(Object.keys(new Round()));

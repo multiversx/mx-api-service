@@ -2,11 +2,11 @@ import { AddressUtils } from "src/utils/address.utils";
 
 describe('Address utils', () => {
 
-  it('Convert from Hex address to bech32', ()=>{
+  it('Convert from Hex address to bech32', () => {
     expect(AddressUtils.bech32Encode('000000000000000000010000000000000000000000000000000000000001ffff')).toStrictEqual('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l');
   });
 
-  it('Convert from bech32 address to hex', ()=>{
+  it('Convert from bech32 address to hex', () => {
     expect(AddressUtils.bech32Decode('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l')).toStrictEqual('000000000000000000010000000000000000000000000000000000000001ffff');
   });
 
@@ -27,7 +27,7 @@ describe('Address utils', () => {
 
   it('check if address is not valid', () => {
     const address = AddressUtils.isAddressValid('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l');
-    if(!address){
+    if (!address) {
       expect(address).toBeFalsy();
     }
   });

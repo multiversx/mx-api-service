@@ -1,6 +1,6 @@
 import { UsernameUtils } from "src/utils/username.utils";
 
-describe('Username Utils', () => { 
+describe('Username Utils', () => {
   describe('normalizeUsername', () => {
     it('Username correctly normalized', () => {
       expect(UsernameUtils.normalizeUsername('alice')).toStrictEqual('alice.elrond');

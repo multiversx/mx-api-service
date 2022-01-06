@@ -1,8 +1,8 @@
-import {WaitingListService} from "../../endpoints/waiting-list/waiting.list.service";
+import { WaitingListService } from "../../endpoints/waiting-list/waiting.list.service";
 import Initializer from "./e2e-init";
-import {Constants} from "../../utils/constants";
-import {Test} from "@nestjs/testing";
-import {PublicAppModule} from "../../public.app.module";
+import { Constants } from "../../utils/constants";
+import { Test } from "@nestjs/testing";
+import { PublicAppModule } from "../../public.app.module";
 
 describe('WaitingListService', () => {
   let waitingListService: WaitingListService;

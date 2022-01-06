@@ -1,4 +1,4 @@
-import{TokenUtils} from "src/utils/token.utils"
+import { TokenUtils } from "src/utils/token.utils"
 
 describe('Token Utils', () => {
     describe('isEsdt', () => {
@@ -20,7 +20,7 @@ describe('Token Utils', () => {
     });
     describe('getThumbnailUrlIdentifier', () => {
         it('Check function getThumbnailUrlIdentifier', () => {
-            expect(TokenUtils.getThumbnailUrlIdentifier('MOS-b9b4b2-2710','https://media.elrond.com/nfts/asset/QmUUhAmBQKGkSqN775NZAAYUaqd8ssMadFg2UYSECSERz6/914.png'))
+            expect(TokenUtils.getThumbnailUrlIdentifier('MOS-b9b4b2-2710', 'https://media.elrond.com/nfts/asset/QmUUhAmBQKGkSqN775NZAAYUaqd8ssMadFg2UYSECSERz6/914.png'))
                 .toStrictEqual('MOS-b9b4b2-947a3912');
 
         });

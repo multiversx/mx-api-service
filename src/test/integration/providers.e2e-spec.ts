@@ -54,7 +54,7 @@ describe('Provider Service', () => {
 
     it('some providers should be included', async () => {
       if (!apiConfigService.getMockNodes()) {
-        const vipProviders:{[key: string]: string} = {
+        const vipProviders: { [key: string]: string } = {
           staking_agency: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhllllsajxzat',
           istari_vision: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrhlllls062tu4',
           truststaking: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzhllllsp9wvyl',
@@ -74,10 +74,10 @@ describe('Provider Service', () => {
           binance_staking: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc0llllsayxegu',
           forbole: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq40llllsfjmn54'
         }
-  
+
         for (let identityVIP of Object.keys(vipProviders)) {
           const providerVIP = providers.find(({ identity }) => identity === identityVIP);
-  
+
           expect(providerVIP?.provider).toStrictEqual(vipProviders[identityVIP]);
           expect(providerVIP?.identity).toStrictEqual(identityVIP);
           expect(providerVIP).toHaveProperty('locked');
@@ -86,7 +86,7 @@ describe('Provider Service', () => {
     });
 
     it('should be in sync with keybase confirmations', async () => {
-      const providerKeybases:{ [key: string]: KeybaseState } | undefined = await cachingService.getCache('providerKeybases');
+      const providerKeybases: { [key: string]: KeybaseState } | undefined = await cachingService.getCache('providerKeybases');
       expect(providerKeybases).toBeDefined();
 
       for (let provider of providers) {
@@ -105,15 +105,15 @@ describe('Provider Service', () => {
       let index = 1;
 
       while (index < providers.length) {
-        expect(providers[index-1]).toHaveProperty('locked');
+        expect(providers[index - 1]).toHaveProperty('locked');
         expect(providers[index]).toHaveProperty('locked');
-        if (providers[index].locked >= providers[index-1].locked) {
+        if (providers[index].locked >= providers[index - 1].locked) {
           expect(true);
         }
         else {
           expect(false);
         }
-        index ++;
+        index++;
       }
     });
 
