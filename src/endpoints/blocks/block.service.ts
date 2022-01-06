@@ -124,6 +124,10 @@ export class BlockService {
       result.validators = [];
     }
 
+    if (result.gasProvided) {
+      result.gasConsumed = result.gasProvided;
+    }
+
     return ApiUtils.mergeObjects(new BlockDetailed(), result);
   }
 
