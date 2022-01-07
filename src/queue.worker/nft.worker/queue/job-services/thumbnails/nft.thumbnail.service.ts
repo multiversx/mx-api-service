@@ -38,7 +38,7 @@ export class NftThumbnailService {
         )
         .toBuffer();
     } catch (error: any) {
-      this.logger.error(error.msg);
+      this.logger.error(error);
       return undefined;
     }
   }
@@ -162,7 +162,7 @@ export class NftThumbnailService {
     const nftIdentifier = nft.identifier;
     const urlHash = TokenUtils.getUrlHash(fileUrl);
 
-    this.logger.log(`Generating thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+    this.logger.log(`Generating thumbnail for NFT with identifier '${nftIdentifier}', url '${fileUrl}' and url hash '${urlHash}'`);
 
     if (!fileUrl || !fileUrl.startsWith('https://')) {
       this.logger.log(`NFT with identifier '${nftIdentifier}' and url hash '${urlHash}' has no urls`);

@@ -5,7 +5,6 @@ import { NftThumbnailService } from "./queue/job-services/thumbnails/nft.thumbna
 import { NftMetadataService } from "./queue/job-services/metadata/nft.metadata.service";
 import { NftMediaService } from "./queue/job-services/media/nft.media.service";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
-import { TokenUtils } from "src/utils/token.utils";
 // import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 // import { TokenUtils } from "src/utils/token.utils";
 // import { InjectQueue } from "@nestjs/bull";
@@ -43,7 +42,7 @@ export class NftWorkerService {
     }
 
     if (nft.media && !settings.skipRefreshThumbnail) {
-      await Promise.all(nft.media.map((media: any) => this.generateThumbnail(nft, media.url, media.fileType)));
+      await Promise.all(nft.media.map((media: any) => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
     }
 
     // const job = await this.nftQueue.add({ identifier: nft.identifier, nft, settings }, {
@@ -57,14 +56,9 @@ export class NftWorkerService {
     return true;
   }
 
-  private async generateThumbnail(nft: Nft, media: NftMedia, excludeThumbnail: boolean = false): Promise<void> {
+  private async generateThumbnail(nft: Nft, media: NftMedia, forceRefresh: boolean = false): Promise<void> {
     try {
-      if (!excludeThumbnail) {
-        await this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType);
-      } else {
-        const urlHash = TokenUtils.getUrlHash(media.url);
-        this.logger.log(`Skip generating thumbnail for NFT with identifier '${nft.identifier}' and url hash '${urlHash}'`);
-      }
+      await this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType, forceRefresh);
     } catch (error) {
       this.logger.error(`An unhandled exception occurred when generating thumbnail for nft with identifier '${nft.identifier}' and url '${media.url}'`);
       this.logger.error(error);
