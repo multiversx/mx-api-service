@@ -1,5 +1,4 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
-import axios from "axios";
 import sharp, { fit } from 'sharp';
 import ffmpeg from 'fluent-ffmpeg';
 import path from "path";
@@ -170,7 +169,7 @@ export class NftThumbnailService {
       return GenerateThumbnailResult.noUrl;
     }
 
-    const fileResult: any = await axios.get(fileUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS });
+    const fileResult: any = await this.apiService.get(fileUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS });
     const file = fileResult.data;
 
     const urlIdentifier = TokenUtils.getThumbnailUrlIdentifier(nftIdentifier, fileUrl);
