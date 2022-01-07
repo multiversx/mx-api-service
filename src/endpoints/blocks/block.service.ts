@@ -79,6 +79,10 @@ export class BlockService {
 
     for (const item of result) {
       item.shard = item.shardId;
+
+      if (item.gasProvided) {
+        item.gasConsumed = item.gasProvided;
+      }
     }
 
     const blocks = [];
