@@ -29,6 +29,7 @@ import { ParseAddressPipe } from 'src/utils/pipes/parse.address.pipe';
 import { ParseTransactionHashPipe } from 'src/utils/pipes/parse.transaction.hash.pipe';
 import { ParseBlockHashPipe } from 'src/utils/pipes/parse.block.hash.pipe';
 import { ParseArrayPipe } from 'src/utils/pipes/parse.array.pipe';
+import { SortOrder } from 'src/common/entities/sort.order';
 
 @Controller()
 @ApiTags('accounts')
@@ -572,6 +573,7 @@ export class AccountController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false })
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
+  @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false })
@@ -591,6 +593,7 @@ export class AccountController {
     @Query('search') search?: string,
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
+    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
     @Query('withScResults', new ParseOptionalBoolPipe) withScResults?: boolean,
     @Query('withOperations', new ParseOptionalBoolPipe) withOperations?: boolean,
   ) {
@@ -607,6 +610,7 @@ export class AccountController {
         search,
         before,
         after,
+        order,
       }, { from, size }, { withScResults, withOperations }, address);
     } catch (error) {
       this.logger.error(`Error in getAccountTransactions for address ${address}`);

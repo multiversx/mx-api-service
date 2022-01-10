@@ -28,6 +28,7 @@ import { CachingService } from 'src/common/caching/caching.service';
 import { CacheInfo } from 'src/common/caching/entities/cache.info';
 import { Constants } from 'src/utils/constants';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
+import { SortOrder } from 'src/common/entities/sort.order';
 
 @Injectable()
 export class TransactionService {
@@ -173,8 +174,10 @@ export class TransactionService {
   }
 
   async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string): Promise<(Transaction | TransactionDetailed)[]> {
-    const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.descending };
-    const nonce: ElasticSortProperty = { name: 'nonce', order: ElasticSortOrder.descending };
+    const sortOrder: ElasticSortOrder = !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
+
+    const timestamp: ElasticSortProperty = { name: 'timestamp', order: sortOrder };
+    const nonce: ElasticSortProperty = { name: 'nonce', order: sortOrder };
 
     const elasticQuery = this.buildTransactionFilterQuery(filter, address)
       .withPagination({ from: pagination.from, size: pagination.size })
