@@ -248,7 +248,7 @@ export class ApiConfigService {
   }
 
   getIsProcessNftsCronActive(): boolean {
-    let isCronActive = this.configService.get<boolean>('cron.processNfts');
+    const isCronActive = this.configService.get<boolean>('cron.processNfts');
     if (isCronActive === undefined) {
       return false;
     }
