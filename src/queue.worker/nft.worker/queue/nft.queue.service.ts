@@ -4,7 +4,6 @@ import { Job } from "bull";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
-import { TokenUtils } from "src/utils/token.utils";
 import { NftMediaService } from "./job-services/media/nft.media.service";
 import { NftMetadataService } from "./job-services/metadata/nft.metadata.service";
 import { NftThumbnailService } from "./job-services/thumbnails/nft.thumbnail.service";
@@ -46,14 +45,9 @@ export class NftQueueService {
     }
   }
 
-  private async generateThumbnail(nft: Nft, media: NftMedia, excludeThumbnail: boolean = false): Promise<void> {
+  private async generateThumbnail(nft: Nft, media: NftMedia, forceRefresh: boolean = false): Promise<void> {
     try {
-      if (!excludeThumbnail) {
-        await this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType);
-      } else {
-        const urlHash = TokenUtils.getUrlHash(media.url);
-        this.logger.log(`Skip generating thumbnail for NFT with identifier '${nft.identifier}' and url hash '${urlHash}'`);
-      }
+      await this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType, forceRefresh);
     } catch (error) {
       this.logger.error(`An unhandled exception occurred when generating thumbnail for nft with identifier '${nft.identifier}' and url '${media.url}'`);
       this.logger.error(error);

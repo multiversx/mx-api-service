@@ -52,6 +52,7 @@ export class ApiService {
       timeout,
       maxRedirects,
       httpAgent: this.getKeepAliveAgent(),
+      responseType: settings.responseType,
       headers,
       transformResponse: [
         (data) => {
