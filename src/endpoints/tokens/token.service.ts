@@ -217,7 +217,7 @@ export class TokenService {
       const tokenAddressesRoles = await this.esdtService.getEsdtAddressesRoles(identifier);
       const addressRoles = tokenAddressesRoles?.find((role: TokenAddressRoles) => role.address === address);
       //@ts-ignore
-      delete addressRoles?.address
+      delete addressRoles?.address;
 
       return addressRoles;
     } catch (error) {

@@ -300,7 +300,7 @@ export class EsdtService {
 
     const tokenAddressesAndRoles: TokenAddressRoles[] = [];
     let currentAddressRoles = new TokenAddressRoles();
-    for (let valueEncoded of tokenAddressesAndRolesEncoded) {
+    for (const valueEncoded of tokenAddressesAndRolesEncoded) {
       const value = Buffer.from(valueEncoded, 'base64');
       if (AddressUtils.isAddressValid(value)) {
         //store roles for current address
