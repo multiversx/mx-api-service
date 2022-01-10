@@ -73,9 +73,16 @@ export class NftMediaService {
 
       try {
         this.logger.log(`Started fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
-        const url = this.getUrl(uri);
+        let url = this.getUrl(uri, this.NFT_THUMBNAIL_PREFIX);
 
         fileProperties = await this.getFilePropertiesFromIpfs(url);
+
+        if (!fileProperties) {
+          //fallback to ipfs
+          url = this.getUrl(uri, this.apiConfigService.getIpfsUrl());
+          fileProperties = await this.getFilePropertiesFromIpfs(url);
+        }
+
         this.logger.log(`Completed fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
       } catch (error) {
         this.logger.error(`Unexpected error when fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
@@ -100,21 +107,12 @@ export class NftMediaService {
     return mediaArray;
   }
 
-  private getUrl(nftUri: string): string {
+  private getUrl(nftUri: string, prefix: string): string {
     const url = BinaryUtils.base64Decode(nftUri);
-
-    return TokenUtils.computeNftUri(url, this.NFT_THUMBNAIL_PREFIX);
+    return TokenUtils.computeNftUri(url, prefix);
   }
 
   private async getFilePropertiesFromIpfs(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
-    return this.cachingService.getOrSetCache(
-      CacheInfo.NftMediaProperties(uri).key,
-      async () => await this.getFilePropertiesFromIpfsRaw(uri),
-      CacheInfo.NftMediaProperties(uri).ttl
-    );
-  }
-
-  private async getFilePropertiesFromIpfsRaw(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
     const response = await this.apiService.head(uri, { timeout: this.IPFS_REQUEST_TIMEOUT });
     if (response.status !== HttpStatus.OK) {
       this.logger.error(`Unexpected http status code '${response.status}' while fetching file properties from uri '${uri}'`);
