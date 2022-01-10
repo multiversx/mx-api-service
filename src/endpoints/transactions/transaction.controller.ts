@@ -1,6 +1,7 @@
 import { BadRequestException, Body, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
+import { SortOrder } from 'src/common/entities/sort.order';
 import { ParseAddressPipe } from 'src/utils/pipes/parse.address.pipe';
 import { ParseArrayPipe } from 'src/utils/pipes/parse.array.pipe';
 import { ParseBlockHashPipe } from 'src/utils/pipes/parse.block.hash.pipe';
@@ -38,6 +39,7 @@ export class TransactionController {
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false })
@@ -56,6 +58,7 @@ export class TransactionController {
     @Query('condition') condition: QueryConditionOptions | undefined,
     @Query('before', ParseOptionalIntPipe) before: number | undefined,
     @Query('after', ParseOptionalIntPipe) after: number | undefined,
+    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('withScResults', new ParseOptionalBoolPipe) withScResults: boolean | undefined,
@@ -74,6 +77,7 @@ export class TransactionController {
       before,
       after,
       condition,
+      order,
     }, { from, size }, { withScResults, withOperations });
   }
 
