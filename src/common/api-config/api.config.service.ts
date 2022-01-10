@@ -248,12 +248,7 @@ export class ApiConfigService {
   }
 
   getIsProcessNftsFlagActive(): boolean {
-    const isActive = this.configService.get<boolean>('flags.processNfts');
-    if (isActive === undefined) {
-      return false;
-    }
-
-    return isActive;
+    return this.configService.get<boolean>('flags.processNfts') ?? false;
   }
 
   getIsPublicApiActive(): boolean {
