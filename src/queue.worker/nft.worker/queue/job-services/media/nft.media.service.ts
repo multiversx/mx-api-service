@@ -115,6 +115,16 @@ export class NftMediaService {
   }
 
   private async getFilePropertiesFromIpfsRaw(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
+    const realUri = TokenUtils.computeNftUri(uri, this.apiConfigService.getIpfsUrl());
+    if (!realUri.startsWith(this.apiConfigService.getIpfsUrl())) {
+      this.logger.log(`Url '${uri}' is not an ipfs uri`);
+      return null;
+    }
+
+    if (uri.endsWith('.json')) {
+      return null;
+    }
+
     const response = await this.apiService.head(uri, { timeout: this.IPFS_REQUEST_TIMEOUT });
     if (response.status !== HttpStatus.OK) {
       this.logger.error(`Unexpected http status code '${response.status}' while fetching file properties from uri '${uri}'`);

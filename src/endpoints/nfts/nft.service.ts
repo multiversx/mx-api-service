@@ -158,7 +158,7 @@ export class NftService {
       this.pluginService.processNft(nft),
     ]);
 
-    if (!nft.media && nft.type !== NftType.MetaESDT) {
+    if ((!nft.media || nft.media.length === 0) && nft.type !== NftType.MetaESDT) {
       nft.media = [
         {
           url: 'https://media.elrond.com/nfts/thumbnail/default.png',
