@@ -9,10 +9,10 @@ import { UsernameService } from "./username.service";
     forwardRef(() => VmQueryModule),
   ],
   providers: [
-    UsernameService
+    UsernameService,
   ],
   exports: [
-    UsernameService
-  ]
+    UsernameService,
+  ],
 })
 export class UsernameModule { }

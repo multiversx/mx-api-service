@@ -11,6 +11,6 @@ import { SmartContractResultService } from "./scresult.service";
   ],
   exports: [
     SmartContractResultService,
-  ]
+  ],
 })
 export class SmartContractResultModule { }

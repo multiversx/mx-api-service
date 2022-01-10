@@ -13,7 +13,7 @@ export class DelegationService {
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly nodeService: NodeService
-  ) {}
+  ) { }
 
   async getDelegation(): Promise<Delegation> {
     return this.cachingService.getOrSetCache(
@@ -29,7 +29,7 @@ export class DelegationService {
       'getContractConfig',
     );
 
-    let nodes = await this.nodeService.getAllNodes();
+    const nodes = await this.nodeService.getAllNodes();
     let providerAddresses = nodes.map(node => node.provider ? node.provider : node.owner);
 
     providerAddresses = providerAddresses.distinct();

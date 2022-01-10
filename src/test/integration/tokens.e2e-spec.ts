@@ -18,13 +18,13 @@ describe('Token Service', () => {
 
     tokenService = moduleRef.get<TokenService>(TokenService);
 
-    let tokens = await tokenService.getTokens(
+    const tokens = await tokenService.getTokens(
       { from: 0, size: 1 },
       new TokenFilter(),
     );
     expect(tokens).toHaveLength(1);
 
-    let token = tokens[0];
+    const token = tokens[0];
     tokenName = token.name;
     tokenIdentifier = token.identifier;
   }, Constants.oneHour() * 1000);
@@ -59,14 +59,14 @@ describe('Token Service', () => {
         );
         expect(tokensList).toBeInstanceOf(Array);
 
-        for (let token of tokensList) {
+        for (const token of tokensList) {
           expect(token.name).toBe(tokenName);
         }
       });
 
       it(`should return a list with nfts that has identifiers`, async () => {
         const tokenFilter = new TokenFilter();
-        tokenFilter.identifiers = ['MSFT-532e00', 'EWLD-e23800', 'invalidIdentifier']
+        tokenFilter.identifiers = ['MSFT-532e00', 'EWLD-e23800', 'invalidIdentifier'];
         const tokensList = await tokenService.getTokens({ from: 0, size: 25 }, tokenFilter);
         expect(tokensList).toBeInstanceOf(Array);
 
@@ -78,7 +78,7 @@ describe('Token Service', () => {
 
       it(`should return an empty tokens list`, async () => {
         const tokenFilter = new TokenFilter();
-        tokenFilter.identifiers = ['LKFARM-9d1ea8-8fb5', 'LKFARM-9d1ea8-8fb6']
+        tokenFilter.identifiers = ['LKFARM-9d1ea8-8fb5', 'LKFARM-9d1ea8-8fb6'];
         const tokensList = await tokenService.getTokens({ from: 0, size: 25 }, tokenFilter);
         expect(tokensList).toBeInstanceOf(Array);
 

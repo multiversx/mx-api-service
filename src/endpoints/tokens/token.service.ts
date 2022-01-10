@@ -24,7 +24,7 @@ export class TokenService {
   ) { }
 
   async getToken(identifier: string): Promise<TokenDetailed | undefined> {
-    let tokens = await this.esdtService.getAllEsdtTokens();
+    const tokens = await this.esdtService.getAllEsdtTokens();
     let token = tokens.find(x => x.identifier === identifier);
     if (!token) {
       return undefined;
@@ -46,7 +46,7 @@ export class TokenService {
 
     tokens = tokens.slice(from, from + size);
 
-    for (let token of tokens) {
+    for (const token of tokens) {
       await this.applyTickerFromAssets(token);
     }
 
@@ -65,19 +65,19 @@ export class TokenService {
     let tokens = await this.esdtService.getAllEsdtTokens();
 
     if (filter.search) {
-      let searchLower = filter.search.toLowerCase();
+      const searchLower = filter.search.toLowerCase();
 
       tokens = tokens.filter(token => token.name.toLowerCase().includes(searchLower) || token.identifier.toLowerCase().includes(searchLower));
     }
 
     if (filter.name) {
-      let nameLower = filter.name.toLowerCase();
+      const nameLower = filter.name.toLowerCase();
 
       tokens = tokens.filter(token => token.name.toLowerCase() === nameLower);
     }
 
     if (filter.identifier) {
-      let identifierLower = filter.identifier.toLowerCase();
+      const identifierLower = filter.identifier.toLowerCase();
 
       tokens = tokens.filter(token => token.identifier.toLowerCase().includes(identifierLower));
     }
@@ -94,13 +94,13 @@ export class TokenService {
   }
 
   async getTokenCount(filter: TokenFilter): Promise<number> {
-    let tokens = await this.getFilteredTokens(filter);
+    const tokens = await this.getFilteredTokens(filter);
 
     return tokens.length;
   }
 
   async getTokenCountForAddress(address: string): Promise<number> {
-    let tokens = await this.getAllTokensForAddress(address, new TokenFilter());
+    const tokens = await this.getAllTokensForAddress(address, new TokenFilter());
     return tokens.length;
   }
 
@@ -110,7 +110,7 @@ export class TokenService {
     tokens = tokens.slice(queryPagination.from, queryPagination.from + queryPagination.size);
     tokens = tokens.map(token => ApiUtils.mergeObjects(new TokenWithBalance(), token));
 
-    for (let token of tokens) {
+    for (const token of tokens) {
       await this.applyTickerFromAssets(token);
     }
 
@@ -120,17 +120,17 @@ export class TokenService {
   async getTokenForAddress(address: string, identifier: string): Promise<TokenWithBalance | undefined> {
     const tokenFilter = new TokenFilter();
     tokenFilter.identifier = identifier;
-    let tokens = await this.getFilteredTokens(tokenFilter);
+    const tokens = await this.getFilteredTokens(tokenFilter);
     if (!tokens.length) {
       return undefined;
     }
 
-    let token = tokens[0];
-    let esdt = await this.elasticService.getAccountEsdtByAddressAndIdentifier(address, identifier);
+    const token = tokens[0];
+    const esdt = await this.elasticService.getAccountEsdtByAddressAndIdentifier(address, identifier);
     let tokenWithBalance = {
       ...esdt,
       ...token,
-    }
+    };
     tokenWithBalance = ApiUtils.mergeObjects(new TokenWithBalance(), tokenWithBalance);
 
     tokenWithBalance.identifier = token.identifier;
@@ -143,29 +143,29 @@ export class TokenService {
   }
 
   async getAllTokensForAddress(address: string, filter: TokenFilter): Promise<TokenWithBalance[]> {
-    let tokens = await this.getFilteredTokens(filter);
+    const tokens = await this.getFilteredTokens(filter);
 
-    let tokensIndexed: { [index: string]: Token } = {};
-    for (let token of tokens) {
+    const tokensIndexed: { [index: string]: Token } = {};
+    for (const token of tokens) {
       tokensIndexed[token.identifier] = token;
     }
 
-    let esdts = await this.esdtService.getAllEsdtsForAddress(address);
+    const esdts = await this.esdtService.getAllEsdtsForAddress(address);
 
-    let tokensWithBalance: TokenWithBalance[] = [];
+    const tokensWithBalance: TokenWithBalance[] = [];
 
-    for (let tokenIdentifier of Object.keys(esdts)) {
+    for (const tokenIdentifier of Object.keys(esdts)) {
       if (!TokenUtils.isEsdt(tokenIdentifier)) {
         continue;
       }
 
-      let esdt = esdts[tokenIdentifier];
-      let token = tokensIndexed[tokenIdentifier];
+      const esdt = esdts[tokenIdentifier];
+      const token = tokensIndexed[tokenIdentifier];
       if (!token) {
         continue;
       }
 
-      let tokenWithBalance = {
+      const tokenWithBalance = {
         ...token,
         ...esdt,
       };
@@ -173,7 +173,7 @@ export class TokenService {
       tokensWithBalance.push(tokenWithBalance);
     }
 
-    for (let token of tokensWithBalance) {
+    for (const token of tokensWithBalance) {
       // @ts-ignore
       token.identifier = token.tokenIdentifier;
       // @ts-ignore

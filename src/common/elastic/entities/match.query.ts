@@ -19,9 +19,9 @@ export class MatchQuery extends AbstractQuery {
       match: {
         [this.key]: {
           query: this.value,
-          operator: this.operator
-        }
-      }
-    }
+          operator: this.operator,
+        },
+      },
+    };
   }
 }

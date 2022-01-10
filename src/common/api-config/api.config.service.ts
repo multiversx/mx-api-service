@@ -126,7 +126,7 @@ export class ApiConfigService {
   }
 
   getNetwork(): string {
-    let network = this.configService.get<string>('network');
+    const network = this.configService.get<string>('network');
     if (!network) {
       throw new Error('No network present');
     }
@@ -177,7 +177,7 @@ export class ApiConfigService {
   }
 
   getProvidersUrl(): string {
-    let providerUrl = this.configService.get<string>('urls.providers');
+    const providerUrl = this.configService.get<string>('urls.providers');
     if (!providerUrl) {
       throw new Error('No providers url present');
     }
@@ -199,7 +199,7 @@ export class ApiConfigService {
   }
 
   getIsTransactionProcessorCronActive(): boolean {
-    let isCronActive = this.configService.get<boolean>(
+    const isCronActive = this.configService.get<boolean>(
       'cron.transactionProcessor',
     );
     if (isCronActive === undefined) {
@@ -210,7 +210,7 @@ export class ApiConfigService {
   }
 
   getTransactionProcessorMaxLookBehind(): number {
-    let transactionProcessorMaxLookBehind = this.configService.get<number>(
+    const transactionProcessorMaxLookBehind = this.configService.get<number>(
       'cron.transactionProcessorMaxLookBehind',
     );
     if (transactionProcessorMaxLookBehind === undefined) {
@@ -221,7 +221,7 @@ export class ApiConfigService {
   }
 
   getIsCacheWarmerCronActive(): boolean {
-    let isCronActive = this.configService.get<boolean>('cron.cacheWarmer');
+    const isCronActive = this.configService.get<boolean>('cron.cacheWarmer');
     if (isCronActive === undefined) {
       throw new Error('No cron.cacheWarmer flag present');
     }
@@ -230,7 +230,7 @@ export class ApiConfigService {
   }
 
   getIsQueueWorkerCronActive(): boolean {
-    let isQueueWorkerActive = this.configService.get<boolean>('cron.queueWorker');
+    const isQueueWorkerActive = this.configService.get<boolean>('cron.queueWorker');
     if (isQueueWorkerActive === undefined) {
       throw new Error('No queue worker cron flag present');
     }
@@ -239,7 +239,7 @@ export class ApiConfigService {
   }
 
   getIsFastWarmerCronActive(): boolean {
-    let isCronActive = this.configService.get<boolean>('cron.fastWarm');
+    const isCronActive = this.configService.get<boolean>('cron.fastWarm');
     if (isCronActive === undefined) {
       return false;
     }
@@ -257,7 +257,7 @@ export class ApiConfigService {
   }
 
   getIsPublicApiActive(): boolean {
-    let isApiActive = this.configService.get<boolean>('api.public');
+    const isApiActive = this.configService.get<boolean>('api.public');
     if (isApiActive === undefined) {
       throw new Error('No api.public flag present');
     }
@@ -266,7 +266,7 @@ export class ApiConfigService {
   }
 
   getIsPrivateApiActive(): boolean {
-    let isApiActive = this.configService.get<boolean>('api.private');
+    const isApiActive = this.configService.get<boolean>('api.private');
     if (isApiActive === undefined) {
       throw new Error('No api.private flag present');
     }
@@ -325,11 +325,11 @@ export class ApiConfigService {
       username: this.getDatabaseUsername(),
       password: this.getDatabasePassword(),
       database: this.getDatabaseName(),
-    }
+    };
   }
 
   getDatabaseSlaveConnections(): DatabaseConnectionOptions[] {
-    let slaves = this.configService.get<DatabaseConnectionOptions[]>('database.slaves');
+    const slaves = this.configService.get<DatabaseConnectionOptions[]>('database.slaves');
     if (!slaves) {
       return [];
     }
@@ -401,7 +401,7 @@ export class ApiConfigService {
   }
 
   getMetaChainShardId(): number {
-    let metaChainShardId = this.configService.get<number>('metaChainShardId');
+    const metaChainShardId = this.configService.get<number>('metaChainShardId');
     if (metaChainShardId === undefined) {
       throw new Error('No metaChainShardId present');
     }
@@ -410,7 +410,7 @@ export class ApiConfigService {
   }
 
   getUseLegacyElastic(): boolean {
-    let useLegacyElastic = this.configService.get<boolean>('useLegacyElastic');
+    const useLegacyElastic = this.configService.get<boolean>('useLegacyElastic');
     if (useLegacyElastic === undefined) {
       return false;
     }
@@ -423,7 +423,7 @@ export class ApiConfigService {
   }
 
   getInflationAmounts(): number[] {
-    let inflationAmounts = this.configService.get<number[]>('inflation');
+    const inflationAmounts = this.configService.get<number[]>('inflation');
     if (!inflationAmounts) {
       throw new Error('No inflation amounts present');
     }
@@ -432,7 +432,7 @@ export class ApiConfigService {
   }
 
   getMediaUrl(): string {
-    let mediaUrl = this.configService.get<string>('urls.media');
+    const mediaUrl = this.configService.get<string>('urls.media');
     if (!mediaUrl) {
       throw new Error('No media url present');
     }
@@ -445,7 +445,7 @@ export class ApiConfigService {
   }
 
   getExternalMediaUrl(): string {
-    let mediaUrl = this.getMediaUrl();
+    const mediaUrl = this.getMediaUrl();
     if (mediaUrl.endsWith('.')) {
       return mediaUrl.substring(0, mediaUrl.length - 1);
     }
@@ -454,7 +454,7 @@ export class ApiConfigService {
   }
 
   getNftThumbnailsUrl(): string {
-    let nftThumbnailsUrl = this.configService.get<string>('urls.nftThumbnails');
+    const nftThumbnailsUrl = this.configService.get<string>('urls.nftThumbnails');
     if (!nftThumbnailsUrl) {
       throw new Error('No nft thumbnails url present');
     }
@@ -463,7 +463,7 @@ export class ApiConfigService {
   }
 
   getSecurityAdmins(): string[] {
-    let admins = this.configService.get<string[]>('security.admins');
+    const admins = this.configService.get<string[]>('security.admins');
     if (admins === undefined) {
       throw new Error('No security admins value present');
     }
@@ -493,7 +493,7 @@ export class ApiConfigService {
   }
 
   getMockPath(): string | undefined {
-    let mockPath = this.configService.get<string>('test.mockPath');
+    const mockPath = this.configService.get<string>('test.mockPath');
     if (mockPath === undefined) {
       throw new Error('No mock path value present');
     }

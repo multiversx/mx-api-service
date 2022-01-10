@@ -41,7 +41,7 @@ export class TransactionProcessorService {
 
   @Cron('*/1 * * * * *')
   async handleNewTransactions() {
-    let isCronActive = this.apiConfigService.getIsTransactionProcessorCronActive();
+    const isCronActive = this.apiConfigService.getIsTransactionProcessorCronActive();
     if (!isCronActive) {
       return;
     }
@@ -55,13 +55,13 @@ export class TransactionProcessorService {
         gatewayUrl: this.apiConfigService.getGatewayUrl(),
         maxLookBehind: this.apiConfigService.getTransactionProcessorMaxLookBehind(),
         onTransactionsReceived: async (shard, nonce, transactions) => {
-          let profiler = new PerformanceProfiler('Processing new transactions');
+          const profiler = new PerformanceProfiler('Processing new transactions');
 
           this.logger.log(`New transactions: ${transactions.length} for shard ${shard} and nonce ${nonce}`);
 
-          let allInvalidatedKeys = [];
+          const allInvalidatedKeys = [];
 
-          for (let transaction of transactions) {
+          for (const transaction of transactions) {
             // this.logger.log(`Transferred ${transaction.value} from ${transaction.sender} to ${transaction.receiver}`);
 
             if (!AddressUtils.isSmartContractAddress(transaction.sender)) {
@@ -85,11 +85,11 @@ export class TransactionProcessorService {
               this.tryHandleNftCreate(transaction);
             }
 
-            let invalidatedTokenProperties = await this.cachingService.tryInvalidateTokenProperties(transaction);
-            let invalidatedTokensOnAccountKeys = await this.cachingService.tryInvalidateTokensOnAccount(transaction);
-            let invalidatedTokenBalancesKeys = await this.cachingService.tryInvalidateTokenBalance(transaction);
-            let invalidatedOwnerKeys = await this.tryInvalidateOwner(transaction);
-            let invalidatedCollectionPropertiesKeys = await this.tryInvalidateCollectionProperties(transaction);
+            const invalidatedTokenProperties = await this.cachingService.tryInvalidateTokenProperties(transaction);
+            const invalidatedTokensOnAccountKeys = await this.cachingService.tryInvalidateTokensOnAccount(transaction);
+            const invalidatedTokenBalancesKeys = await this.cachingService.tryInvalidateTokenBalance(transaction);
+            const invalidatedOwnerKeys = await this.tryInvalidateOwner(transaction);
+            const invalidatedCollectionPropertiesKeys = await this.tryInvalidateCollectionProperties(transaction);
 
             allInvalidatedKeys.push(
               ...invalidatedTokenProperties,
@@ -100,13 +100,13 @@ export class TransactionProcessorService {
             );
           }
 
-          let uniqueInvalidatedKeys = allInvalidatedKeys.distinct();
+          const uniqueInvalidatedKeys = allInvalidatedKeys.distinct();
           if (uniqueInvalidatedKeys.length > 0) {
             this.clientProxy.emit('deleteCacheKeys', uniqueInvalidatedKeys);
           }
 
-          let distinctSendersAndReceivers = transactions.selectMany(transaction => [transaction.sender, transaction.receiver]).distinct();
-          let txCountInvalidationKeys = distinctSendersAndReceivers.map(address => CacheInfo.TxCount(address).key);
+          const distinctSendersAndReceivers = transactions.selectMany(transaction => [transaction.sender, transaction.receiver]).distinct();
+          const txCountInvalidationKeys = distinctSendersAndReceivers.map(address => CacheInfo.TxCount(address).key);
           await this.cachingService.batchDelCache(txCountInvalidationKeys);
 
           profiler.stop();
@@ -117,7 +117,7 @@ export class TransactionProcessorService {
         setLastProcessedNonce: async (shardId, nonce) => {
           this.metricsService.setLastProcessedNonce(shardId, nonce);
           await this.cachingService.setCache<number>(CacheInfo.ShardNonce(shardId).key, nonce, CacheInfo.ShardNonce(shardId).ttl);
-        }
+        },
       });
     } finally {
       this.isProcessing = false;
@@ -129,14 +129,14 @@ export class TransactionProcessorService {
       return;
     }
 
-    let data = BinaryUtils.base64Decode(transaction.data);
+    const data = BinaryUtils.base64Decode(transaction.data);
     if (!data.startsWith('ESDTNFTCreate@')) {
       return;
     }
 
     await new Promise(resolve => setTimeout(resolve, 5000));
 
-    let transactionDetailed = await this.transactionService.getTransaction(transaction.hash);
+    const transactionDetailed = await this.transactionService.getTransaction(transaction.hash);
     if (!transactionDetailed || !transactionDetailed.operations || transactionDetailed.operations.length === 0) {
       return;
     }
@@ -160,7 +160,7 @@ export class TransactionProcessorService {
   }
 
   async tryInvalidateOwner(transaction: ShardTransaction): Promise<string[]> {
-    let transactionFuncName = transaction.getDataFunctionName();
+    const transactionFuncName = transaction.getDataFunctionName();
     if (transactionFuncName !== 'mergeValidatorToDelegationWithWhitelist') {
       return [];
     }

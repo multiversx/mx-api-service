@@ -17,6 +17,6 @@ import { RoundService } from "./round.service";
   ],
   exports: [
     RoundService,
-  ]
+  ],
 })
 export class RoundModule { }

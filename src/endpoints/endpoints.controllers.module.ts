@@ -34,7 +34,7 @@ import { WaitingListController } from "./waiting-list/waiting.list.controller";
   imports: [
     CommonModule,
     EndpointsServicesModule,
-    ProxyModule, 
+    ProxyModule,
     PluginModule,
   ],
   controllers: [

@@ -12,7 +12,7 @@ export class Provider extends NodesInfos {
   featured: boolean = false;
 
   @ApiProperty()
-  serviceFee: number = 0  ;
+  serviceFee: number = 0;
 
   @ApiProperty()
   delegationCap: string = '';

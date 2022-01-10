@@ -15,7 +15,7 @@ import { TokenService } from "./token.service";
 @Controller()
 @ApiTags('tokens')
 export class TokenController {
-  private readonly logger: Logger
+  private readonly logger: Logger;
   constructor(
     private readonly tokenService: TokenService,
     private readonly transactionService: TransactionService,
@@ -28,7 +28,7 @@ export class TokenController {
     status: 200,
     description: 'The list of tokens available on the blockchain',
     type: TokenDetailed,
-    isArray: true
+    isArray: true,
   })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -37,12 +37,12 @@ export class TokenController {
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
   async getTokens(
-		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number, 
-		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-		@Query('search') search: string | undefined,
-		@Query('name') name: string | undefined,
-		@Query('identifier') identifier: string | undefined,
-		@Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('search') search: string | undefined,
+    @Query('name') name: string | undefined,
+    @Query('identifier') identifier: string | undefined,
+    @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
   ): Promise<TokenDetailed[]> {
     return await this.tokenService.getTokens({ from, size }, { search, name, identifier, identifiers });
   }
@@ -58,10 +58,10 @@ export class TokenController {
   @ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
   async getTokenCount(
     @Query('search') search: string | undefined,
-		@Query('name') name: string | undefined,
-		@Query('identifier') identifier: string | undefined,
-		@Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
-    ): Promise<number> {
+    @Query('name') name: string | undefined,
+    @Query('identifier') identifier: string | undefined,
+    @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
+  ): Promise<number> {
     return await this.tokenService.getTokenCount({ search, name, identifier, identifiers });
   }
 
@@ -69,10 +69,10 @@ export class TokenController {
   @ApiExcludeEndpoint()
   async getTokenCountAlternative(
     @Query('search') search: string | undefined,
-		@Query('name') name: string | undefined,
-		@Query('identifier') identifier: string | undefined,
-		@Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
-    ): Promise<number> {
+    @Query('name') name: string | undefined,
+    @Query('identifier') identifier: string | undefined,
+    @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
+  ): Promise<number> {
     return await this.tokenService.getTokenCount({ search, name, identifier, identifiers });
   }
 
@@ -84,10 +84,10 @@ export class TokenController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Token not found'
+    description: 'Token not found',
   })
   async getToken(@Param('identifier') identifier: string): Promise<TokenDetailed> {
-    let token = await this.tokenService.getToken(identifier);
+    const token = await this.tokenService.getToken(identifier);
     if (token === undefined) {
       throw new NotFoundException('Token not found');
     }
@@ -100,11 +100,11 @@ export class TokenController {
     status: 200,
     description: 'The specific token accounts available on the blockchain',
     type: TokenAccount,
-    isArray: true
+    isArray: true,
   })
   @ApiResponse({
     status: 404,
-    description: 'Token not found'
+    description: 'Token not found',
   })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -123,7 +123,7 @@ export class TokenController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Token not found'
+    description: 'Token not found',
   })
   getTokenAccountsCount(
     @Param('identifier') identifier: string,
@@ -135,11 +135,11 @@ export class TokenController {
   @ApiResponse({
     status: 200,
     description: 'The specific token transactions history on the blockchain',
-    isArray: true
+    isArray: true,
   })
   @ApiResponse({
     status: 404,
-    description: 'Token not found'
+    description: 'Token not found',
   })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
@@ -161,9 +161,9 @@ export class TokenController {
     @Query('receiver', ParseAddressPipe) receiver: string | undefined,
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined,
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
-    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined, 
-    @Query('hashes', ParseArrayPipe) hashes: string[] | undefined, 
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined,
+    @Query('hashes', ParseArrayPipe) hashes: string[] | undefined,
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined,
     @Query('search') search: string | undefined,
     @Query('before', ParseOptionalIntPipe) before: number | undefined,
     @Query('after', ParseOptionalIntPipe) after: number | undefined,
@@ -196,11 +196,11 @@ export class TokenController {
   @ApiResponse({
     status: 200,
     description: 'The specific token transactions count on the blockchain',
-    isArray: true
+    isArray: true,
   })
   @ApiResponse({
     status: 404,
-    description: 'Token not found'
+    description: 'Token not found',
   })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
@@ -218,9 +218,9 @@ export class TokenController {
     @Query('receiver', ParseAddressPipe) receiver: string | undefined,
     @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined,
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
-    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined, 
-    @Query('hashes', ParseArrayPipe) hashes: string[] | undefined, 
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined, 
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined,
+    @Query('hashes', ParseArrayPipe) hashes: string[] | undefined,
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined,
     @Query('search') search: string | undefined,
     @Query('before', ParseOptionalIntPipe) before: number | undefined,
     @Query('after', ParseOptionalIntPipe) after: number | undefined,

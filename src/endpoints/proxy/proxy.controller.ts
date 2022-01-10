@@ -16,7 +16,7 @@ import { PluginService } from "src/common/plugins/plugin.service";
 @Controller()
 @ApiTags('proxy')
 export class ProxyController {
-  private readonly logger: Logger
+  private readonly logger: Logger;
 
   constructor(
     private readonly gatewayService: GatewayService,
@@ -87,7 +87,7 @@ export class ProxyController {
       throw new BadRequestException('Receiver must be provided');
     }
 
-    let pluginTransaction = await this.pluginService.processTransactionSend(body);
+    const pluginTransaction = await this.pluginService.processTransactionSend(body);
     if (pluginTransaction) {
       return pluginTransaction;
     }
@@ -202,7 +202,7 @@ export class ProxyController {
   @NoCache()
   async getNodeHeartbeatStatus(@Res() res: Response) {
     try {
-      let heartbeatStatus = await this.cachingService.getOrSetCache(
+      const heartbeatStatus = await this.cachingService.getOrSetCache(
         'heartbeatstatus',
         async () => {
           const result = await this.gatewayService.getRaw('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat);
@@ -222,7 +222,7 @@ export class ProxyController {
   @NoCache()
   async getValidatorStatistics(@Res() res: Response) {
     try {
-      let validatorStatistics = await this.cachingService.getOrSetCache(
+      const validatorStatistics = await this.cachingService.getOrSetCache(
         'validatorstatistics',
         async () => {
           const result = await this.gatewayService.getRaw('validator/statistics', GatewayComponentRequest.validatorStatistics);
@@ -274,7 +274,7 @@ export class ProxyController {
     try {
       return await this.cachingService.getOrSetCache(
         `hyperblock/by-nonce/${nonce}`,
-        async () =>  await this.gatewayGet(`hyperblock/by-nonce/${nonce}`, GatewayComponentRequest.hyperblockByNonce),
+        async () => await this.gatewayGet(`hyperblock/by-nonce/${nonce}`, GatewayComponentRequest.hyperblockByNonce),
         Constants.oneDay(),
       );
     } catch (error: any) {
@@ -290,11 +290,11 @@ export class ProxyController {
 
   private async gatewayGet(url: string, component: GatewayComponentRequest, params: any = undefined, errorHandler?: (error: any) => Promise<boolean>) {
     if (params) {
-      url += '?' + Object.keys(params).filter(key => params[key] !== undefined).map(key => `${key}=${params[key]}`).join('&')
+      url += '?' + Object.keys(params).filter(key => params[key] !== undefined).map(key => `${key}=${params[key]}`).join('&');
     }
 
     try {
-      let result = await this.gatewayService.getRaw(url, component, errorHandler);
+      const result = await this.gatewayService.getRaw(url, component, errorHandler);
       return result.data;
     } catch (error: any) {
       if (error.response) {
@@ -308,7 +308,7 @@ export class ProxyController {
 
   private async gatewayPost(url: string, component: GatewayComponentRequest, data: any) {
     try {
-      let result = await this.gatewayService.createRaw(url, component, data);
+      const result = await this.gatewayService.createRaw(url, component, data);
       return result.data;
     } catch (error: any) {
       if (error.response) {

@@ -11,6 +11,6 @@ import { TagService } from "./tag.service";
   ],
   exports: [
     TagService,
-  ]
+  ],
 })
 export class TagModule { }

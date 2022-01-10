@@ -1,4 +1,4 @@
-import { TokenUtils } from "src/utils/token.utils"
+import { TokenUtils } from "src/utils/token.utils";
 
 describe('Token Utils', () => {
     describe('isEsdt', () => {

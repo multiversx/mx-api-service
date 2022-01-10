@@ -10,13 +10,13 @@ export class ExtractInterceptor implements NestInterceptor {
     return next
       .handle()
       .pipe(map(result => {
-          let extractArgument = request.query.extract;
-          if (extractArgument) {
-            return result[extractArgument];
-          }
+        const extractArgument = request.query.extract;
+        if (extractArgument) {
+          return result[extractArgument];
+        }
 
-          return result;
-        })
+        return result;
+      })
       );
   }
 }

@@ -16,7 +16,7 @@ import { StakeService } from "./stake.service";
     StakeService,
   ],
   exports: [
-    StakeService
-  ]
+    StakeService,
+  ],
 })
 export class StakeModule { }

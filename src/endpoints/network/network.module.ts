@@ -21,6 +21,6 @@ import { NetworkService } from "./network.service";
   ],
   exports: [
     NetworkService,
-  ]
+  ],
 })
 export class NetworkModule { }

@@ -51,7 +51,7 @@ export class Transaction {
 
   @ApiProperty()
   data: string = '';
-  
+
   @ApiProperty()
   tokenIdentifier: string | undefined = undefined;
 

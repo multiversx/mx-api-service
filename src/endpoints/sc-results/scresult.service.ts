@@ -12,29 +12,29 @@ import { SmartContractResult } from "./entities/smart.contract.result";
 @Injectable()
 export class SmartContractResultService {
   constructor(
-    private readonly elasticService: ElasticService, 
+    private readonly elasticService: ElasticService,
   ) { }
 
   private buildSmartContractResultFilterQuery(address?: string): ElasticQuery {
-    let shouldQueries: AbstractQuery[] = [];
-    let mustQueries: AbstractQuery[] = [];
+    const shouldQueries: AbstractQuery[] = [];
+    const mustQueries: AbstractQuery[] = [];
 
     if (address) {
       shouldQueries.push(QueryType.Match('sender', address));
       shouldQueries.push(QueryType.Match('receiver', address));
     }
 
-    let elasticQuery = ElasticQuery.create()
+    const elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.should, shouldQueries)
-      .withCondition(QueryConditionOptions.must, mustQueries)
+      .withCondition(QueryConditionOptions.must, mustQueries);
 
     return elasticQuery;
   }
 
   async getScResults(pagination: QueryPagination): Promise<SmartContractResult[]> {
-    let elasticResult = await this.elasticService.getList('scresults', 'hash', ElasticQuery.create().withPagination(pagination));
+    const elasticResult = await this.elasticService.getList('scresults', 'hash', ElasticQuery.create().withPagination(pagination));
 
-    return elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult))
+    return elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
   }
 
   async getScResult(scHash: string): Promise<SmartContractResult | undefined> {
@@ -54,11 +54,11 @@ export class SmartContractResultService {
     const elasticQuery: ElasticQuery = this.buildSmartContractResultFilterQuery(address);
     elasticQuery
       .withPagination(pagination)
-      .withSort([ { name: 'timestamp', order: ElasticSortOrder.descending } ]);
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    let elasticResult = await this.elasticService.getList('scresults', 'hash', elasticQuery);
+    const elasticResult = await this.elasticService.getList('scresults', 'hash', elasticQuery);
 
-    return elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult))
+    return elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
   }
 
   async getAccountScResultsCount(address: string): Promise<SmartContractResult[]> {

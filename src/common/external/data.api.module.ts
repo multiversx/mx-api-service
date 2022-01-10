@@ -10,10 +10,10 @@ import { DataApiService } from "./data.api.service";
     ApiModule,
   ],
   providers: [
-    DataApiService
+    DataApiService,
   ],
   exports: [
-    DataApiService
-  ]
+    DataApiService,
+  ],
 })
 export class DataApiModule { }

@@ -10,30 +10,30 @@ import { DecoratorUtils } from "src/utils/decorator.utils";
 
 @Injectable()
 export class CachingInterceptor implements NestInterceptor {
-  private pendingRequestsDictionary: { [ key: string]: any; } = {};
+  private pendingRequestsDictionary: { [key: string]: any; } = {};
 
   constructor(
     private readonly cachingService: CachingService,
     private readonly httpAdapterHost: HttpAdapterHost,
     private readonly metricsService: MetricsService,
     private readonly protocolService: ProtocolService,
-  ) {}
+  ) { }
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
-    let apiFunction = context.getClass().name + '.' + context.getHandler().name;
+    const apiFunction = context.getClass().name + '.' + context.getHandler().name;
 
-    let cachingMetadata = DecoratorUtils.getMethodDecorator(NoCacheOptions, context.getHandler());
+    const cachingMetadata = DecoratorUtils.getMethodDecorator(NoCacheOptions, context.getHandler());
     if (cachingMetadata) {
       return next.handle();
     }
 
     this.metricsService.setPendingRequestsCount(Object.keys(this.pendingRequestsDictionary).length);
 
-    let cacheKey = this.getCacheKey(context);
+    const cacheKey = this.getCacheKey(context);
     if (cacheKey) {
-      let pendingRequest = this.pendingRequestsDictionary[cacheKey];
+      const pendingRequest = this.pendingRequestsDictionary[cacheKey];
       if (pendingRequest) {
-        let result = await pendingRequest;
+        const result = await pendingRequest;
         this.metricsService.incrementPendingApiHit(apiFunction);
 
         if (result instanceof HttpException) {
@@ -43,7 +43,7 @@ export class CachingInterceptor implements NestInterceptor {
         }
       }
 
-      let cachedValue = await this.cachingService.getCacheLocal(cacheKey);
+      const cachedValue = await this.cachingService.getCacheLocal(cacheKey);
       if (cachedValue) {
         this.metricsService.incrementCachedApiHit(apiFunction);
         return of(cachedValue);
@@ -62,10 +62,10 @@ export class CachingInterceptor implements NestInterceptor {
             delete this.pendingRequestsDictionary[cacheKey ?? ''];
             pendingRequestResolver(result);
             this.metricsService.setPendingRequestsCount(Object.keys(this.pendingRequestsDictionary).length);
-    
-            let ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
-    
-            await this.cachingService.setCacheLocal(cacheKey!!, result, ttl);
+
+            const ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
+
+            await this.cachingService.setCacheLocal(cacheKey ?? '', result, ttl);
           }),
           catchError((err) => {
             delete this.pendingRequestsDictionary[cacheKey ?? ''];
@@ -81,13 +81,13 @@ export class CachingInterceptor implements NestInterceptor {
   }
 
   getCacheKey(context: ExecutionContext): string | undefined {
-      const httpAdapter = this.httpAdapterHost.httpAdapter;
+    const httpAdapter = this.httpAdapterHost.httpAdapter;
 
-      const request = context.getArgByIndex(0);
-      if (httpAdapter.getRequestMethod(request) !== 'GET') {
-          return undefined;
-      }
+    const request = context.getArgByIndex(0);
+    if (httpAdapter.getRequestMethod(request) !== 'GET') {
+      return undefined;
+    }
 
-      return httpAdapter.getRequestUrl(request);
+    return httpAdapter.getRequestUrl(request);
   }
 }

@@ -8,11 +8,11 @@ import * as winston from 'winston';
       format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
       transports: [
         new winston.transports.Console({ level: 'info' }),
-      ]
+      ],
     }),
   ],
   exports: [
     WinstonModule,
-  ]
+  ],
 })
 export class LoggingModule { }

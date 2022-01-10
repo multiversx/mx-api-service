@@ -17,20 +17,20 @@ export class PerformanceProfiler {
     this.duration = this.stopped - this.started;
 
     if (log) {
-      let logger = new Logger(PerformanceProfiler.name);
+      const logger = new Logger(PerformanceProfiler.name);
 
       logger.log(`${description ?? this.description}: ${this.duration.toFixed(3)}ms`);
     }
   }
 
   private now() {
-    let hrTime = process.hrtime();
+    const hrTime = process.hrtime();
     return hrTime[0] * 1000 + hrTime[1] / 1000000;
   }
 
   static async profile<T>(description: string, promise: Promise<T> | (() => Promise<T>)): Promise<T> {
-    let profiler = new PerformanceProfiler();
-   
+    const profiler = new PerformanceProfiler();
+
     try {
       if (promise instanceof Function) {
         return await promise();

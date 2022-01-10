@@ -15,7 +15,7 @@ import { TransactionOperationType } from "../transactions/entities/transaction.o
 
 @Injectable()
 export class TokenTransferService {
-  private readonly logger: Logger
+  private readonly logger: Logger;
 
   constructor(
     private readonly cachingService: CachingService,
@@ -30,42 +30,42 @@ export class TokenTransferService {
       return undefined;
     }
 
-    let tokens = elasticTransaction.tokens;
+    const tokens = elasticTransaction.tokens;
     if (!tokens || tokens.length === 0) {
       return undefined;
     }
 
-    let esdtValues = elasticTransaction.esdtValues;
+    const esdtValues = elasticTransaction.esdtValues;
     if (!esdtValues || esdtValues.length === 0) {
       return undefined;
     }
 
-    let decodedData = BinaryUtils.base64Decode(elasticTransaction.data);
+    const decodedData = BinaryUtils.base64Decode(elasticTransaction.data);
     if (!decodedData.startsWith('ESDTTransfer@')) {
       return undefined;
     }
 
-    let token = tokens[0];
-    let esdtValue = esdtValues[0];
+    const token = tokens[0];
+    const esdtValue = esdtValues[0];
 
     return { tokenIdentifier: token, tokenAmount: esdtValue };
   }
 
   async getOperationsForTransactionLogs(txHash: string, logs: TransactionLog[]): Promise<TransactionOperation[]> {
-    let operations: (TransactionOperation | undefined)[] = [];
+    const operations: (TransactionOperation | undefined)[] = [];
 
-    for (let log of logs) {
-      for (let event of log.events) {
-        let action = this.getOperationAction(event.identifier);
+    for (const log of logs) {
+      for (const event of log.events) {
+        const action = this.getOperationAction(event.identifier);
         if (action) {
-          let operation = await this.getTransactionNftOperation(txHash, log, event, action);
+          const operation = await this.getTransactionNftOperation(txHash, log, event, action);
 
           operations.push(operation);
         }
       }
     }
 
-    return operations.filter(operation => operation !== undefined).map(operation => operation!);
+    return operations.filter(operation => operation !== undefined).map(operation => operation ?? new TransactionOperation());
   }
 
   private getOperationAction(identifier: string): TransactionOperationAction | null {
@@ -98,21 +98,21 @@ export class TokenTransferService {
   private async getTransactionNftOperation(txHash: string, log: TransactionLog, event: TransactionLogEvent, action: TransactionOperationAction): Promise<TransactionOperation | undefined> {
     try {
       let identifier = BinaryUtils.base64Decode(event.topics[0]);
-      let nonce = BinaryUtils.tryBase64ToHex(event.topics[1]);
-      let value = BinaryUtils.tryBase64ToBigInt(event.topics[2])?.toString() ?? '0';
-      let receiver = BinaryUtils.tryBase64ToAddress(event.topics[3]) ?? log.address;
-      let properties = await this.getTokenTransferProperties(identifier, nonce);
-      let decimals = properties ? properties.decimals : undefined;
-      let name = properties ? properties.name : undefined;
-      let esdtType = properties ? properties.type : undefined;
+      const nonce = BinaryUtils.tryBase64ToHex(event.topics[1]);
+      const value = BinaryUtils.tryBase64ToBigInt(event.topics[2])?.toString() ?? '0';
+      const receiver = BinaryUtils.tryBase64ToAddress(event.topics[3]) ?? log.address;
+      const properties = await this.getTokenTransferProperties(identifier, nonce);
+      const decimals = properties ? properties.decimals : undefined;
+      const name = properties ? properties.name : undefined;
+      const esdtType = properties ? properties.type : undefined;
 
       let collection: string | undefined = undefined;
       if (nonce) {
         collection = identifier;
-        identifier = `${collection}-${nonce}`
+        identifier = `${collection}-${nonce}`;
       }
 
-      let type = nonce ? TransactionOperationType.nft : TransactionOperationType.esdt;
+      const type = nonce ? TransactionOperationType.nft : TransactionOperationType.esdt;
 
       return { action, type, esdtType, collection, identifier, name, sender: event.address, receiver, value, decimals };
     } catch (error) {
@@ -123,7 +123,7 @@ export class TokenTransferService {
   }
 
   async getTokenTransferProperties(identifier: string, nonce?: string): Promise<TokenTransferProperties | null> {
-    let properties = await this.cachingService.getOrSetCache(
+    const properties = await this.cachingService.getOrSetCache(
       CacheInfo.TokenTransferProperties(identifier).key,
       async () => await this.getTokenTransferPropertiesRaw(identifier),
       Constants.oneDay()
@@ -137,18 +137,18 @@ export class TokenTransferService {
   }
 
   private async getTokenTransferPropertiesRaw(identifier: string): Promise<TokenTransferProperties | null> {
-    let properties = await this.esdtService.getEsdtTokenProperties(identifier);
+    const properties = await this.esdtService.getEsdtTokenProperties(identifier);
     if (!properties) {
       return null;
     }
 
-    let assets = await this.tokenAssetService.getAssets(identifier);
+    const assets = await this.tokenAssetService.getAssets(identifier);
 
-    let result: TokenTransferProperties = {
+    const result: TokenTransferProperties = {
       type: properties.type,
       name: properties.name,
       ticker: assets ? identifier.split('-')[0] : identifier,
-    }
+    };
 
     if (properties.type === 'FungibleESDT') {
       result.token = identifier;

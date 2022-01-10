@@ -17,10 +17,10 @@ import { KeybaseService } from "./keybase.service";
 
   ],
   providers: [
-    KeybaseService
+    KeybaseService,
   ],
   exports: [
-    KeybaseService
-  ]
+    KeybaseService,
+  ],
 })
 export class KeybaseModule { }

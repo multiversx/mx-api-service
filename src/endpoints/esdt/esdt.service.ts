@@ -22,7 +22,7 @@ import { TokenAssetService } from "../tokens/token.asset.service";
 
 @Injectable()
 export class EsdtService {
-  private readonly logger: Logger
+  private readonly logger: Logger;
 
   constructor(
     private readonly gatewayService: GatewayService,
@@ -47,17 +47,17 @@ export class EsdtService {
   }
 
   private async getAllEsdtsForAddressFromElastic(address: string): Promise<{ [key: string]: any }> {
-    let elasticQuery = ElasticQuery.create()
+    const elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match('address', address)])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
       .withPagination({ from: 0, size: 10000 });
 
-    let esdts = await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
+    const esdts = await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
 
-    let result: { [key: string]: any } = {};
+    const result: { [key: string]: any } = {};
 
-    for (let esdt of esdts) {
-      let isToken = esdt.tokenNonce === undefined;
+    for (const esdt of esdts) {
+      const isToken = esdt.tokenNonce === undefined;
       if (isToken) {
         result[esdt.token] = {
           balance: esdt.balance,
@@ -82,8 +82,8 @@ export class EsdtService {
 
   // @ts-ignore
   private async getAllEsdtsForAddressFromGateway(address: string): Promise<{ [key: string]: any }> {
-    let esdtResult = await this.gatewayService.get(`address/${address}/esdt`, GatewayComponentRequest.addressEsdt, async (error) => {
-      let errorMessage = error?.response?.data?.error;
+    const esdtResult = await this.gatewayService.get(`address/${address}/esdt`, GatewayComponentRequest.addressEsdt, async (error) => {
+      const errorMessage = error?.response?.data?.error;
       if (errorMessage && errorMessage.includes('account was not found')) {
         return true;
       }
@@ -103,12 +103,12 @@ export class EsdtService {
   async getAllEsdtsForAddress(address: string): Promise<{ [key: string]: any }> {
     let pendingRequest = this.pendingRequestsDictionary[address];
     if (pendingRequest) {
-      let result = await pendingRequest;
+      const result = await pendingRequest;
       this.metricsService.incrementPendingApiHit('Gateway.AccountEsdts');
       return result;
     }
 
-    let cachedValue = await this.cachingService.getCacheLocal<{ [key: string]: any }>(`address:${address}:esdts`);
+    const cachedValue = await this.cachingService.getCacheLocal<{ [key: string]: any }>(`address:${address}:esdts`);
     if (cachedValue) {
       this.metricsService.incrementCachedApiHit('Gateway.AccountEsdts');
       return cachedValue;
@@ -124,7 +124,7 @@ export class EsdtService {
       delete this.pendingRequestsDictionary[address];
     }
 
-    let ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
+    const ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
 
     await this.cachingService.setCacheLocal(`address:${address}:esdts`, esdts, ttl);
     return esdts;
@@ -150,7 +150,7 @@ export class EsdtService {
       return [];
     }
 
-    let tokensProperties = await this.cachingService.batchProcess(
+    const tokensProperties = await this.cachingService.batchProcess(
       tokensIdentifiers,
       token => CacheInfo.EsdtProperties(token).key,
       async (identifier: string) => await this.getEsdtTokenPropertiesRaw(identifier),
@@ -158,7 +158,7 @@ export class EsdtService {
       true
     );
 
-    let tokensAssets = await this.cachingService.batchProcess(
+    const tokensAssets = await this.cachingService.batchProcess(
       tokensIdentifiers,
       token => CacheInfo.EsdtAssets(token).key,
       async (identifier: string) => await this.getEsdtTokenAssetsRaw(identifier),
@@ -174,7 +174,7 @@ export class EsdtService {
   }
 
   async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
-    let properties = await this.cachingService.getOrSetCache(
+    const properties = await this.cachingService.getOrSetCache(
       CacheInfo.EsdtProperties(identifier).key,
       async () => await this.getEsdtTokenPropertiesRaw(identifier),
       Constants.oneWeek(),
@@ -264,7 +264,7 @@ export class EsdtService {
     }
 
     return tokenProps;
-  };
+  }
 
   async getTokenSupply(identifier: string): Promise<string> {
     const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);

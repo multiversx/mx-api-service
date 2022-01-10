@@ -33,7 +33,7 @@ export class RoundService {
       const epochQuery = QueryType.Match('epoch', filter.epoch);
       queries.push(epochQuery);
     }
-    
+
     if (filter.validator !== undefined && filter.shard !== undefined && filter.epoch !== undefined) {
       const index = await this.blsService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
 
@@ -54,14 +54,14 @@ export class RoundService {
   async getRounds(filter: RoundFilter): Promise<Round[]> {
     const { from, size } = filter;
 
-    let elasticQuery = ElasticQuery.create()
+    const elasticQuery = ElasticQuery.create()
       .withPagination({ from, size })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
       .withCondition(filter.condition ?? QueryConditionOptions.must, await this.buildElasticRoundsFilter(filter));
 
-    let result = await this.elasticService.getList('rounds', 'round', elasticQuery);
+    const result = await this.elasticService.getList('rounds', 'round', elasticQuery);
 
-    for (let item of result) {
+    for (const item of result) {
       item.shard = item.shardId;
     }
 

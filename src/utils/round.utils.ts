@@ -14,5 +14,5 @@ export class RoundUtils {
     const lastEpoch = (roundsPerEpoch - roundsPassed) * roundDuration;
 
     return now + fullEpochs + lastEpoch;
-  };
+  }
 }

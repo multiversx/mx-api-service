@@ -9,11 +9,11 @@ export class MicroserviceController {
     private readonly cachingService: CachingService,
   ) {
     this.logger = new Logger(MicroserviceController.name);
-   }
+  }
 
   @EventPattern('deleteCacheKeys')
   async deleteCacheKey(keys: string[]) {
-    for (let key of keys) {
+    for (const key of keys) {
       this.logger.log(`Deleting local cache key ${key}`);
       await this.cachingService.deleteInCacheLocal(key);
     }

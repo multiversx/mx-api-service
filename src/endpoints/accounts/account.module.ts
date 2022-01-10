@@ -29,6 +29,6 @@ import { AccountService } from "./account.service";
   ],
   exports: [
     AccountService,
-  ]
+  ],
 })
 export class AccountModule { }

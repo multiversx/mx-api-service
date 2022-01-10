@@ -5,7 +5,7 @@ import { KeyUnbondPeriod } from "./entities/key.unbond.period";
 
 @Injectable()
 export class KeysService {
-  private readonly logger: Logger
+  private readonly logger: Logger;
 
   constructor(
     private readonly vmQueryService: VmQueryService,
@@ -20,7 +20,7 @@ export class KeysService {
         this.apiConfigService.getStakingContractAddress(),
         'getRemainingUnBondPeriod',
         undefined,
-        [ key ]
+        [key]
       );
 
       let remainingUnBondPeriod = parseInt(Buffer.from(encoded[0], 'base64').toString('ascii'));

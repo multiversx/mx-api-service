@@ -15,8 +15,8 @@ export class ApiService {
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => MetricsService))
     private readonly metricsService: MetricsService,
-  ) {};
-  
+  ) { }
+
   private getKeepAliveAgent(): Agent | undefined {
     if (this.keepaliveAgent === null) {
       if (this.apiConfigService.getUseKeepAliveAgentFlag()) {
@@ -40,9 +40,9 @@ export class ApiService {
     const timeout = settings.timeout || this.defaultTimeout;
     const maxRedirects = settings.skipRedirects === true ? 0 : undefined;
 
-    let headers = {};
+    const headers = {};
 
-    let rateLimiterSecret = this.apiConfigService.getRateLimiterSecret();
+    const rateLimiterSecret = this.apiConfigService.getRateLimiterSecret();
     if (rateLimiterSecret) {
       // @ts-ignore
       headers['x-rate-limiter-secret'] = rateLimiterSecret;
@@ -53,20 +53,20 @@ export class ApiService {
       maxRedirects,
       httpAgent: this.getKeepAliveAgent(),
       headers,
-      transformResponse: [ 
+      transformResponse: [
         (data) => {
           try {
             return JSON.parse(data);
           } catch (error) {
             return data;
           }
-        }  
+        },
       ],
     };
   }
 
   async get(url: string, settings: ApiSettings = new ApiSettings(), errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
-    let profiler = new PerformanceProfiler();
+    const profiler = new PerformanceProfiler();
 
     try {
       return await axios.get(url, this.getConfig(settings));
@@ -74,11 +74,11 @@ export class ApiService {
       let handled = false;
       if (errorHandler) {
         handled = await errorHandler(error);
-      } 
-      
+      }
+
       if (!handled) {
-        let logger = new Logger(ApiService.name);
-        let customError = {
+        const logger = new Logger(ApiService.name);
+        const customError = {
           method: 'GET',
           url,
           response: error.response?.data,
@@ -98,18 +98,18 @@ export class ApiService {
   }
 
   async post(url: string, data: any, settings: ApiSettings = new ApiSettings(), errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
-    let profiler = new PerformanceProfiler();
-    
+    const profiler = new PerformanceProfiler();
+
     try {
       return await axios.post(url, data, this.getConfig(settings));
     } catch (error: any) {
       let handled = false;
       if (errorHandler) {
         handled = await errorHandler(error);
-      } 
-      
+      }
+
       if (!handled) {
-        let customError = {
+        const customError = {
           method: 'POST',
           url,
           body: data,
@@ -119,7 +119,7 @@ export class ApiService {
           name: error.name,
         };
 
-        let logger = new Logger(ApiService.name);
+        const logger = new Logger(ApiService.name);
         logger.error(customError);
 
         throw customError;
@@ -131,7 +131,7 @@ export class ApiService {
   }
 
   async head(url: string, settings: ApiSettings = new ApiSettings(), errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
-    let profiler = new PerformanceProfiler();
+    const profiler = new PerformanceProfiler();
 
     try {
       return await axios.head(url, this.getConfig(settings));
@@ -139,10 +139,10 @@ export class ApiService {
       let handled = false;
       if (errorHandler) {
         handled = await errorHandler(error);
-      } 
-      
+      }
+
       if (!handled) {
-        let customError = {
+        const customError = {
           method: 'HEAD',
           url,
           response: error.response?.data,
@@ -151,7 +151,7 @@ export class ApiService {
           name: error.name,
         };
 
-        let logger = new Logger(ApiService.name);
+        const logger = new Logger(ApiService.name);
         logger.error(customError);
 
         throw customError;

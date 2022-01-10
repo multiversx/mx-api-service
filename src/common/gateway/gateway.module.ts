@@ -12,10 +12,10 @@ import { GatewayService } from "./gateway.service";
     forwardRef(() => MetricsModule),
   ],
   providers: [
-    GatewayService
+    GatewayService,
   ],
   exports: [
-    GatewayService
-  ]
+    GatewayService,
+  ],
 })
 export class GatewayModule { }

@@ -16,7 +16,7 @@ export class AccountDetailed extends Account {
 
     @ApiProperty({ description: 'The number of smart contract results of this account' })
     scrCount: number = 0;
-    
+
     @ApiProperty()
     username: string = '';
 

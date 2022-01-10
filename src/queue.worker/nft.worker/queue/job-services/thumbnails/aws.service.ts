@@ -6,7 +6,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 export class AWSService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
-  ) {}
+  ) { }
 
   public async uploadToS3(path: string, buffer: Buffer, type: string): Promise<string> {
     const s3 = new S3({

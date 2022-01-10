@@ -7,13 +7,13 @@ import { ExternalModule } from "../../common/external/external.module";
 
 @Module({
   imports: [
-    ApiConfigModule, ExternalModule, ElasticModule
+    ApiConfigModule, ExternalModule, ElasticModule,
   ],
   providers: [
-    BlsService
+    BlsService,
   ],
   exports: [
-    BlsService
-  ]
+    BlsService,
+  ],
 })
 export class BlsModule { }

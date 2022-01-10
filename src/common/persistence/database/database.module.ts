@@ -12,7 +12,7 @@ import { DatabaseService } from "./database.service";
       imports: [ApiConfigModule],
       useFactory: (apiConfigService: ApiConfigService) => {
         let replication = undefined;
-        let slaves = apiConfigService.getDatabaseSlaveConnections();
+        const slaves = apiConfigService.getDatabaseSlaveConnections();
         if (slaves.length > 0) {
           replication = {
             master: {
@@ -22,25 +22,25 @@ import { DatabaseService } from "./database.service";
           };
         }
 
-        let options: TypeOrmModuleOptions = {
+        const options: TypeOrmModuleOptions = {
           type: 'mysql',
           entities: [NftMetadataDb, NftMediaDb],
           ...apiConfigService.getDatabaseConnection(),
           keepConnectionAlive: true,
           synchronize: true,
           extra: {
-            connectionLimit: 4
+            connectionLimit: 4,
           },
-          replication
+          replication,
         };
 
         return options;
       },
       inject: [ApiConfigService],
     }),
-    TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb])
+    TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb]),
   ],
   providers: [DatabaseService],
-  exports: [DatabaseService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb])]
+  exports: [DatabaseService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb])],
 })
 export class DatabaseModule { }

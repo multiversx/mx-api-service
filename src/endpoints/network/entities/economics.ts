@@ -6,7 +6,7 @@ export class Economics {
 
   @ApiProperty()
   circulatingSupply: number = 0;
-  
+
   @ApiProperty()
   staked: number = 0;
 

@@ -30,7 +30,7 @@ export class NftExtendedAttributesService {
   }
 
   async getExtendedAttributesFromBase64EncodedAttributes(attributes: string): Promise<NftMetadata | undefined> {
-    let metadata = this.getMetadataFromBase64EncodedAttributes(attributes);
+    const metadata = this.getMetadataFromBase64EncodedAttributes(attributes);
     if (metadata === undefined) {
       return undefined;
     }
@@ -49,7 +49,7 @@ export class NftExtendedAttributesService {
   }
 
   async getExtendedAttributesFromMetadata(metadata: string): Promise<any> {
-    let result = await this.cachingService.getOrSetCache<NftMetadata>(
+    const result = await this.cachingService.getOrSetCache<NftMetadata>(
       `nftExtendedAttributes:${metadata}`,
       async () => await this.getExtendedAttributesFromIpfs(metadata ?? ''),
       Constants.oneWeek(),
@@ -72,12 +72,12 @@ export class NftExtendedAttributesService {
   }
 
   private async getExtendedAttributesFromIpfs(metadata: string): Promise<any> {
-    let ipfsUri = `https://ipfs.io/ipfs/${metadata}`;
-    let processedIpfsUri = TokenUtils.computeNftUri(ipfsUri, this.apiConfigService.getMediaUrl() + '/nfts/asset');
+    const ipfsUri = `https://ipfs.io/ipfs/${metadata}`;
+    const processedIpfsUri = TokenUtils.computeNftUri(ipfsUri, this.apiConfigService.getMediaUrl() + '/nfts/asset');
 
-    let result = await this.apiService.get(processedIpfsUri, { timeout: 5000 });
+    const result = await this.apiService.get(processedIpfsUri, { timeout: 5000 });
 
-    let data = result.data;
+    const data = result.data;
 
     if (typeof data !== 'object' && !Array.isArray(data)) {
       return null;
@@ -87,7 +87,7 @@ export class NftExtendedAttributesService {
   }
 
   getTags(attributes: string): string[] {
-    let match = MatchUtils.getTagsFromBase64Attributes(attributes);
+    const match = MatchUtils.getTagsFromBase64Attributes(attributes);
     if (!match || !match.groups) {
       return [];
     }
@@ -96,7 +96,7 @@ export class NftExtendedAttributesService {
   }
 
   private getMetadataFromBase64EncodedAttributes(attributes: string): string | undefined {
-    let match = MatchUtils.getMetadataFromBase64Attributes(attributes);
+    const match = MatchUtils.getMetadataFromBase64Attributes(attributes);
     if (!match || !match.groups) {
       return undefined;
     }

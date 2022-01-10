@@ -27,7 +27,7 @@ export class TransactionCreate {
 
     @ApiProperty()
     value: string = '';
-    
+
     @ApiProperty()
     version: number = 0;
 }

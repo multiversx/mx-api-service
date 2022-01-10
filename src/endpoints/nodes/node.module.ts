@@ -19,6 +19,6 @@ import { NodeService } from "./node.service";
   ],
   exports: [
     NodeService,
-  ]
+  ],
 })
 export class NodeModule { }

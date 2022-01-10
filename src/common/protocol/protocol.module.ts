@@ -15,6 +15,6 @@ import { ProtocolService } from "./protocol.service";
   ],
   exports: [
     ProtocolService,
-  ]
+  ],
 })
 export class ProtocolModule { }

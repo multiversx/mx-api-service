@@ -7,12 +7,24 @@ module.exports = {
   plugins: ['@typescript-eslint/eslint-plugin'],
   extends: [
     'plugin:@typescript-eslint/recommended',
-    'plugin:prettier/recommended',
+    // 'plugin:prettier/recommended',
   ],
   root: true,
   env: {
     node: true,
     jest: true,
   },
-  ignorePatterns: ['.eslintrc.js']
+  rules: {
+    "@typescript-eslint/no-explicit-any": ["off"],
+    "@typescript-eslint/no-unused-vars": ["off"],
+    "@typescript-eslint/ban-ts-comment": ["off"],
+    "@typescript-eslint/no-empty-function": ["off"],
+    "@typescript-eslint/ban-types": ["off"],
+    "@typescript-eslint/no-var-requires": ["off"],
+    "@typescript-eslint/no-inferrable-types": ["off"],
+    "max-len": ["off"],
+    "semi": ["error"],
+    "comma-dangle": ["error", "always-multiline"]
+  },
+  ignorePatterns: ['.eslintrc.js'],
 };

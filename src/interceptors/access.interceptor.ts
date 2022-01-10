@@ -5,7 +5,7 @@ import { HealthCheckController } from "src/endpoints/health-check/health.check.c
 
 @Injectable()
 export class JwtAuthenticateGuard implements CanActivate {
-  private readonly logger: Logger
+  private readonly logger: Logger;
 
   constructor(
     private readonly apiConfigService: ApiConfigService
@@ -22,22 +22,22 @@ export class JwtAuthenticateGuard implements CanActivate {
       return true;
     }
 
-    let authorization: string = request.headers['authorization'];
+    const authorization: string = request.headers['authorization'];
     if (!authorization) {
       return false;
     }
 
-    let jwt = authorization.replace('Bearer ', '');
+    const jwt = authorization.replace('Bearer ', '');
 
     try {
-      let jwtSecret = this.apiConfigService.getJwtSecret();
+      const jwtSecret = this.apiConfigService.getJwtSecret();
 
       const accessAddress = await new Promise((resolve, reject) => {
         verify(jwt, jwtSecret, (err, decoded) => {
           if (err) {
             reject(err);
           }
-        
+
           // @ts-ignore
           resolve(decoded.accessAddress);
         });

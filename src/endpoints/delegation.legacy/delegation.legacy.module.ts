@@ -13,6 +13,6 @@ import { DelegationLegacyService } from "./delegation.legacy.service";
   ],
   exports: [
     DelegationLegacyService,
-  ]
+  ],
 })
 export class DelegationLegacyModule { }

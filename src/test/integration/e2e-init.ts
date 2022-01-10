@@ -54,7 +54,7 @@ export default class Initializer {
         .mockImplementation(jest.fn(async () => queue));
     }
 
-    let isInitialized =
+    const isInitialized =
       await Initializer.cachingService.getCacheRemote<boolean>('isInitialized');
     if (isInitialized === true) {
       return;
@@ -70,7 +70,7 @@ export default class Initializer {
     await this.fetch(CacheInfo.Keybases.key, async () => await keybaseService.confirmKeybasesAgainstCache());
     await this.fetch(CacheInfo.Nodes.key, async () => await nodeService.getAllNodesRaw());
     await this.fetch(CacheInfo.Providers.key, async () => await providerService.getAllProvidersRaw());
-    await this.fetch(CacheInfo.AllEsdtTokens.key, async () => await esdtService.getAllEsdtTokensRaw())
+    await this.fetch(CacheInfo.AllEsdtTokens.key, async () => await esdtService.getAllEsdtTokensRaw());
 
     await Initializer.cachingService.setCacheRemote<boolean>(
       'isInitialized',
@@ -80,10 +80,10 @@ export default class Initializer {
   }
 
   private static async fetch<T>(key: string, promise: () => Promise<T>) {
-    let description = `Fetching ${key}`;
+    const description = `Fetching ${key}`;
 
     await this.execute(description, async () => {
-      let value = await promise();
+      const value = await promise();
       Initializer.cachingService.setCache(key, value, Constants.oneHour());
     });
   }
@@ -93,9 +93,9 @@ export default class Initializer {
     promise: () => Promise<any>,
   ) {
     console.log(`${new Date().toISODateString()}: ${description}`);
-    let start = Date.now();
+    const start = Date.now();
     await promise();
-    let duration = ((Date.now() - start) / 1000).toFixed(2);
+    const duration = ((Date.now() - start) / 1000).toFixed(2);
     console.log(
       `${new Date().toISODateString()}: ${description} completed. Duration: ${duration}s`,
     );

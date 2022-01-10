@@ -25,7 +25,7 @@ export class NftMetadataService {
       return undefined;
     }
 
-    let metadata = await this.getMetadata(nft);
+    const metadata = await this.getMetadata(nft);
     if (!metadata) {
       return await this.refreshMetadata(nft);
     }
@@ -65,7 +65,7 @@ export class NftMetadataService {
 
     try {
       this.logger.log(`Started fetching metadata for nft with identifier '${nft.identifier}'`);
-      let nftMetadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(nft.attributes);
+      const nftMetadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(nft.attributes);
       this.logger.log(`Completed fetching metadata for nft with identifier '${nft.identifier}'`);
       return nftMetadata ?? null;
     } catch (error) {

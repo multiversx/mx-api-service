@@ -6,13 +6,13 @@ import { DelegationLegacy } from "./entities/delegation.legacy";
 @Controller()
 @ApiTags('delegation')
 export class DelegationLegacyController {
-  constructor(private readonly delegationLegacyService: DelegationLegacyService) {}
+  constructor(private readonly delegationLegacyService: DelegationLegacyService) { }
 
   @Get("/delegation-legacy")
   @ApiResponse({
     status: 200,
     description: 'The delegation legacy details',
-    type: DelegationLegacy
+    type: DelegationLegacy,
   })
   async getBlock(): Promise<DelegationLegacy> {
     return await this.delegationLegacyService.getDelegation();
