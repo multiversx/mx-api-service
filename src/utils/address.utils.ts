@@ -10,7 +10,7 @@ export class AddressUtils {
     return Address.fromBech32(address).hex();
   }
 
-  static isAddressValid(address: string): boolean {
+  static isAddressValid(address: string | Buffer): boolean {
     try {
       new Address(address);
       return true;
