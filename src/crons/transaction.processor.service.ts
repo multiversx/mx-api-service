@@ -81,7 +81,9 @@ export class TransactionProcessorService {
               }
             }
 
-            this.tryHandleNftCreate(transaction);
+            if (this.apiConfigService.getIsProcessNftsFlagActive()) {
+              this.tryHandleNftCreate(transaction);
+            }
 
             const invalidatedTokenProperties = await this.cachingService.tryInvalidateTokenProperties(transaction);
             const invalidatedTokensOnAccountKeys = await this.cachingService.tryInvalidateTokensOnAccount(transaction);
@@ -132,30 +134,29 @@ export class TransactionProcessorService {
       return;
     }
 
-    if (this.apiConfigService.getIsQueueWorkerCronActive()) {
-      await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
-      const transactionDetailed = await this.transactionService.getTransaction(transaction.hash);
-      if (!transactionDetailed || !transactionDetailed.operations || transactionDetailed.operations.length === 0) {
-        return;
-      }
+    const transactionDetailed = await this.transactionService.getTransaction(transaction.hash);
+    if (!transactionDetailed || !transactionDetailed.operations || transactionDetailed.operations.length === 0) {
+      return;
+    }
 
-      const nftIdentifier = transactionDetailed.operations[0].identifier;
+    const nftIdentifier = transactionDetailed.operations[0].identifier;
 
-      if (!nftIdentifier) {
-        return;
-      }
+    if (!nftIdentifier) {
+      return;
+    }
 
-      const nft = await this.nftService.getSingleNft(nftIdentifier);
-      if (nft) {
-        try {
-          await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
-        } catch (error) {
-          this.logger.error(`Unexpected error when processing NFT queue for NFT with identifier '${nftIdentifier}'`);
-          this.logger.error(error);
-        }
+    const nft = await this.nftService.getSingleNft(nftIdentifier);
+    if (nft) {
+      try {
+        await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
+      } catch (error) {
+        this.logger.error(`Unexpected error when processing NFT queue for NFT with identifier '${nftIdentifier}'`);
+        this.logger.error(error);
       }
     }
+
   }
 
   async tryInvalidateOwner(transaction: ShardTransaction): Promise<string[]> {
