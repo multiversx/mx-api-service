@@ -131,6 +131,13 @@ export class CacheInfo {
     };
   }
 
+  static EsdtAddressesRoles(identifier: string): CacheInfo {
+    return {
+      key: `esdt:roles:${identifier}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
   static EsdtAssets(identifier: string): CacheInfo {
     return {
       key: `esdt:assets:${identifier}`,
