@@ -103,7 +103,7 @@ export class NftMediaService {
   private getUrl(nftUri: string): string {
     const url = BinaryUtils.base64Decode(nftUri);
 
-    return TokenUtils.computeNftUri(url, this.apiConfigService.getIpfsUrl());
+    return TokenUtils.computeNftUri(url, this.NFT_THUMBNAIL_PREFIX);
   }
 
   private async getFilePropertiesFromIpfs(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
