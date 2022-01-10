@@ -205,23 +205,26 @@ export class TokenService {
   }
 
   async getTokenRoles(identifier: string): Promise<TokenAddressRoles[] | undefined> {
-    try {
-      return await this.esdtService.getEsdtAddressesRoles(identifier);
-    } catch (error) {
+    const token = await this.getToken(identifier);
+    if (!token) {
       return undefined;
     }
+
+    return await this.esdtService.getEsdtAddressesRoles(identifier);
   }
 
   async getTokenRolesForAddress(identifier: string, address: string): Promise<TokenAddressRoles | undefined> {
-    try {
-      const tokenAddressesRoles = await this.esdtService.getEsdtAddressesRoles(identifier);
-      const addressRoles = tokenAddressesRoles?.find((role: TokenAddressRoles) => role.address === address);
-      //@ts-ignore
-      delete addressRoles?.address;
-
-      return addressRoles;
-    } catch (error) {
+    const token = await this.getToken(identifier);
+    if (!token) {
       return undefined;
     }
+
+    const tokenAddressesRoles = await this.esdtService.getEsdtAddressesRoles(identifier);
+    const addressRoles = tokenAddressesRoles?.find((role: TokenAddressRoles) => role.address === address);
+
+    //@ts-ignore
+    delete addressRoles?.address;
+
+    return addressRoles;
   }
 }

@@ -11,6 +11,7 @@ import { TokenProperties } from "src/endpoints/tokens/entities/token.properties"
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { AddressUtils } from "src/utils/address.utils";
 import { ApiUtils } from "src/utils/api.utils";
+import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
 import { TokenUtils } from "src/utils/token.utils";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
@@ -283,7 +284,7 @@ export class EsdtService {
   }
 
   async getEsdtAddressesRolesRaw(identifier: string): Promise<TokenAddressRoles[] | null> {
-    const arg = Buffer.from(identifier, 'utf8').toString('hex');
+    const arg = BinaryUtils.stringToHex(identifier);
 
     const tokenAddressesAndRolesEncoded = await this.vmQueryService.vmQuery(
       this.apiConfigService.getEsdtContractAddress(),
@@ -294,30 +295,28 @@ export class EsdtService {
     );
 
     if (!tokenAddressesAndRolesEncoded) {
-      this.logger.error(`Could not fetch token addresses roles for token with identifier '${identifier}'`);
-      return null;
+      return [];
     }
 
     const tokenAddressesAndRoles: TokenAddressRoles[] = [];
     let currentAddressRoles = new TokenAddressRoles();
     for (const valueEncoded of tokenAddressesAndRolesEncoded) {
-      const value = Buffer.from(valueEncoded, 'base64');
-      if (AddressUtils.isAddressValid(value)) {
-        //store roles for current address
+      const address = BinaryUtils.tryBase64ToAddress(valueEncoded);
+      if (address) {
         if (currentAddressRoles.address) {
           tokenAddressesAndRoles.push(currentAddressRoles);
         }
 
-        const address = AddressUtils.bech32Encode(value.toString('hex'));
         currentAddressRoles = new TokenAddressRoles();
         currentAddressRoles.address = address;
         currentAddressRoles.roles = [];
+        continue;
       }
-      else {
-        const role = value.toString();
-        currentAddressRoles.roles?.push(role);
-      }
+
+      const role = BinaryUtils.base64Decode(valueEncoded);
+      currentAddressRoles.roles?.push(role);
     }
+
     if (currentAddressRoles.address) {
       tokenAddressesAndRoles.push(currentAddressRoles);
     }
