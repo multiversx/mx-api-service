@@ -16,6 +16,7 @@ import { TokenUtils } from "src/utils/token.utils";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { CachingService } from "../../common/caching/caching.service";
 import { GatewayService } from "../../common/gateway/gateway.service";
+import { TokenAddressRoles } from "../tokens/entities/token.address.roles";
 import { TokenAssets } from "../tokens/entities/token.assets";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { TokenAssetService } from "../tokens/token.asset.service";
@@ -264,6 +265,64 @@ export class EsdtService {
     }
 
     return tokenProps;
+  }
+
+  async getEsdtAddressesRoles(identifier: string): Promise<TokenAddressRoles[] | undefined> {
+    const addressesRoles = await this.cachingService.getOrSetCache(
+      CacheInfo.EsdtAddressesRoles(identifier).key,
+      async () => await this.getEsdtAddressesRolesRaw(identifier),
+      Constants.oneWeek(),
+      CacheInfo.EsdtAddressesRoles(identifier).ttl
+    );
+
+    if (!addressesRoles) {
+      return undefined;
+    }
+
+    return addressesRoles;
+  }
+
+  async getEsdtAddressesRolesRaw(identifier: string): Promise<TokenAddressRoles[] | null> {
+    const arg = Buffer.from(identifier, 'utf8').toString('hex');
+
+    const tokenAddressesAndRolesEncoded = await this.vmQueryService.vmQuery(
+      this.apiConfigService.getEsdtContractAddress(),
+      'getAllAddressesAndRoles',
+      undefined,
+      [arg],
+      true
+    );
+
+    if (!tokenAddressesAndRolesEncoded) {
+      this.logger.error(`Could not fetch token addresses roles for token with identifier '${identifier}'`);
+      return null;
+    }
+
+    const tokenAddressesAndRoles: TokenAddressRoles[] = [];
+    let currentAddressRoles = new TokenAddressRoles();
+    for (let valueEncoded of tokenAddressesAndRolesEncoded) {
+      const value = Buffer.from(valueEncoded, 'base64');
+      if (AddressUtils.isAddressValid(value)) {
+        //store roles for current address
+        if (currentAddressRoles.address) {
+          tokenAddressesAndRoles.push(currentAddressRoles);
+        }
+
+        const address = AddressUtils.bech32Encode(value.toString('hex'));
+        currentAddressRoles = new TokenAddressRoles();
+        currentAddressRoles.address = address;
+        currentAddressRoles.roles = [];
+      }
+      else {
+        const role = value.toString();
+        currentAddressRoles.roles?.push(role);
+      }
+    }
+    if (currentAddressRoles.address) {
+      tokenAddressesAndRoles.push(currentAddressRoles);
+    }
+
+    return tokenAddressesAndRoles;
   }
 
   async getTokenSupply(identifier: string): Promise<string> {
