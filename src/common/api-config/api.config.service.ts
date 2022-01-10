@@ -247,13 +247,13 @@ export class ApiConfigService {
     return isCronActive;
   }
 
-  getIsProcessNftsCronActive(): boolean {
-    const isCronActive = this.configService.get<boolean>('cron.processNfts');
-    if (isCronActive === undefined) {
+  getIsProcessNftsFlagActive(): boolean {
+    const isActive = this.configService.get<boolean>('flags.processNfts');
+    if (isActive === undefined) {
       return false;
     }
 
-    return isCronActive;
+    return isActive;
   }
 
   getIsPublicApiActive(): boolean {

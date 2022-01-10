@@ -10,13 +10,13 @@ cron:
   cacheWarmer: true
   fastWarm: true
   queueWorker: true
-  processNfts: true
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true
   useTracing: false
   useRequestLogging: false
   useVmQueryTracing: false
+  processNfts: true
 image:
   width: 600
   height: 600

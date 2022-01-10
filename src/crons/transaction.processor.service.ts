@@ -81,7 +81,7 @@ export class TransactionProcessorService {
               }
             }
 
-            if (this.apiConfigService.getIsProcessNftsCronActive()) {
+            if (this.apiConfigService.getIsProcessNftsFlagActive()) {
               this.tryHandleNftCreate(transaction);
             }
 
