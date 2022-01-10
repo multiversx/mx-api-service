@@ -122,7 +122,7 @@ export class NftMediaService {
       CacheInfo.NftMediaProperties(uri).key,
       fileProperties,
       CacheInfo.NftMediaProperties(uri).ttl
-    )
+    );
 
     return fileProperties;
   }
