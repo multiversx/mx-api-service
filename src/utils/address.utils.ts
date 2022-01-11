@@ -1,5 +1,6 @@
 import { Address } from "@elrondnetwork/erdjs";
 import { Logger } from "@nestjs/common";
+import { BinaryUtils } from "./binary.utils";
 
 export class AddressUtils {
   static bech32Encode(publicKey: string) {
@@ -72,5 +73,23 @@ export class AddressUtils {
     }
 
     return false;
+  }
+
+  static decodeAddressAttributes(codeMetadata: string) {
+    if (!codeMetadata) {
+      return undefined;
+    }
+
+    const codeHex = BinaryUtils.tryBase64ToHex(codeMetadata);
+    if (!codeHex || codeHex.length !== 4) {
+      return undefined;
+    }
+
+    const isUpgradeable = codeHex[1] === '1';
+    const isReadable = codeHex[1] === '4';
+    const isPayable = codeHex[3] === '2';
+    const isPayableBySc = codeHex[3] === '4';
+
+    return { isUpgradeable, isReadable, isPayable, isPayableBySc };
   }
 }
