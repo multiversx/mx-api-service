@@ -135,11 +135,21 @@ export class NftService {
       }
     }
 
-    for (const nft of nfts) {
-      await this.processNft(nft);
-    }
+    await this.processNfts(nfts);
 
     return nfts;
+  }
+
+  private async processNfts(nfts: Nft[]) {
+    const medias = await this.nftMediaService.batchGetMedia(nfts);
+    const metadatas = await this.nftMetadataService.batchGetMetadata(nfts);
+
+    for (const nft of nfts) {
+      nft.media = medias ? medias[nft.identifier] : undefined;
+      nft.metadata = metadatas ? metadatas[nft.identifier] : undefined;
+
+      await this.pluginService.processNft(nft);
+    }
   }
 
   private async applyNftOwner(nft: Nft): Promise<void> {
@@ -357,9 +367,7 @@ export class NftService {
       }
     }
 
-    for (const nft of nfts) {
-      await this.processNft(nft);
-    }
+    await this.processNfts(nfts);
 
     if (filter.includeFlagged !== true) {
       nfts = nfts.filter(x => !x.scamInfo);
