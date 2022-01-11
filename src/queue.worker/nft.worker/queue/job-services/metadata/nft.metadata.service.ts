@@ -41,6 +41,35 @@ export class NftMetadataService {
     );
   }
 
+  async batchGetMetadata(nfts: Nft[]): Promise<{ [key: string]: any } | null> {
+    const cachedMetadatas = await this.cachingService.batchGetCache(
+      nfts.map((nft) => CacheInfo.NftMetadata(nft.identifier).key)
+    );
+
+    const missingIndexes: number[] = [];
+    const foundMetadatasInCache: { [key: string]: any } = {};
+    cachedMetadatas.map((cachedMetadata, index) => {
+      if (cachedMetadata == null) {
+        missingIndexes.push(index);
+      } else {
+        const nftIdentifier = nfts[index].identifier;
+        foundMetadatasInCache[nftIdentifier] = cachedMetadata;
+      }
+    });
+
+    const missingIdentifiers: string[] = missingIndexes
+      .map((missingIndex) => nfts[missingIndex].identifier)
+      .filter(Boolean);
+
+    if (missingIdentifiers.length) {
+      const foundMetadatasInDb = await this.persistenceService.batchGetMetadata(missingIdentifiers);
+
+      return { ...foundMetadatasInCache, ...foundMetadatasInDb };
+    }
+
+    return foundMetadatasInCache;
+  }
+
   async refreshMetadata(nft: Nft): Promise<any> {
     let metadataRaw = await this.getMetadataRaw(nft);
     if (!metadataRaw) {

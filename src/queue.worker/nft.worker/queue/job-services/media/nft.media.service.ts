@@ -37,6 +37,35 @@ export class NftMediaService {
     );
   }
 
+  async batchGetMedia(nfts: Nft[]): Promise<{ [key: string]: NftMedia[] } | null> {
+    const cachedMedias = await this.cachingService.batchGetCache(
+      nfts.map((nft) => CacheInfo.NftMedia(nft.identifier).key)
+    );
+
+    const missingIndexes: number[] = [];
+    const foundMediasInCache: { [key: string]: any } = {};
+    cachedMedias.map((cachedMedia, index) => {
+      if (cachedMedia == null) {
+        missingIndexes.push(index);
+      } else {
+        const nftIdentifier = nfts[index].identifier;
+        foundMediasInCache[nftIdentifier] = cachedMedia;
+      }
+    });
+
+    const missingIdentifiers: string[] = missingIndexes
+      .map((missingIndex) => nfts[missingIndex].identifier)
+      .filter(Boolean);
+
+    if (missingIdentifiers.length) {
+      const foundMediasInDb = await this.persistenceService.batchGetMedia(missingIdentifiers);
+
+      return { ...foundMediasInCache, ...foundMediasInDb };
+    }
+
+    return foundMediasInCache;
+  }
+
   async refreshMedia(nft: Nft): Promise<NftMedia[] | undefined> {
     const mediaRaw = await this.getMediaRaw(nft);
     if (!mediaRaw) {
@@ -78,7 +107,6 @@ export class NftMediaService {
       } catch (error) {
         this.logger.error(`Unexpected error when fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
         this.logger.error(error);
-        throw error;
       }
 
       if (!fileProperties) {
