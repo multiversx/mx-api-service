@@ -17,6 +17,7 @@ flags:
   useTracing: false
   useRequestLogging: false
   useVmQueryTracing: false
+  processNfts: true
 image:
   width: 600
   height: 600
@@ -49,7 +50,6 @@ database:
   username: 'root'
   password: 'root'
   database: 'api'
-
 caching:
   cacheTtl: 6
   processTtl: 600
