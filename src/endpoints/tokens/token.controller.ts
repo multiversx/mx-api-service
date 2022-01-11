@@ -10,6 +10,7 @@ import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { TransactionStatus } from "../transactions/entities/transaction.status";
 import { TransactionService } from "../transactions/transaction.service";
 import { TokenAccount } from "./entities/token.account";
+import { TokenAddressRoles } from "./entities/token.address.roles";
 import { TokenDetailed } from "./entities/token.detailed";
 import { TokenService } from "./token.service";
 
@@ -247,5 +248,48 @@ export class TokenController {
       this.logger.error(error);
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
     }
+  }
+
+  @Get("/tokens/:identifier/roles")
+  @ApiResponse({
+    status: 200,
+    description: 'Roles of every address to a specific ESDT',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Token not found',
+  })
+  async getTokenRoles(
+    @Param('identifier') identifier: string,
+  ): Promise<TokenAddressRoles[]> {
+    const roles = await this.tokenService.getTokenRoles(identifier);
+
+    if (!roles) {
+      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+    }
+
+    return roles;
+  }
+
+  @Get("/tokens/:identifier/roles/:address")
+  @ApiResponse({
+    status: 200,
+    description: 'Roles for a specific address to a specific ESDT',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Token not found',
+  })
+  async getTokenRolesForAddress(
+    @Param('identifier') identifier: string,
+    @Param('address') address: string,
+  ): Promise<TokenAddressRoles> {
+    const roles = await this.tokenService.getTokenRolesForAddress(identifier, address);
+
+    if (!roles) {
+      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+    }
+
+    return roles;
   }
 }

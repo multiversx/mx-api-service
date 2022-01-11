@@ -14,6 +14,7 @@ import { QueryType } from "src/common/elastic/entities/query.type";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { TokenAccount } from "./entities/token.account";
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
+import { TokenAddressRoles } from "./entities/token.address.roles";
 
 @Injectable()
 export class TokenService {
@@ -201,5 +202,29 @@ export class TokenService {
     const count = await this.elasticService.getCount("accountsesdt", elasticQuery);
 
     return count;
+  }
+
+  async getTokenRoles(identifier: string): Promise<TokenAddressRoles[] | undefined> {
+    const token = await this.getToken(identifier);
+    if (!token) {
+      return undefined;
+    }
+
+    return await this.esdtService.getEsdtAddressesRoles(identifier);
+  }
+
+  async getTokenRolesForAddress(identifier: string, address: string): Promise<TokenAddressRoles | undefined> {
+    const token = await this.getToken(identifier);
+    if (!token) {
+      return undefined;
+    }
+
+    const tokenAddressesRoles = await this.esdtService.getEsdtAddressesRoles(identifier);
+    const addressRoles = tokenAddressesRoles?.find((role: TokenAddressRoles) => role.address === address);
+
+    //@ts-ignore
+    delete addressRoles?.address;
+
+    return addressRoles;
   }
 }

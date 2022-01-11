@@ -11,11 +11,13 @@ import { TokenProperties } from "src/endpoints/tokens/entities/token.properties"
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { AddressUtils } from "src/utils/address.utils";
 import { ApiUtils } from "src/utils/api.utils";
+import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
 import { TokenUtils } from "src/utils/token.utils";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { CachingService } from "../../common/caching/caching.service";
 import { GatewayService } from "../../common/gateway/gateway.service";
+import { TokenAddressRoles } from "../tokens/entities/token.address.roles";
 import { TokenAssets } from "../tokens/entities/token.assets";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { TokenAssetService } from "../tokens/token.asset.service";
@@ -264,6 +266,62 @@ export class EsdtService {
     }
 
     return tokenProps;
+  }
+
+  async getEsdtAddressesRoles(identifier: string): Promise<TokenAddressRoles[] | undefined> {
+    const addressesRoles = await this.cachingService.getOrSetCache(
+      CacheInfo.EsdtAddressesRoles(identifier).key,
+      async () => await this.getEsdtAddressesRolesRaw(identifier),
+      Constants.oneWeek(),
+      CacheInfo.EsdtAddressesRoles(identifier).ttl
+    );
+
+    if (!addressesRoles) {
+      return undefined;
+    }
+
+    return addressesRoles;
+  }
+
+  async getEsdtAddressesRolesRaw(identifier: string): Promise<TokenAddressRoles[] | null> {
+    const arg = BinaryUtils.stringToHex(identifier);
+
+    const tokenAddressesAndRolesEncoded = await this.vmQueryService.vmQuery(
+      this.apiConfigService.getEsdtContractAddress(),
+      'getAllAddressesAndRoles',
+      undefined,
+      [arg],
+      true
+    );
+
+    if (!tokenAddressesAndRolesEncoded) {
+      return [];
+    }
+
+    const tokenAddressesAndRoles: TokenAddressRoles[] = [];
+    let currentAddressRoles = new TokenAddressRoles();
+    for (const valueEncoded of tokenAddressesAndRolesEncoded) {
+      const address = BinaryUtils.tryBase64ToAddress(valueEncoded);
+      if (address) {
+        if (currentAddressRoles.address) {
+          tokenAddressesAndRoles.push(currentAddressRoles);
+        }
+
+        currentAddressRoles = new TokenAddressRoles();
+        currentAddressRoles.address = address;
+        currentAddressRoles.roles = [];
+        continue;
+      }
+
+      const role = BinaryUtils.base64Decode(valueEncoded);
+      currentAddressRoles.roles?.push(role);
+    }
+
+    if (currentAddressRoles.address) {
+      tokenAddressesAndRoles.push(currentAddressRoles);
+    }
+
+    return tokenAddressesAndRoles;
   }
 
   async getTokenSupply(identifier: string): Promise<string> {
