@@ -73,9 +73,7 @@ export class NftMediaService {
 
       try {
         this.logger.log(`Started fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
-        const url = this.getUrl(uri);
-
-        fileProperties = await this.getFilePropertiesFromIpfs(url);
+        fileProperties = await this.getFileProperties(uri);
         this.logger.log(`Completed fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
       } catch (error) {
         this.logger.error(`Unexpected error when fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
@@ -100,34 +98,34 @@ export class NftMediaService {
     return mediaArray;
   }
 
-  private getUrl(nftUri: string): string {
+  private getUrl(nftUri: string, prefix: string): string {
     const url = BinaryUtils.base64Decode(nftUri);
-
-    return TokenUtils.computeNftUri(url, this.apiConfigService.getIpfsUrl());
+    return TokenUtils.computeNftUri(url, prefix);
   }
 
-  private async getFilePropertiesFromIpfs(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
-    return this.cachingService.getOrSetCache(
+  private async getFileProperties(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
+    return await this.cachingService.getOrSetCache(
       CacheInfo.NftMediaProperties(uri).key,
-      async () => await this.getFilePropertiesFromIpfsRaw(uri),
+      async () => await this.getFilePropertiesRaw(uri),
       CacheInfo.NftMediaProperties(uri).ttl
     );
   }
 
-  private async getFilePropertiesFromIpfsRaw(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
-    const realUri = TokenUtils.computeNftUri(uri, this.apiConfigService.getIpfsUrl());
-    if (!realUri.startsWith(this.apiConfigService.getIpfsUrl())) {
-      this.logger.log(`Url '${uri}' is not an ipfs uri`);
-      return null;
-    }
-
+  private async getFilePropertiesRaw(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
     if (uri.endsWith('.json')) {
       return null;
     }
 
-    const response = await this.apiService.head(uri, { timeout: this.IPFS_REQUEST_TIMEOUT });
+    return await this.getFilePropertiesFromHeaders(uri, this.NFT_THUMBNAIL_PREFIX) ??
+      await this.getFilePropertiesFromHeaders(uri, this.apiConfigService.getIpfsUrl());
+  }
+
+  private async getFilePropertiesFromHeaders(uri: string, prefix: string): Promise<{ contentType: string, contentLength: number } | null> {
+    const url = this.getUrl(uri, prefix);
+    const response = await this.apiService.head(url, { timeout: this.IPFS_REQUEST_TIMEOUT });
+
     if (response.status !== HttpStatus.OK) {
-      this.logger.error(`Unexpected http status code '${response.status}' while fetching file properties from uri '${uri}'`);
+      this.logger.error(`Unexpected http status code '${response.status}' while fetching file properties from url '${url}'`);
       return null;
     }
 
