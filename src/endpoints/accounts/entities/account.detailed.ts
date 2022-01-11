@@ -28,4 +28,17 @@ export class AccountDetailed extends Account {
 
     @ApiProperty()
     deployedAt?: number;
+
+    @ApiProperty()
+    isUpgradeable?: boolean;
+
+    @ApiProperty()
+    isReadable?: boolean;
+
+    @ApiProperty()
+    isPayable?: boolean;
+
+
+    @ApiProperty()
+    isPayableBySc?: boolean;
 }

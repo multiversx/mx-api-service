@@ -80,7 +80,7 @@ export class AccountService {
         txCount,
         scrCount,
         {
-          account: { nonce, balance, code, codeHash, rootHash, username, developerReward, ownerAddress },
+          account: { nonce, balance, code, codeHash, rootHash, username, developerReward, ownerAddress, codeMetadata },
         },
       ] = await Promise.all([
         this.transactionService.getTransactionCountForAddress(address),
@@ -89,17 +89,21 @@ export class AccountService {
       ]);
 
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
+      let account: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, username, shard, developerReward, ownerAddress };
 
-      const result: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, username, shard, developerReward, ownerAddress };
+      const codeAttributes = AddressUtils.decodeAddressAttributes(codeMetadata);
+      if (codeAttributes) {
+        account = { ...account, ...codeAttributes };
+      }
 
-      if (result.code && !this.apiConfigService.getUseLegacyElastic()) {
+      if (account.code && !this.apiConfigService.getUseLegacyElastic()) {
         const deployedAt = await this.getAccountDeployedAt(address);
         if (deployedAt) {
-          result.deployedAt = deployedAt;
+          account.deployedAt = deployedAt;
         }
       }
 
-      return result;
+      return account;
     } catch (error) {
       this.logger.error(error);
       this.logger.error(`Error when getting account details for address '${address}'`);
