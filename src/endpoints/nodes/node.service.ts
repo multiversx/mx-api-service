@@ -40,10 +40,6 @@ export class NodeService {
   private getIssues(node: Node, version: string | undefined): string[] {
     const issues: string[] = [];
 
-    // if (node.totalUpTimeSec === 0) {
-    //   issues.push('offlineSinceGenesis'); // Offline since genesis
-    // }
-
     if (version && version !== node.version) {
       issues.push('versionMismatch'); // Outdated client version
     }
@@ -452,8 +448,6 @@ export class NodeService {
         numValidatorSuccess: validatorSuccess,
         numValidatorFailure: validatorFailure,
         numValidatorIgnoredSignatures: validatorIgnoredSignatures,
-        totalUpTimeSec: uptimeSec,
-        totalDownTimeSec: downtimeSec,
         receivedShardID,
         computedShardID,
         peerType,
@@ -499,16 +493,12 @@ export class NodeService {
         rating: parseFloat(parseFloat(rating).toFixed(2)),
         tempRating: parseFloat(parseFloat(tempRating).toFixed(2)),
         ratingModifier: ratingModifier ? ratingModifier : 0,
-        uptimeSec,
-        downtimeSec,
         shard,
         type: nodeType,
         status: nodeStatus,
         online,
         nonce,
         instances,
-        uptime: 0,
-        downtime: 0,
         owner: '',
         provider: '',
         stake: '',
@@ -522,15 +512,6 @@ export class NodeService {
         issues: [],
         position: 0,
       };
-
-      if (node.uptimeSec === 0 && item.downtimeSec === 0) {
-        node.uptime = item.online ? 100 : 0;
-        node.downtime = item.online ? 0 : 100;
-      } else {
-        const uptime = (node.uptimeSec * 100) / (node.uptimeSec + node.downtimeSec);
-        node.uptime = parseFloat(uptime.toFixed(2));
-        node.downtime = parseFloat((100 - uptime).toFixed(2));
-      }
 
       if (['queued', 'jailed'].includes(peerType)) {
         node.shard = undefined;

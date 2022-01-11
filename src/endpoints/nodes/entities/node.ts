@@ -22,12 +22,6 @@ export class Node {
     ratingModifier: number = 0;
 
     @ApiProperty()
-    uptimeSec: number = 0;
-
-    @ApiProperty()
-    downtimeSec: number = 0;
-
-    @ApiProperty()
     shard: number | undefined = undefined;
 
     @ApiProperty()
@@ -44,12 +38,6 @@ export class Node {
 
     @ApiProperty()
     instances: number = 0;
-
-    @ApiProperty()
-    uptime: number = 0;
-
-    @ApiProperty()
-    downtime: number = 0;
 
     @ApiProperty()
     owner: string = '';

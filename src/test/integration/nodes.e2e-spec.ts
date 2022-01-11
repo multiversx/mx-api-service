@@ -114,16 +114,16 @@ describe('Node Service', () => {
       }
     });
 
-    it('should be sorted in ascending order by uptime', async () => {
+    it('should be sorted in ascending order by tempRating', async () => {
       const nodeFilter: NodeFilter = new NodeFilter();
-      nodeFilter.sort = NodeSort.uptime;
+      nodeFilter.sort = NodeSort.tempRating;
 
       const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
-      let currentUptime = 0;
+      let currentTempRating = 0;
       for (const node of filteredNodes) {
-        if (node.uptime) {
-          expect(node.uptime).toBeGreaterThanOrEqual(currentUptime);
-          currentUptime = node.uptime;
+        if (node.tempRating) {
+          expect(node.tempRating).toBeGreaterThanOrEqual(currentTempRating);
+          currentTempRating = node.tempRating;
         }
       }
     });
