@@ -12,4 +12,7 @@ export class Account {
 
     @ApiProperty({ description: 'The shard identifier of the account' })
     shard: number = 0;
+
+    @ApiProperty()
+    scamInfo?: any | undefined = undefined;
 }

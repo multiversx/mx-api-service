@@ -15,7 +15,8 @@ import { TokenModule } from "../tokens/token.module";
 @Module({
   imports: [
     ApiConfigModule, ExternalModule, CachingModule, BlsModule, ElasticModule, GatewayModule,
-    TokenModule,
+    forwardRef(() => TokenModule),
+    forwardRef(() => GatewayModule),
     forwardRef(() => VmQueryModule),
     forwardRef(() => MetricsModule),
     ProtocolModule,

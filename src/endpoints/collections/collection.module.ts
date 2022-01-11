@@ -10,7 +10,7 @@ import { CollectionService } from "./collection.service";
     forwardRef(() => CommonModule),
     EsdtModule,
     VmQueryModule,
-    TokenModule,
+    forwardRef(() => TokenModule),
   ],
   providers: [
     CollectionService,
