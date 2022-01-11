@@ -10,11 +10,19 @@ export class PassThroughService implements PersistenceInterface {
     return null;
   }
 
+  async batchGetMedia(_: string[]): Promise<{ [key: string]: NftMedia[] } | null> {
+    return null;
+  }
+
   async setMetadata(_: string, __: any): Promise<void> {
 
   }
 
   async getMedia(_: string): Promise<NftMedia[] | null> {
+    return null;
+  }
+
+  async batchGetMetadata(_: string[]): Promise<{ [key: string]: any } | null> {
     return null;
   }
 

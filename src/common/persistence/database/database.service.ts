@@ -5,6 +5,7 @@ import { NftMediaDb } from "src/common/persistence/database/entities/nft.media.d
 import { NftMetadataDb } from "src/common/persistence/database/entities/nft.metadata.db";
 import { Repository } from "typeorm";
 import { PersistenceInterface } from "../persistence.interface";
+import { ApiUtils } from "src/utils/api.utils";
 
 @Injectable()
 export class DatabaseService implements PersistenceInterface {
@@ -34,6 +35,23 @@ export class DatabaseService implements PersistenceInterface {
     }
   }
 
+  async batchGetMetadata(identifiers: string[]): Promise<{ [key: string]: any[] }> {
+    const chunks = ApiUtils.getChunks(identifiers, 100);
+
+    const metadatas: { [key: string]: any[] } = {};
+    for (const chunk of chunks) {
+      const metadatasDb = await this.nftMetadataRepository.findByIds(chunk);
+
+      for (const metadataDb of metadatasDb) {
+        if (metadataDb.id) {
+          metadatas[metadataDb.id] = metadataDb.content;
+        }
+      }
+    }
+
+    return metadatas;
+  }
+
   async setMetadata(identifier: string, content: any): Promise<void> {
     const metadata = new NftMetadataDb();
     metadata.id = identifier;
@@ -55,6 +73,23 @@ export class DatabaseService implements PersistenceInterface {
       this.logger.error(error);
       return [];
     }
+  }
+
+  async batchGetMedia(identifiers: string[]): Promise<{ [key: string]: NftMedia[] }> {
+    const chunks = ApiUtils.getChunks(identifiers, 100);
+
+    const medias: { [key: string]: NftMedia[] } = {};
+    for (const chunk of chunks) {
+      const mediasDb = await this.nftMediaRepository.findByIds(chunk);
+
+      for (const mediaDb of mediasDb) {
+        if (mediaDb.id) {
+          medias[mediaDb.id] = mediaDb.content;
+        }
+      }
+    }
+
+    return medias;
   }
 
   async setMedia(identifier: string, media: NftMedia[]): Promise<void> {
