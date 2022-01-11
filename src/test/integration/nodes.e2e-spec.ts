@@ -3,7 +3,6 @@ import { CachingService } from "src/common/caching/caching.service";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
 import { Node } from "src/endpoints/nodes/entities/node";
 import { NodeFilter } from "src/endpoints/nodes/entities/node.filter";
-import { NodeSort } from "src/endpoints/nodes/entities/node.sort";
 import { NodeStatus } from "src/endpoints/nodes/entities/node.status";
 import { NodeType } from "src/endpoints/nodes/entities/node.type";
 import { NodeService } from "src/endpoints/nodes/node.service";
@@ -111,20 +110,6 @@ describe('Node Service', () => {
       for (const node of filteredNodes) {
         expect(node.status).toStrictEqual(NodeStatus.eligible);
         expect(node.online).toBeTruthy();
-      }
-    });
-
-    it('should be sorted in ascending order by uptime', async () => {
-      const nodeFilter: NodeFilter = new NodeFilter();
-      nodeFilter.sort = NodeSort.uptime;
-
-      const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
-      let currentUptime = 0;
-      for (const node of filteredNodes) {
-        if (node.uptime) {
-          expect(node.uptime).toBeGreaterThanOrEqual(currentUptime);
-          currentUptime = node.uptime;
-        }
       }
     });
   });
