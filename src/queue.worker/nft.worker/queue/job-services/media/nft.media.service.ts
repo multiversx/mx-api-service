@@ -104,38 +104,30 @@ export class NftMediaService {
   }
 
   private async getFileProperties(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
-    const cachedFileProperties = await this.cachingService.getCache<{ contentType: string, contentLength: number } | null>(CacheInfo.NftMediaProperties(uri).key);
-    if (cachedFileProperties) {
-      return cachedFileProperties;
-    }
-
-    let url = this.getUrl(uri, this.NFT_THUMBNAIL_PREFIX);
-
-    let fileProperties = await this.getFilePropertiesRaw(url);
-    if (!fileProperties) {
-      //fallback to ipfs
-      url = this.getUrl(uri, this.apiConfigService.getIpfsUrl());
-      fileProperties = await this.getFilePropertiesRaw(url);
-    }
-
-    await this.cachingService.setCache(
+    return await this.cachingService.getOrSetCache(
       CacheInfo.NftMediaProperties(uri).key,
-      fileProperties,
+      async () => await this.getFilePropertiesRaw(uri),
       CacheInfo.NftMediaProperties(uri).ttl
     );
-
-    return fileProperties;
   }
 
-  private async getFilePropertiesRaw(url: string): Promise<{ contentType: string, contentLength: number } | null> {
+  private async getFilePropertiesRaw(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
+    let url = this.getUrl(uri, this.NFT_THUMBNAIL_PREFIX);
+
     if (url.endsWith('.json')) {
       return null;
     }
 
-    const response = await this.apiService.head(url, { timeout: this.IPFS_REQUEST_TIMEOUT });
+    let response = await this.apiService.head(url, { timeout: this.IPFS_REQUEST_TIMEOUT });
     if (response.status !== HttpStatus.OK) {
-      this.logger.error(`Unexpected http status code '${response.status}' while fetching file properties from uri '${url}'`);
-      return null;
+      //fallback to ipfs
+      url = this.getUrl(uri, this.apiConfigService.getIpfsUrl());
+      response = await this.apiService.head(url, { timeout: this.IPFS_REQUEST_TIMEOUT });
+
+      if (response.status !== HttpStatus.OK) {
+        this.logger.error(`Unexpected http status code '${response.status}' while fetching file properties from uri '${uri}'`);
+        return null;
+      }
     }
 
     const { headers } = response;
