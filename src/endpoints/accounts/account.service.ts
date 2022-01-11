@@ -20,6 +20,7 @@ import { ElasticSortOrder } from 'src/common/elastic/entities/elastic.sort.order
 import { DeployedContract } from './entities/deployed.contract';
 import { TransactionService } from '../transactions/transaction.service';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
+import { PluginService } from 'src/common/plugins/plugin.service';
 
 @Injectable()
 export class AccountService {
@@ -33,6 +34,8 @@ export class AccountService {
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
     private readonly transactionService: TransactionService,
+    @Inject(forwardRef(() => PluginService))
+    private readonly pluginService: PluginService,
   ) {
     this.logger = new Logger(AccountService.name);
   }
@@ -103,6 +106,7 @@ export class AccountService {
         }
       }
 
+      await this.pluginService.processAccount(account);
       return account;
     } catch (error) {
       this.logger.error(error);
