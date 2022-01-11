@@ -8,6 +8,7 @@ import { BinaryUtils } from "src/utils/binary.utils";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { LocalCacheService } from "./local.cache.service";
 import { MetricsService } from "../metrics/metrics.service";
+import { ApiUtils } from "src/utils/api.utils";
 
 @Injectable()
 export class CachingService {
@@ -134,7 +135,7 @@ export class CachingService {
   async batchProcess<IN, OUT>(payload: IN[], cacheKeyFunction: (element: IN) => string, handler: (generator: IN) => Promise<OUT>, ttl: number = this.configService.getCacheTtl(), skipCache: boolean = false): Promise<OUT[]> {
     const result: OUT[] = [];
 
-    const chunks = this.getChunks(payload, 100);
+    const chunks = ApiUtils.getChunks(payload, 100);
 
     for (const [_, chunk] of chunks.entries()) {
       // this.logger.log(`Loading ${index + 1} / ${chunks.length} chunks`);
@@ -226,7 +227,7 @@ export class CachingService {
     }
 
 
-    const chunks = this.getChunks(
+    const chunks = ApiUtils.getChunks(
       keys.map((key, index) => {
         const element: any = {};
         element[key] = index;
@@ -272,22 +273,8 @@ export class CachingService {
     }
   }
 
-  private getChunks<T>(array: T[], size = 25): T[][] {
-    return array.reduce((result: T[][], item, current) => {
-      const index = Math.floor(current / size);
-
-      if (!result[index]) {
-        result[index] = [];
-      }
-
-      result[index].push(item);
-
-      return result;
-    }, []);
-  }
-
   async batchGetCache<T>(keys: string[]): Promise<T[]> {
-    const chunks = this.getChunks(keys, 100);
+    const chunks = ApiUtils.getChunks(keys, 100);
 
     const result = [];
 
