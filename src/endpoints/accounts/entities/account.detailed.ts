@@ -38,7 +38,6 @@ export class AccountDetailed extends Account {
     @ApiProperty()
     isPayable?: boolean;
 
-
     @ApiProperty()
-    isPayableBySc?: boolean;
+    isPayableBySmartContract?: boolean;
 }

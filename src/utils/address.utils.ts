@@ -75,7 +75,7 @@ export class AddressUtils {
     return false;
   }
 
-  static decodeAddressAttributes(codeMetadata: string) {
+  static decodeCodeMetadata(codeMetadata: string): { isUpgradeable: boolean, isReadable: boolean, isPayable: boolean, isPayableBySmartContract: boolean } | undefined {
     if (!codeMetadata) {
       return undefined;
     }
@@ -88,8 +88,8 @@ export class AddressUtils {
     const isUpgradeable = codeHex[1] === '1';
     const isReadable = codeHex[1] === '4';
     const isPayable = codeHex[3] === '2';
-    const isPayableBySc = codeHex[3] === '4';
+    const isPayableBySmartContract = codeHex[3] === '4';
 
-    return { isUpgradeable, isReadable, isPayable, isPayableBySc };
+    return { isUpgradeable, isReadable, isPayable, isPayableBySmartContract };
   }
 }

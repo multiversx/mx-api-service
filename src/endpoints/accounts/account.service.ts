@@ -91,7 +91,7 @@ export class AccountService {
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
       let account: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, username, shard, developerReward, ownerAddress };
 
-      const codeAttributes = AddressUtils.decodeAddressAttributes(codeMetadata);
+      const codeAttributes = AddressUtils.decodeCodeMetadata(codeMetadata);
       if (codeAttributes) {
         account = { ...account, ...codeAttributes };
       }
