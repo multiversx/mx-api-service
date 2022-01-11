@@ -118,16 +118,22 @@ export class NftMediaService {
       return null;
     }
 
-    let response = await this.apiService.head(url, { timeout: this.IPFS_REQUEST_TIMEOUT });
-    if (response.status !== HttpStatus.OK) {
+    let fileProperties = await this.getFilePropertiesFromHeaders(url);
+    if (!fileProperties) {
       //fallback to ipfs
       url = this.getUrl(uri, this.apiConfigService.getIpfsUrl());
-      response = await this.apiService.head(url, { timeout: this.IPFS_REQUEST_TIMEOUT });
+      fileProperties = await this.getFilePropertiesFromHeaders(url);
+    }
 
-      if (response.status !== HttpStatus.OK) {
-        this.logger.error(`Unexpected http status code '${response.status}' while fetching file properties from uri '${uri}'`);
-        return null;
-      }
+    return fileProperties;
+  }
+
+  private async getFilePropertiesFromHeaders(url: string): Promise<{ contentType: string, contentLength: number } | null> {
+    const response = await this.apiService.head(url, { timeout: this.IPFS_REQUEST_TIMEOUT });
+
+    if (response.status !== HttpStatus.OK) {
+      this.logger.error(`Unexpected http status code '${response.status}' while fetching file properties from url '${url}'`);
+      return null;
     }
 
     const { headers } = response;
