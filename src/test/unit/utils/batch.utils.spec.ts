@@ -85,7 +85,6 @@ describe('Batch Utils', () => {
     const result = await BatchUtils.batchGetSimple(
       elements,
       element => element.id.toString(),
-      3,
       async elements => {
         const result: { [key: string]: string } = {};
         for (const element of elements) {
@@ -97,7 +96,8 @@ describe('Batch Utils', () => {
         }
 
         return result;
-      }
+      },
+      3
     );
 
     expect(result).toEqual({
@@ -133,7 +133,6 @@ describe('Batch Utils', () => {
     const result = await BatchUtils.batchGet<{ id: string, value: string }, string>(
       inputElements,
       element => element.id.toString(),
-      3,
       [
         {
           getter: async elements => {
@@ -177,7 +176,8 @@ describe('Batch Utils', () => {
             return result;
           },
         },
-      ]
+      ],
+      3
     );
 
     expect(result).toEqual({
