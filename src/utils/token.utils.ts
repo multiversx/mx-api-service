@@ -1,5 +1,7 @@
 import { ApiUtils } from "./api.utils";
 import * as crypto from 'crypto-js';
+import { Nft } from "src/endpoints/nfts/entities/nft";
+import { NftType } from "src/endpoints/nfts/entities/nft.type";
 
 export class TokenUtils {
   static isEsdt(tokenIdentifier: string) {
@@ -28,5 +30,9 @@ export class TokenUtils {
     const urlHash = TokenUtils.getUrlHash(fileUrl);
 
     return `${collectionIdentifier}-${urlHash}`;
+  }
+
+  static hasMedia(nft: Nft) {
+    return nft.type !== NftType.MetaESDT && nft.media;
   }
 }
