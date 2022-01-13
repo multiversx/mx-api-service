@@ -239,7 +239,7 @@ describe('Nft Service', () => {
         },
         nftFilter,
       );
-      for (let nft of nftAddressNFT) {
+      for (const nft of nftAddressNFT) {
         expect(nftAddressNFT).toBeInstanceOf(Array);
         expect(nft).toHaveLength(10);
       }
@@ -259,7 +259,7 @@ describe('Nft Service', () => {
         nftFilter,
         nftQueryOption
       );
-      for (let nft of nftAddressNFT) {
+      for (const nft of nftAddressNFT) {
         expect(nftAddressNFT).toBeInstanceOf(Array);
         expect(nft).toHaveLength(10);
       }
@@ -279,7 +279,7 @@ describe('Nft Service', () => {
         nftFilter,
         nftQueryOption
       );
-      for (let nft of nftAddressSFE) {
+      for (const nft of nftAddressSFE) {
         expect(nft).toBeInstanceOf(Array);
         expect(nft).toHaveLength(10);
       }
