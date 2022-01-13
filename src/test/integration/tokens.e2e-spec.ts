@@ -4,11 +4,16 @@ import { TokenService } from 'src/endpoints/tokens/token.service';
 import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 import { TokenFilter } from 'src/endpoints/tokens/entities/token.filter';
+import {AccountService} from "../../endpoints/accounts/account.service";
+import {TokenWithBalance} from "../../endpoints/tokens/entities/token.with.balance";
+
 
 describe('Token Service', () => {
   let tokenService: TokenService;
+  let accountService: AccountService;
   let tokenName: string;
   let tokenIdentifier: string;
+  let accountAddress: string;
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -17,9 +22,16 @@ describe('Token Service', () => {
     }).compile();
 
     tokenService = moduleRef.get<TokenService>(TokenService);
+    accountService = moduleRef.get<AccountService>(AccountService);
+
+    const accounts = await accountService.getAccounts({from: 0, size: 1});
+    expect(accounts).toHaveLength(1);
+
+    const account = accounts[0];
+    accountAddress = account.address;
 
     const tokens = await tokenService.getTokens(
-      { from: 0, size: 1 },
+      {from: 0, size: 1},
       new TokenFilter(),
     );
     expect(tokens).toHaveLength(1);
@@ -33,7 +45,7 @@ describe('Token Service', () => {
     describe('Tokens pagination', () => {
       it(`should return a list with 25 tokens`, async () => {
         const tokensList = await tokenService.getTokens(
-          { from: 0, size: 25 },
+          {from: 0, size: 25},
           new TokenFilter(),
         );
 
@@ -43,7 +55,7 @@ describe('Token Service', () => {
 
       it(`should return a list with 10 tokens`, async () => {
         const tokensList = await tokenService.getTokens(
-          { from: 0, size: 10 },
+          {from: 0, size: 10},
           new TokenFilter(),
         );
         expect(tokensList).toBeInstanceOf(Array);
@@ -54,8 +66,8 @@ describe('Token Service', () => {
     describe('Tokens filters', () => {
       it(`should return a list of tokens for a collection`, async () => {
         const tokensList = await tokenService.getTokens(
-          { from: 0, size: 50 },
-          { name: tokenName },
+          {from: 0, size: 50},
+          {name: tokenName},
         );
         expect(tokensList).toBeInstanceOf(Array);
 
@@ -67,7 +79,7 @@ describe('Token Service', () => {
       it(`should return a list with nfts that has identifiers`, async () => {
         const tokenFilter = new TokenFilter();
         tokenFilter.identifiers = ['MSFT-532e00', 'EWLD-e23800', 'invalidIdentifier'];
-        const tokensList = await tokenService.getTokens({ from: 0, size: 25 }, tokenFilter);
+        const tokensList = await tokenService.getTokens({from: 0, size: 25}, tokenFilter);
         expect(tokensList).toBeInstanceOf(Array);
 
         expect(tokensList.length).toEqual(2);
@@ -79,7 +91,7 @@ describe('Token Service', () => {
       it(`should return an empty tokens list`, async () => {
         const tokenFilter = new TokenFilter();
         tokenFilter.identifiers = ['LKFARM-9d1ea8-8fb5', 'LKFARM-9d1ea8-8fb6'];
-        const tokensList = await tokenService.getTokens({ from: 0, size: 25 }, tokenFilter);
+        const tokensList = await tokenService.getTokens({from: 0, size: 25}, tokenFilter);
         expect(tokensList).toBeInstanceOf(Array);
 
         expect(tokensList.length).toEqual(0);
@@ -109,6 +121,75 @@ describe('Token Service', () => {
 
     it(`should throw 'Token not found' error`, async () => {
       expect(await tokenService.getToken(tokenIdentifier + 'a')).toBeUndefined();
+    });
+  });
+
+  describe('Get Token Roles', () => {
+    it(`should return token roles`, async () => {
+      const tokenRoles = await tokenService.getToken(tokenIdentifier);
+
+      if (tokenRoles) {
+        const value = await tokenService.getTokenRoles(tokenRoles.identifier);
+        expect(value).toBeInstanceOf(Array);
+      }
+    });
+  });
+
+  describe('Get Token Accounts', () => {
+    it(`should return token with size of 10`, async () => {
+      const tokenRoles = await tokenService.getToken(tokenIdentifier);
+
+      if (tokenRoles) {
+        const tokensList = await tokenService.getTokenAccounts({from: 0, size: 10}, tokenRoles.name);
+        expect(tokensList).toBeInstanceOf(Array);
+      }
+    });
+  });
+
+  describe('Get Token For Address', () => {
+    it(`should return Token for address`, async () => {
+      const tokenFilter = new TokenFilter();
+      tokenFilter.name = 'MSFT-532e00';
+      const tokensList = await tokenService.getTokenForAddress(accountAddress, tokenFilter.name);
+
+      expect(tokensList).toBeInstanceOf(TokenWithBalance);
+    });
+    it(`should return undefined`, async () => {
+      const tokenFilter = new TokenFilter();
+      tokenFilter.name = 'invalidToken';
+      const tokensList = await tokenService.getTokenForAddress(accountAddress, tokenFilter.name);
+      expect(tokensList).toBeUndefined();
+    });
+  });
+
+  describe('Get All Tokens For Address', () => {
+    it(`should return all token for address`, async () => {
+      const tokenFilter = new TokenFilter();
+      tokenFilter.identifiers = ['MSFT-532e00', 'EWLD-e23800'];
+      const tokensList = await tokenService.getAllTokensForAddress(accountAddress, tokenFilter);
+
+      expect(tokensList).toBeInstanceOf(Array);
+    });
+  });
+
+  describe('Get Token Accounts Count', () => {
+    it(`should return the count of token from a specific account`, async () => {
+      const tokenFilter = new TokenFilter();
+      tokenFilter.identifier = 'MSFT-532e00';
+      const tokenCount = await tokenService.getTokenAccountsCount(tokenFilter.identifier);
+
+      expect(tokenCount).toBe(1);
+    });
+  });
+
+  describe('Get Tokens For Address', () => {
+    it(`should return all tokens for address`, async () => {
+      const tokenFilter = new TokenFilter();
+      tokenFilter.identifiers = ['MSFT-532e00', 'EWLD-e23800'];
+
+      const tokensList = await tokenService.getTokensForAddress(accountAddress, {from: 0, size: 25}, tokenFilter);
+
+      expect(tokensList).toBeInstanceOf(Array);
     });
   });
 });
