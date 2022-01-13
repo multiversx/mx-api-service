@@ -97,5 +97,91 @@ describe('Account Service', () => {
         expect(accountUserName).toBeDefined();
       });
     });
+
+    describe('Account Deployed', () => {
+      it(`should return the number of account deployed for address`, async () => {
+        const accountDeployed: Number = new Number(accountService.getAccountDeployedAt(accountAddress));
+        expect(accountDeployed).toBeInstanceOf(Number);
+      });
+    });
+
+    describe('Get Accounts Raw', () => {
+      it(`should return the number of account deployed for address with size 10`, async () => {
+        const accountRaw = await accountService.getAccountsRaw({from: 0, size: 10});
+        expect(accountRaw).toBeInstanceOf(Array);
+        expect(accountRaw).toHaveLength(10);
+
+        for (const account of accountRaw) {
+          expect(account).toBeInstanceOf(Account);
+        }
+      });
+
+      it(`should return the number of account deployed for address with size 50`, async () => {
+        const accountRaw = await accountService.getAccountsRaw({from: 0, size: 50});
+        expect(accountRaw).toBeInstanceOf(Array);
+        expect(accountRaw).toHaveLength(50);
+
+        for (const account of accountRaw) {
+          expect(account).toBeInstanceOf(Account);
+        }
+      });
+    });
+
+    describe('Deferred Account', () => {
+      it(`should return a list of deferred accounts`, async () => {
+        const defferedAccount = await accountService.getDeferredAccount(accountAddress);
+        expect(defferedAccount).toBeInstanceOf(Array);
+      });
+    });
+
+    describe('Get Keys', () => {
+      it(`should return a list of keys for a specific address`, async () => {
+        const getKeysAddress = await accountService.getDeferredAccount(accountAddress);
+        expect(getKeysAddress).toBeInstanceOf(Array);
+      });
+    });
+  });
+
+  describe('Get Account Contracts', () => {
+    it(`should return accounts contracts`, async () => {
+      const accountRaw = await accountService.getAccountContracts({from: 0, size: 10}, accountAddress);
+
+      for (const account of accountRaw) {
+        expect(account).toBeInstanceOf(Array);
+      }
+    });
+    it(`should return accounts contracts with size 50`, async () => {
+      const accountRaw = await accountService.getAccountContracts({from: 0, size: 10}, accountAddress);
+
+      for (const account of accountRaw) {
+        expect(account).toBeInstanceOf(Array);
+        expect(account).toHaveLength(50);
+      }
+    });
+
+    it(`should return accounts contracts with properties`, async () => {
+      const accountRaw = await accountService.getAccountContracts({from: 0, size: 10}, accountAddress);
+
+      for (const account of accountRaw) {
+        expect(account).toHaveProperty('address');
+        expect(account).toHaveProperty('shard');
+        expect(account).toHaveProperty('nonce');
+      }
+    });
+  });
+
+  describe('Account Contract Count', () => {
+    it(`should return the number of account deployed for address`, async () => {
+      const accountCount: Number = new Number(accountService.getAccountContractsCount(accountAddress));
+      expect(accountCount).toBeInstanceOf(Number);
+    });
+  });
+
+  describe('Account Username Raw', () => {
+    it(`should return the username raw`, async () => {
+      const accountUsername: String = new String(accountService.getAccountUsernameRaw(accountAddress));
+      expect(accountUsername).toBeInstanceOf(String);
+    });
   });
 });
+
