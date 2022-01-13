@@ -148,16 +148,16 @@ export class NftMediaService {
   }
 
   private async getFilePropertiesRaw(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
-    if (uri.endsWith('.json')) {
-      return null;
-    }
-
     return await this.getFilePropertiesFromHeaders(uri, this.NFT_THUMBNAIL_PREFIX) ??
       await this.getFilePropertiesFromHeaders(uri, this.apiConfigService.getIpfsUrl());
   }
 
   private async getFilePropertiesFromHeaders(uri: string, prefix: string): Promise<{ contentType: string, contentLength: number } | null> {
     const url = this.getUrl(uri, prefix);
+    if (url.endsWith('.json')) {
+      return null;
+    }
+
     const response = await this.apiService.head(url, { timeout: this.IPFS_REQUEST_TIMEOUT });
 
     if (response.status !== HttpStatus.OK) {

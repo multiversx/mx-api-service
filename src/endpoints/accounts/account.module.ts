@@ -1,5 +1,6 @@
 import { forwardRef, Module } from "@nestjs/common";
 import { CommonModule } from "src/common/common.module";
+import { PluginModule } from "src/plugins/plugin.module";
 import { CollectionModule } from "../collections/collection.module";
 import { DelegationLegacyModule } from "../delegation.legacy/delegation.legacy.module";
 import { NftModule } from "../nfts/nft.module";
@@ -15,7 +16,7 @@ import { AccountService } from "./account.service";
   imports: [
     forwardRef(() => CommonModule),
     forwardRef(() => VmQueryModule),
-    forwardRef(() => TokenModule),
+    TokenModule,
     forwardRef(() => NftModule),
     forwardRef(() => DelegationLegacyModule),
     forwardRef(() => WaitingListModule),
@@ -23,6 +24,7 @@ import { AccountService } from "./account.service";
     forwardRef(() => TransactionModule),
     forwardRef(() => SmartContractResultModule),
     forwardRef(() => CollectionModule),
+    forwardRef(() => PluginModule),
   ],
   providers: [
     AccountService,
