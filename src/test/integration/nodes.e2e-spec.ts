@@ -141,7 +141,7 @@ describe('Node Service', () => {
       const nodeFilter = new NodeFilter();
       const filteredSizeNode = await nodeService.getNodes({
         from: 0,
-        size: 10
+        size: 10,
       }, nodeFilter);
 
       expect(filteredSizeNode).toBeInstanceOf(Array);
