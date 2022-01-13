@@ -5,7 +5,6 @@ import { NftMediaDb } from "src/common/persistence/database/entities/nft.media.d
 import { NftMetadataDb } from "src/common/persistence/database/entities/nft.metadata.db";
 import { Repository } from "typeorm";
 import { PersistenceInterface } from "../persistence.interface";
-import { ApiUtils } from "src/utils/api.utils";
 
 @Injectable()
 export class DatabaseService implements PersistenceInterface {
@@ -35,21 +34,10 @@ export class DatabaseService implements PersistenceInterface {
     }
   }
 
-  async batchGetMetadata(identifiers: string[]): Promise<{ [key: string]: any[] }> {
-    const chunks = ApiUtils.getChunks(identifiers, 100);
+  async batchGetMetadata(identifiers: string[]): Promise<{ [key: string]: any }> {
+    const metadatasDb = await this.nftMetadataRepository.findByIds(identifiers);
 
-    const metadatas: { [key: string]: any[] } = {};
-    for (const chunk of chunks) {
-      const metadatasDb = await this.nftMetadataRepository.findByIds(chunk);
-
-      for (const metadataDb of metadatasDb) {
-        if (metadataDb.id) {
-          metadatas[metadataDb.id] = metadataDb.content;
-        }
-      }
-    }
-
-    return metadatas;
+    return metadatasDb.toObject(metadata => metadata.id);
   }
 
   async setMetadata(identifier: string, content: any): Promise<void> {
@@ -76,20 +64,9 @@ export class DatabaseService implements PersistenceInterface {
   }
 
   async batchGetMedia(identifiers: string[]): Promise<{ [key: string]: NftMedia[] }> {
-    const chunks = ApiUtils.getChunks(identifiers, 100);
+    const mediasDb = await this.nftMediaRepository.findByIds(identifiers);
 
-    const medias: { [key: string]: NftMedia[] } = {};
-    for (const chunk of chunks) {
-      const mediasDb = await this.nftMediaRepository.findByIds(chunk);
-
-      for (const mediaDb of mediasDb) {
-        if (mediaDb.id) {
-          medias[mediaDb.id] = mediaDb.content;
-        }
-      }
-    }
-
-    return medias;
+    return mediasDb.map(x => x.content).toObject(media => media.id);
   }
 
   async setMedia(identifier: string, media: NftMedia[]): Promise<void> {

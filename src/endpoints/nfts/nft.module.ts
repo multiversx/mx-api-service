@@ -1,5 +1,6 @@
 import { forwardRef, Module } from "@nestjs/common";
 import { CommonModule } from "src/common/common.module";
+import { PersistenceModule } from "src/common/persistence/persistence.module";
 import { PluginModule } from "src/plugins/plugin.module";
 import { NftMediaModule } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.module";
 import { NftMetadataModule } from "src/queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.module";
@@ -18,6 +19,7 @@ import { NftService } from "./nft.service";
     forwardRef(() => PluginModule),
     forwardRef(() => NftMetadataModule),
     forwardRef(() => NftMediaModule),
+    forwardRef(() => PersistenceModule),
   ],
   providers: [
     NftService, NftExtendedAttributesService,

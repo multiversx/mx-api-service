@@ -37,43 +37,6 @@ export class NftMediaService {
     );
   }
 
-  async batchGetMedia(nfts: Nft[]): Promise<{ [key: string]: NftMedia[] } | null> {
-    const cachedMedias = await this.cachingService.batchGetCache(
-      nfts.map((nft) => CacheInfo.NftMedia(nft.identifier).key)
-    );
-
-    const missingIndexes: number[] = [];
-    const foundMediasInCache: { [key: string]: any } = {};
-    cachedMedias.map((cachedMedia, index) => {
-      if (cachedMedia == null) {
-        missingIndexes.push(index);
-      } else {
-        const nftIdentifier = nfts[index].identifier;
-        foundMediasInCache[nftIdentifier] = cachedMedia;
-      }
-    });
-
-    const missingIdentifiers: string[] = missingIndexes
-      .map((missingIndex) => nfts[missingIndex].identifier)
-      .filter(Boolean);
-
-    if (missingIdentifiers.length) {
-      const foundMediasInDb = await this.persistenceService.batchGetMedia(missingIdentifiers);
-
-      if (foundMediasInDb && Object.keys(foundMediasInDb).length !== 0) {
-        const keys = Object.keys(foundMediasInDb).map((key) => CacheInfo.NftMedia(key).key);
-        const values = Object.values(foundMediasInDb);
-        const ttls = new Array(keys.length).fill(Constants.oneHour());
-
-        this.cachingService.batchSetCache(keys, values, ttls);
-      }
-
-      return { ...foundMediasInCache, ...foundMediasInDb };
-    }
-
-    return foundMediasInCache;
-  }
-
   async refreshMedia(nft: Nft): Promise<NftMedia[] | undefined> {
     const mediaRaw = await this.getMediaRaw(nft);
     if (!mediaRaw) {

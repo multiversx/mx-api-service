@@ -44,19 +44,4 @@ export class ApiUtils {
 
     return uri;
   }
-
-  static getChunks<T>(array: T[], size = 25): T[][] {
-    return array.reduce((result: T[][], item, current) => {
-      const index = Math.floor(current / size);
-
-      if (!result[index]) {
-        result[index] = [];
-      }
-
-      result[index].push(item);
-
-      return result;
-    }, []);
-  }
-
 }

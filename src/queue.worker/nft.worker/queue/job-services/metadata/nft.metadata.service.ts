@@ -5,7 +5,6 @@ import { PersistenceInterface } from "src/common/persistence/persistence.interfa
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
-import { Constants } from "src/utils/constants";
 
 
 @Injectable()
@@ -40,43 +39,6 @@ export class NftMetadataService {
       async () => await this.persistenceService.getMetadata(nft.identifier),
       CacheInfo.NftMetadata(nft.identifier).ttl
     );
-  }
-
-  async batchGetMetadata(nfts: Nft[]): Promise<{ [key: string]: any } | null> {
-    const cachedMetadatas = await this.cachingService.batchGetCache(
-      nfts.map((nft) => CacheInfo.NftMetadata(nft.identifier).key)
-    );
-
-    const missingIndexes: number[] = [];
-    const foundMetadatasInCache: { [key: string]: any } = {};
-    cachedMetadatas.map((cachedMetadata, index) => {
-      if (cachedMetadata == null) {
-        missingIndexes.push(index);
-      } else {
-        const nftIdentifier = nfts[index].identifier;
-        foundMetadatasInCache[nftIdentifier] = cachedMetadata;
-      }
-    });
-
-    const missingIdentifiers: string[] = missingIndexes
-      .map((missingIndex) => nfts[missingIndex].identifier)
-      .filter(Boolean);
-
-    if (missingIdentifiers.length) {
-      const foundMetadatasInDb = await this.persistenceService.batchGetMetadata(missingIdentifiers);
-
-      if (foundMetadatasInDb && Object.keys(foundMetadatasInDb).length !== 0) {
-        const keys = Object.keys(foundMetadatasInDb).map((key) => CacheInfo.NftMetadata(key).key);
-        const values = Object.values(foundMetadatasInDb);
-        const ttls = new Array(keys.length).fill(Constants.oneHour());
-
-        this.cachingService.batchSetCache(keys, values, ttls);
-      }
-
-      return { ...foundMetadatasInCache, ...foundMetadatasInDb };
-    }
-
-    return foundMetadatasInCache;
   }
 
   async refreshMetadata(nft: Nft): Promise<any> {

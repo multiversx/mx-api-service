@@ -28,6 +28,9 @@ import { NftMetadataService } from "src/queue.worker/nft.worker/queue/job-servic
 import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.service";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 import { NftMedia } from "./entities/nft.media";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { PersistenceInterface } from "src/common/persistence/persistence.interface";
+import { RecordUtils } from "src/utils/record.utils";
 
 @Injectable()
 export class NftService {
@@ -47,6 +50,8 @@ export class NftService {
     private readonly pluginService: PluginService,
     private readonly nftMetadataService: NftMetadataService,
     private readonly nftMediaService: NftMediaService,
+    @Inject('PersistenceService')
+    private readonly persistenceService: PersistenceInterface,
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -155,8 +160,9 @@ export class NftService {
     await Promise.all([
       this.batchApplyMedia(nfts),
       this.batchApplyMetadata(nfts),
-      this.pluginService.batchProcessNfts(nfts),
     ]);
+
+    await this.pluginService.batchProcessNfts(nfts);
   }
 
   private async applyNftOwner(nft: Nft): Promise<void> {
@@ -169,14 +175,19 @@ export class NftService {
   }
 
   private async batchApplyMedia(nfts: Nft[]) {
-    const medias = await this.nftMediaService.batchGetMedia(nfts);
+    await this.cachingService.batchApply(
+      nfts,
+      nft => CacheInfo.NftMedia(nft.identifier).key,
+      async nfts => {
+        const getMediaResults = await this.persistenceService.batchGetMedia(nfts.map(x => x.identifier));
+
+        return RecordUtils.mapKeys(getMediaResults, identifier => CacheInfo.NftMedia(identifier).key);
+      },
+      (nft, media) => nft.media = media,
+      CacheInfo.NftMedia('').ttl,
+    );
 
     for (const nft of nfts) {
-      if (medias) {
-        nft.media = medias[nft.identifier];
-      }
-
-      //default
       if (!TokenUtils.hasMedia(nft)) {
         nft.media = this.DEFAULT_MEDIA;
       }
@@ -184,13 +195,17 @@ export class NftService {
   }
 
   private async batchApplyMetadata(nfts: Nft[]) {
-    const metadatas = await this.nftMetadataService.batchGetMetadata(nfts);
+    await this.cachingService.batchApply(
+      nfts,
+      nft => CacheInfo.NftMetadata(nft.identifier).key,
+      async nfts => {
+        const getMetadataResults = await this.persistenceService.batchGetMetadata(nfts.map(x => x.identifier));
 
-    if (metadatas) {
-      for (const nft of nfts) {
-        nft.metadata = metadatas[nft.identifier];
-      }
-    }
+        return RecordUtils.mapKeys(getMetadataResults, identifier => CacheInfo.NftMetadata(identifier).key);
+      },
+      (nft, metadata) => nft.metadata = metadata,
+      CacheInfo.NftMetadata('').ttl
+    );
   }
 
   private async processNft(nft: Nft) {
