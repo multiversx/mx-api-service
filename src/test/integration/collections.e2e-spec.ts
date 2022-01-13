@@ -96,7 +96,7 @@ describe('Collection Service', () => {
       const collectionFilter = new CollectionAccountFilter();
       collectionFilter.collection = '3LR0NDPUNK-f87097-invalid';
 
-      const collectionAddress = await collectionService.getCollectionForAddress(accountAddress, collectionFilter.collection)
+      const collectionAddress = await collectionService.getCollectionForAddress(accountAddress, collectionFilter.collection);
       expect(collectionAddress).toBeUndefined();
     });
   });
@@ -105,7 +105,7 @@ describe('Collection Service', () => {
     it(`should return collections of NonFungibleESDT for a address`, async () => {
       const collectionsList = await collectionService.getCollectionsForAddress(accountAddress, new CollectionAccountFilter(), {
         from: 0,
-        size: 3
+        size: 3,
       });
       expect(collectionsList).toBeInstanceOf(Array);
     });
