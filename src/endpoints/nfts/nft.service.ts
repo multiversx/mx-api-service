@@ -141,14 +141,16 @@ export class NftService {
   }
 
   private async processNfts(nfts: Nft[]) {
-    const medias = await this.nftMediaService.batchGetMedia(nfts);
-    const metadatas = await this.nftMetadataService.batchGetMetadata(nfts);
+    const [medias, metadatas] = await Promise.all([
+      this.nftMediaService.batchGetMedia(nfts),
+      this.nftMetadataService.batchGetMetadata(nfts),
+      this.pluginService.batchProcessNfts(nfts),
+    ]
+    );
 
     for (const nft of nfts) {
       nft.media = medias ? medias[nft.identifier] : undefined;
       nft.metadata = metadatas ? metadatas[nft.identifier] : undefined;
-
-      await this.pluginService.processNft(nft);
     }
   }
 
