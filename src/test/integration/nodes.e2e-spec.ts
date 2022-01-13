@@ -180,12 +180,12 @@ describe('Node Service', () => {
   describe('Get Node Count', () => {
     it('should return node count', async () => {
       const nodeCount = await nodeService.getNodeCount(new NodeFilter());
-      expect(nodeCount).toBeGreaterThanOrEqual(422);
+      expect(nodeCount).toBeGreaterThanOrEqual(1);
     });
   });
 
-  describe('Get Node Count', () => {
-    it('should return node count', async () => {
+  describe('Delete Owners For Address In Cache', () => {
+    it('should delete address for an owner in cache', async () => {
       const nodeCount = await nodeService.deleteOwnersForAddressInCache(accountAddress);
       expect(nodeCount).toBeInstanceOf(Array);
     });
