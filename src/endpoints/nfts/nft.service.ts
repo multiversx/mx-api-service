@@ -135,12 +135,12 @@ export class NftService {
       }
     }
 
-    await this.processNfts(nfts);
+    await this.batchProcessNfts(nfts);
 
     return nfts;
   }
 
-  private async processNfts(nfts: Nft[]) {
+  private async batchProcessNfts(nfts: Nft[]) {
     const [medias, metadatas] = await Promise.all([
       this.nftMediaService.batchGetMedia(nfts),
       this.nftMetadataService.batchGetMetadata(nfts),
@@ -369,7 +369,7 @@ export class NftService {
       }
     }
 
-    await this.processNfts(nfts);
+    await this.batchProcessNfts(nfts);
 
     if (filter.includeFlagged !== true) {
       nfts = nfts.filter(x => !x.scamInfo);
