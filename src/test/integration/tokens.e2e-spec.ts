@@ -174,7 +174,7 @@ describe('Token Service', () => {
   describe('Get Tokens For Address', () => {
     it(`should return all tokens for address`, async () => {
       const tokenFilter = new TokenFilter();
-      tokenFilter.identifiers = ['FATA-dd6967-1e', 'FATA-dd6967-1f'];
+      tokenFilter.identifiers = [tokenIdentifier];
       const tokensList = await tokenService.getTokensForAddress('erd1xcm2sjlwg4xeqxzvuyhx93kagleewgz9rnw9hs5rxldfjk7nh9ksmznyyr', {
         from: 0,
         size: 25,
