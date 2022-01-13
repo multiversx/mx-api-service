@@ -4,6 +4,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GatewayComponentRequest } from "../gateway/entities/gateway.component.request";
 import { GatewayService } from "../gateway/gateway.service";
 import { ProtocolService } from "../protocol/protocol.service";
+import { ElasticMetricType } from "./entities/elastic.metric.type";
 
 @Injectable()
 export class MetricsService {
@@ -66,7 +67,7 @@ export class MetricsService {
       MetricsService.elasticDurationHistogram = new Histogram({
         name: 'elastic_duration',
         help: 'Elastic Duration',
-        labelNames: ['index'],
+        labelNames: ['type', 'index'],
         buckets: [],
       });
     }
@@ -152,16 +153,12 @@ export class MetricsService {
     MetricsService.externalCallsHistogram.labels(system).observe(duration);
   }
 
-  setElasticDuration(index: string, duration: number) {
-    MetricsService.elasticDurationHistogram.labels(index).observe(duration);
+  setElasticDuration(collection: string, type: ElasticMetricType, duration: number) {
+    MetricsService.elasticDurationHistogram.labels(type, collection).observe(duration);
   }
 
   setGatewayDuration(name: string, duration: number) {
     MetricsService.gatewayDurationHistogram.labels(name).observe(duration);
-  }
-
-  setElasticTook(index: string, took: number) {
-    MetricsService.elasticTookHistogram.labels(index).observe(took);
   }
 
   setRedisDuration(action: string, duration: number) {
