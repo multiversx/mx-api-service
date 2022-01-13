@@ -34,10 +34,10 @@ export class DatabaseService implements PersistenceInterface {
     }
   }
 
-  async batchGetMetadata(identifiers: string[]): Promise<{ [key: string]: any }> {
+  async batchGetMetadata(identifiers: string[]): Promise<Record<string, any>> {
     const metadatasDb = await this.nftMetadataRepository.findByIds(identifiers);
 
-    return metadatasDb.toObject(metadata => metadata.id);
+    return metadatasDb.toRecord(metadata => metadata.id, metadata => metadata.content);
   }
 
   async setMetadata(identifier: string, content: any): Promise<void> {
@@ -63,10 +63,10 @@ export class DatabaseService implements PersistenceInterface {
     }
   }
 
-  async batchGetMedia(identifiers: string[]): Promise<{ [key: string]: NftMedia[] }> {
+  async batchGetMedia(identifiers: string[]): Promise<Record<string, NftMedia[]>> {
     const mediasDb = await this.nftMediaRepository.findByIds(identifiers);
 
-    return mediasDb.map(x => x.content).toObject(media => media.id);
+    return mediasDb.toRecord(media => media.id ?? '', media => media.content);
   }
 
   async setMedia(identifier: string, media: NftMedia[]): Promise<void> {

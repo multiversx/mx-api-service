@@ -90,11 +90,11 @@ Array.prototype.all = function <T>(predicate: (item: T) => boolean): boolean {
   return !this.some(x => !predicate(x));
 };
 
-Array.prototype.toObject = function <T>(predicate: (item: T) => string): { [key: string]: T } {
-  const result: { [key: string]: T } = {};
+Array.prototype.toRecord = function <TIN, TOUT>(keyPredicate: (item: TIN) => string, valuePredicate?: (item: TIN) => TOUT): Record<string, TOUT> {
+  const result: Record<string, TOUT> = {};
 
   for (const item of this) {
-    result[predicate(item)] = item;
+    result[keyPredicate(item)] = valuePredicate ? valuePredicate(item) : item;
   }
 
   return result;
@@ -110,5 +110,5 @@ declare interface Array<T> {
   distinct(): T[];
   distinctBy<TResult>(predicate: (element: T) => TResult): T[];
   all(predicate: (item: T) => boolean): boolean;
-  toObject(predicate: (item: T) => string): { [key: string]: T };
+  toRecord<TOUT>(keyPredicate: (item: T) => string, valuePredicate?: (item: T) => TOUT): Record<string, TOUT>;
 }
