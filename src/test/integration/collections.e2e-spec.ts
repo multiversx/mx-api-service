@@ -96,7 +96,7 @@ describe('Collection Service', () => {
       const collectionFilter = new CollectionAccountFilter();
       collectionFilter.collection = '3LR0NDPUNK-f87097-invalid';
 
-      const collectionAddress = await collectionService.getCollectionForAddress(accountAddress, collectionFilter.collection);
+      const collectionAddress = await collectionService.getCollectionForAddress('erd1qqqqqqqqqqqqqpgqv4ks4nzn2cw96mm06lt7s2l3xfrsznmp2jpsszdry5', collectionFilter.collection);
       expect(collectionAddress).toBeUndefined();
     });
   });

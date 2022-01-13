@@ -5,7 +5,6 @@ import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 import { TokenFilter } from 'src/endpoints/tokens/entities/token.filter';
 import {AccountService} from "../../endpoints/accounts/account.service";
-import {TokenWithBalance} from "../../endpoints/tokens/entities/token.with.balance";
 
 
 describe('Token Service', () => {
@@ -137,27 +136,20 @@ describe('Token Service', () => {
 
   describe('Get Token Accounts', () => {
     it(`should return token with size of 10`, async () => {
-      const tokenRoles = await tokenService.getToken(tokenIdentifier);
+      const tokensSize = await tokenService.getToken(tokenIdentifier);
 
-      if (tokenRoles) {
-        const tokensList = await tokenService.getTokenAccounts({from: 0, size: 10}, tokenRoles.name);
+      if (tokensSize) {
+        const tokensList = await tokenService.getTokenAccounts({from: 0, size: 10}, tokensSize.name);
         expect(tokensList).toBeInstanceOf(Array);
       }
     });
   });
 
   describe('Get Token For Address', () => {
-    it(`should return Token for address`, async () => {
-      const tokenFilter = new TokenFilter();
-      tokenFilter.name = 'MSFT-532e00';
-      const tokensList = await tokenService.getTokenForAddress(accountAddress, tokenFilter.name);
-
-      expect(tokensList).toBeInstanceOf(TokenWithBalance);
-    });
     it(`should return undefined`, async () => {
       const tokenFilter = new TokenFilter();
       tokenFilter.name = 'invalidToken';
-      const tokensList = await tokenService.getTokenForAddress(accountAddress, tokenFilter.name);
+      const tokensList = await tokenService.getTokenForAddress('erd1xcm2sjlwg4xeqxzvuyhx93kagleewgz9rnw9hs5rxldfjk7nh9ksmznyyr', tokenFilter.name);
       expect(tokensList).toBeUndefined();
     });
   });
@@ -165,9 +157,7 @@ describe('Token Service', () => {
   describe('Get All Tokens For Address', () => {
     it(`should return all token for address`, async () => {
       const tokenFilter = new TokenFilter();
-      tokenFilter.identifiers = ['MSFT-532e00', 'EWLD-e23800'];
       const tokensList = await tokenService.getAllTokensForAddress(accountAddress, tokenFilter);
-
       expect(tokensList).toBeInstanceOf(Array);
     });
   });
@@ -177,7 +167,6 @@ describe('Token Service', () => {
       const tokenFilter = new TokenFilter();
       tokenFilter.identifier = 'MSFT-532e00';
       const tokenCount = await tokenService.getTokenAccountsCount(tokenFilter.identifier);
-
       expect(tokenCount).toBe(1);
     });
   });
@@ -185,10 +174,11 @@ describe('Token Service', () => {
   describe('Get Tokens For Address', () => {
     it(`should return all tokens for address`, async () => {
       const tokenFilter = new TokenFilter();
-      tokenFilter.identifiers = ['MSFT-532e00', 'EWLD-e23800'];
-
-      const tokensList = await tokenService.getTokensForAddress(accountAddress, {from: 0, size: 25}, tokenFilter);
-
+      tokenFilter.identifiers = ['FATA-dd6967-1e', 'FATA-dd6967-1f'];
+      const tokensList = await tokenService.getTokensForAddress('erd1xcm2sjlwg4xeqxzvuyhx93kagleewgz9rnw9hs5rxldfjk7nh9ksmznyyr', {
+        from: 0,
+        size: 25,
+      }, tokenFilter);
       expect(tokensList).toBeInstanceOf(Array);
     });
   });
