@@ -10,6 +10,7 @@ import { QueryOperator } from "./entities/query.operator";
 import { QueryConditionOptions } from "./entities/query.condition.options";
 import { QueryPagination } from "../entities/query.pagination";
 import { ElasticSortOrder } from "./entities/elastic.sort.order";
+import { ElasticMetricType } from "../metrics/entities/elastic.metric.type";
 
 @Injectable()
 export class ElasticService {
@@ -34,7 +35,7 @@ export class ElasticService {
 
     profiler.stop();
 
-    this.metricsService.setElasticDuration(collection, profiler.duration);
+    this.metricsService.setElasticDuration(collection, ElasticMetricType.count, profiler.duration);
 
     const count = result.data.count;
 
@@ -49,7 +50,7 @@ export class ElasticService {
     const result = await this.get(url);
 
     profiler.stop();
-    this.metricsService.setElasticDuration(collection, profiler.duration);
+    this.metricsService.setElasticDuration(collection, ElasticMetricType.item, profiler.duration);
 
     const hits = result.data?.hits?.hits;
     if (hits && hits.length > 0) {
@@ -78,12 +79,7 @@ export class ElasticService {
 
     profiler.stop();
 
-    this.metricsService.setElasticDuration(collection, profiler.duration);
-
-    const took = result.data.took;
-    if (!isNaN(took)) {
-      this.metricsService.setElasticTook(collection, took);
-    }
+    this.metricsService.setElasticDuration(collection, ElasticMetricType.list, profiler.duration);
 
     const documents = result.data.hits.hits;
     return documents.map((document: any) => this.formatItem(document, key));
@@ -187,12 +183,7 @@ export class ElasticService {
 
     profiler.stop();
 
-    this.metricsService.setElasticDuration(collection, profiler.duration);
-
-    const took = result.data.tookn;
-    if (!isNaN(took)) {
-      this.metricsService.setElasticTook(collection, took);
-    }
+    this.metricsService.setElasticDuration(collection, ElasticMetricType.list, profiler.duration);
 
     return result.data.hits.hits;
   }
@@ -212,7 +203,7 @@ export class ElasticService {
 
     profiler.stop();
 
-    this.metricsService.setElasticDuration(collection, profiler.duration);
+    this.metricsService.setElasticDuration(collection, ElasticMetricType.count, profiler.duration);
 
     return value;
   }
