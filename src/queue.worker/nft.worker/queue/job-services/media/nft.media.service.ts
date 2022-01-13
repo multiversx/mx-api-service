@@ -60,6 +60,14 @@ export class NftMediaService {
     if (missingIdentifiers.length) {
       const foundMediasInDb = await this.persistenceService.batchGetMedia(missingIdentifiers);
 
+      if (foundMediasInDb && Object.keys(foundMediasInDb).length !== 0) {
+        const keys = Object.keys(foundMediasInDb).map((key) => CacheInfo.NftMedia(key).key);
+        const values = Object.values(foundMediasInDb);
+        const ttls = new Array(keys.length).fill(Constants.oneHour());
+
+        this.cachingService.batchSetCache(keys, values, ttls);
+      }
+
       return { ...foundMediasInCache, ...foundMediasInDb };
     }
 
