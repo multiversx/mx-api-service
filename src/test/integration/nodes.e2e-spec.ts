@@ -12,6 +12,7 @@ import { ProviderService } from "src/endpoints/providers/provider.service";
 import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 import Initializer from "./e2e-init";
+import {AccountService} from "../../endpoints/accounts/account.service";
 
 describe('Node Service', () => {
   let nodeService: NodeService;
@@ -20,6 +21,8 @@ describe('Node Service', () => {
   let nodes: Node[];
   let providers: Provider[];
   let nodeSentinel: Node;
+  let accountService: AccountService;
+  let accountAddress: string;
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -30,10 +33,18 @@ describe('Node Service', () => {
     nodeService = publicAppModule.get<NodeService>(NodeService);
     cachingService = publicAppModule.get<CachingService>(CachingService);
     providerService = publicAppModule.get<ProviderService>(ProviderService);
+    accountService = publicAppModule.get<AccountService>(AccountService);
 
     nodes = await nodeService.getAllNodes();
     providers = await providerService.getAllProviders();
     nodeSentinel = nodes[0];
+
+    const accounts = await accountService.getAccounts({ from: 0, size: 1 });
+    expect(accounts).toHaveLength(1);
+
+    const account = accounts[0];
+    accountAddress = account.address;
+
   }, Constants.oneHour() * 1000);
 
   describe('Nodes', () => {
@@ -53,11 +64,9 @@ describe('Node Service', () => {
           const nodeProvider = providers.find((provider) => node.provider === provider.provider);
           if (nodeProvider?.identity) {
             expect(node.identity).toStrictEqual(nodeProvider.identity);
-          }
-          else if (nodeKeybases[node.bls] && nodeKeybases[node.bls].confirmed) {
+          } else if (nodeKeybases[node.bls] && nodeKeybases[node.bls].confirmed) {
             expect(node.identity).toStrictEqual(nodeKeybases[node.bls].identity);
-          }
-          else {
+          } else {
             expect(node.identity).toBeUndefined();
           }
         }
@@ -68,13 +77,13 @@ describe('Node Service', () => {
       const nodeFilter: NodeFilter = new NodeFilter();
       nodeFilter.search = nodeSentinel.bls;
 
-      let filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
+      let filteredNodes = await nodeService.getNodes({from: 0, size: 25}, nodeFilter);
       for (const node of filteredNodes) {
         expect(node.bls).toStrictEqual(nodeSentinel.bls);
       }
 
       nodeFilter.search = nodeSentinel.version;
-      filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
+      filteredNodes = await nodeService.getNodes({from: 0, size: 25}, nodeFilter);
       for (const node of filteredNodes) {
         expect(node.version).toStrictEqual(nodeSentinel.version);
       }
@@ -85,7 +94,7 @@ describe('Node Service', () => {
       nodeFilter.provider = nodeSentinel.provider;
       nodeFilter.owner = nodeSentinel.owner;
 
-      const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
+      const filteredNodes = await nodeService.getNodes({from: 0, size: 25}, nodeFilter);
       for (const node of filteredNodes) {
         expect(node.provider).toStrictEqual(nodeSentinel.provider);
         expect(node.owner).toStrictEqual(nodeSentinel.owner);
@@ -96,7 +105,7 @@ describe('Node Service', () => {
       const nodeFilter: NodeFilter = new NodeFilter();
       nodeFilter.type = NodeType.validator;
 
-      const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
+      const filteredNodes = await nodeService.getNodes({from: 0, size: 25}, nodeFilter);
       for (const node of filteredNodes) {
         expect(node.type).toStrictEqual(NodeType.validator);
       }
@@ -107,7 +116,7 @@ describe('Node Service', () => {
       nodeFilter.status = NodeStatus.eligible;
       nodeFilter.online = true;
 
-      const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
+      const filteredNodes = await nodeService.getNodes({from: 0, size: 25}, nodeFilter);
       for (const node of filteredNodes) {
         expect(node.status).toStrictEqual(NodeStatus.eligible);
         expect(node.online).toBeTruthy();
@@ -118,7 +127,7 @@ describe('Node Service', () => {
       const nodeFilter: NodeFilter = new NodeFilter();
       nodeFilter.sort = NodeSort.tempRating;
 
-      const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
+      const filteredNodes = await nodeService.getNodes({from: 0, size: 25}, nodeFilter);
       let currentTempRating = 0;
       for (const node of filteredNodes) {
         if (node.tempRating) {
@@ -127,5 +136,82 @@ describe('Node Service', () => {
         }
       }
     });
+
+    it('should return nodes of size 10', async () => {
+      const nodeFilter = new NodeFilter();
+      const filteredSizeNode = await nodeService.getNodes({
+        from: 0,
+        size: 10
+      }, nodeFilter);
+
+      expect(filteredSizeNode).toBeInstanceOf(Array);
+      expect(filteredSizeNode).toHaveLength(10);
+    });
+  });
+
+  describe('Get Node Version', () => {
+    it('should return node version', async () => {
+      const nodeVersion = await nodeService.getNodeVersions();
+      expect(nodeVersion).toBeInstanceOf(Object);
+    });
+  });
+
+  describe('Get All Nodes Raw', () => {
+    it('should return nodes array', async () => {
+      const nodesRaw = await nodeService.getAllNodesRaw();
+      expect(nodesRaw).toBeInstanceOf(Array);
+    });
+  });
+
+  describe('Get HeartBeat', () => {
+    it('should return  nodes HeartBeat', async () => {
+      const heartBeatValue = await nodeService.getHeartbeat();
+      expect(heartBeatValue).toBeInstanceOf(Array);
+    });
+  });
+
+  describe('Get Queue', () => {
+    it('should return queue of address', async () => {
+      const queueAddress = await nodeService.getQueue();
+      expect(queueAddress).toBeInstanceOf(Array);
+    });
+  });
+
+  describe('Get Node Count', () => {
+    it('should return node count', async () => {
+      const nodeCount = await nodeService.getNodeCount(new NodeFilter());
+      expect(nodeCount).toBeGreaterThanOrEqual(422);
+    });
+  });
+
+  describe('Get Node Count', () => {
+    it('should return node count', async () => {
+      const nodeCount = await nodeService.deleteOwnersForAddressInCache(accountAddress);
+      expect(nodeCount).toBeInstanceOf(Array);
+    });
+  });
+
+  describe('Get Owner BLS', () => {
+    it('should return owner bls', async () => {
+      const blsOwner = await nodeService.getOwnerBlses(accountAddress);
+      expect(blsOwner).toBeInstanceOf(Array);
+    });
+  });
+
+  describe('Get Node Version Raw', () => {
+    it('should return node version', async () => {
+      const nodeVersionRaw = await nodeService.getNodeVersionsRaw();
+      expect(nodeVersionRaw).toBeInstanceOf(Object);
+    });
+  });
+
+  describe('Get Node', () => {
+    it('should return nodes based on bls', async () => {
+      const nodeFilter: NodeFilter = new NodeFilter();
+      nodeFilter.search = nodeSentinel.bls;
+      const nodeBls = await nodeService.getNode(nodeFilter.search);
+      expect(nodeBls).toBeInstanceOf(Object);
+    });
   });
 });
+
