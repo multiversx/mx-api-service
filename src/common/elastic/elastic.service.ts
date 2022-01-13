@@ -43,7 +43,13 @@ export class ElasticService {
 
   async getItem(collection: string, key: string, identifier: string) {
     const url = `${this.url}/${collection}/_search?q=_id:${identifier}`;
+
+    const profiler = new PerformanceProfiler();
+
     const result = await this.get(url);
+
+    profiler.stop();
+    this.metricsService.setElasticDuration(collection, profiler.duration);
 
     const hits = result.data?.hits?.hits;
     if (hits && hits.length > 0) {
