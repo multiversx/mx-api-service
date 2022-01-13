@@ -5,10 +5,14 @@ import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 import Initializer from "./e2e-init";
+import {AccountService} from "../../endpoints/accounts/account.service";
+import {CollectionAccountFilter} from "../../endpoints/collections/entities/collection.account.filter";
 
 describe('Collection Service', () => {
   let collectionService: CollectionService;
+  let accountService: AccountService;
   let collectionIdentifier: string;
+  let accountAddress: string;
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -17,6 +21,13 @@ describe('Collection Service', () => {
     }).compile();
 
     collectionService = moduleRef.get<CollectionService>(CollectionService);
+    accountService = moduleRef.get<AccountService>(AccountService);
+
+    const accounts = await accountService.getAccounts({from: 0, size: 1});
+    expect(accounts).toHaveLength(1);
+
+    const account = accounts[0];
+    accountAddress = account.address;
 
     const collections = await collectionService.getNftCollections({ from: 0, size: 1 }, new CollectionFilter());
     expect(collections).toHaveLength(1);
@@ -78,4 +89,29 @@ describe('Collection Service', () => {
       expect(nftCount).toBeInstanceOf(Number);
     });
   });
+
+  describe('Get Collection for a specific address', () => {
+    it(`should return collectionf for a address`, async () => {
+      const collectionFilter = new CollectionAccountFilter();
+      collectionFilter.collection = '3LR0NDPUNK-f87097-invalid';
+
+      const collectionAddress = await collectionService.getCollectionForAddress(accountAddress,collectionFilter.collection )
+      expect(collectionAddress).toBeUndefined();
+    });
+  });
+
+  describe('Get Collections NonFungibleESDT for a specific address', () => {
+    it(`should return collections of NonFungibleESDT for a address`, async () => {
+      const collectionsList = await collectionService.getCollectionsForAddress(accountAddress, new CollectionAccountFilter(), {from: 0, size:3});
+      expect(collectionsList).toBeInstanceOf(Array);
+    });
+  });
+
+  describe('Get Collections Count for a specific address', () => {
+    it(`should return count collection of NonFungibleESDT for a address`, async () => {
+      const collectionAddress = await collectionService.getCollectionCountForAddress(accountAddress, new CollectionAccountFilter());
+      expect(collectionAddress).toBe(0);
+    });
+  });
 });
+
