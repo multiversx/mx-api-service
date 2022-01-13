@@ -5,6 +5,7 @@ import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 import { TokenFilter } from 'src/endpoints/tokens/entities/token.filter';
 import {AccountService} from "../../endpoints/accounts/account.service";
+import {TokenWithBalance} from "../../endpoints/tokens/entities/token.with.balance";
 
 
 describe('Token Service', () => {
@@ -146,11 +147,11 @@ describe('Token Service', () => {
   });
 
   describe('Get Token For Address', () => {
-    it(`should return undefined`, async () => {
+    it(`should return token for address`, async () => {
       const tokenFilter = new TokenFilter();
-      tokenFilter.name = 'invalidToken';
-      const tokensList = await tokenService.getTokenForAddress('erd1xcm2sjlwg4xeqxzvuyhx93kagleewgz9rnw9hs5rxldfjk7nh9ksmznyyr', tokenFilter.name);
-      expect(tokensList).toBeUndefined();
+      tokenFilter.identifier = tokenIdentifier;
+      const tokenAddress = await tokenService.getTokenForAddress('erd1xcm2sjlwg4xeqxzvuyhx93kagleewgz9rnw9hs5rxldfjk7nh9ksmznyyr', tokenIdentifier);
+      expect(tokenAddress).toBeInstanceOf(TokenWithBalance);
     });
   });
 
