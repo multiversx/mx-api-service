@@ -28,6 +28,6 @@ describe('Delegation Service', () => {
     it('should return delegation raw', async () => {
       const delegationValue = await delegationService.getDelegationRaw();
       expect(delegationValue).toBeInstanceOf(Object);
-    })
+    });
   });
-})
+});
