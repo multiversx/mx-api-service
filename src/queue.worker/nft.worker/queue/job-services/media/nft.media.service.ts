@@ -78,7 +78,6 @@ export class NftMediaService {
       } catch (error) {
         this.logger.error(`Unexpected error when fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
         this.logger.error(error);
-        throw error;
       }
 
       if (!fileProperties) {

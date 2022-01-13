@@ -90,6 +90,16 @@ Array.prototype.all = function <T>(predicate: (item: T) => boolean): boolean {
   return !this.some(x => !predicate(x));
 };
 
+Array.prototype.toRecord = function <TIN, TOUT>(keyPredicate: (item: TIN) => string, valuePredicate?: (item: TIN) => TOUT): Record<string, TOUT> {
+  const result: Record<string, TOUT> = {};
+
+  for (const item of this) {
+    result[keyPredicate(item)] = valuePredicate ? valuePredicate(item) : item;
+  }
+
+  return result;
+};
+
 declare interface Array<T> {
   groupBy(predicate: (item: T) => any): any;
   selectMany<TOUT>(predicate: (item: T) => TOUT[]): TOUT[];
@@ -100,4 +110,5 @@ declare interface Array<T> {
   distinct(): T[];
   distinctBy<TResult>(predicate: (element: T) => TResult): T[];
   all(predicate: (item: T) => boolean): boolean;
+  toRecord<TOUT>(keyPredicate: (item: T) => string, valuePredicate?: (item: T) => TOUT): Record<string, TOUT>;
 }

@@ -27,11 +27,16 @@ import { PluginService } from "src/common/plugins/plugin.service";
 import { NftMetadataService } from "src/queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.service";
 import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.service";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
+import { NftMedia } from "./entities/nft.media";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { PersistenceInterface } from "src/common/persistence/persistence.interface";
+import { RecordUtils } from "src/utils/record.utils";
 
 @Injectable()
 export class NftService {
   private readonly logger: Logger;
   private readonly NFT_THUMBNAIL_PREFIX: string;
+  private readonly DEFAULT_MEDIA: NftMedia[];
 
   constructor(
     private readonly gatewayService: GatewayService,
@@ -45,9 +50,20 @@ export class NftService {
     private readonly pluginService: PluginService,
     private readonly nftMetadataService: NftMetadataService,
     private readonly nftMediaService: NftMediaService,
+    @Inject('PersistenceService')
+    private readonly persistenceService: PersistenceInterface,
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
+    this.DEFAULT_MEDIA = [
+      {
+        url: 'https://media.elrond.com/nfts/thumbnail/default.png',
+        originalUrl: 'https://media.elrond.com/nfts/thumbnail/default.png',
+        thumbnailUrl: 'https://media.elrond.com/nfts/thumbnail/default.png',
+        fileType: 'image/png',
+        fileSize: 29512,
+      },
+    ];
   }
 
   private buildElasticNftFilter(filter: NftFilter, identifier?: string) {
@@ -135,11 +151,18 @@ export class NftService {
       }
     }
 
-    for (const nft of nfts) {
-      await this.processNft(nft);
-    }
+    await this.batchProcessNfts(nfts);
 
     return nfts;
+  }
+
+  private async batchProcessNfts(nfts: Nft[]) {
+    await Promise.all([
+      this.batchApplyMedia(nfts),
+      this.batchApplyMetadata(nfts),
+    ]);
+
+    await this.pluginService.batchProcessNfts(nfts);
   }
 
   private async applyNftOwner(nft: Nft): Promise<void> {
@@ -151,6 +174,40 @@ export class NftService {
     }
   }
 
+  private async batchApplyMedia(nfts: Nft[]) {
+    await this.cachingService.batchApply(
+      nfts,
+      nft => CacheInfo.NftMedia(nft.identifier).key,
+      async nfts => {
+        const getMediaResults = await this.persistenceService.batchGetMedia(nfts.map(x => x.identifier));
+
+        return RecordUtils.mapKeys(getMediaResults, identifier => CacheInfo.NftMedia(identifier).key);
+      },
+      (nft, media) => nft.media = media,
+      CacheInfo.NftMedia('').ttl,
+    );
+
+    for (const nft of nfts) {
+      if (!TokenUtils.hasMedia(nft)) {
+        nft.media = this.DEFAULT_MEDIA;
+      }
+    }
+  }
+
+  private async batchApplyMetadata(nfts: Nft[]) {
+    await this.cachingService.batchApply(
+      nfts,
+      nft => CacheInfo.NftMetadata(nft.identifier).key,
+      async nfts => {
+        const getMetadataResults = await this.persistenceService.batchGetMetadata(nfts.map(x => x.identifier));
+
+        return RecordUtils.mapKeys(getMetadataResults, identifier => CacheInfo.NftMetadata(identifier).key);
+      },
+      (nft, metadata) => nft.metadata = metadata,
+      CacheInfo.NftMetadata('').ttl
+    );
+  }
+
   private async processNft(nft: Nft) {
     await Promise.all([
       this.applyMedia(nft),
@@ -158,18 +215,11 @@ export class NftService {
       this.pluginService.processNft(nft),
     ]);
 
-    if ((!nft.media || nft.media.length === 0) && nft.type !== NftType.MetaESDT) {
-      nft.media = [
-        {
-          url: 'https://media.elrond.com/nfts/thumbnail/default.png',
-          originalUrl: 'https://media.elrond.com/nfts/thumbnail/default.png',
-          thumbnailUrl: 'https://media.elrond.com/nfts/thumbnail/default.png',
-          fileType: 'image/png',
-          fileSize: 29512,
-        },
-      ];
+    if (!TokenUtils.hasMedia(nft)) {
+      nft.media = this.DEFAULT_MEDIA;
     }
   }
+
   async applyAssetsAndTicker(token: Nft) {
     token.assets = await this.tokenAssetService.getAssets(token.collection);
 
@@ -357,9 +407,7 @@ export class NftService {
       }
     }
 
-    for (const nft of nfts) {
-      await this.processNft(nft);
-    }
+    await this.batchProcessNfts(nfts);
 
     if (filter.includeFlagged !== true) {
       nfts = nfts.filter(x => !x.scamInfo);
