@@ -16,4 +16,7 @@ export class TokenAssets {
 
   @ApiProperty()
   svgUrl: string = '';
+
+  @ApiProperty()
+  lockedAccounts: string[] = [];
 }

@@ -325,13 +325,15 @@ export class EsdtService {
   }
 
   async getLockedSupply(identifier: string): Promise<string | undefined> {
-    const lockedSupplyAddresses = this.apiConfigService.getLockedSupplyAddressesForToken(identifier);
+    const tokenAssets = await this.tokenAssetService.getAssets(identifier);
 
-    if (lockedSupplyAddresses.length === 0) {
+    const lockedAccounts = tokenAssets?.lockedAccounts;
+
+    if (!(lockedAccounts && lockedAccounts.length !== 0)) {
       return;
     }
 
-    const esdtLockedAccounts = await this.elasticService.getAccountEsdtByAddressesAndIdentifier(identifier, lockedSupplyAddresses);
+    const esdtLockedAccounts = await this.elasticService.getAccountEsdtByAddressesAndIdentifier(identifier, lockedAccounts);
 
     let lockedSupply = BigInt(0);
     for (const account of esdtLockedAccounts) {
