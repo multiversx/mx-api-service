@@ -18,7 +18,7 @@ describe('NFT Tag Service', () => {
 
   }, Constants.oneHour() * 1000);
 
-  test(`should return list of tags for nft`, async () => {
+  test(`should return list of tags for 1 nft`, async () => {
     const nftTags = await tagService.getNftTags({from: 0, size: 1});
 
     for (const nft of nftTags) {
@@ -64,21 +64,11 @@ describe('NFT Tag Service', () => {
   });
 
   test(`should verify if tags contain properties`, async () => {
-    const nftTags = await tagService.getNftTagsRaw({from: 0, size: 10});
+    const nftTagsRaw = await tagService.getNftTagsRaw({from: 0, size: 10});
 
-    for (const nft of nftTags) {
+    for (const nft of nftTagsRaw) {
       expect(nft).toHaveProperty('tag');
       expect(nft).toHaveProperty('count');
     }
   });
-
-  test(`should verify if tags contain properties`, async () => {
-    const nftTags = await tagService.getNftTagsRaw({from: 0, size: 10});
-
-    for (const nft of nftTags) {
-      expect(nft).toHaveProperty('tag');
-      expect(nft).toHaveProperty('count');
-    }
-  });
-
 });
