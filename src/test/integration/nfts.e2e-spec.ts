@@ -202,7 +202,7 @@ describe('Nft Service', () => {
   describe('Get NFT Owner Count', () => {
     it(`should return NFT Owner count = 1`, async () => {
       const nftFilter = new Nft();
-      nftFilter.identifier = 'EGLDMEXF-5bcc57-353d44';
+      nftFilter.identifier = 'EGLDMEXF-5bcc57-358d6e';
       const nftsCount = await nftService.getNftOwnersCount(nftFilter.identifier);
       expect(nftsCount).toBe(1);
     });
@@ -211,7 +211,7 @@ describe('Nft Service', () => {
   describe('Get Single NFT', () => {
     it(`should return a list with nfts that has collection`, async () => {
       const nftFilter = new Nft();
-      nftFilter.identifier = 'EGLDMEXF-5bcc57-353d44';
+      nftFilter.identifier = 'EGLDMEXF-5bcc57-358d6e';
       const nftsList = await nftService.getNftOwnersCountRaw(nftFilter.identifier);
       expect(nftsList).toBe(1);
     });
