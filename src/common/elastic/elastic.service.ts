@@ -11,6 +11,7 @@ import { QueryConditionOptions } from "./entities/query.condition.options";
 import { QueryPagination } from "../entities/query.pagination";
 import { ElasticSortOrder } from "./entities/elastic.sort.order";
 import { ElasticMetricType } from "../metrics/entities/elastic.metric.type";
+import { RangeQuery } from "./entities/range.query";
 
 @Injectable()
 export class ElasticService {
@@ -87,6 +88,25 @@ export class ElasticService {
 
   async getAccountEsdtByIdentifier(identifier: string, pagination?: QueryPagination) {
     return this.getAccountEsdtByIdentifiers([identifier], pagination);
+  }
+
+  async getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]) {
+    const queries = [];
+
+    for (const address of addresses) {
+      queries.push(QueryType.Match('address', address));
+    }
+
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: 25 })
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match("address", "pending-")])
+      .withCondition(QueryConditionOptions.must, [QueryType.Match('token', identifier, QueryOperator.AND)])
+      .withFilter([new RangeQuery("balanceNum", undefined, 0)])
+      .withCondition(QueryConditionOptions.should, queries);
+
+    const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
+
+    return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
 
   async getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination) {

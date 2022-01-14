@@ -6,9 +6,9 @@ api:
   private: true
   auth: false
 cron:
-  transactionProcessor: true
+  transactionProcessor: false
   transactionProcessorMaxLookBehind: 1000
-  cacheWarmer: true
+  cacheWarmer: false
   fastWarm: false
   queueWorker: true
 flags:
@@ -44,6 +44,7 @@ urls:
   nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
+  extras: 'https://extras-api.elrond.com'
 database:
   host: 'localhost'
   port: 3306
@@ -76,3 +77,14 @@ security:
   admins:
   jwtSecret:
   accessAddress:
+lockedAccounts:
+  RIDE-7d18e9:
+    - 'erd1y8tf50le8grc7t3gy7l0wk7lvg9uhzznmx66k0ma3xjguzfm752q9j2wlu'
+    - 'erd12qw2g7jqtejvhq4fdtd09rpslzt5j7jausprzdru7mkuqml6pvhsp40n34'
+    - 'erd10mrn7uvn0g9wqc8nnal2wedh6uj7cjg6ddpc00dsv5q0pvjdtl7s5twmj7'
+    - 'erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc'
+    - 'erd1wxsug6t7zc4207th8484fm769067w5kgnurg2pmdld5nlde8zy2qklln8w'
+    - 'erd1f35warttsdj4y7cz5e56xg7q32vwvfatruvu75n5d0n4zcjs3rtqptksyk'
+    - 'erd188xr2v80m9tp8s0ydu7mxzq0v7rxczme39yyq3nw8k99nn4muzusp2rlyx'
+    - 'erd1pjwfnd30etn6yslp4gyf9qkstjjmq5m9xyju80nnszed6gmxny6q42s6cc'
+    - 'erd16davrfmlkem4cwzhcva85np7dfuhcve70293n6h3ay92r494lkpssx6t9u'
