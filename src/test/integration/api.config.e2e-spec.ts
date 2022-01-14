@@ -36,7 +36,7 @@ describe('API Config', () => {
 
       it('should return mex url', async () => {
         const value = apiConfigService.getMexUrl();
-        expect(value).toBe('');
+        expect(value).toBe('https://mex-indexer.elrond.com');
       });
 
       it('should return IPFS URL', async () => {
