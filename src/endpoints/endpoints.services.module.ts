@@ -24,8 +24,6 @@ import { TransactionModule } from "./transactions/transaction.module";
 import { UsernameModule } from "./usernames/username.module";
 import { VmQueryModule } from "./vm.query/vm.query.module";
 import { WaitingListModule } from "./waiting-list/waiting.list.module";
-import {QueueWorkerModule} from "../queue.worker/queue.worker.module";
-
 
 @Module({
   imports: [
@@ -55,13 +53,12 @@ import {QueueWorkerModule} from "../queue.worker/queue.worker.module";
     forwardRef(() => WaitingListModule),
     forwardRef(() => EsdtModule),
     forwardRef(() => BlsModule),
-    forwardRef(() => QueueWorkerModule),
   ],
   exports: [
     AccountModule, CollectionModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
     MexModule, MiniBlockModule, NetworkModule, NftModule, TagModule, NodeModule, ProviderModule,
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
-    WaitingListModule, EsdtModule, BlsModule, QueueWorkerModule,
+    WaitingListModule, EsdtModule, BlsModule,
   ],
 })
 export class EndpointsServicesModule { }

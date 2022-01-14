@@ -6,6 +6,7 @@ import {NftFilter} from "../../endpoints/nfts/entities/nft.filter";
 import {Constants} from "../../utils/constants";
 import {NftMediaService} from "../../queue.worker/nft.worker/queue/job-services/media/nft.media.service";
 import {Nft} from "../../endpoints/nfts/entities/nft";
+import {QueueWorkerModule} from "../../queue.worker/queue.worker.module";
 
 
 describe('Nft Media Service', () => {
@@ -18,7 +19,7 @@ describe('Nft Media Service', () => {
     await Initializer.initialize();
 
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [PublicAppModule, QueueWorkerModule],
     }).compile();
 
     nftMediaService = moduleRef.get<NftMediaService>(NftMediaService);
