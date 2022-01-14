@@ -324,8 +324,13 @@ export class EsdtService {
     return tokenAddressesAndRoles;
   }
 
-  async getLockedSupply(identifier: string): Promise<string> {
+  async getLockedSupply(identifier: string): Promise<string | undefined> {
     const lockedSupplyAddresses = this.apiConfigService.getLockedSupplyAddressesForToken(identifier);
+
+    if (lockedSupplyAddresses.length === 0) {
+      return;
+    }
+
     const esdtLockedAccounts = await this.elasticService.getAccountEsdtByAddressesAndIdentifier(identifier, lockedSupplyAddresses);
 
     let lockedSupply = BigInt(0);
@@ -343,6 +348,10 @@ export class EsdtService {
     const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
 
     const lockedSupply = await this.getLockedSupply(identifier);
+
+    if (!lockedSupply) {
+      return supply;
+    }
 
     const circulatingSupply = BigInt(supply) - BigInt(lockedSupply);
 
