@@ -64,6 +64,10 @@ export class TransactionController {
     @Query('withScResults', new ParseOptionalBoolPipe) withScResults: boolean | undefined,
     @Query('withOperations', new ParseOptionalBoolPipe) withOperations: boolean | undefined,
   ): Promise<Transaction[]> {
+    if ((withScResults === true || withOperations === true) && size > 50) {
+      throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults' or 'withOperations'`);
+    }
+
     return this.transactionService.getTransactions({
       sender,
       receiver,
