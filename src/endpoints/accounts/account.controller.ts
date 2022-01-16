@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, NotFoundException, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, NotFoundException, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccountService } from './account.service';
 import { AccountDetailed } from './entities/account.detailed';
@@ -597,6 +597,10 @@ export class AccountController {
     @Query('withScResults', new ParseOptionalBoolPipe) withScResults?: boolean,
     @Query('withOperations', new ParseOptionalBoolPipe) withOperations?: boolean,
   ) {
+    if ((withScResults === true || withOperations === true) && size > 50) {
+      throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults' or 'withOperations'`);
+    }
+
     try {
       return await this.transactionService.getTransactions({
         sender,
