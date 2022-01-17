@@ -40,7 +40,7 @@ export class NftWorkerService {
     return true;
   }
 
-  private async needsProcessing(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
+  async needsProcessing(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
     if (settings.forceRefreshMedia || settings.forceRefreshMetadata || settings.forceRefreshThumbnail) {
       return true;
     }
