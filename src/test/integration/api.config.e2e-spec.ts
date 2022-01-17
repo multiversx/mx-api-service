@@ -15,10 +15,12 @@ describe('API Config', () => {
     }).compile();
 
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
+
   }, Constants.oneHour() * 1000);
 
   describe('Get Config values', () => {
     describe('getApiUrls', () => {
+
       it('should return a list of API urls', async () => {
         const value = apiConfigService.getApiUrls();
         expect(value).toBeInstanceOf(Array);
@@ -257,6 +259,21 @@ describe('API Config', () => {
       it('should return access address', async () => {
         const value = apiConfigService.getAccessAddress();
         expect(value).toBe('');
+      });
+
+      it('should return mock path', async () => {
+        const value = apiConfigService.getMockPath();
+        expect(value).toBe('./src/test/mocks/');
+      });
+
+      it('should return no security admin', async () => {
+        const value = apiConfigService.getSecurityAdmins();
+        expect(value).toBeNull();
+      });
+
+      it('should return if is process nfts flac active ( default false )', async () => {
+        const value = apiConfigService.getIsProcessNftsFlagActive();
+        expect(value).toBeFalsy();
       });
     });
   });
