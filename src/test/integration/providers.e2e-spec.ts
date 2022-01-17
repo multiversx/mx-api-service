@@ -17,6 +17,7 @@ describe('Provider Service', () => {
   let identity: string;
   let providerSentinel: Provider;
 
+
   beforeAll(async () => {
     await Initializer.initialize();
     const publicAppModule = await Test.createTestingModule({
@@ -26,9 +27,11 @@ describe('Provider Service', () => {
     providerService = publicAppModule.get<ProviderService>(ProviderService);
     apiConfigService = publicAppModule.get<ApiConfigService>(ApiConfigService);
     cachingService = publicAppModule.get<CachingService>(CachingService);
+
     providers = await providerService.getProviders(new ProviderFilter());
     identity = "istari_vision";
     providerSentinel = providers[0];
+
   }, Constants.oneHour() * 1000);
 
   describe('Providers', () => {
@@ -135,6 +138,130 @@ describe('Provider Service', () => {
       const provider = await providerService.getProvider(providerSentinel.provider);
       expect(provider?.provider).toStrictEqual(providerSentinel.provider);
       expect(provider?.identity).toStrictEqual(providerSentinel.identity);
+    });
+  });
+  describe('Get Delegation Providers', () => {
+    it('should return delegation providers', async () => {
+      const returnDelegationProviders = await providerService.getDelegationProviders();
+      expect(returnDelegationProviders).toBeInstanceOf(Object);
+    });
+    it('all providers should have contract, featured, aprValue properties', async () => {
+      const returnDelegationProviders = await providerService.getDelegationProviders();
+
+      for(const provider of returnDelegationProviders){
+        expect(provider).toHaveProperty('contract');
+        expect(provider).toHaveProperty('featured');
+        expect(provider).toHaveProperty('aprValue');
+      }
+    });
+  });
+
+  describe('Get Delegation Provider Raw', () => {
+    it('should return delegation providers raw', async () => {
+      expect.assertions(1);
+      try{
+        const returnDelegationProvidersRaw = await providerService.getDelegationProvidersRaw();
+        expect(returnDelegationProvidersRaw).toBeInstanceOf(Object);
+      }catch (error){
+        expect(error).toMatch('Error when getting delegation providers');
+      }
+    });
+  });
+
+  describe('Get All Provders', () => {
+    it('should return all providers', async () => {
+      const returnProviders = await providerService.getAllProviders();
+
+      for (const provider of returnProviders) {
+        expect(provider).toBeInstanceOf(Object);
+      }
+    });
+  });
+
+  describe('Get All Providers Raw', () => {
+    it('should return all providers raw', async () => {
+      const returnProvidersRaw = await providerService.getAllProvidersRaw();
+
+      for (const providerRaw of returnProvidersRaw) {
+        expect(providerRaw).toBeInstanceOf(Object);
+      }
+    });
+  });
+
+  describe('Get Provider Configuration', () => {
+    it('should return provider configuration', async () => {
+      const returnProviderConfig = await providerService.getProviderConfig('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85');
+      expect(returnProviderConfig).toBeInstanceOf(Object);
+    });
+  });
+
+  describe('Get Number of users', () => {
+    it('should return the numbers of users', async () => {
+      const returnNumUsers: Number = new Number(await providerService.getNumUsers('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85'));
+      expect(returnNumUsers).toBeInstanceOf(Number);
+    });
+  });
+
+  describe('Get Cumulated Rewards', () => {
+    it('should return cumulated reward from provider address', async () => {
+      const returnNumUsers: Number = new Number(await providerService.getCumulatedRewards('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85'));
+      expect(returnNumUsers).toBeInstanceOf(Number);
+    });
+  });
+
+  describe('Get Provider Metadata', () => {
+    it('should return provider metadata', async () => {
+      const returnNumUsers = await providerService.getProviderMetadata('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85');
+      expect(returnNumUsers).toBeInstanceOf(Object);
+    });
+  });
+
+  describe('Get Provider With Stake Information Raw', () => {
+    it('should return provider information with stake', async () => {
+      const returnProviderStakeInfo = await providerService.getProvidersWithStakeInformationRaw();
+
+      for (const provider of returnProviderStakeInfo) {
+        expect(provider).toBeInstanceOf(Object);
+      }
+    });
+    it('all providers with stake should have provider address', async () => {
+      const returnProviderStakeInfo = await providerService.getProvidersWithStakeInformationRaw();
+      for (const provider of returnProviderStakeInfo)
+        expect(provider).toHaveProperty('provider');
+    });
+    it('all providers with stake should have nodes', async () => {
+      const returnProviderStakeInfo = await providerService.getProvidersWithStakeInformationRaw();
+      for (const provider of returnProviderStakeInfo) {
+        expect(provider.numNodes).toBeGreaterThan(0);
+      }
+    });
+    it('providers with more than 30 nodes should have identity', async () => {
+      const returnProviderStakeInfo = await providerService.getProvidersWithStakeInformationRaw();
+      for (const provider of returnProviderStakeInfo) {
+        if (provider.numNodes >= 30) {
+          expect(provider).toHaveProperty('identity');
+        }
+      }
+    });
+  });
+
+  describe('Get Provider With Stake Information', () => {
+    it('should return providers with stake informations', async () => {
+      const returnProvider = await providerService.getProvidersWithStakeInformation();
+      for (const provider of returnProvider) {
+        expect(provider).toBeInstanceOf(Object);
+      }
+    });
+  });
+
+  describe('Get Provider Addresses', () => {
+    it('should return provider address', async () => {
+      try{
+        const returnProviderAddress = await providerService.getProviderAddresses();
+        expect(returnProviderAddress).toBeInstanceOf(Array);
+      }catch (error){
+        expect(error).toMatch('error');
+      }
     });
   });
 });
