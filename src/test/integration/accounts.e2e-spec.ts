@@ -183,5 +183,13 @@ describe('Account Service', () => {
       expect(accountUsername).toBeInstanceOf(String);
     });
   });
+
+  describe('Get Keys', () => {
+    it(`should return keys for a specific address`, async () => {
+      const returnKeys = await accountService.getKeys(accountAddress);
+      expect(returnKeys).toBeInstanceOf(Array);
+      expect(returnKeys).toBeDefined();
+    });
+  });
 });
 
