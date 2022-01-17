@@ -83,6 +83,8 @@
     "@nestjs/typeorm": "^8.0.2",
     "@nestjs/websockets": "^8.2.3",
     "agentkeepalive": "^4.1.4",
+    "amqp-connection-manager": "^4.0.0",
+    "amqplib": "^0.8.0",
     "anchorme": "^2.1.2",
     "axios": "^0.24.0",
     "bignumber.js": "^9.0.2",
