@@ -1,16 +1,14 @@
-import { Process, Processor } from "@nestjs/bull";
-import { Injectable, Logger } from "@nestjs/common";
-import { Job } from "bull";
+import { Controller, Logger } from "@nestjs/common";
+import { MessagePattern, Payload } from "@nestjs/microservices";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
-import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
+import { NftMessage } from "./entities/nft.message";
 import { NftMediaService } from "./job-services/media/nft.media.service";
 import { NftMetadataService } from "./job-services/metadata/nft.metadata.service";
 import { NftThumbnailService } from "./job-services/thumbnails/nft.thumbnail.service";
 
-@Injectable()
-@Processor('nftQueue')
-export class NftQueueService {
+@Controller()
+export class NftQueueController {
   private readonly logger: Logger;
 
   constructor(
@@ -18,15 +16,15 @@ export class NftQueueService {
     private readonly nftMediaService: NftMediaService,
     private readonly nftThumbnailService: NftThumbnailService,
   ) {
-    this.logger = new Logger(NftQueueService.name);
+    this.logger = new Logger(NftQueueController.name);
   }
 
-  @Process({ concurrency: 4 })
-  async onNftCreated(job: Job<{ identifier: string, nft: Nft, settings: ProcessNftSettings }>) {
-    this.logger.log({ type: 'consumer', jobId: job.id, identifier: job.data.identifier, attemptsMade: job.attemptsMade });
+  @MessagePattern({ cmd: 'process-nfts' })
+  async onNftCreated(@Payload() data: NftMessage) {
+    this.logger.log({ type: 'consumer', identifier: data.identifier });
 
-    const nft = job.data.nft;
-    const settings = job.data.settings;
+    const nft = data.nft;
+    const settings = data.settings;
 
     nft.metadata = await this.nftMetadataService.getMetadata(nft);
 
@@ -43,6 +41,8 @@ export class NftQueueService {
     if (nft.media && !settings.skipRefreshThumbnail) {
       await Promise.all(nft.media.map((media: any) => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
     }
+
+    return;
   }
 
   private async generateThumbnail(nft: Nft, media: NftMedia, forceRefresh: boolean = false): Promise<void> {

@@ -27,7 +27,7 @@ import { ProtocolService } from './common/protocol/protocol.service';
 import { PaginationInterceptor } from './interceptors/pagination.interceptor';
 import { LogRequestsInterceptor } from './interceptors/log.requests.interceptor';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { QueueWorkerModule } from './queue.worker/queue.worker.module';
+import { NftQueueModule } from './queue.worker/nft.worker/queue/nft.queue.module';
 
 async function bootstrap() {
   const publicApp = await NestFactory.create<NestExpressApplication>(
@@ -127,8 +127,17 @@ async function bootstrap() {
   }
 
   if (apiConfigService.getIsQueueWorkerCronActive()) {
-    const queueWorkerApp = await NestFactory.create(QueueWorkerModule);
-    await queueWorkerApp.listen(8000);
+    const queueWorkerApp = await NestFactory.createMicroservice<MicroserviceOptions>(NftQueueModule, {
+      transport: Transport.RMQ,
+      options: {
+        urls: [`amqp://${apiConfigService.getRabbitmqUrl()}:5672`],
+        queue: 'nfts_queue',
+        queueOptions: {
+          durable: false,
+        },
+      },
+    });
+    queueWorkerApp.listen();
   }
 
   const logger = new Logger('Bootstrapper');
