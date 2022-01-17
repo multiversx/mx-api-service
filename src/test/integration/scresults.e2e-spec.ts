@@ -114,4 +114,12 @@ describe('Scresults Service', () => {
       });
     });
   });
+
+  describe('Get Results of a smart contract count', () => {
+    it('should return sc results count', async () => {
+      const scResults: Number =new  Number(
+        await scresultsService.getAccountScResultsCount(accountAddress));
+      expect(scResults).toBeInstanceOf(Number);
+    });
+  });
 });
