@@ -36,6 +36,7 @@ urls:
   gateway:
     - 'https://testnet-gateway.elrond.com'
   redis: '127.0.0.1'
+  rabbitmq: '127.0.0.1'
   providers: 'https://delegation.maiarbrowser.com/providers'
   media: 'https://testnet-media.elrond.com'
   nftThumbnails: 'https://testnet-media.elrond.com/nfts/thumbnail'
