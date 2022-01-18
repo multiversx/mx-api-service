@@ -165,4 +165,18 @@ export class CacheInfo {
       ttl: Constants.oneHour(),
     };
   }
+
+  static TokenTransactions(identifier: string): CacheInfo {
+    return {
+      key: `tokenTransactions:${identifier}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
+  static TokenHolders(identifier: string): CacheInfo {
+    return {
+      key: `tokenHolders:${identifier}`,
+      ttl: Constants.oneHour(),
+    };
+  }
 }

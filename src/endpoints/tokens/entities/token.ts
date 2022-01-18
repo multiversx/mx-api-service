@@ -28,4 +28,10 @@ export class Token {
 
     @ApiProperty()
     assets: TokenAssets | undefined = undefined;
+
+    @ApiProperty()
+    transactions: number | undefined = undefined;
+
+    @ApiProperty()
+    holders: number | undefined = undefined;
 }
