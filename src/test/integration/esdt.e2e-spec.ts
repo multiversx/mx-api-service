@@ -55,15 +55,6 @@ describe('ESDT Service', () => {
           expect(esdt).toBeInstanceOf(Object);
         }
     });
-    it('all esdts need to contain properties', async() => {
-      const returnEsdtsRaw = await esdtService.getAllEsdtTokensRaw();
-
-      for (const esdt of returnEsdtsRaw) {
-        expect(esdt).toHaveProperty('canUpgrade');
-        expect(esdt).toHaveProperty('canMint');
-        expect(esdt).toHaveProperty('canBurn');
-      }
-    });
   });
 
   describe('Get Esdt Token Assets Raw', () => {
