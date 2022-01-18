@@ -173,9 +173,9 @@ export class CacheInfo {
     };
   }
 
-  static TokenHolders(identifier: string): CacheInfo {
+  static TokenAccounts(identifier: string): CacheInfo {
     return {
-      key: `tokenHolders:${identifier}`,
+      key: `tokenAccounts:${identifier}`,
       ttl: Constants.oneHour(),
     };
   }

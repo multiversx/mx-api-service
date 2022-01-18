@@ -33,5 +33,5 @@ export class Token {
     transactions: number | undefined = undefined;
 
     @ApiProperty()
-    holders: number | undefined = undefined;
+    accounts: number | undefined = undefined;
 }
