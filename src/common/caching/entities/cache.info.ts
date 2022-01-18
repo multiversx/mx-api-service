@@ -169,14 +169,14 @@ export class CacheInfo {
   static TokenTransactions(identifier: string): CacheInfo {
     return {
       key: `tokenTransactions:${identifier}`,
-      ttl: Constants.oneMinute(),
+      ttl: Constants.oneMinute() * 5,
     };
   }
 
   static TokenHolders(identifier: string): CacheInfo {
     return {
       key: `tokenHolders:${identifier}`,
-      ttl: Constants.oneMinute(),
+      ttl: Constants.oneMinute() * 5,
     };
   }
 }
