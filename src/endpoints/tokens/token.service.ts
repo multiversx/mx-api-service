@@ -79,10 +79,10 @@ export class TokenService {
       CacheInfo.TokenTransactions(token.identifier).ttl
     );
 
-    token.holders = await this.cachingService.getOrSetCache(
-      CacheInfo.TokenHolders(token.identifier).key,
+    token.accounts = await this.cachingService.getOrSetCache(
+      CacheInfo.TokenAccounts(token.identifier).key,
       async () => await this.getTokenAccountsCount(token.identifier),
-      CacheInfo.TokenHolders(token.identifier).ttl
+      CacheInfo.TokenAccounts(token.identifier).ttl
     );
   }
 
@@ -106,19 +106,19 @@ export class TokenService {
 
     await this.cachingService.batchApply
       (tokens,
-        token => CacheInfo.TokenHolders(token.identifier).key,
+        token => CacheInfo.TokenAccounts(token.identifier).key,
         async tokens => {
           const result: { [key: string]: number } = {};
 
           for (const token of tokens) {
-            const holders = await this.getTokenAccountsCount(token.identifier);
-            result[token.identifier] = holders;
+            const accounts = await this.getTokenAccountsCount(token.identifier);
+            result[token.identifier] = accounts;
           }
 
-          return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenHolders(identifier).key);
+          return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenAccounts(identifier).key);
         },
-        (token, holders) => token.holders = holders,
-        CacheInfo.TokenHolders('').ttl,
+        (token, accounts) => token.accounts = accounts,
+        CacheInfo.TokenAccounts('').ttl,
       );
   }
 
