@@ -147,7 +147,8 @@ export class NftThumbnailService {
 
     let hasThumbnail = true;
     await this.apiService.head(url, { skipRedirects: true }, async (error) => {
-      if (error.response?.status === HttpStatus.NOT_FOUND || error.response?.status === HttpStatus.FOUND) {
+      const status = error.response?.status;
+      if ([HttpStatus.FOUND, HttpStatus.NOT_FOUND, HttpStatus.FORBIDDEN].includes(status)) {
         hasThumbnail = false;
         return true;
       }
