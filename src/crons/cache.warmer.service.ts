@@ -84,6 +84,13 @@ export class CacheWarmerService {
     await Locker.lock('Esdt tokens invalidations', async () => {
       const tokens = await this.esdtService.getAllEsdtTokensRaw();
       await this.invalidateKey(CacheInfo.AllEsdtTokens.key, tokens, CacheInfo.AllEsdtTokens.ttl);
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleEsdtTokenTransactionsAndHoldersInvalidations() {
+    await Locker.lock('Esdt tokens transactions and holders invalidations', async () => {
+      const tokens = await this.esdtService.getAllEsdtTokensRaw();
       await this.tokenService.batchProcessTokens(tokens);
     }, true);
   }
