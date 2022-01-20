@@ -178,8 +178,7 @@ describe('Nft Service', () => {
   describe('Nft count', () => {
     it(`should return a number`, async () => {
       const nftCount: Number = new Number(
-        await nftService.getNftCount(new NftFilter()),
-      );
+        await nftService.getNftCount(new NftFilter()));
       expect(nftCount).toBeInstanceOf(Number);
     });
   });
@@ -202,18 +201,20 @@ describe('Nft Service', () => {
   describe('Get NFT Owner Count', () => {
     it(`should return NFT Owner count = 1`, async () => {
       const nftFilter = new Nft();
-      nftFilter.identifier = 'EGLDMEXF-5bcc57-358d6e';
-      const nftsCount = await nftService.getNftOwnersCount(nftFilter.identifier);
-      expect(nftsCount).toBe(1);
+      nftFilter.identifier = 'EGLDMEXF-5bcc57-377c9f';
+      const nftsCount: Number =new Number (await nftService.getNftOwnersCount(nftFilter.identifier));
+
+      expect(nftsCount).toBeInstanceOf(Number);
     });
   });
 
-  describe('Get Single NFT', () => {
+  describe('Get Nft Owners Count', () => {
     it(`should return a list with nfts that has collection`, async () => {
       const nftFilter = new Nft();
-      nftFilter.identifier = 'EGLDMEXF-5bcc57-358d6e';
-      const nftsList = await nftService.getNftOwnersCountRaw(nftFilter.identifier);
-      expect(nftsList).toBe(1);
+      nftFilter.identifier = 'EGLDMEXF-5bcc57-377c9f';
+      const nftsList: Number = new Number(await nftService.getNftOwnersCountRaw(nftFilter.identifier));
+
+      expect(nftsList).toBeInstanceOf(Number);
     });
   });
 
