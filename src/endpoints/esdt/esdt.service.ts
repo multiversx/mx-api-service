@@ -324,39 +324,45 @@ export class EsdtService {
     return tokenAddressesAndRoles;
   }
 
-  async getLockedSupply(identifier: string): Promise<string | undefined> {
+  async getLockedSupply(identifier: string): Promise<string> {
+    return this.cachingService.getOrSetCache(
+      CacheInfo.TokenLockedSupply(identifier).key,
+      async () => await this.getLockedSupplyRaw(identifier),
+      CacheInfo.TokenLockedSupply(identifier).ttl,
+    );
+  }
+
+  async getLockedSupplyRaw(identifier: string): Promise<string> {
     const tokenAssets = await this.tokenAssetService.getAssets(identifier);
+    if (!tokenAssets) {
+      return '0';
+    }
 
-    const lockedAccounts = tokenAssets?.lockedAccounts;
-
-    if (!(lockedAccounts && lockedAccounts.length !== 0)) {
-      return;
+    const lockedAccounts = tokenAssets.lockedAccounts;
+    if (!lockedAccounts || lockedAccounts.length === 0) {
+      return '0';
     }
 
     const esdtLockedAccounts = await this.elasticService.getAccountEsdtByAddressesAndIdentifier(identifier, lockedAccounts);
 
-    let lockedSupply = BigInt(0);
-    for (const account of esdtLockedAccounts) {
-      const lockedBalance = account.balance;
-
-      lockedSupply += BigInt(lockedBalance);
-    }
-
-    return lockedSupply.toString();
+    return esdtLockedAccounts.sumBigInt(x => x.balance).toString();
   }
-
 
   async getTokenSupply(identifier: string): Promise<string> {
     const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
 
-    const lockedSupply = await this.getLockedSupply(identifier);
+    const isCollectionOrToken = identifier.split('-').length === 2;
+    if (isCollectionOrToken) {
+      const lockedSupply = await this.getLockedSupply(identifier);
+      if (!lockedSupply) {
+        return supply;
+      }
 
-    if (!lockedSupply) {
-      return supply;
+      const circulatingSupply = BigInt(supply) - BigInt(lockedSupply);
+
+      return circulatingSupply.toString();
     }
 
-    const circulatingSupply = BigInt(supply) - BigInt(lockedSupply);
-
-    return circulatingSupply.toString();
+    return supply;
   }
 }

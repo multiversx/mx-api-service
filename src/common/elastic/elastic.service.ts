@@ -90,7 +90,7 @@ export class ElasticService {
     return this.getAccountEsdtByIdentifiers([identifier], pagination);
   }
 
-  async getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]) {
+  async getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]): Promise<any[]> {
     const queries = [];
 
     for (const address of addresses) {

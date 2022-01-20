@@ -85,6 +85,20 @@ export class CacheWarmerService {
     }, true);
   }
 
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleTokenSupplyInvalidations() {
+    await Locker.lock('Token supply invalidations', async () => {
+      const assets = await this.tokenAssetService.getAllAssets();
+      for (const identifier of Object.keys(assets)) {
+        const asset = assets[identifier];
+        if (asset.lockedAccounts) {
+          const lockedSupply = await this.esdtService.getLockedSupplyRaw(identifier);
+          await this.invalidateKey(CacheInfo.TokenLockedSupply(identifier).key, lockedSupply, CacheInfo.TokenLockedSupply(identifier).ttl);
+        }
+      }
+    }, true);
+  }
+
   async handleIdentityInvalidations() {
     await Locker.lock('Identities invalidations', async () => {
       const identities = await this.identitiesService.getAllIdentitiesRaw();

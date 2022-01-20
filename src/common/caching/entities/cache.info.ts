@@ -165,4 +165,11 @@ export class CacheInfo {
       ttl: Constants.oneHour(),
     };
   }
+
+  static TokenLockedSupply(identifier: string): CacheInfo {
+    return {
+      key: `tokenLockedSupply:${identifier}`,
+      ttl: Constants.oneHour(),
+    };
+  }
 }
