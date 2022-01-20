@@ -21,6 +21,7 @@ import { TokenAddressRoles } from "../tokens/entities/token.address.roles";
 import { TokenAssets } from "../tokens/entities/token.assets";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { TokenAssetService } from "../tokens/token.asset.service";
+import { EsdtSupply } from "./entities/esdt.supply";
 
 @Injectable()
 export class EsdtService {
@@ -324,9 +325,51 @@ export class EsdtService {
     return tokenAddressesAndRoles;
   }
 
-  async getTokenSupply(identifier: string): Promise<string> {
+  async getLockedSupply(identifier: string): Promise<string> {
+    return this.cachingService.getOrSetCache(
+      CacheInfo.TokenLockedSupply(identifier).key,
+      async () => await this.getLockedSupplyRaw(identifier),
+      CacheInfo.TokenLockedSupply(identifier).ttl,
+    );
+  }
+
+  async getLockedSupplyRaw(identifier: string): Promise<string> {
+    const tokenAssets = await this.tokenAssetService.getAssets(identifier);
+    if (!tokenAssets) {
+      return '0';
+    }
+
+    const lockedAccounts = tokenAssets.lockedAccounts;
+    if (!lockedAccounts || lockedAccounts.length === 0) {
+      return '0';
+    }
+
+    const esdtLockedAccounts = await this.elasticService.getAccountEsdtByAddressesAndIdentifier(identifier, lockedAccounts);
+
+    return esdtLockedAccounts.sumBigInt(x => x.balance).toString();
+  }
+
+  async getTokenSupply(identifier: string): Promise<EsdtSupply> {
     const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
 
-    return supply;
+    const isCollectionOrToken = identifier.split('-').length === 2;
+    if (isCollectionOrToken) {
+      const lockedSupply = await this.getLockedSupply(identifier);
+      if (!lockedSupply) {
+        return supply;
+      }
+
+      const circulatingSupply = BigInt(supply) - BigInt(lockedSupply);
+
+      return {
+        totalSupply: supply,
+        circulatingSupply: circulatingSupply.toString(),
+      };
+    }
+
+    return {
+      totalSupply: supply,
+      circulatingSupply: supply,
+    };
   }
 }
