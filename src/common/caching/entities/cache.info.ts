@@ -166,6 +166,13 @@ export class CacheInfo {
     };
   }
 
+  static TokenLockedSupply(identifier: string): CacheInfo {
+    return {
+      key: `tokenLockedSupply:${identifier}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
   static TokenTransactions(identifier: string): CacheInfo {
     return {
       key: `tokenTransactions:${identifier}`,

@@ -99,6 +99,24 @@ export class TokenController {
     return token;
   }
 
+  @Get('/tokens/:identifier/supply')
+  @ApiResponse({
+    status: 200,
+    description: 'Non-fungible / semi-fungible token supply',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Token not found',
+  })
+  async getTokenSupply(@Param('identifier') identifier: string): Promise<{ supply: string, circulatingSupply: string }> {
+    const getSupplyResult = await this.tokenService.getTokenSupply(identifier);
+    if (!getSupplyResult) {
+      throw new NotFoundException();
+    }
+
+    return { supply: getSupplyResult.totalSupply, circulatingSupply: getSupplyResult.circulatingSupply };
+  }
+
   @Get("/tokens/:identifier/accounts")
   @ApiResponse({
     status: 200,

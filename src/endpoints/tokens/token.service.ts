@@ -19,6 +19,8 @@ import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { TransactionService } from "../transactions/transaction.service";
 import { RecordUtils } from "src/utils/record.utils";
+import { EsdtSupply } from "../esdt/entities/esdt.supply";
+import { TokenType } from "./entities/token.type";
 
 @Injectable()
 export class TokenService {
@@ -41,7 +43,7 @@ export class TokenService {
 
     await this.applyTickerFromAssets(token);
 
-    token.supply = await this.esdtService.getTokenSupply(identifier);
+    this.applySupply(token);
 
     await this.processToken(token);
 
@@ -197,7 +199,7 @@ export class TokenService {
 
     await this.applyTickerFromAssets(tokenWithBalance);
 
-    tokenWithBalance.supply = await this.esdtService.getTokenSupply(identifier);
+    await this.applySupply(token);
 
     return tokenWithBalance;
   }
@@ -276,5 +278,29 @@ export class TokenService {
     delete addressRoles?.address;
 
     return addressRoles;
+  }
+
+  async applySupply(token: TokenDetailed): Promise<void> {
+    const { totalSupply, circulatingSupply } = await this.esdtService.getTokenSupply(token.identifier);
+
+    token.supply = totalSupply;
+    token.circulatingSupply = circulatingSupply;
+  }
+
+  async getTokenSupply(identifier: string): Promise<EsdtSupply | undefined> {
+    if (identifier.split('-').length !== 2) {
+      return undefined;
+    }
+
+    const properties = await this.esdtService.getEsdtTokenProperties(identifier);
+    if (!properties) {
+      return undefined;
+    }
+
+    if (properties.type !== TokenType.FungibleESDT) {
+      return undefined;
+    }
+
+    return await this.esdtService.getTokenSupply(identifier);
   }
 }

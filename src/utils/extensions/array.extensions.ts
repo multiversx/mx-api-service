@@ -120,6 +120,22 @@ Array.prototype.sortedDescending = function <T>(predicate?: (item: T) => number)
   return sorted;
 };
 
+Array.prototype.sum = function <T>(predicate?: (item: T) => number): number {
+  if (predicate) {
+    return this.map(predicate).reduce((a, b) => a + b);
+  }
+
+  return this.reduce((a, b) => a + b);
+};
+
+Array.prototype.sumBigInt = function <T>(predicate?: (item: T) => bigint): bigint {
+  if (predicate) {
+    return this.map(predicate).reduce((a, b) => BigInt(a) + BigInt(b), BigInt(0));
+  }
+
+  return this.reduce((a, b) => BigInt(a) + BigInt(b), BigInt(0));
+};
+
 declare interface Array<T> {
   groupBy(predicate: (item: T) => any): any;
   selectMany<TOUT>(predicate: (item: T) => TOUT[]): TOUT[];
@@ -132,5 +148,7 @@ declare interface Array<T> {
   all(predicate: (item: T) => boolean): boolean;
   sorted(predicate?: (element: T) => number): T[];
   sortedDescending(predicate?: (element: T) => number): T[];
+  sum(predicate?: (item: T) => number): number;
+  sumBigInt(predicate?: (item: T) => bigint): bigint;
   toRecord<TOUT>(keyPredicate: (item: T) => string, valuePredicate?: (item: T) => TOUT): Record<string, TOUT>;
 }
