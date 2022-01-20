@@ -100,6 +100,8 @@ export class CacheWarmerService {
       }
     }, true);
   }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async handleEsdtTokenTransactionsAndAccountsInvalidations() {
     await Locker.lock('Esdt tokens transactions and accounts invalidations', async () => {
       const tokens = await this.esdtService.getAllEsdtTokensRaw();
