@@ -48,10 +48,19 @@ export class TokenService {
     return token;
   }
 
+  private getBrandedTokens(tokens: TokenDetailed[]): TokenDetailed[] {
+    return tokens.filter((token) => token.assets);
+  }
+
+
   async getTokens(queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenDetailed[]> {
     const { from, size } = queryPagination;
 
     let tokens = await this.getFilteredTokens(filter);
+
+    const brandedTokens = this.getBrandedTokens(tokens);
+
+    tokens = [...brandedTokens, ...tokens].distinctBy((token: TokenDetailed) => token.identifier);
 
     tokens = tokens.slice(from, from + size);
 
@@ -60,6 +69,26 @@ export class TokenService {
     }
 
     await this.batchProcessTokens(tokens);
+
+    tokens = tokens.sort((a, b) => {
+      if (!a.accounts || !b.accounts) {
+        return 0;
+      }
+
+      if (!a.assets && !b.assets) {
+        return b.accounts - a.accounts;
+      }
+
+      if (!a.assets) {
+        return 1;
+      }
+
+      if (!b.assets) {
+        return -1;
+      }
+
+      return b.accounts - a.accounts;
+    });
 
     return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
   }
@@ -148,8 +177,6 @@ export class TokenService {
 
       tokens = tokens.filter(token => identifierArray.includes(token.identifier.toLowerCase()));
     }
-
-    tokens = [...tokens.filter((token) => token.assets), ...tokens].distinctBy((token: TokenDetailed) => token.identifier);
 
     return tokens;
   }
