@@ -179,4 +179,11 @@ export class CacheInfo {
       ttl: Constants.oneHour(),
     };
   }
+
+  static TokenAccounts(identifier: string): CacheInfo {
+    return {
+      key: `tokenAccounts:${identifier}`,
+      ttl: Constants.oneHour(),
+    };
+  }
 }
