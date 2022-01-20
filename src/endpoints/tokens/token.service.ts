@@ -35,7 +35,7 @@ export class TokenService {
 
     await this.applyTickerFromAssets(token);
 
-    token.supply = await this.esdtService.getTokenSupply(identifier);
+    this.applySupply(token);
 
     return token;
   }
@@ -138,7 +138,7 @@ export class TokenService {
 
     await this.applyTickerFromAssets(tokenWithBalance);
 
-    tokenWithBalance.supply = await this.esdtService.getTokenSupply(identifier);
+    await this.applySupply(token);
 
     return tokenWithBalance;
   }
@@ -226,5 +226,12 @@ export class TokenService {
     delete addressRoles?.address;
 
     return addressRoles;
+  }
+
+  async applySupply(token: TokenDetailed): Promise<void> {
+    const { totalSupply, circulatingSupply } = await this.esdtService.getTokenSupply(token.identifier);
+
+    token.supply = totalSupply;
+    token.circulatingSupply = circulatingSupply;
   }
 }

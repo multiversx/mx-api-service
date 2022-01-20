@@ -348,7 +348,7 @@ export class EsdtService {
     return esdtLockedAccounts.sumBigInt(x => x.balance).toString();
   }
 
-  async getTokenSupply(identifier: string): Promise<string> {
+  async getTokenSupply(identifier: string): Promise<{ totalSupply: string, circulatingSupply: string }> {
     const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
 
     const isCollectionOrToken = identifier.split('-').length === 2;
@@ -360,9 +360,15 @@ export class EsdtService {
 
       const circulatingSupply = BigInt(supply) - BigInt(lockedSupply);
 
-      return circulatingSupply.toString();
+      return {
+        totalSupply: supply,
+        circulatingSupply: circulatingSupply.toString(),
+      };
     }
 
-    return supply;
+    return {
+      totalSupply: supply,
+      circulatingSupply: supply,
+    };
   }
 }

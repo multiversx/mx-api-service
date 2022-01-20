@@ -54,13 +54,16 @@ export class Nft {
   metadata: NftMetadata | undefined = undefined;
 
   @ApiProperty()
-  owner?: string;
+  owner: string | undefined = undefined;
 
   @ApiProperty()
-  balance?: string;
+  balance: string | undefined = undefined;
 
   @ApiProperty()
-  supply?: string;
+  supply: string | undefined = undefined;
+
+  @ApiProperty()
+  circulatingSupply: string | undefined = undefined;
 
   @ApiProperty()
   decimals: number | undefined = undefined;

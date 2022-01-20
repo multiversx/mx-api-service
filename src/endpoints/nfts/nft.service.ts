@@ -146,7 +146,7 @@ export class NftService {
     if (queryOptions && queryOptions.withSupply) {
       for (const nft of nfts) {
         if (nft.type === NftType.SemiFungibleESDT) {
-          nft.supply = await this.esdtService.getTokenSupply(nft.identifier);
+          await this.applySupply(nft);
         }
       }
     }
@@ -242,7 +242,7 @@ export class NftService {
       return undefined;
     }
 
-    nft.supply = await this.esdtService.getTokenSupply(nft.identifier);
+    await this.applySupply(nft);
 
     await this.applyNftOwner(nft);
 
@@ -402,7 +402,7 @@ export class NftService {
     if (queryOptions && queryOptions.withSupply) {
       for (const nft of nfts) {
         if (nft.type === NftType.SemiFungibleESDT) {
-          nft.supply = await this.esdtService.getTokenSupply(nft.identifier);
+          await this.applySupply(nft);
         }
       }
     }
@@ -576,7 +576,7 @@ export class NftService {
     const nft = nfts[0];
 
     if (nft.type === NftType.SemiFungibleESDT) {
-      nft.supply = await this.esdtService.getTokenSupply(identifier);
+      await this.applySupply(nft);
     }
 
     nft.assets = await this.tokenAssetService.getAssets(nft.collection);
@@ -584,6 +584,13 @@ export class NftService {
     await this.processNft(nft);
 
     return nft;
+  }
+
+  async applySupply(nft: Nft): Promise<void> {
+    const { totalSupply, circulatingSupply } = await this.esdtService.getTokenSupply(nft.identifier);
+
+    nft.supply = totalSupply;
+    nft.circulatingSupply = circulatingSupply;
   }
 
 }
