@@ -144,11 +144,7 @@ export class NftService {
     }
 
     if (queryOptions && queryOptions.withSupply) {
-      for (const nft of nfts) {
-        if (nft.type === NftType.SemiFungibleESDT) {
-          await this.applySupply(nft);
-        }
-      }
+      await this.batchApplySupply(nfts);
     }
 
     await this.batchProcessNfts(nfts);
@@ -172,6 +168,28 @@ export class NftService {
         nft.owner = accountsEsdt[0].address;
       }
     }
+  }
+
+  private async batchApplySupply(nfts: Nft[]) {
+    await this.cachingService.batchApply(
+      nfts,
+      nft => CacheInfo.TokenLockedSupply(nft.identifier).key,
+      async nfts => {
+        const result: { [key: string]: { totalSupply: string, circulatingSupply: string } | undefined } = {};
+        for (const nft of nfts) {
+          result[nft.identifier] = await this.esdtService.getTokenSupply(nft.identifier);
+        }
+        return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenLockedSupply(identifier).key);
+      },
+      (nft, value) => {
+        console.log(nft, value);
+        if (value) {
+          nft.supply = value.totalSupply;
+          nft.circulatingSupply = value.circulatingSupply;
+        }
+      },
+      CacheInfo.TokenLockedSupply('').ttl,
+    );
   }
 
   private async batchApplyMedia(nfts: Nft[]) {
@@ -400,11 +418,7 @@ export class NftService {
     }
 
     if (queryOptions && queryOptions.withSupply) {
-      for (const nft of nfts) {
-        if (nft.type === NftType.SemiFungibleESDT) {
-          await this.applySupply(nft);
-        }
-      }
+      await this.batchApplySupply(nfts);
     }
 
     await this.batchProcessNfts(nfts);
