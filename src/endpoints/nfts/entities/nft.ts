@@ -63,9 +63,6 @@ export class Nft {
   supply: string | undefined = undefined;
 
   @ApiProperty()
-  circulatingSupply: string | undefined = undefined;
-
-  @ApiProperty()
   decimals: number | undefined = undefined;
 
   @ApiProperty()

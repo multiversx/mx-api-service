@@ -21,6 +21,7 @@ import { TokenAddressRoles } from "../tokens/entities/token.address.roles";
 import { TokenAssets } from "../tokens/entities/token.assets";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { TokenAssetService } from "../tokens/token.asset.service";
+import { EsdtSupply } from "./entities/esdt.supply";
 
 @Injectable()
 export class EsdtService {
@@ -348,7 +349,7 @@ export class EsdtService {
     return esdtLockedAccounts.sumBigInt(x => x.balance).toString();
   }
 
-  async getTokenSupply(identifier: string): Promise<{ totalSupply: string, circulatingSupply: string }> {
+  async getTokenSupply(identifier: string): Promise<EsdtSupply> {
     const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
 
     const isCollectionOrToken = identifier.split('-').length === 2;

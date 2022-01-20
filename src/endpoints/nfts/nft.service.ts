@@ -31,6 +31,7 @@ import { NftMedia } from "./entities/nft.media";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { PersistenceInterface } from "src/common/persistence/persistence.interface";
 import { RecordUtils } from "src/utils/record.utils";
+import { EsdtSupply } from "../esdt/entities/esdt.supply";
 
 @Injectable()
 export class NftService {
@@ -175,19 +176,15 @@ export class NftService {
       nfts,
       nft => CacheInfo.TokenLockedSupply(nft.identifier).key,
       async nfts => {
-        const result: { [key: string]: { totalSupply: string, circulatingSupply: string } | undefined } = {};
+        const result: Record<string, EsdtSupply> = {};
+
         for (const nft of nfts) {
           result[nft.identifier] = await this.esdtService.getTokenSupply(nft.identifier);
         }
+
         return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenLockedSupply(identifier).key);
       },
-      (nft, value) => {
-        console.log(nft, value);
-        if (value) {
-          nft.supply = value.totalSupply;
-          nft.circulatingSupply = value.circulatingSupply;
-        }
-      },
+      (nft, value) => nft.supply = value.totalSupply,
       CacheInfo.TokenLockedSupply('').ttl,
     );
   }
@@ -601,10 +598,9 @@ export class NftService {
   }
 
   async applySupply(nft: Nft): Promise<void> {
-    const { totalSupply, circulatingSupply } = await this.esdtService.getTokenSupply(nft.identifier);
+    const { totalSupply } = await this.esdtService.getTokenSupply(nft.identifier);
 
     nft.supply = totalSupply;
-    nft.circulatingSupply = circulatingSupply;
   }
 
 }
