@@ -126,10 +126,10 @@ export class NftController {
     status: 404,
     description: 'Token not found',
   })
-  async getNftSupply(@Param('identifier') identifier: string): Promise<{ supply: string, circulatingSupply: string }> {
-    const { totalSupply, circulatingSupply } = await this.esdtService.getTokenSupply(identifier);
+  async getNftSupply(@Param('identifier') identifier: string): Promise<{ supply: string }> {
+    const { totalSupply } = await this.esdtService.getTokenSupply(identifier);
 
-    return { supply: totalSupply, circulatingSupply };
+    return { supply: totalSupply };
   }
 
   @Get('/nfts/:identifier/owners')
