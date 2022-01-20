@@ -495,8 +495,4 @@ export class ApiConfigService {
 
     return mockPath;
   }
-
-  getLockedSupplyAddressesForToken(identifier: string) {
-    return this.configService.get<string[]>(`lockedSupply.${identifier}`) ?? [];
-  }
 }
