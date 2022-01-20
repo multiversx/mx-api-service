@@ -85,7 +85,7 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async handleTokenSupplyInvalidations() {
     await Locker.lock('Token supply invalidations', async () => {
       const assets = await this.tokenAssetService.getAllAssets();
