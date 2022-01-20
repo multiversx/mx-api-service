@@ -6,9 +6,9 @@ api:
   private: true
   auth: false
 cron:
-  transactionProcessor: false
+  transactionProcessor: true
   transactionProcessorMaxLookBehind: 1000
-  cacheWarmer: false
+  cacheWarmer: true
   fastWarm: false
   queueWorker: true
 flags:
@@ -44,7 +44,6 @@ urls:
   nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
-  extras: 'https://extras-api.elrond.com'
 database:
   host: 'localhost'
   port: 3306
