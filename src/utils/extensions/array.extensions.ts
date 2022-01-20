@@ -100,6 +100,26 @@ Array.prototype.toRecord = function <TIN, TOUT>(keyPredicate: (item: TIN) => str
   return result;
 };
 
+Array.prototype.sorted = function <T>(predicate?: (item: T) => number): T[] {
+  const cloned = [...this];
+
+  if (predicate) {
+    cloned.sort((a, b) => predicate(a) - predicate(b));
+  } else {
+    cloned.sort((a, b) => a - b);
+  }
+
+  return cloned;
+};
+
+Array.prototype.sortedDescending = function <T>(predicate?: (item: T) => number): T[] {
+  const sorted = this.sorted(predicate);
+
+  sorted.reverse();
+
+  return sorted;
+};
+
 declare interface Array<T> {
   groupBy(predicate: (item: T) => any): any;
   selectMany<TOUT>(predicate: (item: T) => TOUT[]): TOUT[];
@@ -110,5 +130,7 @@ declare interface Array<T> {
   distinct(): T[];
   distinctBy<TResult>(predicate: (element: T) => TResult): T[];
   all(predicate: (item: T) => boolean): boolean;
+  sorted(predicate?: (element: T) => number): T[];
+  sortedDescending(predicate?: (element: T) => number): T[];
   toRecord<TOUT>(keyPredicate: (item: T) => string, valuePredicate?: (item: T) => TOUT): Record<string, TOUT>;
 }

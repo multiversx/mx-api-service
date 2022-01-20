@@ -48,19 +48,10 @@ export class TokenService {
     return token;
   }
 
-  private getBrandedTokens(tokens: TokenDetailed[]): TokenDetailed[] {
-    return tokens.filter((token) => token.assets);
-  }
-
-
   async getTokens(queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenDetailed[]> {
     const { from, size } = queryPagination;
 
     let tokens = await this.getFilteredTokens(filter);
-
-    const brandedTokens = this.getBrandedTokens(tokens);
-
-    tokens = [...brandedTokens, ...tokens].distinctBy((token: TokenDetailed) => token.identifier);
 
     tokens = tokens.slice(from, from + size);
 
@@ -69,26 +60,6 @@ export class TokenService {
     }
 
     await this.batchProcessTokens(tokens);
-
-    tokens = tokens.sort((a, b) => {
-      if (!a.accounts || !b.accounts) {
-        return 0;
-      }
-
-      if (!a.assets && !b.assets) {
-        return b.accounts - a.accounts;
-      }
-
-      if (!a.assets) {
-        return 1;
-      }
-
-      if (!b.assets) {
-        return -1;
-      }
-
-      return b.accounts - a.accounts;
-    });
 
     return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
   }
@@ -110,7 +81,7 @@ export class TokenService {
 
     token.accounts = await this.cachingService.getOrSetCache(
       CacheInfo.TokenAccounts(token.identifier).key,
-      async () => await this.getTokenAccountsCount(token.identifier),
+      async () => await this.esdtService.getTokenAccountsCount(token.identifier),
       CacheInfo.TokenAccounts(token.identifier).ttl
     );
   }
@@ -124,6 +95,7 @@ export class TokenService {
 
           for (const token of tokens) {
             const transactions = await this.transactionService.getTransactionCount({ token: token.identifier });
+
             result[token.identifier] = transactions;
           }
 
@@ -140,7 +112,7 @@ export class TokenService {
           const result: { [key: string]: number } = {};
 
           for (const token of tokens) {
-            const accounts = await this.getTokenAccountsCount(token.identifier);
+            const accounts = await this.esdtService.getTokenAccountsCount(token.identifier);
             result[token.identifier] = accounts;
           }
 
@@ -280,15 +252,6 @@ export class TokenService {
     const tokenAccounts = await this.elasticService.getList("accountsesdt", identifier, elasticQuery);
 
     return tokenAccounts.map((tokenAccount) => ApiUtils.mergeObjects(new TokenAccount(), tokenAccount));
-  }
-
-  async getTokenAccountsCount(identifier: string): Promise<number> {
-    const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
-
-    const count = await this.elasticService.getCount("accountsesdt", elasticQuery);
-
-    return count;
   }
 
   async getTokenRoles(identifier: string): Promise<TokenAddressRoles[] | undefined> {

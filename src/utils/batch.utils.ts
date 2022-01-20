@@ -63,7 +63,7 @@ export class BatchUtils {
         const identifier = identifierFunc(inputElement);
         const outputElement = outputElements[identifier];
 
-        if (outputElement) {
+        if (outputElement !== undefined) {
           found[identifier] = outputElement;
         } else {
           remaining.push(inputElement);
