@@ -7,6 +7,7 @@ import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
+import { EsdtService } from "../esdt/esdt.service";
 import { TransactionStatus } from "../transactions/entities/transaction.status";
 import { TransactionService } from "../transactions/transaction.service";
 import { TokenAccount } from "./entities/token.account";
@@ -21,6 +22,7 @@ export class TokenController {
   constructor(
     private readonly tokenService: TokenService,
     private readonly transactionService: TransactionService,
+    private readonly esdtService: EsdtService,
   ) {
     this.logger = new Logger(TokenController.name);
   }
@@ -95,6 +97,21 @@ export class TokenController {
     }
 
     return token;
+  }
+
+  @Get('/tokens/:identifier/supply')
+  @ApiResponse({
+    status: 200,
+    description: 'Non-fungible / semi-fungible token supply',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Token not found',
+  })
+  async getNftSupply(@Param('identifier') identifier: string): Promise<{ supply: string, circulatingSupply: string }> {
+    const { totalSupply, circulatingSupply } = await this.esdtService.getTokenSupply(identifier);
+
+    return { supply: totalSupply, circulatingSupply };
   }
 
   @Get("/tokens/:identifier/accounts")
