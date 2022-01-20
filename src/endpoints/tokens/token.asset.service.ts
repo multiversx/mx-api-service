@@ -96,7 +96,12 @@ export class TokenAssetService {
     const assets: { [key: string]: TokenAssets } = {};
     for (const tokenIdentifier of tokenIdentifiers) {
       const tokenPath = path.join(tokensPath, tokenIdentifier);
-      assets[tokenIdentifier] = this.readAssetDetails(tokenIdentifier, tokenPath);
+      try {
+        assets[tokenIdentifier] = this.readAssetDetails(tokenIdentifier, tokenPath);
+      } catch (error) {
+        this.logger.error(`An error ocurred while reading assets for token with identifier '${tokenIdentifier}'`);
+        this.logger.error(error);
+      }
     }
 
     return assets;

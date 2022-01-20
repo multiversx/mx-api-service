@@ -15,6 +15,10 @@ import { ElasticService } from "src/common/elastic/elastic.service";
 import { TokenAccount } from "./entities/token.account";
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { TokenAddressRoles } from "./entities/token.address.roles";
+import { CachingService } from "src/common/caching/caching.service";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { TransactionService } from "../transactions/transaction.service";
+import { RecordUtils } from "src/utils/record.utils";
 
 @Injectable()
 export class TokenService {
@@ -22,6 +26,8 @@ export class TokenService {
   constructor(
     private readonly esdtService: EsdtService,
     private readonly elasticService: ElasticService,
+    private readonly cachingService: CachingService,
+    private readonly transactionService: TransactionService,
   ) { }
 
   async getToken(identifier: string): Promise<TokenDetailed | undefined> {
@@ -37,6 +43,8 @@ export class TokenService {
 
     this.applySupply(token);
 
+    await this.processToken(token);
+
     return token;
   }
 
@@ -51,6 +59,8 @@ export class TokenService {
       await this.applyTickerFromAssets(token);
     }
 
+    await this.batchProcessTokens(tokens);
+
     return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
   }
 
@@ -60,6 +70,56 @@ export class TokenService {
     } else {
       token.ticker = token.identifier;
     }
+  }
+
+  async processToken(token: TokenDetailed) {
+    token.transactions = await this.cachingService.getOrSetCache(
+      CacheInfo.TokenTransactions(token.identifier).key,
+      async () => await this.transactionService.getTransactionCount({ token: token.identifier }),
+      CacheInfo.TokenTransactions(token.identifier).ttl
+    );
+
+    token.accounts = await this.cachingService.getOrSetCache(
+      CacheInfo.TokenAccounts(token.identifier).key,
+      async () => await this.getTokenAccountsCount(token.identifier),
+      CacheInfo.TokenAccounts(token.identifier).ttl
+    );
+  }
+
+  async batchProcessTokens(tokens: TokenDetailed[]) {
+    await this.cachingService.batchApply
+      (tokens,
+        token => CacheInfo.TokenTransactions(token.identifier).key,
+        async tokens => {
+          const result: { [key: string]: number } = {};
+
+          for (const token of tokens) {
+            const transactions = await this.transactionService.getTransactionCount({ token: token.identifier });
+            result[token.identifier] = transactions;
+          }
+
+          return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenTransactions(identifier).key);
+        },
+        (token, transactions) => token.transactions = transactions,
+        CacheInfo.TokenTransactions('').ttl,
+      );
+
+    await this.cachingService.batchApply
+      (tokens,
+        token => CacheInfo.TokenAccounts(token.identifier).key,
+        async tokens => {
+          const result: { [key: string]: number } = {};
+
+          for (const token of tokens) {
+            const accounts = await this.getTokenAccountsCount(token.identifier);
+            result[token.identifier] = accounts;
+          }
+
+          return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenAccounts(identifier).key);
+        },
+        (token, accounts) => token.accounts = accounts,
+        CacheInfo.TokenAccounts('').ttl,
+      );
   }
 
   async getFilteredTokens(filter: TokenFilter): Promise<TokenDetailed[]> {

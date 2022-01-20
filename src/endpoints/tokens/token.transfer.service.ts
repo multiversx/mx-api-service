@@ -7,10 +7,11 @@ import { EsdtService } from "../esdt/esdt.service";
 import { TokenAssetService } from "./token.asset.service";
 import { TokenTransferProperties } from "./entities/token.transfer.properties";
 import { TransactionLog } from "../transactions/entities/transaction.log";
-import { TransactionLogEvent } from "../transactions/entities/transaction.log.event";
 import { TransactionLogEventIdentifier } from "../transactions/entities/transaction.log.event.identifier";
 import { TransactionOperation } from "../transactions/entities/transaction.operation";
 import { TransactionOperationAction } from "../transactions/entities/transaction.operation.action";
+import { RecordUtils } from "src/utils/record.utils";
+import { TransactionLogEvent } from "../transactions/entities/transaction.log.event";
 import { TransactionOperationType } from "../transactions/entities/transaction.operation.type";
 
 @Injectable()
@@ -51,14 +52,51 @@ export class TokenTransferService {
     return { tokenIdentifier: token, tokenAmount: esdtValue };
   }
 
-  async getOperationsForTransactionLogs(txHash: string, logs: TransactionLog[]): Promise<TransactionOperation[]> {
-    const operations: (TransactionOperation | undefined)[] = [];
-
+  private async getTokenTransferPropertiesFromLogs(logs: TransactionLog[]): Promise<{ [key: string]: TokenTransferProperties | null }> {
+    const identifiers: string[] = [];
     for (const log of logs) {
       for (const event of log.events) {
         const action = this.getOperationAction(event.identifier);
         if (action) {
-          const operation = await this.getTransactionNftOperation(txHash, log, event, action);
+          identifiers.push(BinaryUtils.base64Decode(event.topics[0]));
+        }
+      }
+    }
+
+    const tokenProperties: {
+      [key: string]: TokenTransferProperties | null
+    } = {};
+
+    await this.cachingService.batchApply(
+      identifiers,
+      identifier => CacheInfo.TokenTransferProperties(identifier).key,
+      async identifiers => {
+
+        const result: { [key: string]: TokenTransferProperties | null } = {};
+        for (const identifier of identifiers) {
+          const value = await this.getTokenTransferPropertiesRaw(identifier);
+          result[identifier] = value;
+        }
+
+        return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenTransferProperties(identifier).key);
+      },
+      (identifier, value) => tokenProperties[identifier] = value,
+      CacheInfo.TokenTransferProperties('').ttl
+    );
+
+    return tokenProperties;
+  }
+
+
+  async getOperationsForTransactionLogs(txHash: string, logs: TransactionLog[]): Promise<TransactionOperation[]> {
+    const tokensProperties = await this.getTokenTransferPropertiesFromLogs(logs);
+
+    const operations: (TransactionOperation | undefined)[] = [];
+    for (const log of logs) {
+      for (const event of log.events) {
+        const action = this.getOperationAction(event.identifier);
+        if (action) {
+          const operation = this.getTransactionNftOperation(txHash, log, event, action, tokensProperties);
 
           operations.push(operation);
         }
@@ -95,13 +133,13 @@ export class TokenTransferService {
     }
   }
 
-  private async getTransactionNftOperation(txHash: string, log: TransactionLog, event: TransactionLogEvent, action: TransactionOperationAction): Promise<TransactionOperation | undefined> {
+  private getTransactionNftOperation(txHash: string, log: TransactionLog, event: TransactionLogEvent, action: TransactionOperationAction, tokensProperties: { [key: string]: TokenTransferProperties | null }): TransactionOperation | undefined {
     try {
       let identifier = BinaryUtils.base64Decode(event.topics[0]);
       const nonce = BinaryUtils.tryBase64ToHex(event.topics[1]);
       const value = BinaryUtils.tryBase64ToBigInt(event.topics[2])?.toString() ?? '0';
       const receiver = BinaryUtils.tryBase64ToAddress(event.topics[3]) ?? log.address;
-      const properties = await this.getTokenTransferProperties(identifier, nonce);
+      const properties = tokensProperties[identifier];
       const decimals = properties ? properties.decimals : undefined;
       const name = properties ? properties.name : undefined;
       const esdtType = properties ? properties.type : undefined;
