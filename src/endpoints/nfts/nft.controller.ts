@@ -1,10 +1,9 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
-import { EsdtService } from "../esdt/esdt.service";
 import { Nft } from "./entities/nft";
 import { NftOwner } from "./entities/nft.owner";
 import { NftType } from "./entities/nft.type";
@@ -15,7 +14,6 @@ import { NftService } from "./nft.service";
 export class NftController {
   constructor(
     private readonly nftService: NftService,
-    private readonly esdtService: EsdtService,
   ) { }
 
   @Get("/nfts")
@@ -127,7 +125,10 @@ export class NftController {
     description: 'Token not found',
   })
   async getNftSupply(@Param('identifier') identifier: string): Promise<{ supply: string }> {
-    const { totalSupply } = await this.esdtService.getTokenSupply(identifier);
+    const totalSupply = await this.nftService.getNftSupply(identifier);
+    if (!totalSupply) {
+      throw new NotFoundException();
+    }
 
     return { supply: totalSupply };
   }

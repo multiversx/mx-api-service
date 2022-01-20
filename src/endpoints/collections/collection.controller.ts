@@ -6,14 +6,12 @@ import { NftType } from "../nfts/entities/nft.type";
 import { CollectionService } from "./collection.service";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
-import { EsdtService } from "../esdt/esdt.service";
 
 @Controller()
 @ApiTags('collections')
 export class CollectionController {
   constructor(
     private readonly collectionService: CollectionService,
-    private readonly esdtService: EsdtService,
   ) { }
 
   @Get("/collections")
@@ -83,20 +81,5 @@ export class CollectionController {
     }
 
     return token;
-  }
-
-  @Get('/collections/:identifier/supply')
-  @ApiResponse({
-    status: 200,
-    description: 'Collection supply',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Collection not found',
-  })
-  async getCollectionSupply(@Param('identifier') identifier: string): Promise<{ supply: string, circulatingSupply: string }> {
-    const { totalSupply, circulatingSupply } = await this.esdtService.getTokenSupply(identifier);
-
-    return { supply: totalSupply, circulatingSupply };
   }
 }

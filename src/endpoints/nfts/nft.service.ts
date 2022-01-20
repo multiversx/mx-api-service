@@ -603,4 +603,18 @@ export class NftService {
     nft.supply = totalSupply;
   }
 
+  async getNftSupply(identifier: string): Promise<string | undefined> {
+    if (identifier.split('-').length !== 3) {
+      return undefined;
+    }
+
+    const nfts = await this.getNftsInternal(0, 1, new NftFilter(), identifier);
+    if (nfts.length === 0) {
+      return undefined;
+    }
+
+    const supply = await this.esdtService.getTokenSupply(identifier);
+
+    return supply.totalSupply;
+  }
 }
