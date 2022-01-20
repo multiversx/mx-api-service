@@ -83,7 +83,7 @@ export class TokenService {
 
     token.accounts = await this.cachingService.getOrSetCache(
       CacheInfo.TokenAccounts(token.identifier).key,
-      async () => await this.getTokenAccountsCount(token.identifier),
+      async () => await this.esdtService.getTokenAccountsCount(token.identifier),
       CacheInfo.TokenAccounts(token.identifier).ttl
     );
   }
@@ -97,6 +97,7 @@ export class TokenService {
 
           for (const token of tokens) {
             const transactions = await this.transactionService.getTransactionCount({ token: token.identifier });
+
             result[token.identifier] = transactions;
           }
 
@@ -113,7 +114,7 @@ export class TokenService {
           const result: { [key: string]: number } = {};
 
           for (const token of tokens) {
-            const accounts = await this.getTokenAccountsCount(token.identifier);
+            const accounts = await this.esdtService.getTokenAccountsCount(token.identifier);
             result[token.identifier] = accounts;
           }
 
@@ -150,8 +151,6 @@ export class TokenService {
 
       tokens = tokens.filter(token => identifierArray.includes(token.identifier.toLowerCase()));
     }
-
-    tokens = [...tokens.filter((token) => token.assets), ...tokens].distinctBy((token: TokenDetailed) => token.identifier);
 
     return tokens;
   }
@@ -255,15 +254,6 @@ export class TokenService {
     const tokenAccounts = await this.elasticService.getList("accountsesdt", identifier, elasticQuery);
 
     return tokenAccounts.map((tokenAccount) => ApiUtils.mergeObjects(new TokenAccount(), tokenAccount));
-  }
-
-  async getTokenAccountsCount(identifier: string): Promise<number> {
-    const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
-
-    const count = await this.elasticService.getCount("accountsesdt", elasticQuery);
-
-    return count;
   }
 
   async getTokenRoles(identifier: string): Promise<TokenAddressRoles[] | undefined> {

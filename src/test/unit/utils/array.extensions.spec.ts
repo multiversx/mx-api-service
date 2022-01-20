@@ -178,4 +178,54 @@ describe('Array Extensions', () => {
       },
     ]);
   });
+
+  describe('Sorted', () => {
+    it('simple', () => {
+      const actual = [2, 1, 3].sorted();
+      const expected = [1, 2, 3];
+
+      expect(actual).toEqual(expected);
+    });
+
+    it('complex', () => {
+      const actual = [
+        { id: 2 },
+        { id: 1 },
+        { id: 3 },
+      ].sorted(x => x.id);
+
+      const expected = [
+        { id: 1 },
+        { id: 2 },
+        { id: 3 },
+      ];
+
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe('Sorted descending', () => {
+    it('simple', () => {
+      const actual = [2, 1, 3].sortedDescending();
+      const expected = [3, 2, 1];
+
+      expect(actual).toEqual(expected);
+    });
+
+    it('complex', () => {
+      const actual = [
+        { id: 2 },
+        { id: 1 },
+        { id: 3 },
+      ].sortedDescending(x => x.id);
+
+      const expected = [
+        { id: 3 },
+        { id: 2 },
+        { id: 1 },
+      ];
+
+      expect(actual).toEqual(expected);
+    });
+  });
 });

@@ -3,6 +3,7 @@ import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
+import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { MetricsService } from "src/common/metrics/metrics.service";
@@ -169,7 +170,32 @@ export class EsdtService {
       true
     );
 
-    return tokensProperties.zip(tokensAssets, (first, second) => ApiUtils.mergeObjects(new TokenDetailed, { ...first, assets: second }));
+    let tokens = tokensProperties.zip(tokensAssets, (first, second) => ApiUtils.mergeObjects(new TokenDetailed, { ...first, assets: second }));
+
+    for (const token of tokens) {
+      if (!token.assets) {
+        continue;
+      }
+
+      token.accounts = await this.cachingService.getOrSetCache(
+        CacheInfo.TokenAccounts(token.identifier).key,
+        async () => await this.getTokenAccountsCount(token.identifier),
+        CacheInfo.TokenAccounts(token.identifier).ttl
+      );
+    }
+
+    tokens = tokens.sortedDescending(token => token.accounts ?? 0);
+
+    return tokens;
+  }
+
+  async getTokenAccountsCount(identifier: string): Promise<number> {
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
+
+    const count = await this.elasticService.getCount("accountsesdt", elasticQuery);
+
+    return count;
   }
 
   async getEsdtTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
