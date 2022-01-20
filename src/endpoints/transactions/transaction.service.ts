@@ -227,22 +227,25 @@ export class TransactionService {
         delete scResult.scHash;
       }
 
+      const hashes = [...transactions.map((transaction) => transaction.txHash), ...scResults.map((scResult) => scResult.hash)];
+      const logs = await this.transactionGetService.getTransactionLogsFromElastic(hashes);
+
       const detailedTransactions: TransactionDetailed[] = [];
       for (const transaction of transactions) {
         const transactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), transaction);
-        const transactionsScResults = scResults.filter(({ originalTxHash }) => originalTxHash == transaction.txHash);
+        const transactionScResults = scResults.filter(({ originalTxHash }) => originalTxHash == transaction.txHash);
 
         if (queryOptions.withScResults) {
-          transactionDetailed.results = transactionsScResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+          transactionDetailed.results = transactionScResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
         }
 
         if (queryOptions.withOperations) {
-          const hashes: string[] = [transactionDetailed.txHash];
-          for (const scResult of transactionsScResults) {
-            hashes.push(scResult.hash);
+          const transactionHashes: string[] = [transactionDetailed.txHash];
+          for (const scResult of transactionScResults) {
+            transactionHashes.push(scResult.hash);
           }
-          const logs = await this.transactionGetService.getTransactionLogsFromElastic(hashes);
-          const transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
+          const transactionLogsFromElastic = logs.filter((log) => transactionHashes.includes(log._id));
+          const transactionLogs: TransactionLog[] = transactionLogsFromElastic.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
           transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransactionLogs(transactionDetailed.txHash, transactionLogs);
 
           transactionDetailed.operations = this.transactionGetService.trimOperations(transactionDetailed.operations);
