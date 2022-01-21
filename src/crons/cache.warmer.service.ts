@@ -20,6 +20,7 @@ import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { TokenService } from "src/endpoints/tokens/token.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -39,6 +40,7 @@ export class CacheWarmerService {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly tokenAssetService: TokenAssetService,
     private readonly pluginService: PluginService,
+    private readonly tokenService: TokenService
   ) {
     this.configCronJob(
       'handleKeybaseAgainstKeybasePubInvalidations',
@@ -82,6 +84,28 @@ export class CacheWarmerService {
     await Locker.lock('Esdt tokens invalidations', async () => {
       const tokens = await this.esdtService.getAllEsdtTokensRaw();
       await this.invalidateKey(CacheInfo.AllEsdtTokens.key, tokens, CacheInfo.AllEsdtTokens.ttl);
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleTokenSupplyInvalidations() {
+    await Locker.lock('Token supply invalidations', async () => {
+      const assets = await this.tokenAssetService.getAllAssets();
+      for (const identifier of Object.keys(assets)) {
+        const asset = assets[identifier];
+        if (asset.lockedAccounts) {
+          const lockedSupply = await this.esdtService.getLockedSupplyRaw(identifier);
+          await this.invalidateKey(CacheInfo.TokenLockedSupply(identifier).key, lockedSupply, CacheInfo.TokenLockedSupply(identifier).ttl);
+        }
+      }
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleEsdtTokenTransactionsAndAccountsInvalidations() {
+    await Locker.lock('Esdt tokens transactions and accounts invalidations', async () => {
+      const tokens = await this.esdtService.getAllEsdtTokensRaw();
+      await this.tokenService.batchProcessTokens(tokens);
     }, true);
   }
 

@@ -15,6 +15,12 @@ import { ElasticService } from "src/common/elastic/elastic.service";
 import { TokenAccount } from "./entities/token.account";
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { TokenAddressRoles } from "./entities/token.address.roles";
+import { CachingService } from "src/common/caching/caching.service";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { TransactionService } from "../transactions/transaction.service";
+import { RecordUtils } from "src/utils/record.utils";
+import { EsdtSupply } from "../esdt/entities/esdt.supply";
+import { TokenType } from "./entities/token.type";
 
 @Injectable()
 export class TokenService {
@@ -22,6 +28,8 @@ export class TokenService {
   constructor(
     private readonly esdtService: EsdtService,
     private readonly elasticService: ElasticService,
+    private readonly cachingService: CachingService,
+    private readonly transactionService: TransactionService,
   ) { }
 
   async getToken(identifier: string): Promise<TokenDetailed | undefined> {
@@ -35,7 +43,9 @@ export class TokenService {
 
     await this.applyTickerFromAssets(token);
 
-    token.supply = await this.esdtService.getTokenSupply(identifier);
+    this.applySupply(token);
+
+    await this.processToken(token);
 
     return token;
   }
@@ -51,6 +61,8 @@ export class TokenService {
       await this.applyTickerFromAssets(token);
     }
 
+    await this.batchProcessTokens(tokens);
+
     return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
   }
 
@@ -60,6 +72,57 @@ export class TokenService {
     } else {
       token.ticker = token.identifier;
     }
+  }
+
+  async processToken(token: TokenDetailed) {
+    token.transactions = await this.cachingService.getOrSetCache(
+      CacheInfo.TokenTransactions(token.identifier).key,
+      async () => await this.transactionService.getTransactionCount({ token: token.identifier }),
+      CacheInfo.TokenTransactions(token.identifier).ttl
+    );
+
+    token.accounts = await this.cachingService.getOrSetCache(
+      CacheInfo.TokenAccounts(token.identifier).key,
+      async () => await this.esdtService.getTokenAccountsCount(token.identifier),
+      CacheInfo.TokenAccounts(token.identifier).ttl
+    );
+  }
+
+  async batchProcessTokens(tokens: TokenDetailed[]) {
+    await this.cachingService.batchApply
+      (tokens,
+        token => CacheInfo.TokenTransactions(token.identifier).key,
+        async tokens => {
+          const result: { [key: string]: number } = {};
+
+          for (const token of tokens) {
+            const transactions = await this.transactionService.getTransactionCount({ token: token.identifier });
+
+            result[token.identifier] = transactions;
+          }
+
+          return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenTransactions(identifier).key);
+        },
+        (token, transactions) => token.transactions = transactions,
+        CacheInfo.TokenTransactions('').ttl,
+      );
+
+    await this.cachingService.batchApply
+      (tokens,
+        token => CacheInfo.TokenAccounts(token.identifier).key,
+        async tokens => {
+          const result: { [key: string]: number } = {};
+
+          for (const token of tokens) {
+            const accounts = await this.esdtService.getTokenAccountsCount(token.identifier);
+            result[token.identifier] = accounts;
+          }
+
+          return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenAccounts(identifier).key);
+        },
+        (token, accounts) => token.accounts = accounts,
+        CacheInfo.TokenAccounts('').ttl,
+      );
   }
 
   async getFilteredTokens(filter: TokenFilter): Promise<TokenDetailed[]> {
@@ -88,8 +151,6 @@ export class TokenService {
 
       tokens = tokens.filter(token => identifierArray.includes(token.identifier.toLowerCase()));
     }
-
-    tokens = [...tokens.filter((token) => token.assets), ...tokens].distinctBy((token: TokenDetailed) => token.identifier);
 
     return tokens;
   }
@@ -138,7 +199,7 @@ export class TokenService {
 
     await this.applyTickerFromAssets(tokenWithBalance);
 
-    tokenWithBalance.supply = await this.esdtService.getTokenSupply(identifier);
+    await this.applySupply(token);
 
     return tokenWithBalance;
   }
@@ -195,15 +256,6 @@ export class TokenService {
     return tokenAccounts.map((tokenAccount) => ApiUtils.mergeObjects(new TokenAccount(), tokenAccount));
   }
 
-  async getTokenAccountsCount(identifier: string): Promise<number> {
-    const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
-
-    const count = await this.elasticService.getCount("accountsesdt", elasticQuery);
-
-    return count;
-  }
-
   async getTokenRoles(identifier: string): Promise<TokenAddressRoles[] | undefined> {
     const token = await this.getToken(identifier);
     if (!token) {
@@ -226,5 +278,29 @@ export class TokenService {
     delete addressRoles?.address;
 
     return addressRoles;
+  }
+
+  async applySupply(token: TokenDetailed): Promise<void> {
+    const { totalSupply, circulatingSupply } = await this.esdtService.getTokenSupply(token.identifier);
+
+    token.supply = totalSupply;
+    token.circulatingSupply = circulatingSupply;
+  }
+
+  async getTokenSupply(identifier: string): Promise<EsdtSupply | undefined> {
+    if (identifier.split('-').length !== 2) {
+      return undefined;
+    }
+
+    const properties = await this.esdtService.getEsdtTokenProperties(identifier);
+    if (!properties) {
+      return undefined;
+    }
+
+    if (properties.type !== TokenType.FungibleESDT) {
+      return undefined;
+    }
+
+    return await this.esdtService.getTokenSupply(identifier);
   }
 }

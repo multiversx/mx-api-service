@@ -3,6 +3,7 @@ import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
+import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { MetricsService } from "src/common/metrics/metrics.service";
@@ -21,6 +22,7 @@ import { TokenAddressRoles } from "../tokens/entities/token.address.roles";
 import { TokenAssets } from "../tokens/entities/token.assets";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { TokenAssetService } from "../tokens/token.asset.service";
+import { EsdtSupply } from "./entities/esdt.supply";
 
 @Injectable()
 export class EsdtService {
@@ -168,7 +170,32 @@ export class EsdtService {
       true
     );
 
-    return tokensProperties.zip(tokensAssets, (first, second) => ApiUtils.mergeObjects(new TokenDetailed, { ...first, assets: second }));
+    let tokens = tokensProperties.zip(tokensAssets, (first, second) => ApiUtils.mergeObjects(new TokenDetailed, { ...first, assets: second }));
+
+    for (const token of tokens) {
+      if (!token.assets) {
+        continue;
+      }
+
+      token.accounts = await this.cachingService.getOrSetCache(
+        CacheInfo.TokenAccounts(token.identifier).key,
+        async () => await this.getTokenAccountsCount(token.identifier),
+        CacheInfo.TokenAccounts(token.identifier).ttl
+      );
+    }
+
+    tokens = tokens.sortedDescending(token => token.accounts ?? 0);
+
+    return tokens;
+  }
+
+  async getTokenAccountsCount(identifier: string): Promise<number> {
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
+
+    const count = await this.elasticService.getCount("accountsesdt", elasticQuery);
+
+    return count;
   }
 
   async getEsdtTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
@@ -324,9 +351,51 @@ export class EsdtService {
     return tokenAddressesAndRoles;
   }
 
-  async getTokenSupply(identifier: string): Promise<string> {
+  async getLockedSupply(identifier: string): Promise<string> {
+    return this.cachingService.getOrSetCache(
+      CacheInfo.TokenLockedSupply(identifier).key,
+      async () => await this.getLockedSupplyRaw(identifier),
+      CacheInfo.TokenLockedSupply(identifier).ttl,
+    );
+  }
+
+  async getLockedSupplyRaw(identifier: string): Promise<string> {
+    const tokenAssets = await this.tokenAssetService.getAssets(identifier);
+    if (!tokenAssets) {
+      return '0';
+    }
+
+    const lockedAccounts = tokenAssets.lockedAccounts;
+    if (!lockedAccounts || lockedAccounts.length === 0) {
+      return '0';
+    }
+
+    const esdtLockedAccounts = await this.elasticService.getAccountEsdtByAddressesAndIdentifier(identifier, lockedAccounts);
+
+    return esdtLockedAccounts.sumBigInt(x => x.balance).toString();
+  }
+
+  async getTokenSupply(identifier: string): Promise<EsdtSupply> {
     const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
 
-    return supply;
+    const isCollectionOrToken = identifier.split('-').length === 2;
+    if (isCollectionOrToken) {
+      const lockedSupply = await this.getLockedSupply(identifier);
+      if (!lockedSupply) {
+        return supply;
+      }
+
+      const circulatingSupply = BigInt(supply) - BigInt(lockedSupply);
+
+      return {
+        totalSupply: supply,
+        circulatingSupply: circulatingSupply.toString(),
+      };
+    }
+
+    return {
+      totalSupply: supply,
+      circulatingSupply: supply,
+    };
   }
 }

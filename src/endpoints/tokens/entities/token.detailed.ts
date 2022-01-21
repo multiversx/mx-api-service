@@ -25,4 +25,7 @@ export class TokenDetailed extends Token {
 
   @ApiProperty()
   supply: string | undefined = undefined;
+
+  @ApiProperty()
+  circulatingSupply: string | undefined = undefined;
 }

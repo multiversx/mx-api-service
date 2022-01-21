@@ -321,12 +321,12 @@ export class CachingService {
 
     for (const key of Object.keys(batchGetResult)) {
       const value = batchGetResult[key];
-      if (!value) {
+      if (value === undefined) {
         continue;
       }
 
       const element = indexedElements[key];
-      if (!element) {
+      if (element === undefined) {
         continue;
       }
 

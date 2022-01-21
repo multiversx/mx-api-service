@@ -31,6 +31,7 @@ import { NftMedia } from "./entities/nft.media";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { PersistenceInterface } from "src/common/persistence/persistence.interface";
 import { RecordUtils } from "src/utils/record.utils";
+import { EsdtSupply } from "../esdt/entities/esdt.supply";
 
 @Injectable()
 export class NftService {
@@ -149,11 +150,7 @@ export class NftService {
     }
 
     if (queryOptions && queryOptions.withSupply) {
-      for (const nft of nfts) {
-        if (nft.type === NftType.SemiFungibleESDT) {
-          nft.supply = await this.esdtService.getTokenSupply(nft.identifier);
-        }
-      }
+      await this.batchApplySupply(nfts);
     }
 
     await this.batchProcessNfts(nfts);
@@ -177,6 +174,24 @@ export class NftService {
         nft.owner = accountsEsdt[0].address;
       }
     }
+  }
+
+  private async batchApplySupply(nfts: Nft[]) {
+    await this.cachingService.batchApply(
+      nfts,
+      nft => CacheInfo.TokenLockedSupply(nft.identifier).key,
+      async nfts => {
+        const result: Record<string, EsdtSupply> = {};
+
+        for (const nft of nfts) {
+          result[nft.identifier] = await this.esdtService.getTokenSupply(nft.identifier);
+        }
+
+        return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenLockedSupply(identifier).key);
+      },
+      (nft, value) => nft.supply = value.totalSupply,
+      CacheInfo.TokenLockedSupply('').ttl,
+    );
   }
 
   private async batchApplyMedia(nfts: Nft[]) {
@@ -247,7 +262,7 @@ export class NftService {
       return undefined;
     }
 
-    nft.supply = await this.esdtService.getTokenSupply(nft.identifier);
+    await this.applySupply(nft);
 
     await this.applyNftOwner(nft);
 
@@ -405,11 +420,7 @@ export class NftService {
     }
 
     if (queryOptions && queryOptions.withSupply) {
-      for (const nft of nfts) {
-        if (nft.type === NftType.SemiFungibleESDT) {
-          nft.supply = await this.esdtService.getTokenSupply(nft.identifier);
-        }
-      }
+      await this.batchApplySupply(nfts);
     }
 
     await this.batchProcessNfts(nfts);
@@ -581,7 +592,7 @@ export class NftService {
     const nft = nfts[0];
 
     if (nft.type === NftType.SemiFungibleESDT) {
-      nft.supply = await this.esdtService.getTokenSupply(identifier);
+      await this.applySupply(nft);
     }
 
     nft.assets = await this.tokenAssetService.getAssets(nft.collection);
@@ -591,4 +602,24 @@ export class NftService {
     return nft;
   }
 
+  async applySupply(nft: Nft): Promise<void> {
+    const { totalSupply } = await this.esdtService.getTokenSupply(nft.identifier);
+
+    nft.supply = totalSupply;
+  }
+
+  async getNftSupply(identifier: string): Promise<string | undefined> {
+    if (identifier.split('-').length !== 3) {
+      return undefined;
+    }
+
+    const nfts = await this.getNftsInternal(0, 1, new NftFilter(), identifier);
+    if (nfts.length === 0) {
+      return undefined;
+    }
+
+    const supply = await this.esdtService.getTokenSupply(identifier);
+
+    return supply.totalSupply;
+  }
 }
