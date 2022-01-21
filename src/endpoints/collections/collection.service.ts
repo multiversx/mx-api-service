@@ -224,24 +224,27 @@ export class CollectionService {
     const esdtResult = await this.gatewayService.get(`address/${address}/registered-nfts`, GatewayComponentRequest.addressNfts);
     const rolesResult = await this.gatewayService.get(`address/${address}/esdts/roles`, GatewayComponentRequest.addressEsdtAllRoles);
 
-    let tokenIdentifiers = esdtResult.tokens;
-    if (tokenIdentifiers.length === 0) {
+    let collectionsIdentifiers = esdtResult.tokens;
+    if (collectionsIdentifiers.length === 0) {
       return [];
     }
 
     if (filter.collection) {
-      if (!tokenIdentifiers.includes(filter.collection)) {
+      if (!collectionsIdentifiers.includes(filter.collection)) {
         return [];
       }
 
-      tokenIdentifiers = [filter.collection];
+      collectionsIdentifiers = [filter.collection];
     }
 
     const roles = rolesResult.roles;
 
     let nftCollections: NftCollectionAccount[] = [];
-    for (const tokenIdentifier of tokenIdentifiers) {
-      const collectionProperties = await this.esdtService.getEsdtTokenProperties(tokenIdentifier);
+    const collectionsProperties = await this.batchGetCollectionsProperties(collectionsIdentifiers);
+    const collectionsAssets = await this.batchGetCollectionsAssets(collectionsIdentifiers);
+
+    for (const collectionIdentifier of collectionsIdentifiers) {
+      const collectionProperties = collectionsProperties[collectionIdentifier];
       if (!collectionProperties) {
         continue;
       }
@@ -254,14 +257,14 @@ export class CollectionService {
       // @ts-ignore
       nftCollection.type = collectionProperties.type;
       nftCollection.name = collectionProperties.name;
-      nftCollection.collection = tokenIdentifier.split('-').slice(0, 2).join('-');
-      nftCollection.ticker = tokenIdentifier.split('-')[0];
+      nftCollection.collection = collectionIdentifier.split('-').slice(0, 2).join('-');
+      nftCollection.ticker = collectionIdentifier.split('-')[0];
       nftCollection.canFreeze = collectionProperties.canFreeze;
       nftCollection.canWipe = collectionProperties.canWipe;
       nftCollection.canPause = collectionProperties.canPause;
       nftCollection.canTransferRole = collectionProperties.canTransferNFTCreateRole;
 
-      const role = roles[tokenIdentifier];
+      const role = roles[collectionIdentifier];
       nftCollection.canCreate = role ? role.includes('ESDTRoleNFTCreate') : false;
       nftCollection.canBurn = role ? role.includes('ESDTRoleNFTBurn') : false;
 
@@ -269,10 +272,10 @@ export class CollectionService {
         nftCollection.canAddQuantity = role ? role.includes('ESDTRoleNFTAddQuantity') : false;
       } else if (nftCollection.type === NftType.MetaESDT) {
         nftCollection.decimals = collectionProperties.decimals;
-        nftCollection.assets = await this.tokenAssetService.getAssets(nftCollection.collection);
       }
 
-      nftCollection.ticker = nftCollection.assets ? tokenIdentifier.split('-')[0] : nftCollection.collection;
+      nftCollection.assets = collectionsAssets[collectionIdentifier];
+      nftCollection.ticker = nftCollection.assets ? collectionIdentifier.split('-')[0] : nftCollection.collection;
 
       nftCollections.push(nftCollection);
     }
