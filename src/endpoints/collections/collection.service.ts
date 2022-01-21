@@ -155,7 +155,7 @@ export class CollectionService {
         return RecordUtils.mapKeys(result, identifier => CacheInfo.EsdtAssets(identifier).key);
       },
       (collectionIdentifier, properties) => collectionsAssets[collectionIdentifier] = properties,
-      CacheInfo.EsdtProperties('').ttl
+      CacheInfo.EsdtAssets('').ttl
     );
 
     return collectionsAssets;
