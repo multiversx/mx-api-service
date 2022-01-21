@@ -86,7 +86,7 @@ export class CollectionService {
     const collectionsProperties = await this.batchGetCollectionsProperties(collectionsIdentifiers);
     const collectionsAssets = await this.batchGetCollectionsAssets(collectionsIdentifiers);
 
-    let nftCollections: NftCollection[] = [];
+    const nftCollections: NftCollection[] = [];
     for (const tokenCollection of tokenCollections) {
       const nftCollection = new NftCollection();
       nftCollection.name = tokenCollection.name;
@@ -112,10 +112,6 @@ export class CollectionService {
 
       nftCollections.push(nftCollection);
     }
-
-    const brandedCollections = nftCollections.filter((collection) => collection.assets);
-
-    nftCollections = [...brandedCollections, ...nftCollections].distinctBy((collection) => collection.collection);
 
     return nftCollections;
   }
