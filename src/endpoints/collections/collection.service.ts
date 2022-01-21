@@ -19,6 +19,11 @@ import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
+import { TokenProperties } from "../tokens/entities/token.properties";
+import { CachingService } from "src/common/caching/caching.service";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { RecordUtils } from "src/utils/record.utils";
+import { TokenAssets } from "../tokens/entities/token.assets";
 
 @Injectable()
 export class CollectionService {
@@ -29,6 +34,7 @@ export class CollectionService {
     private readonly esdtService: EsdtService,
     private readonly tokenAssetService: TokenAssetService,
     private readonly vmQueryService: VmQueryService,
+    private readonly cachingService: CachingService,
   ) { }
 
   private buildCollectionFilter(filter: CollectionFilter) {
@@ -76,8 +82,11 @@ export class CollectionService {
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
     const tokenCollections = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+    const collectionsIdentifiers = tokenCollections.map((collection) => collection.token);
+    const collectionsProperties = await this.batchGetCollectionsProperties(collectionsIdentifiers);
+    const collectionsAssets = await this.batchGetCollectionsAssets(collectionsIdentifiers);
 
-    const nftCollections: NftCollection[] = [];
+    let nftCollections: NftCollection[] = [];
     for (const tokenCollection of tokenCollections) {
       const nftCollection = new NftCollection();
       nftCollection.name = tokenCollection.name;
@@ -85,7 +94,7 @@ export class CollectionService {
       nftCollection.collection = tokenCollection.token;
       nftCollection.timestamp = tokenCollection.timestamp;
 
-      const collectionProperties = await this.esdtService.getEsdtTokenProperties(nftCollection.collection);
+      const collectionProperties = collectionsProperties[nftCollection.collection];
       if (collectionProperties) {
         nftCollection.owner = collectionProperties.owner;
         nftCollection.canFreeze = collectionProperties.canFreeze;
@@ -95,17 +104,67 @@ export class CollectionService {
 
         if (nftCollection.type === NftType.MetaESDT) {
           nftCollection.decimals = collectionProperties.decimals;
-          nftCollection.assets = await this.tokenAssetService.getAssets(nftCollection.collection);
         }
       }
 
+      nftCollection.assets = collectionsAssets[nftCollection.collection];
       nftCollection.ticker = nftCollection.assets ? tokenCollection.ticker : nftCollection.collection;
 
       nftCollections.push(nftCollection);
     }
 
+    const brandedCollections = nftCollections.filter((collection) => collection.assets);
+
+    nftCollections = [...brandedCollections, ...nftCollections].distinctBy((collection) => collection.collection);
+
     return nftCollections;
   }
+
+  async batchGetCollectionsProperties(collectionsIdentifiers: string[]): Promise<{ [key: string]: TokenProperties | undefined }> {
+    const collectionsProperties: { [key: string]: TokenProperties | undefined } = {};
+    await this.cachingService.batchApply(
+      collectionsIdentifiers,
+      collectionIdentifier => CacheInfo.EsdtProperties(collectionIdentifier).key,
+      async collectionsIdentifiers => {
+        const result: { [key: string]: TokenProperties | undefined } = {};
+
+        for (const collectionIdentifier of collectionsIdentifiers) {
+          const collectionProperties = await this.esdtService.getEsdtTokenProperties(collectionIdentifier);
+          result[collectionIdentifier] = collectionProperties;
+        }
+
+        return RecordUtils.mapKeys(result, identifier => CacheInfo.EsdtProperties(identifier).key);
+      },
+      (collectionIdentifier, properties) => collectionsProperties[collectionIdentifier] = properties,
+      CacheInfo.EsdtProperties('').ttl
+    );
+
+    return collectionsProperties;
+  }
+
+  async batchGetCollectionsAssets(collectionsIdentifiers: string[]): Promise<{ [key: string]: TokenAssets | undefined }> {
+    const collectionsAssets: { [key: string]: TokenAssets | undefined } = {};
+
+    await this.cachingService.batchApply(
+      collectionsIdentifiers,
+      collectionIdentifier => CacheInfo.EsdtAssets(collectionIdentifier).key,
+      async collectionsIdentifiers => {
+        const result: { [key: string]: TokenAssets | undefined } = {};
+
+        for (const collectionIdentifier of collectionsIdentifiers) {
+          const collectionAssets = await this.tokenAssetService.getAssets(collectionIdentifier);
+          result[collectionIdentifier] = collectionAssets;
+        }
+
+        return RecordUtils.mapKeys(result, identifier => CacheInfo.EsdtAssets(identifier).key);
+      },
+      (collectionIdentifier, properties) => collectionsAssets[collectionIdentifier] = properties,
+      CacheInfo.EsdtProperties('').ttl
+    );
+
+    return collectionsAssets;
+  }
+
 
   async getNftCollectionCount(filter: CollectionFilter): Promise<number> {
     const elasticQuery = this.buildCollectionFilter(filter);
