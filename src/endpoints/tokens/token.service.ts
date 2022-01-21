@@ -43,7 +43,7 @@ export class TokenService {
 
     await this.applyTickerFromAssets(token);
 
-    this.applySupply(token);
+    await this.applySupply(token);
 
     await this.processToken(token);
 
