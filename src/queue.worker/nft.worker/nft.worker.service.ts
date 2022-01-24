@@ -6,6 +6,7 @@ import { NftMetadataService } from "./queue/job-services/metadata/nft.metadata.s
 import { NftMediaService } from "./queue/job-services/media/nft.media.service";
 import { ClientProxy } from "@nestjs/microservices";
 import { NftMessage } from "./queue/entities/nft.message";
+import { NftType } from "src/endpoints/nfts/entities/nft.type";
 
 @Injectable()
 export class NftWorkerService {
@@ -41,6 +42,10 @@ export class NftWorkerService {
   }
 
   async needsProcessing(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
+    if (nft.type === NftType.MetaESDT) {
+      return false;
+    }
+
     if (settings.forceRefreshMedia || settings.forceRefreshMetadata || settings.forceRefreshThumbnail) {
       return true;
     }
