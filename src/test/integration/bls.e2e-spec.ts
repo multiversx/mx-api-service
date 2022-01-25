@@ -20,19 +20,19 @@ describe('Bls Service', () => {
 
   describe('Get Bls Index', () => {
     it('should return bls index', async () => {
-      const indexValue: Number = new Number(await blsService.getBlsIndex(blsValue, 1, 100));
-      expect(indexValue).toBeInstanceOf(Number);
+      const indexValue = await blsService.getBlsIndex(blsValue, 1, 100);
+      expect(typeof indexValue).toBe('number');
     });
   });
 
   describe('Get Public Keys', () => {
     it('should return public keys from shard 1', async () => {
-      const publicKey = await blsService.getPublicKeys(1, 100);
-      expect(publicKey).toBeInstanceOf(Array);
+      const publicKeys = await blsService.getPublicKeys(1, 100);
+      expect(publicKeys).toBeInstanceOf(Array);
     });
     it('should return empty array', async () => {
-      const publicKey = await blsService.getPublicKeys(3, 100);
-      expect(publicKey).toBeInstanceOf(Array);
+      const emptyKey = await blsService.getPublicKeys(3, 100);
+      expect(emptyKey).toEqual([]);
     });
   });
 });
