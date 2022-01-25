@@ -10,6 +10,8 @@ import { QueryOperator } from "./entities/query.operator";
 import { QueryConditionOptions } from "./entities/query.condition.options";
 import { QueryPagination } from "../entities/query.pagination";
 import { ElasticSortOrder } from "./entities/elastic.sort.order";
+import { ElasticMetricType } from "../metrics/entities/elastic.metric.type";
+import { RangeQuery } from "./entities/range.query";
 
 @Injectable()
 export class ElasticService {
@@ -34,7 +36,7 @@ export class ElasticService {
 
     profiler.stop();
 
-    this.metricsService.setElasticDuration(collection, profiler.duration);
+    this.metricsService.setElasticDuration(collection, ElasticMetricType.count, profiler.duration);
 
     const count = result.data.count;
 
@@ -43,7 +45,13 @@ export class ElasticService {
 
   async getItem(collection: string, key: string, identifier: string) {
     const url = `${this.url}/${collection}/_search?q=_id:${identifier}`;
+
+    const profiler = new PerformanceProfiler();
+
     const result = await this.get(url);
+
+    profiler.stop();
+    this.metricsService.setElasticDuration(collection, ElasticMetricType.item, profiler.duration);
 
     const hits = result.data?.hits?.hits;
     if (hits && hits.length > 0) {
@@ -72,12 +80,7 @@ export class ElasticService {
 
     profiler.stop();
 
-    this.metricsService.setElasticDuration(collection, profiler.duration);
-
-    const took = result.data.took;
-    if (!isNaN(took)) {
-      this.metricsService.setElasticTook(collection, took);
-    }
+    this.metricsService.setElasticDuration(collection, ElasticMetricType.list, profiler.duration);
 
     const documents = result.data.hits.hits;
     return documents.map((document: any) => this.formatItem(document, key));
@@ -85,6 +88,25 @@ export class ElasticService {
 
   async getAccountEsdtByIdentifier(identifier: string, pagination?: QueryPagination) {
     return this.getAccountEsdtByIdentifiers([identifier], pagination);
+  }
+
+  async getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]): Promise<any[]> {
+    const queries = [];
+
+    for (const address of addresses) {
+      queries.push(QueryType.Match('address', address));
+    }
+
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: 25 })
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match("address", "pending-")])
+      .withCondition(QueryConditionOptions.must, [QueryType.Match('token', identifier, QueryOperator.AND)])
+      .withFilter([new RangeQuery("balanceNum", undefined, 0)])
+      .withCondition(QueryConditionOptions.should, queries);
+
+    const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
+
+    return documents.map((document: any) => this.formatItem(document, 'identifier'));
   }
 
   async getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination) {
@@ -181,12 +203,7 @@ export class ElasticService {
 
     profiler.stop();
 
-    this.metricsService.setElasticDuration(collection, profiler.duration);
-
-    const took = result.data.tookn;
-    if (!isNaN(took)) {
-      this.metricsService.setElasticTook(collection, took);
-    }
+    this.metricsService.setElasticDuration(collection, ElasticMetricType.list, profiler.duration);
 
     return result.data.hits.hits;
   }
@@ -206,7 +223,7 @@ export class ElasticService {
 
     profiler.stop();
 
-    this.metricsService.setElasticDuration(collection, profiler.duration);
+    this.metricsService.setElasticDuration(collection, ElasticMetricType.count, profiler.duration);
 
     return value;
   }

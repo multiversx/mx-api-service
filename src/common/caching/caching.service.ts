@@ -8,6 +8,7 @@ import { BinaryUtils } from "src/utils/binary.utils";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { LocalCacheService } from "./local.cache.service";
 import { MetricsService } from "../metrics/metrics.service";
+import { BatchUtils } from "src/utils/batch.utils";
 
 @Injectable()
 export class CachingService {
@@ -134,7 +135,7 @@ export class CachingService {
   async batchProcess<IN, OUT>(payload: IN[], cacheKeyFunction: (element: IN) => string, handler: (generator: IN) => Promise<OUT>, ttl: number = this.configService.getCacheTtl(), skipCache: boolean = false): Promise<OUT[]> {
     const result: OUT[] = [];
 
-    const chunks = this.getChunks(payload, 100);
+    const chunks = BatchUtils.splitArrayIntoChunks(payload, 100);
 
     for (const [_, chunk] of chunks.entries()) {
       // this.logger.log(`Loading ${index + 1} / ${chunks.length} chunks`);
@@ -226,12 +227,13 @@ export class CachingService {
     }
 
 
-    const chunks = this.getChunks(
+    const chunks = BatchUtils.splitArrayIntoChunks(
       keys.map((key, index) => {
         const element: any = {};
         element[key] = index;
         return element;
-      }, 25)
+      }),
+      25,
     );
 
     const sets = [];
@@ -272,22 +274,8 @@ export class CachingService {
     }
   }
 
-  private getChunks<T>(array: T[], size = 25): T[][] {
-    return array.reduce((result: T[][], item, current) => {
-      const index = Math.floor(current / size);
-
-      if (!result[index]) {
-        result[index] = [];
-      }
-
-      result[index].push(item);
-
-      return result;
-    }, []);
-  }
-
   async batchGetCache<T>(keys: string[]): Promise<T[]> {
-    const chunks = this.getChunks(keys, 100);
+    const chunks = BatchUtils.splitArrayIntoChunks(keys, 100);
 
     const result = [];
 
@@ -308,6 +296,104 @@ export class CachingService {
     }
 
     return result;
+  }
+
+  async batchApply<TIN, TOUT>(
+    elements: TIN[],
+    cacheKeyFunc: (element: TIN) => string,
+    getter: (elements: TIN[]) => Promise<{ [key: string]: TOUT }>,
+    setter: (element: TIN, value: TOUT) => void,
+    ttl: number,
+    chunkSize: number = 100,
+  ): Promise<void> {
+    const batchGetResult = await this.batchGet(
+      elements,
+      cacheKeyFunc,
+      getter,
+      ttl,
+      chunkSize,
+    );
+
+    const indexedElements: { [key: string]: TIN } = {};
+    for (const element of elements) {
+      indexedElements[cacheKeyFunc(element)] = element;
+    }
+
+    for (const key of Object.keys(batchGetResult)) {
+      const value = batchGetResult[key];
+      if (value === undefined) {
+        continue;
+      }
+
+      const element = indexedElements[key];
+      if (element === undefined) {
+        continue;
+      }
+
+      setter(element, value);
+    }
+  }
+
+  async batchGet<TIN, TOUT>(
+    elements: TIN[],
+    cacheKeyFunc: (element: TIN) => string,
+    getter: (elements: TIN[]) => Promise<{ [key: string]: TOUT }>,
+    ttl: number,
+    chunkSize: number,
+  ): Promise<{ [key: string]: TOUT }> {
+    return BatchUtils.batchGet<TIN, TOUT>(
+      elements,
+      cacheKeyFunc,
+      [
+        {
+          getter: async elements => {
+            const result: { [key: string]: TOUT } = {};
+
+            for (const element of elements) {
+              const key = cacheKeyFunc(element);
+              const value = await this.getCacheLocal<TOUT>(key);
+              if (value !== undefined) {
+                result[key] = value;
+              }
+            }
+
+            return result;
+          },
+          setter: async elements => {
+            for (const key of Object.keys(elements)) {
+              await this.setCacheLocal(key, elements[key], ttl);
+            }
+          },
+        },
+        {
+          getter: async elements => {
+            const result: { [key: string]: TOUT } = {};
+            const keys = elements.map(element => cacheKeyFunc(element));
+
+            const getResults = await this.batchGetCache<TOUT>(keys);
+
+            for (const [index, element] of elements.entries()) {
+              if (getResults[index] !== null) {
+                result[cacheKeyFunc(element)] = getResults[index];
+              }
+            }
+
+            return result;
+          },
+          setter: async elements => {
+            const keys = Object.keys(elements);
+            const values = Object.values(elements);
+            const ttls = values.map(() => this.spreadTtl(ttl));
+
+            await this.batchSetCache(keys, values, ttls);
+          },
+        },
+        {
+          getter,
+        },
+      ],
+      chunkSize,
+    );
   }
 
   async getOrSetCache<T>(key: string, promise: () => Promise<T>, remoteTtl: number = this.configService.getCacheTtl(), localTtl: number | undefined = undefined, forceRefresh: boolean = false): Promise<T> {

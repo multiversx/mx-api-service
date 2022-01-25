@@ -45,6 +45,7 @@ export class TransactionController {
   @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return results for transactions', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
+  @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false })
   getTransactions(
     @Query('sender', ParseAddressPipe) sender: string | undefined,
     @Query('receiver', ParseAddressPipe) receiver: string | undefined,
@@ -63,7 +64,12 @@ export class TransactionController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('withScResults', new ParseOptionalBoolPipe) withScResults: boolean | undefined,
     @Query('withOperations', new ParseOptionalBoolPipe) withOperations: boolean | undefined,
+    @Query('withLogs', new ParseOptionalBoolPipe) withLogs: boolean | undefined,
   ): Promise<Transaction[]> {
+    if ((withScResults === true || withOperations === true || withLogs) && size > 50) {
+      throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
+    }
+
     return this.transactionService.getTransactions({
       sender,
       receiver,
@@ -78,7 +84,7 @@ export class TransactionController {
       after,
       condition,
       order,
-    }, { from, size }, { withScResults, withOperations });
+    }, { from, size }, { withScResults, withOperations, withLogs });
   }
 
   @Get("/transactions/count")

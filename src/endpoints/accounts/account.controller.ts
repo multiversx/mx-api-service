@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, NotFoundException, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, NotFoundException, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccountService } from './account.service';
 import { AccountDetailed } from './entities/account.detailed';
@@ -578,6 +578,7 @@ export class AccountController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
+  @ApiQuery({ name: 'withOperations', description: 'Return logs for transactions', required: false })
   async getAccountTransactions(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -596,7 +597,12 @@ export class AccountController {
     @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
     @Query('withScResults', new ParseOptionalBoolPipe) withScResults?: boolean,
     @Query('withOperations', new ParseOptionalBoolPipe) withOperations?: boolean,
+    @Query('withLogs', new ParseOptionalBoolPipe) withLogs?: boolean,
   ) {
+    if ((withScResults === true || withOperations === true || withLogs) && size > 50) {
+      throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
+    }
+
     try {
       return await this.transactionService.getTransactions({
         sender,
@@ -611,7 +617,7 @@ export class AccountController {
         before,
         after,
         order,
-      }, { from, size }, { withScResults, withOperations }, address);
+      }, { from, size }, { withScResults, withOperations, withLogs }, address);
     } catch (error) {
       this.logger.error(`Error in getAccountTransactions for address ${address}`);
       this.logger.error(error);

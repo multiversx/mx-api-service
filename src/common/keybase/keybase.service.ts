@@ -109,7 +109,7 @@ export class KeybaseService {
     const distinctIdentities = allKeybases.map(x => x.identity ?? '').filter(x => x !== '').distinct();
 
     await asyncPool(
-      10,
+      1,
       distinctIdentities,
       identity => this.confirmKeybasesAgainstKeybasePubForIdentity(identity)
     );

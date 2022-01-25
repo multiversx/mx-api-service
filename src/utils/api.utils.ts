@@ -44,5 +44,4 @@ export class ApiUtils {
 
     return uri;
   }
-
 }
