@@ -57,7 +57,7 @@ describe('Collection Service', () => {
     });
 
     describe('Collections filters', () => {
-      it(`should return a list with all nfts within a collection`, async () => {
+      it(`should return single collection`, async () => {
         const collectionFilter = new CollectionFilter();
         collectionFilter.collection = collectionIdentifier;
         const collections = await collectionService.getNftCollections({ from: 0, size: 25 }, collectionFilter);

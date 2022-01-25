@@ -130,10 +130,10 @@ describe('Token Service', () => {
 
   describe('Get Token Accounts', () => {
     it(`should return tokens with size of 10`, async () => {
-      const tokensSize = await tokenService.getToken(tokenIdentifier);
+      const token = await tokenService.getToken(tokenIdentifier);
 
-      if (tokensSize) {
-        const tokensList = await tokenService.getTokenAccounts({ from: 0, size: 10 }, tokensSize.name);
+      if (token) {
+        const tokensList = await tokenService.getTokenAccounts({ from: 0, size: 10 }, token.name);
         expect(tokensList).toBeInstanceOf(Array);
       }
     });
@@ -143,8 +143,8 @@ describe('Token Service', () => {
     it(`should return tokens for a specific address`, async () => {
       const tokenFilter = new TokenFilter();
       tokenFilter.identifier = tokenIdentifier;
-      const tokenAddress = await tokenService.getTokenForAddress(address, tokenIdentifier);
-      expect(tokenAddress).toBeInstanceOf(TokenWithBalance);
+      const token = await tokenService.getTokenForAddress(address, tokenIdentifier);
+      expect(token).toBeInstanceOf(TokenWithBalance);
     });
   });
 
