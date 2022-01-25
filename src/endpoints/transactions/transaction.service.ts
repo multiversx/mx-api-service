@@ -237,6 +237,18 @@ export class TransactionService {
 
         if (queryOptions.withScResults) {
           transactionDetailed.results = transactionScResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+
+          for (const log of logs) {
+            if (log._id === transactionDetailed.txHash) {
+              transactionDetailed.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
+            }
+            else {
+              const foundScResult = transactionDetailed.results.find(({ hash }) => log._id === hash);
+              if (foundScResult) {
+                foundScResult.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
+              }
+            }
+          }
         }
 
         if (queryOptions.withOperations) {
