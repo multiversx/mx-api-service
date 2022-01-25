@@ -2,6 +2,7 @@ import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Logger } from "@nestjs/common";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
+import { TransactionOperation } from "src/endpoints/transactions/entities/transaction.operation";
 import { BinaryUtils } from "./binary.utils";
 
 export class TransactionUtils {
@@ -90,5 +91,32 @@ export class TransactionUtils {
     };
 
     return JSON.stringify(filter) === JSON.stringify(filterToCompareWith);
+  }
+
+  static trimOperations(operations: TransactionOperation[]): TransactionOperation[] {
+    const result: TransactionOperation[] = [];
+
+    for (const operation of operations) {
+      const identicalOperations = result.filter(x =>
+        x.sender === operation.sender &&
+        x.receiver === operation.receiver &&
+        x.collection === operation.collection &&
+        x.identifier === operation.identifier &&
+        x.type === operation.type &&
+        x.action === 'transfer'
+      );
+
+      if (identicalOperations.length > 0) {
+        if (BigInt(identicalOperations[0].value) > BigInt(operation.value)) {
+          result.remove(identicalOperations[0]);
+        } else {
+          continue;
+        }
+      }
+
+      result.push(operation);
+    }
+
+    return result;
   }
 }
