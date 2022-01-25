@@ -198,7 +198,7 @@ describe('Node Service', () => {
   describe('Get Owner BLS', () => {
     it('should return owner bls', async () => {
       const blsOwner = await nodeService.getOwnerBlses(providerAddress);
-      expect(blsOwner).toEqual(expect.arrayContaining([expect.any(String)]))
+      expect(blsOwner).toEqual(expect.arrayContaining([expect.any(String)]));
     });
 
     it('should return empty array', async () => {

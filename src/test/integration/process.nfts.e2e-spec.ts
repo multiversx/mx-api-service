@@ -9,6 +9,8 @@ import { ProcessNftsModule } from "../../endpoints/process-nfts/process.nfts.mod
 describe('Process NFTs Service', () => {
   let processNftService: ProcessNftsService;
 
+  const nftIdentifier: string = 'EGLDRIDEFL-74b819-042191';
+
   beforeAll(async () => {
     await Initializer.initialize();
     const moduleRef = await Test.createTestingModule({
@@ -21,8 +23,8 @@ describe('Process NFTs Service', () => {
 
   describe('Process NFT', () => {
     it('should process NFT and return true ', async () => {
-      const nftSetting = new ProcessNftSettings();
-      const process = await processNftService.processNft('EGLDRIDEFL-74b819-042191', nftSetting);
+      const nftSettings = new ProcessNftSettings();
+      const process = await processNftService.processNft(nftIdentifier, nftSettings);
       expect(process).toBeTruthy();
     });
   });

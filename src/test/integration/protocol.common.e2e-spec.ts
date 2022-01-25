@@ -19,15 +19,15 @@ describe('Protocol Service', () => {
 
   describe('Get Shards Ids', () => {
     it('should return shards ids', async () => {
-      const returnShardsId = await protocolService.getShardIds();
-      expect(returnShardsId).toBeInstanceOf(Array);
+      const shardsId = await protocolService.getShardIds();
+      expect(shardsId).toEqual(expect.arrayContaining([expect.any(Number)]));
     });
   });
 
   describe('Get Seconds Remaining Until Next Round', () => {
     it('should return the remaining seconds until next round', async () => {
-      const returnSeconds: Number = new Number(await protocolService.getSecondsRemainingUntilNextRound());
-      expect(returnSeconds).toBeInstanceOf(Number);
+      const returnedSeconds = await protocolService.getSecondsRemainingUntilNextRound();
+      expect(typeof returnedSeconds).toBe('number');
     });
   });
 });
