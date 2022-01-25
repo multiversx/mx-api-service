@@ -3,6 +3,7 @@ import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
 import { Constants } from "../../utils/constants";
+import {Delegation} from "../../endpoints/delegation/entities/delegation";
 
 describe('Delegation Service', () => {
   let delegationService: DelegationService;
@@ -18,16 +19,16 @@ describe('Delegation Service', () => {
   }, Constants.oneHour() * 1000);
 
   describe('Get Delegation', () => {
-    it('should return delegation value', async () => {
-      const delegationValue = await delegationService.getDelegation();
-      expect(delegationValue).toBeInstanceOf(Object);
+    it('should return delegation objects', async () => {
+      const delegation = await delegationService.getDelegation();
+      expect(delegation).toHaveStructure(Object.keys(new Delegation()));
     });
   });
 
   describe('Get Delegation Raw', () => {
-    it('should return delegation raw', async () => {
-      const delegationValue = await delegationService.getDelegationRaw();
-      expect(delegationValue).toBeInstanceOf(Object);
+    it('should return delegation raw objects', async () => {
+      const delegationRaw = await delegationService.getDelegationRaw();
+      expect(delegationRaw).toHaveStructure(Object.keys(new Delegation()));
     });
   });
 });

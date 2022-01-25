@@ -3,13 +3,15 @@ import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
 import { Constants } from "../../utils/constants";
 import { EsdtService } from "../../endpoints/esdt/esdt.service";
-import { TokenAddressRoles } from "../../endpoints/tokens/entities/token.address.roles";
 
 describe('ESDT Service', () => {
   let esdtService: EsdtService;
 
-  const tokenIdentifier = 'QWT-46ac01';
-  const addressToken = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85';
+  const tokenIdentifier: string = 'QWT-46ac01';
+  const tokenAssetsIdentifier: string = 'EGLDMEX-0be9e5';
+  const tokenRole: string = 'EGLDMEX-0be9e5';
+  const smartContractAddress: string = 'erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3';
+
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -21,102 +23,99 @@ describe('ESDT Service', () => {
 
   }, Constants.oneHour() * 1000);
 
-  describe('Get All Esdts For Address From Gateway', () => {
-    it('should return all esdts for address from gateway', async () => {
-      const returnEsdtsAddress = await esdtService.getAllEsdtsForAddress(addressToken);
-      expect(returnEsdtsAddress).toBeInstanceOf(Object);
+  describe('Get All Esdts For Address', () => {
+    it('should return all esdts of address', async () => {
+      const tokens = await esdtService.getAllEsdtsForAddress(smartContractAddress);
+      expect(tokens).toBeInstanceOf(Object);
     });
   });
 
   describe('Get All Esdts Tokens', () => {
     it('should return all esdts tokens', async () => {
-      const returnEsdtToken = await esdtService.getAllEsdtTokens();
+      const tokens = await esdtService.getAllEsdtTokens();
 
-      for (const esdt of returnEsdtToken) {
-        expect(esdt).toBeInstanceOf(Object);
+      for (const token of tokens) {
+        expect(token).toBeInstanceOf(Object);
       }
     });
     it('all esdt need to contain properties', async () => {
-      const returnEsdtToken = await esdtService.getAllEsdtTokens();
+      const tokens = await esdtService.getAllEsdtTokens();
 
-      for (const esdt of returnEsdtToken) {
-        expect(esdt).toHaveProperty('canUpgrade');
-        expect(esdt).toHaveProperty('canMint');
-        expect(esdt).toHaveProperty('canBurn');
+      for (const token of tokens) {
+        expect(token).toHaveProperty('canUpgrade');
+        expect(token).toHaveProperty('canMint');
+        expect(token).toHaveProperty('canBurn');
       }
     });
   });
 
   describe('Get All Esdts Token Raw', () => {
     it('should return all esdts token raw', async () => {
-      const returnEsdtsRaw = await esdtService.getAllEsdtTokensRaw();
+      const tokensRaw = await esdtService.getAllEsdtTokensRaw();
 
-      for (const esdt of returnEsdtsRaw) {
-        expect(esdt).toBeInstanceOf(Object);
+      for (const tokenRaw of tokensRaw) {
+        expect(tokenRaw).toBeInstanceOf(Object);
       }
     });
   });
 
   describe('Get Esdt Token Assets Raw', () => {
-    it('should return undefined', async () => {
-      const returnEsdtsAssets = await esdtService.getEsdtTokenAssetsRaw('undefinedEsdt');
-      expect(returnEsdtsAssets).toBeUndefined();
+    it('should return token assets raw ', async () => {
+      const tokenAssets = await esdtService.getEsdtTokenAssetsRaw(tokenAssetsIdentifier);
+      expect(tokenAssets).toBeInstanceOf(Object);
     });
   });
 
   describe('Get Esdt Token Properties', () => {
-    it('should return undefined', async () => {
-      const returnTokenProperties = await esdtService.getEsdtTokenProperties(tokenIdentifier + 'e');
-      expect(returnTokenProperties).toBeUndefined();
+    it('should be return token properties', async () => {
+      const tokenProperties = await esdtService.getEsdtTokenProperties(tokenAssetsIdentifier);
+      expect(tokenProperties).toBeInstanceOf(Object);
     });
     it('should return token properties', async () => {
-      const returnTokenProperties = await esdtService.getEsdtTokenProperties(tokenIdentifier);
-      expect(returnTokenProperties).toHaveProperty('canBurn');
-      expect(returnTokenProperties).toHaveProperty('canFreeze');
-      expect(returnTokenProperties).toHaveProperty('canWipe');
+      const tokenProperties = await esdtService.getEsdtTokenProperties(tokenIdentifier);
+      expect(tokenProperties).toHaveProperty('canBurn');
+      expect(tokenProperties).toHaveProperty('canFreeze');
+      expect(tokenProperties).toHaveProperty('canWipe');
     });
   });
 
   describe('Get Token Supply', () => {
-    it('should return esdt token properties', async () => {
-      const returnTokenProperties: Number = new Number(await esdtService.getTokenSupply('LKMEX-aab910-10c47f'));
-      expect(returnTokenProperties).toBeInstanceOf(Number);
+    it('should return esdt token supply', async () => {
+      const supply = await esdtService.getTokenSupply(tokenIdentifier);
+      expect(typeof supply?.totalSupply).toBe('string');
+      expect(typeof supply?.circulatingSupply).toBe('string');
+      expect(supply).toBeInstanceOf(Object);
     });
   });
 
   describe('Get Esdt Token Properties Raw', () => {
-    it('should return undefined', async () => {
-      const returnTokenPropertiesRaw = await esdtService.getEsdtTokenPropertiesRaw(tokenIdentifier + 'e');
-      expect(returnTokenPropertiesRaw).toBeNull();
-    });
     it('should return token properties', async () => {
-      const returnTokenPropertiesRaw = await esdtService.getEsdtTokenPropertiesRaw(tokenIdentifier);
-      expect(returnTokenPropertiesRaw).toHaveProperty('canBurn');
-      expect(returnTokenPropertiesRaw).toHaveProperty('canFreeze');
-      expect(returnTokenPropertiesRaw).toHaveProperty('canWipe');
+      const tokenProperties = await esdtService.getEsdtTokenPropertiesRaw(tokenIdentifier);
+      expect(tokenProperties).toBeInstanceOf(Object);
+    });
+    it('token should have canBurn, canFreeze and canWipe properties', async () => {
+      const tokenProperties = await esdtService.getEsdtTokenPropertiesRaw(tokenIdentifier);
+      expect(tokenProperties).toHaveProperty('canBurn');
+      expect(tokenProperties).toHaveProperty('canFreeze');
+      expect(tokenProperties).toHaveProperty('canWipe');
     });
   });
 
   describe('Get Esdt Addresses Roles', () => {
     it('return addresses role', async () => {
-      const returnRoles = await esdtService.getEsdtAddressesRoles(tokenIdentifier);
-      expect(returnRoles).toBeInstanceOf(Array);
-    });
-
-    it('all tokens contains address and roles', async () => {
-      const returnRoles = await esdtService.getEsdtAddressesRoles(tokenIdentifier);
-      expect(returnRoles).toHaveStructure(Object.keys(TokenAddressRoles));
+      const roles = await esdtService.getEsdtAddressesRoles(tokenRole);
+      expect(roles).toBeInstanceOf(Array);
     });
   });
 
   describe('Get Esdt Addresses Roles Raw', () => {
     it('return addresses roles raw', async () => {
-      const returnRolesRaw = await esdtService.getEsdtAddressesRolesRaw(tokenIdentifier);
-      expect(returnRolesRaw).toBeInstanceOf(Array);
+      const rolesRaw = await esdtService.getEsdtAddressesRolesRaw(tokenRole);
+      expect(rolesRaw).toBeInstanceOf(Array);
     });
     it('all tokens contains address and roles', async () => {
-      const returnRolesRaw = await esdtService.getEsdtAddressesRolesRaw(tokenIdentifier);
-      expect(returnRolesRaw).toHaveStructure(Object.keys(TokenAddressRoles));
+      const rolesRaw = await esdtService.getEsdtAddressesRolesRaw(tokenIdentifier);
+      expect(rolesRaw).toEqual([]);
     });
   });
 });

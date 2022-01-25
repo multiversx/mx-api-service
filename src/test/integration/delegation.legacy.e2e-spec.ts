@@ -4,6 +4,8 @@ import { PublicAppModule } from "../../public.app.module";
 import { Constants } from "../../utils/constants";
 import { DelegationLegacyService } from "../../endpoints/delegation.legacy/delegation.legacy.service";
 import { AccountService } from "../../endpoints/accounts/account.service";
+import {DelegationLegacy} from "../../endpoints/delegation.legacy/entities/delegation.legacy";
+import {AccountDelegationLegacy} from "../../endpoints/delegation.legacy/entities/account.delegation.legacy";
 
 describe('Delegation Legacy Service', () => {
   let delegationLegacyService: DelegationLegacyService;
@@ -29,27 +31,16 @@ describe('Delegation Legacy Service', () => {
   }, Constants.oneHour() * 1000);
 
   describe('Get Delegation', () => {
-    it('should return a list of delegations', async () => {
-      const delegationResult = await delegationLegacyService.getDelegation();
-      expect(delegationResult).toBeInstanceOf(Object);
-    });
-    it('delegation should have properties of DelegationLegacy', async () => {
-      const delegationResult = await delegationLegacyService.getDelegation();
-      expect(delegationResult).toBeDefined();
-      expect(delegationResult).toHaveProperty('totalWithdrawOnlyStake');
-      expect(delegationResult).toHaveProperty('totalWaitingStake');
-      expect(delegationResult).toHaveProperty('totalActiveStake');
-      expect(delegationResult).toHaveProperty('totalUnstakedStake');
-      expect(delegationResult).toHaveProperty('totalDeferredPaymentStake');
-      expect(delegationResult).toHaveProperty('numUsers');
+    it('should return delegation legacy', async () => {
+      const delegation = await delegationLegacyService.getDelegation();
+      expect(delegation).toHaveStructure(Object.keys(new DelegationLegacy()));
     });
   });
 
   describe('Get Delegation For Address', () => {
     it('should return delegation details for a specific address', async () => {
-      const delegationAddressResult = await delegationLegacyService.getDelegationForAddress(accountAddress);
-      expect(delegationAddressResult).toBeInstanceOf(Object);
-      expect(delegationAddressResult).toBeDefined();
+      const delegationAddress = await delegationLegacyService.getDelegationForAddress(accountAddress);
+      expect(delegationAddress).toHaveStructure(Object.keys(new AccountDelegationLegacy()));
     });
   });
 });
