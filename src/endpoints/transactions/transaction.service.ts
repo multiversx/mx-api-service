@@ -186,48 +186,7 @@ export class TransactionService {
     }
 
     if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations) && elasticTransactions.some(x => x.hasScResults === true)) {
-      // Add scResults to transaction details
-
-      const elasticQuery = ElasticQuery.create()
-        .withPagination({ from: 0, size: 10000 })
-        .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
-        .withTerms(new TermsQuery('originalTxHash', elasticTransactions.filter(x => x.hasScResults === true).map(x => x.txHash)));
-
-      const scResults = await this.elasticService.getList('scresults', 'scHash', elasticQuery);
-      for (const scResult of scResults) {
-        scResult.hash = scResult.scHash;
-
-        delete scResult.scHash;
-      }
-
-      const hashes = [...transactions.map((transaction) => transaction.txHash), ...scResults.map((scResult) => scResult.hash)];
-      const logs = await this.transactionGetService.getTransactionLogsFromElastic(hashes);
-
-      const detailedTransactions: TransactionDetailed[] = [];
-      for (const transaction of transactions) {
-        const transactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), transaction);
-        const transactionScResults = scResults.filter(({ originalTxHash }) => originalTxHash == transaction.txHash);
-
-        if (queryOptions.withScResults) {
-          transactionDetailed.results = transactionScResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
-        }
-
-        if (queryOptions.withOperations) {
-          const transactionHashes: string[] = [transactionDetailed.txHash];
-          for (const scResult of transactionScResults) {
-            transactionHashes.push(scResult.hash);
-          }
-          const transactionLogsFromElastic = logs.filter((log) => transactionHashes.includes(log._id));
-          const transactionLogs: TransactionLog[] = transactionLogsFromElastic.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
-          transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransactionLogs(transactionDetailed.txHash, transactionLogs);
-
-          transactionDetailed.operations = this.transactionGetService.trimOperations(transactionDetailed.operations);
-        }
-
-        detailedTransactions.push(transactionDetailed);
-      }
-
-      transactions = detailedTransactions;
+      transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
     }
 
     for (const transaction of transactions) {
@@ -301,5 +260,48 @@ export class TransactionService {
       this.logger.error(`Unhandled error when processing plugin transaction for transaction with hash '${transaction.txHash}'`);
       this.logger.error(error);
     }
+  }
+
+  private async getExtraDetailsForTransactions(elasticTransactions: any[], transactions: Transaction[], queryOptions: TransactionQueryOptions): Promise<TransactionDetailed[]> {
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: 10000 })
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
+      .withTerms(new TermsQuery('originalTxHash', elasticTransactions.filter(x => x.hasScResults === true).map(x => x.txHash)));
+
+    const scResults = await this.elasticService.getList('scresults', 'scHash', elasticQuery);
+    for (const scResult of scResults) {
+      scResult.hash = scResult.scHash;
+
+      delete scResult.scHash;
+    }
+
+    const hashes = [...transactions.map((transaction) => transaction.txHash), ...scResults.map((scResult) => scResult.hash)];
+    const logs = await this.transactionGetService.getTransactionLogsFromElastic(hashes);
+
+    const detailedTransactions: TransactionDetailed[] = [];
+    for (const transaction of transactions) {
+      const transactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), transaction);
+      const transactionScResults = scResults.filter(({ originalTxHash }) => originalTxHash == transaction.txHash);
+
+      if (queryOptions.withScResults) {
+        transactionDetailed.results = transactionScResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+      }
+
+      if (queryOptions.withOperations) {
+        const transactionHashes: string[] = [transactionDetailed.txHash];
+        for (const scResult of transactionScResults) {
+          transactionHashes.push(scResult.hash);
+        }
+        const transactionLogsFromElastic = logs.filter((log) => transactionHashes.includes(log._id));
+        const transactionLogs: TransactionLog[] = transactionLogsFromElastic.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
+        transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransactionLogs(transactionDetailed.txHash, transactionLogs);
+
+        transactionDetailed.operations = this.transactionGetService.trimOperations(transactionDetailed.operations);
+      }
+
+      detailedTransactions.push(transactionDetailed);
+    }
+
+    return detailedTransactions;
   }
 }
