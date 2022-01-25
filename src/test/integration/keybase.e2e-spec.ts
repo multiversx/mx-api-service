@@ -92,9 +92,6 @@ describe('Keybase Service', () => {
     it('should return identity profile', async () => {
       const profile = await keybaseService.getProfile(identity);
       expect(profile).toBeInstanceOf(Object);
-      expect(profile).toHaveProperty('avatar');
-      expect(profile).toHaveProperty('identity');
-      expect(profile).toHaveProperty('name');
     });
   });
 });
