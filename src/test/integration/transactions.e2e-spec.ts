@@ -39,9 +39,9 @@ describe('Transaction Service', () => {
   describe('Transactions list', () => {
     it('transactions should have txHash, sender and receiver', async () => {
       const transactionFilter = new TransactionFilter();
-      const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+      const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
 
-      for (const transaction of transactionsList) {
+      for (const transaction of transactions) {
         expect(transaction).toHaveProperty('txHash');
         expect(transaction).toHaveProperty('sender');
         expect(transaction).toHaveProperty('receiver');
@@ -51,24 +51,24 @@ describe('Transaction Service', () => {
     describe('Transactions pagination', () => {
       it(`should return a list with 25 transactions`, async () => {
         const transactionFilter = new TransactionFilter();
-        const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
 
-        expect(transactionsList).toBeInstanceOf(Array);
-        expect(transactionsList).toHaveLength(25);
+        expect(transactions).toBeInstanceOf(Array);
+        expect(transactions).toHaveLength(25);
 
-        for (const transaction of transactionsList) {
+        for (const transaction of transactions) {
           expect(transaction).toHaveStructure(Object.keys(new Transaction()));
         }
       });
 
       it(`should return a list with 100 transactions`, async () => {
         const transactionFilter = new TransactionFilter();
-        const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 100 });
+        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 100 });
 
-        expect(transactionsList).toBeInstanceOf(Array);
-        expect(transactionsList).toHaveLength(100);
+        expect(transactions).toBeInstanceOf(Array);
+        expect(transactions).toHaveLength(100);
 
-        for (const transaction of transactionsList) {
+        for (const transaction of transactions) {
           expect(transaction).toHaveStructure(Object.keys(new Transaction()));
         }
       });
@@ -79,11 +79,11 @@ describe('Transaction Service', () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.sender = transactionSender;
         transactionFilter.receiver = transactionReceiver;
-        const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
 
-        expect(transactionsList).toBeInstanceOf(Array);
+        expect(transactions).toBeInstanceOf(Array);
 
-        for (const transaction of transactionsList) {
+        for (const transaction of transactions) {
           expect(transaction).toHaveStructure(Object.keys(new Transaction()));
           expect(transaction.sender).toBe(transactionSender);
           expect(transaction.receiver).toBe(transactionReceiver);
@@ -93,10 +93,10 @@ describe('Transaction Service', () => {
       it(`should return a list with pending transactions`, async () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.status = TransactionStatus.pending;
-        const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
-        expect(transactionsList).toBeInstanceOf(Array);
+        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+        expect(transactions).toBeInstanceOf(Array);
 
-        for (const transaction of transactionsList) {
+        for (const transaction of transactions) {
           expect(transaction).toHaveStructure(Object.keys(new Transaction()));
           expect(transaction.status).toBe(TransactionStatus.pending);
         }
@@ -106,10 +106,10 @@ describe('Transaction Service', () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.before = 1625559162;
         transactionFilter.after = 1625559108;
-        const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
-        expect(transactionsList).toBeInstanceOf(Array);
+        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+        expect(transactions).toBeInstanceOf(Array);
 
-        for (const transaction of transactionsList) {
+        for (const transaction of transactions) {
           expect(transaction).toHaveStructure(Object.keys(new Transaction()));
           expect(transaction.timestamp).toBeGreaterThanOrEqual(transactionFilter.after);
           expect(transaction.timestamp).toBeLessThanOrEqual(transactionFilter.before);
@@ -119,10 +119,10 @@ describe('Transaction Service', () => {
       it(`should return a list with transactions after one date`, async () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.after = 1625559108;
-        const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
-        expect(transactionsList).toBeInstanceOf(Array);
+        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+        expect(transactions).toBeInstanceOf(Array);
 
-        for (const transaction of transactionsList) {
+        for (const transaction of transactions) {
           expect(transaction).toHaveStructure(Object.keys(new Transaction()));
           expect(transaction.timestamp).toBeGreaterThanOrEqual(transactionFilter.after);
         }
@@ -131,10 +131,10 @@ describe('Transaction Service', () => {
       it(`should return a list with transactions before one date`, async () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.before = 1625559108;
-        const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
-        expect(transactionsList).toBeInstanceOf(Array);
+        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+        expect(transactions).toBeInstanceOf(Array);
 
-        for (const transaction of transactionsList) {
+        for (const transaction of transactions) {
           expect(transaction).toHaveStructure(Object.keys(new Transaction()));
           expect(transaction.timestamp).toBeLessThanOrEqual(transactionFilter.before);
         }
@@ -147,10 +147,10 @@ describe('Transaction Service', () => {
         transactionFilter.receiver = address;
         transactionFilter.condition = QueryConditionOptions.should;
 
-        const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
-        expect(transactionsList).toBeInstanceOf(Array);
+        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+        expect(transactions).toBeInstanceOf(Array);
 
-        for (const transaction of transactionsList) {
+        for (const transaction of transactions) {
           expect(transaction).toHaveStructure(Object.keys(new Transaction()));
           if (transaction.sender !== address && transaction.receiver !== address) {
             expect(false);
@@ -158,7 +158,7 @@ describe('Transaction Service', () => {
         }
 
         const accountTransactionsList = await transactionService.getTransactions(new TransactionFilter(), { from: 0, size: 25 }, undefined, address);
-        expect(transactionsList).toEqual(accountTransactionsList);
+        expect(transactions).toEqual(accountTransactionsList);
       });
 
       it(`should return transactions for an address with self transactions`, async () => {
@@ -167,10 +167,10 @@ describe('Transaction Service', () => {
         transactionFilter.sender = address;
         transactionFilter.receiver = address;
 
-        const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 }, undefined, address);
-        expect(transactionsList).toBeInstanceOf(Array);
+        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 }, undefined, address);
+        expect(transactions).toBeInstanceOf(Array);
 
-        for (const transaction of transactionsList) {
+        for (const transaction of transactions) {
           /*delete transaction.action;
           delete transaction.scamInfo;*/
 
@@ -188,10 +188,10 @@ describe('Transaction Service', () => {
         transactionFilter.sender = address;
         transactionFilter.status = TransactionStatus.success;
 
-        const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
-        expect(transactionsList).toBeInstanceOf(Array);
+        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+        expect(transactions).toBeInstanceOf(Array);
 
-        for (const transaction of transactionsList) {
+        for (const transaction of transactions) {
           expect(transaction).toHaveStructure(Object.keys(new Transaction()));
           expect(transaction.sender).toBe(address);
           expect(transaction.timestamp).toBeGreaterThanOrEqual(transactionFilter.after);
@@ -204,9 +204,9 @@ describe('Transaction Service', () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.hashes = hashes.split(',');
 
-        const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
-        expect(transactionsList).toHaveLength(2);
-        const transactionsHashes = transactionsList.map(({ txHash }) => txHash);
+        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+        expect(transactions).toHaveLength(2);
+        const transactionsHashes = transactions.map(({ txHash }) => txHash);
         expect(hashes.split(',').toString()).not.toStrictEqual(transactionsHashes.toString());
       });
 
@@ -216,8 +216,8 @@ describe('Transaction Service', () => {
         transactionFilter.token = token;
 
 
-        const transactionsList = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
-        for (const transaction of transactionsList) {
+        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+        for (const transaction of transactions) {
           expect(transaction.tokenIdentifier).toBeDefined();
           expect(transaction.tokenIdentifier).toEqual('QWT-46ac01');
         }
@@ -228,9 +228,9 @@ describe('Transaction Service', () => {
 
   describe('Transaction count', () => {
     it(`should return a number`, async () => {
-      const transactionsCount: Number = new Number(await transactionService.getTransactionCount(new TransactionFilter()));
+      const count = await transactionService.getTransactionCount(new TransactionFilter());
 
-      expect(transactionsCount).toBeInstanceOf(Number);
+      expect(typeof count).toBe('number');
     });
   });
 
