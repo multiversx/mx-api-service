@@ -22,7 +22,8 @@ import { NftThumbnailModule } from './queue/job-services/thumbnails/nft.thumbnai
           transport: Transport.RMQ,
           options: {
             urls: [`amqp://${configService.getRabbitmqUrl()}:5672`],
-            queue: 'nft_process',
+            queue: 'process-nfts',
+            noAck: false,
             queueOptions: {
               durable: false,
             },

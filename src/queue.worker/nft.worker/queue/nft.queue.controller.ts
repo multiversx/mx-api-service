@@ -1,5 +1,5 @@
 import { Controller, Logger } from "@nestjs/common";
-import { MessagePattern, Payload } from "@nestjs/microservices";
+import { Ctx, MessagePattern, Payload, RmqContext } from "@nestjs/microservices";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { NftMessage } from "./entities/nft.message";
@@ -20,8 +20,8 @@ export class NftQueueController {
   }
 
   @MessagePattern({ cmd: 'process-nfts' })
-  async onNftCreated(@Payload() data: NftMessage) {
-    this.logger.log({ type: 'consumer', identifier: data.identifier });
+  async onNftCreated(@Payload() data: NftMessage, @Ctx() context: RmqContext) {
+    this.logger.log({ type: 'consumer start', identifier: data.identifier });
 
     const nft = data.nft;
     const settings = data.settings;
@@ -42,7 +42,11 @@ export class NftQueueController {
       await Promise.all(nft.media.map((media: any) => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
     }
 
-    return;
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    this.logger.log({ type: 'consumer end', identifier: data.identifier });
+    channel.ack(originalMsg);
   }
 
   private async generateThumbnail(nft: Nft, media: NftMedia, forceRefresh: boolean = false): Promise<void> {

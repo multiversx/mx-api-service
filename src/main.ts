@@ -131,7 +131,8 @@ async function bootstrap() {
       transport: Transport.RMQ,
       options: {
         urls: [`amqp://${apiConfigService.getRabbitmqUrl()}:5672`],
-        queue: 'nft_process',
+        queue: 'process-nfts',
+        noAck: false,
         queueOptions: {
           durable: false,
         },
