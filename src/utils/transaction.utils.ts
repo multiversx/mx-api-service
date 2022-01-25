@@ -1,5 +1,7 @@
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Logger } from "@nestjs/common";
+import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
+import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { BinaryUtils } from "./binary.utils";
 
 export class TransactionUtils {
@@ -60,5 +62,33 @@ export class TransactionUtils {
     }
 
     return { collection, attributes };
+  }
+
+  static isTransactionCountQueryWithAddressOnly(filter: TransactionFilter, address?: string) {
+    if (!address) {
+      return false;
+    }
+
+    const filterToCompareWith: TransactionFilter = {};
+
+    return JSON.stringify(filter) === JSON.stringify(filterToCompareWith);
+  }
+
+  static isTransactionCountQueryWithSenderAndReceiver(filter: TransactionFilter) {
+    if (!filter.sender || !filter.receiver) {
+      return false;
+    }
+
+    if (filter.sender !== filter.receiver) {
+      return false;
+    }
+
+    const filterToCompareWith: TransactionFilter = {
+      sender: filter.sender,
+      receiver: filter.receiver,
+      condition: QueryConditionOptions.should,
+    };
+
+    return JSON.stringify(filter) === JSON.stringify(filterToCompareWith);
   }
 }

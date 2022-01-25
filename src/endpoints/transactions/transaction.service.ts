@@ -29,6 +29,7 @@ import { CacheInfo } from 'src/common/caching/entities/cache.info';
 import { Constants } from 'src/utils/constants';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { SortOrder } from 'src/common/entities/sort.order';
+import { TransactionUtils } from 'src/utils/transaction.utils';
 
 @Injectable()
 export class TransactionService {
@@ -131,40 +132,12 @@ export class TransactionService {
     return await this.elasticService.getCount('transactions', elasticQuery);
   }
 
-  private isTransactionCountQueryWithAddressOnly(filter: TransactionFilter, address?: string) {
-    if (!address) {
-      return false;
-    }
-
-    const filterToCompareWith: TransactionFilter = {};
-
-    return JSON.stringify(filter) === JSON.stringify(filterToCompareWith);
-  }
-
-  private isTransactionCountQueryWithSenderAndReceiver(filter: TransactionFilter) {
-    if (!filter.sender || !filter.receiver) {
-      return false;
-    }
-
-    if (filter.sender !== filter.receiver) {
-      return false;
-    }
-
-    const filterToCompareWith: TransactionFilter = {
-      sender: filter.sender,
-      receiver: filter.receiver,
-      condition: QueryConditionOptions.should,
-    };
-
-    return JSON.stringify(filter) === JSON.stringify(filterToCompareWith);
-  }
-
   async getTransactionCount(filter: TransactionFilter, address?: string): Promise<number> {
-    if (this.isTransactionCountQueryWithAddressOnly(filter, address)) {
+    if (TransactionUtils.isTransactionCountQueryWithAddressOnly(filter, address)) {
       return this.getTransactionCountForAddress(address ?? '');
     }
 
-    if (this.isTransactionCountQueryWithSenderAndReceiver(filter)) {
+    if (TransactionUtils.isTransactionCountQueryWithSenderAndReceiver(filter)) {
       return this.getTransactionCountForAddress(filter.sender ?? '');
     }
 
