@@ -16,6 +16,9 @@ describe('Nft Queue Service', () => {
   let nftQueueService: NftThumbnailService;
   let nftService: NftService;
 
+  const myPinataUrl: string = 'https://wwwine.mypinata.cloud/ipfs/QmXhZjHWSiEijsdf2RS1g5jRvDmkiAufNdqp5qVet6gbbe/998.jpg';
+  const elrondMediaUrl: string = 'https://media.elrond.com/nfts/thumbnail/default.png';
+
   beforeAll(async () => {
     await Initializer.initialize();
 
@@ -35,13 +38,13 @@ describe('Nft Queue Service', () => {
     it('should return true if nft has thumbnail generated', async () => {
       const nftFilter = new Nft();
       nftFilter.identifier = 'WWWINE-5a5331-03e6';
-      const thumbnailGenerated = await nftQueueService.hasThumbnailGenerated(nftFilter.identifier, 'https://wwwine.mypinata.cloud/ipfs/QmXhZjHWSiEijsdf2RS1g5jRvDmkiAufNdqp5qVet6gbbe/998.jpg');
+      const thumbnailGenerated = await nftQueueService.hasThumbnailGenerated(nftFilter.identifier, myPinataUrl);
       expect(thumbnailGenerated).toBeTruthy();
     });
-    it('should return false if nft has thumbnail generated', async () => {
+    it('should return false if nft does not contain thumbnail generated ', async () => {
       const nftFilter = new Nft();
       nftFilter.identifier = 'MEXFARM-e7af52-438c8a';
-      const thumbnailGenerated = await nftQueueService.hasThumbnailGenerated(nftFilter.identifier, 'https://media.elrond.com/nfts/thumbnail/default.png');
+      const thumbnailGenerated = await nftQueueService.hasThumbnailGenerated(nftFilter.identifier, elrondMediaUrl);
       expect(thumbnailGenerated).toBeFalsy();
     });
   });
@@ -51,10 +54,9 @@ describe('Nft Queue Service', () => {
       const nftFilter = new Nft();
       nftFilter.identifier = 'WWWINE-5a5331-03e6';
       const nftFileType = '998.jpg';
-
       const thumbnail: String = await nftQueueService.generateThumbnail(
         nftFilter,
-        'https://wwwine.mypinata.cloud/ipfs/QmXhZjHWSiEijsdf2RS1g5jRvDmkiAufNdqp5qVet6gbbe/998.jpg',
+        myPinataUrl,
         nftFileType,
         false);
 

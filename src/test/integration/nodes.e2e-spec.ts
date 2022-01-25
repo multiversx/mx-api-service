@@ -24,6 +24,8 @@ describe('Node Service', () => {
   let accountService: AccountService;
   let accountAddress: string;
 
+  const providerAddress: string = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85';
+
   beforeAll(async () => {
     await Initializer.initialize();
     const publicAppModule = await Test.createTestingModule({
@@ -84,6 +86,7 @@ describe('Node Service', () => {
 
       nodeFilter.search = nodeSentinel.version;
       filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
+
       for (const node of filteredNodes) {
         expect(node.version).toStrictEqual(nodeSentinel.version);
       }
@@ -93,8 +96,8 @@ describe('Node Service', () => {
       const nodeFilter: NodeFilter = new NodeFilter();
       nodeFilter.provider = nodeSentinel.provider;
       nodeFilter.owner = nodeSentinel.owner;
-
       const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
+
       for (const node of filteredNodes) {
         expect(node.provider).toStrictEqual(nodeSentinel.provider);
         expect(node.owner).toStrictEqual(nodeSentinel.owner);
@@ -104,8 +107,8 @@ describe('Node Service', () => {
     it('should have validator type', async () => {
       const nodeFilter: NodeFilter = new NodeFilter();
       nodeFilter.type = NodeType.validator;
-
       const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
+
       for (const node of filteredNodes) {
         expect(node.type).toStrictEqual(NodeType.validator);
       }
@@ -115,8 +118,8 @@ describe('Node Service', () => {
       const nodeFilter: NodeFilter = new NodeFilter();
       nodeFilter.status = NodeStatus.eligible;
       nodeFilter.online = true;
-
       const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
+
       for (const node of filteredNodes) {
         expect(node.status).toStrictEqual(NodeStatus.eligible);
         expect(node.online).toBeTruthy();
@@ -129,6 +132,7 @@ describe('Node Service', () => {
 
       const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
       let currentTempRating = 0;
+
       for (const node of filteredNodes) {
         if (node.tempRating) {
           expect(node.tempRating).toBeGreaterThanOrEqual(currentTempRating);
@@ -139,13 +143,13 @@ describe('Node Service', () => {
 
     it('should return nodes of size 10', async () => {
       const nodeFilter = new NodeFilter();
-      const filteredSizeNode = await nodeService.getNodes({
+      const filteredNode = await nodeService.getNodes({
         from: 0,
         size: 10,
       }, nodeFilter);
 
-      expect(filteredSizeNode).toBeInstanceOf(Array);
-      expect(filteredSizeNode).toHaveLength(10);
+      expect(filteredNode).toBeInstanceOf(Array);
+      expect(filteredNode).toHaveLength(10);
     });
   });
 
@@ -164,14 +168,14 @@ describe('Node Service', () => {
   });
 
   describe('Get HeartBeat', () => {
-    it('should return  nodes HeartBeat', async () => {
+    it('should return nodes HeartBeat', async () => {
       const heartBeatValue = await nodeService.getHeartbeat();
       expect(heartBeatValue).toBeInstanceOf(Array);
     });
   });
 
   describe('Get Queue', () => {
-    it('should return queue of address', async () => {
+    it('should return Queue[]', async () => {
       const queueAddress = await nodeService.getQueue();
       expect(queueAddress).toBeInstanceOf(Array);
     });
@@ -179,29 +183,34 @@ describe('Node Service', () => {
 
   describe('Get Node Count', () => {
     it('should return node count', async () => {
-      const nodeCount = await nodeService.getNodeCount(new NodeFilter());
-      expect(nodeCount).toBeGreaterThanOrEqual(1);
+      const count = await nodeService.getNodeCount(new NodeFilter());
+      expect(typeof count).toBe('number');
     });
   });
 
   describe('Delete Owners For Address In Cache', () => {
     it('should delete address for an owner in cache', async () => {
-      const nodeCount = await nodeService.deleteOwnersForAddressInCache(accountAddress);
-      expect(nodeCount).toBeInstanceOf(Array);
+      const ownerDeleted = await nodeService.deleteOwnersForAddressInCache(accountAddress);
+      expect(ownerDeleted).toBeInstanceOf(Array);
     });
   });
 
   describe('Get Owner BLS', () => {
     it('should return owner bls', async () => {
+      const blsOwner = await nodeService.getOwnerBlses(providerAddress);
+      expect(blsOwner).toEqual(expect.arrayContaining([expect.any(String)]))
+    });
+
+    it('should return empty array', async () => {
       const blsOwner = await nodeService.getOwnerBlses(accountAddress);
-      expect(blsOwner).toBeInstanceOf(Array);
+      expect(blsOwner).toEqual([]);
     });
   });
 
   describe('Get Node Version Raw', () => {
     it('should return node version', async () => {
-      const nodeVersionRaw = await nodeService.getNodeVersionsRaw();
-      expect(nodeVersionRaw).toBeInstanceOf(Object);
+      const versionRaw = await nodeService.getNodeVersionsRaw();
+      expect(versionRaw).toBeInstanceOf(Object);
     });
   });
 
@@ -209,8 +218,8 @@ describe('Node Service', () => {
     it('should return nodes based on bls', async () => {
       const nodeFilter: NodeFilter = new NodeFilter();
       nodeFilter.search = nodeSentinel.bls;
-      const nodeBls = await nodeService.getNode(nodeFilter.search);
-      expect(nodeBls).toBeInstanceOf(Object);
+      const node = await nodeService.getNode(nodeFilter.search);
+      expect(node).toBeInstanceOf(Object);
     });
   });
 });
