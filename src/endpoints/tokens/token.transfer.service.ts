@@ -161,11 +161,14 @@ export class TokenTransferService {
   }
 
   async getTokenTransferProperties(identifier: string, nonce?: string): Promise<TokenTransferProperties | null> {
-    const properties = await this.cachingService.getOrSetCache(
+    let properties = await this.cachingService.getOrSetCache(
       CacheInfo.TokenTransferProperties(identifier).key,
       async () => await this.getTokenTransferPropertiesRaw(identifier),
       Constants.oneDay()
     );
+
+    // we clone it since we alter the resulting object 
+    properties = JSON.parse(JSON.stringify(properties));
 
     if (properties && nonce) {
       properties.identifier = `${identifier}-${nonce}`;
