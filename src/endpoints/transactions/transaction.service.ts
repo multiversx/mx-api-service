@@ -212,9 +212,8 @@ export class TransactionService {
       }
     }
 
-    if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations) && elasticTransactions.some(x => x.hasScResults === true)) {
+    if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations || queryOptions.withLogs) && elasticTransactions.some(x => x.hasScResults === true)) {
       // Add scResults to transaction details
-
       const elasticQuery = ElasticQuery.create()
         .withPagination({ from: 0, size: 10000 })
         .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
@@ -237,7 +236,9 @@ export class TransactionService {
 
         if (queryOptions.withScResults) {
           transactionDetailed.results = transactionScResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+        }
 
+        if (queryOptions.withLogs) {
           for (const log of logs) {
             if (log._id === transactionDetailed.txHash) {
               transactionDetailed.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
