@@ -10,7 +10,7 @@ import { Constants } from 'src/utils/constants';
 describe('Account Service', () => {
   let accountService: AccountService;
   let delegationLegacyService: DelegationLegacyService;
-  let accountAddress: string;
+  const accountAddress: string = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85';
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -21,12 +21,6 @@ describe('Account Service', () => {
 
     accountService = moduleRef.get<AccountService>(AccountService);
     delegationLegacyService = moduleRef.get<DelegationLegacyService>(DelegationLegacyService);
-
-    const accounts = await accountService.getAccounts({ from: 0, size: 1 });
-    expect(accounts).toHaveLength(1);
-
-    const account = accounts[0];
-    accountAddress = account.address;
   }, Constants.oneHour() * 1000);
 
   describe('Accounts list', () => {
@@ -63,9 +57,8 @@ describe('Account Service', () => {
 
   describe('Accounts count', () => {
     it(`should return a number`, async () => {
-      const accountsCount: Number = new Number(await accountService.getAccountsCount());
-
-      expect(accountsCount).toBeInstanceOf(Number);
+      const accountsCount = await accountService.getAccountsCount();
+      expect(typeof accountsCount).toBe('number');
     });
   });
 
@@ -86,22 +79,21 @@ describe('Account Service', () => {
     describe('Account Delegation Legacy', () => {
       it(`should return a delegation legacy for an account with address`, async () => {
         const accountDelegationLegacy = await delegationLegacyService.getDelegationForAddress(accountAddress);
-
         expect(accountDelegationLegacy).toHaveStructure(Object.keys(new AccountDelegationLegacy()));
       });
     });
 
     describe('Account userName based on Address', () => {
       it('should return account username based on address ', async () => {
-        const accountUserName = await accountService.getAccountUsername(accountAddress);
-        expect(accountUserName).toBeDefined();
+        const accountUsername = await accountService.getAccountUsername(accountAddress);
+        expect(accountUsername).toBeDefined();
       });
     });
 
     describe('Account Deployed', () => {
       it(`should return the number of account deployed for address`, async () => {
-        const accountDeployed: Number = new Number(accountService.getAccountDeployedAt(accountAddress));
-        expect(accountDeployed).toBeInstanceOf(Number);
+        const accountDeployed = await accountService.getAccountDeployedAt(accountAddress);
+        expect(typeof accountDeployed).toBe('number');
       });
     });
 
@@ -171,16 +163,16 @@ describe('Account Service', () => {
   });
 
   describe('Account Contract Count', () => {
-    it(`should return the number of account deployed for address`, async () => {
-      const accountCount: Number = new Number(accountService.getAccountContractsCount(accountAddress));
-      expect(accountCount).toBeInstanceOf(Number);
+    it(`should return the number of accounts deployed for address`, async () => {
+      const accountCount = await accountService.getAccountContractsCount(accountAddress);
+      expect(typeof accountCount).toBe('number');
     });
   });
 
   describe('Account Username Raw', () => {
     it(`should return the username raw`, async () => {
-      const accountUsername: String = new String(accountService.getAccountUsernameRaw(accountAddress));
-      expect(accountUsername).toBeInstanceOf(String);
+      const accountUsername = await accountService.getAccountUsernameRaw(accountAddress);
+      expect(typeof accountUsername).toBe('string');
     });
   });
 
