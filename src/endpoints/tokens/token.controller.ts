@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { SortOrder } from "src/common/entities/sort.order";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
@@ -178,6 +178,7 @@ export class TokenController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
+  @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false })
   async getTokenTransactions(
     @Param('identifier') identifier: string,
     @Query('sender', ParseAddressPipe) sender: string | undefined,
@@ -195,7 +196,12 @@ export class TokenController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('withScResults', new ParseOptionalBoolPipe) withScResults: boolean | undefined,
     @Query('withOperations', new ParseOptionalBoolPipe) withOperations: boolean | undefined,
+    @Query('withLogs', new ParseOptionalBoolPipe) withLogs: boolean | undefined,
   ) {
+    if ((withScResults === true || withOperations === true || withLogs) && size > 50) {
+      throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
+    }
+
     try {
       return await this.transactionService.getTransactions({
         sender,
@@ -210,7 +216,7 @@ export class TokenController {
         before,
         after,
         order,
-      }, { from, size }, { withScResults, withOperations });
+      }, { from, size }, { withScResults, withOperations, withLogs });
     } catch (error) {
       this.logger.error(error);
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
