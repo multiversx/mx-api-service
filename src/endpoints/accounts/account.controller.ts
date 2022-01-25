@@ -578,6 +578,7 @@ export class AccountController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
+  @ApiQuery({ name: 'withOperations', description: 'Return logs for transactions', required: false })
   async getAccountTransactions(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -596,9 +597,10 @@ export class AccountController {
     @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
     @Query('withScResults', new ParseOptionalBoolPipe) withScResults?: boolean,
     @Query('withOperations', new ParseOptionalBoolPipe) withOperations?: boolean,
+    @Query('withLogs', new ParseOptionalBoolPipe) withLogs?: boolean,
   ) {
-    if ((withScResults === true || withOperations === true) && size > 50) {
-      throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults' or 'withOperations'`);
+    if ((withScResults === true || withOperations === true || withLogs) && size > 50) {
+      throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
     }
 
     try {
@@ -615,7 +617,7 @@ export class AccountController {
         before,
         after,
         order,
-      }, { from, size }, { withScResults, withOperations }, address);
+      }, { from, size }, { withScResults, withOperations, withLogs }, address);
     } catch (error) {
       this.logger.error(`Error in getAccountTransactions for address ${address}`);
       this.logger.error(error);
