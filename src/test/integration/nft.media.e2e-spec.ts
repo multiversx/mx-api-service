@@ -34,20 +34,20 @@ describe('Nft Media Service', () => {
   }, Constants.oneHour() * 1000);
 
   describe('Get Media', () => {
-    it('should return a list of nfts', async () => {
-      const nftFiler = new Nft();
-      nftFiler.identifier = nftIdentifier;
-      const nftGetMedia = await nftMediaService.getMedia(nftFiler);
+    it('should return null', async () => {
+      const nftFilter = new Nft();
+      nftFilter.identifier = nftIdentifier;
+      const nftGetMedia = await nftMediaService.getMedia(nftFilter);
       expect(nftGetMedia).toBeNull();
     });
   });
 
   describe("Refresh Media", () => {
-    it('should refresh media for nft', async () => {
-      const nftFiler = new Nft();
-      nftFiler.identifier = nftIdentifier;
-      const nftRefreshMedia = await nftMediaService.refreshMedia(nftFiler);
-      expect(nftRefreshMedia).toBeInstanceOf(Array);
+    it('should return nft media', async () => {
+      const nftFilter = new Nft();
+      nftFilter.identifier = nftIdentifier;
+      const refreshMedia = await nftMediaService.refreshMedia(nftFilter);
+      expect(refreshMedia).toBeInstanceOf(Array);
     });
   });
 });

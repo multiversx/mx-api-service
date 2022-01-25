@@ -18,57 +18,45 @@ describe('NFT Tag Service', () => {
 
   }, Constants.oneHour() * 1000);
 
-  test(`should return list of tags for 1 nft`, async () => {
-    const nftTags = await tagService.getNftTags({ from: 0, size: 1 });
+  it(`should return list of tags for 1 nft`, async () => {
+    const tags = await tagService.getNftTags({ from: 0, size: 1 });
 
-    for (const nft of nftTags) {
-      expect(nft).toBeInstanceOf(Object);
+    for (const tag of tags) {
+      expect(tag).toBeInstanceOf(Object);
+    }
+  });
+
+  it(`should verify if tags contain properties`, async () => {
+    const tags = await tagService.getNftTags({ from: 0, size: 10 });
+
+    for (const tag of tags) {
+      expect(tag).toHaveProperty('tag');
+      expect(tag).toHaveProperty('count');
+    }
+  });
+
+  it(`should return a list of tags for 1 nft`, async () => {
+    const tagsRaw = await tagService.getNftTagsRaw({ from: 0, size: 1 });
+
+    for (const tag of tagsRaw) {
+      expect(tag).toBeInstanceOf(Object);
       expect.assertions(1);
     }
   });
 
-  test(`should return tags for a list with 10 nfts`, async () => {
-    const nftTags = await tagService.getNftTags({ from: 0, size: 10 });
+  it(`should verify if tags contain properties`, async () => {
+    const tagsRaw = await tagService.getNftTagsRaw({ from: 0, size: 10 });
 
-    for (const nft of nftTags) {
-      expect(nft).toBeInstanceOf(Object);
-      expect.assertions(1);
+    for (const tag of tagsRaw) {
+      expect(tag).toHaveProperty('tag');
+      expect(tag).toHaveProperty('count');
     }
   });
 
-  test(`should verify if tags contain properties`, async () => {
-    const nftTags = await tagService.getNftTags({ from: 0, size: 10 });
-
-    for (const nft of nftTags) {
-      expect(nft).toHaveProperty('tag');
-      expect(nft).toHaveProperty('count');
-    }
-  });
-
-  test(`should return a list of tags for 1 nft`, async () => {
-    const nftTagsRaw = await tagService.getNftTagsRaw({ from: 0, size: 1 });
-
-    for (const nft of nftTagsRaw) {
-      expect(nft).toBeInstanceOf(Object);
-      expect.assertions(1);
-    }
-  });
-
-  test(`should return a list of tags for 10 nfts`, async () => {
-    const nftTagsRaw = await tagService.getNftTagsRaw({ from: 0, size: 10 });
-
-    for (const nft of nftTagsRaw) {
-      expect(nft).toBeInstanceOf(Object);
-      expect.assertions(10);
-    }
-  });
-
-  test(`should verify if tags contain properties`, async () => {
-    const nftTagsRaw = await tagService.getNftTagsRaw({ from: 0, size: 10 });
-
-    for (const nft of nftTagsRaw) {
-      expect(nft).toHaveProperty('tag');
-      expect(nft).toHaveProperty('count');
-    }
+  describe('Get Nft Tag', () => {
+    it('should return tag', async () => {
+      const tag = await tagService.getNftTag('RWxyb25k');
+      expect(tag).toBeInstanceOf(Object);
+    });
   });
 });
