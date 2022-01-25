@@ -33,20 +33,12 @@ describe('Mex Service', () => {
       const mexValues = await mexService.getMexForAddress(accountAddress);
       expect(mexValues).toBeInstanceOf(Array);
     });
-    it('should return a detailed account with accountAddress', async () => {
-      const mexValues = await mexService.getMexForAddress(accountAddress);
-      expect(mexValues).toBeDefined();
-    });
   });
 
   describe('Get Mex For Address Raw', () => {
     it(`should return MexWeek[] for address raw 'accountAddress'`, async () => {
-      const mexValues = await mexService.getMexForAddressRaw(accountAddress);
-      expect(mexValues).toBeInstanceOf(Array);
-    });
-    it('should return a detailed raw account with accountAddress', async () => {
-      const mexValues = await mexService.getMexForAddressRaw(accountAddress);
-      expect(mexValues).toBeDefined();
+      const mexRaw = await mexService.getMexForAddressRaw(accountAddress);
+      expect(mexRaw).toBeInstanceOf(Array);
     });
   });
 });
