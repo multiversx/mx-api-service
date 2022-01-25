@@ -14,7 +14,6 @@ import { SmartContractResult } from "../sc-results/entities/smart.contract.resul
 import { Transaction } from "./entities/transaction";
 import { TransactionDetailed } from "./entities/transaction.detailed";
 import { TransactionLog } from "./entities/transaction.log";
-import { TransactionOperation } from "./entities/transaction.operation";
 import { TransactionOptionalFieldOption } from "./entities/transaction.optional.field.options";
 import { TransactionReceipt } from "./entities/transaction.receipt";
 import { TokenTransferService } from "../tokens/token.transfer.service";
