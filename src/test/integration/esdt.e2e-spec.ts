@@ -59,12 +59,12 @@ describe('ESDT Service', () => {
     });
   });
 
-  describe('Get Esdt Token Assets Raw', () => {
+  /*describe('Get Esdt Token Assets Raw', () => {
     it('should return token assets raw ', async () => {
       const tokenAssets = await esdtService.getEsdtTokenAssetsRaw(tokenAssetsIdentifier);
       expect(tokenAssets).toBeInstanceOf(Object);
     });
-  });
+  });*/
 
   describe('Get Esdt Token Properties', () => {
     it('should be return token properties', async () => {
