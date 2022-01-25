@@ -1,8 +1,8 @@
-import {TagService} from "../../endpoints/nfttags/tag.service";
+import { TagService } from "../../endpoints/nfttags/tag.service";
 import Initializer from "./e2e-init";
-import {Test} from "@nestjs/testing";
-import {PublicAppModule} from "../../public.app.module";
-import {Constants} from "../../utils/constants";
+import { Test } from "@nestjs/testing";
+import { PublicAppModule } from "../../public.app.module";
+import { Constants } from "../../utils/constants";
 
 describe('NFT Tag Service', () => {
   let tagService: TagService;
@@ -19,7 +19,7 @@ describe('NFT Tag Service', () => {
   }, Constants.oneHour() * 1000);
 
   test(`should return list of tags for 1 nft`, async () => {
-    const nftTags = await tagService.getNftTags({from: 0, size: 1});
+    const nftTags = await tagService.getNftTags({ from: 0, size: 1 });
 
     for (const nft of nftTags) {
       expect(nft).toBeInstanceOf(Object);
@@ -28,7 +28,7 @@ describe('NFT Tag Service', () => {
   });
 
   test(`should return tags for a list with 10 nfts`, async () => {
-    const nftTags = await tagService.getNftTags({from: 0, size: 10});
+    const nftTags = await tagService.getNftTags({ from: 0, size: 10 });
 
     for (const nft of nftTags) {
       expect(nft).toBeInstanceOf(Object);
@@ -37,7 +37,7 @@ describe('NFT Tag Service', () => {
   });
 
   test(`should verify if tags contain properties`, async () => {
-    const nftTags = await tagService.getNftTags({from: 0, size: 10});
+    const nftTags = await tagService.getNftTags({ from: 0, size: 10 });
 
     for (const nft of nftTags) {
       expect(nft).toHaveProperty('tag');
@@ -46,7 +46,7 @@ describe('NFT Tag Service', () => {
   });
 
   test(`should return a list of tags for 1 nft`, async () => {
-    const nftTagsRaw = await tagService.getNftTagsRaw({from: 0, size: 1});
+    const nftTagsRaw = await tagService.getNftTagsRaw({ from: 0, size: 1 });
 
     for (const nft of nftTagsRaw) {
       expect(nft).toBeInstanceOf(Object);
@@ -55,7 +55,7 @@ describe('NFT Tag Service', () => {
   });
 
   test(`should return a list of tags for 10 nfts`, async () => {
-    const nftTagsRaw = await tagService.getNftTagsRaw({from: 0, size: 10});
+    const nftTagsRaw = await tagService.getNftTagsRaw({ from: 0, size: 10 });
 
     for (const nft of nftTagsRaw) {
       expect(nft).toBeInstanceOf(Object);
@@ -64,7 +64,7 @@ describe('NFT Tag Service', () => {
   });
 
   test(`should verify if tags contain properties`, async () => {
-    const nftTagsRaw = await tagService.getNftTagsRaw({from: 0, size: 10});
+    const nftTagsRaw = await tagService.getNftTagsRaw({ from: 0, size: 10 });
 
     for (const nft of nftTagsRaw) {
       expect(nft).toHaveProperty('tag');

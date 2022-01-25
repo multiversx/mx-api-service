@@ -1,8 +1,8 @@
-import {DelegationService} from "../../endpoints/delegation/delegation.service";
+import { DelegationService } from "../../endpoints/delegation/delegation.service";
 import Initializer from "./e2e-init";
-import {Test} from "@nestjs/testing";
-import {PublicAppModule} from "../../public.app.module";
-import {Constants} from "../../utils/constants";
+import { Test } from "@nestjs/testing";
+import { PublicAppModule } from "../../public.app.module";
+import { Constants } from "../../utils/constants";
 
 describe('Delegation Service', () => {
   let delegationService: DelegationService;

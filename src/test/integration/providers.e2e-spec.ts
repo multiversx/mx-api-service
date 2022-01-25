@@ -148,7 +148,7 @@ describe('Provider Service', () => {
     it('all providers should have contract, featured, aprValue properties', async () => {
       const returnDelegationProviders = await providerService.getDelegationProviders();
 
-      for(const provider of returnDelegationProviders){
+      for (const provider of returnDelegationProviders) {
         expect(provider).toHaveProperty('contract');
         expect(provider).toHaveProperty('featured');
         expect(provider).toHaveProperty('aprValue');
@@ -159,10 +159,10 @@ describe('Provider Service', () => {
   describe('Get Delegation Provider Raw', () => {
     it('should return delegation providers raw', async () => {
       expect.assertions(1);
-      try{
+      try {
         const returnDelegationProvidersRaw = await providerService.getDelegationProvidersRaw();
         expect(returnDelegationProvidersRaw).toBeInstanceOf(Object);
-      }catch (error){
+      } catch (error) {
         expect(error).toMatch('Error when getting delegation providers');
       }
     });
@@ -256,10 +256,10 @@ describe('Provider Service', () => {
 
   describe('Get Provider Addresses', () => {
     it('should return provider address', async () => {
-      try{
+      try {
         const returnProviderAddress = await providerService.getProviderAddresses();
         expect(returnProviderAddress).toBeInstanceOf(Array);
-      }catch (error){
+      } catch (error) {
         expect(error).toMatch('error');
       }
     });

@@ -1,9 +1,9 @@
 import Initializer from "./e2e-init";
-import {Test} from "@nestjs/testing";
-import {PublicAppModule} from "../../public.app.module";
-import {Constants} from "../../utils/constants";
-import {DelegationLegacyService} from "../../endpoints/delegation.legacy/delegation.legacy.service";
-import {AccountService} from "../../endpoints/accounts/account.service";
+import { Test } from "@nestjs/testing";
+import { PublicAppModule } from "../../public.app.module";
+import { Constants } from "../../utils/constants";
+import { DelegationLegacyService } from "../../endpoints/delegation.legacy/delegation.legacy.service";
+import { AccountService } from "../../endpoints/accounts/account.service";
 
 describe('Delegation Legacy Service', () => {
   let delegationLegacyService: DelegationLegacyService;

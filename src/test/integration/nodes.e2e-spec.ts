@@ -12,7 +12,7 @@ import { ProviderService } from "src/endpoints/providers/provider.service";
 import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 import Initializer from "./e2e-init";
-import {AccountService} from "../../endpoints/accounts/account.service";
+import { AccountService } from "../../endpoints/accounts/account.service";
 
 describe('Node Service', () => {
   let nodeService: NodeService;
@@ -77,13 +77,13 @@ describe('Node Service', () => {
       const nodeFilter: NodeFilter = new NodeFilter();
       nodeFilter.search = nodeSentinel.bls;
 
-      let filteredNodes = await nodeService.getNodes({from: 0, size: 25}, nodeFilter);
+      let filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
       for (const node of filteredNodes) {
         expect(node.bls).toStrictEqual(nodeSentinel.bls);
       }
 
       nodeFilter.search = nodeSentinel.version;
-      filteredNodes = await nodeService.getNodes({from: 0, size: 25}, nodeFilter);
+      filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
       for (const node of filteredNodes) {
         expect(node.version).toStrictEqual(nodeSentinel.version);
       }
@@ -94,7 +94,7 @@ describe('Node Service', () => {
       nodeFilter.provider = nodeSentinel.provider;
       nodeFilter.owner = nodeSentinel.owner;
 
-      const filteredNodes = await nodeService.getNodes({from: 0, size: 25}, nodeFilter);
+      const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
       for (const node of filteredNodes) {
         expect(node.provider).toStrictEqual(nodeSentinel.provider);
         expect(node.owner).toStrictEqual(nodeSentinel.owner);
@@ -105,7 +105,7 @@ describe('Node Service', () => {
       const nodeFilter: NodeFilter = new NodeFilter();
       nodeFilter.type = NodeType.validator;
 
-      const filteredNodes = await nodeService.getNodes({from: 0, size: 25}, nodeFilter);
+      const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
       for (const node of filteredNodes) {
         expect(node.type).toStrictEqual(NodeType.validator);
       }
@@ -116,7 +116,7 @@ describe('Node Service', () => {
       nodeFilter.status = NodeStatus.eligible;
       nodeFilter.online = true;
 
-      const filteredNodes = await nodeService.getNodes({from: 0, size: 25}, nodeFilter);
+      const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
       for (const node of filteredNodes) {
         expect(node.status).toStrictEqual(NodeStatus.eligible);
         expect(node.online).toBeTruthy();
@@ -127,7 +127,7 @@ describe('Node Service', () => {
       const nodeFilter: NodeFilter = new NodeFilter();
       nodeFilter.sort = NodeSort.tempRating;
 
-      const filteredNodes = await nodeService.getNodes({from: 0, size: 25}, nodeFilter);
+      const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
       let currentTempRating = 0;
       for (const node of filteredNodes) {
         if (node.tempRating) {

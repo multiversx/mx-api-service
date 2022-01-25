@@ -107,7 +107,7 @@ describe('Account Service', () => {
 
     describe('Get Accounts Raw', () => {
       it(`should return the number of account deployed for address with size 10`, async () => {
-        const accountRaw = await accountService.getAccountsRaw({from: 0, size: 10});
+        const accountRaw = await accountService.getAccountsRaw({ from: 0, size: 10 });
         expect(accountRaw).toBeInstanceOf(Array);
         expect(accountRaw).toHaveLength(10);
 
@@ -117,7 +117,7 @@ describe('Account Service', () => {
       });
 
       it(`should return the number of account deployed for address with size 50`, async () => {
-        const accountRaw = await accountService.getAccountsRaw({from: 0, size: 50});
+        const accountRaw = await accountService.getAccountsRaw({ from: 0, size: 50 });
         expect(accountRaw).toBeInstanceOf(Array);
         expect(accountRaw).toHaveLength(50);
 
@@ -144,14 +144,14 @@ describe('Account Service', () => {
 
   describe('Get Account Contracts', () => {
     it(`should return accounts contracts`, async () => {
-      const accountRaw = await accountService.getAccountContracts({from: 0, size: 10}, accountAddress);
+      const accountRaw = await accountService.getAccountContracts({ from: 0, size: 10 }, accountAddress);
 
       for (const account of accountRaw) {
         expect(account).toBeInstanceOf(Array);
       }
     });
     it(`should return accounts contracts with size 50`, async () => {
-      const accountRaw = await accountService.getAccountContracts({from: 0, size: 10}, accountAddress);
+      const accountRaw = await accountService.getAccountContracts({ from: 0, size: 10 }, accountAddress);
 
       for (const account of accountRaw) {
         expect(account).toBeInstanceOf(Array);
@@ -160,7 +160,7 @@ describe('Account Service', () => {
     });
 
     it(`should return accounts contracts with properties`, async () => {
-      const accountRaw = await accountService.getAccountContracts({from: 0, size: 10}, accountAddress);
+      const accountRaw = await accountService.getAccountContracts({ from: 0, size: 10 }, accountAddress);
 
       for (const account of accountRaw) {
         expect(account).toHaveProperty('address');

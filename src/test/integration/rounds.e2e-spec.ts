@@ -5,7 +5,7 @@ import { RoundService } from "src/endpoints/rounds/round.service";
 import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 import Initializer from "./e2e-init";
-import {RoundDetailed} from "../../endpoints/rounds/entities/round.detailed";
+import { RoundDetailed } from "../../endpoints/rounds/entities/round.detailed";
 
 describe('Rounds Service', () => {
   let roundService: RoundService;
@@ -50,24 +50,24 @@ describe('Rounds Service', () => {
 
   describe('Get Round Count', () => {
     it('should return round count based on filter', async () => {
-      const countValue: Number = new Number (await roundService.getRoundCount(new RoundFilter()));
+      const countValue: Number = new Number(await roundService.getRoundCount(new RoundFilter()));
       expect(countValue).toBeInstanceOf(Number);
     });
   });
 
   describe('Get Round', () => {
     it('should return round with filers: shard and round', async () => {
-      const roundValue = await roundService.getRound(1,10);
+      const roundValue = await roundService.getRound(1, 10);
       expect(roundValue).toBeInstanceOf(Object);
     });
 
     it('verify if round contain signers ', async () => {
-      const roundValue = await roundService.getRound(1,10);
+      const roundValue = await roundService.getRound(1, 10);
       expect(roundValue).toHaveProperty('signers');
     });
 
     it('all entities should have roundDetailed structure', async () => {
-      const roundValue = await roundService.getRound(1,10);
+      const roundValue = await roundService.getRound(1, 10);
       expect(roundValue).toHaveStructure(Object.keys(new RoundDetailed()));
     });
   });

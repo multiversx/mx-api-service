@@ -1,12 +1,12 @@
 import Initializer from "./e2e-init";
-import {Test} from "@nestjs/testing";
-import {PublicAppModule} from "../../public.app.module";
-import {Constants} from "../../utils/constants";
-import {NftThumbnailService} from "../../queue.worker/nft.worker/queue/job-services/thumbnails/nft.thumbnail.service";
-import {NftService} from "../../endpoints/nfts/nft.service";
-import {NftFilter} from "../../endpoints/nfts/entities/nft.filter";
-import {Nft} from "../../endpoints/nfts/entities/nft";
-import {QueueWorkerModule} from "../../queue.worker/queue.worker.module";
+import { Test } from "@nestjs/testing";
+import { PublicAppModule } from "../../public.app.module";
+import { Constants } from "../../utils/constants";
+import { NftThumbnailService } from "../../queue.worker/nft.worker/queue/job-services/thumbnails/nft.thumbnail.service";
+import { NftService } from "../../endpoints/nfts/nft.service";
+import { NftFilter } from "../../endpoints/nfts/entities/nft.filter";
+import { Nft } from "../../endpoints/nfts/entities/nft";
+import { QueueWorkerModule } from "../../queue.worker/queue.worker.module";
 import {
   GenerateThumbnailResult,
 } from "../../queue.worker/nft.worker/queue/job-services/thumbnails/entities/generate.thumbnail.result";
@@ -26,7 +26,7 @@ describe('Nft Queue Service', () => {
     nftQueueService = moduleRef.get<NftThumbnailService>(NftThumbnailService);
     nftService = moduleRef.get<NftService>(NftService);
 
-    const nfts = await nftService.getNfts({from: 0, size: 1}, new NftFilter());
+    const nfts = await nftService.getNfts({ from: 0, size: 1 }, new NftFilter());
     expect(nfts).toHaveLength(1);
 
   }, Constants.oneHour() * 1000);

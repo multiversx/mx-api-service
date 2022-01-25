@@ -1,8 +1,8 @@
 import Initializer from "./e2e-init";
-import {Test} from "@nestjs/testing";
-import {PublicAppModule} from "../../public.app.module";
-import {Constants} from "../../utils/constants";
-import {BlsService} from "../../endpoints/bls/bls.service";
+import { Test } from "@nestjs/testing";
+import { PublicAppModule } from "../../public.app.module";
+import { Constants } from "../../utils/constants";
+import { BlsService } from "../../endpoints/bls/bls.service";
 
 describe('Bls Service', () => {
   let blsService: BlsService;

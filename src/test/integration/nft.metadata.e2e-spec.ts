@@ -1,13 +1,13 @@
 import Initializer from "./e2e-init";
-import {Test} from "@nestjs/testing";
-import {PublicAppModule} from "../../public.app.module";
-import {QueueWorkerModule} from "../../queue.worker/queue.worker.module";
-import {Constants} from "../../utils/constants";
-import {NftMetadataService} from "../../queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.service";
-import {Nft} from "../../endpoints/nfts/entities/nft";
-import {NftFilter} from "../../endpoints/nfts/entities/nft.filter";
-import {NftService} from "../../endpoints/nfts/nft.service";
-import {NftType} from "../../endpoints/nfts/entities/nft.type";
+import { Test } from "@nestjs/testing";
+import { PublicAppModule } from "../../public.app.module";
+import { QueueWorkerModule } from "../../queue.worker/queue.worker.module";
+import { Constants } from "../../utils/constants";
+import { NftMetadataService } from "../../queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.service";
+import { Nft } from "../../endpoints/nfts/entities/nft";
+import { NftFilter } from "../../endpoints/nfts/entities/nft.filter";
+import { NftService } from "../../endpoints/nfts/nft.service";
+import { NftType } from "../../endpoints/nfts/entities/nft.type";
 
 describe('Nft Metadata Service', () => {
   let nftMetadataService: NftMetadataService;
@@ -24,7 +24,7 @@ describe('Nft Metadata Service', () => {
     nftMetadataService = moduleRef.get<NftMetadataService>(NftMetadataService);
     nftService = moduleRef.get<NftService>(NftService);
 
-    const nfts = await nftService.getNfts({from: 0, size: 1}, new NftFilter());
+    const nfts = await nftService.getNfts({ from: 0, size: 1 }, new NftFilter());
     expect(nfts).toHaveLength(1);
 
     const nft = nfts[0];

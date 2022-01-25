@@ -1,8 +1,8 @@
 import Initializer from "./e2e-init";
-import {Test} from "@nestjs/testing";
-import {PublicAppModule} from "../../public.app.module";
-import {Constants} from "../../utils/constants";
-import {NetworkService} from "../../endpoints/network/network.service";
+import { Test } from "@nestjs/testing";
+import { PublicAppModule } from "../../public.app.module";
+import { Constants } from "../../utils/constants";
+import { NetworkService } from "../../endpoints/network/network.service";
 
 describe('Network Service', () => {
   let networkService: NetworkService;
@@ -70,12 +70,12 @@ describe('Network Service', () => {
       const returnEconomics = await networkService.getEconomics();
       expect(returnEconomics).toHaveProperty('totalSupply');
       expect(returnEconomics).toHaveProperty('circulatingSupply');
-    //  expect(returnEconomics).toHaveProperty('marketCap');
+      //  expect(returnEconomics).toHaveProperty('marketCap');
       expect(returnEconomics).toHaveProperty('apr');
       expect(returnEconomics).toHaveProperty('baseApr');
       expect(returnEconomics).toHaveProperty('staked');
       expect(returnEconomics).toHaveProperty('topUpApr');
-    //  expect(returnEconomics).toHaveProperty('price');
+      //  expect(returnEconomics).toHaveProperty('price');
 
 
     });

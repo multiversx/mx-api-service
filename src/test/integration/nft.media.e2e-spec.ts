@@ -1,12 +1,12 @@
-import {NftService} from "../../endpoints/nfts/nft.service";
+import { NftService } from "../../endpoints/nfts/nft.service";
 import Initializer from "./e2e-init";
-import {Test} from "@nestjs/testing";
-import {PublicAppModule} from "../../public.app.module";
-import {NftFilter} from "../../endpoints/nfts/entities/nft.filter";
-import {Constants} from "../../utils/constants";
-import {NftMediaService} from "../../queue.worker/nft.worker/queue/job-services/media/nft.media.service";
-import {Nft} from "../../endpoints/nfts/entities/nft";
-import {QueueWorkerModule} from "../../queue.worker/queue.worker.module";
+import { Test } from "@nestjs/testing";
+import { PublicAppModule } from "../../public.app.module";
+import { NftFilter } from "../../endpoints/nfts/entities/nft.filter";
+import { Constants } from "../../utils/constants";
+import { NftMediaService } from "../../queue.worker/nft.worker/queue/job-services/media/nft.media.service";
+import { Nft } from "../../endpoints/nfts/entities/nft";
+import { QueueWorkerModule } from "../../queue.worker/queue.worker.module";
 
 
 describe('Nft Media Service', () => {
@@ -25,7 +25,7 @@ describe('Nft Media Service', () => {
     nftMediaService = moduleRef.get<NftMediaService>(NftMediaService);
     nftService = moduleRef.get<NftService>(NftService);
 
-    const nfts = await nftService.getNfts({from: 0, size: 1}, new NftFilter());
+    const nfts = await nftService.getNfts({ from: 0, size: 1 }, new NftFilter());
     expect(nfts).toHaveLength(1);
 
     const nft = nfts[0];

@@ -18,23 +18,23 @@ describe('WaitingListService', () => {
   }, Constants.oneHour() * 1000);
 
   describe('Waiting List', () => {
-      it('should return a list of waiting lists', async () => {
-        const getList = await waitingListService.getWaitingList();
-        expect(getList).toBeInstanceOf(Array);
-      });
+    it('should return a list of waiting lists', async () => {
+      const getList = await waitingListService.getWaitingList();
+      expect(getList).toBeInstanceOf(Array);
+    });
   });
 
   describe('Waiting List For Address', () => {
-      it('should return a list of waitings for a specified address ', async () => {
-        const getAddress = await waitingListService.getWaitingListForAddress(waitingListAddress);
-        expect(getAddress).toBeInstanceOf(Array);
-      });
+    it('should return a list of waitings for a specified address ', async () => {
+      const getAddress = await waitingListService.getWaitingListForAddress(waitingListAddress);
+      expect(getAddress).toBeInstanceOf(Array);
+    });
   });
 
   describe('Waiting List Count', () => {
-      it('should return count of lists', async () => {
-        const gatWaitingList: Number = new Number(await waitingListService.getWaitingListCount());
-        expect(gatWaitingList).toBeInstanceOf(Number);
-      });
+    it('should return count of lists', async () => {
+      const gatWaitingList: Number = new Number(await waitingListService.getWaitingListCount());
+      expect(gatWaitingList).toBeInstanceOf(Number);
+    });
   });
 });
