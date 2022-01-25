@@ -44,17 +44,19 @@ describe('Shard Service', () => {
     });
 
     describe('Get Shards', () => {
-      it('should return a list of shards based on queryPagination size 1', async () => {
-        const shardsValue = await shardService.getShards({ from: 0, size: 1 });
-        expect(shardsValue).toBeInstanceOf(Array);
+      it('should return one shard based on queryPagination size 1', async () => {
+        const shards = await shardService.getShards({ from: 0, size: 1 });
+        expect(shards).toBeInstanceOf(Array);
+        expect(shards.length).toBe(1);
       });
-      it('should return a list of shards based on queryPagination size 10', async () => {
-        const shardsValue = await shardService.getShards({ from: 0, size: 10 });
-        expect(shardsValue).toBeInstanceOf(Array);
+      it('should return a list of shards based on queryPagination size 4', async () => {
+        const shards = await shardService.getShards({ from: 0, size: 4 });
+        expect(shards).toBeInstanceOf(Array);
+        expect(shards.length).toBe(4);
       });
       it('all shards should have shard, validators and activeValidators', async () => {
-        const shardsValue = await shardService.getShards({ from: 0, size: 1 });
-        for (const shard of shardsValue) {
+        const shards = await shardService.getShards({ from: 0, size: 1 });
+        for (const shard of shards) {
           expect(shard).toHaveProperty('shard');
           expect(shard).toHaveProperty('validators');
           expect(shard).toHaveProperty('activeValidators');
