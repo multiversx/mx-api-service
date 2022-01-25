@@ -297,6 +297,18 @@ export class TransactionService {
         transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransactionLogs(transactionDetailed.txHash, transactionLogs);
 
         transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.operations);
+
+        for (const log of transactionLogsFromElastic) {
+          if (log._id === transactionDetailed.txHash) {
+            transactionDetailed.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
+          }
+          else {
+            const foundScResult = transactionDetailed.results.find(({ hash }) => log._id === hash);
+            if (foundScResult) {
+              foundScResult.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
+            }
+          }
+        }
       }
 
       detailedTransactions.push(transactionDetailed);
