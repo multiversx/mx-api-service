@@ -234,7 +234,7 @@ export class IdentitiesService {
     });
 
     identities = identities
-      .filter((identity) => identity && identity.locked !== '0');
+      .filter((identity) => identity && (identity.validators ?? 0) > 0);
 
     identities.sort((a, b) => {
       const aSort = a && a.locked && a.locked !== '0' ? parseInt(a.locked.slice(0, -18)) : 0;
