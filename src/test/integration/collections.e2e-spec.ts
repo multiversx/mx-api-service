@@ -115,5 +115,13 @@ describe('Collection Service', () => {
       expect(typeof count).toBe('number');
     });
   });
+
+  describe('Get NFT Collection', () => {
+    it(`should return nft collection`, async () => {
+     const collection = await collectionService.getNftCollection(NftCollection);
+     expect(collection).toBeInstanceOf(Object);
+     expect(collection?.owner).toBeDefined();
+    });
+  });
 });
 
