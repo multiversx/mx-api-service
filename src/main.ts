@@ -130,11 +130,11 @@ async function bootstrap() {
     const queueWorkerApp = await NestFactory.createMicroservice<MicroserviceOptions>(NftQueueModule, {
       transport: Transport.RMQ,
       options: {
-        urls: [`amqp://${apiConfigService.getRabbitmqUrl()}:5672`],
+        urls: [apiConfigService.getRabbitmqUrl()],
         queue: 'process-nfts',
         noAck: false,
         queueOptions: {
-          durable: false,
+          durable: true,
         },
       },
     });

@@ -21,11 +21,11 @@ import { NftThumbnailModule } from './queue/job-services/thumbnails/nft.thumbnai
         return ClientProxyFactory.create({
           transport: Transport.RMQ,
           options: {
-            urls: [`amqp://${configService.getRabbitmqUrl()}:5672`],
+            urls: [configService.getRabbitmqUrl()],
             queue: 'process-nfts',
             noAck: false,
             queueOptions: {
-              durable: false,
+              durable: true,
             },
           },
         });
