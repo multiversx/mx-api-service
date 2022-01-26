@@ -6,6 +6,10 @@ REST API facade facilitating the interactions with the Elrond blockchain.
 2. Optionally make edits to `config.yaml` or create `config.custom.yaml`
 3. Run `npm run init` in the project directory (to create default plugins structure)
 
+You can run `docker-compose up` in a separate terminal to use a local Docker container for all these dependencies.
+
+After running the sample, you can stop the Docker container with `docker-compose down`.
+
 ## Dependencies
 
 1. Redis Server is required to be installed [docs](https://redis.io/).
