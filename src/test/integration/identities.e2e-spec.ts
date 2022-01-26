@@ -54,7 +54,7 @@ describe('Identities Service', () => {
 
     it('should distribution sum be 1', async () => {
       for (const identity of identities) {
-        if (identity.distribution) {
+        if (identity.distribution && Object.keys(identity.distribution).length > 0) {
           let sum = 0;
           for (const distribution of Object.values(identity.distribution)) {
             sum += distribution;
