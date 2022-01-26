@@ -27,14 +27,20 @@ export class NftCronService {
     }
 
     await Locker.lock('Process NFTs minted in the last 24 hours', async () => {
+      let totalProcessedNfts = 0;
+
       await this.processNftsFromLast24Hours(async nft => {
         const needsProcessing = await this.nftWorkerService.needsProcessing(nft, new ProcessNftSettings());
         if (needsProcessing) {
           await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
+
+          totalProcessedNfts++;
         }
 
         return needsProcessing;
       });
+
+      this.logger.log(`Total processed NFTs: ${totalProcessedNfts}`);
     }, true);
   }
 
