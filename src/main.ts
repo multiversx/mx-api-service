@@ -135,6 +135,7 @@ async function bootstrap() {
         noAck: false,
         queueOptions: {
           durable: true,
+          'x-single-active-consumer': true,
         },
       },
     });

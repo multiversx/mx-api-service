@@ -26,6 +26,7 @@ import { NftThumbnailModule } from './queue/job-services/thumbnails/nft.thumbnai
             noAck: false,
             queueOptions: {
               durable: true,
+              'x-single-active-consumer': true,
             },
           },
         });
