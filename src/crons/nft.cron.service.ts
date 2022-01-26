@@ -20,7 +20,7 @@ export class NftCronService {
     this.logger = new Logger(NftCronService.name);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_HOUR)
   async triggerProcessNftsForLast24Hours() {
     if (!this.apiConfigService.getIsProcessNftsFlagActive()) {
       return;
