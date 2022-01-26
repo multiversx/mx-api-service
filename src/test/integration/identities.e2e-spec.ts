@@ -15,6 +15,9 @@ describe('Identities Service', () => {
   let identities: Identity[];
   let providers: Provider[];
 
+  const identifier: string = 'mapleleafnetwork';
+  const ids: string[] = ['justminingfr', 'staking_agency', 'istari_vision'];
+
   beforeAll(async () => {
     await Initializer.initialize();
 
@@ -25,11 +28,12 @@ describe('Identities Service', () => {
     identityService = publicAppModule.get<IdentitiesService>(IdentitiesService);
     providerService = publicAppModule.get<ProviderService>(ProviderService);
     apiConfigService = publicAppModule.get<ApiConfigService>(ApiConfigService);
+
     identities = await identityService.getAllIdentities();
     providers = await providerService.getProvidersWithStakeInformation();
   }, Constants.oneHour() * 1000);
 
-  describe.only('Identities', () => {
+  describe('Identities', () => {
     it('all identities should have provider stake, topUp and locked', async () => {
       for (const identity of identities) {
         expect(identity).toHaveProperty('stake');
@@ -80,6 +84,37 @@ describe('Identities Service', () => {
           }
         }
       }
+    });
+  });
+
+  describe('Get All Identities Raw', () => {
+    it('should return all identities raw', async () => {
+      const results = await identityService.getAllIdentitiesRaw();
+      expect(results).toContainEqual(expect.objectContaining({identity: expect.any(String)}));
+    });
+  });
+
+  describe('Get Identity', () => {
+    it('should return identity based on identifier', async () => {
+      const identity = await identityService.getIdentity(identifier);
+      expect(identity).toBeInstanceOf(Object);
+    });
+    it('identifier should contain Identity properties', async () => {
+      const identity = await identityService.getIdentity(identifier);
+      expect(identity).toHaveProperty('identity');
+      expect(identity).toHaveProperty('avatar');
+    });
+    it('should return undefined', async () => {
+      const identity = await identityService.getIdentity('');
+      expect(identity).toBeUndefined();
+    });
+  });
+
+  describe('Get Identities', () => {
+    it('should return a list of identities based on ids', async () => {
+      const results = await identityService.getIdentities(ids);
+      expect(results.length).toEqual(3);
+      expect(results).toBeInstanceOf(Array);
     });
   });
 });
