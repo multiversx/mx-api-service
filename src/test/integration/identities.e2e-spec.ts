@@ -55,14 +55,18 @@ describe('Identities Service', () => {
       }
     });
 
-    it('should distribution sum be 0 or greater', async () => {
+    it('should distribution sum be 1', async () => {
       for (const identity of identities) {
         if (identity.distribution) {
-          let sum = 0;
-          for (const distribution of Object.values(identity.distribution)) {
-            sum += distribution;
+          const distributionValues = Object.values(identity.distribution).filter(x => x !== null);
+          if (distributionValues.length > 0) {
+            let sum = 0;
+            for (const distribution of distributionValues) {
+              sum += distribution;
+            }
+
+            expect(sum).toStrictEqual(1);
           }
-          expect(sum).toBeGreaterThanOrEqual(0);
         }
       }
     });
