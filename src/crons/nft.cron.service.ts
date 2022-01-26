@@ -9,7 +9,7 @@ import { Constants } from "src/utils/constants";
 import { Locker } from "src/utils/locker";
 
 @Injectable()
-export class ProcessingTriggerService {
+export class NftCronService {
   private readonly logger: Logger;
 
   constructor(
@@ -17,10 +17,10 @@ export class ProcessingTriggerService {
     private readonly nftService: NftService,
     private readonly apiConfigService: ApiConfigService,
   ) {
-    this.logger = new Logger(ProcessingTriggerService.name);
+    this.logger = new Logger(NftCronService.name);
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_MINUTE)
   async triggerProcessNftsForLast24Hours() {
     if (!this.apiConfigService.getIsProcessNftsFlagActive()) {
       return;
