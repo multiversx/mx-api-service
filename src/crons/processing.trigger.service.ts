@@ -20,7 +20,7 @@ export class ProcessingTriggerService {
     this.logger = new Logger(ProcessingTriggerService.name);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_HOUR)
   async triggerProcessNftsForLast24Hours() {
     if (!this.apiConfigService.getIsProcessNftsFlagActive()) {
       return;
