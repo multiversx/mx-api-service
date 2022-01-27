@@ -49,6 +49,9 @@ export class NftThumbnailService {
         .seek(seek)
         .takeFrames(1)
         .saveToFile(outputPath)
+        .on('start', (commandLine) => {
+          console.log('Spawned ffmpeg with command: ' + commandLine);
+        })
         .on('end', () => {
           resolve(true);
         });
