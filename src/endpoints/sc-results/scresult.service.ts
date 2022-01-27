@@ -22,6 +22,7 @@ export class SmartContractResultService {
     if (address) {
       shouldQueries.push(QueryType.Match('sender', address));
       shouldQueries.push(QueryType.Match('receiver', address));
+      shouldQueries.push(QueryType.Match('receivers', address));
     }
 
     const elasticQuery = ElasticQuery.create()
