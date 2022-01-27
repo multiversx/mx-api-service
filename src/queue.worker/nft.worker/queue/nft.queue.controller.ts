@@ -5,6 +5,7 @@ import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { NftMessage } from "./entities/nft.message";
 import { NftMediaService } from "./job-services/media/nft.media.service";
 import { NftMetadataService } from "./job-services/metadata/nft.metadata.service";
+import { GenerateThumbnailResult } from "./job-services/thumbnails/entities/generate.thumbnail.result";
 import { NftThumbnailService } from "./job-services/thumbnails/nft.thumbnail.service";
 
 @Controller()
@@ -55,12 +56,17 @@ export class NftQueueController {
   }
 
   private async generateThumbnail(nft: Nft, media: NftMedia, forceRefresh: boolean = false): Promise<void> {
+    let result: GenerateThumbnailResult;
     try {
-      await this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType, forceRefresh);
+      result = await this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType, forceRefresh);
     } catch (error) {
       this.logger.error(`An unhandled exception occurred when generating thumbnail for nft with identifier '${nft.identifier}' and url '${media.url}'`);
       this.logger.error(error);
       throw error;
+    }
+
+    if (result === GenerateThumbnailResult.couldNotExtractThumbnail) {
+      throw new Error(`Could not extract thumbnail for for nft with identifier '${nft.identifier}' and url '${media.url}'`);
     }
   }
 }
