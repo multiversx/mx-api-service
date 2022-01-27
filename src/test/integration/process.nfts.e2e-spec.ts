@@ -9,7 +9,7 @@ import { ProcessNftsModule } from "../../endpoints/process-nfts/process.nfts.mod
 describe('Process NFTs Service', () => {
   let processNftService: ProcessNftsService;
 
-  const nftIdentifier: string = 'EGLDRIDEFL-74b819-042191';
+  const nftIdentifier: string = 'EWIZZ-1e8ddb-021c';
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -21,9 +21,10 @@ describe('Process NFTs Service', () => {
 
   }, Constants.oneHour() * 1000);
 
-  describe('Process NFT', () => {
-    it('should process NFT and return true ', async () => {
+  describe.only('Process NFT', () => {
+    it('should return true if nft is process ', async () => {
       const nftSettings = new ProcessNftSettings();
+      nftSettings.forceRefreshMedia = true;
       const process = await processNftService.processNft(nftIdentifier, nftSettings);
       expect(process).toBeTruthy();
     });
