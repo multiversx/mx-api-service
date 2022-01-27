@@ -37,6 +37,15 @@ export class ApiConfigService {
     return elasticUrls[Math.floor(Math.random() * elasticUrls.length)];
   }
 
+  getElasticV2Url(): string {
+    const elasticUrls = this.configService.get<string[]>('urls.elastic-v2');
+    if (!elasticUrls) {
+      throw new Error('No elastic-v2 urls present');
+    }
+
+    return elasticUrls[Math.floor(Math.random() * elasticUrls.length)];
+  }
+
   getMexUrl(): string {
     const mexUrls = this.configService.get<string>('urls.mex');
     if (mexUrls) {

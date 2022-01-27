@@ -34,6 +34,8 @@ urls:
     - 'https://api.elrond.com'
   elastic:
     - 'https://devnet-index.elrond.com'
+  elastic-v2:
+    - ''
   gateway:
     - 'https://devnet-gateway.elrond.com'
   redis: '127.0.0.1'

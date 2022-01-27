@@ -35,6 +35,8 @@ urls:
     - 'https://testnet-api.elrond.com'
   elastic:
     - 'https://index.elrond.com'
+  elastic-v2:
+    - ''
   mex:
     - 'https://mex-indexer.elrond.com'
   gateway:
