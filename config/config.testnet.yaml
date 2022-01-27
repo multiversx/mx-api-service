@@ -17,6 +17,7 @@ flags:
   useRequestLogging: false
   useVmQueryTracing: false
   processNfts: true
+  indexer-v2: true
 image:
   width: 600
   height: 600

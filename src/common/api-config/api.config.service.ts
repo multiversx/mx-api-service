@@ -260,6 +260,10 @@ export class ApiConfigService {
     return this.configService.get<boolean>('flags.processNfts') ?? false;
   }
 
+  getIsIndexerV2FlagActive(): boolean {
+    return this.configService.get<boolean>('flags.indexer-v2') ?? false;
+  }
+
   getIsPublicApiActive(): boolean {
     const isApiActive = this.configService.get<boolean>('api.public');
     if (isApiActive === undefined) {
