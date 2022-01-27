@@ -67,7 +67,6 @@ describe('Token Transfer Service', () => {
 				const properties = await tokenTransferService.getTokenTransferProperties(tokenIdentifier);
 				expect(properties?.type).toBe('FungibleESDT');
 				expect(properties?.name).toBe('holoride');
-				expect(properties?.ticker).toBe('RIDE');
 				expect(properties?.token).toBe('RIDE-7d18e9');
 				expect(properties?.decimals).toBe(18);
 			});
