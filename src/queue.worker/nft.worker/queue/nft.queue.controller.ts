@@ -22,31 +22,34 @@ export class NftQueueController {
   @MessagePattern({ cmd: 'process-nfts' })
   async onNftCreated(@Payload() data: NftMessage, @Ctx() context: RmqContext) {
     this.logger.log({ type: 'consumer start', identifier: data.identifier });
-
-    const nft = data.nft;
-    const settings = data.settings;
-
-    nft.metadata = await this.nftMetadataService.getMetadata(nft);
-
-    if (settings.forceRefreshMetadata || !nft.metadata) {
-      nft.metadata = await this.nftMetadataService.refreshMetadata(nft);
-    }
-
-    nft.media = await this.nftMediaService.getMedia(nft) ?? undefined;
-
-    if (settings.forceRefreshMedia || !nft.media) {
-      nft.media = await this.nftMediaService.refreshMedia(nft);
-    }
-
-    if (nft.media && !settings.skipRefreshThumbnail) {
-      await Promise.all(nft.media.map((media: any) => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
-    }
-
     const channel = context.getChannelRef();
-    const originalMsg = context.getMessage();
+    const message = context.getMessage();
 
-    this.logger.log({ type: 'consumer end', identifier: data.identifier });
-    channel.ack(originalMsg);
+    try {
+      const nft = data.nft;
+      const settings = data.settings;
+
+      nft.metadata = await this.nftMetadataService.getMetadata(nft);
+
+      if (settings.forceRefreshMetadata || !nft.metadata) {
+        nft.metadata = await this.nftMetadataService.refreshMetadata(nft);
+      }
+
+      nft.media = await this.nftMediaService.getMedia(nft) ?? undefined;
+
+      if (settings.forceRefreshMedia || !nft.media) {
+        nft.media = await this.nftMediaService.refreshMedia(nft);
+      }
+
+      if (nft.media && !settings.skipRefreshThumbnail) {
+        await Promise.all(nft.media.map((media: any) => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
+      }
+
+      this.logger.log({ type: 'consumer end', identifier: data.identifier });
+      channel.ack(message);
+    } catch (error) {
+      channel.reject(message, false);
+    }
   }
 
   private async generateThumbnail(nft: Nft, media: NftMedia, forceRefresh: boolean = false): Promise<void> {

@@ -29,6 +29,7 @@ import { NftThumbnailModule } from './queue/job-services/thumbnails/nft.thumbnai
               arguments: {
                 'x-single-active-consumer': true,
               },
+              deadLetterRoutingKey: 'process-nfts-dlq',
             },
           },
         });

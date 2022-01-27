@@ -138,6 +138,7 @@ async function bootstrap() {
           arguments: {
             'x-single-active-consumer': true,
           },
+          deadLetterRoutingKey: 'process-nfts-dlq',
         },
       },
     });
