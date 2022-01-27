@@ -44,7 +44,7 @@ export class NftThumbnailService {
   }
 
   private async getScreenshot(videoPath: string, seek: number, outputPath: string): Promise<void> {
-    await new Promise(resolve => {
+    await new Promise((resolve, reject) => {
       ffmpeg(videoPath)
         .seek(seek)
         .takeFrames(1)
@@ -52,11 +52,12 @@ export class NftThumbnailService {
         .on('start', (commandLine) => {
           this.logger.log('Spawned ffmpeg with command: ' + commandLine);
         })
-        .on('error', (err, stdout, stderr) => {
+        .on('error', (error, stdout, stderr) => {
           this.logger.error(`An unhandled exception occurred when taking a screenshot from video path '${videoPath}'`);
-          this.logger.error(err);
+          this.logger.error(error);
           this.logger.error(stdout);
           this.logger.error(stderr);
+          reject(error);
         })
         .on('end', () => {
           resolve(true);
