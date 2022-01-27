@@ -11,7 +11,7 @@ services:
     environment:
       - REDIS_REPLICATION_MODE=master
 
-  database:
+  sqldatabase:
     image: "mysql:latest"
 
     ports:
