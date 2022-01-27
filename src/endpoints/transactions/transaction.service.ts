@@ -55,6 +55,7 @@ export class TransactionService {
     if (address) {
       shouldQueries.push(QueryType.Match('sender', address));
       shouldQueries.push(QueryType.Match('receiver', address));
+      shouldQueries.push(QueryType.Match('receivers', address));
     }
 
     if (filter.sender) {
@@ -108,6 +109,8 @@ export class TransactionService {
       elasticQuery = elasticQuery
         .withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
     }
+
+    console.log(elasticQuery.toJson().query.bool.should);
 
     return elasticQuery;
   }
