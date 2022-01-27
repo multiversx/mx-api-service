@@ -19,7 +19,7 @@ export class NftQueueController {
     this.logger = new Logger(NftQueueController.name);
   }
 
-  @MessagePattern({ cmd: 'process-nfts' })
+  @MessagePattern({ cmd: 'api-process-nfts' })
   async onNftCreated(@Payload() data: NftMessage, @Ctx() context: RmqContext) {
     this.logger.log({ type: 'consumer start', identifier: data.identifier });
     const channel = context.getChannelRef();
@@ -48,6 +48,8 @@ export class NftQueueController {
       this.logger.log({ type: 'consumer end', identifier: data.identifier });
       channel.ack(message);
     } catch (error) {
+      this.logger.error(`Unexpected error when processing NFT with identifier '${data.identifier}'`);
+      this.logger.error(error);
       channel.reject(message, false);
     }
   }

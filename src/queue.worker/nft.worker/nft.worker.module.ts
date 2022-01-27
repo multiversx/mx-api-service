@@ -22,14 +22,14 @@ import { NftThumbnailModule } from './queue/job-services/thumbnails/nft.thumbnai
           transport: Transport.RMQ,
           options: {
             urls: [configService.getRabbitmqUrl()],
-            queue: 'process-nfts',
+            queue: 'api-process-nfts',
             noAck: false,
             queueOptions: {
               durable: true,
               arguments: {
                 'x-single-active-consumer': true,
               },
-              deadLetterRoutingKey: 'process-nfts-dlq',
+              deadLetterExchange: 'api-process-nfts-dlq',
             },
           },
         });

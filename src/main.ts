@@ -131,14 +131,14 @@ async function bootstrap() {
       transport: Transport.RMQ,
       options: {
         urls: [apiConfigService.getRabbitmqUrl()],
-        queue: 'process-nfts',
+        queue: 'api-process-nfts',
         noAck: false,
         queueOptions: {
           durable: true,
           arguments: {
             'x-single-active-consumer': true,
           },
-          deadLetterRoutingKey: 'process-nfts-dlq',
+          deadLetterExchange: 'api-process-nfts-dlq',
         },
       },
     });
