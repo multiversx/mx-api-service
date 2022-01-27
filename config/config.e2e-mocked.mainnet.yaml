@@ -24,6 +24,7 @@ urls:
   gateway:
     - 'https://gateway.elrond.com'
   redis: '127.0.0.1'
+  rabbitmq: 'amqp://127.0.0.1:5672'
   providers: 'https://internal-delegation-api.elrond.com/providers'
   media: 'https://media.elrond.com'
   nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'

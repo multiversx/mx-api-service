@@ -22,6 +22,7 @@ describe('API Config', () => {
   const mediaUrl: string = 'https://media.elrond.com';
   const externalMediaUrl: string = 'https://media.elrond.com';
   const thumbnailsNftUrl: string = 'https://media.elrond.com/nfts/thumbnail';
+  const rabbitMqUrl: string = 'amqp://127.0.0.1:5672';
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -290,6 +291,11 @@ describe('API Config', () => {
       it('should return false with nfts flag not active', async () => {
         const value = apiConfigService.getIsProcessNftsFlagActive();
         expect(value).toBeFalsy();
+      });
+
+      it('should return rabbitMq url', async () => {
+        const value = apiConfigService.getRabbitmqUrl();
+        expect(value).toBe(rabbitMqUrl);
       });
     });
   });
