@@ -98,7 +98,7 @@ export class ElasticService {
     }
 
     const elasticQuery = ElasticQuery.create()
-      .withPagination({ from: 0, size: 25 })
+      .withPagination({ from: 0, size: addresses.length })
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match("address", "pending-")])
       .withCondition(QueryConditionOptions.must, [QueryType.Match('token', identifier, QueryOperator.AND)])
       .withFilter([new RangeQuery("balanceNum", undefined, 0)])
