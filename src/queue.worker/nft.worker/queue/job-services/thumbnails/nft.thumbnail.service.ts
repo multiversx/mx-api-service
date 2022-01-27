@@ -199,7 +199,7 @@ export class NftThumbnailService {
         this.logger.log(`Successfully generated audio thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
         return GenerateThumbnailResult.success;
       } else {
-        this.logger.log(`Thumbnail could not be generated from audio for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+        this.logger.error(`Thumbnail could not be generated from audio for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
         return GenerateThumbnailResult.couldNotExtractThumbnail;
       }
     } else if (ThumbnailType.isImage(fileType)) {
@@ -209,7 +209,7 @@ export class NftThumbnailService {
         this.logger.log(`Successfully generated image thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
         return GenerateThumbnailResult.success;
       } else {
-        this.logger.log(`Thumbnail could not be generated from image for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+        this.logger.error(`Thumbnail could not be generated from image for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
         return GenerateThumbnailResult.couldNotExtractThumbnail;
       }
     } else if (ThumbnailType.isVideo(fileType)) {
@@ -219,7 +219,7 @@ export class NftThumbnailService {
         this.logger.log(`Successfully generated video thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
         return GenerateThumbnailResult.success;
       } else {
-        this.logger.log(`Thumbnail could not be generated from video for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+        this.logger.error(`Thumbnail could not be generated from video for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
         return GenerateThumbnailResult.couldNotExtractThumbnail;
       }
     } else {
