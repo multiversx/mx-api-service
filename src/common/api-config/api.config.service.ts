@@ -121,6 +121,15 @@ export class ApiConfigService {
     return redisUrl;
   }
 
+  getRabbitmqUrl(): string {
+    const rabbitmqUrl = this.configService.get<string>('urls.rabbitmq');
+    if (!rabbitmqUrl) {
+      throw new Error('No rabbitmq url present');
+    }
+
+    return rabbitmqUrl;
+  }
+
   getCacheTtl(): number {
     return this.configService.get<number>('caching.cacheTtl') ?? 6;
   }
