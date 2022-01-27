@@ -44,11 +44,21 @@ export class NftThumbnailService {
   }
 
   private async getScreenshot(videoPath: string, seek: number, outputPath: string): Promise<void> {
-    await new Promise(resolve => {
+    await new Promise((resolve, reject) => {
       ffmpeg(videoPath)
         .seek(seek)
         .takeFrames(1)
         .saveToFile(outputPath)
+        .on('start', (commandLine) => {
+          this.logger.log('Spawned ffmpeg with command: ' + commandLine);
+        })
+        .on('error', (error, stdout, stderr) => {
+          this.logger.error(`An unhandled exception occurred when taking a screenshot from video path '${videoPath}'`);
+          this.logger.error(error);
+          this.logger.error(stdout);
+          this.logger.error(stderr);
+          reject(error);
+        })
         .on('end', () => {
           resolve(true);
         });
@@ -189,7 +199,7 @@ export class NftThumbnailService {
         this.logger.log(`Successfully generated audio thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
         return GenerateThumbnailResult.success;
       } else {
-        this.logger.log(`Thumbnail could not be generated from audio for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+        this.logger.error(`Thumbnail could not be generated from audio for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
         return GenerateThumbnailResult.couldNotExtractThumbnail;
       }
     } else if (ThumbnailType.isImage(fileType)) {
@@ -199,7 +209,7 @@ export class NftThumbnailService {
         this.logger.log(`Successfully generated image thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
         return GenerateThumbnailResult.success;
       } else {
-        this.logger.log(`Thumbnail could not be generated from image for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+        this.logger.error(`Thumbnail could not be generated from image for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
         return GenerateThumbnailResult.couldNotExtractThumbnail;
       }
     } else if (ThumbnailType.isVideo(fileType)) {
@@ -209,7 +219,7 @@ export class NftThumbnailService {
         this.logger.log(`Successfully generated video thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
         return GenerateThumbnailResult.success;
       } else {
-        this.logger.log(`Thumbnail could not be generated from video for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+        this.logger.error(`Thumbnail could not be generated from video for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
         return GenerateThumbnailResult.couldNotExtractThumbnail;
       }
     } else {

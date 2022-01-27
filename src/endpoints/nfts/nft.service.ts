@@ -113,9 +113,14 @@ export class NftService {
       queries.push(QueryType.Should(identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
     }
 
-    const elasticQuery = ElasticQuery.create()
+    let elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, queries)
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('type', 'FungibleESDT')]);
+
+    if (filter.before || filter.after) {
+      elasticQuery = elasticQuery
+        .withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
+    }
 
     return elasticQuery;
   }
