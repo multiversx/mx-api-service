@@ -50,7 +50,13 @@ export class NftThumbnailService {
         .takeFrames(1)
         .saveToFile(outputPath)
         .on('start', (commandLine) => {
-          console.log('Spawned ffmpeg with command: ' + commandLine);
+          this.logger.log('Spawned ffmpeg with command: ' + commandLine);
+        })
+        .on('error', (err, stdout, stderr) => {
+          this.logger.error(`An unhandled exception occurred when taking a screenshot from video path '${videoPath}'`);
+          this.logger.error(err);
+          this.logger.error(stdout);
+          this.logger.error(stderr);
         })
         .on('end', () => {
           resolve(true);
