@@ -36,6 +36,7 @@ urls:
   gateway:
     - 'https://devnet-gateway.elrond.com'
   redis: '127.0.0.1'
+  rabbitmq: 'amqp://127.0.0.1:5672'
   providers: 'https://devnet-delegation.maiarbrowser.com/providers'
   media: 'https://devnet-media.elrond.com'
   nftThumbnails: 'https://devnet-media.elrond.com/nfts/thumbnail'
