@@ -249,7 +249,8 @@ export class TokenService {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withPagination(pagination)
       .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
-      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
+      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)])
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')]);
 
     const tokenAccounts = await this.elasticService.getList("accountsesdt", identifier, elasticQuery);
 
