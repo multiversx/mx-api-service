@@ -110,8 +110,6 @@ export class TransactionService {
         .withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
     }
 
-    console.log(elasticQuery.toJson().query.bool.should);
-
     return elasticQuery;
   }
 
