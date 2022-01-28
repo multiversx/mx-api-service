@@ -14,7 +14,7 @@ describe('Nft Service', () => {
   let nftIdentifier: string;
 
   const nftAddress: string = 'erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl';
-  const nftsIdentifier: string = 'MEXFARM-e7af52-4edf42';
+  const nftsIdentifier: string = 'LKLP-03a2fa-0d270d';
   const invalidIdentifier: string = 'MEXFARM-e7af524edf42';
 
   beforeAll(async () => {
@@ -36,13 +36,13 @@ describe('Nft Service', () => {
   }, Constants.oneHour() * 1000);
 
   describe('Nfts list', () => {
+
     describe('Nfts pagination', () => {
       it(`should return a list with 25 nfts`, async () => {
         const nftsList = await nftService.getNfts(
           { from: 0, size: 25 },
           new NftFilter(),
         );
-
         expect(nftsList).toBeInstanceOf(Array);
         expect(nftsList).toHaveLength(25);
       });
@@ -335,9 +335,6 @@ describe('Nft Service', () => {
   });
 
   describe('Get Nft For Address', () => {
-    it('should return nft based on address', async () => {
-      return expect(nftService.getNftForAddress(nftAddress, nftsIdentifier)).resolves.toBeInstanceOf(Object);
-    });
     it('should return undefined if the address does not contain a specific identifier', async () => {
       const nft = await nftService.getNftForAddress(nftAddress, 'LKMEX-aab910-21c8e1');
       expect(nft).toBeUndefined();
@@ -346,12 +343,11 @@ describe('Nft Service', () => {
 
   describe('Get Nft Owners', () => {
     it('should return nft owners', async () => {
-      const owners = await nftService.getNftOwners(nftsIdentifier, {from: 0, size: 1});
+      const owners = await nftService.getNftOwners('ALIEN-a499ab-0227', {from: 0, size: 1});
       expect(owners).toBeInstanceOf(Array);
     });
-
     it('nft owner has only 1 address', async () => {
-      const owners = await nftService.getNftOwners(nftsIdentifier, {from: 0, size: 1});
+      const owners = await nftService.getNftOwners('ALIEN-a499ab-0227', {from: 0, size: 1});
       expect(owners?.length).toBe(1);
     });
   });
