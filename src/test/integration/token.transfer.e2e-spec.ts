@@ -3,7 +3,7 @@ import {Test} from "@nestjs/testing";
 import {PublicAppModule} from "../../public.app.module";
 import {Constants} from "../../utils/constants";
 import {TokenTransferService} from "../../endpoints/tokens/token.transfer.service";
-import transactionsWithLogs from "../testUtils/apiToken/transactionsWithLogs";
+import transactionsWithLogs from "../mocks/apiToken/transactionsWithLogs";
 
 describe('Token Transfer Service', () => {
 	let tokenTransferService: TokenTransferService;

@@ -8,5 +8,6 @@ const userAccount = {
 	username: "alice.elrond",
 	shard: 0,
 	developerReward: "0",
+	usernameRaw: 'alice'
 };
 export default userAccount;

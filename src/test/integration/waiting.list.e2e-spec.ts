@@ -33,8 +33,8 @@ describe('WaitingListService', () => {
 
   describe('Waiting List Count', () => {
     it('should return count of lists', async () => {
-      const gatWaitingList: Number = new Number(await waitingListService.getWaitingListCount());
-      expect(gatWaitingList).toBeInstanceOf(Number);
+      const gatWaitingList = await waitingListService.getWaitingListCount();
+      expect(typeof gatWaitingList).toBe('number');
     });
   });
 });
