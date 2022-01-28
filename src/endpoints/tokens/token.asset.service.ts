@@ -44,7 +44,7 @@ export class TokenAssetService {
             // Print data
             logger.log(data.toString('utf8'));
           });
-        }).clone('https://github.com/ElrondNetwork/assets.git', localGitPath, undefined, (err, data) => {
+        }).clone('https://github.com/ElrondNetwork/assets.git', localGitPath, undefined, (err) => {
           if (err) {
             reject(err);
           } else {
