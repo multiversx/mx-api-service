@@ -189,6 +189,7 @@ export class TokenTransferService {
       type: properties.type,
       name: properties.name,
       ticker: assets ? identifier.split('-')[0] : identifier,
+      svgUrl: assets ? assets.svgUrl : '',
     };
 
     if (properties.type === 'FungibleESDT') {
