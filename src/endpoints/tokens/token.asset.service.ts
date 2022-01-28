@@ -20,30 +20,38 @@ export class TokenAssetService {
     this.logger = new Logger(TokenAssetService.name);
   }
 
-  async checkout() {
+  async checkout(): Promise<void> {
     const localGitPath = 'dist/repos/assets';
     const logger = this.logger;
-    rimraf(localGitPath, function () {
-      logger.log("done deleting");
+    return new Promise((resolve, reject) => {
+      rimraf(localGitPath, function () {
+        logger.log("done deleting");
 
-      const options: Partial<SimpleGitOptions> = {
-        baseDir: process.cwd(),
-        binary: 'git',
-        maxConcurrentProcesses: 6,
-      };
+        const options: Partial<SimpleGitOptions> = {
+          baseDir: process.cwd(),
+          binary: 'git',
+          maxConcurrentProcesses: 6,
+        };
 
-      // when setting all options in a single object
-      const git: SimpleGit = simpleGit(options);
+        // when setting all options in a single object
+        const git: SimpleGit = simpleGit(options);
 
-      git.outputHandler((_, stdout, stderr) => {
-        stdout.pipe(process.stdout);
-        stderr.pipe(process.stderr);
+        git.outputHandler((_, stdout, stderr) => {
+          stdout.pipe(process.stdout);
+          stderr.pipe(process.stderr);
 
-        stdout.on('data', (data) => {
-          // Print data
-          logger.log(data.toString('utf8'));
+          stdout.on('data', (data) => {
+            // Print data
+            logger.log(data.toString('utf8'));
+          });
+        }).clone('https://github.com/ElrondNetwork/assets.git', localGitPath, undefined, (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
         });
-      }).clone('https://github.com/ElrondNetwork/assets.git', localGitPath);
+      });
     });
   }
 
