@@ -114,8 +114,8 @@ export class NftService {
     }
 
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      if (filter.whitelistedStorage) {
-        queries.push(QueryType.Nested("data", { "data.whiteListedStorage": filter.whitelistedStorage }));
+      if (filter.isWhitelistedStorage !== undefined) {
+        queries.push(QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
       }
     }
 
@@ -340,7 +340,7 @@ export class NftService {
         }
 
         if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-          nft.isWhitelistedStorage = elasticNft.whiteListedStorage;
+          nft.isWhitelistedStorage = elasticNft.data.whiteListedStorage;
         } else {
           nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
         }
