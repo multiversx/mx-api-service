@@ -102,6 +102,7 @@ describe('Scresults Service', () => {
       it(`should return a detailed scresult with hash`, async () => {
         const result = await scresultsService.getScResult(scHash);
         expect(result).toBeDefined();
+        expect(result).toBeInstanceOf(Object);
         expect(result?.hash).toStrictEqual(scHash);
       });
 
