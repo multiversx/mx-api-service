@@ -135,9 +135,9 @@ async function bootstrap() {
         noAck: false,
         queueOptions: {
           durable: true,
-          arguments: {
-            'x-single-active-consumer': true,
-          },
+          // arguments: {
+          //   'x-single-active-consumer': true,
+          // },
           deadLetterExchange: 'api-process-nfts-dlq',
         },
       },
