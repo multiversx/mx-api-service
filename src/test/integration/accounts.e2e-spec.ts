@@ -84,6 +84,13 @@ describe('Account Service', () => {
 
     });
 
+    describe('Deferred Account', () => {
+      it(`should return a list of deferred accounts`, async () => {
+        const account = await accountService.getDeferredAccount(userAccount.address);
+        expect(account).toBeInstanceOf(Array);
+      });
+    });
+
     describe('Account Delegation Legacy', () => {
       it(`should return a delegation legacy for an account with address`, async () => {
         const account = await delegationLegacyService.getDelegationForAddress(userAccount.address);
@@ -124,13 +131,6 @@ describe('Account Service', () => {
         for (const account of accountsRaw) {
           expect(account).toHaveStructure(Object.keys(new Account()));
         }
-      });
-    });
-
-    describe('Deferred Account', () => {
-      it(`should return a list of deferred accounts`, async () => {
-        const account = await accountService.getDeferredAccount(userAccount.address);
-        expect(account).toBeInstanceOf(Array);
       });
     });
 

@@ -1,14 +1,13 @@
-import { AccountService } from "../../endpoints/accounts/account.service";
 import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
 import { Constants } from "../../utils/constants";
 import { MexService } from "../../endpoints/mex/mex.service";
+import userAccount from "../mocks/accounts/userAccount";
+import mex from "../mocks/esdt/token/mexToken";
 
 describe('Mex Service', () => {
   let mexService: MexService;
-  let accountService: AccountService;
-  let accountAddress: string;
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -18,27 +17,47 @@ describe('Mex Service', () => {
     }).compile();
 
     mexService = moduleRef.get<MexService>(MexService);
-    accountService = moduleRef.get<AccountService>(AccountService);
 
-    const accounts = await accountService.getAccounts({ from: 0, size: 1 });
-    expect(accounts).toHaveLength(1);
-
-    const account = accounts[0];
-    accountAddress = account.address;
-  }, Constants.oneHour() * 1000);
+  }, Constants.oneDay() * 1000);
 
 
   describe('Get Mex For Address', () => {
-    it(`should return MexWeek[] for address 'accountAddress' `, async () => {
-      const mexValues = await mexService.getMexForAddress(accountAddress);
-      expect(mexValues).toBeInstanceOf(Array);
+    it(`should return total mex amount for address' `, async () => {
+      const mexValues = await mexService.getMexForAddress(userAccount.address);
+
+      expect(mexValues).toEqual(
+        expect.arrayContaining(
+        [expect.objectContaining({mex: mex[0].mex})]
+      ));
+    });
+
+    it('should return total mex amount per day for address', async () => {
+      const mexValues = await mexService.getMexForAddress(userAccount.address);
+
+      expect(mexValues).toEqual(
+        expect.arrayContaining(
+        [expect.objectContaining({mex: mex[0].days[0].balance})]
+      ));
     });
   });
 
   describe('Get Mex For Address Raw', () => {
-    it(`should return MexWeek[] for address raw 'accountAddress'`, async () => {
-      const mexRaw = await mexService.getMexForAddressRaw(accountAddress);
-      expect(mexRaw).toBeInstanceOf(Array);
+    it(`should return total mex amount for address raw'`, async () => {
+      const mexRaw = await mexService.getMexForAddressRaw(userAccount.address);
+
+      expect(mexRaw).toEqual(
+        expect.arrayContaining(
+          [expect.objectContaining({mex: mex[0].mex})]
+        ));
+    });
+
+    it('should return total mex amount per day for address raw', async () => {
+      const mexRaw = await mexService.getMexForAddressRaw(userAccount.address);
+
+      expect(mexRaw).toEqual(
+        expect.arrayContaining(
+          [expect.objectContaining({mex: mex[0].days[0].balance})]
+        ));
     });
   });
 });

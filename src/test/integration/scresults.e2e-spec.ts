@@ -4,6 +4,7 @@ import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 import { SmartContractResultService } from 'src/endpoints/sc-results/scresult.service';
 import { SmartContractResult } from 'src/endpoints/sc-results/entities/smart.contract.result';
+import smartContractResults from "../mocks/smartcontract/scresults";
 
 describe('Scresults Service', () => {
   let scresultsService: SmartContractResultService;
@@ -30,13 +31,13 @@ describe('Scresults Service', () => {
     it('scresults should have hash, nonce and timestamp', async () => {
       const results = await scresultsService.getScResults({
         from: 0,
-        size: 25,
+        size: 1,
       });
-      for (const result of results) {
-        expect(result).toHaveProperty('hash');
-        expect(result).toHaveProperty('nonce');
-        expect(result).toHaveProperty('timestamp');
-      }
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({hash: smartContractResults[0].hash}),
+        ])
+      );
     });
 
     it(`should return a list with 25 scresults`, async () => {

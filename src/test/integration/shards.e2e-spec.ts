@@ -49,10 +49,10 @@ describe('Shard Service', () => {
         expect(shards).toBeInstanceOf(Array);
         expect(shards.length).toBe(1);
       });
-      it('should return a list of shards based on queryPagination size 4', async () => {
-        const shards = await shardService.getShards({ from: 0, size: 4 });
+      it('should return a list of shards based on queryPagination size 3', async () => {
+        const shards = await shardService.getShards({ from: 0, size: 3 });
         expect(shards).toBeInstanceOf(Array);
-        expect(shards.length).toBe(4);
+        expect(shards.length).toBe(3);
       });
       it('all shards should have shard, validators and activeValidators', async () => {
         const shards = await shardService.getShards({ from: 0, size: 1 });
