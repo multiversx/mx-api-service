@@ -74,3 +74,5 @@ security:
   admins:
   jwtSecret:
   accessAddress:
+nftProcess:
+  parallelism: 1
