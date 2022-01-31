@@ -75,8 +75,10 @@ export class TransactionService {
       queries.push(QueryType.Match('tokens', filter.token, QueryOperator.AND));
     }
 
-    if (filter.function) {
-      queries.push(QueryType.Match('function', filter.function));
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+      if (filter.function) {
+        queries.push(QueryType.Match('function', filter.function));
+      }
     }
 
     if (filter.senderShard !== undefined) {
