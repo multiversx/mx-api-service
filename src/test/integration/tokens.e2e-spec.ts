@@ -108,7 +108,6 @@ describe('Token Service', () => {
       const token = await tokenService.getToken(tokenDetails.identifier);
 
       expect(token?.owner).toEqual(tokensIdentifier.owner);
-      expect(token?.ticker).toEqual(tokensIdentifier.ticker);
       expect(token?.minted).toEqual(tokensIdentifier.minted);
       expect(token?.decimals).toEqual(tokensIdentifier.decimals);
       expect(token?.identifier).toEqual(tokensIdentifier.identifier);
@@ -152,7 +151,6 @@ describe('Token Service', () => {
       if (tokens) {
         expect(tokens.owner).toEqual(tokenDetails.owner);
         expect(tokens.name).toEqual(tokenDetails.name);
-        expect(tokens.ticker).toEqual(tokenDetails.ticker);
         expect(tokens.decimals).toEqual(tokenDetails.decimals);
       }
     });
