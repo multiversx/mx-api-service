@@ -508,4 +508,8 @@ export class ApiConfigService {
 
     return mockPath;
   }
+
+  getNftProcessParallelism(): number {
+    return this.configService.get<number>('nftProcess.parallelism') ?? 0;
+  }
 }
