@@ -30,6 +30,7 @@ import { Constants } from 'src/utils/constants';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { SortOrder } from 'src/common/entities/sort.order';
 import { TransactionUtils } from 'src/utils/transaction.utils';
+import { BinaryUtils } from 'src/utils/binary.utils';
 
 @Injectable()
 export class TransactionService {
@@ -90,7 +91,8 @@ export class TransactionService {
     }
 
     if (filter.search) {
-      queries.push(QueryType.Wildcard('data', `*${filter.search}*`));
+      const search = BinaryUtils.base64Encode(filter.search);
+      queries.push(QueryType.Wildcard('data', `*${search}*`));
     }
 
     if (filter.condition === QueryConditionOptions.should) {
@@ -102,7 +104,6 @@ export class TransactionService {
     let elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.should, shouldQueries)
       .withCondition(QueryConditionOptions.must, mustQueries);
-
 
     if (filter.before || filter.after) {
       elasticQuery = elasticQuery
