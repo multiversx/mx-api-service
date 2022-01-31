@@ -8,6 +8,7 @@ import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 import { TransactionOptionalFieldOption } from 'src/endpoints/transactions/entities/transaction.optional.field.options';
+import transactionDetails from "../mocks/transactions/transactionDetails";
 
 describe('Transaction Service', () => {
   let transactionService: TransactionService;
@@ -210,16 +211,16 @@ describe('Transaction Service', () => {
         expect(hashes.split(',').toString()).not.toStrictEqual(transactionsHashes.toString());
       });
 
-      it(`should return transactions with all token transactions`, async () => {
-        const token = 'QWT-46ac01';
+      it(`should return transaction details`, async () => {
         const transactionFilter = new TransactionFilter();
-        transactionFilter.token = token;
+        transactionFilter.token = transactionDetails.tokenIdentifier;
+        transactionFilter.receiver = transactionDetails.receiver;
 
-
-        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 1 });
         for (const transaction of transactions) {
-          expect(transaction.tokenIdentifier).toBeDefined();
-          expect(transaction.tokenIdentifier).toEqual('QWT-46ac01');
+          expect(transaction).toBeDefined();
+          expect(transaction.txHash).toMatchSnapshot(transactionDetails.txHash);
+          expect(transaction.sender).toMatchSnapshot(transactionDetails.sender);
         }
       });
     });
@@ -227,45 +228,25 @@ describe('Transaction Service', () => {
   });
 
   describe('Transaction count', () => {
-    it(`should return a number`, async () => {
-      const count = await transactionService.getTransactionCount(new TransactionFilter());
+    it(`should return transaction count based on token indentifier`, async () => {
+      const transactionFilter = new TransactionFilter();
+      transactionFilter.token = transactionDetails.tokenIdentifier;
 
+      const count = await transactionService.getTransactionCount(transactionFilter);
       expect(typeof count).toBe('number');
     });
   });
 
   describe('Specific transaction', () => {
     it(`should return a transaction for a specific hash`, async () => {
-      const transaction = await transactionService.getTransaction(transactionHash);
-
-      if (transaction) {
-        expect(transaction.txHash).toBe(transactionHash);
-      }
-      else {
-        expect(false);
-      }
+      const transaction = await transactionService.getTransaction(transactionDetails.txHash);
+      expect(transaction).toBeInstanceOf(Object);
     });
-
-    it(`should return a transaction for a specific hash without optional fields`, async () => {
-      const transaction = await transactionService.getTransaction(detailedTransactionHash);
-
-      if (transaction) {
-        expect(transaction.txHash).toBe(detailedTransactionHash);
-        expect(transaction.results).toEqual([]);
-        expect(transaction.receipt).toBeUndefined();
-        expect(transaction.logs).toBeUndefined();
-      }
-      else {
-        expect(false);
-      }
-    });
-
-
     it(`should return a transaction for a specific hash with results optional field`, async () => {
-      const transaction = await transactionService.getTransaction(detailedTransactionHash, [TransactionOptionalFieldOption.results]);
+      const transaction = await transactionService.getTransaction(transactionDetails.txHash, [TransactionOptionalFieldOption.results]);
 
       if (transaction) {
-        expect(transaction.txHash).toBe(detailedTransactionHash);
+        expect(transaction.txHash).toMatchSnapshot(transactionDetails.txHash);
         expect(transaction.results).toBeDefined();
         expect(transaction.receipt).toBeUndefined();
         expect(transaction.logs).toBeUndefined();
@@ -280,7 +261,7 @@ describe('Transaction Service', () => {
       const transaction = await transactionService.getTransaction(detailedTransactionHash, [TransactionOptionalFieldOption.results, TransactionOptionalFieldOption.logs]);
 
       if (transaction) {
-        expect(transaction.txHash).toBe(detailedTransactionHash);
+        expect(transaction.txHash).toMatchSnapshot(transactionDetails.txHash);
         expect(transaction.results).toBeDefined();
         expect(transaction.receipt).toBeUndefined();
         expect(transaction.operations).toBeDefined();
@@ -292,6 +273,24 @@ describe('Transaction Service', () => {
 
     it(`should throw 'Transaction not found' error`, async () => {
       expect(await transactionService.getTransaction(transactionHash + 'a')).toBeNull();
+    });
+  });
+
+  describe('Get Transaction Count For Address', () => {
+    it('should return transaction count for address', async  () => {
+      const address = transactionDetails.sender;
+      const count = await transactionService.getTransactionCountForAddress(address);
+
+      return expect(typeof count).toBe('number');
+    });
+  });
+
+  describe('Get Transaction Count For Address Raw', () => {
+    it('should return transaction count for address raw', async  () => {
+      const addressRaw = transactionDetails.sender;
+      const count = await transactionService.getTransactionCountForAddressRaw(addressRaw);
+
+      return expect(typeof count).toBe('number');
     });
   });
 });
