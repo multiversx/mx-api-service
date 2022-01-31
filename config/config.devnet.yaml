@@ -17,7 +17,7 @@ flags:
   useRequestLogging: false
   useVmQueryTracing: false
   processNfts: true
-  indexer-v2: false
+  indexer-v3: false
 image:
   width: 600
   height: 600
@@ -34,8 +34,6 @@ urls:
     - 'https://api.elrond.com'
   elastic:
     - 'https://devnet-index.elrond.com'
-  elastic-v2:
-    - ''
   gateway:
     - 'https://devnet-gateway.elrond.com'
   redis: '127.0.0.1'

@@ -24,11 +24,7 @@ export class ElasticService {
     @Inject(forwardRef(() => MetricsService))
     private readonly metricsService: MetricsService
   ) {
-    if (apiConfigService.getIsIndexerV2FlagActive()) {
-      this.url = apiConfigService.getElasticV2Url();
-    } else {
-      this.url = apiConfigService.getElasticUrl();
-    }
+    this.url = apiConfigService.getElasticUrl();
   }
 
   async getCount(collection: string, elasticQuery: ElasticQuery | undefined = undefined) {

@@ -37,15 +37,6 @@ export class ApiConfigService {
     return elasticUrls[Math.floor(Math.random() * elasticUrls.length)];
   }
 
-  getElasticV2Url(): string {
-    const elasticUrls = this.configService.get<string[]>('urls.elastic-v2');
-    if (!elasticUrls) {
-      throw new Error('No elastic-v2 urls present');
-    }
-
-    return elasticUrls[Math.floor(Math.random() * elasticUrls.length)];
-  }
-
   getMexUrl(): string {
     const mexUrls = this.configService.get<string>('urls.mex');
     if (mexUrls) {
@@ -269,8 +260,8 @@ export class ApiConfigService {
     return this.configService.get<boolean>('flags.processNfts') ?? false;
   }
 
-  getIsIndexerV2FlagActive(): boolean {
-    return this.configService.get<boolean>('flags.indexer-v2') ?? false;
+  getIsIndexerV3FlagActive(): boolean {
+    return this.configService.get<boolean>('flags.indexer-v3') ?? false;
   }
 
   getIsPublicApiActive(): boolean {

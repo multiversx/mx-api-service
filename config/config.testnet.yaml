@@ -17,7 +17,7 @@ flags:
   useRequestLogging: false
   useVmQueryTracing: false
   processNfts: true
-  indexer-v2: true
+  indexer-v3: true
 image:
   width: 600
   height: 600
@@ -34,8 +34,6 @@ urls:
     - 'https://api.elrond.com'
   elastic:
     - 'https://testnet-index.elrond.com'
-  elastic-v2:
-    - 'https://search-testnet-indexer-1-2-4q246teyc63qm2k4aebvdatwyi.eu-central-1.es.amazonaws.com'
   gateway:
     - 'https://testnet-gateway.elrond.com'
   redis: '127.0.0.1'
