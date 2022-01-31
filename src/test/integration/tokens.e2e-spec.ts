@@ -4,13 +4,12 @@ import { TokenService } from 'src/endpoints/tokens/token.service';
 import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 import { TokenFilter } from 'src/endpoints/tokens/entities/token.filter';
-import { TokenWithBalance } from "../../endpoints/tokens/entities/token.with.balance";
-import { EsdtService } from 'src/endpoints/esdt/esdt.service';
-
+import {TokenWithBalance} from "../../endpoints/tokens/entities/token.with.balance";
+import tokenDetails from "../mocks/esdt/token/tokenDetails";
+import tokensIdentifier from "../mocks/esdt/token/tokenDetails";
 
 describe('Token Service', () => {
   let tokenService: TokenService;
-  let esdtService: EsdtService;
   let tokenName: string;
   let tokenIdentifier: string;
 
@@ -24,7 +23,6 @@ describe('Token Service', () => {
     }).compile();
 
     tokenService = moduleRef.get<TokenService>(TokenService);
-    esdtService = moduleRef.get<EsdtService>(EsdtService);
 
     const tokens = await tokenService.getTokens(
       { from: 0, size: 1 },
@@ -97,71 +95,93 @@ describe('Token Service', () => {
 
   describe('Tokens count', () => {
     it(`should return tokens count`, async () => {
-      const count = await tokenService.getTokenCount(new TokenFilter());
+      const tokenFilter = new TokenFilter();
+      tokenFilter.identifier = tokenDetails.identifier;
+
+      const count = await tokenService.getTokenCount(tokenFilter);
       expect(typeof count).toBe('number');
     });
   });
 
   describe('Specific token', () => {
-    it(`should return a token with a specific identifier`, async () => {
-      const token = await tokenService.getToken(tokenIdentifier);
+    it(`should return a specific token based on identifier`, async () => {
+      const token = await tokenService.getToken(tokenDetails.identifier);
 
-      if (token) {
-        expect(token.identifier).toBe(tokenIdentifier);
-        expect(token.name).toBe(tokenName);
-      }
+      expect(token?.owner).toEqual(tokensIdentifier.owner);
+      expect(token?.ticker).toEqual(tokensIdentifier.ticker);
+      expect(token?.minted).toEqual(tokensIdentifier.minted);
+      expect(token?.decimals).toEqual(tokensIdentifier.decimals);
+      expect(token?.identifier).toEqual(tokensIdentifier.identifier);
+
     });
 
     it(`should throw 'Token not found' error`, async () => {
-      expect(await tokenService.getToken(tokenIdentifier + 'a')).toBeUndefined();
+      expect(await tokenService.getToken(tokenDetails.identifier + 'a')).toBeUndefined();
     });
   });
 
   describe('Get Token Roles', () => {
     it(`should return token roles`, async () => {
-      const roles = await tokenService.getToken(tokenIdentifier);
-
-      if (roles) {
-        const value = await tokenService.getTokenRoles(roles.identifier);
-        expect(value).toBeInstanceOf(Array);
-      }
+      const roles = await tokenService.getTokenRoles(tokenDetails.identifier);
+      expect(roles).toBeInstanceOf(Array);
+    });
+    it(`should return undefined`, async () => {
+      const roles = await tokenService.getTokenRoles(tokenDetails.identifier + 'a');
+      expect(roles).toBeUndefined();
     });
   });
 
   describe('Get Token Accounts', () => {
-    it(`should return tokens with size of 10`, async () => {
-      const token = await tokenService.getToken(tokenIdentifier);
+    it(`should return a list with 5 tokens accounts`, async () => {
+      const tokens = await tokenService.getTokenAccounts({from: 0, size: 5}, tokenDetails.identifier);
+      expect(tokens.length).toBe(5);
+      expect(tokens).toBeInstanceOf(Object);
 
-      if (token) {
-        const tokensList = await tokenService.getTokenAccounts({ from: 0, size: 10 }, token.name);
-        expect(tokensList).toBeInstanceOf(Array);
+      for (const token of tokens) {
+        expect(token).toHaveProperty('address');
+        expect(token).toHaveProperty('balance');
       }
     });
   });
 
   describe('Get Token For Address', () => {
-    it(`should return tokens for a specific address`, async () => {
+    it(`should return token for a specific address`, async () => {
+      const tokens = await tokenService.getTokenForAddress(tokenDetails.owner, tokenDetails.identifier);
+			expect(tokens).toBeInstanceOf(TokenWithBalance);
+
+      if (tokens) {
+        expect(tokens.owner).toEqual(tokenDetails.owner);
+        expect(tokens.name).toEqual(tokenDetails.name);
+        expect(tokens.ticker).toEqual(tokenDetails.ticker);
+        expect(tokens.decimals).toEqual(tokenDetails.decimals);
+      }
+    });
+    it('should return undefined if tokens length < 0', async () => {
       const tokenFilter = new TokenFilter();
-      tokenFilter.identifier = tokenIdentifier;
-      const token = await tokenService.getTokenForAddress(address, tokenIdentifier);
-      expect(token).toBeInstanceOf(TokenWithBalance);
+      tokenFilter.identifier = tokenDetails.identifier;
+
+      const tokens = await tokenService.getTokenForAddress(tokenDetails.owner, tokenDetails.identifier);
+      const tokenLength = await tokenService.getFilteredTokens(tokenFilter);
+
+      if(!tokenLength.length){
+        expect(tokens).toBeUndefined();
+      }
     });
   });
 
   describe('Get All Tokens For Address', () => {
-    it(`should return all tokens for address`, async () => {
+    it(`should return one token for a specific address`, async () => {
       const tokenFilter = new TokenFilter();
-      const tokens = await tokenService.getAllTokensForAddress(address, tokenFilter);
-      expect(tokens).toBeInstanceOf(Array);
-    });
-  });
+      tokenFilter.identifier = tokenDetails.identifier;
 
-  describe('Get Token Accounts Count', () => {
-    it(`should return the count of token from a specific account`, async () => {
-      const tokenFilter = new TokenFilter();
-      tokenFilter.identifier = 'MSFT-532e00';
-      const count = await esdtService.getTokenAccountsCount(tokenFilter.identifier);
-      expect(count).toBe(1);
+      const tokens = await tokenService.getAllTokensForAddress(tokenDetails.owner, tokenFilter);
+      expect(typeof tokens.length).toBe('number');
+
+      for (const token of tokens) {
+        expect(token.identifier).toEqual(tokenDetails.identifier);
+        expect(token.name).toEqual(tokenDetails.name);
+        expect(token.owner).toEqual(tokenDetails.owner);
+      }
     });
   });
 
@@ -179,10 +199,14 @@ describe('Token Service', () => {
 
   describe('Get Token Supply', () => {
     it(`should return token supply`, async () => {
-      const count = await tokenService.getTokenSupply(identifier);
-      expect(count).toBeInstanceOf(Object);
-      expect(count).toHaveProperty('totalSupply');
-      expect(count).toHaveProperty('circulatingSupply');
+      const supply = await tokenService.getTokenSupply(tokenDetails.identifier);
+      expect(supply?.totalSupply).toEqual(tokenDetails.supply);
+      expect(supply?.circulatingSupply).toEqual(tokenDetails.circulatingSupply);
+    });
+    it(`should return undefined if identifier token is invalid`, async () => {
+      const invalidIdentifier = 'invalidIdentifier';
+      const supply = await tokenService.getTokenSupply(invalidIdentifier);
+      expect(supply).toBeUndefined();
     });
   });
 
@@ -190,6 +214,13 @@ describe('Token Service', () => {
     it(`should return undefined if address does not contain identifier`, async () => {
       const role = await tokenService.getTokenRolesForAddress(identifier, address);
       expect(role).toBeUndefined();
+    });
+  });
+
+  describe('Get Token Count For Address', () => {
+    it(`should return token count for address`, async () => {
+      const count = await tokenService.getTokenCountForAddress(tokenDetails.owner);
+      expect(typeof count).toBe('number');
     });
   });
 });
