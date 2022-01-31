@@ -113,6 +113,12 @@ export class NftService {
       queries.push(QueryType.Should(identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
     }
 
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+      if (filter.whitelistedStorage) {
+        queries.push(QueryType.Nested("data", { "data.whiteListedStorage": filter.whitelistedStorage }));
+      }
+    }
+
     let elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, queries)
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('type', 'FungibleESDT')]);
@@ -333,7 +339,11 @@ export class NftService {
           }
         }
 
-        nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
+        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+          nft.isWhitelistedStorage = elasticNft.whiteListedStorage;
+        } else {
+          nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
+        }
 
         if (elasticNftData.metadata) {
           nft.attributes = BinaryUtils.base64Encode(`metadata:${elasticNftData.metadata}`);
