@@ -4,6 +4,7 @@ import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 import { SmartContractResultService } from 'src/endpoints/sc-results/scresult.service';
 import { SmartContractResult } from 'src/endpoints/sc-results/entities/smart.contract.result';
+import { SmartContractResultFilter } from 'src/endpoints/sc-results/entities/smart.contract.result.filter';
 
 describe('Scresults Service', () => {
   let scresultsService: SmartContractResultService;
@@ -18,7 +19,7 @@ describe('Scresults Service', () => {
 
     scresultsService = moduleRef.get<SmartContractResultService>(SmartContractResultService);
 
-    const scresults = await scresultsService.getScResults({ from: 0, size: 1 });
+    const scresults = await scresultsService.getScResults({ from: 0, size: 1 }, new SmartContractResultFilter());
     expect(scresults).toHaveLength(1);
 
     const scResult = scresults[0];
@@ -31,7 +32,7 @@ describe('Scresults Service', () => {
       const scresultsList = await scresultsService.getScResults({
         from: 0,
         size: 25,
-      });
+      }, new SmartContractResultFilter());
       for (const scresult of scresultsList) {
         expect(scresult).toHaveProperty('hash');
         expect(scresult).toHaveProperty('nonce');
@@ -43,7 +44,7 @@ describe('Scresults Service', () => {
       const scresultsList = await scresultsService.getScResults({
         from: 0,
         size: 25,
-      });
+      }, new SmartContractResultFilter());
 
       expect(scresultsList).toBeInstanceOf(Array);
       expect(scresultsList).toHaveLength(25);
@@ -59,7 +60,7 @@ describe('Scresults Service', () => {
       const scresultsList = await scresultsService.getScResults({
         from: 0,
         size: 50,
-      });
+      }, new SmartContractResultFilter());
       expect(scresultsList).toBeInstanceOf(Array);
       expect(scresultsList).toHaveLength(50);
 
