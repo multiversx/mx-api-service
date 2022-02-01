@@ -7,6 +7,7 @@ const tokensIdentifier = {
 	burnt: "0",
 	decimals: 6,
 	isPaused: false,
+	type: "FungibleESDT",
 	assets: {
 	"website": "https://qowatt.network",
 		"description": "QoWatt Tokens, first EV charging network using Blockchain in Europe",
