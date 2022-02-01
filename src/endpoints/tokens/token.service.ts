@@ -285,7 +285,7 @@ export class TokenService {
   async applySupply(token: TokenDetailed): Promise<void> {
     const { totalSupply, circulatingSupply } = await this.esdtService.getTokenSupply(token.identifier);
 
-    token.supply = NumberUtils.denominate(BigInt(totalSupply));
+    token.supply = totalSupply;
     token.circulatingSupply = NumberUtils.denominate(BigInt(circulatingSupply));
   }
 
