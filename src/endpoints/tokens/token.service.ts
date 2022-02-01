@@ -21,6 +21,7 @@ import { TransactionService } from "../transactions/transaction.service";
 import { RecordUtils } from "src/utils/record.utils";
 import { EsdtSupply } from "../esdt/entities/esdt.supply";
 import { TokenType } from "./entities/token.type";
+import { NumberUtils } from "src/utils/number.utils";
 
 @Injectable()
 export class TokenService {
@@ -284,8 +285,8 @@ export class TokenService {
   async applySupply(token: TokenDetailed): Promise<void> {
     const { totalSupply, circulatingSupply } = await this.esdtService.getTokenSupply(token.identifier);
 
-    token.supply = totalSupply;
-    token.circulatingSupply = circulatingSupply;
+    token.supply = NumberUtils.denominate(BigInt(totalSupply));
+    token.circulatingSupply = NumberUtils.denominate(BigInt(circulatingSupply));
   }
 
   async getTokenSupply(identifier: string): Promise<EsdtSupply | undefined> {
