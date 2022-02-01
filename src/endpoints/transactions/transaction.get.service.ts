@@ -167,6 +167,10 @@ export class TransactionGetService {
         return null;
       }
 
+      if (transactionResult.miniblockType === 'SmartContractResultBlock') {
+        return null;
+      }
+
       const transaction = transactionResult.transaction;
       if (!transaction) {
         return null;
