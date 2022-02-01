@@ -24,7 +24,8 @@ module.exports = {
     "@typescript-eslint/no-inferrable-types": ["off"],
     "max-len": ["off"],
     "semi": ["error"],
-    "comma-dangle": ["error", "always-multiline"]
+    "comma-dangle": ["error", "always-multiline"],
+    "eol-last": ["error"],
   },
   ignorePatterns: ['.eslintrc.js'],
 };
