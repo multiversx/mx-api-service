@@ -125,38 +125,43 @@ export class TransactionProcessorService {
   }
 
   private async tryHandleNftCreate(transaction: ShardTransaction) {
-    if (transaction.receiver !== transaction.sender || !transaction.data || transaction.status !== TransactionStatus.success) {
-      return;
-    }
-
-    const data = BinaryUtils.base64Decode(transaction.data);
-    if (!data.startsWith('ESDTNFTCreate@')) {
-      return;
-    }
-
-    await new Promise(resolve => setTimeout(resolve, 5000));
-
-    const transactionDetailed = await this.transactionService.getTransaction(transaction.hash);
-    if (!transactionDetailed || !transactionDetailed.operations || transactionDetailed.operations.length === 0) {
-      return;
-    }
-
-    const nftIdentifier = transactionDetailed.operations[0].identifier;
-
-    if (!nftIdentifier) {
-      return;
-    }
-
-    const nft = await this.nftService.getSingleNft(nftIdentifier);
-    if (nft) {
-      try {
-        await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
-      } catch (error) {
-        this.logger.error(`Unexpected error when processing NFT queue for NFT with identifier '${nftIdentifier}'`);
-        this.logger.error(error);
+    try {
+      if (transaction.receiver !== transaction.sender || !transaction.data || transaction.status !== TransactionStatus.success) {
+        return;
       }
-    }
 
+      const data = BinaryUtils.base64Decode(transaction.data);
+      if (!data.startsWith('ESDTNFTCreate@')) {
+        return;
+      }
+
+      this.logger.log(`NFT create detected for transaction with hash '${transaction.hash}'`);
+
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
+      const transactionDetailed = await this.transactionService.getTransaction(transaction.hash);
+      if (!transactionDetailed || !transactionDetailed.operations || transactionDetailed.operations.length === 0) {
+        this.logger.error(`NFT create: could not fetch transaction information for transaction with hash '${transaction.hash}'`);
+        return;
+      }
+
+      const nftIdentifier = transactionDetailed.operations[0].identifier;
+      if (!nftIdentifier) {
+        this.logger.error(`NFT create: could not fetch nft identifier from operation of transaction with hash '${transaction.hash}'`);
+        return;
+      }
+
+      const nft = await this.nftService.getSingleNft(nftIdentifier);
+      if (!nft) {
+        this.logger.error(`NFT create: could not fetch nft details for NFT with identifier '${nftIdentifier}' and transaction hash '${transaction.hash}'`);
+        return;
+      }
+
+      await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
+    } catch (error) {
+      this.logger.error(`Unexpected error when handling NFT create for transaction with hash '${transaction.hash}'`);
+      this.logger.error(error);
+    }
   }
 
   async tryInvalidateOwner(transaction: ShardTransaction): Promise<string[]> {
