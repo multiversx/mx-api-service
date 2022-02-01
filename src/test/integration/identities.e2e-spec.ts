@@ -16,7 +16,6 @@ describe('Identities Service', () => {
   let providers: Provider[];
 
   const ids: string[] = ['justminingfr', 'staking_agency', 'istari_vision'];
-  const id: string = 'justminingfr';
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -102,13 +101,6 @@ describe('Identities Service', () => {
     it('should return a list of identities based on ids', async () => {
       const results = await identityService.getIdentities(ids);
       expect(results).toBeInstanceOf(Array);
-    });
-  });
-
-  describe('Get Identity', () => {
-    it('should return a identity properties', async () => {
-      const results = await identityService.getIdentity(id);
-      expect(results).toBeInstanceOf(Object);
     });
   });
 });
