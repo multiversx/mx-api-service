@@ -36,6 +36,7 @@ export class NftThumbnailService {
             fit: fit.cover,
           }
         )
+        .png({ progressive: true })
         .toBuffer();
     } catch (error: any) {
       this.logger.error(error);
