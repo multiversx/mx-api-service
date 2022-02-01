@@ -108,7 +108,6 @@ describe('Identities Service', () => {
   describe('Get Identity', () => {
     it('should return a identity properties', async () => {
       const results = await identityService.getIdentity(id);
-      expect(results?.identity).toBe(id);
       expect(results).toBeInstanceOf(Object);
     });
   });
