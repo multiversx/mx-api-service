@@ -134,27 +134,33 @@ export class TransactionProcessorService {
       return;
     }
 
+    this.logger.log(`NFT create detected for transaction with hash '${transaction.hash}'`);
+
     await new Promise(resolve => setTimeout(resolve, 5000));
 
     const transactionDetailed = await this.transactionService.getTransaction(transaction.hash);
     if (!transactionDetailed || !transactionDetailed.operations || transactionDetailed.operations.length === 0) {
+      this.logger.error(`NFT create: could not fetch transaction information for transaction with hash '${transaction.hash}'`);
       return;
     }
 
     const nftIdentifier = transactionDetailed.operations[0].identifier;
-
     if (!nftIdentifier) {
+      this.logger.error(`NFT create: could not fetch nft identifier from operation of transaction with hash '${transaction.hash}'`);
       return;
     }
 
     const nft = await this.nftService.getSingleNft(nftIdentifier);
-    if (nft) {
-      try {
-        await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
-      } catch (error) {
-        this.logger.error(`Unexpected error when processing NFT queue for NFT with identifier '${nftIdentifier}'`);
-        this.logger.error(error);
-      }
+    if (!nft) {
+      this.logger.error(`NFT create: could not fetch nft details for NFT with identifier '${nftIdentifier}' and transaction hash '${transaction.hash}'`);
+      return;
+    }
+
+    try {
+      await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
+    } catch (error) {
+      this.logger.error(`Unexpected error when processing NFT queue for NFT with identifier '${nftIdentifier}'`);
+      this.logger.error(error);
     }
 
   }
