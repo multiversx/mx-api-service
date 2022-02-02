@@ -19,6 +19,8 @@ import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.
 import { NftCreateTransactionExtractor } from "src/crons/transaction.processor/extractor/nft.create.transaction.extractor";
 import { UpdateMetadataTransactionExtractor } from "./extractor/update.metadata.transaction.extractor";
 import { SftChangeTransactionExtractor } from "./extractor/sft.change.transaction.extractor";
+import { TransactionExtractorInterface } from "./extractor/transaction.extractor.interface";
+import { TransferOwnershipExtractor } from "./extractor/extract.transfer.ownership";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -212,8 +214,8 @@ export class TransactionProcessorService {
       return [];
     }
 
-    const tryExtractTransferOwnership: TryGenericExtract = new TryExtractTransferOwnership(transaction);
-    const metadataTransferOwnership = tryExtractTransferOwnership.extract();
+    const tryExtractTransferOwnership: TransactionExtractorInterface<{ identifier: string }> = new TransferOwnershipExtractor();
+    const metadataTransferOwnership = tryExtractTransferOwnership.extract(transaction);
     if (metadataTransferOwnership) {
       this.logger.log(`Detected NFT Transfer ownership for collection with identifier '${metadataTransferOwnership.identifier}'`);
       const key = CacheInfo.EsdtProperties(collectionIdentifier).key;

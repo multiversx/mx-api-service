@@ -1,21 +1,15 @@
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Logger } from "@nestjs/common";
-import { BinaryUtils } from "../binary.utils";
-import { TryGenericExtract } from "./generic.extract";
+import { BinaryUtils } from "src/utils/binary.utils";
+import { TransactionExtractorInterface } from "./transaction.extractor.interface";
 
-export class TryExtractTransferOwnership extends TryGenericExtract {
-  constructor(
-    readonly transaction: ShardTransaction,
-  ) {
-    super(transaction);
-  }
-
-  extract() {
-    if (this.transaction.getDataFunctionName() !== 'transferOwnership') {
+export class TransferOwnershipExtractor implements TransactionExtractorInterface<{ identifier: string }> {
+  extract(transaction: ShardTransaction) {
+    if (transaction.getDataFunctionName() !== 'transferOwnership') {
       return undefined;
     }
 
-    const args = this.transaction.getDataArgs();
+    const args = transaction.getDataArgs();
     if (!args || args.length < 2) {
       return undefined;
     }
@@ -30,7 +24,7 @@ export class TryExtractTransferOwnership extends TryGenericExtract {
     try {
       collection = BinaryUtils.hexToString(collectionHex);
     } catch (error: any) {
-      const logger = new Logger(TryExtractTransferOwnership.name);
+      const logger = new Logger(TransferOwnershipExtractor.name);
       logger.error(`Error in tryExtractTransferOwnership function. Could not convert collection hex '${collectionHex}' to string`);
       logger.error(error);
       return undefined;
@@ -39,7 +33,7 @@ export class TryExtractTransferOwnership extends TryGenericExtract {
     try {
       address = BinaryUtils.hexToString(addressHex);
     } catch (error: any) {
-      const logger = new Logger(TryExtractTransferOwnership.name);
+      const logger = new Logger(TransferOwnershipExtractor.name);
       logger.error(`Error in tryExtractTransferOwnership function. Could not convert address hex '${addressHex}' to string`);
       logger.error(error);
       return undefined;
