@@ -1,110 +1,110 @@
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
-import { TryGenericExtract } from "src/utils/transaction-generics/generic.extract";
-import { TryExtractSftChange } from "src/utils/transaction-generics/extract.sft.change";
-import { TryExtractNftCreate } from "src/utils/transaction-generics/extract.nft.create";
-import { TryExtractUpdateMetadata } from "src/utils/transaction-generics/extract.update.metadata";
-import { TryExtractTransferOwnership } from "src/utils/transaction-generics/extract.transfer.ownership";
+import { TransferOwnershipExtractor } from "src/crons/transaction.processor/extractor/extract.transfer.ownership";
+import { NftCreateTransactionExtractor } from "src/crons/transaction.processor/extractor/nft.create.transaction.extractor";
+import { SftChangeTransactionExtractor } from "src/crons/transaction.processor/extractor/sft.change.transaction.extractor";
+import { TransactionExtractorInterface } from "src/crons/transaction.processor/extractor/transaction.extractor.interface";
+import { UpdateMetadataTransactionExtractor } from "src/crons/transaction.processor/extractor/update.metadata.transaction.extractor";
 
 describe('Transaction Utils', () => {
     it('tryExtractCollectionIdentifierFromChangeSftToMetaEsdTransaction', () => {
-        let tryExtractSftChange: TryGenericExtract;
+        let tryExtractSftChange: TransactionExtractorInterface<string | undefined>;
 
         let transaction = new ShardTransaction();
         transaction.data = 'dGVzdFRyYW5zYWN0aW9u';
-        tryExtractSftChange = new TryExtractSftChange(transaction);
-        expect(tryExtractSftChange.extract()).toBeUndefined();
+        tryExtractSftChange = new SftChangeTransactionExtractor();
+        expect(tryExtractSftChange.extract(transaction)).toBeUndefined();
 
         transaction = new ShardTransaction();
         transaction.data = 'dGVzdFRyYW5zYWN0aW9uQA==';
-        tryExtractSftChange = new TryExtractSftChange(transaction);
-        expect(tryExtractSftChange.extract()).toBeUndefined();
+        tryExtractSftChange = new SftChangeTransactionExtractor();
+        expect(tryExtractSftChange.extract(transaction)).toBeUndefined();
 
         transaction = new ShardTransaction();
         transaction.data = 'Y2hhbmdlU0ZUVG9NZXRhRVNEVA==';
-        tryExtractSftChange = new TryExtractSftChange(transaction);
-        expect(tryExtractSftChange.extract()).toBeUndefined();
+        tryExtractSftChange = new SftChangeTransactionExtractor;
+        expect(tryExtractSftChange.extract(transaction)).toBeUndefined();
 
         transaction = new ShardTransaction();
         transaction.data = 'Y2hhbmdlU0ZUVG9NZXRhRVNEVEA0NTQ3NGM0NDRkNDU1ODQ2MmQzNjM3NjE2MzM0MzlAMTJAOWFhNjNj';
-        tryExtractSftChange = new TryExtractSftChange(transaction);
-        expect(tryExtractSftChange.extract()).toEqual('EGLDMEXF-67ac49');
+        tryExtractSftChange = new SftChangeTransactionExtractor();
+        expect(tryExtractSftChange.extract(transaction)).toEqual('EGLDMEXF-67ac49');
     });
 
     it('tryExtractNftMetadataFromNftCreateTransaction', () => {
-        let tryExtractNftCreate: TryGenericExtract;
+        let tryExtractNftCreate: TransactionExtractorInterface<{ collection: string, attributes: string } | undefined>;
 
         let transaction = new ShardTransaction();
         transaction.data = 'dGVzdFRyYW5zYWN0aW9u';
-        tryExtractNftCreate = new TryExtractNftCreate(transaction);
-        expect(tryExtractNftCreate.extract()).toBeUndefined();
+        tryExtractNftCreate = new NftCreateTransactionExtractor();
+        expect(tryExtractNftCreate.extract(transaction)).toBeUndefined();
 
         transaction = new ShardTransaction();
         transaction.data = 'dGVzdFRyYW5zYWN0aW9uQA==';
-        tryExtractNftCreate = new TryExtractNftCreate(transaction);
-        expect(tryExtractNftCreate.extract()).toBeUndefined();
+        tryExtractNftCreate = new NftCreateTransactionExtractor();
+        expect(tryExtractNftCreate.extract(transaction)).toBeUndefined();
 
         transaction = new ShardTransaction();
         transaction.data = 'Y2hhbmdlU0ZUVG9NZXRhRVNEVA==';
-        tryExtractNftCreate = new TryExtractNftCreate(transaction);
-        expect(tryExtractNftCreate.extract()).toBeUndefined();
+        tryExtractNftCreate = new NftCreateTransactionExtractor();
+        expect(tryExtractNftCreate.extract(transaction)).toBeUndefined();
 
         transaction = new ShardTransaction();
         transaction.data = 'RVNEVE5GVENyZWF0ZUA0ZTQ2NTQyZDM4MzEzMTM4Mzc2NkAwMUA0NDY1NjE2Y0BANTE2ZDU5NDc2MTZkNDE0YjMxNWE2MjU2NmE2ZDRjMzk1NTM5NDc3ODY2Nzg2MjU0NDg2YTQ3NzMzNzc0MzUzNTY0NDY3MTRhNWE0YTQyNGE3MTUzNmY2NTZiNjFANzQ2MTY3NzMzYTYxNzI3MjZmNzcyYzc3NzI2ZjZlNjcyYzczNjk2NzZlNjE2YzJjNzA2NTcyNjM2NTZlNzQyYzZjNjk2NTNiNmQ2NTc0NjE2NDYxNzQ2MTNhNTE2ZDYxNzI3MDZlNDQzNjZiNDY0NTRhNjg0NzQxNWEzNzZiNGQ1OTc5MzE3NzQ4NjI0MzczNTA1MTc5NjQ3MTYyNjE1OTMzNDE1ODZkNTczMTQ4Mzk2YTYyNjJANjg3NDc0NzA3MzNhMmYyZjY5NzA2NjczMmU2OTZmMmY2OTcwNjY3MzJmNTE2ZDU5NDc2MTZkNDE0YjMxNWE2MjU2NmE2ZDRjMzk1NTM5NDc3ODY2Nzg2MjU0NDg2YTQ3NzMzNzc0MzUzNTY0NDY3MTRhNWE0YTQyNGE3MTUzNmY2NTZiNjE=';
-        tryExtractNftCreate = new TryExtractNftCreate(transaction);
-        expect(tryExtractNftCreate.extract()).toMatchObject({ collection: 'NFT-81187f', attributes: 'tags:arrow,wrong,signal,percent,lie;metadata:QmarpnD6kFEJhGAZ7kMYy1wHbCsPQydqbaY3AXmW1H9jbb' });
+        tryExtractNftCreate = new NftCreateTransactionExtractor();
+        expect(tryExtractNftCreate.extract(transaction)).toMatchObject({ collection: 'NFT-81187f', attributes: 'tags:arrow,wrong,signal,percent,lie;metadata:QmarpnD6kFEJhGAZ7kMYy1wHbCsPQydqbaY3AXmW1H9jbb' });
     });
 
     it('tryExtractNftIdentifierFromNftUpdateMetadataTransaction', () => {
-        let tryExtractUpdateMetadata: TryGenericExtract;
+        let tryExtractUpdateMetadata: TransactionExtractorInterface<{ identifier: string } | undefined>;
 
         let transaction = new ShardTransaction();
         transaction.data = 'dGVzdFRyYW5zYWN0aW9u';
-        tryExtractUpdateMetadata = new TryExtractUpdateMetadata(transaction);
-        expect(tryExtractUpdateMetadata.extract()).toBeUndefined();
+        tryExtractUpdateMetadata = new UpdateMetadataTransactionExtractor();
+        expect(tryExtractUpdateMetadata.extract(transaction)).toBeUndefined();
 
         transaction = new ShardTransaction();
         transaction.data = 'dGVzdFRyYW5zYWN0aW9uQA==';
-        tryExtractUpdateMetadata = new TryExtractUpdateMetadata(transaction);
-        expect(tryExtractUpdateMetadata.extract()).toBeUndefined();
+        tryExtractUpdateMetadata = new UpdateMetadataTransactionExtractor();
+        expect(tryExtractUpdateMetadata.extract(transaction)).toBeUndefined();
 
         transaction = new ShardTransaction();
         transaction.data = 'Y2hhbmdlU0ZUVG9NZXRhRVNEVA==';
-        tryExtractUpdateMetadata = new TryExtractUpdateMetadata(transaction);
-        expect(tryExtractUpdateMetadata.extract()).toBeUndefined();
+        tryExtractUpdateMetadata = new UpdateMetadataTransactionExtractor();
+        expect(tryExtractUpdateMetadata.extract(transaction)).toBeUndefined();
 
         transaction = new ShardTransaction();
         transaction.data = 'RVNEVE5GVFVwZGF0ZUF0dHJpYnV0ZXNANTQ0NTUzNTQ0MzRmNGMyZDYxNjI2MzY0QDAxQHRlc3RhdHRyaWJ1dGVz';
-        tryExtractUpdateMetadata = new TryExtractUpdateMetadata(transaction);
-        expect(tryExtractUpdateMetadata.extract()).toMatchObject({ identifier: 'TESTCOL-abcd-01' });
+        tryExtractUpdateMetadata = new UpdateMetadataTransactionExtractor();
+        expect(tryExtractUpdateMetadata.extract(transaction)).toMatchObject({ identifier: 'TESTCOL-abcd-01' });
     });
 
     it('tryExtractTransferOwnership', () => {
-        let tryExtractTransferOwnership: TryGenericExtract;
+        let tryExtractTransferOwnership: TransactionExtractorInterface<{ identifier: string }>;
 
         let transaction = new ShardTransaction();
         transaction.data = 'dGVzdFRyYW5zYWN0aW9u';
-        tryExtractTransferOwnership = new TryExtractTransferOwnership(transaction);
-        expect(tryExtractTransferOwnership.extract()).toBeUndefined();
+        tryExtractTransferOwnership = new TransferOwnershipExtractor();
+        expect(tryExtractTransferOwnership.extract(transaction)).toBeUndefined();
 
         transaction = new ShardTransaction();
         transaction.data = 'dGVzdFRyYW5zYWN0aW9uQA==';
-        tryExtractTransferOwnership = new TryExtractTransferOwnership(transaction);
-        expect(tryExtractTransferOwnership.extract()).toBeUndefined();
+        tryExtractTransferOwnership = new TransferOwnershipExtractor();
+        expect(tryExtractTransferOwnership.extract(transaction)).toBeUndefined();
 
         transaction = new ShardTransaction();
         transaction.data = 'Y2hhbmdlU0ZUVG9NZXRhRVNEVA==';
-        tryExtractTransferOwnership = new TryExtractTransferOwnership(transaction);
-        expect(tryExtractTransferOwnership.extract()).toBeUndefined();
+        tryExtractTransferOwnership = new TransferOwnershipExtractor();
+        expect(tryExtractTransferOwnership.extract(transaction)).toBeUndefined();
 
         transaction = new ShardTransaction();
         transaction.data = 'RVNEVE5GVFVwZGF0ZUF0dHJpYnV0ZXNANTQ0NTUzNTQ0MzRmNGMyZDYxNjI2MzY0QDAxQHRlc3RhdHRyaWJ1dGVz';
-        tryExtractTransferOwnership = new TryExtractTransferOwnership(transaction);
-        expect(tryExtractTransferOwnership.extract()).toBeUndefined();
+        tryExtractTransferOwnership = new TransferOwnershipExtractor();
+        expect(tryExtractTransferOwnership.extract(transaction)).toBeUndefined();
 
 
         transaction = new ShardTransaction();
         transaction.data = 'dHJhbnNmZXJPd25lcnNoaXBANTQ0NTUzNTQ0MzRmNGMyZDYxNjI2MzY0QDFhNmI3Njc5ZmQxZjFhODE3MjBmMjZlNzM4NGYxNTBlZmVmOTU4OGU0MjhkMjYwYTFmNDNmNjJhY2U2YTVhM2M=';
-        tryExtractTransferOwnership = new TryExtractTransferOwnership(transaction);
-        expect(tryExtractTransferOwnership.extract()).toMatchObject({ identifier: 'TESTCOL-abcd' });
+        tryExtractTransferOwnership = new TransferOwnershipExtractor();
+        expect(tryExtractTransferOwnership.extract(transaction)).toMatchObject({ identifier: 'TESTCOL-abcd' });
     });
 });
