@@ -1,10 +1,13 @@
 import tokenDetails from "../../mocks/esdt/token/tokenDetails";
+import userAccount from "../../mocks/accounts/userAccount";
+import providerAccount from "../../mocks/accounts/providerAccount";
+import smartContractResults from "../../mocks/smartcontract/scresults";
 const frisby = require('frisby');
 const url: string =  'https://api.elrond.com/accounts';
 //const Joi = require('@hapi/joi');
 
 describe('Accounts Endpoint',  () => {
-	it('/account - return two accounts',async() => {
+	it('/account - return two accounts',() => {
 		const params = new URLSearchParams({
 			'from': '0',
 			'size': '2',
@@ -21,9 +24,9 @@ describe('Accounts Endpoint',  () => {
 				expect(typeof data[0].nonce).toBe('number');
 				expect(typeof data[0].shard).toBe('number');
 			});
-	});
+	}, 6000);
 
-	it('/accounts/{address} - should return account based on address', async () => {
+	it('/accounts/{address} - should return account based on address', () => {
 		const params = new URLSearchParams({
 			'from': '0',
 			'size': '1',
@@ -40,15 +43,15 @@ describe('Accounts Endpoint',  () => {
 			});
 	});
 
-	it('/accounts/{address} - should return status code 400 `format of address is not bech32`', async () => {
-		const invalidAddress = 'erd1sea63y47u569ns315mqjf4vnygn9whkk7p6ry4rfpqyd6rd5addqyd9lf2';
+	it('/accounts/{address} - should return status code 400 `format of address is not bech32`', () => {
+		const invalidAddress: string = 'erd1sea63y47u569ns315mqjf4vnygn9whkk7p6ry4rfpqyd6rd5addqyd9lf2';
 
 		return frisby
 			.get(url + "/" + invalidAddress)
 			.expect('header', 'content-type', /application\/json/)
 			.expect('status', 400);
 	});
-	it('/accounts/count - should return total numbers of accounts', async () => {
+	it('/accounts/count - should return total numbers of accounts', () => {
 		const url = 'https://api.elrond.com/accounts/';
 
 		return frisby
@@ -60,7 +63,7 @@ describe('Accounts Endpoint',  () => {
 			});
 	});
 
-	it('/accounts/{address}/deferred - should return deferred account', async () => {
+	it('/accounts/{address}/deferred - should return deferred account', () => {
 		const params = new URLSearchParams({
 			'from': '0',
 			'size': '1',
@@ -77,8 +80,8 @@ describe('Accounts Endpoint',  () => {
 			});
 	});
 
-	it('/accounts/{address}/tokens - should return a list of tokens for a specific address', async () => {
-		const address = tokenDetails.owner;
+	it('/accounts/{address}/tokens - should return a list of tokens for a specific address',() => {
+		const address: string = tokenDetails.owner;
 
 		return frisby
 			.get(url + "/" + address + '/tokens')
@@ -86,8 +89,8 @@ describe('Accounts Endpoint',  () => {
 			.expect('status', 200);
 	});
 
-	it('/accounts/{address}/tokens - should return 1 token for address based on identifier', async () => {
-		const address = tokenDetails.owner;
+	it('/accounts/{address}/tokens - should return 1 token for address based on identifier', () => {
+		const address: string = tokenDetails.owner;
 		const param = new URLSearchParams({
 			'identifier': 'QWT-46ac01',
 		});
@@ -101,8 +104,8 @@ describe('Accounts Endpoint',  () => {
 				expect(identifier).toEqual(tokenDetails.identifier);
 			});
 	});
-	it('/accounts/{address}}/tokens/count - should return tokens count for a specific address', async () => {
-		const address = tokenDetails.owner;
+	it('/accounts/{address}}/tokens/count - should return tokens count for a specific address',() => {
+		const address: string = tokenDetails.owner;
 
 		return frisby
 			.get(url + "/" + address + "/tokens" + "/count")
@@ -114,8 +117,8 @@ describe('Accounts Endpoint',  () => {
 				expect(data).toBeDefined();
 			});
 	});
-	it('/accounts/{address}/collections - should return all collections', async () => {
-		const address = 'erd1yntjrye50jht0f6nk0kf057dtv9sgmjtwr7t3u3uuxh3v5ll63qqg55er2';
+	it('/accounts/{address}/collections - should return all collections',() => {
+		const address: string = 'erd1yntjrye50jht0f6nk0kf057dtv9sgmjtwr7t3u3uuxh3v5ll63qqg55er2';
 		const params = new URLSearchParams({
 			'from': '0',
 			'size': '1',
@@ -140,8 +143,8 @@ describe('Accounts Endpoint',  () => {
 			});
 	});
 
-	it('/accounts/{address}}/collections/count - should return collections count for a specific address', async () => {
-		const address = 'erd1yntjrye50jht0f6nk0kf057dtv9sgmjtwr7t3u3uuxh3v5ll63qqg55er2';
+	it('/accounts/{address}}/collections/count - should return collections count for a specific address',  () => {
+		const address: string = 'erd1yntjrye50jht0f6nk0kf057dtv9sgmjtwr7t3u3uuxh3v5ll63qqg55er2';
 
 		return frisby
 			.get(url + "/" + address + "/collections" + "/count")
@@ -155,9 +158,9 @@ describe('Accounts Endpoint',  () => {
 			});
 	});
 
-	it('/accounts/{address}/collections/{collections} - should return all collections based of address and collection filter', async () => {
-		const address = 'erd1yntjrye50jht0f6nk0kf057dtv9sgmjtwr7t3u3uuxh3v5ll63qqg55er2';
-		const collection = 'IOTS1075-d46483';
+	it('/accounts/{address}/collections/{collections} - should return all collections based of address and collection filter',  () => {
+		const address: string = 'erd1yntjrye50jht0f6nk0kf057dtv9sgmjtwr7t3u3uuxh3v5ll63qqg55er2';
+		const collection: string = 'IOTS1075-d46483';
 
 		return frisby
 			.get(url + "/" + address + "/collections" + "/" + collection)
@@ -178,7 +181,7 @@ describe('Accounts Endpoint',  () => {
 			});
 	});
 
-	it('/accounts/{address}/tokens/{collections} - should return all tokens based of address and token identifier filter', async () => {
+	it('/accounts/{address}/tokens/{token} - should return all tokens based of address and token identifier filter',  () => {
 		const address = tokenDetails.owner;
 		const tokenIdentifier = tokenDetails.identifier;
 		return frisby
@@ -194,4 +197,207 @@ describe('Accounts Endpoint',  () => {
 				expect(data.isPaused).toEqual(tokenDetails.isPaused);
 			});
 	});
+
+	it('/accounts/{address}/nfts - should return all nfts from address',  () => {
+		const address = tokenDetails.owner;
+
+		return frisby
+			.get(url + "/" + address + "/nfts")
+			.expect('header', 'content-type', /application\/json/)
+			.expect('status', 200);
+	});
+
+	it('/accounts/{address}/nfts?from=0&size=1 - should return 1 nft from address',  () => {
+		const address = tokenDetails.owner;
+		const params = new URLSearchParams({
+			'from': '0',
+			'size': '1',
+		});
+
+		return frisby
+			.get(url + "/" + address + "/nfts" + "?" + params)
+			.expect('header', 'content-type', /application\/json/)
+			.expect('status', 200)
+			.then(function (res: any) {
+				const data = JSON.parse(res['_body']);
+				expect(data[0].identifier).toBeDefined();
+			});
+	});
+
+	it('/accounts/{address}/nfts/count - should return nft count for address',  () => {
+		const address = tokenDetails.owner;
+
+		return frisby
+			.get(url + "/" + address + "/nfts" + "/count")
+			.expect('header', 'content-type', /text\/html/)
+			.expect('status', 200)
+			.then(function (res: any) {
+				const data = JSON.parse(res['_body']);
+				expect(typeof data).toBe('number');
+			});
+	});
+
+	it('/accounts/{address}/nfts/{nft} - should return nft details based on address and nft identifier parameters',  () => {
+		const address: string = 'erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh';
+		const nftIdentifier: string = 'MAW-894a92-0270';
+
+		return frisby
+			.get(url + "/" + address + "/nfts/" + nftIdentifier)
+			.expect('header', 'content-type', /application\/json/)
+			.expect('status', 200)
+			.then(function (res: any) {
+				const data = JSON.parse(res['_body']);
+				expect(data).toBeInstanceOf(Object);
+			});
+	});
+
+	it('/accounts/{address}/stake - should return total stake amount of address',  () => {
+		const address = userAccount.address;
+
+		return frisby
+			.get(url + "/" + address + "/stake")
+			.expect('header', 'content-type', /application\/json/)
+			.expect('status', 200)
+			.then(function (res: any) {
+				const data = JSON.parse(res['_body']);
+				expect(typeof data.totalStaked).toBe('string');
+			});
+	});
+
+	it('/accounts/{address}/delegation-legacy - should return delegation details of address',  () => {
+		const address = userAccount.address;
+
+		return frisby
+			.get(url + "/" + address + "/delegation-legacy")
+			.expect('header', 'content-type', /application\/json/)
+			.expect('status', 200)
+			.then(function (res: any) {
+				const data = JSON.parse(res['_body']);
+				expect(data).toBeInstanceOf(Object);
+			});
+	});
+
+	it('/accounts/{address}/keys - should return bls keys of provider account', () => {
+		const address = providerAccount.address;
+
+		return frisby
+			.get(url + "/" + address + "/keys")
+			.expect('header', 'content-type', /application\/json/)
+			.expect('status', 200)
+			.then(function (res: any) {
+				const data = JSON.parse(res['_body']);
+				for(const key of data)
+				expect(key).toBeInstanceOf(Object);
+			});
+	});
+
+	it('/accounts/{address}/waiting-list - should return a list of waiting list', () => {
+		const address = userAccount.address;
+
+		return frisby
+			.get(url + "/" + address + "/waiting-list")
+			.expect('header', 'content-type', /application\/json/)
+			.expect('status', 200);
+	});
+
+	it('/account/{address}/transactions - should return a list with transactions and logs',() => {
+		const address = userAccount.address;
+		const params = new URLSearchParams({
+			'from': '0',
+			'size': '1',
+			'withLogs': 'true',
+		});
+
+		return frisby
+			.get(url + "/" + address + "/transactions" +"?" + params)
+			.expect('header', 'content-type', /application\/json/)
+			.expect('status', 200)
+			.then(function (res: any) {
+				const data = JSON.parse(res['_body']);
+				for (const results of data) {
+					expect(results).toBeInstanceOf(Object);
+				}
+			});
+	}, 6000);
+
+	it('/accounts/{address}/transactions/count - should return transactions count for address',  () => {
+		const address = userAccount.address;
+
+		return frisby
+			.get(url + "/" + address + "/transactions" + "/count")
+			.expect('header', 'content-type', /text\/html/)
+			.expect('status', 200)
+			.then(function (res: any) {
+				const data = JSON.parse(res['_body']);
+				expect(typeof data).toBe('number');
+			});
+	});
+
+	it('/accounts/{address}/contracts - should return a list contracts of address', () => {
+		const address = providerAccount.address;
+
+		return frisby
+			.get(url + "/" + address + "/contracts")
+			.expect('header', 'content-type', /application\/json/)
+			.expect('status', 200);
+	});
+
+	it('/accounts/{address}/contracts - should return count of contracts of address', () => {
+		const address = providerAccount.address;
+
+		return frisby
+			.get(url + "/" + address + "/contracts")
+			.expect('header', 'content-type', /application\/json/)
+			.expect('status', 200)
+			.then(function (res: any) {
+				const data = JSON.parse(res['_body']);
+				expect(typeof data).toBe('object');
+			});
+	});
+
+	it('/account/{address}/sc-results - should return a list with sc results',() => {
+		const address = smartContractResults[0].sender;
+		const params = new URLSearchParams({
+			'from': '0',
+			'size': '1',
+		});
+
+		return frisby
+			.get(url + "/" + address + "/sc-results" +"?" + params)
+			.expect('header', 'content-type', /application\/json/)
+			.expect('status', 200)
+			.then(function (res: any) {
+				const data = JSON.parse(res['_body']);
+				for (const results of data) {
+					expect(results).toBeInstanceOf(Object);
+				}
+			});
+	}, 6000);
+
+	it('/accounts/{address}/sc-results/count - should return count of sc results of address', () => {
+		const address = providerAccount.address;
+
+		return frisby
+			.get(url + "/" + address + "/sc-results/" + "count")
+			.expect('header', 'content-type', /text\/html/)
+			.expect('status', 200)
+			.then(function (res: any) {
+				const data = JSON.parse(res['_body']);
+				expect(typeof data).toBe('number');
+			});
+	});
+
+	it('/account/{address}/sc-results/{scHash} - should return sc results of address based on scHash',() => {
+		const address: string = smartContractResults[0].sender;
+		const hash: string = smartContractResults[0].hash;
+
+		return frisby
+			.get(url + "/" + address + "/sc-results/" + hash)
+			.expect('header', 'content-type', /application\/json/)
+			.expect('status', 200)
+			.then(function (res: any) {
+				const data = JSON.parse(res['_body']);
+				expect(data).toBeInstanceOf(Object);
+			});
+	},);
 });
