@@ -196,5 +196,3 @@ describe('Account Service', () => {
     });
   });
 });
-});
-
