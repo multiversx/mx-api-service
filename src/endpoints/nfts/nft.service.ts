@@ -284,7 +284,7 @@ export class NftService {
   }
 
   private async applyMetadata(nft: Nft) {
-    nft.metadata = await this.nftMetadataService.getOrRefreshMetadata(nft);
+    nft.metadata = await this.nftMetadataService.getMetadata(nft) ?? undefined;
   }
 
   async getNftOwners(identifier: string, pagination: QueryPagination): Promise<NftOwner[] | undefined> {

@@ -2,7 +2,6 @@ import { Injectable, Logger } from "@nestjs/common";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { BinaryUtils } from "src/utils/binary.utils";
-import { Constants } from "src/utils/constants";
 import { EsdtService } from "../esdt/esdt.service";
 import { TokenAssetService } from "./token.asset.service";
 import { TokenTransferProperties } from "./entities/token.transfer.properties";
@@ -164,7 +163,7 @@ export class TokenTransferService {
     let properties = await this.cachingService.getOrSetCache(
       CacheInfo.TokenTransferProperties(identifier).key,
       async () => await this.getTokenTransferPropertiesRaw(identifier),
-      Constants.oneDay()
+      CacheInfo.TokenTransferProperties(identifier).ttl,
     );
 
     // we clone it since we alter the resulting object 
@@ -177,7 +176,7 @@ export class TokenTransferService {
     return properties;
   }
 
-  private async getTokenTransferPropertiesRaw(identifier: string): Promise<TokenTransferProperties | null> {
+  async getTokenTransferPropertiesRaw(identifier: string): Promise<TokenTransferProperties | null> {
     const properties = await this.esdtService.getEsdtTokenProperties(identifier);
     if (!properties) {
       return null;
