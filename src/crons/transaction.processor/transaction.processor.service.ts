@@ -85,6 +85,7 @@ export class TransactionProcessorService {
               if (nftUpdateAttributesResult) {
                 this.logger.log(`Detected NFT update attributes for NFT with identifier '${nftUpdateAttributesResult.identifier}' and tx hash '${transaction.hash}'`);
                 this.tryHandleNftUpdateMetadata(transaction, nftUpdateAttributesResult.identifier);
+                allInvalidatedKeys.push(CacheInfo.NftMetadata(nftUpdateAttributesResult.identifier).key);
               }
             }
 
