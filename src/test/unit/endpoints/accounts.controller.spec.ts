@@ -7,10 +7,10 @@ const url: string =  'https://api.elrond.com/accounts';
 //const Joi = require('@hapi/joi');
 
 describe('Accounts Endpoint',  () => {
-	it('/account - return two accounts',() => {
+	it('/account - return one accounts',() => {
 		const params = new URLSearchParams({
 			'from': '0',
-			'size': '2',
+			'size': '1',
 		});
 
 		return frisby
