@@ -5,6 +5,8 @@ import { Constants } from 'src/utils/constants';
 import { SmartContractResultService } from 'src/endpoints/sc-results/scresult.service';
 import { SmartContractResult } from 'src/endpoints/sc-results/entities/smart.contract.result';
 import smartContractResults from "../mocks/smartcontract/scresults";
+import { SmartContractResultFilter } from 'src/endpoints/sc-results/entities/smart.contract.result.filter';
+
 
 describe('Scresults Service', () => {
   let scresultsService: SmartContractResultService;
@@ -19,7 +21,7 @@ describe('Scresults Service', () => {
 
     scresultsService = moduleRef.get<SmartContractResultService>(SmartContractResultService);
 
-    const scresults = await scresultsService.getScResults({ from: 0, size: 1 });
+    const scresults = await scresultsService.getScResults({ from: 0, size: 1 }, new SmartContractResultFilter());
     expect(scresults).toHaveLength(1);
 
     const scResult = scresults[0];
@@ -38,13 +40,20 @@ describe('Scresults Service', () => {
           expect.objectContaining({hash: smartContractResults[0].hash}),
         ])
       );
+        size: 25,
+      }, new SmartContractResultFilter());
+      for (const scresult of scresultsList) {
+        expect(scresult).toHaveProperty('hash');
+        expect(scresult).toHaveProperty('nonce');
+        expect(scresult).toHaveProperty('timestamp');
+      }
     });
 
     it(`should return a list with 25 scresults`, async () => {
       const results = await scresultsService.getScResults({
         from: 0,
         size: 25,
-      });
+      }, new SmartContractResultFilter());
 
       expect(results).toBeInstanceOf(Array);
       expect(results).toHaveLength(25);
@@ -63,6 +72,11 @@ describe('Scresults Service', () => {
       });
       expect(results).toBeInstanceOf(Array);
       expect(results).toHaveLength(50);
+      }, 
+       new SmartContractResultFilter());
+      expect(scresultsList).toBeInstanceOf(Array);
+      expect(scresultsList).toHaveLength(50);
+
 
       for (const result of results) {
         expect(result).toHaveStructure(

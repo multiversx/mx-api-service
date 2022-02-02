@@ -16,3 +16,6 @@ export class Account {
   @ApiProperty()
   scamInfo: any | undefined = undefined;
 }
+    @ApiProperty()
+    scamInfo?: any | undefined = undefined;
+}

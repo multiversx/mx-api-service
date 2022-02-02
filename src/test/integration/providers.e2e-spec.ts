@@ -142,6 +142,7 @@ describe('Provider Service', () => {
       expect(provider?.identity).toStrictEqual(providerSentinel.identity);
     });
   });
+  
   describe('Get Delegation Providers', () => {
     it('should return delegation providers', async () => {
       const providerDelegation = await providerService.getDelegationProviders();
