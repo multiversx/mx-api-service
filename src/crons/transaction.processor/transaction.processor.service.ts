@@ -85,7 +85,6 @@ export class TransactionProcessorService {
               if (nftUpdateAttributesResult) {
                 this.logger.log(`Detected NFT update attributes for NFT with identifier '${nftUpdateAttributesResult.identifier}' and tx hash '${transaction.hash}'`);
                 this.tryHandleNftUpdateMetadata(transaction, nftUpdateAttributesResult.identifier);
-                allInvalidatedKeys.push(CacheInfo.NftMetadata(nftUpdateAttributesResult.identifier).key);
               }
             }
 
@@ -138,7 +137,8 @@ export class TransactionProcessorService {
 
       const processSettings = new ProcessNftSettings();
       processSettings.forceRefreshMetadata = true;
-      this.nftWorkerService.addProcessNftQueueJob(nft, processSettings);
+      await this.nftWorkerService.addProcessNftQueueJob(nft, processSettings);
+      this.clientProxy.emit('deleteCacheKeys', [CacheInfo.NftMetadata(nft.identifier).key]);
     } catch (error) {
       this.logger.error(`Unexpected error when handling NFT update metadata for transaction with hash '${transaction.hash}'`);
       this.logger.error(error);
