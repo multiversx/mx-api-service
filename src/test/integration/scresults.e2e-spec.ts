@@ -5,30 +5,23 @@ import { Constants } from 'src/utils/constants';
 import { SmartContractResultService } from 'src/endpoints/sc-results/scresult.service';
 import { SmartContractResult } from 'src/endpoints/sc-results/entities/smart.contract.result';
 import smartContractResults from "../mocks/smartcontract/scresults";
-import { SmartContractResultFilter } from 'src/endpoints/sc-results/entities/smart.contract.result.filter';
-
 
 describe('Scresults Service', () => {
   let scresultsService: SmartContractResultService;
   let accountAddress: string;
   let scHash: string;
-
   beforeAll(async () => {
     await Initializer.initialize();
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
-
     scresultsService = moduleRef.get<SmartContractResultService>(SmartContractResultService);
-
-    const scresults = await scresultsService.getScResults({ from: 0, size: 1 }, new SmartContractResultFilter());
+    const scresults = await scresultsService.getScResults({ from: 0, size: 1 });
     expect(scresults).toHaveLength(1);
-
     const scResult = scresults[0];
     accountAddress = scResult.sender;
     scHash = scresults[0].hash;
   }, Constants.oneHour() * 1000);
-
   describe('Scresults list', () => {
     it('scresults should have hash, nonce and timestamp', async () => {
       const results = await scresultsService.getScResults({
@@ -40,31 +33,20 @@ describe('Scresults Service', () => {
           expect.objectContaining({hash: smartContractResults[0].hash}),
         ])
       );
-        size: 25,
-      }, new SmartContractResultFilter());
-      for (const scresult of scresultsList) {
-        expect(scresult).toHaveProperty('hash');
-        expect(scresult).toHaveProperty('nonce');
-        expect(scresult).toHaveProperty('timestamp');
-      }
     });
-
     it(`should return a list with 25 scresults`, async () => {
       const results = await scresultsService.getScResults({
         from: 0,
         size: 25,
-      }, new SmartContractResultFilter());
-
+      });
       expect(results).toBeInstanceOf(Array);
       expect(results).toHaveLength(25);
-
       for (const result of results) {
         expect(result).toHaveStructure(
           Object.keys(new SmartContractResult()),
         );
       }
     });
-
     it(`should return a list with 50 scresults`, async () => {
       const results = await scresultsService.getScResults({
         from: 0,
@@ -72,12 +54,6 @@ describe('Scresults Service', () => {
       });
       expect(results).toBeInstanceOf(Array);
       expect(results).toHaveLength(50);
-      }, 
-       new SmartContractResultFilter());
-      expect(scresultsList).toBeInstanceOf(Array);
-      expect(scresultsList).toHaveLength(50);
-
-
       for (const result of results) {
         expect(result).toHaveStructure(
           Object.keys(new SmartContractResult()),
@@ -85,7 +61,6 @@ describe('Scresults Service', () => {
       }
     });
   });
-
   describe('Scresults filters', () => {
     it(`should return a list of scresults for an account`, async () => {
       const results = await scresultsService.getAccountScResults(
@@ -93,7 +68,6 @@ describe('Scresults Service', () => {
         { from: 0, size: 25 },
       );
       expect(results).toBeInstanceOf(Array);
-
       for (const result of results) {
         expect(result).toHaveStructure(
           Object.keys(new SmartContractResult()),
@@ -102,15 +76,12 @@ describe('Scresults Service', () => {
       }
     });
   });
-
   describe('Scresults count', () => {
     it(`should return smart contract count`, async () => {
       const count =await scresultsService.getScResultsCount();
-
       expect(typeof count).toBe('number');
     });
   });
-
   describe('Specific scresult', () => {
     describe('Scresult Details', () => {
       it(`should return a detailed scresult with hash`, async () => {
@@ -127,7 +98,6 @@ describe('Scresults Service', () => {
       });
     });
   });
-
   describe('Get Results of a smart contract count', () => {
     it('should return sc results count', async () => {
       const count = await scresultsService.getAccountScResultsCount(accountAddress);
