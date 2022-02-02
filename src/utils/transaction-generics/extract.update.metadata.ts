@@ -10,7 +10,7 @@ export class TryExtractUpdateMetadata extends TryGenericExtract {
     super(transaction);
   }
 
-  async extract() {
+  extract() {
     if (this.transaction.getDataFunctionName() !== 'ESDTNFTUpdateAttributes') {
       return undefined;
     }
@@ -24,22 +24,13 @@ export class TryExtractUpdateMetadata extends TryGenericExtract {
     const nonceHex = args[1];
 
     let collection: string = '';
-    let nonce: string = '';
+    const nonce: string = nonceHex;
 
     try {
       collection = BinaryUtils.hexToString(collectionHex);
     } catch (error: any) {
       const logger = new Logger(TryExtractUpdateMetadata.name);
       logger.error(`Error in tryExtractNftMetadataFromUpdateAttributes function. Could not convert collection hex '${collectionHex}' to string`);
-      logger.error(error);
-      return undefined;
-    }
-
-    try {
-      nonce = BinaryUtils.hexToString(nonceHex);
-    } catch (error: any) {
-      const logger = new Logger(TryExtractUpdateMetadata.name);
-      logger.error(`Error in tryExtractNftMetadataFromUpdateAttributes function. Could not convert attributes hex '${nonceHex}' to string`);
       logger.error(error);
       return undefined;
     }

@@ -10,7 +10,7 @@ export class TryExtractNftCreate extends TryGenericExtract {
     super(transaction);
   }
 
-  async extract() {
+  extract() {
     if (this.transaction.getDataFunctionName() !== 'ESDTNFTCreate') {
       return undefined;
     }

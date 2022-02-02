@@ -10,7 +10,7 @@ export class TryExtractSftChange extends TryGenericExtract {
     super(transaction);
   }
 
-  async extract() {
+  extract() {
     if (this.transaction.getDataFunctionName() !== 'changeSFTToMetaESDT') {
       return undefined;
     }
