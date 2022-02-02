@@ -20,6 +20,7 @@ import { TryExtractNftCreate } from "src/utils/transaction-generics/extract.nft.
 import { TryGenericExtract } from "src/utils/transaction-generics/generic.extract";
 import { TryExtractUpdateMetadata } from "src/utils/transaction-generics/extract.update.metadata";
 import { TryExtractSftChange } from "src/utils/transaction-generics/extract.sft.change";
+import { TryExtractTransferOwnership } from "src/utils/transaction-generics/extract.transfer.ownership";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -92,7 +93,6 @@ export class TransactionProcessorService {
                   this.tryHandleNftUpdateMetadata(transaction, metadataUpdateResult.identifier);
                 }
               }
-
             }
 
             if (this.apiConfigService.getIsProcessNftsFlagActive()) {
@@ -210,15 +210,24 @@ export class TransactionProcessorService {
 
     const tryExtractSftChange: TryGenericExtract = new TryExtractSftChange(transaction);
     const collectionIdentifier = tryExtractSftChange.extract();
-    if (!collectionIdentifier) {
-      return [];
+    if (collectionIdentifier) {
+      this.logger.log(`Change SFT to Meta ESDT transaction detected for collection '${collectionIdentifier}'`);
+      const key = CacheInfo.EsdtProperties(collectionIdentifier).key;
+      await this.cachingService.deleteInCache(key);
+
+      return [key];
     }
 
-    this.logger.log(`Change SFT to Meta ESDT transaction detected for collection '${collectionIdentifier}'`);
+    const tryExtractTransferOwnership: TryGenericExtract = new TryExtractTransferOwnership(transaction);
+    const metadataTransferOwnership = tryExtractTransferOwnership.extract();
+    if (metadataTransferOwnership) {
+      this.logger.log(`Detected NFT Transfer ownership for collection with identifier '${metadataTransferOwnership.identifier}'`);
+      const key = CacheInfo.EsdtProperties(collectionIdentifier).key;
+      await this.cachingService.deleteInCache(key);
 
-    const key = `esdt:${collectionIdentifier}`;
-    await this.cachingService.deleteInCache(key);
+      return [key];
+    }
 
-    return [key];
+    return [];
   }
 }

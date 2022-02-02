@@ -3,8 +3,9 @@ import { TryGenericExtract } from "src/utils/transaction-generics/generic.extrac
 import { TryExtractSftChange } from "src/utils/transaction-generics/extract.sft.change";
 import { TryExtractNftCreate } from "src/utils/transaction-generics/extract.nft.create";
 import { TryExtractUpdateMetadata } from "src/utils/transaction-generics/extract.update.metadata";
+import { TryExtractTransferOwnership } from "src/utils/transaction-generics/extract.transfer.ownership";
 
-describe.only('Transaction Utils', () => {
+describe('Transaction Utils', () => {
     it('tryExtractCollectionIdentifierFromChangeSftToMetaEsdTransaction', () => {
         let tryExtractSftChange: TryGenericExtract;
 
@@ -75,5 +76,35 @@ describe.only('Transaction Utils', () => {
         transaction.data = 'RVNEVE5GVFVwZGF0ZUF0dHJpYnV0ZXNANTQ0NTUzNTQ0MzRmNGMyZDYxNjI2MzY0QDAxQHRlc3RhdHRyaWJ1dGVz';
         tryExtractUpdateMetadata = new TryExtractUpdateMetadata(transaction);
         expect(tryExtractUpdateMetadata.extract()).toMatchObject({ identifier: 'TESTCOL-abcd-01' });
+    });
+
+    it('tryExtractTransferOwnership', () => {
+        let tryExtractTransferOwnership: TryGenericExtract;
+
+        let transaction = new ShardTransaction();
+        transaction.data = 'dGVzdFRyYW5zYWN0aW9u';
+        tryExtractTransferOwnership = new TryExtractTransferOwnership(transaction);
+        expect(tryExtractTransferOwnership.extract()).toBeUndefined();
+
+        transaction = new ShardTransaction();
+        transaction.data = 'dGVzdFRyYW5zYWN0aW9uQA==';
+        tryExtractTransferOwnership = new TryExtractTransferOwnership(transaction);
+        expect(tryExtractTransferOwnership.extract()).toBeUndefined();
+
+        transaction = new ShardTransaction();
+        transaction.data = 'Y2hhbmdlU0ZUVG9NZXRhRVNEVA==';
+        tryExtractTransferOwnership = new TryExtractTransferOwnership(transaction);
+        expect(tryExtractTransferOwnership.extract()).toBeUndefined();
+
+        transaction = new ShardTransaction();
+        transaction.data = 'RVNEVE5GVFVwZGF0ZUF0dHJpYnV0ZXNANTQ0NTUzNTQ0MzRmNGMyZDYxNjI2MzY0QDAxQHRlc3RhdHRyaWJ1dGVz';
+        tryExtractTransferOwnership = new TryExtractTransferOwnership(transaction);
+        expect(tryExtractTransferOwnership.extract()).toBeUndefined();
+
+
+        transaction = new ShardTransaction();
+        transaction.data = 'dHJhbnNmZXJPd25lcnNoaXBANTQ0NTUzNTQ0MzRmNGMyZDYxNjI2MzY0QDFhNmI3Njc5ZmQxZjFhODE3MjBmMjZlNzM4NGYxNTBlZmVmOTU4OGU0MjhkMjYwYTFmNDNmNjJhY2U2YTVhM2M=';
+        tryExtractTransferOwnership = new TryExtractTransferOwnership(transaction);
+        expect(tryExtractTransferOwnership.extract()).toMatchObject({ identifier: 'TESTCOL-abcd' });
     });
 });
