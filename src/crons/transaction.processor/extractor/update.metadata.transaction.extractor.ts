@@ -1,21 +1,15 @@
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Logger } from "@nestjs/common";
-import { BinaryUtils } from "../binary.utils";
-import { TryGenericExtract } from "./generic.extract";
+import { BinaryUtils } from "src/utils/binary.utils";
+import { TransactionExtractorInterface } from "./transaction.extractor.interface";
 
-export class TryExtractUpdateMetadata extends TryGenericExtract {
-  constructor(
-    readonly transaction: ShardTransaction,
-  ) {
-    super(transaction);
-  }
-
-  extract() {
-    if (this.transaction.getDataFunctionName() !== 'ESDTNFTUpdateAttributes') {
+export class UpdateMetadataTransactionExtractor implements TransactionExtractorInterface<{ identifier: string }> {
+  extract(transaction: ShardTransaction) {
+    if (transaction.getDataFunctionName() !== 'ESDTNFTUpdateAttributes') {
       return undefined;
     }
 
-    const args = this.transaction.getDataArgs();
+    const args = transaction.getDataArgs();
     if (!args || args.length < 3) {
       return undefined;
     }
@@ -29,7 +23,7 @@ export class TryExtractUpdateMetadata extends TryGenericExtract {
     try {
       collection = BinaryUtils.hexToString(collectionHex);
     } catch (error: any) {
-      const logger = new Logger(TryExtractUpdateMetadata.name);
+      const logger = new Logger(UpdateMetadataTransactionExtractor.name);
       logger.error(`Error in tryExtractNftMetadataFromUpdateAttributes function. Could not convert collection hex '${collectionHex}' to string`);
       logger.error(error);
       return undefined;

@@ -16,10 +16,9 @@ import { TransactionService } from "src/endpoints/transactions/transaction.servi
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
-import { TryExtractNftCreate } from "src/utils/transaction-generics/extract.nft.create";
-import { TryGenericExtract } from "src/utils/transaction-generics/generic.extract";
-import { TryExtractUpdateMetadata } from "src/utils/transaction-generics/extract.update.metadata";
-import { TryExtractSftChange } from "src/utils/transaction-generics/extract.sft.change";
+import { NftCreateTransactionExtractor } from "src/crons/transaction.processor/extractor/nft.create.transaction.extractor";
+import { UpdateMetadataTransactionExtractor } from "./extractor/update.metadata.transaction.extractor";
+import { SftChangeTransactionExtractor } from "./extractor/sft.change.transaction.extractor";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -76,16 +75,16 @@ export class TransactionProcessorService {
             }
 
             if (transaction.data) {
-              const tryExtractNftCreate: TryGenericExtract = new TryExtractNftCreate(transaction);
-              const metadataNftCreateResult = tryExtractNftCreate.extract();
+              const tryExtractNftCreate = new NftCreateTransactionExtractor();
+              const metadataNftCreateResult = tryExtractNftCreate.extract(transaction);
               if (metadataNftCreateResult) {
                 this.logger.log(`Detected NFT Create for collection with identifier '${metadataNftCreateResult.collection}'. Raw attributes: '${metadataNftCreateResult.attributes}'`);
 
                 // this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(BinaryUtils.base64Encode(metadataResult.attributes));
               }
 
-              const tryExtractUpdateMetadata: TryGenericExtract = new TryExtractUpdateMetadata(transaction);
-              const metadataUpdateResult = tryExtractUpdateMetadata.extract();
+              const tryExtractUpdateMetadata = new UpdateMetadataTransactionExtractor();
+              const metadataUpdateResult = tryExtractUpdateMetadata.extract(transaction);
               if (metadataUpdateResult) {
                 this.logger.log(`Detected NFT Update attributes for NFT with identifier '${metadataUpdateResult.identifier}'`);
                 if (this.apiConfigService.getIsProcessNftsFlagActive()) {
@@ -208,8 +207,8 @@ export class TransactionProcessorService {
       return [];
     }
 
-    const tryExtractSftChange: TryGenericExtract = new TryExtractSftChange(transaction);
-    const collectionIdentifier = tryExtractSftChange.extract();
+    const tryExtractSftChange = new SftChangeTransactionExtractor();
+    const collectionIdentifier = tryExtractSftChange.extract(transaction);
     if (!collectionIdentifier) {
       return [];
     }
