@@ -1,9 +1,9 @@
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { TransferOwnershipExtractor } from "src/crons/transaction.processor/extractor/extract.transfer.ownership";
 import { NftCreateTransactionExtractor } from "src/crons/transaction.processor/extractor/nft.create.transaction.extractor";
+import { NftUpdateAttributesTransactionExtractor } from "src/crons/transaction.processor/extractor/nft.update.attributes.transaction.extractor";
 import { SftChangeTransactionExtractor } from "src/crons/transaction.processor/extractor/sft.change.transaction.extractor";
 import { TransactionExtractorInterface } from "src/crons/transaction.processor/extractor/transaction.extractor.interface";
-import { UpdateMetadataTransactionExtractor } from "src/crons/transaction.processor/extractor/update.metadata.transaction.extractor";
 
 describe('Transaction Utils', () => {
     it('tryExtractCollectionIdentifierFromChangeSftToMetaEsdTransaction', () => {
@@ -55,27 +55,23 @@ describe('Transaction Utils', () => {
     });
 
     it('tryExtractNftIdentifierFromNftUpdateMetadataTransaction', () => {
-        let tryExtractUpdateMetadata: TransactionExtractorInterface<{ identifier: string } | undefined>;
+        const extractor = new NftUpdateAttributesTransactionExtractor();
 
         let transaction = new ShardTransaction();
         transaction.data = 'dGVzdFRyYW5zYWN0aW9u';
-        tryExtractUpdateMetadata = new UpdateMetadataTransactionExtractor();
-        expect(tryExtractUpdateMetadata.extract(transaction)).toBeUndefined();
+        expect(extractor.extract(transaction)).toBeUndefined();
 
         transaction = new ShardTransaction();
         transaction.data = 'dGVzdFRyYW5zYWN0aW9uQA==';
-        tryExtractUpdateMetadata = new UpdateMetadataTransactionExtractor();
-        expect(tryExtractUpdateMetadata.extract(transaction)).toBeUndefined();
+        expect(extractor.extract(transaction)).toBeUndefined();
 
         transaction = new ShardTransaction();
         transaction.data = 'Y2hhbmdlU0ZUVG9NZXRhRVNEVA==';
-        tryExtractUpdateMetadata = new UpdateMetadataTransactionExtractor();
-        expect(tryExtractUpdateMetadata.extract(transaction)).toBeUndefined();
+        expect(extractor.extract(transaction)).toBeUndefined();
 
         transaction = new ShardTransaction();
         transaction.data = 'RVNEVE5GVFVwZGF0ZUF0dHJpYnV0ZXNANTQ0NTUzNTQ0MzRmNGMyZDYxNjI2MzY0QDAxQHRlc3RhdHRyaWJ1dGVz';
-        tryExtractUpdateMetadata = new UpdateMetadataTransactionExtractor();
-        expect(tryExtractUpdateMetadata.extract(transaction)).toMatchObject({ identifier: 'TESTCOL-abcd-01' });
+        expect(extractor.extract(transaction)).toMatchObject({ identifier: 'TESTCOL-abcd-01' });
     });
 
     it('tryExtractTransferOwnership', () => {
