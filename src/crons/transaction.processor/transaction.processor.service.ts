@@ -144,6 +144,7 @@ export class TransactionProcessorService {
       this.logger.error(error);
     }
   }
+
   private async tryHandleNftCreate(transaction: ShardTransaction) {
     try {
       // we wait for the transaction and its operations to be fully indexed
