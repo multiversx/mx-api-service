@@ -10,14 +10,12 @@ import { EventsGateway } from "src/websockets/events.gateway";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { BinaryUtils } from "src/utils/binary.utils";
-import { TransactionStatus } from "src/endpoints/transactions/entities/transaction.status";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 import { NftCreateTransactionExtractor } from "src/crons/transaction.processor/extractor/nft.create.transaction.extractor";
-import { UpdateMetadataTransactionExtractor } from "./extractor/update.metadata.transaction.extractor";
+import { NftUpdateMetadataTransactionExtractor as NftUpdateAttributesTransactionExtractor } from "./extractor/nft.update.attributes.transaction.extractor";
 import { SftChangeTransactionExtractor } from "./extractor/sft.change.transaction.extractor";
 import { TransactionExtractorInterface } from "./extractor/transaction.extractor.interface";
 import { TransferOwnershipExtractor } from "./extractor/extract.transfer.ownership";
@@ -76,27 +74,18 @@ export class TransactionProcessorService {
               this.eventsGateway.onAccountBalanceChanged(transaction.receiver);
             }
 
-            if (transaction.data) {
-              const tryExtractNftCreate = new NftCreateTransactionExtractor();
-              const metadataNftCreateResult = tryExtractNftCreate.extract(transaction);
-              if (metadataNftCreateResult) {
-                this.logger.log(`Detected NFT Create for collection with identifier '${metadataNftCreateResult.collection}'. Raw attributes: '${metadataNftCreateResult.attributes}'`);
-
-                // this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(BinaryUtils.base64Encode(metadataResult.attributes));
-              }
-
-              const tryExtractUpdateMetadata = new UpdateMetadataTransactionExtractor();
-              const metadataUpdateResult = tryExtractUpdateMetadata.extract(transaction);
-              if (metadataUpdateResult) {
-                this.logger.log(`Detected NFT Update attributes for NFT with identifier '${metadataUpdateResult.identifier}'`);
-                if (this.apiConfigService.getIsProcessNftsFlagActive()) {
-                  this.tryHandleNftUpdateMetadata(transaction, metadataUpdateResult.identifier);
-                }
-              }
-            }
-
             if (this.apiConfigService.getIsProcessNftsFlagActive()) {
-              this.tryHandleNftCreate(transaction);
+              const nftCreateResult = new NftCreateTransactionExtractor().extract(transaction);
+              if (nftCreateResult) {
+                this.logger.log(`Detected NFT create for collection '${nftCreateResult.collection}' and tx hash '${transaction.hash}'`);
+                this.tryHandleNftCreate(transaction);
+              }
+
+              const nftUpdateAttributesResult = new NftUpdateAttributesTransactionExtractor().extract(transaction);
+              if (nftUpdateAttributesResult) {
+                this.logger.log(`Detected NFT update attributes for NFT with identifier '${nftUpdateAttributesResult.identifier}' and tx hash '${transaction.hash}'`);
+                this.tryHandleNftUpdateMetadata(transaction, nftUpdateAttributesResult.identifier);
+              }
             }
 
             const invalidatedTokenProperties = await this.cachingService.tryInvalidateTokenProperties(transaction);
@@ -156,17 +145,7 @@ export class TransactionProcessorService {
   }
   private async tryHandleNftCreate(transaction: ShardTransaction) {
     try {
-      if (transaction.receiver !== transaction.sender || !transaction.data || transaction.status !== TransactionStatus.success) {
-        return;
-      }
-
-      const data = BinaryUtils.base64Decode(transaction.data);
-      if (!data.startsWith('ESDTNFTCreate@')) {
-        return;
-      }
-
-      this.logger.log(`NFT create detected for transaction with hash '${transaction.hash}'`);
-
+      // we wait for the transaction and its operations to be fully indexed
       await new Promise(resolve => setTimeout(resolve, 5000));
 
       const transactionDetailed = await this.transactionService.getTransaction(transaction.hash);

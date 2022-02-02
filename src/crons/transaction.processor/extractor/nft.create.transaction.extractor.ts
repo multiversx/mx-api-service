@@ -5,6 +5,10 @@ import { TransactionExtractorInterface } from "./transaction.extractor.interface
 
 export class NftCreateTransactionExtractor implements TransactionExtractorInterface<{ collection: string, attributes: string }> {
   extract(transaction: ShardTransaction) {
+    if (transaction.sender !== transaction.receiver) {
+      return undefined;
+    }
+
     if (transaction.getDataFunctionName() !== 'ESDTNFTCreate') {
       return undefined;
     }

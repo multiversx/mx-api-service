@@ -3,7 +3,7 @@ import { Logger } from "@nestjs/common";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { TransactionExtractorInterface } from "./transaction.extractor.interface";
 
-export class UpdateMetadataTransactionExtractor implements TransactionExtractorInterface<{ identifier: string }> {
+export class NftUpdateMetadataTransactionExtractor implements TransactionExtractorInterface<{ identifier: string }> {
   extract(transaction: ShardTransaction) {
     if (transaction.getDataFunctionName() !== 'ESDTNFTUpdateAttributes') {
       return undefined;
@@ -23,7 +23,7 @@ export class UpdateMetadataTransactionExtractor implements TransactionExtractorI
     try {
       collection = BinaryUtils.hexToString(collectionHex);
     } catch (error: any) {
-      const logger = new Logger(UpdateMetadataTransactionExtractor.name);
+      const logger = new Logger(NftUpdateMetadataTransactionExtractor.name);
       logger.error(`Error in tryExtractNftMetadataFromUpdateAttributes function. Could not convert collection hex '${collectionHex}' to string`);
       logger.error(error);
       return undefined;
