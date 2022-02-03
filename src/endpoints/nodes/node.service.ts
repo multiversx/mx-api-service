@@ -135,6 +135,10 @@ export class NodeService {
         return false;
       }
 
+      if(query.sort && !node.hasOwnProperty(query.sort)){
+        return false;
+      }
+
       return true;
     });
 
