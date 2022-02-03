@@ -68,7 +68,11 @@ export class TransactionService {
     }
 
     if (filter.receiver) {
-      queries.push(QueryType.Match('receiver', filter.receiver));
+      shouldQueries.push(QueryType.Match('receiver', filter.receiver));
+
+      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+        shouldQueries.push(QueryType.Match('receivers', filter.receiver));
+      }
     }
 
     if (filter.token) {
