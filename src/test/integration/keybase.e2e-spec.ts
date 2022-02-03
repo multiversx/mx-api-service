@@ -1,9 +1,11 @@
 import Initializer from "./e2e-init";
-import {Test} from "@nestjs/testing";
-import {PublicAppModule} from "../../public.app.module";
-import {Constants} from "../../utils/constants";
-import {KeybaseService} from "../../common/keybase/keybase.service";
-import {Keybase} from "../../common/keybase/entities/keybase";
+import { Test } from "@nestjs/testing";
+import { PublicAppModule } from "../../public.app.module";
+import { Constants } from "../../utils/constants";
+import { KeybaseService } from "../../common/keybase/keybase.service";
+import { Keybase } from "../../common/keybase/entities/keybase";
+import { KeybaseState } from "src/common/keybase/entities/keybase.state";
+import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
 
 describe('Keybase Service', () => {
   let keybaseService: KeybaseService;
@@ -17,15 +19,19 @@ describe('Keybase Service', () => {
       imports: [PublicAppModule],
     }).compile();
 
-
     keybaseService = moduleRef.get<KeybaseService>(KeybaseService);
-
   }, Constants.oneHour() * 1000);
 
   describe('Confirm KeyBase Against Cache', () => {
     it(`should confirm base against cache and return Key base Object`, async () => {
-      const confirmKey = await keybaseService.confirmKeybasesAgainstCache();
-      expect(confirmKey).toBeInstanceOf(Object);
+      const keybaseDictionary = await keybaseService.confirmKeybasesAgainstCache();
+
+      const keybases = Object.values(keybaseDictionary);
+      expect(keybases.length).toBeGreaterThan(3000);
+
+      for (const keybase of keybases) {
+        expect(keybase).toHaveStructure(Object.keys(new KeybaseState()));
+      }
     });
   });
 
@@ -33,13 +39,11 @@ describe('Keybase Service', () => {
     it(`should return identities profiles`, async () => {
       const profiles = await keybaseService.getIdentitiesProfilesAgainstCache();
       expect(profiles).toBeInstanceOf(Array);
-    });
-  });
+      expect(profiles.length).toBeGreaterThan(100);
 
-  describe('Get Identities Profiles Against Cache', () => {
-    it(`should return identities profiles`, async () => {
-      const profiles = await keybaseService.getIdentitiesProfilesAgainstCache();
-      expect(profiles).toBeInstanceOf(Array);
+      for (const profile of profiles) {
+        expect(profile).toHaveStructure(Object.keys(new KeybaseIdentity()));
+      }
     });
   });
 
@@ -59,10 +63,10 @@ describe('Keybase Service', () => {
 
   describe('is Keybase Pub Up', () => {
     it(`verify is keybase is pub up`, async () => {
-      try{
+      try {
         const key = await keybaseService.isKeybasePubUp();
         expect(key).toBeTruthy();
-      }catch (err){
+      } catch (err) {
         expect(err).toBeFalsy();
       }
     });
@@ -70,10 +74,10 @@ describe('Keybase Service', () => {
 
   describe('is Keybase Io Up', () => {
     it(`verify is keybase is Io up`, async () => {
-      try{
+      try {
         const key = await keybaseService.isKeybaseIoUp();
         expect(key).toBeTruthy();
-      }catch (err){
+      } catch (err) {
         expect(err).toBeFalsy();
       }
     });
