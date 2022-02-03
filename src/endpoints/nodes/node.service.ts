@@ -135,7 +135,7 @@ export class NodeService {
         return false;
       }
 
-      if(query.sort && !node.hasOwnProperty(query.sort)){
+      if(query.sort && !(query.sort in node)){
         return false;
       }
 
