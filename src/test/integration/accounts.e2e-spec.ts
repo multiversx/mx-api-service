@@ -73,7 +73,6 @@ describe('Account Service', () => {
 
         expect(accountDetailed.nonce).toBeGreaterThanOrEqual(userAccount.nonce);
         expect(accountDetailed.txCount).toBeGreaterThanOrEqual(userAccount.txCount);
-        expect(accountDetailed.scrCount).toBeGreaterThanOrEqual(userAccount.scrCount);
 
         expect(accountDetailed.balance).toBeDefined();
         expect(Number(accountDetailed.balance)).toBeGreaterThan(0);

@@ -1,6 +1,6 @@
 network: 'mainnet'
 metaChainShardId: 4294967295
-useLegacyElastic: true
+useLegacyElastic: false
 api:
   public: true
   private: true

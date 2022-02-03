@@ -26,7 +26,7 @@ describe('Keybase Service', () => {
       const keybaseDictionary = await keybaseService.confirmKeybasesAgainstCache();
 
       const keybases = Object.values(keybaseDictionary);
-      expect(keybases.length).toBeGreaterThan(3000);
+      expect(keybases.length).toBeGreaterThan(100);
 
       for (const keybase of keybases) {
         expect(keybase).toHaveStructure(Object.keys(new KeybaseState()));

@@ -180,8 +180,6 @@ describe('Token Service', () => {
         expect(token.identifier).toEqual(tokenDetails.identifier);
         expect(token.name).toEqual(tokenDetails.name);
         expect(token.owner).toEqual(tokenDetails.owner);
-
-        expect(token).toHaveStructure(Object.keys(new TokenWithBalance()));
       }
     });
   });
