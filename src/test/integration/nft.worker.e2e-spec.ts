@@ -30,9 +30,6 @@ describe('Nft Worker Service', () => {
 
 			const nftSettings = new ProcessNftSettings();
 			nftSettings.forceRefreshMedia = true;
-			nftSettings.skipRefreshThumbnail = true;
-			nftSettings.forceRefreshThumbnail = true;
-			nftSettings.forceRefreshMetadata = true;
 
 			const process = await nftWorkerService.addProcessNftQueueJob(nft, nftSettings);
 			expect(process).toBeTruthy();
@@ -58,6 +55,7 @@ describe('Nft Worker Service', () => {
 			nftSettings.forceRefreshMedia = true;
 
 			const process = await nftWorkerService.needsProcessing(nft, nftSettings);
+
 			if (nft.type == NftType.MetaESDT) {
 				expect(process).toBeFalsy();
 			}
@@ -70,6 +68,7 @@ describe('Nft Worker Service', () => {
 			nftSettings.forceRefreshMedia = true;
 
 			const process = await nftWorkerService.needsProcessing(nft, nftSettings);
+
 			if (nftSettings.forceRefreshMedia) {
 				expect(process).toBeTruthy();
 			}
@@ -82,6 +81,7 @@ describe('Nft Worker Service', () => {
 			nftSettings.forceRefreshMedia = true;
 
 			const process = await nftWorkerService.needsProcessing(nft, nftSettings);
+
 			if (nft.media?.length == 0) {
 				expect(process).toBeTruthy();
 			}

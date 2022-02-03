@@ -7,14 +7,16 @@ import { TokenFilter } from 'src/endpoints/tokens/entities/token.filter';
 import { TokenWithBalance } from "../../endpoints/tokens/entities/token.with.balance";
 import tokenDetails from "../mocks/esdt/token/token.example";
 import tokenExample from "../mocks/esdt/token/token.example";
+import {TokenDetailed} from "../../endpoints/tokens/entities/token.detailed";
+import {EsdtSupply} from "../../endpoints/esdt/entities/esdt.supply";
+import {TokenAccount} from "../../endpoints/tokens/entities/token.account";
 
 describe('Token Service', () => {
   let tokenService: TokenService;
-  let tokenName: string;
-  let tokenIdentifier: string;
 
   const address: string = 'erd1xcm2sjlwg4xeqxzvuyhx93kagleewgz9rnw9hs5rxldfjk7nh9ksmznyyr';
   const identifier: string = 'EGLDRIDE-7bd51a';
+  const tokenName: string = 'ElrondWorld';
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -30,9 +32,7 @@ describe('Token Service', () => {
     );
     expect(tokens).toHaveLength(1);
 
-    const token = tokens[0];
-    tokenName = token.name;
-    tokenIdentifier = token.identifier;
+
   }, Constants.oneHour() * 1000);
 
   describe('Tokens list', () => {
@@ -42,9 +42,11 @@ describe('Token Service', () => {
           { from: 0, size: 25 },
           new TokenFilter(),
         );
-
-        expect(tokens).toBeInstanceOf(Array);
         expect(tokens).toHaveLength(25);
+
+        for (const token of tokens) {
+          expect(token).toHaveStructure(Object.keys(new TokenDetailed()));
+        }
       });
 
       it(`should return a list with 10 tokens`, async () => {
@@ -52,8 +54,11 @@ describe('Token Service', () => {
           { from: 0, size: 10 },
           new TokenFilter(),
         );
-        expect(tokens).toBeInstanceOf(Array);
         expect(tokens).toHaveLength(10);
+
+        for (const token of tokens) {
+          expect(token).toHaveStructure(Object.keys(new TokenDetailed()));
+        }
       });
     });
 
@@ -67,6 +72,7 @@ describe('Token Service', () => {
 
         for (const token of tokens) {
           expect(token.name).toBe(tokenName);
+          expect(token).toHaveStructure(Object.keys(new TokenDetailed()));
         }
       });
 
@@ -74,8 +80,10 @@ describe('Token Service', () => {
         const tokenFilter = new TokenFilter();
         tokenFilter.identifiers = ['MSFT-532e00', 'EWLD-e23800', 'invalidIdentifier'];
         const tokens = await tokenService.getTokens({ from: 0, size: 25 }, tokenFilter);
-        expect(tokens).toBeInstanceOf(Array);
 
+        for (const token of tokens) {
+          expect(token).toHaveStructure(Object.keys(new TokenDetailed()));
+        }
         expect(tokens.length).toEqual(2);
         const nftsIdentifiers = tokens.map((nft) => nft.identifier);
         expect(nftsIdentifiers.includes('MSFT-532e00')).toBeTruthy();
@@ -134,26 +142,19 @@ describe('Token Service', () => {
     it(`should return a list with 5 tokens accounts`, async () => {
       const tokens = await tokenService.getTokenAccounts({ from: 0, size: 5 }, tokenDetails.identifier);
       expect(tokens.length).toBe(5);
-      expect(tokens).toBeInstanceOf(Object);
 
       for (const token of tokens) {
-        expect(token).toHaveProperty('address');
-        expect(token).toHaveProperty('balance');
+        expect(token).toHaveStructure(Object.keys(new TokenAccount()));
       }
     });
   });
 
   describe('Get Token For Address', () => {
     it(`should return token for a specific address`, async () => {
-      const tokens = await tokenService.getTokenForAddress(tokenDetails.owner, tokenDetails.identifier);
-      expect(tokens).toBeInstanceOf(TokenWithBalance);
-
-      if (tokens) {
-        expect(tokens.owner).toEqual(tokenDetails.owner);
-        expect(tokens.name).toEqual(tokenDetails.name);
-        expect(tokens.decimals).toEqual(tokenDetails.decimals);
-      }
+      const token = await tokenService.getTokenForAddress(tokenDetails.owner, tokenDetails.identifier);
+      expect(token).toHaveStructure(Object.keys(new TokenWithBalance()));
     });
+
     it('should return undefined if tokens length < 0', async () => {
       const tokenFilter = new TokenFilter();
       tokenFilter.identifier = tokenDetails.identifier;
@@ -179,6 +180,8 @@ describe('Token Service', () => {
         expect(token.identifier).toEqual(tokenDetails.identifier);
         expect(token.name).toEqual(tokenDetails.name);
         expect(token.owner).toEqual(tokenDetails.owner);
+
+        expect(token).toHaveStructure(Object.keys(new TokenWithBalance()));
       }
     });
   });
@@ -186,20 +189,26 @@ describe('Token Service', () => {
   describe('Get Tokens For Address', () => {
     it(`should return all tokens for address`, async () => {
       const tokenFilter = new TokenFilter();
-      tokenFilter.identifiers = [tokenIdentifier];
-      const token = await tokenService.getTokensForAddress(address, {
+      tokenFilter.identifier = 'MEX-455c57';
+      const tokenAddress = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      const tokens = await tokenService.getTokensForAddress(tokenAddress, {
         from: 0,
-        size: 25,
+        size: 1,
       }, tokenFilter);
-      expect(token).toBeInstanceOf(Array);
+
+      expect(tokens.length).toBe(1);
+
+      for (const token of tokens) {
+        expect(token).toHaveStructure(Object.keys(new TokenWithBalance()));
+      }
     });
   });
 
   describe('Get Token Supply', () => {
     it(`should return token supply`, async () => {
       const supply = await tokenService.getTokenSupply(tokenDetails.identifier);
-      expect(supply?.totalSupply).toEqual(tokenDetails.supply);
-      expect(supply?.circulatingSupply).toEqual(tokenDetails.circulatingSupply);
+      expect(supply).toHaveStructure(Object.keys(new EsdtSupply()));
+
     });
     it(`should return undefined if identifier token is invalid`, async () => {
       const invalidIdentifier = 'invalidIdentifier';

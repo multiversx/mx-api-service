@@ -107,9 +107,7 @@ describe('Scresults Service', () => {
     });
 
     it(`should throw 'Smart contract result not found' error`, async () => {
-      expect(
-        await scresultsService.getScResult(scHash + 'a'),
-      ).toBeUndefined();
+      expect(await scresultsService.getScResult(scHash + 'a')).toBeUndefined();
     });
   });
 

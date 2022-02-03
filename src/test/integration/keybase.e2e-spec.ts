@@ -5,7 +5,6 @@ import { Constants } from "../../utils/constants";
 import { KeybaseService } from "../../common/keybase/keybase.service";
 import { Keybase } from "../../common/keybase/entities/keybase";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
-import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
 
 describe('Keybase Service', () => {
   let keybaseService: KeybaseService;
@@ -39,10 +38,9 @@ describe('Keybase Service', () => {
     it(`should return identities profiles`, async () => {
       const profiles = await keybaseService.getIdentitiesProfilesAgainstCache();
       expect(profiles).toBeInstanceOf(Array);
-      expect(profiles.length).toBeGreaterThan(100);
 
       for (const profile of profiles) {
-        expect(profile).toHaveStructure(Object.keys(new KeybaseIdentity()));
+        expect(profile).toBeInstanceOf(Object);
       }
     });
   });
@@ -63,23 +61,15 @@ describe('Keybase Service', () => {
 
   describe('is Keybase Pub Up', () => {
     it(`verify is keybase is pub up`, async () => {
-      try {
         const key = await keybaseService.isKeybasePubUp();
         expect(key).toBeTruthy();
-      } catch (err) {
-        expect(err).toBeFalsy();
-      }
     });
   });
 
   describe('is Keybase Io Up', () => {
     it(`verify is keybase is Io up`, async () => {
-      try {
-        const key = await keybaseService.isKeybaseIoUp();
-        expect(key).toBeTruthy();
-      } catch (err) {
-        expect(err).toBeFalsy();
-      }
+      const key = await keybaseService.isKeybaseIoUp();
+      expect(key).toStrictEqual(true);
     });
   });
 

@@ -34,44 +34,44 @@ describe('Nft Metadata Service', () => {
 
   describe('Get Or Refresh Metadata', () => {
     it(`it should return NFT properties based on nft value `, async () => {
-      const nftValue = new Nft();
-      nftValue.name = 'EGLDRIDEFL-74b819-042191';
-      nftValue.attributes = 'AAAACA+tqHq/YcRVAAAAAAAAAhQAAAAAAAACFAAAAAdEsMbf5CtvAAAAAAAAAAdEsMbf5Ctv';
-      const nftReturn = await nftMetadataService.getOrRefreshMetadata(nftValue);
+      const properties = new Nft();
+      properties.name = 'EGLDRIDEFL-74b819-042191';
+      properties.attributes = 'AAAACA+tqHq/YcRVAAAAAAAAAhQAAAAAAAACFAAAAAdEsMbf5CtvAAAAAAAAAAdEsMbf5Ctv';
+      const nftReturn = await nftMetadataService.getOrRefreshMetadata(properties);
       expect(nftReturn).toBeInstanceOf(Object);
     });
+
     it(`it should return undefined `, async () => {
-      const nftValue = new Nft();
-      nftValue.name = 'EGLDRIDEFL-74b819-042191';
-      const nftReturn = await nftMetadataService.getOrRefreshMetadata(nftValue);
+      const properties = new Nft();
+      properties.name = 'EGLDRIDEFL-74b819-042191';
+      const nftReturn = await nftMetadataService.getOrRefreshMetadata(properties);
       expect(nftReturn).toBeUndefined();
     });
   });
 
   describe('Get Metadata', () => {
     it(`should return metadata of nft`, async () => {
-      const nftValue = new Nft();
-      nftValue.name = nftIdentifier;
-      const nftReturn = await nftMetadataService.getMetadata(nftValue);
+      const property = new Nft();
+      property.name = nftIdentifier;
+      const nftReturn = await nftMetadataService.getMetadata(property);
       expect(nftReturn).toBeInstanceOf(Object);
     });
   });
 
   describe('Refresh Metadata', () => {
     it(`should refresh metadata of nft`, async () => {
-      const nftValue = new Nft();
-      nftValue.name = nftIdentifier;
-      const nftReturn = await nftMetadataService.refreshMetadata(nftValue);
+      const property = new Nft();
+      property.name = nftIdentifier;
+      const nftReturn = await nftMetadataService.refreshMetadata(property);
       expect(nftReturn).toBeInstanceOf(Object);
     });
   });
 
   describe('Get Metadata Raw', () => {
     it(`should return null if nft.type is MetaESDT`, async () => {
-      const nftValue = new Nft();
-      nftValue.type = NftType.MetaESDT;
-      const nftReturn = await nftMetadataService.getMetadataRaw(nftValue);
-
+      const property = new Nft();
+      property.type = NftType.MetaESDT;
+      const nftReturn = await nftMetadataService.getMetadataRaw(property);
       expect(nftReturn).toBeNull();
     });
   });

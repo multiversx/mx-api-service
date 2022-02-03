@@ -3,6 +3,9 @@ import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
 import { Constants } from "../../utils/constants";
 import { NetworkService } from "../../endpoints/network/network.service";
+import { NetworkConstants } from "src/endpoints/network/entities/constants";
+import { NetworkConfig } from "src/endpoints/network/entities/network.config";
+import { Economics } from "src/endpoints/network/entities/economics";
 
 describe('Network Service', () => {
   let networkService: NetworkService;
@@ -20,60 +23,28 @@ describe('Network Service', () => {
   describe('Get Constants', () => {
     it('should return network constants', async () => {
       const constants = await networkService.getConstants();
-      expect(constants).toBeInstanceOf(Object);
-    });
-    it('verify if return value contain properties', async () => {
-      const constants = await networkService.getConstants();
-      expect(constants).toHaveProperty('chainId');
-      expect(constants).toHaveProperty('gasPerDataByte');
-      expect(constants).toHaveProperty('minGasLimit');
-      expect(constants).toHaveProperty('minGasPrice');
-      expect(constants).toHaveProperty('minTransactionVersion');
+      expect(constants).toHaveStructure(Object.keys(new NetworkConstants()));
     });
   });
 
   describe('Get Network Config', () => {
     it('should return network configuration', async () => {
       const networkConfig = await networkService.getNetworkConfig();
-      expect(networkConfig).toBeInstanceOf(Object);
-    });
-    it('verify if return value contain properties', async () => {
-      const networkConfig = await networkService.getNetworkConfig();
-      expect(networkConfig).toHaveProperty('roundsPassed');
-      expect(networkConfig).toHaveProperty('roundsPerEpoch');
-      expect(networkConfig).toHaveProperty('roundDuration');
+      expect(networkConfig).toHaveStructure(Object.keys(new NetworkConfig()));
     });
   });
+
   describe('Get Economics Raw', () => {
     it('should return economic raw properties', async () => {
-      const economicsRaw = await networkService.getEconomicsRaw();
-      expect(economicsRaw).toBeInstanceOf(Object);
-    });
-    it('verify if return value contain properties', async () => {
-      const economicsRaw = await networkService.getEconomicsRaw();
-      expect(economicsRaw).toHaveProperty('totalSupply');
-      expect(economicsRaw).toHaveProperty('circulatingSupply');
-      expect(economicsRaw).toHaveProperty('staked');
-      expect(economicsRaw).toHaveProperty('price');
-      expect(economicsRaw).toHaveProperty('marketCap');
-      expect(economicsRaw).toHaveProperty('apr');
-      expect(economicsRaw).toHaveProperty('topUpApr');
-      expect(economicsRaw).toHaveProperty('baseApr');
+      const propertiesRaw = await networkService.getEconomicsRaw();
+      expect(propertiesRaw).toHaveStructure(Object.keys(new Economics()));
     });
   });
+
   describe('Get Economics', () => {
     it('should return economics properties', async () => {
-      const economics = await networkService.getEconomics();
-      expect(economics).toBeInstanceOf(Object);
-    });
-    it('verify if return value contain properties', async () => {
-      const economics = await networkService.getEconomics();
-      expect(economics).toHaveProperty('totalSupply');
-      expect(economics).toHaveProperty('circulatingSupply');
-      expect(economics).toHaveProperty('apr');
-      expect(economics).toHaveProperty('baseApr');
-      expect(economics).toHaveProperty('staked');
-      expect(economics).toHaveProperty('topUpApr');
+      const properties = await networkService.getEconomics();
+      expect(properties).toBeInstanceOf(Object);
     });
   });
 });

@@ -30,12 +30,10 @@ describe('Token Transfer Service', () => {
 	describe('Get Operations For Transaction Logs', () => {
 		it('should return operations with transaction logs', async () => {
 			const operations = await tokenTransferService.getOperationsForTransactionLogs(txHash, transactionsWithLogs);
-			expect(operations).toBeInstanceOf(Array);
-		});
 
-		it('should return operations with transaction logs', async () => {
-			const operations = await tokenTransferService.getOperationsForTransactionLogs(txHash, transactionsWithLogs);
-			expect(operations).toBeInstanceOf(Array);
+			for (const operation of operations) {
+				expect(operation).toBeInstanceOf(Object);
+			}
 		});
 
 		it('verify if operations results contains properties of "TransactionOperation"', async () => {
@@ -46,13 +44,12 @@ describe('Token Transfer Service', () => {
 						"action": "transfer",
 						"collection": "LKFARM-9d1ea8",
 						"decimals": 18,
+						"type": "nft",
 						"esdtType": "MetaESDT",
 						"identifier": "LKFARM-9d1ea8-4d2842",
 						"name": "LockedLPStaked",
 						"receiver": "erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl",
 						"sender": "erd1hz65lr7ry7sa3p8jjeplwzujm2d7ktj7s6glk9hk8f4zj8znftgqaey5f5",
-						"type": "nft",
-						"value": "1019407981831508973285",
 					}),
 				])
 			);
@@ -71,10 +68,14 @@ describe('Token Transfer Service', () => {
 
 			it('token transfer should have "TokenTransferProperties"', async () => {
 				const properties = await tokenTransferService.getTokenTransferProperties(tokenIdentifier);
-				expect(properties?.type).toBe('FungibleESDT');
-				expect(properties?.name).toBe('holoride');
-				expect(properties?.token).toBe('RIDE-7d18e9');
-				expect(properties?.decimals).toBe(18);
+
+				if (!properties) {
+					throw new Error('Properties cannot be defined');
+				}
+				expect(properties.type).toBe('FungibleESDT');
+				expect(properties.name).toBe('holoride');
+				expect(properties.token).toBe('RIDE-7d18e9');
+				expect(properties.decimals).toBe(18);
 			});
 		});
 
@@ -82,10 +83,13 @@ describe('Token Transfer Service', () => {
 			it('should return token transfer properties raw based on identifier', async () => {
 				const properties = await tokenTransferService.getTokenTransferPropertiesRaw(tokenDetails.identifier);
 
-				expect(properties?.name).toBe(tokenDetails.name);
-				expect(properties?.type).toBe(tokenDetails.type);
-				expect(properties?.token).toBe(tokenDetails.identifier);
-				expect(properties?.decimals).toBe(tokenDetails.decimals);
+				if (!properties) {
+					throw new Error('Properties cannot be defined');
+				}
+				expect(properties.name).toBe(tokenDetails.name);
+				expect(properties.type).toBe(tokenDetails.type);
+				expect(properties.token).toBe(tokenDetails.identifier);
+				expect(properties.decimals).toBe(tokenDetails.decimals);
 			});
 			it('should return null for invalidIdentifier and with null properties', async () => {
 				const properties = await tokenTransferService.getTokenTransferPropertiesRaw(invalidTokenIdentifier);

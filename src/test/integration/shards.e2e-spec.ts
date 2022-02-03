@@ -23,9 +23,7 @@ describe('Shard Service', () => {
   describe('Shards', () => {
     it('all shards should have shard, validators and activeValidators', async () => {
       for (const shard of shards) {
-        expect(shard).toHaveProperty('shard');
-        expect(shard).toHaveProperty('validators');
-        expect(shard).toHaveProperty('activeValidators');
+        expect(shard).toHaveStructure(Object.keys(new Shard()));
       }
     });
 
@@ -38,7 +36,10 @@ describe('Shard Service', () => {
       describe('Get all shards', () => {
         it('should return a list of shards', async () => {
           const shardList = await shardService.getAllShards();
-          expect(shardList).toBeInstanceOf(Array);
+
+          for (const shard of shardList) {
+            expect(shard).toHaveStructure(Object.keys(new Shard()));
+          }
         });
       });
     });
@@ -46,20 +47,27 @@ describe('Shard Service', () => {
     describe('Get Shards', () => {
       it('should return one shard based on queryPagination size 1', async () => {
         const shards = await shardService.getShards({ from: 0, size: 1 });
-        expect(shards).toBeInstanceOf(Array);
         expect(shards.length).toBe(1);
+
+        for (const shard of shards) {
+          expect(shard).toHaveStructure(Object.keys(new Shard()));
+        }
       });
+
       it('should return a list of shards based on queryPagination size 3', async () => {
         const shards = await shardService.getShards({ from: 0, size: 3 });
-        expect(shards).toBeInstanceOf(Array);
         expect(shards.length).toBe(3);
+
+        for (const shard of shards) {
+          expect(shard).toHaveStructure(Object.keys(new Shard()));
+        }
       });
       it('all shards should have shard, validators and activeValidators', async () => {
         const shards = await shardService.getShards({ from: 0, size: 1 });
+        expect(shards.length).toBe(1);
+
         for (const shard of shards) {
-          expect(shard).toHaveProperty('shard');
-          expect(shard).toHaveProperty('validators');
-          expect(shard).toHaveProperty('activeValidators');
+          expect(shard).toHaveStructure(Object.keys(new Shard()));
         }
       });
     });

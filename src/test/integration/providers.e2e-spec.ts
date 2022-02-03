@@ -8,6 +8,8 @@ import { ProviderService } from "src/endpoints/providers/provider.service";
 import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 import Initializer from "./e2e-init";
+import {DelegationData} from "../../endpoints/providers/entities/delegation.data";
+import {ProviderConfig} from "../../endpoints/providers/entities/provider.config";
 
 describe('Provider Service', () => {
   let providerService: ProviderService;
@@ -18,7 +20,6 @@ describe('Provider Service', () => {
   let providerSentinel: Provider;
 
   const providerAddress: string = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85';
-
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -39,7 +40,7 @@ describe('Provider Service', () => {
   describe('Providers', () => {
     it('all providers should have provider address', async () => {
       for (const provider of providers) {
-        expect(provider).toHaveProperty('provider');
+        expect(provider).toHaveStructure(Object.keys(new Provider()));
       }
     });
 
@@ -152,21 +153,17 @@ describe('Provider Service', () => {
       const providerDelegation = await providerService.getDelegationProviders();
 
       for (const provider of providerDelegation) {
-        expect(provider).toHaveProperty('contract');
-        expect(provider).toHaveProperty('featured');
-        expect(provider).toHaveProperty('aprValue');
+        expect(provider).toHaveStructure(Object.keys(new DelegationData()));
       }
     });
   });
 
   describe('Get Delegation Provider Raw', () => {
     it('should return delegation providers raw', async () => {
-      expect.assertions(1);
-      try {
-        const providerRaw = await providerService.getDelegationProvidersRaw();
-        expect(providerRaw).toBeInstanceOf(Object);
-      } catch (error) {
-        expect(error).toMatch('Error when getting delegation providers');
+      const providerRaw = await providerService.getDelegationProvidersRaw();
+
+      for (const provider of providerRaw) {
+        expect(provider).toHaveStructure(Object.keys(new DelegationData()));
       }
     });
   });
@@ -176,7 +173,7 @@ describe('Provider Service', () => {
       const providers = await providerService.getAllProviders();
 
       for (const provider of providers) {
-        expect(provider).toBeInstanceOf(Object);
+        expect(provider).toHaveStructure(Object.keys(new Provider()));
       }
     });
   });
@@ -186,7 +183,7 @@ describe('Provider Service', () => {
       const providersRaw = await providerService.getAllProvidersRaw();
 
       for (const providerRaw of providersRaw) {
-        expect(providerRaw).toBeInstanceOf(Object);
+        expect(providerRaw).toHaveStructure(Object.keys(new Provider()));
       }
     });
   });
@@ -194,14 +191,7 @@ describe('Provider Service', () => {
   describe('Get Provider Configuration', () => {
     it('should return provider configuration', async () => {
       const providerConfig = await providerService.getProviderConfig(providerAddress);
-      expect(providerConfig).toBeInstanceOf(Object);
-    });
-    it('provider configuration must contain owner, serviceFee, delegationCap and apr', async () => {
-      const providerConfig = await providerService.getProviderConfig(providerAddress);
-      expect(providerConfig).toHaveProperty('owner');
-      expect(providerConfig).toHaveProperty('serviceFee');
-      expect(providerConfig).toHaveProperty('delegationCap');
-      expect(providerConfig).toHaveProperty('apr');
+      expect(providerConfig).toHaveStructure(Object.keys(new ProviderConfig()));
     });
   });
 
@@ -237,13 +227,8 @@ describe('Provider Service', () => {
       const stakeProvider = await providerService.getProvidersWithStakeInformationRaw();
 
       for (const provider of stakeProvider) {
-        expect(provider).toBeInstanceOf(Object);
+        expect(provider).toHaveStructure(Object.keys(new Provider()));
       }
-    });
-    it('all providers with stake should have provider address', async () => {
-      const stakeProvider = await providerService.getProvidersWithStakeInformationRaw();
-      for (const provider of stakeProvider)
-        expect(provider).toHaveProperty('provider');
     });
     it('all providers with stake should have nodes', async () => {
       const stakeProvider = await providerService.getProvidersWithStakeInformationRaw();
@@ -266,19 +251,15 @@ describe('Provider Service', () => {
       const providers = await providerService.getProvidersWithStakeInformation();
 
       for (const provider of providers) {
-        expect(provider).toBeInstanceOf(Object);
+        expect(provider).toHaveStructure(Object.keys(new Provider()));
       }
     });
   });
 
   describe('Get Provider Addresses', () => {
     it('should return provider address', async () => {
-      try {
-        const providerAddress = await providerService.getProviderAddresses();
-        expect(providerAddress).toEqual(expect.arrayContaining([expect.any(String)]));
-      } catch (error) {
-        expect(error).toMatch('error');
-      }
+      const providerAddress = await providerService.getProviderAddresses();
+      expect(providerAddress).toEqual(expect.arrayContaining([expect.any(String)]));
     });
   });
 });

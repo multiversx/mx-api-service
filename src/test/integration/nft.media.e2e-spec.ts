@@ -7,6 +7,7 @@ import { Constants } from "../../utils/constants";
 import { NftMediaService } from "../../queue.worker/nft.worker/queue/job-services/media/nft.media.service";
 import { Nft } from "../../endpoints/nfts/entities/nft";
 import { QueueWorkerModule } from "../../queue.worker/queue.worker.module";
+import {NftMedia} from "../../endpoints/nfts/entities/nft.media";
 
 
 describe('Nft Media Service', () => {
@@ -47,7 +48,15 @@ describe('Nft Media Service', () => {
       const nftFilter = new Nft();
       nftFilter.identifier = nftIdentifier;
       const refreshMedia = await nftMediaService.refreshMedia(nftFilter);
-      expect(refreshMedia).toBeInstanceOf(Array);
+
+      if (!refreshMedia) {
+        throw new Error('Media must be defined');
+      }
+
+      for (const media of refreshMedia) {
+        expect(media).toHaveStructure(Object.keys(new NftMedia()));
+        expect(media.url).toBeDefined();
+      }
     });
   });
 });

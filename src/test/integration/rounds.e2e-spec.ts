@@ -24,9 +24,7 @@ describe('Rounds Service', () => {
   describe('Rounds', () => {
     it('all rounds should have round and shard', async () => {
       for (const round of rounds) {
-        expect(round).toHaveProperty('round');
-        expect(round).toHaveProperty('shard');
-        expect(round).not.toHaveProperty('shardId');
+        expect(round).toHaveStructure(Object.keys(new Round()));
       }
     });
 
@@ -58,12 +56,12 @@ describe('Rounds Service', () => {
   describe('Get Round', () => {
     it('should return round with filers: shard and round', async () => {
       const roundValue = await roundService.getRound(1, 10);
-      expect(roundValue).toBeInstanceOf(Object);
+      expect(roundValue).toHaveStructure(Object.keys(new RoundDetailed));
     });
 
     it('verify if round contain signers ', async () => {
       const round = await roundService.getRound(1, 10);
-      expect(round).toHaveProperty('signers');
+      expect(round).toHaveStructure(Object.keys(new RoundDetailed));
     });
 
     it('all entities should have roundDetailed structure', async () => {
