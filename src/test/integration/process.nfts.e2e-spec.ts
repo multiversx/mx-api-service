@@ -29,15 +29,4 @@ describe('Process NFTs Service', () => {
       expect(process).toBeTruthy();
     });
   });
-
-  //TBD- The process is taking to long: Exceeded timeout of 60000 ms for a test.
-  /*describe('Process Collection', () => {
-    it('should process NFT collection with identifier EGLDRIDEFL-74b819', async () => {
-      const collection = new NftFilter();
-      collection.collection = nftCollection;
-      const nftSetting = new ProcessNftSettings();
-      const process = await processNftService.processCollection(collection.collection, nftSetting);
-      expect(process).toBeInstanceOf(Object);
-    });
-  });*/
 });

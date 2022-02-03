@@ -21,12 +21,11 @@ describe('Username Service', () => {
 
   describe('Get Username Address Raw', () => {
     it('returns username address', async () => {
-      const address = await usernameService.getUsernameAddressRaw(userAccount.usernameRaw);
-      expect(address).toBe(userAccount.address);
+      expect(await usernameService.getUsernameAddressRaw(userAccount.usernameRaw)).toBe(userAccount.address);
     });
+
     it('returns null if username is not added ', async () => {
-      const result = await usernameService.getUsernameAddressRaw(usernameWithNoAddress);
-      expect(result).toBeNull();
+      expect(await usernameService.getUsernameAddressRaw(usernameWithNoAddress)).toBeNull();
     });
   });
 });

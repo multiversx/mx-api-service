@@ -22,17 +22,13 @@ describe('API Service', () => {
 
   describe('Get', () => {
     it(`GET request should not fail`, async () => {
-      const getValue = await apiService.get(apiUrl);
-
-      expect(getValue).toBeTruthy();
+      expect( await apiService.get(apiUrl)).toBeTruthy();
     });
   });
 
   describe('Head', () => {
     it(`HEAD request should not fail`, async () => {
-      const headValue = await apiService.head(apiUrl);
-
-      expect(headValue).toBeTruthy();
+      expect( await apiService.head(apiUrl)).toBeTruthy();
     });
   });
 });

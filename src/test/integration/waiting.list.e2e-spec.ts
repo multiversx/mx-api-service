@@ -4,10 +4,10 @@ import { Constants } from "../../utils/constants";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
 import {WaitingList} from "../../endpoints/waiting-list/entities/waiting.list";
+import userAccount from "../mocks/accounts/user.account";
 
 describe('WaitingListService', () => {
   let waitingListService: WaitingListService;
-  let waitingListAddress: string;
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -30,7 +30,7 @@ describe('WaitingListService', () => {
 
   describe('Waiting List For Address', () => {
     it('should return a list of waitings for a specified address ', async () => {
-      const list = await waitingListService.getWaitingListForAddress(waitingListAddress);
+      const list = await waitingListService.getWaitingListForAddress(userAccount.address);
 
       for (const item of list) {
         expect(item).toHaveStructure(Object.keys(new WaitingList()));

@@ -75,10 +75,7 @@ describe('Stake Service', () => {
 
   describe('Get  Stakes For Address', () => {
     it('should return  stake for a specific address', async () => {
-      const stake = await stakeService.getStakeForAddress(node);
-      expect(stake).toBeInstanceOf(Object);
-      expect(stake).toHaveProperty('totalStaked');
-      expect(stake).toHaveProperty('unstakedTokens');
+      expect(await stakeService.getStakeForAddress(node)).toBeInstanceOf(Object);
     });
   });
 });

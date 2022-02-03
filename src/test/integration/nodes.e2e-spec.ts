@@ -13,6 +13,8 @@ import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 import Initializer from "./e2e-init";
 import { AccountService } from "../../endpoints/accounts/account.service";
+import { Queue } from "src/endpoints/nodes/entities/queue";
+import providerAccount from "../mocks/accounts/provider.account";
 
 describe('Node Service', () => {
   let nodeService: NodeService;
@@ -23,8 +25,6 @@ describe('Node Service', () => {
   let nodeSentinel: Node;
   let accountService: AccountService;
   let accountAddress: string;
-
-  const providerAddress: string = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85';
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -50,13 +50,6 @@ describe('Node Service', () => {
   }, Constants.oneHour() * 1000);
 
   describe('Nodes', () => {
-    it('all nodes should have bls and type', async () => {
-      for (const node of nodes) {
-        expect(node).toHaveProperty('bls');
-        expect(node).toHaveProperty('type');
-      }
-    });
-
     it('should be in sync with keybase confirmations', async () => {
       const nodeKeybases: { [key: string]: KeybaseState } | undefined = await cachingService.getCache('nodeKeybases');
       expect(nodeKeybases).toBeDefined();
@@ -143,13 +136,18 @@ describe('Node Service', () => {
 
     it('should return nodes of size 10', async () => {
       const nodeFilter = new NodeFilter();
-      const filteredNode = await nodeService.getNodes({
-        from: 0,
-        size: 10,
-      }, nodeFilter);
+      const filteredNode = await nodeService.getNodes({from: 0, size: 10}, nodeFilter);
 
-      expect(filteredNode).toBeInstanceOf(Array);
       expect(filteredNode).toHaveLength(10);
+
+      if(!filteredNode){
+        throw new Error('Node properties are not defined');
+      }
+
+      for(const node of filteredNode){
+        expect(node).toHaveStructure(Object.keys(new Node()));
+      }
+
     });
   });
 
@@ -163,21 +161,42 @@ describe('Node Service', () => {
   describe('Get All Nodes Raw', () => {
     it('should return nodes array', async () => {
       const nodesRaw = await nodeService.getAllNodesRaw();
-      expect(nodesRaw).toBeInstanceOf(Array);
+
+      if(!nodesRaw){
+        throw new Error('Node properties are not defined');
+      }
+
+      for(const node of nodesRaw){
+        expect(node).toHaveStructure(Object.keys(new Node()));
+      }
     });
   });
 
   describe('Get HeartBeat', () => {
     it('should return nodes HeartBeat', async () => {
       const heartBeatValue = await nodeService.getHeartbeat();
-      expect(heartBeatValue).toBeInstanceOf(Array);
+
+      if(!heartBeatValue){
+        throw new Error('Node properties are not defined');
+      }
+
+      for(const node of heartBeatValue){
+        expect(node).toHaveStructure(Object.keys(new Node()));
+      }
     });
   });
 
   describe('Get Queue', () => {
     it('should return Queue[]', async () => {
       const queueAddress = await nodeService.getQueue();
-      expect(queueAddress).toBeInstanceOf(Array);
+
+      if(!queueAddress){
+        throw new Error('Queue properties are not defined');
+      }
+
+      for(const queue of queueAddress){
+        expect(queue).toHaveStructure(Object.keys(new Queue()));
+      }
     });
   });
 
@@ -191,13 +210,16 @@ describe('Node Service', () => {
   describe('Delete Owners For Address In Cache', () => {
     it('should delete address for an owner in cache', async () => {
       const ownerDeleted = await nodeService.deleteOwnersForAddressInCache(accountAddress);
-      expect(ownerDeleted).toBeInstanceOf(Array);
+
+      for(const owner of ownerDeleted){
+        expect(owner).toBeInstanceOf(Array);
+      }
     });
   });
 
   describe('Get Owner BLS', () => {
     it('should return owner bls', async () => {
-      const blsOwner = await nodeService.getOwnerBlses(providerAddress);
+      const blsOwner = await nodeService.getOwnerBlses(providerAccount.address);
       expect(blsOwner).toEqual(expect.arrayContaining([expect.any(String)]));
     });
 
@@ -219,7 +241,11 @@ describe('Node Service', () => {
       const nodeFilter: NodeFilter = new NodeFilter();
       nodeFilter.search = nodeSentinel.bls;
       const node = await nodeService.getNode(nodeFilter.search);
-      expect(node).toBeInstanceOf(Object);
+
+      if(!node){
+        throw new Error('Node properties are not defined');
+      }
+      expect(node).toHaveStructure(Object.keys(new Node()));
     });
   });
 });

@@ -33,7 +33,14 @@ describe('ESDT Service', () => {
   describe('Get All Esdts Tokens', () => {
     it('should return all esdts tokens', async () => {
       const tokens = await esdtService.getAllEsdtTokens();
-      expect(tokens).toBeInstanceOf(Array);
+
+      if(!tokens){
+        throw new Error('Token properties are not defined');
+      }
+
+      for(const token of tokens){
+        expect(token).toBeInstanceOf(Object);
+      }
     });
   });
 

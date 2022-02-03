@@ -85,7 +85,17 @@ describe('Keybase Service', () => {
   describe('Get Profile', () => {
     it('should return identity profile', async () => {
       const profile = await keybaseService.getProfile(identity);
-      expect(profile).toBeInstanceOf(Object);
+
+      if(!profile){
+        throw new Error('Identity properties are not defined');
+      }
+      
+      expect(profile).toEqual(
+        expect.objectContaining({
+          identity: profile.identity,
+          name: profile.name,
+          avatar: profile.avatar,
+        }));
     });
   });
 });

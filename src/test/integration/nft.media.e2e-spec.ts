@@ -54,8 +54,8 @@ describe('Nft Media Service', () => {
       }
 
       for (const media of refreshMedia) {
-        expect(media).toHaveStructure(Object.keys(new NftMedia()));
         expect(media.url).toBeDefined();
+        expect(media).toHaveStructure(Object.keys(new NftMedia()));
       }
     });
   });
