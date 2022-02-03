@@ -1,13 +1,13 @@
 import Initializer from "./e2e-init";
-import {Test} from "@nestjs/testing";
-import {PublicAppModule} from "../../public.app.module";
-import {Constants} from "../../utils/constants";
-import {NftWorkerService} from "../../queue.worker/nft.worker/nft.worker.service";
-import {Nft} from "../../endpoints/nfts/entities/nft";
-import nftsUtils from "../mocks/esdt/nft/nfts";
-import {ProcessNftSettings} from "../../endpoints/process-nfts/entities/process.nft.settings";
-import {NftWorkerModule} from "../../queue.worker/nft.worker/nft.worker.module";
-import {NftType} from "../../endpoints/nfts/entities/nft.type";
+import { Test } from "@nestjs/testing";
+import { PublicAppModule } from "../../public.app.module";
+import { Constants } from "../../utils/constants";
+import { NftWorkerService } from "../../queue.worker/nft.worker/nft.worker.service";
+import { Nft } from "../../endpoints/nfts/entities/nft";
+import nftExample from "../mocks/esdt/nft/nft.example";
+import { ProcessNftSettings } from "../../endpoints/process-nfts/entities/process.nft.settings";
+import { NftWorkerModule } from "../../queue.worker/nft.worker/nft.worker.module";
+import { NftType } from "../../endpoints/nfts/entities/nft.type";
 
 describe('Nft Worker Service', () => {
 	let nftWorkerService: NftWorkerService;
@@ -26,7 +26,7 @@ describe('Nft Worker Service', () => {
 	describe('Add Process Nft Queue Job', () => {
 		it('should return nft process "true" with forceRefreshMedia = true', async () => {
 			const nft = new Nft();
-			nft.identifier = nftsUtils.identifier;
+			nft.identifier = nftExample.identifier;
 
 			const nftSettings = new ProcessNftSettings();
 			nftSettings.forceRefreshMedia = true;
@@ -42,7 +42,7 @@ describe('Nft Worker Service', () => {
 	describe('Needs Processing', () => {
 		it('should return true on nft processing', async () => {
 			const nft = new Nft();
-			nft.identifier = nftsUtils.identifier;
+			nft.identifier = nftExample.identifier;
 
 			const nftSettings = new ProcessNftSettings();
 			nftSettings.forceRefreshMedia = true;
@@ -64,7 +64,7 @@ describe('Nft Worker Service', () => {
 		});
 		it('should return true if ProcessNftSettings are set to true', async () => {
 			const nft = new Nft();
-			nft.identifier = nftsUtils.identifier;
+			nft.identifier = nftExample.identifier;
 
 			const nftSettings = new ProcessNftSettings();
 			nftSettings.forceRefreshMedia = true;

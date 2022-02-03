@@ -1,4 +1,4 @@
-const nftsUtils = {
+const nftExample = {
 	identifier: "MAW-894a92-0270",
 	collection: "MAW-894a92",
 	timestamp: 1643636676,
@@ -80,4 +80,4 @@ const nftsUtils = {
 	supply: "1",
 	ticker: "MAW-894a92",
 };
-export default nftsUtils;
+export default nftExample;

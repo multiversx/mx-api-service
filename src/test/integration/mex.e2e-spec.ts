@@ -3,8 +3,8 @@ import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
 import { Constants } from "../../utils/constants";
 import { MexService } from "../../endpoints/mex/mex.service";
-import userAccount from "../mocks/accounts/userAccount";
-import mex from "../mocks/esdt/token/mexToken";
+import userAccount from "../mocks/accounts/user.account";
+import mexResult from "../mocks/esdt/token/mex.result";
 
 describe('Mex Service', () => {
   let mexService: MexService;
@@ -27,8 +27,8 @@ describe('Mex Service', () => {
 
       expect(mexValues).toEqual(
         expect.arrayContaining(
-        [expect.objectContaining({mex: mex[0].mex})]
-      ));
+          [expect.objectContaining({ mex: mexResult[0].mex })]
+        ));
     });
 
     it('should return total mex amount per day for address', async () => {
@@ -36,8 +36,8 @@ describe('Mex Service', () => {
 
       expect(mexValues).toEqual(
         expect.arrayContaining(
-        [expect.objectContaining({mex: mex[0].days[0].balance})]
-      ));
+          [expect.objectContaining({ mex: mexResult[0].days[0].balance })]
+        ));
     });
   });
 
@@ -47,7 +47,7 @@ describe('Mex Service', () => {
 
       expect(mexRaw).toEqual(
         expect.arrayContaining(
-          [expect.objectContaining({mex: mex[0].mex})]
+          [expect.objectContaining({ mex: mexResult[0].mex })]
         ));
     });
 
@@ -56,7 +56,7 @@ describe('Mex Service', () => {
 
       expect(mexRaw).toEqual(
         expect.arrayContaining(
-          [expect.objectContaining({mex: mex[0].days[0].balance})]
+          [expect.objectContaining({ mex: mexResult[0].days[0].balance })]
         ));
     });
   });

@@ -3,7 +3,6 @@ import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
 import { Constants } from "../../utils/constants";
 import { ApiService } from "../../common/network/api.service";
-import { ApiSettings } from "../../common/network/entities/api.settings";
 
 describe('API Service', () => {
   let apiService: ApiService;
@@ -22,20 +21,16 @@ describe('API Service', () => {
   }, Constants.oneHour() * 1000);
 
   describe('Get', () => {
-    it(`should return true if url exist and have apiSetting responseType = 'json'`, async () => {
-      const apiSettings = new ApiSettings();
-      apiSettings.responseType = 'json';
-      const getValue = await apiService.get(apiUrl, apiSettings);
+    it(`GET request should not fail`, async () => {
+      const getValue = await apiService.get(apiUrl);
 
       expect(getValue).toBeTruthy();
     });
   });
 
   describe('Head', () => {
-    it(`should return true if url exist and have apiSetting responseType = 'json'`, async () => {
-      const apiSettings = new ApiSettings();
-      apiSettings.responseType = 'json';
-      const headValue = await apiService.head(apiUrl, apiSettings);
+    it(`HEAD request should not fail`, async () => {
+      const headValue = await apiService.head(apiUrl);
 
       expect(headValue).toBeTruthy();
     });

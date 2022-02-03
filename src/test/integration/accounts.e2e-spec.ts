@@ -7,8 +7,9 @@ import { DelegationLegacyService } from 'src/endpoints/delegation.legacy/delegat
 import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 import { DeployedContract } from 'src/endpoints/accounts/entities/deployed.contract';
-import userAccount from "../mocks/accounts/userAccount";
-import providerAccount from "../mocks/accounts/providerAccount";
+import userAccount from "../mocks/accounts/user.account";
+import providerAccount from "../mocks/accounts/provider.account";
+import { AccountKey } from 'src/endpoints/accounts/entities/account.key';
 
 describe('Account Service', () => {
   let accountService: AccountService;
@@ -27,15 +28,6 @@ describe('Account Service', () => {
   }, Constants.oneHour() * 1000);
 
   describe('Accounts list', () => {
-    it('accounts should have address, shard and nonce', async () => {
-      const accountsList = await accountService.getAccounts({ from: 0, size: 25 });
-      for (const account of accountsList) {
-        expect(account).toHaveProperty('address');
-        expect(account).toHaveProperty('shard');
-        expect(account).toHaveProperty('nonce');
-      }
-    });
-
     it(`should return a list with 25 accounts`, async () => {
       const accountsList = await accountService.getAccounts({ from: 0, size: 25 });
 
@@ -69,13 +61,22 @@ describe('Account Service', () => {
     describe('Account Details', () => {
       it(`should return a detailed account with account address`, async () => {
         const accountDetailed = await accountService.getAccount(userAccount.address);
-        expect(accountDetailed).toBeDefined();
+        if (!accountDetailed) {
+          throw new Error('Account must be defined');
+        }
 
-        expect(accountDetailed?.address).toStrictEqual(userAccount.address);
-        expect(accountDetailed?.nonce).toStrictEqual(userAccount.nonce);
-        expect(accountDetailed?.balance).toStrictEqual(userAccount.balance);
-        expect(accountDetailed?.rootHash).toStrictEqual(userAccount.rootHash);
-        expect(accountDetailed?.username).toStrictEqual(userAccount.username);
+        expect(accountDetailed.address).toStrictEqual(userAccount.address);
+        expect(accountDetailed.developerReward).toStrictEqual(userAccount.developerReward);
+        expect(accountDetailed.rootHash).toStrictEqual(userAccount.rootHash);
+        expect(accountDetailed.username).toStrictEqual(userAccount.username);
+        expect(accountDetailed.shard).toStrictEqual(userAccount.shard);
+
+        expect(accountDetailed.nonce).toBeGreaterThanOrEqual(userAccount.nonce);
+        expect(accountDetailed.txCount).toBeGreaterThanOrEqual(userAccount.txCount);
+        expect(accountDetailed.scrCount).toBeGreaterThanOrEqual(userAccount.scrCount);
+
+        expect(accountDetailed.balance).toBeDefined();
+        expect(Number(accountDetailed.balance)).toBeGreaterThan(0);
       });
 
       it(`should throw 'Account not found' error`, async () => {
@@ -100,8 +101,8 @@ describe('Account Service', () => {
 
     describe('Account username based on Address', () => {
       it('should return account username based on address ', async () => {
-        const user = await accountService.getAccountUsername(userAccount.address);
-        expect(user).toBe(userAccount.username);
+        const username = await accountService.getAccountUsername(userAccount.address);
+        expect(username).toBe(userAccount.username);
       });
     });
 
@@ -138,6 +139,10 @@ describe('Account Service', () => {
       it(`should return a list of keys for a specific address`, async () => {
         const keys = await accountService.getKeys(providerAccount.address);
         expect(keys).toBeInstanceOf(Array);
+
+        for (const key of keys) {
+          expect(key).toHaveStructure(Object.keys(new AccountKey()));
+        }
       });
     });
   });
@@ -178,18 +183,12 @@ describe('Account Service', () => {
     });
   });
 
-  describe('Get Keys', () => {
-    it(`should return keys for a specific address`, async () => {
-      const keys = await accountService.getKeys(providerAccount.address);
-      expect(keys).toBeInstanceOf(Array);
-    });
-  });
-
   describe('Get Account Deployed Raw', () => {
     it(`should return keys for a specific address`, async () => {
       const account = await accountService.getAccountDeployedAtRaw(providerAccount.address);
       expect(typeof account).toBe('number');
     });
+
     it(`should return null if account is not deployed`, async () => {
       const account = await accountService.getAccountDeployedAtRaw(userAccount.address);
       expect(account).toBeNull();

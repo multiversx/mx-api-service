@@ -4,14 +4,13 @@ import { PublicAppModule } from "../../public.app.module";
 import { Constants } from "../../utils/constants";
 import { DelegationLegacyService } from "../../endpoints/delegation.legacy/delegation.legacy.service";
 import { AccountService } from "../../endpoints/accounts/account.service";
-import {DelegationLegacy} from "../../endpoints/delegation.legacy/entities/delegation.legacy";
-import {AccountDelegationLegacy} from "../../endpoints/delegation.legacy/entities/account.delegation.legacy";
+import { DelegationLegacy } from "../../endpoints/delegation.legacy/entities/delegation.legacy";
+import { AccountDelegationLegacy } from "../../endpoints/delegation.legacy/entities/account.delegation.legacy";
 
 describe('Delegation Legacy Service', () => {
   let delegationLegacyService: DelegationLegacyService;
   let accountService: AccountService;
   let accountAddress: string;
-
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -27,7 +26,6 @@ describe('Delegation Legacy Service', () => {
 
     const account = accounts[0];
     accountAddress = account.address;
-
   }, Constants.oneHour() * 1000);
 
   describe('Get Delegation', () => {

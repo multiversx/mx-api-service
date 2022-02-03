@@ -1,11 +1,11 @@
 import Initializer from "./e2e-init";
-import {Test} from "@nestjs/testing";
-import {PublicAppModule} from "../../public.app.module";
-import {Constants} from "../../utils/constants";
-import {TokenTransferService} from "../../endpoints/tokens/token.transfer.service";
+import { Test } from "@nestjs/testing";
+import { PublicAppModule } from "../../public.app.module";
+import { Constants } from "../../utils/constants";
+import { TokenTransferService } from "../../endpoints/tokens/token.transfer.service";
 import transactionsWithLogs from "../mocks/transactions/transactionsWithLogs";
-import tokenDetails from "../mocks/esdt/token/tokenDetails";
-import {EsdtService} from "../../endpoints/esdt/esdt.service";
+import tokenDetails from "../mocks/esdt/token/token.example";
+import { EsdtService } from "../../endpoints/esdt/esdt.service";
 
 describe('Token Transfer Service', () => {
 	let tokenTransferService: TokenTransferService;
@@ -52,7 +52,8 @@ describe('Token Transfer Service', () => {
 						"receiver": "erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl",
 						"sender": "erd1hz65lr7ry7sa3p8jjeplwzujm2d7ktj7s6glk9hk8f4zj8znftgqaey5f5",
 						"type": "nft",
-						"value": "1019407981831508973285"}),
+						"value": "1019407981831508973285",
+					}),
 				])
 			);
 		});

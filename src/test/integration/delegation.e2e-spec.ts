@@ -3,7 +3,7 @@ import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
 import { Constants } from "../../utils/constants";
-import {Delegation} from "../../endpoints/delegation/entities/delegation";
+import { Delegation } from "../../endpoints/delegation/entities/delegation";
 
 describe('Delegation Service', () => {
   let delegationService: DelegationService;

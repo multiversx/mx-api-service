@@ -29,7 +29,12 @@ describe('Bls Service', () => {
     it('should return public keys from shard 1', async () => {
       const publicKeys = await blsService.getPublicKeys(1, 100);
       expect(publicKeys).toBeInstanceOf(Array);
+
+      for (const key of publicKeys) {
+        expect(typeof key).toBe('string');
+      }
     });
+
     it('should return empty array', async () => {
       const emptyKey = await blsService.getPublicKeys(3, 100);
       expect(emptyKey).toEqual([]);

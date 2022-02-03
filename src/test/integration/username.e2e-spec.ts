@@ -3,7 +3,7 @@ import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
 import { Constants } from "../../utils/constants";
 import { UsernameService } from "../../endpoints/usernames/username.service";
-import userAccount from "../mocks/accounts/userAccount";
+import userAccount from "../mocks/accounts/user.account";
 
 describe('Username Service', () => {
   let usernameService: UsernameService;

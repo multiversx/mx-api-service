@@ -236,13 +236,9 @@ export class IdentitiesService {
     identities = identities
       .filter((identity) => identity && (identity.validators ?? 0) > 0);
 
-    identities.sort((a, b) => {
-      const aSort = a && a.locked && a.locked !== '0' ? parseInt(a.locked.slice(0, -18)) : 0;
-      const bSort = b && b.locked && b.locked !== '0' ? parseInt(b.locked.slice(0, -18)) : 0;
-      return bSort - aSort;
-    });
+    identities = identities.sortedDescending(identity => new BigNumber(identity.locked).dividedBy(10 ** 18).toNumber());
 
-    identities.forEach((identity, index) => {
+    for (const [index, identity] of identities.entries()) {
       if (identity) {
         identity.rank = index + 1;
 
@@ -250,7 +246,7 @@ export class IdentitiesService {
           identity.avatar = this.processIdentityAvatar(identity.avatar);
         }
       }
-    });
+    }
 
     return identities;
   }

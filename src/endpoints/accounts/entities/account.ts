@@ -14,5 +14,5 @@ export class Account {
   shard: number = 0;
 
   @ApiProperty()
-  scamInfo?: any | undefined = undefined;
+  scamInfo: any | undefined = undefined;
 }

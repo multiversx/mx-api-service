@@ -4,9 +4,9 @@ import { TokenService } from 'src/endpoints/tokens/token.service';
 import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 import { TokenFilter } from 'src/endpoints/tokens/entities/token.filter';
-import {TokenWithBalance} from "../../endpoints/tokens/entities/token.with.balance";
-import tokenDetails from "../mocks/esdt/token/tokenDetails";
-import tokensIdentifier from "../mocks/esdt/token/tokenDetails";
+import { TokenWithBalance } from "../../endpoints/tokens/entities/token.with.balance";
+import tokenDetails from "../mocks/esdt/token/token.example";
+import tokenExample from "../mocks/esdt/token/token.example";
 
 describe('Token Service', () => {
   let tokenService: TokenService;
@@ -107,10 +107,10 @@ describe('Token Service', () => {
     it(`should return a specific token based on identifier`, async () => {
       const token = await tokenService.getToken(tokenDetails.identifier);
 
-      expect(token?.owner).toEqual(tokensIdentifier.owner);
-      expect(token?.minted).toEqual(tokensIdentifier.minted);
-      expect(token?.decimals).toEqual(tokensIdentifier.decimals);
-      expect(token?.identifier).toEqual(tokensIdentifier.identifier);
+      expect(token?.owner).toEqual(tokenExample.owner);
+      expect(token?.minted).toEqual(tokenExample.minted);
+      expect(token?.decimals).toEqual(tokenExample.decimals);
+      expect(token?.identifier).toEqual(tokenExample.identifier);
 
     });
 
@@ -132,7 +132,7 @@ describe('Token Service', () => {
 
   describe('Get Token Accounts', () => {
     it(`should return a list with 5 tokens accounts`, async () => {
-      const tokens = await tokenService.getTokenAccounts({from: 0, size: 5}, tokenDetails.identifier);
+      const tokens = await tokenService.getTokenAccounts({ from: 0, size: 5 }, tokenDetails.identifier);
       expect(tokens.length).toBe(5);
       expect(tokens).toBeInstanceOf(Object);
 
@@ -146,7 +146,7 @@ describe('Token Service', () => {
   describe('Get Token For Address', () => {
     it(`should return token for a specific address`, async () => {
       const tokens = await tokenService.getTokenForAddress(tokenDetails.owner, tokenDetails.identifier);
-			expect(tokens).toBeInstanceOf(TokenWithBalance);
+      expect(tokens).toBeInstanceOf(TokenWithBalance);
 
       if (tokens) {
         expect(tokens.owner).toEqual(tokenDetails.owner);
@@ -161,7 +161,7 @@ describe('Token Service', () => {
       const tokens = await tokenService.getTokenForAddress(tokenDetails.owner, tokenDetails.identifier);
       const tokenLength = await tokenService.getFilteredTokens(tokenFilter);
 
-      if(!tokenLength.length){
+      if (!tokenLength.length) {
         expect(tokens).toBeUndefined();
       }
     });

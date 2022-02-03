@@ -240,7 +240,7 @@ describe('API Config', () => {
 
       it('should return whether to use legacy elastic', async () => {
         const value = apiConfigService.getUseLegacyElastic();
-        expect(value).toBeTruthy();
+        expect(value).toStrictEqual(false);
       });
 
       it('should return rate limiter secret', async () => {

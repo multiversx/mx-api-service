@@ -1,4 +1,4 @@
-const mex =
+const mexResult =
 	[
 		{
 			days: [
@@ -123,4 +123,4 @@ const mex =
 			mex: "2613734058297381888",
 		},
 	];
-export default mex;
+export default mexResult;

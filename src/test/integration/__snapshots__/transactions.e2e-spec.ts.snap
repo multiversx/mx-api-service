@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Transaction Service Specific transaction should return a transaction for a specific hash with results and logs optional fields: 87db96d4a04dc5729049a3faf6e7cd6064ecc91f48bdbef3a7889b8fb61538e8 1`] = `"18128acfd3f19f7a747ccf02bc866e95aa2db92af44fed2f9ed2c2102223b462"`;
+
+exports[`Transaction Service Specific transaction should return a transaction for a specific hash with results optional field: 87db96d4a04dc5729049a3faf6e7cd6064ecc91f48bdbef3a7889b8fb61538e8 1`] = `"87db96d4a04dc5729049a3faf6e7cd6064ecc91f48bdbef3a7889b8fb61538e8"`;
+
+exports[`Transaction Service Transactions list Transactions filters should return transaction details: 87db96d4a04dc5729049a3faf6e7cd6064ecc91f48bdbef3a7889b8fb61538e8 1`] = `"87db96d4a04dc5729049a3faf6e7cd6064ecc91f48bdbef3a7889b8fb61538e8"`;
+
+exports[`Transaction Service Transactions list Transactions filters should return transaction details: erd137esrr64ker9cspja6ey4wna7kqau3fyzawk9xgyr9n6925u6f2sm2rja6 1`] = `"erd137esrr64ker9cspja6ey4wna7kqau3fyzawk9xgyr9n6925u6f2sm2rja6"`;
