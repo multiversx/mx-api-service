@@ -179,12 +179,6 @@ export class TransactionService {
     for (const elasticTransaction of elasticTransactions) {
       const transaction = ApiUtils.mergeObjects(new Transaction(), elasticTransaction);
 
-      const tokenTransfer = this.tokenTransferService.getTokenTransfer(elasticTransaction);
-      if (tokenTransfer) {
-        transaction.tokenValue = tokenTransfer.tokenAmount;
-        transaction.tokenIdentifier = tokenTransfer.tokenIdentifier;
-      }
-
       transactions.push(transaction);
     }
 

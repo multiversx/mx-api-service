@@ -56,12 +56,6 @@ export class Transaction {
   function: string | undefined = undefined;
 
   @ApiProperty()
-  tokenIdentifier: string | undefined = undefined;
-
-  @ApiProperty()
-  tokenValue: string | undefined = undefined;
-
-  @ApiProperty()
   action: any | undefined = undefined;
 
   @ApiProperty()
