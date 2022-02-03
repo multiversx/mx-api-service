@@ -135,6 +135,11 @@ async function bootstrap() {
         noAck: false,
         queueOptions: {
           durable: true,
+          arguments: {
+            'x-death': {
+              'count': apiConfigService.getNftProcessRetryCount(),
+            },
+          },
           // arguments: {
           //   'x-single-active-consumer': true,
           // },
