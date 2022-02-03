@@ -21,7 +21,7 @@ describe('Process NFTs Service', () => {
 
   }, Constants.oneHour() * 1000);
 
-  describe.only('Process NFT', () => {
+  describe('Process NFT', () => {
     it('should return true if nft is process ', async () => {
       const nftSettings = new ProcessNftSettings();
       nftSettings.forceRefreshMedia = true;

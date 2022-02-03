@@ -145,7 +145,7 @@ describe('Node Service', () => {
       }
 
       for(const node of filteredNode){
-        expect(node).toHaveStructure(Object.keys(new Node()));
+        expect(node).toBeInstanceOf(Object);
       }
 
     });
@@ -167,7 +167,7 @@ describe('Node Service', () => {
       }
 
       for(const node of nodesRaw){
-        expect(node).toHaveStructure(Object.keys(new Node()));
+        expect(node).toBeInstanceOf(Object);
       }
     });
   });
@@ -181,7 +181,7 @@ describe('Node Service', () => {
       }
 
       for(const node of heartBeatValue){
-        expect(node).toHaveStructure(Object.keys(new Node()));
+        expect(node).toBeInstanceOf(Object);
       }
     });
   });
@@ -245,7 +245,7 @@ describe('Node Service', () => {
       if(!node){
         throw new Error('Node properties are not defined');
       }
-      expect(node).toHaveStructure(Object.keys(new Node()));
+      expect(node).toBeInstanceOf(Object);
     });
   });
 });

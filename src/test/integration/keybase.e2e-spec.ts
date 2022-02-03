@@ -89,13 +89,7 @@ describe('Keybase Service', () => {
       if(!profile){
         throw new Error('Identity properties are not defined');
       }
-      
-      expect(profile).toEqual(
-        expect.objectContaining({
-          identity: profile.identity,
-          name: profile.name,
-          avatar: profile.avatar,
-        }));
+      expect(profile).toBeInstanceOf(Object);
     });
   });
 });
