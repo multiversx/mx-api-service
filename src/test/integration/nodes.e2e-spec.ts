@@ -245,7 +245,7 @@ describe('Node Service', () => {
       if(!node){
         throw new Error('Node properties are not defined');
       }
-      expect(node).toBeInstanceOf(Object);
+      expect(node).toMatchObject({...Node});
     });
   });
 });
