@@ -91,7 +91,7 @@ export class StakeService {
   }
 
   async getAllStakesForNodes(addresses: string[]) {
-    return this.cachingService.batchProcess(
+    return await this.cachingService.batchProcess(
       addresses,
       address => `stakeTopup:${address}`,
       async address => await this.getAllStakesForAddressNodesRaw(address),
