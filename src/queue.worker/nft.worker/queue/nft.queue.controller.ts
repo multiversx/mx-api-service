@@ -14,7 +14,7 @@ import { NftThumbnailService } from "./job-services/thumbnails/nft.thumbnail.ser
 export class NftQueueController {
   private readonly logger: Logger;
   private readonly locker: Semaphore;
-  private readonly retryLimit: Number;
+  private readonly RETRY_LIMIT: Number;
 
   constructor(
     private readonly nftMetadataService: NftMetadataService,
@@ -24,24 +24,7 @@ export class NftQueueController {
   ) {
     this.logger = new Logger(NftQueueController.name);
     this.locker = semaphore(apiConfigService.getNftProcessParallelism());
-    this.retryLimit = apiConfigService.getNftProcessRetryCount();
-  }
-
-  private getAttemptAndUpdateContent(msg: any): { attempt: Number, content: Buffer } {
-    let content, attempt;
-    if (!msg.content) {
-      attempt = 0;
-      content = Buffer.from(JSON.stringify({ try_attempt: 0 }), 'utf8');
-      return { attempt: 0, content };
-    }
-
-    content = JSON.parse(msg.content.toString('utf8'));
-    content.try_attempt = ++content.try_attempt || 1;
-
-    attempt = content.try_attempt;
-    content = Buffer.from(JSON.stringify(content), 'utf8');
-
-    return { attempt, content };
+    this.RETRY_LIMIT = apiConfigService.getNftProcessRetryCount();
   }
 
   @MessagePattern({ cmd: 'api-process-nfts' })
@@ -49,13 +32,16 @@ export class NftQueueController {
     this.locker.take(async () => {
       const channel = context.getChannelRef();
       const message = context.getMessage();
+      const headers = message.properties.headers;
 
-      const { attempt, content } = this.getAttemptAndUpdateContent(message);
-      message.content = content;
+      let attempt = 0;
+      if (headers['x-death']) {
+        attempt = headers['x-death'][0].count;
+      }
 
       this.logger.log({ type: 'consumer start', identifier: data.identifier, attempt });
 
-      if (attempt >= this.retryLimit) {
+      if (attempt >= this.RETRY_LIMIT) {
         this.logger.log(`NFT ${data.identifier} reached maximum number of retries! Removed from retry exchange!`);
         channel.ack(message);
         return;
