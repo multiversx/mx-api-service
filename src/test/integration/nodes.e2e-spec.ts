@@ -14,7 +14,7 @@ import { Constants } from "src/utils/constants";
 import Initializer from "./e2e-init";
 import { AccountService } from "../../endpoints/accounts/account.service";
 import { Queue } from "src/endpoints/nodes/entities/queue";
-import providerAccount from "../mocks/accounts/provider.account";
+import providerAccount from "../data/accounts/provider.account";
 
 describe('Node Service', () => {
   let nodeService: NodeService;
@@ -22,7 +22,7 @@ describe('Node Service', () => {
   let providerService: ProviderService;
   let nodes: Node[];
   let providers: Provider[];
-  let nodeSentinel: Node;
+  let firstNode: Node;
   let accountService: AccountService;
   let accountAddress: string;
 
@@ -39,7 +39,7 @@ describe('Node Service', () => {
 
     nodes = await nodeService.getAllNodes();
     providers = await providerService.getAllProviders();
-    nodeSentinel = nodes[0];
+    firstNode = nodes[0];
 
     const accounts = await accountService.getAccounts({ from: 0, size: 1 });
     expect(accounts).toHaveLength(1);
@@ -70,30 +70,30 @@ describe('Node Service', () => {
 
     it('should be filtered by bls, name or version', async () => {
       const nodeFilter: NodeFilter = new NodeFilter();
-      nodeFilter.search = nodeSentinel.bls;
+      nodeFilter.search = firstNode.bls;
 
       let filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
       for (const node of filteredNodes) {
-        expect(node.bls).toStrictEqual(nodeSentinel.bls);
+        expect(node.bls).toStrictEqual(firstNode.bls);
       }
 
-      nodeFilter.search = nodeSentinel.version;
+      nodeFilter.search = firstNode.version;
       filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
 
       for (const node of filteredNodes) {
-        expect(node.version).toStrictEqual(nodeSentinel.version);
+        expect(node.version).toStrictEqual(firstNode.version);
       }
     });
 
     it('should be filtered by provider and owner', async () => {
       const nodeFilter: NodeFilter = new NodeFilter();
-      nodeFilter.provider = nodeSentinel.provider;
-      nodeFilter.owner = nodeSentinel.owner;
+      nodeFilter.provider = firstNode.provider;
+      nodeFilter.owner = firstNode.owner;
       const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
 
       for (const node of filteredNodes) {
-        expect(node.provider).toStrictEqual(nodeSentinel.provider);
-        expect(node.owner).toStrictEqual(nodeSentinel.owner);
+        expect(node.provider).toStrictEqual(firstNode.provider);
+        expect(node.owner).toStrictEqual(firstNode.owner);
       }
     });
 
@@ -115,7 +115,7 @@ describe('Node Service', () => {
 
       for (const node of filteredNodes) {
         expect(node.status).toStrictEqual(NodeStatus.eligible);
-        expect(node.online).toBeTruthy();
+        expect(node.online).toStrictEqual(true);
       }
     });
 
@@ -136,51 +136,46 @@ describe('Node Service', () => {
 
     it('should return nodes of size 10', async () => {
       const nodeFilter = new NodeFilter();
-      const filteredNode = await nodeService.getNodes({from: 0, size: 10}, nodeFilter);
+      const filteredNode = await nodeService.getNodes({ from: 0, size: 10 }, nodeFilter);
 
       expect(filteredNode).toHaveLength(10);
 
-      if(!filteredNode){
-        throw new Error('Node properties are not defined');
-      }
-
-      for(const node of filteredNode){
+      for (const node of filteredNode) {
         expect(node).toBeInstanceOf(Object);
       }
-
     });
   });
 
   describe('Get Node Version', () => {
     it('should return node version', async () => {
       const nodeVersion = await nodeService.getNodeVersions();
-      expect(nodeVersion).toBeInstanceOf(Object);
+
+      const versions = Object.values(nodeVersion);
+
+      const versionSum = versions.sum();
+      expect(versionSum).toStrictEqual(1);
     });
   });
 
   describe('Get All Nodes Raw', () => {
     it('should return nodes array', async () => {
-      const nodesRaw = await nodeService.getAllNodesRaw();
+      const nodes = await nodeService.getAllNodesRaw();
 
-      if(!nodesRaw){
-        throw new Error('Node properties are not defined');
-      }
+      expect(nodes.length).toBeGreaterThan(3000);
 
-      for(const node of nodesRaw){
+      for (const node of nodes) {
         expect(node).toBeInstanceOf(Object);
       }
     });
   });
 
-  describe('Get HeartBeat', () => {
-    it('should return nodes HeartBeat', async () => {
-      const heartBeatValue = await nodeService.getHeartbeat();
+  describe('Get Heartbeat', () => {
+    it('should return nodes Heartbeat', async () => {
+      const nodes = await nodeService.getHeartbeat();
 
-      if(!heartBeatValue){
-        throw new Error('Node properties are not defined');
-      }
+      expect(nodes.length).toBeGreaterThan(3000);
 
-      for(const node of heartBeatValue){
+      for (const node of nodes) {
         expect(node).toBeInstanceOf(Object);
       }
     });
@@ -188,14 +183,10 @@ describe('Node Service', () => {
 
   describe('Get Queue', () => {
     it('should return Queue[]', async () => {
-      const queueAddress = await nodeService.getQueue();
+      const queueItems = await nodeService.getQueue();
 
-      if(!queueAddress){
-        throw new Error('Queue properties are not defined');
-      }
-
-      for(const queue of queueAddress){
-        expect(queue).toHaveStructure(Object.keys(new Queue()));
+      for (const queueItem of queueItems) {
+        expect(queueItem).toHaveStructure(Object.keys(new Queue()));
       }
     });
   });
@@ -209,9 +200,10 @@ describe('Node Service', () => {
 
   describe('Delete Owners For Address In Cache', () => {
     it('should delete address for an owner in cache', async () => {
+      // TODO: make sure keys are in cache, then make sure they are deleted afterwards
       const ownerDeleted = await nodeService.deleteOwnersForAddressInCache(accountAddress);
 
-      for(const owner of ownerDeleted){
+      for (const owner of ownerDeleted) {
         expect(owner).toBeInstanceOf(Array);
       }
     });
@@ -232,20 +224,26 @@ describe('Node Service', () => {
   describe('Get Node Version Raw', () => {
     it('should return node version', async () => {
       const versionRaw = await nodeService.getNodeVersionsRaw();
-      expect(versionRaw).toBeInstanceOf(Object);
+
+      const versions = Object.values(versionRaw);
+
+      const versionSum = versions.sum();
+      expect(versionSum).toStrictEqual(1);
     });
   });
 
   describe('Get Node', () => {
     it('should return nodes based on bls', async () => {
       const nodeFilter: NodeFilter = new NodeFilter();
-      nodeFilter.search = nodeSentinel.bls;
+      nodeFilter.search = firstNode.bls;
       const node = await nodeService.getNode(nodeFilter.search);
-
-      if(!node){
+      if (!node) {
         throw new Error('Node properties are not defined');
       }
-      expect(node).toMatchObject({...Node});
+
+      expect(node).toHaveProperty('bls');
+      expect(node).toHaveProperty('name');
+      expect(node).toHaveProperty('version');
     });
   });
 });

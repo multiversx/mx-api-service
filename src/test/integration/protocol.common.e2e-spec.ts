@@ -20,7 +20,7 @@ describe('Protocol Service', () => {
   describe('Get Shards Ids', () => {
     it('should return shards ids', async () => {
       const shardsId = await protocolService.getShardIds();
-      expect(shardsId).toEqual(expect.arrayContaining([expect.any(Number)]));
+      expect(shardsId).toStrictEqual([0, 1, 2, 4294967295]);
     });
   });
 

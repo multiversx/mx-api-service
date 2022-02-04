@@ -7,14 +7,13 @@ import { Constants } from "../../utils/constants";
 import { NftMediaService } from "../../queue.worker/nft.worker/queue/job-services/media/nft.media.service";
 import { Nft } from "../../endpoints/nfts/entities/nft";
 import { QueueWorkerModule } from "../../queue.worker/queue.worker.module";
-import {NftMedia} from "../../endpoints/nfts/entities/nft.media";
+import { NftMedia } from "../../endpoints/nfts/entities/nft.media";
 
 
 describe('Nft Media Service', () => {
   let nftMediaService: NftMediaService;
   let nftService: NftService;
   let nftIdentifier: string;
-
 
   beforeAll(async () => {
     await Initializer.initialize();

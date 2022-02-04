@@ -3,8 +3,8 @@ import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
 import { Constants } from "../../utils/constants";
 import { MexService } from "../../endpoints/mex/mex.service";
-import userAccount from "../mocks/accounts/user.account";
-import mexResult from "../mocks/esdt/token/mex.result";
+import userAccount from "../data/accounts/user.account";
+import { MexWeek } from "src/endpoints/mex/entities/mex.week";
 
 describe('Mex Service', () => {
   let mexService: MexService;
@@ -23,41 +23,21 @@ describe('Mex Service', () => {
 
   describe('Get Mex For Address', () => {
     it(`should return total mex amount for address' `, async () => {
-      const mexValues = await mexService.getMexForAddress(userAccount.address);
+      const mexWeeks = await mexService.getMexForAddress(userAccount.address);
 
-      expect(mexValues).toEqual(
-        expect.arrayContaining(
-          [expect.objectContaining({ mex: mexResult[0].mex })]
-        ));
-    });
-
-    it('should return total mex amount per day for address', async () => {
-      const mexValues = await mexService.getMexForAddress(userAccount.address);
-
-      expect(mexValues).toEqual(
-        expect.arrayContaining(
-          [expect.objectContaining({ mex: mexResult[0].days[0].balance })]
-        ));
+      for (const mexWeek of mexWeeks) {
+        expect(mexWeek).toHaveStructure(Object.keys(new MexWeek()));
+      }
     });
   });
 
   describe('Get Mex For Address Raw', () => {
     it(`should return total mex amount for address raw'`, async () => {
-      const mexRaw = await mexService.getMexForAddressRaw(userAccount.address);
+      const mexWeeks = await mexService.getMexForAddressRaw(userAccount.address);
 
-      expect(mexRaw).toEqual(
-        expect.arrayContaining(
-          [expect.objectContaining({ mex: mexResult[0].mex })]
-        ));
-    });
-
-    it('should return total mex amount per day for address raw', async () => {
-      const mexRaw = await mexService.getMexForAddressRaw(userAccount.address);
-
-      expect(mexRaw).toEqual(
-        expect.arrayContaining(
-          [expect.objectContaining({ mex: mexResult[0].days[0].balance })]
-        ));
+      for (const mexWeek of mexWeeks) {
+        expect(mexWeek).toHaveStructure(Object.keys(new MexWeek()));
+      }
     });
   });
 });

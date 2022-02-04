@@ -7,8 +7,8 @@ import { DelegationLegacyService } from 'src/endpoints/delegation.legacy/delegat
 import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 import { DeployedContract } from 'src/endpoints/accounts/entities/deployed.contract';
-import userAccount from "../mocks/accounts/user.account";
-import providerAccount from "../mocks/accounts/provider.account";
+import userAccount from "../data/accounts/user.account";
+import providerAccount from "../data/accounts/provider.account";
 import { AccountKey } from 'src/endpoints/accounts/entities/account.key';
 
 describe('Account Service', () => {

@@ -1,8 +1,8 @@
 import Initializer from "./e2e-init";
-import {Test} from "@nestjs/testing";
-import {PublicAppModule} from "../../public.app.module";
-import {Constants} from "../../utils/constants";
-import {TokenAssetService} from "../../endpoints/tokens/token.asset.service";
+import { Test } from "@nestjs/testing";
+import { PublicAppModule } from "../../public.app.module";
+import { Constants } from "../../utils/constants";
+import { TokenAssetService } from "../../endpoints/tokens/token.asset.service";
 
 describe('Token Service', () => {
   let tokenAssetService: TokenAssetService;
@@ -20,14 +20,18 @@ describe('Token Service', () => {
   describe('Get All Assets', () => {
     it(`should return all assets`, async () => {
       const assets = await tokenAssetService.getAllAssets();
-      expect(assets).toBeInstanceOf(Object);
+
+      const assetValues = Object.values(assets);
+      expect(assetValues.length).toBeGreaterThan(10);
     });
   });
 
   describe('Get All Assets Raw', () => {
     it('should return all assets raw', async () => {
       const assets = await tokenAssetService.getAllAssetsRaw();
-      expect(assets).toBeInstanceOf(Object);
+
+      const assetValues = Object.values(assets);
+      expect(assetValues.length).toBeGreaterThan(10);
     });
   });
 });

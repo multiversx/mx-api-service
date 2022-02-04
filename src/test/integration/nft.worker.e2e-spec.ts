@@ -7,84 +7,77 @@ import { Nft } from "../../endpoints/nfts/entities/nft";
 import nftExample from "../mocks/esdt/nft/nft.example";
 import { ProcessNftSettings } from "../../endpoints/process-nfts/entities/process.nft.settings";
 import { NftWorkerModule } from "../../queue.worker/nft.worker/nft.worker.module";
-import { NftType } from "../../endpoints/nfts/entities/nft.type";
 
 describe('Nft Worker Service', () => {
-	let nftWorkerService: NftWorkerService;
+  let nftWorkerService: NftWorkerService;
 
-	beforeAll(async () => {
-		await Initializer.initialize();
+  beforeAll(async () => {
+    await Initializer.initialize();
 
-		const moduleRef = await Test.createTestingModule({
-			imports: [PublicAppModule, NftWorkerModule],
-		}).compile();
+    const moduleRef = await Test.createTestingModule({
+      imports: [PublicAppModule, NftWorkerModule],
+    }).compile();
 
-		nftWorkerService = moduleRef.get<NftWorkerService>(NftWorkerService);
+    nftWorkerService = moduleRef.get<NftWorkerService>(NftWorkerService);
 
-	}, Constants.oneHour() * 1000);
+  }, Constants.oneHour() * 1000);
 
-	describe('Add Process Nft Queue Job', () => {
-		it('should return nft process "true" with forceRefreshMedia = true', async () => {
-			const nft = new Nft();
-			nft.identifier = nftExample.identifier;
+  describe('Add Process Nft Queue Job', () => {
+    it('should return nft process "true" with forceRefreshMedia = true', async () => {
+      const nft = new Nft();
+      nft.identifier = nftExample.identifier;
 
-			const nftSettings = new ProcessNftSettings();
-			nftSettings.forceRefreshMedia = true;
+      const nftSettings = new ProcessNftSettings();
+      nftSettings.forceRefreshMedia = true;
 
-			const process = await nftWorkerService.addProcessNftQueueJob(nft, nftSettings);
-			expect(process).toBeTruthy();
-		});
-	});
+      const process = await nftWorkerService.addProcessNftQueueJob(nft, nftSettings);
+      expect(process).toStrictEqual(true);
+    });
+  });
 
-	describe('Needs Processing', () => {
-		it('should return true on nft processing', async () => {
-			const nft = new Nft();
-			nft.identifier = nftExample.identifier;
+  describe('Needs Processing', () => {
+    it('should return true on nft processing', async () => {
+      const nft = new Nft();
+      nft.identifier = nftExample.identifier;
 
-			const nftSettings = new ProcessNftSettings();
-			nftSettings.forceRefreshMedia = true;
+      const nftSettings = new ProcessNftSettings();
+      nftSettings.forceRefreshMedia = true;
 
-			const process = await nftWorkerService.needsProcessing(nft, nftSettings);
-			expect(process).toBeTruthy();
-		});
-		it('should return false if nft.type is MetaESDT', async () => {
-			const nft = new Nft();
-			nft.identifier = 'LKMEX-aab910-23049b';
+      const process = await nftWorkerService.needsProcessing(nft, nftSettings);
+      expect(process).toStrictEqual(true);
+    });
 
-			const nftSettings = new ProcessNftSettings();
-			nftSettings.forceRefreshMedia = true;
+    it('should return false if nft.type is MetaESDT', async () => {
+      const nft = new Nft();
+      nft.identifier = 'LKMEX-aab910-23049b';
 
-			const process = await nftWorkerService.needsProcessing(nft, nftSettings);
+      const nftSettings = new ProcessNftSettings();
+      nftSettings.forceRefreshMedia = true;
 
-			if (nft.type == NftType.MetaESDT) {
-				expect(process).toBeFalsy();
-			}
-		});
-		it('should return true if ProcessNftSettings are set to true', async () => {
-			const nft = new Nft();
-			nft.identifier = nftExample.identifier;
+      const process = await nftWorkerService.needsProcessing(nft, nftSettings);
+      expect(process).toStrictEqual(false);
+    });
 
-			const nftSettings = new ProcessNftSettings();
-			nftSettings.forceRefreshMedia = true;
+    it('should return true if ProcessNftSettings are set to true', async () => {
+      const nft = new Nft();
+      nft.identifier = nftExample.identifier;
 
-			const process = await nftWorkerService.needsProcessing(nft, nftSettings);
+      const nftSettings = new ProcessNftSettings();
+      nftSettings.forceRefreshMedia = true;
 
-			if (nftSettings.forceRefreshMedia) {
-				expect(process).toBeTruthy();
-			}
-		});
-		it('should return true if nft.media.length == 0', async () => {
-			const nft = new Nft();
-			nft.identifier = 'LKMEX-aab910-23049b';
+      const process = await nftWorkerService.needsProcessing(nft, nftSettings);
+      expect(process).toStrictEqual(true);
+    });
 
-			const nftSettings = new ProcessNftSettings();
-			nftSettings.forceRefreshMedia = true;
+    it('should return true if nft.media.length == 0', async () => {
+      const nft = new Nft();
+      nft.identifier = 'LKMEX-aab910-23049b';
 
-			const process = await nftWorkerService.needsProcessing(nft, nftSettings);
+      const nftSettings = new ProcessNftSettings();
+      nftSettings.forceRefreshMedia = true;
 
-			if (nft.media?.length == 0) {
-				expect(process).toBeTruthy();
-			}
-		});
-	});
+      const process = await nftWorkerService.needsProcessing(nft, nftSettings);
+      expect(process).toStrictEqual(true);
+    });
+  });
 });

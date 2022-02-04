@@ -39,13 +39,14 @@ describe('Nft Queue Service', () => {
       const nftFilter = new Nft();
       nftFilter.identifier = 'WWWINE-5a5331-03e6';
       const thumbnailGenerated = await nftQueueService.hasThumbnailGenerated(nftFilter.identifier, myPinataUrl);
-      expect(thumbnailGenerated).toBeTruthy();
+      expect(thumbnailGenerated).toStrictEqual(true);
     });
+
     it('should return false if nft does not contain thumbnail generated ', async () => {
       const nftFilter = new Nft();
       nftFilter.identifier = 'MEXFARM-e7af52-438c8a';
       const thumbnailGenerated = await nftQueueService.hasThumbnailGenerated(nftFilter.identifier, elrondMediaUrl);
-      expect(thumbnailGenerated).toBeFalsy();
+      expect(thumbnailGenerated).toStrictEqual(false);
     });
   });
 

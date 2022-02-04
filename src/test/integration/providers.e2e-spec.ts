@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import BigNumber from 'bignumber.js';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { CachingService } from 'src/common/caching/caching.service';
 import { KeybaseState } from 'src/common/keybase/entities/keybase.state';
@@ -7,7 +8,7 @@ import { ProviderFilter } from 'src/endpoints/providers/entities/provider.filter
 import { ProviderService } from 'src/endpoints/providers/provider.service';
 import { PublicAppModule } from 'src/public.app.module';
 import { Constants } from 'src/utils/constants';
-import providerAccount from '../mocks/accounts/provider.account';
+import providerAccount from '../data/accounts/provider.account';
 import Initializer from './e2e-init';
 
 describe('Provider Service', () => {
@@ -16,7 +17,7 @@ describe('Provider Service', () => {
   let apiConfigService: ApiConfigService;
   let providers: Provider[];
   let identity: string;
-  let providerSentinel: Provider;
+  let firstProvider: Provider;
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -30,12 +31,13 @@ describe('Provider Service', () => {
 
     providers = await providerService.getProviders(new ProviderFilter());
     identity = 'istari_vision';
-    providerSentinel = providers[0];
+    firstProvider = providers[0];
   }, Constants.oneHour() * 1000);
 
   describe('Providers', () => {
     it('all providers should have provider address', async () => {
       for (const property of providers) {
+        // TODO: check every property individually
         expect(property).toEqual({
           provider: property.provider,
           serviceFee: property.serviceFee,
@@ -110,13 +112,12 @@ describe('Provider Service', () => {
         };
 
         for (const identityVIP of Object.keys(vipProviders)) {
-          const providerVIP = providers.find(
-            ({ identity }) => identity === identityVIP,
-          );
+          const providerVIP = providers.find(({ identity }) => identity === identityVIP);
+          if (!providerVIP) {
+            throw new Error('ProviderVIP must be defined');
+          }
 
-          expect(providerVIP?.provider).toStrictEqual(
-            vipProviders[identityVIP],
-          );
+          expect(providerVIP?.provider).toStrictEqual(vipProviders[identityVIP]);
           expect(providerVIP?.identity).toStrictEqual(identityVIP);
           expect(providerVIP).toHaveProperty('locked');
         }
@@ -130,13 +131,8 @@ describe('Provider Service', () => {
 
       for (const provider of providers) {
         if (providerKeybases) {
-          if (
-            providerKeybases[provider.provider] &&
-            providerKeybases[provider.provider].confirmed
-          ) {
-            expect(provider.identity).toBe(
-              providerKeybases[provider.provider].identity,
-            );
+          if (providerKeybases[provider.provider] && providerKeybases[provider.provider].confirmed) {
+            expect(provider.identity).toBe(providerKeybases[provider.provider].identity);
           } else {
             expect(provider.identity).toBeUndefined();
           }
@@ -145,17 +141,19 @@ describe('Provider Service', () => {
     });
 
     it('should be sorted by locked amount', async () => {
-      let index = 1;
+      for (let index = 1; index < providers.length; index++) {
+        const currentProvider = providers[index];
+        const previousProvider = providers[index - 1];
 
-      while (index < providers.length) {
-        expect(providers[index - 1]).toHaveProperty('locked');
-        expect(providers[index]).toHaveProperty('locked');
-        if (providers[index].locked >= providers[index - 1].locked) {
-          expect(true);
-        } else {
-          expect(false);
+        expect(previousProvider).toHaveProperty('locked');
+        expect(currentProvider).toHaveProperty('locked');
+
+        const currentLocked = new BigNumber(currentProvider.locked);
+        const previousLocked = new BigNumber(previousProvider.locked);
+
+        if (currentLocked > previousLocked) {
+          throw new Error('Invalid provider sorting');
         }
-        index++;
       }
     });
 
@@ -174,11 +172,13 @@ describe('Provider Service', () => {
     });
 
     it('should be filtered by provider address', async () => {
-      const provider = await providerService.getProvider(
-        providerSentinel.provider,
-      );
-      expect(provider?.provider).toStrictEqual(providerSentinel.provider);
-      expect(provider?.identity).toStrictEqual(providerSentinel.identity);
+      const provider = await providerService.getProvider(firstProvider.provider);
+      if (!provider) {
+        throw new Error('Provider must be defined');
+      }
+
+      expect(provider.provider).toStrictEqual(firstProvider.provider);
+      expect(provider.identity).toStrictEqual(firstProvider.identity);
     });
   });
 
@@ -187,6 +187,7 @@ describe('Provider Service', () => {
       const providerDelegation = await providerService.getDelegationProviders();
 
       for (const property of providerDelegation) {
+        // TODO: verify individual props
         expect(property).toEqual(
           expect.objectContaining({
             aprValue: property.aprValue,
@@ -202,6 +203,7 @@ describe('Provider Service', () => {
       const providerRaw = await providerService.getDelegationProvidersRaw();
 
       for (const property of providerRaw) {
+        // TODO: verify individual props
         expect(property).toEqual(
           expect.objectContaining({
             aprValue: property.aprValue,
@@ -217,6 +219,7 @@ describe('Provider Service', () => {
       const providers = await providerService.getAllProviders();
 
       for (const properties of providers) {
+        // TODO: verify individual props
         expect(properties).toEqual({
           provider: properties.provider,
           serviceFee: properties.serviceFee,
@@ -250,6 +253,7 @@ describe('Provider Service', () => {
     it('should return provider configuration', async () => {
       const provider = await providerService.getProviderConfig(providerAccount.address);
 
+      // TODO: verify individual props
       expect(provider).toEqual(
         expect.objectContaining({
           owner: provider.owner,
@@ -277,6 +281,7 @@ describe('Provider Service', () => {
     it('provider metadata must contain "name", "website", "identity ', async () => {
       const provider = await providerService.getProviderMetadata(providerAccount.address);
 
+      // TODO: verify individual props
       expect(provider).toEqual(
         expect.objectContaining({
           name: provider.name,
@@ -291,6 +296,7 @@ describe('Provider Service', () => {
       const properties = await providerService.getProvidersWithStakeInformationRaw();
 
       for (const property of properties) {
+        // TODO: verify individual props
         expect(property).toEqual({
           provider: property.provider,
           serviceFee: property.serviceFee,
@@ -330,6 +336,7 @@ describe('Provider Service', () => {
       const providers = await providerService.getProvidersWithStakeInformation();
 
       for (const provider of providers) {
+        // TODO: verify individual props
         expect(provider).toEqual({
           provider: provider.provider,
           serviceFee: provider.serviceFee,
@@ -351,11 +358,9 @@ describe('Provider Service', () => {
 
   describe('Get Provider Addresses', () => {
     it('should return provider address', async () => {
-      const providerAddress = await providerService.getProviderAddresses();
+      const providerAddresses = await providerService.getProviderAddresses();
 
-      expect(providerAddress).toEqual(
-        expect.arrayContaining([expect.any(String)]),
-      );
+      expect(providerAddresses.length).toBeGreaterThan(50);
     });
   });
 });

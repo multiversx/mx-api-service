@@ -3,8 +3,8 @@ import { StakeService } from "src/endpoints/stake/stake.service";
 import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 import Initializer from "./e2e-init";
-import {Stake} from "../../endpoints/stake/entities/stake";
-import {StakeTopup} from "../../endpoints/stake/entities/stake.topup";
+import { Stake } from "../../endpoints/stake/entities/stake";
+import { StakeTopup } from "../../endpoints/stake/entities/stake.topup";
 
 describe('Stake Service', () => {
   let stakeService: StakeService;
@@ -12,7 +12,8 @@ describe('Stake Service', () => {
 
   const nodes: string[] = [
     'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhllllsajxzat',
-    'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrhlllls062tu4'];
+    'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrhlllls062tu4',
+  ];
 
   const node: string = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhllllsajxzat';
 
@@ -73,9 +74,10 @@ describe('Stake Service', () => {
     });
   });
 
-  describe('Get  Stakes For Address', () => {
+  describe('Get Stakes For Address', () => {
     it('should return  stake for a specific address', async () => {
-      expect(await stakeService.getStakeForAddress(node)).toBeInstanceOf(Object);
+      const stake = await stakeService.getStakeForAddress(node);
+      expect(stake).toBeInstanceOf(Object);
     });
   });
 });

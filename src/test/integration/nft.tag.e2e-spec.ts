@@ -3,7 +3,7 @@ import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
 import { Constants } from "../../utils/constants";
-import {Tag} from "../../endpoints/nfttags/entities/tag";
+import { Tag } from "../../endpoints/nfttags/entities/tag";
 
 describe('NFT Tag Service', () => {
   let tagService: TagService;
@@ -21,10 +21,10 @@ describe('NFT Tag Service', () => {
 
   it(`should return list of tags for 1 nft`, async () => {
     const tags = await tagService.getNftTags({ from: 0, size: 1 });
-    expect(tags.length).toBe(1);
+    expect(tags.length).toStrictEqual(1);
 
     for (const tag of tags) {
-      expect(tag).toHaveStructure(Object.keys(new Tag));
+      expect(tag).toHaveStructure(Object.keys(new Tag()));
     }
   });
 
@@ -39,7 +39,7 @@ describe('NFT Tag Service', () => {
 
   describe('Get Nft Tag', () => {
     it('should return tag', async () => {
-      const tag = await tagService.getNftTag('RWxyb25k');
+      const tag = await tagService.getNftTag('Warrior');
       expect(tag).toHaveStructure(Object.keys(new Tag()));
     });
   });

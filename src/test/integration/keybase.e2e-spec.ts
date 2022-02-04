@@ -5,6 +5,7 @@ import { Constants } from "../../utils/constants";
 import { KeybaseService } from "../../common/keybase/keybase.service";
 import { Keybase } from "../../common/keybase/entities/keybase";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
+import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
 
 describe('Keybase Service', () => {
   let keybaseService: KeybaseService;
@@ -21,8 +22,8 @@ describe('Keybase Service', () => {
     keybaseService = moduleRef.get<KeybaseService>(KeybaseService);
   }, Constants.oneHour() * 1000);
 
-  describe('Confirm KeyBase Against Cache', () => {
-    it(`should confirm base against cache and return Key base Object`, async () => {
+  describe('Confirm Keybase Against Cache', () => {
+    it(`should confirm keybase against cache and return Keybase Object`, async () => {
       const keybaseDictionary = await keybaseService.confirmKeybasesAgainstCache();
 
       const keybases = Object.values(keybaseDictionary);
@@ -54,15 +55,24 @@ describe('Keybase Service', () => {
 
   describe('Get Cached Nodes And Providers Keybases', () => {
     it(`should return cached nodes identities`, async () => {
-      const nodes = await keybaseService.getCachedNodesAndProvidersKeybases();
-      expect(nodes).toBeInstanceOf(Object);
+      const nodesDictionary = await keybaseService.getCachedNodesAndProvidersKeybases();
+      if (!nodesDictionary) {
+        throw new Error('nodesDictionary it not defined');
+      }
+
+      const nodes = Object.values(nodesDictionary);
+      expect(nodes.length).toBeGreaterThan(100);
+
+      for (const node of nodes) {
+        expect(node).toHaveStructure(Object.keys(new KeybaseState()));
+      }
     });
   });
 
   describe('is Keybase Pub Up', () => {
     it(`verify is keybase is pub up`, async () => {
-        const key = await keybaseService.isKeybasePubUp();
-        expect(key).toBeTruthy();
+      const key = await keybaseService.isKeybasePubUp();
+      expect(key).toStrictEqual(true);
     });
   });
 
@@ -77,19 +87,20 @@ describe('Keybase Service', () => {
     it('should confirm Keybase', async () => {
       const keybase = new Keybase();
       keybase.identity = identity;
+
       const key = await keybaseService.confirmKeybase(keybase);
-      expect(key).toBeTruthy();
+      expect(key).toStrictEqual(true);
     });
   });
 
   describe('Get Profile', () => {
     it('should return identity profile', async () => {
       const profile = await keybaseService.getProfile(identity);
-
-      if(!profile){
-        throw new Error('Identity properties are not defined');
+      if (!profile) {
+        throw new Error('Profile is not defined');
       }
-      expect(profile).toBeInstanceOf(Object);
+
+      expect(profile).toHaveStructure(Object.keys(new KeybaseIdentity()));
     });
   });
 });

@@ -3,11 +3,11 @@ import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
 import { Constants } from "../../utils/constants";
 import { UsernameService } from "../../endpoints/usernames/username.service";
-import userAccount from "../mocks/accounts/user.account";
+import userAccount from "../data/accounts/user.account";
 
 describe('Username Service', () => {
   let usernameService: UsernameService;
-  const usernameWithNoAddress: string = 'erd1wh9c0sjr2xn8hzf02lwwcr4jk2s84tat9ud2kaq6zr7xzpvl9l5q8awmex';
+  const usernameWithNoAddress: string = 'invalidUsername';
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -21,11 +21,13 @@ describe('Username Service', () => {
 
   describe('Get Username Address Raw', () => {
     it('returns username address', async () => {
-      expect(await usernameService.getUsernameAddressRaw(userAccount.usernameRaw)).toBe(userAccount.address);
+      const address = await usernameService.getUsernameAddressRaw(userAccount.usernameRaw);
+      expect(address).toBe(userAccount.address);
     });
 
     it('returns null if username is not added ', async () => {
-      expect(await usernameService.getUsernameAddressRaw(usernameWithNoAddress)).toBeNull();
+      const address = await usernameService.getUsernameAddressRaw(usernameWithNoAddress);
+      expect(address).toBeNull();
     });
   });
 });
