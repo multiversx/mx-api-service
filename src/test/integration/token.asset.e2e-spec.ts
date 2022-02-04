@@ -22,7 +22,14 @@ describe('Token Service', () => {
       const assets = await tokenAssetService.getAllAssets();
 
       const assetValues = Object.values(assets);
-      expect(assetValues.length).toBeGreaterThan(10);
+
+      assetValues.forEach(asset => {
+        expect(asset).toHaveProperty('website');
+        expect(asset).toHaveProperty('description');
+        expect(asset).toHaveProperty('status');
+        expect(asset).toHaveProperty('pngUrl');
+        expect(asset).toHaveProperty('svgUrl');
+      });
     });
   });
 
@@ -31,7 +38,14 @@ describe('Token Service', () => {
       const assets = await tokenAssetService.getAllAssetsRaw();
 
       const assetValues = Object.values(assets);
-      expect(assetValues.length).toBeGreaterThan(10);
+
+      assetValues.forEach(asset => {
+        expect(asset).toHaveProperty('website');
+        expect(asset).toHaveProperty('description');
+        expect(asset).toHaveProperty('status');
+        expect(asset).toHaveProperty('pngUrl');
+        expect(asset).toHaveProperty('svgUrl');
+      });
     });
   });
 });

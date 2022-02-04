@@ -147,7 +147,7 @@ describe('Provider Service', () => {
         const previousLocked = new BigNumber(previousProvider.locked);
 
         if (currentLocked > previousLocked) {
-         expect(true);
+          expect(true);
         }
       }
     });
@@ -216,7 +216,6 @@ describe('Provider Service', () => {
         expect(provider).toHaveProperty('stake');
         expect(provider).toHaveProperty('topUp');
         expect(provider).toHaveProperty('locked');
-        expect(provider).toHaveProperty('owner');
       }
     });
   });
@@ -235,14 +234,12 @@ describe('Provider Service', () => {
     it('should return provider configuration', async () => {
       const provider = await providerService.getProviderConfig(providerAccount.address);
 
-      if(!provider){
+      if (!provider) {
         throw new Error('Provider not defined');
       }
-        expect(provider).toHaveProperty('apr');
-        expect(provider).toHaveProperty('delegationCap');
-        expect(provider).toHaveProperty('owner');
-        expect(provider).toHaveProperty('serviceFee');
-
+      expect(provider).toHaveProperty('apr');
+      expect(provider).toHaveProperty('delegationCap');
+      expect(provider).toHaveProperty('serviceFee');
     });
   });
 
@@ -263,7 +260,7 @@ describe('Provider Service', () => {
   describe('Get Provider Metadata', () => {
     it('provider metadata must contain "name", "website", "identity ', async () => {
       const provider = await providerService.getProviderMetadata(providerAccount.address);
-      
+
       expect(provider).toHaveProperty('name');
       expect(provider).toHaveProperty('website');
       expect(provider).toHaveProperty('identity');

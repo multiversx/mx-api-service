@@ -161,7 +161,7 @@ describe('Node Service', () => {
     it('should return nodes array', async () => {
       const nodes = await nodeService.getAllNodesRaw();
 
-      expect(nodes.length).toBeGreaterThan(3000);
+      expect(nodes.length).toBeGreaterThan(100);
 
       for (const node of nodes) {
         expect(node).toBeInstanceOf(Object);
@@ -173,7 +173,7 @@ describe('Node Service', () => {
     it('should return nodes Heartbeat', async () => {
       const nodes = await nodeService.getHeartbeat();
 
-      expect(nodes.length).toBeGreaterThan(3000);
+      expect(nodes.length).toBeGreaterThan(100);
 
       for (const node of nodes) {
         expect(node).toBeInstanceOf(Object);
