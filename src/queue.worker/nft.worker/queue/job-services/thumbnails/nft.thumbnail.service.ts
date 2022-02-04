@@ -157,6 +157,7 @@ export class NftThumbnailService {
     const url = this.getFullThumbnailUrl(urlIdentifier);
 
     let hasThumbnail = true;
+    // eslint-disable-next-line require-await
     await this.apiService.head(url, { skipRedirects: true }, async (error) => {
       const status = error.response?.status;
       if ([HttpStatus.FOUND, HttpStatus.NOT_FOUND, HttpStatus.FORBIDDEN].includes(status)) {

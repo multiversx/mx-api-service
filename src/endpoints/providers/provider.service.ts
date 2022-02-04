@@ -137,7 +137,7 @@ export class ProviderService {
   }
 
   async getDelegationProviders(): Promise<DelegationData[]> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       'delegationProviders',
       async () => await this.getDelegationProvidersRaw(),
       Constants.oneMinute()

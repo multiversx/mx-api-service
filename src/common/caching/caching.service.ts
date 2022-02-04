@@ -341,7 +341,7 @@ export class CachingService {
     ttl: number,
     chunkSize: number,
   ): Promise<{ [key: string]: TOUT }> {
-    return BatchUtils.batchGet<TIN, TOUT>(
+    return await BatchUtils.batchGet<TIN, TOUT>(
       elements,
       cacheKeyFunc,
       [
@@ -434,7 +434,7 @@ export class CachingService {
   }
 
   async deleteInCacheLocal(key: string) {
-    this.localCacheService.deleteCacheKey(key);
+    await this.localCacheService.deleteCacheKey(key);
   }
 
   async deleteInCache(key: string): Promise<string[]> {

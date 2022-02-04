@@ -1,3 +1,4 @@
+/* eslint-disable require-await */
 import { BatchUtils } from "src/utils/batch.utils";
 
 describe('Batch Utils', () => {

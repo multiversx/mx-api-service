@@ -35,7 +35,7 @@ describe('Provider Service', () => {
   }, Constants.oneHour() * 1000);
 
   describe('Providers', () => {
-    it('all providers should have provider address', async () => {
+    it('all providers should have provider address', () => {
 
       for (const provider of providers) {
         expect(provider).toHaveProperty('provider');
@@ -51,13 +51,13 @@ describe('Provider Service', () => {
       }
     });
 
-    it('all providers should have nodes', async () => {
+    it('all providers should have nodes', () => {
       for (const provider of providers) {
         expect(provider.numNodes).toBeGreaterThan(0);
       }
     });
 
-    it('providers with more than 30 nodes should have identity', async () => {
+    it('providers with more than 30 nodes should have identity', () => {
       for (const provider of providers) {
         if (provider.numNodes >= 30) {
           expect(provider).toHaveProperty('identity');
@@ -65,7 +65,7 @@ describe('Provider Service', () => {
       }
     });
 
-    it('some providers should be included', async () => {
+    it('some providers should be included', () => {
       if (!apiConfigService.getMockNodes()) {
         const vipProviders: { [key: string]: string } = {
           staking_agency:
@@ -135,7 +135,7 @@ describe('Provider Service', () => {
       }
     });
 
-    it('should be sorted by locked amount', async () => {
+    it('should be sorted by locked amount', () => {
       for (let index = 1; index < providers.length; index++) {
         const currentProvider = providers[index];
         const previousProvider = providers[index - 1];
@@ -162,7 +162,7 @@ describe('Provider Service', () => {
       }
     });
 
-    it('some providers should be confirmed', async () => {
+    it('some providers should be confirmed', () => {
       expect(providers.length).toBeGreaterThanOrEqual(32);
     });
 

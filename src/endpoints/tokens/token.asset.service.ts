@@ -20,7 +20,7 @@ export class TokenAssetService {
     this.logger = new Logger(TokenAssetService.name);
   }
 
-  async checkout(): Promise<void> {
+  checkout(): Promise<void> {
     const localGitPath = 'dist/repos/assets';
     const logger = this.logger;
     return new Promise((resolve, reject) => {
@@ -85,14 +85,14 @@ export class TokenAssetService {
   }
 
   async getAllAssets(): Promise<{ [key: string]: TokenAssets }> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       CacheInfo.TokenAssets.key,
       async () => await this.getAllAssetsRaw(),
       CacheInfo.TokenAssets.ttl
     );
   }
 
-  async getAllAssetsRaw(): Promise<{ [key: string]: TokenAssets }> {
+  getAllAssetsRaw(): { [key: string]: TokenAssets } {
     const tokensPath = this.getTokensPath();
     if (!fs.existsSync(tokensPath)) {
       return {};

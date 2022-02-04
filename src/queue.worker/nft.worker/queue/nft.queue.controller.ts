@@ -26,7 +26,7 @@ export class NftQueueController {
   }
 
   @MessagePattern({ cmd: 'api-process-nfts' })
-  async onNftCreated(@Payload() data: NftMessage, @Ctx() context: RmqContext) {
+  onNftCreated(@Payload() data: NftMessage, @Ctx() context: RmqContext) {
     this.locker.take(async () => {
       this.logger.log({ type: 'consumer start', identifier: data.identifier });
       const channel = context.getChannelRef();

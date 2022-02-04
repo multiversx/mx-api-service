@@ -33,7 +33,7 @@ describe('Identities Service', () => {
   }, Constants.oneHour() * 1000);
 
   describe('Identities', () => {
-    it('all identities should have provider stake, topUp and locked', async () => {
+    it('all identities should have provider stake, topUp and locked', () => {
       for (const identity of identities) {
         expect(identity).toHaveProperty('stake');
         expect(identity).toHaveProperty('topUp');
@@ -41,7 +41,7 @@ describe('Identities Service', () => {
       }
     });
 
-    it('should be sorted by locked amount', async () => {
+    it('should be sorted by locked amount', () => {
       for (let index = 1; index < identities.length; index++) {
         const currentIdentity = identities[index];
         const previousIdentity = identities[index - 1];
@@ -56,7 +56,7 @@ describe('Identities Service', () => {
       }
     });
 
-    it('should distribution sum be 1', async () => {
+    it('should distribution sum be 1', () => {
       for (const identity of identities) {
         if (identity.distribution) {
           const distributionValues = Object.values(identity.distribution).filter(x => x !== null);
@@ -69,11 +69,11 @@ describe('Identities Service', () => {
       }
     });
 
-    it('some identities should be confirmed', async () => {
+    it('some identities should be confirmed', () => {
       expect(identities.length).toBeGreaterThanOrEqual(32);
     });
 
-    it('all providers identities should appear', async () => {
+    it('all providers identities should appear', () => {
       if (!apiConfigService.getMockNodes()) {
         for (const provider of providers) {
           if (provider.identity && provider.locked !== '0') {

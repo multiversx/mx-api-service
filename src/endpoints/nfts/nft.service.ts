@@ -368,7 +368,7 @@ export class NftService {
   }
 
   async getNftOwnersCount(identifier: string): Promise<number> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       `nftOwnerCount:${identifier}`,
       async () => await this.getNftOwnersCountRaw(identifier),
       Constants.oneMinute()
@@ -438,7 +438,7 @@ export class NftService {
     return nfts.length;
   }
 
-  private async filterNfts(filter: NftFilter, nfts: NftAccount[]): Promise<NftAccount[]> {
+  private filterNfts(filter: NftFilter, nfts: NftAccount[]): NftAccount[] {
     if (filter.search) {
       const searchLower = filter.search.toLowerCase();
 
@@ -575,7 +575,7 @@ export class NftService {
       nfts.push(nft);
     }
 
-    nfts = await this.filterNfts(filter, nfts);
+    nfts = this.filterNfts(filter, nfts);
 
     return nfts;
   }

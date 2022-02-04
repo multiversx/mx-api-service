@@ -34,7 +34,7 @@ export class NftMetadataService {
   }
 
   async getMetadata(nft: Nft): Promise<any> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       CacheInfo.NftMetadata(nft.identifier).key,
       async () => await this.persistenceService.getMetadata(nft.identifier),
       CacheInfo.NftMetadata(nft.identifier).ttl
