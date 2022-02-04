@@ -38,12 +38,12 @@ export class NftQueueController {
       if (headers['x-death']) {
         attempt = headers['x-death'][0].count;
       }
-
       this.logger.log({ type: 'consumer start', identifier: data.identifier, attempt });
 
       if (attempt >= this.RETRY_LIMIT) {
         this.logger.log(`NFT ${data.identifier} reached maximum number of retries! Removed from retry exchange!`);
         channel.ack(message);
+        this.locker.leave();
         return;
       }
 
