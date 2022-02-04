@@ -28,11 +28,18 @@ export class NftQueueController {
   }
 
   private getAttemptAndUpdateContent(msg: any): { attempt: Number, content: Buffer } {
-    let content = JSON.parse(msg.content.toString('hex'));
+    let content, attempt;
+    if (!msg.content) {
+      attempt = 0;
+      content = Buffer.from(JSON.stringify({ try_attempt: 0 }), 'utf8');
+      return { attempt: 0, content };
+    }
+
+    content = JSON.parse(msg.content.toString('utf8'));
     content.try_attempt = ++content.try_attempt || 1;
 
-    const attempt = content.try_attempt;
-    content = Buffer.from(JSON.stringify(content), 'hex');
+    attempt = content.try_attempt;
+    content = Buffer.from(JSON.stringify(content), 'utf8');
 
     return { attempt, content };
   }
