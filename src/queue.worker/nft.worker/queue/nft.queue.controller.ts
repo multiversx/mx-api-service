@@ -14,6 +14,7 @@ import { NftThumbnailService } from "./job-services/thumbnails/nft.thumbnail.ser
 export class NftQueueController {
   private readonly logger: Logger;
   private readonly locker: Semaphore;
+  private readonly retryLimit: Number;
 
   constructor(
     private readonly nftMetadataService: NftMetadataService,
@@ -23,14 +24,35 @@ export class NftQueueController {
   ) {
     this.logger = new Logger(NftQueueController.name);
     this.locker = semaphore(apiConfigService.getNftProcessParallelism());
+    this.retryLimit = apiConfigService.getNftProcessRetryCount();
+  }
+
+  private getAttemptAndUpdateContent(msg: any): { attempt: Number, content: Buffer } {
+    let content = JSON.parse(msg.content.toString('hex'));
+    content.try_attempt = ++content.try_attempt || 1;
+
+    const attempt = content.try_attempt;
+    content = Buffer.from(JSON.stringify(content), 'hex');
+
+    return { attempt, content };
   }
 
   @MessagePattern({ cmd: 'api-process-nfts' })
   async onNftCreated(@Payload() data: NftMessage, @Ctx() context: RmqContext) {
     this.locker.take(async () => {
-      this.logger.log({ type: 'consumer start', identifier: data.identifier });
       const channel = context.getChannelRef();
       const message = context.getMessage();
+
+      const { attempt, content } = this.getAttemptAndUpdateContent(message);
+      message.content = content;
+
+      this.logger.log({ type: 'consumer start', identifier: data.identifier, attempt });
+
+      if (attempt >= this.retryLimit) {
+        this.logger.log(`NFT ${data.identifier} reached maximum number of retries! Removed from retry exchange!`);
+        channel.ack(message);
+        return;
+      }
 
       try {
         const nft = data.nft;
