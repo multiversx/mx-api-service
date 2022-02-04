@@ -15,7 +15,7 @@ export class BlsService {
   }
 
 
-  public async getPublicKeys(shard: number, epoch: number) {
+  public async getPublicKeys(shard: number, epoch: number): Promise<string[]> {
     const key = `${shard}_${epoch}`;
 
     if (this.publicKeysCache[key]) {

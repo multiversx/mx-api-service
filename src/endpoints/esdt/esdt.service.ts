@@ -229,7 +229,7 @@ export class EsdtService {
     );
 
     if (!tokenPropertiesEncoded) {
-      this.logger.error(`Could not fetch token properties for token with identifier '${identifier}'`);
+      // this.logger.error(`Could not fetch token properties for token with identifier '${identifier}'`);
       return null;
     }
 
