@@ -3,7 +3,7 @@ import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
 import { Constants } from "../../utils/constants";
 import { EsdtService } from "../../endpoints/esdt/esdt.service";
-import tokenExample from "../mocks/esdt/token/token.example";
+import tokenExample from "../data/esdt/token/token.example";
 import { TokenAddressRoles } from "src/endpoints/tokens/entities/token.address.roles";
 
 describe('ESDT Service', () => {

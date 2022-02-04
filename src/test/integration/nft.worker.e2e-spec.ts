@@ -4,7 +4,7 @@ import { PublicAppModule } from "../../public.app.module";
 import { Constants } from "../../utils/constants";
 import { NftWorkerService } from "../../queue.worker/nft.worker/nft.worker.service";
 import { Nft } from "../../endpoints/nfts/entities/nft";
-import nftExample from "../mocks/esdt/nft/nft.example";
+import nftExample from "../data/esdt/nft/nft.example";
 import { ProcessNftSettings } from "../../endpoints/process-nfts/entities/process.nft.settings";
 import { NftWorkerModule } from "../../queue.worker/nft.worker/nft.worker.module";
 
@@ -45,17 +45,6 @@ describe('Nft Worker Service', () => {
 
       const process = await nftWorkerService.needsProcessing(nft, nftSettings);
       expect(process).toStrictEqual(true);
-    });
-
-    it('should return false if nft.type is MetaESDT', async () => {
-      const nft = new Nft();
-      nft.identifier = 'LKMEX-aab910-23049b';
-
-      const nftSettings = new ProcessNftSettings();
-      nftSettings.forceRefreshMedia = true;
-
-      const process = await nftWorkerService.needsProcessing(nft, nftSettings);
-      expect(process).toStrictEqual(false);
     });
 
     it('should return true if ProcessNftSettings are set to true', async () => {

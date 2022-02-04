@@ -8,7 +8,7 @@ import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 import { TransactionOptionalFieldOption } from 'src/endpoints/transactions/entities/transaction.optional.field.options';
-import transactionDetails from "../mocks/transactions/transaction.details";
+import transactionDetails from "../data/transactions/transaction.details";
 import { TransactionDetailed } from "../../endpoints/transactions/entities/transaction.detailed";
 
 describe('Transaction Service', () => {
@@ -210,9 +210,8 @@ describe('Transaction Service', () => {
         const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 1 });
         for (const transaction of transactions) {
           expect(transaction).toBeDefined();
-          // TODO: normal testing
-          expect(transaction.txHash).toMatchSnapshot(transactionDetails.txHash);
-          expect(transaction.sender).toMatchSnapshot(transactionDetails.sender);
+          expect(transaction.txHash).toEqual(transactionDetails.txHash);
+          expect(transaction.sender).toEqual(transactionDetails.sender);
         }
       });
     });

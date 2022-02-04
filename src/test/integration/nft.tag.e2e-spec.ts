@@ -39,7 +39,7 @@ describe('NFT Tag Service', () => {
 
   describe('Get Nft Tag', () => {
     it('should return tag', async () => {
-      const tag = await tagService.getNftTag('Warrior');
+      const tag = await tagService.getNftTag('RWxyb25k'); //Base64 encoded string (Elrond)
       expect(tag).toHaveStructure(Object.keys(new Tag()));
     });
   });

@@ -3,8 +3,8 @@ import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
 import { Constants } from "../../utils/constants";
 import { TokenTransferService } from "../../endpoints/tokens/token.transfer.service";
-import transactionsWithLogs from "../mocks/transactions/transactions.with.logs";
-import tokenDetails from "../mocks/esdt/token/token.example";
+import transactionsWithLogs from "../data/transactions/transactions.with.logs";
+import tokenDetails from "../data/esdt/token/token.example";
 import { EsdtService } from "../../endpoints/esdt/esdt.service";
 
 describe('Token Transfer Service', () => {
@@ -31,17 +31,12 @@ describe('Token Transfer Service', () => {
       const operations = await tokenTransferService.getOperationsForTransactionLogs(txHash, transactionsWithLogs);
 
       for (const operation of operations) {
-        // TODO: check structure differently
-        expect(operation).toEqual(
-          expect.objectContaining({
-            action: operation.action,
-            identifier: operation.identifier,
-            receiver: operation.receiver,
-            sender: operation.sender,
-            type: operation.type,
-            value: operation.value,
-          })
-        );
+        expect(operation).toHaveProperty('action');
+        expect(operation).toHaveProperty('identifier');
+        expect(operation).toHaveProperty('receiver');
+        expect(operation).toHaveProperty('sender');
+        expect(operation).toHaveProperty('type');
+        expect(operation).toHaveProperty('value');
       }
     });
 
@@ -52,8 +47,10 @@ describe('Token Transfer Service', () => {
           throw new Error('Properties are not defined');
         }
 
-        // TODO: check some props
-        expect(properties).toBeInstanceOf(Object);
+        expect(properties).toHaveProperty('type');
+        expect(properties).toHaveProperty('ticker');
+        expect(properties).toHaveProperty('name');
+        expect(properties).toHaveProperty('svgUrl');
       });
 
       it('should return null if token identifier is not valid', async () => {

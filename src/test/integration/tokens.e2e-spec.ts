@@ -5,11 +5,11 @@ import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 import { TokenFilter } from 'src/endpoints/tokens/entities/token.filter';
 import { TokenWithBalance } from "../../endpoints/tokens/entities/token.with.balance";
-import tokenDetails from "../mocks/esdt/token/token.example";
 import { TokenDetailed } from "../../endpoints/tokens/entities/token.detailed";
 import { EsdtSupply } from "../../endpoints/esdt/entities/esdt.supply";
 import { TokenAccount } from "../../endpoints/tokens/entities/token.account";
 import { TokenAddressRoles } from 'src/endpoints/tokens/entities/token.address.roles';
+import tokenDetails from '../data/esdt/token/token.example';
 
 describe('Token Service', () => {
   let tokenService: TokenService;
@@ -148,11 +148,6 @@ describe('Token Service', () => {
     it(`should return token for a specific address`, async () => {
       const token = await tokenService.getTokenForAddress(tokenDetails.owner, tokenDetails.identifier);
       expect(token).toHaveStructure(Object.keys(new TokenWithBalance()));
-    });
-
-    it('should return undefined if tokens length < 0', async () => {
-      const token = await tokenService.getTokenForAddress(tokenDetails.owner + 'a', tokenDetails.identifier);
-      expect(token).toBeUndefined();
     });
   });
 

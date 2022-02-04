@@ -254,19 +254,6 @@ describe('Nft Service', () => {
         expect(nft).toHaveStructure(Object.keys(new GatewayNft()));
       }
     });
-
-    it(`should return a list with nfts if identifiers value is 2`, async () => {
-      const nftFilter = new NftFilter();
-      nftFilter.identifiers = ['LKFARM-9d1ea8-44b421', 'LKMEX-aab910-1d8b28'];
-      const nfts = await nftService.getGatewayNfts(nftAddress, nftFilter);
-
-      expect(nfts).toBeInstanceOf(Array);
-      expect(nfts.length).toStrictEqual(2);
-
-      for (const nft of nfts) {
-        expect(nft).toHaveStructure(Object.keys(new GatewayNft()));
-      }
-    });
   });
 
   describe('Get NFTs For Address Internal', () => {

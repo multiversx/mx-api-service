@@ -96,10 +96,7 @@ describe('Keybase Service', () => {
   describe('Get Profile', () => {
     it('should return identity profile', async () => {
       const profile = await keybaseService.getProfile(identity);
-      if (!profile) {
-        throw new Error('Profile is not defined');
-      }
-
+    
       expect(profile).toHaveStructure(Object.keys(new KeybaseIdentity()));
     });
   });
