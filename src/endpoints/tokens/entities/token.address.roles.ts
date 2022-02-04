@@ -1,4 +1,4 @@
 export class TokenAddressRoles {
-  address?: string;
-  roles?: string[];
+  address: string | undefined = undefined;
+  roles: string[] | undefined = undefined;
 }

@@ -15,8 +15,8 @@ export class AccountKey {
   rewardAddress: string = '';
 
   @ApiProperty()
-  queueIndex?: string;
+  queueIndex: string | undefined = undefined;
 
   @ApiProperty()
-  queueSize?: string;
+  queueSize: string | undefined = undefined;
 }
