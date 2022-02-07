@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { AbstractQuery } from "src/common/elastic/entities/abstract.query";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
@@ -14,6 +15,7 @@ import { SmartContractResultFilter } from "./entities/smart.contract.result.filt
 export class SmartContractResultService {
   constructor(
     private readonly elasticService: ElasticService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   private buildSmartContractResultFilterQuery(address?: string): ElasticQuery {
@@ -23,6 +25,10 @@ export class SmartContractResultService {
     if (address) {
       shouldQueries.push(QueryType.Match('sender', address));
       shouldQueries.push(QueryType.Match('receiver', address));
+
+      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+        shouldQueries.push(QueryType.Match('receivers', address));
+      }
     }
 
     const elasticQuery = ElasticQuery.create()

@@ -30,6 +30,7 @@ import { Constants } from 'src/utils/constants';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { SortOrder } from 'src/common/entities/sort.order';
 import { TransactionUtils } from 'src/utils/transaction.utils';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
 
 @Injectable()
 export class TransactionService {
@@ -43,6 +44,7 @@ export class TransactionService {
     private readonly tokenTransferService: TokenTransferService,
     private readonly pluginsService: PluginService,
     private readonly cachingService: CachingService,
+    private readonly apiConfigService: ApiConfigService,
   ) {
     this.logger = new Logger(TransactionService.name);
   }
@@ -55,6 +57,10 @@ export class TransactionService {
     if (address) {
       shouldQueries.push(QueryType.Match('sender', address));
       shouldQueries.push(QueryType.Match('receiver', address));
+
+      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+        shouldQueries.push(QueryType.Match('receivers', address));
+      }
     }
 
     if (filter.sender) {
@@ -67,6 +73,12 @@ export class TransactionService {
 
     if (filter.token) {
       queries.push(QueryType.Match('tokens', filter.token, QueryOperator.AND));
+    }
+
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+      if (filter.function) {
+        queries.push(QueryType.Match('function', filter.function));
+      }
     }
 
     if (filter.senderShard !== undefined) {
