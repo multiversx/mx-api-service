@@ -17,7 +17,7 @@ export class NftCollection {
   ticker: string = '';
 
   @ApiProperty()
-  owner?: string;
+  owner: string | undefined = undefined;
 
   @ApiProperty()
   timestamp: number = 0;
@@ -35,10 +35,10 @@ export class NftCollection {
   canTransferRole: boolean = false;
 
   @ApiProperty()
-  decimals?: number;
+  decimals: number | undefined;
 
   @ApiProperty()
-  assets?: TokenAssets;
+  assets: TokenAssets | undefined = undefined;
 
   @ApiProperty()
   roles: AddresCollectionRoles[] = [];

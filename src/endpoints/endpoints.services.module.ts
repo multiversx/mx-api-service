@@ -25,7 +25,6 @@ import { UsernameModule } from "./usernames/username.module";
 import { VmQueryModule } from "./vm.query/vm.query.module";
 import { WaitingListModule } from "./waiting-list/waiting.list.module";
 
-
 @Module({
   imports: [
     forwardRef(() => AccountModule),
