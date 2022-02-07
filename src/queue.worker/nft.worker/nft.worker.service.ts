@@ -4,7 +4,7 @@ import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.
 import { NftThumbnailService } from "./queue/job-services/thumbnails/nft.thumbnail.service";
 import { NftMetadataService } from "./queue/job-services/metadata/nft.metadata.service";
 import { NftMediaService } from "./queue/job-services/media/nft.media.service";
-import { ClientProxy, RmqRecordBuilder } from "@nestjs/microservices";
+import { ClientProxy } from "@nestjs/microservices";
 import { NftMessage } from "./queue/entities/nft.message";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 
