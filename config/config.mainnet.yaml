@@ -79,6 +79,5 @@ security:
   accessAddress:
 nftProcess:
   parallelism: 1
-  retryCount: 100
-  prefetchCount: 100
+  maxRetries: 3
   

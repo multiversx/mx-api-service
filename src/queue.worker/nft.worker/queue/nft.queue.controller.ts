@@ -1,6 +1,5 @@
 import { Controller, Logger } from "@nestjs/common";
 import { Ctx, MessagePattern, Payload, RmqContext } from "@nestjs/microservices";
-import semaphore, { Semaphore } from "semaphore";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
@@ -13,7 +12,6 @@ import { NftThumbnailService } from "./job-services/thumbnails/nft.thumbnail.ser
 @Controller()
 export class NftQueueController {
   private readonly logger: Logger;
-  private readonly locker: Semaphore;
   private readonly RETRY_LIMIT: Number;
 
   constructor(
@@ -23,8 +21,7 @@ export class NftQueueController {
     apiConfigService: ApiConfigService,
   ) {
     this.logger = new Logger(NftQueueController.name);
-    this.locker = semaphore(apiConfigService.getNftProcessParallelism());
-    this.RETRY_LIMIT = apiConfigService.getNftProcessRetryCount();
+    this.RETRY_LIMIT = apiConfigService.getNftProcessMaxRetries();
   }
 
   private getAttempt(msg: any): number {
@@ -43,52 +40,47 @@ export class NftQueueController {
 
   @MessagePattern({ cmd: 'api-process-nfts' })
   async onNftCreated(@Payload() data: NftMessage, @Ctx() context: RmqContext) {
-    this.locker.take(async () => {
-      const channel = context.getChannelRef();
-      const message = context.getMessage();
-      const attempt = this.getAttempt(message);
+    const channel = context.getChannelRef();
+    const message = context.getMessage();
+    const attempt = this.getAttempt(message);
 
-      if (attempt >= this.RETRY_LIMIT) {
-        this.logger.log(`NFT ${data.identifier} reached maximum number of retries! Removed from retry exchange!`);
-        channel.ack(message);
-        this.locker.leave();
-        return;
+    if (attempt >= this.RETRY_LIMIT) {
+      this.logger.log(`NFT ${data.identifier} reached maximum number of retries (${this.RETRY_LIMIT})! Removed from retry exchange!`);
+      channel.ack(message);
+      return;
+    }
+
+    this.logger.log({ type: 'consumer start', identifier: data.identifier, attempt });
+
+    try {
+      const nft = data.nft;
+      const settings = data.settings;
+
+      nft.metadata = await this.nftMetadataService.getMetadata(nft);
+
+      if (settings.forceRefreshMetadata || !nft.metadata) {
+        nft.metadata = await this.nftMetadataService.refreshMetadata(nft);
       }
 
-      this.logger.log({ type: 'consumer start', identifier: data.identifier, attempt });
+      nft.media = await this.nftMediaService.getMedia(nft) ?? undefined;
 
-      try {
-        const nft = data.nft;
-        const settings = data.settings;
-
-        nft.metadata = await this.nftMetadataService.getMetadata(nft);
-
-        if (settings.forceRefreshMetadata || !nft.metadata) {
-          nft.metadata = await this.nftMetadataService.refreshMetadata(nft);
-        }
-
-        nft.media = await this.nftMediaService.getMedia(nft) ?? undefined;
-
-        if (settings.forceRefreshMedia || !nft.media) {
-          nft.media = await this.nftMediaService.refreshMedia(nft);
-        }
-
-        if (nft.media && !settings.skipRefreshThumbnail) {
-          await Promise.all(nft.media.map((media: any) => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
-        }
-
-        this.logger.log({ type: 'consumer end', identifier: data.identifier });
-        channel.ack(message);
-
-        this.locker.leave();
-      } catch (error: any) {
-        this.logger.error(`Unexpected error when processing NFT with identifier '${data.identifier}'`);
-        this.logger.error(error);
-        channel.reject(message, false);
-
-        this.locker.leave();
+      if (settings.forceRefreshMedia || !nft.media) {
+        nft.media = await this.nftMediaService.refreshMedia(nft);
       }
-    });
+
+      if (nft.media && !settings.skipRefreshThumbnail) {
+        await Promise.all(nft.media.map((media: any) => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
+      }
+
+      this.logger.log({ type: 'consumer end', identifier: data.identifier });
+
+      channel.ack(message);
+    } catch (error: any) {
+      this.logger.error(`Unexpected error when processing NFT with identifier '${data.identifier}'`);
+      this.logger.error(error);
+
+      channel.reject(message, false);
+    }
   }
 
   private async generateThumbnail(nft: Nft, media: NftMedia, forceRefresh: boolean = false): Promise<void> {

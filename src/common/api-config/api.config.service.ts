@@ -506,14 +506,10 @@ export class ApiConfigService {
   }
 
   getNftProcessParallelism(): number {
-    return this.configService.get<number>('nftProcess.parallelism') ?? 0;
+    return this.configService.get<number>('nftProcess.parallelism') ?? 1;
   }
 
-  getNftProcessRetryCount(): number {
-    return this.configService.get<number>('nftProcess.retryCount') ?? 0;
-  }
-
-  getNftProcessPrefetchCount(): number {
-    return this.configService.get<number>('nftProcess.prefetchCount') ?? 100;
+  getNftProcessMaxRetries(): number {
+    return this.configService.get<number>('nftProcess.maxRetries') ?? 3;
   }
 }
