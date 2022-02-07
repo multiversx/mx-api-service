@@ -221,20 +221,6 @@ describe('Nft Service', () => {
         expect(nft).toHaveStructure(Object.keys(new NftAccount()));
       }
     });
-
-    it(`should return Nft for address with withTimestamp true`, async () => {
-      const nftQueryOption = new NftQueryOptions();
-      nftQueryOption.withTimestamp = true;
-      const nfts = await nftService.getNftsForAddress(userAccount.address, { from: 0, size: 10 }, { type: NftType.SemiFungibleESDT }, nftQueryOption);
-
-      if (!nfts) {
-        throw new Error('Nft properties are not defined');
-      }
-
-      for (const nft of nfts) {
-        expect(nft).toHaveStructure(Object.keys(new NftAccount()));
-      }
-    });
   });
 
   describe('Get NFT Count For Address', () => {
