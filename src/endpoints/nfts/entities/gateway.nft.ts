@@ -8,4 +8,5 @@ export class GatewayNft {
   royalties: string = '0';
   tokenIdentifier: string = '';
   uris: string[] = [];
+  timestamp?: number;
 }

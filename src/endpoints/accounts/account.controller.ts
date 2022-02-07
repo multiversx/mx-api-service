@@ -30,6 +30,7 @@ import { ParseTransactionHashPipe } from 'src/utils/pipes/parse.transaction.hash
 import { ParseBlockHashPipe } from 'src/utils/pipes/parse.block.hash.pipe';
 import { ParseArrayPipe } from 'src/utils/pipes/parse.array.pipe';
 import { SortOrder } from 'src/common/entities/sort.order';
+import { EsdtDataSource } from '../esdt/entities/esdt.data.source';
 
 @Controller()
 @ApiTags('accounts')
@@ -382,10 +383,10 @@ export class AccountController {
     @Query('withTimestamp', new ParseOptionalBoolPipe) withTimestamp?: boolean,
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean,
     @Query('withMetadata', new ParseOptionalBoolPipe) withMetadata?: boolean,
-    @Query('source') source?: string,
+    @Query('source') source?: EsdtDataSource,
   ): Promise<NftAccount[]> {
     try {
-      return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }, { withTimestamp, withSupply, withMetadata });
+      return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }, { withTimestamp, withSupply, withMetadata }, source);
     } catch (error) {
       this.logger.error(`Error in getAccountNfts for address ${address}`);
       this.logger.error(error);

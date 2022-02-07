@@ -2,6 +2,8 @@ import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
+import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
+import { ElasticSortProperty } from "src/common/elastic/entities/elastic.sort.property";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { QueryType } from "src/common/elastic/entities/query.type";
@@ -22,6 +24,7 @@ import { TokenAddressRoles } from "../tokens/entities/token.address.roles";
 import { TokenAssets } from "../tokens/entities/token.assets";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { TokenAssetService } from "../tokens/token.asset.service";
+import { EsdtDataSource } from "./entities/esdt.data.source";
 import { EsdtSupply } from "./entities/esdt.supply";
 
 @Injectable()
@@ -42,8 +45,8 @@ export class EsdtService {
     this.logger = new Logger(EsdtService.name);
   }
 
-  private async getAllEsdtsForAddressRaw(address: string, source?: string): Promise<{ [key: string]: any }> {
-    if (source === 'elastic') {
+  private async getAllEsdtsForAddressRaw(address: string, source?: EsdtDataSource): Promise<{ [key: string]: any }> {
+    if (source === EsdtDataSource.elastic && this.apiConfigService.()) {
       return this.getAllEsdtsForAddressFromElastic(address);
     }
 
@@ -52,6 +55,7 @@ export class EsdtService {
 
   private async getAllEsdtsForAddressFromElastic(address: string): Promise<{ [key: string]: any }> {
     const elasticQuery = ElasticQuery.create()
+      .withSort([{ name: "timestamp", order: ElasticSortOrder.descending }])
       .withCondition(QueryConditionOptions.must, [QueryType.Match('address', address)])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
       .withPagination({ from: 0, size: 10000 });
@@ -103,7 +107,7 @@ export class EsdtService {
 
   private pendingRequestsDictionary: { [key: string]: any; } = {};
 
-  async getAllEsdtsForAddress(address: string, source?: string): Promise<{ [key: string]: any }> {
+  async getAllEsdtsForAddress(address: string, source?: EsdtDataSource): Promise<{ [key: string]: any }> {
     let pendingRequest = this.pendingRequestsDictionary[address];
     if (pendingRequest) {
       const result = await pendingRequest;
@@ -112,10 +116,7 @@ export class EsdtService {
     }
 
     let cachedValue;
-    if (source === 'elastic') {
-      cachedValue = await this.cachingService.getCacheLocal<{ [key: string]: any }>(`elastic:address:${address}:esdts`);
-    }
-    else {
+    if (source === EsdtDataSource.gateway) {
       cachedValue = await this.cachingService.getCacheLocal<{ [key: string]: any }>(`address:${address}:esdts`);
     }
 
@@ -136,12 +137,10 @@ export class EsdtService {
 
     const ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
 
-    if (source === 'elastic') {
-      await this.cachingService.setCacheLocal(`elastic:address:${address}:esdts`, esdts, ttl);
-    }
-    else {
+    if (source === EsdtDataSource.gateway) {
       await this.cachingService.setCacheLocal(`address:${address}:esdts`, esdts, ttl);
     }
+
     return esdts;
   }
 

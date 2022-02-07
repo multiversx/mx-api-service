@@ -12,7 +12,7 @@ export class Nft {
   collection: string = '';
 
   @ApiProperty()
-  timestamp: number = 0;
+  timestamp?: number = 0;
 
   @ApiProperty()
   attributes: string = '';
