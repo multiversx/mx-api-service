@@ -1,5 +1,5 @@
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
-import { TransferOwnershipExtractor } from "src/crons/transaction.processor/extractor/extract.transfer.ownership";
+import { TransferOwnershipExtractor } from "src/crons/transaction.processor/extractor/transfer.ownership.extractor";
 import { NftCreateTransactionExtractor } from "src/crons/transaction.processor/extractor/nft.create.transaction.extractor";
 import { NftUpdateAttributesTransactionExtractor } from "src/crons/transaction.processor/extractor/nft.update.attributes.transaction.extractor";
 import { SftChangeTransactionExtractor } from "src/crons/transaction.processor/extractor/sft.change.transaction.extractor";

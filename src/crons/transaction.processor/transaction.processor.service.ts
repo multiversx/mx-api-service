@@ -18,7 +18,7 @@ import { NftCreateTransactionExtractor } from "src/crons/transaction.processor/e
 import { NftUpdateAttributesTransactionExtractor as NftUpdateAttributesTransactionExtractor } from "./extractor/nft.update.attributes.transaction.extractor";
 import { SftChangeTransactionExtractor } from "./extractor/sft.change.transaction.extractor";
 import { TransactionExtractorInterface } from "./extractor/transaction.extractor.interface";
-import { TransferOwnershipExtractor } from "./extractor/extract.transfer.ownership";
+import { TransferOwnershipExtractor } from "./extractor/transfer.ownership.extractor";
 
 @Injectable()
 export class TransactionProcessorService {
