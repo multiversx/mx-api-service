@@ -352,7 +352,6 @@ export class AccountController {
   @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
   @ApiQuery({ name: 'includeFlagged', description: 'Include NFTs that are flagged or not', required: false })
-  @ApiQuery({ name: 'withTimestamp', description: 'Add timestamp in the response structure', required: false })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false })
   @ApiQuery({ name: 'withMetadata', description: 'Return metadata for nfts', required: false })
   @ApiQuery({ name: 'source', description: 'Data source of request', required: false })
@@ -380,7 +379,6 @@ export class AccountController {
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseOptionalBoolPipe) includeFlagged?: boolean,
-    @Query('withTimestamp', new ParseOptionalBoolPipe) withTimestamp?: boolean,
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean,
     @Query('withMetadata', new ParseOptionalBoolPipe) withMetadata?: boolean,
     @Query('source') source?: EsdtDataSource,
