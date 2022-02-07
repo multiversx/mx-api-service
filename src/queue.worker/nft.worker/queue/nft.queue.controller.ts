@@ -27,17 +27,27 @@ export class NftQueueController {
     this.RETRY_LIMIT = apiConfigService.getNftProcessRetryCount();
   }
 
+  private getAttempt(msg: any): number {
+    const headers = msg.properties.headers;
+
+    let attempt = 0;
+    if (headers['x-death']) {
+      const currentXDeath = headers['x-death'][0];
+      if (currentXDeath) {
+        attempt = currentXDeath.count;
+      }
+    }
+
+    return attempt;
+  }
+
   @MessagePattern({ cmd: 'api-process-nfts' })
   async onNftCreated(@Payload() data: NftMessage, @Ctx() context: RmqContext) {
     this.locker.take(async () => {
       const channel = context.getChannelRef();
       const message = context.getMessage();
-      const headers = message.properties.headers;
+      const attempt = this.getAttempt(message);
 
-      let attempt = 0;
-      if (headers['x-death']) {
-        attempt = headers['x-death'][0].count;
-      }
       this.logger.log({ type: 'consumer start', identifier: data.identifier, attempt });
 
       if (attempt >= this.RETRY_LIMIT) {
