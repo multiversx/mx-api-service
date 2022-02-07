@@ -47,8 +47,10 @@ export class NftMetadataService {
       metadataRaw = {};
     }
 
+    await this.persistenceService.deleteMetadata(nft.identifier);
     await this.persistenceService.setMetadata(nft.identifier, metadataRaw);
 
+    await this.cachingService.deleteInCache(CacheInfo.NftMetadata(nft.identifier).key);
     await this.cachingService.setCache(
       CacheInfo.NftMetadata(nft.identifier).key,
       metadataRaw,

@@ -9,14 +9,16 @@ import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { EventsGateway } from "src/websockets/events.gateway";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
-import { TransactionUtils } from "src/utils/transaction.utils";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { BinaryUtils } from "src/utils/binary.utils";
-import { TransactionStatus } from "src/endpoints/transactions/entities/transaction.status";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
+import { NftCreateTransactionExtractor } from "src/crons/transaction.processor/extractor/nft.create.transaction.extractor";
+import { NftUpdateAttributesTransactionExtractor as NftUpdateAttributesTransactionExtractor } from "./extractor/nft.update.attributes.transaction.extractor";
+import { SftChangeTransactionExtractor } from "./extractor/sft.change.transaction.extractor";
+import { TransactionExtractorInterface } from "./extractor/transaction.extractor.interface";
+import { TransferOwnershipExtractor } from "./extractor/transfer.ownership.extractor";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -72,18 +74,20 @@ export class TransactionProcessorService {
               this.eventsGateway.onAccountBalanceChanged(transaction.receiver);
             }
 
-            if (transaction.data) {
-              const metadataResult = TransactionUtils.tryExtractNftMetadataFromNftCreateTransaction(transaction);
-              if (metadataResult) {
-                this.logger.log(`Detected NFT Create for collection with identifier '${metadataResult.collection}'. Raw attributes: '${metadataResult.attributes}'`);
-
-                // this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(BinaryUtils.base64Encode(metadataResult.attributes));
-              }
-            }
-
             if (this.apiConfigService.getIsProcessNftsFlagActive()) {
-              // eslint-disable-next-line @typescript-eslint/no-floating-promises
-              this.tryHandleNftCreate(transaction);
+              const nftCreateResult = new NftCreateTransactionExtractor().extract(transaction);
+              if (nftCreateResult) {
+                this.logger.log(`Detected NFT create for collection '${nftCreateResult.collection}' and tx hash '${transaction.hash}'`);
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                this.tryHandleNftCreate(transaction);
+              }
+
+              const nftUpdateAttributesResult = new NftUpdateAttributesTransactionExtractor().extract(transaction);
+              if (nftUpdateAttributesResult) {
+                this.logger.log(`Detected NFT update attributes for NFT with identifier '${nftUpdateAttributesResult.identifier}' and tx hash '${transaction.hash}'`);
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                this.tryHandleNftUpdateMetadata(transaction, nftUpdateAttributesResult.identifier);
+              }
             }
 
             const invalidatedTokenProperties = await this.cachingService.tryInvalidateTokenProperties(transaction);
@@ -125,19 +129,27 @@ export class TransactionProcessorService {
     }
   }
 
+  private async tryHandleNftUpdateMetadata(transaction: ShardTransaction, identifier: string) {
+    try {
+      const nft = await this.nftService.getSingleNft(identifier);
+      if (!nft) {
+        this.logger.error(`NFT update metadata: could not fetch nft details for NFT with identifier '${identifier}' and transaction hash '${transaction.hash}'`);
+        return;
+      }
+
+      const processSettings = new ProcessNftSettings();
+      processSettings.forceRefreshMetadata = true;
+      await this.nftWorkerService.addProcessNftQueueJob(nft, processSettings);
+      this.clientProxy.emit('deleteCacheKeys', [CacheInfo.NftMetadata(nft.identifier).key]);
+    } catch (error) {
+      this.logger.error(`Unexpected error when handling NFT update metadata for transaction with hash '${transaction.hash}'`);
+      this.logger.error(error);
+    }
+  }
+
   private async tryHandleNftCreate(transaction: ShardTransaction) {
     try {
-      if (transaction.receiver !== transaction.sender || !transaction.data || transaction.status !== TransactionStatus.success) {
-        return;
-      }
-
-      const data = BinaryUtils.base64Decode(transaction.data);
-      if (!data.startsWith('ESDTNFTCreate@')) {
-        return;
-      }
-
-      this.logger.log(`NFT create detected for transaction with hash '${transaction.hash}'`);
-
+      // we wait for the transaction and its operations to be fully indexed
       await new Promise(resolve => setTimeout(resolve, 5000));
 
       const transactionDetailed = await this.transactionService.getTransaction(transaction.hash);
@@ -179,16 +191,22 @@ export class TransactionProcessorService {
       return [];
     }
 
-    const collectionIdentifier = TransactionUtils.tryExtractCollectionIdentifierFromChangeSftToMetaEsdTransaction(transaction);
+    const tryExtractSftChange = new SftChangeTransactionExtractor();
+    const collectionIdentifier = tryExtractSftChange.extract(transaction);
     if (!collectionIdentifier) {
       return [];
     }
 
-    this.logger.log(`Change SFT to Meta ESDT transaction detected for collection '${collectionIdentifier}'`);
+    const tryExtractTransferOwnership: TransactionExtractorInterface<{ identifier: string }> = new TransferOwnershipExtractor();
+    const metadataTransferOwnership = tryExtractTransferOwnership.extract(transaction);
+    if (metadataTransferOwnership) {
+      this.logger.log(`Detected NFT Transfer ownership for collection with identifier '${metadataTransferOwnership.identifier}'`);
+      const key = CacheInfo.EsdtProperties(collectionIdentifier).key;
+      await this.cachingService.deleteInCache(key);
 
-    const key = `esdt:${collectionIdentifier}`;
-    await this.cachingService.deleteInCache(key);
+      return [key];
+    }
 
-    return [key];
+    return [];
   }
 }

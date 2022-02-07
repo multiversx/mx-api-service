@@ -19,6 +19,10 @@ export class PassThroughService implements PersistenceInterface {
 
   }
 
+  async deleteMetadata(_: string): Promise<void> {
+
+  }
+
   async getMedia(_: string): Promise<NftMedia[] | null> {
     return null;
   }

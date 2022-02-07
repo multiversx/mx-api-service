@@ -9,6 +9,8 @@ export interface PersistenceInterface {
 
   getMetadata(identifier: string): Promise<any | null>
 
+  deleteMetadata(identifier: string): Promise<void>
+
   batchGetMetadata(identifiers: string[]): Promise<{ [key: string]: any }>
 
   setMetadata(identifier: string, value: any): Promise<void>
