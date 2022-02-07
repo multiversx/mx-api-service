@@ -51,7 +51,7 @@ export class NftCronService {
       nfts = nfts.sortedDescending(x => x.timestamp || 0);
 
       for (const nft of nfts) {
-        if (!nftIdentifiers.has(nft.identifier)) {
+        if (nft.identifier && !nftIdentifiers.has(nft.identifier)) {
           const neededProcessing = await handler(nft);
           if (neededProcessing) {
             totalProcessedNfts++;
