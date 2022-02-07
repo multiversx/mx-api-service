@@ -7,6 +7,7 @@ import { NftMetadataModule } from "src/queue.worker/nft.worker/queue/job-service
 import { CollectionModule } from "../collections/collection.module";
 import { EsdtModule } from "../esdt/esdt.module";
 import { TokenModule } from "../tokens/token.module";
+import { NftAccountService } from "./nft.account.service";
 import { NftExtendedAttributesService } from "./nft.extendedattributes.service";
 import { NftService } from "./nft.service";
 
@@ -22,7 +23,7 @@ import { NftService } from "./nft.service";
     forwardRef(() => PersistenceModule),
   ],
   providers: [
-    NftService, NftExtendedAttributesService,
+    NftService, NftExtendedAttributesService, NftAccountService,
   ],
   exports: [
     NftService, NftExtendedAttributesService,

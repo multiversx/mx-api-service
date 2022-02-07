@@ -3,7 +3,6 @@ import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
-import { ElasticSortProperty } from "src/common/elastic/entities/elastic.sort.property";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { QueryType } from "src/common/elastic/entities/query.type";
