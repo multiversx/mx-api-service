@@ -36,9 +36,9 @@ export class NftWorkerService {
     message.nft = nft;
     message.settings = settings;
 
-    const record = new RmqRecordBuilder(message);
+    //const record = new RmqRecordBuilder(message);
 
-    this.client.send({ cmd: 'api-process-nfts' }, record).subscribe();
+    this.client.send({ cmd: 'api-process-nfts' }, message).subscribe();
 
     return true;
   }
