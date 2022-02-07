@@ -5,6 +5,7 @@ import { RoundService } from "src/endpoints/rounds/round.service";
 import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 import Initializer from "./e2e-init";
+import { RoundDetailed } from "../../endpoints/rounds/entities/round.detailed";
 
 describe('Rounds Service', () => {
   let roundService: RoundService;
@@ -21,14 +22,6 @@ describe('Rounds Service', () => {
   }, Constants.oneHour() * 1000);
 
   describe('Rounds', () => {
-    it('all rounds should have round and shard', async () => {
-      for (const round of rounds) {
-        expect(round).toHaveProperty('round');
-        expect(round).toHaveProperty('shard');
-        expect(round).not.toHaveProperty('shardId');
-      }
-    });
-
     it('all entities should have round structure', async () => {
       for (const round of rounds) {
         expect(round).toHaveStructure(Object.keys(new Round()));
@@ -46,4 +39,19 @@ describe('Rounds Service', () => {
       }
     });
   });
+
+  describe('Get Round Count', () => {
+    it('should return round count based on filter', async () => {
+      const count = await roundService.getRoundCount(new RoundFilter());
+      expect(typeof count).toBe('number');
+    });
+  });
+
+  describe('Get Round', () => {
+    it('all entities should have roundDetailed structure', async () => {
+      const round = await roundService.getRound(1, 10);
+      expect(round).toHaveStructure(Object.keys(new RoundDetailed()));
+    });
+  });
 });
+

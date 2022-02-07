@@ -3,10 +3,11 @@ import Initializer from "./e2e-init";
 import { Constants } from "../../utils/constants";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
+import { WaitingList } from "../../endpoints/waiting-list/entities/waiting.list";
+import userAccount from "../data/accounts/user.account";
 
 describe('WaitingListService', () => {
   let waitingListService: WaitingListService;
-  let waitingListAddress: string;
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -18,27 +19,29 @@ describe('WaitingListService', () => {
   }, Constants.oneHour() * 1000);
 
   describe('Waiting List', () => {
-    describe('getWaitingList', () => {
-      it('should return a list of waiting lists', async () => {
-        const getList = await waitingListService.getWaitingList();
-        expect(getList).toBeInstanceOf(Array);
-      });
+    it('should return a list of waiting lists', async () => {
+      const waitingList = await waitingListService.getWaitingList();
+
+      for (const waitingListItem of waitingList) {
+        expect(waitingListItem).toHaveStructure(Object.keys(new WaitingList()));
+      }
     });
   });
+
   describe('Waiting List For Address', () => {
-    describe('getWaitingListForAddress', () => {
-      it('should return a list of waitings for a specified address ', async () => {
-        const getAddress = await waitingListService.getWaitingListForAddress(waitingListAddress);
-        expect(getAddress).toBeInstanceOf(Array);
-      });
+    it('should return a list of waitings for a specified address ', async () => {
+      const waitingList = await waitingListService.getWaitingListForAddress(userAccount.address);
+
+      for (const waitingListItem of waitingList) {
+        expect(waitingListItem).toHaveStructure(Object.keys(new WaitingList()));
+      }
     });
   });
+
   describe('Waiting List Count', () => {
-    describe('getWaitingListCount', () => {
-      it('should return count of lists', async () => {
-        const gatWaitingList: Number = new Number(await waitingListService.getWaitingListCount());
-        expect(gatWaitingList).toBeInstanceOf(Number);
-      });
+    it('should return count of lists', async () => {
+      const count = await waitingListService.getWaitingListCount();
+      expect(typeof count).toBe('number');
     });
   });
 });
