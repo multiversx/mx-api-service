@@ -42,8 +42,8 @@ export class EsdtService {
     this.logger = new Logger(EsdtService.name);
   }
 
-  private async getAllEsdtsForAddressRaw(address: string): Promise<{ [key: string]: any }> {
-    if (AddressUtils.isSmartContractAddress(address)) {
+  private async getAllEsdtsForAddressRaw(address: string, source?: string): Promise<{ [key: string]: any }> {
+    if (source === 'elastic') {
       return this.getAllEsdtsForAddressFromElastic(address);
     }
 
@@ -84,7 +84,6 @@ export class EsdtService {
     return result;
   }
 
-  // @ts-ignore
   private async getAllEsdtsForAddressFromGateway(address: string): Promise<{ [key: string]: any }> {
     const esdtResult = await this.gatewayService.get(`address/${address}/esdt`, GatewayComponentRequest.addressEsdt, async (error) => {
       const errorMessage = error?.response?.data?.error;
@@ -104,7 +103,7 @@ export class EsdtService {
 
   private pendingRequestsDictionary: { [key: string]: any; } = {};
 
-  async getAllEsdtsForAddress(address: string): Promise<{ [key: string]: any }> {
+  async getAllEsdtsForAddress(address: string, source?: string): Promise<{ [key: string]: any }> {
     let pendingRequest = this.pendingRequestsDictionary[address];
     if (pendingRequest) {
       const result = await pendingRequest;
@@ -112,13 +111,20 @@ export class EsdtService {
       return result;
     }
 
-    const cachedValue = await this.cachingService.getCacheLocal<{ [key: string]: any }>(`address:${address}:esdts`);
+    let cachedValue;
+    if (source === 'elastic') {
+      cachedValue = await this.cachingService.getCacheLocal<{ [key: string]: any }>(`elastic:address:${address}:esdts`);
+    }
+    else {
+      cachedValue = await this.cachingService.getCacheLocal<{ [key: string]: any }>(`address:${address}:esdts`);
+    }
+
     if (cachedValue) {
       this.metricsService.incrementCachedApiHit('Gateway.AccountEsdts');
       return cachedValue;
     }
 
-    pendingRequest = this.getAllEsdtsForAddressRaw(address);
+    pendingRequest = this.getAllEsdtsForAddressRaw(address, source);
     this.pendingRequestsDictionary[address] = pendingRequest;
 
     let esdts: { [key: string]: any };
@@ -130,7 +136,12 @@ export class EsdtService {
 
     const ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
 
-    await this.cachingService.setCacheLocal(`address:${address}:esdts`, esdts, ttl);
+    if (source === 'elastic') {
+      await this.cachingService.setCacheLocal(`elastic:address:${address}:esdts`, esdts, ttl);
+    }
+    else {
+      await this.cachingService.setCacheLocal(`address:${address}:esdts`, esdts, ttl);
+    }
     return esdts;
   }
 

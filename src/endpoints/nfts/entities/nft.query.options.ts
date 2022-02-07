@@ -3,4 +3,5 @@ export class NftQueryOptions {
   withSupply?: boolean = false;
   withTimestamp?: boolean = false;
   withMetadata?: boolean = false;
+  source?: string = 'gateway';
 }

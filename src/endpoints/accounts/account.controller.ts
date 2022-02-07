@@ -354,6 +354,7 @@ export class AccountController {
   @ApiQuery({ name: 'withTimestamp', description: 'Add timestamp in the response structure', required: false })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false })
   @ApiQuery({ name: 'withMetadata', description: 'Return metadata for nfts', required: false })
+  @ApiQuery({ name: 'source', description: 'Data source of request', required: false })
   @ApiResponse({
     status: 200,
     description: 'The non-fungible and semi-fungible tokens of a given account',
@@ -381,6 +382,7 @@ export class AccountController {
     @Query('withTimestamp', new ParseOptionalBoolPipe) withTimestamp?: boolean,
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean,
     @Query('withMetadata', new ParseOptionalBoolPipe) withMetadata?: boolean,
+    @Query('source') source?: string,
   ): Promise<NftAccount[]> {
     try {
       return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }, { withTimestamp, withSupply, withMetadata });
