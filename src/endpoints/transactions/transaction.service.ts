@@ -68,7 +68,11 @@ export class TransactionService {
     }
 
     if (filter.receiver) {
-      queries.push(QueryType.Match('receiver', filter.receiver));
+      shouldQueries.push(QueryType.Match('receiver', filter.receiver));
+
+      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+        shouldQueries.push(QueryType.Match('receivers', filter.receiver));
+      }
     }
 
     if (filter.token) {
@@ -174,12 +178,6 @@ export class TransactionService {
 
     for (const elasticTransaction of elasticTransactions) {
       const transaction = ApiUtils.mergeObjects(new Transaction(), elasticTransaction);
-
-      const tokenTransfer = this.tokenTransferService.getTokenTransfer(elasticTransaction);
-      if (tokenTransfer) {
-        transaction.tokenValue = tokenTransfer.tokenAmount;
-        transaction.tokenIdentifier = tokenTransfer.tokenIdentifier;
-      }
 
       transactions.push(transaction);
     }

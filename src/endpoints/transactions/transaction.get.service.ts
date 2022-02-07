@@ -86,11 +86,6 @@ export class TransactionGetService {
       }
 
       const transactionDetailed: TransactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), result);
-      const tokenTransfer = this.tokenTransferService.getTokenTransfer(result);
-      if (tokenTransfer) {
-        transactionDetailed.tokenValue = tokenTransfer.tokenAmount;
-        transactionDetailed.tokenIdentifier = tokenTransfer.tokenIdentifier;
-      }
 
       const hashes: string[] = [];
       hashes.push(txHash);
