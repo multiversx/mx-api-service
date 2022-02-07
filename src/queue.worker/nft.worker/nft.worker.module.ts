@@ -24,6 +24,7 @@ import { NftThumbnailModule } from './queue/job-services/thumbnails/nft.thumbnai
             urls: [configService.getRabbitmqUrl()],
             queue: 'api-process-nfts',
             noAck: false,
+            prefetchCount: configService.getNftProcessPrefetchCount(),
             queueOptions: {
               durable: true,
               // arguments: {

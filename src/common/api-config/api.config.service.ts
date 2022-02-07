@@ -512,4 +512,8 @@ export class ApiConfigService {
   getNftProcessRetryCount(): number {
     return this.configService.get<number>('nftProcess.retryCount') ?? 0;
   }
+
+  getNftProcessPrefetchCount(): number {
+    return this.configService.get<number>('nftProcess.prefetchCount') ?? 100;
+  }
 }
