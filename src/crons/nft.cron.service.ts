@@ -20,7 +20,7 @@ export class NftCronService {
     this.logger = new Logger(NftCronService.name);
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_6_HOURS)
   async triggerProcessNftsForLast24Hours() {
     if (!this.apiConfigService.getIsProcessNftsFlagActive()) {
       return;
@@ -51,13 +51,15 @@ export class NftCronService {
       nfts = nfts.sortedDescending(x => x.timestamp);
 
       for (const nft of nfts) {
-        if (!nftIdentifiers.has(nft.identifier)) {
-          const neededProcessing = await handler(nft);
-          if (neededProcessing) {
-            totalProcessedNfts++;
-          }
+        if (nft.identifier) {
+          if (!nftIdentifiers.has(nft.identifier)) {
+            const neededProcessing = await handler(nft);
+            if (neededProcessing) {
+              totalProcessedNfts++;
+            }
 
-          nftIdentifiers.add(nft.identifier);
+            nftIdentifiers.add(nft.identifier);
+          }
         }
       }
 
