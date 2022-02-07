@@ -46,7 +46,7 @@ export class EsdtService {
   }
 
   private async getAllEsdtsForAddressRaw(address: string, source?: EsdtDataSource): Promise<{ [key: string]: any }> {
-    if (source === EsdtDataSource.elastic && this.apiConfigService.()) {
+    if (source === EsdtDataSource.elastic && this.apiConfigService.getIsIndexerV3FlagActive()) {
       return this.getAllEsdtsForAddressFromElastic(address);
     }
 
