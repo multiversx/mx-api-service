@@ -223,7 +223,7 @@ export class CachingService {
       const value = values[index];
       const ttl = ttls[index];
 
-      this.setCacheLocal(key, value, ttl);
+      await this.setCacheLocal(key, value, ttl);
     }
 
 
@@ -260,7 +260,7 @@ export class CachingService {
 
   async batchDelCache(keys: string[]) {
     for (const key of keys) {
-      this.deleteInCacheLocal(key);
+      await this.deleteInCacheLocal(key);
     }
 
     const dels = keys.map(key => ['del', key]);

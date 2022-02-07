@@ -36,6 +36,7 @@ export class TokenAssetService {
         // when setting all options in a single object
         const git: SimpleGit = simpleGit(options);
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         git.outputHandler((_, stdout, stderr) => {
           stdout.pipe(process.stdout);
           stderr.pipe(process.stderr);

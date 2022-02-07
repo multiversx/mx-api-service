@@ -88,7 +88,7 @@ export default class Initializer {
 
     await this.execute(description, async () => {
       const value = await promise();
-      Initializer.cachingService.setCache(key, value, Constants.oneHour());
+      await Initializer.cachingService.setCache(key, value, Constants.oneHour());
     });
   }
 

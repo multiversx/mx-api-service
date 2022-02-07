@@ -82,6 +82,7 @@ export class TransactionProcessorService {
             }
 
             if (this.apiConfigService.getIsProcessNftsFlagActive()) {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               this.tryHandleNftCreate(transaction);
             }
 
