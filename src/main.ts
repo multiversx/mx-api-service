@@ -133,6 +133,7 @@ async function bootstrap() {
         urls: [apiConfigService.getRabbitmqUrl()],
         queue: 'api-process-nfts',
         noAck: false,
+        prefetchCount: apiConfigService.getNftProcessParallelism(),
         queueOptions: {
           durable: true,
           // arguments: {
