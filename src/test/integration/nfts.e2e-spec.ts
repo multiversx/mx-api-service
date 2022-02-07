@@ -2,18 +2,19 @@ import { Test } from "@nestjs/testing";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftService } from "src/endpoints/nfts/nft.service";
-import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 import Initializer from "./e2e-init";
 import { Nft } from "../../endpoints/nfts/entities/nft";
-import { NftQueryOptions } from "../../endpoints/nfts/entities/nft.query.options";
 import { NftOwner } from "src/endpoints/nfts/entities/nft.owner";
 import { NftAccount } from "src/endpoints/nfts/entities/nft.account";
 import { GatewayNft } from "src/endpoints/nfts/entities/gateway.nft";
 import userAccount from "../data/accounts/user.account";
+import { NftAccountService } from "src/endpoints/nfts/nft.account.service";
+import { NftModule } from "src/endpoints/nfts/nft.module";
 
 describe('Nft Service', () => {
   let nftService: NftService;
+  let nftAccountService: NftAccountService;
   let nftCreator: string;
 
   const nftAddress: string = 'erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl';
@@ -24,10 +25,11 @@ describe('Nft Service', () => {
     await Initializer.initialize();
 
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [NftModule],
     }).compile();
 
     nftService = moduleRef.get<NftService>(NftService);
+    nftAccountService = moduleRef.get<NftAccountService>(NftAccountService);
 
     const nfts = await nftService.getNfts({ from: 0, size: 1 }, new NftFilter());
     expect(nfts).toHaveLength(1);
@@ -234,7 +236,7 @@ describe('Nft Service', () => {
     it(`should return a list with nfts`, async () => {
       const nftFilter = new NftFilter();
       nftFilter.identifiers = ['LKFARM-9d1ea8-44b421'];
-      const nfts = await nftService.getGatewayNfts(nftAddress, nftFilter);
+      const nfts = await nftAccountService.getAccountNfts(nftAddress, nftFilter);
 
       for (const nft of nfts) {
         expect(nft).toHaveStructure(Object.keys(new GatewayNft()));
@@ -246,7 +248,7 @@ describe('Nft Service', () => {
     it(`should return a list with nfts from internal address`, async () => {
       const nftFilter = new NftFilter();
       nftFilter.identifiers = ['LKFARM-9d1ea8-44b421'];
-      const nfts = await nftService.getNftsForAddressInternal(nftAddress, nftFilter);
+      const nfts = await nftAccountService.getNftsForAddressInternal(nftAddress, nftFilter);
 
       for (const nft of nfts) {
         expect(nft).toHaveStructure(Object.keys(new NftAccount()));

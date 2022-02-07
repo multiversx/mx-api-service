@@ -91,7 +91,7 @@ export class NftAccountService {
     return nfts;
   }
 
-  private async getAccountNfts(address: string, filter: NftFilter, source?: EsdtDataSource): Promise<GatewayNft[]> {
+  async getAccountNfts(address: string, filter: NftFilter, source?: EsdtDataSource): Promise<GatewayNft[]> {
     if (filter.identifiers !== undefined) {
       const identifiers = filter.identifiers;
       if (identifiers.length === 1) {
