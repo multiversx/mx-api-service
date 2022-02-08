@@ -78,12 +78,14 @@ export class TransactionProcessorService {
               const nftCreateResult = new NftCreateTransactionExtractor().extract(transaction);
               if (nftCreateResult) {
                 this.logger.log(`Detected NFT create for collection '${nftCreateResult.collection}' and tx hash '${transaction.hash}'`);
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 this.tryHandleNftCreate(transaction);
               }
 
               const nftUpdateAttributesResult = new NftUpdateAttributesTransactionExtractor().extract(transaction);
               if (nftUpdateAttributesResult) {
                 this.logger.log(`Detected NFT update attributes for NFT with identifier '${nftUpdateAttributesResult.identifier}' and tx hash '${transaction.hash}'`);
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 this.tryHandleNftUpdateMetadata(transaction, nftUpdateAttributesResult.identifier);
               }
             }

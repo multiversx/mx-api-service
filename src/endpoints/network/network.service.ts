@@ -38,7 +38,7 @@ export class NetworkService {
   ) { }
 
   async getConstants(): Promise<NetworkConstants> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       'constants',
       async () => await this.getConstantsRaw(),
       Constants.oneDay()
@@ -94,7 +94,7 @@ export class NetworkService {
   }
 
   async getEconomics(): Promise<Economics> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       CacheInfo.Economics.key,
       async () => await this.getEconomicsRaw(),
       CacheInfo.Economics.ttl,

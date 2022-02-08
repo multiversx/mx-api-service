@@ -4,12 +4,13 @@ import { tap } from 'rxjs/operators';
 
 @Injectable()
 export class FieldsInterceptor implements NestInterceptor {
-  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.getArgByIndex(0);
 
     return next
       .handle()
       .pipe(
+        // eslint-disable-next-line require-await
         tap(async (result) => {
           const fieldsArgument = request.query.fields;
           if (fieldsArgument) {

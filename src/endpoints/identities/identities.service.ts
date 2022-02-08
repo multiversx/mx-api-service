@@ -36,7 +36,7 @@ export class IdentitiesService {
   }
 
   async getAllIdentities(): Promise<Identity[]> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       CacheInfo.Identities.key,
       async () => await this.getAllIdentitiesRaw(),
       CacheInfo.Identities.ttl

@@ -22,7 +22,7 @@ export class ShardService {
   }
 
   async getAllShards(): Promise<Shard[]> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       CacheInfo.ActiveShards.key,
       async () => await this.getAllShardsRaw(),
       CacheInfo.ActiveShards.ttl
