@@ -108,13 +108,13 @@ export class TokenController {
     status: 404,
     description: 'Token not found',
   })
-  async getTokenSupply(@Param('identifier') identifier: string): Promise<{ supply: string, circulatingSupply: string }> {
+  async getTokenSupply(@Param('identifier') identifier: string): Promise<{ supply: number, circulatingSupply: number }> {
     const getSupplyResult = await this.tokenService.getTokenSupply(identifier);
     if (!getSupplyResult) {
       throw new NotFoundException();
     }
 
-    return { supply: getSupplyResult.totalSupply, circulatingSupply: getSupplyResult.circulatingSupply };
+    return getSupplyResult;
   }
 
   @Get("/tokens/:identifier/accounts")
