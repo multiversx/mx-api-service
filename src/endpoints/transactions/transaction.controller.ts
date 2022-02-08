@@ -37,6 +37,7 @@ export class TransactionController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false })
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
+  @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false })
@@ -56,6 +57,7 @@ export class TransactionController {
     @Query('hashes', ParseArrayPipe) hashes: string[] | undefined,
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined,
     @Query('search') search: string | undefined,
+    @Query('function') scFunction: string | undefined,
     @Query('condition') condition: QueryConditionOptions | undefined,
     @Query('before', ParseOptionalIntPipe) before: number | undefined,
     @Query('after', ParseOptionalIntPipe) after: number | undefined,
@@ -74,6 +76,7 @@ export class TransactionController {
       sender,
       receiver,
       token,
+      function: scFunction,
       senderShard,
       receiverShard,
       miniBlockHash,
