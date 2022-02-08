@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { forwardRef, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
 import { CachingService } from 'src/common/caching/caching.service';
@@ -120,7 +120,16 @@ export class AccountService {
       return 0;
     }
 
-    return await this.elasticService.getCount('scresults', query);
+    try {
+      return await this.elasticService.getCount('scresults', query);
+    } catch (error) {
+      // @ts-ignore
+      if (error.response.status === HttpStatus.NOT_FOUND) {
+        return 0;
+      }
+
+      throw error;
+    }
   }
 
   async getAccountDeployedAt(address: string): Promise<number | null> {
