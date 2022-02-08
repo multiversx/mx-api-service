@@ -6,7 +6,6 @@ import { Constants } from 'src/utils/constants';
 import { TokenFilter } from 'src/endpoints/tokens/entities/token.filter';
 import { TokenWithBalance } from "../../endpoints/tokens/entities/token.with.balance";
 import { TokenDetailed } from "../../endpoints/tokens/entities/token.detailed";
-import { EsdtSupply } from "../../endpoints/esdt/entities/esdt.supply";
 import { TokenAccount } from "../../endpoints/tokens/entities/token.account";
 import { TokenAddressRoles } from 'src/endpoints/tokens/entities/token.address.roles';
 import tokenDetails from '../data/esdt/token/token.example';
@@ -183,9 +182,16 @@ describe('Token Service', () => {
   describe('Get Token Supply', () => {
     it(`should return token supply`, async () => {
       const supply = await tokenService.getTokenSupply(tokenDetails.identifier);
-      expect(supply).toHaveStructure(Object.keys(new EsdtSupply()));
 
+      if(!supply){
+        throw new Error('Properties not defined');
+      }
+
+      expect(typeof supply).toBe('object');
+      expect(supply.hasOwnProperty('supply')).toBe(true);
+      expect(supply.hasOwnProperty('circulatingSupply')).toBe(true);
     });
+
     it(`should return undefined if identifier token is invalid`, async () => {
       const invalidIdentifier = 'invalidIdentifier';
       const supply = await tokenService.getTokenSupply(invalidIdentifier);
