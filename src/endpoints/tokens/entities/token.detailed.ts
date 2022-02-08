@@ -24,8 +24,8 @@ export class TokenDetailed extends Token {
   canWipe: boolean = false;
 
   @ApiProperty()
-  supply: number | undefined = undefined;
+  supply: string | undefined = undefined;
 
   @ApiProperty()
-  circulatingSupply: number | undefined = undefined;
+  circulatingSupply: string | undefined = undefined;
 }

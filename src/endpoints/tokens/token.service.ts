@@ -284,11 +284,11 @@ export class TokenService {
   async applySupply(token: TokenDetailed): Promise<void> {
     const { totalSupply, circulatingSupply } = await this.esdtService.getTokenSupply(token.identifier);
 
-    token.supply = NumberUtils.denominate(BigInt(totalSupply), token.decimals);
-    token.circulatingSupply = NumberUtils.denominate(BigInt(circulatingSupply), token.decimals);
+    token.supply = NumberUtils.denominate(BigInt(totalSupply), token.decimals).toFixed();
+    token.circulatingSupply = NumberUtils.denominate(BigInt(circulatingSupply), token.decimals).toFixed();
   }
 
-  async getTokenSupply(identifier: string): Promise<{ supply: number, circulatingSupply: number } | undefined> {
+  async getTokenSupply(identifier: string): Promise<{ supply: string, circulatingSupply: string } | undefined> {
     if (identifier.split('-').length !== 2) {
       return undefined;
     }
@@ -305,8 +305,8 @@ export class TokenService {
     const result = await this.esdtService.getTokenSupply(identifier);
 
     return {
-      supply: NumberUtils.denominateString(result.totalSupply, properties.decimals),
-      circulatingSupply: NumberUtils.denominateString(result.circulatingSupply, properties.decimals),
+      supply: NumberUtils.denominateString(result.totalSupply, properties.decimals).toFixed(),
+      circulatingSupply: NumberUtils.denominateString(result.circulatingSupply, properties.decimals).toFixed(),
     };
   }
 }
