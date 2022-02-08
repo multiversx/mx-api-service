@@ -48,6 +48,7 @@ describe('Caching Service', () => {
 
   describe('Get Or Set Cache', () => {
     it(`should return 'test' value after key is set`, async () => {
+      // eslint-disable-next-line require-await
       const cacheValue = await cachingService.getOrSetCache('test', async () => 'test', Constants.oneSecond());
       expect(cacheValue).toBe('test');
     });

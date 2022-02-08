@@ -46,10 +46,10 @@ export class EsdtService {
 
   private async getAllEsdtsForAddressRaw(address: string, source?: EsdtDataSource): Promise<{ [key: string]: any }> {
     if (source === EsdtDataSource.elastic && this.apiConfigService.getIsIndexerV3FlagActive()) {
-      return this.getAllEsdtsForAddressFromElastic(address);
+      return await this.getAllEsdtsForAddressFromElastic(address);
     }
 
-    return this.getAllEsdtsForAddressFromGateway(address);
+    return await this.getAllEsdtsForAddressFromGateway(address);
   }
 
   private async getAllEsdtsForAddressFromElastic(address: string): Promise<{ [key: string]: any }> {
@@ -88,6 +88,7 @@ export class EsdtService {
   }
 
   private async getAllEsdtsForAddressFromGateway(address: string): Promise<{ [key: string]: any }> {
+    // eslint-disable-next-line require-await
     const esdtResult = await this.gatewayService.get(`address/${address}/esdt`, GatewayComponentRequest.addressEsdt, async (error) => {
       const errorMessage = error?.response?.data?.error;
       if (errorMessage && errorMessage.includes('account was not found')) {
@@ -144,7 +145,7 @@ export class EsdtService {
   }
 
   async getAllEsdtTokens(): Promise<TokenDetailed[]> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       CacheInfo.AllEsdtTokens.key,
       async () => await this.getAllEsdtTokensRaw(),
       CacheInfo.AllEsdtTokens.ttl
@@ -361,7 +362,7 @@ export class EsdtService {
   }
 
   async getLockedSupply(identifier: string): Promise<string> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       CacheInfo.TokenLockedSupply(identifier).key,
       async () => await this.getLockedSupplyRaw(identifier),
       CacheInfo.TokenLockedSupply(identifier).ttl,

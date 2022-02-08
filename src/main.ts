@@ -143,7 +143,7 @@ async function bootstrap() {
         },
       },
     });
-    queueWorkerApp.listen();
+    await queueWorkerApp.listen();
   }
 
   const logger = new Logger('Bootstrapper');
@@ -162,6 +162,7 @@ async function bootstrap() {
       },
     },
   );
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   pubSubApp.listen();
 
   logger.log(`Public API active: ${apiConfigService.getIsPublicApiActive()}`);
@@ -175,6 +176,7 @@ async function bootstrap() {
   logger.log(`Queue worker active: ${apiConfigService.getIsQueueWorkerCronActive()}`);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();
 
 RedisClient.prototype.on_error = function (err: any) {

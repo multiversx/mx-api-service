@@ -1,3 +1,4 @@
+/* eslint-disable require-await */
 import { Injectable } from "@nestjs/common";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { PersistenceInterface } from "../persistence.interface";

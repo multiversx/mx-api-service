@@ -28,7 +28,7 @@ describe('Stake Service', () => {
   }, Constants.oneHour() * 1000);
 
   describe('Stake', () => {
-    it('global stake should have totalValidators, activeValidators, queueSize and totalStaked', async () => {
+    it('global stake should have totalValidators, activeValidators, queueSize and totalStaked', () => {
       expect(globalStake).toHaveProperty('totalValidators');
       expect(globalStake).toHaveProperty('activeValidators');
       expect(globalStake).toHaveProperty('queueSize');

@@ -49,7 +49,7 @@ export class AccountService {
   }
 
   async getAccountUsername(address: string): Promise<string | null> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       `account:${address}:username`,
       async () => await this.getAccountUsernameRaw(address),
       Constants.oneWeek()
@@ -151,7 +151,7 @@ export class AccountService {
   }
 
   async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       `accounts:${queryPagination.from}:${queryPagination.size}`,
       async () => await this.getAccountsRaw(queryPagination),
       Constants.oneMinute(),

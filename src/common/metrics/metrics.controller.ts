@@ -9,6 +9,6 @@ export class MetricsController {
 
   @Get("/metrics")
   async getMetrics(): Promise<string> {
-    return this.metricsService.getMetrics();
+    return await this.metricsService.getMetrics();
   }
 }

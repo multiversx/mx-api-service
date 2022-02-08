@@ -24,7 +24,7 @@ describe('Blocks Service', () => {
   }, Constants.oneHour() * 1000);
 
   describe('Blocks', () => {
-    it('blocks should have hash, epoch and shard', async () => {
+    it('blocks should have hash, epoch and shard', () => {
       for (const block of blocks) {
         expect(block).toHaveProperty('hash');
         expect(block).toHaveProperty('epoch');
@@ -32,13 +32,13 @@ describe('Blocks Service', () => {
       }
     });
 
-    it('all entities should have block structure', async () => {
+    it('all entities should have block structure', () => {
       for (const block of blocks) {
         expect(block).toHaveStructure(Object.keys(new Block()));
       }
     });
 
-    it('should be sorted by timestamp in descending order', async () => {
+    it('should be sorted by timestamp in descending order', () => {
       let index = 1;
 
       while (index < blocks.length) {
