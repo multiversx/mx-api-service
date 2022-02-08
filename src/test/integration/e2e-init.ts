@@ -33,9 +33,11 @@ export default class Initializer {
     if (Initializer.apiConfigService.getMockKeybases()) {
       jest
         .spyOn(KeybaseService.prototype, 'confirmKeybase')
+        // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => true));
       jest
         .spyOn(KeybaseService.prototype, 'getProfile')
+        // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => new KeybaseIdentity()));
     }
 
@@ -46,11 +48,13 @@ export default class Initializer {
       );
       jest
         .spyOn(NodeService.prototype, 'getHeartbeat')
+        // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => heartbeat));
 
       const queue = FileUtils.parseJSONFile(`${MOCK_PATH}queue.mock.json`);
       jest
         .spyOn(NodeService.prototype, 'getQueue')
+        // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => queue));
     }
 
@@ -84,7 +88,7 @@ export default class Initializer {
 
     await this.execute(description, async () => {
       const value = await promise();
-      Initializer.cachingService.setCache(key, value, Constants.oneHour());
+      await Initializer.cachingService.setCache(key, value, Constants.oneHour());
     });
   }
 

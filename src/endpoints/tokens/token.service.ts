@@ -59,7 +59,7 @@ export class TokenService {
     tokens = tokens.slice(from, from + size);
 
     for (const token of tokens) {
-      await this.applyTickerFromAssets(token);
+      this.applyTickerFromAssets(token);
     }
 
     await this.batchProcessTokens(tokens);
@@ -67,7 +67,7 @@ export class TokenService {
     return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
   }
 
-  async applyTickerFromAssets(token: Token) {
+  applyTickerFromAssets(token: Token) {
     if (token.assets) {
       token.ticker = token.identifier.split('-')[0];
     } else {

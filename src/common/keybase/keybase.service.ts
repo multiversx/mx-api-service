@@ -116,6 +116,7 @@ export class KeybaseService {
   }
 
   async confirmKeybasesAgainstKeybasePubForIdentity(identity: string): Promise<void> {
+    // eslint-disable-next-line require-await
     const result = await this.apiService.get(`https://keybase.pub/${identity}/elrond`, { timeout: 100000 }, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
 
     if (!result) {
@@ -216,8 +217,7 @@ export class KeybaseService {
         ? `https://keybase.pub/${keybase.identity}/elrond/${keybase.key}`
         : `https://keybase.pub/${keybase.identity}/elrond/${this.apiConfigService.getNetwork()}/${keybase.key}`;
 
-      // this.logger.log(`Fetching keybase for identity ${keybase.identity} and key ${keybase.key}`);
-
+      // eslint-disable-next-line require-await
       const { status } = await this.apiService.head(url, new ApiSettings(), async (error) => {
         if (error.response?.status === HttpStatus.NOT_FOUND) {
           throw error;

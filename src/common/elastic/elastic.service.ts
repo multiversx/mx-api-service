@@ -87,7 +87,7 @@ export class ElasticService {
   }
 
   async getAccountEsdtByIdentifier(identifier: string, pagination?: QueryPagination) {
-    return this.getAccountEsdtByIdentifiers([identifier], pagination);
+    return await this.getAccountEsdtByIdentifiers([identifier], pagination);
   }
 
   async getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]): Promise<any[]> {
