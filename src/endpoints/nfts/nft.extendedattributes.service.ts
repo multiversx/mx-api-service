@@ -35,7 +35,7 @@ export class NftExtendedAttributesService {
       return undefined;
     }
 
-    return this.getExtendedAttributesFromMetadata(metadata);
+    return await this.getExtendedAttributesFromMetadata(metadata);
   }
 
   async tryGetExtendedAttributesFromMetadata(metadata: string): Promise<NftMetadata | undefined> {

@@ -113,6 +113,12 @@ export class NftService {
       queries.push(QueryType.Should(identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
     }
 
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+      if (filter.isWhitelistedStorage !== undefined) {
+        queries.push(QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
+      }
+    }
+
     let elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, queries)
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('type', 'FungibleESDT')]);
@@ -333,7 +339,11 @@ export class NftService {
           }
         }
 
-        nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
+        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+          nft.isWhitelistedStorage = elasticNft.data.whiteListedStorage;
+        } else {
+          nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
+        }
 
         if (elasticNftData.metadata) {
           nft.attributes = BinaryUtils.base64Encode(`metadata:${elasticNftData.metadata}`);
@@ -368,7 +378,7 @@ export class NftService {
   }
 
   async getNftOwnersCount(identifier: string): Promise<number> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       `nftOwnerCount:${identifier}`,
       async () => await this.getNftOwnersCountRaw(identifier),
       Constants.oneMinute()
@@ -438,7 +448,7 @@ export class NftService {
     return nfts.length;
   }
 
-  private async filterNfts(filter: NftFilter, nfts: NftAccount[]): Promise<NftAccount[]> {
+  private filterNfts(filter: NftFilter, nfts: NftAccount[]): NftAccount[] {
     if (filter.search) {
       const searchLower = filter.search.toLowerCase();
 
@@ -575,7 +585,7 @@ export class NftService {
       nfts.push(nft);
     }
 
-    nfts = await this.filterNfts(filter, nfts);
+    nfts = this.filterNfts(filter, nfts);
 
     return nfts;
   }

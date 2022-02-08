@@ -6,6 +6,7 @@ export class TransactionFilter {
     sender?: string;
     receiver?: string;
     token?: string;
+    function?: string;
     senderShard?: number;
     receiverShard?: number;
     miniBlockHash?: string;

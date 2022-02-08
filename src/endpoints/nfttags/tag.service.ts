@@ -18,7 +18,7 @@ export class TagService {
   ) { }
 
   async getNftTags(pagination: QueryPagination): Promise<Tag[]> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       'nftTags',
       async () => await this.getNftTagsRaw(pagination),
       Constants.oneHour(),

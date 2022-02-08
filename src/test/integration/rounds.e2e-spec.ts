@@ -22,7 +22,7 @@ describe('Rounds Service', () => {
   }, Constants.oneHour() * 1000);
 
   describe('Rounds', () => {
-    it('all entities should have round structure', async () => {
+    it('all entities should have round structure', () => {
       for (const round of rounds) {
         expect(round).toHaveStructure(Object.keys(new Round()));
       }

@@ -171,6 +171,7 @@ export class TokenController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false })
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
+  @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false })
@@ -189,6 +190,7 @@ export class TokenController {
     @Query('hashes', ParseArrayPipe) hashes: string[] | undefined,
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined,
     @Query('search') search: string | undefined,
+    @Query('function') scFunction: string | undefined,
     @Query('before', ParseOptionalIntPipe) before: number | undefined,
     @Query('after', ParseOptionalIntPipe) after: number | undefined,
     @Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
@@ -207,6 +209,7 @@ export class TokenController {
         sender,
         receiver,
         token: identifier,
+        function: scFunction,
         senderShard,
         receiverShard,
         miniBlockHash,

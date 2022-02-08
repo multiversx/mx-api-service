@@ -16,7 +16,7 @@ export class DelegationService {
   ) { }
 
   async getDelegation(): Promise<Delegation> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       'delegation',
       async () => await this.getDelegationRaw(),
       Constants.oneMinute() * 10

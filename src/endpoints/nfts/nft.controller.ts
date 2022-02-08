@@ -32,6 +32,7 @@ export class NftController {
   @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
   @ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
   @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
+  @ApiQuery({ name: 'isWhitelistedStorage', description: 'Return all NFTs that are whitelisted in storage', required: false })
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
   @ApiQuery({ name: 'withOwner', description: 'Return owner where type = NonFungibleESDT', required: false })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false })
@@ -46,12 +47,13 @@ export class NftController {
     @Query('name') name: string | undefined,
     @Query('tags', ParseArrayPipe) tags: string[] | undefined,
     @Query('creator', ParseAddressPipe) creator: string | undefined,
+    @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage: boolean | undefined,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
     @Query('withOwner', new ParseOptionalBoolPipe) withOwner?: boolean | undefined,
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean | undefined,
     @Query('withMetadata', new ParseOptionalBoolPipe) withMetadata?: boolean | undefined,
   ): Promise<Nft[]> {
-    return await this.nftService.getNfts({ from, size }, { search, identifiers, type, collection, name, tags, creator, hasUris }, { withOwner, withSupply, withMetadata });
+    return await this.nftService.getNfts({ from, size }, { search, identifiers, type, collection, name, tags, creator, hasUris, isWhitelistedStorage }, { withOwner, withSupply, withMetadata });
   }
 
   @Get("/nfts/count")

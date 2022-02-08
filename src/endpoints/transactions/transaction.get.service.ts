@@ -86,11 +86,6 @@ export class TransactionGetService {
       }
 
       const transactionDetailed: TransactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), result);
-      const tokenTransfer = this.tokenTransferService.getTokenTransfer(result);
-      if (tokenTransfer) {
-        transactionDetailed.tokenValue = tokenTransfer.tokenAmount;
-        transactionDetailed.tokenIdentifier = tokenTransfer.tokenIdentifier;
-      }
 
       const hashes: string[] = [];
       hashes.push(txHash);
@@ -155,6 +150,7 @@ export class TransactionGetService {
 
   async tryGetTransactionFromGateway(txHash: string, queryInElastic: boolean = true): Promise<TransactionDetailed | null> {
     try {
+      // eslint-disable-next-line require-await
       const transactionResult = await this.gatewayService.get(`transaction/${txHash}?withResults=true`, GatewayComponentRequest.transactionDetails, async (error) => {
         if (error.response.data.error === 'transaction not found') {
           return true;
