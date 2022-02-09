@@ -19,7 +19,6 @@ import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { TransactionService } from "../transactions/transaction.service";
 import { RecordUtils } from "src/utils/record.utils";
-import { EsdtSupply } from "../esdt/entities/esdt.supply";
 import { TokenType } from "./entities/token.type";
 import { NumberUtils } from "src/utils/number.utils";
 
@@ -285,11 +284,11 @@ export class TokenService {
   async applySupply(token: TokenDetailed): Promise<void> {
     const { totalSupply, circulatingSupply } = await this.esdtService.getTokenSupply(token.identifier);
 
-    token.supply = totalSupply;
-    token.circulatingSupply = NumberUtils.denominate(BigInt(circulatingSupply));
+    token.supply = NumberUtils.denominate(BigInt(totalSupply), token.decimals).toFixed();
+    token.circulatingSupply = NumberUtils.denominate(BigInt(circulatingSupply), token.decimals).toFixed();
   }
 
-  async getTokenSupply(identifier: string): Promise<EsdtSupply | undefined> {
+  async getTokenSupply(identifier: string): Promise<{ supply: string, circulatingSupply: string } | undefined> {
     if (identifier.split('-').length !== 2) {
       return undefined;
     }
@@ -303,6 +302,11 @@ export class TokenService {
       return undefined;
     }
 
-    return await this.esdtService.getTokenSupply(identifier);
+    const result = await this.esdtService.getTokenSupply(identifier);
+
+    return {
+      supply: NumberUtils.denominateString(result.totalSupply, properties.decimals).toFixed(),
+      circulatingSupply: NumberUtils.denominateString(result.circulatingSupply, properties.decimals).toFixed(),
+    };
   }
 }

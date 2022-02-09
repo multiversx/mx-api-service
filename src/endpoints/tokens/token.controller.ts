@@ -114,7 +114,7 @@ export class TokenController {
       throw new NotFoundException();
     }
 
-    return { supply: getSupplyResult.totalSupply, circulatingSupply: getSupplyResult.circulatingSupply };
+    return getSupplyResult;
   }
 
   @Get("/tokens/:identifier/accounts")
