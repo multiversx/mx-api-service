@@ -443,7 +443,7 @@ export class NftService {
   }
 
   async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {
-    const nfts = await this.getNftsForAddressInternal(address, filter);
+    const nfts = await this.getNftsForAddressInternal(address, filter, false);
 
     return nfts.length;
   }
@@ -524,10 +524,13 @@ export class NftService {
     return Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
   }
 
-  async getNftsForAddressInternal(address: string, filter: NftFilter): Promise<NftAccount[]> {
+  async getNftsForAddressInternal(address: string, filter: NftFilter, sort: boolean = true): Promise<NftAccount[]> {
     const gatewayNfts = await this.getGatewayNfts(address, filter);
 
-    gatewayNfts.sort((a: GatewayNft, b: GatewayNft) => a.tokenIdentifier.localeCompare(b.tokenIdentifier, 'en', { sensitivity: 'base' }));
+    if (sort) {
+      const collator = new Intl.Collator('en', { numeric: true, sensitivity: 'base' });
+      gatewayNfts.sort((a: GatewayNft, b: GatewayNft) => collator.compare(a.tokenIdentifier, b.tokenIdentifier));
+    }
 
     let nfts: NftAccount[] = [];
 
