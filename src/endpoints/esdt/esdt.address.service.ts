@@ -85,9 +85,9 @@ export class EsdtAddressService {
       gatewayNfts.push(gatewayNft);
     }
 
-    const mapped: GatewayNft[] = Object.values(gatewayNfts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
+    const nfts: GatewayNft[] = Object.values(gatewayNfts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
 
-    const nftAccounts: NftAccount[] = await this.mapToNftAccount(mapped);
+    const nftAccounts: NftAccount[] = await this.mapToNftAccount(nfts);
 
     return nftAccounts;
   }
@@ -95,9 +95,9 @@ export class EsdtAddressService {
   private async getEsdtsForAddressFromGateway(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
     const esdts = await this.getAllEsdtsForAddressFromGateway(address);
 
-    const mapped: GatewayNft[] = Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
+    const nfts: GatewayNft[] = Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
 
-    const nftAccounts: NftAccount[] = await this.mapToNftAccount(mapped);
+    const nftAccounts: NftAccount[] = await this.mapToNftAccount(nfts);
 
     return this.filterEsdtsForAddressFromGateway(filter, pagination, nftAccounts);
   }
