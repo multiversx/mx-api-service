@@ -25,11 +25,11 @@ describe('Blocks Service', () => {
 
   describe('Blocks', () => {
     it('blocks should have hash, epoch and shard', () => {
-      for (const block of blocks) {
+      blocks.forEach(block => {
         expect(block).toHaveProperty('hash');
         expect(block).toHaveProperty('epoch');
         expect(block).toHaveProperty('shard');
-      }
+      });
     });
 
     it('all entities should have block structure', () => {
@@ -65,6 +65,20 @@ describe('Blocks Service', () => {
       const blockDetailed = await blocksService.getBlock(blockSentinel.hash);
       expect(blockDetailed?.hash).toStrictEqual(blockSentinel.hash);
       expect(blockDetailed).toHaveProperty('validators');
+    });
+
+    it('should return current epoch', async () => {
+      const epoch = await blocksService.getCurrentEpoch();
+      expect(typeof epoch).toBe('number');
+    });
+
+    it('should return block count', async () => {
+      const blocksFilter = new BlockFilter();
+      blocksFilter.shard = 2;
+      blocksFilter.epoch = 396;
+      const block = await blocksService.getBlocksCount(blocksFilter);
+
+      expect(typeof block).toBe('number');
     });
   });
 });

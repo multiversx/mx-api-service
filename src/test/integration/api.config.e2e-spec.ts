@@ -3,9 +3,11 @@ import Initializer from "./e2e-init";
 import { Constants } from "../../utils/constants";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
+import { ConfigService } from "@nestjs/config";
 
 describe('API Config', () => {
   let apiConfigService: ApiConfigService;
+  let configService: ConfigService;
 
   const esdtContractAddress: string = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u';
   const auctionContractAddress: string = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l';
@@ -23,6 +25,7 @@ describe('API Config', () => {
   const externalMediaUrl: string = 'https://media.elrond.com';
   const thumbnailsNftUrl: string = 'https://media.elrond.com/nfts/thumbnail';
   const rabbitMqUrl: string = 'amqp://127.0.0.1:5672';
+  const temp: string = '/tmp';
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -30,10 +33,14 @@ describe('API Config', () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
-
+    configService;
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
+    configService = moduleRef.get<ConfigService>(ConfigService);
+
 
   }, Constants.oneHour() * 1000);
+
+  beforeEach(() => { jest.restoreAllMocks(); });
 
   describe('Get Config values', () => {
 
@@ -43,14 +50,38 @@ describe('API Config', () => {
         expect(value).toBeInstanceOf(Array);
       });
 
+      it('should throw error if api urls are missing', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getApiUrls()).toThrowError('No API urls present');
+      });
+
       it('should return gateway url', () => {
         const value = apiConfigService.getGatewayUrl();
         expect(value).toBe(gatewayUrl);
       });
 
+      it('should throw error if gateway url is missing', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getGatewayUrl()).toThrowError('No gateway urls present');
+      });
+
       it('should return elastic url', () => {
         const value = apiConfigService.getElasticUrl();
         expect(value).toBe(elasticUrl);
+      });
+
+      it('should throw error if elastic url is missing', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getElasticUrl()).toThrowError('No elastic urls present');
       });
 
       it('should return mex url', () => {
@@ -68,9 +99,25 @@ describe('API Config', () => {
         expect(value).toBe(esdtContractAddress);
       });
 
+      it('should throw error if esdtContract url is missing', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getEsdtContractAddress()).toThrowError('No ESDT contract present');
+      });
+
       it('should return auction contract address', () => {
         const value = apiConfigService.getAuctionContractAddress();
         expect(value).toBe(auctionContractAddress);
+      });
+
+      it('should throw error if auctionContract url is missing', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getAuctionContractAddress()).toThrowError('No auction contract present');
       });
 
       it('should return staking contract address', () => {
@@ -78,9 +125,25 @@ describe('API Config', () => {
         expect(value).toBe(stakingContractAddress);
       });
 
+      it('should throw error if staking url is missing', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getStakingContractAddress()).toThrowError('No staking contract present');
+      });
+
       it('should return delegation contract address', () => {
         const value = apiConfigService.getDelegationContractAddress();
         expect(value).toBe(delegationContractAddress);
+      });
+
+      it('should throw error if delegation contract url is missing', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getDelegationContractAddress()).toThrowError('No delegation contract present');
       });
 
       it('should return delegation contract shard id', () => {
@@ -88,9 +151,25 @@ describe('API Config', () => {
         expect(value).toBe(2);
       });
 
+      it('should throw error if delegation contract shard id  is missing', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getDelegationContractShardId()).toThrowError('No delegation contract shard ID present');
+      });
+
       it('should return delegation manager contract address', () => {
         const value = apiConfigService.getDelegationManagerContractAddress();
         expect(value).toBe(delegationManagerContractAddress);
+      });
+
+      it('should throw error if delegation manager contract is missing', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getDelegationManagerContractAddress()).toThrowError('No delegation manager contract present');
       });
 
       it('should return Vm Query Url', () => {
@@ -103,6 +182,14 @@ describe('API Config', () => {
         expect(value).toBe('127.0.0.1');
       });
 
+      it('should throw error if redis url is missing', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getRedisUrl()).toThrowError('No redis url present');
+      });
+
       it('should return cache Ttl', () => {
         const value = apiConfigService.getCacheTtl();
         expect(value).toBe(6);
@@ -113,9 +200,17 @@ describe('API Config', () => {
         expect(value).toBe('mainnet');
       });
 
+      it('should throw error if network is not present', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getNetwork()).toThrowError('No network present');
+      });
+
       it('should return pool limit', () => {
         const value = apiConfigService.getPoolLimit();
-        expect(value).toBe(10);
+        expect(value).toBeGreaterThanOrEqual(10);
       });
 
       it('should return process ttl', () => {
@@ -168,6 +263,14 @@ describe('API Config', () => {
         expect(value).toBe(providersUrl);
       });
 
+      it('should return null if provider url is undefined', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getProvidersUrl()).toThrowError('No providers url present');
+      });
+
       it('should return data url', () => {
         const value = apiConfigService.getDataUrl();
         expect(value).toBeUndefined();
@@ -178,14 +281,51 @@ describe('API Config', () => {
         expect(value).toBeTruthy();
       });
 
+      it('should return null if transaction processor cron is not active', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getIsTransactionProcessorCronActive()).toThrowError('No cron.transactionProcessor flag present');
+      });
+
       it('should return transaction processor max number', () => {
         const value = apiConfigService.getTransactionProcessorMaxLookBehind();
         expect(value).toBe(1000);
       });
 
+      it('should return null if transaction processor max flag is not defined', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getTransactionProcessorMaxLookBehind()).toThrowError('No cron.transactionProcessorMaxLookBehind flag present');
+      });
+
       it('should return true if cache warmer cron is active', () => {
         const value = apiConfigService.getIsCacheWarmerCronActive();
         expect(value).toBeTruthy();
+      });
+
+      it('should return null if cron cache warmer not defined', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getIsCacheWarmerCronActive()).toThrowError('No cron.cacheWarmer flag present');
+      });
+
+      it('should return true if queue worker cron is active', () => {
+        const value = apiConfigService.getIsQueueWorkerCronActive();
+        expect(value).toBeTruthy();
+      });
+
+      it('should return null if cron cache warmer not defined', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getIsQueueWorkerCronActive()).toThrowError('No queue worker cron flag present');
       });
 
       it('should return false if fast warmer cron is not active', () => {
@@ -213,9 +353,25 @@ describe('API Config', () => {
         expect(value).toBe('localhost');
       });
 
+      it('should throw error if database host is not defined', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getDatabaseHost()).toThrowError('No database.host present');
+      });
+
       it('should return database port', () => {
         const value = apiConfigService.getDatabasePort();
         expect(value).toBe(3306);
+      });
+
+      it('should throw error if database port is not defined', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getDatabasePort()).toThrowError('No database.port present');
       });
 
       it('should return database username', () => {
@@ -233,14 +389,38 @@ describe('API Config', () => {
         expect(value).toBe('api');
       });
 
+      it('should throw error if database name is not defined', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getDatabaseName()).toThrowError('No database.database present');
+      });
+
       it('should return meta chain shard id', () => {
         const value = apiConfigService.getMetaChainShardId();
         expect(value).toBe(4294967295);
       });
 
+      it('should return null if media url is undefined', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getMetaChainShardId()).toThrowError('No metaChainShardId present');
+      });
+
       it('should return whether to use legacy elastic', () => {
         const value = apiConfigService.getUseLegacyElastic();
         expect(value).toStrictEqual(false);
+      });
+
+      it('should return null if lagacy elastic is undefined', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(apiConfigService.getUseLegacyElastic()).toBeFalsy();
       });
 
       it('should return rate limiter secret', () => {
@@ -253,10 +433,27 @@ describe('API Config', () => {
         expect(value).toBeInstanceOf(Array);
       });
 
+      it('should return null if inflation amounts are null', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => null));
+
+        expect(() => apiConfigService.getInflationAmounts()).toThrowError('No inflation amounts present');
+      });
+
       it('should return media url', () => {
         const value = apiConfigService.getMediaUrl();
         expect(value).toBe(mediaUrl);
       });
+
+      it('should return null if media url is undefined', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getMediaUrl()).toThrowError('No media url present');
+      });
+
 
       it('should return media internal url', () => {
         const value = apiConfigService.getMediaInternalUrl();
@@ -273,6 +470,14 @@ describe('API Config', () => {
         expect(value).toBe(thumbnailsNftUrl);
       });
 
+      it('should return null if thumbnails url is undefined', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getNftThumbnailsUrl()).toThrowError('No nft thumbnails url present');
+      });
+
       it('should return access address', () => {
         const value = apiConfigService.getAccessAddress();
         expect(value).toBe('');
@@ -283,19 +488,87 @@ describe('API Config', () => {
         expect(value).toBe('./src/test/mocks/');
       });
 
-      it('should return null', () => {
-        const value = apiConfigService.getSecurityAdmins();
-        expect(value).toBeNull();
+      it('should return null if security Admins are undefined', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getSecurityAdmins()).toThrowError('No security admins value present');
       });
 
       it('should return false with nfts flag not active', () => {
         const value = apiConfigService.getIsProcessNftsFlagActive();
-        expect(value).toBeFalsy();
+        expect(value).toBeTruthy();
       });
 
       it('should return rabbitMq url', () => {
         const value = apiConfigService.getRabbitmqUrl();
         expect(value).toBe(rabbitMqUrl);
+      });
+
+      it('should throw error if rabbitMq url is missing', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getRabbitmqUrl()).toThrowError('No rabbitmq url present');
+      });
+
+      it('should return temp url', () => {
+        const value = apiConfigService.getTempUrl();
+        expect(value).toBe(temp);
+      });
+
+      it('should throw error if temp url is not defined', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getTempUrl()).toThrowError('No tmp url present');
+      });
+
+      it('should return nft process parallelism ', () => {
+        const value = apiConfigService.getNftProcessParallelism();
+        expect(value).toBe(1);
+      });
+
+      it('should return nft process max retries ', () => {
+        const value = apiConfigService.getNftProcessMaxRetries();
+        expect(value).toBe(3);
+      });
+
+      it('should return jwt secret ', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getJwtSecret()).toThrowError('No jwtSecret present');
+      });
+
+      it('should return AwsS3Region ', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getAwsS3Region()).toThrowError('No s3Region present');
+      });
+
+      it('should return AwsS3Bucket ', () => {
+        const value = apiConfigService.getAwsS3Bucket();
+        expect(value).toBe('media.elrond.com');
+      });
+
+      it('should return AwsS3Bucket ', () => {
+        jest
+          .spyOn(ConfigService.prototype, 'get')
+          .mockImplementation(jest.fn(() => undefined));
+
+        expect(() => apiConfigService.getAwsS3Bucket()).toThrowError('No s3Bucket present');
+      });
+
+      it('should return details for a specific configKey', () => {
+        const value = apiConfigService.getConfig('urls.api');
+        expect(value).toBeInstanceOf(Array);
       });
     });
   });
