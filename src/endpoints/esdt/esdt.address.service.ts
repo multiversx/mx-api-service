@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
@@ -33,6 +33,7 @@ export class EsdtAddressService {
     private readonly metricsService: MetricsService,
     private readonly protocolService: ProtocolService,
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
+    @Inject(forwardRef(() => NftService))
     private readonly nftService: NftService,
   ) {
     this.logger = new Logger(EsdtAddressService.name);
