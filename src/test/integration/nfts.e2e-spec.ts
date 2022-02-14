@@ -14,7 +14,6 @@ describe('Nft Service', () => {
   let nftService: NftService;
   let nftCreator: string;
 
-  const nftAddress: string = 'erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl';
   const nftsIdentifier: string = 'LKLP-03a2fa-0d270d';
   const invalidIdentifier: string = 'MEXFARM-e7af524edf42';
 
