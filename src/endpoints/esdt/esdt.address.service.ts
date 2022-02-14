@@ -2,10 +2,6 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
-import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
-import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
-import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
-import { QueryType } from "src/common/elastic/entities/query.type";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
@@ -21,6 +17,7 @@ import { NftFilter } from "../nfts/entities/nft.filter";
 import { NftType } from "../nfts/entities/nft.type";
 import { NftExtendedAttributesService } from "../nfts/nft.extendedattributes.service";
 import { NftService } from "../nfts/nft.service";
+import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 
 @Injectable()
 export class EsdtAddressService {
@@ -51,21 +48,16 @@ export class EsdtAddressService {
   }
 
   async getEsdtsCountForAddressFromElastic(address: string, filter: NftFilter): Promise<number> {
-    const elasticQuery = this.nftService.buildElasticNftFilter(filter);
-    elasticQuery
-      .withCondition(QueryConditionOptions.must, [QueryType.Match('address', address)])
-      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')]);
+    const elasticQuery = this.nftService.buildElasticNftFilter(filter, undefined, address);
 
     return await this.elasticService.getCount('accountsesdt', elasticQuery);
   }
 
 
   private async getEsdtsForAddressFromElastic(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
-    const elasticQuery = this.nftService.buildElasticNftFilter(filter);
-    elasticQuery
+    let elasticQuery = this.nftService.buildElasticNftFilter(filter, undefined, address);
+    elasticQuery = elasticQuery
       .withSort([{ name: "timestamp", order: ElasticSortOrder.descending }])
-      .withCondition(QueryConditionOptions.must, [QueryType.Match('address', address)])
-      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
       .withPagination(pagination);
 
     const esdts = await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
