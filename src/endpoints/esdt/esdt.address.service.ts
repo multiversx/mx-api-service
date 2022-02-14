@@ -220,6 +220,10 @@ export class EsdtAddressService {
       nfts = nfts.filter(x => x.name.toLowerCase().includes(searchLower) || x.identifier.toLowerCase().includes(searchLower));
     }
 
+    if (filter.identifiers) {
+      nfts = nfts.filter(x => filter.identifiers?.includes(x.identifier));
+    }
+
     if (filter.type) {
       const types = filter.type;
 
@@ -262,7 +266,9 @@ export class EsdtAddressService {
 
     const { from, size } = pagination;
 
-    nfts = nfts.slice(from, from + size);
+    if (nfts.length > from + size) {
+      nfts = nfts.slice(from, from + size);
+    }
 
     return nfts;
   }
