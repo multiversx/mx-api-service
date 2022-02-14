@@ -29,10 +29,7 @@ import { PersistenceInterface } from "src/common/persistence/persistence.interfa
 import { RecordUtils } from "src/utils/record.utils";
 import { EsdtSupply } from "../esdt/entities/esdt.supply";
 import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
-import { GatewayNft } from "./entities/gateway.nft";
-import { GatewayService } from "src/common/gateway/gateway.service";
-import { NftExtendedAttributesService } from "./nft.extendedattributes.service";
-import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { EsdtAddressService } from "../esdt/esdt.address.service";
 
 @Injectable()
 export class NftService {
@@ -43,8 +40,6 @@ export class NftService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly elasticService: ElasticService,
-    private readonly gatewayService: GatewayService,
-    private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     private readonly esdtService: EsdtService,
     private readonly tokenAssetService: TokenAssetService,
     private readonly cachingService: CachingService,
@@ -54,6 +49,7 @@ export class NftService {
     private readonly nftMediaService: NftMediaService,
     @Inject('PersistenceService')
     private readonly persistenceService: PersistenceInterface,
+    private readonly esdtAddressService: EsdtAddressService,
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -68,9 +64,13 @@ export class NftService {
     ];
   }
 
-  private buildElasticNftFilter(filter: NftFilter, identifier?: string) {
+  buildElasticNftFilter(filter: NftFilter, identifier?: string, address?: string) {
     const queries = [];
     queries.push(QueryType.Exists('identifier'));
+
+    if (address) {
+      queries.push(QueryType.Match('address', address));
+    }
 
     if (filter.search !== undefined) {
       queries.push(QueryType.Wildcard('token', `*${filter.search}*`));
@@ -122,7 +122,7 @@ export class NftService {
 
     let elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, queries)
-      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('type', 'FungibleESDT')]);
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('type', 'FungibleESDT'), QueryType.Match('address', 'pending')]);
 
     if (filter.before || filter.after) {
       elasticQuery = elasticQuery
@@ -400,153 +400,8 @@ export class NftService {
     return await this.elasticService.getCount('tokens', elasticQuery);
   }
 
-  async getNftsForAddressInternal(address: string, filter: NftFilter, source?: EsdtDataSource): Promise<NftAccount[]> {
-    const accountNfts = await this.getAccountNfts(address, filter, source);
-
-    accountNfts.sort((a: GatewayNft, b: GatewayNft) => a.tokenIdentifier.localeCompare(b.tokenIdentifier, 'en', { sensitivity: 'base' }));
-
-    let nfts: NftAccount[] = [];
-
-    for (const dataSourceNft of accountNfts) {
-      const nft = new NftAccount();
-      nft.identifier = dataSourceNft.tokenIdentifier;
-      nft.collection = dataSourceNft.tokenIdentifier.split('-').slice(0, 2).join('-');
-      nft.nonce = dataSourceNft.nonce;
-      nft.creator = dataSourceNft.creator;
-      nft.royalties = Number(dataSourceNft.royalties) / 100; // 10.000 => 100%
-      nft.uris = dataSourceNft.uris ? dataSourceNft.uris.filter((x: any) => x) : [];
-      nft.name = dataSourceNft.name;
-      nft.timestamp = dataSourceNft.timestamp;
-
-      if (nft.uris && nft.uris.length > 0) {
-        try {
-          nft.url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(nft.uris[0]), this.NFT_THUMBNAIL_PREFIX);
-        } catch (error) {
-          this.logger.error(error);
-        }
-      }
-
-      nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
-
-      nft.attributes = dataSourceNft.attributes;
-
-      if (dataSourceNft.attributes) {
-        nft.tags = this.nftExtendedAttributesService.getTags(dataSourceNft.attributes);
-      }
-
-      const collectionDetails = await this.esdtService.getEsdtTokenProperties(nft.collection);
-      if (collectionDetails) {
-        // @ts-ignore
-        nft.type = collectionDetails.type;
-
-        if (nft.type === NftType.MetaESDT) {
-          nft.decimals = collectionDetails.decimals;
-          // @ts-ignore
-          delete nft.royalties;
-          // @ts-ignore
-          delete nft.uris;
-        }
-
-        if (!nft.name) {
-          nft.name = collectionDetails.name;
-        }
-      }
-
-      if ([NftType.SemiFungibleESDT, NftType.MetaESDT].includes(nft.type)) {
-        nft.balance = dataSourceNft.balance;
-      }
-
-      nfts.push(nft);
-    }
-
-    nfts = await this.filterNfts(filter, nfts);
-
-    return nfts;
-  }
-
-  async getAccountNfts(address: string, filter: NftFilter, source?: EsdtDataSource): Promise<GatewayNft[]> {
-    if (filter.identifiers !== undefined) {
-      const identifiers = filter.identifiers;
-      if (identifiers.length === 1) {
-        const identifier = identifiers[0];
-        const collectionIdentifier = identifier.split('-').slice(0, 2).join('-');
-        const nonce = parseInt(identifier.split('-')[2], 16);
-
-        const { tokenData: gatewayNft } = await this.gatewayService.get(`address/${address}/nft/${collectionIdentifier}/nonce/${nonce}`, GatewayComponentRequest.addressNftByNonce);
-
-        // normalizing tokenIdentifier since it doesn't contain the nonce in this particular scenario
-        gatewayNft.tokenIdentifier = identifier;
-
-        if (gatewayNft.balance === '0') {
-          return [];
-        }
-
-        return [gatewayNft];
-      }
-
-      if (identifiers.length > 1) {
-        const esdts = await this.esdtService.getAllEsdtsForAddress(address, source);
-        return Object.values(esdts).map(x => x as any).filter(x => identifiers.includes(x.tokenIdentifier));
-      }
-    }
-
-    const esdts = await this.esdtService.getAllEsdtsForAddress(address, source);
-    return Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
-  }
-
-  private filterNfts(filter: NftFilter, nfts: NftAccount[]): NftAccount[] {
-    if (filter.search) {
-      const searchLower = filter.search.toLowerCase();
-
-      nfts = nfts.filter(x => x.name.toLowerCase().includes(searchLower) || x.identifier.toLowerCase().includes(searchLower));
-    }
-
-    if (filter.type) {
-      const types = filter.type;
-
-      nfts = nfts.filter(x => types.includes(x.type));
-    }
-
-    if (filter.collection) {
-      nfts = nfts.filter(x => x.collection === filter.collection);
-    }
-
-    if (filter.name) {
-      const searchedNameLower = filter.name.toLowerCase();
-
-      nfts = nfts.filter(x => x.name.toLowerCase().includes(searchedNameLower));
-    }
-
-    if (filter.collections) {
-      const collectionsArray = filter.collections;
-      nfts = nfts.filter(x => collectionsArray.includes(x.collection));
-    }
-
-    if (filter.tags) {
-      const tagsArray = filter.tags;
-      nfts = nfts.filter(nft => tagsArray.filter(tag => nft.tags.includes(tag)).length === tagsArray.length);
-    }
-
-    if (filter.creator) {
-      nfts = nfts.filter(x => x.creator === filter.creator);
-    }
-
-    if (filter.hasUris === true) {
-      nfts = nfts.filter(x => x.uris && x.uris.length > 0);
-    } else if (filter.hasUris === false) {
-      nfts = nfts.filter(x => x.uris && x.uris.length === 0);
-    }
-
-    return nfts;
-  }
-
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
-    const { from, size } = queryPagination;
-
-    let nfts;
-    nfts = await this.getNftsForAddressInternal(address, filter, source);
-
-    nfts = nfts.slice(from, from + size);
+    const nfts = await this.esdtAddressService.getEsdtsForAddress(address, filter, queryPagination, source);
 
     for (const nft of nfts) {
       await this.applyAssetsAndTicker(nft);
@@ -558,26 +413,20 @@ export class NftService {
 
     await this.batchProcessNfts(nfts);
 
-    if (filter.includeFlagged !== true) {
-      nfts = nfts.filter(x => !x.scamInfo);
-    }
-
-    nfts = this.filterNfts(filter, nfts);
-    
     return nfts;
   }
 
   async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {
-    const nfts = await this.getNftsForAddressInternal(address, filter);
+    const count = await this.esdtAddressService.getEsdtsCountForAddressFromElastic(address, filter);
 
-    return nfts.length;
+    return count;
   }
 
   async getNftForAddress(address: string, identifier: string): Promise<NftAccount | undefined> {
     const filter = new NftFilter();
     filter.identifiers = [identifier];
 
-    const nfts = await this.getNftsForAddressInternal(address, filter);
+    const nfts = await this.esdtAddressService.getEsdtsForAddress(address, filter, { from: 0, size: 1 });
     if (nfts.length === 0) {
       return undefined;
     }

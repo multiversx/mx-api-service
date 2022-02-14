@@ -10,6 +10,7 @@ import { ExternalModule } from "../../common/external/external.module";
 import { GatewayModule } from "../../common/gateway/gateway.module";
 import { ProtocolModule } from "src/common/protocol/protocol.module";
 import { TokenModule } from "../tokens/token.module";
+import { EsdtAddressService } from "./esdt.address.service";
 
 
 @Module({
@@ -22,10 +23,10 @@ import { TokenModule } from "../tokens/token.module";
     ProtocolModule,
   ],
   providers: [
-    EsdtService,
+    EsdtService, EsdtAddressService,
   ],
   exports: [
-    EsdtService,
+    EsdtService, EsdtAddressService,
   ],
 })
 export class EsdtModule { }
