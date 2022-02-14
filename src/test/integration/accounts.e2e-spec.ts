@@ -33,7 +33,6 @@ describe('Account Service', () => {
 
       accountsList.forEach(account => {
         expect(account).toHaveStructure(Object.keys(new Account()));
-        expect(account).toHaveLength(25);
       });
     });
 

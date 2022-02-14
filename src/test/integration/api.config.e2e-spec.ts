@@ -25,7 +25,6 @@ describe('API Config', () => {
   const externalMediaUrl: string = 'https://media.elrond.com';
   const thumbnailsNftUrl: string = 'https://media.elrond.com/nfts/thumbnail';
   const rabbitMqUrl: string = 'amqp://127.0.0.1:5672';
-  const temp: string = '/tmp';
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -315,11 +314,6 @@ describe('API Config', () => {
         expect(() => apiConfigService.getIsCacheWarmerCronActive()).toThrowError('No cron.cacheWarmer flag present');
       });
 
-      it('should return true if queue worker cron is active', () => {
-        const value = apiConfigService.getIsQueueWorkerCronActive();
-        expect(value).toBeTruthy();
-      });
-
       it('should return null if cron cache warmer not defined', () => {
         jest
           .spyOn(ConfigService.prototype, 'get')
@@ -498,7 +492,7 @@ describe('API Config', () => {
 
       it('should return false with nfts flag not active', () => {
         const value = apiConfigService.getIsProcessNftsFlagActive();
-        expect(value).toBeTruthy();
+        expect(value).toBeFalsy();
       });
 
       it('should return rabbitMq url', () => {
@@ -512,11 +506,6 @@ describe('API Config', () => {
           .mockImplementation(jest.fn(() => undefined));
 
         expect(() => apiConfigService.getRabbitmqUrl()).toThrowError('No rabbitmq url present');
-      });
-
-      it('should return temp url', () => {
-        const value = apiConfigService.getTempUrl();
-        expect(value).toBe(temp);
       });
 
       it('should throw error if temp url is not defined', () => {
@@ -551,11 +540,6 @@ describe('API Config', () => {
           .mockImplementation(jest.fn(() => undefined));
 
         expect(() => apiConfigService.getAwsS3Region()).toThrowError('No s3Region present');
-      });
-
-      it('should return AwsS3Bucket ', () => {
-        const value = apiConfigService.getAwsS3Bucket();
-        expect(value).toBe('media.elrond.com');
       });
 
       it('should return AwsS3Bucket ', () => {
