@@ -49,6 +49,7 @@ export class NftService {
     private readonly nftMediaService: NftMediaService,
     @Inject('PersistenceService')
     private readonly persistenceService: PersistenceInterface,
+    @Inject(forwardRef(() => EsdtAddressService))
     private readonly esdtAddressService: EsdtAddressService,
   ) {
     this.logger = new Logger(NftService.name);
