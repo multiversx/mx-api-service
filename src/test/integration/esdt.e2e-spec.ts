@@ -1,32 +1,52 @@
 import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "../../public.app.module";
 import { Constants } from "../../utils/constants";
 import { EsdtService } from "../../endpoints/esdt/esdt.service";
 import tokenExample from "../data/esdt/token/token.example";
 import { TokenAddressRoles } from "src/endpoints/tokens/entities/token.address.roles";
+import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
+import { EsdtAddressService } from "src/endpoints/esdt/esdt.address.service";
+import { EsdtModule } from "src/endpoints/esdt/esdt.module";
+import { EsdtDataSource } from "src/endpoints/esdt/entities/esdt.data.source";
+import { NftAccount } from "src/endpoints/nfts/entities/nft.account";
 
 describe('ESDT Service', () => {
   let esdtService: EsdtService;
+  let esdtAddressService: EsdtAddressService;
+  const nftAddress: string = 'erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl';
 
   const egldMexTokenIdentifier: string = 'EGLDMEX-0be9e5';
 
   beforeAll(async () => {
     await Initializer.initialize();
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [EsdtModule],
     }).compile();
 
     esdtService = moduleRef.get<EsdtService>(EsdtService);
+    esdtAddressService = moduleRef.get<EsdtAddressService>(EsdtAddressService);
 
   }, Constants.oneHour() * 1000);
 
-  describe('Get All Esdts For Address', () => {
-    it('should return all esdts of address', async () => {
+  describe('Get Esdts For Address', () => {
+    it('gateway & elastic esdts of address should be the same', async () => {
       const esdtAddress: string = 'erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3';
 
-      await expect(esdtService.getAllEsdtsForAddress(esdtAddress))
-        .resolves.toBeInstanceOf(Object);
+      const gatewayNfts = await esdtAddressService.getEsdtsForAddress(esdtAddress, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.gateway);
+      const elasticNfts = await esdtAddressService.getEsdtsForAddress(esdtAddress, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.elastic);
+
+      expect(gatewayNfts).toStrictEqual(elasticNfts);
+    });
+
+    it(`should return a list with nfts account with one specific identifier`, async () => {
+      const nftFilter = new NftFilter();
+      nftFilter.identifiers = ['EGLDMEXF-5bcc57-0a3ad9'];
+      const nfts = await esdtAddressService.getEsdtsForAddress(nftAddress, nftFilter, { from: 0, size: 25 });
+
+      for (const nft of nfts) {
+        expect(nft).toHaveStructure(Object.keys(new NftAccount()));
+        expect(nft.identifier).toStrictEqual('EGLDMEXF-5bcc57-0a3ad9');
+      }
     });
   });
 

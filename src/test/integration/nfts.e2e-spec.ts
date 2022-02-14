@@ -7,7 +7,6 @@ import Initializer from "./e2e-init";
 import { Nft } from "../../endpoints/nfts/entities/nft";
 import { NftOwner } from "src/endpoints/nfts/entities/nft.owner";
 import { NftAccount } from "src/endpoints/nfts/entities/nft.account";
-import { GatewayNft } from "src/endpoints/nfts/entities/gateway.nft";
 import userAccount from "../data/accounts/user.account";
 import { NftModule } from "src/endpoints/nfts/nft.module";
 
@@ -226,30 +225,6 @@ describe('Nft Service', () => {
     it(`should return Nft count for address`, async () => {
       const count = await nftService.getNftCountForAddress(userAccount.address, { type: NftType.NonFungibleESDT });
       expect(typeof count).toBe('number');
-    });
-  });
-
-  describe('Get GatewayNFTs', () => {
-    it(`should return a list with nfts`, async () => {
-      const nftFilter = new NftFilter();
-      nftFilter.identifiers = ['LKFARM-9d1ea8-44b421'];
-      const nfts = await nftService.getAccountNfts(nftAddress, nftFilter);
-
-      for (const nft of nfts) {
-        expect(nft).toHaveStructure(Object.keys(new GatewayNft()));
-      }
-    });
-  });
-
-  describe('Get NFTs For Address Internal', () => {
-    it(`should return a list with nfts from internal address`, async () => {
-      const nftFilter = new NftFilter();
-      nftFilter.identifiers = ['LKFARM-9d1ea8-44b421'];
-      const nfts = await nftService.getNftsForAddressInternal(nftAddress, nftFilter);
-
-      for (const nft of nfts) {
-        expect(nft).toHaveStructure(Object.keys(new NftAccount()));
-      }
     });
   });
 
