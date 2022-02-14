@@ -21,6 +21,7 @@ import { TransactionService } from "../transactions/transaction.service";
 import { RecordUtils } from "src/utils/record.utils";
 import { TokenType } from "./entities/token.type";
 import { NumberUtils } from "src/utils/number.utils";
+import { EsdtAddressService } from "../esdt/esdt.address.service";
 
 @Injectable()
 export class TokenService {
@@ -30,6 +31,7 @@ export class TokenService {
     private readonly elasticService: ElasticService,
     private readonly cachingService: CachingService,
     private readonly transactionService: TransactionService,
+    private readonly esdtAddressService: EsdtAddressService,
   ) { }
 
   async getToken(identifier: string): Promise<TokenDetailed | undefined> {
@@ -212,7 +214,7 @@ export class TokenService {
       tokensIndexed[token.identifier] = token;
     }
 
-    const esdts = await this.esdtService.getAllEsdtsForAddress(address);
+    const esdts = await this.esdtAddressService.getAllEsdtsForAddressFromGateway(address);
 
     const tokensWithBalance: TokenWithBalance[] = [];
 

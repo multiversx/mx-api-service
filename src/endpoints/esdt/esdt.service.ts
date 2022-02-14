@@ -46,7 +46,7 @@ export class EsdtService {
     );
   }
 
-  private async getAllEsdtTokensRaw(): Promise<TokenDetailed[]> {
+  async getAllEsdtTokensRaw(): Promise<TokenDetailed[]> {
     let tokensIdentifiers: string[];
     try {
       const getFungibleTokensResult = await this.gatewayService.get('network/esdt/fungible-tokens', GatewayComponentRequest.allFungibleTokens);
@@ -121,7 +121,7 @@ export class EsdtService {
     return properties;
   }
 
-  private async getEsdtTokenPropertiesRaw(identifier: string): Promise<TokenProperties | null> {
+  async getEsdtTokenPropertiesRaw(identifier: string): Promise<TokenProperties | null> {
     const arg = Buffer.from(identifier, 'utf8').toString('hex');
 
     const tokenPropertiesEncoded = await this.vmQueryService.vmQuery(
@@ -214,7 +214,7 @@ export class EsdtService {
     return addressesRoles;
   }
 
-  private async getEsdtAddressesRolesRaw(identifier: string): Promise<TokenAddressRoles[] | null> {
+  async getEsdtAddressesRolesRaw(identifier: string): Promise<TokenAddressRoles[] | null> {
     const arg = BinaryUtils.stringToHex(identifier);
 
     const tokenAddressesAndRolesEncoded = await this.vmQueryService.vmQuery(
@@ -263,7 +263,7 @@ export class EsdtService {
     );
   }
 
-  private async getLockedSupplyRaw(identifier: string): Promise<string> {
+  async getLockedSupplyRaw(identifier: string): Promise<string> {
     const tokenAssets = await this.tokenAssetService.getAssets(identifier);
     if (!tokenAssets) {
       return '0';
