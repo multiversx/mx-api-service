@@ -8,12 +8,10 @@ import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { EsdtAddressService } from "src/endpoints/esdt/esdt.address.service";
 import { EsdtModule } from "src/endpoints/esdt/esdt.module";
 import { EsdtDataSource } from "src/endpoints/esdt/entities/esdt.data.source";
-import { NftAccount } from "src/endpoints/nfts/entities/nft.account";
 
 describe('ESDT Service', () => {
   let esdtService: EsdtService;
   let esdtAddressService: EsdtAddressService;
-  const nftAddress: string = 'erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl';
 
   const egldMexTokenIdentifier: string = 'EGLDMEX-0be9e5';
 
@@ -36,17 +34,6 @@ describe('ESDT Service', () => {
       const elasticNfts = await esdtAddressService.getEsdtsForAddress(esdtAddress, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.elastic);
 
       expect(gatewayNfts).toStrictEqual(elasticNfts);
-    });
-
-    it(`should return a list with nfts account with one specific identifier`, async () => {
-      const nftFilter = new NftFilter();
-      nftFilter.identifiers = ['EGLDMEXF-5bcc57-0a3ad9'];
-      const nfts = await esdtAddressService.getEsdtsForAddress(nftAddress, nftFilter, { from: 0, size: 25 });
-
-      for (const nft of nfts) {
-        expect(nft).toHaveStructure(Object.keys(new NftAccount()));
-        expect(nft.identifier).toStrictEqual('EGLDMEXF-5bcc57-0a3ad9');
-      }
     });
   });
 

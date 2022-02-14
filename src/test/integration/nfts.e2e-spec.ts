@@ -242,13 +242,6 @@ describe('Nft Service', () => {
     });
   });
 
-  describe('Get Nft For Address', () => {
-    it('should return undefined if the address does not contain a specific identifier', async () => {
-      const nft = await nftService.getNftForAddress(nftAddress, 'LKMEX-aab910-21c8e1');
-      expect(nft).toBeUndefined();
-    });
-  });
-
   describe('Get Nft Owners', () => {
     it('should return nft owners', async () => {
       const owners = await nftService.getNftOwners('ALIEN-a499ab-0227', { from: 0, size: 1 });
