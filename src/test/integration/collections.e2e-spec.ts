@@ -85,6 +85,8 @@ describe('Collection Service', () => {
       const collectionToTest = new NftCollectionAccount();
       // @ts-ignore
       delete collectionToTest.timestamp;
+      //@ts-ignore
+      delete collectionToTest.owner;
 
       expect(collection).toBeDefined();
       expect(collection).toHaveStructure(Object.keys(collectionToTest));
@@ -106,6 +108,9 @@ describe('Collection Service', () => {
 
         // @ts-ignore
         delete collectionToTest.timestamp;
+
+        //@ts-ignore
+        delete collectionToTest.owner;
 
         expect(collection).toHaveStructure(Object.keys(collectionToTest));
       }
