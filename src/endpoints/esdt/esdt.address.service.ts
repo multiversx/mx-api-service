@@ -41,6 +41,7 @@ export class EsdtAddressService {
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     @Inject(forwardRef(() => NftService))
     private readonly nftService: NftService,
+    @Inject(forwardRef(() => CollectionService))
     private readonly collectionService: CollectionService,
   ) {
     this.logger = new Logger(EsdtAddressService.name);
