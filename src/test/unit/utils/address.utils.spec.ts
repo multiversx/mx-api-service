@@ -11,8 +11,8 @@ describe('Address utils', () => {
   });
 
   it('is smart contract address', () => {
-    expect(AddressUtils.isSmartContractAddress('erd1rf4hv70arudgzus0ymnnsnc4pml0jkywg2xjvzslg0mz4nn2tg7q7k0t6p')).toBeFalsy();
-    expect(AddressUtils.isSmartContractAddress('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l')).toBeTruthy();
+    expect(AddressUtils.isSmartContractAddress('erd1rf4hv70arudgzus0ymnnsnc4pml0jkywg2xjvzslg0mz4nn2tg7q7k0t6p')).toStrictEqual(false);
+    expect(AddressUtils.isSmartContractAddress('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l')).toStrictEqual(true);
   });
 
   it('compute shard for address', () => {
@@ -22,13 +22,13 @@ describe('Address utils', () => {
   });
 
   it('check if address is valid, return true', () => {
-    expect(AddressUtils.isAddressValid('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l')).toBeTruthy();
+    expect(AddressUtils.isAddressValid('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l')).toStrictEqual(true);
   });
 
   it('check if address is not valid', () => {
     const address = AddressUtils.isAddressValid('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l');
     if (!address) {
-      expect(address).toBeFalsy();
+      expect(address).toStrictEqual(false);
     }
   });
 
@@ -38,10 +38,10 @@ describe('Address utils', () => {
     const properties = AddressUtils.decodeCodeMetadata(attributesBase64);
 
     if (properties) {
-      expect(properties.isUpgradeable).toBeTruthy();
-      expect(properties.isReadable).toBeTruthy();
-      expect(properties.isPayable).toBeTruthy();
-      expect(properties.isPayableBySmartContract).toBeFalsy();
+      expect(properties.isUpgradeable).toStrictEqual(true);
+      expect(properties.isReadable).toStrictEqual(true);
+      expect(properties.isPayable).toStrictEqual(true);
+      expect(properties.isPayableBySmartContract).toStrictEqual(false);
     }
   });
 
@@ -51,10 +51,10 @@ describe('Address utils', () => {
     const properties = AddressUtils.decodeCodeMetadata(attributesBase64);
 
     if (properties) {
-      expect(properties.isReadable).toBeTruthy();
-      expect(properties.isUpgradeable).toBeFalsy();
-      expect(properties.isPayable).toBeFalsy();
-      expect(properties.isPayableBySmartContract).toBeFalsy();
+      expect(properties.isReadable).toStrictEqual(true);
+      expect(properties.isUpgradeable).toStrictEqual(false);
+      expect(properties.isPayable).toStrictEqual(false);
+      expect(properties.isPayableBySmartContract).toStrictEqual(false);
     }
   });
 
@@ -63,10 +63,10 @@ describe('Address utils', () => {
 
     const properties = AddressUtils.decodeCodeMetadata(attributesBase64);
     if (properties) {
-      expect(properties.isPayable).toBeTruthy();
-      expect(properties.isUpgradeable).toBeFalsy();
-      expect(properties.isReadable).toBeFalsy();
-      expect(properties.isPayableBySmartContract).toBeFalsy();
+      expect(properties.isPayable).toStrictEqual(true);
+      expect(properties.isUpgradeable).toStrictEqual(false);
+      expect(properties.isReadable).toStrictEqual(false);
+      expect(properties.isPayableBySmartContract).toStrictEqual(false);
     }
   });
 
@@ -76,10 +76,10 @@ describe('Address utils', () => {
     const properties = AddressUtils.decodeCodeMetadata(attributesBase64);
 
     if (properties) {
-      expect(properties.isPayableBySmartContract).toBeTruthy();
-      expect(properties.isUpgradeable).toBeFalsy();
-      expect(properties.isReadable).toBeFalsy();
-      expect(properties.isPayable).toBeFalsy();
+      expect(properties.isPayableBySmartContract).toStrictEqual(true);
+      expect(properties.isUpgradeable).toStrictEqual(false);
+      expect(properties.isReadable).toStrictEqual(false);
+      expect(properties.isPayable).toStrictEqual(false);
     }
   });
 });
