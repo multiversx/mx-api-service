@@ -31,4 +31,15 @@ describe('Address utils', () => {
       expect(address).toBeFalsy();
     }
   });
+
+  it('Decode smart contract attributes', () => {
+    const attributesBase64 = 'BQI=';
+
+    const properties = AddressUtils.decodeCodeMetadata(attributesBase64);
+
+    expect(properties?.isUpgradeable).toBeTruthy();
+    expect(properties?.isReadable).toBeTruthy();
+    expect(properties?.isPayable).toBeTruthy();
+    expect(properties?.isPayableBySmartContract).toBeFalsy();
+  });
 });
