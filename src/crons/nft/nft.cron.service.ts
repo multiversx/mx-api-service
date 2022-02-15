@@ -48,7 +48,7 @@ export class NftCronService {
     while (true) {
       let nfts = await this.nftService.getNfts({ from: 0, size: 10000 }, { before, after });
 
-      nfts = nfts.sortedDescending(x => x.timestamp || 0);
+      nfts = nfts.sortedDescending(x => x.timestamp ?? 0);
 
       for (const nft of nfts) {
         if (nft.identifier && !nftIdentifiers.has(nft.identifier)) {
@@ -65,7 +65,7 @@ export class NftCronService {
         break;
       }
 
-      before = nfts[nfts.length - 1].timestamp || 0;
+      before = nfts[nfts.length - 1].timestamp ?? 0;
     }
 
     this.logger.log(`Total processed NFTs from the last 24h: ${totalProcessedNfts}`);
