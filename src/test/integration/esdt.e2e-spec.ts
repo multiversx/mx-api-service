@@ -41,15 +41,6 @@ describe('ESDT Service', () => {
   });
 
   describe('Get Esdt Collections For Address', () => {
-    it('gateway & elastic esdt collections of address should be the same', async () => {
-      const esdtAddress: string = 'erd1zqhn3w4w7uamw6eelrqcjjm8ac732s2z69hgkduldm6fapa90drswejs34';
-
-      const gatewayNfts: NftCollection[] = await esdtAddressService.getEsdtCollectionsForAddress(esdtAddress, new CollectionAccountFilter(), { from: 0, size: 25 }, EsdtDataSource.gateway);
-      const elasticNfts: NftCollection[] = await esdtAddressService.getEsdtCollectionsForAddress(esdtAddress, new CollectionAccountFilter(), { from: 0, size: 25 }, EsdtDataSource.elastic);
-
-      expect(gatewayNfts).toStrictEqual(elasticNfts);
-    });
-
     it('gateway esdt collections should have property canCreate & canBurn', async () => {
       const esdtAddress: string = 'erd1zqhn3w4w7uamw6eelrqcjjm8ac732s2z69hgkduldm6fapa90drswejs34';
 
@@ -58,6 +49,27 @@ describe('ESDT Service', () => {
       for (const gatewayNft of gatewayNfts) {
         expect(gatewayNft).toHaveProperty('canCreate');
         expect(gatewayNft).toHaveProperty('canBurn');
+      }
+    });
+  });
+
+  describe('Get Esdt Collections For Address', () => {
+    it('elastic esdt collections should have property of NftCollection', async () => {
+      const esdtAddress: string = 'erd1zqhn3w4w7uamw6eelrqcjjm8ac732s2z69hgkduldm6fapa90drswejs34';
+
+      const gatewayNfts: NftCollectionAccount[] | NftCollection[] = await esdtAddressService.getEsdtCollectionsForAddress(esdtAddress, new CollectionAccountFilter(), { from: 0, size: 25 }, EsdtDataSource.gateway);
+
+      for (const gatewayNft of gatewayNfts) {
+        expect(gatewayNft.hasOwnProperty('collection')).toBe(true);
+        expect(gatewayNft.hasOwnProperty('type')).toBe(true);
+        expect(gatewayNft.hasOwnProperty('name')).toBe(true);
+        expect(gatewayNft.hasOwnProperty('ticker')).toBe(true);
+        expect(gatewayNft.hasOwnProperty('canFreeze')).toBe(true);
+        expect(gatewayNft.hasOwnProperty('canWipe')).toBe(true);
+        expect(gatewayNft.hasOwnProperty('canPause')).toBe(true);
+        expect(gatewayNft.hasOwnProperty('canTransferRole')).toBe(true);
+        expect(gatewayNft.hasOwnProperty('assets')).toBe(true);
+        expect(gatewayNft.hasOwnProperty('roles')).toBe(true);
       }
     });
   });

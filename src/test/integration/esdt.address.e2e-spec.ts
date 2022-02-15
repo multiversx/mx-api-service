@@ -90,23 +90,6 @@ describe('EsdtAddressService', () => {
   });
 
   describe('getEsdtCollectionsForAddress', () => {
-    it('should return esdt collection for address based on collection identifier ', async () => {
-      const address: string = 'erd1yt24jpcm58k2734lf53ws96lqtkzy46vlxwnjud7ce3vl02eahmsele6j8';
-      const collectionFilter = new CollectionAccountFilter();
-      collectionFilter.collection = 'HMORGOTH-ecd5fb';
-
-      const collections: NftCollection[] | NftCollectionAccount[] = await esdtAddressService.getEsdtCollectionsForAddress(address, collectionFilter, { from: 0, size: 1 });
-
-      expect(collections).toHaveLength(1);
-
-      for (const collection of collections) {
-        expect(collection.hasOwnProperty('collection')).toBe(true);
-        expect(collection.hasOwnProperty('name')).toBe(true);
-        expect(collection.hasOwnProperty('canCreate')).toBe(true);
-        expect(collection.hasOwnProperty('canBurn')).toBe(true);
-      }
-    });
-
     it('should return esdt collection for address based on collection identifier and source "ELASTIC" ', async () => {
       const address: string = 'erd1yt24jpcm58k2734lf53ws96lqtkzy46vlxwnjud7ce3vl02eahmsele6j8';
       const collectionFilter = new CollectionAccountFilter();
@@ -122,7 +105,6 @@ describe('EsdtAddressService', () => {
         expect(collection.hasOwnProperty('type')).toBe(true);
         expect(collection.hasOwnProperty('name')).toBe(true);
         expect(collection.hasOwnProperty('ticker')).toBe(true);
-        expect(collection.hasOwnProperty('timestamp')).toBe(true);
         expect(collection.hasOwnProperty('canFreeze')).toBe(true);
         expect(collection.hasOwnProperty('canWipe')).toBe(true);
         expect(collection.hasOwnProperty('canPause')).toBe(true);
