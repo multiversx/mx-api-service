@@ -24,7 +24,6 @@ import { CollectionService } from "../collections/collection.service";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { NftCollection } from "../collections/entities/nft.collection";
-import { AbstractQuery } from "src/common/elastic/entities/abstract.query";
 
 @Injectable()
 export class EsdtAddressService {
@@ -148,24 +147,10 @@ export class EsdtAddressService {
       throw new BadRequestException('canCreate / canBurn / canAddQuantity filter not supported when fetching account collections from elastic');
     }
 
-    const mustConditions: AbstractQuery[] = [QueryType.Match("currentOwner", address)];
-    const shouldConditions: AbstractQuery[] = [];
-
-    let elasticQuery = this.collectionService.buildCollectionFilter(filter)
+    const elasticQuery = this.collectionService.buildCollectionFilter(filter)
+      .withCondition(QueryConditionOptions.must, QueryType.Match("currentOwner", address))
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
       .withPagination(pagination);
-
-    if (filter.type) {
-      mustConditions.push(QueryType.Match('type', filter.type));
-    }
-
-    if (filter.search) {
-      shouldConditions.push(QueryType.Wildcard('name', `*${filter.search}*`));
-      shouldConditions.push(QueryType.Wildcard('token', `*${filter.search}*`));
-    }
-
-    elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, mustConditions)
-      .withCondition(QueryConditionOptions.should, shouldConditions);
 
     const tokenCollections = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
     const collectionsIdentifiers = tokenCollections.map((collection) => collection.token);
@@ -186,7 +171,9 @@ export class EsdtAddressService {
       delete accountCollection.owner;
     }
 
-    return accountCollections;
+    const accountCollectionsWithRoles: NftCollectionAccount[] = await this.applyRolesToAccountCollections(address, accountCollections);
+
+    return accountCollectionsWithRoles;
   }
 
   private filterEsdtCollectionsForAddress(collections: NftCollectionAccount[], filter: CollectionAccountFilter, pagination: QueryPagination): NftCollectionAccount[] {
@@ -238,8 +225,10 @@ export class EsdtAddressService {
 
       accountCollection = { ...accountCollection, ...collection };
 
-      // @ts-ignore
-      delete accountCollection.timestamp;
+      if (accountCollection.timestamp === 0) {
+        // @ts-ignore
+        delete accountCollection.timestamp;
+      }
 
       // @ts-ignore
       delete accountCollection.owner;
