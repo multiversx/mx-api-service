@@ -32,14 +32,54 @@ describe('Address utils', () => {
     }
   });
 
-  it('Decode smart contract attributes', () => {
+  it('Decode smart contract attribute "UPGRADEABLE"', () => {
     const attributesBase64 = 'BQI=';
 
     const properties = AddressUtils.decodeCodeMetadata(attributesBase64);
 
-    expect(properties?.isUpgradeable).toBeTruthy();
-    expect(properties?.isReadable).toBeTruthy();
-    expect(properties?.isPayable).toBeTruthy();
-    expect(properties?.isPayableBySmartContract).toBeFalsy();
+    if (properties) {
+      expect(properties.isUpgradeable).toBeTruthy();
+      expect(properties.isReadable).toBeTruthy();
+      expect(properties.isPayable).toBeTruthy();
+      expect(properties.isPayableBySmartContract).toBeFalsy();
+    }
+  });
+
+  it('Decode smart contract attribute "READABLE"', () => {
+    const attributesBase64 = 'BAA=';
+
+    const properties = AddressUtils.decodeCodeMetadata(attributesBase64);
+
+    if (properties) {
+      expect(properties.isReadable).toBeTruthy();
+      expect(properties.isUpgradeable).toBeFalsy();
+      expect(properties.isPayable).toBeFalsy();
+      expect(properties.isPayableBySmartContract).toBeFalsy();
+    }
+  });
+
+  it('Decode smart contract attributes "PAYABLE"', () => {
+    const attributesBase64 = 'AAI=';
+
+    const properties = AddressUtils.decodeCodeMetadata(attributesBase64);
+    if (properties) {
+      expect(properties.isPayable).toBeTruthy();
+      expect(properties.isUpgradeable).toBeFalsy();
+      expect(properties.isReadable).toBeFalsy();
+      expect(properties.isPayableBySmartContract).toBeFalsy();
+    }
+  });
+
+  it('Decode smart contract attributes "PAYABLE_BY_SC"', () => {
+    const attributesBase64 = 'AAQ=';
+
+    const properties = AddressUtils.decodeCodeMetadata(attributesBase64);
+
+    if (properties) {
+      expect(properties.isPayableBySmartContract).toBeTruthy();
+      expect(properties.isUpgradeable).toBeFalsy();
+      expect(properties.isReadable).toBeFalsy();
+      expect(properties.isPayable).toBeFalsy();
+    }
   });
 });
