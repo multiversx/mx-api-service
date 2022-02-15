@@ -48,7 +48,7 @@ database:
   host: 'localhost'
   port: 3306
   username: 'root'
-  password: 'root'
+  password: 'alfabeta'
   database: 'api'
 caching:
   cacheTtl: 6

@@ -30,6 +30,8 @@ import { ParseTransactionHashPipe } from 'src/utils/pipes/parse.transaction.hash
 import { ParseBlockHashPipe } from 'src/utils/pipes/parse.block.hash.pipe';
 import { ParseArrayPipe } from 'src/utils/pipes/parse.array.pipe';
 import { SortOrder } from 'src/common/entities/sort.order';
+import {AccountHistory} from "./entities/account.history";
+import {AccountEsdtHistory} from "./entities/account.esdt.history";
 
 @Controller()
 @ApiTags('accounts')
@@ -765,5 +767,46 @@ export class AccountController {
     }
 
     return scResult;
+  }
+
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @Get("/accounts/:address/history")
+  @ApiResponse({
+    status: 200,
+    description: 'The history for given address',
+    type: SmartContractResult,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account history not found',
+  })
+  getAccountHistory(
+      @Param('address', ParseAddressPipe) address: string,
+      @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+      @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<AccountHistory[]> {
+    return this.accountService.getAccountHistory(address, { from, size });
+  }
+
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @Get("/accounts/:address/history/:tokenIdentifier")
+  @ApiResponse({
+    status: 200,
+    description: 'The history of a token for given address',
+    type: SmartContractResult,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account token history not found',
+  })
+  getAccountTokenHistory(
+      @Param('address', ParseAddressPipe) address: string,
+      @Param('tokenIdentifier') tokenIdentifier: string,
+      @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+      @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<AccountEsdtHistory[]> {
+    return this.accountService.getAccountTokenHistory(address, tokenIdentifier, { from, size });
   }
 }
