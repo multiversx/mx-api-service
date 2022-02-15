@@ -56,7 +56,6 @@ describe('ESDT Service', () => {
       const gatewayNfts: NftCollectionAccount[] | NftCollection[] = await esdtAddressService.getEsdtCollectionsForAddress(esdtAddress, new CollectionAccountFilter(), { from: 0, size: 25 }, EsdtDataSource.gateway);
 
       for (const gatewayNft of gatewayNfts) {
-        expect(gatewayNft).toBeInstanceOf(NftCollectionAccount);
         expect(gatewayNft).toHaveProperty('canCreate');
         expect(gatewayNft).toHaveProperty('canBurn');
       }
