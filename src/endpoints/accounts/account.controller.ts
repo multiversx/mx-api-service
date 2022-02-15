@@ -383,7 +383,7 @@ export class AccountController {
     @Query('includeFlagged', new ParseOptionalBoolPipe) includeFlagged?: boolean,
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean,
     @Query('withMetadata', new ParseOptionalBoolPipe) withMetadata?: boolean,
-    @Query('source') source?: EsdtDataSource,
+    @Query('source', new ParseOptionalEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
   ): Promise<NftAccount[]> {
     try {
       return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }, { withSupply, withMetadata }, source);
