@@ -37,7 +37,7 @@ export class CollectionService {
     private readonly cachingService: CachingService,
   ) { }
 
-  private buildCollectionFilter(filter: CollectionFilter) {
+  buildCollectionFilter(filter: CollectionFilter | CollectionAccountFilter) {
     const mustNotQueries = [];
     mustNotQueries.push(QueryType.Exists('identifier'));
 
@@ -46,7 +46,7 @@ export class CollectionService {
       mustQueries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
     }
 
-    if (filter.identifiers !== undefined) {
+    if (filter instanceof CollectionFilter && filter.identifiers !== undefined) {
       mustQueries.push(QueryType.Should(filter.identifiers.map(identifier => QueryType.Match('token', identifier, QueryOperator.AND))));
     }
 
@@ -218,7 +218,6 @@ export class CollectionService {
 
   private async getFilteredCollectionsForAddress(address: string, filter: CollectionAccountFilter): Promise<NftCollectionAccount[]> {
     const esdtResult = await this.gatewayService.get(`address/${address}/registered-nfts`, GatewayComponentRequest.addressNfts);
-    const rolesResult = await this.gatewayService.get(`address/${address}/esdts/roles`, GatewayComponentRequest.addressEsdtAllRoles);
 
     let collectionsIdentifiers = esdtResult.tokens;
     if (collectionsIdentifiers.length === 0) {
@@ -233,6 +232,7 @@ export class CollectionService {
       collectionsIdentifiers = [filter.collection];
     }
 
+    const rolesResult = await this.gatewayService.get(`address/${address}/esdts/roles`, GatewayComponentRequest.addressEsdtAllRoles);
     const roles = rolesResult.roles;
 
     let nftCollections: NftCollectionAccount[] = [];
