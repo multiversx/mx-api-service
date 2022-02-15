@@ -28,8 +28,14 @@ import { PaginationInterceptor } from './interceptors/pagination.interceptor';
 import { LogRequestsInterceptor } from './interceptors/log.requests.interceptor';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { NftQueueModule } from './queue.worker/nft.worker/queue/nft.queue.module';
+import configuration from "config/configuration";
 
 async function bootstrap() {
+  const conf = configuration();
+  if (conf.flags?.useTracing === true) {
+    require('dd-trace').init();
+  }
+
   const publicApp = await NestFactory.create<NestExpressApplication>(
     PublicAppModule,
   );
@@ -49,10 +55,6 @@ async function bootstrap() {
 
   if (apiConfigService.getIsAuthActive()) {
     publicApp.useGlobalGuards(new JwtAuthenticateGuard(apiConfigService));
-  }
-
-  if (apiConfigService.getUseTracingFlag()) {
-    require('dd-trace').init();
   }
 
   const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
