@@ -6,10 +6,12 @@ import { AccountService } from 'src/endpoints/accounts/account.service';
 import { DelegationLegacyService } from 'src/endpoints/delegation.legacy/delegation.legacy.service';
 import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
+import {TokenService} from "../../endpoints/tokens/token.service";
 
 describe('Account Service', () => {
   let accountService: AccountService;
   let delegationLegacyService: DelegationLegacyService;
+  let tokensService: TokenService;
   let accountAddress: string;
 
   beforeAll(async () => {
@@ -21,6 +23,7 @@ describe('Account Service', () => {
 
     accountService = moduleRef.get<AccountService>(AccountService);
     delegationLegacyService = moduleRef.get<DelegationLegacyService>(DelegationLegacyService);
+    tokensService = moduleRef.get<TokenService>(TokenService);
 
     const accounts = await accountService.getAccounts({ from: 0, size: 1 });
     expect(accounts).toHaveLength(1);
@@ -95,6 +98,38 @@ describe('Account Service', () => {
       it('should return account username based on address ', async () => {
         const accountUserName = await accountService.getAccountUsername(accountAddress);
         expect(accountUserName).toBeDefined();
+      });
+    });
+  });
+
+  describe('Account history & Account Token History', () => {
+    describe('Account History', () => {
+
+      it(`should return the account EGLD balance history`, async () => {
+        const accountHistories = await accountService.getAccountHistory(accountAddress, {from: 0, size: 1});
+        expect(accountHistories).toBeDefined();
+        for (const account of accountHistories) {
+          expect(account).toHaveProperty('address');
+          expect(account).toHaveProperty('balance');
+          expect(account).toHaveProperty('timestamp');
+        }
+      });
+    });
+
+    describe('Account Token balance history', () => {
+      it('should return the token EGLD balance history ', async () => {
+        const accountTokens = await tokensService.getTokensForAddress(accountAddress, {from: 0, size: 1}, {});
+        if(accountTokens.length){
+          const accountTokenHistories = await accountService.getAccountTokenHistory(accountAddress,
+              accountTokens[0].identifier, {from: 0, size: 1});
+
+          for (const account of accountTokenHistories) {
+            expect(account).toHaveProperty('address');
+            expect(account).toHaveProperty('balance');
+            expect(account).toHaveProperty('timestamp');
+            expect(account).toHaveProperty('token');
+          }
+        }
       });
     });
   });

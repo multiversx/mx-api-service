@@ -774,12 +774,12 @@ export class AccountController {
   @Get("/accounts/:address/history")
   @ApiResponse({
     status: 200,
-    description: 'The history for given address',
+    description: 'The account EGLD balance historical data for given address',
     type: SmartContractResult,
   })
   @ApiResponse({
     status: 404,
-    description: 'Account history not found',
+    description: 'Account EGLD balance history not found',
   })
   getAccountHistory(
       @Param('address', ParseAddressPipe) address: string,
@@ -794,12 +794,12 @@ export class AccountController {
   @Get("/accounts/:address/history/:tokenIdentifier")
   @ApiResponse({
     status: 200,
-    description: 'The history of a token for given address',
+    description: 'The token balance history for given address',
     type: SmartContractResult,
   })
   @ApiResponse({
     status: 404,
-    description: 'Account token history not found',
+    description: 'Token balance history not found for this account',
   })
   getAccountTokenHistory(
       @Param('address', ParseAddressPipe) address: string,
