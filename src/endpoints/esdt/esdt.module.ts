@@ -12,12 +12,14 @@ import { ProtocolModule } from "src/common/protocol/protocol.module";
 import { TokenModule } from "../tokens/token.module";
 import { EsdtAddressService } from "./esdt.address.service";
 import { NftModule } from "../nfts/nft.module";
+import { CollectionModule } from "../collections/collection.module";
 
 
 @Module({
   imports: [
     ApiConfigModule, ExternalModule, CachingModule, BlsModule, ElasticModule, GatewayModule,
     NftModule,
+    CollectionModule,
     forwardRef(() => TokenModule),
     forwardRef(() => GatewayModule),
     forwardRef(() => VmQueryModule),

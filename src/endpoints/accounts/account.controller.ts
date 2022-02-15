@@ -31,6 +31,7 @@ import { ParseBlockHashPipe } from 'src/utils/pipes/parse.block.hash.pipe';
 import { ParseArrayPipe } from 'src/utils/pipes/parse.array.pipe';
 import { SortOrder } from 'src/common/entities/sort.order';
 import { EsdtDataSource } from '../esdt/entities/esdt.data.source';
+import { NftCollection } from '../collections/entities/nft.collection';
 
 @Controller()
 @ApiTags('accounts')
@@ -201,6 +202,7 @@ export class AccountController {
   @ApiQuery({ name: 'canAddQuantity', description: 'Filter by property canAddQuantity (boolean)', required: false })
   @ApiQuery({ name: 'withNfts', description: 'Return additional nfts', required: false })
   @ApiQuery({ name: 'nftSize', description: 'Maximum number of nfts per collection entry', required: false })
+  @ApiQuery({ name: 'source', description: 'Data source of request', required: false })
   @ApiResponse({
     status: 200,
     description: 'The token collections of a given account',
@@ -221,9 +223,10 @@ export class AccountController {
     @Query('canCreate', new ParseOptionalBoolPipe) canCreate?: boolean,
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
     @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity?: boolean,
-  ): Promise<NftCollectionAccount[]> {
+    @Query('source', new ParseOptionalEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
+  ): Promise<NftCollectionAccount | NftCollection[]> {
     try {
-      return await this.collectionService.getCollectionsForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity }, { from, size });
+      return await this.collectionService.getCollectionsForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity }, { from, size }, source);
     } catch (error) {
       this.logger.error(`Error in getAccountCollections for address ${address}`);
       this.logger.error(error);
@@ -304,7 +307,7 @@ export class AccountController {
   async getAccountCollection(
     @Param('address', ParseAddressPipe) address: string,
     @Param('collection') collection: string,
-  ): Promise<NftCollectionAccount> {
+  ): Promise<NftCollectionAccount | NftCollection> {
     const result = await this.collectionService.getCollectionForAddress(address, collection);
     if (!result) {
       throw new NotFoundException('Collection for given account not found');
