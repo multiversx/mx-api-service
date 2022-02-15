@@ -18,13 +18,13 @@ export class DappConfigController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Network not found',
+    description: 'Network configuration not found',
   })
   getDappConfiguration(@Param('network', new ParseOptionalEnumPipe(DappNetwork)) network: DappNetwork): any {
     const configuration = this.dappConfigService.getDappConfiguration(network);
 
     if (!configuration) {
-      throw new HttpException(`Network not found ${network}`, HttpStatus.NOT_FOUND);
+      throw new HttpException(`Network configuration not found for network ${network}`, HttpStatus.NOT_FOUND);
     }
 
     return configuration;
