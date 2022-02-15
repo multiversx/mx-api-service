@@ -80,6 +80,7 @@ export class CollectionService {
       const creatorResult = await this.gatewayService.get(`address/${filter.creator}/esdts-with-role/ESDTRoleNFTCreate`, GatewayComponentRequest.addressEsdtWithRole);
       filter.identifiers = creatorResult.tokens;
     }
+
     const elasticQuery = this.buildCollectionFilter(filter);
     elasticQuery
       .withPagination(pagination)
@@ -88,10 +89,18 @@ export class CollectionService {
     const tokenCollections = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
     const collectionsIdentifiers = tokenCollections.map((collection) => collection.token);
 
+    const indexedCollections: Record<string, any> = {};
+    for (const collection of tokenCollections) {
+      indexedCollections[collection.token] = collection;
+    }
+
     const nftColections: NftCollection[] = await this.applyPropertiesToCollections(collectionsIdentifiers);
 
-    for (const [index, collection] of nftColections.entries()) {
-      collection.timestamp = tokenCollections[index].timestamp;
+    for (const nftCollection of nftColections) {
+      const indexedCollection = indexedCollections[nftCollection.collection];
+      if (indexedCollection) {
+        nftCollection.timestamp = indexedCollection.timestamp;
+      }
     }
 
     return nftColections;

@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { BadRequestException, forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
@@ -24,6 +24,7 @@ import { CollectionService } from "../collections/collection.service";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { NftCollection } from "../collections/entities/nft.collection";
+import { AbstractQuery } from "src/common/elastic/entities/abstract.query";
 
 @Injectable()
 export class EsdtAddressService {
@@ -58,7 +59,7 @@ export class EsdtAddressService {
 
 
   async getEsdtCollectionsForAddress(address: string, filter: CollectionAccountFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftCollection[] | NftCollectionAccount[]> {
-    if (source === EsdtDataSource.elastic && this.apiConfigService.getIsIndexerV3FlagActive()) {
+    if (source === EsdtDataSource.elastic) {
       return await this.getEsdtCollectionsForAddressFromElastic(address, filter, pagination);
     }
 
@@ -143,19 +144,46 @@ export class EsdtAddressService {
   }
 
   private async getEsdtCollectionsForAddressFromElastic(address: string, filter: CollectionAccountFilter, pagination: QueryPagination): Promise<NftCollection[]> {
-    const elasticQuery =
-      this.collectionService.buildCollectionFilter(filter)
-        .withCondition(QueryConditionOptions.must, [QueryType.Match("currentOwner", address)])
-        .withPagination(pagination);
+    if (filter.canCreate !== undefined || filter.canBurn !== undefined || filter.canAddQuantity !== undefined) {
+      throw new BadRequestException('canCreate / canBurn / canAddQuantity filter not supported when fetching account collections from elastic');
+    }
+
+    const mustConditions: AbstractQuery[] = [QueryType.Match("currentOwner", address)];
+    const shouldConditions: AbstractQuery[] = [];
+
+    let elasticQuery = this.collectionService.buildCollectionFilter(filter)
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
+      .withPagination(pagination);
+
+    if (filter.type) {
+      mustConditions.push(QueryType.Match('type', filter.type));
+    }
+
+    if (filter.search) {
+      shouldConditions.push(QueryType.Wildcard('name', `*${filter.search}*`));
+      shouldConditions.push(QueryType.Wildcard('token', `*${filter.search}*`));
+    }
+
+    elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, mustConditions)
+      .withCondition(QueryConditionOptions.should, shouldConditions);
 
     const tokenCollections = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
     const collectionsIdentifiers = tokenCollections.map((collection) => collection.token);
 
+    const indexedCollections: Record<string, any> = {};
+    for (const collection of tokenCollections) {
+      indexedCollections[collection.token] = collection;
+    }
+
     const accountCollections = await this.collectionService.applyPropertiesToCollections(collectionsIdentifiers);
 
-    for (const collection of accountCollections) {
-      //@ts-ignore
-      delete collection.timestamp;
+    for (const accountCollection of accountCollections) {
+      const indexedCollection = indexedCollections[accountCollection.collection];
+      if (indexedCollection) {
+        accountCollection.timestamp = indexedCollection.timestamp;
+      }
+
+      delete accountCollection.owner;
     }
 
     return accountCollections;
