@@ -8,6 +8,9 @@ import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { EsdtAddressService } from "src/endpoints/esdt/esdt.address.service";
 import { EsdtModule } from "src/endpoints/esdt/esdt.module";
 import { EsdtDataSource } from "src/endpoints/esdt/entities/esdt.data.source";
+import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
+import { CollectionAccountFilter } from "src/endpoints/collections/entities/collection.account.filter";
+import { NftCollectionAccount } from "src/endpoints/collections/entities/nft.collection.account";
 
 describe('ESDT Service', () => {
   let esdtService: EsdtService;
@@ -34,6 +37,29 @@ describe('ESDT Service', () => {
       const elasticNfts = await esdtAddressService.getEsdtsForAddress(esdtAddress, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.elastic);
 
       expect(gatewayNfts).toStrictEqual(elasticNfts);
+    });
+  });
+
+  describe('Get Esdt Collections For Address', () => {
+    it('gateway & elastic esdt collections of address should be the same', async () => {
+      const esdtAddress: string = 'erd1zqhn3w4w7uamw6eelrqcjjm8ac732s2z69hgkduldm6fapa90drswejs34';
+
+      const gatewayNfts: NftCollection[] = await esdtAddressService.getEsdtCollectionsForAddress(esdtAddress, new CollectionAccountFilter(), { from: 0, size: 25 }, EsdtDataSource.gateway);
+      const elasticNfts: NftCollection[] = await esdtAddressService.getEsdtCollectionsForAddress(esdtAddress, new CollectionAccountFilter(), { from: 0, size: 25 }, EsdtDataSource.elastic);
+
+      expect(gatewayNfts).toStrictEqual(elasticNfts);
+    });
+
+    it('gateway esdt collections should have property canCreate & canBurn', async () => {
+      const esdtAddress: string = 'erd1zqhn3w4w7uamw6eelrqcjjm8ac732s2z69hgkduldm6fapa90drswejs34';
+
+      const gatewayNfts: NftCollectionAccount[] | NftCollection[] = await esdtAddressService.getEsdtCollectionsForAddress(esdtAddress, new CollectionAccountFilter(), { from: 0, size: 25 }, EsdtDataSource.gateway);
+
+      expect(gatewayNfts).toBeInstanceOf(NftCollectionAccount);
+      for (const gatewayNft of gatewayNfts) {
+        expect(gatewayNft).toHaveProperty('canCreate');
+        expect(gatewayNft).toHaveProperty('canBurn');
+      }
     });
   });
 
