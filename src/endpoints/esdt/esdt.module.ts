@@ -19,7 +19,7 @@ import { CollectionModule } from "../collections/collection.module";
   imports: [
     ApiConfigModule, ExternalModule, CachingModule, BlsModule, ElasticModule, GatewayModule,
     NftModule,
-    CollectionModule,
+    forwardRef(() => CollectionModule),
     forwardRef(() => TokenModule),
     forwardRef(() => GatewayModule),
     forwardRef(() => VmQueryModule),
