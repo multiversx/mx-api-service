@@ -8,7 +8,7 @@ import { TransactionExtractorInterface } from "./transaction.extractor.interface
 export class NftCreateTransactionExtractor implements TransactionExtractorInterface<{ collection: string }> {
   private readonly logger: Logger = new Logger(NftCreateTransactionExtractor.name);
 
-  canBeNftCreateTransactionFromLogs(transaction: ShardTransaction): Boolean {
+  canDetectNftCreateTransactionFromLogs(transaction: ShardTransaction): Boolean {
     if (!transaction.sender || !transaction.receiver) {
       return false;
     }

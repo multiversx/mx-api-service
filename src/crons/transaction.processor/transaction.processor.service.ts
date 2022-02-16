@@ -148,7 +148,7 @@ export class TransactionProcessorService {
       const nftCreateExtractor = new NftCreateTransactionExtractor();
       let nftCreateResult = nftCreateExtractor.extract(transaction);
 
-      if (!nftCreateResult && !nftCreateExtractor.canBeNftCreateTransactionFromLogs(transaction)) {
+      if (!nftCreateResult && !nftCreateExtractor.canDetectNftCreateTransactionFromLogs(transaction)) {
         return;
       }
 
