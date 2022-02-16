@@ -50,6 +50,30 @@ describe('Transaction Utils', () => {
         expect(extractor.extract(transaction)).toMatchObject({ collection: 'NFT-81187f' });
     });
 
+    it('canDetectNftCreateFromLogs', () => {
+        const extractor = new NftCreateTransactionExtractor();
+
+        let transaction = new ShardTransaction();
+        transaction.data = 'dGVzdFRyYW5zYWN0aW9u';
+        expect(extractor.canDetectNftCreateTransactionFromLogs(transaction)).toBe(false);
+
+        transaction = new ShardTransaction();
+        transaction.data = 'dGVzdFRyYW5zYWN0aW9uQA==';
+        expect(extractor.canDetectNftCreateTransactionFromLogs(transaction)).toBe(false);
+
+        transaction = new ShardTransaction();
+        transaction.data = 'Y2hhbmdlU0ZUVG9NZXRhRVNEVA==';
+        transaction.sender = 'erd13wtw8k3vch93g5w74a7x35kld2hqm73kcn644l49669qr425wyfquyk02a';
+        transaction.receiver = 'erd1qqqqqqqqqqqqqpgq95786n3gs5ddqxvwhtdyjepep740xqrkys5swtr2gm';
+        expect(extractor.canDetectNftCreateTransactionFromLogs(transaction)).toBe(false);
+
+        transaction = new ShardTransaction();
+        transaction.sender = 'erd13wtw8k3vch93g5w74a7x35kld2hqm73kcn644l49669qr425wyfquyk02a';
+        transaction.receiver = 'erd1qqqqqqqqqqqqqpgq95786n3gs5ddqxvwhtdyjepep740xqrkys5swtr2gm';
+        transaction.data = 'YnV5QDUzNzU2MjYzNjE3MjcwNjE3NDY5NGY0NzczQDAx';
+        expect(extractor.canDetectNftCreateTransactionFromLogs(transaction)).toBe(true);
+    });
+
     it('tryExtractNftIdentifierFromNftUpdateMetadataTransaction', () => {
         const extractor = new NftUpdateAttributesTransactionExtractor();
 
