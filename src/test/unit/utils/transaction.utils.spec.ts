@@ -33,7 +33,7 @@ describe('Transaction Utils', () => {
         expect(tryExtractSftChange.extract(transaction)).toEqual('EGLDMEXF-67ac49');
     });
 
-    it('tryExtractNftMetadataFromNftCreateTransaction transaction', () => {
+    it('tryExtractNftMetadataFromNftCreateTransaction from transaction', () => {
         const extractor = new NftCreateTransactionExtractor();
 
         let transaction = new ShardTransaction();
