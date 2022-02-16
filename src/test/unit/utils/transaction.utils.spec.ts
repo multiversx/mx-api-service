@@ -4,6 +4,9 @@ import { NftCreateTransactionExtractor } from "src/crons/transaction.processor/e
 import { NftUpdateAttributesTransactionExtractor } from "src/crons/transaction.processor/extractor/nft.update.attributes.transaction.extractor";
 import { SftChangeTransactionExtractor } from "src/crons/transaction.processor/extractor/sft.change.transaction.extractor";
 import { TransactionExtractorInterface } from "src/crons/transaction.processor/extractor/transaction.extractor.interface";
+import { TransactionDetailed } from "src/endpoints/transactions/entities/transaction.detailed";
+import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
+import { TransactionLogEvent } from "src/endpoints/transactions/entities/transaction.log.event";
 
 describe('Transaction Utils', () => {
     it('tryExtractCollectionIdentifierFromChangeSftToMetaEsdTransaction', () => {
@@ -30,7 +33,7 @@ describe('Transaction Utils', () => {
         expect(tryExtractSftChange.extract(transaction)).toEqual('EGLDMEXF-67ac49');
     });
 
-    it('tryExtractNftMetadataFromNftCreateTransaction', () => {
+    it('tryExtractNftMetadataFromNftCreateTransaction transaction', () => {
         const extractor = new NftCreateTransactionExtractor();
 
         let transaction = new ShardTransaction();
@@ -48,6 +51,48 @@ describe('Transaction Utils', () => {
         transaction = new ShardTransaction();
         transaction.data = 'RVNEVE5GVENyZWF0ZUA0ZTQ2NTQyZDM4MzEzMTM4Mzc2NkAwMUA0NDY1NjE2Y0BANTE2ZDU5NDc2MTZkNDE0YjMxNWE2MjU2NmE2ZDRjMzk1NTM5NDc3ODY2Nzg2MjU0NDg2YTQ3NzMzNzc0MzUzNTY0NDY3MTRhNWE0YTQyNGE3MTUzNmY2NTZiNjFANzQ2MTY3NzMzYTYxNzI3MjZmNzcyYzc3NzI2ZjZlNjcyYzczNjk2NzZlNjE2YzJjNzA2NTcyNjM2NTZlNzQyYzZjNjk2NTNiNmQ2NTc0NjE2NDYxNzQ2MTNhNTE2ZDYxNzI3MDZlNDQzNjZiNDY0NTRhNjg0NzQxNWEzNzZiNGQ1OTc5MzE3NzQ4NjI0MzczNTA1MTc5NjQ3MTYyNjE1OTMzNDE1ODZkNTczMTQ4Mzk2YTYyNjJANjg3NDc0NzA3MzNhMmYyZjY5NzA2NjczMmU2OTZmMmY2OTcwNjY3MzJmNTE2ZDU5NDc2MTZkNDE0YjMxNWE2MjU2NmE2ZDRjMzk1NTM5NDc3ODY2Nzg2MjU0NDg2YTQ3NzMzNzc0MzUzNTY0NDY3MTRhNWE0YTQyNGE3MTUzNmY2NTZiNjE=';
         expect(extractor.extract(transaction)).toMatchObject({ collection: 'NFT-81187f' });
+    });
+
+    it('tryExtractNftMetadataFromNftCreateTransaction from detailed transaction logs', () => {
+        const extractor = new NftCreateTransactionExtractor();
+
+        //Transaction does not have logs
+        let transaction = new ShardTransaction();
+        const transactionDetailed = new TransactionDetailed();
+        transaction.data = 'dGVzdFRyYW5zYWN0aW9u';
+        expect(extractor.extract(transaction, transactionDetailed)).toBeUndefined();
+
+        //Event identifier isn't ESDTNFTCreate
+        transaction = new ShardTransaction();
+        transaction.data = 'dGVzdFRyYW5zYWN0aW9uQA==';
+        transactionDetailed.logs = new TransactionLog();
+        const event = new TransactionLogEvent();
+        event.identifier = 'ESDTNFTTransfer';
+        event.topics = [
+            "T0dTLTNmMTQwOA==",
+            "Jvk=",
+            "AQ==",
+            "CAESAgABIrwDCPlNEhNTdWJjYXJwYXRpIE9HICM5OTc3GiAAAAAAAAAAAAUALTx9TiiFGtAZjrraSWQ5D6rzAHYkKSDoByouUW1YRUR1WW1UVEd5b1NpdjVBeFRkZUxCdHRidkZFcVptZTh2eGVZOUI2WE5MbTJMaHR0cHM6Ly9pcGZzLmlvL2lwZnMvUW1YRUR1WW1UVEd5b1NpdjVBeFRkZUxCdHRidkZFcVptZTh2eGVZOUI2WE5MbS82MjA0LnBuZzJNaHR0cHM6Ly9pcGZzLmlvL2lwZnMvUW1YRUR1WW1UVEd5b1NpdjVBeFRkZUxCdHRidkZFcVptZTh2eGVZOUI2WE5MbS82MjA0Lmpzb24yU2h0dHBzOi8vaXBmcy5pby9pcGZzL1FtWEVEdVltVFRHeW9TaXY1QXhUZGVMQnR0YnZGRXFabWU4dnhlWTlCNlhOTG0vY29sbGVjdGlvbi5qc29uOlt0YWdzOlN1YmNhcnBhdGksT0dzLE11c2ljO21ldGFkYXRhOlFtWEVEdVltVFRHeW9TaXY1QXhUZGVMQnR0YnZGRXFabWU4dnhlWTlCNlhOTG0vNjIwNC5qc29u",
+        ];
+        transactionDetailed.logs.events = [new TransactionLogEvent(), event];
+        expect(extractor.extract(transaction)).toBeUndefined();
+
+        //Transaction has an event that sugests it is and ESDTNFTCreate transaction
+        transaction = new ShardTransaction();
+        event.identifier = 'ESDTNFTCreate';
+        event.topics = [
+            "T0dTLTNmMTQwOA==",
+            "Jvk=",
+            "AQ==",
+            "CAESAgABIrwDCPlNEhNTdWJjYXJwYXRpIE9HICM5OTc3GiAAAAAAAAAAAAUALTx9TiiFGtAZjrraSWQ5D6rzAHYkKSDoByouUW1YRUR1WW1UVEd5b1NpdjVBeFRkZUxCdHRidkZFcVptZTh2eGVZOUI2WE5MbTJMaHR0cHM6Ly9pcGZzLmlvL2lwZnMvUW1YRUR1WW1UVEd5b1NpdjVBeFRkZUxCdHRidkZFcVptZTh2eGVZOUI2WE5MbS82MjA0LnBuZzJNaHR0cHM6Ly9pcGZzLmlvL2lwZnMvUW1YRUR1WW1UVEd5b1NpdjVBeFRkZUxCdHRidkZFcVptZTh2eGVZOUI2WE5MbS82MjA0Lmpzb24yU2h0dHBzOi8vaXBmcy5pby9pcGZzL1FtWEVEdVltVFRHeW9TaXY1QXhUZGVMQnR0YnZGRXFabWU4dnhlWTlCNlhOTG0vY29sbGVjdGlvbi5qc29uOlt0YWdzOlN1YmNhcnBhdGksT0dzLE11c2ljO21ldGFkYXRhOlFtWEVEdVltVFRHeW9TaXY1QXhUZGVMQnR0YnZGRXFabWU4dnhlWTlCNlhOTG0vNjIwNC5qc29u",
+        ];
+        transactionDetailed.logs.events = [new TransactionLogEvent(), event];
+        expect(extractor.extract(transaction, transactionDetailed)).toMatchObject({ collection: 'OGS-3f1408' });
+
+        //Transaction does not have any event that sugests it is and ESDTNFTCreate transaction
+        transaction = new ShardTransaction();
+        transactionDetailed.logs.events = [new TransactionLogEvent(), new TransactionLogEvent()];
+        expect(extractor.extract(transaction, transactionDetailed)).toBeUndefined();
     });
 
     it('canDetectNftCreateFromLogs', () => {
