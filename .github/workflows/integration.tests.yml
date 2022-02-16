@@ -68,8 +68,6 @@ jobs:
             npm run test:e2e:mocked
           fi
         shell: bash
-      - name: Collect code coverage
-        run: npm run test:e2e:cov
       - uses: codecov/codecov-action@v2
         with:
           files: ./coverage/e2e/clover.xml
