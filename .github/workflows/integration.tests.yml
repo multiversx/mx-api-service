@@ -58,6 +58,8 @@ jobs:
       - run: npm ci
       - name: Initialize
         run: npm run init
+      - name: Warm
+        run: npm run test:e2e:warm
       - name: Run integration tests
         run: |
           if ${{ github.ref == 'refs/heads/main' }}; then

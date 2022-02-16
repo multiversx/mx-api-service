@@ -6,7 +6,7 @@
   ],
   "rootDir": ".",
   "testEnvironment": "node",
-  "testRegex": "initialize.e2e-spec.ts$",
+  "testRegex": "warm.e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
