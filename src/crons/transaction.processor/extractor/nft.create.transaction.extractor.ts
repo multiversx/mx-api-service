@@ -5,7 +5,7 @@ import { AddressUtils } from "src/utils/address.utils";
 import { BinaryUtils } from "../../../utils/binary.utils";
 import { TransactionExtractorInterface } from "./transaction.extractor.interface";
 
-export class NftCreateTransactionExtractor implements TransactionExtractorInterface<{ collection: string, attributes?: string }> {
+export class NftCreateTransactionExtractor implements TransactionExtractorInterface<{ collection: string }> {
   private readonly logger: Logger = new Logger(NftCreateTransactionExtractor.name);
 
   canBeNftCreateTransactionFromLogs(transaction: ShardTransaction): Boolean {
@@ -62,10 +62,8 @@ export class NftCreateTransactionExtractor implements TransactionExtractorInterf
     }
 
     const collectionHex = args[0];
-    const attributesHex = args[5];
 
     let collection: string = '';
-    let attributes: string = '';
 
     try {
       collection = BinaryUtils.hexToString(collectionHex);
@@ -76,16 +74,7 @@ export class NftCreateTransactionExtractor implements TransactionExtractorInterf
       return undefined;
     }
 
-    try {
-      attributes = BinaryUtils.hexToString(attributesHex);
-    } catch (error: any) {
-      const logger = new Logger(NftCreateTransactionExtractor.name);
-      logger.error(`Error in tryExtractNftMetadataFromNftCreateTransaction function. Could not convert attributes hex '${attributesHex}' to string`);
-      logger.error(error);
-      return undefined;
-    }
-
     this.logger.log(`Detected NFT create for collection '${collection}' and tx hash '${transaction.hash}'`);
-    return { collection, attributes };
+    return { collection };
   }
 }
