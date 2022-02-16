@@ -1,15 +1,13 @@
 import { Test } from '@nestjs/testing';
-import { PublicAppModule } from 'src/public.app.module';
 import { Account } from 'src/endpoints/accounts/entities/account';
 import { AccountDelegationLegacy } from 'src/endpoints/delegation.legacy/entities/account.delegation.legacy';
 import { AccountService } from 'src/endpoints/accounts/account.service';
 import { DelegationLegacyService } from 'src/endpoints/delegation.legacy/delegation.legacy.service';
-import Initializer from './e2e-init';
-import { Constants } from 'src/utils/constants';
 import { DeployedContract } from 'src/endpoints/accounts/entities/deployed.contract';
 import userAccount from "../data/accounts/user.account";
 import providerAccount from "../data/accounts/provider.account";
 import { AccountKey } from 'src/endpoints/accounts/entities/account.key';
+import { PublicAppModule } from 'src/public.app.module';
 
 describe('Account Service', () => {
   let accountService: AccountService;
@@ -17,15 +15,13 @@ describe('Account Service', () => {
   const smartContractOwnerAddress: string = 'erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97';
 
   beforeAll(async () => {
-    await Initializer.initialize();
-
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     accountService = moduleRef.get<AccountService>(AccountService);
     delegationLegacyService = moduleRef.get<DelegationLegacyService>(DelegationLegacyService);
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Accounts list', () => {
     it(`should return a list with 25 accounts`, async () => {

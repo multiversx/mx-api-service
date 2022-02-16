@@ -3,8 +3,6 @@ import { Round } from "src/endpoints/rounds/entities/round";
 import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
 import { RoundService } from "src/endpoints/rounds/round.service";
 import { PublicAppModule } from "src/public.app.module";
-import { Constants } from "src/utils/constants";
-import Initializer from "./e2e-init";
 import { RoundDetailed } from "../../endpoints/rounds/entities/round.detailed";
 
 describe('Rounds Service', () => {
@@ -12,14 +10,14 @@ describe('Rounds Service', () => {
   let rounds: Round[];
 
   beforeAll(async () => {
-    await Initializer.initialize();
+
     const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     roundService = publicAppModule.get<RoundService>(RoundService);
     rounds = await roundService.getRounds(new RoundFilter());
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Rounds', () => {
     it('all entities should have round structure', () => {

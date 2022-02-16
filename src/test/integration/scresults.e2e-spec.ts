@@ -1,9 +1,7 @@
 import { SmartContractResultService } from "../../endpoints/sc-results/scresult.service";
-import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
 import { SmartContractResultFilter } from "../../endpoints/sc-results/entities/smart.contract.result.filter";
-import { Constants } from "../../utils/constants";
 import smartContractResults from "../data/smartcontract/scresults";
 import { SmartContractResult } from "../../endpoints/sc-results/entities/smart.contract.result";
 
@@ -13,7 +11,7 @@ describe('Scresults Service', () => {
   let scHash: string;
 
   beforeAll(async () => {
-    await Initializer.initialize();
+
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -26,7 +24,7 @@ describe('Scresults Service', () => {
     const scResult = scResults[0];
     accountAddress = scResult.sender;
     scHash = scResults[0].hash;
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Scresults list', () => {
     it('scresults should have hash, nonce and timestamp', async () => {

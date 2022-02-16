@@ -1,7 +1,5 @@
-import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
-import { Constants } from "../../utils/constants";
 import { TokenTransferService } from "../../endpoints/tokens/token.transfer.service";
 import transactionsWithLogs from "../data/transactions/transactions.with.logs";
 import tokenDetails from "../data/esdt/token/token.example";
@@ -16,7 +14,7 @@ describe('Token Transfer Service', () => {
   const invalidTokenIdentifier: string = 'LKFARM-9d1ea8-4d2842';
 
   beforeAll(async () => {
-    await Initializer.initialize();
+
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -24,7 +22,7 @@ describe('Token Transfer Service', () => {
     tokenTransferService = moduleRef.get<TokenTransferService>(TokenTransferService);
     esdtService = moduleRef.get<EsdtService>(EsdtService);
 
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Get Operations For Transaction Logs', () => {
     it('should return operations with transaction logs', async () => {

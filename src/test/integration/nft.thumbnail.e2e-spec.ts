@@ -1,7 +1,5 @@
-import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
-import { Constants } from "../../utils/constants";
 import { NftThumbnailService } from "../../queue.worker/nft.worker/queue/job-services/thumbnails/nft.thumbnail.service";
 import { NftService } from "../../endpoints/nfts/nft.service";
 import { NftFilter } from "../../endpoints/nfts/entities/nft.filter";
@@ -20,7 +18,6 @@ describe('Nft Queue Service', () => {
   const elrondMediaUrl: string = 'https://media.elrond.com/nfts/thumbnail/default.png';
 
   beforeAll(async () => {
-    await Initializer.initialize();
 
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule, QueueWorkerModule],
@@ -32,7 +29,7 @@ describe('Nft Queue Service', () => {
     const nfts = await nftService.getNfts({ from: 0, size: 1 }, new NftFilter());
     expect(nfts).toHaveLength(1);
 
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('HasThumbnail Generated', () => {
     it('should return true if nft has thumbnail generated', async () => {

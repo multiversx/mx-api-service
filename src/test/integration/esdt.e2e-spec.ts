@@ -1,7 +1,5 @@
-import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
-import { Constants } from "../../utils/constants";
 import { EsdtService } from "../../endpoints/esdt/esdt.service";
 import tokenExample from "../data/esdt/token/token.example";
 import { TokenAddressRoles } from "src/endpoints/tokens/entities/token.address.roles";
@@ -12,14 +10,12 @@ describe('ESDT Service', () => {
   const egldMexTokenIdentifier: string = 'EGLDMEX-0be9e5';
 
   beforeAll(async () => {
-    await Initializer.initialize();
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     esdtService = moduleRef.get<EsdtService>(EsdtService);
-
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Get All Esdts For Address', () => {
     it('should return all esdts of address', async () => {

@@ -5,8 +5,6 @@ import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { Provider } from "src/endpoints/providers/entities/provider";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { PublicAppModule } from "src/public.app.module";
-import { Constants } from "src/utils/constants";
-import Initializer from "./e2e-init";
 
 describe('Identities Service', () => {
   let identityService: IdentitiesService;
@@ -18,8 +16,6 @@ describe('Identities Service', () => {
   const ids: string[] = ['justminingfr', 'staking_agency', 'istari_vision'];
 
   beforeAll(async () => {
-    await Initializer.initialize();
-
     const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -30,7 +26,7 @@ describe('Identities Service', () => {
 
     identities = await identityService.getAllIdentities();
     providers = await providerService.getProvidersWithStakeInformation();
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Identities', () => {
     it('all identities should have provider stake, topUp and locked', () => {

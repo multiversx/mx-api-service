@@ -2,19 +2,17 @@ import { Test } from '@nestjs/testing';
 import { CachingService } from 'src/common/caching/caching.service';
 import { PublicAppModule } from 'src/public.app.module';
 import { Constants } from 'src/utils/constants';
-import Initializer from './e2e-init';
 
 describe('Caching Service', () => {
   let cachingService: CachingService;
 
   beforeAll(async () => {
-    await Initializer.initialize();
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     cachingService = moduleRef.get<CachingService>(CachingService);
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Cache Local', () => {
     //CRUD

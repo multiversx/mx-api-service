@@ -1,7 +1,5 @@
-import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
-import { Constants } from "../../utils/constants";
 import { NftWorkerService } from "../../queue.worker/nft.worker/nft.worker.service";
 import { Nft } from "../../endpoints/nfts/entities/nft";
 import nftExample from "../data/esdt/nft/nft.example";
@@ -12,7 +10,7 @@ describe('Nft Worker Service', () => {
   let nftWorkerService: NftWorkerService;
 
   beforeAll(async () => {
-    await Initializer.initialize();
+
 
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule, NftWorkerModule],
@@ -20,7 +18,7 @@ describe('Nft Worker Service', () => {
 
     nftWorkerService = moduleRef.get<NftWorkerService>(NftWorkerService);
 
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Add Process Nft Queue Job', () => {
     it('should return nft process "true" with forceRefreshMedia = true', async () => {

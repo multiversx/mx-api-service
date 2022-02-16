@@ -1,7 +1,5 @@
-import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
-import { Constants } from "../../utils/constants";
 import { NetworkService } from "../../endpoints/network/network.service";
 import { NetworkConstants } from "src/endpoints/network/entities/constants";
 import { NetworkConfig } from "src/endpoints/network/entities/network.config";
@@ -11,14 +9,14 @@ describe('Network Service', () => {
   let networkService: NetworkService;
 
   beforeAll(async () => {
-    await Initializer.initialize();
+
     const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     networkService = publicAppModule.get<NetworkService>(NetworkService);
 
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Get Constants', () => {
     it('should return network constants', async () => {

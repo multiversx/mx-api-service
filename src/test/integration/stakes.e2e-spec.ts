@@ -1,8 +1,6 @@
 import { Test } from "@nestjs/testing";
 import { StakeService } from "src/endpoints/stake/stake.service";
 import { PublicAppModule } from "src/public.app.module";
-import { Constants } from "src/utils/constants";
-import Initializer from "./e2e-init";
 import { Stake } from "../../endpoints/stake/entities/stake";
 import { StakeTopup } from "../../endpoints/stake/entities/stake.topup";
 
@@ -18,14 +16,14 @@ describe('Stake Service', () => {
   const node: string = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhllllsajxzat';
 
   beforeAll(async () => {
-    await Initializer.initialize();
+
     const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     stakeService = publicAppModule.get<StakeService>(StakeService);
     globalStake = await stakeService.getGlobalStake();
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Stake', () => {
     it('global stake should have totalValidators, activeValidators, queueSize and totalStaked', () => {

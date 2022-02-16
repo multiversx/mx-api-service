@@ -1,8 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import { TokenService } from 'src/endpoints/tokens/token.service';
-import Initializer from './e2e-init';
-import { Constants } from 'src/utils/constants';
 import { TokenFilter } from 'src/endpoints/tokens/entities/token.filter';
 import { TokenWithBalance } from "../../endpoints/tokens/entities/token.with.balance";
 import { TokenDetailed } from "../../endpoints/tokens/entities/token.detailed";
@@ -18,7 +16,7 @@ describe('Token Service', () => {
   const tokenName: string = 'ElrondWorld';
 
   beforeAll(async () => {
-    await Initializer.initialize();
+
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -30,7 +28,7 @@ describe('Token Service', () => {
       new TokenFilter(),
     );
     expect(tokens).toHaveLength(1);
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Tokens list', () => {
     describe('Tokens pagination', () => {
@@ -183,7 +181,7 @@ describe('Token Service', () => {
     it(`should return token supply`, async () => {
       const supply = await tokenService.getTokenSupply(tokenDetails.identifier);
 
-      if(!supply){
+      if (!supply) {
         throw new Error('Properties not defined');
       }
 

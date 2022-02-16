@@ -4,8 +4,6 @@ import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import { TransactionStatus } from 'src/endpoints/transactions/entities/transaction.status';
 import { TransactionService } from 'src/endpoints/transactions/transaction.service';
 import { TransactionFilter } from 'src/endpoints/transactions/entities/transaction.filter';
-import Initializer from './e2e-init';
-import { Constants } from 'src/utils/constants';
 import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 import { TransactionOptionalFieldOption } from 'src/endpoints/transactions/entities/transaction.optional.field.options';
 import transactionDetails from "../data/transactions/transaction.details";
@@ -19,7 +17,7 @@ describe('Transaction Service', () => {
   const detailedTransactionHash: string = '18128acfd3f19f7a747ccf02bc866e95aa2db92af44fed2f9ed2c2102223b462';
 
   beforeAll(async () => {
-    await Initializer.initialize();
+
 
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
@@ -36,7 +34,7 @@ describe('Transaction Service', () => {
     transactionHash = transaction.txHash;
     transactionSender = transaction.sender;
     transactionReceiver = transaction.receiver;
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Transactions list', () => {
     describe('Transactions pagination', () => {

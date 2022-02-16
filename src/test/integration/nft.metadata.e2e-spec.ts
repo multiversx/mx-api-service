@@ -1,8 +1,6 @@
-import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
 import { QueueWorkerModule } from "../../queue.worker/queue.worker.module";
-import { Constants } from "../../utils/constants";
 import { NftMetadataService } from "../../queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.service";
 import { Nft } from "../../endpoints/nfts/entities/nft";
 import { NftFilter } from "../../endpoints/nfts/entities/nft.filter";
@@ -15,7 +13,7 @@ describe('Nft Metadata Service', () => {
   let nftIdentifier: string;
 
   beforeAll(async () => {
-    await Initializer.initialize();
+
 
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule, QueueWorkerModule],
@@ -30,7 +28,7 @@ describe('Nft Metadata Service', () => {
     const nft = nfts[0];
     nftIdentifier = nft.identifier;
 
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Get Or Refresh Metadata', () => {
     it(`it should return NFT properties based on nft value `, async () => {

@@ -3,8 +3,6 @@ import { BlockService } from "src/endpoints/blocks/block.service";
 import { Block } from "src/endpoints/blocks/entities/block";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { PublicAppModule } from "src/public.app.module";
-import { Constants } from "src/utils/constants";
-import Initializer from "./e2e-init";
 
 describe('Blocks Service', () => {
   let blocksService: BlockService;
@@ -12,7 +10,6 @@ describe('Blocks Service', () => {
   let blockSentinel: Block;
 
   beforeAll(async () => {
-    await Initializer.initialize();
     const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
 
@@ -21,7 +18,7 @@ describe('Blocks Service', () => {
     blocksService = publicAppModule.get<BlockService>(BlockService);
     blocks = await blocksService.getBlocks(new BlockFilter(), { from: 0, size: 25 });
     blockSentinel = blocks[0];
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Blocks', () => {
     it('blocks should have hash, epoch and shard', () => {

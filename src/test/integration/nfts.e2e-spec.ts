@@ -3,8 +3,6 @@ import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { PublicAppModule } from "src/public.app.module";
-import { Constants } from "src/utils/constants";
-import Initializer from "./e2e-init";
 import { Nft } from "../../endpoints/nfts/entities/nft";
 import { NftQueryOptions } from "../../endpoints/nfts/entities/nft.query.options";
 import { NftOwner } from "src/endpoints/nfts/entities/nft.owner";
@@ -21,8 +19,6 @@ describe('Nft Service', () => {
   const invalidIdentifier: string = 'MEXFARM-e7af524edf42';
 
   beforeAll(async () => {
-    await Initializer.initialize();
-
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -34,7 +30,7 @@ describe('Nft Service', () => {
 
     const nft = nfts[0];
     nftCreator = nft.creator;
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Nfts list', () => {
 

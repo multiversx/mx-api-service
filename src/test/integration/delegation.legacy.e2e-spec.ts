@@ -1,7 +1,5 @@
-import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
-import { Constants } from "../../utils/constants";
 import { DelegationLegacyService } from "../../endpoints/delegation.legacy/delegation.legacy.service";
 import { AccountService } from "../../endpoints/accounts/account.service";
 import { DelegationLegacy } from "../../endpoints/delegation.legacy/entities/delegation.legacy";
@@ -13,7 +11,6 @@ describe('Delegation Legacy Service', () => {
   let accountAddress: string;
 
   beforeAll(async () => {
-    await Initializer.initialize();
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -26,7 +23,7 @@ describe('Delegation Legacy Service', () => {
 
     const account = accounts[0];
     accountAddress = account.address;
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Get Delegation', () => {
     it('should return delegation legacy', async () => {

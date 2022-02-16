@@ -10,8 +10,6 @@ import { NodeService } from "src/endpoints/nodes/node.service";
 import { Provider } from "src/endpoints/providers/entities/provider";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { PublicAppModule } from "src/public.app.module";
-import { Constants } from "src/utils/constants";
-import Initializer from "./e2e-init";
 import { AccountService } from "../../endpoints/accounts/account.service";
 import { Queue } from "src/endpoints/nodes/entities/queue";
 import providerAccount from "../data/accounts/provider.account";
@@ -27,7 +25,7 @@ describe('Node Service', () => {
   let accountAddress: string;
 
   beforeAll(async () => {
-    await Initializer.initialize();
+
     const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -47,7 +45,7 @@ describe('Node Service', () => {
     const account = accounts[0];
     accountAddress = account.address;
 
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Nodes', () => {
     it('should be in sync with keybase confirmations', async () => {

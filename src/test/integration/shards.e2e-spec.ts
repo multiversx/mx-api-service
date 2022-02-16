@@ -2,20 +2,18 @@ import { Test } from "@nestjs/testing";
 import { Shard } from "src/endpoints/shards/entities/shard";
 import { ShardService } from "src/endpoints/shards/shard.service";
 import { PublicAppModule } from "src/public.app.module";
-import { Constants } from "src/utils/constants";
-import Initializer from "./e2e-init";
 
 describe('Shard Service', () => {
   let shardService: ShardService;
 
   beforeAll(async () => {
-    await Initializer.initialize();
+
     const publicAppModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     shardService = publicAppModule.get<ShardService>(ShardService);
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Shards', () => {
     describe('Shards List', () => {
