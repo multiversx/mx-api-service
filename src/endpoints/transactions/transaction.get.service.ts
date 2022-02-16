@@ -14,10 +14,10 @@ import { SmartContractResult } from "../sc-results/entities/smart.contract.resul
 import { Transaction } from "./entities/transaction";
 import { TransactionDetailed } from "./entities/transaction.detailed";
 import { TransactionLog } from "./entities/transaction.log";
-import { TransactionOperation } from "./entities/transaction.operation";
 import { TransactionOptionalFieldOption } from "./entities/transaction.optional.field.options";
 import { TransactionReceipt } from "./entities/transaction.receipt";
 import { TokenTransferService } from "../tokens/token.transfer.service";
+import { TransactionUtils } from "src/utils/transaction.utils";
 
 @Injectable()
 export class TransactionGetService {
@@ -86,11 +86,6 @@ export class TransactionGetService {
       }
 
       const transactionDetailed: TransactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), result);
-      const tokenTransfer = this.tokenTransferService.getTokenTransfer(result);
-      if (tokenTransfer) {
-        transactionDetailed.tokenValue = tokenTransfer.tokenAmount;
-        transactionDetailed.tokenIdentifier = tokenTransfer.tokenIdentifier;
-      }
 
       const hashes: string[] = [];
       hashes.push(txHash);
@@ -122,7 +117,7 @@ export class TransactionGetService {
           const transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
 
           transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransactionLogs(txHash, transactionLogs);
-          transactionDetailed.operations = this.trimOperations(transactionDetailed.operations);
+          transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.operations);
 
           for (const log of logs) {
             if (log._id === txHash) {
@@ -145,33 +140,6 @@ export class TransactionGetService {
     }
   }
 
-  trimOperations(operations: TransactionOperation[]): TransactionOperation[] {
-    const result: TransactionOperation[] = [];
-
-    for (const operation of operations) {
-      const identicalOperations = result.filter(x =>
-        x.sender === operation.sender &&
-        x.receiver === operation.receiver &&
-        x.collection === operation.collection &&
-        x.identifier === operation.identifier &&
-        x.type === operation.type &&
-        x.action === 'transfer'
-      );
-
-      if (identicalOperations.length > 0) {
-        if (BigInt(identicalOperations[0].value) > BigInt(operation.value)) {
-          result.remove(identicalOperations[0]);
-        } else {
-          continue;
-        }
-      }
-
-      result.push(operation);
-    }
-
-    return result;
-  }
-
   async tryGetTransactionFromGatewayForList(txHash: string) {
     const gatewayTransaction = await this.tryGetTransactionFromGateway(txHash, false);
     if (gatewayTransaction) {
@@ -182,6 +150,7 @@ export class TransactionGetService {
 
   async tryGetTransactionFromGateway(txHash: string, queryInElastic: boolean = true): Promise<TransactionDetailed | null> {
     try {
+      // eslint-disable-next-line require-await
       const transactionResult = await this.gatewayService.get(`transaction/${txHash}?withResults=true`, GatewayComponentRequest.transactionDetails, async (error) => {
         if (error.response.data.error === 'transaction not found') {
           return true;
@@ -195,7 +164,12 @@ export class TransactionGetService {
       }
 
       const transaction = transactionResult.transaction;
+
       if (!transaction) {
+        return null;
+      }
+
+      if (transaction.miniblockType === 'SmartContractResultBlock') {
         return null;
       }
 

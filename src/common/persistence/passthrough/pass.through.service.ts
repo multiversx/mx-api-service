@@ -1,3 +1,4 @@
+/* eslint-disable require-await */
 import { Injectable } from "@nestjs/common";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { PersistenceInterface } from "../persistence.interface";
@@ -15,6 +16,10 @@ export class PassThroughService implements PersistenceInterface {
   }
 
   async setMetadata(_: string, __: any): Promise<void> {
+
+  }
+
+  async deleteMetadata(_: string): Promise<void> {
 
   }
 

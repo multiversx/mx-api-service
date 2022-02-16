@@ -121,6 +121,15 @@ export class ApiConfigService {
     return redisUrl;
   }
 
+  getRabbitmqUrl(): string {
+    const rabbitmqUrl = this.configService.get<string>('urls.rabbitmq');
+    if (!rabbitmqUrl) {
+      throw new Error('No rabbitmq url present');
+    }
+
+    return rabbitmqUrl;
+  }
+
   getCacheTtl(): number {
     return this.configService.get<number>('caching.cacheTtl') ?? 6;
   }
@@ -249,6 +258,10 @@ export class ApiConfigService {
 
   getIsProcessNftsFlagActive(): boolean {
     return this.configService.get<boolean>('flags.processNfts') ?? false;
+  }
+
+  getIsIndexerV3FlagActive(): boolean {
+    return this.configService.get<boolean>('flags.indexer-v3') ?? false;
   }
 
   getIsPublicApiActive(): boolean {
@@ -494,5 +507,13 @@ export class ApiConfigService {
     }
 
     return mockPath;
+  }
+
+  getNftProcessParallelism(): number {
+    return this.configService.get<number>('nftProcess.parallelism') ?? 1;
+  }
+
+  getNftProcessMaxRetries(): number {
+    return this.configService.get<number>('nftProcess.maxRetries') ?? 3;
   }
 }

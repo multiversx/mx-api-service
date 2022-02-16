@@ -7,6 +7,7 @@ export class JwtAdminGuard implements CanActivate {
     private readonly apiConfigService: ApiConfigService
   ) { }
 
+  // eslint-disable-next-line require-await
   async canActivate(
     context: ExecutionContext,
   ): Promise<boolean> {

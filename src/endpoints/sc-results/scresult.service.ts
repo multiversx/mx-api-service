@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { AbstractQuery } from "src/common/elastic/entities/abstract.query";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
@@ -8,11 +9,13 @@ import { QueryType } from "src/common/elastic/entities/query.type";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { ApiUtils } from "src/utils/api.utils";
 import { SmartContractResult } from "./entities/smart.contract.result";
+import { SmartContractResultFilter } from "./entities/smart.contract.result.filter";
 
 @Injectable()
 export class SmartContractResultService {
   constructor(
     private readonly elasticService: ElasticService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   private buildSmartContractResultFilterQuery(address?: string): ElasticQuery {
@@ -22,6 +25,10 @@ export class SmartContractResultService {
     if (address) {
       shouldQueries.push(QueryType.Match('sender', address));
       shouldQueries.push(QueryType.Match('receiver', address));
+
+      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+        shouldQueries.push(QueryType.Match('receivers', address));
+      }
     }
 
     const elasticQuery = ElasticQuery.create()
@@ -31,8 +38,14 @@ export class SmartContractResultService {
     return elasticQuery;
   }
 
-  async getScResults(pagination: QueryPagination): Promise<SmartContractResult[]> {
-    const elasticResult = await this.elasticService.getList('scresults', 'hash', ElasticQuery.create().withPagination(pagination));
+  async getScResults(pagination: QueryPagination, filter: SmartContractResultFilter): Promise<SmartContractResult[]> {
+    let query = ElasticQuery.create().withPagination(pagination);
+
+    if (filter.miniBlockHash) {
+      query = query.withCondition(QueryConditionOptions.must, [QueryType.Match('miniBlockHash', filter.miniBlockHash)]);
+    }
+
+    const elasticResult = await this.elasticService.getList('scresults', 'hash', query);
 
     return elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
   }

@@ -3,6 +3,7 @@ import { AccountModule } from "./accounts/account.module";
 import { BlockModule } from "./blocks/block.module";
 import { BlsModule } from "./bls/bls.module";
 import { CollectionModule } from "./collections/collection.module";
+import { DappConfigModule } from "./dapp-config/dapp.config.module";
 import { DelegationLegacyModule } from "./delegation.legacy/delegation.legacy.module";
 import { DelegationModule } from "./delegation/delegation.module";
 import { EsdtModule } from "./esdt/esdt.module";
@@ -24,7 +25,6 @@ import { TransactionModule } from "./transactions/transaction.module";
 import { UsernameModule } from "./usernames/username.module";
 import { VmQueryModule } from "./vm.query/vm.query.module";
 import { WaitingListModule } from "./waiting-list/waiting.list.module";
-
 
 @Module({
   imports: [
@@ -54,12 +54,13 @@ import { WaitingListModule } from "./waiting-list/waiting.list.module";
     forwardRef(() => WaitingListModule),
     forwardRef(() => EsdtModule),
     forwardRef(() => BlsModule),
+    forwardRef(() => DappConfigModule),
   ],
   exports: [
     AccountModule, CollectionModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
     MexModule, MiniBlockModule, NetworkModule, NftModule, TagModule, NodeModule, ProviderModule,
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
-    WaitingListModule, EsdtModule, BlsModule,
+    WaitingListModule, EsdtModule, BlsModule, DappConfigModule,
   ],
 })
 export class EndpointsServicesModule { }

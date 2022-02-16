@@ -19,8 +19,8 @@ import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { TransactionService } from "../transactions/transaction.service";
 import { RecordUtils } from "src/utils/record.utils";
-import { EsdtSupply } from "../esdt/entities/esdt.supply";
 import { TokenType } from "./entities/token.type";
+import { NumberUtils } from "src/utils/number.utils";
 
 @Injectable()
 export class TokenService {
@@ -58,7 +58,7 @@ export class TokenService {
     tokens = tokens.slice(from, from + size);
 
     for (const token of tokens) {
-      await this.applyTickerFromAssets(token);
+      this.applyTickerFromAssets(token);
     }
 
     await this.batchProcessTokens(tokens);
@@ -66,7 +66,7 @@ export class TokenService {
     return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
   }
 
-  async applyTickerFromAssets(token: Token) {
+  applyTickerFromAssets(token: Token) {
     if (token.assets) {
       token.ticker = token.identifier.split('-')[0];
     } else {
@@ -249,7 +249,8 @@ export class TokenService {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withPagination(pagination)
       .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
-      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
+      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)])
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')]);
 
     const tokenAccounts = await this.elasticService.getList("accountsesdt", identifier, elasticQuery);
 
@@ -283,11 +284,11 @@ export class TokenService {
   async applySupply(token: TokenDetailed): Promise<void> {
     const { totalSupply, circulatingSupply } = await this.esdtService.getTokenSupply(token.identifier);
 
-    token.supply = totalSupply;
-    token.circulatingSupply = circulatingSupply;
+    token.supply = NumberUtils.denominate(BigInt(totalSupply), token.decimals).toFixed();
+    token.circulatingSupply = NumberUtils.denominate(BigInt(circulatingSupply), token.decimals).toFixed();
   }
 
-  async getTokenSupply(identifier: string): Promise<EsdtSupply | undefined> {
+  async getTokenSupply(identifier: string): Promise<{ supply: string, circulatingSupply: string } | undefined> {
     if (identifier.split('-').length !== 2) {
       return undefined;
     }
@@ -301,6 +302,11 @@ export class TokenService {
       return undefined;
     }
 
-    return await this.esdtService.getTokenSupply(identifier);
+    const result = await this.esdtService.getTokenSupply(identifier);
+
+    return {
+      supply: NumberUtils.denominateString(result.totalSupply, properties.decimals).toFixed(),
+      circulatingSupply: NumberUtils.denominateString(result.circulatingSupply, properties.decimals).toFixed(),
+    };
   }
 }

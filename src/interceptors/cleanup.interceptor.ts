@@ -5,7 +5,7 @@ import { ApiUtils } from "src/utils/api.utils";
 
 @Injectable()
 export class CleanupInterceptor implements NestInterceptor {
-  async intercept(_: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
+  intercept(_: ExecutionContext, next: CallHandler): Observable<any> {
     return next
       .handle()
       .pipe(

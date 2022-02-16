@@ -11,6 +11,7 @@ export class SmartContractResultController {
 
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'miniBlockHash', description: 'The hash of the parent miniBlock', required: false })
   @Get("/sc-results")
   @ApiResponse({
     status: 200,
@@ -20,8 +21,9 @@ export class SmartContractResultController {
   getScResults(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('miniBlockHash') miniBlockHash?: string,
   ): Promise<SmartContractResult[]> {
-    return this.scResultService.getScResults({ from, size });
+    return this.scResultService.getScResults({ from, size }, { miniBlockHash });
   }
 
   @Get("/sc-results/count")

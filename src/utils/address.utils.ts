@@ -85,10 +85,13 @@ export class AddressUtils {
       return undefined;
     }
 
-    const isUpgradeable = codeHex[1] === '1';
-    const isReadable = codeHex[1] === '4';
-    const isPayable = codeHex[3] === '2';
-    const isPayableBySmartContract = codeHex[3] === '4';
+    const firstOctet = parseInt(codeHex.slice(0, 2), 16).toString(2).padStart(4, '0');
+    const isUpgradeable = firstOctet.charAt(3) === '1';
+    const isReadable = firstOctet.charAt(1) === '1';
+
+    const secondOctet = parseInt(codeHex.slice(2), 16).toString(2).padStart(4, '0');
+    const isPayable = secondOctet.charAt(2) === '1';
+    const isPayableBySmartContract = secondOctet.charAt(1) === '1';
 
     return { isUpgradeable, isReadable, isPayable, isPayableBySmartContract };
   }

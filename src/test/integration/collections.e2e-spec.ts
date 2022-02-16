@@ -5,10 +5,15 @@ import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 import Initializer from "./e2e-init";
+import { CollectionAccountFilter } from "../../endpoints/collections/entities/collection.account.filter";
+import { NftCollection } from "../../endpoints/collections/entities/nft.collection";
+import { NftCollectionAccount } from "src/endpoints/collections/entities/nft.collection.account";
 
 describe('Collection Service', () => {
   let collectionService: CollectionService;
-  let collectionIdentifier: string;
+
+  const collectionIdentifier: string = 'DEITIES-0d1f10';
+  const collectionAddress: string = 'erd1gv55fk7gn0f437eq53x7u5zux824a9ff86v5pvnneg7yvsucpp0svncsmz';
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -20,52 +25,48 @@ describe('Collection Service', () => {
 
     const collections = await collectionService.getNftCollections({ from: 0, size: 1 }, new CollectionFilter());
     expect(collections).toHaveLength(1);
-
-    const nftCollection = collections[0];
-    collectionIdentifier = nftCollection.collection;
   }, Constants.oneHour() * 1000);
 
   describe('Collections list', () => {
     describe('Collections pagination', () => {
       it(`should return a list with 25 nfts collections`, async () => {
-        const collectionsList = await collectionService.getNftCollections({ from: 0, size: 25 }, new CollectionFilter());
+        const collections = await collectionService.getNftCollections({ from: 0, size: 25 }, new CollectionFilter());
+        expect(collections).toHaveLength(25);
 
-        expect(collectionsList).toBeInstanceOf(Array);
-        expect(collectionsList).toHaveLength(25);
+        for (const collection of collections) {
+          expect(collection).toHaveStructure(Object.keys(new NftCollection()));
+        }
       });
 
       it(`should return a list with 10 nfts collections`, async () => {
-        const collectionsList = await collectionService.getNftCollections({ from: 0, size: 10 }, new CollectionFilter());
-        expect(collectionsList).toBeInstanceOf(Array);
-        expect(collectionsList).toHaveLength(10);
+        const collections = await collectionService.getNftCollections({ from: 0, size: 10 }, new CollectionFilter());
+        expect(collections).toBeInstanceOf(Array);
+        expect(collections).toHaveLength(10);
 
-        for (const nftCollection of collectionsList) {
-          expect(nftCollection.owner).toBeDefined();
-          expect(nftCollection.collection).toBeDefined();
+        for (const collection of collections) {
+          expect(collection.owner).toBeDefined();
+          expect(collection.collection).toBeDefined();
+          expect(collection).toHaveStructure(Object.keys(new NftCollection()));
         }
       });
     });
 
     describe('Collections filters', () => {
-      it(`should return a list with all nfts within a collection`, async () => {
-        const collectionFilter = new CollectionFilter();
-        collectionFilter.collection = collectionIdentifier;
-        const nftsCollections = await collectionService.getNftCollections({ from: 0, size: 25 }, collectionFilter);
-        expect(nftsCollections).toBeInstanceOf(Array);
+      it(`should return single collection`, async () => {
+        const collections = await collectionService.getNftCollections({ from: 0, size: 25 }, { collection: collectionIdentifier });
+        expect(collections).toBeInstanceOf(Array);
 
-        for (const nftCollection of nftsCollections) {
-          expect(nftCollection.collection).toBe(collectionIdentifier);
+        for (const collection of collections) {
+          expect(collection.collection).toBe(collectionIdentifier);
         }
       });
 
       it(`should return a list with SemiFungibleESDT collections`, async () => {
-        const collectionFilter = new CollectionFilter();
-        collectionFilter.type = NftType.SemiFungibleESDT;
-        const collectionsList = await collectionService.getNftCollections({ from: 0, size: 25 }, collectionFilter);
-        expect(collectionsList).toBeInstanceOf(Array);
+        const collections = await collectionService.getNftCollections({ from: 0, size: 25 }, { type: NftType.SemiFungibleESDT });
+        expect(collections).toBeInstanceOf(Array);
 
-        for (const nftCollection of collectionsList) {
-          expect(nftCollection.type).toBe(NftType.SemiFungibleESDT);
+        for (const collection of collections) {
+          expect(collection.type).toBe(NftType.SemiFungibleESDT);
         }
       });
     });
@@ -73,9 +74,61 @@ describe('Collection Service', () => {
 
   describe('Collections count', () => {
     it(`should return a number`, async () => {
-      const nftCount: Number = new Number(await collectionService.getNftCollectionCount(new CollectionFilter()));
+      const count = await collectionService.getNftCollectionCount(new CollectionFilter());
+      expect(typeof count).toBe('number');
+    });
+  });
 
-      expect(nftCount).toBeInstanceOf(Number);
+  describe('Get Collection for a specific address', () => {
+    it(`should return collection for a specific address`, async () => {
+      const collection = await collectionService.getCollectionForAddress(collectionAddress, collectionIdentifier);
+      const collectionToTest = new NftCollectionAccount();
+      // @ts-ignore
+      delete collectionToTest.timestamp;
+
+      expect(collection).toBeDefined();
+      expect(collection).toHaveStructure(Object.keys(collectionToTest));
+    });
+  });
+
+  describe('Get Collection of NonFungibleESDT for a specific address', () => {
+    it(`should return collection of NonFungibleESDT for a specific address`, async () => {
+      const collections = await collectionService.getCollectionsForAddress(collectionAddress, new CollectionAccountFilter(), {
+        from: 0,
+        size: 3,
+      });
+
+      expect(collections).toBeInstanceOf(Array);
+      expect(collections.length).toStrictEqual(3);
+
+      for (const collection of collections) {
+        const collectionToTest = new NftCollectionAccount();
+
+        // @ts-ignore
+        delete collectionToTest.timestamp;
+
+        expect(collection).toHaveStructure(Object.keys(collectionToTest));
+      }
+    });
+  });
+
+  describe('Get Collections Count for a specific address', () => {
+    it(`should return count collection of NonFungibleESDT for a specific address`, async () => {
+      const count = await collectionService.getCollectionCountForAddress(collectionAddress, new CollectionAccountFilter());
+      expect(typeof count).toBe('number');
+    });
+  });
+
+  describe('Get NFT Collection', () => {
+    it(`should return nft collection`, async () => {
+      const collection = await collectionService.getNftCollection(collectionIdentifier);
+      if (!collection) {
+        throw new Error('Collection is not defined');
+      }
+
+      expect(collection).toHaveStructure(Object.keys(new NftCollection()));
+      expect(collection.owner).toBeDefined();
     });
   });
 });
+

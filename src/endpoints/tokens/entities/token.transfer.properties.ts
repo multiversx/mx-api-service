@@ -8,4 +8,5 @@ export class TokenTransferProperties {
   ticker: string = '';
   decimals?: number = 0;
   name: string = '';
+  svgUrl: string = '';
 }

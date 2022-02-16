@@ -66,6 +66,7 @@ export class ProxyController {
   @Get('/address/:address/esdt')
   @ApiExcludeEndpoint()
   async getAddressEsdt(@Param('address', ParseAddressPipe) address: string) {
+    // eslint-disable-next-line require-await
     return await this.gatewayGet(`address/${address}/esdt`, GatewayComponentRequest.addressDetails, undefined, async (error) => {
       const message = error.response?.data?.error;
       if (message && message.includes('account was not found')) {
