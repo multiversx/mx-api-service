@@ -4,7 +4,7 @@ import { Observable } from "rxjs";
 const MAX_REQUEST_PAGINATION: number = 10000;
 @Injectable()
 export class PaginationInterceptor implements NestInterceptor {
-  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.getArgByIndex(0);
 
     const from: number = parseInt(request.query.from || 0);

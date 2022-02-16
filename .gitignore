@@ -6,6 +6,7 @@
 /config/config.custom.devnet.yaml
 /config/config.custom.testnet.yaml
 /config/config.custom.mainnet.yaml
+__snapshots__
 
 # Logs
 logs

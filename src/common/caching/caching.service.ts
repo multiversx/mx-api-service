@@ -223,7 +223,7 @@ export class CachingService {
       const value = values[index];
       const ttl = ttls[index];
 
-      this.setCacheLocal(key, value, ttl);
+      await this.setCacheLocal(key, value, ttl);
     }
 
 
@@ -260,7 +260,7 @@ export class CachingService {
 
   async batchDelCache(keys: string[]) {
     for (const key of keys) {
-      this.deleteInCacheLocal(key);
+      await this.deleteInCacheLocal(key);
     }
 
     const dels = keys.map(key => ['del', key]);
@@ -341,7 +341,7 @@ export class CachingService {
     ttl: number,
     chunkSize: number,
   ): Promise<{ [key: string]: TOUT }> {
-    return BatchUtils.batchGet<TIN, TOUT>(
+    return await BatchUtils.batchGet<TIN, TOUT>(
       elements,
       cacheKeyFunc,
       [
@@ -434,7 +434,7 @@ export class CachingService {
   }
 
   async deleteInCacheLocal(key: string) {
-    this.localCacheService.deleteCacheKey(key);
+    await this.localCacheService.deleteCacheKey(key);
   }
 
   async deleteInCache(key: string): Promise<string[]> {

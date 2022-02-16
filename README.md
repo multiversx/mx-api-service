@@ -12,6 +12,10 @@ REST API facade facilitating the interactions with the Elrond blockchain.
 2. MySQL Server is required to be installed [docs](https://dev.mysql.com/doc/refman/8.0/en/installing.html). This can be avoided by adding in the .env file the following: `PERSISTENCE=passthrough`.
 3. ffmpeg is required to be installed [docs](https://www.ffmpeg.org/download.html).
 
+You can use `docker-compose up` in a separate terminal to use a local docker container for all these dependencies.
+
+After running the sample, you can stop the Docker container with `docker-compose down`
+
 ## Available Scripts
 
 This is an Elrond project built on Nest.js framework.

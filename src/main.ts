@@ -11,7 +11,7 @@ import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { FieldsInterceptor } from './interceptors/fields.interceptor';
 import { PrivateAppModule } from './private.app.module';
 import { MetricsService } from './common/metrics/metrics.service';
-import { CacheWarmerModule } from './crons/cache.warmer.module';
+import { CacheWarmerModule } from './crons/cache.warmer/cache.warmer.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Logger, NestInterceptor } from '@nestjs/common';
 import * as bodyParser from 'body-parser';
@@ -21,15 +21,21 @@ import { CleanupInterceptor } from './interceptors/cleanup.interceptor';
 import { RedisClient } from 'redis';
 import { ExtractInterceptor } from './interceptors/extract.interceptor';
 import { JwtAuthenticateGuard } from './interceptors/access.interceptor';
-import { TransactionProcessorModule } from './crons/transaction.processor.module';
+import { TransactionProcessorModule } from './crons/transaction.processor/transaction.processor.module';
 import { MicroserviceModule } from './common/microservice/microservice.module';
 import { ProtocolService } from './common/protocol/protocol.service';
 import { PaginationInterceptor } from './interceptors/pagination.interceptor';
 import { LogRequestsInterceptor } from './interceptors/log.requests.interceptor';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { QueueWorkerModule } from './queue.worker/queue.worker.module';
+import { NftQueueModule } from './queue.worker/nft.worker/queue/nft.queue.module';
+import configuration from "config/configuration";
 
 async function bootstrap() {
+  const conf = configuration();
+  if (conf.flags?.useTracing === true) {
+    require('dd-trace').init();
+  }
+
   const publicApp = await NestFactory.create<NestExpressApplication>(
     PublicAppModule,
   );
@@ -49,10 +55,6 @@ async function bootstrap() {
 
   if (apiConfigService.getIsAuthActive()) {
     publicApp.useGlobalGuards(new JwtAuthenticateGuard(apiConfigService));
-  }
-
-  if (apiConfigService.getUseTracingFlag()) {
-    require('dd-trace').init();
   }
 
   const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
@@ -127,8 +129,23 @@ async function bootstrap() {
   }
 
   if (apiConfigService.getIsQueueWorkerCronActive()) {
-    const queueWorkerApp = await NestFactory.create(QueueWorkerModule);
-    await queueWorkerApp.listen(8000);
+    const queueWorkerApp = await NestFactory.createMicroservice<MicroserviceOptions>(NftQueueModule, {
+      transport: Transport.RMQ,
+      options: {
+        urls: [apiConfigService.getRabbitmqUrl()],
+        queue: 'api-process-nfts',
+        noAck: false,
+        prefetchCount: apiConfigService.getNftProcessParallelism(),
+        queueOptions: {
+          durable: true,
+          // arguments: {
+          //   'x-single-active-consumer': true,
+          // },
+          deadLetterExchange: 'api-process-nfts-dlq',
+        },
+      },
+    });
+    await queueWorkerApp.listen();
   }
 
   const logger = new Logger('Bootstrapper');
@@ -147,6 +164,7 @@ async function bootstrap() {
       },
     },
   );
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   pubSubApp.listen();
 
   logger.log(`Public API active: ${apiConfigService.getIsPublicApiActive()}`);
@@ -160,6 +178,7 @@ async function bootstrap() {
   logger.log(`Queue worker active: ${apiConfigService.getIsQueueWorkerCronActive()}`);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();
 
 RedisClient.prototype.on_error = function (err: any) {

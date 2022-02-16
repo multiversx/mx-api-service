@@ -22,9 +22,12 @@ module.exports = {
     "@typescript-eslint/ban-types": ["off"],
     "@typescript-eslint/no-var-requires": ["off"],
     "@typescript-eslint/no-inferrable-types": ["off"],
+    "require-await": ["error"],
+    "@typescript-eslint/no-floating-promises": ["error"],
     "max-len": ["off"],
     "semi": ["error"],
-    "comma-dangle": ["error", "always-multiline"]
+    "comma-dangle": ["error", "always-multiline"],
+    "eol-last": ["error"],
   },
   ignorePatterns: ['.eslintrc.js'],
 };

@@ -41,6 +41,9 @@ export class SmartContractResult {
     @ApiProperty()
     callType: string = '';
 
+    @ApiProperty()
+    miniBlockHash: string | undefined = undefined;
+
     @ApiProperty({ type: TransactionLog })
     logs: TransactionLog | undefined = undefined;
 

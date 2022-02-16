@@ -17,6 +17,7 @@ flags:
   useRequestLogging: false
   useVmQueryTracing: false
   processNfts: true
+  indexer-v3: false
 image:
   width: 600
   height: 600
@@ -36,6 +37,7 @@ urls:
   gateway:
     - 'https://devnet-gateway.elrond.com'
   redis: '127.0.0.1'
+  rabbitmq: 'amqp://127.0.0.1:5672'
   providers: 'https://devnet-delegation.maiarbrowser.com/providers'
   media: 'https://devnet-media.elrond.com'
   nftThumbnails: 'https://devnet-media.elrond.com/nfts/thumbnail'
@@ -73,3 +75,6 @@ security:
   admins:
   jwtSecret:
   accessAddress:
+nftProcess:
+  parallelism: 1
+  maxRetries: 3

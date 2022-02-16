@@ -15,6 +15,8 @@ describe('Identities Service', () => {
   let identities: Identity[];
   let providers: Provider[];
 
+  const ids: string[] = ['justminingfr', 'staking_agency', 'istari_vision'];
+
   beforeAll(async () => {
     await Initializer.initialize();
 
@@ -25,12 +27,13 @@ describe('Identities Service', () => {
     identityService = publicAppModule.get<IdentitiesService>(IdentitiesService);
     providerService = publicAppModule.get<ProviderService>(ProviderService);
     apiConfigService = publicAppModule.get<ApiConfigService>(ApiConfigService);
+
     identities = await identityService.getAllIdentities();
     providers = await providerService.getProvidersWithStakeInformation();
   }, Constants.oneHour() * 1000);
 
   describe('Identities', () => {
-    it('all identities should have provider stake, topUp and locked', async () => {
+    it('all identities should have provider stake, topUp and locked', () => {
       for (const identity of identities) {
         expect(identity).toHaveProperty('stake');
         expect(identity).toHaveProperty('topUp');
@@ -38,41 +41,42 @@ describe('Identities Service', () => {
       }
     });
 
-    it('should be sorted by locked amount', async () => {
-      let index = 1;
+    it('should be sorted by locked amount', () => {
+      for (let index = 1; index < identities.length; index++) {
+        const currentIdentity = identities[index];
+        const previousIdentity = identities[index - 1];
 
-      while (index < identities.length) {
-        expect(identities[index]).toBeDefined();
-        expect(identities[index - 1]).toHaveProperty('locked');
-        expect(identities[index]).toHaveProperty('locked');
-        if (identities[index].locked < identities[index - 1].locked) {
-          expect(false);
+        expect(currentIdentity).toBeDefined();
+        expect(previousIdentity).toHaveProperty('locked');
+        expect(currentIdentity).toHaveProperty('locked');
+
+        if (Number(currentIdentity.locked) > Number(previousIdentity.locked)) {
+          throw new Error(`Invalid sorting by locked for current identity '${currentIdentity.identity ?? currentIdentity.name}' and previous identity '${previousIdentity.identity ?? previousIdentity.name}'`);
         }
-        index++;
       }
     });
 
-    it('should distribution sum be 1', async () => {
+    it('should distribution sum be 1', () => {
       for (const identity of identities) {
         if (identity.distribution) {
-          let sum = 0;
-          for (const distribution of Object.values(identity.distribution)) {
-            sum += distribution;
-          }
+          const distributionValues = Object.values(identity.distribution).filter(x => x !== null);
+          if (distributionValues.length > 0) {
+            const sum = distributionValues.sum();
 
-          expect(sum).toStrictEqual(1);
+            expect(sum).toStrictEqual(1);
+          }
         }
       }
     });
 
-    it('some identities should be confirmed', async () => {
+    it('some identities should be confirmed', () => {
       expect(identities.length).toBeGreaterThanOrEqual(32);
     });
 
-    it('all providers identities should appear', async () => {
+    it('all providers identities should appear', () => {
       if (!apiConfigService.getMockNodes()) {
         for (const provider of providers) {
-          if (provider.identity) {
+          if (provider.identity && provider.locked !== '0') {
             const providerIdentity = identities.find(({ identity }) => identity === provider.identity);
 
             expect(providerIdentity?.identity).toStrictEqual(provider.identity);
@@ -81,6 +85,20 @@ describe('Identities Service', () => {
           }
         }
       }
+    });
+  });
+
+  describe('Get All Identities Raw', () => {
+    it('should return all identities raw', async () => {
+      const results = await identityService.getAllIdentitiesRaw();
+      expect(results).toBeInstanceOf(Array);
+    });
+  });
+
+  describe('Get Identities', () => {
+    it('should return a list of identities based on ids', async () => {
+      const results = await identityService.getIdentities(ids);
+      expect(results).toBeInstanceOf(Array);
     });
   });
 });

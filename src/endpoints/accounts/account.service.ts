@@ -52,7 +52,7 @@ export class AccountService {
   }
 
   async getAccountUsername(address: string): Promise<string | null> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       `account:${address}:username`,
       async () => await this.getAccountUsernameRaw(address),
       Constants.oneWeek()
@@ -95,7 +95,7 @@ export class AccountService {
       ]);
 
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
-      let account: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, username, shard, developerReward, ownerAddress };
+      let account: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, username, shard, developerReward, ownerAddress, scamInfo: undefined };
 
       const codeAttributes = AddressUtils.decodeCodeMetadata(codeMetadata);
       if (codeAttributes) {
@@ -123,7 +123,16 @@ export class AccountService {
       return 0;
     }
 
-    return await this.elasticService.getCount('scresults', query);
+    try {
+      return await this.elasticService.getCount('scresults', query);
+    } catch (error) {
+      // @ts-ignore
+      if (error.response.status === HttpStatus.NOT_FOUND) {
+        return 0;
+      }
+
+      throw error;
+    }
   }
 
   async getAccountDeployedAt(address: string): Promise<number | null> {
@@ -154,7 +163,7 @@ export class AccountService {
   }
 
   async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       `accounts:${queryPagination.from}:${queryPagination.size}`,
       async () => await this.getAccountsRaw(queryPagination),
       Constants.oneMinute(),

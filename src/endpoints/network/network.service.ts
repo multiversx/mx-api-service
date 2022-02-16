@@ -38,7 +38,7 @@ export class NetworkService {
   ) { }
 
   async getConstants(): Promise<NetworkConstants> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       'constants',
       async () => await this.getConstantsRaw(),
       Constants.oneDay()
@@ -94,7 +94,7 @@ export class NetworkService {
   }
 
   async getEconomics(): Promise<Economics> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       CacheInfo.Economics.key,
       async () => await this.getEconomicsRaw(),
       CacheInfo.Economics.ttl,
@@ -102,7 +102,7 @@ export class NetworkService {
   }
 
   async getEconomicsRaw(): Promise<Economics> {
-    const locked = 2660000;
+    const locked = 1330000;
     const [
       {
         account: { balance },
@@ -112,7 +112,6 @@ export class NetworkService {
       },
       [, totalWaitingStakeBase64],
       priceValue,
-      marketCapValue,
     ] = await Promise.all([
       this.gatewayService.get(
         `address/${this.apiConfigService.getAuctionContractAddress()}`,
@@ -124,7 +123,6 @@ export class NetworkService {
         'getTotalStakeByType',
       ),
       this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price),
-      this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.marketCap),
     ]);
 
     const totalWaitingStakeHex = Buffer.from(
@@ -139,6 +137,8 @@ export class NetworkService {
     const totalSupply = parseInt(erd_total_supply.slice(0, -18));
 
     const circulatingSupply = totalSupply - locked;
+    const price = priceValue ? parseFloat(priceValue.toFixed(2)) : undefined;
+    const marketCap = price ? Math.round(price * circulatingSupply) : undefined;
 
     const aprInfo = await this.getApr();
 
@@ -146,10 +146,8 @@ export class NetworkService {
       totalSupply,
       circulatingSupply,
       staked,
-      price: priceValue ? parseFloat(priceValue.toFixed(2)) : undefined,
-      marketCap: marketCapValue
-        ? parseInt(marketCapValue.toFixed(0))
-        : undefined,
+      price,
+      marketCap,
       apr: aprInfo.apr ? aprInfo.apr.toRounded(6) : 0,
       topUpApr: aprInfo.topUpApr ? aprInfo.topUpApr.toRounded(6) : 0,
       baseApr: aprInfo.baseApr ? aprInfo.baseApr.toRounded(6) : 0,

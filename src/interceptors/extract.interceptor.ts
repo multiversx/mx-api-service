@@ -4,7 +4,7 @@ import { map } from 'rxjs/operators';
 
 @Injectable()
 export class ExtractInterceptor implements NestInterceptor {
-  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.getArgByIndex(0);
 
     return next

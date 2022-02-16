@@ -48,6 +48,15 @@ export class DatabaseService implements PersistenceInterface {
     await this.nftMetadataRepository.save(metadata);
   }
 
+  async deleteMetadata(identifier: string): Promise<void> {
+    try {
+      await this.nftMetadataRepository.delete(identifier);
+    } catch (error) {
+      this.logger.error(`An unexpected error occurred when trying to delete metadata from DB for identifier '${identifier}'`);
+      this.logger.error(error);
+    }
+  }
+
   async getMedia(identifier: string): Promise<NftMedia[] | null> {
     try {
       const media: NftMediaDb | undefined = await this.nftMediaRepository.findOne({ id: identifier });

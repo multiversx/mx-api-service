@@ -1,24 +1,22 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 import { NftThumbnailService } from "./queue/job-services/thumbnails/nft.thumbnail.service";
 import { NftMetadataService } from "./queue/job-services/metadata/nft.metadata.service";
 import { NftMediaService } from "./queue/job-services/media/nft.media.service";
-import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
-// import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
-// import { TokenUtils } from "src/utils/token.utils";
-// import { InjectQueue } from "@nestjs/bull";
-// import { Queue } from "bull";
+import { ClientProxy } from "@nestjs/microservices";
+import { NftMessage } from "./queue/entities/nft.message";
+import { NftType } from "src/endpoints/nfts/entities/nft.type";
 
 @Injectable()
 export class NftWorkerService {
   private readonly logger: Logger;
 
   constructor(
-    // @InjectQueue('nftQueue') private nftQueue: Queue,
     private readonly nftThumbnailService: NftThumbnailService,
     private readonly nftMetadataService: NftMetadataService,
     private readonly nftMediaService: NftMediaService,
+    @Inject('QUEUE_SERVICE') private readonly client: ClientProxy,
   ) {
     this.logger = new Logger(NftWorkerService.name);
   }
@@ -33,40 +31,21 @@ export class NftWorkerService {
       return false;
     }
 
-    if (settings.forceRefreshMetadata || !nft.metadata) {
-      nft.metadata = await this.nftMetadataService.refreshMetadata(nft);
-    }
+    const message = new NftMessage();
+    message.identifier = nft.identifier;
+    message.nft = nft;
+    message.settings = settings;
 
-    if (settings.forceRefreshMedia || !nft.media) {
-      nft.media = await this.nftMediaService.refreshMedia(nft);
-    }
-
-    if (nft.media && !settings.skipRefreshThumbnail) {
-      await Promise.all(nft.media.map((media: any) => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
-    }
-
-    // const job = await this.nftQueue.add({ identifier: nft.identifier, nft, settings }, {
-    //   priority: 1000,
-    //   attempts: 3,
-    //   timeout: 60000,
-    //   removeOnComplete: true
-    // });
-    // this.logger.log({ type: 'producer', jobId: job.id, identifier: job.data.identifier, settings });
+    this.client.send({ cmd: 'api-process-nfts' }, message).subscribe();
 
     return true;
   }
 
-  private async generateThumbnail(nft: Nft, media: NftMedia, forceRefresh: boolean = false): Promise<void> {
-    try {
-      await this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType, forceRefresh);
-    } catch (error) {
-      this.logger.error(`An unhandled exception occurred when generating thumbnail for nft with identifier '${nft.identifier}' and url '${media.url}'`);
-      this.logger.error(error);
-      throw error;
+  async needsProcessing(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
+    if (nft.type === NftType.MetaESDT) {
+      return false;
     }
-  }
 
-  private async needsProcessing(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
     if (settings.forceRefreshMedia || settings.forceRefreshMetadata || settings.forceRefreshThumbnail) {
       return true;
     }

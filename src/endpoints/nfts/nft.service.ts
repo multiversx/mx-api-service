@@ -113,9 +113,20 @@ export class NftService {
       queries.push(QueryType.Should(identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
     }
 
-    const elasticQuery = ElasticQuery.create()
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+      if (filter.isWhitelistedStorage !== undefined) {
+        queries.push(QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
+      }
+    }
+
+    let elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, queries)
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('type', 'FungibleESDT')]);
+
+    if (filter.before || filter.after) {
+      elasticQuery = elasticQuery
+        .withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
+    }
 
     return elasticQuery;
   }
@@ -273,7 +284,7 @@ export class NftService {
   }
 
   private async applyMetadata(nft: Nft) {
-    nft.metadata = await this.nftMetadataService.getOrRefreshMetadata(nft);
+    nft.metadata = await this.nftMetadataService.getMetadata(nft) ?? undefined;
   }
 
   async getNftOwners(identifier: string, pagination: QueryPagination): Promise<NftOwner[] | undefined> {
@@ -328,7 +339,11 @@ export class NftService {
           }
         }
 
-        nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
+        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+          nft.isWhitelistedStorage = elasticNft.data.whiteListedStorage;
+        } else {
+          nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
+        }
 
         if (elasticNftData.metadata) {
           nft.attributes = BinaryUtils.base64Encode(`metadata:${elasticNftData.metadata}`);
@@ -363,7 +378,7 @@ export class NftService {
   }
 
   async getNftOwnersCount(identifier: string): Promise<number> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       `nftOwnerCount:${identifier}`,
       async () => await this.getNftOwnersCountRaw(identifier),
       Constants.oneMinute()
@@ -428,12 +443,12 @@ export class NftService {
   }
 
   async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {
-    const nfts = await this.getNftsForAddressInternal(address, filter);
+    const nfts = await this.getNftsForAddressInternal(address, filter, false);
 
     return nfts.length;
   }
 
-  private async filterNfts(filter: NftFilter, nfts: NftAccount[]): Promise<NftAccount[]> {
+  private filterNfts(filter: NftFilter, nfts: NftAccount[]): NftAccount[] {
     if (filter.search) {
       const searchLower = filter.search.toLowerCase();
 
@@ -509,10 +524,13 @@ export class NftService {
     return Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
   }
 
-  async getNftsForAddressInternal(address: string, filter: NftFilter): Promise<NftAccount[]> {
+  async getNftsForAddressInternal(address: string, filter: NftFilter, sort: boolean = true): Promise<NftAccount[]> {
     const gatewayNfts = await this.getGatewayNfts(address, filter);
 
-    gatewayNfts.sort((a: GatewayNft, b: GatewayNft) => a.tokenIdentifier.localeCompare(b.tokenIdentifier, 'en', { sensitivity: 'base' }));
+    if (sort) {
+      const collator = new Intl.Collator('en', { numeric: true, sensitivity: 'base' });
+      gatewayNfts.sort((a: GatewayNft, b: GatewayNft) => collator.compare(a.tokenIdentifier, b.tokenIdentifier));
+    }
 
     let nfts: NftAccount[] = [];
 
@@ -570,7 +588,7 @@ export class NftService {
       nfts.push(nft);
     }
 
-    nfts = await this.filterNfts(filter, nfts);
+    nfts = this.filterNfts(filter, nfts);
 
     return nfts;
   }

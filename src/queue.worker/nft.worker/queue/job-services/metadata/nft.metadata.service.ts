@@ -34,7 +34,7 @@ export class NftMetadataService {
   }
 
   async getMetadata(nft: Nft): Promise<any> {
-    return this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       CacheInfo.NftMetadata(nft.identifier).key,
       async () => await this.persistenceService.getMetadata(nft.identifier),
       CacheInfo.NftMetadata(nft.identifier).ttl
@@ -47,8 +47,10 @@ export class NftMetadataService {
       metadataRaw = {};
     }
 
+    await this.persistenceService.deleteMetadata(nft.identifier);
     await this.persistenceService.setMetadata(nft.identifier, metadataRaw);
 
+    await this.cachingService.deleteInCache(CacheInfo.NftMetadata(nft.identifier).key);
     await this.cachingService.setCache(
       CacheInfo.NftMetadata(nft.identifier).key,
       metadataRaw,

@@ -11,4 +11,7 @@ export class NftFilter {
   creator?: string;
   hasUris?: boolean;
   includeFlagged?: boolean;
+  before?: number;
+  after?: number;
+  isWhitelistedStorage?: boolean;
 }
