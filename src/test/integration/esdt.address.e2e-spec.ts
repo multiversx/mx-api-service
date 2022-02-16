@@ -8,6 +8,7 @@ import Initializer from "./e2e-init";
 import { EsdtDataSource } from 'src/endpoints/esdt/entities/esdt.data.source';
 import { NftCollection } from 'src/endpoints/collections/entities/nft.collection';
 import { NftCollectionAccount } from 'src/endpoints/collections/entities/nft.collection.account';
+import { NftType } from 'src/endpoints/nfts/entities/nft.type';
 
 describe('EsdtAddressService', () => {
   let esdtAddressService: EsdtAddressService;
@@ -130,13 +131,26 @@ describe('EsdtAddressService', () => {
   });
 
   describe('getEsdtCollectionsCountForAddressFromElastic', () => {
-    it('should return esdt collections count for address form "ELASTIC"', async () => {
+    it('should return esdt collections count for address from "ELASTIC"', async () => {
       const address: string = 'erd1yt24jpcm58k2734lf53ws96lqtkzy46vlxwnjud7ce3vl02eahmsele6j8';
       const filter = new NftFilter();
       filter.collection = 'HMORGOTH-ecd5fb';
       const count = await esdtAddressService.getEsdtCollectionsCountForAddressFromElastic(address, filter);
 
       expect(typeof count).toBe('number');
+    });
+
+    it('should return esdt collections of type NonFungibleESDT for address from "ELASTIC" source', async () => {
+      const address: string = 'erd1yt24jpcm58k2734lf53ws96lqtkzy46vlxwnjud7ce3vl02eahmsele6j8';
+      const filter = new NftFilter();
+      filter.collection = 'HMORGOTH-ecd5fb';
+      filter.type = NftType.NonFungibleESDT;
+      const results = await esdtAddressService.getEsdtCollectionsForAddress(address, filter, { from: 0, size: 1 });
+
+      for (const result of results) {
+        expect(result).toBeInstanceOf(Object);
+        expect(result.type).toStrictEqual('NonFungibleESDT');
+      }
     });
   });
 });
