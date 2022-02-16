@@ -41,11 +41,15 @@ export class CollectionService {
     private readonly esdtAddressService: EsdtAddressService,
   ) { }
 
-  buildCollectionFilter(filter: CollectionFilter | CollectionAccountFilter) {
+  buildCollectionFilter(filter: CollectionFilter | CollectionAccountFilter, address?: string) {
     const mustNotQueries = [];
     mustNotQueries.push(QueryType.Exists('identifier'));
 
     const mustQueries = [];
+    if (address) {
+      mustQueries.push(QueryType.Match("currentOwner", address));
+    }
+
     if (filter.collection !== undefined) {
       mustQueries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
     }
@@ -81,8 +85,7 @@ export class CollectionService {
       filter.identifiers = creatorResult.tokens;
     }
 
-    const elasticQuery = this.buildCollectionFilter(filter);
-    elasticQuery
+    const elasticQuery = this.buildCollectionFilter(filter)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 

@@ -21,8 +21,6 @@ import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order
 import { CollectionAccountFilter } from "../collections/entities/collection.account.filter";
 import { NftCollectionAccount } from "../collections/entities/nft.collection.account";
 import { CollectionService } from "../collections/collection.service";
-import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
-import { QueryType } from "src/common/elastic/entities/query.type";
 import { NftCollection } from "../collections/entities/nft.collection";
 
 @Injectable()
@@ -49,13 +47,12 @@ export class EsdtAddressService {
   }
 
   async getEsdtsForAddress(address: string, filter: NftFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftAccount[]> {
-    if (source === EsdtDataSource.elastic && this.apiConfigService.getIsIndexerV3FlagActive()) {
+    if (source === EsdtDataSource.elastic) {
       return await this.getEsdtsForAddressFromElastic(address, filter, pagination);
     }
 
     return await this.getEsdtsForAddressFromGateway(address, filter, pagination);
   }
-
 
   async getEsdtCollectionsForAddress(address: string, filter: CollectionAccountFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftCollection[] | NftCollectionAccount[]> {
     if (source === EsdtDataSource.elastic) {
@@ -72,19 +69,18 @@ export class EsdtAddressService {
   }
 
   async getEsdtCollectionsCountForAddressFromElastic(address: string, filter: CollectionAccountFilter): Promise<number> {
-    const elasticQuery =
-      this.collectionService.buildCollectionFilter(filter)
-        .withCondition(QueryConditionOptions.must, [QueryType.Match("currentOwner", address)]);
+    const elasticQuery = this.collectionService.buildCollectionFilter(filter, address);
 
     return await this.elasticService.getCount('tokens', elasticQuery);
   }
 
-
   private async getEsdtsForAddressFromElastic(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
-    let elasticQuery = this.nftService.buildElasticNftFilter(filter, undefined, address);
-    elasticQuery = elasticQuery
-      .withSort([{ name: "timestamp", order: ElasticSortOrder.descending }])
+    let elasticQuery = this.nftService.buildElasticNftFilter(filter, undefined, address)
       .withPagination(pagination);
+
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+      elasticQuery = elasticQuery.withSort([{ name: "timestamp", order: ElasticSortOrder.descending }]);
+    }
 
     const esdts = await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
 
@@ -92,22 +88,23 @@ export class EsdtAddressService {
 
     for (const esdt of esdts) {
       const isToken = esdt.tokenNonce === undefined;
-      const gatewayNft = new GatewayNft();
+      const nft = new GatewayNft();
       if (isToken) {
-        gatewayNft.balance = esdt.balance;
-        gatewayNft.tokenIdentifier = esdt.token;
+        nft.balance = esdt.balance;
+        nft.tokenIdentifier = esdt.token;
       } else {
-        gatewayNft.attributes = esdt.data?.attributes;
-        gatewayNft.balance = esdt.balance;
-        gatewayNft.creator = esdt.data?.creator;
-        gatewayNft.name = esdt.data?.name;
-        gatewayNft.nonce = esdt.tokenNonce;
-        gatewayNft.royalties = esdt.data?.royalties;
-        gatewayNft.tokenIdentifier = esdt.identifier;
-        gatewayNft.uris = esdt.data?.uris;
+        nft.attributes = esdt.data?.attributes;
+        nft.balance = esdt.balance;
+        nft.creator = esdt.data?.creator;
+        nft.name = esdt.data?.name;
+        nft.nonce = esdt.tokenNonce;
+        nft.royalties = esdt.data?.royalties;
+        nft.tokenIdentifier = esdt.identifier;
+        nft.uris = esdt.data?.uris;
+        nft.timestamp = esdt.data?.timestamp;
       }
 
-      gatewayNfts.push(gatewayNft);
+      gatewayNfts.push(nft);
     }
 
     const nfts: GatewayNft[] = Object.values(gatewayNfts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
@@ -147,8 +144,7 @@ export class EsdtAddressService {
       throw new BadRequestException('canCreate / canBurn / canAddQuantity filter not supported when fetching account collections from elastic');
     }
 
-    const elasticQuery = this.collectionService.buildCollectionFilter(filter)
-      .withCondition(QueryConditionOptions.must, QueryType.Match("currentOwner", address))
+    const elasticQuery = this.collectionService.buildCollectionFilter(filter, address)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
       .withPagination(pagination);
 
