@@ -43,10 +43,12 @@ export default class Initializer {
     }
 
     if (Initializer.apiConfigService.getMockTokens()) {
+      const MOCK_PATH = Initializer.apiConfigService.getMockPath();
+      const tokens = FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`);
       jest
-        .spyOn(EsdtService.prototype, 'getEsdtTokenPropertiesRaw')
+        .spyOn(EsdtService.prototype, 'getAllEsdtTokens')
         // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async () => new TokenProperties()));
+        .mockImplementation(jest.fn(async () => tokens));
     }
 
     if (Initializer.apiConfigService.getMockNodes()) {
