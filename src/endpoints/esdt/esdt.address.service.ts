@@ -54,7 +54,7 @@ export class EsdtAddressService {
     return await this.getEsdtsForAddressFromGateway(address, filter, pagination);
   }
 
-  async getEsdtCollectionsForAddress(address: string, filter: CollectionAccountFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftCollection[] | NftCollectionAccount[]> {
+  async getEsdtCollectionsForAddress(address: string, filter: CollectionAccountFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftCollectionAccount[]> {
     if (source === EsdtDataSource.elastic) {
       return await this.getEsdtCollectionsForAddressFromElastic(address, filter, pagination);
     }
@@ -139,7 +139,7 @@ export class EsdtAddressService {
     return filteredColections;
   }
 
-  private async getEsdtCollectionsForAddressFromElastic(address: string, filter: CollectionAccountFilter, pagination: QueryPagination): Promise<NftCollection[]> {
+  private async getEsdtCollectionsForAddressFromElastic(address: string, filter: CollectionAccountFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
     if (filter.canCreate !== undefined || filter.canBurn !== undefined || filter.canAddQuantity !== undefined) {
       throw new BadRequestException('canCreate / canBurn / canAddQuantity filter not supported when fetching account collections from elastic');
     }
