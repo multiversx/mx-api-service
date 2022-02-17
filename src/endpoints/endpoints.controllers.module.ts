@@ -4,6 +4,7 @@ import { PluginModule } from "src/plugins/plugin.module";
 import { AccountController } from "./accounts/account.controller";
 import { BlockController } from "./blocks/block.controller";
 import { CollectionController } from "./collections/collection.controller";
+import { DappConfigController } from "./dapp-config/dapp.config.controller";
 import { DelegationLegacyController } from "./delegation.legacy/delegation.legacy.controller";
 import { DelegationController } from "./delegation/delegation.controller";
 import { EndpointsServicesModule } from "./endpoints.services.module";
@@ -42,7 +43,7 @@ import { WaitingListController } from "./waiting-list/waiting.list.controller";
     KeysController, MexController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
     ProviderController, ProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
     TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
-    HealthCheckController,
+    HealthCheckController, DappConfigController,
   ],
 })
 export class EndpointsControllersModule { }

@@ -3,7 +3,6 @@ import { CollectionService } from "src/endpoints/collections/collection.service"
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { PublicAppModule } from "src/public.app.module";
-import { CollectionAccountFilter } from "../../endpoints/collections/entities/collection.account.filter";
 import { NftCollection } from "../../endpoints/collections/entities/nft.collection";
 import { NftCollectionAccount } from "src/endpoints/collections/entities/nft.collection.account";
 
@@ -82,6 +81,8 @@ describe('Collection Service', () => {
       const collectionToTest = new NftCollectionAccount();
       // @ts-ignore
       delete collectionToTest.timestamp;
+      //@ts-ignore
+      delete collectionToTest.owner;
 
       expect(collection).toBeDefined();
       expect(collection).toHaveStructure(Object.keys(collectionToTest));
@@ -90,7 +91,7 @@ describe('Collection Service', () => {
 
   describe('Get Collection of NonFungibleESDT for a specific address', () => {
     it(`should return collection of NonFungibleESDT for a specific address`, async () => {
-      const collections = await collectionService.getCollectionsForAddress(collectionAddress, new CollectionAccountFilter(), {
+      const collections = await collectionService.getCollectionsForAddress(collectionAddress, new CollectionFilter(), {
         from: 0,
         size: 3,
       });
@@ -104,6 +105,9 @@ describe('Collection Service', () => {
         // @ts-ignore
         delete collectionToTest.timestamp;
 
+        //@ts-ignore
+        delete collectionToTest.owner;
+
         expect(collection).toHaveStructure(Object.keys(collectionToTest));
       }
     });
@@ -111,7 +115,7 @@ describe('Collection Service', () => {
 
   describe('Get Collections Count for a specific address', () => {
     it(`should return count collection of NonFungibleESDT for a specific address`, async () => {
-      const count = await collectionService.getCollectionCountForAddress(collectionAddress, new CollectionAccountFilter());
+      const count = await collectionService.getCollectionCountForAddress(collectionAddress, new CollectionFilter());
       expect(typeof count).toBe('number');
     });
   });

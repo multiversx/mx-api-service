@@ -2,25 +2,22 @@ import { Test } from "@nestjs/testing";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftService } from "src/endpoints/nfts/nft.service";
-import { PublicAppModule } from "src/public.app.module";
 import { Nft } from "../../endpoints/nfts/entities/nft";
-import { NftQueryOptions } from "../../endpoints/nfts/entities/nft.query.options";
 import { NftOwner } from "src/endpoints/nfts/entities/nft.owner";
 import { NftAccount } from "src/endpoints/nfts/entities/nft.account";
-import { GatewayNft } from "src/endpoints/nfts/entities/gateway.nft";
 import userAccount from "../data/accounts/user.account";
+import { NftModule } from "src/endpoints/nfts/nft.module";
 
 describe('Nft Service', () => {
   let nftService: NftService;
   let nftCreator: string;
 
-  const nftAddress: string = 'erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl';
   const nftsIdentifier: string = 'LKLP-03a2fa-0d270d';
   const invalidIdentifier: string = 'MEXFARM-e7af524edf42';
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [NftModule],
     }).compile();
 
     nftService = moduleRef.get<NftService>(NftService);
@@ -217,50 +214,12 @@ describe('Nft Service', () => {
         expect(nft).toHaveStructure(Object.keys(new NftAccount()));
       }
     });
-
-    it(`should return Nft for address with withTimestamp true`, async () => {
-      const nftQueryOption = new NftQueryOptions();
-      nftQueryOption.withTimestamp = true;
-      const nfts = await nftService.getNftsForAddress(userAccount.address, { from: 0, size: 10 }, { type: NftType.SemiFungibleESDT }, nftQueryOption);
-
-      if (!nfts) {
-        throw new Error('Nft properties are not defined');
-      }
-
-      for (const nft of nfts) {
-        expect(nft).toHaveStructure(Object.keys(new NftAccount()));
-      }
-    });
   });
 
   describe('Get NFT Count For Address', () => {
     it(`should return Nft count for address`, async () => {
       const count = await nftService.getNftCountForAddress(userAccount.address, { type: NftType.NonFungibleESDT });
       expect(typeof count).toBe('number');
-    });
-  });
-
-  describe('Get GatewayNFTs', () => {
-    it(`should return a list with nfts`, async () => {
-      const nftFilter = new NftFilter();
-      nftFilter.identifiers = ['LKFARM-9d1ea8-44b421'];
-      const nfts = await nftService.getGatewayNfts(nftAddress, nftFilter);
-
-      for (const nft of nfts) {
-        expect(nft).toHaveStructure(Object.keys(new GatewayNft()));
-      }
-    });
-  });
-
-  describe('Get NFTs For Address Internal', () => {
-    it(`should return a list with nfts from internal address`, async () => {
-      const nftFilter = new NftFilter();
-      nftFilter.identifiers = ['LKFARM-9d1ea8-44b421'];
-      const nfts = await nftService.getNftsForAddressInternal(nftAddress, nftFilter);
-
-      for (const nft of nfts) {
-        expect(nft).toHaveStructure(Object.keys(new NftAccount()));
-      }
     });
   });
 
@@ -275,13 +234,6 @@ describe('Nft Service', () => {
     it('should return undefined if identifier is invalid', async () => {
       const supply = await nftService.getNftSupply(invalidIdentifier);
       expect(supply).toBeUndefined();
-    });
-  });
-
-  describe('Get Nft For Address', () => {
-    it('should return undefined if the address does not contain a specific identifier', async () => {
-      const nft = await nftService.getNftForAddress(nftAddress, 'LKMEX-aab910-21c8e1');
-      expect(nft).toBeUndefined();
     });
   });
 
