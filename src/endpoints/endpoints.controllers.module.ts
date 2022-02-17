@@ -1,5 +1,4 @@
 import { Module } from "@nestjs/common";
-import { CommonModule } from "src/common/common.module";
 import { PluginModule } from "src/plugins/plugin.module";
 import { AccountController } from "./accounts/account.controller";
 import { BlockController } from "./blocks/block.controller";
@@ -30,10 +29,8 @@ import { UsernameController } from "./usernames/username.controller";
 import { VmQueryController } from "./vm.query/vm.query.controller";
 import { WaitingListController } from "./waiting-list/waiting.list.controller";
 
-
 @Module({
   imports: [
-    CommonModule,
     EndpointsServicesModule,
     ProxyModule,
     PluginModule,

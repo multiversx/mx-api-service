@@ -2,14 +2,12 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { NftMediaDb } from "src/common/persistence/database/entities/nft.media.db";
 import { NftMetadataDb } from "src/common/persistence/database/entities/nft.metadata.db";
-import { ApiConfigModule } from "../../api-config/api.config.module";
 import { ApiConfigService } from "../../api-config/api.config.service";
 import { DatabaseService } from "./database.service";
 
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
-      imports: [ApiConfigModule],
       useFactory: (apiConfigService: ApiConfigService) => {
         let replication = undefined;
         const slaves = apiConfigService.getDatabaseSlaveConnections();
