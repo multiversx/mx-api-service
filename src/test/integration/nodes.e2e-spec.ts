@@ -187,7 +187,7 @@ describe('Node Service', () => {
     it('should return nodes array', async () => {
       const nodes = await nodeService.getAllNodes();
 
-      expect(nodes.length).toBeGreaterThan(100);
+      expect(nodes.length).toBeGreaterThanOrEqual(100);
 
       for (const node of nodes) {
         expect(node).toBeInstanceOf(Object);
