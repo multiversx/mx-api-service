@@ -13,7 +13,7 @@ describe('Token Service', () => {
 
   const address: string = 'erd1xcm2sjlwg4xeqxzvuyhx93kagleewgz9rnw9hs5rxldfjk7nh9ksmznyyr';
   const identifier: string = 'EGLDRIDE-7bd51a';
-  const tokenName: string = 'ElrondWorld';
+  const tokenName: string = 'CheckerChain';
 
   beforeAll(async () => {
 
@@ -63,7 +63,7 @@ describe('Token Service', () => {
 
       it(`should return a list with tokens that has identifiers`, async () => {
         const tokenFilter = new TokenFilter();
-        tokenFilter.identifiers = ['MSFT-532e00', 'EWLD-e23800', 'invalidIdentifier'];
+        tokenFilter.identifiers = ['IGNIS-b208a9', 'CHECKR-60108b', 'invalidIdentifier'];
         const tokens = await tokenService.getTokens({ from: 0, size: 25 }, tokenFilter);
 
         for (const token of tokens) {
@@ -71,8 +71,8 @@ describe('Token Service', () => {
         }
         expect(tokens.length).toEqual(2);
         const nftsIdentifiers = tokens.map((nft) => nft.identifier);
-        expect(nftsIdentifiers.includes('MSFT-532e00')).toStrictEqual(true);
-        expect(nftsIdentifiers.includes('EWLD-e23800')).toStrictEqual(true);
+        expect(nftsIdentifiers.includes('IGNIS-b208a9')).toStrictEqual(true);
+        expect(nftsIdentifiers.includes('CHECKR-60108b')).toStrictEqual(true);
       });
 
       it(`should return an empty tokens list`, async () => {
