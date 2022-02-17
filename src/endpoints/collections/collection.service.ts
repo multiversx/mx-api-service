@@ -53,7 +53,7 @@ export class CollectionService {
       mustQueries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
     }
 
-    if (filter instanceof CollectionFilter && filter.identifiers !== undefined) {
+    if (filter.identifiers !== undefined) {
       mustQueries.push(QueryType.Should(filter.identifiers.map(identifier => QueryType.Match('token', identifier, QueryOperator.AND))));
     }
 
