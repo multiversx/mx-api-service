@@ -235,7 +235,7 @@ export class CollectionService {
     }
   }
 
-  async getCollectionForAddress(address: string, collection: string): Promise<NftCollectionAccount | NftCollection | undefined> {
+  async getCollectionForAddress(address: string, collection: string): Promise<NftCollectionAccount | undefined> {
     const filter: CollectionAccountFilter = { collection };
 
     const collections = await this.esdtAddressService.getEsdtCollectionsForAddress(address, filter, { from: 0, size: 1 });
@@ -246,7 +246,7 @@ export class CollectionService {
     return collections[0];
   }
 
-  async getCollectionsForAddress(address: string, filter: CollectionAccountFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftCollectionAccount[] | NftCollection[]> {
+  async getCollectionsForAddress(address: string, filter: CollectionAccountFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftCollectionAccount[]> {
     const collections = await this.esdtAddressService.getEsdtCollectionsForAddress(address, filter, pagination, source);
 
     return collections;

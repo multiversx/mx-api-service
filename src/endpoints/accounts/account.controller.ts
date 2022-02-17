@@ -31,7 +31,6 @@ import { ParseBlockHashPipe } from 'src/utils/pipes/parse.block.hash.pipe';
 import { ParseArrayPipe } from 'src/utils/pipes/parse.array.pipe';
 import { SortOrder } from 'src/common/entities/sort.order';
 import { EsdtDataSource } from '../esdt/entities/esdt.data.source';
-import { NftCollection } from '../collections/entities/nft.collection';
 
 @Controller()
 @ApiTags('accounts')
@@ -223,7 +222,7 @@ export class AccountController {
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
     @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity?: boolean,
     @Query('source', new ParseOptionalEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
-  ): Promise<NftCollectionAccount | NftCollection[]> {
+  ): Promise<NftCollectionAccount[]> {
     try {
       return await this.collectionService.getCollectionsForAddress(address, { search, type, canCreate, canBurn, canAddQuantity }, { from, size }, source);
     } catch (error) {
@@ -306,7 +305,7 @@ export class AccountController {
   async getAccountCollection(
     @Param('address', ParseAddressPipe) address: string,
     @Param('collection') collection: string,
-  ): Promise<NftCollectionAccount | NftCollection> {
+  ): Promise<NftCollectionAccount> {
     const result = await this.collectionService.getCollectionForAddress(address, collection);
     if (!result) {
       throw new NotFoundException('Collection for given account not found');
