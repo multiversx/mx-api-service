@@ -6,7 +6,6 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { EsdtService } from "../esdt/esdt.service";
 import { AddresCollectionRoles } from "./entities/address.collection.roles";
-import { CollectionAccountFilter } from "./entities/collection.account.filter";
 import { CollectionFilter } from "./entities/collection.filter";
 import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
@@ -41,7 +40,7 @@ export class CollectionService {
     private readonly esdtAddressService: EsdtAddressService,
   ) { }
 
-  buildCollectionFilter(filter: CollectionFilter | CollectionAccountFilter, address?: string) {
+  buildCollectionFilter(filter: CollectionFilter, address?: string) {
     const mustNotQueries = [];
     mustNotQueries.push(QueryType.Exists('identifier'));
 
@@ -236,7 +235,7 @@ export class CollectionService {
   }
 
   async getCollectionForAddress(address: string, collection: string): Promise<NftCollectionAccount | undefined> {
-    const filter: CollectionAccountFilter = { collection };
+    const filter: CollectionFilter = { collection };
 
     const collections = await this.esdtAddressService.getEsdtCollectionsForAddress(address, filter, { from: 0, size: 1 });
     if (collections.length === 0) {
@@ -246,13 +245,13 @@ export class CollectionService {
     return collections[0];
   }
 
-  async getCollectionsForAddress(address: string, filter: CollectionAccountFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftCollectionAccount[]> {
+  async getCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftCollectionAccount[]> {
     const collections = await this.esdtAddressService.getEsdtCollectionsForAddress(address, filter, pagination, source);
 
     return collections;
   }
 
-  async getCollectionCountForAddress(address: string, filter: CollectionAccountFilter): Promise<number> {
+  async getCollectionCountForAddress(address: string, filter: CollectionFilter): Promise<number> {
     const count = await this.esdtAddressService.getEsdtCollectionsCountForAddressFromElastic(address, filter);
 
     return count;

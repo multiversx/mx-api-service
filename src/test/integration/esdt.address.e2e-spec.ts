@@ -1,4 +1,3 @@
-import { CollectionAccountFilter } from '../../endpoints/collections/entities/collection.account.filter';
 import { NftFilter } from '../../endpoints/nfts/entities/nft.filter';
 import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 import { Test } from "@nestjs/testing";
@@ -9,6 +8,7 @@ import { EsdtDataSource } from 'src/endpoints/esdt/entities/esdt.data.source';
 import { NftCollection } from 'src/endpoints/collections/entities/nft.collection';
 import { NftCollectionAccount } from 'src/endpoints/collections/entities/nft.collection.account';
 import { NftType } from 'src/endpoints/nfts/entities/nft.type';
+import { CollectionFilter } from 'src/endpoints/collections/entities/collection.filter';
 
 describe('EsdtAddressService', () => {
   let esdtAddressService: EsdtAddressService;
@@ -93,7 +93,7 @@ describe('EsdtAddressService', () => {
   describe('getEsdtCollectionsForAddress', () => {
     it('should return esdt collection for address based on collection identifier and source "ELASTIC" ', async () => {
       const address: string = 'erd1yt24jpcm58k2734lf53ws96lqtkzy46vlxwnjud7ce3vl02eahmsele6j8';
-      const collectionFilter = new CollectionAccountFilter();
+      const collectionFilter = new CollectionFilter();
       collectionFilter.collection = 'HMORGOTH-ecd5fb';
 
       const collections: NftCollection[] | NftCollectionAccount[] = await esdtAddressService.getEsdtCollectionsForAddress(address, collectionFilter, { from: 0, size: 1 }, EsdtDataSource.elastic);
@@ -117,7 +117,7 @@ describe('EsdtAddressService', () => {
 
     it('should return esdt collection for address based on collection identifier and response from gateway contain canBurn and canCreate ', async () => {
       const address: string = 'erd1yt24jpcm58k2734lf53ws96lqtkzy46vlxwnjud7ce3vl02eahmsele6j8';
-      const collectionFilter = new CollectionAccountFilter();
+      const collectionFilter = new CollectionFilter();
       collectionFilter.collection = 'HMORGOTH-ecd5fb';
 
       const collectionEsdtGateway: NftCollection[] | NftCollectionAccount[] = await esdtAddressService.getEsdtCollectionsForAddress(address, collectionFilter, { from: 0, size: 1 }, EsdtDataSource.gateway);

@@ -18,10 +18,10 @@ import { NftType } from "../nfts/entities/nft.type";
 import { NftExtendedAttributesService } from "../nfts/nft.extendedattributes.service";
 import { NftService } from "../nfts/nft.service";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
-import { CollectionAccountFilter } from "../collections/entities/collection.account.filter";
 import { NftCollectionAccount } from "../collections/entities/nft.collection.account";
 import { CollectionService } from "../collections/collection.service";
 import { NftCollection } from "../collections/entities/nft.collection";
+import { CollectionFilter } from "../collections/entities/collection.filter";
 
 @Injectable()
 export class EsdtAddressService {
@@ -54,7 +54,7 @@ export class EsdtAddressService {
     return await this.getEsdtsForAddressFromGateway(address, filter, pagination);
   }
 
-  async getEsdtCollectionsForAddress(address: string, filter: CollectionAccountFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftCollectionAccount[]> {
+  async getEsdtCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftCollectionAccount[]> {
     if (source === EsdtDataSource.elastic) {
       return await this.getEsdtCollectionsForAddressFromElastic(address, filter, pagination);
     }
@@ -68,7 +68,7 @@ export class EsdtAddressService {
     return await this.elasticService.getCount('accountsesdt', elasticQuery);
   }
 
-  async getEsdtCollectionsCountForAddressFromElastic(address: string, filter: CollectionAccountFilter): Promise<number> {
+  async getEsdtCollectionsCountForAddressFromElastic(address: string, filter: CollectionFilter): Promise<number> {
     const elasticQuery = this.collectionService.buildCollectionFilter(filter, address);
 
     return await this.elasticService.getCount('tokens', elasticQuery);
@@ -114,7 +114,7 @@ export class EsdtAddressService {
     return nftAccounts;
   }
 
-  private async getEsdtCollectionsForAddressFromGateway(address: string, filter: CollectionAccountFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
+  private async getEsdtCollectionsForAddressFromGateway(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
     const esdtResult = await this.gatewayService.get(`address/${address}/registered-nfts`, GatewayComponentRequest.addressNfts);
 
     let collectionsIdentifiers = esdtResult.tokens;
@@ -139,7 +139,7 @@ export class EsdtAddressService {
     return filteredColections;
   }
 
-  private async getEsdtCollectionsForAddressFromElastic(address: string, filter: CollectionAccountFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
+  private async getEsdtCollectionsForAddressFromElastic(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
     if (filter.canCreate !== undefined || filter.canBurn !== undefined || filter.canAddQuantity !== undefined) {
       throw new BadRequestException('canCreate / canBurn / canAddQuantity filter not supported when fetching account collections from elastic');
     }
@@ -172,7 +172,7 @@ export class EsdtAddressService {
     return accountCollectionsWithRoles;
   }
 
-  private filterEsdtCollectionsForAddress(collections: NftCollectionAccount[], filter: CollectionAccountFilter, pagination: QueryPagination): NftCollectionAccount[] {
+  private filterEsdtCollectionsForAddress(collections: NftCollectionAccount[], filter: CollectionFilter, pagination: QueryPagination): NftCollectionAccount[] {
     if (filter.type !== undefined) {
       collections = collections.filter(x => x.type === filter.type);
     }
