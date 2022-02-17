@@ -52,6 +52,14 @@ export default class Initializer {
 
     if (Initializer.apiConfigService.getMockNodes()) {
       const MOCK_PATH = Initializer.apiConfigService.getMockPath();
+      const nodes = FileUtils.parseJSONFile(
+        `${MOCK_PATH}nodes.mock.json`,
+      );
+      jest
+        .spyOn(NodeService.prototype, 'getAllNodesRaw')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => nodes));
+
       const heartbeat = FileUtils.parseJSONFile(
         `${MOCK_PATH}heartbeat.mock.json`,
       );
