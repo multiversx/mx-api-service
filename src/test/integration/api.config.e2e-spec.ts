@@ -7,7 +7,6 @@ import { ConfigService } from "@nestjs/config";
 
 describe('API Config', () => {
   let apiConfigService: ApiConfigService;
-  let configService: ConfigService;
 
   const esdtContractAddress: string = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u';
   const auctionContractAddress: string = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l';
@@ -32,17 +31,14 @@ describe('API Config', () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
-    configService;
-    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
-    configService = moduleRef.get<ConfigService>(ConfigService);
 
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
 
   }, Constants.oneHour() * 1000);
 
   beforeEach(() => { jest.restoreAllMocks(); });
 
   describe('Get Config values', () => {
-
     describe('getApiUrls', () => {
       it('should return a list of API urls', () => {
         const value = apiConfigService.getApiUrls();

@@ -25,11 +25,12 @@ describe('Blocks Service', () => {
 
   describe('Blocks', () => {
     it('blocks should have hash, epoch and shard', () => {
-      blocks.forEach(block => {
+
+      for (const block of blocks) {
         expect(block).toHaveProperty('hash');
         expect(block).toHaveProperty('epoch');
         expect(block).toHaveProperty('shard');
-      });
+      }
     });
 
     it('all entities should have block structure', () => {

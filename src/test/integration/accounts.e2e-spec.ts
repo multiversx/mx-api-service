@@ -31,9 +31,9 @@ describe('Account Service', () => {
     it(`should return a list with 25 accounts`, async () => {
       const accountsList = await accountService.getAccounts({ from: 0, size: 25 });
 
-      accountsList.forEach(account => {
+      for (const account of accountsList) {
         expect(account).toHaveStructure(Object.keys(new Account()));
-      });
+      }
     });
 
     it(`should return a list with 50 accounts`, async () => {
