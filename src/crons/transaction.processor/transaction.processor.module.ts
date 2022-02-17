@@ -1,6 +1,5 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
-import { MetricsModule } from 'src/common/metrics/metrics.module';
 import { NftModule } from 'src/endpoints/nfts/nft.module';
 import { NodeModule } from 'src/endpoints/nodes/node.module';
 import { ShardModule } from 'src/endpoints/shards/shard.module';
@@ -12,11 +11,10 @@ import { TransactionProcessorService } from './transaction.processor.service';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    forwardRef(() => TransactionModule),
-    forwardRef(() => MetricsModule),
-    forwardRef(() => ShardModule),
-    forwardRef(() => NodeModule),
-    forwardRef(() => NftModule),
+    TransactionModule,
+    ShardModule,
+    NodeModule,
+    NftModule,
     NftWorkerModule,
   ],
   providers: [

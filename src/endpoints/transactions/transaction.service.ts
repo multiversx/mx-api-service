@@ -31,7 +31,6 @@ import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.com
 import { SortOrder } from 'src/common/entities/sort.order';
 import { TransactionUtils } from 'src/utils/transaction.utils';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { TransactionActionService } from './transaction-action/transaction.action.service';
 
 @Injectable()
 export class TransactionService {
@@ -46,7 +45,6 @@ export class TransactionService {
     private readonly pluginsService: PluginService,
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly transactionActionService: TransactionActionService
   ) {
     this.logger = new Logger(TransactionService.name);
   }
@@ -267,7 +265,6 @@ export class TransactionService {
 
   private async processTransaction(transaction: Transaction | TransactionDetailed): Promise<void> {
     try {
-      await this.transactionActionService.getTransactionAction(transaction);
       await this.pluginsService.processTransaction(transaction);
     } catch (error) {
       this.logger.error(`Unhandled error when processing plugin transaction for transaction with hash '${transaction.txHash}'`);

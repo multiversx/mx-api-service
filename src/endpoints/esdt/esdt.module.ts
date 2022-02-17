@@ -7,7 +7,7 @@ import { TokenModule } from "../tokens/token.module";
 @Module({
   imports: [
     forwardRef(() => TokenModule),
-    forwardRef(() => VmQueryModule),
+    VmQueryModule,
   ],
   providers: [
     EsdtService,

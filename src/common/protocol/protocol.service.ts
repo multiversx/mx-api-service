@@ -9,9 +9,7 @@ import { GatewayService } from "../gateway/gateway.service";
 export class ProtocolService {
   private readonly logger: Logger;
   constructor(
-    @Inject(forwardRef(() => GatewayService))
     private readonly gatewayService: GatewayService,
-    @Inject(forwardRef(() => CachingService))
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => ElasticService))
     private readonly elasticService: ElasticService

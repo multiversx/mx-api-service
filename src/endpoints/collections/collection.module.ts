@@ -6,7 +6,7 @@ import { CollectionService } from "./collection.service";
 
 @Module({
   imports: [
-    EsdtModule,
+    forwardRef(() => EsdtModule),
     VmQueryModule,
     forwardRef(() => TokenModule),
   ],

@@ -6,7 +6,7 @@ import { StakeService } from "./stake.service";
 
 @Module({
   imports: [
-    forwardRef(() => VmQueryModule),
+    VmQueryModule,
     forwardRef(() => NodeModule),
     forwardRef(() => NetworkModule),
   ],

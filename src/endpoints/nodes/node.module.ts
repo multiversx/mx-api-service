@@ -8,8 +8,8 @@ import { NodeService } from "./node.service";
 @Module({
   imports: [
     forwardRef(() => ProviderModule),
-    forwardRef(() => VmQueryModule),
-    forwardRef(() => BlockModule),
+    VmQueryModule,
+    BlockModule,
     forwardRef(() => StakeModule),
   ],
   providers: [

@@ -6,7 +6,7 @@ import { ProviderService } from "./provider.service";
 @Module({
   imports: [
     forwardRef(() => NodeModule),
-    forwardRef(() => VmQueryModule),
+    VmQueryModule,
   ],
   providers: [
     ProviderService,

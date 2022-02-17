@@ -13,9 +13,9 @@ import { NftService } from "./nft.service";
     forwardRef(() => EsdtModule),
     forwardRef(() => TokenModule),
     forwardRef(() => CollectionModule),
-    forwardRef(() => PluginModule),
+    PluginModule,
     forwardRef(() => NftMetadataModule),
-    forwardRef(() => NftMediaModule),
+    NftMediaModule,
   ],
   providers: [
     NftService, NftExtendedAttributesService,

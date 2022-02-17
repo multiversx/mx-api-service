@@ -1,12 +1,12 @@
-import { forwardRef, Module } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { NodeModule } from "../nodes/node.module";
 import { VmQueryModule } from "../vm.query/vm.query.module";
 import { DelegationService } from "./delegation.service";
 
 @Module({
   imports: [
-    forwardRef(() => VmQueryModule),
-    forwardRef(() => NodeModule),
+    VmQueryModule,
+    NodeModule,
   ],
   providers: [
     DelegationService,

@@ -17,6 +17,7 @@ export class IdentitiesService {
   constructor(
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
+    @Inject(forwardRef(() => KeybaseService))
     private readonly keybaseService: KeybaseService,
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => NetworkService))

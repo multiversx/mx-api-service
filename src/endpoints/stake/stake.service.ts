@@ -25,6 +25,7 @@ export class StakeService {
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
     private readonly gatewayService: GatewayService,
+    @Inject(forwardRef(() => NetworkService))
     private readonly networkService: NetworkService,
   ) {
     this.logger = new Logger(StakeService.name);

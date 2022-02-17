@@ -8,10 +8,10 @@ import { NetworkService } from "./network.service";
 
 @Module({
   imports: [
-    forwardRef(() => VmQueryModule),
-    forwardRef(() => BlockModule),
+    VmQueryModule,
+    BlockModule,
     forwardRef(() => AccountModule),
-    forwardRef(() => TransactionModule),
+    TransactionModule,
     forwardRef(() => StakeModule),
   ],
   providers: [
