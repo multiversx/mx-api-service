@@ -46,7 +46,7 @@ export default class Initializer {
       const MOCK_PATH = Initializer.apiConfigService.getMockPath();
       const tokens = FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`);
       jest
-        .spyOn(EsdtService.prototype, 'getAllEsdtTokens')
+        .spyOn(EsdtService.prototype, 'getAllEsdtTokensRaw')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => tokens));
     }
