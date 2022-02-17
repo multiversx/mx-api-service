@@ -62,4 +62,5 @@ security:
 test:
   mockKeybases: false
   mockNodes: false
+  mockTokens: false
   mockPath: './src/test/mocks/'

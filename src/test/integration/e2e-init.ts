@@ -7,6 +7,7 @@ import { KeybaseService } from "src/common/keybase/keybase.service";
 import { EsdtService } from "src/endpoints/esdt/esdt.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
+import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
 import { PublicAppModule } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 import { FileUtils } from "src/utils/file.utils";
@@ -39,6 +40,13 @@ export default class Initializer {
         .spyOn(KeybaseService.prototype, 'getProfile')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => new KeybaseIdentity()));
+    }
+
+    if (Initializer.apiConfigService.getMockTokens()) {
+      jest
+        .spyOn(EsdtService.prototype, 'getEsdtTokenPropertiesRaw')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => new TokenProperties()));
     }
 
     if (Initializer.apiConfigService.getMockNodes()) {
