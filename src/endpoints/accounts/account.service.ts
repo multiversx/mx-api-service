@@ -376,10 +376,6 @@ export class AccountService {
   }
 
   async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<AccountEsdtHistory[]> {
-    if(!tokenIdentifier){
-      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
-    }
-
     const elasticQuery: ElasticQuery = AccountService.buildAccountHistoryFilterQuery(address, tokenIdentifier);
     elasticQuery
         .withPagination(pagination)
