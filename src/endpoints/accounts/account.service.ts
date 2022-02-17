@@ -361,7 +361,6 @@ export class AccountService {
   }
 
   private static buildAccountHistoryFilterQuery(address?: string, token?: string): ElasticQuery {
-    const shouldQueries: AbstractQuery[] = [];
     const mustQueries: AbstractQuery[] = [];
 
     if (address) {
@@ -373,7 +372,6 @@ export class AccountService {
     }
 
     return ElasticQuery.create()
-      .withCondition(QueryConditionOptions.should, shouldQueries)
       .withCondition(QueryConditionOptions.must, mustQueries);
   }
 

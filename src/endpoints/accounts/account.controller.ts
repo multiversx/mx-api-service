@@ -778,7 +778,7 @@ export class AccountController {
   @ApiResponse({
     status: 200,
     description: 'The account EGLD balance historical data for given address',
-    type: SmartContractResult,
+    type: AccountHistory,
   })
   @ApiResponse({
     status: 404,
@@ -798,7 +798,7 @@ export class AccountController {
   @ApiResponse({
     status: 200,
     description: 'The token balance history for given address',
-    type: SmartContractResult,
+    type: AccountEsdtHistory,
   })
   @ApiResponse({
     status: 404,
