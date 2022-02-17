@@ -13,6 +13,8 @@ import { PublicAppModule } from "src/public.app.module";
 import { AccountService } from "../../endpoints/accounts/account.service";
 import { Queue } from "src/endpoints/nodes/entities/queue";
 import providerAccount from "../data/accounts/provider.account";
+import { FileUtils } from "src/utils/file.utils";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 describe('Node Service', () => {
   let nodeService: NodeService;
@@ -23,6 +25,7 @@ describe('Node Service', () => {
   let firstNode: Node;
   let accountService: AccountService;
   let accountAddress: string;
+  let apiConfigService: ApiConfigService;
 
   beforeAll(async () => {
 
@@ -34,6 +37,7 @@ describe('Node Service', () => {
     cachingService = publicAppModule.get<CachingService>(CachingService);
     providerService = publicAppModule.get<ProviderService>(ProviderService);
     accountService = publicAppModule.get<AccountService>(AccountService);
+    apiConfigService = publicAppModule.get<ApiConfigService>(ApiConfigService);
 
     nodes = await nodeService.getAllNodes();
     providers = await providerService.getAllProviders();
@@ -45,6 +49,30 @@ describe('Node Service', () => {
     const account = accounts[0];
     accountAddress = account.address;
 
+    if (apiConfigService.getMockNodes()) {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const nodesMocked = FileUtils.parseJSONFile(
+        `${MOCK_PATH}nodes.mock.json`,
+      );
+      jest
+        .spyOn(NodeService.prototype, 'getAllNodesRaw')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => nodesMocked));
+
+      const heartbeat = FileUtils.parseJSONFile(
+        `${MOCK_PATH}heartbeat.mock.json`,
+      );
+      jest
+        .spyOn(NodeService.prototype, 'getHeartbeat')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => heartbeat));
+
+      const queue = FileUtils.parseJSONFile(`${MOCK_PATH}queue.mock.json`);
+      jest
+        .spyOn(NodeService.prototype, 'getQueue')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => queue));
+    }
   });
 
   describe('Nodes', () => {
@@ -155,9 +183,9 @@ describe('Node Service', () => {
     });
   });
 
-  describe('Get All Nodes Raw', () => {
+  describe('Get All Nodes', () => {
     it('should return nodes array', async () => {
-      const nodes = await nodeService.getAllNodesRaw();
+      const nodes = await nodeService.getAllNodes();
 
       expect(nodes.length).toBeGreaterThan(100);
 
@@ -171,7 +199,7 @@ describe('Node Service', () => {
     it('should return nodes Heartbeat', async () => {
       const nodes = await nodeService.getHeartbeat();
 
-      expect(nodes.length).toBeGreaterThan(100);
+      expect(nodes.length).toBeGreaterThan(50);
 
       for (const node of nodes) {
         expect(node).toBeInstanceOf(Object);
