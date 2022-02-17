@@ -162,12 +162,8 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "./src/**/*.(t|j)s",
-      "!./src/crons/**",
-      "!./src/decorators/**",
-      "!./src/interceptors/**",
-      "!./src/test/**",
-      "!./src/websockets/**"
+      "./src/utils/**/*.(t|j)s",
+      "./src/common/elastic/entities/**/*.(t|j)s"
     ],
     "coverageDirectory": "./coverage/unit",
     "testEnvironment": "node",
