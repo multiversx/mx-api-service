@@ -59,15 +59,15 @@ jobs:
       - name: Initialize
         run: npm run init
       - name: Warm
-        run: npm run test:e2e:warm
-      - name: Run integration tests
         run: |
           if ${{ github.ref == 'refs/heads/main' }}; then
-            npm run test:e2e
+            npm run test:e2e:warm
           else
-            npm run test:e2e:mocked
+            npm run test:e2e:warm:mocked
           fi
         shell: bash
+      - name: Run integration tests
+        run: npm run test:e2e
       - uses: codecov/codecov-action@v2
         with:
           files: ./coverage/e2e/clover.xml
