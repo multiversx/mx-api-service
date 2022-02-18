@@ -1,11 +1,9 @@
-import { forwardRef, Module } from "@nestjs/common";
-import { CommonModule } from "src/common/common.module";
+import { Module } from "@nestjs/common";
 import { BlsModule } from "../bls/bls.module";
 import { BlockService } from "./block.service";
 
 @Module({
   imports: [
-    forwardRef(() => CommonModule),
     BlsModule,
   ],
   providers: [
