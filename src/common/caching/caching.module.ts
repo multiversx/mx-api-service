@@ -1,5 +1,4 @@
 import { forwardRef, Global, Module } from "@nestjs/common";
-import { BlsModule } from "../../endpoints/bls/bls.module";
 import { MetricsModule } from "../metrics/metrics.module";
 import { MicroserviceModule } from "../microservice/microservice.module";
 import { ProtocolModule } from "../protocol/protocol.module";
@@ -12,7 +11,6 @@ import { LocalCacheService } from "./local.cache.service";
   imports: [
     forwardRef(() => ProtocolModule),
     MetricsModule,
-    BlsModule,
     forwardRef(() => MicroserviceModule),
   ],
   providers: [
