@@ -1,32 +1,76 @@
 import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "../../public.app.module";
 import { Constants } from "../../utils/constants";
 import { EsdtService } from "../../endpoints/esdt/esdt.service";
 import tokenExample from "../data/esdt/token/token.example";
 import { TokenAddressRoles } from "src/endpoints/tokens/entities/token.address.roles";
+import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
+import { EsdtAddressService } from "src/endpoints/esdt/esdt.address.service";
+import { EsdtModule } from "src/endpoints/esdt/esdt.module";
+import { EsdtDataSource } from "src/endpoints/esdt/entities/esdt.data.source";
+import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
+import { NftCollectionAccount } from "src/endpoints/collections/entities/nft.collection.account";
+import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 
 describe('ESDT Service', () => {
   let esdtService: EsdtService;
+  let esdtAddressService: EsdtAddressService;
 
   const egldMexTokenIdentifier: string = 'EGLDMEX-0be9e5';
 
   beforeAll(async () => {
     await Initializer.initialize();
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [EsdtModule],
     }).compile();
 
     esdtService = moduleRef.get<EsdtService>(EsdtService);
+    esdtAddressService = moduleRef.get<EsdtAddressService>(EsdtAddressService);
 
   }, Constants.oneHour() * 1000);
 
-  describe('Get All Esdts For Address', () => {
-    it('should return all esdts of address', async () => {
+  describe('Get Esdts For Address', () => {
+    it('gateway & elastic esdts of address should be the same', async () => {
       const esdtAddress: string = 'erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3';
 
-      await expect(esdtService.getAllEsdtsForAddress(esdtAddress))
-        .resolves.toBeInstanceOf(Object);
+      const gatewayNfts = await esdtAddressService.getEsdtsForAddress(esdtAddress, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.gateway);
+      const elasticNfts = await esdtAddressService.getEsdtsForAddress(esdtAddress, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.elastic);
+
+      expect(gatewayNfts).toStrictEqual(elasticNfts);
+    });
+  });
+
+  describe('Get Esdt Collections For Address', () => {
+    it('gateway esdt collections should have property canCreate & canBurn', async () => {
+      const esdtAddress: string = 'erd1zqhn3w4w7uamw6eelrqcjjm8ac732s2z69hgkduldm6fapa90drswejs34';
+
+      const gatewayNfts: NftCollectionAccount[] | NftCollection[] = await esdtAddressService.getEsdtCollectionsForAddress(esdtAddress, new CollectionFilter(), { from: 0, size: 25 }, EsdtDataSource.gateway);
+
+      for (const gatewayNft of gatewayNfts) {
+        expect(gatewayNft).toHaveProperty('canCreate');
+        expect(gatewayNft).toHaveProperty('canBurn');
+      }
+    });
+  });
+
+  describe('Get Esdt Collections For Address', () => {
+    it('elastic esdt collections should have property of NftCollection', async () => {
+      const esdtAddress: string = 'erd1zqhn3w4w7uamw6eelrqcjjm8ac732s2z69hgkduldm6fapa90drswejs34';
+
+      const gatewayNfts: NftCollectionAccount[] | NftCollection[] = await esdtAddressService.getEsdtCollectionsForAddress(esdtAddress, new CollectionFilter(), { from: 0, size: 25 }, EsdtDataSource.gateway);
+
+      for (const gatewayNft of gatewayNfts) {
+        expect(gatewayNft.hasOwnProperty('collection')).toBe(true);
+        expect(gatewayNft.hasOwnProperty('type')).toBe(true);
+        expect(gatewayNft.hasOwnProperty('name')).toBe(true);
+        expect(gatewayNft.hasOwnProperty('ticker')).toBe(true);
+        expect(gatewayNft.hasOwnProperty('canFreeze')).toBe(true);
+        expect(gatewayNft.hasOwnProperty('canWipe')).toBe(true);
+        expect(gatewayNft.hasOwnProperty('canPause')).toBe(true);
+        expect(gatewayNft.hasOwnProperty('canTransferRole')).toBe(true);
+        expect(gatewayNft.hasOwnProperty('assets')).toBe(true);
+        expect(gatewayNft.hasOwnProperty('roles')).toBe(true);
+      }
     });
   });
 

@@ -6,8 +6,6 @@ import { QueryConditionOptions } from "src/common/elastic/entities/query.conditi
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
-import { MetricsService } from "src/common/metrics/metrics.service";
-import { ProtocolService } from "src/common/protocol/protocol.service";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { AddressUtils } from "src/utils/address.utils";
@@ -33,106 +31,11 @@ export class EsdtService {
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
-    private readonly metricsService: MetricsService,
-    private readonly protocolService: ProtocolService,
     private readonly elasticService: ElasticService,
     @Inject(forwardRef(() => TokenAssetService))
     private readonly tokenAssetService: TokenAssetService,
   ) {
     this.logger = new Logger(EsdtService.name);
-  }
-
-  private async getAllEsdtsForAddressRaw(address: string): Promise<{ [key: string]: any }> {
-    if (AddressUtils.isSmartContractAddress(address)) {
-      return await this.getAllEsdtsForAddressFromElastic(address);
-    }
-
-    return await this.getAllEsdtsForAddressFromGateway(address);
-  }
-
-  private async getAllEsdtsForAddressFromElastic(address: string): Promise<{ [key: string]: any }> {
-    const elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, [QueryType.Match('address', address)])
-      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
-      .withPagination({ from: 0, size: 10000 });
-
-    const esdts = await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
-
-    const result: { [key: string]: any } = {};
-
-    for (const esdt of esdts) {
-      const isToken = esdt.tokenNonce === undefined;
-      if (isToken) {
-        result[esdt.token] = {
-          balance: esdt.balance,
-          tokenIdentifier: esdt.token,
-        };
-      } else {
-        result[esdt.identifier] = {
-          attributes: esdt.data?.attributes,
-          balance: esdt.balance,
-          creator: esdt.data?.creator,
-          name: esdt.data?.name,
-          nonce: esdt.tokenNonce,
-          royalties: esdt.data?.royalties,
-          tokenIdentifier: esdt.identifier,
-          uris: esdt.data?.uris,
-        };
-      }
-    }
-
-    return result;
-  }
-
-  // @ts-ignore
-  private async getAllEsdtsForAddressFromGateway(address: string): Promise<{ [key: string]: any }> {
-    // eslint-disable-next-line require-await
-    const esdtResult = await this.gatewayService.get(`address/${address}/esdt`, GatewayComponentRequest.addressEsdt, async (error) => {
-      const errorMessage = error?.response?.data?.error;
-      if (errorMessage && errorMessage.includes('account was not found')) {
-        return true;
-      }
-
-      return false;
-    });
-
-    if (!esdtResult) {
-      return {};
-    }
-
-    return esdtResult.esdts;
-  }
-
-  private pendingRequestsDictionary: { [key: string]: any; } = {};
-
-  async getAllEsdtsForAddress(address: string): Promise<{ [key: string]: any }> {
-    let pendingRequest = this.pendingRequestsDictionary[address];
-    if (pendingRequest) {
-      const result = await pendingRequest;
-      this.metricsService.incrementPendingApiHit('Gateway.AccountEsdts');
-      return result;
-    }
-
-    const cachedValue = await this.cachingService.getCacheLocal<{ [key: string]: any }>(`address:${address}:esdts`);
-    if (cachedValue) {
-      this.metricsService.incrementCachedApiHit('Gateway.AccountEsdts');
-      return cachedValue;
-    }
-
-    pendingRequest = this.getAllEsdtsForAddressRaw(address);
-    this.pendingRequestsDictionary[address] = pendingRequest;
-
-    let esdts: { [key: string]: any };
-    try {
-      esdts = await pendingRequest;
-    } finally {
-      delete this.pendingRequestsDictionary[address];
-    }
-
-    const ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
-
-    await this.cachingService.setCacheLocal(`address:${address}:esdts`, esdts, ttl);
-    return esdts;
   }
 
   async getAllEsdtTokens(): Promise<TokenDetailed[]> {
@@ -199,7 +102,7 @@ export class EsdtService {
     return count;
   }
 
-  async getEsdtTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
+  private async getEsdtTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
     return await this.tokenAssetService.getAssets(identifier);
   }
 
@@ -352,7 +255,7 @@ export class EsdtService {
     return tokenAddressesAndRoles;
   }
 
-  async getLockedSupply(identifier: string): Promise<string> {
+  private async getLockedSupply(identifier: string): Promise<string> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.TokenLockedSupply(identifier).key,
       async () => await this.getLockedSupplyRaw(identifier),
