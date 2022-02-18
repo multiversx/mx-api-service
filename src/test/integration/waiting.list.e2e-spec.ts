@@ -20,8 +20,8 @@ describe('WaitingListService', () => {
     it('should return a list of waiting lists', async () => {
       const waitingList = await waitingListService.getWaitingList();
 
-      for (const waitingListItem of waitingList) {
-        expect(waitingListItem).toHaveStructure(Object.keys(new WaitingList()));
+      for (const item of waitingList) {
+        expect(item).toHaveStructure(Object.keys(new WaitingList()));
       }
     });
   });
@@ -30,8 +30,8 @@ describe('WaitingListService', () => {
     it('should return a list of waitings for a specified address ', async () => {
       const waitingList = await waitingListService.getWaitingListForAddress(userAccount.address);
 
-      for (const waitingListItem of waitingList) {
-        expect(waitingListItem).toHaveStructure(Object.keys(new WaitingList()));
+      for (const item of waitingList) {
+        expect(item).toHaveStructure(Object.keys(new WaitingList()));
       }
     });
   });
