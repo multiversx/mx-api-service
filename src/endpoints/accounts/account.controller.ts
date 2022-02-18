@@ -33,6 +33,7 @@ import { SortOrder } from 'src/common/entities/sort.order';
 import { EsdtDataSource } from '../esdt/entities/esdt.data.source';
 import { TransferService } from '../transfers/transfer.service';
 import { Transfer } from '../transfers/entities/transfer';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
 
 @Controller()
 @ApiTags('accounts')
@@ -49,7 +50,8 @@ export class AccountController {
     private readonly transactionService: TransactionService,
     private readonly scResultService: SmartContractResultService,
     private readonly collectionService: CollectionService,
-    private readonly transferService: TransferService
+    private readonly transferService: TransferService,
+    private readonly apiConfigService: ApiConfigService
   ) {
     this.logger = new Logger(AccountController.name);
   }
@@ -723,6 +725,10 @@ export class AccountController {
     @Query('after', ParseOptionalIntPipe) after?: number,
     @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<Transfer[]> {
+    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
+      throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
+    }
+
     try {
       return await this.transferService.getTransfers({
         sender,
@@ -781,6 +787,10 @@ export class AccountController {
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
+    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
+      throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
+    }
+
     return await this.transferService.getTransfersCount({
       sender,
       receiver,
