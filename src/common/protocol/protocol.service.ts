@@ -10,6 +10,7 @@ export class ProtocolService {
   private readonly logger: Logger;
   constructor(
     private readonly gatewayService: GatewayService,
+    @Inject(forwardRef(() => CachingService))
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => ElasticService))
     private readonly elasticService: ElasticService

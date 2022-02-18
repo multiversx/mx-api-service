@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
-import { BlsModule } from "../bls/bls.module";
+import { CachingModule } from "src/common/caching/caching.module";
 import { VmQueryService } from "./vm.query.service";
 
 @Module({
   imports: [
-    BlsModule,
+    CachingModule,
   ],
   providers: [
     VmQueryService,

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import axios, { AxiosRequestConfig } from "axios";
 import Agent from 'agentkeepalive';
 import { MetricsService } from "src/common/metrics/metrics.service";
@@ -13,6 +13,7 @@ export class ApiService {
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
+    @Inject(forwardRef(() => MetricsService))
     private readonly metricsService: MetricsService,
   ) { }
 
