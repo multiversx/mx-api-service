@@ -28,9 +28,8 @@ export class TransferService {
   }
 
   private buildTransferFilterQuery(filter: TransactionFilter, address?: string): ElasticQuery {
-    const queries: AbstractQuery[] = [];
-    const shouldQueries: AbstractQuery[] = [];
     const mustQueries: AbstractQuery[] = [];
+    const shouldQueries: AbstractQuery[] = [];
 
     if (address) {
       shouldQueries.push(QueryType.Match('sender', address));
@@ -42,7 +41,7 @@ export class TransferService {
     }
 
     if (filter.sender) {
-      queries.push(QueryType.Match('sender', filter.sender));
+      mustQueries.push(QueryType.Match('sender', filter.sender));
     }
 
     if (filter.receiver) {
@@ -54,37 +53,37 @@ export class TransferService {
     }
 
     if (filter.token) {
-      queries.push(QueryType.Match('tokens', filter.token, QueryOperator.AND));
+      mustQueries.push(QueryType.Match('tokens', filter.token, QueryOperator.AND));
     }
 
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       if (filter.function) {
-        queries.push(QueryType.Match('function', filter.function));
+        mustQueries.push(QueryType.Match('function', filter.function));
       }
     }
 
     if (filter.senderShard !== undefined) {
-      queries.push(QueryType.Match('senderShard', filter.senderShard));
+      mustQueries.push(QueryType.Match('senderShard', filter.senderShard));
     }
 
     if (filter.receiverShard !== undefined) {
-      queries.push(QueryType.Match('receiverShard', filter.receiverShard));
+      mustQueries.push(QueryType.Match('receiverShard', filter.receiverShard));
     }
 
     if (filter.miniBlockHash) {
-      queries.push(QueryType.Match('miniBlockHash', filter.miniBlockHash));
+      mustQueries.push(QueryType.Match('miniBlockHash', filter.miniBlockHash));
     }
 
     if (filter.hashes) {
-      queries.push(QueryType.Should(filter.hashes.map(hash => QueryType.Match('_id', hash))));
+      mustQueries.push(QueryType.Should(filter.hashes.map(hash => QueryType.Match('_id', hash))));
     }
 
     if (filter.status) {
-      queries.push(QueryType.Match('status', filter.status));
+      mustQueries.push(QueryType.Match('status', filter.status));
     }
 
     if (filter.search) {
-      queries.push(QueryType.Wildcard('data', `*${filter.search}*`));
+      mustQueries.push(QueryType.Wildcard('data', `*${filter.search}*`));
     }
 
     let elasticQuery = ElasticQuery.create()
