@@ -6,6 +6,7 @@ import { NftService } from "../../endpoints/nfts/nft.service";
 import { NftType } from "../../endpoints/nfts/entities/nft.type";
 import { NftMetadataModule } from "src/queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.module";
 import { NftModule } from "src/endpoints/nfts/nft.module";
+import '../../utils/extensions/array.extensions';
 
 describe('Nft Metadata Service', () => {
   let nftMetadataService: NftMetadataService;
