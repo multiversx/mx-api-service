@@ -20,13 +20,13 @@ describe('Provider Service', () => {
   let firstProvider: Provider;
 
   beforeAll(async () => {
-    const publicAppModule = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       imports: [ProviderModule, ApiConfigModule, CachingModule],
     }).compile();
 
-    providerService = publicAppModule.get<ProviderService>(ProviderService);
-    apiConfigService = publicAppModule.get<ApiConfigService>(ApiConfigService);
-    cachingService = publicAppModule.get<CachingService>(CachingService);
+    providerService = moduleRef.get<ProviderService>(ProviderService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
+    cachingService = moduleRef.get<CachingService>(CachingService);
 
     providers = await providerService.getProviders(new ProviderFilter());
     identity = 'istari_vision';

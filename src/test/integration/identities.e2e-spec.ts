@@ -21,13 +21,13 @@ describe('Identities Service', () => {
   const ids: string[] = ['justminingfr', 'staking_agency', 'istari_vision'];
 
   beforeAll(async () => {
-    const publicAppModule = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       imports: [IdentitiesModule, ProviderModule, ApiConfigModule],
     }).compile();
 
-    identityService = publicAppModule.get<IdentitiesService>(IdentitiesService);
-    providerService = publicAppModule.get<ProviderService>(ProviderService);
-    apiConfigService = publicAppModule.get<ApiConfigService>(ApiConfigService);
+    identityService = moduleRef.get<IdentitiesService>(IdentitiesService);
+    providerService = moduleRef.get<ProviderService>(ProviderService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
 
     identities = await identityService.getAllIdentities();
     providers = await providerService.getProvidersWithStakeInformation();

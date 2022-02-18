@@ -9,11 +9,11 @@ describe('Shard Service', () => {
   let shardService: ShardService;
 
   beforeAll(async () => {
-    const publicAppModule = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       imports: [ShardModule],
     }).compile();
 
-    shardService = publicAppModule.get<ShardService>(ShardService);
+    shardService = moduleRef.get<ShardService>(ShardService);
   });
 
   describe('Shards', () => {

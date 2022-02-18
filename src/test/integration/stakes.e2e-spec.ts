@@ -17,11 +17,11 @@ describe('Stake Service', () => {
   const node: string = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhllllsajxzat';
 
   beforeAll(async () => {
-    const publicAppModule = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       imports: [StakeModule],
     }).compile();
 
-    stakeService = publicAppModule.get<StakeService>(StakeService);
+    stakeService = moduleRef.get<StakeService>(StakeService);
     globalStake = await stakeService.getGlobalStake();
   });
 

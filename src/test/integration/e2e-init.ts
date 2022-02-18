@@ -7,7 +7,7 @@ import { KeybaseService } from "src/common/keybase/keybase.service";
 import { EsdtService } from "src/endpoints/esdt/esdt.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
-import { PublicAppModule } from "src/public.app.module";
+import { moduleRef } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 import { FileUtils } from "src/utils/file.utils";
 import "../../utils/extensions/jest.extensions";
@@ -17,18 +17,18 @@ export default class Initializer {
   private static apiConfigService: ApiConfigService;
 
   static async initialize() {
-    const publicAppModule = await Test.createTestingModule({
-      imports: [PublicAppModule],
+    const moduleRef = await Test.createTestingModule({
+      imports: [moduleRef],
     }).compile();
 
     Initializer.cachingService =
-      publicAppModule.get<CachingService>(CachingService);
+      moduleRef.get<CachingService>(CachingService);
     Initializer.apiConfigService =
-      publicAppModule.get<ApiConfigService>(ApiConfigService);
-    const keybaseService = publicAppModule.get<KeybaseService>(KeybaseService);
-    const nodeService = publicAppModule.get<NodeService>(NodeService);
-    const providerService = publicAppModule.get<ProviderService>(ProviderService);
-    const esdtService = publicAppModule.get<EsdtService>(EsdtService);
+      moduleRef.get<ApiConfigService>(ApiConfigService);
+    const keybaseService = moduleRef.get<KeybaseService>(KeybaseService);
+    const nodeService = moduleRef.get<NodeService>(NodeService);
+    const providerService = moduleRef.get<ProviderService>(ProviderService);
+    const esdtService = moduleRef.get<EsdtService>(EsdtService);
 
     if (Initializer.apiConfigService.getMockKeybases()) {
       jest

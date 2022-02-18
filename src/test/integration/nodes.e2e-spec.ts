@@ -35,15 +35,15 @@ describe('Node Service', () => {
   let apiConfigService: ApiConfigService;
 
   beforeAll(async () => {
-    const publicAppModule = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       imports: [NodeModule, CachingModule, ProviderModule, AccountModule, ApiConfigModule],
     }).compile();
 
-    nodeService = publicAppModule.get<NodeService>(NodeService);
-    cachingService = publicAppModule.get<CachingService>(CachingService);
-    providerService = publicAppModule.get<ProviderService>(ProviderService);
-    accountService = publicAppModule.get<AccountService>(AccountService);
-    apiConfigService = publicAppModule.get<ApiConfigService>(ApiConfigService);
+    nodeService = moduleRef.get<NodeService>(NodeService);
+    cachingService = moduleRef.get<CachingService>(CachingService);
+    providerService = moduleRef.get<ProviderService>(ProviderService);
+    accountService = moduleRef.get<AccountService>(AccountService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
 
     nodes = await nodeService.getAllNodes();
     providers = await providerService.getAllProviders();

@@ -11,11 +11,11 @@ describe('Rounds Service', () => {
   let rounds: Round[];
 
   beforeAll(async () => {
-    const publicAppModule = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       imports: [RoundModule],
     }).compile();
 
-    roundService = publicAppModule.get<RoundService>(RoundService);
+    roundService = moduleRef.get<RoundService>(RoundService);
     rounds = await roundService.getRounds(new RoundFilter());
   });
 

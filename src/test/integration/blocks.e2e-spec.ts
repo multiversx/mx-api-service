@@ -11,12 +11,12 @@ describe('Blocks Service', () => {
   let blockSentinel: Block;
 
   beforeAll(async () => {
-    const publicAppModule = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       imports: [BlockModule],
 
     }).compile();
 
-    blocksService = publicAppModule.get<BlockService>(BlockService);
+    blocksService = moduleRef.get<BlockService>(BlockService);
     blocks = await blocksService.getBlocks(new BlockFilter(), { from: 0, size: 25 });
     blockSentinel = blocks[0];
   });

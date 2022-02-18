@@ -7,11 +7,11 @@ describe('Bls Service', () => {
   const blsValue = '03fb3a66ff74935c1d0531b47e98d5d90fcf51133dbd8e9db583e11a6f579735e6a673cd4d1ad2c9cb3e8d9f614bdb0ba5c21b20863a83e22fbd72231186026f32b91b9c8a49db41934db4ae0fdbe7ce89b3d84469ca45067ef152fe5c233118';
 
   beforeAll(async () => {
-    const publicAppModule = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       imports: [BlsModule],
     }).compile();
 
-    blsService = publicAppModule.get<BlsService>(BlsService);
+    blsService = moduleRef.get<BlsService>(BlsService);
   });
 
   describe('Get Bls Index', () => {

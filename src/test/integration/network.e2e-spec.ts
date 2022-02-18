@@ -12,11 +12,11 @@ describe('Network Service', () => {
   let networkService: NetworkService;
 
   beforeAll(async () => {
-    const publicAppModule = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       imports: [NetworkModule],
     }).compile();
 
-    networkService = publicAppModule.get<NetworkService>(NetworkService);
+    networkService = moduleRef.get<NetworkService>(NetworkService);
   });
 
   describe('Get Constants', () => {

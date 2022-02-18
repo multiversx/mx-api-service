@@ -6,11 +6,11 @@ describe('Protocol Service', () => {
   let protocolService: ProtocolService;
 
   beforeAll(async () => {
-    const publicAppModule = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       imports: [ProtocolModule],
     }).compile();
 
-    protocolService = publicAppModule.get<ProtocolService>(ProtocolService);
+    protocolService = moduleRef.get<ProtocolService>(ProtocolService);
   });
 
   describe('Get Shards Ids', () => {

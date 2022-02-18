@@ -8,11 +8,11 @@ describe('Username Service', () => {
   const usernameWithNoAddress: string = 'invalidUsername';
 
   beforeAll(async () => {
-    const publicAppModule = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       imports: [UsernameModule],
     }).compile();
 
-    usernameService = publicAppModule.get<UsernameService>(UsernameService);
+    usernameService = moduleRef.get<UsernameService>(UsernameService);
   });
 
   describe('Get Username Address Raw', () => {
