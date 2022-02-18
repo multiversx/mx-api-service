@@ -13,7 +13,7 @@ import { NftService } from "./nft.service";
     forwardRef(() => EsdtModule),
     forwardRef(() => TokenModule),
     forwardRef(() => CollectionModule),
-    PluginModule,
+    forwardRef(() => PluginModule),
     forwardRef(() => NftMetadataModule),
     NftMediaModule,
   ],

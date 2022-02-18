@@ -8,9 +8,9 @@ import { TransactionService } from "./transaction.service";
 
 @Module({
   imports: [
-    PluginModule,
     forwardRef(() => TokenModule),
     DataApiModule,
+    forwardRef(() => PluginModule),
   ],
   providers: [
     TransactionGetService, TransactionPriceService, TransactionService,
