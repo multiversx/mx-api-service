@@ -18,7 +18,7 @@ import { CollectionModule } from "../collections/collection.module";
 @Module({
   imports: [
     ApiConfigModule, ExternalModule, CachingModule, BlsModule, ElasticModule, GatewayModule,
-    NftModule,
+    forwardRef(() => NftModule),
     forwardRef(() => CollectionModule),
     forwardRef(() => TokenModule),
     forwardRef(() => GatewayModule),

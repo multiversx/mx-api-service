@@ -13,8 +13,8 @@ import { ProtocolModule } from "../protocol/protocol.module";
   imports: [
     ApiConfigModule,
     forwardRef(() => MicroserviceModule),
-    ElasticModule,
-    BlsModule,
+    forwardRef(() => ElasticModule),
+    forwardRef(() => BlsModule),
     forwardRef(() => MetricsModule),
     forwardRef(() => ProtocolModule),
   ],
