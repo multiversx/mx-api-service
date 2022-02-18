@@ -31,6 +31,8 @@ describe('Account Service', () => {
     it(`should return a list with 25 accounts`, async () => {
       const accountsList = await accountService.getAccounts({ from: 0, size: 25 });
 
+      expect(accountsList).toHaveLength(25);
+
       for (const account of accountsList) {
         expect(account).toHaveStructure(Object.keys(new Account()));
       }
@@ -38,7 +40,6 @@ describe('Account Service', () => {
 
     it(`should return a list with 50 accounts`, async () => {
       const accountsList = await accountService.getAccounts({ from: 0, size: 50 });
-      expect(accountsList).toBeInstanceOf(Array);
       expect(accountsList).toHaveLength(50);
 
       for (const account of accountsList) {
@@ -51,10 +52,6 @@ describe('Account Service', () => {
     it(`should return a number`, async () => {
       const accountsCount = await accountService.getAccountsCount();
       expect(typeof accountsCount).toBe('number');
-    });
-
-    it(`should return a number`, async () => {
-
     });
   });
 
