@@ -75,12 +75,8 @@ export class TransactionProcessorService {
             }
 
             if (this.apiConfigService.getIsProcessNftsFlagActive()) {
-              const nftCreateResult = new NftCreateTransactionExtractor().extract(transaction);
-              if (nftCreateResult) {
-                this.logger.log(`Detected NFT create for collection '${nftCreateResult.collection}' and tx hash '${transaction.hash}'`);
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                this.tryHandleNftCreate(transaction);
-              }
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+              this.tryHandleNftCreate(transaction);
 
               const nftUpdateAttributesResult = new NftUpdateAttributesTransactionExtractor().extract(transaction);
               if (nftUpdateAttributesResult) {
@@ -149,6 +145,13 @@ export class TransactionProcessorService {
 
   private async tryHandleNftCreate(transaction: ShardTransaction) {
     try {
+      const nftCreateExtractor = new NftCreateTransactionExtractor();
+      let nftCreateResult = nftCreateExtractor.extract(transaction);
+
+      if (!nftCreateResult && !nftCreateExtractor.canDetectNftCreateTransactionFromLogs(transaction)) {
+        return;
+      }
+
       // we wait for the transaction and its operations to be fully indexed
       await new Promise(resolve => setTimeout(resolve, 5000));
 
@@ -156,6 +159,14 @@ export class TransactionProcessorService {
       if (!transactionDetailed || !transactionDetailed.operations || transactionDetailed.operations.length === 0) {
         this.logger.error(`NFT create: could not fetch transaction information for transaction with hash '${transaction.hash}'`);
         return;
+      }
+
+      //check if it is an ESDTNFTCreate from transaction logs
+      if (!nftCreateResult) {
+        nftCreateResult = nftCreateExtractor.extract(transaction, transactionDetailed);
+        if (!nftCreateResult) {
+          return;
+        }
       }
 
       const nftIdentifier = transactionDetailed.operations[0].identifier;
