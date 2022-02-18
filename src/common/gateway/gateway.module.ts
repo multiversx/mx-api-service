@@ -8,7 +8,7 @@ import { GatewayService } from "./gateway.service";
 @Module({
   imports: [
     ApiConfigModule,
-    ApiModule,
+    forwardRef(() => ApiModule),
     forwardRef(() => MetricsModule),
   ],
   providers: [
