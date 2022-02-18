@@ -1,5 +1,4 @@
 import { Test } from '@nestjs/testing';
-import { PublicAppModule } from 'src/public.app.module';
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import { TransactionStatus } from 'src/endpoints/transactions/entities/transaction.status';
 import { TransactionService } from 'src/endpoints/transactions/transaction.service';
@@ -10,9 +9,14 @@ import { QueryConditionOptions } from 'src/common/elastic/entities/query.conditi
 import { TransactionOptionalFieldOption } from 'src/endpoints/transactions/entities/transaction.optional.field.options';
 import transactionDetails from "../data/transactions/transaction.details";
 import { TransactionDetailed } from "../../endpoints/transactions/entities/transaction.detailed";
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { TransactionModule } from 'src/endpoints/transactions/transaction.module';
+import { ApiConfigModule } from 'src/common/api-config/api.config.module';
+import { BinaryUtils } from 'src/utils/binary.utils';
 
 describe('Transaction Service', () => {
   let transactionService: TransactionService;
+  let apiConfigService: ApiConfigService;
   let transactionHash: string;
   let transactionSender: string;
   let transactionReceiver: string;
@@ -22,10 +26,11 @@ describe('Transaction Service', () => {
     await Initializer.initialize();
 
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [TransactionModule, ApiConfigModule],
     }).compile();
 
     transactionService = moduleRef.get<TransactionService>(TransactionService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
 
     const transactionFilter = new TransactionFilter();
 
@@ -74,6 +79,20 @@ describe('Transaction Service', () => {
           expect(transaction).toHaveStructure(Object.keys(new Transaction()));
           expect(transaction.sender).toBe(transactionSender);
           expect(transaction.receiver).toBe(transactionReceiver);
+        }
+      });
+
+      it('should return a list with transfers that call ESDTNFTTransfer function', async () => {
+        if (apiConfigService.getIsIndexerV3FlagActive()) {
+          const transactionFilter = new TransactionFilter();
+          transactionFilter.function = 'ESDTNFTTransfer';
+
+          const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+
+          for (const transaction of transactions) {
+            expect(transaction).toHaveStructure(Object.keys(new Transaction()));
+            expect(BinaryUtils.base64Decode(transaction.data).startsWith('ESDTNFTTransfer')).toBe(true);
+          }
         }
       });
 
