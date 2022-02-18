@@ -31,6 +31,8 @@ import { ParseBlockHashPipe } from 'src/utils/pipes/parse.block.hash.pipe';
 import { ParseArrayPipe } from 'src/utils/pipes/parse.array.pipe';
 import { SortOrder } from 'src/common/entities/sort.order';
 import { EsdtDataSource } from '../esdt/entities/esdt.data.source';
+import { TransferService } from '../transfers/transfer.service';
+import { Transfer } from '../transfers/entities/transfer';
 
 @Controller()
 @ApiTags('accounts')
@@ -47,6 +49,7 @@ export class AccountController {
     private readonly transactionService: TransactionService,
     private readonly scResultService: SmartContractResultService,
     private readonly collectionService: CollectionService,
+    private readonly transferService: TransferService
   ) {
     this.logger = new Logger(AccountController.name);
   }
@@ -679,6 +682,120 @@ export class AccountController {
     }, address);
   }
 
+
+  @Get("/accounts/:address/transfers")
+  @ApiResponse({
+    status: 200,
+    description: 'Transfers history informations for a given account',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found',
+  })
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Address of the transfer receiver', required: false })
+  @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transfer hashes', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transfer (success / pending / invalid)', required: false })
+  @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
+  @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  async getAccountTransfers(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('token') token?: string,
+    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('search') search?: string,
+    @Query('before', ParseOptionalIntPipe) before?: number,
+    @Query('after', ParseOptionalIntPipe) after?: number,
+    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
+  ): Promise<Transfer[]> {
+    try {
+      return await this.transferService.getTransfers({
+        sender,
+        receiver,
+        token,
+        senderShard,
+        receiverShard,
+        miniBlockHash,
+        hashes,
+        status,
+        search,
+        before,
+        after,
+        order,
+      }, { from, size }, address);
+    } catch (error) {
+      this.logger.error(`Error in getAccountTransfers for address ${address}`);
+      this.logger.error(error);
+      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  @Get("/accounts/:address/transfers/count")
+  @ApiResponse({
+    status: 200,
+    description: 'Transfers count history informations for a given account',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found',
+  })
+  @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Address of the transfer receiver', required: false })
+  @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transfer hashes', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transfer (success / pending / invalid)', required: false })
+  @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
+  @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  async getAccountTransfersCount(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('token') token?: string,
+    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('search') search?: string,
+    @Query('function') scFunction?: string | undefined,
+    @Query('before', ParseOptionalIntPipe) before?: number,
+    @Query('after', ParseOptionalIntPipe) after?: number,
+  ): Promise<number> {
+    return await this.transferService.getTransfersCount({
+      sender,
+      receiver,
+      token,
+      function: scFunction,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      search,
+      before,
+      after,
+    }, address);
+  }
 
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
