@@ -101,7 +101,7 @@ export class EsdtAddressService {
         nft.royalties = esdt.data?.royalties;
         nft.tokenIdentifier = esdt.identifier;
         nft.uris = esdt.data?.uris;
-        nft.timestamp = esdt.data?.timestamp;
+        nft.timestamp = esdt.timestamp;
       }
 
       gatewayNfts.push(nft);
