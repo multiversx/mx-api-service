@@ -1,10 +1,13 @@
-import { Global, Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { ApiConfigService } from '../api-config/api.config.service';
+import { CachingModule } from '../caching/caching.module';
 import { MicroserviceController } from './microservice.controller';
 
-@Global()
 @Module({
+  imports: [
+    forwardRef(() => CachingModule),
+  ],
   controllers: [
     MicroserviceController,
   ],

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { CacheController } from './common/caching/cache.controller';
 import { LoggingModule } from './common/logging/logging.module';
 import { MetricsController } from './common/metrics/metrics.controller';
+import { MicroserviceModule } from './common/microservice/microservice.module';
 import { HealthCheckController } from './endpoints/health-check/health.check.controller';
 import { ProcessNftsController } from './endpoints/process-nfts/process.nfts.controller';
 import { ProcessNftsModule } from './endpoints/process-nfts/process.nfts.module';
@@ -10,6 +11,7 @@ import { ProcessNftsModule } from './endpoints/process-nfts/process.nfts.module'
   imports: [
     LoggingModule,
     ProcessNftsModule,
+    MicroserviceModule,
   ],
   controllers: [
     MetricsController,
