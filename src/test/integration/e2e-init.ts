@@ -1,13 +1,18 @@
 import { Test } from "@nestjs/testing";
+import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { CachingModule } from "src/common/caching/caching.module";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
+import { KeybaseModule } from "src/common/keybase/keybase.module";
 import { KeybaseService } from "src/common/keybase/keybase.service";
+import { EsdtModule } from "src/endpoints/esdt/esdt.module";
 import { EsdtService } from "src/endpoints/esdt/esdt.service";
+import { NodeModule } from "src/endpoints/nodes/node.module";
 import { NodeService } from "src/endpoints/nodes/node.service";
+import { ProviderModule } from "src/endpoints/providers/provider.module";
 import { ProviderService } from "src/endpoints/providers/provider.service";
-import { moduleRef } from "src/public.app.module";
 import { Constants } from "src/utils/constants";
 import { FileUtils } from "src/utils/file.utils";
 import "../../utils/extensions/jest.extensions";
@@ -18,7 +23,7 @@ export default class Initializer {
 
   static async initialize() {
     const moduleRef = await Test.createTestingModule({
-      imports: [moduleRef],
+      imports: [CachingModule, ApiConfigModule, KeybaseModule, NodeModule, ProviderModule, EsdtModule],
     }).compile();
 
     Initializer.cachingService =
