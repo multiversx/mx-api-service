@@ -10,6 +10,8 @@ import { ProviderFilter } from 'src/endpoints/providers/entities/provider.filter
 import { ProviderModule } from 'src/endpoints/providers/provider.module';
 import { ProviderService } from 'src/endpoints/providers/provider.service';
 import providerAccount from '../data/accounts/provider.account';
+import '../../utils/extensions/array.extensions';
+import '../../utils/extensions/jest.extensions';
 
 describe('Provider Service', () => {
   let providerService: ProviderService;

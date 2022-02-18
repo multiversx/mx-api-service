@@ -23,6 +23,7 @@ describe('ESDT Service', () => {
     }).compile();
 
     esdtService = moduleRef.get<EsdtService>(EsdtService);
+    esdtAddressService = moduleRef.get<EsdtAddressService>(EsdtAddressService);
   });
 
   describe('Get Esdts For Address', () => {

@@ -3,8 +3,8 @@ import { KeybaseService } from "../../common/keybase/keybase.service";
 import { Keybase } from "../../common/keybase/entities/keybase";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
 import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
-import { KeybaseModule } from "src/common/keybase/keybase.module";
 import '../../utils/extensions/jest.extensions';
+import { PublicAppModule } from "src/public.app.module";
 
 describe('Keybase Service', () => {
   let keybaseService: KeybaseService;
@@ -13,7 +13,7 @@ describe('Keybase Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [KeybaseModule],
+      imports: [PublicAppModule],
     }).compile();
 
     keybaseService = moduleRef.get<KeybaseService>(KeybaseService);

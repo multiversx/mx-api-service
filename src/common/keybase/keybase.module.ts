@@ -13,7 +13,7 @@ import { KeybaseService } from "./keybase.service";
     CachingModule,
     ApiModule,
     forwardRef(() => NodeModule),
-    ProviderModule,
+    forwardRef(() => ProviderModule),
   ],
   providers: [
     KeybaseService,
