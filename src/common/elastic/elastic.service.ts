@@ -19,7 +19,6 @@ export class ElasticService {
 
   constructor(
     private apiConfigService: ApiConfigService,
-    @Inject(forwardRef(() => ApiService))
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => MetricsService))
     private readonly metricsService: MetricsService

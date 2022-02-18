@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
@@ -13,6 +13,7 @@ export class TransactionPriceService {
   constructor(
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
+    @Inject(forwardRef(() => DataApiService))
     private readonly dataApiService: DataApiService,
   ) { }
 

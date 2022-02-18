@@ -1,11 +1,7 @@
-import { forwardRef, Module } from "@nestjs/common";
-import { CommonModule } from "src/common/common.module";
+import { Module } from "@nestjs/common";
 import { MexService } from "./mex.service";
 
 @Module({
-  imports: [
-    forwardRef(() => CommonModule),
-  ],
   providers: [
     MexService,
   ],

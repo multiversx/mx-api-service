@@ -1,13 +1,11 @@
-import { Module } from "@nestjs/common";
-import { ApiConfigModule } from "../../common/api-config/api.config.module";
+import { Global, Module } from "@nestjs/common";
+import { ElasticModule } from "src/common/elastic/elastic.module";
 import { BlsService } from "./bls.service";
-import { ElasticModule } from "../../common/elastic/elastic.module";
-import { ExternalModule } from "../../common/external/external.module";
 
-
+@Global()
 @Module({
   imports: [
-    ApiConfigModule, ExternalModule, ElasticModule,
+    ElasticModule,
   ],
   providers: [
     BlsService,

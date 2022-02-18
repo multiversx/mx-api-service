@@ -1,12 +1,10 @@
-import { forwardRef, Module } from "@nestjs/common";
-import { CommonModule } from "src/common/common.module";
-import { BlsModule } from "../bls/bls.module";
+import { Module } from "@nestjs/common";
+import { CachingModule } from "src/common/caching/caching.module";
 import { VmQueryService } from "./vm.query.service";
 
 @Module({
   imports: [
-    forwardRef(() => CommonModule),
-    BlsModule,
+    CachingModule,
   ],
   providers: [
     VmQueryService,

@@ -1,22 +1,17 @@
-import { forwardRef, Module } from "@nestjs/common";
-import { ApiConfigModule } from "../api-config/api.config.module";
-import { BlsModule } from "../../endpoints/bls/bls.module";
-import { ElasticModule } from "../elastic/elastic.module";
+import { forwardRef, Global, Module } from "@nestjs/common";
+import { MetricsModule } from "../metrics/metrics.module";
+import { MicroserviceModule } from "../microservice/microservice.module";
+import { ProtocolModule } from "../protocol/protocol.module";
 import { CacheConfigService } from "./cache.config.service";
 import { CachingService } from "./caching.service";
-import { MicroserviceModule } from "../microservice/microservice.module";
-import { MetricsModule } from "../metrics/metrics.module";
 import { LocalCacheService } from "./local.cache.service";
-import { ProtocolModule } from "../protocol/protocol.module";
 
+@Global()
 @Module({
   imports: [
-    ApiConfigModule,
-    forwardRef(() => MicroserviceModule),
-    ElasticModule,
-    BlsModule,
-    forwardRef(() => MetricsModule),
     forwardRef(() => ProtocolModule),
+    MetricsModule,
+    forwardRef(() => MicroserviceModule),
   ],
   providers: [
     CachingService, CacheConfigService, LocalCacheService,
