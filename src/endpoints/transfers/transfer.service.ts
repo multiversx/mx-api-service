@@ -141,7 +141,7 @@ export class TransferService {
     try {
       await this.pluginsService.processTransaction(transfer);
     } catch (error) {
-      this.logger.error(`Unhandled error when processing plugin fo transfer with hash '${transfer.txHash}'`);
+      this.logger.error(`Unhandled error when processing plugin for transfer with hash '${transfer.txHash}'`);
       this.logger.error(error);
     }
   }
