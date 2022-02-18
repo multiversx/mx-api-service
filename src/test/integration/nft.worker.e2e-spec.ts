@@ -1,5 +1,4 @@
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "../../public.app.module";
 import { NftWorkerService } from "../../queue.worker/nft.worker/nft.worker.service";
 import { Nft } from "../../endpoints/nfts/entities/nft";
 import nftExample from "../data/esdt/nft/nft.example";
@@ -10,14 +9,11 @@ describe('Nft Worker Service', () => {
   let nftWorkerService: NftWorkerService;
 
   beforeAll(async () => {
-
-
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule, NftWorkerModule],
+      imports: [NftWorkerModule],
     }).compile();
 
     nftWorkerService = moduleRef.get<NftWorkerService>(NftWorkerService);
-
   });
 
   describe('Add Process Nft Queue Job', () => {

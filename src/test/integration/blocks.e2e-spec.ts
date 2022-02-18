@@ -1,8 +1,9 @@
 import { Test } from "@nestjs/testing";
+import { BlockModule } from "src/endpoints/blocks/block.module";
 import { BlockService } from "src/endpoints/blocks/block.service";
 import { Block } from "src/endpoints/blocks/entities/block";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
-import { PublicAppModule } from "src/public.app.module";
+import '../../utils/extensions/jest.extensions';
 
 describe('Blocks Service', () => {
   let blocksService: BlockService;
@@ -11,7 +12,7 @@ describe('Blocks Service', () => {
 
   beforeAll(async () => {
     const publicAppModule = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [BlockModule],
 
     }).compile();
 

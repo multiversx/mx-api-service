@@ -1,10 +1,15 @@
 import { Test } from "@nestjs/testing";
+import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { Identity } from "src/endpoints/identities/entities/identity";
+import { IdentitiesModule } from "src/endpoints/identities/identities.module";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { Provider } from "src/endpoints/providers/entities/provider";
+import { ProviderModule } from "src/endpoints/providers/provider.module";
 import { ProviderService } from "src/endpoints/providers/provider.service";
-import { PublicAppModule } from "src/public.app.module";
+import '../../utils/extensions/jest.extensions';
+import '../../utils/extensions/array.extensions';
+import '../../utils/extensions/number.extensions';
 
 describe('Identities Service', () => {
   let identityService: IdentitiesService;
@@ -17,7 +22,7 @@ describe('Identities Service', () => {
 
   beforeAll(async () => {
     const publicAppModule = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [IdentitiesModule, ProviderModule, ApiConfigModule],
     }).compile();
 
     identityService = publicAppModule.get<IdentitiesService>(IdentitiesService);

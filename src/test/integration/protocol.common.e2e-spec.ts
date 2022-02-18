@@ -1,18 +1,16 @@
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "../../public.app.module";
 import { ProtocolService } from "../../common/protocol/protocol.service";
+import { ProtocolModule } from "src/common/protocol/protocol.module";
 
 describe('Protocol Service', () => {
   let protocolService: ProtocolService;
 
   beforeAll(async () => {
-
     const publicAppModule = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [ProtocolModule],
     }).compile();
 
     protocolService = publicAppModule.get<ProtocolService>(ProtocolService);
-
   });
 
   describe('Get Shards Ids', () => {

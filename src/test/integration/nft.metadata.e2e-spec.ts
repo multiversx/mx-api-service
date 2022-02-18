@@ -1,11 +1,11 @@
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "../../public.app.module";
-import { QueueWorkerModule } from "../../queue.worker/queue.worker.module";
 import { NftMetadataService } from "../../queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.service";
 import { Nft } from "../../endpoints/nfts/entities/nft";
 import { NftFilter } from "../../endpoints/nfts/entities/nft.filter";
 import { NftService } from "../../endpoints/nfts/nft.service";
 import { NftType } from "../../endpoints/nfts/entities/nft.type";
+import { NftMetadataModule } from "src/queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.module";
+import { NftModule } from "src/endpoints/nfts/nft.module";
 
 describe('Nft Metadata Service', () => {
   let nftMetadataService: NftMetadataService;
@@ -13,10 +13,8 @@ describe('Nft Metadata Service', () => {
   let nftIdentifier: string;
 
   beforeAll(async () => {
-
-
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule, QueueWorkerModule],
+      imports: [NftMetadataModule, NftModule],
     }).compile();
 
     nftMetadataService = moduleRef.get<NftMetadataService>(NftMetadataService);

@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
+import { CachingModule } from 'src/common/caching/caching.module';
 import { CachingService } from 'src/common/caching/caching.service';
-import { PublicAppModule } from 'src/public.app.module';
 import { Constants } from 'src/utils/constants';
 
 describe('Caching Service', () => {
@@ -8,7 +8,7 @@ describe('Caching Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [CachingModule],
     }).compile();
 
     cachingService = moduleRef.get<CachingService>(CachingService);

@@ -1,21 +1,22 @@
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "../../public.app.module";
 import { NetworkService } from "../../endpoints/network/network.service";
 import { NetworkConstants } from "src/endpoints/network/entities/constants";
 import { NetworkConfig } from "src/endpoints/network/entities/network.config";
 import { Economics } from "src/endpoints/network/entities/economics";
+import { NetworkModule } from "src/endpoints/network/network.module";
+import '../../utils/extensions/jest.extensions';
+import '../../utils/extensions/array.extensions';
+import '../../utils/extensions/number.extensions';
 
 describe('Network Service', () => {
   let networkService: NetworkService;
 
   beforeAll(async () => {
-
     const publicAppModule = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [NetworkModule],
     }).compile();
 
     networkService = publicAppModule.get<NetworkService>(NetworkService);
-
   });
 
   describe('Get Constants', () => {

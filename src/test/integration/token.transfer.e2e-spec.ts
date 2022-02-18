@@ -1,9 +1,10 @@
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "../../public.app.module";
 import { TokenTransferService } from "../../endpoints/tokens/token.transfer.service";
 import transactionsWithLogs from "../data/transactions/transactions.with.logs";
 import tokenDetails from "../data/esdt/token/token.example";
 import { EsdtService } from "../../endpoints/esdt/esdt.service";
+import { EsdtModule } from "src/endpoints/esdt/esdt.module";
+import { TokenModule } from "src/endpoints/tokens/token.module";
 
 describe('Token Transfer Service', () => {
   let tokenTransferService: TokenTransferService;
@@ -14,14 +15,12 @@ describe('Token Transfer Service', () => {
   const invalidTokenIdentifier: string = 'LKFARM-9d1ea8-4d2842';
 
   beforeAll(async () => {
-
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [EsdtModule, TokenModule],
     }).compile();
 
     tokenTransferService = moduleRef.get<TokenTransferService>(TokenTransferService);
     esdtService = moduleRef.get<EsdtService>(EsdtService);
-
   });
 
   describe('Get Operations For Transaction Logs', () => {

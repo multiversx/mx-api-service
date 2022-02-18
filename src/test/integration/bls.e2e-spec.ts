@@ -1,6 +1,6 @@
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "../../public.app.module";
 import { BlsService } from "../../endpoints/bls/bls.service";
+import { BlsModule } from "src/endpoints/bls/bls.module";
 
 describe('Bls Service', () => {
   let blsService: BlsService;
@@ -8,7 +8,7 @@ describe('Bls Service', () => {
 
   beforeAll(async () => {
     const publicAppModule = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [BlsModule],
     }).compile();
 
     blsService = publicAppModule.get<BlsService>(BlsService);

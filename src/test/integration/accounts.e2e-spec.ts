@@ -7,7 +7,9 @@ import { DeployedContract } from 'src/endpoints/accounts/entities/deployed.contr
 import userAccount from "../data/accounts/user.account";
 import providerAccount from "../data/accounts/provider.account";
 import { AccountKey } from 'src/endpoints/accounts/entities/account.key';
-import { PublicAppModule } from 'src/public.app.module';
+import { AccountModule } from 'src/endpoints/accounts/account.module';
+import { DelegationLegacyModule } from 'src/endpoints/delegation.legacy/delegation.legacy.module';
+import '../../utils/extensions/jest.extensions';
 
 describe('Account Service', () => {
   let accountService: AccountService;
@@ -16,7 +18,7 @@ describe('Account Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [AccountModule, DelegationLegacyModule],
     }).compile();
 
     accountService = moduleRef.get<AccountService>(AccountService);

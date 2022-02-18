@@ -1,20 +1,18 @@
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "../../public.app.module";
 import { UsernameService } from "../../endpoints/usernames/username.service";
 import userAccount from "../data/accounts/user.account";
+import { UsernameModule } from "src/endpoints/usernames/username.module";
 
 describe('Username Service', () => {
   let usernameService: UsernameService;
   const usernameWithNoAddress: string = 'invalidUsername';
 
   beforeAll(async () => {
-
     const publicAppModule = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [UsernameModule],
     }).compile();
 
     usernameService = publicAppModule.get<UsernameService>(UsernameService);
-
   });
 
   describe('Get Username Address Raw', () => {

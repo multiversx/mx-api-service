@@ -2,9 +2,10 @@ import { Test } from "@nestjs/testing";
 import { CollectionService } from "src/endpoints/collections/collection.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
-import { PublicAppModule } from "src/public.app.module";
 import { NftCollection } from "../../endpoints/collections/entities/nft.collection";
 import { NftCollectionAccount } from "src/endpoints/collections/entities/nft.collection.account";
+import { CollectionModule } from "src/endpoints/collections/collection.module";
+import '../../utils/extensions/jest.extensions';
 
 describe('Collection Service', () => {
   let collectionService: CollectionService;
@@ -14,7 +15,7 @@ describe('Collection Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [CollectionModule],
     }).compile();
 
     collectionService = moduleRef.get<CollectionService>(CollectionService);

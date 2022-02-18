@@ -1,16 +1,16 @@
 import { WaitingListService } from "../../endpoints/waiting-list/waiting.list.service";
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "../../public.app.module";
 import { WaitingList } from "../../endpoints/waiting-list/entities/waiting.list";
 import userAccount from "../data/accounts/user.account";
+import { WaitingListModule } from "src/endpoints/waiting-list/waiting.list.module";
+import '../../utils/extensions/jest.extensions';
 
 describe('WaitingListService', () => {
   let waitingListService: WaitingListService;
 
   beforeAll(async () => {
-
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [WaitingListModule],
     }).compile();
 
     waitingListService = moduleRef.get<WaitingListService>(WaitingListService);

@@ -1,5 +1,4 @@
 import { Test } from '@nestjs/testing';
-import { PublicAppModule } from 'src/public.app.module';
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import { TransactionStatus } from 'src/endpoints/transactions/entities/transaction.status';
 import { TransactionService } from 'src/endpoints/transactions/transaction.service';
@@ -8,6 +7,9 @@ import { QueryConditionOptions } from 'src/common/elastic/entities/query.conditi
 import { TransactionOptionalFieldOption } from 'src/endpoints/transactions/entities/transaction.optional.field.options';
 import transactionDetails from "../data/transactions/transaction.details";
 import { TransactionDetailed } from "../../endpoints/transactions/entities/transaction.detailed";
+import { TransactionModule } from 'src/endpoints/transactions/transaction.module';
+import '../../utils/extensions/jest.extensions';
+import '../../utils/extensions/array.extensions';
 
 describe('Transaction Service', () => {
   let transactionService: TransactionService;
@@ -17,10 +19,8 @@ describe('Transaction Service', () => {
   const detailedTransactionHash: string = '18128acfd3f19f7a747ccf02bc866e95aa2db92af44fed2f9ed2c2102223b462';
 
   beforeAll(async () => {
-
-
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [TransactionModule],
     }).compile();
 
     transactionService = moduleRef.get<TransactionService>(TransactionService);

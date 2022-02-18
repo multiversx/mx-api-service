@@ -1,9 +1,11 @@
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "../../public.app.module";
 import { DelegationLegacyService } from "../../endpoints/delegation.legacy/delegation.legacy.service";
 import { AccountService } from "../../endpoints/accounts/account.service";
 import { DelegationLegacy } from "../../endpoints/delegation.legacy/entities/delegation.legacy";
 import { AccountDelegationLegacy } from "../../endpoints/delegation.legacy/entities/account.delegation.legacy";
+import { AccountModule } from "src/endpoints/accounts/account.module";
+import { DelegationLegacyModule } from "src/endpoints/delegation.legacy/delegation.legacy.module";
+import '../../utils/extensions/jest.extensions';
 
 describe('Delegation Legacy Service', () => {
   let delegationLegacyService: DelegationLegacyService;
@@ -12,7 +14,7 @@ describe('Delegation Legacy Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [AccountModule, DelegationLegacyModule],
     }).compile();
 
     delegationLegacyService = moduleRef.get<DelegationLegacyService>(DelegationLegacyService);

@@ -1,27 +1,24 @@
 import { NftFilter } from '../../endpoints/nfts/entities/nft.filter';
 import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "src/public.app.module";
-import { Constants } from "src/utils/constants";
-import Initializer from "./e2e-init";
 import { EsdtDataSource } from 'src/endpoints/esdt/entities/esdt.data.source';
 import { NftCollection } from 'src/endpoints/collections/entities/nft.collection';
 import { NftCollectionAccount } from 'src/endpoints/collections/entities/nft.collection.account';
 import { NftType } from 'src/endpoints/nfts/entities/nft.type';
 import { CollectionFilter } from 'src/endpoints/collections/entities/collection.filter';
+import '../../utils/extensions/jest.extensions';
+import { EsdtModule } from 'src/endpoints/esdt/esdt.module';
 
 describe('EsdtAddressService', () => {
   let esdtAddressService: EsdtAddressService;
 
   beforeAll(async () => {
-    await Initializer.initialize();
-
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [EsdtModule],
     }).compile();
 
     esdtAddressService = moduleRef.get<EsdtAddressService>(EsdtAddressService);
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('getEsdtsForAddress', () => {
     it('should return one esdt from address with source "GATEWAY"', async () => {

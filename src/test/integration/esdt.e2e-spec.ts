@@ -9,6 +9,7 @@ import { EsdtDataSource } from "src/endpoints/esdt/entities/esdt.data.source";
 import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
 import { NftCollectionAccount } from "src/endpoints/collections/entities/nft.collection.account";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
+import '../../utils/extensions/jest.extensions';
 
 describe('ESDT Service', () => {
   let esdtService: EsdtService;

@@ -1,9 +1,10 @@
 import { SmartContractResultService } from "../../endpoints/sc-results/scresult.service";
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "../../public.app.module";
 import { SmartContractResultFilter } from "../../endpoints/sc-results/entities/smart.contract.result.filter";
 import smartContractResults from "../data/smartcontract/scresults";
 import { SmartContractResult } from "../../endpoints/sc-results/entities/smart.contract.result";
+import { SmartContractResultModule } from "src/endpoints/sc-results/scresult.module";
+import '../../utils/extensions/jest.extensions';
 
 describe('Scresults Service', () => {
   let scResultsService: SmartContractResultService;
@@ -11,9 +12,8 @@ describe('Scresults Service', () => {
   let scHash: string;
 
   beforeAll(async () => {
-
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [SmartContractResultModule],
     }).compile();
 
     scResultsService = moduleRef.get<SmartContractResultService>(SmartContractResultService);

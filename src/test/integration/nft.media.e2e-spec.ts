@@ -1,11 +1,11 @@
 import { NftService } from "../../endpoints/nfts/nft.service";
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "../../public.app.module";
 import { NftFilter } from "../../endpoints/nfts/entities/nft.filter";
 import { NftMediaService } from "../../queue.worker/nft.worker/queue/job-services/media/nft.media.service";
 import { Nft } from "../../endpoints/nfts/entities/nft";
-import { QueueWorkerModule } from "../../queue.worker/queue.worker.module";
 import { NftMedia } from "../../endpoints/nfts/entities/nft.media";
+import { NftMediaModule } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.module";
+import { NftModule } from "src/endpoints/nfts/nft.module";
 
 
 describe('Nft Media Service', () => {
@@ -14,10 +14,8 @@ describe('Nft Media Service', () => {
   let nftIdentifier: string;
 
   beforeAll(async () => {
-
-
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule, QueueWorkerModule],
+      imports: [NftMediaModule, NftModule],
     }).compile();
 
     nftMediaService = moduleRef.get<NftMediaService>(NftMediaService);

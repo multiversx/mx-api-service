@@ -7,6 +7,8 @@ import { NftOwner } from "src/endpoints/nfts/entities/nft.owner";
 import { NftAccount } from "src/endpoints/nfts/entities/nft.account";
 import userAccount from "../data/accounts/user.account";
 import { NftModule } from "src/endpoints/nfts/nft.module";
+import '../../utils/extensions/jest.extensions';
+import '../../utils/extensions/array.extensions';
 
 describe('Nft Service', () => {
   let nftService: NftService;

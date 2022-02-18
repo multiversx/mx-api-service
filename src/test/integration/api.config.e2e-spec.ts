@@ -1,6 +1,6 @@
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "src/public.app.module";
+import { ApiConfigModule } from "src/common/api-config/api.config.module";
 
 describe('API Config', () => {
   let apiConfigService: ApiConfigService;
@@ -24,7 +24,7 @@ describe('API Config', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [ApiConfigModule],
     }).compile();
 
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
