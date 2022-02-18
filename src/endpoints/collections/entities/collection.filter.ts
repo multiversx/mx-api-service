@@ -6,4 +6,8 @@ export class CollectionFilter {
   search?: string;
   type?: NftType;
   creator?: string;
+  owner?: string;
+  canCreate?: boolean;
+  canBurn?: boolean;
+  canAddQuantity?: boolean;
 }
