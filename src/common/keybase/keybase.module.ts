@@ -1,9 +1,8 @@
-import { forwardRef, Global, Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { NodeModule } from "src/endpoints/nodes/node.module";
 import { ProviderModule } from "src/endpoints/providers/provider.module";
 import { KeybaseService } from "./keybase.service";
 
-@Global()
 @Module({
   imports: [
     forwardRef(() => NodeModule),
