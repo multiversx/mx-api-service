@@ -159,6 +159,8 @@ export class TokenTransferService {
         return TransactionOperationAction.localMint;
       case TransactionLogEventIdentifier.ESDTLocalBurn:
         return TransactionOperationAction.localBurn;
+      case TransactionLogEventIdentifier.ESDTWipe:
+        return TransactionOperationAction.wipe;
       case TransactionLogEventIdentifier.ESDTFreeze:
         return TransactionOperationAction.freeze;
       default:
@@ -170,7 +172,7 @@ export class TokenTransferService {
     try {
       let identifier = BinaryUtils.base64Decode(event.topics[0]);
       const nonce = BinaryUtils.tryBase64ToHex(event.topics[1]);
-      const value = BinaryUtils.tryBase64ToBigInt(event.topics[2])?.toString() ?? '0';
+      const value = BinaryUtils.tryBase64ToBigInt(event.topics[2])?.toString();
       const receiver = BinaryUtils.tryBase64ToAddress(event.topics[3]) ?? log.address;
       const properties = tokensProperties[identifier];
       const decimals = properties ? properties.decimals : undefined;
