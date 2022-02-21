@@ -305,7 +305,7 @@ export class TransactionService {
         const transactionLogsFromElastic = logs.filter((log) => transactionHashes.includes(log._id));
         const transactionLogs: TransactionLog[] = transactionLogsFromElastic.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
 
-        if (!transactionLogs.length) {
+        if (TransactionUtils.isFreezeTransaction(transactionDetailed.data)) {
           transactionDetailed.operations = await this.tokenTransferService.getOperationsForFreezeFromScResults(transactionDetailed.results);
         }
         else {
