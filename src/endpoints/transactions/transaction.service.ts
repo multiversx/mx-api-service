@@ -304,8 +304,13 @@ export class TransactionService {
         }
         const transactionLogsFromElastic = logs.filter((log) => transactionHashes.includes(log._id));
         const transactionLogs: TransactionLog[] = transactionLogsFromElastic.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
-        transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransactionLogs(transactionDetailed.txHash, transactionLogs);
 
+        if (!transactionLogs.length) {
+          transactionDetailed.operations = await this.tokenTransferService.getOperationsForFreezeFromScResults(transactionDetailed.results);
+        }
+        else {
+          transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransactionLogs(transactionDetailed.txHash, transactionLogs);
+        }
         transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.operations);
 
         for (const log of transactionLogsFromElastic) {

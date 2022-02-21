@@ -12,6 +12,7 @@ import { TransactionOperationAction } from "../transactions/entities/transaction
 import { RecordUtils } from "src/utils/record.utils";
 import { TransactionLogEvent } from "../transactions/entities/transaction.log.event";
 import { TransactionOperationType } from "../transactions/entities/transaction.operation.type";
+import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
 
 @Injectable()
 export class TokenTransferService {
@@ -105,6 +106,39 @@ export class TokenTransferService {
     return operations.filter(operation => operation !== undefined).map(operation => operation ?? new TransactionOperation());
   }
 
+  async getOperationsForFreezeFromScResults(scresults: SmartContractResult[]): Promise<TransactionOperation[]> {
+    if (scresults.length === 0) {
+      return [];
+    }
+
+    const operations: (TransactionOperation | undefined)[] = [];
+
+    for (const scresult of scresults) {
+      const data = BinaryUtils.base64Decode(scresult.data);
+
+      const operationIdentifier = data.split('@')[0];
+      const action = this.getOperationAction(operationIdentifier);
+      if (action) {
+        const tokenIdentifier = BinaryUtils.hexToString(data.split('@')[1]);
+        const properties = await this.getTokenTransferProperties(tokenIdentifier);
+
+        const operation = new TransactionOperation();
+        operation.action = action;
+        operation.identifier = tokenIdentifier;
+        operation.type = TransactionOperationType.esdt;
+        operation.esdtType = properties?.type;
+        operation.collection = tokenIdentifier;
+        operation.name = properties?.name;
+        operation.decimals = properties?.decimals;
+        operation.receiver = scresult.receiver;
+
+        operations.push(operation);
+      }
+    }
+
+    return operations.filter(operation => operation !== undefined).map(operation => operation ?? new TransactionOperation());
+  }
+
   private getOperationAction(identifier: string): TransactionOperationAction | null {
     switch (identifier) {
       case TransactionLogEventIdentifier.ESDTNFTTransfer:
@@ -127,6 +161,8 @@ export class TokenTransferService {
         return TransactionOperationAction.localBurn;
       case TransactionLogEventIdentifier.ESDTWipe:
         return TransactionOperationAction.wipe;
+      case TransactionLogEventIdentifier.ESDTFreeze:
+        return TransactionOperationAction.freeze;
       default:
         return null;
     }
