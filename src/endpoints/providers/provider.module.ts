@@ -1,14 +1,14 @@
 import { forwardRef, Module } from "@nestjs/common";
-import { CommonModule } from "src/common/common.module";
+import { KeybaseModule } from "src/common/keybase/keybase.module";
 import { NodeModule } from "../nodes/node.module";
 import { VmQueryModule } from "../vm.query/vm.query.module";
 import { ProviderService } from "./provider.service";
 
 @Module({
   imports: [
-    forwardRef(() => CommonModule),
+    forwardRef(() => KeybaseModule),
     forwardRef(() => NodeModule),
-    forwardRef(() => VmQueryModule),
+    VmQueryModule,
   ],
   providers: [
     ProviderService,

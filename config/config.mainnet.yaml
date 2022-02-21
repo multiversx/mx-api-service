@@ -47,6 +47,7 @@ urls:
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
 database:
+  enabled: false
   host: 'localhost'
   port: 3306
   username: 'root'

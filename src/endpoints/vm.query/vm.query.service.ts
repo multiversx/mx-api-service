@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
@@ -12,6 +12,7 @@ export class VmQueryService {
   private readonly logger: Logger;
 
   constructor(
+    @Inject(forwardRef(() => CachingService))
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
     private readonly protocolService: ProtocolService,
