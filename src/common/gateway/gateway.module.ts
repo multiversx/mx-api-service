@@ -1,15 +1,13 @@
-import { forwardRef, Module } from "@nestjs/common";
-import { ApiConfigModule } from "../api-config/api.config.module";
+import { Global, Module } from "@nestjs/common";
 import { MetricsModule } from "../metrics/metrics.module";
 import { ApiModule } from "../network/api.module";
 import { GatewayService } from "./gateway.service";
 
-
+@Global()
 @Module({
   imports: [
-    ApiConfigModule,
-    forwardRef(() => ApiModule),
-    forwardRef(() => MetricsModule),
+    MetricsModule,
+    ApiModule,
   ],
   providers: [
     GatewayService,

@@ -1,5 +1,5 @@
 import { forwardRef, Module } from "@nestjs/common";
-import { CommonModule } from "src/common/common.module";
+import { DataApiModule } from "src/common/external/data.api.module";
 import { PluginModule } from "src/plugins/plugin.module";
 import { TokenModule } from "../tokens/token.module";
 import { TransactionGetService } from "./transaction.get.service";
@@ -8,9 +8,9 @@ import { TransactionService } from "./transaction.service";
 
 @Module({
   imports: [
-    forwardRef(() => CommonModule),
-    forwardRef(() => PluginModule),
     forwardRef(() => TokenModule),
+    DataApiModule,
+    forwardRef(() => PluginModule),
   ],
   providers: [
     TransactionGetService, TransactionPriceService, TransactionService,

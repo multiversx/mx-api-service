@@ -1,11 +1,7 @@
-import { forwardRef, Module } from "@nestjs/common";
-import { CommonModule } from "src/common/common.module";
+import { Module } from "@nestjs/common";
 import { SmartContractResultService } from "./scresult.service";
 
 @Module({
-  imports: [
-    forwardRef(() => CommonModule),
-  ],
   providers: [
     SmartContractResultService,
   ],

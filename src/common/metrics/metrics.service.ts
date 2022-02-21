@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { register, Histogram, Gauge, collectDefaultMetrics } from 'prom-client';
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GatewayComponentRequest } from "../gateway/entities/gateway.component.request";
@@ -24,7 +24,6 @@ export class MetricsService {
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    @Inject(forwardRef(() => GatewayService))
     private readonly gatewayService: GatewayService,
     @Inject(forwardRef(() => ProtocolService))
     private readonly protocolService: ProtocolService,

@@ -29,7 +29,6 @@ export class AccountService {
   constructor(
     private readonly elasticService: ElasticService,
     private readonly gatewayService: GatewayService,
-    @Inject(forwardRef(() => CachingService))
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
