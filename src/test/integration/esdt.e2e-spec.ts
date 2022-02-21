@@ -4,12 +4,12 @@ import tokenExample from "../data/esdt/token/token.example";
 import { TokenAddressRoles } from "src/endpoints/tokens/entities/token.address.roles";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { EsdtAddressService } from "src/endpoints/esdt/esdt.address.service";
-import { EsdtModule } from "src/endpoints/esdt/esdt.module";
 import { EsdtDataSource } from "src/endpoints/esdt/entities/esdt.data.source";
 import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
 import { NftCollectionAccount } from "src/endpoints/collections/entities/nft.collection.account";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import '../../utils/extensions/jest.extensions';
+import { PublicAppModule } from "src/public.app.module";
 
 describe('ESDT Service', () => {
   let esdtService: EsdtService;
@@ -19,7 +19,7 @@ describe('ESDT Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [EsdtModule],
+      imports: [PublicAppModule],
     }).compile();
 
     esdtService = moduleRef.get<EsdtService>(EsdtService);

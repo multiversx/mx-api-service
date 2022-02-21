@@ -6,8 +6,8 @@ import { TokenDetailed } from "../../endpoints/tokens/entities/token.detailed";
 import { TokenAccount } from "../../endpoints/tokens/entities/token.account";
 import { TokenAddressRoles } from 'src/endpoints/tokens/entities/token.address.roles';
 import tokenDetails from '../data/esdt/token/token.example';
-import { TokenModule } from 'src/endpoints/tokens/token.module';
 import '../../utils/extensions/jest.extensions';
+import { PublicAppModule } from 'src/public.app.module';
 
 describe('Token Service', () => {
   let tokenService: TokenService;
@@ -19,7 +19,7 @@ describe('Token Service', () => {
   beforeAll(async () => {
 
     const moduleRef = await Test.createTestingModule({
-      imports: [TokenModule],
+      imports: [PublicAppModule],
     }).compile();
 
     tokenService = moduleRef.get<TokenService>(TokenService);

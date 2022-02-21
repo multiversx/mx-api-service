@@ -7,9 +7,9 @@ import { QueryConditionOptions } from 'src/common/elastic/entities/query.conditi
 import { TransactionOptionalFieldOption } from 'src/endpoints/transactions/entities/transaction.optional.field.options';
 import transactionDetails from "../data/transactions/transaction.details";
 import { TransactionDetailed } from "../../endpoints/transactions/entities/transaction.detailed";
-import { TransactionModule } from 'src/endpoints/transactions/transaction.module';
 import '../../utils/extensions/jest.extensions';
 import '../../utils/extensions/array.extensions';
+import { PublicAppModule } from 'src/public.app.module';
 
 describe('Transaction Service', () => {
   let transactionService: TransactionService;
@@ -20,7 +20,7 @@ describe('Transaction Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [TransactionModule],
+      imports: [PublicAppModule],
     }).compile();
 
     transactionService = moduleRef.get<TransactionService>(TransactionService);

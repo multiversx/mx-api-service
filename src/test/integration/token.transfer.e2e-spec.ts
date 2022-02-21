@@ -3,8 +3,7 @@ import { TokenTransferService } from "../../endpoints/tokens/token.transfer.serv
 import transactionsWithLogs from "../data/transactions/transactions.with.logs";
 import tokenDetails from "../data/esdt/token/token.example";
 import { EsdtService } from "../../endpoints/esdt/esdt.service";
-import { EsdtModule } from "src/endpoints/esdt/esdt.module";
-import { TokenModule } from "src/endpoints/tokens/token.module";
+import { PublicAppModule } from "src/public.app.module";
 
 describe('Token Transfer Service', () => {
   let tokenTransferService: TokenTransferService;
@@ -16,7 +15,7 @@ describe('Token Transfer Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [EsdtModule, TokenModule],
+      imports: [PublicAppModule],
     }).compile();
 
     tokenTransferService = moduleRef.get<TokenTransferService>(TokenTransferService);

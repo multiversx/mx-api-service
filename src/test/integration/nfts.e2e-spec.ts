@@ -6,9 +6,9 @@ import { Nft } from "../../endpoints/nfts/entities/nft";
 import { NftOwner } from "src/endpoints/nfts/entities/nft.owner";
 import { NftAccount } from "src/endpoints/nfts/entities/nft.account";
 import userAccount from "../data/accounts/user.account";
-import { NftModule } from "src/endpoints/nfts/nft.module";
 import '../../utils/extensions/jest.extensions';
 import '../../utils/extensions/array.extensions';
+import { PublicAppModule } from "src/public.app.module";
 
 describe('Nft Service', () => {
   let nftService: NftService;
@@ -19,7 +19,7 @@ describe('Nft Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [NftModule],
+      imports: [PublicAppModule],
     }).compile();
 
     nftService = moduleRef.get<NftService>(NftService);

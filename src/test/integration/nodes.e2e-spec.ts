@@ -14,14 +14,10 @@ import { Queue } from "src/endpoints/nodes/entities/queue";
 import providerAccount from "../data/accounts/provider.account";
 import { FileUtils } from "src/utils/file.utils";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { NodeModule } from "src/endpoints/nodes/node.module";
-import { CachingModule } from "src/common/caching/caching.module";
-import { ProviderModule } from "src/endpoints/providers/provider.module";
-import { AccountModule } from "src/endpoints/accounts/account.module";
-import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import '../../utils/extensions/array.extensions';
 import '../../utils/extensions/jest.extensions';
 import '../../utils/extensions/number.extensions';
+import { PublicAppModule } from "src/public.app.module";
 
 describe('Node Service', () => {
   let nodeService: NodeService;
@@ -36,7 +32,7 @@ describe('Node Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [NodeModule, CachingModule, ProviderModule, AccountModule, ApiConfigModule],
+      imports: [PublicAppModule],
     }).compile();
 
     nodeService = moduleRef.get<NodeService>(NodeService);

@@ -5,8 +5,8 @@ import { NftMediaService } from "../../queue.worker/nft.worker/queue/job-service
 import { Nft } from "../../endpoints/nfts/entities/nft";
 import { NftMedia } from "../../endpoints/nfts/entities/nft.media";
 import { NftMediaModule } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.module";
-import { NftModule } from "src/endpoints/nfts/nft.module";
 import '../../utils/extensions/array.extensions';
+import { PublicAppModule } from "src/public.app.module";
 
 describe('Nft Media Service', () => {
   let nftMediaService: NftMediaService;
@@ -15,7 +15,7 @@ describe('Nft Media Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [NftMediaModule, NftModule],
+      imports: [NftMediaModule, PublicAppModule],
     }).compile();
 
     nftMediaService = moduleRef.get<NftMediaService>(NftMediaService);

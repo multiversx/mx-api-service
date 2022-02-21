@@ -7,14 +7,14 @@ import { NftCollectionAccount } from 'src/endpoints/collections/entities/nft.col
 import { NftType } from 'src/endpoints/nfts/entities/nft.type';
 import { CollectionFilter } from 'src/endpoints/collections/entities/collection.filter';
 import '../../utils/extensions/jest.extensions';
-import { EsdtModule } from 'src/endpoints/esdt/esdt.module';
+import { PublicAppModule } from 'src/public.app.module';
 
 describe('EsdtAddressService', () => {
   let esdtAddressService: EsdtAddressService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [EsdtModule],
+      imports: [PublicAppModule],
     }).compile();
 
     esdtAddressService = moduleRef.get<EsdtAddressService>(EsdtAddressService);

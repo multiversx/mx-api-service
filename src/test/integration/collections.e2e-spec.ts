@@ -4,8 +4,8 @@ import { CollectionFilter } from "src/endpoints/collections/entities/collection.
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftCollection } from "../../endpoints/collections/entities/nft.collection";
 import { NftCollectionAccount } from "src/endpoints/collections/entities/nft.collection.account";
-import { CollectionModule } from "src/endpoints/collections/collection.module";
 import '../../utils/extensions/jest.extensions';
+import { PublicAppModule } from "src/public.app.module";
 
 describe('Collection Service', () => {
   let collectionService: CollectionService;
@@ -15,7 +15,7 @@ describe('Collection Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [CollectionModule],
+      imports: [PublicAppModule],
     }).compile();
 
     collectionService = moduleRef.get<CollectionService>(CollectionService);

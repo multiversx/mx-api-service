@@ -7,7 +7,7 @@ import {
   GenerateThumbnailResult,
 } from "../../queue.worker/nft.worker/queue/job-services/thumbnails/entities/generate.thumbnail.result";
 import { NftThumbnailModule } from "src/queue.worker/nft.worker/queue/job-services/thumbnails/nft.thumbnail.module";
-import { NftModule } from "src/endpoints/nfts/nft.module";
+import { PublicAppModule } from "src/public.app.module";
 
 
 describe('Nft Queue Service', () => {
@@ -19,7 +19,7 @@ describe('Nft Queue Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [NftThumbnailModule, NftModule],
+      imports: [NftThumbnailModule, PublicAppModule],
     }).compile();
 
     nftQueueService = moduleRef.get<NftThumbnailService>(NftThumbnailService);

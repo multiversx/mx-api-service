@@ -3,8 +3,8 @@ import { Test } from "@nestjs/testing";
 import { SmartContractResultFilter } from "../../endpoints/sc-results/entities/smart.contract.result.filter";
 import smartContractResults from "../data/smartcontract/scresults";
 import { SmartContractResult } from "../../endpoints/sc-results/entities/smart.contract.result";
-import { SmartContractResultModule } from "src/endpoints/sc-results/scresult.module";
 import '../../utils/extensions/jest.extensions';
+import { PublicAppModule } from "src/public.app.module";
 
 describe('Scresults Service', () => {
   let scResultsService: SmartContractResultService;
@@ -13,7 +13,7 @@ describe('Scresults Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [SmartContractResultModule],
+      imports: [PublicAppModule],
     }).compile();
 
     scResultsService = moduleRef.get<SmartContractResultService>(SmartContractResultService);

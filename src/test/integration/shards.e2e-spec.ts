@@ -1,16 +1,16 @@
 import { Test } from "@nestjs/testing";
 import { Shard } from "src/endpoints/shards/entities/shard";
-import { ShardModule } from "src/endpoints/shards/shard.module";
 import { ShardService } from "src/endpoints/shards/shard.service";
 import '../../utils/extensions/jest.extensions';
 import '../../utils/extensions/array.extensions';
+import { PublicAppModule } from "src/public.app.module";
 
 describe('Shard Service', () => {
   let shardService: ShardService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [ShardModule],
+      imports: [PublicAppModule],
     }).compile();
 
     shardService = moduleRef.get<ShardService>(ShardService);

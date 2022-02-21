@@ -1,17 +1,15 @@
 import { Test } from '@nestjs/testing';
 import BigNumber from 'bignumber.js';
-import { ApiConfigModule } from 'src/common/api-config/api.config.module';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { CachingModule } from 'src/common/caching/caching.module';
 import { CachingService } from 'src/common/caching/caching.service';
 import { KeybaseState } from 'src/common/keybase/entities/keybase.state';
 import { Provider } from 'src/endpoints/providers/entities/provider';
 import { ProviderFilter } from 'src/endpoints/providers/entities/provider.filter';
-import { ProviderModule } from 'src/endpoints/providers/provider.module';
 import { ProviderService } from 'src/endpoints/providers/provider.service';
 import providerAccount from '../data/accounts/provider.account';
 import '../../utils/extensions/array.extensions';
 import '../../utils/extensions/jest.extensions';
+import { PublicAppModule } from 'src/public.app.module';
 
 describe('Provider Service', () => {
   let providerService: ProviderService;
@@ -23,7 +21,7 @@ describe('Provider Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [ProviderModule, ApiConfigModule, CachingModule],
+      imports: [PublicAppModule],
     }).compile();
 
     providerService = moduleRef.get<ProviderService>(ProviderService);

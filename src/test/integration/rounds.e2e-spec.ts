@@ -1,8 +1,8 @@
 import { Test } from "@nestjs/testing";
 import { Round } from "src/endpoints/rounds/entities/round";
 import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
-import { RoundModule } from "src/endpoints/rounds/round.module";
 import { RoundService } from "src/endpoints/rounds/round.service";
+import { PublicAppModule } from "src/public.app.module";
 import { RoundDetailed } from "../../endpoints/rounds/entities/round.detailed";
 import '../../utils/extensions/jest.extensions';
 
@@ -12,7 +12,7 @@ describe('Rounds Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [RoundModule],
+      imports: [PublicAppModule],
     }).compile();
 
     roundService = moduleRef.get<RoundService>(RoundService);

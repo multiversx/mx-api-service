@@ -1,16 +1,16 @@
 import { DelegationService } from "../../endpoints/delegation/delegation.service";
 import { Test } from "@nestjs/testing";
 import { Delegation } from "../../endpoints/delegation/entities/delegation";
-import { DelegationModule } from "src/endpoints/delegation/delegation.module";
 import '../../utils/extensions/jest.extensions';
 import '../../utils/extensions/array.extensions';
+import { PublicAppModule } from "src/public.app.module";
 
 describe('Delegation Service', () => {
   let delegationService: DelegationService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [DelegationModule],
+      imports: [PublicAppModule],
     }).compile();
 
     delegationService = moduleRef.get<DelegationService>(DelegationService);

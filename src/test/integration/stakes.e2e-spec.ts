@@ -1,6 +1,6 @@
 import { Test } from "@nestjs/testing";
-import { StakeModule } from "src/endpoints/stake/stake.module";
 import { StakeService } from "src/endpoints/stake/stake.service";
+import { PublicAppModule } from "src/public.app.module";
 import { Stake } from "../../endpoints/stake/entities/stake";
 import { StakeTopup } from "../../endpoints/stake/entities/stake.topup";
 import '../../utils/extensions/jest.extensions';
@@ -18,7 +18,7 @@ describe('Stake Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [StakeModule],
+      imports: [PublicAppModule],
     }).compile();
 
     stakeService = moduleRef.get<StakeService>(StakeService);

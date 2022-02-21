@@ -2,15 +2,15 @@ import { Test } from "@nestjs/testing";
 import { MexService } from "../../endpoints/mex/mex.service";
 import userAccount from "../data/accounts/user.account";
 import { MexWeek } from "src/endpoints/mex/entities/mex.week";
-import { MexModule } from "src/endpoints/mex/mex.module";
 import '../../utils/extensions/jest.extensions';
+import { PublicAppModule } from "src/public.app.module";
 
 describe('Mex Service', () => {
   let mexService: MexService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [MexModule],
+      imports: [PublicAppModule],
     }).compile();
 
     mexService = moduleRef.get<MexService>(MexService);

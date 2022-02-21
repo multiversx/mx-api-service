@@ -1,6 +1,6 @@
 import { Test } from "@nestjs/testing";
 import { TokenAssetService } from "../../endpoints/tokens/token.asset.service";
-import { TokenModule } from "src/endpoints/tokens/token.module";
+import { PublicAppModule } from "src/public.app.module";
 
 describe('Token Service', () => {
   let tokenAssetService: TokenAssetService;
@@ -8,7 +8,7 @@ describe('Token Service', () => {
   beforeAll(async () => {
 
     const moduleRef = await Test.createTestingModule({
-      imports: [TokenModule],
+      imports: [PublicAppModule],
     }).compile();
 
     tokenAssetService = moduleRef.get<TokenAssetService>(TokenAssetService);

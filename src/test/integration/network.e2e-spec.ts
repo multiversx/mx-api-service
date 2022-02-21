@@ -3,17 +3,17 @@ import { NetworkService } from "../../endpoints/network/network.service";
 import { NetworkConstants } from "src/endpoints/network/entities/constants";
 import { NetworkConfig } from "src/endpoints/network/entities/network.config";
 import { Economics } from "src/endpoints/network/entities/economics";
-import { NetworkModule } from "src/endpoints/network/network.module";
 import '../../utils/extensions/jest.extensions';
 import '../../utils/extensions/array.extensions';
 import '../../utils/extensions/number.extensions';
+import { PublicAppModule } from "src/public.app.module";
 
 describe('Network Service', () => {
   let networkService: NetworkService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [NetworkModule],
+      imports: [PublicAppModule],
     }).compile();
 
     networkService = moduleRef.get<NetworkService>(NetworkService);

@@ -1,6 +1,6 @@
 import { Test } from "@nestjs/testing";
+import { PublicAppModule } from "src/public.app.module";
 import { ApiService } from "../../common/network/api.service";
-import { ApiModule } from "src/common/network/api.module";
 
 describe('API Service', () => {
   let apiService: ApiService;
@@ -9,7 +9,7 @@ describe('API Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [ApiModule],
+      imports: [PublicAppModule],
     }).compile();
 
     apiService = moduleRef.get<ApiService>(ApiService);

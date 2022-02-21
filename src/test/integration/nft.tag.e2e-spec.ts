@@ -1,15 +1,15 @@
 import { TagService } from "../../endpoints/nfttags/tag.service";
 import { Test } from "@nestjs/testing";
 import { Tag } from "../../endpoints/nfttags/entities/tag";
-import { TagModule } from "src/endpoints/nfttags/tag.module";
 import '../../utils/extensions/jest.extensions';
+import { PublicAppModule } from "src/public.app.module";
 
 describe('NFT Tag Service', () => {
   let tagService: TagService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [TagModule],
+      imports: [PublicAppModule],
     }).compile();
 
     tagService = moduleRef.get<TagService>(TagService);
