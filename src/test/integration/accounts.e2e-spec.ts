@@ -10,7 +10,7 @@ import { DeployedContract } from 'src/endpoints/accounts/entities/deployed.contr
 import userAccount from "../data/accounts/user.account";
 import providerAccount from "../data/accounts/provider.account";
 import { AccountKey } from 'src/endpoints/accounts/entities/account.key';
-import {TokenService} from "../../endpoints/tokens/token.service";
+import { TokenService } from "../../endpoints/tokens/token.service";
 
 describe('Account Service', () => {
   let accountService: AccountService;
@@ -199,7 +199,7 @@ describe('Account Service', () => {
     describe('Account History', () => {
 
       it(`should return the account EGLD balance history`, async () => {
-        const accountHistories = await accountService.getAccountHistory(smartContractOwnerAddress, {from: 0, size: 1});
+        const accountHistories = await accountService.getAccountHistory(smartContractOwnerAddress, { from: 0, size: 1 });
         expect(accountHistories).toBeDefined();
         for (const account of accountHistories) {
           expect(account).toHaveProperty('address');
@@ -211,10 +211,10 @@ describe('Account Service', () => {
 
     describe('Account Token balance history', () => {
       it('should return the token EGLD balance history ', async () => {
-        const accountTokens = await tokensService.getTokensForAddress(smartContractOwnerAddress, {from: 0, size: 1}, {});
-        if(accountTokens.length){
+        const accountTokens = await tokensService.getTokensForAddress(smartContractOwnerAddress, { from: 0, size: 1 }, {});
+        if (accountTokens.length) {
           const accountTokenHistories = await accountService.getAccountTokenHistory(smartContractOwnerAddress,
-              accountTokens[0].identifier, {from: 0, size: 1});
+            accountTokens[0].identifier, { from: 0, size: 1 });
 
           for (const account of accountTokenHistories) {
             expect(account).toHaveProperty('address');

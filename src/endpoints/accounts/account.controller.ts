@@ -30,8 +30,8 @@ import { ParseTransactionHashPipe } from 'src/utils/pipes/parse.transaction.hash
 import { ParseBlockHashPipe } from 'src/utils/pipes/parse.block.hash.pipe';
 import { ParseArrayPipe } from 'src/utils/pipes/parse.array.pipe';
 import { SortOrder } from 'src/common/entities/sort.order';
-import {AccountHistory} from "./entities/account.history";
-import {AccountEsdtHistory} from "./entities/account.esdt.history";
+import { AccountHistory } from "./entities/account.history";
+import { AccountEsdtHistory } from "./entities/account.esdt.history";
 import { EsdtDataSource } from '../esdt/entities/esdt.data.source';
 
 @Controller()
@@ -787,9 +787,9 @@ export class AccountController {
     description: 'Account EGLD balance history not found',
   })
   getAccountHistory(
-      @Param('address', ParseAddressPipe) address: string,
-      @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-      @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<AccountHistory[]> {
     return this.accountService.getAccountHistory(address, { from, size });
   }
@@ -807,10 +807,10 @@ export class AccountController {
     description: 'Token balance history not found for this account',
   })
   getAccountTokenHistory(
-      @Param('address', ParseAddressPipe) address: string,
-      @Param('tokenIdentifier') tokenIdentifier: string,
-      @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-      @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Param('address', ParseAddressPipe) address: string,
+    @Param('tokenIdentifier') tokenIdentifier: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<AccountEsdtHistory[]> {
     return this.accountService.getAccountTokenHistory(address, tokenIdentifier, { from, size });
   }

@@ -1,4 +1,4 @@
-import {forwardRef, HttpStatus, Inject, Injectable, Logger} from '@nestjs/common';
+import { forwardRef, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
 import { CachingService } from 'src/common/caching/caching.service';
@@ -21,9 +21,9 @@ import { DeployedContract } from './entities/deployed.contract';
 import { TransactionService } from '../transactions/transaction.service';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { PluginService } from 'src/common/plugins/plugin.service';
-import {AccountEsdtHistory} from "./entities/account.esdt.history";
-import {AbstractQuery} from "../../common/elastic/entities/abstract.query";
-import {AccountHistory} from "./entities/account.history";
+import { AccountEsdtHistory } from "./entities/account.esdt.history";
+import { AbstractQuery } from "../../common/elastic/entities/abstract.query";
+import { AccountHistory } from "./entities/account.history";
 
 @Injectable()
 export class AccountService {
@@ -352,8 +352,8 @@ export class AccountService {
   async getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]> {
     const elasticQuery: ElasticQuery = AccountService.buildAccountHistoryFilterQuery(address);
     elasticQuery
-        .withPagination(pagination)
-        .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withPagination(pagination)
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
     const elasticResult = await this.elasticService.getList('accountshistory', 'address', elasticQuery);
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountHistory(), item));
@@ -377,8 +377,8 @@ export class AccountService {
   async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<AccountEsdtHistory[]> {
     const elasticQuery: ElasticQuery = AccountService.buildAccountHistoryFilterQuery(address, tokenIdentifier);
     elasticQuery
-        .withPagination(pagination)
-        .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withPagination(pagination)
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
     const elasticResult = await this.elasticService.getList('accountsesdthistory', 'address', elasticQuery);
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
