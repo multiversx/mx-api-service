@@ -159,8 +159,6 @@ export class TokenTransferService {
         return TransactionOperationAction.localMint;
       case TransactionLogEventIdentifier.ESDTLocalBurn:
         return TransactionOperationAction.localBurn;
-      case TransactionLogEventIdentifier.ESDTWipe:
-        return TransactionOperationAction.wipe;
       case TransactionLogEventIdentifier.ESDTFreeze:
         return TransactionOperationAction.freeze;
       default:

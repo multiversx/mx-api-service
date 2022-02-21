@@ -7,6 +7,5 @@ export enum TransactionOperationAction {
   multiTransfer = 'multiTransfer',
   localMint = 'localMint',
   localBurn = 'localBurn',
-  wipe = 'wipe',
   freeze = 'freeze'
 }
