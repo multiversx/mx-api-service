@@ -66,63 +66,71 @@ export class NftService {
   }
 
   buildElasticNftFilter(filter: NftFilter, identifier?: string, address?: string) {
-    const queries = [];
-    queries.push(QueryType.Exists('identifier'));
+    const mustQueries = [];
+    const shouldQueries = [];
+    mustQueries.push(QueryType.Exists('identifier'));
 
     if (address) {
-      queries.push(QueryType.Match('address', address));
+      mustQueries.push(QueryType.Match('address', address));
     }
 
     if (filter.search !== undefined) {
-      queries.push(QueryType.Wildcard('token', `*${filter.search}*`));
+      mustQueries.push(QueryType.Wildcard('token', `*${filter.search}*`));
     }
 
     if (filter.type !== undefined) {
-      queries.push(QueryType.Match('type', filter.type));
+      mustQueries.push(QueryType.Match('type', filter.type));
     }
 
     if (identifier !== undefined) {
-      queries.push(QueryType.Match('identifier', identifier, QueryOperator.AND));
+      mustQueries.push(QueryType.Match('identifier', identifier, QueryOperator.AND));
     }
 
     if (filter.collection !== undefined && filter.collection !== '') {
-      queries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
+      mustQueries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
+    }
+
+    if (filter.collections !== undefined && filter.collections.length !== 0) {
+      for (const collection of filter.collections) {
+        shouldQueries.push(QueryType.Match('token', collection, QueryOperator.AND));
+      }
     }
 
     if (filter.name !== undefined && filter.name !== '') {
-      queries.push(QueryType.Nested('data', { "data.name": filter.name }));
+      mustQueries.push(QueryType.Nested('data', { "data.name": filter.name }));
     }
 
     if (filter.hasUris !== undefined) {
-      queries.push(QueryType.Nested('data', { "data.nonEmptyURIs": filter.hasUris }));
+      mustQueries.push(QueryType.Nested('data', { "data.nonEmptyURIs": filter.hasUris }));
     }
 
     if (filter.tags) {
       const tagArray = filter.tags;
       if (tagArray.length > 0) {
         for (const tag of tagArray) {
-          queries.push(QueryType.Nested("data", { "data.tags": tag }));
+          mustQueries.push(QueryType.Nested("data", { "data.tags": tag }));
         }
       }
     }
 
     if (filter.creator !== undefined) {
-      queries.push(QueryType.Nested("data", { "data.creator": filter.creator }));
+      mustQueries.push(QueryType.Nested("data", { "data.creator": filter.creator }));
     }
 
     if (filter.identifiers) {
       const identifiers = filter.identifiers;
-      queries.push(QueryType.Should(identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
+      mustQueries.push(QueryType.Should(identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
     }
 
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       if (filter.isWhitelistedStorage !== undefined) {
-        queries.push(QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
+        mustQueries.push(QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
       }
     }
 
     let elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, queries)
+      .withCondition(QueryConditionOptions.must, mustQueries)
+      .withCondition(QueryConditionOptions.should, shouldQueries)
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('type', 'FungibleESDT'), QueryType.Match('address', 'pending')]);
 
     if (filter.before || filter.after) {
