@@ -31,23 +31,23 @@ export class TransactionUtils {
     return JSON.stringify(filter) === JSON.stringify(filterToCompareWith);
   }
 
-  static trimOperations(operations: TransactionOperation[]): TransactionOperation[] {
+  static trimOperations(txHash: string, operations: TransactionOperation[]): TransactionOperation[] {
     const result: TransactionOperation[] = [];
 
     for (const operation of operations) {
-      const identicalOperations = result.filter(x =>
-        x.sender === operation.sender &&
-        x.receiver === operation.receiver &&
-        x.collection === operation.collection &&
-        x.identifier === operation.identifier &&
-        x.type === operation.type &&
-        x.action === 'transfer'
-      );
+      if (operation.action === 'transfer' && operation.id === txHash) {
+        const identicalOperations = operations.filter(x =>
+          x.sender === operation.sender &&
+          x.receiver === operation.receiver &&
+          x.collection === operation.collection &&
+          x.identifier === operation.identifier &&
+          x.type === operation.type &&
+          x.value === operation.value &&
+          x.action === 'transfer' &&
+          x.id !== txHash
+        );
 
-      if (identicalOperations.length > 0) {
-        if (BigInt(identicalOperations[0].value) > BigInt(operation.value)) {
-          result.remove(identicalOperations[0]);
-        } else {
+        if (identicalOperations.length > 0) {
           continue;
         }
       }

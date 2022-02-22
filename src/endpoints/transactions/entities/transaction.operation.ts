@@ -3,6 +3,8 @@ import { TransactionOperationAction } from "./transaction.operation.action";
 import { TransactionOperationType } from "./transaction.operation.type";
 
 export class TransactionOperation {
+  id: string = '';
+
   action: TransactionOperationAction = TransactionOperationAction.none;
 
   type: TransactionOperationType = TransactionOperationType.none;
