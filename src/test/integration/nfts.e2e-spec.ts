@@ -1,3 +1,4 @@
+import { CachingService } from 'src/common/caching/caching.service';
 import { Test } from "@nestjs/testing";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
@@ -9,6 +10,7 @@ import { NftOwner } from "src/endpoints/nfts/entities/nft.owner";
 import { NftAccount } from "src/endpoints/nfts/entities/nft.account";
 import userAccount from "../data/accounts/user.account";
 import { NftModule } from "src/endpoints/nfts/nft.module";
+import nftExample from "../data/esdt/nft/nft.example";
 
 describe('Nft Service', () => {
   let nftService: NftService;
@@ -33,6 +35,8 @@ describe('Nft Service', () => {
     nftCreator = nft.creator;
   }, Constants.oneHour() * 1000);
 
+  beforeEach(() => { jest.restoreAllMocks(); });
+
   describe('Nfts list', () => {
 
     describe('Nfts pagination', () => {
@@ -45,7 +49,6 @@ describe('Nft Service', () => {
           expect(nft).toHaveProperty('identifier');
           expect(nft).toHaveProperty('collection');
           expect(nft).toHaveProperty('timestamp');
-
           expect(nft).toBeInstanceOf(Nft);
         }
       });
@@ -59,7 +62,6 @@ describe('Nft Service', () => {
           expect(nft).toHaveProperty('identifier');
           expect(nft).toHaveProperty('collection');
           expect(nft).toHaveProperty('timestamp');
-
           expect(nft).toBeInstanceOf(Nft);
         }
       });
@@ -165,6 +167,7 @@ describe('Nft Service', () => {
       const nftFilter = new Nft();
       nftFilter.identifier = 'EGLDMEXF-5bcc57-353d44';
       const nft = await nftService.getSingleNft(nftFilter.identifier);
+
       if (!nft) {
         throw new Error('Nft properties are not defined');
       }
@@ -183,6 +186,10 @@ describe('Nft Service', () => {
 
   describe('Get NFT Owner Count', () => {
     it(`should return NFT Owner count = 1`, async () => {
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .mockImplementation(jest.fn((_address: string, promise: any) => promise()));
+
       const nftFilter = new Nft();
       nftFilter.identifier = 'EGLDMEXF-5bcc57-377c9f';
       const count = await nftService.getNftOwnersCount(nftFilter.identifier);
@@ -260,6 +267,34 @@ describe('Nft Service', () => {
       }
 
       expect(owners.length).toBe(1);
+    });
+  });
+
+  describe("getNftForAddress", () => {
+    it("should return nft for address", async () => {
+      const nfts = await nftService.getNftForAddress(nftExample.owner, nftExample.identifier);
+
+      if (!nfts) {
+        throw new Error("Nft properties are not defined");
+      }
+
+      expect(nfts.collection).toBeDefined();
+      expect(nfts.hasOwnProperty("identifier")).toBeTruthy();
+    });
+    it("all nfts should contain tags", async () => {
+      const nfts = await nftService.getNftForAddress(nftExample.owner, nftExample.identifier);
+      const tagsNft: string[] = [
+        "Elrond",
+        "MAW",
+        "superMAW",
+        "Romania",
+        "TrustStaking"];
+
+      if (!nfts) {
+        throw new Error("Nft properties are not defined");
+      }
+
+      expect(nfts.tags).toStrictEqual(tagsNft);
     });
   });
 });

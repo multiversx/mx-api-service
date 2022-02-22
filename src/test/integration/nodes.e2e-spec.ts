@@ -237,6 +237,7 @@ describe('Node Service', () => {
       const nodeFilter: NodeFilter = new NodeFilter();
       nodeFilter.search = firstNode.bls;
       const node = await nodeService.getNode(nodeFilter.search);
+
       if (!node) {
         throw new Error('Node properties are not defined');
       }
@@ -246,5 +247,13 @@ describe('Node Service', () => {
       expect(node).toHaveProperty('version');
     });
   });
-});
 
+  describe("getBlsOwner", () => {
+    it("should return bls owner", async () => {
+      const bls: string = "00f9b676245ecf7bc74e3b644c106cfbbb366ce01a0149c1e50303d22c09bef7600f21f1925753ab994174b9926e9b078c2d1edaf03c221149ea0239722278aa864a1b26f298c29fe546fdb0ee1385243dfe407074e0dfa134c7e6d4197ce110";
+      const owner = await nodeService.getBlsOwner(bls);
+
+      expect(owner).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85");
+    });
+  });
+});

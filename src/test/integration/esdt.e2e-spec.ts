@@ -29,6 +29,8 @@ describe('ESDT Service', () => {
 
   }, Constants.oneHour() * 1000);
 
+  beforeEach(() => { jest.restoreAllMocks(); });
+
   describe('Get Esdts For Address', () => {
     it('gateway & elastic esdts of address should be the same', async () => {
       const esdtAddress: string = 'erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3';
@@ -169,6 +171,15 @@ describe('ESDT Service', () => {
       for (const role of roles) {
         expect(role).toHaveStructure(Object.keys(new TokenAddressRoles()));
       }
+    });
+  });
+
+  describe("getLockedSupplyRaw", () => {
+    it("should return locked supply based on identifier", async () => {
+      const esdtIdentifier: string = "RIDE-7d18e9";
+      const supply = await esdtService.getLockedSupplyRaw(esdtIdentifier);
+
+      expect(typeof supply).toBe('string');
     });
   });
 });

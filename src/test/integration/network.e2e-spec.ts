@@ -1,3 +1,4 @@
+import { CachingService } from 'src/common/caching/caching.service';
 import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
@@ -22,6 +23,11 @@ describe('Network Service', () => {
 
   describe('Get Constants', () => {
     it('should return network constants', async () => {
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
+
       const constants = await networkService.getConstants();
       expect(constants).toHaveStructure(Object.keys(new NetworkConstants()));
     });
@@ -43,8 +49,13 @@ describe('Network Service', () => {
 
   describe('Get Economics', () => {
     it('should return economics properties', async () => {
-      const properties = await networkService.getEconomics();
-      expect(properties).toBeInstanceOf(Object);
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_address: string, promise: any) => promise()));
+
+      const propertiesRaw = await networkService.getEconomics();
+      expect(propertiesRaw).toHaveStructure(Object.keys(new Economics()));
     });
   });
 });

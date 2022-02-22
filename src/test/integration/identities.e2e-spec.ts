@@ -91,14 +91,63 @@ describe('Identities Service', () => {
   describe('Get All Identities Raw', () => {
     it('should return all identities raw', async () => {
       const results = await identityService.getAllIdentitiesRaw();
-      expect(results).toBeInstanceOf(Array);
+
+      for (const result of results) {
+        expect(result).toBeInstanceOf(Object);
+      }
     });
   });
 
   describe('Get Identities', () => {
     it('should return a list of identities based on ids', async () => {
       const results = await identityService.getIdentities(ids);
-      expect(results).toBeInstanceOf(Array);
+
+      for (const result of results) {
+        expect(result).toBeInstanceOf(Object);
+        expect(result.hasOwnProperty('apr')).toBe(true);
+        expect(result.hasOwnProperty('avatar')).toBe(true);
+        expect(result.hasOwnProperty('description')).toBe(true);
+        expect(result.hasOwnProperty('distribution')).toBe(true);
+        expect(result.hasOwnProperty('identity')).toBe(true);
+        expect(result.hasOwnProperty('location')).toBe(true);
+        expect(result.hasOwnProperty('locked')).toBe(true);
+        expect(result.hasOwnProperty('name')).toBe(true);
+        expect(result.hasOwnProperty('providers')).toBe(true);
+        expect(result.hasOwnProperty('rank')).toBe(true);
+        expect(result.hasOwnProperty('score')).toBe(true);
+        expect(result.hasOwnProperty('stake')).toBe(true);
+        expect(result.hasOwnProperty('stakePercent')).toBe(true);
+        expect(result.hasOwnProperty('topUp')).toBe(true);
+        expect(result.hasOwnProperty('validators')).toBe(true);
+        expect(result.hasOwnProperty('website')).toBe(true);
+      }
+    });
+  });
+
+  describe('getIdentity', () => {
+    it('should return all properties of identifier', async () => {
+      const identity = await identityService.getIdentity("staking_agency");
+
+      if (!identity) {
+        throw new Error('Identity must be defined');
+      }
+
+      expect(identity.hasOwnProperty('apr')).toBe(true);
+      expect(identity.hasOwnProperty('avatar')).toBe(true);
+      expect(identity.hasOwnProperty('description')).toBe(true);
+      expect(identity.hasOwnProperty('distribution')).toBe(true);
+      expect(identity.hasOwnProperty('identity')).toBe(true);
+      expect(identity.hasOwnProperty('location')).toBe(true);
+      expect(identity.hasOwnProperty('locked')).toBe(true);
+      expect(identity.hasOwnProperty('name')).toBe(true);
+      expect(identity.hasOwnProperty('providers')).toBe(true);
+      expect(identity.hasOwnProperty('rank')).toBe(true);
+      expect(identity.hasOwnProperty('score')).toBe(true);
+      expect(identity.hasOwnProperty('stake')).toBe(true);
+      expect(identity.hasOwnProperty('stakePercent')).toBe(true);
+      expect(identity.hasOwnProperty('topUp')).toBe(true);
+      expect(identity.hasOwnProperty('validators')).toBe(true);
+      expect(identity.hasOwnProperty('website')).toBe(true);
     });
   });
 });

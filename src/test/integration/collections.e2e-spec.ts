@@ -68,6 +68,17 @@ describe('Collection Service', () => {
           expect(collection.type).toBe(NftType.SemiFungibleESDT);
         }
       });
+
+      it('should return collection based identifiers', async () => {
+        const filter = new CollectionFilter();
+        filter.identifiers = ["MAW-894a92-0447", "MAW-894a92-0446"];
+        const collections = await collectionService.getNftCollections({ from: 0, size: 1 }, filter);
+
+        for (const collection of collections) {
+          console.log(collection.name);
+          expect(collection.name).toStrictEqual("MAW-894a92");
+        }
+      });
     });
   });
 

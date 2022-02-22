@@ -1,3 +1,4 @@
+import { CachingService } from 'src/common/caching/caching.service';
 import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
@@ -20,9 +21,14 @@ describe('Mex Service', () => {
 
   }, Constants.oneDay() * 1000);
 
+  beforeEach(() => { jest.restoreAllMocks(); });
 
   describe('Get Mex For Address', () => {
     it(`should return total mex amount for address' `, async () => {
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .mockImplementation(jest.fn((_address, promise: any) => promise()));
+
       const mexWeeks = await mexService.getMexForAddress(userAccount.address);
 
       for (const mexWeek of mexWeeks) {

@@ -1,3 +1,4 @@
+import { CachingService } from 'src/common/caching/caching.service';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import { Account } from 'src/endpoints/accounts/entities/account';
@@ -27,7 +28,22 @@ describe('Account Service', () => {
     delegationLegacyService = moduleRef.get<DelegationLegacyService>(DelegationLegacyService);
   }, Constants.oneHour() * 1000);
 
+  beforeEach(() => { jest.restoreAllMocks(); });
+
   describe('Accounts list', () => {
+    it(`should return a list with 10 accounts`, async () => {
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .mockImplementation(jest.fn((_address: string, promise: any) => promise()));
+
+      const accountsList = await accountService.getAccounts({ from: 0, size: 10 });
+      expect(accountsList).toHaveLength(10);
+
+      for (const account of accountsList) {
+        expect(account).toHaveStructure(Object.keys(new Account()));
+      }
+    });
+
     it(`should return a list with 25 accounts`, async () => {
       const accountsList = await accountService.getAccounts({ from: 0, size: 25 });
 
@@ -50,6 +66,10 @@ describe('Account Service', () => {
 
   describe('Accounts count', () => {
     it(`should return a number`, async () => {
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .mockImplementation(jest.fn((_address: string, promise: any) => promise()));
+
       const accountsCount = await accountService.getAccountsCount();
       expect(typeof accountsCount).toBe('number');
     });
@@ -98,6 +118,10 @@ describe('Account Service', () => {
 
     describe('Account username based on Address', () => {
       it('should return account username based on address ', async () => {
+        jest
+          .spyOn(CachingService.prototype, 'getOrSetCache')
+          .mockImplementation(jest.fn((_address: string, promise: any) => promise()));
+
         const username = await accountService.getAccountUsername(userAccount.address);
         expect(username).toBe(userAccount.username);
       });
@@ -105,6 +129,10 @@ describe('Account Service', () => {
 
     describe('Account Deployed', () => {
       it(`should return the deployed timestamp for a given address`, async () => {
+        jest
+          .spyOn(CachingService.prototype, 'getOrSetCache')
+          .mockImplementation(jest.fn((_address: string, promise: any) => promise()));
+
         const accountDeployed = await accountService.getAccountDeployedAt(providerAccount.address);
         expect(typeof accountDeployed).toBe('number');
       });
@@ -177,6 +205,15 @@ describe('Account Service', () => {
     it(`should return the username raw`, async () => {
       const username = await accountService.getAccountUsernameRaw(userAccount.address);
       expect(username).toEqual(userAccount.username);
+    });
+    it(`should return null if account is not defined`, async () => {
+      jest
+        .spyOn(AccountService.prototype, 'getAccount')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_address: string) => null));
+
+      const username = await accountService.getAccountUsernameRaw(userAccount.address);
+      expect(username).toBeNull();
     });
   });
 
