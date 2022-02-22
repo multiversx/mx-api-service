@@ -209,6 +209,28 @@ describe('Nft Service', () => {
   });
 
   describe('Get NFT For Address', () => {
+    it(`should return nfts within one collections`, async () => {
+      const collection = 'LKFARM-9d1ea8';
+      const nfts = await nftService.getNftsForAddress(userAccount.address, { from: 0, size: 10 }, { collection });
+
+      expect(nfts).toBeInstanceOf(Array);
+
+      for (const nft of nfts) {
+        expect(nft.collection).toStrictEqual(collection);
+      }
+    });
+
+    it(`should return nfts within few collections`, async () => {
+      const collections = ['LKFARM-9d1ea8', 'LKMEX-aab910'];
+      const nfts = await nftService.getNftsForAddress(userAccount.address, { from: 0, size: 10 }, { collections });
+
+      expect(nfts).toBeInstanceOf(Array);
+
+      for (const nft of nfts) {
+        expect(collections.includes(nft.collection)).toBe(true);
+      }
+    });
+
     it(`should return Nft for address without NftQueryOptions`, async () => {
       const nfts = await nftService.getNftsForAddress(userAccount.address, { from: 0, size: 10 }, { type: NftType.NonFungibleESDT });
 
