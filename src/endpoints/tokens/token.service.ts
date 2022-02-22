@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
 import { TokenDetailed } from "./entities/token.detailed";
@@ -22,17 +22,22 @@ import { RecordUtils } from "src/utils/record.utils";
 import { TokenType } from "./entities/token.type";
 import { NumberUtils } from "src/utils/number.utils";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
+import { GatewayService } from "src/common/gateway/gateway.service";
+import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 
 @Injectable()
 export class TokenService {
-
+  private readonly logger: Logger;
   constructor(
     private readonly esdtService: EsdtService,
     private readonly elasticService: ElasticService,
     private readonly cachingService: CachingService,
     private readonly transactionService: TransactionService,
     private readonly esdtAddressService: EsdtAddressService,
-  ) { }
+    private readonly gatewayService: GatewayService
+  ) {
+    this.logger = new Logger(TokenService.name);
+  }
 
   async getToken(identifier: string): Promise<TokenDetailed | undefined> {
     const tokens = await this.esdtService.getAllEsdtTokens();
@@ -182,18 +187,24 @@ export class TokenService {
   }
 
   async getTokenForAddress(address: string, identifier: string): Promise<TokenWithBalance | undefined> {
-    const tokenFilter = new TokenFilter();
-    tokenFilter.identifier = identifier;
-    const tokens = await this.getFilteredTokens(tokenFilter);
+    const tokens = await this.getFilteredTokens({ identifier });
     if (!tokens.length) {
+      this.logger.log(`Error when fetching token ${identifier} details for address ${address}`);
       return undefined;
     }
 
     const token = tokens[0];
-    const esdt = await this.elasticService.getAccountEsdtByAddressAndIdentifier(address, identifier);
+    const esdt = await this.gatewayService.get(`address/${address}/esdt/${identifier}`, GatewayComponentRequest.addressEsdtBalance);
+
+    if (!esdt || !esdt.tokenData) {
+      this.logger.log(`Error when fetching token ${identifier} balance for address ${address}`);
+      return undefined;
+    }
+
+    const balance = esdt.tokenData.balance;
     let tokenWithBalance = {
-      ...esdt,
       ...token,
+      balance,
     };
     tokenWithBalance = ApiUtils.mergeObjects(new TokenWithBalance(), tokenWithBalance);
 

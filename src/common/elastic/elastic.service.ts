@@ -135,42 +135,6 @@ export class ElasticService {
     return result;
   }
 
-  async getAccountEsdtByAddress(address: string, from: number, size: number, token: string | undefined) {
-    const queries = [
-      QueryType.Match('address', address),
-      QueryType.Exists('identifier'),
-    ];
-
-    if (token) {
-      queries.push(
-        QueryType.Match('token', token, QueryOperator.AND)
-      );
-    }
-
-    const elasticQuery = ElasticQuery.create()
-      .withPagination({ from, size })
-      .withCondition(QueryConditionOptions.must, queries);
-
-    const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
-
-    return documents.map((document: any) => this.formatItem(document, 'identifier'));
-  }
-
-  async getAccountEsdtByAddressAndIdentifier(address: string, identifier: string) {
-    const queries = [
-      QueryType.Match('address', address),
-      QueryType.Match('token', identifier, QueryOperator.AND),
-    ];
-
-    const elasticQuery = ElasticQuery.create()
-      .withPagination({ from: 0, size: 1 })
-      .withCondition(QueryConditionOptions.must, queries);
-
-    const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
-
-    return documents.map((document: any) => this.formatItem(document, 'identifier'))[0];
-  }
-
   async getAccountEsdtByAddressCount(address: string) {
     const queries = [
       QueryType.Match('address', address),
