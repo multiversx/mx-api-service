@@ -1,6 +1,7 @@
 import { AbstractQuery } from "./abstract.query";
 import { ExistsQuery } from "./exists.query";
 import { MatchQuery } from "./match.query";
+import { MustQuery } from "./must.query";
 import { NestedQuery } from "./nested.query";
 import { QueryOperator } from "./query.operator";
 import { RangeQuery } from "./range.query";
@@ -30,5 +31,9 @@ export class QueryType {
 
   static Should = (queries: AbstractQuery[]): ShouldQuery => {
     return new ShouldQuery(queries);
+  };
+
+  static Must = (queries: AbstractQuery[]): MustQuery => {
+    return new MustQuery(queries);
   };
 }

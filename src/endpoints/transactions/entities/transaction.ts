@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 
 export class Transaction {
   @ApiProperty()
@@ -60,6 +61,9 @@ export class Transaction {
 
   @ApiProperty()
   scamInfo: any | undefined = undefined;
+
+  @ApiProperty()
+  type: TransactionType | undefined = undefined;
 
   getDate(): Date | undefined {
     if (this.timestamp) {
