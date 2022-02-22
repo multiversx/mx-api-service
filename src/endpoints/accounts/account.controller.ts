@@ -34,8 +34,8 @@ import { AccountHistory } from "./entities/account.history";
 import { AccountEsdtHistory } from "./entities/account.esdt.history";
 import { EsdtDataSource } from '../esdt/entities/esdt.data.source';
 import { TransferService } from '../transfers/transfer.service';
-import { Transfer } from '../transfers/entities/transfer';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { Transaction } from '../transactions/entities/transaction';
 
 @Controller()
 @ApiTags('accounts')
@@ -726,7 +726,7 @@ export class AccountController {
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
     @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
-  ): Promise<Transfer[]> {
+  ): Promise<Transaction[]> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }

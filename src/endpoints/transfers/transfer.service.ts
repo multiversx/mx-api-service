@@ -1,7 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
-import { AbstractQuery } from "src/common/elastic/entities/abstract.query";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 import { ElasticSortProperty } from "src/common/elastic/entities/elastic.sort.property";
@@ -13,8 +12,8 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { ApiUtils } from "src/utils/api.utils";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
-import { Transfer } from "./entities/transfer";
-import { TransferType } from "./entities/transfer.type";
+import { TransactionType } from "../transactions/entities/transaction.type";
+import { Transaction } from "../transactions/entities/transaction";
 
 @Injectable()
 export class TransferService {
@@ -27,80 +26,101 @@ export class TransferService {
     this.logger = new Logger(TransferService.name);
   }
 
-  private buildTransferFilterQuery(filter: TransactionFilter, address?: string): ElasticQuery {
-    const mustQueries: AbstractQuery[] = [];
-    const shouldQueries: AbstractQuery[] = [];
-
-    if (address) {
-      shouldQueries.push(QueryType.Match('sender', address));
-      shouldQueries.push(QueryType.Match('receiver', address));
-
-      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-        shouldQueries.push(QueryType.Match('receivers', address));
-      }
-    }
+  private buildTransferFilterQuery(filter: TransactionFilter, address: string): ElasticQuery {
+    let elasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.should, QueryType.Must([
+        QueryType.Match('type', 'unsigned'),
+        QueryType.Match('nonce', 0),
+        QueryType.Should([
+          QueryType.Match('receiver', address),
+          QueryType.Match('receivers', address),
+        ]),
+      ]))
+      .withCondition(QueryConditionOptions.should, QueryType.Must([
+        QueryType.Match('type', 'normal'),
+        QueryType.Should([
+          QueryType.Match('sender', address),
+          QueryType.Match('receiver', address),
+          QueryType.Match('receivers', address),
+        ]),
+      ]));
 
     if (filter.sender) {
-      mustQueries.push(QueryType.Match('sender', filter.sender));
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('sender', filter.sender));
     }
 
     if (filter.receiver) {
-      shouldQueries.push(QueryType.Match('receiver', filter.receiver));
-
-      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-        shouldQueries.push(QueryType.Match('receivers', filter.receiver));
-      }
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Should([
+        QueryType.Match('receiver', filter.receiver),
+        QueryType.Match('receivers', filter.receiver),
+      ]));
     }
 
     if (filter.token) {
-      mustQueries.push(QueryType.Match('tokens', filter.token, QueryOperator.AND));
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('tokens', filter.token, QueryOperator.AND));
     }
 
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      if (filter.function) {
-        mustQueries.push(QueryType.Match('function', filter.function));
-      }
+    if (filter.function && this.apiConfigService.getIsIndexerV3FlagActive()) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('function', filter.function));
     }
 
     if (filter.senderShard !== undefined) {
-      mustQueries.push(QueryType.Match('senderShard', filter.senderShard));
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('senderShard', filter.senderShard));
     }
 
     if (filter.receiverShard !== undefined) {
-      mustQueries.push(QueryType.Match('receiverShard', filter.receiverShard));
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('receiverShard', filter.receiverShard));
     }
 
     if (filter.miniBlockHash) {
-      mustQueries.push(QueryType.Match('miniBlockHash', filter.miniBlockHash));
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('miniBlockHash', filter.miniBlockHash));
     }
 
     if (filter.hashes) {
-      mustQueries.push(QueryType.Should(filter.hashes.map(hash => QueryType.Match('_id', hash))));
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Should(filter.hashes.map(hash => QueryType.Match('_id', hash))));
     }
 
     if (filter.status) {
-      mustQueries.push(QueryType.Match('status', filter.status));
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('status', filter.status));
     }
 
     if (filter.search) {
-      mustQueries.push(QueryType.Wildcard('data', `*${filter.search}*`));
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Wildcard('data', `*${filter.search}*`));
     }
 
-    let elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.should, shouldQueries)
-      .withCondition(QueryConditionOptions.must, mustQueries);
-
-
     if (filter.before || filter.after) {
-      elasticQuery = elasticQuery
-        .withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
+      elasticQuery = elasticQuery.withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
     }
 
     return elasticQuery;
   }
 
+  private sortElasticTransfers(elasticTransfers: any[]): any[] {
+    for (const elasticTransfer of elasticTransfers) {
+      if (elasticTransfer.originalTxHash) {
+        const transaction = elasticTransfers.find(x => x.txHash === elasticTransfer.originalTxHash);
+        if (transaction) {
+          elasticTransfer.order = (transaction.nonce * 10) + 1;
+        } else {
+          elasticTransfer.order = 0;
+        }
+      } else {
+        elasticTransfer.order = elasticTransfer.nonce * 10;
+      }
+    }
 
-  async getTransfers(filter: TransactionFilter, pagination: QueryPagination, address?: string): Promise<Transfer[]> {
+    elasticTransfers.sort((a, b) => {
+      if (a.timestamp !== b.timestamp) {
+        return b.timestamp - a.timestamp;
+      }
+
+      return b.order - a.order;
+    });
+
+    return elasticTransfers;
+  }
+
+  async getTransfers(filter: TransactionFilter, pagination: QueryPagination, address: string): Promise<Transaction[]> {
     const sortOrder: ElasticSortOrder = !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
 
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: sortOrder };
@@ -110,37 +130,34 @@ export class TransferService {
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
-    const elasticTransfers = await this.elasticService.getList('operations', 'txHash', elasticQuery);
+    let elasticOperations = await this.elasticService.getList('operations', 'txHash', elasticQuery);
+    elasticOperations = this.sortElasticTransfers(elasticOperations);
 
-    const transfers: Transfer[] = [];
+    const transactions: Transaction[] = [];
 
-    for (const elasticTransfer of elasticTransfers) {
-      const transfer = ApiUtils.mergeObjects(new Transfer(), elasticTransfer);
-      if (elasticTransfer.type === 'unsigned') {
-        transfer.type = TransferType.SmartContractResult;
-      } else {
-        transfer.type = TransferType.Transaction;
-      }
+    for (const elasticOperation of elasticOperations) {
+      const transaction = ApiUtils.mergeObjects(new Transaction(), elasticOperation);
+      transaction.type = elasticOperation.type === 'unsigned' ? TransactionType.SmartContractResult : TransactionType.Transaction;
 
-      await this.processTransfer(transfer);
+      await this.processTransaction(transaction);
 
-      transfers.push(transfer);
+      transactions.push(transaction);
     }
 
-    return transfers;
+    return transactions;
   }
 
-  async getTransfersCount(filter: TransactionFilter, address?: string): Promise<number> {
+  async getTransfersCount(filter: TransactionFilter, address: string): Promise<number> {
     const elasticQuery = this.buildTransferFilterQuery(filter, address);
 
     return await this.elasticService.getCount('operations', elasticQuery);
   }
 
-  private async processTransfer(transfer: Transfer): Promise<void> {
+  private async processTransaction(transaction: Transaction): Promise<void> {
     try {
-      await this.pluginsService.processTransaction(transfer);
+      await this.pluginsService.processTransaction(transaction);
     } catch (error) {
-      this.logger.error(`Unhandled error when processing plugin for transfer with hash '${transfer.txHash}'`);
+      this.logger.error(`Unhandled error when processing plugin for transfer with hash '${transaction.txHash}'`);
       this.logger.error(error);
     }
   }
