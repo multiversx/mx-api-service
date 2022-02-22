@@ -125,25 +125,11 @@ describe('Identities Service', () => {
   });
 
   describe('getIdentity', () => {
-    it('should return all properties of identifier', async () => {
-      const identity = await identityService.getIdentity("staking_agency");
+    it('should return locked and distribution properties of identifier', async () => {
+      const identity = await identityService.getIdentity("justminingfr");
 
-      expect(identity?.hasOwnProperty('apr')).toBe(true);
-      expect(identity?.hasOwnProperty('avatar')).toBe(true);
-      expect(identity?.hasOwnProperty('description')).toBe(true);
-      expect(identity?.hasOwnProperty('distribution')).toBe(true);
-      expect(identity?.hasOwnProperty('identity')).toBe(true);
-      expect(identity?.hasOwnProperty('location')).toBe(true);
-      expect(identity?.hasOwnProperty('locked')).toBe(true);
-      expect(identity?.hasOwnProperty('name')).toBe(true);
-      expect(identity?.hasOwnProperty('providers')).toBe(true);
-      expect(identity?.hasOwnProperty('rank')).toBe(true);
-      expect(identity?.hasOwnProperty('score')).toBe(true);
-      expect(identity?.hasOwnProperty('stake')).toBe(true);
-      expect(identity?.hasOwnProperty('stakePercent')).toBe(true);
-      expect(identity?.hasOwnProperty('topUp')).toBe(true);
-      expect(identity?.hasOwnProperty('validators')).toBe(true);
-      expect(identity?.hasOwnProperty('website')).toBe(true);
+      expect(identity).toHaveProperty("locked");
+      expect(identity).toHaveProperty("distribution");
     });
   });
 });
