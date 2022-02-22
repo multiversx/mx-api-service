@@ -350,8 +350,7 @@ export class AccountService {
 
 
   async getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]> {
-    const elasticQuery: ElasticQuery = AccountService.buildAccountHistoryFilterQuery(address);
-    elasticQuery
+    const elasticQuery: ElasticQuery = AccountService.buildAccountHistoryFilterQuery(address)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
@@ -375,8 +374,7 @@ export class AccountService {
   }
 
   async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<AccountEsdtHistory[]> {
-    const elasticQuery: ElasticQuery = AccountService.buildAccountHistoryFilterQuery(address, tokenIdentifier);
-    elasticQuery
+    const elasticQuery: ElasticQuery = AccountService.buildAccountHistoryFilterQuery(address, tokenIdentifier)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
