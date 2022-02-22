@@ -5,7 +5,6 @@ import { NftFilter } from "../../endpoints/nfts/entities/nft.filter";
 import { NftService } from "../../endpoints/nfts/nft.service";
 import { NftType } from "../../endpoints/nfts/entities/nft.type";
 import '../../utils/extensions/array.extensions';
-import { NftMetadataModule } from "src/queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.module";
 import { PublicAppModule } from "src/public.app.module";
 
 describe('Nft Metadata Service', () => {
@@ -15,7 +14,7 @@ describe('Nft Metadata Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [NftMetadataModule, PublicAppModule],
+      imports: [PublicAppModule],
     }).compile();
 
     nftMetadataService = moduleRef.get<NftMetadataService>(NftMetadataService);

@@ -9,7 +9,7 @@ import { ElasticService } from "./elastic.service";
 @Module({
   imports: [
     ApiConfigModule,
-    forwardRef(() => ApiModule),
+    ApiModule,
     forwardRef(() => MetricsModule),
   ],
   providers: [

@@ -4,14 +4,13 @@ import { Nft } from "../../endpoints/nfts/entities/nft";
 import nftExample from "../data/esdt/nft/nft.example";
 import { ProcessNftSettings } from "../../endpoints/process-nfts/entities/process.nft.settings";
 import { NftWorkerModule } from "src/queue.worker/nft.worker/nft.worker.module";
-import { PublicAppModule } from "src/public.app.module";
 
 describe('Nft Worker Service', () => {
   let nftWorkerService: NftWorkerService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [NftWorkerModule, PublicAppModule],
+      imports: [NftWorkerModule],
     }).compile();
 
     nftWorkerService = moduleRef.get<NftWorkerService>(NftWorkerService);
