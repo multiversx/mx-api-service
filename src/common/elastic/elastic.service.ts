@@ -149,7 +149,8 @@ export class ElasticService {
 
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from, size })
-      .withCondition(QueryConditionOptions.must, queries);
+      .withCondition(QueryConditionOptions.must, queries)
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')]);
 
     const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
 
@@ -164,7 +165,9 @@ export class ElasticService {
 
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from: 0, size: 1 })
-      .withCondition(QueryConditionOptions.must, queries);
+      .withCondition(QueryConditionOptions.must, queries)
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')]);
+
 
     const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
 
