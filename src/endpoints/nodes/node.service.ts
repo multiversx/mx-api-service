@@ -158,6 +158,10 @@ export class NodeService {
         return false;
       }
 
+      if(query.sort && !(query.sort in node)){
+        return false;
+      }
+
       return true;
     });
 
