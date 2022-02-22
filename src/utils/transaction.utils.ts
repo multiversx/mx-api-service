@@ -45,7 +45,7 @@ export class TransactionUtils {
       );
 
       if (identicalOperations.length > 0) {
-        if (BigInt(identicalOperations[0].value) > BigInt(operation.value)) {
+        if (BigInt(identicalOperations[0].value ?? '0') > BigInt(operation.value ?? '0')) {
           result.remove(identicalOperations[0]);
         } else {
           continue;
