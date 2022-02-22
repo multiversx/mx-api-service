@@ -1,5 +1,4 @@
-import { forwardRef, Module } from "@nestjs/common";
-import { CommonModule } from "src/common/common.module";
+import { Module } from "@nestjs/common";
 import { PluginModule } from "src/plugins/plugin.module";
 import { TokenModule } from "../tokens/token.module";
 import { TransferService } from "./transfer.service";
@@ -7,9 +6,8 @@ import { TransferService } from "./transfer.service";
 
 @Module({
   imports: [
-    forwardRef(() => CommonModule),
-    forwardRef(() => PluginModule),
-    forwardRef(() => TokenModule),
+    PluginModule,
+    TokenModule,
   ],
   providers: [
     TransferService,
