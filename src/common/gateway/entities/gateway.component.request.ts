@@ -6,6 +6,7 @@ export enum GatewayComponentRequest {
   networkTotalStaked = 'networkTotalStaked',
   addressDetails = 'addressDetails',
   addressEsdt = 'addressEsdt',
+  addressEsdtBalance = 'addressEsdtBalance',
   addressNfts = 'addressNfts',
   nodeHeartbeat = 'nodeHeartbeat',
   validatorStatistics = 'validatorStatistics',
