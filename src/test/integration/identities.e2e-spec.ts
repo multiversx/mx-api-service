@@ -123,12 +123,4 @@ describe('Identities Service', () => {
       }
     });
   });
-
-  describe('getIdentity', () => {
-    it('should return locked and distribution properties of identifier', async () => {
-      const identity = await identityService.getIdentity("justminingfr");
-
-      expect(identity).toBeInstanceOf(Object);
-    });
-  });
 });
