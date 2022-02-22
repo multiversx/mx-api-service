@@ -176,6 +176,7 @@ export class TransactionController {
     status: 404,
     description: 'Transaction not found',
   })
+  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
   async getTransaction(
     @Param('txHash', ParseTransactionHashPipe) txHash: string,
     @Query('fields', ParseArrayPipe) fields?: string[],
