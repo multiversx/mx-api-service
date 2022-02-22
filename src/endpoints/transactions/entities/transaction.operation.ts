@@ -17,7 +17,7 @@ export class TransactionOperation {
 
   name?: string;
 
-  value: string = '';
+  value?: string;
 
   sender: string = '';
 

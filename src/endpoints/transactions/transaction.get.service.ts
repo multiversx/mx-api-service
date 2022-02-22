@@ -117,7 +117,7 @@ export class TransactionGetService {
           const transactionLogs: TransactionLog[] = logs.map(log => ({ id: log._id, ...ApiUtils.mergeObjects(new TransactionLog(), log._source) }));
 
           transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransactionLogs(txHash, transactionLogs);
-          transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.txHash, transactionDetailed.operations);
+          transactionDetailed.operations = TransactionUtils.trimOperations(txHash, transactionDetailed.operations);
 
           for (const log of logs) {
             if (log._id === txHash) {
