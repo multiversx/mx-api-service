@@ -1,4 +1,3 @@
-import { CachingService } from 'src/common/caching/caching.service';
 import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "../../public.app.module";
@@ -51,12 +50,10 @@ describe('Keybase Service', () => {
 
   describe('Get Cached Identity Profiles Keybases', () => {
     it(`should return cached identities profiles`, async () => {
-      jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
-        .mockImplementation(jest.fn((_key: string, promise: any) => promise()));
-
       const profiles = await keybaseService.getCachedIdentityProfilesKeybases();
-      expect(profiles).toBeInstanceOf(Array);
+      for (const profile of profiles) {
+        expect(profile).toBeInstanceOf(Object);
+      }
     });
   });
 
