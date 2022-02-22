@@ -1,7 +1,6 @@
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionOperation } from "src/endpoints/transactions/entities/transaction.operation";
-import { BinaryUtils } from "./binary.utils";
 
 export class TransactionUtils {
   static isTransactionCountQueryWithAddressOnly(filter: TransactionFilter, address?: string) {
@@ -57,19 +56,5 @@ export class TransactionUtils {
     }
 
     return result;
-  }
-
-  static isFreezeTransaction(data: string): Boolean {
-    if (!data) {
-      return false;
-    }
-
-    const dataDecoded = BinaryUtils.base64Decode(data);
-
-    if (!dataDecoded.startsWith('freeze@')) {
-      return false;
-    }
-
-    return true;
   }
 }
