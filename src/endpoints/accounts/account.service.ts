@@ -21,6 +21,9 @@ import { DeployedContract } from './entities/deployed.contract';
 import { TransactionService } from '../transactions/transaction.service';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { PluginService } from 'src/common/plugins/plugin.service';
+import { AccountEsdtHistory } from "./entities/account.esdt.history";
+import { AbstractQuery } from "../../common/elastic/entities/abstract.query";
+import { AccountHistory } from "./entities/account.history";
 
 @Injectable()
 export class AccountService {
@@ -343,5 +346,39 @@ export class AccountService {
       .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)]);
 
     return await this.elasticService.getCount('scdeploys', elasticQuery);
+  }
+
+
+  async getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]> {
+    const elasticQuery: ElasticQuery = AccountService.buildAccountHistoryFilterQuery(address)
+      .withPagination(pagination)
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+
+    const elasticResult = await this.elasticService.getList('accountshistory', 'address', elasticQuery);
+    return elasticResult.map(item => ApiUtils.mergeObjects(new AccountHistory(), item));
+  }
+
+  private static buildAccountHistoryFilterQuery(address?: string, token?: string): ElasticQuery {
+    const mustQueries: AbstractQuery[] = [];
+
+    if (address) {
+      mustQueries.push(QueryType.Match('address', address));
+    }
+
+    if (token) {
+      mustQueries.push(QueryType.Match('token', token));
+    }
+
+    return ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, mustQueries);
+  }
+
+  async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<AccountEsdtHistory[]> {
+    const elasticQuery: ElasticQuery = AccountService.buildAccountHistoryFilterQuery(address, tokenIdentifier)
+      .withPagination(pagination)
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+
+    const elasticResult = await this.elasticService.getList('accountsesdthistory', 'address', elasticQuery);
+    return elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
   }
 }
