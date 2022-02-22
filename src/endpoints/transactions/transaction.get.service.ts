@@ -114,10 +114,10 @@ export class TransactionGetService {
 
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs)) {
           const logs = await this.getTransactionLogsFromElastic(hashes);
-          const transactionLogs: TransactionLog[] = logs.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
+          const transactionLogs: TransactionLog[] = logs.map(log => ({ id: log._id, ...ApiUtils.mergeObjects(new TransactionLog(), log._source) }));
 
-          transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransactionLogs(transactionDetailed.txHash, transactionLogs);
-          transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.operations);
+          transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransactionLogs(txHash, transactionLogs);
+          transactionDetailed.operations = TransactionUtils.trimOperations(txHash, transactionDetailed.operations);
 
           for (const log of logs) {
             if (log._id === txHash) {
