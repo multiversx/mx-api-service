@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
@@ -9,22 +9,19 @@ import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { SortOrder } from "src/common/entities/sort.order";
-import { PluginService } from "src/common/plugins/plugin.service";
 import { ApiUtils } from "src/utils/api.utils";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionType } from "../transactions/entities/transaction.type";
 import { Transaction } from "../transactions/entities/transaction";
+import { TransactionService } from "../transactions/transaction.service";
 
 @Injectable()
 export class TransferService {
-  private readonly logger: Logger;
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly elasticService: ElasticService,
-    private readonly pluginsService: PluginService,
-  ) {
-    this.logger = new Logger(TransferService.name);
-  }
+    private readonly transactionService: TransactionService,
+  ) { }
 
   private buildTransferFilterQuery(filter: TransactionFilter, address: string): ElasticQuery {
     let elasticQuery = ElasticQuery.create()
@@ -147,7 +144,7 @@ export class TransferService {
         delete transaction.round;
       }
 
-      await this.processTransaction(transaction);
+      await this.transactionService.processTransaction(transaction);
 
       transactions.push(transaction);
     }
@@ -159,14 +156,5 @@ export class TransferService {
     const elasticQuery = this.buildTransferFilterQuery(filter, address);
 
     return await this.elasticService.getCount('operations', elasticQuery);
-  }
-
-  private async processTransaction(transaction: Transaction): Promise<void> {
-    try {
-      await this.pluginsService.processTransaction(transaction);
-    } catch (error) {
-      this.logger.error(`Unhandled error when processing plugin for transfer with hash '${transaction.txHash}'`);
-      this.logger.error(error);
-    }
   }
 }

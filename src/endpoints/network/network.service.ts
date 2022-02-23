@@ -30,6 +30,7 @@ export class NetworkService {
     private readonly vmQueryService: VmQueryService,
     private readonly blockService: BlockService,
     private readonly accountService: AccountService,
+    @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
     private readonly dataApiService: DataApiService,
     private readonly apiService: ApiService,
