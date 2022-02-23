@@ -50,9 +50,9 @@ describe('Network Service', () => {
 
   describe('Get Economics', () => {
     it('should return economics properties', async () => {
-      const a = await networkService.getEconomics();
+      const results = await networkService.getEconomics();
 
-      expect(a).toEqual(expect.objectContaining({
+      expect(results).toEqual(expect.objectContaining({
         apr: expect.any(Number),
         baseApr: expect.any(Number),
         circulatingSupply: expect.any(Number),
