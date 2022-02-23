@@ -22,5 +22,5 @@
     "!./src/websockets/**"
   ],
   "coverageDirectory": "./coverage/e2e",
-  "testTimeout": 120000
+  "testTimeout": 160000
 }
