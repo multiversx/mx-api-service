@@ -1,23 +1,19 @@
-import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "../../public.app.module";
-import { Constants } from "../../utils/constants";
 import { UsernameService } from "../../endpoints/usernames/username.service";
 import userAccount from "../data/accounts/user.account";
+import { UsernameModule } from "src/endpoints/usernames/username.module";
 
 describe('Username Service', () => {
   let usernameService: UsernameService;
   const usernameWithNoAddress: string = 'invalidUsername';
 
   beforeAll(async () => {
-    await Initializer.initialize();
-    const publicAppModule = await Test.createTestingModule({
-      imports: [PublicAppModule],
+    const moduleRef = await Test.createTestingModule({
+      imports: [UsernameModule],
     }).compile();
 
-    usernameService = publicAppModule.get<UsernameService>(UsernameService);
-
-  }, Constants.oneHour() * 1000);
+    usernameService = moduleRef.get<UsernameService>(UsernameService);
+  });
 
   describe('Get Username Address Raw', () => {
     it('returns username address', async () => {

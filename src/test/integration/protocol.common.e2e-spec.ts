@@ -1,22 +1,18 @@
 import { CachingService } from 'src/common/caching/caching.service';
-import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "../../public.app.module";
-import { Constants } from "../../utils/constants";
 import { ProtocolService } from "../../common/protocol/protocol.service";
+import { ProtocolModule } from "src/common/protocol/protocol.module";
 
 describe('Protocol Service', () => {
   let protocolService: ProtocolService;
 
   beforeAll(async () => {
-    await Initializer.initialize();
-    const publicAppModule = await Test.createTestingModule({
-      imports: [PublicAppModule],
+    const moduleRef = await Test.createTestingModule({
+      imports: [ProtocolModule],
     }).compile();
 
-    protocolService = publicAppModule.get<ProtocolService>(ProtocolService);
-
-  }, Constants.oneHour() * 1000);
+    protocolService = moduleRef.get<ProtocolService>(ProtocolService);
+  });
 
   beforeEach(() => { jest.restoreAllMocks(); });
 

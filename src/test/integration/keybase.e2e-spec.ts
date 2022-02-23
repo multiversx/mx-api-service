@@ -1,11 +1,10 @@
-import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "../../public.app.module";
-import { Constants } from "../../utils/constants";
 import { KeybaseService } from "../../common/keybase/keybase.service";
 import { Keybase } from "../../common/keybase/entities/keybase";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
 import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
+import '../../utils/extensions/jest.extensions';
+import { PublicAppModule } from "src/public.app.module";
 
 describe('Keybase Service', () => {
   let keybaseService: KeybaseService;
@@ -13,14 +12,12 @@ describe('Keybase Service', () => {
   const identity: string = 'cryptoshigo';
 
   beforeAll(async () => {
-    await Initializer.initialize();
-
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     keybaseService = moduleRef.get<KeybaseService>(KeybaseService);
-  }, Constants.oneHour() * 1000);
+  });
 
   beforeEach(() => { jest.restoreAllMocks(); });
 

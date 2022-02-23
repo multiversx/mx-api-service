@@ -9,12 +9,15 @@ import { NodeType } from "src/endpoints/nodes/entities/node.type";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { Provider } from "src/endpoints/providers/entities/provider";
 import { ProviderService } from "src/endpoints/providers/provider.service";
-import { PublicAppModule } from "src/public.app.module";
-import { Constants } from "src/utils/constants";
-import Initializer from "./e2e-init";
 import { AccountService } from "../../endpoints/accounts/account.service";
 import { Queue } from "src/endpoints/nodes/entities/queue";
 import providerAccount from "../data/accounts/provider.account";
+import { FileUtils } from "src/utils/file.utils";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
+import '../../utils/extensions/array.extensions';
+import '../../utils/extensions/jest.extensions';
+import '../../utils/extensions/number.extensions';
+import { PublicAppModule } from "src/public.app.module";
 
 describe('Node Service', () => {
   let nodeService: NodeService;
@@ -25,17 +28,18 @@ describe('Node Service', () => {
   let firstNode: Node;
   let accountService: AccountService;
   let accountAddress: string;
+  let apiConfigService: ApiConfigService;
 
   beforeAll(async () => {
-    await Initializer.initialize();
-    const publicAppModule = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
-    nodeService = publicAppModule.get<NodeService>(NodeService);
-    cachingService = publicAppModule.get<CachingService>(CachingService);
-    providerService = publicAppModule.get<ProviderService>(ProviderService);
-    accountService = publicAppModule.get<AccountService>(AccountService);
+    nodeService = moduleRef.get<NodeService>(NodeService);
+    cachingService = moduleRef.get<CachingService>(CachingService);
+    providerService = moduleRef.get<ProviderService>(ProviderService);
+    accountService = moduleRef.get<AccountService>(AccountService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
 
     nodes = await nodeService.getAllNodes();
     providers = await providerService.getAllProviders();
@@ -47,7 +51,31 @@ describe('Node Service', () => {
     const account = accounts[0];
     accountAddress = account.address;
 
-  }, Constants.oneHour() * 1000);
+    if (apiConfigService.getMockNodes()) {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const nodesMocked = FileUtils.parseJSONFile(
+        `${MOCK_PATH}nodes.mock.json`,
+      );
+      jest
+        .spyOn(NodeService.prototype, 'getAllNodesRaw')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => nodesMocked));
+
+      const heartbeat = FileUtils.parseJSONFile(
+        `${MOCK_PATH}heartbeat.mock.json`,
+      );
+      jest
+        .spyOn(NodeService.prototype, 'getHeartbeat')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => heartbeat));
+
+      const queue = FileUtils.parseJSONFile(`${MOCK_PATH}queue.mock.json`);
+      jest
+        .spyOn(NodeService.prototype, 'getQueue')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => queue));
+    }
+  });
 
   describe('Nodes', () => {
     it('should be in sync with keybase confirmations', async () => {
@@ -157,11 +185,11 @@ describe('Node Service', () => {
     });
   });
 
-  describe('Get All Nodes Raw', () => {
+  describe('Get All Nodes', () => {
     it('should return nodes array', async () => {
-      const nodes = await nodeService.getAllNodesRaw();
+      const nodes = await nodeService.getAllNodes();
 
-      expect(nodes.length).toBeGreaterThan(100);
+      expect(nodes.length).toBeGreaterThanOrEqual(100);
 
       for (const node of nodes) {
         expect(node).toBeInstanceOf(Object);
@@ -173,7 +201,7 @@ describe('Node Service', () => {
     it('should return nodes Heartbeat', async () => {
       const nodes = await nodeService.getHeartbeat();
 
-      expect(nodes.length).toBeGreaterThan(100);
+      expect(nodes.length).toBeGreaterThan(50);
 
       for (const node of nodes) {
         expect(node).toBeInstanceOf(Object);

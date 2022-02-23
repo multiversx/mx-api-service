@@ -1,32 +1,32 @@
 import { CachingService } from 'src/common/caching/caching.service';
 import { Test } from '@nestjs/testing';
-import { PublicAppModule } from 'src/public.app.module';
 import { Account } from 'src/endpoints/accounts/entities/account';
 import { AccountDelegationLegacy } from 'src/endpoints/delegation.legacy/entities/account.delegation.legacy';
 import { AccountService } from 'src/endpoints/accounts/account.service';
 import { DelegationLegacyService } from 'src/endpoints/delegation.legacy/delegation.legacy.service';
-import Initializer from './e2e-init';
-import { Constants } from 'src/utils/constants';
 import { DeployedContract } from 'src/endpoints/accounts/entities/deployed.contract';
 import userAccount from "../data/accounts/user.account";
 import providerAccount from "../data/accounts/provider.account";
 import { AccountKey } from 'src/endpoints/accounts/entities/account.key';
+import '../../utils/extensions/jest.extensions';
+import { TokenService } from "../../endpoints/tokens/token.service";
+import { PublicAppModule } from 'src/public.app.module';
 
 describe('Account Service', () => {
   let accountService: AccountService;
   let delegationLegacyService: DelegationLegacyService;
+  let tokensService: TokenService;
   const smartContractOwnerAddress: string = 'erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97';
 
   beforeAll(async () => {
-    await Initializer.initialize();
-
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     accountService = moduleRef.get<AccountService>(AccountService);
     delegationLegacyService = moduleRef.get<DelegationLegacyService>(DelegationLegacyService);
-  }, Constants.oneHour() * 1000);
+    tokensService = moduleRef.get<TokenService>(TokenService);
+  });
 
   beforeEach(() => { jest.restoreAllMocks(); });
 
@@ -228,4 +228,36 @@ describe('Account Service', () => {
       expect(account).toBeNull();
     });
   });
-}); 
+
+  describe('Account history & Account Token History', () => {
+    describe('Account History', () => {
+
+      it(`should return the account EGLD balance history`, async () => {
+        const accountHistories = await accountService.getAccountHistory(smartContractOwnerAddress, { from: 0, size: 1 });
+        expect(accountHistories).toBeDefined();
+        for (const account of accountHistories) {
+          expect(account).toHaveProperty('address');
+          expect(account).toHaveProperty('balance');
+          expect(account).toHaveProperty('timestamp');
+        }
+      });
+    });
+
+    describe('Account Token balance history', () => {
+      it('should return the token EGLD balance history ', async () => {
+        const accountTokens = await tokensService.getTokensForAddress(smartContractOwnerAddress, { from: 0, size: 1 }, {});
+        if (accountTokens.length) {
+          const accountTokenHistories = await accountService.getAccountTokenHistory(smartContractOwnerAddress,
+            accountTokens[0].identifier, { from: 0, size: 1 });
+
+          for (const account of accountTokenHistories) {
+            expect(account).toHaveProperty('address');
+            expect(account).toHaveProperty('balance');
+            expect(account).toHaveProperty('timestamp');
+            expect(account).toHaveProperty('token');
+          }
+        }
+      });
+    });
+  });
+});

@@ -1,25 +1,24 @@
 import { CachingService } from 'src/common/caching/caching.service';
-import Initializer from "./e2e-init";
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "../../public.app.module";
-import { Constants } from "../../utils/constants";
 import { NetworkService } from "../../endpoints/network/network.service";
 import { NetworkConstants } from "src/endpoints/network/entities/constants";
 import { NetworkConfig } from "src/endpoints/network/entities/network.config";
 import { Economics } from "src/endpoints/network/entities/economics";
+import '../../utils/extensions/jest.extensions';
+import '../../utils/extensions/array.extensions';
+import '../../utils/extensions/number.extensions';
+import { PublicAppModule } from "src/public.app.module";
 
 describe('Network Service', () => {
   let networkService: NetworkService;
 
   beforeAll(async () => {
-    await Initializer.initialize();
-    const publicAppModule = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
-    networkService = publicAppModule.get<NetworkService>(NetworkService);
-
-  }, Constants.oneHour() * 1000);
+    networkService = moduleRef.get<NetworkService>(NetworkService);
+  });
 
   describe('Get Constants', () => {
     it('should return network constants', async () => {

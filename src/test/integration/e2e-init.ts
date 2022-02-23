@@ -17,18 +17,18 @@ export default class Initializer {
   private static apiConfigService: ApiConfigService;
 
   static async initialize() {
-    const publicAppModule = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     Initializer.cachingService =
-      publicAppModule.get<CachingService>(CachingService);
+      moduleRef.get<CachingService>(CachingService);
     Initializer.apiConfigService =
-      publicAppModule.get<ApiConfigService>(ApiConfigService);
-    const keybaseService = publicAppModule.get<KeybaseService>(KeybaseService);
-    const nodeService = publicAppModule.get<NodeService>(NodeService);
-    const providerService = publicAppModule.get<ProviderService>(ProviderService);
-    const esdtService = publicAppModule.get<EsdtService>(EsdtService);
+      moduleRef.get<ApiConfigService>(ApiConfigService);
+    const keybaseService = moduleRef.get<KeybaseService>(KeybaseService);
+    const nodeService = moduleRef.get<NodeService>(NodeService);
+    const providerService = moduleRef.get<ProviderService>(ProviderService);
+    const esdtService = moduleRef.get<EsdtService>(EsdtService);
 
     if (Initializer.apiConfigService.getMockKeybases()) {
       jest
@@ -41,8 +41,25 @@ export default class Initializer {
         .mockImplementation(jest.fn(async () => new KeybaseIdentity()));
     }
 
+    if (Initializer.apiConfigService.getMockTokens()) {
+      const MOCK_PATH = Initializer.apiConfigService.getMockPath();
+      const tokens = FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`);
+      jest
+        .spyOn(EsdtService.prototype, 'getAllEsdtTokensRaw')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => tokens));
+    }
+
     if (Initializer.apiConfigService.getMockNodes()) {
       const MOCK_PATH = Initializer.apiConfigService.getMockPath();
+      const nodes = FileUtils.parseJSONFile(
+        `${MOCK_PATH}nodes.mock.json`,
+      );
+      jest
+        .spyOn(NodeService.prototype, 'getAllNodesRaw')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => nodes));
+
       const heartbeat = FileUtils.parseJSONFile(
         `${MOCK_PATH}heartbeat.mock.json`,
       );

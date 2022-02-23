@@ -4,9 +4,10 @@ import { Identity } from "src/endpoints/identities/entities/identity";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { Provider } from "src/endpoints/providers/entities/provider";
 import { ProviderService } from "src/endpoints/providers/provider.service";
+import '../../utils/extensions/jest.extensions';
+import '../../utils/extensions/array.extensions';
+import '../../utils/extensions/number.extensions';
 import { PublicAppModule } from "src/public.app.module";
-import { Constants } from "src/utils/constants";
-import Initializer from "./e2e-init";
 
 describe('Identities Service', () => {
   let identityService: IdentitiesService;
@@ -18,19 +19,17 @@ describe('Identities Service', () => {
   const ids: string[] = ['justminingfr', 'staking_agency', 'istari_vision'];
 
   beforeAll(async () => {
-    await Initializer.initialize();
-
-    const publicAppModule = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
-    identityService = publicAppModule.get<IdentitiesService>(IdentitiesService);
-    providerService = publicAppModule.get<ProviderService>(ProviderService);
-    apiConfigService = publicAppModule.get<ApiConfigService>(ApiConfigService);
+    identityService = moduleRef.get<IdentitiesService>(IdentitiesService);
+    providerService = moduleRef.get<ProviderService>(ProviderService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
 
     identities = await identityService.getAllIdentities();
     providers = await providerService.getProvidersWithStakeInformation();
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Identities', () => {
     it('all identities should have provider stake, topUp and locked', () => {
