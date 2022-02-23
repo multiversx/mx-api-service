@@ -191,7 +191,7 @@ describe.skip('Transfer Service', () => {
 
           for (const transfer of transfers) {
             expect(transfer).toHaveStructure(Object.keys(new Transaction()));
-            expect(BinaryUtils.base64Decode(transfer.data).startsWith('ESDTNFTTransfer')).toBe(true);
+            expect(BinaryUtils.base64Decode(transfer.data ?? '').startsWith('ESDTNFTTransfer')).toBe(true);
           }
         }
       });

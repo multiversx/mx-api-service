@@ -9,7 +9,7 @@ import { CollectionModule } from "../collections/collection.module";
 
 @Module({
   imports: [
-    NftModule,
+    forwardRef(() => NftModule),
     forwardRef(() => CollectionModule),
     forwardRef(() => TokenModule),
     VmQueryModule,

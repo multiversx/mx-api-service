@@ -2,11 +2,10 @@ import { Test } from "@nestjs/testing";
 import { CollectionService } from "src/endpoints/collections/collection.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
-import { PublicAppModule } from "src/public.app.module";
-import { Constants } from "src/utils/constants";
-import Initializer from "./e2e-init";
 import { NftCollection } from "../../endpoints/collections/entities/nft.collection";
 import { NftCollectionAccount } from "src/endpoints/collections/entities/nft.collection.account";
+import '../../utils/extensions/jest.extensions';
+import { PublicAppModule } from "src/public.app.module";
 
 describe('Collection Service', () => {
   let collectionService: CollectionService;
@@ -15,7 +14,6 @@ describe('Collection Service', () => {
   const collectionAddress: string = 'erd1gv55fk7gn0f437eq53x7u5zux824a9ff86v5pvnneg7yvsucpp0svncsmz';
 
   beforeAll(async () => {
-    await Initializer.initialize();
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -24,7 +22,7 @@ describe('Collection Service', () => {
 
     const collections = await collectionService.getNftCollections({ from: 0, size: 1 }, new CollectionFilter());
     expect(collections).toHaveLength(1);
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Collections list', () => {
     describe('Collections pagination', () => {

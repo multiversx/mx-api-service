@@ -29,6 +29,7 @@ urls:
   media: 'https://media.elrond.com'
   nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
 database:
+  enabled: false
   host: 'localhost'
   port: 3306
   username: 'root'
@@ -62,4 +63,5 @@ security:
 test:
   mockKeybases: false
   mockNodes: false
+  mockTokens: false
   mockPath: './src/test/mocks/'

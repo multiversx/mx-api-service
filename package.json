@@ -32,10 +32,11 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage --forceExit --detectOpenHandles",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "npm run copy-e2e-mainnet-config & nest build & jest --config ./src/test/jest-e2e.json --forceExit --detectOpenHandles --runInBand",
-    "test:e2e:mocked": "npm run copy-e2e-mocked-mainnet-config & nest build & jest --config ./src/test/jest-e2e.json --forceExit --detectOpenHandles --runInBand",
-    "test:e2e:warm": "npm run copy-e2e-mainnet-config & nest build & jest --config ./src/test/jest-e2e-warm.json --forceExit --detectOpenHandles --runInBand",
-    "test:e2e:cov": "jest --config ./src/test/jest-e2e.json --coverage --forceExit --detectOpenHandles",
+    "test:e2e": "jest --config ./src/test/jest-e2e.json --forceExit --maxWorkers=4 --coverage",
+    "test:e2e:warm": "npm run copy-e2e-mainnet-config & nest build & jest --config ./src/test/jest-e2e-warm.json --forceExit",
+    "test:e2e:warm:mocked": "npm run copy-e2e-mocked-mainnet-config & nest build & jest --config ./src/test/jest-e2e-warm.json --forceExit",
+    "test:e2e:cov": "jest --config ./src/test/jest-e2e.json --coverage --forceExit --maxWorkers=4",
+    "test:e2e:local": "npm run test:e2e:warm & npm run test:e2e",
     "init": "run-script-os",
     "copy-mainnet-config": "run-script-os",
     "copy-testnet-config": "run-script-os",
@@ -161,12 +162,8 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "./src/**/*.(t|j)s",
-      "!./src/crons/**",
-      "!./src/decorators/**",
-      "!./src/interceptors/**",
-      "!./src/test/**",
-      "!./src/websockets/**"
+      "./src/utils/**/*.(t|j)s",
+      "./src/common/elastic/entities/**/*.(t|j)s"
     ],
     "coverageDirectory": "./coverage/unit",
     "testEnvironment": "node",
