@@ -66,72 +66,61 @@ export class NftService {
   }
 
   buildElasticNftFilter(filter: NftFilter, identifier?: string, address?: string) {
-    const mustQueries = [];
-    const shouldQueries = [];
-    mustQueries.push(QueryType.Exists('identifier'));
+    let elasticQuery = ElasticQuery.create();
+    elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Exists('identifier'));
 
     if (address) {
-      mustQueries.push(QueryType.Match('address', address));
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('address', address));
     }
 
     if (filter.search !== undefined) {
-      mustQueries.push(QueryType.Wildcard('token', `*${filter.search}*`));
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Wildcard('token', `*${filter.search}*`));
     }
 
     if (filter.type !== undefined) {
-      mustQueries.push(QueryType.Match('type', filter.type));
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('type', filter.type));
     }
 
     if (identifier !== undefined) {
-      mustQueries.push(QueryType.Match('identifier', identifier, QueryOperator.AND));
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('identifier', identifier, QueryOperator.AND));
     }
 
     if (filter.collection !== undefined && filter.collection !== '') {
-      mustQueries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('token', filter.collection, QueryOperator.AND));
     }
 
     if (filter.collections !== undefined && filter.collections.length !== 0) {
-      for (const collection of filter.collections) {
-        shouldQueries.push(QueryType.Match('token', collection, QueryOperator.AND));
-      }
+      const collections = filter.collections;
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Should(collections.map(collection => QueryType.Match('token', collection, QueryOperator.AND))));
     }
 
     if (filter.name !== undefined && filter.name !== '') {
-      mustQueries.push(QueryType.Nested('data', { "data.name": filter.name }));
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Nested('data', { "data.name": filter.name }));
     }
 
     if (filter.hasUris !== undefined) {
-      mustQueries.push(QueryType.Nested('data', { "data.nonEmptyURIs": filter.hasUris }));
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Nested('data', { "data.nonEmptyURIs": filter.hasUris }));
     }
 
     if (filter.tags) {
-      const tagArray = filter.tags;
-      if (tagArray.length > 0) {
-        for (const tag of tagArray) {
-          mustQueries.push(QueryType.Nested("data", { "data.tags": tag }));
-        }
-      }
+      const tags = filter.tags;
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Should(tags.map(tag => QueryType.Nested("data", { "data.tags": tag }))));
     }
 
     if (filter.creator !== undefined) {
-      mustQueries.push(QueryType.Nested("data", { "data.creator": filter.creator }));
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Nested("data", { "data.creator": filter.creator }));
     }
 
     if (filter.identifiers) {
       const identifiers = filter.identifiers;
-      mustQueries.push(QueryType.Should(identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Should(identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
     }
 
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       if (filter.isWhitelistedStorage !== undefined) {
-        mustQueries.push(QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
+        elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
       }
     }
-
-    let elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, mustQueries)
-      .withCondition(QueryConditionOptions.should, shouldQueries)
-      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('type', 'FungibleESDT'), QueryType.Match('address', 'pending')]);
 
     if (filter.before || filter.after) {
       elasticQuery = elasticQuery
