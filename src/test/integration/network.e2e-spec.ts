@@ -50,7 +50,7 @@ describe('Network Service', () => {
     });
   });
 
-  describe.only('Get Economics', () => {
+  describe('Get Economics', () => {
     it('should return economics properties', async () => {
       expect.assertions(1);
       jest
