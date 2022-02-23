@@ -20,9 +20,7 @@ describe('Network Service', () => {
     networkService = moduleRef.get<NetworkService>(NetworkService);
   });
 
-  beforeEach(() => {
-    jest.restoreAllMocks();
-  });
+  beforeEach(() => { jest.restoreAllMocks(); });
 
   describe('Get Constants', () => {
     it('should return network constants', async () => {
@@ -52,13 +50,16 @@ describe('Network Service', () => {
 
   describe('Get Economics', () => {
     it('should return economics properties', async () => {
-      expect.assertions(1);
-      jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_address: string, promise: any) => promise()));
+      const a = await networkService.getEconomics();
 
-      return await networkService.getEconomics().then(data => expect(data).toHaveStructure(Object.keys(new Economics())));
+      expect(a).toEqual(expect.objectContaining({
+        apr: expect.any(Number),
+        baseApr: expect.any(Number),
+        circulatingSupply: expect.any(Number),
+        staked: expect.any(Number),
+        topUpApr: expect.any(Number),
+        totalSupply: expect.any(Number),
+      }));
     });
   });
 });
