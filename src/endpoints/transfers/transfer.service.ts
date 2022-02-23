@@ -139,6 +139,14 @@ export class TransferService {
       const transaction = ApiUtils.mergeObjects(new Transaction(), elasticOperation);
       transaction.type = elasticOperation.type === 'unsigned' ? TransactionType.SmartContractResult : TransactionType.Transaction;
 
+      if (transaction.type === TransactionType.SmartContractResult) {
+        delete transaction.gasLimit;
+        delete transaction.gasPrice;
+        delete transaction.gasUsed;
+        delete transaction.nonce;
+        delete transaction.round;
+      }
+
       await this.processTransaction(transaction);
 
       transactions.push(transaction);
