@@ -8,6 +8,7 @@ import '../../utils/extensions/jest.extensions';
 import '../../utils/extensions/array.extensions';
 import '../../utils/extensions/number.extensions';
 import { PublicAppModule } from "src/public.app.module";
+import { Stats } from 'src/endpoints/network/entities/stats';
 
 describe('Network Service', () => {
   let networkService: NetworkService;
@@ -60,6 +61,14 @@ describe('Network Service', () => {
         topUpApr: expect.any(Number),
         totalSupply: expect.any(Number),
       }));
+    });
+  });
+
+  describe("getStats", () => {
+    it("should return status network", async () => {
+      const status = await networkService.getStats();
+
+      expect(status).toHaveStructure(Object.keys(new Stats()));
     });
   });
 });

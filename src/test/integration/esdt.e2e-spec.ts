@@ -1,3 +1,4 @@
+import { EsdtSupply } from '../../endpoints/esdt/entities/esdt.supply';
 import { Test } from "@nestjs/testing";
 import { EsdtService } from "../../endpoints/esdt/esdt.service";
 import tokenExample from "../data/esdt/token/token.example";
@@ -109,8 +110,7 @@ describe('ESDT Service', () => {
         throw new Error('Token supply must be defined');
       }
 
-      expect(supply.totalSupply).toBeDefined();
-      expect(supply.circulatingSupply).toBeDefined();
+      expect(supply).toHaveStructure(Object.keys(new EsdtSupply()));
     });
   });
 

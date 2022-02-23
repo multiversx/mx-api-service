@@ -1,3 +1,4 @@
+import { ProviderConfig } from '../../endpoints/providers/entities/provider.config';
 import { Test } from '@nestjs/testing';
 import BigNumber from 'bignumber.js';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
@@ -236,9 +237,7 @@ describe('Provider Service', () => {
       if (!provider) {
         throw new Error('Provider not defined');
       }
-      expect(provider).toHaveProperty('apr');
-      expect(provider).toHaveProperty('delegationCap');
-      expect(provider).toHaveProperty('serviceFee');
+      expect(provider).toHaveStructure(Object.keys(new ProviderConfig()));
     });
   });
 

@@ -1,3 +1,4 @@
+import { NftQueryOptions } from '../../endpoints/nfts/entities/nft.query.options';
 import { CachingService } from 'src/common/caching/caching.service';
 import { Test } from "@nestjs/testing";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
@@ -221,6 +222,22 @@ describe('Nft Service', () => {
 
       for (const nft of nfts) {
         expect(nft).toHaveStructure(Object.keys(new NftAccount()));
+      }
+    });
+
+    it("should return Nft based on addres with Nft Query Option = withSupply", async () => {
+      const options = new NftQueryOptions();
+      options.withOwner = true;
+      options.withMetadata = true;
+      options.withSupply = true;
+
+      const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+      const nfts = await nftService.getNftsForAddress(address, { from: 0, size: 1 }, { type: NftType.NonFungibleESDT }, options);
+
+      for (const nft of nfts) {
+        expect(nft.hasOwnProperty("identifier")).toBeTruthy();
+        expect(nft.hasOwnProperty("collection")).toBeTruthy();
+        expect(nft.hasOwnProperty("type")).toBeTruthy();
       }
     });
   });
