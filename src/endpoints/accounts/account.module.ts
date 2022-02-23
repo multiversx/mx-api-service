@@ -7,6 +7,7 @@ import { SmartContractResultModule } from "../sc-results/scresult.module";
 import { StakeModule } from "../stake/stake.module";
 import { TokenModule } from "../tokens/token.module";
 import { TransactionModule } from "../transactions/transaction.module";
+import { TransferModule } from "../transfers/transfer.module";
 import { VmQueryModule } from "../vm.query/vm.query.module";
 import { WaitingListModule } from "../waiting-list/waiting.list.module";
 import { AccountService } from "./account.service";
@@ -23,6 +24,7 @@ import { AccountService } from "./account.service";
     SmartContractResultModule,
     CollectionModule,
     forwardRef(() => PluginModule),
+    TransferModule,
   ],
   providers: [
     AccountService,

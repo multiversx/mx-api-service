@@ -9,10 +9,14 @@ import transactionDetails from "../data/transactions/transaction.details";
 import { TransactionDetailed } from "../../endpoints/transactions/entities/transaction.detailed";
 import '../../utils/extensions/jest.extensions';
 import '../../utils/extensions/array.extensions';
-import { PublicAppModule } from 'src/public.app.module';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { TransactionModule } from 'src/endpoints/transactions/transaction.module';
+import { ApiConfigModule } from 'src/common/api-config/api.config.module';
+import { BinaryUtils } from 'src/utils/binary.utils';
 
 describe('Transaction Service', () => {
   let transactionService: TransactionService;
+  let apiConfigService: ApiConfigService;
   let transactionHash: string;
   let transactionSender: string;
   let transactionReceiver: string;
@@ -20,10 +24,11 @@ describe('Transaction Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [TransactionModule, ApiConfigModule],
     }).compile();
 
     transactionService = moduleRef.get<TransactionService>(TransactionService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
 
     const transactionFilter = new TransactionFilter();
 
@@ -72,6 +77,20 @@ describe('Transaction Service', () => {
           expect(transaction).toHaveStructure(Object.keys(new Transaction()));
           expect(transaction.sender).toBe(transactionSender);
           expect(transaction.receiver).toBe(transactionReceiver);
+        }
+      });
+
+      it('should return a list with transfers that call ESDTNFTTransfer function', async () => {
+        if (apiConfigService.getIsIndexerV3FlagActive()) {
+          const transactionFilter = new TransactionFilter();
+          transactionFilter.function = 'ESDTNFTTransfer';
+
+          const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+
+          for (const transaction of transactions) {
+            expect(transaction).toHaveStructure(Object.keys(new Transaction()));
+            expect(BinaryUtils.base64Decode(transaction.data ?? '').startsWith('ESDTNFTTransfer')).toBe(true);
+          }
         }
       });
 
