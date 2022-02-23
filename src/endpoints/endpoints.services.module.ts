@@ -21,6 +21,7 @@ import { SmartContractResultModule } from "./sc-results/scresult.module";
 import { ShardModule } from "./shards/shard.module";
 import { StakeModule } from "./stake/stake.module";
 import { TokenModule } from "./tokens/token.module";
+import { TransactionActionModule } from "./transactions/transaction-action/transaction.action.module";
 import { TransactionModule } from "./transactions/transaction.module";
 import { TransferModule } from "./transfers/transfer.module";
 import { UsernameModule } from "./usernames/username.module";
@@ -57,12 +58,13 @@ import { WaitingListModule } from "./waiting-list/waiting.list.module";
     BlsModule,
     DappConfigModule,
     TransferModule,
+    TransactionActionModule,
   ],
   exports: [
     AccountModule, CollectionModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
     MexModule, MiniBlockModule, NetworkModule, NftModule, TagModule, NodeModule, ProviderModule,
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
-    WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule,
+    WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, TransactionActionModule,
   ],
 })
 export class EndpointsServicesModule { }
