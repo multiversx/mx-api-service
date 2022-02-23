@@ -6,19 +6,19 @@ export class Transaction {
   txHash: string = '';
 
   @ApiProperty()
-  gasLimit: number = 0;
+  gasLimit: number | undefined = undefined;
 
   @ApiProperty()
-  gasPrice: number = 0;
+  gasPrice: number | undefined = undefined;
 
   @ApiProperty()
-  gasUsed: number = 0;
+  gasUsed: number | undefined = undefined;
 
   @ApiProperty()
-  miniBlockHash: string = '';
+  miniBlockHash: string | undefined = undefined;
 
   @ApiProperty()
-  nonce: number = 0;
+  nonce: number | undefined = undefined;
 
   @ApiProperty()
   receiver: string = '';
@@ -27,7 +27,7 @@ export class Transaction {
   receiverShard: number = 0;
 
   @ApiProperty()
-  round: number = 0;
+  round: number | undefined = undefined;
 
   @ApiProperty()
   sender: string = '';
@@ -36,7 +36,7 @@ export class Transaction {
   senderShard: number = 0;
 
   @ApiProperty()
-  signature: string = '';
+  signature: string | undefined = undefined;
 
   @ApiProperty()
   status: string = '';
@@ -45,13 +45,13 @@ export class Transaction {
   value: string = '';
 
   @ApiProperty()
-  fee: string = '';
+  fee: string | undefined = undefined;
 
   @ApiProperty()
   timestamp: number = 0;
 
   @ApiProperty()
-  data: string = '';
+  data: string | undefined = undefined;
 
   @ApiProperty()
   function: string | undefined = undefined;
@@ -64,6 +64,9 @@ export class Transaction {
 
   @ApiProperty()
   type: TransactionType | undefined = undefined;
+
+  @ApiProperty()
+  originalTxHash: string | undefined = undefined;
 
   getDate(): Date | undefined {
     if (this.timestamp) {
