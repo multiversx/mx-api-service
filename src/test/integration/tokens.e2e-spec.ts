@@ -1,24 +1,23 @@
 import { Test } from '@nestjs/testing';
-import { PublicAppModule } from 'src/public.app.module';
 import { TokenService } from 'src/endpoints/tokens/token.service';
-import Initializer from './e2e-init';
-import { Constants } from 'src/utils/constants';
 import { TokenFilter } from 'src/endpoints/tokens/entities/token.filter';
 import { TokenWithBalance } from "../../endpoints/tokens/entities/token.with.balance";
 import { TokenDetailed } from "../../endpoints/tokens/entities/token.detailed";
 import { TokenAccount } from "../../endpoints/tokens/entities/token.account";
 import { TokenAddressRoles } from 'src/endpoints/tokens/entities/token.address.roles';
 import tokenDetails from '../data/esdt/token/token.example';
+import '../../utils/extensions/jest.extensions';
+import { PublicAppModule } from 'src/public.app.module';
 
 describe('Token Service', () => {
   let tokenService: TokenService;
 
   const address: string = 'erd1xcm2sjlwg4xeqxzvuyhx93kagleewgz9rnw9hs5rxldfjk7nh9ksmznyyr';
   const identifier: string = 'EGLDRIDE-7bd51a';
-  const tokenName: string = 'ElrondWorld';
+  const tokenName: string = 'CheckerChain';
 
   beforeAll(async () => {
-    await Initializer.initialize();
+
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -30,7 +29,7 @@ describe('Token Service', () => {
       new TokenFilter(),
     );
     expect(tokens).toHaveLength(1);
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Tokens list', () => {
     describe('Tokens pagination', () => {
@@ -65,7 +64,7 @@ describe('Token Service', () => {
 
       it(`should return a list with tokens that has identifiers`, async () => {
         const tokenFilter = new TokenFilter();
-        tokenFilter.identifiers = ['MSFT-532e00', 'EWLD-e23800', 'invalidIdentifier'];
+        tokenFilter.identifiers = ['IGNIS-b208a9', 'CHECKR-60108b', 'invalidIdentifier'];
         const tokens = await tokenService.getTokens({ from: 0, size: 25 }, tokenFilter);
 
         for (const token of tokens) {
@@ -73,8 +72,8 @@ describe('Token Service', () => {
         }
         expect(tokens.length).toEqual(2);
         const nftsIdentifiers = tokens.map((nft) => nft.identifier);
-        expect(nftsIdentifiers.includes('MSFT-532e00')).toStrictEqual(true);
-        expect(nftsIdentifiers.includes('EWLD-e23800')).toStrictEqual(true);
+        expect(nftsIdentifiers.includes('IGNIS-b208a9')).toStrictEqual(true);
+        expect(nftsIdentifiers.includes('CHECKR-60108b')).toStrictEqual(true);
       });
 
       it(`should return an empty tokens list`, async () => {
@@ -183,7 +182,7 @@ describe('Token Service', () => {
     it(`should return token supply`, async () => {
       const supply = await tokenService.getTokenSupply(tokenDetails.identifier);
 
-      if(!supply){
+      if (!supply) {
         throw new Error('Properties not defined');
       }
 

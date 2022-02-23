@@ -1,8 +1,6 @@
 import { ApiConfigService } from "../../common/api-config/api.config.service";
-import Initializer from "./e2e-init";
-import { Constants } from "../../utils/constants";
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "../../public.app.module";
+import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import { ConfigService } from "@nestjs/config";
 
 describe('API Config', () => {
@@ -26,15 +24,13 @@ describe('API Config', () => {
   const rabbitMqUrl: string = 'amqp://127.0.0.1:5672';
 
   beforeAll(async () => {
-    await Initializer.initialize();
-
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [ApiConfigModule],
     }).compile();
 
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
 
-  }, Constants.oneHour() * 1000);
+  });
 
   beforeEach(() => { jest.restoreAllMocks(); });
 

@@ -500,6 +500,10 @@ export class ApiConfigService {
     return this.configService.get<boolean>('test.mockNodes');
   }
 
+  getMockTokens(): boolean | undefined {
+    return this.configService.get<boolean>('test.mockTokens');
+  }
+
   getMockPath(): string | undefined {
     const mockPath = this.configService.get<string>('test.mockPath');
     if (mockPath === undefined) {

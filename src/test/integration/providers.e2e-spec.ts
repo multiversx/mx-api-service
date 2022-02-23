@@ -6,10 +6,10 @@ import { KeybaseState } from 'src/common/keybase/entities/keybase.state';
 import { Provider } from 'src/endpoints/providers/entities/provider';
 import { ProviderFilter } from 'src/endpoints/providers/entities/provider.filter';
 import { ProviderService } from 'src/endpoints/providers/provider.service';
-import { PublicAppModule } from 'src/public.app.module';
-import { Constants } from 'src/utils/constants';
 import providerAccount from '../data/accounts/provider.account';
-import Initializer from './e2e-init';
+import '../../utils/extensions/array.extensions';
+import '../../utils/extensions/jest.extensions';
+import { PublicAppModule } from 'src/public.app.module';
 
 describe('Provider Service', () => {
   let providerService: ProviderService;
@@ -20,19 +20,18 @@ describe('Provider Service', () => {
   let firstProvider: Provider;
 
   beforeAll(async () => {
-    await Initializer.initialize();
-    const publicAppModule = await Test.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
-    providerService = publicAppModule.get<ProviderService>(ProviderService);
-    apiConfigService = publicAppModule.get<ApiConfigService>(ApiConfigService);
-    cachingService = publicAppModule.get<CachingService>(CachingService);
+    providerService = moduleRef.get<ProviderService>(ProviderService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
+    cachingService = moduleRef.get<CachingService>(CachingService);
 
     providers = await providerService.getProviders(new ProviderFilter());
     identity = 'istari_vision';
     firstProvider = providers[0];
-  }, Constants.oneHour() * 1000);
+  });
 
   describe('Providers', () => {
     it('all providers should have provider address', () => {
