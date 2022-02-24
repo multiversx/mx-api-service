@@ -22,6 +22,7 @@ import { NftCollectionAccount } from "../collections/entities/nft.collection.acc
 import { CollectionService } from "../collections/collection.service";
 import { NftCollection } from "../collections/entities/nft.collection";
 import { CollectionFilter } from "../collections/entities/collection.filter";
+import { AddressUtils } from "src/utils/address.utils";
 
 @Injectable()
 export class EsdtAddressService {
@@ -47,7 +48,7 @@ export class EsdtAddressService {
   }
 
   async getEsdtsForAddress(address: string, filter: NftFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftAccount[]> {
-    if (source === EsdtDataSource.elastic) {
+    if (source === EsdtDataSource.elastic || AddressUtils.isSmartContractAddress(address)) {
       return await this.getEsdtsForAddressFromElastic(address, filter, pagination);
     }
 
