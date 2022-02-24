@@ -64,7 +64,8 @@ export class EsdtAddressService {
   }
 
   async getEsdtsCountForAddressFromElastic(address: string, filter: NftFilter): Promise<number> {
-    if (filter.type) {
+    // temporary fix until we have type on the accountsesdt elastic collection
+    if (filter.type && !AddressUtils.isSmartContractAddress(address)) {
       const allEsdts = await this.getEsdtsForAddressFromGateway(address, filter, { from: 0, size: 10000 });
       return allEsdts.length;
     }
