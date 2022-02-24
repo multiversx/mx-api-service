@@ -29,6 +29,7 @@ import { LogRequestsInterceptor } from './interceptors/log.requests.interceptor'
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { NftQueueModule } from './queue.worker/nft.worker/queue/nft.queue.module';
 import configuration from "config/configuration";
+import { PluginService } from './common/plugins/plugin.service';
 
 async function bootstrap() {
   const conf = configuration();
@@ -52,6 +53,7 @@ async function bootstrap() {
   const metricsService = publicApp.get<MetricsService>(MetricsService);
   const tokenAssetService = publicApp.get<TokenAssetService>(TokenAssetService);
   const protocolService = publicApp.get<ProtocolService>(ProtocolService);
+  const pluginService = publicApp.get<PluginService>(PluginService);
 
   if (apiConfigService.getIsAuthActive()) {
     publicApp.useGlobalGuards(new JwtAuthenticateGuard(apiConfigService));
@@ -86,6 +88,8 @@ async function bootstrap() {
   globalInterceptors.push(new CleanupInterceptor());
   globalInterceptors.push(new PaginationInterceptor());
 
+  await pluginService.bootstrapPublicApp(publicApp);
+
   publicApp.useGlobalInterceptors(...globalInterceptors);
   const description = readFileSync(
     join(__dirname, '..', 'docs', 'swagger.md'),
@@ -108,6 +112,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(publicApp, config);
   SwaggerModule.setup('docs', publicApp, document);
   SwaggerModule.setup('', publicApp, document);
+
 
   if (apiConfigService.getIsPublicApiActive()) {
     await publicApp.listen(3001);
@@ -169,13 +174,10 @@ async function bootstrap() {
 
   logger.log(`Public API active: ${apiConfigService.getIsPublicApiActive()}`);
   logger.log(`Private API active: ${apiConfigService.getIsPrivateApiActive()}`);
-  logger.log(
-    `Transaction processor active: ${apiConfigService.getIsTransactionProcessorCronActive()}`,
-  );
-  logger.log(
-    `Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`,
-  );
+  logger.log(`Transaction processor active: ${apiConfigService.getIsTransactionProcessorCronActive()}`);
+  logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
   logger.log(`Queue worker active: ${apiConfigService.getIsQueueWorkerCronActive()}`);
+
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
