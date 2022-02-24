@@ -82,4 +82,7 @@ security:
 nftProcess:
   parallelism: 1
   maxRetries: 3
+transaction-action:
+  mex:
+    microServiceUrl: 'https://graph.maiar.exchange/graphql' 
   
