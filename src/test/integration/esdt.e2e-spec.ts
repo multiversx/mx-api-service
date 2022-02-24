@@ -11,6 +11,7 @@ import { NftCollectionAccount } from "src/endpoints/collections/entities/nft.col
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import '../../utils/extensions/jest.extensions';
 import { PublicAppModule } from "src/public.app.module";
+import { NftType } from 'src/endpoints/nfts/entities/nft.type';
 
 describe('ESDT Service', () => {
   let esdtService: EsdtService;
@@ -37,6 +38,61 @@ describe('ESDT Service', () => {
       const elasticNfts = await esdtAddressService.getEsdtsForAddress(esdtAddress, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.elastic);
 
       expect(gatewayNfts).toStrictEqual(elasticNfts);
+    });
+
+    it("should return esdts of type MetaESDT", async () => {
+      const address: string = "erd1k3wtee6vzk47halxwm7qud3mrdjrlw4fyjvuhamtzy4hjhe6htcsv9jcgs";
+      const filter = new NftFilter();
+      filter.type = NftType.MetaESDT;
+      const results = await esdtAddressService.getEsdtsForAddress(address, filter, { from: 0, size: 2 });
+
+      expect(results).toHaveLength(2);
+
+      for (const result of results) {
+        expect(result.type).toStrictEqual("MetaESDT");
+      }
+    });
+
+    it("should return esdts of type SemiFungibleESDT", async () => {
+      const address: string = "erd1k3wtee6vzk47halxwm7qud3mrdjrlw4fyjvuhamtzy4hjhe6htcsv9jcgs";
+      const filter = new NftFilter();
+      filter.type = NftType.SemiFungibleESDT;
+
+      const results = await esdtAddressService.getEsdtsForAddress(address, filter, { from: 0, size: 2 });
+
+      expect(results).toHaveLength(2);
+
+      for (const result of results) {
+        expect(result.type).toStrictEqual("SemiFungibleESDT");
+      }
+    });
+
+    it("should return esdts of type NonFungibleESDT", async () => {
+      const address: string = "erd1k3wtee6vzk47halxwm7qud3mrdjrlw4fyjvuhamtzy4hjhe6htcsv9jcgs";
+      const filter = new NftFilter();
+      filter.type = NftType.NonFungibleESDT;
+
+      const results = await esdtAddressService.getEsdtsForAddress(address, filter, { from: 0, size: 2 });
+
+      expect(results).toHaveLength(2);
+
+      for (const result of results) {
+        expect(result.type).toStrictEqual("NonFungibleESDT");
+      }
+    });
+
+    it("should return esdts of type NonFungibleESDT and SemiFungibleESDT", async () => {
+      const address: string = "erd1k3wtee6vzk47halxwm7qud3mrdjrlw4fyjvuhamtzy4hjhe6htcsv9jcgs";
+      const resultNft = await esdtAddressService.getEsdtsForAddress(address, { type: NftType.NonFungibleESDT }, { from: 0, size: 100 });
+      const resultSft = await esdtAddressService.getEsdtsForAddress(address, { type: NftType.SemiFungibleESDT }, { from: 0, size: 100 });
+
+      for (const result of resultNft) {
+        expect(result.type).toStrictEqual("NonFungibleESDT");
+      }
+
+      for (const result of resultSft) {
+        expect(result.type).toStrictEqual("SemiFungibleESDT");
+      }
     });
   });
 
