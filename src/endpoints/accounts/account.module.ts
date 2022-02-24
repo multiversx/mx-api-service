@@ -22,7 +22,7 @@ import { AccountService } from "./account.service";
     forwardRef(() => StakeModule),
     forwardRef(() => TransactionModule),
     SmartContractResultModule,
-    CollectionModule,
+    forwardRef(() => CollectionModule),
     forwardRef(() => PluginModule),
     TransferModule,
   ],
