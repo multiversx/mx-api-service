@@ -271,7 +271,8 @@ export class EsdtAddressService {
 
   private async mapToNftAccount(nfts: GatewayNft[], sort: boolean): Promise<NftAccount[]> {
     if (sort) {
-      nfts.sort((a: GatewayNft, b: GatewayNft) => a.tokenIdentifier.localeCompare(b.tokenIdentifier, 'en', { sensitivity: 'base' }));
+      const collator = new Intl.Collator('en', { sensitivity: 'base' });
+      nfts.sort((a: GatewayNft, b: GatewayNft) => collator.compare(a.tokenIdentifier, b.tokenIdentifier));
     }
 
     const nftAccounts: NftAccount[] = [];
