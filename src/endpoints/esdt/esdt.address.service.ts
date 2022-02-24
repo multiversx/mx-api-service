@@ -99,8 +99,7 @@ export class EsdtAddressService {
   }
 
   private async getEsdtsForAddressFromElastic(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
-    let elasticQuery = this.nftService.buildElasticNftFilter(filter, undefined, address)
-      .withPagination(pagination);
+    let elasticQuery = this.nftService.buildElasticNftFilter(filter, undefined, address);
 
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       elasticQuery = elasticQuery.withSort([{ name: "timestamp", order: ElasticSortOrder.descending }]);
@@ -133,7 +132,11 @@ export class EsdtAddressService {
 
     const nfts: GatewayNft[] = Object.values(gatewayNfts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
 
-    const nftAccounts: NftAccount[] = await this.mapToNftAccount(nfts);
+    let nftAccounts: NftAccount[] = await this.mapToNftAccount(nfts);
+
+    const { from, size } = pagination;
+
+    nftAccounts = nftAccounts.slice(from, from + size);
 
     return nftAccounts;
   }
