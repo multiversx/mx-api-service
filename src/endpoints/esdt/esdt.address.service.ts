@@ -69,10 +69,10 @@ export class EsdtAddressService {
 
   private async getEsdtsForAddressWithTypeFilter(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
     if (AddressUtils.isSmartContractAddress(address)) {
-      const nftType = filter.type;
+      const nftType = (filter.type ?? '').split(',');
       filter.type = undefined;
       let allEsdts = await this.getEsdtsForAddressFromElastic(address, filter, { from: 0, size: 10000 });
-      allEsdts = allEsdts.filter(x => x.type === nftType);
+      allEsdts = allEsdts.filter(x => nftType.includes(x.type));
       allEsdts = allEsdts.slice(pagination.from, pagination.from + pagination.size);
       return allEsdts;
     }
@@ -393,7 +393,7 @@ export class EsdtAddressService {
     }
 
     if (filter.type) {
-      const types = filter.type;
+      const types = (filter.type ?? '').split(',');
 
       nfts = nfts.filter(x => types.includes(x.type));
     }
