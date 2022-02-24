@@ -64,8 +64,12 @@ export class EsdtAddressService {
   }
 
   async getEsdtsCountForAddressFromElastic(address: string, filter: NftFilter): Promise<number> {
-    const elasticQuery = this.nftService.buildElasticNftFilter(filter, undefined, address);
+    if (filter.type) {
+      const allEsdts = await this.getEsdtsForAddressFromGateway(address, filter, { from: 0, size: 10000 });
+      return allEsdts.length;
+    }
 
+    const elasticQuery = this.nftService.buildElasticNftFilter(filter, undefined, address);
     return await this.elasticService.getCount('accountsesdt', elasticQuery);
   }
 
