@@ -18,7 +18,7 @@ export class UsernameService {
       const contract = UsernameUtils.getContractAddress(username);
       const encoded = UsernameUtils.encodeUsername(username);
 
-      const [encodedAddress] = await this.vmQueryService.vmQuery(contract, 'resolve', undefined, [encoded]);
+      const [encodedAddress] = await this.vmQueryService.vmQuery(contract, 'resolve', undefined, undefined, [encoded]);
 
       if (encodedAddress) {
         const publicKey = BinaryUtils.base64ToHex(encodedAddress);

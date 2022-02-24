@@ -44,6 +44,7 @@ export class WaitingListService {
       this.apiConfigService.getDelegationContractAddress(),
       'getFullWaitingList',
       undefined,
+      undefined,
       []
     );
 

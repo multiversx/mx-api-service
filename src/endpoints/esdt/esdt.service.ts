@@ -128,6 +128,7 @@ export class EsdtService {
       this.apiConfigService.getEsdtContractAddress(),
       'getTokenProperties',
       undefined,
+      undefined,
       [arg],
       true
     );
@@ -220,6 +221,7 @@ export class EsdtService {
     const tokenAddressesAndRolesEncoded = await this.vmQueryService.vmQuery(
       this.apiConfigService.getEsdtContractAddress(),
       'getAllAddressesAndRoles',
+      undefined,
       undefined,
       [arg],
       true

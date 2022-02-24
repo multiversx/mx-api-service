@@ -107,6 +107,7 @@ export class StakeService {
         this.apiConfigService.getAuctionContractAddress(),
         'getTotalStakedTopUpStakedBlsKeys',
         this.apiConfigService.getAuctionContractAddress(),
+        undefined,
         [AddressUtils.bech32Decode(address)],
       );
     } catch (error) {
@@ -176,6 +177,7 @@ export class StakeService {
         this.apiConfigService.getAuctionContractAddress(),
         'getUnStakedTokensList',
         address,
+        undefined,
         [AddressUtils.bech32Decode(address)],
       ),
     ]);

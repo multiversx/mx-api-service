@@ -215,6 +215,7 @@ export class CollectionService {
       this.apiConfigService.getEsdtContractAddress(),
       'getSpecialRoles',
       undefined,
+      undefined,
       [BinaryUtils.stringToHex(nftCollection.collection)]
     );
 

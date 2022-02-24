@@ -20,6 +20,7 @@ export class KeysService {
         this.apiConfigService.getStakingContractAddress(),
         'getRemainingUnBondPeriod',
         undefined,
+        undefined,
         [key]
       );
 

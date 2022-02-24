@@ -34,7 +34,7 @@ export class VmQueryService {
     };
   }
 
-  async vmQueryFullResult(contract: string, func: string, caller: string | undefined = undefined, args: string[] = []): Promise<any> {
+  async vmQueryFullResult(contract: string, func: string, caller: string | undefined = undefined, value: string | undefined = undefined, args: string[] = []): Promise<any> {
     let key = `vm-query:${contract}:${func}`;
     if (caller) {
       key += `:${caller}`;
@@ -48,13 +48,13 @@ export class VmQueryService {
 
     return await this.cachingService.getOrSetCache(
       key,
-      async () => await this.vmQueryRaw(contract, func, caller, args),
+      async () => await this.vmQueryRaw(contract, func, caller, value, args),
       remoteTtl,
       localTtl
     );
   }
 
-  async vmQuery(contract: string, func: string, caller: string | undefined = undefined, args: string[] = [], skipCache: boolean = false): Promise<string[]> {
+  async vmQuery(contract: string, func: string, caller: string | undefined = undefined, value: string | undefined = undefined, args: string[] = [], skipCache: boolean = false): Promise<string[]> {
     let key = `vm-query:${contract}:${func}`;
     if (caller) {
       key += `:${caller}`;
@@ -67,14 +67,14 @@ export class VmQueryService {
     try {
       let result: any;
       if (skipCache) {
-        result = await this.vmQueryRaw(contract, func, caller, args);
+        result = await this.vmQueryRaw(contract, func, caller, value, args);
       } else {
 
         const { localTtl, remoteTtl } = await this.computeTtls();
 
         result = await this.cachingService.getOrSetCache(
           key,
-          async () => await this.vmQueryRaw(contract, func, caller, args),
+          async () => await this.vmQueryRaw(contract, func, caller, value, args),
           remoteTtl,
           localTtl
         );
@@ -84,16 +84,17 @@ export class VmQueryService {
 
       return 'ReturnData' in data ? data.ReturnData : data.returnData;
     } catch (error: any) {
-      this.logger.error(`Error in vm query for address '${contract}', function '${func}', caller '${caller}', args '${JSON.stringify(args)}'. Error message: ${error.response?.data?.error}`);
+      this.logger.error(`Error in vm query for address '${contract}', function '${func}', caller '${caller}', value '${value}', args '${JSON.stringify(args)}'. Error message: ${error.response?.data?.error}`);
       throw error;
     }
   }
 
-  async vmQueryRaw(contract: string, func: string, caller: string | undefined, args: string[] = []): Promise<any> {
+  async vmQueryRaw(contract: string, func: string, caller: string | undefined, value: string | undefined, args: string[] = []): Promise<any> {
     const payload = {
       scAddress: contract,
-      FuncName: func,
+      funcName: func,
       caller: caller,
+      value: value,
       args: args,
     };
 
