@@ -15,14 +15,14 @@ import { AccountService } from "./account.service";
 @Module({
   imports: [
     VmQueryModule,
-    TokenModule,
+    forwardRef(() => TokenModule),
     forwardRef(() => NftModule),
     DelegationLegacyModule,
     WaitingListModule,
     forwardRef(() => StakeModule),
-    TransactionModule,
+    forwardRef(() => TransactionModule),
     SmartContractResultModule,
-    CollectionModule,
+    forwardRef(() => CollectionModule),
     forwardRef(() => PluginModule),
     TransferModule,
   ],
