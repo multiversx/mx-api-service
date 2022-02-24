@@ -90,7 +90,7 @@ export class TokenTransferService {
   async getOperationsForTransactionLogs(txHash: string, logs: TransactionLog[], sender: string): Promise<TransactionOperation[]> {
     const tokensProperties = await this.getTokenTransferPropertiesFromLogs(logs);
 
-    const operations: (TransactionOperation | undefined)[] = [];
+    const operations: TransactionOperation[] = [];
     for (const log of logs) {
       for (const event of log.events) {
         const action = this.getOperationAction(event.identifier);
@@ -101,16 +101,17 @@ export class TokenTransferService {
         let operation;
         if (action === TransactionOperationAction.writeLog || action === TransactionOperationAction.signalError) {
           operation = this.getTransactionLogOperation(log, event, action, sender);
-        }
-        else {
+        } else {
           operation = this.getTransactionNftOperation(txHash, log, event, action, tokensProperties);
         }
 
-        operations.push(operation);
+        if (operation) {
+          operations.push(operation);
+        }
       }
     }
 
-    return operations.filter(operation => operation !== undefined).map(operation => operation ?? new TransactionOperation());
+    return operations;
   }
 
   private getTransactionLogOperation(log: TransactionLog, event: TransactionLogEvent, action: TransactionOperationAction, receiver: string): TransactionOperation {
