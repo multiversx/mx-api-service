@@ -416,9 +416,7 @@ export class EsdtAddressService {
 
     const { from, size } = pagination;
 
-    if (nfts.length > from + size) {
-      nfts = nfts.slice(from, from + size);
-    }
+    nfts = nfts.slice(from, from + size);
 
     return nfts;
   }
