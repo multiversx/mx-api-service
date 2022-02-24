@@ -87,23 +87,58 @@ export class TokenTransferService {
   }
 
 
-  async getOperationsForTransactionLogs(txHash: string, logs: TransactionLog[]): Promise<TransactionOperation[]> {
+  async getOperationsForTransactionLogs(txHash: string, logs: TransactionLog[], sender: string): Promise<TransactionOperation[]> {
     const tokensProperties = await this.getTokenTransferPropertiesFromLogs(logs);
 
     const operations: (TransactionOperation | undefined)[] = [];
     for (const log of logs) {
       for (const event of log.events) {
         const action = this.getOperationAction(event.identifier);
-        if (action) {
-          const operation = this.getTransactionNftOperation(txHash, log, event, action, tokensProperties);
-
-          operations.push(operation);
+        if (!action) {
+          continue;
         }
+
+        let operation;
+        if (action === TransactionOperationAction.writeLog || action === TransactionOperationAction.signalError) {
+          operation = this.getTransactionLogOperation(log, event, action, sender);
+        }
+        else {
+          operation = this.getTransactionNftOperation(txHash, log, event, action, tokensProperties);
+        }
+
+        operations.push(operation);
       }
     }
 
     return operations.filter(operation => operation !== undefined).map(operation => operation ?? new TransactionOperation());
   }
+
+  private getTransactionLogOperation(log: TransactionLog, event: TransactionLogEvent, action: TransactionOperationAction, receiver: string): TransactionOperation {
+    const operation = new TransactionOperation();
+    operation.id = log.id ?? '';
+    operation.action = action;
+
+    if (action === TransactionOperationAction.writeLog) {
+      operation.type = TransactionOperationType.log;
+    }
+    if (action === TransactionOperationAction.signalError) {
+      operation.type = TransactionOperationType.error;
+    }
+
+    operation.sender = event.address;
+    operation.receiver = receiver;
+
+    if (event.data) {
+      operation.data = BinaryUtils.base64Decode(event.data);
+    }
+
+    if (event.topics.length > 1) {
+      operation.message = BinaryUtils.base64Decode(event.topics[1]);
+    }
+
+    return operation;
+  }
+
 
   private getOperationAction(identifier: string): TransactionOperationAction | null {
     switch (identifier) {
@@ -129,6 +164,10 @@ export class TokenTransferService {
         return TransactionOperationAction.wipe;
       case TransactionLogEventIdentifier.ESDTFreeze:
         return TransactionOperationAction.freeze;
+      case TransactionLogEventIdentifier.writeLog:
+        return TransactionOperationAction.writeLog;
+      case TransactionLogEventIdentifier.signalError:
+        return TransactionOperationAction.signalError;
       default:
         return null;
     }
