@@ -14,8 +14,8 @@ import { IdentitiesModule } from "src/endpoints/identities/identities.module";
     forwardRef(() => TokenModule),
     ConfigModule,
     TransactionActionMexRecognizerModule,
-    ProviderModule,
-    IdentitiesModule,
+    forwardRef(() => ProviderModule),
+    forwardRef(() => IdentitiesModule),
   ],
   providers: [
     TransactionActionService,

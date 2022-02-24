@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CachingService } from "src/common/caching/caching.service";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
@@ -14,7 +14,9 @@ import { StakeFunction } from "./entities/stake.function";
 @Injectable()
 export class StakeActionRecognizerService implements TransactionActionRecognizerInterface {
   constructor(
+    @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
+    @Inject(forwardRef(() => IdentitiesService))
     private readonly identitiesService: IdentitiesService,
     private readonly cachingService: CachingService,
   ) { }
