@@ -264,14 +264,15 @@ export class EsdtAddressService {
 
     const nfts: GatewayNft[] = Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
 
+    const collator = new Intl.Collator('en', { sensitivity: 'base' });
+    nfts.sort((a: GatewayNft, b: GatewayNft) => collator.compare(a.tokenIdentifier, b.tokenIdentifier));
+
     const nftAccounts: NftAccount[] = await this.mapToNftAccount(nfts);
 
     return this.filterEsdtsForAddressFromGateway(filter, pagination, nftAccounts);
   }
 
   private async mapToNftAccount(nfts: GatewayNft[]): Promise<NftAccount[]> {
-    nfts.sort((a: GatewayNft, b: GatewayNft) => a.tokenIdentifier.localeCompare(b.tokenIdentifier, 'en', { sensitivity: 'base' }));
-
     const nftAccounts: NftAccount[] = [];
 
     for (const dataSourceNft of nfts) {
