@@ -38,6 +38,14 @@ export class ElasticQuery {
     return this;
   }
 
+  withMustCondition(queries: AbstractQuery[] | AbstractQuery): ElasticQuery {
+    return this.withCondition(QueryConditionOptions.must, queries);
+  }
+
+  withShouldCondition(queries: AbstractQuery[] | AbstractQuery): ElasticQuery {
+    return this.withCondition(QueryConditionOptions.should, queries);
+  }
+
   withCondition(queryCondition: QueryConditionOptions, queries: AbstractQuery[] | AbstractQuery): ElasticQuery {
     if (!Array.isArray(queries)) {
       queries = [queries];

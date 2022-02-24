@@ -66,65 +66,59 @@ export class NftService {
   }
 
   buildElasticNftFilter(filter: NftFilter, identifier?: string, address?: string) {
-    let elasticQuery = ElasticQuery.create();
-    elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Exists('identifier'));
+    let elasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, QueryType.Exists('identifier'));
 
     if (address) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('address', address));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('address', address));
     }
 
     if (filter.search !== undefined) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Wildcard('token', `*${filter.search}*`));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Wildcard('token', `*${filter.search}*`));
     }
 
     if (filter.type !== undefined) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('type', filter.type));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('type', filter.type));
     }
 
     if (identifier !== undefined) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('identifier', identifier, QueryOperator.AND));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('identifier', identifier, QueryOperator.AND));
     }
 
     if (filter.collection !== undefined && filter.collection !== '') {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('token', filter.collection, QueryOperator.AND));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('token', filter.collection, QueryOperator.AND));
     }
 
     if (filter.collections !== undefined && filter.collections.length !== 0) {
-      const collections = filter.collections;
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Should(collections.map(collection => QueryType.Match('token', collection, QueryOperator.AND))));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.collections.map(collection => QueryType.Match('token', collection, QueryOperator.AND))));
     }
 
     if (filter.name !== undefined && filter.name !== '') {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Nested('data', { "data.name": filter.name }));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('data', { "data.name": filter.name }));
     }
 
     if (filter.hasUris !== undefined) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Nested('data', { "data.nonEmptyURIs": filter.hasUris }));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('data', { "data.nonEmptyURIs": filter.hasUris }));
     }
 
     if (filter.tags) {
-      const tags = filter.tags;
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Should(tags.map(tag => QueryType.Nested("data", { "data.tags": tag }))));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.tags.map(tag => QueryType.Nested("data", { "data.tags": tag }))));
     }
 
     if (filter.creator !== undefined) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Nested("data", { "data.creator": filter.creator }));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", { "data.creator": filter.creator }));
     }
 
     if (filter.identifiers) {
-      const identifiers = filter.identifiers;
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Should(identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
     }
 
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      if (filter.isWhitelistedStorage !== undefined) {
-        elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
-      }
+    if (filter.isWhitelistedStorage !== undefined && this.apiConfigService.getIsIndexerV3FlagActive()) {
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
     }
 
     if (filter.before || filter.after) {
-      elasticQuery = elasticQuery
-        .withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
+      elasticQuery = elasticQuery.withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
     }
 
     return elasticQuery;
