@@ -35,6 +35,7 @@ export class AccountService {
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
+    @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
     @Inject(forwardRef(() => PluginService))
     private readonly pluginService: PluginService,

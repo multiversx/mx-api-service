@@ -48,6 +48,10 @@ export class EsdtAddressService {
   }
 
   async getEsdtsForAddress(address: string, filter: NftFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftAccount[]> {
+    if (filter.type) {
+      return await this.getEsdtsForAddressWithTypeFilter(address, filter, pagination);
+    }
+
     if (source === EsdtDataSource.elastic || AddressUtils.isSmartContractAddress(address)) {
       return await this.getEsdtsForAddressFromElastic(address, filter, pagination);
     }
@@ -63,10 +67,24 @@ export class EsdtAddressService {
     return await this.getEsdtCollectionsForAddressFromGateway(address, filter, pagination);
   }
 
+  private async getEsdtsForAddressWithTypeFilter(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
+    if (AddressUtils.isSmartContractAddress(address)) {
+      const nftType = (filter.type ?? '').split(',');
+      filter.type = undefined;
+      let allEsdts = await this.getEsdtsForAddressFromElastic(address, filter, { from: 0, size: 10000 });
+      allEsdts = allEsdts.filter(x => nftType.includes(x.type));
+      allEsdts = allEsdts.slice(pagination.from, pagination.from + pagination.size);
+      return allEsdts;
+    }
+
+    const allEsdts = await this.getEsdtsForAddressFromGateway(address, filter, pagination);
+    return allEsdts;
+  }
+
   async getEsdtsCountForAddressFromElastic(address: string, filter: NftFilter): Promise<number> {
     // temporary fix until we have type on the accountsesdt elastic collection
-    if (filter.type && !AddressUtils.isSmartContractAddress(address)) {
-      const allEsdts = await this.getEsdtsForAddressFromGateway(address, filter, { from: 0, size: 10000 });
+    if (filter.type) {
+      const allEsdts = await this.getEsdtsForAddressWithTypeFilter(address, filter, { from: 0, size: 10000 });
       return allEsdts.length;
     }
 
@@ -246,14 +264,15 @@ export class EsdtAddressService {
 
     const nfts: GatewayNft[] = Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
 
+    const collator = new Intl.Collator('en', { sensitivity: 'base' });
+    nfts.sort((a: GatewayNft, b: GatewayNft) => collator.compare(a.tokenIdentifier, b.tokenIdentifier));
+
     const nftAccounts: NftAccount[] = await this.mapToNftAccount(nfts);
 
     return this.filterEsdtsForAddressFromGateway(filter, pagination, nftAccounts);
   }
 
   private async mapToNftAccount(nfts: GatewayNft[]): Promise<NftAccount[]> {
-    nfts.sort((a: GatewayNft, b: GatewayNft) => a.tokenIdentifier.localeCompare(b.tokenIdentifier, 'en', { sensitivity: 'base' }));
-
     const nftAccounts: NftAccount[] = [];
 
     for (const dataSourceNft of nfts) {
@@ -375,7 +394,7 @@ export class EsdtAddressService {
     }
 
     if (filter.type) {
-      const types = filter.type;
+      const types = (filter.type ?? '').split(',');
 
       nfts = nfts.filter(x => types.includes(x.type));
     }

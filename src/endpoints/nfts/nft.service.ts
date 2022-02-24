@@ -66,68 +66,59 @@ export class NftService {
   }
 
   buildElasticNftFilter(filter: NftFilter, identifier?: string, address?: string) {
-    const queries = [];
-    queries.push(QueryType.Exists('identifier'));
+    let elasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, QueryType.Exists('identifier'));
 
     if (address) {
-      queries.push(QueryType.Match('address', address));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('address', address));
     }
 
     if (filter.search !== undefined) {
-      queries.push(QueryType.Wildcard('token', `*${filter.search}*`));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Wildcard('token', `*${filter.search}*`));
     }
 
     if (filter.type !== undefined) {
-      queries.push(QueryType.Match('type', filter.type));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('type', filter.type));
     }
 
     if (identifier !== undefined) {
-      queries.push(QueryType.Match('identifier', identifier, QueryOperator.AND));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('identifier', identifier, QueryOperator.AND));
     }
 
     if (filter.collection !== undefined && filter.collection !== '') {
-      queries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('token', filter.collection, QueryOperator.AND));
+    }
+
+    if (filter.collections !== undefined && filter.collections.length !== 0) {
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.collections.map(collection => QueryType.Match('token', collection, QueryOperator.AND))));
     }
 
     if (filter.name !== undefined && filter.name !== '') {
-      queries.push(QueryType.Nested('data', { "data.name": filter.name }));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('data', { "data.name": filter.name }));
     }
 
     if (filter.hasUris !== undefined) {
-      queries.push(QueryType.Nested('data', { "data.nonEmptyURIs": filter.hasUris }));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('data', { "data.nonEmptyURIs": filter.hasUris }));
     }
 
     if (filter.tags) {
-      const tagArray = filter.tags;
-      if (tagArray.length > 0) {
-        for (const tag of tagArray) {
-          queries.push(QueryType.Nested("data", { "data.tags": tag }));
-        }
-      }
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.tags.map(tag => QueryType.Nested("data", { "data.tags": tag }))));
     }
 
     if (filter.creator !== undefined) {
-      queries.push(QueryType.Nested("data", { "data.creator": filter.creator }));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", { "data.creator": filter.creator }));
     }
 
     if (filter.identifiers) {
-      const identifiers = filter.identifiers;
-      queries.push(QueryType.Should(identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
     }
 
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      if (filter.isWhitelistedStorage !== undefined) {
-        queries.push(QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
-      }
+    if (filter.isWhitelistedStorage !== undefined && this.apiConfigService.getIsIndexerV3FlagActive()) {
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
     }
-
-    let elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, queries)
-      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('type', 'FungibleESDT'), QueryType.Match('address', 'pending')]);
 
     if (filter.before || filter.after) {
-      elasticQuery = elasticQuery
-        .withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
+      elasticQuery = elasticQuery.withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
     }
 
     return elasticQuery;
