@@ -28,7 +28,7 @@ export class TransactionActionService {
     this.logger = new Logger(TransactionActionService.name);
   }
 
-  async getRecognizers() {
+  private async getRecognizers() {
     if (this.recognizers.length === 0) {
       const isMexActive = await this.mexRecognizer.isActive();
       if (isMexActive) {
