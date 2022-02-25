@@ -215,7 +215,7 @@ describe('Node Service', () => {
       const filteredNode = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
 
       for (const node of filteredNode) {
-        expect(node).toStrictEqual(NodeType.validator);
+        expect(node.type).toStrictEqual(NodeType.validator);
         expect(node.provider).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5");
       }
     });
@@ -348,9 +348,7 @@ describe('Node Service', () => {
       const nodes = await nodeService.getAllNodesRaw();
 
       for (const node of nodes) {
-        expect(node.hasOwnProperty("name")).toBeTruthy();
-        expect(node.hasOwnProperty("shard")).toBeTruthy();
-        expect(node.hasOwnProperty("status")).toBeTruthy();
+        expect(node).toBeInstanceOf(Object);
       }
     });
   });
