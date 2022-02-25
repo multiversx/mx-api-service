@@ -258,7 +258,7 @@ export class TransactionService {
     };
   }
 
-  async parseTransaction(unsignedTransaction: UnsignedTransaction): Promise<TransactionParseResult> {
+  async decodeTransaction(unsignedTransaction: UnsignedTransaction): Promise<TransactionParseResult> {
     const action = await this.transactionActionService.getTransactionAction(unsignedTransaction);
 
     return {

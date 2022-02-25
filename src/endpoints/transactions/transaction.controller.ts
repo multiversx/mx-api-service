@@ -219,13 +219,13 @@ export class TransactionController {
     return result;
   }
 
-  @Post('/transactions/parse')
+  @Post('/transactions/decode')
   @ApiResponse({
     status: 201,
-    description: 'Parse a transaction',
+    description: 'Decode a transaction',
     type: TransactionParseResult,
   })
-  async parseTransaction(@Body() transaction: UnsignedTransaction): Promise<TransactionParseResult> {
+  async decodeTransaction(@Body() transaction: UnsignedTransaction): Promise<TransactionParseResult> {
     if (!transaction.sender) {
       throw new BadRequestException('Sender must be provided');
     }
@@ -234,7 +234,7 @@ export class TransactionController {
       throw new BadRequestException('Receiver must be provided');
     }
 
-    const result = await this.transactionService.parseTransaction(transaction);
+    const result = await this.transactionService.decodeTransaction(transaction);
 
     return result;
   }
