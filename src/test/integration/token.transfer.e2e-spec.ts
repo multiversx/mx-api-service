@@ -9,6 +9,7 @@ import { TransactionLog } from "src/endpoints/transactions/entities/transaction.
 import { TransactionOperationAction } from "src/endpoints/transactions/entities/transaction.operation.action";
 import { TransactionOperationType } from "src/endpoints/transactions/entities/transaction.operation.type";
 import { TransactionDetailed } from "src/endpoints/transactions/entities/transaction.detailed";
+import { SmartContractResult } from "src/endpoints/sc-results/entities/smart.contract.result";
 
 describe('Token Transfer Service', () => {
   let tokenTransferService: TokenTransferService;
@@ -139,6 +140,24 @@ describe('Token Transfer Service', () => {
         expect(operation.action).toStrictEqual(TransactionOperationAction.signalError);
         expect(operation.type).toStrictEqual(TransactionOperationType.error);
         expect(operation.message).toStrictEqual("error signalled by smartcontract");
+      }
+    });
+
+
+    it('should return operations for a egld transfer from smart contract result', async () => {
+      const scr = new SmartContractResult();
+      scr.value = "6761736710959745";
+      scr.nonce = 0;
+      scr.sender = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqghllllsku0nzf";
+      scr.receiver = "erd1pln7dkvselu5hmx3qs9elzfaln96k30x0j6ypnh8gsnyvklanxsqmujqq7";
+      transaction.results = [scr];
+
+      const operations = await tokenTransferService.getOperationsForTransaction(transaction, []);
+      expect(operations.length).toStrictEqual(1);
+
+      for (const operation of operations) {
+        expect(operation.action).toStrictEqual(TransactionOperationAction.transfer);
+        expect(operation.type).toStrictEqual(TransactionOperationType.egld);
       }
     });
 
