@@ -129,6 +129,7 @@ export class EsdtService {
       'getTokenProperties',
       undefined,
       [arg],
+      undefined,
       true
     );
 
@@ -222,6 +223,7 @@ export class EsdtService {
       'getAllAddressesAndRoles',
       undefined,
       [arg],
+      undefined,
       true
     );
 

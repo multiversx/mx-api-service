@@ -79,3 +79,6 @@ security:
 nftProcess:
   parallelism: 1
   maxRetries: 3
+transaction-action:
+  mex:
+    microServiceUrl: 'https://testnet-exchange-graph.elrond.com/graphql'

@@ -43,8 +43,6 @@ export class WaitingListService {
     const fullWaitingListEncoded = await this.vmQueryService.vmQuery(
       this.apiConfigService.getDelegationContractAddress(),
       'getFullWaitingList',
-      undefined,
-      []
     );
 
     const fullWaitingList: WaitingList[] = fullWaitingListEncoded.reduce((result, _, index, array) => {

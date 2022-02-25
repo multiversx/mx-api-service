@@ -9,5 +9,7 @@ export enum TransactionLogEventIdentifier {
   ESDTLocalMint = 'ESDTLocalMint',
   ESDTLocalBurn = 'ESDTLocalBurn',
   ESDTWipe = 'ESDTWipe',
-  ESDTFreeze = 'ESDTFreeze'
+  ESDTFreeze = 'ESDTFreeze',
+  writeLog = 'writeLog',
+  signalError = 'signalError'
 }
