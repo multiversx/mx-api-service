@@ -10,5 +10,5 @@ export enum TransactionOperationAction {
   wipe = 'wipe',
   freeze = 'freeze',
   writeLog = 'writeLog',
-  signalError = 'signalError'
+  signalError = 'signalError',
 }
