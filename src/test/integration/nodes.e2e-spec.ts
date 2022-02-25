@@ -169,7 +169,7 @@ describe('Node Service', () => {
       expect(filteredNode).toHaveLength(10);
 
       for (const node of filteredNode) {
-        expect(node).toHaveStructure((Object.keys(new Node())));
+        expect(node).toBeInstanceOf(Object);
       }
     });
 
@@ -180,7 +180,8 @@ describe('Node Service', () => {
       const filteredNode = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
 
       for (const node of filteredNode) {
-        expect(node).toHaveStructure((Object.keys(new Node())));
+        expect(node).toBeInstanceOf(Object);
+        expect(node.shard).toStrictEqual(1);
       }
     });
 
@@ -191,7 +192,7 @@ describe('Node Service', () => {
       const filteredNode = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
 
       for (const node of filteredNode) {
-        expect(node).toHaveStructure((Object.keys(new Node())));
+        expect(node).toBeInstanceOf(Object);
       }
     });
 
@@ -202,7 +203,7 @@ describe('Node Service', () => {
       const filteredNode = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
 
       for (const node of filteredNode) {
-        expect(node).toHaveStructure((Object.keys(new Node())));
+        expect(node).toBeInstanceOf(Object);
       }
     });
 
@@ -214,7 +215,8 @@ describe('Node Service', () => {
       const filteredNode = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
 
       for (const node of filteredNode) {
-        expect(node).toHaveStructure((Object.keys(new Node())));
+        expect(node).toStrictEqual(NodeType.validator);
+        expect(node.provider).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5");
       }
     });
   });
@@ -349,8 +351,6 @@ describe('Node Service', () => {
         expect(node.hasOwnProperty("name")).toBeTruthy();
         expect(node.hasOwnProperty("shard")).toBeTruthy();
         expect(node.hasOwnProperty("status")).toBeTruthy();
-        expect(node.hasOwnProperty("owner")).toBeTruthy();
-        expect(node.hasOwnProperty("provider")).toBeTruthy();
       }
     });
   });
