@@ -24,4 +24,8 @@ export class TransactionOperation {
   receiver: string = '';
 
   decimals?: number;
+
+  data?: string = '';
+
+  message?: string = '';
 }

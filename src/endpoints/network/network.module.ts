@@ -11,7 +11,7 @@ import { NetworkService } from "./network.service";
     VmQueryModule,
     BlockModule,
     forwardRef(() => AccountModule),
-    TransactionModule,
+    forwardRef(() => TransactionModule),
     forwardRef(() => StakeModule),
   ],
   providers: [

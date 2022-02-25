@@ -8,5 +8,7 @@ export enum TransactionOperationAction {
   localMint = 'localMint',
   localBurn = 'localBurn',
   wipe = 'wipe',
-  freeze = 'freeze'
+  freeze = 'freeze',
+  writeLog = 'writeLog',
+  signalError = 'signalError'
 }
