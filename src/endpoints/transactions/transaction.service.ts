@@ -33,7 +33,7 @@ import { TransactionUtils } from 'src/utils/transaction.utils';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { SignedTransaction } from './entities/transaction.signed';
-import { TransactionParseResult } from './entities/transaction.parse.result';
+import { TransactionDecodeResult } from './entities/transaction.decode.result';
 
 @Injectable()
 export class TransactionService {
@@ -258,7 +258,7 @@ export class TransactionService {
     };
   }
 
-  async decodeTransaction(unsignedTransaction: UnsignedTransaction): Promise<TransactionParseResult> {
+  async decodeTransaction(unsignedTransaction: UnsignedTransaction): Promise<TransactionDecodeResult> {
     const action = await this.transactionActionService.getTransactionAction(unsignedTransaction);
 
     return {

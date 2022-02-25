@@ -15,7 +15,7 @@ import { TransactionSendResult } from './entities/transaction.send.result';
 import { TransactionStatus } from './entities/transaction.status';
 import { TransactionService } from './transaction.service';
 import { SignedTransaction } from './entities/transaction.signed';
-import { TransactionParseResult } from './entities/transaction.parse.result';
+import { TransactionDecodeResult } from './entities/transaction.decode.result';
 import { UnsignedTransaction } from './entities/transaction.unsigned';
 
 @Controller()
@@ -223,9 +223,9 @@ export class TransactionController {
   @ApiResponse({
     status: 201,
     description: 'Decode a transaction',
-    type: TransactionParseResult,
+    type: TransactionDecodeResult,
   })
-  async decodeTransaction(@Body() transaction: UnsignedTransaction): Promise<TransactionParseResult> {
+  async decodeTransaction(@Body() transaction: UnsignedTransaction): Promise<TransactionDecodeResult> {
     if (!transaction.sender) {
       throw new BadRequestException('Sender must be provided');
     }
