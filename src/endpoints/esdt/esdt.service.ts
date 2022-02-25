@@ -128,8 +128,8 @@ export class EsdtService {
       this.apiConfigService.getEsdtContractAddress(),
       'getTokenProperties',
       undefined,
-      undefined,
       [arg],
+      undefined,
       true
     );
 
@@ -222,8 +222,8 @@ export class EsdtService {
       this.apiConfigService.getEsdtContractAddress(),
       'getAllAddressesAndRoles',
       undefined,
-      undefined,
       [arg],
+      undefined,
       true
     );
 

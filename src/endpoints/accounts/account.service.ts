@@ -201,7 +201,6 @@ export class AccountService {
         this.apiConfigService.getDelegationContractAddress(),
         'getUserDeferredPaymentList',
         undefined,
-        undefined,
         [publicKey]
       ),
       this.vmQueryService.vmQuery(
@@ -237,7 +236,6 @@ export class AccountService {
       this.apiConfigService.getAuctionContractAddress(),
       'getBlsKeysStatus',
       this.apiConfigService.getAuctionContractAddress(),
-      undefined,
       [publicKey],
     );
   }
@@ -246,7 +244,6 @@ export class AccountService {
     const [encodedRewardsPublicKey] = await this.vmQueryService.vmQuery(
       this.apiConfigService.getStakingContractAddress(),
       'getRewardAddress',
-      undefined,
       undefined,
       [blsKey],
     );
@@ -304,7 +301,6 @@ export class AccountService {
               this.apiConfigService.getStakingContractAddress(),
               'getQueueIndex',
               this.apiConfigService.getAuctionContractAddress(),
-              undefined,
               [blsKey],
             )
           ),

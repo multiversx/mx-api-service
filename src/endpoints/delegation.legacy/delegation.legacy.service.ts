@@ -52,13 +52,11 @@ export class DelegationLegacyService {
         this.apiConfigService.getDelegationContractAddress(),
         'getUserStakeByType',
         undefined,
-        undefined,
         [publicKey]
       ),
       this.vmQueryService.vmQuery(
         this.apiConfigService.getDelegationContractAddress(),
         'getClaimableRewards',
-        undefined,
         undefined,
         [publicKey]
       ),

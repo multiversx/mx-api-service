@@ -350,7 +350,6 @@ export class NodeService {
       this.apiConfigService.getStakingContractAddress(),
       'getOwner',
       this.apiConfigService.getAuctionContractAddress(),
-      undefined,
       [bls],
     );
 
@@ -368,7 +367,6 @@ export class NodeService {
       this.apiConfigService.getAuctionContractAddress(),
       'getBlsKeysStatus',
       this.apiConfigService.getAuctionContractAddress(),
-      undefined,
       [AddressUtils.bech32Decode(owner)],
     );
 

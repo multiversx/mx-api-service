@@ -34,7 +34,7 @@ export class VmQueryService {
     };
   }
 
-  async vmQueryFullResult(contract: string, func: string, caller: string | undefined = undefined, value: string | undefined = undefined, args: string[] = []): Promise<any> {
+  async vmQueryFullResult(contract: string, func: string, caller: string | undefined = undefined, args: string[] = [], value: string | undefined = undefined): Promise<any> {
     let key = `vm-query:${contract}:${func}`;
     if (caller) {
       key += `:${caller}`;
@@ -48,13 +48,13 @@ export class VmQueryService {
 
     return await this.cachingService.getOrSetCache(
       key,
-      async () => await this.vmQueryRaw(contract, func, caller, value, args),
+      async () => await this.vmQueryRaw(contract, func, caller, args, value),
       remoteTtl,
       localTtl
     );
   }
 
-  async vmQuery(contract: string, func: string, caller: string | undefined = undefined, value: string | undefined = undefined, args: string[] = [], skipCache: boolean = false): Promise<string[]> {
+  async vmQuery(contract: string, func: string, caller: string | undefined = undefined, args: string[] = [], value: string | undefined = undefined, skipCache: boolean = false): Promise<string[]> {
     let key = `vm-query:${contract}:${func}`;
     if (caller) {
       key += `:${caller}`;
@@ -67,14 +67,14 @@ export class VmQueryService {
     try {
       let result: any;
       if (skipCache) {
-        result = await this.vmQueryRaw(contract, func, caller, value, args);
+        result = await this.vmQueryRaw(contract, func, caller, args, value);
       } else {
 
         const { localTtl, remoteTtl } = await this.computeTtls();
 
         result = await this.cachingService.getOrSetCache(
           key,
-          async () => await this.vmQueryRaw(contract, func, caller, value, args),
+          async () => await this.vmQueryRaw(contract, func, caller, args, value),
           remoteTtl,
           localTtl
         );
@@ -89,13 +89,13 @@ export class VmQueryService {
     }
   }
 
-  async vmQueryRaw(contract: string, func: string, caller: string | undefined, value: string | undefined, args: string[] = []): Promise<any> {
+  async vmQueryRaw(contract: string, func: string, caller: string | undefined, args: string[] = [], value: string | undefined = undefined): Promise<any> {
     const payload = {
       scAddress: contract,
       funcName: func,
       caller: caller,
-      value: value,
       args: args,
+      value: value,
     };
 
     const profiler = new PerformanceProfiler();
