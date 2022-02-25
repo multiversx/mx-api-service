@@ -12,6 +12,8 @@ import { TransactionOperationAction } from "../transactions/entities/transaction
 import { RecordUtils } from "src/utils/record.utils";
 import { TransactionLogEvent } from "../transactions/entities/transaction.log.event";
 import { TransactionOperationType } from "../transactions/entities/transaction.operation.type";
+import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
+import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
 
 @Injectable()
 export class TokenTransferService {
@@ -86,8 +88,44 @@ export class TokenTransferService {
     return tokenProperties;
   }
 
+  async getOperationsForTransaction(transaction: TransactionDetailed, logs: TransactionLog[]): Promise<TransactionOperation[]> {
+    const scResultsOperations: TransactionOperation[] = this.getOperationsForTransactionScResults(transaction.results);
+    const logsOperations: TransactionOperation[] = await this.getOperationsForTransactionLogs(transaction.txHash, logs, transaction.sender);
+
+    return [...scResultsOperations, ...logsOperations];
+  }
+
+
+  private getOperationsForTransactionScResults(scResults: SmartContractResult[]): TransactionOperation[] {
+    if (!scResults.length) {
+      return [];
+    }
+
+    const operations: TransactionOperation[] = [];
+    for (const scResult of scResults) {
+      if (scResult.nonce !== 0 || scResult.value === undefined || scResult.value === '0') {
+        continue;
+      }
+
+      const operation = new TransactionOperation();
+      operation.action = TransactionOperationAction.transfer;
+      operation.type = TransactionOperationType.egld;
+      operation.id = scResult.hash;
+      operation.sender = scResult.sender;
+      operation.receiver = scResult.receiver;
+      operation.value = scResult.value;
+
+      operations.push(operation);
+    }
+
+    return operations;
+  }
 
   async getOperationsForTransactionLogs(txHash: string, logs: TransactionLog[], sender: string): Promise<TransactionOperation[]> {
+    if (!logs.length) {
+      return [];
+    }
+
     const tokensProperties = await this.getTokenTransferPropertiesFromLogs(logs);
 
     const operations: TransactionOperation[] = [];
