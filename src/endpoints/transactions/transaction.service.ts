@@ -32,6 +32,7 @@ import { SortOrder } from 'src/common/entities/sort.order';
 import { TransactionUtils } from 'src/utils/transaction.utils';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { TransactionActionService } from './transaction-action/transaction.action.service';
+import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 
 @Injectable()
 export class TransactionService {
@@ -254,6 +255,13 @@ export class TransactionService {
       senderShard,
       status: 'Pending',
     };
+  }
+
+  async decodeTransaction(transactionDecode: TransactionDecodeDto): Promise<TransactionDecodeDto> {
+    const transaction = ApiUtils.mergeObjects(new Transaction(), { ...transactionDecode });
+    transactionDecode.action = await this.transactionActionService.getTransactionAction(transaction);
+
+    return transactionDecode;
   }
 
   private async getTransactionPrice(transaction: TransactionDetailed): Promise<number | undefined> {
