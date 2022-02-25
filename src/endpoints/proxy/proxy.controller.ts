@@ -168,7 +168,7 @@ export class ProxyController {
   })
   async queryLegacy(@Body() query: VmQueryRequest) {
     try {
-      return await this.vmQueryService.vmQueryFullResult(query.scAddress, query.funcName, query.caller, query.args);
+      return await this.vmQueryService.vmQueryFullResult(query.scAddress, query.funcName, query.caller, query.args, query.value);
     } catch (error: any) {
       throw new BadRequestException(error.response.data);
     }

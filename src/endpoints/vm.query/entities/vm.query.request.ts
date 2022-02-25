@@ -3,4 +3,5 @@ export class VmQueryRequest {
   funcName: string = '';
   caller: string | undefined;
   args: string[] = [];
+  value: string | undefined;
 }

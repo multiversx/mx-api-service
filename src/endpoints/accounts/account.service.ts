@@ -206,8 +206,6 @@ export class AccountService {
       this.vmQueryService.vmQuery(
         this.apiConfigService.getDelegationContractAddress(),
         'getNumBlocksBeforeUnBond',
-        undefined,
-        []
       ),
       this.gatewayService.get(`network/status/${this.apiConfigService.getDelegationContractShardId()}`, GatewayComponentRequest.networkStatus),
     ]);
