@@ -1,6 +1,10 @@
 import { Injectable } from "@nestjs/common";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { TokenTransferProperties } from "src/endpoints/tokens/entities/token.transfer.properties";
 import { TokenType } from "src/endpoints/tokens/entities/token.type";
+import { TokenTransferService } from "src/endpoints/tokens/token.transfer.service";
+import { AddressUtils } from "src/utils/address.utils";
+import { BinaryUtils } from "src/utils/binary.utils";
 import { NumberUtils } from "src/utils/number.utils";
 import { StringUtils } from "src/utils/string.utils";
 import { TransactionAction } from "../../entities/transaction.action";
@@ -11,10 +15,50 @@ import { TransactionActionRecognizerInterface } from "../../transaction.action.r
 
 @Injectable()
 export class TransactionActionEsdtNftRecognizerService implements TransactionActionRecognizerInterface {
-  constructor() { }
+  constructor(
+    private readonly apiConfigService: ApiConfigService,
+    private readonly tokenTransferService: TokenTransferService,
+  ) { }
+
+  async recognize(metadata: TransactionMetadata): Promise<TransactionAction | undefined> {
+    return await this.recognizeTransfer(metadata) ??
+      await this.recognizeFreeze(metadata);
+  }
+
+  async recognizeFreeze(metadata: TransactionMetadata): Promise<TransactionAction | undefined> {
+    if (!metadata || metadata.functionName !== 'freeze' || metadata.receiver !== this.apiConfigService.getEsdtContractAddress()) {
+      return undefined;
+    }
+
+    const tokenIdentifier = BinaryUtils.hexToString(metadata.functionArgs[0]);
+
+    const tokenProperties = await this.tokenTransferService.getTokenTransferProperties(tokenIdentifier);
+    if (!tokenProperties) {
+      return undefined;
+    }
+
+    if (!AddressUtils.isAddressValid(metadata.functionArgs[1])) {
+      return undefined;
+    }
+
+    const address = AddressUtils.bech32Encode(metadata.functionArgs[1]);
+
+    const result = new TransactionAction();
+    result.category = TransactionActionCategory.esdtNft;
+    result.name = 'freeze';
+    result.description = `Freezed token ${tokenIdentifier} balance for address ${address}`;
+    result.arguments = {
+      address,
+      token: {
+        ...tokenProperties,
+      },
+    };
+
+    return result;
+  }
 
   // eslint-disable-next-line require-await
-  async recognize(metadata: TransactionMetadata): Promise<TransactionAction | undefined> {
+  async recognizeTransfer(metadata: TransactionMetadata): Promise<TransactionAction | undefined> {
     const multiTransfers = metadata.transfers;
     if (!multiTransfers) {
       return undefined;
