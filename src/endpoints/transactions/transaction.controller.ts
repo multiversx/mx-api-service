@@ -9,6 +9,7 @@ import { ParseOptionalBoolPipe } from 'src/utils/pipes/parse.optional.bool.pipe'
 import { ParseOptionalEnumPipe } from 'src/utils/pipes/parse.optional.enum.pipe';
 import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
 import { ParseTransactionHashPipe } from 'src/utils/pipes/parse.transaction.hash.pipe';
+import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
@@ -204,11 +205,35 @@ export class TransactionController {
       throw new BadRequestException('Receiver must be provided');
     }
 
+    if (!transaction.signature) {
+      throw new BadRequestException('Signature must be provided');
+    }
+
     const result = await this.transactionService.createTransaction(transaction);
 
     if (typeof result === 'string' || result instanceof String) {
       throw new HttpException(result, HttpStatus.BAD_REQUEST);
     }
+
+    return result;
+  }
+
+  @Post('/transactions/decode')
+  @ApiResponse({
+    status: 201,
+    description: 'Decode a transaction',
+    type: TransactionDecodeDto,
+  })
+  async decodeTransaction(@Body() transaction: TransactionDecodeDto): Promise<TransactionDecodeDto> {
+    if (!transaction.sender) {
+      throw new BadRequestException('Sender must be provided');
+    }
+
+    if (!transaction.receiver) {
+      throw new BadRequestException('Receiver must be provided');
+    }
+
+    const result = await this.transactionService.decodeTransaction(transaction);
 
     return result;
   }

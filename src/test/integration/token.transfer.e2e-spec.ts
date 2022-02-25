@@ -8,6 +8,8 @@ import { TransactionLogEvent } from "src/endpoints/transactions/entities/transac
 import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
 import { TransactionOperationAction } from "src/endpoints/transactions/entities/transaction.operation.action";
 import { TransactionOperationType } from "src/endpoints/transactions/entities/transaction.operation.type";
+import { TransactionDetailed } from "src/endpoints/transactions/entities/transaction.detailed";
+import { SmartContractResult } from "src/endpoints/sc-results/entities/smart.contract.result";
 
 describe('Token Transfer Service', () => {
   let tokenTransferService: TokenTransferService;
@@ -17,6 +19,7 @@ describe('Token Transfer Service', () => {
   const tokenIdentifier: string = 'RIDE-7d18e9';
   const invalidTokenIdentifier: string = 'LKFARM-9d1ea8-4d2842';
   const sender: string = 'erd1hz65lr7ry7sa3p8jjeplwzujm2d7ktj7s6glk9hk8f4zj8znftgqaey5f5';
+  let transaction: TransactionDetailed;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -25,11 +28,15 @@ describe('Token Transfer Service', () => {
 
     tokenTransferService = moduleRef.get<TokenTransferService>(TokenTransferService);
     esdtService = moduleRef.get<EsdtService>(EsdtService);
+
+    transaction = new TransactionDetailed();
+    transaction.txHash = txHash;
+    transaction.sender = sender;
   });
 
   describe('Get Operations For Transaction Logs', () => {
     it('should return operations for transaction logs', async () => {
-      const operations = await tokenTransferService.getOperationsForTransactionLogs(txHash, transactionsWithLogs, sender);
+      const operations = await tokenTransferService.getOperationsForTransaction(transaction, transactionsWithLogs);
 
       for (const operation of operations) {
         expect(operation).toHaveProperty('action');
@@ -53,7 +60,7 @@ describe('Token Transfer Service', () => {
       const log = new TransactionLog();
       log.events = [localMintEvent];
 
-      const operations = await tokenTransferService.getOperationsForTransactionLogs(txHash, [log], sender);
+      const operations = await tokenTransferService.getOperationsForTransaction(transaction, [log]);
 
       expect(operations.length).toStrictEqual(1);
 
@@ -78,7 +85,7 @@ describe('Token Transfer Service', () => {
       const log = new TransactionLog();
       log.events = [transferEvent];
 
-      const operations = await tokenTransferService.getOperationsForTransactionLogs(txHash, [log], sender);
+      const operations = await tokenTransferService.getOperationsForTransaction(transaction, [log]);
 
       expect(operations.length).toStrictEqual(1);
 
@@ -102,7 +109,7 @@ describe('Token Transfer Service', () => {
       const log = new TransactionLog();
       log.events = [writeLogEvent];
 
-      const operations = await tokenTransferService.getOperationsForTransactionLogs(txHash, [log], sender);
+      const operations = await tokenTransferService.getOperationsForTransaction(transaction, [log]);
 
       expect(operations.length).toStrictEqual(1);
 
@@ -126,14 +133,31 @@ describe('Token Transfer Service', () => {
       const log = new TransactionLog();
       log.events = [signalErrorEvent];
 
-      const operations = await tokenTransferService.getOperationsForTransactionLogs(txHash, [log], sender);
-
+      const operations = await tokenTransferService.getOperationsForTransaction(transaction, [log]);
       expect(operations.length).toStrictEqual(1);
 
       for (const operation of operations) {
         expect(operation.action).toStrictEqual(TransactionOperationAction.signalError);
         expect(operation.type).toStrictEqual(TransactionOperationType.error);
         expect(operation.message).toStrictEqual("error signalled by smartcontract");
+      }
+    });
+
+
+    it('should return operations for a egld transfer from smart contract result', async () => {
+      const scr = new SmartContractResult();
+      scr.value = "6761736710959745";
+      scr.nonce = 0;
+      scr.sender = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqghllllsku0nzf";
+      scr.receiver = "erd1pln7dkvselu5hmx3qs9elzfaln96k30x0j6ypnh8gsnyvklanxsqmujqq7";
+      transaction.results = [scr];
+
+      const operations = await tokenTransferService.getOperationsForTransaction(transaction, []);
+      expect(operations.length).toStrictEqual(1);
+
+      for (const operation of operations) {
+        expect(operation.action).toStrictEqual(TransactionOperationAction.transfer);
+        expect(operation.type).toStrictEqual(TransactionOperationType.egld);
       }
     });
 
