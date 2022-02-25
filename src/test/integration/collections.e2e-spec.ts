@@ -20,7 +20,9 @@ describe('Collection Service', () => {
 
   describe("NFT Collections", () => {
     it("shoult return 10 NonFungibleESDT collections", async () => {
-      const results = await collectionService.getNftCollections({ from: 0, size: 10 }, new CollectionFilter());
+      const filter = new CollectionFilter();
+      filter.type = NftType.NonFungibleESDT;
+      const results = await collectionService.getNftCollections({ from: 0, size: 10 }, filter);
 
       expect(results).toHaveLength(10);
 
