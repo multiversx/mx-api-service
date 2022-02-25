@@ -3,7 +3,7 @@ import { QueryConditionOptions } from 'src/common/elastic/entities/query.conditi
 import { AddressUtils } from 'src/utils/address.utils';
 import { ApiUtils } from 'src/utils/api.utils';
 import { Transaction } from './entities/transaction';
-import { TransactionCreate } from './entities/transaction.create';
+import { UnsignedTransaction } from './entities/transaction.unsigned';
 import { TransactionDetailed } from './entities/transaction.detailed';
 import { TransactionFilter } from './entities/transaction.filter';
 import { TransactionSendResult } from './entities/transaction.send.result';
@@ -32,6 +32,8 @@ import { SortOrder } from 'src/common/entities/sort.order';
 import { TransactionUtils } from 'src/utils/transaction.utils';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { TransactionActionService } from './transaction-action/transaction.action.service';
+import { SignedTransaction } from './entities/transaction.signed';
+import { TransactionParseResult } from './entities/transaction.parse.result';
 
 @Injectable()
 export class TransactionService {
@@ -227,18 +229,18 @@ export class TransactionService {
     return transaction;
   }
 
-  async createTransaction(transaction: TransactionCreate): Promise<TransactionSendResult | string> {
-    const receiverShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.receiver));
-    const senderShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.sender));
+  async createTransaction(signedTransaction: SignedTransaction): Promise<TransactionSendResult | string> {
+    const receiverShard = AddressUtils.computeShard(AddressUtils.bech32Decode(signedTransaction.receiver));
+    const senderShard = AddressUtils.computeShard(AddressUtils.bech32Decode(signedTransaction.sender));
 
-    const pluginTransaction = await this.pluginsService.processTransactionSend(transaction);
+    const pluginTransaction = await this.pluginsService.processTransactionSend(signedTransaction);
     if (pluginTransaction) {
       return pluginTransaction;
     }
 
     let txHash: string;
     try {
-      const result = await this.gatewayService.create('transaction/send', GatewayComponentRequest.sendTransaction, transaction);
+      const result = await this.gatewayService.create('transaction/send', GatewayComponentRequest.sendTransaction, signedTransaction);
       txHash = result.txHash;
     } catch (error: any) {
       this.logger.error(error);
@@ -248,12 +250,22 @@ export class TransactionService {
     // TODO: pending alignment
     return {
       txHash,
-      receiver: transaction.receiver,
-      sender: transaction.sender,
+      receiver: signedTransaction.receiver,
+      sender: signedTransaction.sender,
       receiverShard,
       senderShard,
       status: 'Pending',
     };
+  }
+
+  async parseTransaction(unsignedTransaction: UnsignedTransaction): Promise<TransactionParseResult> {
+    const action = await this.transactionActionService.getTransactionAction(unsignedTransaction);
+
+    return {
+      ...unsignedTransaction,
+      action,
+    };
+
   }
 
   private async getTransactionPrice(transaction: TransactionDetailed): Promise<number | undefined> {

@@ -12,6 +12,7 @@ import { TransactionActionEsdtNftRecognizerService } from "./recognizers/esdt/tr
 import { TokenTransferService } from "src/endpoints/tokens/token.transfer.service";
 import { StringUtils } from "src/utils/string.utils";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
+import { UnsignedTransaction } from "../entities/transaction.unsigned";
 
 @Injectable()
 export class TransactionActionService {
@@ -43,7 +44,7 @@ export class TransactionActionService {
     return this.recognizers;
   }
 
-  async getTransactionAction(transaction: Transaction): Promise<TransactionAction | undefined> {
+  async getTransactionAction(transaction: Transaction | UnsignedTransaction): Promise<TransactionAction | undefined> {
     const metadata = await this.getTransactionMetadata(transaction);
 
     const recognizers = await this.getRecognizers();
@@ -58,7 +59,7 @@ export class TransactionActionService {
     return undefined;
   }
 
-  private async getTransactionMetadata(transaction: Transaction): Promise<TransactionMetadata> {
+  private async getTransactionMetadata(transaction: Transaction | UnsignedTransaction): Promise<TransactionMetadata> {
     const metadata = this.getNormalTransactionMetadata(transaction);
 
     const esdtMetadata = await this.getEsdtTransactionMetadata(metadata);
@@ -79,7 +80,7 @@ export class TransactionActionService {
     return metadata;
   }
 
-  private getNormalTransactionMetadata(transaction: Transaction): TransactionMetadata {
+  private getNormalTransactionMetadata(transaction: Transaction | UnsignedTransaction): TransactionMetadata {
     const metadata = new TransactionMetadata();
     metadata.sender = transaction.sender;
     metadata.receiver = transaction.receiver;
@@ -98,7 +99,7 @@ export class TransactionActionService {
     }
 
     try {
-      if (transaction.type === TransactionType.SmartContractResult) {
+      if (transaction instanceof Transaction && transaction.type === TransactionType.SmartContractResult) {
         if (metadata.functionName === 'MultiESDTNFTTransfer' &&
           metadata.functionArgs.length > 0 &&
           AddressUtils.bech32Encode(metadata.functionArgs[0]) === metadata.receiver

@@ -10,11 +10,13 @@ import { ParseOptionalEnumPipe } from 'src/utils/pipes/parse.optional.enum.pipe'
 import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
 import { ParseTransactionHashPipe } from 'src/utils/pipes/parse.transaction.hash.pipe';
 import { Transaction } from './entities/transaction';
-import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
 import { TransactionSendResult } from './entities/transaction.send.result';
 import { TransactionStatus } from './entities/transaction.status';
 import { TransactionService } from './transaction.service';
+import { SignedTransaction } from './entities/transaction.signed';
+import { TransactionParseResult } from './entities/transaction.parse.result';
+import { UnsignedTransaction } from './entities/transaction.unsigned';
 
 @Controller()
 @ApiTags('transactions')
@@ -195,7 +197,7 @@ export class TransactionController {
     description: 'Create a transaction',
     type: TransactionSendResult,
   })
-  async createTransaction(@Body() transaction: TransactionCreate): Promise<TransactionSendResult> {
+  async createTransaction(@Body() transaction: SignedTransaction): Promise<TransactionSendResult> {
     if (!transaction.sender) {
       throw new BadRequestException('Sender must be provided');
     }
@@ -204,11 +206,35 @@ export class TransactionController {
       throw new BadRequestException('Receiver must be provided');
     }
 
+    if (!transaction.signature) {
+      throw new BadRequestException('Signature must be provided');
+    }
+
     const result = await this.transactionService.createTransaction(transaction);
 
     if (typeof result === 'string' || result instanceof String) {
       throw new HttpException(result, HttpStatus.BAD_REQUEST);
     }
+
+    return result;
+  }
+
+  @Post('/transactions/parse')
+  @ApiResponse({
+    status: 201,
+    description: 'Parse a transaction',
+    type: TransactionParseResult,
+  })
+  async parseTransaction(@Body() transaction: UnsignedTransaction): Promise<TransactionParseResult> {
+    if (!transaction.sender) {
+      throw new BadRequestException('Sender must be provided');
+    }
+
+    if (!transaction.receiver) {
+      throw new BadRequestException('Receiver must be provided');
+    }
+
+    const result = await this.transactionService.parseTransaction(transaction);
 
     return result;
   }

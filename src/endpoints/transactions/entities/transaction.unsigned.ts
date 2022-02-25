@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 
-export class TransactionCreate {
+export class UnsignedTransaction {
     @ApiProperty()
     chainId: string = '';
 
@@ -21,9 +21,6 @@ export class TransactionCreate {
 
     @ApiProperty()
     sender: string = '';
-
-    @ApiProperty()
-    signature: string = '';
 
     @ApiProperty()
     value: string = '';
