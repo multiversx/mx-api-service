@@ -103,7 +103,6 @@ export class TokenTransferService {
 
     const operations: TransactionOperation[] = [];
     for (const scResult of scResults) {
-      //is not and egld transfer
       if (scResult.nonce !== 0 || scResult.value === undefined || scResult.value === '0') {
         continue;
       }
@@ -122,7 +121,7 @@ export class TokenTransferService {
     return operations;
   }
 
-  private async getOperationsForTransactionLogs(txHash: string, logs: TransactionLog[], sender: string): Promise<TransactionOperation[]> {
+  async getOperationsForTransactionLogs(txHash: string, logs: TransactionLog[], sender: string): Promise<TransactionOperation[]> {
     if (!logs.length) {
       return [];
     }
