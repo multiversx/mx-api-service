@@ -132,7 +132,7 @@ export class MexSettingsService {
   }
 
   getMicroServiceUrl(): string | undefined {
-    return this.configService.get<string>('transaction-action.mex.microServiceUrl');
+    return this.configService.get<string>('transaction-action.mex.microServiceUrl') ?? this.configService.get<string>('plugins.transaction-action.mex.microServiceUrl');
   }
 
   private async apiCall(params: any): Promise<any> {
