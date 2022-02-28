@@ -64,6 +64,19 @@ describe('Collection Service', () => {
       expect(results).toHaveLength(2);
     });
 
+    it("should return one collection based on identifier and roles properties are not defined", async () => {
+
+      const filters = new CollectionFilter();
+      filters.identifiers = ["EROBOT-527a29"];
+
+      const results = await collectionService.getNftCollections({ from: 0, size: 2 }, filters);
+
+      for (const result of results) {
+        expect(result.roles).toStrictEqual([]);
+        expect(results).toHaveLength(1);
+      }
+    });
+
     it("should return owner collections", async () => {
       const filters = new CollectionFilter();
       filters.owner = "erd1nz42knvgmxpevepsyvq9dx3wzdgtd6lmu96y28tuupayazgx4fvs3w9d09";
@@ -112,6 +125,18 @@ describe('Collection Service', () => {
       const collection: string = "EROBOT-527a29";
       const result = await collectionService.getNftCollection(collection);
 
+      expect(result).toHaveStructure(Object.keys(new NftCollection()));
+    });
+
+    it("should return nft collection and if collection has roles, roles property must be defined", async () => {
+      const collection: string = "EROBOT-527a29";
+      const result = await collectionService.getNftCollection(collection);
+
+      if (!result) {
+        throw new Error("Properties are not defined");
+      }
+
+      expect(result.roles).toBeDefined();
       expect(result).toHaveStructure(Object.keys(new NftCollection()));
     });
   });
