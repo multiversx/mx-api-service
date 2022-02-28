@@ -32,6 +32,7 @@ import { SortOrder } from 'src/common/entities/sort.order';
 import { TransactionUtils } from 'src/utils/transaction.utils';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { TransactionActionService } from './transaction-action/transaction.action.service';
+import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 
 @Injectable()
 export class TransactionService {
@@ -256,6 +257,13 @@ export class TransactionService {
     };
   }
 
+  async decodeTransaction(transactionDecode: TransactionDecodeDto): Promise<TransactionDecodeDto> {
+    const transaction = ApiUtils.mergeObjects(new Transaction(), { ...transactionDecode });
+    transactionDecode.action = await this.transactionActionService.getTransactionAction(transaction);
+
+    return transactionDecode;
+  }
+
   private async getTransactionPrice(transaction: TransactionDetailed): Promise<number | undefined> {
     try {
       return await this.transactionPriceService.getTransactionPrice(transaction);
@@ -309,7 +317,7 @@ export class TransactionService {
         const transactionLogsFromElastic = logs.filter((log) => transactionHashes.includes(log._id));
         const transactionLogs: TransactionLog[] = transactionLogsFromElastic.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
 
-        transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransactionLogs(transactionDetailed.txHash, transactionLogs, transactionDetailed.sender);
+        transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, transactionLogs);
         transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.txHash, transactionDetailed.operations);
 
         for (const log of transactionLogsFromElastic) {

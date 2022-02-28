@@ -158,7 +158,7 @@ export class NodeService {
         return false;
       }
 
-      if(query.sort && !(query.sort in node)){
+      if (query.sort && !(query.sort in node)) {
         return false;
       }
 

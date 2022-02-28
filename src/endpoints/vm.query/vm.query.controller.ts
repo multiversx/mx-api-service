@@ -18,7 +18,7 @@ export class VmQueryController {
   async query(@Body() query: VmQueryRequest) {
     let result: any;
     try {
-      result = await this.vmQueryService.vmQueryFullResult(query.scAddress, query.funcName, query.caller, query.args);
+      result = await this.vmQueryService.vmQueryFullResult(query.scAddress, query.funcName, query.caller, query.args, query.value);
     } catch (error: any) {
       throw new BadRequestException({
         statusCode: HttpStatus.BAD_REQUEST,

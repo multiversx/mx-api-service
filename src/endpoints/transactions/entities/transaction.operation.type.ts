@@ -4,4 +4,5 @@ export enum TransactionOperationType {
   esdt = 'esdt',
   log = 'log',
   error = 'error',
+  egld = 'egld'
 }
