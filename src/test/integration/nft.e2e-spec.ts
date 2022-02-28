@@ -1,4 +1,4 @@
-import { NftQueryOptions } from './../../endpoints/nfts/entities/nft.query.options';
+import { NftQueryOptions } from '../../endpoints/nfts/entities/nft.query.options';
 import { Test } from "@nestjs/testing";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import '../../utils/extensions/jest.extensions';
@@ -43,6 +43,13 @@ describe('Nft Service', () => {
         expect(nft.hasOwnProperty("collection")).toBeTruthy();
         expect(nft.hasOwnProperty("timestamp")).toBeTruthy();
       }
+    });
+
+    it("should verify if the first element in the pagination filter (from: 0) is different from (from: 1) ", async () => {
+      const nft_0 = await nftService.getNfts({ from: 0, size: 1 }, new NftFilter());
+      const nft_1 = await nftService.getNfts({ from: 1, size: 2 }, new NftFilter());
+
+      expect(nft_0).not.toStrictEqual(nft_1);
     });
   });
 
