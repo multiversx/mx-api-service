@@ -110,6 +110,45 @@ describe('Nft Service', () => {
       }
     });
 
+    it("should return a list with all nft that has option withOwner on true", async () => {
+      const filters = new NftFilter();
+      filters.identifiers = ['EROBOT-527a29-c4'];
+
+      const options = new NftQueryOptions();
+      options.withOwner = true;
+
+      const results = await nftService.getNfts({ from: 0, size: 10 }, filters, options);
+
+      const nftsIdentifiers = results.map((result) => result.identifier);
+
+      expect(nftsIdentifiers.includes("EROBOT-527a29-c4")).toBeTruthy();
+    });
+
+    it(`should verify if returned values of /nfts?identifiers=EROBOT-527a29-c4&withOwner=true has the same values as nfts/EROBOT-527a29-c4`, async () => {
+      const identifier: string = "EROBOT-527a29-c4";
+      const filter = new NftFilter();
+      filter.identifiers = [identifier];
+
+      const results = await nftService.getNfts({ from: 0, size: 1 }, filter);
+      const result = await nftService.getSingleNft(identifier);
+
+      if (!result) {
+        throw new Error("Properties are not defined");
+      }
+
+      for (const nftResult of results) {
+        expect(nftResult.identifier).toStrictEqual(result.identifier);
+        expect(nftResult.collection).toStrictEqual(result.collection);
+        expect(nftResult.attributes).toStrictEqual(result.attributes);
+        expect(nftResult.nonce).toStrictEqual(result.nonce);
+        expect(nftResult.type).toStrictEqual(result.type);
+        expect(nftResult.creator).toStrictEqual(result.creator);
+        expect(nftResult.royalties).toStrictEqual(result.royalties);
+        expect(nftResult.isWhitelistedStorage).toStrictEqual(result.isWhitelistedStorage);
+        expect(nftResult.tags).toStrictEqual(result.tags);
+      }
+    });
+
     it(`should return a list with SemiFungibleESDT tokens`, async () => {
       const nfts = await nftService.getNfts({ from: 0, size: 25 }, { type: NftType.SemiFungibleESDT });
 
