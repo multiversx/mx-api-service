@@ -18,6 +18,11 @@ describe('Account Service', () => {
       imports: [PublicAppModule],
     }).compile();
 
+    jest
+      .spyOn(CachingService.prototype, 'getOrSetCache')
+      // eslint-disable-next-line require-await
+      .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
+
     accountService = moduleRef.get<AccountService>(AccountService);
     tokensService = moduleRef.get<TokenService>(TokenService);
   });
@@ -46,11 +51,6 @@ describe('Account Service', () => {
     });
 
     it("returned accounts contains properties", async () => {
-      jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
-
       const results = await accountService.getAccounts({ from: 0, size: 10 });
 
       for (const result of results) {
@@ -76,11 +76,6 @@ describe('Account Service', () => {
 
   describe("Get Account Username", () => {
     it("should return account username", async () => {
-      jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
-
       const address: string = "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz";
       const result = await accountService.getAccountUsername(address);
 
@@ -101,11 +96,6 @@ describe('Account Service', () => {
 
   describe('Get Account Deployed', () => {
     it(`should return the deployed timestamp for a given address`, async () => {
-      jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
-
       const address: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85";
       const result = await accountService.getAccountDeployedAt(address);
 
@@ -166,13 +156,7 @@ describe('Account Service', () => {
     });
 
     it("should return accounts count", async () => {
-      jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
-
       const results = await accountService.getAccountsCount();
-
       expect(typeof results).toStrictEqual("number");
     });
   });
