@@ -21,8 +21,8 @@ describe('Process Nft Service', () => {
 
   }, Constants.oneHour() * 1000);
 
-  describe("processNft", () => {
-    it("should refresh media", async () => {
+  describe("Process NFT", () => {
+    it("should force refresh media", async () => {
       const filter = new ProcessNftSettings();
       filter.forceRefreshMedia = true;
       const process = await processNftService.processNft(nftExample.identifier, filter);
@@ -30,7 +30,7 @@ describe('Process Nft Service', () => {
       expect(process).toBeTruthy();
     });
 
-    it("should refresh metadata", async () => {
+    it("should force refresh metadata", async () => {
       const filter = new ProcessNftSettings();
       filter.forceRefreshMetadata = true;
       const process = await processNftService.processNft(nftExample.identifier, filter);
@@ -38,7 +38,7 @@ describe('Process Nft Service', () => {
       expect(process).toBeTruthy();
     });
 
-    it("should refresh metadata", async () => {
+    it("should force refresh thumbnail", async () => {
       const filter = new ProcessNftSettings();
       filter.forceRefreshThumbnail = true;
       const process = await processNftService.processNft(nftExample.identifier, filter);
@@ -46,7 +46,7 @@ describe('Process Nft Service', () => {
       expect(process).toBeTruthy();
     });
 
-    it("should refresh metadata", async () => {
+    it("should skip refresh thumbnail", async () => {
       const filter = new ProcessNftSettings();
       filter.skipRefreshThumbnail = true;
       const process = await processNftService.processNft(nftExample.identifier, filter);
