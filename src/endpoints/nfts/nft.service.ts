@@ -198,14 +198,9 @@ export class NftService {
       nfts,
       nft => CacheInfo.NftMedia(nft.identifier).key,
       async nfts => {
-        const record: { [key: string]: any } = {};
-        for (const nft of nfts) {
-          const nftMedia = await this.persistenceService.getMedia(nft.identifier);
-          record[nft.identifier] = nftMedia;
+        const getMediaResults = await this.persistenceService.batchGetMedia(nfts.map((nft) => nft.identifier));
 
-        }
-
-        return RecordUtils.mapKeys(record, identifier => CacheInfo.NftMedia(identifier).key);
+        return RecordUtils.mapKeys(getMediaResults, identifier => CacheInfo.NftMedia(identifier).key);
       },
       (nft, media) => nft.media = media,
       CacheInfo.NftMedia('').ttl,
@@ -223,14 +218,9 @@ export class NftService {
       nfts,
       nft => CacheInfo.NftMetadata(nft.identifier).key,
       async nfts => {
-        const record: { [key: string]: any } = {};
-        for (const nft of nfts) {
-          const nftMetadata = await this.persistenceService.getMetadata(nft.identifier);
-          record[nft.identifier] = nftMetadata;
+        const getMetadataResults = await this.persistenceService.batchGetMetadata(nfts.map((nft) => nft.identifier));
 
-        }
-
-        return RecordUtils.mapKeys(record, identifier => CacheInfo.NftMetadata(identifier).key);
+        return RecordUtils.mapKeys(getMetadataResults, identifier => CacheInfo.NftMetadata(identifier).key);
       },
       (nft, metadata) => nft.metadata = metadata,
       CacheInfo.NftMetadata('').ttl
