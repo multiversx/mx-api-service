@@ -48,11 +48,7 @@ export class EsdtAddressService {
   }
 
   async getEsdtsForAddress(address: string, filter: NftFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftAccount[]> {
-    if (filter.type) {
-      return await this.getEsdtsForAddressWithTypeFilter(address, filter, pagination);
-    }
-
-    if (source === EsdtDataSource.elastic || AddressUtils.isSmartContractAddress(address)) {
+    if ((this.apiConfigService.getIsIndexerV3FlagActive() || !filter.type) && (source === EsdtDataSource.elastic || AddressUtils.isSmartContractAddress(address))) {
       return await this.getEsdtsForAddressFromElastic(address, filter, pagination);
     }
 
@@ -67,26 +63,13 @@ export class EsdtAddressService {
     return await this.getEsdtCollectionsForAddressFromGateway(address, filter, pagination);
   }
 
-  private async getEsdtsForAddressWithTypeFilter(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
-    if (AddressUtils.isSmartContractAddress(address)) {
-      const nftType = (filter.type ?? '').split(',');
-      filter.type = undefined;
-      let allEsdts = await this.getEsdtsForAddressFromElastic(address, filter, { from: 0, size: 10000 });
-      allEsdts = allEsdts.filter(x => nftType.includes(x.type));
-      allEsdts = allEsdts.slice(pagination.from, pagination.from + pagination.size);
-      return allEsdts;
-    }
-
-    const allEsdts = await this.getEsdtsForAddressFromGateway(address, filter, pagination);
-    return allEsdts;
-  }
-
   async getEsdtsCountForAddressFromElastic(address: string, filter: NftFilter): Promise<number> {
-    // temporary fix until we have type on the accountsesdt elastic collection
-    if (filter.type) {
-      const allEsdts = await this.getEsdtsForAddressWithTypeFilter(address, filter, { from: 0, size: 10000 });
-      return allEsdts.length;
+    if (!this.apiConfigService.getIsIndexerV3FlagActive() && filter.type) {
+      const esdts = await this.getEsdtsForAddressFromGateway(address, filter, { from: 0, size: 10000 });
+
+      return esdts.length;
     }
+
 
     const elasticQuery = this.nftService.buildElasticNftFilter(filter, undefined, address);
     return await this.elasticService.getCount('accountsesdt', elasticQuery);
