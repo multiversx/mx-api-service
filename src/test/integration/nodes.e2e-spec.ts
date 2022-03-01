@@ -210,11 +210,9 @@ describe('Node Service', () => {
 
       const filteredNode = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
 
-      expect(filteredNode).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ issues: [] }),
-        ])
-      );
+      for (const node of filteredNode) {
+        expect(node.issues).toBeUndefined();
+      }
     });
 
     it("should be sorted by identity and provider", async () => {
