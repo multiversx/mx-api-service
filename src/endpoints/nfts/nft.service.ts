@@ -200,8 +200,8 @@ export class NftService {
       async nfts => {
         const record: { [key: string]: any } = {};
         for (const nft of nfts) {
-          const nftMetadata = await this.persistenceService.getMedia(nft.identifier);
-          record[nft.identifier] = nftMetadata;
+          const nftMedia = await this.persistenceService.getMedia(nft.identifier);
+          record[nft.identifier] = nftMedia;
 
         }
 
