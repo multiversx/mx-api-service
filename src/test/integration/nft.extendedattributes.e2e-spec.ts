@@ -1,8 +1,7 @@
+import { NftExtendedAttributesService } from 'src/endpoints/nfts/nft.extendedattributes.service';
 import { CachingService } from 'src/common/caching/caching.service';
 import { EsdtModule } from 'src/endpoints/esdt/esdt.module';
-import { NftExtendedAttributesService } from 'src/endpoints/nfts/nft.extendedattributes.service';
 import { Test } from '@nestjs/testing';
-import { Constants } from 'src/utils/constants';
 import Initializer from './e2e-init';
 
 describe('Nft Extended Attributes Service', () => {
@@ -17,7 +16,7 @@ describe('Nft Extended Attributes Service', () => {
 
     nftExtendedAttributesService = moduleRef.get<NftExtendedAttributesService>(NftExtendedAttributesService);
 
-  }, Constants.oneHour() * 1000);
+  });
 
   beforeEach(() => { jest.restoreAllMocks(); });
 
@@ -25,8 +24,8 @@ describe('Nft Extended Attributes Service', () => {
     const attributes: string = "bWV0YWRhdGE6UW1UQjk3dkhMYkdBZnkxVDJQZFUyWE5QdXlXQjd1Znd3aFNoNU1wTENWbjEybS8zOTUuanNvbg==";
     const extendedAttributes = await nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(attributes);
 
-    expect(extendedAttributes).toBeInstanceOf(Object);
     expect(extendedAttributes.description).toStrictEqual("The unique MAW NFT Collection! ");
+    expect(extendedAttributes).toBeInstanceOf(Object);
 
     expect(extendedAttributes.hasOwnProperty("dna"));
     expect(extendedAttributes.hasOwnProperty("edition"));
@@ -74,8 +73,8 @@ describe('Nft Extended Attributes Service', () => {
     const metadata: string = "QmTB97vHLbGAfy1T2PdU2XNPuyWB7ufwwhSh5MpLCVn12m/395.json";
     const extendedAttributes = await nftExtendedAttributesService.getExtendedAttributesFromMetadata(metadata);
 
-    expect(extendedAttributes).toBeInstanceOf(Object);
     expect(extendedAttributes.compiler).toStrictEqual("Trust Staking");
+    expect(extendedAttributes).toBeInstanceOf(Object);
 
     expect(extendedAttributes.hasOwnProperty("dna"));
     expect(extendedAttributes.hasOwnProperty("edition"));
@@ -102,7 +101,7 @@ describe('Nft Extended Attributes Service', () => {
     expect(extendedAttributes).toBeUndefined();
   });
 
-  describe("getTags", () => {
+  describe("Get Tags", () => {
     it("should return tags", () => {
       const attributes: string = "bWV0YWRhdGE6UW1UQjk3dkhMYkdBZnkxVDJQZFUyWE5QdXlXQjd1Znd3aFNoNU1wTENWbjEybS8zOTUuanNvbg==";
       const tags = nftExtendedAttributesService.getTags(attributes);

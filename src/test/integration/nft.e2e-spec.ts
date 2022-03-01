@@ -221,21 +221,21 @@ describe('Nft Service', () => {
       expect(count).toBeGreaterThanOrEqual(10000);
     });
 
-    it(`should return esdt count for address with esdt type MetaESDT`, async () => {
+    it(`should return esdt count for address with type MetaESDT`, async () => {
       const address: string = "erd1qqqqqqqqqqqqqpgqr8z5hkwek0pmytcvla86qjusn4hkufjlrp8s7hhkjk";
       const count = await nftService.getNftCountForAddress(address, { type: NftType.MetaESDT });
 
       expect(count > 0).toBeTruthy();
     });
 
-    it(`should return Nesdtft count for address with esdt type SemiFungibleESDT`, async () => {
+    it(`should return esdt count for address with type SemiFungibleESDT`, async () => {
       const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
       const count = await nftService.getNftCountForAddress(address, { type: NftType.SemiFungibleESDT });
 
       expect(count).toBeGreaterThanOrEqual(0);
     });
 
-    it(`should return esdt count for address with esdt type NonFungibleESDT`, async () => {
+    it(`should return esdt count for address with type NonFungibleESDT`, async () => {
       const address: string = "erd1k3wtee6vzk47halxwm7qud3mrdjrlw4fyjvuhamtzy4hjhe6htcsv9jcgs";
       const count = await nftService.getNftCountForAddress(address, { type: NftType.NonFungibleESDT });
 
