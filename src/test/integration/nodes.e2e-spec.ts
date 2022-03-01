@@ -211,7 +211,7 @@ describe('Node Service', () => {
       const filteredNode = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
 
       for (const node of filteredNode) {
-        expect(node.issues).toStrictEqual([]);
+        expect(node.issues).toBeUndefined();
       }
     });
 
