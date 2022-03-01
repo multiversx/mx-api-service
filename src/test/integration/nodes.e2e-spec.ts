@@ -172,15 +172,69 @@ describe('Node Service', () => {
         expect(node).toBeInstanceOf(Object);
       }
     });
+
+    it("should be sorted by shard 1", async () => {
+      const nodeFilter: NodeFilter = new NodeFilter();
+      nodeFilter.shard = 1;
+
+      const filteredNode = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
+
+      for (const node of filteredNode) {
+        expect(node).toBeInstanceOf(Object);
+        expect(node.shard).toStrictEqual(1);
+      }
+    });
+
+    it("should return nodes details if issues filter is true", async () => {
+      const nodeFilter: NodeFilter = new NodeFilter();
+      nodeFilter.issues = true;
+
+      const filteredNode = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
+
+      for (const node of filteredNode) {
+        expect(node.hasOwnProperty("bls")).toBeTruthy();
+        expect(node.hasOwnProperty("name")).toBeTruthy();
+        expect(node.hasOwnProperty("version")).toBeTruthy();
+        expect(node.hasOwnProperty("identity")).toBeTruthy();
+        expect(node.hasOwnProperty("shard")).toBeTruthy();
+        expect(node.hasOwnProperty("type")).toBeTruthy();
+        expect(node.hasOwnProperty("issues")).toBeTruthy();
+        expect(node.hasOwnProperty("validatorFailure")).toBeTruthy();
+        expect(node.hasOwnProperty("validatorIgnoredSignatures")).toBeTruthy();
+      }
+    });
+
+    it("should return nodes details if issues filter is false", async () => {
+      const nodeFilter: NodeFilter = new NodeFilter();
+      nodeFilter.issues = false;
+
+      const filteredNode = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
+
+      for (const node of filteredNode) {
+        expect(node.issues).toBeUndefined();
+      }
+    });
+
+    it("should be sorted by identity and provider", async () => {
+      const nodeFilter: NodeFilter = new NodeFilter();
+      nodeFilter.identity = "thepalmtreenw";
+      nodeFilter.provider = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5";
+
+      const filteredNode = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
+
+      for (const node of filteredNode) {
+        expect(node.type).toStrictEqual(NodeType.validator);
+        expect(node.provider).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5");
+      }
+    });
   });
 
   describe('Get Node Version', () => {
     it('should return node version', async () => {
       const nodeVersion = await nodeService.getNodeVersions();
-
       const versions = Object.values(nodeVersion);
-
       const versionSum = versions.sum();
+
       expect(versionSum).toStrictEqual(1);
     });
   });
@@ -252,10 +306,9 @@ describe('Node Service', () => {
   describe('Get Node Version Raw', () => {
     it('should return node version', async () => {
       const versionRaw = await nodeService.getNodeVersionsRaw();
-
       const versions = Object.values(versionRaw);
-
       const versionSum = versions.sum();
+
       expect(versionSum).toStrictEqual(1);
     });
   });
@@ -265,6 +318,7 @@ describe('Node Service', () => {
       const nodeFilter: NodeFilter = new NodeFilter();
       nodeFilter.search = firstNode.bls;
       const node = await nodeService.getNode(nodeFilter.search);
+
       if (!node) {
         throw new Error('Node properties are not defined');
       }
@@ -274,5 +328,36 @@ describe('Node Service', () => {
       expect(node).toHaveProperty('version');
     });
   });
-});
 
+  describe("getBlsOwner", () => {
+    it("should return bls owner", async () => {
+      const bls: string = "00f9b676245ecf7bc74e3b644c106cfbbb366ce01a0149c1e50303d22c09bef7600f21f1925753ab994174b9926e9b078c2d1edaf03c221149ea0239722278aa864a1b26f298c29fe546fdb0ee1385243dfe407074e0dfa134c7e6d4197ce110";
+      const owner = await nodeService.getBlsOwner(bls);
+
+      expect(owner).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85");
+    });
+  });
+
+  describe("getOwners", () => {
+    it("should return nodes address", async () => {
+      const bls: string[] = [
+        "011176971aa7bbc6bf849d85d8512d4ab5fc9c9af4a6cab2cf502b419f568a3beaebf3347934eb341731591ffd41980977b6a20a896438236eb215ab5ff56093421bb824211f0a2cc71fda67473fa72306a6d04dd04e054cacb2bffe4ef5a309",
+        "003ba6237f0f7c269eebfecb6a0a0796076c02593846e1ce89aee9b832b94dd54e93d35b03dc3d5944b1aae916722506faf959a47cabf2d00f567ad50b10f8f1a40ab0316fdf302454f7aea58b23109ccfdce082bd16fb262342a1382b802c10",
+      ];
+      const results = await nodeService.getOwners(bls, 573);
+
+      expect(results[0]).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhllllsajxzat");
+      expect(results[1]).toStrictEqual("erd1qzwd98g6xjs6h33ezxc9ey766ee082z9q4yvj46r8p7xqnl0eenqvxtaz3");
+    });
+  });
+
+  describe("getAllNodesRaw", () => {
+    it("should return all nodes", async () => {
+      const nodes = await nodeService.getAllNodesRaw();
+
+      for (const node of nodes) {
+        expect(node).toBeInstanceOf(Object);
+      }
+    });
+  });
+});
