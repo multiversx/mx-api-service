@@ -24,6 +24,7 @@ import { NumberUtils } from "src/utils/number.utils";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Injectable()
 export class TokenService {
@@ -34,7 +35,8 @@ export class TokenService {
     private readonly cachingService: CachingService,
     private readonly transactionService: TransactionService,
     private readonly esdtAddressService: EsdtAddressService,
-    private readonly gatewayService: GatewayService
+    private readonly gatewayService: GatewayService,
+    private readonly apiConfigService: ApiConfigService
   ) {
     this.logger = new Logger(TokenService.name);
   }
@@ -271,6 +273,40 @@ export class TokenService {
   }
 
   async getTokenRoles(identifier: string): Promise<TokenAddressRoles[] | undefined> {
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+      const token = await this.elasticService.getItem('tokens', 'identifier', identifier);
+
+      if (!token) {
+        return undefined;
+      }
+
+      if (!token.roles) {
+        return undefined;
+      }
+
+      const roles: TokenAddressRoles[] = [];
+      for (const role of Object.keys(token.roles)) {
+        const addresses = token.roles[role].distinct();
+
+        for (const address of addresses) {
+          const foundAddressRoles = roles.find((addressRole) => addressRole.address === address);
+          if (foundAddressRoles) {
+            foundAddressRoles.roles?.push(role);
+            continue;
+          }
+
+          const addressRole = new TokenAddressRoles();
+          addressRole.address = address;
+          addressRole.roles = [role];
+
+          roles.push(addressRole);
+        }
+      }
+
+      return roles;
+    }
+
+
     const token = await this.getToken(identifier);
     if (!token) {
       return undefined;
@@ -280,6 +316,30 @@ export class TokenService {
   }
 
   async getTokenRolesForAddress(identifier: string, address: string): Promise<TokenAddressRoles | undefined> {
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+      const token = await this.elasticService.getItem('tokens', 'identifier', identifier);
+
+      if (!token) {
+        return undefined;
+      }
+
+      if (!token.roles) {
+        return undefined;
+      }
+
+      const addressRoles: TokenAddressRoles = new TokenAddressRoles();
+      addressRoles.address = address;
+      addressRoles.roles = [];
+      for (const role of Object.keys(token.roles)) {
+        const addresses = token.roles[role].distinct();
+        if (addresses.includes(address)) {
+          addressRoles.roles.push(role);
+        }
+      }
+
+      return addressRoles;
+    }
+
     const token = await this.getToken(identifier);
     if (!token) {
       return undefined;
