@@ -198,7 +198,7 @@ export class NftService {
       nfts,
       nft => CacheInfo.NftMedia(nft.identifier).key,
       async nfts => {
-        const getMediaResults = await this.persistenceService.batchGetMedia(nfts.map(x => x.identifier));
+        const getMediaResults = await this.persistenceService.batchGetMedia(nfts.map((nft) => nft.identifier));
 
         return RecordUtils.mapKeys(getMediaResults, identifier => CacheInfo.NftMedia(identifier).key);
       },
@@ -218,7 +218,7 @@ export class NftService {
       nfts,
       nft => CacheInfo.NftMetadata(nft.identifier).key,
       async nfts => {
-        const getMetadataResults = await this.persistenceService.batchGetMetadata(nfts.map(x => x.identifier));
+        const getMetadataResults = await this.persistenceService.batchGetMetadata(nfts.map((nft) => nft.identifier));
 
         return RecordUtils.mapKeys(getMetadataResults, identifier => CacheInfo.NftMetadata(identifier).key);
       },
