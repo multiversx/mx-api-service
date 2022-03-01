@@ -192,7 +192,15 @@ describe('Node Service', () => {
       const filteredNode = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
 
       for (const node of filteredNode) {
-        expect(node).toBeInstanceOf(Object);
+        expect(node.hasOwnProperty("bls")).toBeTruthy();
+        expect(node.hasOwnProperty("name")).toBeTruthy();
+        expect(node.hasOwnProperty("version")).toBeTruthy();
+        expect(node.hasOwnProperty("identity")).toBeTruthy();
+        expect(node.hasOwnProperty("shard")).toBeTruthy();
+        expect(node.hasOwnProperty("type")).toBeTruthy();
+        expect(node.hasOwnProperty("issues")).toBeTruthy();
+        expect(node.hasOwnProperty("validatorFailure")).toBeTruthy();
+        expect(node.hasOwnProperty("validatorIgnoredSignatures")).toBeTruthy();
       }
     });
 
@@ -203,7 +211,7 @@ describe('Node Service', () => {
       const filteredNode = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
 
       for (const node of filteredNode) {
-        expect(node).toBeInstanceOf(Object);
+        expect(node.issues).toStrictEqual([]);
       }
     });
 
