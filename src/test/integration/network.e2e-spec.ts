@@ -45,7 +45,8 @@ describe('Network Service', () => {
   describe('Get Economics Raw', () => {
     it('should return economic raw properties', async () => {
       expect.assertions(1);
-      return await networkService.getEconomicsRaw().then(data => expect(data).toHaveStructure(Object.keys(new Economics())));
+      const results = await networkService.getEconomicsRaw();
+      expect(results).toHaveStructure(Object.keys(new Economics()));
     });
   });
 

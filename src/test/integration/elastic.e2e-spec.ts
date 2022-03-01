@@ -1,10 +1,9 @@
+import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 import { ElasticQuery } from 'src/common/elastic/entities/elastic.query';
-import { Test } from '@nestjs/testing';
 import { ElasticService } from 'src/common/elastic/elastic.service';
 import { PublicAppModule } from 'src/public.app.module';
-import { Constants } from 'src/utils/constants';
+import { Test } from '@nestjs/testing';
 import Initializer from './e2e-init';
-import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 
 describe('Elastic Service', () => {
   let elasticService: ElasticService;
@@ -18,7 +17,7 @@ describe('Elastic Service', () => {
 
     elasticService = moduleRef.get<ElasticService>(ElasticService);
 
-  }, Constants.oneHour() * 1000);
+  });
 
   describe("getAccountEsdtByAddressCount", () => {
     it("should return count number of esdt for address", async () => {
