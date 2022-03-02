@@ -169,7 +169,7 @@ export class TransactionProcessorService {
         }
       }
 
-      const nftIdentifier = transactionDetailed.operations[0].identifier;
+      const nftIdentifier = transactionDetailed.operations.find(x => x.action === 'create' && x.type === 'nft')?.identifier;
       if (!nftIdentifier) {
         this.logger.error(`NFT create: could not fetch nft identifier from operation of transaction with hash '${transaction.hash}'`);
         return;
