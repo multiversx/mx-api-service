@@ -23,6 +23,7 @@ import { CollectionService } from "../collections/collection.service";
 import { NftCollection } from "../collections/entities/nft.collection";
 import { CollectionFilter } from "../collections/entities/collection.filter";
 import { AddressUtils } from "src/utils/address.utils";
+import { TokenAddressRoles } from "../tokens/entities/token.address.roles";
 
 @Injectable()
 export class EsdtAddressService {
@@ -169,9 +170,55 @@ export class EsdtAddressService {
       const indexedCollection = indexedCollections[accountCollection.collection];
       if (indexedCollection) {
         accountCollection.timestamp = indexedCollection.timestamp;
+
+        if (indexedCollection.roles) {
+          const addressRoles: TokenAddressRoles = new TokenAddressRoles();
+          addressRoles.address = address;
+          addressRoles.roles = [];
+          for (const role of Object.keys(indexedCollection.roles)) {
+            const addresses = indexedCollection.roles[role].distinct();
+            if (addresses.includes(address)) {
+              addressRoles.roles.push(role);
+            }
+          }
+
+          //@ts-ignore
+          delete addressRoles.address;
+
+          accountCollection.roles = [addressRoles];
+        }
       }
 
       delete accountCollection.owner;
+    }
+
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+      const accountCollections: NftCollectionAccount[] = [];
+      for (const collection of accountCollections) {
+        let accountCollection = new NftCollectionAccount();
+
+        const role = collection.roles[0].roles;
+        accountCollection.canCreate = role ? role.includes('ESDTRoleNFTCreate') : false;
+        accountCollection.canBurn = role ? role.includes('ESDTRoleNFTBurn') : false;
+
+        if (collection.type === NftType.SemiFungibleESDT) {
+          accountCollection.canAddQuantity = role ? role.includes('ESDTRoleNFTAddQuantity') : false;
+        }
+
+        accountCollection = { ...accountCollection, ...collection };
+
+        if (accountCollection.timestamp === 0) {
+          // @ts-ignore
+          delete accountCollection.timestamp;
+        }
+
+        // @ts-ignore
+        delete accountCollection.owner;
+
+        accountCollections.push(accountCollection);
+      }
+
+      return accountCollections;
     }
 
     const accountCollectionsWithRoles: NftCollectionAccount[] = await this.applyRolesToAccountCollections(address, accountCollections);
