@@ -337,6 +337,9 @@ export class TokenService {
         }
       }
 
+      //@ts-ignore
+      delete addressRoles.address;
+
       return addressRoles;
     }
 
