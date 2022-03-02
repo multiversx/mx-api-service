@@ -219,7 +219,7 @@ describe('Transaction Service', () => {
         expect(!transactionsHashes.includes('INVALIDTXHASH'));
       });
 
-      it(`should return transaction details`, async () => {
+      it(`should return transaction details based on receiver filter`, async () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.token = transactionDetails.tokenIdentifier;
         transactionFilter.receiver = transactionDetails.receiver;
@@ -229,6 +229,22 @@ describe('Transaction Service', () => {
           expect(transaction).toBeDefined();
           expect(transaction.txHash).toEqual(transactionDetails.txHash);
           expect(transaction.sender).toEqual(transactionDetails.sender);
+        }
+      });
+
+      it("should return transaction details based on sender, receiver and miniblock", async () => {
+        const transactionFilter = new TransactionFilter();
+        transactionFilter.sender = transactionDetails.sender;
+        transactionFilter.receiver = transactionDetails.receiver;
+        transactionFilter.senderShard = transactionDetails.senderShard;
+        transactionFilter.miniBlockHash = transactionDetails.miniBlockHash;
+
+        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 1 });
+        for (const transaction of transactions) {
+          expect(transaction.sender).toStrictEqual(transactionDetails.sender);
+          expect(transaction.receiver).toStrictEqual(transactionDetails.receiver);
+          expect(transaction.senderShard).toStrictEqual(transactionDetails.senderShard);
+          expect(transaction.miniBlockHash).toStrictEqual(transactionDetails.miniBlockHash);
         }
       });
     });
