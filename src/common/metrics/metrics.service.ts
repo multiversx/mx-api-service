@@ -104,7 +104,7 @@ export class MetricsService {
       MetricsService.jobsHistogram = new Histogram({
         name: 'jobs',
         help: 'Jobs',
-        labelNames: ['job', 'result'],
+        labelNames: ['job_identifier', 'result'],
         buckets: [],
       });
     }
