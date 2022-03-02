@@ -15,7 +15,6 @@ import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.com
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
-import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 import { TokenProperties } from "../tokens/entities/token.properties";
 import { CachingService } from "src/common/caching/caching.service";
@@ -41,39 +40,46 @@ export class CollectionService {
   ) { }
 
   buildCollectionFilter(filter: CollectionFilter, address?: string) {
-    const mustNotQueries = [];
-    mustNotQueries.push(QueryType.Exists('identifier'));
+    let elasticQuery = ElasticQuery.create();
+    elasticQuery = elasticQuery.withMustNotCondition(QueryType.Exists('identifier'));
 
-    const mustQueries = [];
     if (address) {
-      mustQueries.push(QueryType.Match("currentOwner", address));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match("currentOwner", address));
+      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+        elasticQuery = elasticQuery.withMustCondition(QueryType.Should(
+          [
+            QueryType.Nested('roles', { 'roles.ESDTRoleNFTCreate': address }),
+            QueryType.Nested('roles', { 'roles.ESDTRoleNFTBurn': address }),
+            QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddQuantity': address }),
+            QueryType.Nested('roles', { 'roles.ESDTRoleNFTUpdateAttributes': address }),
+            QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddURI': address }),
+            QueryType.Nested('roles', { 'roles.ESDTTransferRole': address }),
+          ]
+        ));
+      }
     }
 
     if (filter.collection !== undefined) {
-      mustQueries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('token', filter.collection, QueryOperator.AND));
     }
 
     if (filter.identifiers !== undefined) {
-      mustQueries.push(QueryType.Should(filter.identifiers.map(identifier => QueryType.Match('token', identifier, QueryOperator.AND))));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.identifiers.map(identifier => QueryType.Match('token', identifier, QueryOperator.AND))));
     }
 
     if (filter.search !== undefined) {
-      mustQueries.push(QueryType.Wildcard('token', `*${filter.search}*`));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Wildcard('token', `*${filter.search}*`));
     }
 
     if (filter.type !== undefined) {
-      mustQueries.push(QueryType.Match('type', filter.type));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('type', filter.type));
     }
 
-    const shouldQueries = [];
-    shouldQueries.push(QueryType.Match('type', NftType.SemiFungibleESDT));
-    shouldQueries.push(QueryType.Match('type', NftType.NonFungibleESDT));
-    shouldQueries.push(QueryType.Match('type', NftType.MetaESDT));
-
-    const elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, mustQueries)
-      .withCondition(QueryConditionOptions.should, shouldQueries)
-      .withCondition(QueryConditionOptions.mustNot, mustNotQueries);
+    elasticQuery = elasticQuery.withShouldCondition([
+      QueryType.Match('type', NftType.SemiFungibleESDT),
+      QueryType.Match('type', NftType.NonFungibleESDT),
+      QueryType.Match('type', NftType.MetaESDT),
+    ]);
 
     return elasticQuery;
   }
