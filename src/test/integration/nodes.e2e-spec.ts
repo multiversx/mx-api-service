@@ -388,7 +388,7 @@ describe('Node Service', () => {
       const filter = new NodeFilter();
       filter.online = true;
       const count = await nodeService.getNodeCount(filter);
-      console.log(count);
+
       expect(typeof count).toStrictEqual('number');
     });
 
@@ -396,7 +396,7 @@ describe('Node Service', () => {
       const filter = new NodeFilter();
       filter.online = false;
       const count = await nodeService.getNodeCount(filter);
-      console.log(count);
+
       expect(typeof count).toStrictEqual('number');
     });
   });
