@@ -471,14 +471,4 @@ describe('Node Service', () => {
       expect(results[1]).toStrictEqual("erd1qzwd98g6xjs6h33ezxc9ey766ee082z9q4yvj46r8p7xqnl0eenqvxtaz3");
     });
   });
-
-  describe("getAllNodesRaw", () => {
-    it("should return all nodes", async () => {
-      const nodes = await nodeService.getAllNodesRaw();
-
-      for (const node of nodes) {
-        expect(node).toBeInstanceOf(Object);
-      }
-    });
-  });
 });
