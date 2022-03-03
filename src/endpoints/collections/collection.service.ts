@@ -44,10 +44,10 @@ export class CollectionService {
     elasticQuery = elasticQuery.withMustNotCondition(QueryType.Exists('identifier'));
 
     if (address) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match("currentOwner", address));
       if (this.apiConfigService.getIsIndexerV3FlagActive()) {
         elasticQuery = elasticQuery.withMustCondition(QueryType.Should(
           [
+            QueryType.Match('currentOwner', address),
             QueryType.Nested('roles', { 'roles.ESDTRoleNFTCreate': address }),
             QueryType.Nested('roles', { 'roles.ESDTRoleNFTBurn': address }),
             QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddQuantity': address }),
@@ -56,32 +56,16 @@ export class CollectionService {
             QueryType.Nested('roles', { 'roles.ESDTTransferRole': address }),
           ]
         ));
+      } else {
+        elasticQuery = elasticQuery.withMustCondition(QueryType.Match('currentOwner', address));
       }
     }
 
-    if (filter.collection !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('token', filter.collection, QueryOperator.AND));
-    }
-
-    if (filter.identifiers !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.identifiers.map(identifier => QueryType.Match('token', identifier, QueryOperator.AND))));
-    }
-
-    if (filter.search !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Wildcard('token', `*${filter.search}*`));
-    }
-
-    if (filter.type !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('type', filter.type));
-    }
-
-    elasticQuery = elasticQuery.withShouldCondition([
-      QueryType.Match('type', NftType.SemiFungibleESDT),
-      QueryType.Match('type', NftType.NonFungibleESDT),
-      QueryType.Match('type', NftType.MetaESDT),
-    ]);
-
-    return elasticQuery;
+    return elasticQuery.withMustMatchCondition('token', filter.collection, QueryOperator.AND)
+      .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
+      .withMustWildcardCondition('token', filter.search)
+      .withMustMatchCondition('type', filter.type)
+      .withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT, NftType.MetaESDT], type => QueryType.Match('type', type));
   }
 
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
