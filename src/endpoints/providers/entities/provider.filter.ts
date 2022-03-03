@@ -1,5 +1,3 @@
-import { QueryPagination } from "src/common/entities/query.pagination";
-
-export class ProviderFilter extends QueryPagination {
+export class ProviderFilter {
   identity: string | undefined = undefined;
 } 
