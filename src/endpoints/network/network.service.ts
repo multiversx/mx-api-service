@@ -222,7 +222,7 @@ export class NetworkService {
     const stakePerNode = elrondConfig.stakePerNode;
     const protocolSustainabilityRewards =
       elrondConfig.protocolSustainabilityRewards;
-    const epochDuration = (config.roundDuration / 1000) * config.roundsPerEpoch;
+    const epochDuration = config.roundDuration * config.roundsPerEpoch;
     const secondsInYear = 365 * 24 * 3600;
     const epochsInYear = secondsInYear / epochDuration;
 
