@@ -489,10 +489,13 @@ export class NodeService {
         }
       }
 
+      const versionComponents = version ? version.split('-') : [''];
+      const nodeVersion = versionComponents.slice(0, versionComponents.length - 2).join('-').slit('/')[0];
+
       const node: Node = {
         bls,
         name,
-        version: version ? version.split('-')[0].split('/')[0] : '',
+        version: nodeVersion,
         identity: identity && identity !== '' ? identity.toLowerCase() : identity,
         rating: parseFloat(parseFloat(rating).toFixed(2)),
         tempRating: parseFloat(parseFloat(tempRating).toFixed(2)),
