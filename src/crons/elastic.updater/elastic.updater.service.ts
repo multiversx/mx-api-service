@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { Locker } from "src/utils/locker";
 import { ElasticService } from "src/common/elastic/elastic.service";
@@ -9,6 +9,9 @@ import { QueryType } from "src/common/elastic/entities/query.type";
 import { TokenType } from "src/endpoints/tokens/entities/token.type";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import asyncPool from "tiny-async-pool";
+import { PersistenceInterface } from "src/common/persistence/persistence.interface";
+import { BatchUtils } from "src/utils/batch.utils";
+import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 @Injectable()
 export class ElasticUpdaterService {
   private readonly logger: Logger;
@@ -17,6 +20,8 @@ export class ElasticUpdaterService {
     private readonly tokenAssetService: TokenAssetService,
     private readonly elasticService: ElasticService,
     private readonly nftService: NftService,
+    @Inject('PersistenceService')
+    private readonly persistenceService: PersistenceInterface,
   ) {
     this.logger = new Logger(ElasticUpdaterService.name);
   }
@@ -45,10 +50,12 @@ export class ElasticUpdaterService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleUpdateIsWhitelisted() {
-    await Locker.lock('Elastic updater: Update isWhitelisted', async () => {
+    await Locker.lock('Elastic updater: Update tokens isWhitelisted, media, metadata', async () => {
       const query = ElasticQuery.create()
         .withFields([
           'api_isWhitelistedStorage',
+          'api_media',
+          'api_metadata',
           'data.uris',
         ])
         .withMustCondition(QueryType.Exists('identifier'))
@@ -59,28 +66,151 @@ export class ElasticUpdaterService {
         .withPagination({ from: 0, size: 10000 });
 
       await this.elasticService.getListWithScroll('tokens', 'identifier', query, async items => {
-        const itemsToUpdate: { identifier: string, isWhitelistedStorage: boolean }[] = [];
+        const whitelistStorageItems = items.map(item => ({
+          identifier: item.identifier,
+          uris: item.data?.uris,
+          isWhitelistedStorage: item.api_isWhitelistedStorage,
+        }));
 
-        for (const item of items) {
-          const computedIsWhitelistedStorage = this.nftService.isWhitelistedStorage(item.data?.uris);
-          const actualIsWhitelistedStorage = item.api_isWhitelistedStorage;
+        await this.updateIsWhitelistedStorageForTokens(whitelistStorageItems);
 
-          if (computedIsWhitelistedStorage !== actualIsWhitelistedStorage) {
-            const itemToUpdate = {
-              identifier: item.identifier,
-              isWhitelistedStorage: computedIsWhitelistedStorage,
-            };
+        const mediaItems = items.map(item => ({
+          identifier: item.identifier,
+          media: item.api_media,
+        }));
 
-            itemsToUpdate.push(itemToUpdate);
-          }
-        }
+        await this.updateMediaForTokens(mediaItems);
 
-        await asyncPool(
-          5,
-          itemsToUpdate,
-          async item => await this.elasticService.setCustomValue('tokens', item.identifier, 'isWhitelistedStorage', item.isWhitelistedStorage)
-        );
+        const metadataItems = items.map(item => ({
+          identifier: item.identifier,
+          metadata: item.api_metadata,
+        }));
+
+        await this.updateMetadataForTokens(metadataItems);
       });
     }, true);
+  }
+
+  private async updateMetadataForTokens(items: { identifier: string, metadata: any }[]): Promise<void> {
+    const indexedItems = items.toRecord(item => item.identifier);
+
+    const metadataResult = await BatchUtils.batchGet(
+      items,
+      item => item.identifier,
+      async elements => await this.persistenceService.batchGetMetadata(elements.map(x => x.identifier)),
+      100
+    );
+
+    const itemsToUpdate: { identifier: string, metadata: any }[] = [];
+
+    for (const identifier of Object.keys(metadataResult)) {
+      const item: any = indexedItems[identifier];
+      if (!item) {
+        continue;
+      }
+
+      const currentMetadata = metadataResult[identifier];
+      const actualMetadata = item.metadata;
+
+      if (JsonDiff.diff(currentMetadata, actualMetadata)) {
+        itemsToUpdate.push({
+          identifier: identifier,
+          metadata: currentMetadata,
+        });
+      }
+    }
+
+    await asyncPool(
+      5,
+      itemsToUpdate,
+      async item => await this.updateMetadataForToken(item.identifier, item.metadata)
+    );
+  }
+
+  private async updateMediaForTokens(items: { identifier: string, media: NftMedia[] }[]): Promise<void> {
+    const indexedItems = items.toRecord(item => item.identifier);
+
+    const mediaResult = await BatchUtils.batchGet(
+      items,
+      item => item.identifier,
+      async elements => await this.persistenceService.batchGetMedia(elements.map(x => x.identifier)),
+      100
+    );
+
+    const itemsToUpdate: { identifier: string, media: NftMedia[] }[] = [];
+
+    for (const identifier of Object.keys(mediaResult)) {
+      const item: any = indexedItems[identifier];
+      if (!item) {
+        continue;
+      }
+
+      const currentMedia = mediaResult[identifier];
+      const actualMedia = item.media;
+
+      if (JsonDiff.diff(currentMedia, actualMedia)) {
+        itemsToUpdate.push({
+          identifier: identifier,
+          media: currentMedia,
+        });
+      }
+    }
+
+    await asyncPool(
+      5,
+      itemsToUpdate,
+      async item => await this.updateMediaForToken(item.identifier, item.media)
+    );
+  }
+
+  private async updateIsWhitelistedStorageForTokens(items: { identifier: string, uris: string[] | undefined, isWhitelistedStorage: boolean | undefined }[]): Promise<void> {
+    const itemsToUpdate: { identifier: string, isWhitelistedStorage: boolean }[] = [];
+
+    for (const item of items) {
+      const computedIsWhitelistedStorage = this.nftService.isWhitelistedStorage(item.uris);
+      const actualIsWhitelistedStorage = item.isWhitelistedStorage;
+
+      if (computedIsWhitelistedStorage !== actualIsWhitelistedStorage) {
+        const itemToUpdate = {
+          identifier: item.identifier,
+          isWhitelistedStorage: computedIsWhitelistedStorage,
+        };
+
+        itemsToUpdate.push(itemToUpdate);
+      }
+    }
+
+    await asyncPool(
+      5,
+      itemsToUpdate,
+      async item => await this.updateIsWhitelistedStorageForToken(item.identifier, item.isWhitelistedStorage)
+    );
+  }
+
+  private async updateIsWhitelistedStorageForToken(identifier: string, isWhitelistedStorage: boolean): Promise<void> {
+    try {
+      this.logger.log(`Setting api_isWhitelistedStorage for token with identifier '${identifier}'`);
+      await this.elasticService.setCustomValue('tokens', identifier, 'isWhitelistedStorage', isWhitelistedStorage);
+    } catch (error) {
+      this.logger.error(`Unexpected error when updating isWhitelistedStorage for token with identifier '${identifier}'`);
+    }
+  }
+
+  private async updateMediaForToken(identifier: string, media: NftMedia[]): Promise<void> {
+    try {
+      this.logger.log(`Setting api_media for token with identifier '${identifier}'`);
+      await this.elasticService.setCustomValue('tokens', identifier, 'media', media);
+    } catch (error) {
+      this.logger.error(`Unexpected error when updating media for token with identifier '${identifier}'`);
+    }
+  }
+
+  private async updateMetadataForToken(identifier: string, metadata: any): Promise<void> {
+    try {
+      this.logger.log(`Setting api_metadata for token with identifier '${identifier}'`);
+      await this.elasticService.setCustomValue('tokens', identifier, 'metadata', metadata);
+    } catch (error) {
+      this.logger.error(`Unexpected error when updating metadata for token with identifier '${identifier}'`);
+    }
   }
 }

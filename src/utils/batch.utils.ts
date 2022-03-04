@@ -2,12 +2,19 @@ export class BatchUtils {
   static async batchGet<TIN, TOUT>(
     elements: TIN[],
     identifierFunc: (element: TIN) => string,
-    funcs: {
+    funcs: ({
       getter: (elements: TIN[]) => Promise<{ [key: string]: TOUT }>,
       setter?: (elements: { [key: string]: TOUT }) => Promise<void>
-    }[],
+    }[]) | ((elements: TIN[]) => Promise<{ [key: string]: TOUT }>),
     chunkSize: number,
   ): Promise<{ [key: string]: TOUT }> {
+    if (!Array.isArray(funcs)) {
+      funcs = [
+        {
+          getter: funcs,
+        },
+      ];
+    }
 
     let inputElements = elements;
 
