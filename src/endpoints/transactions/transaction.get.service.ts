@@ -100,7 +100,7 @@ export class TransactionGetService {
         }
 
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.receipt)) {
-          const receiptHashQuery = QueryType.Match('receiptHash', txHash);
+          const receiptHashQuery = QueryType.Match('txHash', txHash);
           const elasticQueryReceipts = ElasticQuery.create()
             .withPagination({ from: 0, size: 1 })
             .withCondition(QueryConditionOptions.must, [receiptHashQuery]);
