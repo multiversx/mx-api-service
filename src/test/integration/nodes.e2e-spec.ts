@@ -74,8 +74,15 @@ describe('Node Service', () => {
         .spyOn(NodeService.prototype, 'getQueue')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => queue));
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
     }
   });
+
+  beforeEach(() => { jest.restoreAllMocks(); });
 
   describe('Nodes', () => {
     it('should be in sync with keybase confirmations', async () => {
@@ -132,6 +139,39 @@ describe('Node Service', () => {
 
       for (const node of filteredNodes) {
         expect(node.type).toStrictEqual(NodeType.validator);
+      }
+    });
+
+    it("should return nodes of a specific owner", async () => {
+      const nodeFilter: NodeFilter = new NodeFilter();
+      nodeFilter.owner = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85";
+      const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
+
+      for (const node of filteredNodes) {
+        console.log(node);
+      }
+
+    });
+
+    it("node is validator only if stake is equal with 2500 EGLD", async () => {
+      const nodeFilter: NodeFilter = new NodeFilter();
+      nodeFilter.type = NodeType.validator;
+
+      const filteredNodes = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
+      for (const node of filteredNodes) {
+        if (node.stake === "2500000000000000000000") {
+          expect(node.type).toStrictEqual(NodeType.validator);
+        }
+      }
+    });
+
+    it('should have observer type', async () => {
+      const nodeFilter: NodeFilter = new NodeFilter();
+      nodeFilter.type = NodeType.observer;
+      const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
+
+      for (const node of filteredNodes) {
+        expect(node.type).toStrictEqual(NodeType.observer);
       }
     });
 
@@ -276,7 +316,88 @@ describe('Node Service', () => {
   describe('Get Node Count', () => {
     it('should return node count', async () => {
       const count = await nodeService.getNodeCount(new NodeFilter());
-      expect(typeof count).toBe('number');
+      expect(typeof count).toStrictEqual('number');
+    });
+
+    it("should return node count based on provider filter", async () => {
+      const provider: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85";
+      const filter = new NodeFilter();
+      filter.provider = provider;
+      const count = await nodeService.getNodeCount(filter);
+
+      expect(typeof count).toStrictEqual('number');
+    });
+
+    it("should return node count based on issue = true filter", async () => {
+      const filter = new NodeFilter();
+      filter.issues = true;
+      const count = await nodeService.getNodeCount(filter);
+
+      expect(typeof count).toStrictEqual('number');
+    });
+
+    it("should return node count based on issue = false filter", async () => {
+      const filter = new NodeFilter();
+      filter.issues = false;
+      const count = await nodeService.getNodeCount(filter);
+
+      expect(typeof count).toStrictEqual('number');
+    });
+
+    it("should return node count based on status = eligible filter", async () => {
+      const filter = new NodeFilter();
+      filter.status = NodeStatus.eligible;
+      const count = await nodeService.getNodeCount(filter);
+
+      expect(typeof count).toStrictEqual('number');
+    });
+
+    it("should return node count based on status = queued filter", async () => {
+      const filter = new NodeFilter();
+      filter.status = NodeStatus.queued;
+      const count = await nodeService.getNodeCount(filter);
+
+      expect(typeof count).toStrictEqual('number');
+    });
+
+    it("should return node count based on status = new filter", async () => {
+      const filter = new NodeFilter();
+      filter.status = NodeStatus.new;
+      const count = await nodeService.getNodeCount(filter);
+
+      expect(typeof count).toStrictEqual('number');
+    });
+
+    it("should return node count based on type = validator filter", async () => {
+      const filter = new NodeFilter();
+      filter.type = NodeType.validator;
+      const count = await nodeService.getNodeCount(filter);
+
+      expect(typeof count).toStrictEqual('number');
+    });
+
+    it("should return node count based on type = observer filter", async () => {
+      const filter = new NodeFilter();
+      filter.type = NodeType.observer;
+      const count = await nodeService.getNodeCount(filter);
+
+      expect(typeof count).toStrictEqual('number');
+    });
+
+    it("should return node count based on only = true filter", async () => {
+      const filter = new NodeFilter();
+      filter.online = true;
+      const count = await nodeService.getNodeCount(filter);
+
+      expect(typeof count).toStrictEqual('number');
+    });
+
+    it("should return node count based on only = false filter", async () => {
+      const filter = new NodeFilter();
+      filter.online = false;
+      const count = await nodeService.getNodeCount(filter);
+
+      expect(typeof count).toStrictEqual('number');
     });
   });
 
@@ -348,16 +469,6 @@ describe('Node Service', () => {
 
       expect(results[0]).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhllllsajxzat");
       expect(results[1]).toStrictEqual("erd1qzwd98g6xjs6h33ezxc9ey766ee082z9q4yvj46r8p7xqnl0eenqvxtaz3");
-    });
-  });
-
-  describe("getAllNodesRaw", () => {
-    it("should return all nodes", async () => {
-      const nodes = await nodeService.getAllNodesRaw();
-
-      for (const node of nodes) {
-        expect(node).toBeInstanceOf(Object);
-      }
     });
   });
 });

@@ -33,7 +33,7 @@ export class QueryType {
     return new ShouldQuery(queries);
   };
 
-  static Must = (queries: AbstractQuery[]): MustQuery => {
-    return new MustQuery(queries);
+  static Must = (queries: AbstractQuery[], mustNotQueries: AbstractQuery[] = []): MustQuery => {
+    return new MustQuery(queries, mustNotQueries);
   };
 }
