@@ -1,71 +1,203 @@
-import { ProviderConfig } from '../../endpoints/providers/entities/provider.config';
-import { Test } from '@nestjs/testing';
-import BigNumber from 'bignumber.js';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { CachingService } from 'src/common/caching/caching.service';
-import { KeybaseState } from 'src/common/keybase/entities/keybase.state';
-import { Provider } from 'src/endpoints/providers/entities/provider';
 import { ProviderFilter } from 'src/endpoints/providers/entities/provider.filter';
+import { Test } from '@nestjs/testing';
 import { ProviderService } from 'src/endpoints/providers/provider.service';
-import providerAccount from '../data/accounts/provider.account';
+import { PublicAppModule } from 'src/public.app.module';
+import { ProviderConfig } from '../../endpoints/providers/entities/provider.config';
+import { Provider } from 'src/endpoints/providers/entities/provider';
+import { CachingService } from 'src/common/caching/caching.service';
 import '../../utils/extensions/array.extensions';
 import '../../utils/extensions/jest.extensions';
-import { PublicAppModule } from 'src/public.app.module';
 
 describe('Provider Service', () => {
   let providerService: ProviderService;
-  let cachingService: CachingService;
   let apiConfigService: ApiConfigService;
-  let providers: Provider[];
-  let identity: string;
-  let firstProvider: Provider;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
+    jest
+      .spyOn(CachingService.prototype, 'getOrSetCache')
+      // eslint-disable-next-line require-await
+      .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
+
     providerService = moduleRef.get<ProviderService>(ProviderService);
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
-    cachingService = moduleRef.get<CachingService>(CachingService);
 
-    providers = await providerService.getProviders(new ProviderFilter());
-    identity = 'istari_vision';
-    firstProvider = providers[0];
   });
 
-  describe('Providers', () => {
-    it('all providers should have provider address', () => {
+  beforeEach(() => { jest.restoreAllMocks(); });
 
-      for (const provider of providers) {
-        expect(provider).toHaveProperty('provider');
-        expect(provider).toHaveProperty('serviceFee');
-        expect(provider).toHaveProperty('delegationCap');
-        expect(provider).toHaveProperty('apr');
-        expect(provider).toHaveProperty('numUsers');
-        expect(provider).toHaveProperty('cumulatedRewards');
-        expect(provider).toHaveProperty('numNodes');
-        expect(provider).toHaveProperty('stake');
-        expect(provider).toHaveProperty('topUp');
-        expect(provider).toHaveProperty('locked');
+  describe("Get Provider", () => {
+    it("should return provider based on address", async () => {
+      const address: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85";
+
+      const result = await providerService.getProvider(address);
+
+      if (!result) {
+        throw new Error("Properties are not defined");
+      }
+
+      expect(result.hasOwnProperty("provider")).toBeTruthy();
+      expect(result.hasOwnProperty("serviceFee")).toBeTruthy();
+      expect(result.hasOwnProperty("delegationCap")).toBeTruthy();
+      expect(result.hasOwnProperty("apr")).toBeTruthy();
+      expect(result.hasOwnProperty("numUsers")).toBeTruthy();
+      expect(result.hasOwnProperty("cumulatedRewards")).toBeTruthy();
+      expect(result.hasOwnProperty("identity")).toBeTruthy();
+      expect(result.hasOwnProperty("numNodes")).toBeTruthy();
+      expect(result.hasOwnProperty("stake")).toBeTruthy();
+      expect(result.hasOwnProperty("topUp")).toBeTruthy();
+      expect(result.hasOwnProperty("locked")).toBeTruthy();
+      expect(result.hasOwnProperty("featured")).toBeTruthy();
+    });
+
+    it("should verify if identity of provider is defined", async () => {
+      const address: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85";
+      const result = await providerService.getProvider(address);
+
+      if (!result) {
+        throw new Error("Properties are not defined");
+      }
+
+      expect(result.identity).toBeDefined();
+      expect(result.identity).toStrictEqual("justminingfr");
+      expect(result.provider).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85");
+    });
+
+    it("should return provider addresses", async () => {
+      const results = await providerService.getProviderAddresses();
+
+      expect(results.length).toBeGreaterThan(50);
+    });
+
+    it("should return provider configuration", async () => {
+      const address: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85";
+      const results = await providerService.getProviderConfig(address);
+
+      expect(results).toHaveStructure(Object.keys(new ProviderConfig()));
+    });
+
+    it("should return providerd metadata", async () => {
+      const address: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85";
+      const results = await providerService.getProviderMetadata(address);
+
+      expect(results.hasOwnProperty("name")).toBeTruthy();
+      expect(results.hasOwnProperty("website")).toBeTruthy();
+      expect(results.hasOwnProperty("identity")).toBeTruthy();
+    });
+
+    it("should return numbers of users for a specific provider", async () => {
+      const address: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85";
+      const results = await providerService.getNumUsers(address);
+
+      expect(typeof results).toStrictEqual("number");
+    });
+
+    it("should return cumulated rewards for a specific provider", async () => {
+      const address: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85";
+      const results = await providerService.getCumulatedRewards(address);
+
+      expect(typeof results).toStrictEqual("string");
+
+    });
+  });
+
+  describe("Get Providers", () => {
+    it("should return all providers", async () => {
+      const results = await providerService.getAllProviders();
+
+      for (const result of results) {
+        expect(result.hasOwnProperty("provider")).toBeTruthy();
+        expect(result.hasOwnProperty("serviceFee")).toBeTruthy();
+        expect(result.hasOwnProperty("delegationCap")).toBeTruthy();
+        expect(result.hasOwnProperty("apr")).toBeTruthy();
+        expect(result.hasOwnProperty("numUsers")).toBeTruthy();
+        expect(result.hasOwnProperty("cumulatedRewards")).toBeTruthy();
+        expect(result.hasOwnProperty("numNodes")).toBeTruthy();
+        expect(result.hasOwnProperty("stake")).toBeTruthy();
+        expect(result.hasOwnProperty("topUp")).toBeTruthy();
+        expect(result.hasOwnProperty("locked")).toBeTruthy();
+        expect(result.hasOwnProperty("featured")).toBeTruthy();
       }
     });
 
-    it('all providers should have nodes', () => {
-      for (const provider of providers) {
-        expect(provider.numNodes).toBeGreaterThan(0);
+    it('should return all providers raw', async () => {
+      const results = await providerService.getAllProvidersRaw();
+
+      for (const result of results) {
+        expect(result).toHaveStructure(Object.keys(new Provider()));
       }
     });
 
-    it('providers with more than 30 nodes should have identity', () => {
-      for (const provider of providers) {
-        if (provider.numNodes >= 30) {
-          expect(provider).toHaveProperty('identity');
+    it("should return provider details", async () => {
+      const filter = new ProviderFilter();
+      const results = await providerService.getProviders(filter);
+
+      for (const result of results) {
+        expect(result.hasOwnProperty("provider")).toBeTruthy();
+        expect(result.hasOwnProperty("serviceFee")).toBeTruthy();
+        expect(result.hasOwnProperty("delegationCap")).toBeTruthy();
+        expect(result.hasOwnProperty("apr")).toBeTruthy();
+        expect(result.hasOwnProperty("numUsers")).toBeTruthy();
+        expect(result.hasOwnProperty("cumulatedRewards")).toBeTruthy();
+        expect(result.hasOwnProperty("numNodes")).toBeTruthy();
+        expect(result.hasOwnProperty("stake")).toBeTruthy();
+        expect(result.hasOwnProperty("topUp")).toBeTruthy();
+        expect(result.hasOwnProperty("locked")).toBeTruthy();
+        expect(result.hasOwnProperty("featured")).toBeTruthy();
+      }
+    });
+
+    it("should be filtered by identity", async () => {
+      const filter = new ProviderFilter();
+      filter.identity = "justminingfr";
+      const results = await providerService.getProviders(filter);
+
+      for (const result of results) {
+        expect(result.identity).toStrictEqual("justminingfr");
+      }
+    });
+
+    it("should verify if providers contains minimum one node", async () => {
+      const filter = new ProviderFilter();
+      filter.identity = "justminingfr";
+
+      const results = await providerService.getProviders(filter);
+
+      for (const result of results) {
+        expect(result.numNodes).toBeGreaterThan(0);
+      }
+    });
+
+    it("should verify providers with more than 30 nodes should have identity", async () => {
+      const filter = new ProviderFilter();
+      const results = await providerService.getProviders(filter);
+
+      for (const result of results) {
+        if (result.numNodes > 30) {
+          expect(result).toHaveProperty("identity");
         }
       }
     });
 
-    it('some providers should be included', () => {
+    it("should verify if provider contain idenity property", async () => {
+      const filter = new ProviderFilter();
+      filter.identity = "justminingfr";
+
+      const results = await providerService.getProviders(filter);
+
+      for (const result of results) {
+        if (result.numNodes > 30) {
+          expect(result.identity).toBeDefined();
+          expect(result.identity).toStrictEqual("justminingfr");
+        }
+      }
+    });
+
+    it('some providers should be included', async () => {
       if (!apiConfigService.getMockNodes()) {
         const vipProviders: { [key: string]: string } = {
           staking_agency:
@@ -106,6 +238,8 @@ describe('Provider Service', () => {
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq40llllsfjmn54',
         };
 
+        const providers = await providerService.getProviders(new ProviderFilter());
+
         for (const identityVIP of Object.keys(vipProviders)) {
           const providerVIP = providers.find(({ identity }) => identity === identityVIP);
           if (!providerVIP) {
@@ -119,211 +253,12 @@ describe('Provider Service', () => {
       }
     });
 
-    it('should be in sync with keybase confirmations', async () => {
-      const providerKeybases: { [key: string]: KeybaseState } | undefined =
-        await cachingService.getCache('providerKeybases');
-      expect(providerKeybases).toBeDefined();
+    it("should return providers with stake information", async () => {
+      const results = await providerService.getProvidersWithStakeInformation();
 
-      for (const provider of providers) {
-        if (providerKeybases) {
-          if (providerKeybases[provider.provider] && providerKeybases[provider.provider].confirmed) {
-            expect(provider.identity).toBe(providerKeybases[provider.provider].identity);
-          } else {
-            expect(provider.identity).toBeUndefined();
-          }
-        }
+      for (const result of results) {
+        expect(result.stake).not.toBeUndefined();
       }
-    });
-
-    it('should be sorted by locked amount', () => {
-      for (let index = 1; index < providers.length; index++) {
-        const currentProvider = providers[index];
-        const previousProvider = providers[index - 1];
-
-        expect(previousProvider).toHaveProperty('locked');
-        expect(currentProvider).toHaveProperty('locked');
-
-        const currentLocked = new BigNumber(currentProvider.locked);
-        const previousLocked = new BigNumber(previousProvider.locked);
-
-        if (currentLocked > previousLocked) {
-          expect(true);
-        }
-      }
-    });
-
-    it('should be filtered by identity', async () => {
-      const providersFilter = new ProviderFilter();
-      providersFilter.identity = identity;
-      const providers = await providerService.getProviders(providersFilter);
-
-      for (const provider of providers) {
-        expect(provider.identity).toStrictEqual(identity);
-      }
-    });
-
-    it('some providers should be confirmed', () => {
-      expect(providers.length).toBeGreaterThanOrEqual(32);
-    });
-
-    it('should be filtered by provider address', async () => {
-      const provider = await providerService.getProvider(firstProvider.provider);
-      if (!provider) {
-        throw new Error('Provider must be defined');
-      }
-
-      expect(provider.provider).toStrictEqual(firstProvider.provider);
-      expect(provider.identity).toStrictEqual(firstProvider.identity);
-    });
-  });
-
-  describe('Get Delegation Providers', () => {
-    it('all providers should have contract, featured, aprValue properties', async () => {
-      const providerDelegation = await providerService.getDelegationProviders();
-
-      for (const property of providerDelegation) {
-        expect(property).toHaveProperty('aprValue');
-        expect(property).toHaveProperty('featured');
-        expect(property).toHaveProperty('contract');
-      }
-    });
-  });
-
-  describe('Get Delegation Provider Raw', () => {
-    it('should return delegation providers raw', async () => {
-      const providerRaw = await providerService.getDelegationProvidersRaw();
-
-      for (const property of providerRaw) {
-        expect(property).toHaveProperty('aprValue');
-        expect(property).toHaveProperty('featured');
-        expect(property).toHaveProperty('contract');
-      }
-    });
-  });
-
-  describe('Get All Providers', () => {
-    it('should return all providers', async () => {
-      const providers = await providerService.getAllProviders();
-
-      for (const provider of providers) {
-        expect(provider).toHaveProperty('provider');
-        expect(provider).toHaveProperty('serviceFee');
-        expect(provider).toHaveProperty('delegationCap');
-        expect(provider).toHaveProperty('apr');
-        expect(provider).toHaveProperty('numUsers');
-        expect(provider).toHaveProperty('cumulatedRewards');
-        expect(provider).toHaveProperty('numNodes');
-        expect(provider).toHaveProperty('stake');
-        expect(provider).toHaveProperty('topUp');
-        expect(provider).toHaveProperty('locked');
-      }
-    });
-  });
-
-  describe('Get All Providers Raw', () => {
-    it('should return all providers raw', async () => {
-      const providersRaw = await providerService.getAllProvidersRaw();
-
-      for (const providerRaw of providersRaw) {
-        expect(providerRaw).toHaveStructure(Object.keys(new Provider()));
-      }
-    });
-  });
-
-  describe('Get Provider Configuration', () => {
-    it('should return provider configuration', async () => {
-      const provider = await providerService.getProviderConfig(providerAccount.address);
-
-      if (!provider) {
-        throw new Error('Provider not defined');
-      }
-      expect(provider).toHaveStructure(Object.keys(new ProviderConfig()));
-    });
-  });
-
-  describe('Get Number of users', () => {
-    it('should return the numbers of users', async () => {
-      const users = await providerService.getNumUsers(providerAccount.address);
-      expect(typeof users).toBe('number');
-    });
-  });
-
-  describe('Get Cumulated Rewards', () => {
-    it('should return cumulated reward from provider address', async () => {
-      const rewards = await providerService.getCumulatedRewards(providerAccount.address);
-      expect(typeof rewards).toBe('string');
-    });
-  });
-
-  describe('Get Provider Metadata', () => {
-    it('provider metadata must contain "name", "website", "identity ', async () => {
-      const provider = await providerService.getProviderMetadata(providerAccount.address);
-
-      expect(provider).toHaveProperty('name');
-      expect(provider).toHaveProperty('website');
-      expect(provider).toHaveProperty('identity');
-    });
-  });
-
-  describe('Get Provider With Stake Information Raw', () => {
-    it('should return provider information with stake', async () => {
-      const providers = await providerService.getProvidersWithStakeInformationRaw();
-
-      for (const provider of providers) {
-        expect(provider).toHaveProperty('provider');
-        expect(provider).toHaveProperty('serviceFee');
-        expect(provider).toHaveProperty('delegationCap');
-        expect(provider).toHaveProperty('apr');
-        expect(provider).toHaveProperty('numUsers');
-        expect(provider).toHaveProperty('cumulatedRewards');
-        expect(provider).toHaveProperty('numNodes');
-        expect(provider).toHaveProperty('stake');
-        expect(provider).toHaveProperty('topUp');
-        expect(provider).toHaveProperty('featured');
-      }
-    });
-
-    it('all providers with stake should have nodes', async () => {
-      const stakeProvider = await providerService.getProvidersWithStakeInformationRaw();
-      for (const provider of stakeProvider) {
-        expect(provider.numNodes).toBeGreaterThan(0);
-      }
-    });
-
-    it('providers with more than 30 nodes should have identity', async () => {
-      const stakeProvider = await providerService.getProvidersWithStakeInformationRaw();
-      for (const provider of stakeProvider) {
-        if (provider.numNodes >= 30) {
-          expect(provider).toHaveProperty('identity');
-        }
-      }
-    });
-  });
-
-  describe('Get Provider With Stake Information', () => {
-    it('should return providers with stake informations', async () => {
-      const providers = await providerService.getProvidersWithStakeInformation();
-
-      for (const provider of providers) {
-        expect(provider).toHaveProperty('provider');
-        expect(provider).toHaveProperty('serviceFee');
-        expect(provider).toHaveProperty('delegationCap');
-        expect(provider).toHaveProperty('apr');
-        expect(provider).toHaveProperty('numUsers');
-        expect(provider).toHaveProperty('cumulatedRewards');
-        expect(provider).toHaveProperty('numNodes');
-        expect(provider).toHaveProperty('stake');
-        expect(provider).toHaveProperty('topUp');
-        expect(provider).toHaveProperty('featured');
-      }
-    });
-  });
-
-  describe('Get Provider Addresses', () => {
-    it('should return provider address', async () => {
-      const providerAddresses = await providerService.getProviderAddresses();
-
-      expect(providerAddresses.length).toBeGreaterThan(50);
     });
   });
 });

@@ -2,11 +2,11 @@ import { TokenFilter } from '../../endpoints/tokens/entities/token.filter';
 import { Test } from '@nestjs/testing';
 import { TokenService } from 'src/endpoints/tokens/token.service';
 import { PublicAppModule } from 'src/public.app.module';
-import '../../utils/extensions/jest.extensions';
 import { TokenDetailed } from 'src/endpoints/tokens/entities/token.detailed';
 import { TokenAddressRoles } from 'src/endpoints/tokens/entities/token.address.roles';
 import { TokenAccount } from 'src/endpoints/tokens/entities/token.account';
 import { TokenWithBalance } from 'src/endpoints/tokens/entities/token.with.balance';
+import '../../utils/extensions/jest.extensions';
 
 describe('Token Service', () => {
   let tokenService: TokenService;
@@ -63,6 +63,18 @@ describe('Token Service', () => {
       for (const result of results) {
         expect(results).toHaveLength(1);
         expect(result.name).toStrictEqual("holoride");
+        expect(result).toHaveStructure(Object.keys(new TokenDetailed()));
+      }
+    });
+
+    it("should return one token based on search parameter", async () => {
+      const filter = new TokenFilter();
+      filter.search = "RIDE-7d18e9";
+
+      const results = await tokenService.getTokens({ from: 0, size: 1 }, filter);
+
+      for (const result of results) {
+        expect(results).toHaveLength(1);
         expect(result).toHaveStructure(Object.keys(new TokenDetailed()));
       }
     });
