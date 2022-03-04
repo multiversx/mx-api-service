@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression, SchedulerRegistry } from "@nestjs/schedule";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
@@ -21,9 +21,12 @@ import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { TokenService } from "src/endpoints/tokens/token.service";
-
+import { ElasticService } from "src/common/elastic/elastic.service";
+import * as JsonDiff from "json-diff";
 @Injectable()
 export class CacheWarmerService {
+  private readonly logger: Logger;
+
   constructor(
     private readonly nodeService: NodeService,
     private readonly esdtService: EsdtService,
@@ -40,8 +43,11 @@ export class CacheWarmerService {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly tokenAssetService: TokenAssetService,
     private readonly pluginService: PluginService,
-    private readonly tokenService: TokenService
+    private readonly tokenService: TokenService,
+    private readonly elasticService: ElasticService,
   ) {
+    this.logger = new Logger(CacheWarmerService.name);
+
     this.configCronJob(
       'handleKeybaseAgainstKeybasePubInvalidations',
       CronExpression.EVERY_MINUTE,
@@ -205,6 +211,28 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleCronPlugins() {
     await this.pluginService.handleEveryMinuteCron();
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleUpdateAssetsInElastic() {
+    await Locker.lock('Update assets in elastic', async () => {
+      const allAssets = await this.tokenAssetService.getAllAssets();
+
+      for (const key of Object.keys(allAssets)) {
+        const elasticAssets = await this.elasticService.getCustomValue('tokens', key, 'assets');
+        if (elasticAssets === null) {
+          this.logger.log(`Could not find token with identifier '${key}' when updating assets in elastic`);
+          continue;
+        }
+
+        const githubAssets = allAssets[key];
+
+        if (!elasticAssets || JsonDiff.diff(githubAssets, elasticAssets)) {
+          this.logger.log(`Updating assets for token with identifier '${key}'`);
+          await this.elasticService.setCustomValue('tokens', key, 'assets', githubAssets);
+        }
+      }
+    }, true);
   }
 
   private async invalidateKey(key: string, data: any, ttl: number) {
