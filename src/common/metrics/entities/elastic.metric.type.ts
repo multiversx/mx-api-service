@@ -1,5 +1,6 @@
 export enum ElasticMetricType {
   list = 'list',
   item = 'item',
-  count = 'count'
+  count = 'count',
+  scroll = 'scroll',
 }

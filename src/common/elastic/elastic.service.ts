@@ -129,6 +129,37 @@ export class ElasticService {
     return documents.map((document: any) => this.formatItem(document, key));
   }
 
+  async getListWithScroll(collection: string, key: string, elasticQuery: ElasticQuery, callback: (items: any[]) => Promise<void>): Promise<void> {
+    const url = `${this.url}/${collection}/_search?scroll=10m`;
+
+    const profiler = new PerformanceProfiler();
+
+    const result = await this.post(url, elasticQuery.toJson());
+
+    profiler.stop();
+
+    this.metricsService.setElasticDuration(collection, ElasticMetricType.list, profiler.duration);
+
+    const scrollId = result.data._scroll_id;
+    let documents = result.data.hits.hits.map((document: any) => this.formatItem(document, key));
+    await callback(documents);
+
+    while (documents.length > 0) {
+      const scrollProfiler = new PerformanceProfiler();
+
+      const scrollResult = await this.post(`${this.url}/_search/scroll`, {
+        scroll: '20m',
+        scroll_id: scrollId,
+      });
+
+      scrollProfiler.stop();
+      this.metricsService.setElasticDuration(collection, ElasticMetricType.scroll, scrollProfiler.duration);
+
+      documents = scrollResult.data.hits.hits.map((document: any) => this.formatItem(document, key));
+      await callback(documents);
+    }
+  }
+
   async getAccountEsdtByIdentifier(identifier: string, pagination?: QueryPagination) {
     return await this.getAccountEsdtByIdentifiers([identifier], pagination);
   }

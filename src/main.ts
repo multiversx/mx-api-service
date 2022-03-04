@@ -29,6 +29,7 @@ import { LogRequestsInterceptor } from './interceptors/log.requests.interceptor'
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { NftQueueModule } from './queue.worker/nft.worker/queue/nft.queue.module';
 import configuration from "config/configuration";
+import { ElasticUpdaterModule } from './crons/elastic.updater/elastic.updater.module';
 
 async function bootstrap() {
   const conf = configuration();
@@ -124,8 +125,13 @@ async function bootstrap() {
   }
 
   if (apiConfigService.getIsCacheWarmerCronActive()) {
-    const processorApp = await NestFactory.create(CacheWarmerModule);
-    await processorApp.listen(6001);
+    const cacheWarmerApp = await NestFactory.create(CacheWarmerModule);
+    await cacheWarmerApp.listen(6001);
+  }
+
+  if (apiConfigService.getIsElasticUpdaterCronActive()) {
+    const cacheWarmerApp = await NestFactory.create(ElasticUpdaterModule);
+    await cacheWarmerApp.listen(7001);
   }
 
   if (apiConfigService.getIsQueueWorkerCronActive()) {
@@ -169,13 +175,10 @@ async function bootstrap() {
 
   logger.log(`Public API active: ${apiConfigService.getIsPublicApiActive()}`);
   logger.log(`Private API active: ${apiConfigService.getIsPrivateApiActive()}`);
-  logger.log(
-    `Transaction processor active: ${apiConfigService.getIsTransactionProcessorCronActive()}`,
-  );
-  logger.log(
-    `Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`,
-  );
+  logger.log(`Transaction processor active: ${apiConfigService.getIsTransactionProcessorCronActive()}`,);
+  logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`,);
   logger.log(`Queue worker active: ${apiConfigService.getIsQueueWorkerCronActive()}`);
+  logger.log(`Elastic updater active: ${apiConfigService.getIsElasticUpdaterCronActive()}`);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
