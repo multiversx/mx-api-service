@@ -27,11 +27,12 @@ export class TransferService {
     let elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.should, QueryType.Must([
         QueryType.Match('type', 'unsigned'),
-        QueryType.Match('nonce', 0),
         QueryType.Should([
           QueryType.Match('receiver', address),
           QueryType.Match('receivers', address),
         ]),
+      ], [
+        QueryType.Exists('canBeIgnored'),
       ]))
       .withCondition(QueryConditionOptions.should, QueryType.Must([
         QueryType.Match('type', 'normal'),
