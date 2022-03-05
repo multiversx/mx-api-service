@@ -490,7 +490,7 @@ export class NodeService {
       }
 
       const versionComponents = version ? version.split('-') : [''];
-      const nodeVersion = versionComponents.slice(0, versionComponents.length - 2).join('-').slit('/')[0];
+      const nodeVersion = versionComponents.slice(0, versionComponents.length - 2).join('-').split('/')[0];
 
       const node: Node = {
         bls,
