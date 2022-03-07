@@ -134,9 +134,9 @@ export class NftService {
     }
 
     if (queryOptions && queryOptions.withOwner) {
-      const nonFungibleNftIdentifiers = nfts.filter(x => x.type === NftType.NonFungibleESDT).map(x => x.identifier);
+      const nftsIdentifiers = nfts.filter(x => x.type === NftType.NonFungibleESDT).map(x => x.identifier);
 
-      const accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nonFungibleNftIdentifiers);
+      const accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nftsIdentifiers, queryPagination);
 
       for (const nft of nfts) {
         if (nft.type === NftType.NonFungibleESDT) {

@@ -361,7 +361,6 @@ export class AccountController {
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
   @ApiQuery({ name: 'includeFlagged', description: 'Include NFTs that are flagged or not', required: false })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false })
-  @ApiQuery({ name: 'withMetadata', description: 'Return metadata for nfts', required: false })
   @ApiQuery({ name: 'source', description: 'Data source of request', required: false })
   @ApiResponse({
     status: 200,
@@ -388,11 +387,10 @@ export class AccountController {
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseOptionalBoolPipe) includeFlagged?: boolean,
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean,
-    @Query('withMetadata', new ParseOptionalBoolPipe) withMetadata?: boolean,
     @Query('source', new ParseOptionalEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
   ): Promise<NftAccount[]> {
     try {
-      return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }, { withSupply, withMetadata }, source);
+      return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }, { withSupply }, source);
     } catch (error) {
       this.logger.error(`Error in getAccountNfts for address ${address}`);
       this.logger.error(error);
