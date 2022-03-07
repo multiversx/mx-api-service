@@ -236,9 +236,9 @@ export class NetworkService {
 
     const topUpRewardsLimit = 0.5 * rewardsPerEpoch;
     const networkBaseStake = stake.activeValidators * stakePerNode;
-    const networkTotalStake = NumberUtils.denominateString(stakedBalance) - stake.queueSize * stakePerNode;
+    const networkTotalStake = NumberUtils.denominateString(stakedBalance) - (stake.queueSize * stakePerNode);
 
-    const networkTopUpStake = networkTotalStake - stake.totalValidators * stakePerNode - stake.queueSize * stakePerNode;
+    const networkTopUpStake = networkTotalStake - networkBaseStake;
 
     const topUpReward = ((2 * topUpRewardsLimit) / Math.PI) * Math.atan(networkTopUpStake / (2 * 2000000));
     const baseReward = rewardsPerEpoch - topUpReward;
