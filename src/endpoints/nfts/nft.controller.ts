@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
@@ -36,7 +36,6 @@ export class NftController {
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
   @ApiQuery({ name: 'withOwner', description: 'Return owner where type = NonFungibleESDT', required: false })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false })
-  @ApiQuery({ name: 'withMetadata', description: 'Return metadata for nfts', required: false })
   async getNfts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -51,9 +50,12 @@ export class NftController {
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
     @Query('withOwner', new ParseOptionalBoolPipe) withOwner?: boolean | undefined,
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean | undefined,
-    @Query('withMetadata', new ParseOptionalBoolPipe) withMetadata?: boolean | undefined,
   ): Promise<Nft[]> {
-    return await this.nftService.getNfts({ from, size }, { search, identifiers, type, collection, name, tags, creator, hasUris, isWhitelistedStorage }, { withOwner, withSupply, withMetadata });
+    if (withOwner === true && size > 100) {
+      throw new BadRequestException(`Maximum size of 100 is allowed when activating flags 'withOwner' or 'withSupply'`);
+    }
+
+    return await this.nftService.getNfts({ from, size }, { search, identifiers, type, collection, name, tags, creator, hasUris, isWhitelistedStorage }, { withOwner, withSupply });
   }
 
   @Get("/nfts/count")
