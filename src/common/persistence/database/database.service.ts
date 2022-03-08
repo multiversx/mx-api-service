@@ -35,9 +35,16 @@ export class DatabaseService implements PersistenceInterface {
   }
 
   async batchGetMetadata(identifiers: string[]): Promise<Record<string, any>> {
-    const metadatasDb = await this.nftMetadataRepository.findByIds(identifiers);
+    try {
+      const metadatasDb = await this.nftMetadataRepository.findByIds(identifiers);
 
-    return metadatasDb.toRecord(metadata => metadata.id, metadata => metadata.content);
+      return metadatasDb.toRecord(metadata => metadata.id, metadata => metadata.content);
+    } catch (error) {
+      this.logger.log(`Error when getting metadata from DB for batch '${identifiers}'`);
+      this.logger.error(error);
+
+      return {};
+    }
   }
 
   async setMetadata(identifier: string, content: any): Promise<void> {
@@ -73,9 +80,16 @@ export class DatabaseService implements PersistenceInterface {
   }
 
   async batchGetMedia(identifiers: string[]): Promise<Record<string, NftMedia[]>> {
-    const mediasDb = await this.nftMediaRepository.findByIds(identifiers);
+    try {
+      const mediasDb = await this.nftMediaRepository.findByIds(identifiers);
 
-    return mediasDb.toRecord(media => media.id ?? '', media => media.content);
+      return mediasDb.toRecord(media => media.id ?? '', media => media.content);
+    } catch (error) {
+      this.logger.log(`Error when getting media from DB for batch '${identifiers}'`);
+      this.logger.error(error);
+
+      return {};
+    }
   }
 
   async setMedia(identifier: string, media: NftMedia[]): Promise<void> {

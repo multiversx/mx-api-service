@@ -1,3 +1,4 @@
+import { CachingService } from 'src/common/caching/caching.service';
 import { Test } from "@nestjs/testing";
 import { NetworkService } from "../../endpoints/network/network.service";
 import { NetworkConstants } from "src/endpoints/network/entities/constants";
@@ -7,6 +8,7 @@ import '../../utils/extensions/jest.extensions';
 import '../../utils/extensions/array.extensions';
 import '../../utils/extensions/number.extensions';
 import { PublicAppModule } from "src/public.app.module";
+import { Stats } from 'src/endpoints/network/entities/stats';
 
 describe('Network Service', () => {
   let networkService: NetworkService;
@@ -19,8 +21,15 @@ describe('Network Service', () => {
     networkService = moduleRef.get<NetworkService>(NetworkService);
   });
 
+  beforeEach(() => { jest.restoreAllMocks(); });
+
   describe('Get Constants', () => {
     it('should return network constants', async () => {
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
+
       const constants = await networkService.getConstants();
       expect(constants).toHaveStructure(Object.keys(new NetworkConstants()));
     });
@@ -35,15 +44,32 @@ describe('Network Service', () => {
 
   describe('Get Economics Raw', () => {
     it('should return economic raw properties', async () => {
-      const propertiesRaw = await networkService.getEconomicsRaw();
-      expect(propertiesRaw).toHaveStructure(Object.keys(new Economics()));
+      expect.assertions(1);
+      const results = await networkService.getEconomicsRaw();
+      expect(results).toHaveStructure(Object.keys(new Economics()));
     });
   });
 
   describe('Get Economics', () => {
     it('should return economics properties', async () => {
-      const properties = await networkService.getEconomics();
-      expect(properties).toBeInstanceOf(Object);
+      const results = await networkService.getEconomics();
+
+      expect(results).toEqual(expect.objectContaining({
+        apr: expect.any(Number),
+        baseApr: expect.any(Number),
+        circulatingSupply: expect.any(Number),
+        staked: expect.any(Number),
+        topUpApr: expect.any(Number),
+        totalSupply: expect.any(Number),
+      }));
+    });
+  });
+
+  describe("getStats", () => {
+    it("should return status network", async () => {
+      const status = await networkService.getStats();
+
+      expect(status).toHaveStructure(Object.keys(new Stats()));
     });
   });
 });

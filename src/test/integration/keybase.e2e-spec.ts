@@ -19,6 +19,8 @@ describe('Keybase Service', () => {
     keybaseService = moduleRef.get<KeybaseService>(KeybaseService);
   });
 
+  beforeEach(() => { jest.restoreAllMocks(); });
+
   describe('Confirm Keybase Against Cache', () => {
     it(`should confirm keybase against cache and return Keybase Object`, async () => {
       const keybaseDictionary = await keybaseService.confirmKeybasesAgainstCache();
@@ -46,7 +48,9 @@ describe('Keybase Service', () => {
   describe('Get Cached Identity Profiles Keybases', () => {
     it(`should return cached identities profiles`, async () => {
       const profiles = await keybaseService.getCachedIdentityProfilesKeybases();
-      expect(profiles).toBeInstanceOf(Array);
+      for (const profile of profiles) {
+        expect(profile).toBeInstanceOf(Object);
+      }
     });
   });
 

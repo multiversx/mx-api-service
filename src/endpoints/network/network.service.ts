@@ -215,46 +215,33 @@ export class NetworkService {
     const elrondConfig = {
       feesInEpoch: 0,
       stakePerNode: 2500,
-      protocolSustainabilityRewards: 0.1,
     };
 
     const feesInEpoch = elrondConfig.feesInEpoch;
     const stakePerNode = elrondConfig.stakePerNode;
-    const protocolSustainabilityRewards =
-      elrondConfig.protocolSustainabilityRewards;
-    const epochDuration = (config.roundDuration / 1000) * config.roundsPerEpoch;
+    const epochDuration = config.roundDuration * config.roundsPerEpoch;
     const secondsInYear = 365 * 24 * 3600;
     const epochsInYear = secondsInYear / epochDuration;
 
     const yearIndex = Math.floor(stats.epoch / epochsInYear);
+
     const inflationAmounts = this.apiConfigService.getInflationAmounts();
 
     if (yearIndex >= inflationAmounts.length) {
-      throw new Error(
-        `There is no inflation information for year with index ${yearIndex}`,
-      );
+      throw new Error(`There is no inflation information for year with index ${yearIndex}`,);
     }
 
     const inflation = inflationAmounts[yearIndex];
     const rewardsPerEpoch = Math.max(inflation / epochsInYear, feesInEpoch);
 
-    const rewardsPerEpochWithoutProtocolSustainability =
-      (1 - protocolSustainabilityRewards) * rewardsPerEpoch;
-    const topUpRewardsLimit =
-      0.5 * rewardsPerEpochWithoutProtocolSustainability;
+    const topUpRewardsLimit = 0.5 * rewardsPerEpoch;
     const networkBaseStake = stake.activeValidators * stakePerNode;
-    const networkTotalStake = NumberUtils.denominateString(stakedBalance);
+    const networkTotalStake = NumberUtils.denominateString(stakedBalance) - (stake.queueSize * stakePerNode);
 
-    const networkTopUpStake =
-      networkTotalStake -
-      stake.totalValidators * stakePerNode -
-      stake.queueSize * stakePerNode;
+    const networkTopUpStake = networkTotalStake - networkBaseStake;
 
-    const topUpReward =
-      ((2 * topUpRewardsLimit) / Math.PI) *
-      Math.atan(networkTopUpStake / (2 * 2000000));
-    const baseReward =
-      rewardsPerEpochWithoutProtocolSustainability - topUpReward;
+    const topUpReward = ((2 * topUpRewardsLimit) / Math.PI) * Math.atan(networkTopUpStake / (2 * 2000000));
+    const baseReward = rewardsPerEpoch - topUpReward;
 
     const apr = (epochsInYear * (topUpReward + baseReward)) / networkTotalStake;
 

@@ -1,20 +1,16 @@
+import { TokenFilter } from '../../endpoints/tokens/entities/token.filter';
 import { Test } from '@nestjs/testing';
 import { TokenService } from 'src/endpoints/tokens/token.service';
-import { TokenFilter } from 'src/endpoints/tokens/entities/token.filter';
-import { TokenWithBalance } from "../../endpoints/tokens/entities/token.with.balance";
-import { TokenDetailed } from "../../endpoints/tokens/entities/token.detailed";
-import { TokenAccount } from "../../endpoints/tokens/entities/token.account";
-import { TokenAddressRoles } from 'src/endpoints/tokens/entities/token.address.roles';
-import tokenDetails from '../data/esdt/token/token.example';
-import '../../utils/extensions/jest.extensions';
 import { PublicAppModule } from 'src/public.app.module';
+import { TokenDetailed } from 'src/endpoints/tokens/entities/token.detailed';
+import { TokenAddressRoles } from 'src/endpoints/tokens/entities/token.address.roles';
+import { TokenAccount } from 'src/endpoints/tokens/entities/token.account';
+import { TokenWithBalance } from 'src/endpoints/tokens/entities/token.with.balance';
+import '../../utils/extensions/jest.extensions';
 
 describe('Token Service', () => {
   let tokenService: TokenService;
 
-  const address: string = 'erd1xcm2sjlwg4xeqxzvuyhx93kagleewgz9rnw9hs5rxldfjk7nh9ksmznyyr';
-  const identifier: string = 'EGLDRIDE-7bd51a';
-  const tokenName: string = 'CheckerChain';
 
   beforeAll(async () => {
 
@@ -24,171 +20,180 @@ describe('Token Service', () => {
 
     tokenService = moduleRef.get<TokenService>(TokenService);
 
-    const tokens = await tokenService.getTokens(
-      { from: 0, size: 1 },
-      new TokenFilter(),
-    );
-    expect(tokens).toHaveLength(1);
   });
 
-  describe('Tokens list', () => {
-    describe('Tokens pagination', () => {
-      it(`should return a list with 25 tokens`, async () => {
-        const tokens = await tokenService.getTokens({ from: 0, size: 25 }, new TokenFilter());
-        expect(tokens).toHaveLength(25);
+  describe("Get Tokens with filters", () => {
+    it("should return a list of 10 tokens", async () => {
+      const results = await tokenService.getTokens({ from: 0, size: 10 }, new TokenFilter());
 
-        for (const token of tokens) {
-          expect(token).toHaveStructure(Object.keys(new TokenDetailed()));
-        }
-      });
-
-      it(`should return a list with 10 tokens`, async () => {
-        const tokens = await tokenService.getTokens({ from: 0, size: 10 }, new TokenFilter());
-        expect(tokens).toHaveLength(10);
-
-        for (const token of tokens) {
-          expect(token).toHaveStructure(Object.keys(new TokenDetailed()));
-        }
-      });
+      for (const result of results) {
+        expect(result).toHaveStructure(Object.keys(new TokenDetailed()));
+      }
     });
 
-    describe('Tokens filters', () => {
-      it(`should return a list of tokens for a collection`, async () => {
-        const tokens = await tokenService.getTokens({ from: 0, size: 50 }, { name: tokenName });
-        expect(tokens).toBeInstanceOf(Array);
-        expect(tokens).toHaveLength(1);
+    it("should return a list of tokens based on identifiers parameter", async () => {
+      const filter = new TokenFilter();
+      filter.identifiers = ["RIDE-7d18e9", "MEX-455c57"];
 
-        expect(tokens[0].name).toBe(tokenName);
-        expect(tokens[0]).toHaveStructure(Object.keys(new TokenDetailed()));
-      });
+      const results = await tokenService.getTokens({ from: 0, size: 2 }, filter);
 
-      it(`should return a list with tokens that has identifiers`, async () => {
-        const tokenFilter = new TokenFilter();
-        tokenFilter.identifiers = ['IGNIS-b208a9', 'CHECKR-60108b', 'invalidIdentifier'];
-        const tokens = await tokenService.getTokens({ from: 0, size: 25 }, tokenFilter);
+      const nftsIdentifiers = results.map((nft) => nft.identifier);
+      expect(nftsIdentifiers.includes('RIDE-7d18e9')).toStrictEqual(true);
+      expect(nftsIdentifiers.includes('MEX-455c57')).toStrictEqual(true);
+    });
 
-        for (const token of tokens) {
-          expect(token).toHaveStructure(Object.keys(new TokenDetailed()));
-        }
-        expect(tokens.length).toEqual(2);
-        const nftsIdentifiers = tokens.map((nft) => nft.identifier);
-        expect(nftsIdentifiers.includes('IGNIS-b208a9')).toStrictEqual(true);
-        expect(nftsIdentifiers.includes('CHECKR-60108b')).toStrictEqual(true);
-      });
+    it("should return one token based on identifier parameter", async () => {
+      const filter = new TokenFilter();
+      filter.identifier = "RIDE-7d18e9";
 
-      it(`should return an empty tokens list`, async () => {
-        const tokenFilter = new TokenFilter();
-        tokenFilter.identifiers = ['LKFARM-9d1ea8-8fb5', 'LKFARM-9d1ea8-8fb6'];
-        const tokens = await tokenService.getTokens({ from: 0, size: 25 }, tokenFilter);
+      const results = await tokenService.getTokens({ from: 0, size: 1 }, filter);
 
-        expect(tokens.length).toEqual(0);
-        expect(tokens).toBeInstanceOf(Array);
-      });
+      for (const result of results) {
+        expect(result).toHaveStructure(Object.keys(new TokenDetailed()));
+        expect(results).toHaveLength(1);
+      }
+    });
+
+    it("should return one token based on name parameter", async () => {
+      const filter = new TokenFilter();
+      filter.name = "holoride";
+
+      const results = await tokenService.getTokens({ from: 0, size: 1 }, filter);
+
+      for (const result of results) {
+        expect(results).toHaveLength(1);
+        expect(result.name).toStrictEqual("holoride");
+        expect(result).toHaveStructure(Object.keys(new TokenDetailed()));
+      }
+    });
+
+    it("should return one token based on search parameter", async () => {
+      const filter = new TokenFilter();
+      filter.search = "RIDE-7d18e9";
+
+      const results = await tokenService.getTokens({ from: 0, size: 1 }, filter);
+
+      for (const result of results) {
+        expect(results).toHaveLength(1);
+        expect(result).toHaveStructure(Object.keys(new TokenDetailed()));
+      }
     });
   });
 
-  describe('Tokens count', () => {
-    it(`should return tokens count`, async () => {
-      const tokenFilter = new TokenFilter();
-      tokenFilter.identifier = tokenDetails.identifier;
+  describe("Get Token", () => {
+    it("should return token details", async () => {
+      const identifier: string = "RIDE-7d18e9";
+      const result = await tokenService.getToken(identifier);
 
-      const count = await tokenService.getTokenCount(tokenFilter);
-      expect(typeof count).toBe('number');
+      expect(result).toHaveStructure(Object.keys(new TokenDetailed()));
     });
-  });
 
-  describe('Specific token', () => {
-    it(`should return a specific token based on identifier`, async () => {
-      const token = await tokenService.getToken(tokenDetails.identifier);
-      if (!token) {
-        throw new Error('Token is not defined');
+    it("should verify if tokens properties are defined", async () => {
+      const identifier: string = "RIDE-7d18e9";
+      const result = await tokenService.getToken(identifier);
+
+      if (!result) {
+        throw new Error("Properties are not defined");
+      }
+      expect(result.hasOwnProperty("identifier")).toBeTruthy();
+      expect(result.hasOwnProperty("name")).toBeTruthy();
+      expect(result.hasOwnProperty("ticker")).toBeTruthy();
+      expect(result.hasOwnProperty("owner")).toBeTruthy();
+      expect(result.hasOwnProperty("minted")).toBeTruthy();
+      expect(result.hasOwnProperty("burnt")).toBeTruthy();
+      expect(result.hasOwnProperty("decimals")).toBeTruthy();
+      expect(result.hasOwnProperty("isPaused")).toBeTruthy();
+      expect(result.hasOwnProperty("assets")).toBeTruthy();
+      expect(result.hasOwnProperty("transactions")).toBeTruthy();
+      expect(result.hasOwnProperty("accounts")).toBeTruthy();
+    });
+
+    it("should return tokens properties", async () => {
+      const identifier: string = "RIDE-7d18e9";
+      const result = await tokenService.getToken(identifier);
+
+      if (!result) {
+        throw new Error("Properties are not defined");
       }
 
-      expect(token).toHaveStructure(Object.keys(new TokenDetailed()));
+      expect(result.canUpgrade).toBeTruthy();
+      expect(result.canMint).toBeFalsy();
+      expect(result.canBurn).toBeFalsy();
+      expect(result.canChangeOwner).toBeTruthy();
+      expect(result.canPause).toBeFalsy();
+      expect(result.canFreeze).toBeFalsy();
+      expect(result.canWipe).toBeFalsy();
     });
 
-    it('Should return undefined token', async () => {
-      const token = await tokenService.getToken(tokenDetails.identifier + 'a');
-      expect(token).toBeUndefined();
+    it("should contain supply and circulatingSupply", async () => {
+      const identifier: string = "RIDE-7d18e9";
+      const result = await tokenService.getToken(identifier);
+
+      if (!result) {
+        throw new Error("Properties are not defined");
+      }
+
+      expect(result.supply).toBeDefined();
+      expect(result.circulatingSupply).toBeDefined();
     });
   });
 
-  describe('Get Token Roles', () => {
-    it(`should return token roles`, async () => {
-      const roles = await tokenService.getTokenRoles(tokenDetails.identifier);
-      if (!roles) {
+  //TBD
+  describe("Get Tokens Roles", () => {
+    it("should return token roles", async () => {
+      const identifier: string = "RIDE-7d18e9";
+      const results = await tokenService.getTokenRoles(identifier);
+
+      if (!results) {
         throw new Error('Token roles are not defined');
       }
 
-      for (const role of roles) {
-        expect(role).toHaveStructure(Object.keys(new TokenAddressRoles()));
+      for (const result of results) {
+        expect(result).toHaveStructure(Object.keys(new TokenAddressRoles()));
       }
     });
 
-    it(`should return undefined`, async () => {
-      const roles = await tokenService.getTokenRoles(tokenDetails.identifier + 'a');
-      expect(roles).toBeUndefined();
+    it("should return token role for address", async () => {
+      const identifier: string = "RIDE-7d18e9";
+      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+      const result = await tokenService.getTokenRolesForAddress(address, identifier);
+
+      expect(result).toBeUndefined();
     });
   });
 
-  describe('Get Token Accounts', () => {
-    it(`should return a list with 5 tokens accounts`, async () => {
-      const tokens = await tokenService.getTokenAccounts({ from: 0, size: 5 }, tokenDetails.identifier);
-      expect(tokens.length).toBe(5);
+  describe("Get Token Accounts", () => {
+    it(`should return 10 accounts of token "holoride"`, async () => {
+      const identifier: string = "RIDE-7d18e9";
+      const results = await tokenService.getTokenAccounts({ from: 0, size: 10 }, identifier);
 
-      for (const token of tokens) {
-        expect(token).toHaveStructure(Object.keys(new TokenAccount()));
+      expect(results).toHaveLength(10);
+
+      for (const result of results) {
+        expect(result).toHaveStructure(Object.keys(new TokenAccount()));
       }
     });
-  });
 
-  describe('Get Token For Address', () => {
-    it(`should return token for a specific address`, async () => {
-      const token = await tokenService.getTokenForAddress(tokenDetails.owner, tokenDetails.identifier);
-      expect(token).toHaveStructure(Object.keys(new TokenWithBalance()));
+    it("should verify if pagination filter returns different accounts (from = 0 != from = 1 )", async () => {
+      const identifier: string = "RIDE-7d18e9";
+      const result_1 = await tokenService.getTokenAccounts({ from: 0, size: 1 }, identifier);
+      const result_2 = await tokenService.getTokenAccounts({ from: 1, size: 2 }, identifier);
+
+      expect(result_1).not.toStrictEqual(result_2);
     });
   });
 
-  describe('Get All Tokens For Address', () => {
-    it(`should return one token for a specific address`, async () => {
-      const tokenFilter = new TokenFilter();
-      tokenFilter.identifier = tokenDetails.identifier;
+  describe("Get Token Supply", () => {
+    it("should return token supply", async () => {
+      const identifier: string = "RIDE-7d18e9";
+      const result = await tokenService.getTokenSupply(identifier);
 
-      const tokens = await tokenService.getAllTokensForAddress(tokenDetails.owner, tokenFilter);
-      expect(tokens.length).toBeGreaterThan(0);
-
-      for (const token of tokens) {
-        expect(token).toBeInstanceOf(Object);
-      }
-    });
-  });
-
-  describe('Get Tokens For Address', () => {
-    it(`should return all tokens for address`, async () => {
-      const tokenFilter = new TokenFilter();
-      tokenFilter.identifier = 'MEX-455c57';
-      const tokenAddress = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
-      const tokens = await tokenService.getTokensForAddress(tokenAddress, { from: 0, size: 1 }, tokenFilter);
-
-      expect(tokens.length).toBe(1);
-
-      for (const token of tokens) {
-        expect(token).toHaveStructure(Object.keys(new TokenWithBalance()));
-      }
-    });
-  });
-
-  describe('Get Token Supply', () => {
-    it(`should return token supply`, async () => {
-      const supply = await tokenService.getTokenSupply(tokenDetails.identifier);
-
-      if (!supply) {
+      if (!result) {
         throw new Error('Properties not defined');
       }
 
-      expect(typeof supply).toBe('object');
-      expect(supply.hasOwnProperty('supply')).toBe(true);
-      expect(supply.hasOwnProperty('circulatingSupply')).toBe(true);
+      expect(result.hasOwnProperty('supply')).toBe(true);
+      expect(result.hasOwnProperty('circulatingSupply')).toBe(true);
     });
 
     it(`should return undefined if identifier token is invalid`, async () => {
@@ -198,17 +203,94 @@ describe('Token Service', () => {
     });
   });
 
-  describe('Get Token Role For Address', () => {
-    it(`should return undefined if address does not contain identifier`, async () => {
-      const roles = await tokenService.getTokenRolesForAddress(identifier, address);
-      expect(roles).toBeUndefined();
+  describe("Get Token Count", () => {
+    it("should return token count based on identifier property", async () => {
+      const filter = new TokenFilter();
+      filter.identifier = "RIDE-7d18e9";
+
+      const result = await tokenService.getTokenCount(filter);
+
+      expect(result).toStrictEqual(1);
+      expect(typeof result).toStrictEqual("number");
+    });
+
+    it("should return token count based on identifiers property", async () => {
+      const filter = new TokenFilter();
+      filter.identifiers = ["RIDE-7d18e9", "MEX-455c57"];
+
+      const result = await tokenService.getTokenCount(filter);
+
+      expect(result).toStrictEqual(2);
+      expect(typeof result).toStrictEqual("number");
+    });
+
+    it("should return token count based on name property", async () => {
+      const filter = new TokenFilter();
+      filter.name = "holoride";
+
+      const result = await tokenService.getTokenCount(filter);
+
+      expect(typeof result).toStrictEqual("number");
+    });
+
+    it("should return token count for a specific address", async () => {
+      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+      const result = await tokenService.getTokenCountForAddress(address);
+
+      expect(typeof result).toStrictEqual("number");
     });
   });
 
-  describe('Get Token Count For Address', () => {
-    it(`should return token count for address`, async () => {
-      const count = await tokenService.getTokenCountForAddress(tokenDetails.owner);
-      expect(typeof count).toBe('number');
+  describe("Get Token For Address", () => {
+    it("should return one token for a specific address", async () => {
+      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+      const identifier: string = "RIDE-7d18e9";
+      const result = await tokenService.getTokenForAddress(address, identifier);
+
+      expect(result).toHaveStructure(Object.keys(new TokenWithBalance()));
+    });
+  });
+
+  describe("Get Tokens For Address", () => {
+    it("should return one token details for a specific address based on identifier property filter", async () => {
+      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+      const filter = new TokenFilter();
+      filter.identifier = "RIDE-7d18e9";
+      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 1 }, filter);
+
+      expect(results).toHaveLength(1);
+
+      for (const result of results) {
+        expect(result).toHaveStructure(Object.keys(new TokenWithBalance()));
+        expect(result.identifier).toStrictEqual("RIDE-7d18e9");
+      }
+    });
+
+    it("should return one token details for a specific address based on name property filter", async () => {
+      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+      const filter = new TokenFilter();
+      filter.name = "holoride";
+      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 1 }, filter);
+
+      expect(results).toHaveLength(1);
+
+      for (const result of results) {
+        expect(result).toHaveStructure(Object.keys(new TokenWithBalance()));
+        expect(result.name).toStrictEqual("holoride");
+      }
+    });
+
+    //TBD
+    it("should return two tokens details for a specific address based on identifiers property filter", async () => {
+      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+      const filter = new TokenFilter();
+      filter.identifiers = ["RIDE-7d18e9", "MEX-455c57"];
+
+      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 1 }, filter);
+      const nftsIdentifiers = results.map((nft) => nft.identifier);
+
+      expect(nftsIdentifiers.includes('RIDE-7d18e9')).toStrictEqual(true);
+      // expect(nftsIdentifiers.includes('MEX-455c57')).toStrictEqual(true);
     });
   });
 });
