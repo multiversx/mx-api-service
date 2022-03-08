@@ -208,9 +208,7 @@ export class ApiConfigService {
   }
 
   getIsTransactionProcessorCronActive(): boolean {
-    const isCronActive = this.configService.get<boolean>(
-      'cron.transactionProcessor',
-    );
+    const isCronActive = this.configService.get<boolean>('cron.transactionProcessor');
     if (isCronActive === undefined) {
       throw new Error('No cron.transactionProcessor flag present');
     }
@@ -219,14 +217,30 @@ export class ApiConfigService {
   }
 
   getTransactionProcessorMaxLookBehind(): number {
-    const transactionProcessorMaxLookBehind = this.configService.get<number>(
-      'cron.transactionProcessorMaxLookBehind',
-    );
+    const transactionProcessorMaxLookBehind = this.configService.get<number>('cron.transactionProcessorMaxLookBehind');
     if (transactionProcessorMaxLookBehind === undefined) {
       throw new Error('No cron.transactionProcessorMaxLookBehind flag present');
     }
 
     return transactionProcessorMaxLookBehind;
+  }
+
+  getIsTransactionCompletedCronActive(): boolean {
+    const isCronActive = this.configService.get<boolean>('cron.transactionCompleted');
+    if (isCronActive === undefined) {
+      throw new Error('No cron.transactionCompleted flag present');
+    }
+
+    return isCronActive;
+  }
+
+  getTransactionCompletedMaxLookBehind(): number {
+    const transactionCompletedMaxLookBehind = this.configService.get<number>('cron.transactionCompletedMaxLookBehind',);
+    if (transactionCompletedMaxLookBehind === undefined) {
+      throw new Error('No cron.transactionCompletedMaxLookBehind flag present');
+    }
+
+    return transactionCompletedMaxLookBehind;
   }
 
   getIsCacheWarmerCronActive(): boolean {

@@ -167,7 +167,7 @@ export class CachingService {
     if (skipCache) {
       cached = new Array(keys.length).fill(null);
     } else {
-      cached = await this.batchGetCache(keys);
+      cached = await this.batchGetCacheRemote(keys);
     }
 
     const missing = cached
@@ -274,7 +274,7 @@ export class CachingService {
     }
   }
 
-  async batchGetCache<T>(keys: string[]): Promise<T[]> {
+  async batchGetCacheRemote<T>(keys: string[]): Promise<T[]> {
     const chunks = BatchUtils.splitArrayIntoChunks(keys, 100);
 
     const result = [];
@@ -370,7 +370,7 @@ export class CachingService {
             const result: { [key: string]: TOUT } = {};
             const keys = elements.map(element => cacheKeyFunc(element));
 
-            const getResults = await this.batchGetCache<TOUT>(keys);
+            const getResults = await this.batchGetCacheRemote<TOUT>(keys);
 
             for (const [index, element] of elements.entries()) {
               if (getResults[index] !== null) {

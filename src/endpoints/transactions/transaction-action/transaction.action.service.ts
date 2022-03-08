@@ -58,7 +58,7 @@ export class TransactionActionService {
     return undefined;
   }
 
-  private async getTransactionMetadata(transaction: Transaction): Promise<TransactionMetadata> {
+  async getTransactionMetadata(transaction: Transaction): Promise<TransactionMetadata> {
     const metadata = this.getNormalTransactionMetadata(transaction);
 
     const esdtMetadata = await this.getEsdtTransactionMetadata(metadata);

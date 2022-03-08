@@ -7,6 +7,8 @@ api:
 cron:
   transactionProcessor: true
   transactionProcessorMaxLookBehind: 100
+  transactionCompleted: false
+  transactionCompletedMaxLookBehind: 100
   cacheWarmer: true
   fastWarm: true
   queueWorker: true
