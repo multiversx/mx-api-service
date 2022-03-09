@@ -106,7 +106,7 @@ describe('Account Service', () => {
   describe('Account Token balance history', () => {
     it('should return the token EGLD balance history ', async () => {
       const address: string = "erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97";
-      const accountTokens = await tokensService.getTokensForAddress(address, { from: 0, size: 1 }, {});
+      const accountTokens = await tokensService.getTokensForAddressFromGateway(address, { from: 0, size: 1 }, {});
 
       if (accountTokens.length) {
         const accountTokenHistories = await accountService.getAccountTokenHistory(address,
