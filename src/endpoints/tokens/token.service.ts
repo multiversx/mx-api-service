@@ -170,6 +170,22 @@ export class TokenService {
   }
 
   async getTokenCountForAddress(address: string): Promise<number> {
+    if (AddressUtils.isSmartContractAddress(address)) {
+      return await this.getTokenCountForAddressFromElastic(address);
+    }
+
+    return await this.getTokenCountForAddressFromGateway(address);
+  }
+
+  async getTokenCountForAddressFromElastic(address: string): Promise<number> {
+    const query = ElasticQuery.create()
+      .withMustNotCondition(QueryType.Exists('identifier'))
+      .withMustCondition(QueryType.Match('address', address));
+
+    return await this.elasticService.getCount('accountsesdt', query);
+  }
+
+  async getTokenCountForAddressFromGateway(address: string): Promise<number> {
     const tokens = await this.getAllTokensForAddress(address, new TokenFilter());
     return tokens.length;
   }
