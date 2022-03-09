@@ -29,7 +29,10 @@ export class TransactionCompletedService {
         maxLookBehind: this.apiConfigService.getTransactionCompletedMaxLookBehind(),
         waitForFinalizedCrossShardSmartContractResults: true,
         onTransactionsReceived: async (_, __, transactions) => {
-          const hashes: string[] = await this.cachingService.batchGetCacheRemote(transactions.map(transaction => CacheInfo.TransactionPendingResults(transaction.hash).key));
+          const transactionsExcludingSmartContractResults = transactions.filter(transaction => !transaction.originalTransactionHash);
+
+          const cacheKeys = transactionsExcludingSmartContractResults.map(transaction => CacheInfo.TransactionPendingResults(transaction.hash).key);
+          const hashes: string[] = await this.cachingService.batchGetCacheRemote(cacheKeys);
           const validHashes = hashes.filter(x => x !== null);
           if (validHashes.length > 0) {
             const keys = validHashes.map(hash => CacheInfo.TransactionPendingResults(hash).key);
@@ -37,13 +40,15 @@ export class TransactionCompletedService {
             await this.cachingService.batchDelCache(keys);
           }
 
-          this.clientProxy.emit('transactionsCompleted', transactions);
+          this.clientProxy.emit('transactionsCompleted', transactionsExcludingSmartContractResults);
         },
         onTransactionsPending: async (_, __, transactions) => {
           await this.cachingService.batchSetCache(
             transactions.map(transaction => CacheInfo.TransactionPendingResults(transaction.hash).key),
             transactions.map(transaction => transaction.hash),
-            transactions.map(transaction => CacheInfo.TransactionPendingResults(transaction.hash).ttl)
+            transactions.map(transaction => CacheInfo.TransactionPendingResults(transaction.hash).ttl),
+            false,
+            false,
           );
 
           this.clientProxy.emit('transactionsPendingResults', transactions);

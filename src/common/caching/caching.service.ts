@@ -212,20 +212,23 @@ export class CachingService {
     return ttl;
   }
 
-  async batchSetCache(keys: string[], values: any[], ttls: number[]) {
+  async batchSetCache(keys: string[], values: any[], ttls: number[], setLocalCache: boolean = true, spreadTtl: boolean = true) {
     if (!ttls) {
       ttls = new Array(keys.length).fill(this.configService.getCacheTtl());
     }
 
-    ttls = ttls.map(ttl => this.spreadTtl(ttl));
-
-    for (const [index, key] of keys.entries()) {
-      const value = values[index];
-      const ttl = ttls[index];
-
-      await this.setCacheLocal(key, value, ttl);
+    if (spreadTtl) {
+      ttls = ttls.map(ttl => this.spreadTtl(ttl));
     }
 
+    if (setLocalCache) {
+      for (const [index, key] of keys.entries()) {
+        const value = values[index];
+        const ttl = ttls[index];
+
+        await this.setCacheLocal(key, value, ttl);
+      }
+    }
 
     const chunks = BatchUtils.splitArrayIntoChunks(
       keys.map((key, index) => {
