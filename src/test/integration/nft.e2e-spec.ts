@@ -178,6 +178,21 @@ describe('Nft Service', () => {
         expect(nft.type).toStrictEqual(NftType.MetaESDT);
       }
     });
+
+    it(`should verify if all returned nfts from a specific collection contain the owner property`, async () => {
+      const filters = new NftFilter();
+      filters.collection = "MOS-b9b4b2";
+
+      const options = new NftQueryOptions();
+      options.withOwner = true;
+
+      const results = await nftService.getNfts({ from: 0, size: 500 }, filters, options);
+
+      const nftsOwner = results.map((result) => result.owner);
+
+      expect(nftsOwner).toBeDefined();
+      expect(nftsOwner.length).toStrictEqual(500);
+    });
   });
 
   describe("NFT Count", () => {
