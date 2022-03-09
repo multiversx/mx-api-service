@@ -47,44 +47,48 @@ export class EsdtAddressService {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
   }
 
-  async getEsdtsForAddress(address: string, filter: NftFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftAccount[]> {
+  async getNftsForAddress(address: string, filter: NftFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftAccount[]> {
+    if (filter.identifiers && filter.identifiers.length === 1) {
+      return await this.getNftsForAddressFromGateway(address, filter, pagination);
+    }
+
     if (filter.type) {
-      return await this.getEsdtsForAddressWithTypeFilter(address, filter, pagination);
+      return await this.getNftsForAddressWithTypeFilter(address, filter, pagination);
     }
 
     if (source === EsdtDataSource.elastic || AddressUtils.isSmartContractAddress(address)) {
-      return await this.getEsdtsForAddressFromElastic(address, filter, pagination);
+      return await this.getNftsForAddressFromElastic(address, filter, pagination);
     }
 
-    return await this.getEsdtsForAddressFromGateway(address, filter, pagination);
+    return await this.getNftsForAddressFromGateway(address, filter, pagination);
   }
 
-  async getEsdtCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftCollectionAccount[]> {
+  async getCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftCollectionAccount[]> {
     if (source === EsdtDataSource.elastic) {
-      return await this.getEsdtCollectionsForAddressFromElastic(address, filter, pagination);
+      return await this.getCollectionsForAddressFromElastic(address, filter, pagination);
     }
 
-    return await this.getEsdtCollectionsForAddressFromGateway(address, filter, pagination);
+    return await this.getCollectionsForAddressFromGateway(address, filter, pagination);
   }
 
-  private async getEsdtsForAddressWithTypeFilter(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
+  private async getNftsForAddressWithTypeFilter(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
     if (AddressUtils.isSmartContractAddress(address)) {
       const nftType = (filter.type ?? '').split(',');
       filter.type = undefined;
-      let allEsdts = await this.getEsdtsForAddressFromElastic(address, filter, { from: 0, size: 10000 });
+      let allEsdts = await this.getNftsForAddressFromElastic(address, filter, { from: 0, size: 10000 });
       allEsdts = allEsdts.filter(x => nftType.includes(x.type));
       allEsdts = allEsdts.slice(pagination.from, pagination.from + pagination.size);
       return allEsdts;
     }
 
-    const allEsdts = await this.getEsdtsForAddressFromGateway(address, filter, pagination);
+    const allEsdts = await this.getNftsForAddressFromGateway(address, filter, pagination);
     return allEsdts;
   }
 
-  async getEsdtsCountForAddressFromElastic(address: string, filter: NftFilter): Promise<number> {
+  async getNftCountForAddressFromElastic(address: string, filter: NftFilter): Promise<number> {
     // temporary fix until we have type on the accountsesdt elastic collection
     if (filter.type) {
-      const allEsdts = await this.getEsdtsForAddressWithTypeFilter(address, filter, { from: 0, size: 10000 });
+      const allEsdts = await this.getNftsForAddressWithTypeFilter(address, filter, { from: 0, size: 10000 });
       return allEsdts.length;
     }
 
@@ -92,13 +96,13 @@ export class EsdtAddressService {
     return await this.elasticService.getCount('accountsesdt', elasticQuery);
   }
 
-  async getEsdtCollectionsCountForAddressFromElastic(address: string, filter: CollectionFilter): Promise<number> {
+  async getCollectionCountForAddressFromElastic(address: string, filter: CollectionFilter): Promise<number> {
     const elasticQuery = this.collectionService.buildCollectionFilter(filter, address);
 
     return await this.elasticService.getCount('tokens', elasticQuery);
   }
 
-  private async getEsdtsForAddressFromElastic(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
+  private async getNftsForAddressFromElastic(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
     let elasticQuery = this.nftService.buildElasticNftFilter(filter, undefined, address)
       .withPagination(pagination);
 
@@ -138,7 +142,7 @@ export class EsdtAddressService {
     return nftAccounts;
   }
 
-  private async getEsdtCollectionsForAddressFromGateway(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
+  private async getCollectionsForAddressFromGateway(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
     const esdtResult = await this.gatewayService.get(`address/${address}/registered-nfts`, GatewayComponentRequest.addressNfts);
 
     let collectionsIdentifiers = esdtResult.tokens;
@@ -158,12 +162,12 @@ export class EsdtAddressService {
 
     const accountCollectionsWithRoles: NftCollectionAccount[] = await this.applyRolesToAccountCollections(address, accountCollections);
 
-    const filteredColections: NftCollectionAccount[] = this.filterEsdtCollectionsForAddress(accountCollectionsWithRoles, filter, pagination);
+    const filteredColections: NftCollectionAccount[] = this.filterCollectionsForAddress(accountCollectionsWithRoles, filter, pagination);
 
     return filteredColections;
   }
 
-  private async getEsdtCollectionsForAddressFromElastic(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
+  private async getCollectionsForAddressFromElastic(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
     if (filter.canCreate !== undefined || filter.canBurn !== undefined || filter.canAddQuantity !== undefined) {
       throw new BadRequestException('canCreate / canBurn / canAddQuantity filter not supported when fetching account collections from elastic');
     }
@@ -196,7 +200,7 @@ export class EsdtAddressService {
     return accountCollectionsWithRoles;
   }
 
-  private filterEsdtCollectionsForAddress(collections: NftCollectionAccount[], filter: CollectionFilter, pagination: QueryPagination): NftCollectionAccount[] {
+  private filterCollectionsForAddress(collections: NftCollectionAccount[], filter: CollectionFilter, pagination: QueryPagination): NftCollectionAccount[] {
     if (filter.type !== undefined) {
       collections = collections.filter(x => x.type === filter.type);
     }
@@ -259,8 +263,27 @@ export class EsdtAddressService {
     return nftCollections;
   }
 
-  private async getEsdtsForAddressFromGateway(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
-    const esdts = await this.getAllEsdtsForAddressFromGateway(address);
+  private async getNftsForAddressFromGateway(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
+    let esdts: Record<string, any> = {};
+
+    if (filter.identifiers && filter.identifiers.length === 1) {
+      const identifier = filter.identifiers[0];
+      const collection = identifier.split('-').slice(0, 2).join('-');
+      const nonceHex = identifier.split('-')[2];
+      const nonceNumeric = BinaryUtils.hexToNumber(nonceHex);
+
+      const result = await this.gatewayService.get(`address/${address}/nft/${collection}/nonce/${nonceNumeric}`, GatewayComponentRequest.addressNftByNonce);
+
+      if (!result || !result.tokenData) {
+        return [];
+      }
+
+      result.tokenData.tokenIdentifier = identifier;
+
+      esdts[identifier] = result.tokenData;
+    } else {
+      esdts = await this.getAllEsdtsForAddressFromGateway(address);
+    }
 
     const nfts: GatewayNft[] = Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
 
