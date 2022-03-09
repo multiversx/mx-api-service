@@ -226,21 +226,11 @@ export class ApiConfigService {
   }
 
   getIsTransactionCompletedCronActive(): boolean {
-    const isCronActive = this.configService.get<boolean>('cron.transactionCompleted');
-    if (isCronActive === undefined) {
-      throw new Error('No cron.transactionCompleted flag present');
-    }
-
-    return isCronActive;
+    return this.configService.get<boolean>('cron.transactionCompleted') ?? false;
   }
 
   getTransactionCompletedMaxLookBehind(): number {
-    const transactionCompletedMaxLookBehind = this.configService.get<number>('cron.transactionCompletedMaxLookBehind',);
-    if (transactionCompletedMaxLookBehind === undefined) {
-      throw new Error('No cron.transactionCompletedMaxLookBehind flag present');
-    }
-
-    return transactionCompletedMaxLookBehind;
+    return this.configService.get<number>('cron.transactionCompletedMaxLookBehind') ?? 100;
   }
 
   getIsCacheWarmerCronActive(): boolean {
