@@ -48,6 +48,10 @@ export class EsdtAddressService {
   }
 
   async getEsdtsForAddress(address: string, filter: NftFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftAccount[]> {
+    if (filter.identifiers && filter.identifiers.length === 1) {
+      return await this.getEsdtsForAddressFromGateway(address, filter, pagination);
+    }
+
     if (filter.type) {
       return await this.getEsdtsForAddressWithTypeFilter(address, filter, pagination);
     }
@@ -260,7 +264,26 @@ export class EsdtAddressService {
   }
 
   private async getEsdtsForAddressFromGateway(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
-    const esdts = await this.getAllEsdtsForAddressFromGateway(address);
+    let esdts: Record<string, any> = {};
+
+    if (filter.identifiers && filter.identifiers.length === 1) {
+      const identifier = filter.identifiers[0];
+      const collection = identifier.split('-').slice(0, 2).join('-');
+      const nonceHex = identifier.split('-')[2];
+      const nonceNumeric = BinaryUtils.hexToNumber(nonceHex);
+
+      const result = await this.gatewayService.get(`address/${address}/nft/${collection}/nonce/${nonceNumeric}`, GatewayComponentRequest.addressNftByNonce);
+
+      if (!result || !result.tokenData) {
+        return [];
+      }
+
+      result.tokenData.tokenIdentifier = identifier;
+
+      esdts[identifier] = result.tokenData;
+    } else {
+      esdts = await this.getAllEsdtsForAddressFromGateway(address);
+    }
 
     const nfts: GatewayNft[] = Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
 
