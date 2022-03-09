@@ -223,6 +223,20 @@ export class TransactionService {
         this.processTransaction(transaction),
       ]);
       transaction.price = price;
+
+      if (transaction.pendingResults === true && transaction.results) {
+        for (const result of transaction.results) {
+          if (!result.logs || !result.logs.events) {
+            continue;
+          }
+
+          for (const event of result.logs.events) {
+            if (event.identifier === 'completedTxEvent') {
+              transaction.pendingResults = undefined;
+            }
+          }
+        }
+      }
     }
 
     return transaction;
