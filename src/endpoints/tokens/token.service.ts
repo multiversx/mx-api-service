@@ -24,6 +24,7 @@ import { NumberUtils } from "src/utils/number.utils";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { AddressUtils } from "src/utils/address.utils";
 
 @Injectable()
 export class TokenService {
@@ -169,11 +170,76 @@ export class TokenService {
   }
 
   async getTokenCountForAddress(address: string): Promise<number> {
+    if (AddressUtils.isSmartContractAddress(address)) {
+      return await this.getTokenCountForAddressFromElastic(address);
+    }
+
+    return await this.getTokenCountForAddressFromGateway(address);
+  }
+
+  async getTokenCountForAddressFromElastic(address: string): Promise<number> {
+    const query = ElasticQuery.create()
+      .withMustNotCondition(QueryType.Exists('identifier'))
+      .withMustCondition(QueryType.Match('address', address));
+
+    return await this.elasticService.getCount('accountsesdt', query);
+  }
+
+  async getTokenCountForAddressFromGateway(address: string): Promise<number> {
     const tokens = await this.getAllTokensForAddress(address, new TokenFilter());
     return tokens.length;
   }
 
   async getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
+    if (AddressUtils.isSmartContractAddress(address)) {
+      return await this.getTokensForAddressFromElastic(address, queryPagination, filter);
+    }
+
+    return await this.getTokensForAddressFromGateway(address, queryPagination, filter);
+  }
+
+  async getTokensForAddressFromElastic(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
+    let query = ElasticQuery.create()
+      .withMustNotCondition(QueryType.Exists('identifier'))
+      .withMustCondition(QueryType.Match('address', address))
+      .withPagination({ from: queryPagination.from, size: queryPagination.size });
+
+    if (filter.identifier) {
+      query = query.withMustCondition(QueryType.Match('token', filter.identifier));
+    }
+
+    if (filter.identifiers) {
+      query = query.withShouldCondition(filter.identifiers.map(identifier => QueryType.Match('token', identifier)));
+    }
+
+    if (filter.name) {
+      query = query.withMustCondition(QueryType.Nested('data.name', filter.name));
+    }
+
+    if (filter.search) {
+      query = query.withMustCondition(QueryType.Nested('data.name', filter.search));
+    }
+
+    const elasticTokens = await this.elasticService.getList('accountsesdt', 'token', query);
+
+    const elasticTokensWithBalance = elasticTokens.toRecord(token => token.token, token => token.balance);
+
+    const allTokens = await this.esdtService.getAllEsdtTokens();
+
+    const result: TokenWithBalance[] = [];
+    for (const token of allTokens) {
+      if (elasticTokensWithBalance[token.identifier]) {
+        result.push({
+          ...token,
+          balance: elasticTokensWithBalance[token.identifier],
+        });
+      }
+    }
+
+    return result;
+  }
+
+  async getTokensForAddressFromGateway(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
     let tokens = await this.getAllTokensForAddress(address, filter);
 
     tokens = tokens.slice(queryPagination.from, queryPagination.from + queryPagination.size);

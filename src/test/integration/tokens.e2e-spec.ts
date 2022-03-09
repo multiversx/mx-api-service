@@ -256,7 +256,7 @@ describe('Token Service', () => {
       const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
       const filter = new TokenFilter();
       filter.identifier = "RIDE-7d18e9";
-      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 1 }, filter);
+      const results = await tokenService.getTokensForAddressFromGateway(address, { from: 0, size: 1 }, filter);
 
       expect(results).toHaveLength(1);
 
@@ -270,7 +270,7 @@ describe('Token Service', () => {
       const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
       const filter = new TokenFilter();
       filter.name = "holoride";
-      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 1 }, filter);
+      const results = await tokenService.getTokensForAddressFromGateway(address, { from: 0, size: 1 }, filter);
 
       expect(results).toHaveLength(1);
 
@@ -286,7 +286,7 @@ describe('Token Service', () => {
       const filter = new TokenFilter();
       filter.identifiers = ["RIDE-7d18e9", "MEX-455c57"];
 
-      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 1 }, filter);
+      const results = await tokenService.getTokensForAddressFromGateway(address, { from: 0, size: 1 }, filter);
       const nftsIdentifiers = results.map((nft) => nft.identifier);
 
       expect(nftsIdentifiers.includes('RIDE-7d18e9')).toStrictEqual(true);

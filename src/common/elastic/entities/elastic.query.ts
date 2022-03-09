@@ -42,6 +42,10 @@ export class ElasticQuery {
     return this.withCondition(QueryConditionOptions.must, queries);
   }
 
+  withMustNotCondition(queries: AbstractQuery[] | AbstractQuery): ElasticQuery {
+    return this.withCondition(QueryConditionOptions.mustNot, queries);
+  }
+
   withShouldCondition(queries: AbstractQuery[] | AbstractQuery): ElasticQuery {
     return this.withCondition(QueryConditionOptions.should, queries);
   }
