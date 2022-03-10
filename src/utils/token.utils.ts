@@ -41,10 +41,6 @@ export class TokenUtils {
       return false;
     }
 
-    if (!nft.uris || nft.uris.length === 0) {
-      return false;
-    }
-
     return true;
   }
 }
