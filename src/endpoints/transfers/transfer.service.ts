@@ -14,6 +14,7 @@ import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionType } from "../transactions/entities/transaction.type";
 import { Transaction } from "../transactions/entities/transaction";
 import { TransactionService } from "../transactions/transaction.service";
+import { AddressUtils } from "src/utils/address.utils";
 
 @Injectable()
 export class TransferService {
@@ -24,14 +25,19 @@ export class TransferService {
   ) { }
 
   private buildTransferFilterQuery(filter: TransactionFilter, address: string): ElasticQuery {
+    const smartContractResultConditions = [
+      QueryType.Match('receiver', address),
+      QueryType.Match('receivers', address),
+    ];
+
+    if (AddressUtils.isSmartContractAddress(address)) {
+      smartContractResultConditions.push(QueryType.Match('sender', address));
+    }
+
     let elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.should, QueryType.Must([
         QueryType.Match('type', 'unsigned'),
-        QueryType.Should([
-          QueryType.Match('sender', address),
-          QueryType.Match('receiver', address),
-          QueryType.Match('receivers', address),
-        ]),
+        QueryType.Should(smartContractResultConditions),
       ], [
         QueryType.Exists('canBeIgnored'),
       ]))
