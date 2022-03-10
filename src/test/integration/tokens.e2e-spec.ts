@@ -421,6 +421,17 @@ describe('Token Service', () => {
       }
     });
 
+    it("should return only one token for a specific smart contract address, identifiers filter applyed", async () => {
+      const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
+      const filter = new TokenFilter();
+      filter.identifiers = ["WEGLD-bds4d79", "HRD-71df2d"];
 
+      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 1 }, filter);
+
+      for (const result of results) {
+        expect(result.identifier).toStrictEqual("WEGLD-bd4d79");
+        expect(result.identifier).not.toStrictEqual("HRD-71df2d");
+      }
+    });
   });
 });
