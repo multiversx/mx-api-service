@@ -45,6 +45,7 @@ urls:
   nftThumbnails: 'https://testnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
+  socket: 'testnet-socket-fra.elrond.com'
 database:
   enabled: false
   host: 'localhost'

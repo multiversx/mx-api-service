@@ -50,6 +50,15 @@ export class ApiConfigService {
     return this.configService.get<string>('urls.ipfs') ?? 'https://ipfs.io/ipfs';
   }
 
+  getSocketUrl(): string {
+    const url = this.configService.get<string>('urls.socket');
+    if (!url) {
+      throw new Error('No socket url present');
+    }
+
+    return url;
+  }
+
   getEsdtContractAddress(): string {
     const address = this.configService.get<string>('contracts.esdt');
     if (!address) {
