@@ -28,6 +28,7 @@ export class TransferService {
       .withCondition(QueryConditionOptions.should, QueryType.Must([
         QueryType.Match('type', 'unsigned'),
         QueryType.Should([
+          QueryType.Match('sender', address),
           QueryType.Match('receiver', address),
           QueryType.Match('receivers', address),
         ]),
