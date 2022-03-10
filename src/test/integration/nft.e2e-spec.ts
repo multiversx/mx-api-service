@@ -358,4 +358,22 @@ describe('Nft Service', () => {
       expect(result.creator).toBeDefined();
     });
   });
+
+  describe("Get NFT Identifier Media", () => {
+    it("should verify if nft media is defined and receive same value", async () => {
+      const identifier: string = "EROBOT-527a29-c4";
+      const filter = new NftFilter();
+      filter.identifiers = [identifier];
+
+      const singleNft = await nftService.getSingleNft(identifier);
+      const nfts = await nftService.getNfts({ from: 0, size: 1 }, filter);
+
+      if (!singleNft) {
+        throw new Error("Properties are not defined");
+      }
+      for (const nft of nfts) {
+        expect(nft.media).toStrictEqual(singleNft.media);
+      }
+    });
+  });
 });

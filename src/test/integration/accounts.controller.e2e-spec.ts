@@ -174,25 +174,6 @@ describe("Accounts Controller", () => {
       });
   });
 
-  it("accounts/{address}}/tokens?from=&size&identifiers - should return 200 status code and just one token", async () => {
-    const params = new URLSearchParams({
-      'from': '0',
-      'size': '2',
-      'identifiers': 'WEGLD-bd4d79, HRD-71df2d',
-    });
-
-    const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
-    await request(app.getHttpServer())
-      .get(route + "/" + address + "/tokens" + "?" + params)
-      .set("header", "content-type")
-      .expect(200)
-      .then(res => {
-        expect(res.body).toHaveLength(1);
-        expect(res.body.identifier).toStrictEqual("WEGLD-bd4d79");
-        expect(res.body.identifier).not.toStrictEqual("HRD-71df2d");
-      });
-  });
-
   it("/accounts/:address/tokens/count - should return 200 status code and address tokens count", async () => {
     const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
     await request(app.getHttpServer())
