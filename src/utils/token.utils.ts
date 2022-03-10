@@ -32,7 +32,19 @@ export class TokenUtils {
     return `${collectionIdentifier}-${urlHash}`;
   }
 
-  static hasMedia(nft: Nft) {
-    return nft.type !== NftType.MetaESDT && nft.media;
+  static needsDefaultMedia(nft: Nft): boolean {
+    if (nft.type === NftType.MetaESDT) {
+      return false;
+    }
+
+    if (nft.media && nft.media.length > 0) {
+      return false;
+    }
+
+    if (!nft.uris || nft.uris.length === 0) {
+      return false;
+    }
+
+    return true;
   }
 }
