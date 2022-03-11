@@ -190,7 +190,7 @@ export class TokenTransferService {
       case TransactionLogEventIdentifier.ESDTNFTCreate:
         return TransactionOperationAction.create;
       case TransactionLogEventIdentifier.MultiESDTNFTTransfer:
-        return TransactionOperationAction.multiTransfer;
+        return TransactionOperationAction.transfer;
       case TransactionLogEventIdentifier.ESDTTransfer:
         return TransactionOperationAction.transfer;
       case TransactionLogEventIdentifier.ESDTBurn:
