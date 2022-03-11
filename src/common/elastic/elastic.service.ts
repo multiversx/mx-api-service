@@ -119,7 +119,7 @@ export class ElasticService {
     let elasticQuery = ElasticQuery.create();
 
     if (pagination) {
-      elasticQuery = elasticQuery.withPagination({ from: pagination.from, size: pagination.size });
+      elasticQuery = elasticQuery.withPagination({ from: 0, size: pagination.size });
     } else {
       elasticQuery = elasticQuery.withPagination({ from: 0, size: 100 });
     }
