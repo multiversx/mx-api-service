@@ -307,7 +307,7 @@ export class NodeService {
   async getOwners(blses: string[], epoch: number) {
     const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(bls, epoch).key);
 
-    const cached = await this.cachingService.batchGetCache(keys);
+    const cached = await this.cachingService.batchGetCacheRemote(keys);
 
     const missing = cached
       .map((element, index) => (element === null ? index : false))
