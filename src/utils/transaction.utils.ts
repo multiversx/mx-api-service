@@ -1,6 +1,7 @@
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionOperation } from "src/endpoints/transactions/entities/transaction.operation";
+import { TransactionOperationAction } from "src/endpoints/transactions/entities/transaction.operation.action";
 
 export class TransactionUtils {
   static isTransactionCountQueryWithAddressOnly(filter: TransactionFilter, address?: string) {
@@ -35,7 +36,7 @@ export class TransactionUtils {
     const result: TransactionOperation[] = [];
 
     for (const operation of operations) {
-      if (operation.action === 'transfer') {
+      if (operation.action === TransactionOperationAction.transfer) {
         const identicalOperations = operations.filter(x =>
           x.sender === operation.sender &&
           x.receiver === operation.receiver &&
@@ -43,7 +44,7 @@ export class TransactionUtils {
           x.identifier === operation.identifier &&
           x.type === operation.type &&
           x.value === operation.value &&
-          x.action === 'transfer' &&
+          x.action === TransactionOperationAction.transfer &&
           x.id === previousHashes[operation.id]
         );
 
