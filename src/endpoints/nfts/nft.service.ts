@@ -207,7 +207,7 @@ export class NftService {
     );
 
     for (const nft of nfts) {
-      if (!TokenUtils.hasMedia(nft)) {
+      if (TokenUtils.needsDefaultMedia(nft)) {
         nft.media = this.DEFAULT_MEDIA;
       }
     }
@@ -234,7 +234,7 @@ export class NftService {
       this.pluginService.processNft(nft),
     ]);
 
-    if (!TokenUtils.hasMedia(nft)) {
+    if (TokenUtils.needsDefaultMedia(nft)) {
       nft.media = this.DEFAULT_MEDIA;
     }
   }

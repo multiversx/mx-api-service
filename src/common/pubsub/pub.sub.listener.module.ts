@@ -1,18 +1,17 @@
-import { Module } from '@nestjs/common';
-import { ScheduleModule } from '@nestjs/schedule';
-import { CacheWarmerService } from './cache.warmer.service';
-import { EndpointsServicesModule } from '../../endpoints/endpoints.services.module';
-import { PluginModule } from 'src/plugins/plugin.module';
-import { KeybaseModule } from 'src/common/keybase/keybase.module';
-import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { forwardRef, Module } from '@nestjs/common';
 import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservices';
+import { WebSocketPublisherModule } from 'src/websockets/web-socket-publisher-module';
+import { ApiConfigService } from '../api-config/api.config.service';
+import { CachingModule } from '../caching/caching.module';
+import { PubSubListenerController } from './pub.sub.listener.controller';
 
 @Module({
   imports: [
-    ScheduleModule.forRoot(),
-    EndpointsServicesModule,
-    PluginModule,
-    KeybaseModule,
+    forwardRef(() => CachingModule),
+    WebSocketPublisherModule,
+  ],
+  controllers: [
+    PubSubListenerController,
   ],
   providers: [
     {
@@ -34,7 +33,7 @@ import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservi
       },
       inject: [ApiConfigService],
     },
-    CacheWarmerService,
   ],
+  exports: ['PUBSUB_SERVICE'],
 })
-export class CacheWarmerModule { }
+export class PubSubListenerModule { }
