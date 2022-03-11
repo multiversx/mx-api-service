@@ -1,7 +1,7 @@
 {
   "id": "mainnet",
   "name": "Mainnet",
-  "egldLabel": "xEGLD",
+  "egldLabel": "eGLD",
   "decimals": "4",
   "egldDenomination": "18",
   "gasPerDataByte": "1500",

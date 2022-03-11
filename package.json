@@ -71,7 +71,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.44.0",
     "@elrondnetwork/erdjs": "^8.0.0",
-    "@elrondnetwork/transaction-processor": "^0.1.20",
+    "@elrondnetwork/transaction-processor": "^0.1.22",
     "@hapi/joi": "^17.1.1",
     "@nestjs/common": "^8.2.3",
     "@nestjs/config": "^1.1.5",

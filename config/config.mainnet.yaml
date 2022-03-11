@@ -8,6 +8,8 @@ api:
 cron:
   transactionProcessor: true
   transactionProcessorMaxLookBehind: 1000
+  transactionCompleted: false
+  transactionCompletedMaxLookBehind: 100
   cacheWarmer: true
   fastWarm: false
   queueWorker: true
@@ -46,6 +48,7 @@ urls:
   nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
+  socket: 'socket-fra.elrond.com'
 database:
   enabled: false
   host: 'localhost'

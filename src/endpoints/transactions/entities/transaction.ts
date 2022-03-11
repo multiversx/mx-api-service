@@ -68,6 +68,9 @@ export class Transaction {
   @ApiProperty()
   originalTxHash: string | undefined = undefined;
 
+  @ApiProperty()
+  pendingResults: boolean | undefined = undefined;
+
   getDate(): Date | undefined {
     if (this.timestamp) {
       return new Date(this.timestamp * 1000);
