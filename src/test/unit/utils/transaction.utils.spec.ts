@@ -202,7 +202,11 @@ describe('Transaction Utils', () => {
       },
     ];
 
-    const trimmedOperations = TransactionUtils.trimOperations('2199b2f2ebf591e1d05ee3c871546cffdc1eb4970a54eee707614aa9374935c0', operations);
+    const previousHashes = {
+      '2199b2f2ebf591e1d05ee3c871546cffdc1eb4970a54eee707614aa9374935c0': 'f592405c4d6556a5a680c3225ae7bd254b73c7c47cf032ec66936dbbb494ca4c',
+    };
+
+    const trimmedOperations = TransactionUtils.trimOperations(operations, previousHashes);
 
     expect(trimmedOperations.length).toStrictEqual(1);
     expect(trimmedOperations[0]).toEqual({

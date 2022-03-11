@@ -31,11 +31,11 @@ export class TransactionUtils {
     return JSON.stringify(filter) === JSON.stringify(filterToCompareWith);
   }
 
-  static trimOperations(txHash: string, operations: TransactionOperation[]): TransactionOperation[] {
+  static trimOperations(operations: TransactionOperation[], previousHashes: Record<string, string>): TransactionOperation[] {
     const result: TransactionOperation[] = [];
 
     for (const operation of operations) {
-      if (operation.action === 'transfer' && operation.id === txHash) {
+      if (operation.action === 'transfer') {
         const identicalOperations = operations.filter(x =>
           x.sender === operation.sender &&
           x.receiver === operation.receiver &&
@@ -44,7 +44,7 @@ export class TransactionUtils {
           x.type === operation.type &&
           x.value === operation.value &&
           x.action === 'transfer' &&
-          x.id !== txHash
+          x.id === previousHashes[operation.id]
         );
 
         if (identicalOperations.length > 0) {

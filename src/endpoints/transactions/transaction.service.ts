@@ -342,14 +342,17 @@ export class TransactionService {
 
       if (queryOptions.withOperations) {
         const transactionHashes: string[] = [transactionDetailed.txHash];
+        const previousHashes: Record<string, string> = {};
         for (const scResult of transactionScResults) {
           transactionHashes.push(scResult.hash);
+          previousHashes[scResult.hash] = scResult.prevTxHash;
         }
+
         const transactionLogsFromElastic = logs.filter((log) => transactionHashes.includes(log._id));
         const transactionLogs: TransactionLog[] = transactionLogsFromElastic.map(log => ApiUtils.mergeObjects(new TransactionLog(), log._source));
 
         transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, transactionLogs);
-        transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.txHash, transactionDetailed.operations);
+        transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.operations, previousHashes);
 
         for (const log of transactionLogsFromElastic) {
           if (log._id === transactionDetailed.txHash) {
