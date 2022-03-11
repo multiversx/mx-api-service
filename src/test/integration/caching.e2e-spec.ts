@@ -60,7 +60,7 @@ describe('Caching Service', () => {
     const handlerFunction = async (number: Number) => await number.toString();
 
     it(`should return emptyOutput because keys aren't set`, async () => {
-      const cacheValueChunks = await cachingService.batchGetCache(input.map((x) => cacheKeyFunction(x)));
+      const cacheValueChunks = await cachingService.batchGetCacheRemote(input.map((x) => cacheKeyFunction(x)));
 
       expect(cacheValueChunks).toStrictEqual(emptyOutput);
     });
@@ -68,7 +68,7 @@ describe('Caching Service', () => {
     it(`should return ouput keys as string`, async () => {
       await cachingService.batchProcess(input, cacheKeyFunction, handlerFunction, Constants.oneSecond());
 
-      const cacheValueChunks = await cachingService.batchGetCache(input.map((x) => cacheKeyFunction(x)));
+      const cacheValueChunks = await cachingService.batchGetCacheRemote(input.map((x) => cacheKeyFunction(x)));
       expect(cacheValueChunks).toStrictEqual(output);
     });
 

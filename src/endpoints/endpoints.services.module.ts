@@ -27,6 +27,7 @@ import { TransferModule } from "./transfers/transfer.module";
 import { UsernameModule } from "./usernames/username.module";
 import { VmQueryModule } from "./vm.query/vm.query.module";
 import { WaitingListModule } from "./waiting-list/waiting.list.module";
+import { WebsocketModule } from "./websocket/websocket.module";
 
 @Module({
   imports: [
@@ -59,12 +60,13 @@ import { WaitingListModule } from "./waiting-list/waiting.list.module";
     DappConfigModule,
     TransferModule,
     TransactionActionModule,
+    WebsocketModule,
   ],
   exports: [
     AccountModule, CollectionModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
     MexModule, MiniBlockModule, NetworkModule, NftModule, TagModule, NodeModule, ProviderModule,
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
-    WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, TransactionActionModule,
+    WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, TransactionActionModule, WebsocketModule,
   ],
 })
 export class EndpointsServicesModule { }

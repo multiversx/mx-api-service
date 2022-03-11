@@ -4,9 +4,7 @@ import { Cron } from "@nestjs/schedule";
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
-import { AddressUtils } from "src/utils/address.utils";
 import { PerformanceProfiler } from "src/utils/performance.profiler";
-import { EventsGateway } from "src/websockets/events.gateway";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
@@ -28,7 +26,6 @@ export class TransactionProcessorService {
 
   constructor(
     private readonly cachingService: CachingService,
-    private readonly eventsGateway: EventsGateway,
     private readonly apiConfigService: ApiConfigService,
     private readonly metricsService: MetricsService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
@@ -43,11 +40,6 @@ export class TransactionProcessorService {
 
   @Cron('*/1 * * * * *')
   async handleNewTransactions() {
-    const isCronActive = this.apiConfigService.getIsTransactionProcessorCronActive();
-    if (!isCronActive) {
-      return;
-    }
-
     if (this.isProcessing) {
       return;
     }
@@ -64,16 +56,6 @@ export class TransactionProcessorService {
           const allInvalidatedKeys = [];
 
           for (const transaction of transactions) {
-            // this.logger.log(`Transferred ${transaction.value} from ${transaction.sender} to ${transaction.receiver}`);
-
-            if (!AddressUtils.isSmartContractAddress(transaction.sender)) {
-              this.eventsGateway.onAccountBalanceChanged(transaction.sender);
-            }
-
-            if (!AddressUtils.isSmartContractAddress(transaction.receiver)) {
-              this.eventsGateway.onAccountBalanceChanged(transaction.receiver);
-            }
-
             if (this.apiConfigService.getIsProcessNftsFlagActive()) {
               // eslint-disable-next-line @typescript-eslint/no-floating-promises
               this.tryHandleNftCreate(transaction);
@@ -113,11 +95,11 @@ export class TransactionProcessorService {
           profiler.stop();
         },
         getLastProcessedNonce: async (shardId) => {
-          return await this.cachingService.getCache<number>(CacheInfo.ShardNonce(shardId).key);
+          return await this.cachingService.getCache<number>(CacheInfo.TransactionProcessorShardNonce(shardId).key);
         },
         setLastProcessedNonce: async (shardId, nonce) => {
           this.metricsService.setLastProcessedNonce(shardId, nonce);
-          await this.cachingService.setCache<number>(CacheInfo.ShardNonce(shardId).key, nonce, CacheInfo.ShardNonce(shardId).ttl);
+          await this.cachingService.setCache<number>(CacheInfo.TransactionProcessorShardNonce(shardId).key, nonce, CacheInfo.TransactionProcessorShardNonce(shardId).ttl);
         },
       });
     } finally {

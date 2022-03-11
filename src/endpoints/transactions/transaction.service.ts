@@ -166,7 +166,7 @@ export class TransactionService {
     return await this.elasticService.getCount('transactions', elasticQuery);
   }
 
-  async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string): Promise<(Transaction | TransactionDetailed)[]> {
+  async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string): Promise<Transaction[]> {
     const sortOrder: ElasticSortOrder = !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
 
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: sortOrder };
@@ -178,7 +178,7 @@ export class TransactionService {
 
     const elasticTransactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
 
-    let transactions: (Transaction | TransactionDetailed)[] = [];
+    let transactions: Transaction[] = [];
 
     for (const elasticTransaction of elasticTransactions) {
       const transaction = ApiUtils.mergeObjects(new Transaction(), elasticTransaction);
@@ -223,6 +223,20 @@ export class TransactionService {
         this.processTransaction(transaction),
       ]);
       transaction.price = price;
+
+      if (transaction.pendingResults === true && transaction.results) {
+        for (const result of transaction.results) {
+          if (!result.logs || !result.logs.events) {
+            continue;
+          }
+
+          for (const event of result.logs.events) {
+            if (event.identifier === 'completedTxEvent') {
+              transaction.pendingResults = undefined;
+            }
+          }
+        }
+      }
     }
 
     return transaction;
@@ -274,14 +288,31 @@ export class TransactionService {
     }
   }
 
-  async processTransaction(transaction: Transaction | TransactionDetailed): Promise<void> {
+  async processTransaction(transaction: Transaction): Promise<void> {
     try {
       await this.pluginsService.processTransaction(transaction);
+
       transaction.action = await this.transactionActionService.getTransactionAction(transaction);
+      transaction.pendingResults = await this.getPendingResults(transaction);
     } catch (error) {
       this.logger.error(`Unhandled error when processing plugin transaction for transaction with hash '${transaction.txHash}'`);
       this.logger.error(error);
     }
+  }
+
+  private async getPendingResults(transaction: Transaction): Promise<boolean | undefined> {
+    const twentyMinutes = Constants.oneMinute() * 20 * 1000;
+    const timestampLimit = (new Date().getTime() - twentyMinutes) / 1000;
+    if (transaction.timestamp < timestampLimit) {
+      return undefined;
+    }
+
+    const pendingResult = await this.cachingService.getCache(CacheInfo.TransactionPendingResults(transaction.txHash).key);
+    if (!pendingResult) {
+      return undefined;
+    }
+
+    return true;
   }
 
   private async getExtraDetailsForTransactions(elasticTransactions: any[], transactions: Transaction[], queryOptions: TransactionQueryOptions): Promise<TransactionDetailed[]> {
