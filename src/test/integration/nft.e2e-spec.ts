@@ -193,6 +193,36 @@ describe('Nft Service', () => {
       expect(nftsOwner).toBeDefined();
       expect(nftsOwner.length).toStrictEqual(500);
     });
+
+    it("should verify if all esdt of type NonFungibleTokens contains owner property and need to be defined", async () => {
+      const options = new NftQueryOptions();
+      options.withOwner = true;
+
+      const nfts = await nftService.getNfts({ from: 50, size: 25 }, { type: NftType.NonFungibleESDT }, options);
+      const nftOwners = nfts.map((nft) => nft.owner);
+
+      expect(nftOwners).toHaveLength(25);
+    });
+
+    it("should verify if all esdt of type MetaEsdt contains owner property and need to bedefined ", async () => {
+      const options = new NftQueryOptions();
+      options.withOwner = true;
+
+      const nfts = await nftService.getNfts({ from: 50, size: 25 }, { type: NftType.MetaESDT }, options);
+      const nftOwners = nfts.map((nft) => nft.owner);
+
+      expect(nftOwners).toHaveLength(25);
+    });
+
+    it("should verify if all esdt of type SemiFungibleESDT contains owner property and need to be defined", async () => {
+      const options = new NftQueryOptions();
+      options.withOwner = true;
+
+      const nfts = await nftService.getNfts({ from: 50, size: 25 }, { type: NftType.SemiFungibleESDT }, options);
+      const nftOwners = nfts.map((nft) => nft.owner);
+
+      expect(nftOwners).toHaveLength(25);
+    });
   });
 
   describe("NFT Count", () => {

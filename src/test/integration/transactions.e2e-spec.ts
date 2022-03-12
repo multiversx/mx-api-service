@@ -275,6 +275,22 @@ describe('Transaction Service', () => {
       expect(transaction).toHaveStructure(Object.keys(new TransactionDetailed()));
     });
 
+    it("should verify if transaction doesn't contain multiple operations of same type", async () => {
+      const isArrayUnique = (arr: string | Iterable<any> | null | undefined) => Array.isArray(arr) && new Set(arr).size === arr.length;
+      const transaction = "288dc8bdd296bcab2e08165df9d041adf2235d78c78d8801bf8984f2762faa12";
+      const results = await transactionService.getTransaction(transaction);
+
+      if (!results) {
+        throw new Error('Properties are not defined');
+      }
+      expect(results.operations).toEqual(expect.arrayContaining([expect.objectContaining({
+        action: 'transfer',
+      })]));
+
+      expect(results.operations).toHaveLength(5);
+      expect(isArrayUnique(results.operations)).toBeTruthy();
+    });
+
 
     it(`should return a transaction for a specific hash with results and logs optional fields`, async () => {
       const transaction = await transactionService.getTransaction(detailedTransactionHash, [TransactionOptionalFieldOption.results, TransactionOptionalFieldOption.logs]);
