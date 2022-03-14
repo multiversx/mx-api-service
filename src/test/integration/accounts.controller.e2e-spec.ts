@@ -192,4 +192,154 @@ describe("Accounts Controller", () => {
         expect(res.body.message).toEqual("Validation failed (a bech32 address is expected)");
       });
   });
+
+  it("/accounts/:address/tokens/{collection} - should return 200 status code and collection details for a specific address", async () => {
+    const address: string = "erd1qqqqqqqqqqqqqpgqaz6dvegfmlm2ftatg3qx550e2zq07k4ryl5sh0qx2e";
+    const collection: string = "OVERTURE-276027";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/collections" + "/" + collection)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it(`/accounts/:address/tokens/{collection} - should return 404 status code and response body with message "Collection for given account not found" `, async () => {
+    const address: string = "erd1qqqqqqqqqqqqqpgq09vq93grfqy7x5fhgmh44ncqfp3xaw57ys5s7j9fed";
+    const collection: string = "OGS-3f1408";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/collections" + "/" + collection)
+      .set("header", "content-type")
+      .expect(404)
+      .then(res => {
+        expect(res.body.message).toEqual("Collection for given account not found");
+      });
+  });
+
+  //TBD
+  it("/accounts/:address/tokens/{tokens} - should return 200 status code and token details for a specific address", async () => {
+    const address: string = "erd12xspx5z0nm08tvtt8v3nyu3w8mxfr36rj27u99yesmr7uxj6h7cscsvsw5";
+    const token: string = "RIDE-7d18e9";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/tokens" + "/" + token)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/nfts - should return 200 status code and nfts details for a specific address", async () => {
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/nfts")
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/nfts?from=&size - should return 200 status code and 2 nfts details for a specific address, filtered by from&size params", async () => {
+    const params = new URLSearchParams({
+      'from': '0',
+      'size': '2',
+    });
+
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/nfts" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/nfts?search - should return 200 status code and 2 nfts details for a specific address, filtered by search param", async () => {
+    const params = new URLSearchParams({
+      'search': 'CHALK-33daec',
+    });
+
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/nfts" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/nfts?identifiers - should return 200 status code and 1 nft details for a specific address, filtered by identifiers param", async () => {
+    const params = new URLSearchParams({
+      'identifiers': 'CHALK-33daec-02',
+    });
+
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/nfts" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/nfts?collection - should return 200 status code and all nfts from a collection for a specific address, filtered by collection param", async () => {
+    const params = new URLSearchParams({
+      'collection': 'CHALK-33daec',
+    });
+
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/nfts" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/nfts?collections - should return 200 status code and all nfts from collections, for a specific address, filtered by collections param", async () => {
+    const params = new URLSearchParams({
+      'collections': 'CRAZYBEAR-d3c2ea,DEAD-79f8d1',
+    });
+
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/nfts" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/nfts?name - should return 200 status code and nft details, for a specific address, filtered by name param", async () => {
+    const params = new URLSearchParams({
+      'name': 'Blue1 Bear',
+    });
+
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/nfts" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/nfts?tags - should return 200 status code and nft details, for a specific address, filtered by tags param", async () => {
+    const params = new URLSearchParams({
+      'tags': 'Undead,Elrond,Treasure Hunt',
+    });
+
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/nfts" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/nfts?creator - should return 200 status code and nfts details, for a specific address, filtered by creator param", async () => {
+    const params = new URLSearchParams({
+      'creator': 'erd1qqqqqqqqqqqqqpgq55mwyqu4xs20lyhq5t7mnwwqmxrl4su5ys5sc5h7mm',
+    });
+
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/nfts" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/nfts?hasUris&includeFlagged&withSupply - should return 200 status code and nfts details, for a specific address, filtered by hasUris, includedFlagged and withSupply param", async () => {
+    const params = new URLSearchParams({
+      'hasUris': 'true',
+      'includeFlagged': 'true',
+      'withSupply': 'true',
+    });
+
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/nfts" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
 });
