@@ -273,8 +273,7 @@ export class EsdtAddressService {
       const nonceNumeric = BinaryUtils.hexToNumber(nonceHex);
 
       const result = await this.gatewayService.get(`address/${address}/nft/${collection}/nonce/${nonceNumeric}`, GatewayComponentRequest.addressNftByNonce);
-
-      if (!result || !result.tokenData) {
+      if (!result || !result.tokenData || result.tokenData.balance === '0') {
         return [];
       }
 
