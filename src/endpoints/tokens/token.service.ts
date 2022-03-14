@@ -262,7 +262,7 @@ export class TokenService {
     const token = tokens[0];
     const esdt = await this.gatewayService.get(`address/${address}/esdt/${identifier}`, GatewayComponentRequest.addressEsdtBalance);
 
-    if (!esdt || !esdt.tokenData) {
+    if (!esdt || !esdt.tokenData || esdt.tokenData.balance === '0') {
       this.logger.log(`Error when fetching token ${identifier} balance for address ${address}`);
       return undefined;
     }
