@@ -342,4 +342,95 @@ describe("Accounts Controller", () => {
       .set("header", "content-type")
       .expect(200);
   });
+
+  it("/accounts/{address}/nfts?source - should return 200 status code and nfts details, for a specific address, filtered by source = ELASTIC param", async () => {
+    const params = new URLSearchParams({
+      'source': 'elastic',
+    });
+
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/nfts" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/nfts?source - should return 200 status code and nfts details, for a specific address, filtered by source = GATEWAY param", async () => {
+    const params = new URLSearchParams({
+      'source': 'gateway',
+    });
+
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/nfts" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/nfts/count - should return 200 status code and nfts count for a specific address", async () => {
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/nfts/count")
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/nfts/{nft} - should return 200 status code and nft details for a specific address", async () => {
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    const identifier: string = "CHALK-33daec-02";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/nfts" + "/" + identifier)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/nfts/{nft} - should return 404 status code if nft identifier is not found in wallet address ", async () => {
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    const identifier: string = "PLANET-2a97b1-01";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/nfts" + "/" + identifier)
+      .set("header", "content-type")
+      .expect(404)
+      .then(res => {
+        expect(res.body.message).toEqual("Token for given account not found");
+      });
+  });
+
+  it("/accounts/{address}/stake - should return 200 status code and staked details for a specific address", async () => {
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/stake")
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/delegation-legacy - should return 200 status code and delegation details for a specific address", async () => {
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/delegation-legacy")
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/keys - should return 200 status code and nodes details for a specific validator address", async () => {
+    const address: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/keys")
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/waiting-list - should return 200 status code and waiting-list details for a specific address", async () => {
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/waiting-list")
+      .set("header", "content-type")
+      .expect(200);
+  });
 });
