@@ -33,7 +33,8 @@
     "importHelpers": true,
     "typeRoots": [
       "src/@types",
-      "node_modules/@types"
-    ]
+      "node_modules/@types",
+    ],
+    "skipLibCheck": true
   }
 }
