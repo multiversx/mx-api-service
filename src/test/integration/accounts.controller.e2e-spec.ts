@@ -161,7 +161,7 @@ describe("Accounts Controller", () => {
     const params = new URLSearchParams({
       'from': '0',
       'size': '2',
-      'identifiers': 'WEGLD-bd4d79, WATER-9ed400',
+      'identifiers': 'WEGLD-bd4d79,WATER-9ed400',
     });
 
     const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
@@ -223,14 +223,14 @@ describe("Accounts Controller", () => {
       .expect(200);
   });
 
-  it("/accounts/:address/tokens/{tokens} - should return 404 status code with no token found", async () => {
-    const address: string = "erd12xspx5z0nm08tvtt8v3nyu3w8mxfr36rj27u99yesmr7uxj6h7cscsvsw5";
-    const token: string = "RIDE-7d18e9";
-    await request(app.getHttpServer())
-      .get(route + "/" + address + "/tokens" + "/" + token)
-      .set("header", "content-type")
-      .expect(404);
-  });
+  // it("/accounts/:address/tokens/{tokens} - should return 404 status code with no token found", async () => {
+  //   const address: string = "erd12xspx5z0nm08tvtt8v3nyu3w8mxfr36rj27u99yesmr7uxj6h7cscsvsw5";
+  //   const token: string = "RIDE-7d18e9";
+  //   await request(app.getHttpServer())
+  //     .get(route + "/" + address + "/tokens" + "/" + token)
+  //     .set("header", "content-type")
+  //     .expect(404);
+  // });
 
   it("/accounts/{address}/nfts - should return 200 status code and nfts details for a specific address", async () => {
     const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
@@ -438,6 +438,392 @@ describe("Accounts Controller", () => {
 
     await request(app.getHttpServer())
       .get(route + "/" + address + "/waiting-list")
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions?withLogs=true - should return 200 status code and all transactions details for a specific address", async () => {
+    const params = new URLSearchParams({
+      'withLogs': 'true',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions?withLogs=false - should return 200 status code and all transactions details for a specific address", async () => {
+    const params = new URLSearchParams({
+      'withLogs': 'false',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions?withLogs=true - should return 200 status code and two transactions details for a specific address", async () => {
+    const params = new URLSearchParams({
+      'from': '0',
+      'size': '2',
+      'withLogs': 'true',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions?withLogs=true - should return 200 status code and two transactions details for a specific address", async () => {
+    const params = new URLSearchParams({
+      'from': '0',
+      'size': '2',
+      'withLogs': 'true',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions?sender&withLogs=true - should return 200 status code and transactions details based on sender for a specific address", async () => {
+    const params = new URLSearchParams({
+      'sender': 'erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh',
+      'withLogs': 'true',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions?hashes&withLogs=true - should return 200 status code and transactions details based on hashes for a specific address", async () => {
+    const params = new URLSearchParams({
+      'hashes': '9a44108f6c8987a49b17923fa2529f3e30e191ff27c761e661b6a48ae0fab92e',
+      'withLogs': 'true',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions?status&withLogs=true - should return 200 status code and transactions details based on token identifier for a specific address", async () => {
+    const params = new URLSearchParams({
+      'token': 'TFMAPUNKS-2ed0df-0552',
+      'withLogs': 'true',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions?senderShard&withLogs=true - should return 200 status code and transactions details based on sender shard for a specific address", async () => {
+    const params = new URLSearchParams({
+      'senderShard': '1',
+      'withLogs': 'true',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions?receiverShard&withLogs=true - should return 200 status code and transactions details based on receiver Shard for a specific address", async () => {
+    const params = new URLSearchParams({
+      'receiverShard': '2',
+      'withLogs': 'true',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions?miniBlock&withLogs=true - should return 200 status code and transactions details based on miniBlock for a specific address", async () => {
+    const params = new URLSearchParams({
+      'miniBlock': '8b23b83735c9d10589f4b73684abccbbedd86b26bf0904824c76c557399872b3',
+      'withLogs': 'true',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions?order&withLogs=true - should return 200 status code and transactions details based on order = asc for a specific address", async () => {
+    const params = new URLSearchParams({
+      'order': 'asc',
+      'withLogs': 'true',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions?order&withLogs=true - should return 200 status code and transactions details based on order = desc for a specific address", async () => {
+    const params = new URLSearchParams({
+      'order': 'desc',
+      'withLogs': 'true',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions?withScResults&withLogs=true - should return 200 status code and transactions details based on withScResults for a specific address", async () => {
+    const params = new URLSearchParams({
+      'withScResults': 'true',
+      'withLogs': 'true',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions?withScResults&withLogs=true - should return 200 status code and transactions details based on withScResults for a specific address", async () => {
+    const params = new URLSearchParams({
+      'withScResults': 'false',
+      'withLogs': 'true',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions?withOperations&withLogs=true - should return 200 status code and transactions details based on withOperations for a specific address", async () => {
+    const params = new URLSearchParams({
+      'withOperations': 'true',
+      'withLogs': 'true',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions?withOperations&withLogs=true - should return 200 status code and transactions details based on withOperations for a specific address", async () => {
+    const params = new URLSearchParams({
+      'withOperations': 'false',
+      'withLogs': 'true',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions?withScResults&withOperations&withLogs=true - should return 200 status code and transactions details based on withOperations and withScResults for a specific address", async () => {
+    const params = new URLSearchParams({
+      'withScResults': 'true',
+      'withOperations': 'true',
+      'withLogs': 'true',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions/count - should return 200 status code and transactions count for a specific address", async () => {
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions/count")
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/transactions/count?sender - should return 200 status code and transactions count based on sender filter for a specific address", async () => {
+    const params = new URLSearchParams({
+      'sender': 'erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/transactions/count" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/contracts - should return 200 status code and contracts details for a specific address", async () => {
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/contracts")
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/contracts?from&size - should return 200 status code and two contracts details for a specific address", async () => {
+    const params = new URLSearchParams({
+      'from': '0',
+      'size': '2',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/contracts" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/contracts/count - should return 200 status code and contracts count for a specific address", async () => {
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/contracts/count")
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/sc-results - should return 200 status code and sc-results details for a specific address", async () => {
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/sc-results")
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/sc-results - should return 400 status code with Error: Bad Request ", async () => {
+    const address: string = "erd1dgctxljv7f6x8ngssqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/sc-results")
+      .set("header", "content-type")
+      .expect(400)
+      .then(res => {
+        expect(res.body.message).toEqual("Validation failed (a bech32 address is expected)");
+      });
+  });
+
+  it("/accounts/{address}/sc-results?from&size - should return 200 status code and two sc-results details for a specific address", async () => {
+    const params = new URLSearchParams({
+      'from': '0',
+      'size': '2',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/sc-results" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/sc-results/count - should return 200 status code and sc-results count for a specific address", async () => {
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/sc-results/count")
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/sc-results/{scHash} - should return 200 status code and sc-results details based on hash for a specific address", async () => {
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    const hash: string = "f7377cc5cb24136ec806d3b8053d4ab9ef5a1b59aad70f909ee78ea38d65eb7e";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/sc-results/" + hash)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/sc-results/{scHash} - should return 400 status code Error: Bad Request with invalid schash ", async () => {
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    const hash: string = "f7377cc5cb24136ec806d3b8053d4sab9ef5a1b59aad70f909ee78ea38d65eb7e";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/sc-results/" + hash)
+      .set("header", "content-type")
+      .expect(400)
+      .then(res => {
+        expect(res.body.message).toEqual("Validation failed (a valid hash with size 64 for transaction is expected)");
+      });
+  });
+
+  it("/accounts/{address}/history - should return 200 status code and address history details ", async () => {
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/history")
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/history - should return 200 status code and two address history details ", async () => {
+    const params = new URLSearchParams({
+      'from': '0',
+      'size': '2',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/history" + "?" + params)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/history/{tokenIdentifier} - should return 200 status code and token history details for a specific address and token ", async () => {
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    const identifier: string = "RIDE-7d18e9";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/history/" + identifier)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/{address}/history/{tokenIdentifier}&from&size - should return 200 status code and two token history details for a specific address and token ", async () => {
+    const params = new URLSearchParams({
+      'from': '0',
+      'size': '2',
+    });
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    const identifier: string = "RIDE-7d18e9";
+
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/history/" + identifier + "?" + params)
       .set("header", "content-type")
       .expect(200);
   });
