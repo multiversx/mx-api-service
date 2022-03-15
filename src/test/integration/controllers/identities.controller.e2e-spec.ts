@@ -19,10 +19,7 @@ describe("Identities Controller", () => {
   it("/identities - should return 200 status code and a list of identities", async () => {
     await request(app.getHttpServer())
       .get(route)
-      .expect(200)
-      .then(res => {
-        console.log(res.body);
-      });
+      .expect(200);
   });
 
   it("/identities/{identifier} - should return 200 status code and identity details", async () => {
@@ -30,10 +27,7 @@ describe("Identities Controller", () => {
 
     await request(app.getHttpServer())
       .get(route + "/" + identifier)
-      .expect(200)
-      .then(res => {
-        console.log(res.body);
-      });
+      .expect(200);
   });
 
   it("/identities/{identifier} - should return 404 status code Error Code: Identity not found", async () => {
