@@ -28,6 +28,7 @@ import { DatabaseService } from "./database.service";
           ...apiConfigService.getDatabaseConnection(),
           keepConnectionAlive: true,
           synchronize: true,
+          retryAttempts: 300,
           extra: {
             connectionLimit: 4,
           },
