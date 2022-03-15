@@ -22,14 +22,6 @@ describe("Identities Controller", () => {
       .expect(200);
   });
 
-  it("/identities/{identifier} - should return 200 status code and identity details", async () => {
-    const identifier: string = "elrondcom";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier)
-      .expect(200);
-  });
-
   it("/identities/{identifier} - should return 404 status code Error Code: Identity not found", async () => {
     const identifier: string = "justminingfrT";
 
