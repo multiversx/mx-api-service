@@ -23,7 +23,7 @@ describe("Identities Controller", () => {
   });
 
   it("/identities/{identifier} - should return 200 status code and identity details", async () => {
-    const identifier: string = "justminingfr";
+    const identifier: string = "elrondcom";
 
     await request(app.getHttpServer())
       .get(route + "/" + identifier)
