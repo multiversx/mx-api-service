@@ -214,14 +214,22 @@ describe("Accounts Controller", () => {
       });
   });
 
-  //TBD
   it("/accounts/:address/tokens/{tokens} - should return 200 status code and token details for a specific address", async () => {
+    const address: string = "erd12xspx5z0nm08tvtt8v3nyu3w8mxfr36rj27u99yesmr7uxj6h7cscsvsw5";
+    const token: string = "WEGLD-bd4d79";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/tokens" + "/" + token)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/:address/tokens/{tokens} - should return 404 status code with no token found", async () => {
     const address: string = "erd12xspx5z0nm08tvtt8v3nyu3w8mxfr36rj27u99yesmr7uxj6h7cscsvsw5";
     const token: string = "RIDE-7d18e9";
     await request(app.getHttpServer())
       .get(route + "/" + address + "/tokens" + "/" + token)
       .set("header", "content-type")
-      .expect(200);
+      .expect(404);
   });
 
   it("/accounts/{address}/nfts - should return 200 status code and nfts details for a specific address", async () => {
