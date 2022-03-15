@@ -66,7 +66,7 @@ export class NftMetadataService {
     }
 
     try {
-      this.logger.log(`Started fetching metadata for nft with identifier '${nft.identifier}'`);
+      this.logger.log(`Started fetching metadata for nft with identifier '${nft.identifier}' and attributes '${nft.attributes}'`);
       const nftMetadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(nft.attributes);
       this.logger.log(`Completed fetching metadata for nft with identifier '${nft.identifier}'`);
       return nftMetadata ?? null;
