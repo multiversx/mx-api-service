@@ -81,6 +81,10 @@ export class CollectionService {
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
     if (filter.creator) {
       const creatorResult = await this.gatewayService.get(`address/${filter.creator}/esdts-with-role/ESDTRoleNFTCreate`, GatewayComponentRequest.addressEsdtWithRole);
+      if (creatorResult.tokens.length === 0) {
+        return [];
+      }
+
       filter.identifiers = creatorResult.tokens;
     }
 
