@@ -14,6 +14,7 @@ export class TokenUtils {
 
   static computeNftUri(uri: string, prefix: string) {
     uri = ApiUtils.replaceUri(uri, 'https://ipfs.io/ipfs', prefix);
+    uri = ApiUtils.replaceUri(uri, 'https://gateway.ipfs.io/ipfs', prefix);
     uri = ApiUtils.replaceUri(uri, 'https://gateway.pinata.cloud/ipfs', prefix);
     uri = ApiUtils.replaceUri(uri, 'https://dweb.link/ipfs', prefix);
     uri = ApiUtils.replaceUri(uri, 'ipfs:/', prefix);
