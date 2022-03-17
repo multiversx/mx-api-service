@@ -1,10 +1,12 @@
-import { INestApplication } from '@nestjs/common';
+import { MiniBlockController } from '../../../endpoints/miniblocks/mini.block.controller';
+import { HttpException, INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
 describe("Miniblocks Controller", () => {
   let app: INestApplication;
+  let miniBlockController: MiniBlockController;
   const route: string = "/miniblocks";
 
   beforeAll(async () => {
@@ -13,6 +15,8 @@ describe("Miniblocks Controller", () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
+    miniBlockController = moduleRef.get<MiniBlockController>(MiniBlockController);
+
     await app.init();
   });
 
@@ -33,5 +37,26 @@ describe("Miniblocks Controller", () => {
       .then(res => {
         expect(res.body.message).toEqual("Miniblock not found");
       });
+  });
+
+  it("should return block details based on miniBlockHash", async () => {
+    const hash: string = "4ab87e21dcf63f3d88f64e8228f001232ff29585ad475e20211ead04f1f700cc";
+    const results = await miniBlockController.getBlock(hash);
+
+    expect(results.hasOwnProperty("miniBlockHash")).toBeTruthy();
+    expect(results.hasOwnProperty("receiverBlockHash")).toBeTruthy();
+    expect(results.hasOwnProperty("receiverShard")).toBeTruthy();
+    expect(results.hasOwnProperty("senderBlockHash")).toBeTruthy();
+    expect(results.hasOwnProperty("senderShard")).toBeTruthy();
+    expect(results.hasOwnProperty("timestamp")).toBeTruthy();
+    expect(results.hasOwnProperty("type")).toBeTruthy();
+  });
+
+  it("should throw HttpException with HttpStatus: Not Found", async () => {
+    const hash: string = "4ab87e21dcf63f3d88f64e8228f001232ff29585ad475e20211ead04f1f700ccT";
+
+    await expect(miniBlockController.getBlock(hash)).rejects.toThrow(
+      HttpException,
+    );
   });
 });
