@@ -196,6 +196,11 @@ export class CollectionService {
 
 
   async getNftCollectionCount(filter: CollectionFilter): Promise<number> {
+    if (filter.creator) {
+      const creatorResult = await this.gatewayService.get(`address/${filter.creator}/esdts-with-role/ESDTRoleNFTCreate`, GatewayComponentRequest.addressEsdtWithRole);
+      return creatorResult.tokens.length;
+    }
+
     const elasticQuery = this.buildCollectionFilter(filter);
 
     return await this.elasticService.getCount('tokens', elasticQuery);
