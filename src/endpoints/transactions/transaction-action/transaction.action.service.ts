@@ -95,6 +95,19 @@ export class TransactionActionService {
         metadata.functionName = dataComponents[0];
         metadata.functionArgs = args;
       }
+
+      if (metadata.functionName === 'relayedTx' && metadata.functionArgs.length === 1) {
+        try {
+          const relayedTransaction = JSON.parse(BinaryUtils.hexToString(metadata.functionArgs[0]));
+          relayedTransaction.value = relayedTransaction.value.toString();
+          relayedTransaction.sender = AddressUtils.bech32Encode(BinaryUtils.base64ToHex(relayedTransaction.sender));
+          relayedTransaction.receiver = AddressUtils.bech32Encode(BinaryUtils.base64ToHex(relayedTransaction.receiver));
+          return this.getNormalTransactionMetadata(relayedTransaction);
+        } catch (error) {
+          this.logger.error(`Unhandled error when interpreting relayed transaction`);
+          this.logger.error(error);
+        }
+      }
     }
 
     try {
