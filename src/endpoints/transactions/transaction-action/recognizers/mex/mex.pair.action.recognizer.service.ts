@@ -62,6 +62,11 @@ export class MexPairActionRecognizerService {
 
     const destinationValueDenominated = NumberUtils.toDenominatedString(destinationValue, pair2Properties.decimals);
 
+    metadata.transfers?.push({
+      value: destinationValue,
+      properties: pair2Properties,
+    });
+
     const description = `Swap ${valueDenominated} ${pair1Properties.ticker} for a minimum of ${destinationValueDenominated} ${pair2Properties.ticker}`;
     return this.transactionActionEsdtNftRecognizerService.getMultiTransferAction(metadata, TransactionActionCategory.mex, 'swap', description);
   }
