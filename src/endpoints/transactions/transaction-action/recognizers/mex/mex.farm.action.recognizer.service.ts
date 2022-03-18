@@ -48,6 +48,8 @@ export class MexFarmActionRecognizerService {
       case MexFunction.claimDualYield:
       case MexFunction.claimDualYieldProxy:
         return this.getFarmAction(metadata, MexFunction.claimRewards, 'Claim dual yield for');
+      case MexFunction.unbondFarm:
+        return this.getFarmAction(metadata, MexFunction.unbondFarm, 'Unbond farm with');
       default:
         return undefined;
     }

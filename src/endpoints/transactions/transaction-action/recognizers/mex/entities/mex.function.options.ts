@@ -31,4 +31,5 @@ export enum MexFunction {
   unstakeFarmTokensProxy = 'unstakeFarmTokensProxy',
   claimDualYield = 'claimDualYield',
   claimDualYieldProxy = 'claimDualYieldProxy',
+  unbondFarm = 'unbondFarm',
 }
