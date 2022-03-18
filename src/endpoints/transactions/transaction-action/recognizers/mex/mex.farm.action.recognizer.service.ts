@@ -1,186 +1,59 @@
 import { Injectable } from "@nestjs/common";
-import { NumberUtils } from "src/utils/number.utils";
 import { TransactionAction } from "../../entities/transaction.action";
 import { TransactionActionCategory } from "../../entities/transaction.action.category";
 import { TransactionMetadata } from "../../entities/transaction.metadata";
+import { TransactionActionEsdtNftRecognizerService } from "../esdt/transaction.action.esdt.nft.recognizer.service";
 import { MexFunction } from "./entities/mex.function.options";
 import { MexSettings } from "./entities/mex.settings";
-import { MexSettingsService } from "./mex.settings.service";
 
 @Injectable()
 export class MexFarmActionRecognizerService {
   constructor(
-    private readonly mexSettingsService: MexSettingsService
+    private readonly transactionActionEsdtNftRecognizerService: TransactionActionEsdtNftRecognizerService,
   ) { }
 
   recognize(settings: MexSettings, metadata: TransactionMetadata): TransactionAction | undefined {
-    if (metadata.receiver !== settings.proxyContract && !settings.farmContracts.includes(metadata.receiver)) {
+    if (!settings.farmContracts.includes(metadata.receiver)) {
       return undefined;
     }
 
     switch (metadata.functionName) {
       case MexFunction.enterFarm:
       case MexFunction.enterFarmProxy:
-        return this.getEnterFarmAction(metadata);
+        return this.getFarmAction(metadata, MexFunction.enterFarm, 'Enter farm with');
       case MexFunction.enterFarmAndLockRewards:
       case MexFunction.enterFarmAndLockRewardsProxy:
-        return this.getEnterFarmAndLockAction(metadata);
+        return this.getFarmAction(metadata, MexFunction.enterFarm, 'Enter farm and lock rewards with');
       case MexFunction.exitFarm:
       case MexFunction.exitFarmProxy:
-        return this.getExitFarmAction(metadata);
+        return this.getFarmAction(metadata, MexFunction.exitFarm, 'Exit farm with');
       case MexFunction.claimRewards:
       case MexFunction.claimRewardsProxy:
-        return this.getClaimRewardsAction(metadata);
+        return this.getFarmAction(metadata, MexFunction.claimRewards, 'Claim rewards for');
       case MexFunction.compoundRewards:
       case MexFunction.compoundRewardsProxy:
-        return this.getCompundRewardsAction(metadata);
+        return this.getFarmAction(metadata, MexFunction.compoundRewards, 'Reinvest rewards for');
+      case MexFunction.stakeFarm:
+      case MexFunction.stakeFarmProxy:
+        return this.getFarmAction(metadata, MexFunction.enterFarm, 'Stake farm with');
+      case MexFunction.stakeFarmTokens:
+      case MexFunction.stakeFarmTokensProxy:
+        return this.getFarmAction(metadata, MexFunction.enterFarm, 'Stake farm tokens with');
+      case MexFunction.unstakeFarm:
+      case MexFunction.unstakeFarmProxy:
+        return this.getFarmAction(metadata, MexFunction.exitFarm, 'Unstake farm with');
+      case MexFunction.unstakeFarmTokens:
+      case MexFunction.unstakeFarmTokensProxy:
+        return this.getFarmAction(metadata, MexFunction.exitFarm, 'Unstake farm tokens with');
+      case MexFunction.claimDualYield:
+      case MexFunction.claimDualYieldProxy:
+        return this.getFarmAction(metadata, MexFunction.claimRewards, 'Claim dual yield for');
       default:
         return undefined;
     }
   }
 
-  private getEnterFarmAction(metadata: TransactionMetadata): TransactionAction | undefined {
-    const transfers = this.mexSettingsService.getTransfers(metadata);
-    if (!transfers) {
-      return undefined;
-    }
-
-    const pairProperties = transfers[0].properties;
-    if (!pairProperties) {
-      return undefined;
-    }
-
-    const value = transfers[0].value;
-    const valueDenominated = NumberUtils.toDenominatedString(value, pairProperties.decimals);
-
-    const result = new TransactionAction();
-    result.category = TransactionActionCategory.mex;
-    result.name = MexFunction.enterFarm;
-    result.description = `Enter farm with ${valueDenominated} ${pairProperties.ticker}`;
-    result.arguments = {
-      token: {
-        ...pairProperties,
-        value: value.toString(),
-      },
-      receiver: metadata.receiver,
-    };
-
-    return result;
-  }
-
-  private getExitFarmAction(metadata: TransactionMetadata): TransactionAction | undefined {
-    const transfers = this.mexSettingsService.getTransfers(metadata);
-    if (!transfers) {
-      return undefined;
-    }
-
-    const properties = transfers[0].properties;
-    if (!properties) {
-      return undefined;
-    }
-
-    const value = transfers[0].value;
-    const valueDenominated = NumberUtils.toDenominatedString(value, properties.decimals);
-
-    const result = new TransactionAction();
-    result.category = TransactionActionCategory.mex;
-    result.name = MexFunction.exitFarm;
-    result.description = `Exit farm with ${valueDenominated} ${properties.ticker}`;
-    result.arguments = {
-      token: {
-        ...properties,
-        value: value.toString(),
-      },
-      receiver: metadata.receiver,
-    };
-
-    return result;
-  }
-
-  private getEnterFarmAndLockAction(metadata: TransactionMetadata): TransactionAction | undefined {
-    const transfers = this.mexSettingsService.getTransfers(metadata);
-    if (!transfers) {
-      return undefined;
-    }
-
-    const properties = transfers[0].properties;
-    if (!properties) {
-      return undefined;
-    }
-
-    const value = transfers[0].value;
-    const valueDenominated = NumberUtils.toDenominatedString(value, properties.decimals);
-
-    const result = new TransactionAction();
-    result.category = TransactionActionCategory.mex;
-    result.name = MexFunction.enterFarmAndLockRewards;
-    result.description = `Enter farm and lock rewards with ${valueDenominated} ${properties.ticker}`;
-    result.arguments = {
-      token: {
-        ...properties,
-        value: transfers[0].value.toString(),
-      },
-      receiver: metadata.receiver,
-    };
-
-    return result;
-  }
-
-  private getClaimRewardsAction(metadata: TransactionMetadata): TransactionAction | undefined {
-    const transfers = this.mexSettingsService.getTransfers(metadata);
-    if (!transfers) {
-      return undefined;
-    }
-
-    const properties = transfers[0].properties;
-    if (!properties) {
-      return undefined;
-    }
-
-    const value = transfers[0].value;
-    const valueDenominated = NumberUtils.toDenominatedString(value, properties.decimals);
-
-    const result = new TransactionAction();
-    result.category = TransactionActionCategory.mex;
-    result.name = MexFunction.claimRewards;
-    result.description = `Claim rewards ${valueDenominated} ${properties.ticker}`;
-    result.arguments = {
-      token: {
-        ...properties,
-        value: transfers[0].value.toString(),
-      },
-      receiver: metadata.receiver,
-    };
-
-    return result;
-  }
-
-  private getCompundRewardsAction(metadata: TransactionMetadata): TransactionAction | undefined {
-    const transfers = this.mexSettingsService.getTransfers(metadata);
-    if (!transfers) {
-      return undefined;
-    }
-
-    const properties = transfers[0].properties;
-    if (!properties) {
-      return undefined;
-    }
-
-    const value = transfers[0].value;
-    const valueDenominated = NumberUtils.toDenominatedString(value, properties.decimals);
-
-    const result = new TransactionAction();
-    result.category = TransactionActionCategory.mex;
-    result.name = MexFunction.compoundRewards;
-    result.description = `Reinvest rewards ${valueDenominated} ${properties.ticker}`;
-    result.arguments = {
-      token: {
-        ...properties,
-        value: transfers[0].value.toString(),
-      },
-      receiver: metadata.receiver,
-    };
-
-    return result;
+  private getFarmAction(metadata: TransactionMetadata, name: string, action: string): TransactionAction | undefined {
+    return this.transactionActionEsdtNftRecognizerService.getMultiTransferActionWithTicker(metadata, TransactionActionCategory.mex, name, action);
   }
 }

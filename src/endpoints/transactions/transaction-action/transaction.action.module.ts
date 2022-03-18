@@ -23,6 +23,9 @@ import { IdentitiesModule } from "src/endpoints/identities/identities.module";
     StakeActionRecognizerService,
     SCCallActionRecognizerService,
   ],
-  exports: [TransactionActionService],
+  exports: [
+    TransactionActionService,
+    TransactionActionEsdtNftRecognizerService,
+  ],
 })
 export class TransactionActionModule { }
