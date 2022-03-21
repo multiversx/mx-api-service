@@ -931,12 +931,17 @@ export class AccountController {
     status: 404,
     description: 'Token balance history not found for this account',
   })
-  getAccountTokenHistory(
+  async getAccountTokenHistory(
     @Param('address', ParseAddressPipe) address: string,
     @Param('tokenIdentifier') tokenIdentifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<AccountEsdtHistory[]> {
-    return this.accountService.getAccountTokenHistory(address, tokenIdentifier, { from, size });
+    const history = await this.accountService.getAccountTokenHistory(address, tokenIdentifier, { from, size });
+    if (!history) {
+      throw new NotFoundException(`Token '${tokenIdentifier}' not found`);
+    }
+
+    return history;
   }
 }

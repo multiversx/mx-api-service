@@ -109,14 +109,16 @@ describe('Account Service', () => {
       const accountTokens = await tokensService.getTokensForAddressFromGateway(address, { from: 0, size: 1 }, {});
 
       if (accountTokens.length) {
-        const accountTokenHistories = await accountService.getAccountTokenHistory(address,
-          accountTokens[0].identifier, { from: 0, size: 1 });
+        const accountTokenHistories = await accountService.getAccountTokenHistory(address, accountTokens[0].identifier, { from: 0, size: 1 });
+        expect(accountTokenHistories).toBeDefined();
 
-        for (const account of accountTokenHistories) {
-          expect(account).toHaveProperty('address');
-          expect(account).toHaveProperty('balance');
-          expect(account).toHaveProperty('timestamp');
-          expect(account).toHaveProperty('token');
+        if (accountTokenHistories) {
+          for (const account of accountTokenHistories) {
+            expect(account).toHaveProperty('address');
+            expect(account).toHaveProperty('balance');
+            expect(account).toHaveProperty('timestamp');
+            expect(account).toHaveProperty('token');
+          }
         }
       }
     });

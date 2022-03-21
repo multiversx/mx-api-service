@@ -3,6 +3,7 @@ import { NumberUtils } from "src/utils/number.utils";
 import { TransactionAction } from "../../entities/transaction.action";
 import { TransactionActionCategory } from "../../entities/transaction.action.category";
 import { TransactionMetadata } from "../../entities/transaction.metadata";
+import { TransactionActionEsdtNftRecognizerService } from "../esdt/transaction.action.esdt.nft.recognizer.service";
 import { MexFunction } from "./entities/mex.function.options";
 import { MexSettings } from "./entities/mex.settings";
 import { MexSettingsService } from "./mex.settings.service";
@@ -11,6 +12,7 @@ import { MexSettingsService } from "./mex.settings.service";
 export class MexLockedAssetActionRecognizerService {
   constructor(
     private readonly mexSettingsService: MexSettingsService,
+    private readonly transactionActionEsdtNftRecognizerService: TransactionActionEsdtNftRecognizerService,
   ) { }
 
   recognize(settings: MexSettings, metadata: TransactionMetadata): TransactionAction | undefined {
@@ -19,8 +21,10 @@ export class MexLockedAssetActionRecognizerService {
     }
 
     switch (metadata.functionName) {
+      case MexFunction.lockAssets:
+        return this.getAssetsAction(metadata, 'Lock');
       case MexFunction.unlockAssets:
-        return this.getUnlockAssetsAction(metadata);
+        return this.getAssetsAction(metadata, 'Unlock');
       case MexFunction.mergeLockedAssetTokens:
         return this.getMergeLockedAssetTokens(metadata);
       default:
@@ -37,49 +41,12 @@ export class MexLockedAssetActionRecognizerService {
     const value = transfers.sumBigInt(x => BigInt(x.value.toString()));
     const valueDenominated = NumberUtils.toDenominatedString(value);
 
-    const result = new TransactionAction();
-    result.category = TransactionActionCategory.mex;
-    result.name = MexFunction.mergeLockedAssetTokens;
-    result.description = `Merge ${transfers.length} LKMEX positions into a single LKMEX position of value ${valueDenominated}`;
-    result.arguments = {
-      transfers: transfers.map(transfer => ({
-        ...transfer.properties,
-        ticker: 'LKMEX',
-        value: transfer.value.toString(),
-      })),
-      receiver: metadata.receiver,
-    };
+    const description = `Merge ${transfers.length} LKMEX positions into a single LKMEX position of value ${valueDenominated}`;
 
-    return result;
+    return this.transactionActionEsdtNftRecognizerService.getMultiTransferAction(metadata, TransactionActionCategory.mex, MexFunction.mergeLockedAssetTokens, description);
   }
 
-  private getUnlockAssetsAction(metadata: TransactionMetadata): TransactionAction | undefined {
-    const transfers = this.mexSettingsService.getTransfers(metadata);
-    if (!transfers) {
-      return undefined;
-    }
-
-    const properties = transfers[0].properties;
-    if (!properties) {
-      return undefined;
-    }
-
-    const value = transfers[0].value;
-    const valueDenominated = NumberUtils.toDenominatedString(value, properties.decimals);
-
-    const result = new TransactionAction();
-    result.category = TransactionActionCategory.mex;
-    result.name = MexFunction.unlockAssets;
-    result.description = `Unlock ${valueDenominated} LKMEX`;
-    result.arguments = {
-      token: {
-        ...properties,
-        ticker: 'LKMEX',
-        value: value.toString(),
-      },
-      receiver: metadata.receiver,
-    };
-
-    return result;
+  private getAssetsAction(metadata: TransactionMetadata, action: string): TransactionAction | undefined {
+    return this.transactionActionEsdtNftRecognizerService.getMultiTransferActionWithTicker(metadata, TransactionActionCategory.mex, metadata.functionName ?? '', action);
   }
 }

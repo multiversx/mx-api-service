@@ -1,8 +1,10 @@
-import { Controller, Logger } from "@nestjs/common";
-import { Ctx, MessagePattern, Payload, RmqContext } from "@nestjs/microservices";
+import { Controller, Inject, Logger } from "@nestjs/common";
+import { ClientProxy, Ctx, MessagePattern, Payload, RmqContext } from "@nestjs/microservices";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
+import { NftService } from "src/endpoints/nfts/nft.service";
 import { NftMessage } from "./entities/nft.message";
 import { NftMediaService } from "./job-services/media/nft.media.service";
 import { NftMetadataService } from "./job-services/metadata/nft.metadata.service";
@@ -18,6 +20,8 @@ export class NftQueueController {
     private readonly nftMetadataService: NftMetadataService,
     private readonly nftMediaService: NftMediaService,
     private readonly nftThumbnailService: NftThumbnailService,
+    private readonly nftService: NftService,
+    @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     apiConfigService: ApiConfigService,
   ) {
     this.logger = new Logger(NftQueueController.name);
@@ -53,13 +57,28 @@ export class NftQueueController {
     this.logger.log({ type: 'consumer start', identifier: data.identifier, attempt });
 
     try {
-      const nft = data.nft;
+      const nft = await this.nftService.getSingleNft(data.identifier);
+      if (!nft) {
+        throw new Error(`Could not fetch details for NFT with identifier '${data.identifier}'`);
+      }
+
       const settings = data.settings;
 
       nft.metadata = await this.nftMetadataService.getMetadata(nft);
 
-      if (settings.forceRefreshMetadata || !nft.metadata) {
-        nft.metadata = await this.nftMetadataService.refreshMetadata(nft);
+      if (nft.metadata && settings.forceRefreshMetadata) {
+        const oldMetadata = nft.metadata;
+        nft.metadata = await this.refreshMetadata(nft.identifier);
+        const newMetadata = nft.metadata;
+        if (newMetadata) {
+          this.logger.log(`Refreshed NFT metadata. Old: '${JSON.stringify(oldMetadata)}', New: '${JSON.stringify(newMetadata)}'`);
+        } else {
+          this.logger.log(`Refreshed NFT metadata. Old: '${JSON.stringify(oldMetadata)}', New is empty`);
+        }
+
+        this.clientProxy.emit('deleteCacheKeys', [CacheInfo.NftMetadata(nft.identifier).key]);
+      } else if (!nft.metadata) {
+        nft.metadata = await this.refreshMetadata(nft.identifier);
       }
 
       nft.media = await this.nftMediaService.getMedia(nft) ?? undefined;
@@ -81,6 +100,20 @@ export class NftQueueController {
 
       channel.reject(message, false);
     }
+  }
+
+  private async refreshMetadata(identifier: string) {
+    const owners = await this.nftService.getNftOwners(identifier, { from: 0, size: 1 });
+    if (!owners) {
+      throw new Error(`Could not fetch owners for NFT with identifier '${identifier}'`);
+    }
+
+    const nft = await this.nftService.getNftForAddress(owners[0].address, identifier);
+    if (!nft) {
+      throw new Error(`Could not fetch details for NFT with identifier '${identifier}'`);
+    }
+
+    return await this.nftMetadataService.refreshMetadata(nft);
   }
 
   private async generateThumbnail(nft: Nft, media: NftMedia, forceRefresh: boolean = false): Promise<void> {

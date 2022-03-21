@@ -118,7 +118,6 @@ export class TransactionProcessorService {
       const processSettings = new ProcessNftSettings();
       processSettings.forceRefreshMetadata = true;
       await this.nftWorkerService.addProcessNftQueueJob(nft, processSettings);
-      this.clientProxy.emit('deleteCacheKeys', [CacheInfo.NftMetadata(nft.identifier).key]);
     } catch (error) {
       this.logger.error(`Unexpected error when handling NFT update metadata for transaction with hash '${transaction.hash}'`);
       this.logger.error(error);

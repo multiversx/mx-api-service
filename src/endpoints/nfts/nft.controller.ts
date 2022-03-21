@@ -70,6 +70,7 @@ export class NftController {
   @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
   @ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
   @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
+  @ApiQuery({ name: 'isWhitelistedStorage', description: 'Return all NFTs that are whitelisted in storage', required: false })
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
   async getNftCount(
     @Query('search') search: string | undefined,
@@ -79,9 +80,10 @@ export class NftController {
     @Query('name') name: string | undefined,
     @Query('tags', ParseArrayPipe) tags: string[] | undefined,
     @Query('creator', ParseAddressPipe) creator: string | undefined,
+    @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage: boolean | undefined,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<number> {
-    return await this.nftService.getNftCount({ search, identifiers, type, collection, name, tags, creator, hasUris });
+    return await this.nftService.getNftCount({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris });
   }
 
   @Get("/nfts/c")
@@ -94,9 +96,10 @@ export class NftController {
     @Query('name') name: string | undefined,
     @Query('tags', ParseArrayPipe) tags: string[] | undefined,
     @Query('creator', ParseAddressPipe) creator: string | undefined,
+    @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage: boolean | undefined,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<number> {
-    return await this.nftService.getNftCount({ search, identifiers, type, collection, name, tags, creator, hasUris });
+    return await this.nftService.getNftCount({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris });
   }
 
   @Get('/nfts/:identifier')
