@@ -5,5 +5,19 @@
   "eslint.validate": [
     "javascript"
   ],
-  "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/coverage": true,
+    "**/dist": true,
+    "**/config/config.yaml": true,
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/coverage": true,
+    "**/dist": true,
+  },
+  "search.useIgnoreFiles": false
 }

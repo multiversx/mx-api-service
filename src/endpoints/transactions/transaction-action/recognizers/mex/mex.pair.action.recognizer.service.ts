@@ -8,16 +8,18 @@ import { MexFunction } from "./entities/mex.function.options";
 import { MexSettings } from "./entities/mex.settings";
 import { TokenTransferService } from "src/endpoints/tokens/token.transfer.service";
 import { MexSettingsService } from "./mex.settings.service";
+import { TransactionActionEsdtNftRecognizerService } from "../esdt/transaction.action.esdt.nft.recognizer.service";
 
 @Injectable()
 export class MexPairActionRecognizerService {
   constructor(
     private readonly mexSettingsService: MexSettingsService,
     private readonly tokenTransferService: TokenTransferService,
+    private readonly transactionActionEsdtNftRecognizerService: TransactionActionEsdtNftRecognizerService,
   ) { }
 
   async recognize(settings: MexSettings, metadata: TransactionMetadata): Promise<TransactionAction | undefined> {
-    if (metadata.receiver !== settings.proxyContract && !settings.pairContracts.includes(metadata.receiver)) {
+    if (!settings.pairContracts.includes(metadata.receiver)) {
       return undefined;
     }
 
@@ -60,92 +62,24 @@ export class MexPairActionRecognizerService {
 
     const destinationValueDenominated = NumberUtils.toDenominatedString(destinationValue, pair2Properties.decimals);
 
-    const result = new TransactionAction();
-    result.category = TransactionActionCategory.mex;
-    result.name = 'swap';
-    result.description = `Swap ${valueDenominated} ${pair1Properties.ticker} for a minimum of ${destinationValueDenominated} ${pair2Properties.ticker}`;
-    result.arguments = {
-      token1: {
-        ...pair1Properties,
-        value: value.toString(),
-      },
-      token2: {
-        ...pair2Properties,
-        value: destinationValue.toString(),
-      },
-      receiver: metadata.receiver,
-    };
+    metadata.transfers?.push({
+      value: destinationValue,
+      properties: pair2Properties,
+    });
 
-    return result;
+    let description = `Swap ${valueDenominated} ${pair1Properties.ticker} for a minimum of ${destinationValueDenominated} ${pair2Properties.ticker}`;
+    if (metadata.functionName === MexFunction.swapTokensFixedOutput) {
+      description = `Swap a maximum of ${valueDenominated} ${pair1Properties.ticker} for ${destinationValueDenominated} ${pair2Properties.ticker}`;
+    }
+
+    return this.transactionActionEsdtNftRecognizerService.getMultiTransferAction(metadata, TransactionActionCategory.mex, 'swap', description);
   }
 
   private getAddLiquidityAction(metadata: TransactionMetadata): TransactionAction | undefined {
-    const transfers = this.mexSettingsService.getTransfers(metadata);
-    if (!transfers) {
-      return undefined;
-    }
-
-    const pair1Properties = transfers[0].properties;
-    if (!pair1Properties) {
-      return undefined;
-    }
-
-    const pair2Properties = transfers[1].properties;
-    if (!pair2Properties) {
-      return undefined;
-    }
-
-    const pair1Value = transfers[0].value;
-    const pair1ValueDenominated = NumberUtils.toDenominatedString(pair1Value, pair1Properties.decimals);
-
-    const pair2Value = transfers[1].value;
-    const pair2ValueDenominated = NumberUtils.toDenominatedString(pair2Value, pair2Properties.decimals);
-
-    const result = new TransactionAction();
-    result.category = TransactionActionCategory.mex;
-    result.name = MexFunction.addLiquidity;
-    result.description = `Added liquidity for ${pair1ValueDenominated} ${pair1Properties.ticker} and ${pair2ValueDenominated} ${pair2Properties.ticker}`;
-    result.arguments = {
-      token1: {
-        ...pair1Properties,
-        value: pair1Value.toString(),
-      },
-      token2: {
-        ...pair2Properties,
-        value: pair2Value.toString(),
-      },
-      receiver: metadata.receiver,
-    };
-
-    return result;
+    return this.transactionActionEsdtNftRecognizerService.getMultiTransferActionWithTicker(metadata, TransactionActionCategory.mex, MexFunction.addLiquidity, 'Added liquidity for');
   }
 
   private getRemoveLiquidityAction(metadata: TransactionMetadata): TransactionAction | undefined {
-    const transfers = this.mexSettingsService.getTransfers(metadata);
-    if (!transfers) {
-      return undefined;
-    }
-
-    const properties = transfers[0].properties;
-    if (!properties) {
-      return undefined;
-    }
-
-    const value = transfers[0].value;
-    const valueDenominated = NumberUtils.toDenominatedString(value, properties.decimals);
-
-    const result = new TransactionAction();
-    result.category = TransactionActionCategory.mex;
-    result.name = MexFunction.removeLiquidity;
-    result.description = `Removed liquidity ${valueDenominated} for ${properties.ticker}`;
-    result.arguments = {
-      token: {
-        ...properties,
-        value: transfers[0].value.toString(),
-      },
-      receiver: metadata.receiver,
-    };
-
-    return result;
+    return this.transactionActionEsdtNftRecognizerService.getMultiTransferActionWithTicker(metadata, TransactionActionCategory.mex, MexFunction.removeLiquidity, 'Removed liquidity with');
   }
 }

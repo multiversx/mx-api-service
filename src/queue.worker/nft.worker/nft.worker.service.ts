@@ -33,7 +33,6 @@ export class NftWorkerService {
 
     const message = new NftMessage();
     message.identifier = nft.identifier;
-    message.nft = nft;
     message.settings = settings;
 
     this.client.send({ cmd: 'api-process-nfts' }, message).subscribe();

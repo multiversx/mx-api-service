@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
 import { TokenDetailed } from "./entities/token.detailed";
@@ -33,6 +33,7 @@ export class TokenService {
     private readonly esdtService: EsdtService,
     private readonly elasticService: ElasticService,
     private readonly cachingService: CachingService,
+    @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
     private readonly esdtAddressService: EsdtAddressService,
     private readonly gatewayService: GatewayService
