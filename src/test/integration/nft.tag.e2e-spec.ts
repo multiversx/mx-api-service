@@ -18,7 +18,6 @@ describe('NFT Tag Service', () => {
 
   it(`should return list of tags for 1 nft`, async () => {
     const tags = await tagService.getNftTags({ from: 0, size: 1 });
-    expect(tags.length).toStrictEqual(1);
 
     for (const tag of tags) {
       expect(tag).toHaveStructure(Object.keys(new Tag()));
