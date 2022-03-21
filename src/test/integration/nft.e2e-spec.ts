@@ -266,6 +266,24 @@ describe('Nft Service', () => {
       expect(count).toBeGreaterThanOrEqual(10000);
     });
 
+    it("should return 0 if one collection isWhitelistedStorage = true ", async () => {
+      const filters = new NftFilter();
+      filters.collection = "LKMEX-f4d898";
+      filters.isWhitelistedStorage = true;
+
+      const count = await nftService.getNftCount(filters);
+      expect(count).toStrictEqual(0);
+    });
+
+    it("should return 10000 nfts if collection isWhitelistedStorage ", async () => {
+      const filters = new NftFilter();
+      filters.collection = "MOS-b9b4b2";
+      filters.isWhitelistedStorage = true;
+
+      const count = await nftService.getNftCount(filters);
+      expect(count).toStrictEqual(10000);
+    });
+
     it(`should return esdt count for address with type MetaESDT`, async () => {
       const address: string = "erd1qqqqqqqqqqqqqpgqr8z5hkwek0pmytcvla86qjusn4hkufjlrp8s7hhkjk";
       const count = await nftService.getNftCountForAddress(address, { type: NftType.MetaESDT });
