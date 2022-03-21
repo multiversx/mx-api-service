@@ -29,6 +29,7 @@ import { LogRequestsInterceptor } from './interceptors/log.requests.interceptor'
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { NftQueueModule } from './queue.worker/nft.worker/queue/nft.queue.module';
 import configuration from "config/configuration";
+import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './websockets/socket-adapter';
 
@@ -54,6 +55,7 @@ async function bootstrap() {
   const metricsService = publicApp.get<MetricsService>(MetricsService);
   const tokenAssetService = publicApp.get<TokenAssetService>(TokenAssetService);
   const protocolService = publicApp.get<ProtocolService>(ProtocolService);
+  const pluginService = publicApp.get<PluginService>(PluginService);
 
   if (apiConfigService.getIsAuthActive()) {
     publicApp.useGlobalGuards(new JwtAuthenticateGuard(apiConfigService));
@@ -88,6 +90,8 @@ async function bootstrap() {
   globalInterceptors.push(new CleanupInterceptor());
   globalInterceptors.push(new PaginationInterceptor());
 
+  await pluginService.bootstrapPublicApp(publicApp);
+
   publicApp.useGlobalInterceptors(...globalInterceptors);
   const description = readFileSync(
     join(__dirname, '..', 'docs', 'swagger.md'),
@@ -110,6 +114,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(publicApp, config);
   SwaggerModule.setup('docs', publicApp, document);
   SwaggerModule.setup('', publicApp, document);
+
 
   if (apiConfigService.getIsPublicApiActive()) {
     await publicApp.listen(3001);

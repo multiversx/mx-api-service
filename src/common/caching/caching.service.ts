@@ -15,6 +15,8 @@ export class CachingService {
   private client = createClient(6379, this.configService.getRedisUrl());
   private asyncSet = promisify(this.client.set).bind(this.client);
   private asyncGet = promisify(this.client.get).bind(this.client);
+  private asyncIncr = promisify(this.client.incr).bind(this.client);
+  private asyncExpire = promisify(this.client.expire).bind(this.client);
   private asyncFlushDb = promisify(this.client.flushdb).bind(this.client);
   private asyncMGet = promisify(this.client.mget).bind(this.client);
   private asyncMulti = (commands: any[]) => {
@@ -46,6 +48,14 @@ export class CachingService {
         this.metricsService.setRedisDuration('KEYS', profiler.duration);
       }
     }
+  }
+
+  public async incrementRemote(key: string): Promise<number> {
+    return await this.asyncIncr(key);
+  }
+
+  public async setTtlRemote(key: string, ttl: number): Promise<void> {
+    return await this.asyncExpire(key, ttl);
   }
 
   public async setCacheRemote<T>(key: string, value: T, ttl: number = this.configService.getCacheTtl()): Promise<T> {
