@@ -72,4 +72,14 @@ describe('Network Service', () => {
       expect(status).toHaveStructure(Object.keys(new Stats()));
     });
   });
+
+  describe("Get APR", () => {
+    it("should return APR, toUpAPR, baseAPR", async () => {
+      const results = await networkService.getApr();
+
+      expect(results.hasOwnProperty("apr")).toBeTruthy();
+      expect(results.hasOwnProperty("topUpApr")).toBeTruthy();
+      expect(results.hasOwnProperty("baseApr")).toBeTruthy();
+    });
+  });
 });

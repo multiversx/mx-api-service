@@ -1,15 +1,16 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservices';
-import { ApiConfigService } from '../api-config/api.config.service';
-import { CachingModule } from '../caching/caching.module';
-import { MicroserviceController } from './microservice.controller';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ApiConfigModule } from 'src/common/api-config/api.config.module';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { CachingModule } from 'src/common/caching/caching.module';
+import { TransactionCompletedService } from './transaction.completed.service';
 
 @Module({
   imports: [
-    forwardRef(() => CachingModule),
-  ],
-  controllers: [
-    MicroserviceController,
+    ScheduleModule.forRoot(),
+    ApiConfigModule,
+    CachingModule,
   ],
   providers: [
     {
@@ -31,7 +32,7 @@ import { MicroserviceController } from './microservice.controller';
       },
       inject: [ApiConfigService],
     },
+    TransactionCompletedService,
   ],
-  exports: ['PUBSUB_SERVICE'],
 })
-export class MicroserviceModule { }
+export class TransactionCompletedModule { }

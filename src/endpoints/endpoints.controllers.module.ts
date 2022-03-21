@@ -28,6 +28,7 @@ import { TransactionController } from "./transactions/transaction.controller";
 import { UsernameController } from "./usernames/username.controller";
 import { VmQueryController } from "./vm.query/vm.query.controller";
 import { WaitingListController } from "./waiting-list/waiting.list.controller";
+import { WebsocketController } from "./websocket/websocket.controller";
 
 @Module({
   imports: [
@@ -40,7 +41,7 @@ import { WaitingListController } from "./waiting-list/waiting.list.controller";
     KeysController, MexController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
     ProviderController, ProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
     TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
-    HealthCheckController, DappConfigController,
+    HealthCheckController, DappConfigController, WebsocketController,
   ],
 })
 export class EndpointsControllersModule { }

@@ -80,6 +80,71 @@ describe('Token Service', () => {
     });
   });
 
+  describe("Get Tokens From Elastic", () => {
+    it("should return one token from elastic for a specific address", async () => {
+      const filter = new TokenFilter();
+      filter.identifier = "WEGLD-bd4d79";
+      const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
+
+      const results = await tokenService.getTokensForAddressFromElastic(address, { from: 0, size: 1 }, filter);
+
+      for (const result of results) {
+        expect(result.identifier).toStrictEqual("WEGLD-bd4d79");
+        expect(result.name).toStrictEqual("WrappedEGLD");
+        expect(result.owner).toStrictEqual("erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97");
+        expect(result.assets?.website).toStrictEqual("https://maiar.exchange");
+
+        expect(result.hasOwnProperty("canUpgrade")).toBeTruthy();
+        expect(result.hasOwnProperty("canMint")).toBeTruthy();
+        expect(result.hasOwnProperty("canBurn")).toBeTruthy();
+        expect(result.hasOwnProperty("canChangeOwner")).toBeTruthy();
+        expect(result.hasOwnProperty("canPause")).toBeTruthy();
+        expect(result.hasOwnProperty("canFreeze")).toBeTruthy();
+        expect(result.hasOwnProperty("canWipe")).toBeTruthy();
+
+        expect(result.balance).toBeDefined();
+      }
+    });
+
+    it("should return two tokens from elastic for a specific address", async () => {
+      const filter = new TokenFilter();
+      filter.identifiers = ["WEGLD-bd4d79", "WATER-9ed400"];
+      const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
+
+      const results = await tokenService.getTokensForAddressFromElastic(address, { from: 0, size: 2 }, filter);
+
+      const tokensIdentifiers = results.map((tokens) => tokens.identifier);
+      expect(tokensIdentifiers.includes('WEGLD-bd4d79')).toStrictEqual(true);
+      expect(tokensIdentifiers.includes('WATER-9ed400')).toStrictEqual(true);
+    });
+
+    it("should return one token from eleastic for a specific address", async () => {
+      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+      const filter = new TokenFilter();
+      filter.identifier = "RIDE-7d18e9";
+
+      const results = await tokenService.getTokensForAddressFromElastic(address, { from: 0, size: 1 }, filter);
+
+      for (const result of results) {
+        expect(result.identifier).toStrictEqual("RIDE-7d18e9");
+        expect(result.name).toStrictEqual("holoride");
+        expect(result.owner).toStrictEqual("erd1fnq9urh6945yez393jf86umt7zhqz3wa5dqxa2fwv5gemj0fxqpsjcarlm");
+        expect(result.assets?.website).toStrictEqual("https://www.holoride.com");
+      }
+    });
+
+    it("should return two tokens from eleastic for a specific address", async () => {
+      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+      const filter = new TokenFilter();
+      filter.identifiers = ["RIDE-7d18e9", "MEX-455c57"];
+
+      const results = await tokenService.getTokensForAddressFromElastic(address, { from: 0, size: 1 }, filter);
+      const nftsIdentifiers = results.map((nft) => nft.identifier);
+
+      expect(nftsIdentifiers.includes('RIDE-7d18e9')).toStrictEqual(true);
+    });
+  });
+
   describe("Get Token", () => {
     it("should return token details", async () => {
       const identifier: string = "RIDE-7d18e9";
@@ -239,6 +304,20 @@ describe('Token Service', () => {
 
       expect(typeof result).toStrictEqual("number");
     });
+
+    it("should return token count for smart contract address", async () => {
+      const smartContractAddress: string = "erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl";
+      const result = await tokenService.getTokenCountForAddress(smartContractAddress);
+
+      expect(typeof result).toStrictEqual("number");
+    });
+
+    it("should return from elastic token count for a specific address", async () => {
+      const smartContractAddress: string = "erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl";
+      const result = await tokenService.getTokenCountForAddressFromElastic(smartContractAddress);
+
+      expect(typeof result).toStrictEqual("number");
+    });
   });
 
   describe("Get Token For Address", () => {
@@ -256,7 +335,7 @@ describe('Token Service', () => {
       const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
       const filter = new TokenFilter();
       filter.identifier = "RIDE-7d18e9";
-      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 1 }, filter);
+      const results = await tokenService.getTokensForAddressFromGateway(address, { from: 0, size: 1 }, filter);
 
       expect(results).toHaveLength(1);
 
@@ -270,7 +349,7 @@ describe('Token Service', () => {
       const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
       const filter = new TokenFilter();
       filter.name = "holoride";
-      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 1 }, filter);
+      const results = await tokenService.getTokensForAddressFromGateway(address, { from: 0, size: 1 }, filter);
 
       expect(results).toHaveLength(1);
 
@@ -280,17 +359,79 @@ describe('Token Service', () => {
       }
     });
 
-    //TBD
     it("should return two tokens details for a specific address based on identifiers property filter", async () => {
       const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
       const filter = new TokenFilter();
       filter.identifiers = ["RIDE-7d18e9", "MEX-455c57"];
 
-      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 1 }, filter);
+      const results = await tokenService.getTokensForAddressFromGateway(address, { from: 0, size: 1 }, filter);
       const nftsIdentifiers = results.map((nft) => nft.identifier);
 
       expect(nftsIdentifiers.includes('RIDE-7d18e9')).toStrictEqual(true);
-      // expect(nftsIdentifiers.includes('MEX-455c57')).toStrictEqual(true);
+    });
+
+    it("should return one token for a specific smart contract address", async () => {
+      const smartContractAddress: string = "erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl";
+      const filter = new TokenFilter();
+      filter.identifier = "WEGLD-bd4d79";
+
+      const results = await tokenService.getTokensForAddress(smartContractAddress, { from: 0, size: 1 }, filter);
+
+      for (const result of results) {
+        expect(result.identifier).toStrictEqual("WEGLD-bd4d79");
+        expect(result.name).toStrictEqual("WrappedEGLD");
+        expect(result.owner).toStrictEqual("erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97");
+        expect(result.assets?.website).toStrictEqual("https://maiar.exchange");
+
+        expect(result.hasOwnProperty("canUpgrade")).toBeTruthy();
+        expect(result.hasOwnProperty("canMint")).toBeTruthy();
+        expect(result.hasOwnProperty("canBurn")).toBeTruthy();
+        expect(result.hasOwnProperty("canChangeOwner")).toBeTruthy();
+        expect(result.hasOwnProperty("canPause")).toBeTruthy();
+        expect(result.hasOwnProperty("canFreeze")).toBeTruthy();
+        expect(result.hasOwnProperty("canWipe")).toBeTruthy();
+
+      }
+    });
+
+    it("should return two tokens for a specific smart contract address", async () => {
+      const filter = new TokenFilter();
+      filter.identifiers = ["WEGLD-bd4d79", "WATER-9ed400"];
+      const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
+
+      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 2 }, filter);
+
+      const tokensIdentifiers = results.map((tokens) => tokens.identifier);
+      expect(tokensIdentifiers.includes('WEGLD-bd4d79')).toStrictEqual(true);
+      expect(tokensIdentifiers.includes('WATER-9ed400')).toStrictEqual(true);
+    });
+
+    it("should return tokens for a specific address", async () => {
+      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+      const filter = new TokenFilter();
+      filter.identifier = "RIDE-7d18e9";
+
+      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 1 }, filter);
+
+      for (const result of results) {
+        expect(result.identifier).toStrictEqual("RIDE-7d18e9");
+        expect(result.name).toStrictEqual("holoride");
+        expect(result.owner).toStrictEqual("erd1fnq9urh6945yez393jf86umt7zhqz3wa5dqxa2fwv5gemj0fxqpsjcarlm");
+        expect(result.assets?.website).toStrictEqual("https://www.holoride.com");
+      }
+    });
+
+    it("should return only one token for a specific smart contract address, identifiers filter applyed", async () => {
+      const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
+      const filter = new TokenFilter();
+      filter.identifiers = ["WEGLD-bds4d79", "HRD-71df2d"];
+
+      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 1 }, filter);
+
+      for (const result of results) {
+        expect(result.identifier).toStrictEqual("WEGLD-bd4d79");
+        expect(result.identifier).not.toStrictEqual("HRD-71df2d");
+      }
     });
   });
 });

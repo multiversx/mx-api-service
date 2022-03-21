@@ -25,6 +25,7 @@ import { AccountService } from "./account.service";
     forwardRef(() => CollectionModule),
     forwardRef(() => PluginModule),
     TransferModule,
+    forwardRef(() => TokenModule),
   ],
   providers: [
     AccountService,

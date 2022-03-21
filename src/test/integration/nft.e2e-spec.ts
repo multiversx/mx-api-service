@@ -178,6 +178,51 @@ describe('Nft Service', () => {
         expect(nft.type).toStrictEqual(NftType.MetaESDT);
       }
     });
+
+    it(`should verify if all returned nfts from a specific collection contain the owner property`, async () => {
+      const filters = new NftFilter();
+      filters.collection = "MOS-b9b4b2";
+
+      const options = new NftQueryOptions();
+      options.withOwner = true;
+
+      const results = await nftService.getNfts({ from: 0, size: 500 }, filters, options);
+
+      const nftsOwner = results.map((result) => result.owner);
+
+      expect(nftsOwner).toBeDefined();
+      expect(nftsOwner.length).toStrictEqual(500);
+    });
+
+    it("should verify if all esdt of type NonFungibleTokens contains owner property and need to be defined", async () => {
+      const options = new NftQueryOptions();
+      options.withOwner = true;
+
+      const nfts = await nftService.getNfts({ from: 50, size: 25 }, { type: NftType.NonFungibleESDT }, options);
+      const nftOwners = nfts.map((nft) => nft.owner);
+
+      expect(nftOwners).toHaveLength(25);
+    });
+
+    it("should verify if all esdt of type MetaEsdt contains owner property and need to bedefined ", async () => {
+      const options = new NftQueryOptions();
+      options.withOwner = true;
+
+      const nfts = await nftService.getNfts({ from: 50, size: 25 }, { type: NftType.MetaESDT }, options);
+      const nftOwners = nfts.map((nft) => nft.owner);
+
+      expect(nftOwners).toHaveLength(25);
+    });
+
+    it("should verify if all esdt of type SemiFungibleESDT contains owner property and need to be defined", async () => {
+      const options = new NftQueryOptions();
+      options.withOwner = true;
+
+      const nfts = await nftService.getNfts({ from: 50, size: 25 }, { type: NftType.SemiFungibleESDT }, options);
+      const nftOwners = nfts.map((nft) => nft.owner);
+
+      expect(nftOwners).toHaveLength(25);
+    });
   });
 
   describe("NFT Count", () => {
@@ -341,6 +386,24 @@ describe('Nft Service', () => {
       expect(result.type).toStrictEqual(NftType.NonFungibleESDT);
       expect(result.identifier).toStrictEqual("EROBOT-527a29-c4");
       expect(result.creator).toBeDefined();
+    });
+  });
+
+  describe("Get NFT Identifier Media", () => {
+    it("should verify if nft media is defined and receive same value", async () => {
+      const identifier: string = "EROBOT-527a29-c4";
+      const filter = new NftFilter();
+      filter.identifiers = [identifier];
+
+      const singleNft = await nftService.getSingleNft(identifier);
+      const nfts = await nftService.getNfts({ from: 0, size: 1 }, filter);
+
+      if (!singleNft) {
+        throw new Error("Properties are not defined");
+      }
+      for (const nft of nfts) {
+        expect(nft.media).toStrictEqual(singleNft.media);
+      }
     });
   });
 });

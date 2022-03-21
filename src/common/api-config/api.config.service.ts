@@ -50,6 +50,15 @@ export class ApiConfigService {
     return this.configService.get<string>('urls.ipfs') ?? 'https://ipfs.io/ipfs';
   }
 
+  getSocketUrl(): string {
+    const url = this.configService.get<string>('urls.socket');
+    if (!url) {
+      throw new Error('No socket url present');
+    }
+
+    return url;
+  }
+
   getEsdtContractAddress(): string {
     const address = this.configService.get<string>('contracts.esdt');
     if (!address) {
@@ -208,9 +217,7 @@ export class ApiConfigService {
   }
 
   getIsTransactionProcessorCronActive(): boolean {
-    const isCronActive = this.configService.get<boolean>(
-      'cron.transactionProcessor',
-    );
+    const isCronActive = this.configService.get<boolean>('cron.transactionProcessor');
     if (isCronActive === undefined) {
       throw new Error('No cron.transactionProcessor flag present');
     }
@@ -219,14 +226,20 @@ export class ApiConfigService {
   }
 
   getTransactionProcessorMaxLookBehind(): number {
-    const transactionProcessorMaxLookBehind = this.configService.get<number>(
-      'cron.transactionProcessorMaxLookBehind',
-    );
+    const transactionProcessorMaxLookBehind = this.configService.get<number>('cron.transactionProcessorMaxLookBehind');
     if (transactionProcessorMaxLookBehind === undefined) {
       throw new Error('No cron.transactionProcessorMaxLookBehind flag present');
     }
 
     return transactionProcessorMaxLookBehind;
+  }
+
+  getIsTransactionCompletedCronActive(): boolean {
+    return this.configService.get<boolean>('cron.transactionCompleted') ?? false;
+  }
+
+  getTransactionCompletedMaxLookBehind(): number {
+    return this.configService.get<number>('cron.transactionCompletedMaxLookBehind') ?? 100;
   }
 
   getIsCacheWarmerCronActive(): boolean {

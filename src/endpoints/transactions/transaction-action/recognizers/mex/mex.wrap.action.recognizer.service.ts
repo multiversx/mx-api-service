@@ -1,17 +1,19 @@
 import { Injectable } from "@nestjs/common";
+import { TokenType } from "src/endpoints/tokens/entities/token.type";
 import { NumberUtils } from "src/utils/number.utils";
 import { TransactionAction } from "../../entities/transaction.action";
 import { TransactionActionCategory } from "../../entities/transaction.action.category";
 import { TransactionMetadata } from "../../entities/transaction.metadata";
+import { TransactionActionEsdtNftRecognizerService } from "../esdt/transaction.action.esdt.nft.recognizer.service";
 import { MexFunction } from "./entities/mex.function.options";
 import { MexSettings } from "./entities/mex.settings";
-import { TokenType } from "src/endpoints/tokens/entities/token.type";
 import { MexSettingsService } from "./mex.settings.service";
 
 @Injectable()
 export class MexWrapActionRecognizerService {
   constructor(
-    private readonly mexSettingsService: MexSettingsService
+    private readonly transactionActionEsdtNftRecognizerService: TransactionActionEsdtNftRecognizerService,
+    private readonly mexSettingsService: MexSettingsService,
   ) { }
 
   recognize(settings: MexSettings, metadata: TransactionMetadata): TransactionAction | undefined {
@@ -30,11 +32,13 @@ export class MexWrapActionRecognizerService {
   }
 
   private getWrapAction(metadata: TransactionMetadata): TransactionAction | undefined {
-    const valueDenominated = NumberUtils.toDenominatedString(metadata.value);
     const wegldId = this.mexSettingsService.getWegldId();
     if (!wegldId) {
       return undefined;
     }
+
+    const valueDenominated = NumberUtils.toDenominatedString(metadata.value);
+
 
     const result = new TransactionAction();
     result.category = TransactionActionCategory.mex;
@@ -56,32 +60,6 @@ export class MexWrapActionRecognizerService {
   }
 
   private getUnwrapAction(metadata: TransactionMetadata): TransactionAction | undefined {
-    const transfers = this.mexSettingsService.getTransfers(metadata);
-    if (!transfers) {
-      return undefined;
-    }
-
-    const properties = transfers[0].properties;
-    if (!properties) {
-      return undefined;
-    }
-
-    const value = transfers[0].value;
-    const valueDenominated = NumberUtils.toDenominatedString(value, properties.decimals);
-
-    const result = new TransactionAction();
-    result.category = TransactionActionCategory.mex;
-    result.name = MexFunction.unwrapEgld;
-    result.description = `Unwrap ${valueDenominated} eGLD`;
-    result.arguments = {
-      token: {
-        ...properties,
-        ticker: "WEGLD",
-        value: value.toString(),
-      },
-      receiver: metadata.receiver,
-    };
-
-    return result;
+    return this.transactionActionEsdtNftRecognizerService.getMultiTransferActionWithTicker(metadata, TransactionActionCategory.mex, MexFunction.unwrapEgld, 'Unwrap');
   }
 }

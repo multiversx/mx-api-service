@@ -22,7 +22,7 @@ import { RedisClient } from 'redis';
 import { ExtractInterceptor } from './interceptors/extract.interceptor';
 import { JwtAuthenticateGuard } from './interceptors/access.interceptor';
 import { TransactionProcessorModule } from './crons/transaction.processor/transaction.processor.module';
-import { MicroserviceModule } from './common/microservice/microservice.module';
+import { PubSubListenerModule } from './common/pubsub/pub.sub.listener.module';
 import { ProtocolService } from './common/protocol/protocol.service';
 import { PaginationInterceptor } from './interceptors/pagination.interceptor';
 import { LogRequestsInterceptor } from './interceptors/log.requests.interceptor';
@@ -30,6 +30,9 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { NftQueueModule } from './queue.worker/nft.worker/queue/nft.queue.module';
 import configuration from "config/configuration";
 import { ElasticUpdaterModule } from './crons/elastic.updater/elastic.updater.module';
+import { PluginService } from './common/plugins/plugin.service';
+import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
+import { SocketAdapter } from './websockets/socket-adapter';
 
 async function bootstrap() {
   const conf = configuration();
@@ -53,6 +56,7 @@ async function bootstrap() {
   const metricsService = publicApp.get<MetricsService>(MetricsService);
   const tokenAssetService = publicApp.get<TokenAssetService>(TokenAssetService);
   const protocolService = publicApp.get<ProtocolService>(ProtocolService);
+  const pluginService = publicApp.get<PluginService>(PluginService);
 
   if (apiConfigService.getIsAuthActive()) {
     publicApp.useGlobalGuards(new JwtAuthenticateGuard(apiConfigService));
@@ -87,6 +91,8 @@ async function bootstrap() {
   globalInterceptors.push(new CleanupInterceptor());
   globalInterceptors.push(new PaginationInterceptor());
 
+  await pluginService.bootstrapPublicApp(publicApp);
+
   publicApp.useGlobalInterceptors(...globalInterceptors);
   const description = readFileSync(
     join(__dirname, '..', 'docs', 'swagger.md'),
@@ -110,6 +116,7 @@ async function bootstrap() {
   SwaggerModule.setup('docs', publicApp, document);
   SwaggerModule.setup('', publicApp, document);
 
+
   if (apiConfigService.getIsPublicApiActive()) {
     await publicApp.listen(3001);
   }
@@ -122,6 +129,11 @@ async function bootstrap() {
   if (apiConfigService.getIsTransactionProcessorCronActive()) {
     const processorApp = await NestFactory.create(TransactionProcessorModule);
     await processorApp.listen(5001);
+  }
+
+  if (apiConfigService.getIsTransactionCompletedCronActive()) {
+    const processorApp = await NestFactory.create(TransactionCompletedModule);
+    await processorApp.listen(7001);
   }
 
   if (apiConfigService.getIsCacheWarmerCronActive()) {
@@ -157,7 +169,7 @@ async function bootstrap() {
   const logger = new Logger('Bootstrapper');
 
   const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
-    MicroserviceModule,
+    PubSubListenerModule,
     {
       transport: Transport.REDIS,
       options: {
@@ -170,13 +182,15 @@ async function bootstrap() {
       },
     },
   );
+  pubSubApp.useWebSocketAdapter(new SocketAdapter(pubSubApp));
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   pubSubApp.listen();
 
   logger.log(`Public API active: ${apiConfigService.getIsPublicApiActive()}`);
   logger.log(`Private API active: ${apiConfigService.getIsPrivateApiActive()}`);
-  logger.log(`Transaction processor active: ${apiConfigService.getIsTransactionProcessorCronActive()}`,);
-  logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`,);
+  logger.log(`Transaction processor cron active: ${apiConfigService.getIsTransactionProcessorCronActive()}`);
+  logger.log(`Transaction completed cron active: ${apiConfigService.getIsTransactionCompletedCronActive()}`);
+  logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
   logger.log(`Queue worker active: ${apiConfigService.getIsQueueWorkerCronActive()}`);
   logger.log(`Elastic updater active: ${apiConfigService.getIsElasticUpdaterCronActive()}`);
 }

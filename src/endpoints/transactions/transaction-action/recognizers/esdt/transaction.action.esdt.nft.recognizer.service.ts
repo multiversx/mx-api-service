@@ -21,7 +21,7 @@ export class TransactionActionEsdtNftRecognizerService implements TransactionAct
   ) { }
 
   async recognize(metadata: TransactionMetadata): Promise<TransactionAction | undefined> {
-    return await this.recognizeTransfer(metadata) ??
+    return this.recognizeTransfer(metadata) ??
       await this.recognizeFreeze(metadata);
   }
 
@@ -57,17 +57,42 @@ export class TransactionActionEsdtNftRecognizerService implements TransactionAct
     return result;
   }
 
-  // eslint-disable-next-line require-await
-  async recognizeTransfer(metadata: TransactionMetadata): Promise<TransactionAction | undefined> {
+  private recognizeTransfer(metadata: TransactionMetadata): TransactionAction | undefined {
+    return this.getMultiTransferAction(metadata, TransactionActionCategory.esdtNft, 'transfer', 'Transfer');
+  }
+
+  getMultiTransferActionWithTicker(metadata: TransactionMetadata, category: TransactionActionCategory, name: string, action: string): TransactionAction | undefined {
+    const multiTransfers = metadata.transfers;
+    if (!multiTransfers) {
+      return undefined;
+    }
+
+    const description = `${action} ${multiTransfers.map(x => `${NumberUtils.toDenominatedString(x.value, x.properties?.decimals)} ${x.properties?.ticker}`).filter(x => x !== undefined).join(', ')}`;
+
+    return this.getMultiTransferAction(metadata, category, name, description);
+  }
+
+  getMultiTransferActionWithFullDescription(metadata: TransactionMetadata, category: TransactionActionCategory, name: string, action: string): TransactionAction | undefined {
+    const multiTransfers = metadata.transfers;
+    if (!multiTransfers) {
+      return undefined;
+    }
+
+    const description = `${action} ${multiTransfers.map(x => this.getMultiTransferDescription(x)).filter(x => x !== undefined).join(', ')} to ${metadata.receiver}`;
+
+    return this.getMultiTransferAction(metadata, category, name, description);
+  }
+
+  getMultiTransferAction(metadata: TransactionMetadata, category: TransactionActionCategory, name: string, description: string): TransactionAction | undefined {
     const multiTransfers = metadata.transfers;
     if (!multiTransfers) {
       return undefined;
     }
 
     const result = new TransactionAction();
-    result.category = TransactionActionCategory.esdtNft;
-    result.name = 'transfer';
-    result.description = `Transfer ${multiTransfers.map(x => this.getMultiTransferDescription(x)).filter(x => x !== undefined).join(', ')} to ${metadata.receiver}`;
+    result.category = category;
+    result.name = name;
+    result.description = description;
     result.arguments = {
       transfers: multiTransfers.map(x => this.getNftTransferDetails(x)).filter(x => x !== undefined),
       receiver: metadata.receiver,
@@ -78,7 +103,7 @@ export class TransactionActionEsdtNftRecognizerService implements TransactionAct
     return result;
   }
 
-  private getNftTransferDetails(transfer: TransactionMetadataTransfer): any {
+  getNftTransferDetails(transfer: TransactionMetadataTransfer): any {
     const properties = transfer.properties;
     if (properties) {
       return {
@@ -90,7 +115,7 @@ export class TransactionActionEsdtNftRecognizerService implements TransactionAct
     return undefined;
   }
 
-  private getMultiTransferDescription(transfer: TransactionMetadataTransfer): string | undefined {
+  getMultiTransferDescription(transfer: TransactionMetadataTransfer): string | undefined {
     const properties = transfer.properties;
     if (!properties) {
       return undefined;

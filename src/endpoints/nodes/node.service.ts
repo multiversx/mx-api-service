@@ -307,7 +307,7 @@ export class NodeService {
   async getOwners(blses: string[], epoch: number) {
     const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(bls, epoch).key);
 
-    const cached = await this.cachingService.batchGetCache(keys);
+    const cached = await this.cachingService.batchGetCacheRemote(keys);
 
     const missing = cached
       .map((element, index) => (element === null ? index : false))
@@ -492,7 +492,7 @@ export class NodeService {
       const node: Node = {
         bls,
         name,
-        version: version ? version.split('-')[0].split('/')[0] : '',
+        version: version ? (version.includes('-rc') ? version.split('-').slice(0, 2).join('-').split('/')[0] : version.split('-')[0].split('/')[0]) : '',
         identity: identity && identity !== '' ? identity.toLowerCase() : identity,
         rating: parseFloat(parseFloat(rating).toFixed(2)),
         tempRating: parseFloat(parseFloat(tempRating).toFixed(2)),
