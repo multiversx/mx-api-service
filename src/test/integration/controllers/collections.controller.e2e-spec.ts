@@ -121,7 +121,7 @@ describe("collections Controller", () => {
 
   it("/collections?identifiers - should return 200 status code and two collections details based on identifier filter", async () => {
     const params = new URLSearchParams({
-      'identifiers': 'PEACE-086f39,SHIT-4bc579',
+      'identifiers': 'PEACE-086f39,MOS-b9b4b2',
     });
 
     await request(app.getHttpServer())
