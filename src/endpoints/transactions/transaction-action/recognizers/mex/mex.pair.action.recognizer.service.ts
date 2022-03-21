@@ -62,7 +62,16 @@ export class MexPairActionRecognizerService {
 
     const destinationValueDenominated = NumberUtils.toDenominatedString(destinationValue, pair2Properties.decimals);
 
-    const description = `Swap ${valueDenominated} ${pair1Properties.ticker} for a minimum of ${destinationValueDenominated} ${pair2Properties.ticker}`;
+    metadata.transfers?.push({
+      value: destinationValue,
+      properties: pair2Properties,
+    });
+
+    let description = `Swap ${valueDenominated} ${pair1Properties.ticker} for a minimum of ${destinationValueDenominated} ${pair2Properties.ticker}`;
+    if (metadata.functionName === MexFunction.swapTokensFixedOutput) {
+      description = `Swap a maximum of ${valueDenominated} ${pair1Properties.ticker} for ${destinationValueDenominated} ${pair2Properties.ticker}`;
+    }
+
     return this.transactionActionEsdtNftRecognizerService.getMultiTransferAction(metadata, TransactionActionCategory.mex, 'swap', description);
   }
 

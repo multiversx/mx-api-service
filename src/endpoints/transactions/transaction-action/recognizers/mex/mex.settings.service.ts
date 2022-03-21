@@ -117,6 +117,10 @@ export class MexSettingsService {
     return microServiceUrl;
   }
 
+  getWegldId(): string | undefined {
+    return this.settings?.wegldId;
+  }
+
   getMicroServiceUrl(): string | undefined {
     return this.configService.get<string>('transaction-action.mex.microServiceUrl') ?? this.configService.get<string>('plugins.transaction-action.mex.microServiceUrl');
   }
