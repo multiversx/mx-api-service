@@ -83,7 +83,7 @@ export class EsdtService {
 
       token.accounts = await this.cachingService.getOrSetCache(
         CacheInfo.TokenAccounts(token.identifier).key,
-        async () => await this.getTokenAccountsCount(token.identifier),
+        async () => await this.getEsdtAccountsCount(token.identifier),
         CacheInfo.TokenAccounts(token.identifier).ttl
       );
     }
@@ -93,7 +93,7 @@ export class EsdtService {
     return tokens;
   }
 
-  async getTokenAccountsCount(identifier: string): Promise<number> {
+  async getEsdtAccountsCount(identifier: string): Promise<number> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
 
