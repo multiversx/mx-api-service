@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { CachingService } from "src/common/caching/caching.service";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { ApiService } from "src/common/network/api.service";
 import { Constants } from "src/utils/constants";
 import { TransactionMetadata } from "../../entities/transaction.metadata";
@@ -35,9 +36,10 @@ export class MexSettingsService {
     let settings = this.settings;
     if (settings === undefined) {
       settings = await this.cachingService.getOrSetCache(
-        'mex:settings:v3',
+        CacheInfo.MexSettings.key,
         async () => await this.getSettingsRaw(),
-        Constants.oneDay()
+        CacheInfo.MexSettings.ttl,
+        Constants.oneMinute() * 10,
       );
 
       this.settings = settings;
@@ -70,13 +72,13 @@ export class MexSettingsService {
     return mexContracts;
   }
 
-  private async getSettingsRaw(): Promise<MexSettings | null> {
+  public async getSettingsRaw(): Promise<MexSettings | null> {
     const params = {
       "variables": {
         "offset": 0,
         "limit": 500,
       },
-      "query": "query ($offset: Int, $limit: Int) {\r\n  pairs(offset: $offset, limit: $limit) {\r\n    address\r\n    firstToken {\r\n      name\r\n      identifier\r\n      decimals\r\n      __typename\r\n    }\r\n    secondToken {\r\n      name\r\n      identifier\r\n      decimals\r\n      __typename\r\n    } }\r\n  proxy {\r\n    address\r\n  }\r\n  farms {\r\n    address\r\n  }\r\n  wrappingInfo {\r\n    address\r\n    shard\r\n  }\r\n  distribution {\r\n    address\r\n  }\r\n  lockedAssetFactory {\r\n    address\r\n  }\r\n  stakingFarms {\r\n    address\r\n  }\r\n  stakingProxies {\r\n    address\r\n  }\r\n}\r\n",
+      "query": "query ($offset: Int, $limit: Int) {\r\n  pairs(offset: $offset, limit: $limit) {\r\n    state\r\n     address\r\n    firstToken {\r\n      name\r\n      identifier\r\n      decimals\r\n      __typename\r\n    }\r\n    secondToken {\r\n      name\r\n      identifier\r\n      decimals\r\n      __typename\r\n    } }\r\n  proxy {\r\n    address\r\n  }\r\n  farms {\r\n    state\r\n    address\r\n  }\r\n  wrappingInfo {\r\n    address\r\n    shard\r\n  }\r\n  distribution {\r\n    address\r\n  }\r\n  lockedAssetFactory {\r\n    address\r\n  }\r\n  stakingFarms {\r\n    state\r\n    address\r\n  }\r\n  stakingProxies {\r\n    address\r\n  }\r\n}\r\n",
     };
 
     const result = await this.apiCall(params);
@@ -86,13 +88,13 @@ export class MexSettingsService {
 
     const settings = new MexSettings();
     settings.farmContracts = [
-      ...result.farms.map((x: any) => x.address),
-      ...result.stakingFarms.map((x: any) => x.address),
+      ...result.farms.filter((x: any) => ['Active', 'Migrate'].includes(x.state)).map((x: any) => x.address),
+      ...result.stakingFarms.filter((x: any) => x.state === 'Active').map((x: any) => x.address),
       ...result.stakingProxies.map((x: any) => x.address),
       result.proxy.address,
     ];
     settings.pairContracts = [
-      ...result.pairs.map((x: any) => x.address),
+      ...result.pairs.filter((x: any) => x.state === 'Active').map((x: any) => x.address),
       result.proxy.address,
     ];
     settings.wrapContracts = result.wrappingInfo.map((x: any) => x.address);
