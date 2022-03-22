@@ -24,6 +24,7 @@ import { TokenAssets } from "../tokens/entities/token.assets";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { TokenAddressRoles } from "../tokens/entities/token.address.roles";
+import { TokenUtils } from "src/utils/token.utils";
 
 @Injectable()
 export class CollectionService {
@@ -223,13 +224,13 @@ export class CollectionService {
       for (const address of addresses) {
         const foundAddressRoles = roles.find((addressRole) => addressRole.address === address);
         if (foundAddressRoles) {
-          foundAddressRoles.roles?.push(role);
+          TokenUtils.setRole(foundAddressRoles, role);
           continue;
         }
 
         const addressRole = new TokenAddressRoles();
         addressRole.address = address;
-        addressRole.roles = [role];
+        TokenUtils.setRole(addressRole, role);
 
         roles.push(addressRole);
       }
@@ -257,7 +258,10 @@ export class CollectionService {
 
       const roleForAddress = new TokenAddressRoles();
       roleForAddress.address = components[0];
-      roleForAddress.roles = components[1].split(',');
+      const roles = components[1].split(',');
+      for (const role of roles) {
+        TokenUtils.setRole(roleForAddress, role);
+      }
 
       nftCollection.roles.push(roleForAddress);
     }

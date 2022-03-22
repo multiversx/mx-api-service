@@ -358,13 +358,13 @@ export class TokenService {
         for (const address of addresses) {
           const foundAddressRoles = roles.find((addressRole) => addressRole.address === address);
           if (foundAddressRoles) {
-            foundAddressRoles.roles?.push(role);
+            TokenUtils.setRole(foundAddressRoles, role);
             continue;
           }
 
           const addressRole = new TokenAddressRoles();
           addressRole.address = address;
-          addressRole.roles = [role];
+          TokenUtils.setRole(addressRole, role);
 
           roles.push(addressRole);
         }
@@ -396,11 +396,10 @@ export class TokenService {
 
       const addressRoles: TokenAddressRoles = new TokenAddressRoles();
       addressRoles.address = address;
-      addressRoles.roles = [];
       for (const role of Object.keys(token.roles)) {
         const addresses = token.roles[role].distinct();
         if (addresses.includes(address)) {
-          addressRoles.roles.push(role);
+          TokenUtils.setRole(addressRoles, role);
         }
       }
 

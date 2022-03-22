@@ -242,12 +242,12 @@ export class EsdtService {
 
         currentAddressRoles = new TokenAddressRoles();
         currentAddressRoles.address = address;
-        currentAddressRoles.roles = [];
+
         continue;
       }
 
       const role = BinaryUtils.base64Decode(valueEncoded);
-      currentAddressRoles.roles?.push(role);
+      TokenUtils.setRole(currentAddressRoles, role);
     }
 
     if (currentAddressRoles.address) {
