@@ -126,7 +126,7 @@ export class CollectionService {
       nftCollection.canFreeze = collectionProperties.canFreeze;
       nftCollection.canWipe = collectionProperties.canWipe;
       nftCollection.canPause = collectionProperties.canPause;
-      nftCollection.canTransferRole = collectionProperties.canTransferNFTCreateRole;
+      nftCollection.canTransferNftCreateRole = collectionProperties.canTransferNFTCreateRole;
       nftCollection.owner = collectionProperties.owner;
 
       if (nftCollection.type === NftType.MetaESDT) {
@@ -205,7 +205,9 @@ export class CollectionService {
       return undefined;
     }
 
-    const [collectionWithProperties] = await this.applyPropertiesToCollections([nftCollection.token]);
+    const [collectionWithProperties] = await this.applyPropertiesToCollections([collection]);
+
+    collectionWithProperties.timestamp = nftCollection.timestamp;
 
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       await this.applySpecialRoles(collectionWithProperties);

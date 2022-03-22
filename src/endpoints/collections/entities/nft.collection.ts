@@ -32,7 +32,7 @@ export class NftCollection {
   canPause: boolean = false;
 
   @ApiProperty()
-  canTransferRole: boolean = false;
+  canTransferNftCreateRole: boolean = false;
 
   @ApiProperty()
   decimals: number | undefined = undefined;
