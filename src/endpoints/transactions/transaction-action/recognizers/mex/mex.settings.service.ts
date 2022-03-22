@@ -3,6 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { ApiService } from "src/common/network/api.service";
+import { Constants } from "src/utils/constants";
 import { TransactionMetadata } from "../../entities/transaction.metadata";
 import { TransactionMetadataTransfer } from "../../entities/transaction.metadata.transfer";
 import { MexSettings } from "./entities/mex.settings";
@@ -37,7 +38,8 @@ export class MexSettingsService {
       settings = await this.cachingService.getOrSetCache(
         CacheInfo.MexSettings.key,
         async () => await this.getSettingsRaw(),
-        CacheInfo.MexSettings.ttl
+        CacheInfo.MexSettings.ttl,
+        Constants.oneMinute() * 10,
       );
 
       this.settings = settings;

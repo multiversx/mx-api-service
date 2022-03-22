@@ -209,7 +209,7 @@ export class CacheWarmerService {
     await this.pluginService.handleEveryMinuteCron();
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async handleMexSettings() {
     await Locker.lock('Mex settings invalidations', async () => {
       const settings = await this.mexSettingsService.getSettingsRaw();
