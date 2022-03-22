@@ -213,7 +213,9 @@ export class CacheWarmerService {
   async handleMexSettings() {
     await Locker.lock('Mex settings invalidations', async () => {
       const settings = await this.mexSettingsService.getSettingsRaw();
-      await this.invalidateKey(CacheInfo.MexSettings.key, settings, CacheInfo.MexSettings.ttl);
+      if (settings) {
+        await this.invalidateKey(CacheInfo.MexSettings.key, settings, CacheInfo.MexSettings.ttl);
+      }
     });
   }
 

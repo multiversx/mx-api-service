@@ -76,7 +76,7 @@ export class MexSettingsService {
         "offset": 0,
         "limit": 500,
       },
-      "query": "query ($offset: Int, $limit: Int) {\r\n  pairs(offset: $offset, limit: $limit) {\r\n    address\r\n    firstToken {\r\n      name\r\n      identifier\r\n      decimals\r\n      __typename\r\n    }\r\n    secondToken {\r\n      name\r\n      identifier\r\n      decimals\r\n      __typename\r\n    } }\r\n  proxy {\r\n    address\r\n  }\r\n  farms {\r\n    address\r\n  }\r\n  wrappingInfo {\r\n    address\r\n    shard\r\n  }\r\n  distribution {\r\n    address\r\n  }\r\n  lockedAssetFactory {\r\n    address\r\n  }\r\n  stakingFarms {\r\n    address\r\n  }\r\n  stakingProxies {\r\n    address\r\n  }\r\n}\r\n",
+      "query": "query ($offset: Int, $limit: Int) {\r\n  pairs(offset: $offset, limit: $limit) {\r\n    state\r\n     address\r\n    firstToken {\r\n      name\r\n      identifier\r\n      decimals\r\n      __typename\r\n    }\r\n    secondToken {\r\n      name\r\n      identifier\r\n      decimals\r\n      __typename\r\n    } }\r\n  proxy {\r\n    address\r\n  }\r\n  farms {\r\n    state\r\n    address\r\n  }\r\n  wrappingInfo {\r\n    address\r\n    shard\r\n  }\r\n  distribution {\r\n    address\r\n  }\r\n  lockedAssetFactory {\r\n    address\r\n  }\r\n  stakingFarms {\r\n    state\r\n    address\r\n  }\r\n  stakingProxies {\r\n    address\r\n  }\r\n}\r\n",
     };
 
     const result = await this.apiCall(params);
@@ -86,13 +86,13 @@ export class MexSettingsService {
 
     const settings = new MexSettings();
     settings.farmContracts = [
-      ...result.farms.map((x: any) => x.address),
-      ...result.stakingFarms.map((x: any) => x.address),
+      ...result.farms.filter((x: any) => ['Active', 'Migrate'].includes(x.state)).map((x: any) => x.address),
+      ...result.stakingFarms.filter((x: any) => x.state === 'Active').map((x: any) => x.address),
       ...result.stakingProxies.map((x: any) => x.address),
       result.proxy.address,
     ];
     settings.pairContracts = [
-      ...result.pairs.map((x: any) => x.address),
+      ...result.pairs.filter((x: any) => x.state === 'Active').map((x: any) => x.address),
       result.proxy.address,
     ];
     settings.wrapContracts = result.wrappingInfo.map((x: any) => x.address);
