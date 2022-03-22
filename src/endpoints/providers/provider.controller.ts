@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { Controller, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
 import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Node } from "src/endpoints/nodes/entities/node";
 import { ProviderService } from "./provider.service";
@@ -17,15 +17,11 @@ export class ProviderController {
 		type: Node,
 		isArray: true,
 	})
-	@ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-	@ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
 	@ApiQuery({ name: 'identity', description: 'Search by identity', required: false })
 	async getProviders(
-		@Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-		@Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
 		@Query('identity') identity: string | undefined,
 	): Promise<Provider[]> {
-		return await this.providerService.getProviders({ from, size, identity });
+		return await this.providerService.getProviders({ identity });
 	}
 
 	@Get('/providers/:address')

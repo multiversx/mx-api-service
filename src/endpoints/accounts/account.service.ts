@@ -24,6 +24,8 @@ import { PluginService } from 'src/common/plugins/plugin.service';
 import { AccountEsdtHistory } from "./entities/account.esdt.history";
 import { AbstractQuery } from "../../common/elastic/entities/abstract.query";
 import { AccountHistory } from "./entities/account.history";
+import { QueryOperator } from 'src/common/elastic/entities/query.operator';
+import { TokenService } from '../tokens/token.service';
 
 @Injectable()
 export class AccountService {
@@ -39,6 +41,8 @@ export class AccountService {
     private readonly transactionService: TransactionService,
     @Inject(forwardRef(() => PluginService))
     private readonly pluginService: PluginService,
+    @Inject(forwardRef(() => TokenService))
+    private readonly tokenService: TokenService,
   ) {
     this.logger = new Logger(AccountService.name);
   }
@@ -347,7 +351,6 @@ export class AccountService {
     return await this.elasticService.getCount('scdeploys', elasticQuery);
   }
 
-
   async getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]> {
     const elasticQuery: ElasticQuery = AccountService.buildAccountHistoryFilterQuery(address)
       .withPagination(pagination)
@@ -365,14 +368,19 @@ export class AccountService {
     }
 
     if (token) {
-      mustQueries.push(QueryType.Match('token', token));
+      mustQueries.push(QueryType.Match('token', token, QueryOperator.AND));
     }
 
     return ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, mustQueries);
   }
 
-  async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<AccountEsdtHistory[]> {
+  async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<AccountEsdtHistory[] | undefined> {
+    const token = await this.tokenService.getToken(tokenIdentifier);
+    if (!token) {
+      return undefined;
+    }
+
     const elasticQuery: ElasticQuery = AccountService.buildAccountHistoryFilterQuery(address, tokenIdentifier)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);

@@ -41,10 +41,6 @@ export class ElasticQuery {
     return this;
   }
 
-  withMustNotCondition(queries: AbstractQuery[] | AbstractQuery): ElasticQuery {
-    return this.withCondition(QueryConditionOptions.mustNot, queries);
-  }
-
   withMustMatchCondition(key: string, value: any | undefined, operator: QueryOperator | undefined = undefined) {
     if (value === undefined) {
       return this;
@@ -71,6 +67,10 @@ export class ElasticQuery {
 
   withMustCondition(queries: AbstractQuery[] | AbstractQuery): ElasticQuery {
     return this.withCondition(QueryConditionOptions.must, queries);
+  }
+
+  withMustNotCondition(queries: AbstractQuery[] | AbstractQuery): ElasticQuery {
+    return this.withCondition(QueryConditionOptions.mustNot, queries);
   }
 
   withShouldCondition(queries: AbstractQuery[] | AbstractQuery): ElasticQuery {

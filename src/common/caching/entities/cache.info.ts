@@ -105,9 +105,16 @@ export class CacheInfo {
     };
   }
 
-  static ShardNonce(shard: number): CacheInfo {
+  static TransactionProcessorShardNonce(shard: number): CacheInfo {
     return {
       key: `shardNonce:${shard}`,
+      ttl: Number.MAX_SAFE_INTEGER,
+    };
+  }
+
+  static TransactionCompletedShardNonce(shard: number): CacheInfo {
+    return {
+      key: `completedShardNonce:${shard}`,
       ttl: Number.MAX_SAFE_INTEGER,
     };
   }
@@ -184,6 +191,13 @@ export class CacheInfo {
     return {
       key: `tokenAccounts:${identifier}`,
       ttl: Constants.oneHour(),
+    };
+  }
+
+  static TransactionPendingResults(hash: string): CacheInfo {
+    return {
+      key: `transaction:pendingresults:${hash}`,
+      ttl: Constants.oneMinute() * 20,
     };
   }
 }

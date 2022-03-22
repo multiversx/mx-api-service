@@ -1,6 +1,7 @@
 ## Type
 - [ ] Bug
 - [ ] Feature  
+- [ ] Refactoring
 - [ ] Performance improvement
 
 ## Problem setting

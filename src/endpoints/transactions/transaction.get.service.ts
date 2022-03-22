@@ -89,6 +89,7 @@ export class TransactionGetService {
 
       const hashes: string[] = [];
       hashes.push(txHash);
+      const previousHashes: Record<string, string> = {};
 
       if (!this.apiConfigService.getUseLegacyElastic()) {
         if (result.hasScResults === true && (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.results))) {
@@ -96,11 +97,12 @@ export class TransactionGetService {
 
           for (const scResult of transactionDetailed.results) {
             hashes.push(scResult.hash);
+            previousHashes[scResult.hash] = scResult.prevTxHash;
           }
         }
 
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.receipt)) {
-          const receiptHashQuery = QueryType.Match('receiptHash', txHash);
+          const receiptHashQuery = QueryType.Match('txHash', txHash);
           const elasticQueryReceipts = ElasticQuery.create()
             .withPagination({ from: 0, size: 1 })
             .withCondition(QueryConditionOptions.must, [receiptHashQuery]);
@@ -117,7 +119,7 @@ export class TransactionGetService {
           const transactionLogs: TransactionLog[] = logs.map(log => ({ id: log._id, ...ApiUtils.mergeObjects(new TransactionLog(), log._source) }));
 
           transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, transactionLogs);
-          transactionDetailed.operations = TransactionUtils.trimOperations(txHash, transactionDetailed.operations);
+          transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.operations, previousHashes);
 
           for (const log of logs) {
             if (log._id === txHash) {

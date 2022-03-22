@@ -134,9 +134,9 @@ export class NftService {
     }
 
     if (queryOptions && queryOptions.withOwner) {
-      const nonFungibleNftIdentifiers = nfts.filter(x => x.type === NftType.NonFungibleESDT).map(x => x.identifier);
+      const nftsIdentifiers = nfts.filter(x => x.type === NftType.NonFungibleESDT).map(x => x.identifier);
 
-      const accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nonFungibleNftIdentifiers);
+      const accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nftsIdentifiers, queryPagination);
 
       for (const nft of nfts) {
         if (nft.type === NftType.NonFungibleESDT) {
@@ -207,7 +207,7 @@ export class NftService {
     );
 
     for (const nft of nfts) {
-      if (!TokenUtils.hasMedia(nft)) {
+      if (TokenUtils.needsDefaultMedia(nft)) {
         nft.media = this.DEFAULT_MEDIA;
       }
     }
@@ -234,7 +234,7 @@ export class NftService {
       this.pluginService.processNft(nft),
     ]);
 
-    if (!TokenUtils.hasMedia(nft)) {
+    if (TokenUtils.needsDefaultMedia(nft)) {
       nft.media = this.DEFAULT_MEDIA;
     }
   }
@@ -393,7 +393,7 @@ export class NftService {
   }
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
-    const nfts = await this.esdtAddressService.getEsdtsForAddress(address, filter, queryPagination, source);
+    const nfts = await this.esdtAddressService.getNftsForAddress(address, filter, queryPagination, source);
 
     for (const nft of nfts) {
       await this.applyAssetsAndTicker(nft);
@@ -409,7 +409,7 @@ export class NftService {
   }
 
   async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {
-    const count = await this.esdtAddressService.getEsdtsCountForAddressFromElastic(address, filter);
+    const count = await this.esdtAddressService.getNftCountForAddressFromElastic(address, filter);
 
     return count;
   }
@@ -418,7 +418,7 @@ export class NftService {
     const filter = new NftFilter();
     filter.identifiers = [identifier];
 
-    const nfts = await this.esdtAddressService.getEsdtsForAddress(address, filter, { from: 0, size: 1 });
+    const nfts = await this.esdtAddressService.getNftsForAddress(address, filter, { from: 0, size: 1 });
     if (nfts.length === 0) {
       return undefined;
     }

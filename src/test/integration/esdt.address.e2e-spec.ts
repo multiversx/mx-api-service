@@ -25,7 +25,7 @@ describe('EsdtAddressService', () => {
       const address: string = 'erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3';
       const filter = new NftFilter();
       filter.identifiers = ['EGLDMEXF-5bcc57-0b63a1'];
-      const results = await esdtAddressService.getEsdtsForAddress(address, filter, { from: 0, size: 1 }, EsdtDataSource.gateway);
+      const results = await esdtAddressService.getNftsForAddress(address, filter, { from: 0, size: 1 }, EsdtDataSource.gateway);
 
       expect(results).toHaveLength(1);
       expect(results).toBeInstanceOf(Array);
@@ -41,7 +41,7 @@ describe('EsdtAddressService', () => {
     const address: string = 'erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3';
     const filter = new NftFilter();
     filter.identifiers = ['EGLDMEXF-5bcc57-0b63a1'];
-    const results = await esdtAddressService.getEsdtsForAddress(address, filter, { from: 0, size: 1 }, EsdtDataSource.elastic);
+    const results = await esdtAddressService.getNftsForAddress(address, filter, { from: 0, size: 1 }, EsdtDataSource.elastic);
 
     expect(results).toHaveLength(1);
     expect(results).toBeInstanceOf(Array);
@@ -57,8 +57,8 @@ describe('EsdtAddressService', () => {
     const filter = new NftFilter();
     filter.identifiers = ['EGLDMEXF-5bcc57-0b63a1'];
 
-    const elasticResults = await esdtAddressService.getEsdtsForAddress(address, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.gateway);
-    const gatewayResults = await esdtAddressService.getEsdtsForAddress(address, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.elastic);
+    const elasticResults = await esdtAddressService.getNftsForAddress(address, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.gateway);
+    const gatewayResults = await esdtAddressService.getNftsForAddress(address, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.elastic);
 
     expect(elasticResults).toStrictEqual(gatewayResults);
   });
@@ -68,7 +68,7 @@ describe('EsdtAddressService', () => {
     const filter = new NftFilter();
     filter.isWhitelistedStorage = false;
 
-    const results = await esdtAddressService.getEsdtsForAddress(address, new NftFilter(), { from: 0, size: 2 }, EsdtDataSource.gateway);
+    const results = await esdtAddressService.getNftsForAddress(address, new NftFilter(), { from: 0, size: 2 }, EsdtDataSource.gateway);
     expect(results).toHaveLength(2);
 
     for (const result of results) {
@@ -81,7 +81,7 @@ describe('EsdtAddressService', () => {
       const address: string = 'erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3';
       const filter = new NftFilter();
       filter.identifiers = ['EGLDMEXF-5bcc57-0b63a1'];
-      const count = await esdtAddressService.getEsdtsCountForAddressFromElastic(address, filter);
+      const count = await esdtAddressService.getNftCountForAddressFromElastic(address, filter);
 
       expect(typeof count).toBe('number');
     });
@@ -93,7 +93,7 @@ describe('EsdtAddressService', () => {
       const collectionFilter = new CollectionFilter();
       collectionFilter.collection = 'HMORGOTH-ecd5fb';
 
-      const collections: NftCollection[] | NftCollectionAccount[] = await esdtAddressService.getEsdtCollectionsForAddress(address, collectionFilter, { from: 0, size: 1 }, EsdtDataSource.elastic);
+      const collections: NftCollection[] | NftCollectionAccount[] = await esdtAddressService.getCollectionsForAddress(address, collectionFilter, { from: 0, size: 1 }, EsdtDataSource.elastic);
 
       expect(collections).toHaveLength(1);
       expect(collections).toBeInstanceOf(Object);
@@ -117,7 +117,7 @@ describe('EsdtAddressService', () => {
       const collectionFilter = new CollectionFilter();
       collectionFilter.collection = 'HMORGOTH-ecd5fb';
 
-      const collectionEsdtGateway: NftCollection[] | NftCollectionAccount[] = await esdtAddressService.getEsdtCollectionsForAddress(address, collectionFilter, { from: 0, size: 1 }, EsdtDataSource.gateway);
+      const collectionEsdtGateway: NftCollection[] | NftCollectionAccount[] = await esdtAddressService.getCollectionsForAddress(address, collectionFilter, { from: 0, size: 1 }, EsdtDataSource.gateway);
 
       for (const collection of collectionEsdtGateway) {
         expect(collection).toBeInstanceOf(Object);
@@ -132,7 +132,7 @@ describe('EsdtAddressService', () => {
       const address: string = 'erd1yt24jpcm58k2734lf53ws96lqtkzy46vlxwnjud7ce3vl02eahmsele6j8';
       const filter = new NftFilter();
       filter.collection = 'HMORGOTH-ecd5fb';
-      const count = await esdtAddressService.getEsdtCollectionsCountForAddressFromElastic(address, filter);
+      const count = await esdtAddressService.getCollectionCountForAddressFromElastic(address, filter);
 
       expect(typeof count).toBe('number');
     });
@@ -142,7 +142,7 @@ describe('EsdtAddressService', () => {
       const filter = new NftFilter();
       filter.collection = 'HMORGOTH-ecd5fb';
       filter.type = NftType.NonFungibleESDT;
-      const results = await esdtAddressService.getEsdtCollectionsForAddress(address, filter, { from: 0, size: 1 });
+      const results = await esdtAddressService.getCollectionsForAddress(address, filter, { from: 0, size: 1 });
 
       for (const result of results) {
         expect(result).toBeInstanceOf(Object);
