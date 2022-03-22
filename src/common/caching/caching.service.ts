@@ -504,28 +504,6 @@ export class CachingService {
     return [];
   }
 
-  async tryInvalidateTokensOnAccount(transaction: ShardTransaction): Promise<string[]> {
-    if (transaction.sender !== this.configService.getEsdtContractAddress()) {
-      return [];
-    }
-
-    return await this.deleteInCache(`tokens:${transaction.receiver}`);
-  }
-
-  async tryInvalidateTokenBalance(transaction: ShardTransaction): Promise<string[]> {
-    const transactionFuncName = transaction.getDataFunctionName();
-    if (transactionFuncName === 'ESDTTransfer') {
-      const invalidatedKeys = [];
-      let invalidated = await this.deleteInCache(`tokens:${transaction.sender}`);
-      invalidatedKeys.push(...invalidated);
-
-      invalidated = await this.deleteInCache(`tokens:${transaction.receiver}`);
-      invalidatedKeys.push(...invalidated);
-    }
-
-    return [];
-  }
-
   async flushDb(): Promise<any> {
     await this.asyncFlushDb();
   }
