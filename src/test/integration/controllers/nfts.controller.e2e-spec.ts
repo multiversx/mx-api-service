@@ -265,7 +265,7 @@ describe("NFT Controller", () => {
       .expect(200);
   });
 
-  it("/nfts/count?{identifiers} - should return 200 status code and nft details based on identifier", async () => {
+  it("/nfts/:identifier - should return 200 status code and nft details based on identifier", async () => {
     const identifier: string = "GCC-6b08ed-34";
 
     await request(app.getHttpServer())
@@ -273,7 +273,7 @@ describe("NFT Controller", () => {
       .expect(200);
   });
 
-  it("/nfts/count?{identifiers} - should return 404 status code Error: Not Found", async () => {
+  it("/nfts/:identifier - should return 404 status code Error: Not Found", async () => {
     const identifier: string = "GCC-6b08ed-34Test";
 
     await request(app.getHttpServer())
@@ -284,7 +284,7 @@ describe("NFT Controller", () => {
       });
   });
 
-  it("/nfts/count?{identifiers}/supply - should return 200 status code and nft details supply", async () => {
+  it("/nfts/:identifier/supply - should return 200 status code and nft details supply", async () => {
     const identifier: string = "GCC-6b08ed-34";
 
     await request(app.getHttpServer())
@@ -292,16 +292,16 @@ describe("NFT Controller", () => {
       .expect(200);
   });
 
-  it("/nfts/count?{identifiers}/owners - should return 200 status code and nft owners details", async () => {
-    const identifier: string = "MOS-b9b4b2";
+  it("/nfts/:identifier/owners - should return 200 status code and nft owners details", async () => {
+    const identifier: string = "LKMEX-aab910-04";
 
     await request(app.getHttpServer())
       .get(route + "/" + identifier + "/owners")
       .expect(200);
   });
 
-  it("/nfts/count?{identifiers}/owners - should return 200 status code and nft owners details", async () => {
-    const identifier: string = "MOS-b9b4b2";
+  it("/nfts/:identifier/owners - should return 200 status code and nft owners details", async () => {
+    const identifier: string = "LKMEX-aab910-04";
     const params = new URLSearchParams({
       'from': '0',
       'size': '10',
@@ -312,8 +312,8 @@ describe("NFT Controller", () => {
       .expect(200);
   });
 
-  it("/nfts/count?{identifiers}/owners/count - should return 200 status code and nft owners count", async () => {
-    const identifier: string = "MOS-b9b4b2";
+  it("/nfts/:identifier/owners/count - should return 200 status code and nft owners count", async () => {
+    const identifier: string = "LKMEX-aab910-04";
 
     await request(app.getHttpServer())
       .get(route + "/" + identifier + "/owners/count")

@@ -136,7 +136,7 @@ export class NftService {
     if (queryOptions && queryOptions.withOwner) {
       const nftsIdentifiers = nfts.filter(x => x.type === NftType.NonFungibleESDT).map(x => x.identifier);
 
-      const accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nftsIdentifiers, queryPagination);
+      const accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nftsIdentifiers, { from: 0, size: nftsIdentifiers.length });
 
       for (const nft of nfts) {
         if (nft.type === NftType.NonFungibleESDT) {
@@ -280,7 +280,22 @@ export class NftService {
     nft.metadata = await this.nftMetadataService.getMetadata(nft) ?? undefined;
   }
 
+  private async isNft(identifier: string): Promise<boolean> {
+    if (identifier.split('-').length !== 3) {
+      return false;
+    }
+
+    const nfts = await this.getNftsInternal(0, 1, new NftFilter(), identifier);
+
+    return nfts.length > 0;
+  }
+
   async getNftOwners(identifier: string, pagination: QueryPagination): Promise<NftOwner[] | undefined> {
+    const isNft = await this.isNft(identifier);
+    if (!isNft) {
+      return undefined;
+    }
+
     const accountsEsdt = await this.elasticService.getAccountEsdtByIdentifier(identifier, pagination);
 
     return accountsEsdt.map((esdt: any) => {
@@ -370,15 +385,26 @@ export class NftService {
     return nfts;
   }
 
-  async getNftOwnersCount(identifier: string): Promise<number> {
-    return await this.cachingService.getOrSetCache(
+  async getNftOwnersCount(identifier: string): Promise<number | undefined> {
+    const owners = await this.cachingService.getOrSetCache(
       `nftOwnerCount:${identifier}`,
       async () => await this.getNftOwnersCountRaw(identifier),
       Constants.oneMinute()
     );
+
+    if (owners === null) {
+      return undefined;
+    }
+
+    return owners;
   }
 
-  async getNftOwnersCountRaw(identifier: string): Promise<number> {
+  async getNftOwnersCountRaw(identifier: string): Promise<number | null> {
+    const isNft = await this.isNft(identifier);
+    if (!isNft) {
+      return null;
+    }
+
     const elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
       .withCondition(QueryConditionOptions.must, [QueryType.Match('identifier', identifier, QueryOperator.AND)]);
