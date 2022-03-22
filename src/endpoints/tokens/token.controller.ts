@@ -7,7 +7,6 @@ import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
-import { EsdtService } from "../esdt/esdt.service";
 import { TransactionStatus } from "../transactions/entities/transaction.status";
 import { TransactionService } from "../transactions/transaction.service";
 import { TokenAccount } from "./entities/token.account";
@@ -22,7 +21,6 @@ export class TokenController {
   constructor(
     private readonly tokenService: TokenService,
     private readonly transactionService: TransactionService,
-    private readonly esdtService: EsdtService,
   ) {
     this.logger = new Logger(TokenController.name);
   }
@@ -130,12 +128,17 @@ export class TokenController {
   })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  getTokenAccounts(
+  async getTokenAccounts(
     @Param('identifier') identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<TokenAccount[]> {
-    return this.tokenService.getTokenAccounts({ from, size }, identifier);
+    const accounts = await this.tokenService.getTokenAccounts({ from, size }, identifier);
+    if (!accounts) {
+      throw new NotFoundException('Token not found');
+    }
+
+    return accounts;
   }
 
   @Get("/tokens/:identifier/accounts/count")
@@ -147,10 +150,15 @@ export class TokenController {
     status: 404,
     description: 'Token not found',
   })
-  getTokenAccountsCount(
+  async getTokenAccountsCount(
     @Param('identifier') identifier: string,
   ): Promise<number> {
-    return this.esdtService.getTokenAccountsCount(identifier);
+    const count = await this.tokenService.getTokenAccountsCount(identifier);
+    if (count === undefined) {
+      throw new NotFoundException('Token not found');
+    }
+
+    return count;
   }
 
   @Get("/tokens/:identifier/transactions")

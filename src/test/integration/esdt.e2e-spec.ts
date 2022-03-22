@@ -188,7 +188,7 @@ describe('ESDT Service', () => {
   describe('Get Token Account Count', () => {
     it('return token account count', async () => {
       const tokenIdentifier: string = "EGLDMEX-0be9e5";
-      const result = await esdtService.getTokenAccountsCount(tokenIdentifier);
+      const result = await esdtService.getEsdtAccountsCount(tokenIdentifier);
 
       expect(typeof result).toStrictEqual('number');
     });
