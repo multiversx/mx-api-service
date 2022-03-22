@@ -21,6 +21,7 @@ import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { TokenService } from "src/endpoints/tokens/token.service";
+import { MexSettingsService } from "src/endpoints/transactions/transaction-action/recognizers/mex/mex.settings.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -40,7 +41,8 @@ export class CacheWarmerService {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly tokenAssetService: TokenAssetService,
     private readonly pluginService: PluginService,
-    private readonly tokenService: TokenService
+    private readonly tokenService: TokenService,
+    private readonly mexSettingsService: MexSettingsService,
   ) {
     this.configCronJob(
       'handleKeybaseAgainstKeybasePubInvalidations',
@@ -205,6 +207,14 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleCronPlugins() {
     await this.pluginService.handleEveryMinuteCron();
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleMexSettings() {
+    await Locker.lock('Mex settings invalidations', async () => {
+      const settings = await this.mexSettingsService.getSettingsRaw();
+      await this.invalidateKey(CacheInfo.MexSettings.key, settings, CacheInfo.MexSettings.ttl);
+    });
   }
 
   private async invalidateKey(key: string, data: any, ttl: number) {

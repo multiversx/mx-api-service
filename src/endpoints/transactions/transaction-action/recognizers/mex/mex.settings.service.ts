@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { CachingService } from "src/common/caching/caching.service";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { ApiService } from "src/common/network/api.service";
-import { Constants } from "src/utils/constants";
 import { TransactionMetadata } from "../../entities/transaction.metadata";
 import { TransactionMetadataTransfer } from "../../entities/transaction.metadata.transfer";
 import { MexSettings } from "./entities/mex.settings";
@@ -35,9 +35,9 @@ export class MexSettingsService {
     let settings = this.settings;
     if (settings === undefined) {
       settings = await this.cachingService.getOrSetCache(
-        'mex:settings:v3',
+        CacheInfo.MexSettings.key,
         async () => await this.getSettingsRaw(),
-        Constants.oneDay()
+        CacheInfo.MexSettings.ttl
       );
 
       this.settings = settings;
@@ -70,7 +70,7 @@ export class MexSettingsService {
     return mexContracts;
   }
 
-  private async getSettingsRaw(): Promise<MexSettings | null> {
+  public async getSettingsRaw(): Promise<MexSettings | null> {
     const params = {
       "variables": {
         "offset": 0,
