@@ -10,6 +10,12 @@ export class NftCollectionAccount extends NftCollection {
   canBurn: boolean = false;
 
   @ApiProperty()
+  canUpdateAttributes: boolean = false;
+
+  @ApiProperty()
+  canAddUri: boolean = false;
+
+  @ApiProperty()
   canAddQuantity?: boolean;
 
   @ApiProperty()
