@@ -68,7 +68,10 @@ export class LoggingInterceptor implements NestInterceptor {
       this.logger.log(logBody);
     }
 
-    const origin = request.headers['origin'];
+    let origin = request.headers['origin'];
+    if (!origin) {
+      origin = 'Unknown';
+    }
 
     return next
       .handle()
