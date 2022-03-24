@@ -26,6 +26,7 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { AddressUtils } from "src/utils/address.utils";
+import { TokenProperties } from "./entities/token.properties";
 
 @Injectable()
 export class TokenService {
@@ -94,7 +95,7 @@ export class TokenService {
 
     token.accounts = await this.cachingService.getOrSetCache(
       CacheInfo.TokenAccounts(token.identifier).key,
-      async () => await this.esdtService.getTokenAccountsCount(token.identifier),
+      async () => await this.esdtService.getEsdtAccountsCount(token.identifier),
       CacheInfo.TokenAccounts(token.identifier).ttl
     );
   }
@@ -125,7 +126,7 @@ export class TokenService {
           const result: { [key: string]: number } = {};
 
           for (const token of tokens) {
-            const accounts = await this.esdtService.getTokenAccountsCount(token.identifier);
+            const accounts = await this.esdtService.getEsdtAccountsCount(token.identifier);
             result[token.identifier] = accounts;
           }
 
@@ -327,7 +328,12 @@ export class TokenService {
     return tokensWithBalance;
   }
 
-  async getTokenAccounts(pagination: QueryPagination, identifier: string): Promise<TokenAccount[]> {
+  async getTokenAccounts(pagination: QueryPagination, identifier: string): Promise<TokenAccount[] | undefined> {
+    const properties = await this.getTokenProperties(identifier);
+    if (!properties) {
+      return undefined;
+    }
+
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withPagination(pagination)
       .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
@@ -337,6 +343,20 @@ export class TokenService {
     const tokenAccounts = await this.elasticService.getList("accountsesdt", identifier, elasticQuery);
 
     return tokenAccounts.map((tokenAccount) => ApiUtils.mergeObjects(new TokenAccount(), tokenAccount));
+  }
+
+  async getTokenAccountsCount(identifier: string): Promise<number | undefined> {
+    const properties = await this.getTokenProperties(identifier);
+    if (!properties) {
+      return undefined;
+    }
+
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
+
+    const count = await this.elasticService.getCount("accountsesdt", elasticQuery);
+
+    return count;
   }
 
   async getTokenRoles(identifier: string): Promise<TokenAddressRoles[] | undefined> {
@@ -431,6 +451,20 @@ export class TokenService {
   }
 
   async getTokenSupply(identifier: string): Promise<{ supply: string, circulatingSupply: string } | undefined> {
+    const properties = await this.getTokenProperties(identifier);
+    if (!properties) {
+      return undefined;
+    }
+
+    const result = await this.esdtService.getTokenSupply(identifier);
+
+    return {
+      supply: NumberUtils.denominateString(result.totalSupply, properties.decimals).toFixed(),
+      circulatingSupply: NumberUtils.denominateString(result.circulatingSupply, properties.decimals).toFixed(),
+    };
+  }
+
+  async getTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
     if (identifier.split('-').length !== 2) {
       return undefined;
     }
@@ -444,11 +478,6 @@ export class TokenService {
       return undefined;
     }
 
-    const result = await this.esdtService.getTokenSupply(identifier);
-
-    return {
-      supply: NumberUtils.denominateString(result.totalSupply, properties.decimals).toFixed(),
-      circulatingSupply: NumberUtils.denominateString(result.circulatingSupply, properties.decimals).toFixed(),
-    };
+    return properties;
   }
 }
