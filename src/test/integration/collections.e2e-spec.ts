@@ -268,8 +268,6 @@ describe('Collection Service', () => {
 
       // @ts-ignore
       delete collectionResults.timestamp;
-      //@ts-ignore
-      delete collectionResults.owner;
 
       expect(collection).toBeDefined();
       expect(collection).toHaveStructure(Object.keys(collectionResults));
