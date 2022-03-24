@@ -139,7 +139,15 @@ export class ProxyController {
     @Param('hash', ParseTransactionHashPipe) hash: string,
     @Query('sender', ParseAddressPipe) sender: string,
   ) {
-    return await this.gatewayGet(`transaction/${hash}/status`, GatewayComponentRequest.transactionDetails, { sender });
+    // eslint-disable-next-line require-await
+    return await this.gatewayGet(`transaction/${hash}/status`, GatewayComponentRequest.transactionDetails, { sender }, async error => {
+      const message = error.response?.data?.error;
+      if (message === 'transaction not found') {
+        throw error;
+      }
+
+      return false;
+    });
   }
 
   @Post('/vm-values/hex')
@@ -275,11 +283,19 @@ export class ProxyController {
     try {
       return await this.cachingService.getOrSetCache(
         `hyperblock/by-nonce/${nonce}`,
-        async () => await this.gatewayGet(`hyperblock/by-nonce/${nonce}`, GatewayComponentRequest.hyperblockByNonce),
+        // eslint-disable-next-line require-await
+        async () => await this.gatewayGet(`hyperblock/by-nonce/${nonce}`, GatewayComponentRequest.hyperblockByNonce, undefined, async error => {
+          const message = error.response?.data?.error;
+          if (message === 'sending request error') {
+            throw error;
+          }
+
+          return false;
+        }),
         Constants.oneDay(),
       );
     } catch (error: any) {
-      throw new BadRequestException(error.response.data);
+      throw new BadRequestException(error.response);
     }
   }
 
@@ -299,7 +315,11 @@ export class ProxyController {
       return result.data;
     } catch (error: any) {
       if (error.response) {
-        throw new BadRequestException(error.response.data);
+        if (error.response.data) {
+          throw new BadRequestException(error.response.data);
+        }
+
+        throw new BadRequestException(error.response);
       }
 
       this.logger.error(`Unhandled exception when calling gateway url '${url}'`);
