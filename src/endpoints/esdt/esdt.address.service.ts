@@ -172,8 +172,8 @@ export class EsdtAddressService {
   }
 
   private async getCollectionsForAddressFromElastic(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
-    if (filter.canCreate !== undefined || filter.canBurn !== undefined || filter.canAddQuantity !== undefined) {
-      throw new BadRequestException('canCreate / canBurn / canAddQuantity filter not supported when fetching account collections from elastic');
+    if (!this.apiConfigService.getIsIndexerV3FlagActive() && (filter.canCreate !== undefined || filter.canBurn !== undefined || filter.canAddQuantity !== undefined || filter.canUpdateAttributes !== undefined || filter.canAddUri !== undefined || filter.canTransferRole !== undefined)) {
+      throw new BadRequestException('canCreate / canBurn / canAddQuantity / canUpdateAttributes / canAddUri / canTransferRole filter not supported when fetching account collections from elastic');
     }
 
     const elasticQuery = this.collectionService.buildCollectionFilter(filter, address)
@@ -261,17 +261,29 @@ export class EsdtAddressService {
       collections = collections.filter(x => x.owner === filter.owner);
     }
 
-    // if (filter.canCreate !== undefined) {
-    //   collections = collections.filter(x => x.canCreate === filter.canCreate);
-    // }
+    if (filter.canCreate !== undefined) {
+      collections = collections.filter(x => x.roles[0].canCreate === filter.canCreate);
+    }
 
-    // if (filter.canBurn !== undefined) {
-    //   collections = collections.filter(x => x.canBurn === filter.canBurn);
-    // }
+    if (filter.canBurn !== undefined) {
+      collections = collections.filter(x => x.roles[0].canBurn === filter.canBurn);
+    }
 
-    // if (filter.canAddQuantity !== undefined) {
-    //   collections = collections.filter(x => x.canAddQuantity === filter.canAddQuantity);
-    // }
+    if (filter.canAddQuantity !== undefined) {
+      collections = collections.filter(x => x.roles[0].canAddQuantity === filter.canAddQuantity);
+    }
+
+    if (filter.canUpdateAttributes !== undefined) {
+      collections = collections.filter(x => x.roles[0].canUpdateAttributes === filter.canAddQuantity);
+    }
+
+    if (filter.canAddUri !== undefined) {
+      collections = collections.filter(x => x.roles[0].canAddUri === filter.canAddUri);
+    }
+
+    if (filter.canTransferRole !== undefined) {
+      collections = collections.filter(x => x.roles[0].canTransferRole === filter.canTransferRole);
+    }
 
     collections = collections.slice(pagination.from, pagination.from + pagination.size);
 
@@ -294,6 +306,7 @@ export class EsdtAddressService {
       accountRoles.canBurn = role ? role.includes('ESDTRoleNFTBurn') : false;
       accountRoles.canUpdateAttributes = role ? role.includes('ESDTRoleNFTUpdateAttributes') : false;
       accountRoles.canAddUri = role ? role.includes('ESDTRoleNFTAddURI') : false;
+      accountRoles.canTransferRole = role ? role.includes('ESDTTransferRole') : false;
 
       if (collection.type === NftType.SemiFungibleESDT) {
         accountRoles.canAddQuantity = role ? role.includes('ESDTRoleNFTAddQuantity') : false;

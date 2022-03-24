@@ -62,6 +62,32 @@ export class CollectionService {
       }
     }
 
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+      if (filter.canCreate !== undefined) {
+        elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('roles', { 'roles.ESDTRoleNFTCreate': address }));
+      }
+
+      if (filter.canBurn !== undefined) {
+        elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('roles', { 'roles.ESDTRoleNFTBurn': address }));
+      }
+
+      if (filter.canAddQuantity !== undefined) {
+        elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddQuantity': address }));
+      }
+
+      if (filter.canUpdateAttributes !== undefined) {
+        elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('roles', { 'roles.ESDTRoleNFTUpdateAttributes': address }));
+      }
+
+      if (filter.canAddUri !== undefined) {
+        elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddURI': address }));
+      }
+
+      if (filter.canTransferRole !== undefined) {
+        elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('roles', { 'roles.ESDTTransferRole': address }));
+      }
+    }
+
     return elasticQuery.withMustMatchCondition('token', filter.collection, QueryOperator.AND)
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
       .withMustWildcardCondition('token', filter.search)
