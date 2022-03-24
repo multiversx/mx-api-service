@@ -68,6 +68,8 @@ export class LoggingInterceptor implements NestInterceptor {
       this.logger.log(logBody);
     }
 
+    const origin = request.headers['origin'];
+
     return next
       .handle()
       .pipe(
@@ -77,13 +79,13 @@ export class LoggingInterceptor implements NestInterceptor {
           const http = context.switchToHttp();
           const res = http.getResponse();
 
-          this.metricsService.setApiCall(apiFunction, res.statusCode, profiler.duration);
+          this.metricsService.setApiCall(apiFunction, origin, res.statusCode, profiler.duration);
         }),
         catchError(err => {
           profiler.stop();
 
           const statusCode = err.status ?? HttpStatus.INTERNAL_SERVER_ERROR;
-          this.metricsService.setApiCall(apiFunction, statusCode, profiler.duration);
+          this.metricsService.setApiCall(apiFunction, origin, statusCode, profiler.duration);
 
           return throwError(() => err);
         })
