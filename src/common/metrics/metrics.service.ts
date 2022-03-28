@@ -33,7 +33,7 @@ export class MetricsService {
       MetricsService.apiCallsHistogram = new Histogram({
         name: 'api',
         help: 'API Calls',
-        labelNames: ['endpoint', 'code'],
+        labelNames: ['endpoint', 'origin', 'code'],
         buckets: [],
       });
     }
@@ -147,8 +147,8 @@ export class MetricsService {
     }
   }
 
-  setApiCall(endpoint: string, status: number, duration: number) {
-    MetricsService.apiCallsHistogram.labels(endpoint, status.toString()).observe(duration);
+  setApiCall(endpoint: string, origin: string, status: number, duration: number) {
+    MetricsService.apiCallsHistogram.labels(endpoint, origin, status.toString()).observe(duration);
   }
 
   setVmQuery(address: string, func: string, duration: number) {
