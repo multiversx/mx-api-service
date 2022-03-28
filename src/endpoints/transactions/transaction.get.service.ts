@@ -48,13 +48,27 @@ export class TransactionGetService {
   }
 
   async getTransactionLogsFromElastic(hashes: string[]): Promise<any[]> {
+    let currentHashes = hashes.slice(0, 1000);
+    const result = [];
+    while (currentHashes.length > 0) {
+      const items = await this.getTransactionLogsFromElasticInternal(currentHashes);
+      result.push(...items);
+
+      hashes = hashes.slice(1000);
+      currentHashes = hashes.slice(0, 1000);
+    }
+
+    return result;
+  }
+
+  private async getTransactionLogsFromElasticInternal(hashes: string[]): Promise<any[]> {
     const queries = [];
     for (const hash of hashes) {
       queries.push(QueryType.Match('_id', hash));
     }
 
     const elasticQueryLogs = ElasticQuery.create()
-      .withPagination({ from: 0, size: 100 })
+      .withPagination({ from: 0, size: 10000 })
       .withCondition(QueryConditionOptions.should, queries);
 
     return await this.elasticService.getLogsForTransactionHashes(elasticQueryLogs);
