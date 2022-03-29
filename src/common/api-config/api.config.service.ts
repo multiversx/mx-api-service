@@ -269,6 +269,42 @@ export class ApiConfigService {
     return isCronActive;
   }
 
+  isEventsNotifierFeatureActive(): boolean {
+    const isEventsNotifierActive = this.configService.get<boolean>('features.eventsNotifier.enabled');
+    if (isEventsNotifierActive === undefined) {
+      return false;
+    }
+
+    return isEventsNotifierActive;
+  }
+
+  getEventsNotifierFeaturePort(): number {
+    const eventsNotifierPort = this.configService.get<number>('features.eventsNotifier.port');
+    if (eventsNotifierPort === undefined) {
+      throw new Error('No events notifier port present');
+    }
+
+    return eventsNotifierPort;
+  }
+
+  getEventsNotifierUrl(): string {
+    const url = this.configService.get<string>('features.eventsNotifier.url');
+    if (!url) {
+      throw new Error('No events notifier url present');
+    }
+
+    return url;
+  }
+
+  getEventsNotifierExchange(): string {
+    const exchange = this.configService.get<string>('features.eventsNotifier.exchange');
+    if (!exchange) {
+      throw new Error('No events notifier exchange present');
+    }
+
+    return exchange;
+  }
+
   getIsProcessNftsFlagActive(): boolean {
     return this.configService.get<boolean>('flags.processNfts') ?? false;
   }

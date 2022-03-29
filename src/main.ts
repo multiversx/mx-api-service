@@ -32,6 +32,7 @@ import configuration from "config/configuration";
 import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './websockets/socket-adapter';
+import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
 
 async function bootstrap() {
   const conf = configuration();
@@ -160,6 +161,11 @@ async function bootstrap() {
     await queueWorkerApp.listen();
   }
 
+  if (apiConfigService.isEventsNotifierFeatureActive()) {
+    const eventsNotifierApp = await NestFactory.create(RabbitMqProcessorModule);
+    await eventsNotifierApp.listen(apiConfigService.getEventsNotifierFeaturePort());
+  }
+
   const logger = new Logger('Bootstrapper');
 
   const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
@@ -186,6 +192,7 @@ async function bootstrap() {
   logger.log(`Transaction completed cron active: ${apiConfigService.getIsTransactionCompletedCronActive()}`);
   logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
   logger.log(`Queue worker active: ${apiConfigService.getIsQueueWorkerCronActive()}`);
+  logger.log(`Events notifier active: ${apiConfigService.isEventsNotifierFeatureActive()}`);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
