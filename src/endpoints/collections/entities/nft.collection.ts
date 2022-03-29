@@ -35,7 +35,7 @@ export class NftCollection {
   canTransferRole: boolean = false;
 
   @ApiProperty()
-  decimals: number | undefined;
+  decimals: number | undefined = undefined;
 
   @ApiProperty()
   assets: TokenAssets | undefined = undefined;

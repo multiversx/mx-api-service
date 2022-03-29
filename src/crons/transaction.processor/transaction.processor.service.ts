@@ -69,15 +69,11 @@ export class TransactionProcessorService {
             }
 
             const invalidatedTokenProperties = await this.cachingService.tryInvalidateTokenProperties(transaction);
-            const invalidatedTokensOnAccountKeys = await this.cachingService.tryInvalidateTokensOnAccount(transaction);
-            const invalidatedTokenBalancesKeys = await this.cachingService.tryInvalidateTokenBalance(transaction);
             const invalidatedOwnerKeys = await this.tryInvalidateOwner(transaction);
             const invalidatedCollectionPropertiesKeys = await this.tryInvalidateCollectionProperties(transaction);
 
             allInvalidatedKeys.push(
               ...invalidatedTokenProperties,
-              ...invalidatedTokensOnAccountKeys,
-              ...invalidatedTokenBalancesKeys,
               ...invalidatedOwnerKeys,
               ...invalidatedCollectionPropertiesKeys
             );

@@ -12,5 +12,6 @@
   ],
   "walletAddress": "https://wallet.elrond.com",
   "apiAddress": "https://api.elrond.com",
-  "explorerAddress": "https://explorer.elrond.com"
+  "explorerAddress": "https://explorer.elrond.com",
+  "chainId": "1"
 }

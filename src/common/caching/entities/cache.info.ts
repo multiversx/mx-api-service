@@ -124,6 +124,11 @@ export class CacheInfo {
     ttl: Constants.oneDay(),
   };
 
+  static MexSettings: CacheInfo = {
+    key: 'mex:settings',
+    ttl: Constants.oneDay(),
+  };
+
   static TokenTransferProperties(identifier: string): CacheInfo {
     return {
       key: `token:transfer:properties:v2:${identifier}`,

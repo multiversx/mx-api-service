@@ -23,6 +23,7 @@ import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.com
 import { TokenService } from "src/endpoints/tokens/token.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import * as JsonDiff from "json-diff";
+import { MexSettingsService } from "src/endpoints/transactions/transaction-action/recognizers/mex/mex.settings.service";
 @Injectable()
 export class CacheWarmerService {
   private readonly logger: Logger;
@@ -45,6 +46,7 @@ export class CacheWarmerService {
     private readonly pluginService: PluginService,
     private readonly tokenService: TokenService,
     private readonly elasticService: ElasticService,
+    private readonly mexSettingsService: MexSettingsService,
   ) {
     this.logger = new Logger(CacheWarmerService.name);
 
@@ -233,6 +235,16 @@ export class CacheWarmerService {
         }
       }
     }, true);
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleMexSettings() {
+    await Locker.lock('Mex settings invalidations', async () => {
+      const settings = await this.mexSettingsService.getSettingsRaw();
+      if (settings) {
+        await this.invalidateKey(CacheInfo.MexSettings.key, settings, CacheInfo.MexSettings.ttl);
+      }
+    });
   }
 
   private async invalidateKey(key: string, data: any, ttl: number) {

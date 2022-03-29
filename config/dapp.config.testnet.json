@@ -12,5 +12,6 @@
   ],
   "walletAddress": "https://testnet-wallet.elrond.com",
   "apiAddress": "https://testnet-api.elrond.com",
-  "explorerAddress": "https://testnet-explorer.elrond.com"
+  "explorerAddress": "https://testnet-explorer.elrond.com",
+  "chainId": "T"
 }

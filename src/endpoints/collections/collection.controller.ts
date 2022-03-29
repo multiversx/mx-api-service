@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { NftCollection } from "./entities/nft.collection";
@@ -6,12 +6,16 @@ import { NftType } from "../nfts/entities/nft.type";
 import { CollectionService } from "./collection.service";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
+import { Nft } from "../nfts/entities/nft";
+import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
+import { NftService } from "../nfts/nft.service";
 
 @Controller()
 @ApiTags('collections')
 export class CollectionController {
   constructor(
     private readonly collectionService: CollectionService,
+    private readonly nftService: NftService,
   ) { }
 
   @Get("/collections")
@@ -81,5 +85,73 @@ export class CollectionController {
     }
 
     return token;
+  }
+
+  @Get("/collections/:collection/nfts")
+  @ApiResponse({
+    status: 200,
+    description: 'List non-fungible and semi-fungible tokens',
+    type: Nft,
+    isArray: true,
+  })
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
+  @ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
+  @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
+  @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
+  @ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
+  @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
+  @ApiQuery({ name: 'isWhitelistedStorage', description: 'Return all NFTs that are whitelisted in storage', required: false })
+  @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
+  @ApiQuery({ name: 'withOwner', description: 'Return owner where type = NonFungibleESDT', required: false })
+  @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false })
+  async getNfts(
+    @Param('collection') collection: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('search') search: string | undefined,
+    @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
+    @Query('type') type: NftType | undefined,
+    @Query('name') name: string | undefined,
+    @Query('tags', ParseArrayPipe) tags: string[] | undefined,
+    @Query('creator', ParseAddressPipe) creator: string | undefined,
+    @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage: boolean | undefined,
+    @Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
+    @Query('withOwner', new ParseOptionalBoolPipe) withOwner?: boolean | undefined,
+    @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean | undefined,
+  ): Promise<Nft[]> {
+    if (withOwner === true && size > 100) {
+      throw new BadRequestException(`Maximum size of 100 is allowed when activating flags 'withOwner' or 'withSupply'`);
+    }
+
+    return await this.nftService.getNfts({ from, size }, { search, identifiers, type, collection, name, tags, creator, hasUris, isWhitelistedStorage }, { withOwner, withSupply });
+  }
+
+  @Get("/collections/:collection/nfts/count")
+  @ApiResponse({
+    status: 200,
+    description: 'The number of non-fungible and semi-fungible tokens available on the blockchain',
+  })
+  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
+  @ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
+  @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
+  @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
+  @ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
+  @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
+  @ApiQuery({ name: 'isWhitelistedStorage', description: 'Return all NFTs that are whitelisted in storage', required: false })
+  @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
+  async getNftCount(
+    @Param('collection') collection: string,
+    @Query('search') search: string | undefined,
+    @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
+    @Query('type') type: NftType | undefined,
+    @Query('name') name: string | undefined,
+    @Query('tags', ParseArrayPipe) tags: string[] | undefined,
+    @Query('creator', ParseAddressPipe) creator: string | undefined,
+    @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage: boolean | undefined,
+    @Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
+  ): Promise<number> {
+    return await this.nftService.getNftCount({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris });
   }
 }

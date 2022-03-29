@@ -232,10 +232,13 @@ describe('Token Service', () => {
       const identifier: string = "RIDE-7d18e9";
       const results = await tokenService.getTokenAccounts({ from: 0, size: 10 }, identifier);
 
+      expect(results).toBeDefined();
       expect(results).toHaveLength(10);
 
-      for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new TokenAccount()));
+      if (results) {
+        for (const result of results) {
+          expect(result).toHaveStructure(Object.keys(new TokenAccount()));
+        }
       }
     });
 
