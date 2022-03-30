@@ -86,7 +86,10 @@ describe('ESDT Service', () => {
       const gatewayNfts = await esdtAddressService.getNftsForAddress(esdtAddress, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.gateway);
       const elasticNfts = await esdtAddressService.getNftsForAddress(esdtAddress, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.elastic);
 
-      expect(gatewayNfts).toStrictEqual(elasticNfts);
+      const sortedGatewayNfts = gatewayNfts.sort((a, b) => a.identifier.localeCompare(b.identifier));
+      const sortedElasticNfts = elasticNfts.sort((a, b) => a.identifier.localeCompare(b.identifier));
+
+      expect(sortedGatewayNfts).toStrictEqual(sortedElasticNfts);
     });
   });
 
