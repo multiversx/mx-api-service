@@ -21,6 +21,12 @@ flags:
   useVmQueryTracing: false
   processNfts: true
   indexer-v3: false
+features:
+  eventsNotifier:
+    enabled: true
+    port: 5674
+    url: 'amqp://guest:guest@127.0.0.1:5673'
+    exchange: 'all_events'
 image:
   width: 600
   height: 600
@@ -87,5 +93,4 @@ nftProcess:
   maxRetries: 3
 transaction-action:
   mex:
-    microServiceUrl: 'https://graph.maiar.exchange/graphql' 
-  
+    microServiceUrl: 'https://graph.maiar.exchange/graphql'
