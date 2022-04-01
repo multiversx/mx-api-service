@@ -102,5 +102,11 @@ describe('Nft Extended Attributes Service', () => {
 
       expect(tags).toStrictEqual(['Elrond', 'Robots', 'Robot', 'eRobots']);
     });
+
+    it("should return undefined because test simulates that attributes are not defined", () => {
+      const attributes: string = "bWV0YWRhdGE6UW1UQjk3dkhMYkdBZnkxVDJQZFUyWE5QdXlXQjd1Znd3aFNoNU1wTENWbjEybS8zOTUuanNvbg==";
+      const tags = nftExtendedAttributesService.getTags(attributes);
+      expect(tags).toStrictEqual([]);
+    });
   });
 });
