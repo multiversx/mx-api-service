@@ -25,6 +25,7 @@ import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { TokenAddressRoles } from "../tokens/entities/token.address.roles";
 import { TokenUtils } from "src/utils/token.utils";
+import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 
 @Injectable()
 export class CollectionService {
@@ -64,27 +65,33 @@ export class CollectionService {
 
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       if (filter.canCreate !== undefined) {
-        elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('roles', { 'roles.ESDTRoleNFTCreate': address }));
+        const condition = filter.canCreate === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
+        elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleNFTCreate': address }));
       }
 
       if (filter.canBurn !== undefined) {
-        elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('roles', { 'roles.ESDTRoleNFTBurn': address }));
+        const condition = filter.canBurn === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
+        elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleNFTBurn': address }));
       }
 
       if (filter.canAddQuantity !== undefined) {
-        elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddQuantity': address }));
+        const condition = filter.canAddQuantity === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
+        elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddQuantity': address }));
       }
 
       if (filter.canUpdateAttributes !== undefined) {
-        elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('roles', { 'roles.ESDTRoleNFTUpdateAttributes': address }));
+        const condition = filter.canUpdateAttributes === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
+        elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleNFTUpdateAttributes': address }));
       }
 
       if (filter.canAddUri !== undefined) {
-        elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddURI': address }));
+        const condition = filter.canAddUri === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
+        elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddURI': address }));
       }
 
       if (filter.canTransferRole !== undefined) {
-        elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('roles', { 'roles.ESDTTransferRole': address }));
+        const condition = filter.canTransferRole === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
+        elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTTransferRole': address }));
       }
     }
 

@@ -209,8 +209,6 @@ export class AccountController {
   @ApiQuery({ name: 'canUpdateAttributes', description: 'Filter by property canUpdateAttributes (boolean)', required: false })
   @ApiQuery({ name: 'canAddUri', description: 'Filter by property canAddUri (boolean)', required: false })
   @ApiQuery({ name: 'canTransferRole', description: 'Filter by property canTransferRole (boolean)', required: false })
-  @ApiQuery({ name: 'withNfts', description: 'Return additional nfts', required: false })
-  @ApiQuery({ name: 'nftSize', description: 'Maximum number of nfts per collection entry', required: false })
   @ApiQuery({ name: 'source', description: 'Data source of request', required: false })
   @ApiResponse({
     status: 200,

@@ -24,7 +24,6 @@ import { NftCollection } from "../collections/entities/nft.collection";
 import { CollectionFilter } from "../collections/entities/collection.filter";
 import { AddressUtils } from "src/utils/address.utils";
 import { TokenAddressRoles } from "../tokens/entities/token.address.roles";
-import { TokenRoles } from "../tokens/entities/token.roles";
 import { ApiUtils } from "src/utils/api.utils";
 
 @Injectable()
@@ -214,26 +213,22 @@ export class EsdtAddressService {
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       const nftAccountCollections: NftCollectionAccount[] = [];
       for (const collection of accountCollections) {
-        let accountCollection = new NftCollectionAccount();
+        const role = collection.roles.find(x => x.address === address) ?? new TokenAddressRoles();
 
-        let role;
-        if (!collection.roles.length) {
-          role = new TokenRoles();
-        } else {
-          role = ApiUtils.mergeObjects(new TokenRoles(), collection.roles[0]);
-        }
-
-        if (collection.type === NftType.SemiFungibleESDT) {
+        if (collection.type === NftType.NonFungibleESDT) {
           //@ts-ignore
           delete role.canAddQuantity;
         }
 
-        accountCollection = { ...collection };
+        const accountCollection = ApiUtils.mergeObjects(new NftCollectionAccount(), { ...collection, ...role });
 
         if (accountCollection.timestamp === 0) {
           // @ts-ignore
           delete accountCollection.timestamp;
         }
+
+        // @ts-ignore
+        delete accountCollection.roles;
 
         nftAccountCollections.push(accountCollection);
       }
@@ -296,24 +291,18 @@ export class EsdtAddressService {
 
     const nftCollections: NftCollectionAccount[] = [];
     for (const collection of collections) {
-      let accountCollection: NftCollectionAccount = new NftCollectionAccount();
-
-      const accountRoles: TokenAddressRoles = new TokenAddressRoles();
-      accountRoles.address = address;
+      const accountCollection: NftCollectionAccount = ApiUtils.mergeObjects(new NftCollectionAccount(), collection);
 
       const role = roles[collection.collection];
-      accountRoles.canCreate = role ? role.includes('ESDTRoleNFTCreate') : false;
-      accountRoles.canBurn = role ? role.includes('ESDTRoleNFTBurn') : false;
-      accountRoles.canUpdateAttributes = role ? role.includes('ESDTRoleNFTUpdateAttributes') : false;
-      accountRoles.canAddUri = role ? role.includes('ESDTRoleNFTAddURI') : false;
-      accountRoles.canTransferRole = role ? role.includes('ESDTTransferRole') : false;
+      accountCollection.canCreate = role ? role.includes('ESDTRoleNFTCreate') : false;
+      accountCollection.canBurn = role ? role.includes('ESDTRoleNFTBurn') : false;
+      accountCollection.canUpdateAttributes = role ? role.includes('ESDTRoleNFTUpdateAttributes') : false;
+      accountCollection.canAddUri = role ? role.includes('ESDTRoleNFTAddURI') : false;
+      accountCollection.canTransferRole = role ? role.includes('ESDTTransferRole') : false;
 
       if (collection.type === NftType.SemiFungibleESDT) {
-        accountRoles.canAddQuantity = role ? role.includes('ESDTRoleNFTAddQuantity') : false;
+        accountCollection.canAddQuantity = role ? role.includes('ESDTRoleNFTAddQuantity') : false;
       }
-
-      accountCollection = { ...collection };
-      accountCollection.roles = [accountRoles];
 
       if (accountCollection.timestamp === 0) {
         // @ts-ignore
