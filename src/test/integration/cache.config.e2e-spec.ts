@@ -1,4 +1,5 @@
-import { EsdtModule } from '../../endpoints/esdt/esdt.module';
+import { ProtocolService } from '../../common/protocol/protocol.service';
+import { PublicAppModule } from '../../public.app.module';
 import { CacheConfigService } from '../../common/caching/cache.config.service';
 import { Test } from '@nestjs/testing';
 import { Constants } from 'src/utils/constants';
@@ -11,7 +12,7 @@ describe('Cache Config Service', () => {
     await Initializer.initialize();
 
     const moduleRef = await Test.createTestingModule({
-      imports: [EsdtModule],
+      imports: [PublicAppModule],
     }).compile();
 
     cacheConfigService = moduleRef.get<CacheConfigService>(CacheConfigService);
@@ -19,9 +20,12 @@ describe('Cache Config Service', () => {
   }, Constants.oneHour() * 1000);
 
   it("should return ttl value", async () => {
-    const create = await cacheConfigService.createCacheOptions();
+    jest
+      .spyOn(ProtocolService.prototype, 'getSecondsRemainingUntilNextRound')
+      // eslint-disable-next-line require-await
+      .mockImplementation(async () => Promise.resolve(10));
 
-    expect(create).toHaveProperty("ttl");
-    expect(create).toBeInstanceOf(Object);
+    const create = await cacheConfigService.createCacheOptions();
+    expect(create).toStrictEqual({ ttl: 10 });
   });
 });

@@ -695,14 +695,14 @@ describe("Nodes Controller", () => {
       .expect(200);
   });
 
-  it("/nodes/{bls}} - should return 200 status code and node details based on bls identifier", async () => {
+  it("/nodes/:bls - should return 200 status code and node details based on bls identifier", async () => {
     const identifier: string = "00f9b676245ecf7bc74e3b644c106cfbbb366ce01a0149c1e50303d22c09bef7600f21f1925753ab994174b9926e9b078c2d1edaf03c221149ea0239722278aa864a1b26f298c29fe546fdb0ee1385243dfe407074e0dfa134c7e6d4197ce110";
     await request(app.getHttpServer())
       .get(route + "/" + identifier)
       .expect(200);
   });
 
-  it("/nodes/{bls}} - should return 404 status code Erro: Node not found", async () => {
+  it("/nodes/:bls - should return 404 status code Erro: Node not found", async () => {
     const identifier: string = "00f9b676245ecf7bc74e3b644c106cfbbb366ce01a0149c1e50303d22c09bef7600f21f1925753ab994174b9926e9b078c2d1edaf03c221149ea0239722278aa864a1b26f298c29fe546fdb0ee1385243dfe407074e0dfa134c7e6d4197ce110T";
     await request(app.getHttpServer())
       .get(route + "/" + identifier)

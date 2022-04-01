@@ -16,13 +16,13 @@ describe("Identities Controller", () => {
     await app.init();
   });
 
-  it("/identities - should return 200 status code and a list of identities", async () => {
+  it("/identities - should return 200 status code and one list of identities", async () => {
     await request(app.getHttpServer())
       .get(route)
       .expect(200);
   });
 
-  it("/identities/{identifier} - should return 404 status code Error Code: Identity not found", async () => {
+  it("/identities/:identifier - should return 404 status code Error Code: Identity not found", async () => {
     const identifier: string = "justminingfrT";
 
     await request(app.getHttpServer())

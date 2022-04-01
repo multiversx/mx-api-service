@@ -201,7 +201,7 @@ describe("collections Controller", () => {
       .expect(200);
   });
 
-  it("/collections/{collection} - should return 200 status code and collection details for a specifc collection", async () => {
+  it("/collections/:collection - should return 200 status code and collection details for a specifc collection", async () => {
     const collection: string = "MOS-b9b4b2";
 
     await request(app.getHttpServer())
@@ -209,7 +209,7 @@ describe("collections Controller", () => {
       .expect(200);
   });
 
-  it("/collections/{collection} - should return 404 status code Error Code: NFT Collection not found", async () => {
+  it("/collections/:collection - should return 404 status code Error Code: NFT Collection not found", async () => {
     const collection: string = "MOS-b9b4b2T";
 
     await request(app.getHttpServer())

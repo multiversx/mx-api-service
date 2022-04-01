@@ -96,14 +96,14 @@ describe("Tokens Controller", () => {
       .expect(200);
   });
 
-  it("/tokens/count/{identifier} - should return 200 status code and token details based on token identifier query", async () => {
+  it("/tokens/count/:identifier - should return 200 status code and token details based on token identifier query", async () => {
     const identifier: string = "WEGLD-bd4d79";
     await request(app.getHttpServer())
       .get(route + "/" + identifier)
       .expect(200);
   });
 
-  it("/tokens/count/{identifier} - should return 404 status code Error: Token not found", async () => {
+  it("/tokens/count/:identifier - should return 404 status code Error: Token not found", async () => {
     const identifier: string = "WEGLD-bd4d79Test";
     await request(app.getHttpServer())
       .get(route + "/" + identifier)
@@ -113,14 +113,14 @@ describe("Tokens Controller", () => {
       });
   });
 
-  it("/tokens/count/{identifiers}/supply - should return 200 status code and token supply details based on token identifier query", async () => {
+  it("/tokens/count/:identifiers/supply - should return 200 status code and token supply details based on token identifier query", async () => {
     const identifier: string = "WEGLD-bd4d79";
     await request(app.getHttpServer())
       .get(route + "/" + identifier + "/supply")
       .expect(200);
   });
 
-  it("/tokens/count/{identifiers}/supply - should return 404 status code Error: Not Found", async () => {
+  it("/tokens/count/:identifiers/supply - should return 404 status code Error: Not Found", async () => {
     const identifier: string = "WEGLD-bd4d79Test";
     await request(app.getHttpServer())
       .get(route + "/" + identifier + "/supply")
@@ -130,7 +130,7 @@ describe("Tokens Controller", () => {
       });
   });
 
-  it("/tokens/count/{identifiers}/accounts - should return 200 status code and token accounts details based on token identifier query", async () => {
+  it("/tokens/count/:identifiers/accounts - should return 200 status code and token accounts details based on token identifier query", async () => {
     const identifier: string = "WEGLD-bd4d79";
 
     await request(app.getHttpServer())
@@ -138,7 +138,7 @@ describe("Tokens Controller", () => {
       .expect(200);
   });
 
-  it("/tokens/count/{identifiers}/accounts/count - should return 200 status code and total token accounts count details based on token identifier query", async () => {
+  it("/tokens/count/:identifiers/accounts/count - should return 200 status code and total token accounts count details based on token identifier query", async () => {
     const identifier: string = "WEGLD-bd4d79";
 
     await request(app.getHttpServer())
@@ -147,7 +147,7 @@ describe("Tokens Controller", () => {
   });
 
 
-  it("/tokens/count/{identifiers}/accounts?from&size - should return 200 status code and 100 tokens accounts details based on token identifier query", async () => {
+  it("/tokens/count/:identifiers/accounts?from&size - should return 200 status code and 100 tokens accounts details based on token identifier query", async () => {
     const params = new URLSearchParams({
       'from': '0',
       'size': '100',
@@ -159,7 +159,7 @@ describe("Tokens Controller", () => {
       .expect(200);
   });
 
-  it("/tokens/{identifiers}/transactions - should return 200 status code and transactions details for a specific token", async () => {
+  it("/tokens/:identifiers/transactions - should return 200 status code and transactions details for a specific token", async () => {
     const identifier: string = "WEGLD-bd4d79";
 
     await request(app.getHttpServer())
@@ -167,7 +167,7 @@ describe("Tokens Controller", () => {
       .expect(200);
   });
 
-  it("/tokens/{identifiers}/transactions?from&size - should return 200 status code and 100 transactions details for a specific token", async () => {
+  it("/tokens/:identifiers/transactions?from&size - should return 200 status code and 100 transactions details for a specific token", async () => {
     const params = new URLSearchParams({
       'from': '0',
       'size': '100',
@@ -179,7 +179,7 @@ describe("Tokens Controller", () => {
       .expect(200);
   });
 
-  it("/tokens/{identifiers}/transactions?from&size&withLogs&withOperations&order - should return 200 status code and 50 transactions details with logs, withoperations and ordered asc for a specific token", async () => {
+  it("/tokens/:identifiers/transactions?from&size&withLogs&withOperations&order - should return 200 status code and 50 transactions details with logs, withoperations and ordered asc for a specific token", async () => {
     const params = new URLSearchParams({
       'from': '0',
       'size': '50',
@@ -194,7 +194,7 @@ describe("Tokens Controller", () => {
       .expect(200);
   });
 
-  it("/tokens/{identifiers}/transactions?from&size&status - should return 200 status code and 50 transactions details with status success for a specific token", async () => {
+  it("/tokens/:identifiers/transactions?from&size&status - should return 200 status code and 50 transactions details with status success for a specific token", async () => {
     const params = new URLSearchParams({
       'from': '0',
       'size': '50',
@@ -207,7 +207,7 @@ describe("Tokens Controller", () => {
       .expect(200);
   });
 
-  it("/tokens/{identifiers}/transactions?from&size&status - should return 200 status code and 10 transactions details with status pending for a specific token", async () => {
+  it("/tokens/:identifiers/transactions?from&size&status - should return 200 status code and 10 transactions details with status pending for a specific token", async () => {
     const params = new URLSearchParams({
       'from': '0',
       'size': '10',
@@ -220,7 +220,7 @@ describe("Tokens Controller", () => {
       .expect(200);
   });
 
-  it("/tokens/{identifiers}/transactions?from&size&status - should return 200 status code and 10 transactions details with status invalid for a specific token", async () => {
+  it("/tokens/:identifiers/transactions?from&size&status - should return 200 status code and 10 transactions details with status invalid for a specific token", async () => {
     const params = new URLSearchParams({
       'from': '0',
       'size': '10',
@@ -233,7 +233,7 @@ describe("Tokens Controller", () => {
       .expect(200);
   });
 
-  it("/tokens/{identifiers}/transactions?from&size&withLogs&withOperations&withScResults - should return 400 status code, maximum size of 50 is allowed when flags are active", async () => {
+  it("/tokens/:identifiers/transactions?from&size&withLogs&withOperations&withScResults - should return 400 status code, maximum size of 50 is allowed when flags are active", async () => {
     const params = new URLSearchParams({
       'from': '0',
       'size': '100',
@@ -251,7 +251,7 @@ describe("Tokens Controller", () => {
       });
   });
 
-  it("/tokens/{identifiers}/transactions/count - should return 200 status code and total transactions count", async () => {
+  it("/tokens/:identifiers/transactions/count - should return 200 status code and total transactions count", async () => {
     const identifier: string = "WEGLD-bd4d79";
 
     await request(app.getHttpServer())
@@ -270,7 +270,7 @@ describe("Tokens Controller", () => {
   //     });
   // });
 
-  it("/tokens/{identifiers}/transactions/count?status - should return 200 status code and total success transactions count", async () => {
+  it("/tokens/:identifiers/transactions/count?status - should return 200 status code and total success transactions count", async () => {
     const params = new URLSearchParams({
       'status': 'success',
     });
@@ -281,7 +281,7 @@ describe("Tokens Controller", () => {
       .expect(200);
   });
 
-  it("/tokens/{identifiers}/transactions/count?status - should return 200 status code and total pending transactions count", async () => {
+  it("/tokens/:identifiers/transactions/count?status - should return 200 status code and total pending transactions count", async () => {
     const params = new URLSearchParams({
       'status': 'pending',
     });
@@ -292,7 +292,7 @@ describe("Tokens Controller", () => {
       .expect(200);
   });
 
-  it("/tokens/{identifiers}/transactions/count?status - should return 200 status code and total fail transactions count", async () => {
+  it("/tokens/:identifiers/transactions/count?status - should return 200 status code and total fail transactions count", async () => {
     const params = new URLSearchParams({
       'status': 'fail',
     });
@@ -303,7 +303,7 @@ describe("Tokens Controller", () => {
       .expect(200);
   });
 
-  it("/tokens/{identifiers}/transactions/count?senderShard&receiverShard - should return 200 status code and total transactions count for shard 0", async () => {
+  it("/tokens/:identifiers/transactions/count?senderShard&receiverShard - should return 200 status code and total transactions count for shard 0", async () => {
     const params = new URLSearchParams({
       'senderShard': '0',
       'receiverShard': '0',
@@ -315,7 +315,7 @@ describe("Tokens Controller", () => {
       .expect(200);
   });
 
-  it("/tokens/{identifiers}/transactions/count?senderShard&receiverShard - should return 200 status code and total transactions count for senderShard 0 and receiver shard 1", async () => {
+  it("/tokens/:identifiers/transactions/count?senderShard&receiverShard - should return 200 status code and total transactions count for senderShard 0 and receiver shard 1", async () => {
     const params = new URLSearchParams({
       'senderShard': '0',
       'receiverShard': '1',
@@ -327,7 +327,7 @@ describe("Tokens Controller", () => {
       .expect(200);
   });
 
-  it("/tokens/{identifiers}/transactions/count?miniBlockHash - should return 200 status code and total transactions count for a specific miniBlockHash", async () => {
+  it("/tokens/:identifiers/transactions/count?miniBlockHash - should return 200 status code and total transactions count for a specific miniBlockHash", async () => {
     const params = new URLSearchParams({
       'miniBlockHash': '4ab87e21dcf63f3d88f64e8228f001232ff29585ad475e20211ead04f1f700cc',
     });
@@ -338,7 +338,7 @@ describe("Tokens Controller", () => {
       .expect(200);
   });
 
-  it("/tokens/{identifiers}/roles- should return 200 status code and roles for a specific token", async () => {
+  it("/tokens/:identifiers/roles- should return 200 status code and roles for a specific token", async () => {
     const identifier: string = "WEGLD-bd4d79";
 
     await request(app.getHttpServer())
@@ -346,7 +346,7 @@ describe("Tokens Controller", () => {
       .expect(200);
   });
 
-  it("/tokens/{identifiers}/roles- should return 400 status code Error: Not Found if token is not found", async () => {
+  it("/tokens/:identifiers/roles- should return 400 status code Error: Not Found if token is not found", async () => {
     const identifier: string = "WEGLD-bd4d79Test";
 
     await request(app.getHttpServer())
@@ -357,7 +357,7 @@ describe("Tokens Controller", () => {
       });
   });
 
-  it("/tokens/{identifiers}/roles{address} - should return 200 status code and roles for a specific token and address", async () => {
+  it("/tokens/:identifiers/roles{address} - should return 200 status code and roles for a specific token and address", async () => {
     const identifier: string = "WEGLD-bd4d79";
     const address: string = "erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3";
 
@@ -366,7 +366,7 @@ describe("Tokens Controller", () => {
       .expect(200);
   });
 
-  it("/tokens/{identifiers}/roles{address} - should return 400 status code Error: Not Found if token is not found", async () => {
+  it("/tokens/:identifiers/roles{address} - should return 400 status code Error: Not Found if token is not found", async () => {
     const identifier: string = "WEGLD-bd4d79T";
     const address: string = "erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3";
 
