@@ -48,14 +48,14 @@ describe("Sc-Results Controller", () => {
       .expect(200);
   });
 
-  it("/sc-results{scHash} - should return 200 status code and sc-result details based om scHash", async () => {
+  it("/sc-results/:scHash - should return 200 status code and sc-result details based om scHash", async () => {
     const hash: string = "15b7adeaec77fd2e9bd2680834ea552028f10caff59e68a332d9c32f9b371590";
     await request(app.getHttpServer())
       .get(route + "/" + hash)
       .expect(200);
   });
 
-  it("/sc-results{scHash} - should return 404 status code Error: Not Found", async () => {
+  it("/sc-results/:scHash - should return 404 status code Error: Not Found", async () => {
     const hash: string = "15b7adeaec77fd2e9bd2680834ea552028f10caff59e68a332d9c32f9b371590T";
     await request(app.getHttpServer())
       .get(route + "/" + hash)

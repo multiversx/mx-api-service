@@ -152,7 +152,7 @@ describe("Block Controller", () => {
       .expect(200);
   });
 
-  it("/blocks/{hash} - should return 200 status code and block details based on hash", async () => {
+  it("/blocks/:hash - should return 200 status code and block details based on hash", async () => {
     const hash: string = "870e0aa4aed8f1007dcbd666aac43e8add03ad07e808030eb6fb45b607971a63";
 
     await request(app.getHttpServer())
@@ -160,7 +160,7 @@ describe("Block Controller", () => {
       .expect(200);
   });
 
-  it("/blocks/{hash} - should return 400 status code Error: Bad Request ", async () => {
+  it("/blocks/:hash - should return 400 status code Error: Bad Request ", async () => {
     const hash: string = "870e0aa4aed8f1007dcbd666aac43e8add03ads07e808030eb6fb45b607971a63";
 
     await request(app.getHttpServer())

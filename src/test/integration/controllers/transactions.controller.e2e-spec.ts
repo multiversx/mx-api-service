@@ -345,7 +345,7 @@ describe("Transactions Controller", () => {
       .expect(200);
   });
 
-  it("/transactions/{thHash} - should return 200 status code and transaction details for a specific txHash ", async () => {
+  it("/transactions/:txHash - should return 200 status code and transaction details for a specific txHash ", async () => {
     const txHash: string = "0b1f62e44f4657182be6f6c263dbdeb0bf6d5efd603fe879027e9df2dec2192b";
 
     await request(app.getHttpServer())
@@ -353,7 +353,7 @@ describe("Transactions Controller", () => {
       .expect(200);
   });
 
-  it("/transactions/{txHash} - should return 404 status code Error: Not Found ", async () => {
+  it("/transactions/:txHash - should return 404 status code Error: Not Found ", async () => {
     const txHash: string = "0b1f62e44f4657182be6f6c263dbdeb0bf6d5efd603fe879027e9df2dec2192bT";
 
     await request(app.getHttpServer())

@@ -1,114 +1,112 @@
 import { NftExtendedAttributesService } from 'src/endpoints/nfts/nft.extendedattributes.service';
 import { CachingService } from 'src/common/caching/caching.service';
-import { EsdtModule } from 'src/endpoints/esdt/esdt.module';
+import { PublicAppModule } from "../../public.app.module";
 import { Test } from '@nestjs/testing';
 import Initializer from './e2e-init';
 
 describe('Nft Extended Attributes Service', () => {
   let nftExtendedAttributesService: NftExtendedAttributesService;
 
+  const attributes = {
+    description: 'The unique MAW NFT Collection! ',
+    dna: '7eb2a6d3e1e0c93c5920a941744bd38a547858de',
+    edition: 395,
+    createdAt: 1639180014636,
+    attributes: [
+      { trait_type: 'Background', value: '10' },
+      { trait_type: 'Body', value: 'Suit_1' },
+      { trait_type: 'Mouth', value: 'Mouth_Jail' },
+      { trait_type: 'Head', value: 'Head_Trib' },
+      { trait_type: 'Left Eye', value: 'EyeL_Metalic_Black' },
+      { trait_type: 'Right Eye', value: 'EyeR_Yellow' },
+      { trait_type: 'Left Ear', value: 'EarL_Metalic_Gold' },
+      { trait_type: 'Right Ear', value: 'EarR_Metalic_Black' },
+      { trait_type: 'Drops', value: 'Drop3' },
+    ],
+    compiler: 'Trust Staking',
+  };
+
   beforeAll(async () => {
     await Initializer.initialize();
 
     const moduleRef = await Test.createTestingModule({
-      imports: [EsdtModule],
+      imports: [PublicAppModule],
     }).compile();
 
     nftExtendedAttributesService = moduleRef.get<NftExtendedAttributesService>(NftExtendedAttributesService);
-
   });
 
-  beforeEach(() => { jest.restoreAllMocks(); });
-
-  it("should return extended attributes from base64", async () => {
-    const attributes: string = "bWV0YWRhdGE6UW1UQjk3dkhMYkdBZnkxVDJQZFUyWE5QdXlXQjd1Znd3aFNoNU1wTENWbjEybS8zOTUuanNvbg==";
-    const extendedAttributes = await nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(attributes);
-
-    expect(extendedAttributes.description).toStrictEqual("The unique MAW NFT Collection! ");
-    expect(extendedAttributes).toBeInstanceOf(Object);
-
-    expect(extendedAttributes.hasOwnProperty("dna"));
-    expect(extendedAttributes.hasOwnProperty("edition"));
-    expect(extendedAttributes.hasOwnProperty("edition"));
-    expect(extendedAttributes.hasOwnProperty("attributes"));
-    expect(extendedAttributes.hasOwnProperty("compiler"));
+  beforeEach(() => {
+    jest.restoreAllMocks();
   });
 
-  it("should return undefined", async () => {
-    const attributes: string = "bWV0YWRhdGE6UW1UQjk3sdkhMYkdBZnkxVDJQZFUyWE5QdXlXQjd1Znd3aFNoNU1wTENWbjEybS8zOTUuanNvbg==";
+  describe("tryGetExtendedAttributesFromBase64EncodedAttributes", () => {
+    it("should return attributes from base64 encoded", async () => {
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_attributes: string) => {
+          return Object.assign({}, attributes);
+        }));
 
-    try {
-      await nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(attributes);
-    } catch (e) {
-      expect(e).toMatch(`Could not get extended attributes from raw attributes '${attributes}'`);
-    }
+      const results = await nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes('bWV0YWRhdGE6UW1UQjk3dkhMYkdBZnkxVDJQZFUyWE5QdXlXQjd1Znd3aFNoNU1wTENWbjEybS8zOTUuanNvbg==');
+      expect(results.attributes).not.toBeUndefined();
+      expect(results).toHaveProperties(['description', 'dna', 'edition', 'createdAt']);
+    });
+
+    it("should return undefined because test simulates that attributes are not defined", async () => {
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_attributes: string) => {
+          const response = Object.assign({}, attributes);
+          response.attributes = [];
+          return response;
+        }));
+
+      const results = await nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes('');
+      expect(results).toBeUndefined();
+    });
+    //ToDo catch(error)
   });
 
-  it("should try get extended attributes from metadata", async () => {
-    const metadata: string = "QmTB97vHLbGAfy1T2PdU2XNPuyWB7ufwwhSh5MpLCVn12m/395.json";
-    const extendedAttributes = await nftExtendedAttributesService.tryGetExtendedAttributesFromMetadata(metadata);
+  describe("tryGetExtendedAttributesFromMetadata", () => {
+    it("should return extended attributes from metadata", async () => {
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_metadata: string) => {
+          return Object.assign({}, attributes);
+        }));
 
-    if (!extendedAttributes) {
-      throw new Error("Attributes are not defined");
-    }
-    expect(extendedAttributes).toBeInstanceOf(Object);
-    expect(extendedAttributes.hasOwnProperty("dna"));
-    expect(extendedAttributes.hasOwnProperty("edition"));
-    expect(extendedAttributes.hasOwnProperty("edition"));
-    expect(extendedAttributes.hasOwnProperty("attributes"));
-    expect(extendedAttributes.hasOwnProperty("compiler"));
+      const results = await nftExtendedAttributesService.tryGetExtendedAttributesFromMetadata('QmTB97vHLbGAfy1T2PdU2XNPuyWB7ufwwhSh5MpLCVn12m/395.json');
+      expect(results).toHaveProperties(['description', 'dna', 'edition', 'createdAt']);
+    });
+
+    it("should return undefined because test simulates that metadata is not defined", async () => {
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_metadata: string) => undefined));
+
+      const results = await nftExtendedAttributesService.tryGetExtendedAttributesFromMetadata('');
+      expect(results).toBeUndefined();
+    });
+    //ToDo catch(error)
   });
 
-  it("should return undefined", async () => {
-    const metadata: string = "QmTB97vHLbGAfsy1T2PdU2XNPuyWB7ufwwhSh5MpLCVn12m/395.json";
-
-    try {
-      await nftExtendedAttributesService.tryGetExtendedAttributesFromMetadata(metadata);
-    } catch (e) {
-      expect(e).toMatch(`Error when getting extended attributes from metadata '${metadata}'`);
-    }
-  });
-
-  it("should get extended attributes from metadata", async () => {
-    const metadata: string = "QmTB97vHLbGAfy1T2PdU2XNPuyWB7ufwwhSh5MpLCVn12m/395.json";
-    const extendedAttributes = await nftExtendedAttributesService.getExtendedAttributesFromMetadata(metadata);
-
-    expect(extendedAttributes.compiler).toStrictEqual("Trust Staking");
-    expect(extendedAttributes).toBeInstanceOf(Object);
-
-    expect(extendedAttributes.hasOwnProperty("dna"));
-    expect(extendedAttributes.hasOwnProperty("edition"));
-    expect(extendedAttributes.hasOwnProperty("edition"));
-    expect(extendedAttributes.hasOwnProperty("attributes"));
-    expect(extendedAttributes.hasOwnProperty("compiler"));
-  });
-
-  it("should return undefined if result is not defined", async () => {
-    jest
-      .spyOn(CachingService.prototype, 'getOrSetCache')
-      // eslint-disable-next-line require-await
-      .mockImplementation(jest.fn(async (_description: string) => undefined));
-
-    const metadata: string = "QmTB97vHLbGAfy1T2PdU2XNPuyWB7ufwwhSh5MpLCVn12m/395.json";
-    const extendedAttributes = await nftExtendedAttributesService.getExtendedAttributesFromMetadata(metadata);
-    expect(extendedAttributes).toBeUndefined();
-  });
-
-  it("shoul return undefined ", async () => {
-    const metadata: string = "QmTB97vHLbGAfy1T2PdU2XNPuyWB7ufwwhSh5MpLCVn12m/395.json";
-    const extendedAttributes = await nftExtendedAttributesService.getExtendedAttributesFromBase64EncodedAttributes(metadata);
-
-    expect(extendedAttributes).toBeUndefined();
-  });
-
-  describe("Get Tags", () => {
-    it("should return tags", () => {
-      const attributes: string = "bWV0YWRhdGE6UW1UQjk3dkhMYkdBZnkxVDJQZFUyWE5QdXlXQjd1Znd3aFNoNU1wTENWbjEybS8zOTUuanNvbg==";
+  describe("getTags", () => {
+    it("should return tags based on attributes", () => {
+      const attributes: string = "dGFnczpFbHJvbmQsUm9ib3RzLFJvYm90LGVSb2JvdHM=";
       const tags = nftExtendedAttributesService.getTags(attributes);
 
-      for (const tag of tags) {
-        expect(typeof tag).toStrictEqual("string");
-      }
+      expect(tags).toStrictEqual(['Elrond', 'Robots', 'Robot', 'eRobots']);
+    });
+
+    it("should return undefined because test simulates that attributes are not defined", () => {
+      const attributes: string = "bWV0YWRhdGE6UW1UQjk3dkhMYkdBZnkxVDJQZFUyWE5QdXlXQjd1Znd3aFNoNU1wTENWbjEybS8zOTUuanNvbg==";
+      const tags = nftExtendedAttributesService.getTags(attributes);
+      expect(tags).toStrictEqual([]);
     });
   });
 });

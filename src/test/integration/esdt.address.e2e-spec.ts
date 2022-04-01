@@ -60,7 +60,10 @@ describe('EsdtAddressService', () => {
     const elasticResults = await esdtAddressService.getNftsForAddress(address, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.gateway);
     const gatewayResults = await esdtAddressService.getNftsForAddress(address, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.elastic);
 
-    expect(elasticResults).toStrictEqual(gatewayResults);
+    const sortedGatewayNfts = gatewayResults.sort((a, b) => a.identifier.localeCompare(b.identifier));
+    const sortedElasticNfts = elasticResults.sort((a, b) => a.identifier.localeCompare(b.identifier));
+
+    expect(sortedGatewayNfts).toStrictEqual(sortedElasticNfts);
   });
 
   it('should return one esdt from address if "isWhiteListed" from "ELASTCIC" source', async () => {

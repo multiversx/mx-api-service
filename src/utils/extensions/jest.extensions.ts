@@ -17,8 +17,25 @@ expect.extend({
             };
         }
     },
+
+    toHaveProperties(received: any, args: any[]) {
+        const receivedProperties = Object.getOwnPropertyNames(received);
+        const pass = !args.some(val => receivedProperties.indexOf(val) === -1);
+        if (pass) {
+            return {
+                message: () => `expected ${received} not to have properties of ${args}`,
+                pass: true,
+            };
+        } else {
+            return {
+                message: () => `expected ${received} to have properties of ${args}`,
+                pass: false,
+            };
+        }
+    },
 });
 
 interface Matchers<R> {
     toHaveStructure(received: any, keys: string[]): R;
+    toHaveProperties(received: any, args: any[]): R;
 }
