@@ -1,440 +1,751 @@
+import { GatewayModule } from '../../common/gateway/gateway.module';
+import { EsdtService } from 'src/endpoints/esdt/esdt.service';
+import { ElasticService } from 'src/common/elastic/elastic.service';
+import { CachingService } from 'src/common/caching/caching.service';
 import { TokenFilter } from '../../endpoints/tokens/entities/token.filter';
-import { Test } from '@nestjs/testing';
 import { TokenService } from 'src/endpoints/tokens/token.service';
 import { PublicAppModule } from 'src/public.app.module';
 import { TokenDetailed } from 'src/endpoints/tokens/entities/token.detailed';
-import { TokenAddressRoles } from 'src/endpoints/tokens/entities/token.address.roles';
-import { TokenAccount } from 'src/endpoints/tokens/entities/token.account';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { TokenWithBalance } from 'src/endpoints/tokens/entities/token.with.balance';
+import { Test } from '@nestjs/testing';
+import { FileUtils } from 'src/utils/file.utils';
 import '../../utils/extensions/jest.extensions';
 
 describe('Token Service', () => {
   let tokenService: TokenService;
+  let apiConfigService: ApiConfigService;
 
+  const token = {
+    identifier: 'WEGLD-bd4d79',
+    name: 'WrappedEGLD',
+    ticker: 'WEGLD',
+    owner: 'erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97',
+    minted: '0',
+    burnt: '0',
+    decimals: 18,
+    isPaused: false,
+    assets: {
+      website: 'https://maiar.exchange',
+      description: 'wEGLD is an ESDT token that has the same value as EGLD, the native coin of the Elrond blockchain.',
+      ledgerSignature: '3044022062a68d4bdd649aebb5e4ed5c6284e211c689c3b8142e59a47b01cc9997b16dfa0220475b064836849b9c4aa9c5ff18daed91a64f847bd96aa0a26768349f2cd0c24f',
+      status: 'active',
+      pngUrl: 'https://media.elrond.com/tokens/asset/WEGLD-bd4d79/logo.png',
+      svgUrl: 'https://media.elrond.com/tokens/asset/WEGLD-bd4d79/logo.svg',
+    },
+    transactions: 6839938,
+    accounts: 91702,
+    canUpgrade: true,
+    canMint: true,
+    canBurn: true,
+    canChangeOwner: true,
+    canPause: true,
+    canFreeze: true,
+    canWipe: true,
+    supply: '1861656',
+    circulatingSupply: '1861656',
+  };
 
   beforeAll(async () => {
 
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      imports: [PublicAppModule, GatewayModule],
     }).compile();
 
     tokenService = moduleRef.get<TokenService>(TokenService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
 
   });
 
-  describe("Get Tokens with filters", () => {
-    it("should return a list of 10 tokens", async () => {
-      const results = await tokenService.getTokens({ from: 0, size: 10 }, new TokenFilter());
+  beforeEach(() => { jest.restoreAllMocks(); });
 
-      for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new TokenDetailed()));
-      }
+  describe("getTokens", () => {
+    it("should return a list of 3 tokens", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+
+      const results = await tokenService.getTokens({ from: 0, size: 3 }, new TokenFilter());
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
+          expect.objectContaining({ identifier: "RIDE-7d18e9" }),
+          expect.objectContaining({ identifier: "MEX-455c57" }),
+        ])
+      );
     });
 
-    it("should return a list of tokens based on identifiers parameter", async () => {
-      const filter = new TokenFilter();
-      filter.identifiers = ["RIDE-7d18e9", "MEX-455c57"];
-
-      const results = await tokenService.getTokens({ from: 0, size: 2 }, filter);
-
-      const nftsIdentifiers = results.map((nft) => nft.identifier);
-      expect(nftsIdentifiers.includes('RIDE-7d18e9')).toStrictEqual(true);
-      expect(nftsIdentifiers.includes('MEX-455c57')).toStrictEqual(true);
-    });
-
-    it("should return one token based on identifier parameter", async () => {
-      const filter = new TokenFilter();
-      filter.identifier = "RIDE-7d18e9";
-
-      const results = await tokenService.getTokens({ from: 0, size: 1 }, filter);
-
-      for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new TokenDetailed()));
-        expect(results).toHaveLength(1);
-      }
-    });
-
-    it("should return one token based on name parameter", async () => {
-      const filter = new TokenFilter();
-      filter.name = "holoride";
-
-      const results = await tokenService.getTokens({ from: 0, size: 1 }, filter);
-
-      for (const result of results) {
-        expect(results).toHaveLength(1);
-        expect(result.name).toStrictEqual("holoride");
-        expect(result).toHaveStructure(Object.keys(new TokenDetailed()));
-      }
-    });
-
-    it("should return one token based on search parameter", async () => {
-      const filter = new TokenFilter();
-      filter.search = "RIDE-7d18e9";
-
-      const results = await tokenService.getTokens({ from: 0, size: 1 }, filter);
-
-      for (const result of results) {
-        expect(results).toHaveLength(1);
-        expect(result).toHaveStructure(Object.keys(new TokenDetailed()));
-      }
-    });
-  });
-
-  describe("Get Tokens From Elastic", () => {
-    it("should return one token from elastic for a specific address", async () => {
+    it("should return a list with one token and identifier filter applied", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
       const filter = new TokenFilter();
       filter.identifier = "WEGLD-bd4d79";
-      const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
 
-      const results = await tokenService.getTokensForAddressFromElastic(address, { from: 0, size: 1 }, filter);
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const results = await tokenService.getTokens({ from: 0, size: 1 }, new TokenFilter());
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
+        ])
+      );
+    });
+
+    it("should return a list of tokens with the identifiers filter applied", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const filter = new TokenFilter();
+      filter.identifiers = ["WEGLD-bd4d79", "RIDE-7d18e9"];
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const results = await tokenService.getTokens({ from: 0, size: 2 }, new TokenFilter());
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
+          expect.objectContaining({ identifier: "RIDE-7d18e9" }),
+        ])
+      );
+    });
+
+    it("should return a list of one token with the name filter applied", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const filter = new TokenFilter();
+      filter.name = "WrappedEGLD";
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const results = await tokenService.getTokens({ from: 0, size: 1 }, new TokenFilter());
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: "WrappedEGLD" }),
+        ])
+      );
+    });
+
+    it("should return a list of one token with the search filter applied", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const filter = new TokenFilter();
+      filter.search = "WEGLD-bd4d79";
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const results = await tokenService.getTokens({ from: 0, size: 1 }, new TokenFilter());
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
+        ])
+      );
+    });
+
+    it("should verify if token have structure of TokenDetailed", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const results = await tokenService.getTokens({ from: 0, size: 1 }, new TokenFilter());
 
       for (const result of results) {
-        expect(result.identifier).toStrictEqual("WEGLD-bd4d79");
-        expect(result.name).toStrictEqual("WrappedEGLD");
-        expect(result.owner).toStrictEqual("erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97");
-        expect(result.assets?.website).toStrictEqual("https://maiar.exchange");
-
-        expect(result.hasOwnProperty("canUpgrade")).toBeTruthy();
-        expect(result.hasOwnProperty("canMint")).toBeTruthy();
-        expect(result.hasOwnProperty("canBurn")).toBeTruthy();
-        expect(result.hasOwnProperty("canChangeOwner")).toBeTruthy();
-        expect(result.hasOwnProperty("canPause")).toBeTruthy();
-        expect(result.hasOwnProperty("canFreeze")).toBeTruthy();
-        expect(result.hasOwnProperty("canWipe")).toBeTruthy();
-
-        expect(result.balance).toBeDefined();
+        expect(result).toHaveStructure(Object.keys(new TokenDetailed()));
       }
-    });
-
-    it("should return two tokens from elastic for a specific address", async () => {
-      const filter = new TokenFilter();
-      filter.identifiers = ["WEGLD-bd4d79", "WATER-9ed400"];
-      const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
-
-      const results = await tokenService.getTokensForAddressFromElastic(address, { from: 0, size: 2 }, filter);
-
-      const tokensIdentifiers = results.map((tokens) => tokens.identifier);
-      expect(tokensIdentifiers.includes('WEGLD-bd4d79')).toStrictEqual(true);
-      expect(tokensIdentifiers.includes('WATER-9ed400')).toStrictEqual(true);
-    });
-
-    it("should return one token from eleastic for a specific address", async () => {
-      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
-      const filter = new TokenFilter();
-      filter.identifier = "RIDE-7d18e9";
-
-      const results = await tokenService.getTokensForAddressFromElastic(address, { from: 0, size: 1 }, filter);
-
-      for (const result of results) {
-        expect(result.identifier).toStrictEqual("RIDE-7d18e9");
-        expect(result.name).toStrictEqual("holoride");
-        expect(result.owner).toStrictEqual("erd1fnq9urh6945yez393jf86umt7zhqz3wa5dqxa2fwv5gemj0fxqpsjcarlm");
-        expect(result.assets?.website).toStrictEqual("https://www.holoride.com");
-      }
-    });
-
-    it("should return two tokens from eleastic for a specific address", async () => {
-      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
-      const filter = new TokenFilter();
-      filter.identifiers = ["RIDE-7d18e9", "MEX-455c57"];
-
-      const results = await tokenService.getTokensForAddressFromElastic(address, { from: 0, size: 1 }, filter);
-      const nftsIdentifiers = results.map((nft) => nft.identifier);
-
-      expect(nftsIdentifiers.includes('RIDE-7d18e9')).toStrictEqual(true);
     });
   });
 
-  describe("Get Token", () => {
-    it("should return token details", async () => {
-      const identifier: string = "RIDE-7d18e9";
-      const result = await tokenService.getToken(identifier);
+  describe("getToken", () => {
+    it("should return a specific token", async () => {
 
-      expect(result).toHaveStructure(Object.keys(new TokenDetailed()));
-    });
+      jest
+        .spyOn(ElasticService.prototype, 'get')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => token));
 
-    it("should verify if tokens properties are defined", async () => {
-      const identifier: string = "RIDE-7d18e9";
-      const result = await tokenService.getToken(identifier);
+      const result = await tokenService.getToken("WEGLD-bd4d79");
 
       if (!result) {
-        throw new Error("Properties are not defined");
+        throw new Error("Token not found");
       }
-      expect(result.hasOwnProperty("identifier")).toBeTruthy();
-      expect(result.hasOwnProperty("name")).toBeTruthy();
-      expect(result.hasOwnProperty("ticker")).toBeTruthy();
-      expect(result.hasOwnProperty("owner")).toBeTruthy();
-      expect(result.hasOwnProperty("minted")).toBeTruthy();
-      expect(result.hasOwnProperty("burnt")).toBeTruthy();
-      expect(result.hasOwnProperty("decimals")).toBeTruthy();
-      expect(result.hasOwnProperty("isPaused")).toBeTruthy();
-      expect(result.hasOwnProperty("assets")).toBeTruthy();
-      expect(result.hasOwnProperty("transactions")).toBeTruthy();
-      expect(result.hasOwnProperty("accounts")).toBeTruthy();
+      expect(result.identifier).toStrictEqual("WEGLD-bd4d79");
     });
 
-    it("should return tokens properties", async () => {
-      const identifier: string = "RIDE-7d18e9";
-      const result = await tokenService.getToken(identifier);
+    it("should return undefined because test simulates that token is undefined", async () => {
 
-      if (!result) {
-        throw new Error("Properties are not defined");
-      }
+      jest
+        .spyOn(ElasticService.prototype, 'get')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => undefined));
 
-      expect(result.canUpgrade).toBeTruthy();
-      expect(result.canMint).toBeFalsy();
-      expect(result.canBurn).toBeFalsy();
-      expect(result.canChangeOwner).toBeTruthy();
-      expect(result.canPause).toBeFalsy();
-      expect(result.canFreeze).toBeFalsy();
-      expect(result.canWipe).toBeFalsy();
-    });
-
-    it("should contain supply and circulatingSupply", async () => {
-      const identifier: string = "RIDE-7d18e9";
-      const result = await tokenService.getToken(identifier);
-
-      if (!result) {
-        throw new Error("Properties are not defined");
-      }
-
-      expect(result.supply).toBeDefined();
-      expect(result.circulatingSupply).toBeDefined();
-    });
-  });
-
-  //TBD
-  describe("Get Tokens Roles", () => {
-    it("should return token roles", async () => {
-      const identifier: string = "RIDE-7d18e9";
-      const results = await tokenService.getTokenRoles(identifier);
-
-      if (!results) {
-        throw new Error('Token roles are not defined');
-      }
-
-      for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new TokenAddressRoles()));
-      }
-    });
-
-    it("should return token role for address", async () => {
-      const identifier: string = "RIDE-7d18e9";
-      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
-      const result = await tokenService.getTokenRolesForAddress(address, identifier);
+      const result = await tokenService.getToken('');
 
       expect(result).toBeUndefined();
     });
   });
 
-  describe("Get Token Accounts", () => {
-    it(`should return 10 accounts of token "holoride"`, async () => {
-      const identifier: string = "RIDE-7d18e9";
-      const results = await tokenService.getTokenAccounts({ from: 0, size: 10 }, identifier);
+  describe("getFilteredTokens", () => {
+    it("should return a list of tokens with search filter applied", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const filter = new TokenFilter();
+      filter.search = "WEGLD-bd4d79";
 
-      expect(results).toBeDefined();
-      expect(results).toHaveLength(10);
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
 
-      if (results) {
-        for (const result of results) {
-          expect(result).toHaveStructure(Object.keys(new TokenAccount()));
-        }
-      }
+      const results = await tokenService.getFilteredTokens(filter);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
+        ])
+      );
     });
 
-    it("should verify if pagination filter returns different accounts (from = 0 != from = 1 )", async () => {
-      const identifier: string = "RIDE-7d18e9";
-      const result_1 = await tokenService.getTokenAccounts({ from: 0, size: 1 }, identifier);
-      const result_2 = await tokenService.getTokenAccounts({ from: 1, size: 2 }, identifier);
+    it("should return a list of tokens with name filter applied", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const filter = new TokenFilter();
+      filter.name = "WrappedEGLD";
 
-      expect(result_1).not.toStrictEqual(result_2);
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const results = await tokenService.getFilteredTokens(filter);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: "WrappedEGLD" }),
+        ])
+      );
+    });
+
+    it("should return a list of tokens with identifier filter applied", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const filter = new TokenFilter();
+      filter.identifier = "WEGLD-bd4d79";
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const results = await tokenService.getFilteredTokens(filter);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
+        ])
+      );
+    });
+
+    it("should return a list of tokens with identifier filter applied", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const filter = new TokenFilter();
+      filter.identifiers = ["WEGLD-bd4d79", "RIDE-7d18e9"];
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const results = await tokenService.getFilteredTokens(filter);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
+          expect.objectContaining({ identifier: "RIDE-7d18e9" }),
+        ])
+      );
+    });
+
+    it("should return an empty token list if tokens are not present", async () => {
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => []));
+
+      const results = await tokenService.getFilteredTokens(new TokenFilter());
+
+      expect(results).toStrictEqual([]);
     });
   });
 
-  describe("Get Token Supply", () => {
-    it("should return token supply", async () => {
-      const identifier: string = "RIDE-7d18e9";
+  describe("getTokenCount", () => {
+    it("should return token count based on identifier filter", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const filter: TokenFilter = new TokenFilter();
+      filter.identifier = "WEGLD-bd4d79";
+
+      jest
+        .spyOn(ElasticService.prototype, 'get')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const result = await tokenService.getTokenCount(filter);
+
+      expect(result).toStrictEqual(1);
+    });
+
+    it("should return tokens count based on identifiers filter", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const filter: TokenFilter = new TokenFilter();
+      filter.identifiers = ["WEGLD-bd4d79", "RIDE-7d18e9"];
+
+      jest
+        .spyOn(ElasticService.prototype, 'get')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const result = await tokenService.getTokenCount(filter);
+
+      expect(result).toStrictEqual(2);
+    });
+
+    //TBD: count filtered by name of WrappedEGLD = 5
+    // it.only("should return tokens count based on name filter", async () => {
+    //   const MOCK_PATH = apiConfigService.getMockPath();
+    //   const filter: TokenFilter = new TokenFilter();
+    //   filter.name = "WrappedEGLD";
+
+    //   jest
+    //     .spyOn(ElasticService.prototype, 'get')
+    //     // eslint-disable-next-line require-await
+    //     .mockImplementation(jest.fn(async () =>
+    //       FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+    //   const result = await tokenService.getTokenCount(filter);
+    //   console.log(result)
+
+    // });
+
+    // it("should return tokens count based on search filter", async () => {
+    //   const MOCK_PATH = apiConfigService.getMockPath();
+    //   const filter: TokenFilter = new TokenFilter();
+    //   filter.search = "WrappedEGLD";
+
+    //   jest
+    //     .spyOn(ElasticService.prototype, 'get')
+    //     // eslint-disable-next-line require-await
+    //     .mockImplementation(jest.fn(async () =>
+    //       FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+    //   const result = await tokenService.getTokenCount(filter);
+
+    //   expect(result).toStrictEqual(1);
+    // });
+  });
+
+  describe("getTokenProperties", () => {
+    it("should return all properties for token", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const identifier: string = "WEGLD-bd4d79";
+
+      jest
+        .spyOn(ElasticService.prototype, 'get')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const result = await tokenService.getTokenProperties(identifier);
+
+      expect(result).toHaveProperties([
+        'identifier', 'name', 'type',
+        'owner', 'minted', 'burnt',
+        'decimals', 'isPaused', 'canUpgrade',
+        'canMint', 'canBurn', 'canChangeOwner',
+        'canPause', 'canFreeze', 'canWipe']);
+    });
+
+    it("should return undefined because test simulates that token properties are undefined", async () => {
+      const identifier: string = "WEGLD-bd4d79";
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => undefined));
+
+      const result = await tokenService.getTokenProperties(identifier);
+      expect(result).toBeUndefined();
+    });
+
+    it("should return undefined because test simulates that token format is not correct ( missing - )", async () => {
+      const identifier: string = "WEGLDbd4d79";
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => undefined));
+
+      const result = await tokenService.getTokenProperties(identifier);
+      expect(result).toBeUndefined();
+    });
+
+    it("should return undefined because test simulates that token type is Fungible ESDT", async () => {
+      const identifier: string = "EROBOT-527a29";
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => undefined));
+
+      const result = await tokenService.getTokenProperties(identifier);
+      expect(result).toBeUndefined();
+    });
+
+    //ToDo: properties of TokenType.FungibleESDT
+  });
+
+  describe("getTokenCountForAddress", () => {
+    it("should return total number of tokens for address", async () => {
+      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+      const count: number = 1;
+
+      jest
+        .spyOn(ElasticService.prototype, 'get')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => count));
+
+      const result = await tokenService.getTokenCountForAddress(address);
+
+      expect(result).toStrictEqual(1);
+    });
+
+    it("should return total number of tokens for smart contract address", async () => {
+      const address: string = "erd1qqqqqqqqqqqqqpgqmqq78c5htmdnws8hm5u4suvags36eq092jpsaxv3e7";
+      const count: number = 1;
+
+      jest
+        .spyOn(ElasticService.prototype, 'get')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => count));
+
+      const result = await tokenService.getTokenCountForAddress(address);
+
+      expect(result).toStrictEqual(1);
+    });
+  });
+
+  describe("getTokensForAddress", () => {
+    it("should return a list of tokens for a specific address", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+
+      const filter: TokenFilter = new TokenFilter();
+      filter.identifier = "RIDE-7d18e9";
+
+      jest
+        .spyOn(ElasticService.prototype, 'get')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 1 }, filter);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identifier: "RIDE-7d18e9" }),
+        ])
+      );
+    });
+
+    it("should return a list of tokens for a specific smart contract address", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const address: string = "erd1qqqqqqqqqqqqqpgqmqq78c5htmdnws8hm5u4suvags36eq092jpsaxv3e7";
+
+      const filter: TokenFilter = new TokenFilter();
+      filter.identifier = "RIDE-7d18e9";
+
+      jest
+        .spyOn(ElasticService.prototype, 'get')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 1 }, filter);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identifier: "RIDE-7d18e9" }),
+        ])
+      );
+    });
+
+    it("should return an empty list because test simulates that address does not contain a specific token", async () => {
+      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+
+      const filter: TokenFilter = new TokenFilter();
+      filter.identifier = "OXSY-3dc78b";
+
+      jest
+        .spyOn(ElasticService.prototype, 'get')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => []));
+
+      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 1 }, filter);
+
+      expect(results).toEqual([]);
+    });
+  });
+
+  describe("getTokensForAddressFromElastic", () => {
+    it("should return one token for a specific address with source ELASTIC and identifier filter applied", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+
+      const filter: TokenFilter = new TokenFilter();
+      filter.identifier = "RIDE-7d18e9";
+
+      jest
+        .spyOn(ElasticService.prototype, 'get')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const results = await tokenService.getTokensForAddressFromElastic(address, { from: 0, size: 1 }, filter);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identifier: "RIDE-7d18e9" }),
+        ])
+      );
+    });
+
+    it("should return a list of two tokens for a specific address with source ELASTIC and identifiers filter applied", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
+
+      const filter: TokenFilter = new TokenFilter();
+      filter.identifiers = ["WATER-9ed400", "WEGLD-bd4d79"];
+
+      jest
+        .spyOn(ElasticService.prototype, 'get')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const results = await tokenService.getTokensForAddressFromElastic(address, { from: 0, size: 2 }, filter);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identifier: "WATER-9ed400" }),
+          expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
+        ])
+      );
+    });
+  });
+
+  describe("getTokenSupply", () => {
+    it("should return totalSupply and circulatingSupply for token", async () => {
+      const identifier: string = token.identifier;
       const result = await tokenService.getTokenSupply(identifier);
 
       if (!result) {
         throw new Error('Properties not defined');
       }
 
-      expect(result.hasOwnProperty('supply')).toBe(true);
-      expect(result.hasOwnProperty('circulatingSupply')).toBe(true);
+      expect(result).toHaveProperties(['supply', 'circulatingSupply']);
     });
 
-    it(`should return undefined if identifier token is invalid`, async () => {
-      const invalidIdentifier = 'invalidIdentifier';
-      const supply = await tokenService.getTokenSupply(invalidIdentifier);
-      expect(supply).toBeUndefined();
-    });
-  });
+    it("should return undefined because test simulates that token properties are not defined", async () => {
+      const identifier: string = token.identifier;
 
-  describe("Get Token Count", () => {
-    it("should return token count based on identifier property", async () => {
-      const filter = new TokenFilter();
-      filter.identifier = "RIDE-7d18e9";
+      jest
+        .spyOn(TokenService.prototype, 'getTokenProperties')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_identifier: string) => undefined));
 
-      const result = await tokenService.getTokenCount(filter);
-
-      expect(result).toStrictEqual(1);
-      expect(typeof result).toStrictEqual("number");
-    });
-
-    it("should return token count based on identifiers property", async () => {
-      const filter = new TokenFilter();
-      filter.identifiers = ["RIDE-7d18e9", "MEX-455c57"];
-
-      const result = await tokenService.getTokenCount(filter);
-
-      expect(result).toStrictEqual(2);
-      expect(typeof result).toStrictEqual("number");
-    });
-
-    it("should return token count based on name property", async () => {
-      const filter = new TokenFilter();
-      filter.name = "holoride";
-
-      const result = await tokenService.getTokenCount(filter);
-
-      expect(typeof result).toStrictEqual("number");
-    });
-
-    it("should return token count for a specific address", async () => {
-      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
-      const result = await tokenService.getTokenCountForAddress(address);
-
-      expect(typeof result).toStrictEqual("number");
-    });
-
-    it("should return token count for smart contract address", async () => {
-      const smartContractAddress: string = "erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl";
-      const result = await tokenService.getTokenCountForAddress(smartContractAddress);
-
-      expect(typeof result).toStrictEqual("number");
-    });
-
-    it("should return from elastic token count for a specific address", async () => {
-      const smartContractAddress: string = "erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl";
-      const result = await tokenService.getTokenCountForAddressFromElastic(smartContractAddress);
-
-      expect(typeof result).toStrictEqual("number");
+      const results = await tokenService.getTokenSupply(identifier);
+      expect(results).toBeUndefined();
     });
   });
 
-  describe("Get Token For Address", () => {
-    it("should return one token for a specific address", async () => {
+  describe("getTokenAccounts", () => {
+    it("should return a list of account witch contains a specific token", async () => {
+      const identifier: string = token.identifier;
+
+      const results = await tokenService.getTokenAccounts({ from: 0, size: 10 }, identifier);
+
+      if (!results) {
+        throw new Error('Properties not defined');
+      }
+
+      expect(results).toHaveLength(10);
+
+      for (const result of results) {
+        expect(result).toHaveProperties(['address', 'balance']);
+      }
+    });
+
+    it("should return undefined because test simulates that properties are not defined", async () => {
+      const identifier: string = token.identifier;
+
+      jest
+        .spyOn(TokenService.prototype, 'getTokenProperties')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => undefined));
+
+      const results = await tokenService.getTokenAccounts({ from: 0, size: 1 }, identifier);
+      expect(results).toBeUndefined();
+    });
+  });
+
+  describe("getTokenAccountsCount", () => {
+    it("should return total accounts for a specific token", async () => {
+      const identifier: string = token.identifier;
+
+      jest
+        .spyOn(ElasticService.prototype, 'getCount')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => 1000));
+
+      const results = await tokenService.getTokenAccountsCount(identifier);
+
+      expect(results).toStrictEqual(1000);
+    });
+
+    it("should return undefined because test simulates that properties are not defined", async () => {
+      const identifier: string = token.identifier;
+
+      jest
+        .spyOn(TokenService.prototype, 'getTokenProperties')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => undefined));
+
+      const results = await tokenService.getTokenAccountsCount(identifier);
+      expect(results).toBeUndefined();
+    });
+  });
+
+  describe("getTokenRoles", () => {
+    it("should return token roles", async () => {
+      const identifier: string = token.identifier;
+
+      jest
+        .spyOn(EsdtService.prototype, 'getEsdtAddressesRoles')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_identifier: string) => [{
+          address: "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8",
+          roles: ["ESDTRoleLocalMint", "ESDTRoleLocalBurn", "ESDTRoleLocalTransfer"],
+        },
+        {
+          address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
+          roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
+        },
+        ]));
+
+      const results = await tokenService.getTokenRoles(identifier);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ roles: ["ESDTRoleLocalMint", "ESDTRoleLocalBurn", "ESDTRoleLocalTransfer"] }),
+          expect.objectContaining({ roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'] }),
+        ])
+      );
+    });
+
+    it("should return undefined because test simulates that roles are not defined for token", async () => {
+      const identifier: string = token.identifier;
+
+      jest
+        .spyOn(TokenService.prototype, 'getToken')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_identifier: string) => undefined));
+
+      const results = await tokenService.getTokenRoles(identifier);
+      expect(results).toBeUndefined();
+    });
+  });
+
+  describe("getTokenRolesForAddress", () => {
+    it("should return token roles for a specific address", async () => {
+      const identifier: string = token.identifier;
+      const address: string = "erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy";
+
+      jest
+        .spyOn(EsdtService.prototype, 'getEsdtAddressesRoles')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_identifier: string) => [
+          {
+            address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
+            roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
+          },
+        ]));
+
+      const results = await tokenService.getTokenRolesForAddress(identifier, address);
+
+      expect(results).toEqual(expect.objectContaining({ roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'] }));
+
+    });
+
+    it("should return undefined because test simulates that roles are not defined for token", async () => {
+      const identifier: string = token.identifier;
+      const address: string = "erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy";
+
+      jest
+        .spyOn(TokenService.prototype, 'getToken')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_identifier: string) => undefined));
+
+      const results = await tokenService.getTokenRolesForAddress(identifier, address);
+      expect(results).toBeUndefined();
+    });
+  });
+
+  //TBD: getTokenForAddress return undefined for SC address
+  describe("getTokenForAddress", () => {
+    it("should return token for a specific address", async () => {
       const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
       const identifier: string = "RIDE-7d18e9";
       const result = await tokenService.getTokenForAddress(address, identifier);
 
       expect(result).toHaveStructure(Object.keys(new TokenWithBalance()));
     });
-  });
 
-  describe("Get Tokens For Address", () => {
-    it("should return one token details for a specific address based on identifier property filter", async () => {
+    it("should return undefined because test simulates that token is not defined for address", async () => {
       const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
-      const filter = new TokenFilter();
-      filter.identifier = "RIDE-7d18e9";
-      const results = await tokenService.getTokensForAddressFromGateway(address, { from: 0, size: 1 }, filter);
+      const identifier: string = "RIDE-7d18e9";
 
-      expect(results).toHaveLength(1);
+      jest
+        .spyOn(TokenService.prototype, 'getFilteredTokens')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_filter: TokenFilter) => []));
 
-      for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new TokenWithBalance()));
-        expect(result.identifier).toStrictEqual("RIDE-7d18e9");
-      }
-    });
-
-    it("should return one token details for a specific address based on name property filter", async () => {
-      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
-      const filter = new TokenFilter();
-      filter.name = "holoride";
-      const results = await tokenService.getTokensForAddressFromGateway(address, { from: 0, size: 1 }, filter);
-
-      expect(results).toHaveLength(1);
-
-      for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new TokenWithBalance()));
-        expect(result.name).toStrictEqual("holoride");
-      }
-    });
-
-    it("should return two tokens details for a specific address based on identifiers property filter", async () => {
-      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
-      const filter = new TokenFilter();
-      filter.identifiers = ["RIDE-7d18e9", "MEX-455c57"];
-
-      const results = await tokenService.getTokensForAddressFromGateway(address, { from: 0, size: 1 }, filter);
-      const nftsIdentifiers = results.map((nft) => nft.identifier);
-
-      expect(nftsIdentifiers.includes('RIDE-7d18e9')).toStrictEqual(true);
-    });
-
-    it("should return one token for a specific smart contract address", async () => {
-      const smartContractAddress: string = "erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl";
-      const filter = new TokenFilter();
-      filter.identifier = "WEGLD-bd4d79";
-
-      const results = await tokenService.getTokensForAddress(smartContractAddress, { from: 0, size: 1 }, filter);
-
-      for (const result of results) {
-        expect(result.identifier).toStrictEqual("WEGLD-bd4d79");
-        expect(result.name).toStrictEqual("WrappedEGLD");
-        expect(result.owner).toStrictEqual("erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97");
-        expect(result.assets?.website).toStrictEqual("https://maiar.exchange");
-
-        expect(result.hasOwnProperty("canUpgrade")).toBeTruthy();
-        expect(result.hasOwnProperty("canMint")).toBeTruthy();
-        expect(result.hasOwnProperty("canBurn")).toBeTruthy();
-        expect(result.hasOwnProperty("canChangeOwner")).toBeTruthy();
-        expect(result.hasOwnProperty("canPause")).toBeTruthy();
-        expect(result.hasOwnProperty("canFreeze")).toBeTruthy();
-        expect(result.hasOwnProperty("canWipe")).toBeTruthy();
-
-      }
-    });
-
-    it("should return two tokens for a specific smart contract address", async () => {
-      const filter = new TokenFilter();
-      filter.identifiers = ["WEGLD-bd4d79", "WATER-9ed400"];
-      const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
-
-      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 2 }, filter);
-
-      const tokensIdentifiers = results.map((tokens) => tokens.identifier);
-      expect(tokensIdentifiers.includes('WEGLD-bd4d79')).toStrictEqual(true);
-      expect(tokensIdentifiers.includes('WATER-9ed400')).toStrictEqual(true);
-    });
-
-    it("should return tokens for a specific address", async () => {
-      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
-      const filter = new TokenFilter();
-      filter.identifier = "RIDE-7d18e9";
-
-      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 1 }, filter);
-
-      for (const result of results) {
-        expect(result.identifier).toStrictEqual("RIDE-7d18e9");
-        expect(result.name).toStrictEqual("holoride");
-        expect(result.owner).toStrictEqual("erd1fnq9urh6945yez393jf86umt7zhqz3wa5dqxa2fwv5gemj0fxqpsjcarlm");
-        expect(result.assets?.website).toStrictEqual("https://www.holoride.com");
-      }
-    });
-
-    it("should return only one token for a specific smart contract address, identifiers filter applyed", async () => {
-      const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
-      const filter = new TokenFilter();
-      filter.identifiers = ["WEGLD-bds4d79", "HRD-71df2d"];
-
-      const results = await tokenService.getTokensForAddress(address, { from: 0, size: 1 }, filter);
-
-      for (const result of results) {
-        expect(result.identifier).toStrictEqual("WEGLD-bd4d79");
-        expect(result.identifier).not.toStrictEqual("HRD-71df2d");
-      }
+      const result = await tokenService.getTokenForAddress(address, identifier);
+      expect(result).toBeUndefined();
     });
   });
 });
