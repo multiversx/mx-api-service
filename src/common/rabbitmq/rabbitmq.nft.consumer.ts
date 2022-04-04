@@ -16,7 +16,7 @@ export class RabbitMqNftConsumer {
 
   @CompetingRabbitConsumer({
     exchange: 'all_events',
-    queueName: 'api_service',
+    queueName: 'api-process-logs-and-events',
   })
   async consumeEvents(rawEvents: any) {
     try {
