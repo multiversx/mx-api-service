@@ -1,4 +1,3 @@
-import { Logger } from "@nestjs/common";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { NumberUtils } from "src/utils/number.utils";
 
@@ -7,19 +6,15 @@ export class NftTopics {
   collection: string = '';
   nonce: number = 0;
 
-  constructor(rawTopics: string[]) {
-    const logger = new Logger(NftTopics.name);
+  static parse(rawTopics: string[]): NftTopics {
+    const hexNonce = BinaryUtils.base64ToHex(rawTopics[1]);
 
-    try {
-      this.collection = BinaryUtils.base64Decode(rawTopics[0]);
-      this.nonce = parseInt(NumberUtils.numberDecode(rawTopics[1]));
+    const topics = new NftTopics();
+    topics.collection = BinaryUtils.base64Decode(rawTopics[0]);
+    topics.nonce = parseInt(NumberUtils.numberDecode(rawTopics[1]));
+    topics.identifier = `${topics.collection}-${hexNonce}`;
 
-      const hexNonce = BinaryUtils.base64ToHex(rawTopics[1]);
-      this.identifier = `${this.collection}-${hexNonce}`;
-    } catch (error) {
-      logger.error(`An unhandled error occurred when decoding NFT topics from raw topics`);
-      logger.error(error);
-    }
+    return topics;
   }
 
   toPlainObject() {
