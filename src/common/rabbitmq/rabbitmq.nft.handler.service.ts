@@ -20,6 +20,9 @@ export class RabbitMqNftHandlerService {
 
     this.logger.log(`Detected 'ESDTNFTCreate' event for NFT with identifier '${identifier}'`);
 
+    // we wait for the transaction and its operations to be fully indexed
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
     const nft = await this.nftService.getSingleNft(identifier);
     if (!nft) {
       this.logger.log(`Could not fetch NFT details for NFT with identifier '${identifier}'`);
