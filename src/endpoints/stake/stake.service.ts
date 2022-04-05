@@ -85,7 +85,7 @@ export class StakeService {
     for (const stake of stakesForAddressesNodes) {
       const blses = stake.blses;
       if (!blses) {
-        throw new Error(`Cannot find blses for address stake '${stake.address}'`);
+        this.logger.error(`Cannot find blses for address stake '${stake.address}'`);
       }
 
       for (const bls of blses) {
