@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { ApiUtils } from "src/utils/api.utils";
 
 export class Block {
     @ApiProperty()
@@ -51,4 +52,18 @@ export class Block {
 
     @ApiProperty()
     maxGasLimit: number = 0;
+
+    static mergeWithElasticResponse<T extends Block>(newBlock: T, blockRaw: any): T {
+        blockRaw.shard = blockRaw.shardId ?? blockRaw.shard;
+
+        if (blockRaw.gasProvided) {
+            blockRaw.gasConsumed = blockRaw.gasProvided;
+        }
+
+        if (blockRaw.scheduledData?.rootHash) {
+            blockRaw.maxGasLimit = blockRaw.maxGasLimit * 2;
+        }
+
+        return ApiUtils.mergeObjects(newBlock, blockRaw);
+    }
 }
