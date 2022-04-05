@@ -7,26 +7,27 @@ import { MongoDbService } from "./mongodb/mongo.db.service";
 import { PassThroughModule } from "./passthrough/pass.through.module";
 import { PassThroughService } from "./passthrough/pass.through.service";
 import { PersistenceInterface } from "./persistence.interface";
+import { PersistenceService } from "./persistence.service";
 
 @Global()
 @Module({})
 export class PersistenceModule {
   static register(): DynamicModule {
     let persistenceModule: Type<any> = PassThroughModule;
-    let persistenceService: Type<PersistenceInterface> = PassThroughService;
+    let persistenceInterface: Type<PersistenceInterface> = PassThroughService;
 
     const isPassThrough = process.env.PERSISTENCE === 'passthrough' || configuration().database?.enabled === false;
     if (!isPassThrough) {
       const isMysql = !configuration().database?.type || configuration().database?.type === 'mysql';
       if (isMysql) {
         persistenceModule = DatabaseModule;
-        persistenceService = DatabaseService;
+        persistenceInterface = DatabaseService;
       }
 
       const isMongoDb = configuration().database?.type === 'mongodb';
       if (isMongoDb) {
         persistenceModule = MongoDbModule;
-        persistenceService = MongoDbService;
+        persistenceInterface = MongoDbService;
       }
     }
 
@@ -37,11 +38,12 @@ export class PersistenceModule {
       ],
       providers: [
         {
-          provide: 'PersistenceService',
-          useClass: persistenceService,
+          provide: 'PersistenceInterface',
+          useClass: persistenceInterface,
         },
+        PersistenceService,
       ],
-      exports: ['PersistenceService'],
+      exports: ['PersistenceInterface', PersistenceService],
     };
   }
 }

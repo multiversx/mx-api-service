@@ -1,9 +1,9 @@
-import { HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { ApiService } from "src/common/network/api.service";
-import { PersistenceInterface } from "src/common/persistence/persistence.interface";
+import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MediaMimeTypeEnum } from "src/endpoints/nfts/entities/media.mime.type";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
@@ -22,8 +22,7 @@ export class NftMediaService {
     private readonly cachingService: CachingService,
     private readonly apiService: ApiService,
     private readonly apiConfigService: ApiConfigService,
-    @Inject('PersistenceService')
-    private readonly persistenceService: PersistenceInterface,
+    private readonly persistenceService: PersistenceService,
   ) {
     this.logger = new Logger(NftMediaService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
