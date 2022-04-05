@@ -13,6 +13,7 @@ import { NetworkService } from "../network/network.service";
 import { RoundUtils } from "src/utils/round.utils";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { ApiUtils } from "src/utils/api.utils";
 
 @Injectable()
 export class StakeService {
@@ -88,7 +89,10 @@ export class StakeService {
       }
 
       for (const bls of blses) {
-        allStakesForAddresses.push({ ...stake, bls });
+        const nodeStake = ApiUtils.mergeObjects(new Stake(), stake);
+        nodeStake.bls = bls;
+
+        allStakesForAddresses.push(nodeStake);
       }
     }
 
