@@ -519,7 +519,7 @@ describe('Node Service', () => {
     });
   });
 
-  describe.only("getOwners", () => {
+  describe("getOwners", () => {
     it("should return owners address based on bls list", async () => {
       const bls: string[] = [
         "003ba6237f0f7c269eebfecb6a0a0796076c02593846e1ce89aee9b832b94dd54e93d35b03dc3d5944b1aae916722506faf959a47cabf2d00f567ad50b10f8f1a40ab0316fdf302454f7aea58b23109ccfdce082bd16fb262342a1382b802c10",
