@@ -1,23 +1,24 @@
+
+import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
+import { Queue } from 'src/endpoints/nodes/entities/queue';
+import { NodeFilter } from 'src/endpoints/nodes/entities/node.filter';
 import { Test } from "@nestjs/testing";
 import { CachingService } from "src/common/caching/caching.service";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
 import { Node } from "src/endpoints/nodes/entities/node";
-import { NodeFilter } from "src/endpoints/nodes/entities/node.filter";
-import { NodeSort } from "src/endpoints/nodes/entities/node.sort";
-import { NodeStatus } from "src/endpoints/nodes/entities/node.status";
-import { NodeType } from "src/endpoints/nodes/entities/node.type";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { Provider } from "src/endpoints/providers/entities/provider";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { AccountService } from "../../endpoints/accounts/account.service";
-import { Queue } from "src/endpoints/nodes/entities/queue";
-import providerAccount from "../data/accounts/provider.account";
-import { FileUtils } from "src/utils/file.utils";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { PublicAppModule } from "src/public.app.module";
+import { NodeType } from 'src/endpoints/nodes/entities/node.type';
+import { NodeStatus } from 'src/endpoints/nodes/entities/node.status';
+import { NodeSort } from 'src/endpoints/nodes/entities/node.sort';
 import '../../utils/extensions/array.extensions';
 import '../../utils/extensions/jest.extensions';
 import '../../utils/extensions/number.extensions';
-import { PublicAppModule } from "src/public.app.module";
+import { FileUtils } from "src/utils/file.utils";
 
 describe('Node Service', () => {
   let nodeService: NodeService;
@@ -25,9 +26,7 @@ describe('Node Service', () => {
   let providerService: ProviderService;
   let nodes: Node[];
   let providers: Provider[];
-  let firstNode: Node;
   let accountService: AccountService;
-  let accountAddress: string;
   let apiConfigService: ApiConfigService;
 
   beforeAll(async () => {
@@ -43,13 +42,10 @@ describe('Node Service', () => {
 
     nodes = await nodeService.getAllNodes();
     providers = await providerService.getAllProviders();
-    firstNode = nodes[0];
 
     const accounts = await accountService.getAccounts({ from: 0, size: 1 });
     expect(accounts).toHaveLength(1);
 
-    const account = accounts[0];
-    accountAddress = account.address;
 
     if (apiConfigService.getMockNodes()) {
       const MOCK_PATH = apiConfigService.getMockPath();
@@ -102,373 +98,448 @@ describe('Node Service', () => {
         }
       }
     });
+  });
 
-    it('should be filtered by bls, name or version', async () => {
-      const nodeFilter: NodeFilter = new NodeFilter();
-      nodeFilter.search = firstNode.bls;
+  beforeEach(() => { jest.restoreAllMocks(); });
 
-      let filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
-      for (const node of filteredNodes) {
-        expect(node.bls).toStrictEqual(firstNode.bls);
-      }
+  describe("getNode", () => {
+    it("should return node details based on bls identifier", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const bls: string = "003ba6237f0f7c269eebfecb6a0a0796076c02593846e1ce89aee9b832b94dd54e93d35b03dc3d5944b1aae916722506faf959a47cabf2d00f567ad50b10f8f1a40ab0316fdf302454f7aea58b23109ccfdce082bd16fb262342a1382b802c10";
 
-      nodeFilter.search = firstNode.version;
-      filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
 
-      for (const node of filteredNodes) {
-        expect(node.version).toStrictEqual(firstNode.version);
-      }
-    });
+      const resuls = await nodeService.getNode(bls);
 
-    it('should be filtered by provider and owner', async () => {
-      const nodeFilter: NodeFilter = new NodeFilter();
-      nodeFilter.provider = firstNode.provider;
-      nodeFilter.owner = firstNode.owner;
-      const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
-
-      for (const node of filteredNodes) {
-        expect(node.provider).toStrictEqual(firstNode.provider);
-        expect(node.owner).toStrictEqual(firstNode.owner);
-      }
-    });
-
-    it('should have validator type', async () => {
-      const nodeFilter: NodeFilter = new NodeFilter();
-      nodeFilter.type = NodeType.validator;
-      const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
-
-      for (const node of filteredNodes) {
-        expect(node.type).toStrictEqual(NodeType.validator);
-      }
-    });
-
-    it("should return nodes of a specific owner", async () => {
-      const nodeFilter: NodeFilter = new NodeFilter();
-      nodeFilter.owner = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85";
-      const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
-
-      for (const node of filteredNodes) {
-        console.log(node);
-      }
-
-    });
-
-    it("node is validator only if stake is equal with 2500 EGLD", async () => {
-      const nodeFilter: NodeFilter = new NodeFilter();
-      nodeFilter.type = NodeType.validator;
-
-      const filteredNodes = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
-      for (const node of filteredNodes) {
-        if (node.stake === "2500000000000000000000") {
-          expect(node.type).toStrictEqual(NodeType.validator);
-        }
-      }
-    });
-
-    it('should have observer type', async () => {
-      const nodeFilter: NodeFilter = new NodeFilter();
-      nodeFilter.type = NodeType.observer;
-      const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
-
-      for (const node of filteredNodes) {
-        expect(node.type).toStrictEqual(NodeType.observer);
-      }
-    });
-
-    it('all nodes should be online with eligible status', async () => {
-      const nodeFilter: NodeFilter = new NodeFilter();
-      nodeFilter.status = NodeStatus.eligible;
-      nodeFilter.online = true;
-      const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
-
-      for (const node of filteredNodes) {
-        expect(node.status).toStrictEqual(NodeStatus.eligible);
-        expect(node.online).toStrictEqual(true);
-      }
-    });
-
-    it('should be sorted in ascending order by tempRating', async () => {
-      const nodeFilter: NodeFilter = new NodeFilter();
-      nodeFilter.sort = NodeSort.tempRating;
-
-      const filteredNodes = await nodeService.getNodes({ from: 0, size: 25 }, nodeFilter);
-      let currentTempRating = 0;
-
-      for (const node of filteredNodes) {
-        if (node.tempRating) {
-          expect(node.tempRating).toBeGreaterThanOrEqual(currentTempRating);
-          currentTempRating = node.tempRating;
-        }
-      }
-    });
-
-    it('should return nodes of size 10', async () => {
-      const nodeFilter = new NodeFilter();
-      const filteredNode = await nodeService.getNodes({ from: 0, size: 10 }, nodeFilter);
-
-      expect(filteredNode).toHaveLength(10);
-
-      for (const node of filteredNode) {
-        expect(node).toBeInstanceOf(Object);
-      }
-    });
-
-    it("should be sorted by shard 1", async () => {
-      const nodeFilter: NodeFilter = new NodeFilter();
-      nodeFilter.shard = 1;
-
-      const filteredNode = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
-
-      for (const node of filteredNode) {
-        expect(node).toBeInstanceOf(Object);
-        expect(node.shard).toStrictEqual(1);
-      }
-    });
-
-    it("should return nodes details if issues filter is true", async () => {
-      const nodeFilter: NodeFilter = new NodeFilter();
-      nodeFilter.issues = true;
-
-      const filteredNode = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
-
-      for (const node of filteredNode) {
-        expect(node.hasOwnProperty("bls")).toBeTruthy();
-        expect(node.hasOwnProperty("name")).toBeTruthy();
-        expect(node.hasOwnProperty("version")).toBeTruthy();
-        expect(node.hasOwnProperty("identity")).toBeTruthy();
-        expect(node.hasOwnProperty("shard")).toBeTruthy();
-        expect(node.hasOwnProperty("type")).toBeTruthy();
-        expect(node.hasOwnProperty("issues")).toBeTruthy();
-        expect(node.hasOwnProperty("validatorFailure")).toBeTruthy();
-        expect(node.hasOwnProperty("validatorIgnoredSignatures")).toBeTruthy();
-      }
-    });
-
-    it("should return nodes details if issues filter is false", async () => {
-      const nodeFilter: NodeFilter = new NodeFilter();
-      nodeFilter.issues = false;
-
-      const filteredNode = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
-
-      for (const node of filteredNode) {
-        expect(node.issues).toBeUndefined();
-      }
-    });
-
-    it("should be sorted by identity and provider", async () => {
-      const nodeFilter: NodeFilter = new NodeFilter();
-      nodeFilter.identity = "thepalmtreenw";
-      nodeFilter.provider = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5";
-
-      const filteredNode = await nodeService.getNodes({ from: 0, size: 1 }, nodeFilter);
-
-      for (const node of filteredNode) {
-        expect(node.type).toStrictEqual(NodeType.validator);
-        expect(node.provider).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5");
-      }
+      expect(resuls).toEqual(
+        expect.objectContaining({
+          bls: "003ba6237f0f7c269eebfecb6a0a0796076c02593846e1ce89aee9b832b94dd54e93d35b03dc3d5944b1aae916722506faf959a47cabf2d00f567ad50b10f8f1a40ab0316fdf302454f7aea58b23109ccfdce082bd16fb262342a1382b802c10",
+          name: "Raven2",
+        }));
     });
   });
 
-  describe('Get Node Version', () => {
-    it('should return node version', async () => {
+  describe("getNodeCount", () => {
+    it("should return total online nodes count", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const nodes: NodeFilter = new NodeFilter();
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
+
+      nodes.online = true;
+      const online = await nodeService.getNodeCount(nodes);
+      expect(online).toStrictEqual(97);
+
+      nodes.online = false;
+      const offline = await nodeService.getNodeCount(nodes);
+      expect(offline).toStrictEqual(2);
+    });
+
+    it("should return total nodes on shard 1", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const nodes: NodeFilter = new NodeFilter();
+      nodes.shard = 1;
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
+
+      const results = await nodeService.getNodeCount(nodes);
+      expect(results).toStrictEqual(25);
+    });
+
+    it("should return total validators nodes count", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const nodes: NodeFilter = new NodeFilter();
+      nodes.type = NodeType.validator;
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
+
+      const results = await nodeService.getNodeCount(nodes);
+      expect(results).toStrictEqual(97);
+    });
+
+    it("should return total observers nodes count", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const nodes: NodeFilter = new NodeFilter();
+      nodes.type = NodeType.observer;
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
+
+      const results = await nodeService.getNodeCount(nodes);
+      expect(results).toStrictEqual(2);
+    });
+
+    it("should return total count of nodes with issues", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const nodes: NodeFilter = new NodeFilter();
+      nodes.issues = true;
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
+
+      const results = await nodeService.getNodeCount(nodes);
+      expect(results).toStrictEqual(11);
+    });
+  });
+
+  describe("getNodeVersions", () => {
+    it("should return all nodes version", async () => {
       const nodeVersion = await nodeService.getNodeVersions();
+      const nodeVersionRaw = await nodeService.getNodeVersionsRaw();
+
       const versions = Object.values(nodeVersion);
       const versionSum = versions.sum();
 
-      expect(versionSum).toStrictEqual(1);
-    });
-  });
-
-  describe('Get All Nodes', () => {
-    it('should return nodes array', async () => {
-      const nodes = await nodeService.getAllNodes();
-
-      expect(nodes.length).toBeGreaterThanOrEqual(100);
-
-      for (const node of nodes) {
-        expect(node).toBeInstanceOf(Object);
-      }
-    });
-  });
-
-  describe('Get Heartbeat', () => {
-    it('should return nodes Heartbeat', async () => {
-      const nodes = await nodeService.getHeartbeat();
-
-      expect(nodes.length).toBeGreaterThan(50);
-
-      for (const node of nodes) {
-        expect(node).toBeInstanceOf(Object);
-      }
-    });
-  });
-
-  describe('Get Queue', () => {
-    it('should return Queue[]', async () => {
-      const queueItems = await nodeService.getQueue();
-
-      for (const queueItem of queueItems) {
-        expect(queueItem).toHaveStructure(Object.keys(new Queue()));
-      }
-    });
-  });
-
-  describe('Get Node Count', () => {
-    it('should return node count', async () => {
-      const count = await nodeService.getNodeCount(new NodeFilter());
-      expect(typeof count).toStrictEqual('number');
-    });
-
-    it("should return node count based on provider filter", async () => {
-      const provider: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85";
-      const filter = new NodeFilter();
-      filter.provider = provider;
-      const count = await nodeService.getNodeCount(filter);
-
-      expect(typeof count).toStrictEqual('number');
-    });
-
-    it("should return node count based on issue = true filter", async () => {
-      const filter = new NodeFilter();
-      filter.issues = true;
-      const count = await nodeService.getNodeCount(filter);
-
-      expect(typeof count).toStrictEqual('number');
-    });
-
-    it("should return node count based on issue = false filter", async () => {
-      const filter = new NodeFilter();
-      filter.issues = false;
-      const count = await nodeService.getNodeCount(filter);
-
-      expect(typeof count).toStrictEqual('number');
-    });
-
-    it("should return node count based on status = eligible filter", async () => {
-      const filter = new NodeFilter();
-      filter.status = NodeStatus.eligible;
-      const count = await nodeService.getNodeCount(filter);
-
-      expect(typeof count).toStrictEqual('number');
-    });
-
-    it("should return node count based on status = queued filter", async () => {
-      const filter = new NodeFilter();
-      filter.status = NodeStatus.queued;
-      const count = await nodeService.getNodeCount(filter);
-
-      expect(typeof count).toStrictEqual('number');
-    });
-
-    it("should return node count based on status = new filter", async () => {
-      const filter = new NodeFilter();
-      filter.status = NodeStatus.new;
-      const count = await nodeService.getNodeCount(filter);
-
-      expect(typeof count).toStrictEqual('number');
-    });
-
-    it("should return node count based on type = validator filter", async () => {
-      const filter = new NodeFilter();
-      filter.type = NodeType.validator;
-      const count = await nodeService.getNodeCount(filter);
-
-      expect(typeof count).toStrictEqual('number');
-    });
-
-    it("should return node count based on type = observer filter", async () => {
-      const filter = new NodeFilter();
-      filter.type = NodeType.observer;
-      const count = await nodeService.getNodeCount(filter);
-
-      expect(typeof count).toStrictEqual('number');
-    });
-
-    it("should return node count based on only = true filter", async () => {
-      const filter = new NodeFilter();
-      filter.online = true;
-      const count = await nodeService.getNodeCount(filter);
-
-      expect(typeof count).toStrictEqual('number');
-    });
-
-    it("should return node count based on only = false filter", async () => {
-      const filter = new NodeFilter();
-      filter.online = false;
-      const count = await nodeService.getNodeCount(filter);
-
-      expect(typeof count).toStrictEqual('number');
-    });
-  });
-
-  describe('Delete Owners For Address In Cache', () => {
-    it('should delete address for an owner in cache', async () => {
-      // TODO: make sure keys are in cache, then make sure they are deleted afterwards
-      const ownerDeleted = await nodeService.deleteOwnersForAddressInCache(accountAddress);
-
-      for (const owner of ownerDeleted) {
-        expect(owner).toBeInstanceOf(Array);
-      }
-    });
-  });
-
-  describe('Get Owner BLS', () => {
-    it('should return owner bls', async () => {
-      const blsOwner = await nodeService.getOwnerBlses(providerAccount.address);
-      expect(blsOwner).toEqual(expect.arrayContaining([expect.any(String)]));
-    });
-
-    it('should return empty array', async () => {
-      const blsOwner = await nodeService.getOwnerBlses(accountAddress);
-      expect(blsOwner).toEqual([]);
-    });
-  });
-
-  describe('Get Node Version Raw', () => {
-    it('should return node version', async () => {
-      const versionRaw = await nodeService.getNodeVersionsRaw();
-      const versions = Object.values(versionRaw);
-      const versionSum = versions.sum();
+      const versionsRaw = Object.values(nodeVersionRaw);
+      const versionSumRaw = versionsRaw.sum();
 
       expect(versionSum).toStrictEqual(1);
+      expect(versionSumRaw).toStrictEqual(1);
     });
   });
 
-  describe('Get Node', () => {
-    it('should return nodes based on bls', async () => {
-      const nodeFilter: NodeFilter = new NodeFilter();
-      nodeFilter.search = firstNode.bls;
-      const node = await nodeService.getNode(nodeFilter.search);
+  describe("getNodes", () => {
+    it("should return one list of 3 nodes", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
 
-      if (!node) {
-        throw new Error('Node properties are not defined');
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
+
+      const results = await nodeService.getNodes({ from: 0, size: 3 }, new NodeFilter());
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identity: "thepalmtreenw" }),
+          expect.objectContaining({ identity: "stewiegriffin" }),
+          expect.objectContaining({ identity: "heliosstaking" }),
+        ])
+      );
+    });
+
+    it("should return 3 nodes with type validator", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const nodes: NodeFilter = new NodeFilter();
+      nodes.type = NodeType.validator;
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
+
+      const results = await nodeService.getNodes({ from: 0, size: 3 }, nodes);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identity: "thepalmtreenw", type: "validator" }),
+          expect.objectContaining({ identity: "stewiegriffin", type: "validator" }),
+          expect.objectContaining({ identity: "heliosstaking", type: "validator" }),
+        ])
+      );
+    });
+
+    it("should return 3 nodes with status eligible", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const nodes: NodeFilter = new NodeFilter();
+      nodes.status = NodeStatus.eligible;
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
+
+      const results = await nodeService.getNodes({ from: 0, size: 3 }, nodes);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identity: "thepalmtreenw", status: "eligible" }),
+          expect.objectContaining({ identity: "validblocks", status: "eligible" }),
+          expect.objectContaining({ identity: "justminingfr", status: "eligible" }),
+        ])
+      );
+    });
+
+    it("should return 3 nodes from shard 1", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const nodes: NodeFilter = new NodeFilter();
+      nodes.shard = 1;
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
+
+      const results = await nodeService.getNodes({ from: 0, size: 3 }, nodes);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identity: "thepalmtreenw", shard: 1 }),
+          expect.objectContaining({ identity: "stewiegriffin", shard: 1 }),
+          expect.objectContaining({ identity: "heliosstaking", shard: 1 }),
+        ])
+      );
+    });
+
+    it("should return 1 node with issues", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const nodes: NodeFilter = new NodeFilter();
+      nodes.issues = true;
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
+
+      const results = await nodeService.getNodes({ from: 0, size: 1 }, nodes);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identity: "oxsy", issues: ['versionMismatch'] }),
+        ])
+      );
+    });
+
+    it("should return 1 node with owner", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const nodes: NodeFilter = new NodeFilter();
+      nodes.owner = "erd1qzwd98g6xjs6h33ezxc9ey766ee082z9q4yvj46r8p7xqnl0eenqvxtaz3";
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
+
+      const results = await nodeService.getNodes({ from: 0, size: 1 }, nodes);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identity: "stewiegriffin", owner: "erd1qzwd98g6xjs6h33ezxc9ey766ee082z9q4yvj46r8p7xqnl0eenqvxtaz3" }),
+        ])
+      );
+    });
+
+    it("should return 4 nodes sorted by name ASC", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const nodes: NodeFilter = new NodeFilter();
+      nodes.sort = NodeSort.name;
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
+
+      const results = await nodeService.getNodes({ from: 0, size: 4 }, nodes);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: "alchemy-pot-12" }),
+          expect.objectContaining({ name: "arcstake-EGLD1-141-1" }),
+          expect.objectContaining({ name: "Beany-2a" }),
+          expect.objectContaining({ name: "binance-validator-19" }),
+        ])
+      );
+    });
+
+    it("should return 2 nodes of a provider ", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const nodes: NodeFilter = new NodeFilter();
+      nodes.provider = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5";
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
+
+      const results = await nodeService.getNodes({ from: 0, size: 2 }, nodes);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: "ThePalmTreeNW122", provider: "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5" }),
+          expect.objectContaining({ name: "ThePalmTreeNW312", provider: "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5" }),
+        ])
+      );
+    });
+  });
+
+  describe("getAllNodes", () => {
+    it("should return all nodes", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
+
+      const results = await nodeService.getAllNodes();
+
+      expect(results.length).toBeGreaterThanOrEqual(99);
+    });
+  });
+
+  describe("getAllNodesRaw", () => {
+    it("should return all raw nodes", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+
+      jest
+        .spyOn(NodeService.prototype, 'getHeartbeat')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
+
+      const results = await nodeService.getAllNodesRaw();
+
+      expect(results.length).toBeGreaterThanOrEqual(99);
+    });
+  });
+
+  describe("getHeartbeat", () => {
+    it("should return heartbeat details", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
+
+      const results = await nodeService.getHeartbeat();
+
+      for (const result of results) {
+        expect(result).toHaveProperties([
+          'bls', 'name', 'version', 'identity', 'rating',
+          'tempRating', 'ratingModifier', 'shard', 'type', 'status',
+          'online', 'nonce', 'instances', 'owner', 'provider',
+          'validatorFailure', 'validatorIgnoredSignatures', 'issues', 'position']);
       }
+    });
+  });
 
-      expect(node).toHaveProperty('bls');
-      expect(node).toHaveProperty('name');
-      expect(node).toHaveProperty('version');
+  describe("getQueue", () => {
+    it("should return all nodes in queue", async () => {
+      const results = await nodeService.getQueue();
+
+      for (const result of results) {
+        expect(result).toHaveStructure(Object.keys(new Queue()));
+      }
+    });
+
+    it("should return empty array because test simulates that vm query send an empty array with no informations about nodes", async () => {
+
+      jest
+        .spyOn(VmQueryService.prototype, 'vmQuery')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => []));
+
+      const results = await nodeService.getQueue();
+
+      expect(results).toStrictEqual([]);
     });
   });
 
   describe("getBlsOwner", () => {
-    it("should return bls owner", async () => {
-      const bls: string = "00f9b676245ecf7bc74e3b644c106cfbbb366ce01a0149c1e50303d22c09bef7600f21f1925753ab994174b9926e9b078c2d1edaf03c221149ea0239722278aa864a1b26f298c29fe546fdb0ee1385243dfe407074e0dfa134c7e6d4197ce110";
-      const owner = await nodeService.getBlsOwner(bls);
+    it("should return owner address based on bls", async () => {
+      const bls: string = "003ba6237f0f7c269eebfecb6a0a0796076c02593846e1ce89aee9b832b94dd54e93d35b03dc3d5944b1aae916722506faf959a47cabf2d00f567ad50b10f8f1a40ab0316fdf302454f7aea58b23109ccfdce082bd16fb262342a1382b802c10";
 
-      expect(owner).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85");
+      jest
+        .spyOn(VmQueryService.prototype, 'vmQuery')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => ["AJzSnRo0oavGORGwXJPa1nLzqEUFSMlXQzh8YE/vzmY="]));
+
+      const results = await nodeService.getBlsOwner(bls);
+
+      expect(results).toStrictEqual("erd1qzwd98g6xjs6h33ezxc9ey766ee082z9q4yvj46r8p7xqnl0eenqvxtaz3");
+    });
+  });
+
+  describe("getOwnerBlses", () => {
+    it("should return one bls node details for a specific owner", async () => {
+      const owner: string = "erd1qzwd98g6xjs6h33ezxc9ey766ee082z9q4yvj46r8p7xqnl0eenqvxtaz3";
+
+      jest
+        .spyOn(VmQueryService.prototype, 'vmQuery')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => ["009cd29d1a34a1abc63911b05c93dad672f3a8450548c95743387c604fefce66]"]));
+
+      const results = await nodeService.getOwnerBlses(owner);
+
+      expect(results).toEqual(expect.arrayContaining([
+        "d34f5c776f5dd5adf86b569b73adfdd756f4e5cf7775a77aef67f76bce39d39e3c73de7be37dfcedceb4e1f79f71eeba",
+      ]));
+    });
+  });
+
+  describe("deleteOwnersForAddressInCache", () => {
+    it("should delete owners for a specific address in cache", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const address: string = "erd1qzwd98g6xjs6h33ezxc9ey766ee082z9q4yvj46r8p7xqnl0eenqvxtaz3";
+
+      jest
+        .spyOn(NodeService.prototype, 'getAllNodes')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
+
+      const results = await nodeService.deleteOwnersForAddressInCache(address);
+
+      expect(results).toEqual(expect.arrayContaining([
+        "owner:613:003ba6237f0f7c269eebfecb6a0a0796076c02593846e1ce89aee9b832b94dd54e93d35b03dc3d5944b1aae916722506faf959a47cabf2d00f567ad50b10f8f1a40ab0316fdf302454f7aea58b23109ccfdce082bd16fb262342a1382b802c10",
+      ]));
     });
   });
 
   describe("getOwners", () => {
-    it("should return nodes address", async () => {
+    it("should return ", async () => {
       const bls: string[] = [
-        "011176971aa7bbc6bf849d85d8512d4ab5fc9c9af4a6cab2cf502b419f568a3beaebf3347934eb341731591ffd41980977b6a20a896438236eb215ab5ff56093421bb824211f0a2cc71fda67473fa72306a6d04dd04e054cacb2bffe4ef5a309",
         "003ba6237f0f7c269eebfecb6a0a0796076c02593846e1ce89aee9b832b94dd54e93d35b03dc3d5944b1aae916722506faf959a47cabf2d00f567ad50b10f8f1a40ab0316fdf302454f7aea58b23109ccfdce082bd16fb262342a1382b802c10",
-      ];
-      const results = await nodeService.getOwners(bls, 573);
+        "00198be6aae517a382944cd5a97845857f3b122bb1edf1588d60ed421d32d16ea2767f359a0d714fae3a35c1b0cf4e1141d701d5d1d24160e49eeaebeab21e2f89a2b7c44f3a313383d542e69800cfb6e115406d3d8114b4044ef5a04acf0408"];
 
-      expect(results[0]).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhllllsajxzat");
-      expect(results[1]).toStrictEqual("erd1qzwd98g6xjs6h33ezxc9ey766ee082z9q4yvj46r8p7xqnl0eenqvxtaz3");
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          [
+            'erd1qzwd98g6xjs6h33ezxc9ey766ee082z9q4yvj46r8p7xqnl0eenqvxtaz3',
+            'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5',
+          ]));
+
+      const results = await nodeService.getOwners(bls, 608);
+
+      expect(results).toEqual(expect.arrayContaining([
+        "erd1qzwd98g6xjs6h33ezxc9ey766ee082z9q4yvj46r8p7xqnl0eenqvxtaz3",
+        "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5",
+      ]));
     });
   });
 });
