@@ -205,4 +205,11 @@ export class CacheInfo {
       ttl: Constants.oneMinute() * 20,
     };
   }
+
+  static StakeTopup(address: string): CacheInfo {
+    return {
+      key: `stakeTopup:${address}`,
+      ttl: Constants.oneMinute() * 15,
+    };
+  }
 }
