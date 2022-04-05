@@ -78,17 +78,21 @@ export class StakeService {
   }
 
   async getStakes(addresses: string[]): Promise<Stake[]> {
-    const stakes = await this.getAllStakesForNodes(addresses);
+    const stakesForAddressesNodes = await this.getAllStakesForNodes(addresses);
 
-    const value: Stake[] = [];
+    const allStakesForAddresses: Stake[] = [];
+    for (const stake of stakesForAddressesNodes) {
+      const blses = stake.blses;
+      if (!blses) {
+        throw new Error(`Cannot find blses for address stake '${stake.address}'`);
+      }
 
-    stakes.forEach(({ stake, topUp, locked, blses }) => {
-      blses.forEach((bls) => {
-        value.push({ bls, stake, topUp, locked });
-      });
-    });
+      for (const bls of blses) {
+        allStakesForAddresses.push({ ...stake, bls });
+      }
+    }
 
-    return value;
+    return allStakesForAddresses;
   }
 
   async getAllStakesForNodes(addresses: string[]) {
@@ -110,6 +114,7 @@ export class StakeService {
         [AddressUtils.bech32Decode(address)],
       );
     } catch (error) {
+      this.logger.log(`Unexpected error when trying to get stake informations from contract for address '${address}'`);
       this.logger.log(error);
       response = undefined;
     }
