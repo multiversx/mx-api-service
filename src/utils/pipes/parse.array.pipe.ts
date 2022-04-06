@@ -2,7 +2,11 @@ import { ArgumentMetadata, HttpException, HttpStatus, PipeTransform } from "@nes
 
 
 export class ParseArrayPipe implements PipeTransform<string | undefined, Promise<string[] | undefined>> {
-  private MAX_ARRAY_SIZE = 1024;
+  private readonly maxArraySize;
+
+  constructor(maxArraySize: number = 1024) {
+    this.maxArraySize = maxArraySize;
+  }
 
   transform(value: string | undefined, _: ArgumentMetadata): Promise<string[] | undefined> {
     return new Promise(resolve => {
@@ -12,11 +16,13 @@ export class ParseArrayPipe implements PipeTransform<string | undefined, Promise
 
       const valueArray = value.split(',');
 
-      if (valueArray.length > this.MAX_ARRAY_SIZE) {
-        throw new HttpException(`Validation failed (less than ${this.MAX_ARRAY_SIZE} comma separated values expected)`, HttpStatus.BAD_REQUEST);
+      if (valueArray.length > this.maxArraySize) {
+        throw new HttpException(`Validation failed (less than ${this.maxArraySize} comma separated values expected)`, HttpStatus.BAD_REQUEST);
       }
 
-      resolve(valueArray);
+      const distinctValueArray = valueArray.distinct();
+
+      resolve(distinctValueArray);
     });
   }
 }

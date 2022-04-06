@@ -23,7 +23,7 @@ export class SmartContractResultController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('miniBlockHash') miniBlockHash?: string,
-    @Query('originalTxHashes', ParseArrayPipe) originalTxHashes?: string[],
+    @Query('originalTxHashes', new ParseArrayPipe(64)) originalTxHashes?: string[],
   ): Promise<SmartContractResult[]> {
     return this.scResultService.getScResults({ from, size }, { miniBlockHash, originalTxHashes });
   }
