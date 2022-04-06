@@ -14,6 +14,7 @@ import { RoundUtils } from "src/utils/round.utils";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { ApiUtils } from "src/utils/api.utils";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 
 @Injectable()
 export class StakeService {
@@ -99,12 +100,20 @@ export class StakeService {
     return allStakesForAddresses;
   }
 
+  async getAllStakesForNode(address: string) {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.StakeTopup(address).key,
+      async () => await this.getAllStakesForAddressNodesRaw(address),
+      CacheInfo.StakeTopup(address).ttl
+    );
+  }
+
   async getAllStakesForNodes(addresses: string[]) {
     return await this.cachingService.batchProcess(
       addresses,
-      address => `stakeTopup:${address}`,
+      address => CacheInfo.StakeTopup(address).key,
       async address => await this.getAllStakesForAddressNodesRaw(address),
-      Constants.oneMinute() * 15
+      CacheInfo.StakeTopup('').ttl
     );
   }
 
