@@ -26,6 +26,7 @@ import { AbstractQuery } from "../../common/elastic/entities/abstract.query";
 import { AccountHistory } from "./entities/account.history";
 import { QueryOperator } from 'src/common/elastic/entities/query.operator';
 import { TokenService } from '../tokens/token.service';
+import { StakeService } from '../stake/stake.service';
 
 @Injectable()
 export class AccountService {
@@ -43,6 +44,8 @@ export class AccountService {
     private readonly pluginService: PluginService,
     @Inject(forwardRef(() => TokenService))
     private readonly tokenService: TokenService,
+    @Inject(forwardRef(() => StakeService))
+    private readonly stakeService: StakeService,
   ) {
     this.logger = new Logger(AccountService.name);
   }
@@ -280,9 +283,11 @@ export class AccountService {
 
     if (nodes.length) {
       const rewardAddress = await this.getRewardAddressForNode(nodes[0].blsKey);
+      const { topUp } = await this.stakeService.getAllStakesForNode(address);
 
       for (const node of nodes) {
         node.rewardAddress = rewardAddress;
+        node.topUp = topUp;
       }
     }
 

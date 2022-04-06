@@ -9,6 +9,9 @@ export class AccountKey {
   stake: string = '';
 
   @ApiProperty()
+  topUp: string = '';
+
+  @ApiProperty()
   status: string = '';
 
   @ApiProperty()

@@ -280,7 +280,11 @@ export class NodeService {
 
     for (const node of nodes) {
       if (node.type === 'validator') {
-        const stake = stakes.find(({ bls }) => bls === node.bls) || new Stake();
+        let stake = stakes.find(({ bls }) => bls === node.bls) ?? new Stake();
+
+        if (node.status === "jailed") {
+          stake = stakes.find(({ address }) => node.provider ? address === node.provider : address === node.owner) ?? new Stake();
+        }
 
         node.stake = stake.stake;
         node.topUp = stake.topUp;
