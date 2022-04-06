@@ -13,6 +13,7 @@ import { NetworkService } from "../network/network.service";
 import { RoundUtils } from "src/utils/round.utils";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { ApiUtils } from "src/utils/api.utils";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 
 @Injectable()
@@ -79,17 +80,24 @@ export class StakeService {
   }
 
   async getStakes(addresses: string[]): Promise<Stake[]> {
-    const stakes = await this.getAllStakesForNodes(addresses);
+    const stakesForAddressesNodes = await this.getAllStakesForNodes(addresses);
 
-    const value: Stake[] = [];
+    const allStakesForAddresses: Stake[] = [];
+    for (const stake of stakesForAddressesNodes) {
+      const blses = stake.blses;
+      if (!blses) {
+        this.logger.error(`Cannot find blses for address stake '${stake.address}'`);
+      }
 
-    stakes.forEach(({ stake, topUp, locked, blses }) => {
-      blses.forEach((bls) => {
-        value.push({ bls, stake, topUp, locked });
-      });
-    });
+      for (const bls of blses) {
+        const nodeStake = ApiUtils.mergeObjects(new Stake(), stake);
+        nodeStake.bls = bls;
 
-    return value;
+        allStakesForAddresses.push(nodeStake);
+      }
+    }
+
+    return allStakesForAddresses;
   }
 
   async getAllStakesForNode(address: string) {
@@ -119,6 +127,7 @@ export class StakeService {
         [AddressUtils.bech32Decode(address)],
       );
     } catch (error) {
+      this.logger.log(`Unexpected error when trying to get stake informations from contract for address '${address}'`);
       this.logger.log(error);
       response = undefined;
     }
