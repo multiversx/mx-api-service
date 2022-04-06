@@ -33,6 +33,7 @@ import { TransactionUtils } from 'src/utils/transaction.utils';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
+import { TransactionStatus } from './entities/transaction.status';
 
 @Injectable()
 export class TransactionService {
@@ -294,6 +295,10 @@ export class TransactionService {
 
       transaction.action = await this.transactionActionService.getTransactionAction(transaction);
       transaction.pendingResults = await this.getPendingResults(transaction);
+
+      if (transaction.pendingResults === true) {
+        transaction.status = TransactionStatus.pending;
+      }
     } catch (error) {
       this.logger.error(`Unhandled error when processing plugin transaction for transaction with hash '${transaction.txHash}'`);
       this.logger.error(error);
