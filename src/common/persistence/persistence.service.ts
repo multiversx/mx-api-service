@@ -20,7 +20,6 @@ export class PersistenceService implements PersistenceInterface {
     } finally {
       profiler.stop();
 
-      this.metricsService.setExternalCall('persistence', profiler.duration);
       this.metricsService.setPersistenceDuration(key, profiler.duration);
     }
   }

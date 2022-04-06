@@ -182,10 +182,12 @@ export class MetricsService {
   }
 
   setRedisDuration(action: string, duration: number) {
+    MetricsService.externalCallsHistogram.labels('redis').observe(duration);
     MetricsService.redisDurationHistogram.labels(action).observe(duration);
   }
 
   setPersistenceDuration(action: string, duration: number) {
+    MetricsService.externalCallsHistogram.labels('persistence').observe(duration);
     MetricsService.persistenceDurationHistogram.labels(action).observe(duration);
   }
 
