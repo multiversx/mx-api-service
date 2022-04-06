@@ -38,7 +38,7 @@ export class PersistenceService implements PersistenceInterface {
   }
 
   async getMetadata(identifier: string): Promise<any> {
-    await this.execute('getMetadata', this.persistenceInterface.getMetadata(identifier));
+    return await this.execute('getMetadata', this.persistenceInterface.getMetadata(identifier));
   }
 
   async deleteMetadata(identifier: string): Promise<void> {
