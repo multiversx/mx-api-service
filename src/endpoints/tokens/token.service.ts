@@ -327,6 +327,11 @@ export class TokenService {
   }
 
   async getTokenAccounts(pagination: QueryPagination, identifier: string): Promise<TokenAccount[] | undefined> {
+    const token = await this.getToken(identifier);
+    if (!token) {
+      return undefined;
+    }
+
     const properties = await this.getTokenProperties(identifier);
     if (!properties) {
       return undefined;
@@ -344,6 +349,11 @@ export class TokenService {
   }
 
   async getTokenAccountsCount(identifier: string): Promise<number | undefined> {
+    const token = await this.getToken(identifier);
+    if (!token) {
+      return undefined;
+    }
+
     const properties = await this.getTokenProperties(identifier);
     if (!properties) {
       return undefined;
@@ -389,6 +399,11 @@ export class TokenService {
   }
 
   async getTokenSupply(identifier: string): Promise<{ supply: string, circulatingSupply: string } | undefined> {
+    const token = await this.getToken(identifier);
+    if (!token) {
+      return undefined;
+    }
+
     const properties = await this.getTokenProperties(identifier);
     if (!properties) {
       return undefined;

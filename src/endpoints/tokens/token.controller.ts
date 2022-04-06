@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { BadRequestException, Controller, DefaultValuePipe, Get, Logger, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { SortOrder } from "src/common/entities/sort.order";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
@@ -109,7 +109,7 @@ export class TokenController {
   async getTokenSupply(@Param('identifier') identifier: string): Promise<{ supply: string, circulatingSupply: string }> {
     const getSupplyResult = await this.tokenService.getTokenSupply(identifier);
     if (!getSupplyResult) {
-      throw new NotFoundException();
+      throw new NotFoundException('Token not found');
     }
 
     return getSupplyResult;
@@ -213,6 +213,11 @@ export class TokenController {
     }
 
     try {
+      const token = await this.tokenService.getToken(identifier);
+      if (!token) {
+        throw new NotFoundException('Token not found');
+      }
+
       return await this.transactionService.getTransactions({
         sender,
         receiver,
@@ -230,7 +235,7 @@ export class TokenController {
       }, { from, size }, { withScResults, withOperations, withLogs });
     } catch (error) {
       this.logger.error(error);
-      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Token not found');
     }
   }
 
@@ -268,6 +273,11 @@ export class TokenController {
     @Query('after', ParseOptionalIntPipe) after: number | undefined,
   ) {
     try {
+      const token = await this.tokenService.getToken(identifier);
+      if (!token) {
+        throw new NotFoundException('Token not found');
+      }
+
       return await this.transactionService.getTransactionCount({
         sender,
         receiver,
@@ -283,7 +293,7 @@ export class TokenController {
       });
     } catch (error) {
       this.logger.error(error);
-      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Token not found');
     }
   }
 
@@ -300,9 +310,8 @@ export class TokenController {
     @Param('identifier') identifier: string,
   ): Promise<TokenAddressRoles[]> {
     const roles = await this.tokenService.getTokenRoles(identifier);
-
     if (!roles) {
-      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Token not found');
     }
 
     return roles;
@@ -322,9 +331,8 @@ export class TokenController {
     @Param('address') address: string,
   ): Promise<TokenAddressRoles> {
     const roles = await this.tokenService.getTokenRolesForAddress(identifier, address);
-
     if (!roles) {
-      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Token not found');
     }
 
     return roles;
