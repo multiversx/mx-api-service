@@ -54,7 +54,7 @@ export class Block {
     maxGasLimit: number = 0;
 
     static mergeWithElasticResponse<T extends Block>(newBlock: T, blockRaw: any): T {
-        blockRaw.shard = blockRaw.shardId ?? blockRaw.shard;
+        blockRaw.shard = blockRaw.shardId;
 
         if (blockRaw.gasProvided) {
             blockRaw.gasConsumed = blockRaw.gasProvided;
