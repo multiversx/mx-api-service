@@ -79,7 +79,7 @@ export class SmartContractResultService {
     return elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
   }
 
-  async getAccountScResultsCount(address: string): Promise<SmartContractResult[]> {
+  async getAccountScResultsCount(address: string): Promise<number> {
     const elasticQuery: ElasticQuery = this.buildSmartContractResultFilterQuery(address);
 
     return await this.elasticService.getCount('scresults', elasticQuery);
