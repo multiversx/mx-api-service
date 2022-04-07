@@ -133,7 +133,7 @@ export class TransactionGetService {
           const transactionLogs: TransactionLog[] = logs.map(log => ({ id: log._id, ...ApiUtils.mergeObjects(new TransactionLog(), log._source) }));
 
           transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, transactionLogs);
-          transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.operations, previousHashes);
+          transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
 
           for (const log of logs) {
             if (log._id === txHash) {

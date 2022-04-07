@@ -6,6 +6,7 @@ import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { QueryType } from "src/common/elastic/entities/query.type";
+import { TermsQuery } from "src/common/elastic/entities/terms.query";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { ApiUtils } from "src/utils/api.utils";
 import { SmartContractResult } from "./entities/smart.contract.result";
@@ -45,6 +46,10 @@ export class SmartContractResultService {
       query = query.withCondition(QueryConditionOptions.must, [QueryType.Match('miniBlockHash', filter.miniBlockHash)]);
     }
 
+    if (filter.originalTxHashes) {
+      query = query.withTerms(new TermsQuery('originalTxHash', filter.originalTxHashes));
+    }
+
     const elasticResult = await this.elasticService.getList('scresults', 'hash', query);
 
     return elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
@@ -74,7 +79,7 @@ export class SmartContractResultService {
     return elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
   }
 
-  async getAccountScResultsCount(address: string): Promise<SmartContractResult[]> {
+  async getAccountScResultsCount(address: string): Promise<number> {
     const elasticQuery: ElasticQuery = this.buildSmartContractResultFilterQuery(address);
 
     return await this.elasticService.getCount('scresults', elasticQuery);

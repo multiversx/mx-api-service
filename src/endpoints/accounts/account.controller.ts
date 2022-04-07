@@ -869,7 +869,6 @@ export class AccountController {
   @ApiResponse({
     status: 200,
     description: 'The count of all smart contract results for a given account',
-    type: SmartContractResult,
   })
   @ApiResponse({
     status: 404,
@@ -877,7 +876,7 @@ export class AccountController {
   })
   getAccountScResultsCount(
     @Param('address', ParseAddressPipe) address: string,
-  ): Promise<SmartContractResult[]> {
+  ): Promise<number> {
     return this.scResultService.getAccountScResultsCount(address);
   }
 

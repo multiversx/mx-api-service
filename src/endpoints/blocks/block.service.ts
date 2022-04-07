@@ -6,7 +6,6 @@ import { BlockFilter } from "./entities/block.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlsService } from "src/endpoints/bls/bls.service";
 import { Constants } from "src/utils/constants";
-import { ApiUtils } from "src/utils/api.utils";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { AbstractQuery } from "src/common/elastic/entities/abstract.query";
@@ -77,34 +76,26 @@ export class BlockService {
 
     const result = await this.elasticService.getList('blocks', 'hash', elasticQuery);
 
-    for (const item of result) {
-      item.shard = item.shardId;
-
-      if (item.gasProvided) {
-        item.gasConsumed = item.gasProvided;
-      }
-    }
-
     const blocks = [];
-
     for (const item of result) {
-      const block = await this.computeProposerAndValidators(item);
+      const blockRaw = await this.computeProposerAndValidators(item);
 
-      blocks.push(ApiUtils.mergeObjects(new Block(), block));
+      const block = Block.mergeWithElasticResponse(new Block(), blockRaw);
+      blocks.push(block);
     }
 
     return blocks;
   }
 
   async computeProposerAndValidators(item: any) {
-    const { shardId: shard, epoch, searchOrder, ...rest } = item;
+    const { shardId, epoch, searchOrder, ...rest } = item;
     let { proposer, validators } = item;
 
-    let blses: any = await this.cachingService.getCacheLocal(CacheInfo.ShardAndEpochBlses(shard, epoch).key);
+    let blses: any = await this.cachingService.getCacheLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key);
     if (!blses) {
-      blses = await this.blsService.getPublicKeys(shard, epoch);
+      blses = await this.blsService.getPublicKeys(shardId, epoch);
 
-      await this.cachingService.setCacheLocal(CacheInfo.ShardAndEpochBlses(shard, epoch).key, blses, CacheInfo.ShardAndEpochBlses(shard, epoch).ttl);
+      await this.cachingService.setCacheLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key, blses, CacheInfo.ShardAndEpochBlses(shardId, epoch).ttl);
     }
 
     proposer = blses[proposer];
@@ -113,12 +104,11 @@ export class BlockService {
       validators = validators.map((index: number) => blses[index]);
     }
 
-    return { shard, epoch, proposer, validators, ...rest };
+    return { shardId, epoch, proposer, validators, ...rest };
   }
 
   async getBlock(hash: string): Promise<BlockDetailed> {
     const result = await this.elasticService.getItem('blocks', 'hash', hash);
-    result.shard = result.shardId;
 
     if (result.round > 0) {
       const publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);
@@ -128,11 +118,7 @@ export class BlockService {
       result.validators = [];
     }
 
-    if (result.gasProvided) {
-      result.gasConsumed = result.gasProvided;
-    }
-
-    return ApiUtils.mergeObjects(new BlockDetailed(), result);
+    return BlockDetailed.mergeWithElasticResponse(new BlockDetailed(), result);
   }
 
   async getCurrentEpoch(): Promise<number> {
