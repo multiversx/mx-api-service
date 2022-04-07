@@ -1,4 +1,4 @@
-
+import { BlockService } from 'src/endpoints/blocks/block.service';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { Queue } from 'src/endpoints/nodes/entities/queue';
 import { NodeFilter } from 'src/endpoints/nodes/entities/node.filter';
@@ -15,10 +15,10 @@ import { PublicAppModule } from "src/public.app.module";
 import { NodeType } from 'src/endpoints/nodes/entities/node.type';
 import { NodeStatus } from 'src/endpoints/nodes/entities/node.status';
 import { NodeSort } from 'src/endpoints/nodes/entities/node.sort';
+import { FileUtils } from "src/utils/file.utils";
 import '../../utils/extensions/array.extensions';
 import '../../utils/extensions/jest.extensions';
 import '../../utils/extensions/number.extensions';
-import { FileUtils } from "src/utils/file.utils";
 
 describe('Node Service', () => {
   let nodeService: NodeService;
@@ -501,9 +501,14 @@ describe('Node Service', () => {
   });
 
   describe("deleteOwnersForAddressInCache", () => {
-    it("should delete owners for a specific address in cache", async () => {
+    it("should delete owner for a specific address in cache", async () => {
       const MOCK_PATH = apiConfigService.getMockPath();
       const address: string = "erd1qzwd98g6xjs6h33ezxc9ey766ee082z9q4yvj46r8p7xqnl0eenqvxtaz3";
+
+      jest
+        .spyOn(BlockService.prototype, 'getCurrentEpoch')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => 613));
 
       jest
         .spyOn(NodeService.prototype, 'getAllNodes')
