@@ -12,6 +12,7 @@ import { TransactionOperationAction } from "src/endpoints/transactions/entities/
 import { TransactionOperationType } from "src/endpoints/transactions/entities/transaction.operation.type";
 import { TokenType } from "src/endpoints/tokens/entities/token.type";
 import { TransactionUtils } from "src/utils/transaction.utils";
+import '../../../utils/extensions/array.extensions';
 
 describe('Transaction Utils', () => {
   it('tryExtractCollectionIdentifierFromChangeSftToMetaEsdTransaction', () => {
@@ -206,7 +207,7 @@ describe('Transaction Utils', () => {
       '2199b2f2ebf591e1d05ee3c871546cffdc1eb4970a54eee707614aa9374935c0': 'f592405c4d6556a5a680c3225ae7bd254b73c7c47cf032ec66936dbbb494ca4c',
     };
 
-    const trimmedOperations = TransactionUtils.trimOperations(operations, previousHashes);
+    const trimmedOperations = TransactionUtils.trimOperations('erd1qqqqqqqqqqqqqpgqxe80hegndzmp25c2qnsutze45h8q7nlud8ssplfp8u', operations, previousHashes);
 
     expect(trimmedOperations.length).toStrictEqual(1);
     expect(trimmedOperations[0]).toEqual({

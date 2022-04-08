@@ -140,7 +140,7 @@ describe("Rounds Controller", () => {
       .expect(200);
   });
 
-  it("/rounds/{shard}/{round}- should return 200 status code and rounds details from a specific shard and round ", async () => {
+  it("/rounds/:shard/:round- should return 200 status code and rounds details from a specific shard and round ", async () => {
     const shard: number = 0;
     const round: number = 8557848;
 
@@ -149,7 +149,7 @@ describe("Rounds Controller", () => {
       .expect(200);
   });
 
-  it("/rounds/{shard}/{round}- should return 200 status code and rounds details from a specific shard and round ", async () => {
+  it("/rounds/:shard/:round- should return 200 status code and rounds details from a specific shard and round ", async () => {
     const shard: number = 1;
     const round: number = 8557841;
 
@@ -158,7 +158,7 @@ describe("Rounds Controller", () => {
       .expect(200);
   });
 
-  it("/rounds/{shard}/{round}- should return 200 status code and rounds details from a specific shard and round ", async () => {
+  it("/rounds/:shard/:round- should return 200 status code and rounds details from a specific shard and round ", async () => {
     const shard: number = 2;
     const round: number = 8557848;
 

@@ -303,6 +303,15 @@ export class ApiConfigService {
     return this.configService.get<boolean>('api.auth') ?? false;
   }
 
+  getDatabaseType(): string {
+    const databaseType = this.configService.get<string>('database.type');
+    if (!databaseType) {
+      throw new Error('No database.type present');
+    }
+
+    return databaseType;
+  }
+
   getDatabaseHost(): string {
     const databaseHost = this.configService.get<string>('database.host');
     if (!databaseHost) {
@@ -341,6 +350,15 @@ export class ApiConfigService {
     }
 
     return databaseName;
+  }
+
+  getDatabaseUrl(): string {
+    const databaseUrl = this.configService.get<string>('database.url');
+    if (!databaseUrl) {
+      throw new Error('No database.url present');
+    }
+
+    return databaseUrl;
   }
 
   getDatabaseConnection(): any {

@@ -1,4 +1,3 @@
-import { NftService } from '../../endpoints/nfts/nft.service';
 import { ProcessNftsModule } from '../../endpoints/process-nfts/process.nfts.module';
 import { ProcessNftSettings } from '../../endpoints/process-nfts/entities/process.nft.settings';
 import { ProcessNftsService } from '../../endpoints/process-nfts/process.nfts.service';
@@ -13,6 +12,7 @@ describe('Process Nft Service', () => {
   beforeAll(async () => {
     await Initializer.initialize();
 
+
     const moduleRef = await Test.createTestingModule({
       imports: [ProcessNftsModule],
     }).compile();
@@ -21,7 +21,7 @@ describe('Process Nft Service', () => {
 
   }, Constants.oneHour() * 1000);
 
-  describe("Process NFT", () => {
+  describe("processNft", () => {
     it("should force refresh media", async () => {
       const filter = new ProcessNftSettings();
       filter.forceRefreshMedia = true;
@@ -52,20 +52,6 @@ describe('Process Nft Service', () => {
       const process = await processNftService.processNft(nftExample.identifier, filter);
 
       expect(process).toBeTruthy();
-    });
-
-    it("should throw new error if nft identifier is not correct", async () => {
-      const filter = new ProcessNftSettings();
-      filter.skipRefreshThumbnail = true;
-
-      jest
-        .spyOn(NftService.prototype, 'getSingleNft')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async () => undefined));
-
-      const process = await processNftService.processNft("invalidIdentifier", filter);
-
-      expect(process).toBeFalsy();
     });
   });
 

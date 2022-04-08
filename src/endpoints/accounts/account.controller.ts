@@ -204,10 +204,11 @@ export class AccountController {
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
   @ApiQuery({ name: 'owner', description: 'Filter by collection owner', required: false })
   @ApiQuery({ name: 'canCreate', description: 'Filter by property canCreate (boolean)', required: false })
-  @ApiQuery({ name: 'canBurn', description: 'Filter by property canCreate (boolean)', required: false })
+  @ApiQuery({ name: 'canBurn', description: 'Filter by property canBurn (boolean)', required: false })
   @ApiQuery({ name: 'canAddQuantity', description: 'Filter by property canAddQuantity (boolean)', required: false })
-  @ApiQuery({ name: 'withNfts', description: 'Return additional nfts', required: false })
-  @ApiQuery({ name: 'nftSize', description: 'Maximum number of nfts per collection entry', required: false })
+  @ApiQuery({ name: 'canUpdateAttributes', description: 'Filter by property canUpdateAttributes (boolean)', required: false })
+  @ApiQuery({ name: 'canAddUri', description: 'Filter by property canAddUri (boolean)', required: false })
+  @ApiQuery({ name: 'canTransferRole', description: 'Filter by property canTransferRole (boolean)', required: false })
   @ApiQuery({ name: 'source', description: 'Data source of request', required: false })
   @ApiResponse({
     status: 200,
@@ -228,10 +229,13 @@ export class AccountController {
     @Query('canCreate', new ParseOptionalBoolPipe) canCreate?: boolean,
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
     @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity?: boolean,
+    @Query('canUpdateAttributes', new ParseOptionalBoolPipe) canUpdateAttributes?: boolean,
+    @Query('canAddUri', new ParseOptionalBoolPipe) canAddUri?: boolean,
+    @Query('canTransferRole', new ParseOptionalBoolPipe) canTransferRole?: boolean,
     @Query('source', new ParseOptionalEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
   ): Promise<NftCollectionAccount[]> {
     try {
-      return await this.collectionService.getCollectionsForAddress(address, { search, type, canCreate, canBurn, canAddQuantity }, { from, size }, source);
+      return await this.collectionService.getCollectionsForAddress(address, { search, type, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole }, { from, size }, source);
     } catch (error) {
       this.logger.error(`Error in getAccountCollections for address ${address}`);
       this.logger.error(error);
@@ -865,7 +869,6 @@ export class AccountController {
   @ApiResponse({
     status: 200,
     description: 'The count of all smart contract results for a given account',
-    type: SmartContractResult,
   })
   @ApiResponse({
     status: 404,
@@ -873,7 +876,7 @@ export class AccountController {
   })
   getAccountScResultsCount(
     @Param('address', ParseAddressPipe) address: string,
-  ): Promise<SmartContractResult[]> {
+  ): Promise<number> {
     return this.scResultService.getAccountScResultsCount(address);
   }
 

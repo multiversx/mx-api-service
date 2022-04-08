@@ -3,7 +3,7 @@ import { Test } from "@nestjs/testing";
 import { EsdtService } from "../../endpoints/esdt/esdt.service";
 import { PublicAppModule } from "src/public.app.module";
 import { CachingService } from "src/common/caching/caching.service";
-import { TokenAddressRoles } from "src/endpoints/tokens/entities/token.address.roles";
+import { CollectionRoleForAddress } from "src/endpoints/tokens/entities/collection.role.for.address";
 import { EsdtSupply } from "src/endpoints/esdt/entities/esdt.supply";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
@@ -82,11 +82,13 @@ describe('ESDT Service', () => {
 
     it('gateway & elastic esdts of address should be the same', async () => {
       const esdtAddress: string = 'erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3';
-
       const gatewayNfts = await esdtAddressService.getNftsForAddress(esdtAddress, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.gateway);
       const elasticNfts = await esdtAddressService.getNftsForAddress(esdtAddress, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.elastic);
 
-      expect(gatewayNfts).toStrictEqual(elasticNfts);
+      const sortedGatewayNfts = gatewayNfts.sort((a, b) => a.identifier.localeCompare(b.identifier));
+      const sortedElasticNfts = elasticNfts.sort((a, b) => a.identifier.localeCompare(b.identifier));
+
+      expect(sortedGatewayNfts).toStrictEqual(sortedElasticNfts);
     });
   });
 
@@ -153,7 +155,7 @@ describe('ESDT Service', () => {
       }
 
       for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new TokenAddressRoles()));
+        expect(result).toHaveStructure(Object.keys(new CollectionRoleForAddress()));
       }
     });
   });
@@ -168,7 +170,7 @@ describe('ESDT Service', () => {
       }
 
       for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new TokenAddressRoles()));
+        expect(result).toHaveStructure(Object.keys(new CollectionRoleForAddress()));
       }
     });
   });

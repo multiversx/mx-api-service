@@ -1,4 +1,4 @@
-import { forwardRef, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
 import { CachingService } from 'src/common/caching/caching.service';
@@ -26,6 +26,10 @@ import { AbstractQuery } from "../../common/elastic/entities/abstract.query";
 import { AccountHistory } from "./entities/account.history";
 import { QueryOperator } from 'src/common/elastic/entities/query.operator';
 import { TokenService } from '../tokens/token.service';
+import { StakeService } from '../stake/stake.service';
+import { TransferService } from '../transfers/transfer.service';
+import { SmartContractResultService } from '../sc-results/scresult.service';
+import { TransactionType } from '../transactions/entities/transaction.type';
 
 @Injectable()
 export class AccountService {
@@ -43,6 +47,12 @@ export class AccountService {
     private readonly pluginService: PluginService,
     @Inject(forwardRef(() => TokenService))
     private readonly tokenService: TokenService,
+    @Inject(forwardRef(() => StakeService))
+    private readonly stakeService: StakeService,
+    @Inject(forwardRef(() => TransferService))
+    private readonly transferService: TransferService,
+    @Inject(forwardRef(() => SmartContractResultService))
+    private readonly smartContractResultService: SmartContractResultService,
   ) {
     this.logger = new Logger(AccountService.name);
   }
@@ -77,14 +87,6 @@ export class AccountService {
       return null;
     }
 
-    const queries = [
-      QueryType.Match('sender', address),
-      QueryType.Match('receiver', address),
-    ];
-
-    const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.should, queries);
-
     try {
       const [
         txCount,
@@ -93,8 +95,8 @@ export class AccountService {
           account: { nonce, balance, code, codeHash, rootHash, username, developerReward, ownerAddress, codeMetadata },
         },
       ] = await Promise.all([
-        this.transactionService.getTransactionCountForAddress(address),
-        this.getAccountScResults(elasticQuery),
+        this.getAccountTxCount(address),
+        this.getAccountScResults(address),
         this.gatewayService.get(`address/${address}`, GatewayComponentRequest.addressDetails),
       ]);
 
@@ -122,21 +124,24 @@ export class AccountService {
     }
   }
 
-  private async getAccountScResults(query: ElasticQuery): Promise<number> {
+  private async getAccountTxCount(address: string): Promise<number> {
+    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
+      return this.transactionService.getTransactionCountForAddress(address);
+    }
+
+    return await this.transferService.getTransfersCount({ type: TransactionType.Transaction }, address);
+  }
+
+  private async getAccountScResults(address: string): Promise<number> {
     if (this.apiConfigService.getUseLegacyElastic()) {
       return 0;
     }
 
-    try {
-      return await this.elasticService.getCount('scresults', query);
-    } catch (error) {
-      // @ts-ignore
-      if (error.response.status === HttpStatus.NOT_FOUND) {
-        return 0;
-      }
-
-      throw error;
+    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
+      return await this.smartContractResultService.getAccountScResultsCount(address);
     }
+
+    return await this.transferService.getTransfersCount({ type: TransactionType.SmartContractResult }, address);
   }
 
   async getAccountDeployedAt(address: string): Promise<number | null> {
@@ -280,9 +285,11 @@ export class AccountService {
 
     if (nodes.length) {
       const rewardAddress = await this.getRewardAddressForNode(nodes[0].blsKey);
+      const { topUp } = await this.stakeService.getAllStakesForNode(address);
 
       for (const node of nodes) {
         node.rewardAddress = rewardAddress;
+        node.topUp = topUp;
       }
     }
 
