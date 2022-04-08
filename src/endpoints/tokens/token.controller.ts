@@ -10,7 +10,7 @@ import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { TransactionStatus } from "../transactions/entities/transaction.status";
 import { TransactionService } from "../transactions/transaction.service";
 import { TokenAccount } from "./entities/token.account";
-import { TokenAddressRoles } from "./entities/token.address.roles";
+import { CollectionRoleForAddress } from "./entities/collection.role.for.address";
 import { TokenDetailed } from "./entities/token.detailed";
 import { TokenService } from "./token.service";
 
@@ -298,7 +298,7 @@ export class TokenController {
   })
   async getTokenRoles(
     @Param('identifier') identifier: string,
-  ): Promise<TokenAddressRoles[]> {
+  ): Promise<CollectionRoleForAddress[]> {
     const roles = await this.tokenService.getTokenRoles(identifier);
 
     if (!roles) {
@@ -320,7 +320,7 @@ export class TokenController {
   async getTokenRolesForAddress(
     @Param('identifier') identifier: string,
     @Param('address') address: string,
-  ): Promise<TokenAddressRoles> {
+  ): Promise<CollectionRoleForAddress> {
     const roles = await this.tokenService.getTokenRolesForAddress(identifier, address);
 
     if (!roles) {

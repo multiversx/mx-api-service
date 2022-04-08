@@ -2,8 +2,11 @@ import { ApiUtils } from "src/utils/api.utils";
 import { AbstractQuery } from "./abstract.query";
 import { ElasticPagination } from "./elastic.pagination";
 import { ElasticSortProperty } from "./elastic.sort.property";
+import { MatchQuery } from "./match.query";
 import { QueryCondition } from "./query.condition";
 import { QueryConditionOptions } from "./query.condition.options";
+import { QueryOperator } from "./query.operator";
+import { QueryType } from "./query.type";
 import { RangeQuery } from "./range.query";
 import { TermsQuery } from "./terms.query";
 
@@ -36,6 +39,30 @@ export class ElasticQuery {
     this.sort = sort;
 
     return this;
+  }
+
+  withMustMatchCondition(key: string, value: any | undefined, operator: QueryOperator | undefined = undefined) {
+    if (value === undefined) {
+      return this;
+    }
+
+    return this.withMustCondition(QueryType.Match(key, value, operator));
+  }
+
+  withMustWildcardCondition(key: string, value: string | undefined) {
+    if (value === undefined) {
+      return this;
+    }
+
+    return this.withMustCondition(QueryType.Wildcard(key, `*${value}*`));
+  }
+
+  withMustMultiShouldCondition<T>(values: T[] | undefined, action: (value: T) => MatchQuery) {
+    if (values === undefined) {
+      return this;
+    }
+
+    return this.withMustCondition(QueryType.Should(values.map(value => action(value))));
   }
 
   withMustCondition(queries: AbstractQuery[] | AbstractQuery): ElasticQuery {

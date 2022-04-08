@@ -14,7 +14,7 @@ import { QueryType } from "src/common/elastic/entities/query.type";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { TokenAccount } from "./entities/token.account";
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
-import { TokenAddressRoles } from "./entities/token.address.roles";
+import { CollectionRoleForAddress } from "./entities/collection.role.for.address";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { TransactionService } from "../transactions/transaction.service";
@@ -24,6 +24,7 @@ import { NumberUtils } from "src/utils/number.utils";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { AddressUtils } from "src/utils/address.utils";
 import { TokenProperties } from "./entities/token.properties";
 
@@ -37,7 +38,8 @@ export class TokenService {
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
     private readonly esdtAddressService: EsdtAddressService,
-    private readonly gatewayService: GatewayService
+    private readonly gatewayService: GatewayService,
+    private readonly apiConfigService: ApiConfigService
   ) {
     this.logger = new Logger(TokenService.name);
   }
@@ -357,7 +359,41 @@ export class TokenService {
     return count;
   }
 
-  async getTokenRoles(identifier: string): Promise<TokenAddressRoles[] | undefined> {
+  async getTokenRoles(identifier: string): Promise<CollectionRoleForAddress[] | undefined> {
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+      const token = await this.elasticService.getItem('tokens', 'identifier', identifier);
+
+      if (!token) {
+        return undefined;
+      }
+
+      if (!token.roles) {
+        return undefined;
+      }
+
+      const roles: CollectionRoleForAddress[] = [];
+      for (const role of Object.keys(token.roles)) {
+        const addresses = token.roles[role].distinct();
+
+        for (const address of addresses) {
+          const foundAddressRoles = roles.find((addressRole) => addressRole.address === address);
+          if (foundAddressRoles) {
+            TokenUtils.setCollectionRole(foundAddressRoles, role);
+            continue;
+          }
+
+          const addressRole = new CollectionRoleForAddress();
+          addressRole.address = address;
+          TokenUtils.setCollectionRole(addressRole, role);
+
+          roles.push(addressRole);
+        }
+      }
+
+      return roles;
+    }
+
+
     const token = await this.getToken(identifier);
     if (!token) {
       return undefined;
@@ -366,14 +402,40 @@ export class TokenService {
     return await this.esdtService.getEsdtAddressesRoles(identifier);
   }
 
-  async getTokenRolesForAddress(identifier: string, address: string): Promise<TokenAddressRoles | undefined> {
+  async getTokenRolesForAddress(identifier: string, address: string): Promise<CollectionRoleForAddress | undefined> {
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+      const token = await this.elasticService.getItem('tokens', 'identifier', identifier);
+
+      if (!token) {
+        return undefined;
+      }
+
+      if (!token.roles) {
+        return undefined;
+      }
+
+      const addressRoles: CollectionRoleForAddress = new CollectionRoleForAddress();
+      addressRoles.address = address;
+      for (const role of Object.keys(token.roles)) {
+        const addresses = token.roles[role].distinct();
+        if (addresses.includes(address)) {
+          TokenUtils.setCollectionRole(addressRoles, role);
+        }
+      }
+
+      //@ts-ignore
+      delete addressRoles.address;
+
+      return addressRoles;
+    }
+
     const token = await this.getToken(identifier);
     if (!token) {
       return undefined;
     }
 
     const tokenAddressesRoles = await this.esdtService.getEsdtAddressesRoles(identifier);
-    const addressRoles = tokenAddressesRoles?.find((role: TokenAddressRoles) => role.address === address);
+    const addressRoles = tokenAddressesRoles?.find((role: CollectionRoleForAddress) => role.address === address);
 
     //@ts-ignore
     delete addressRoles?.address;
