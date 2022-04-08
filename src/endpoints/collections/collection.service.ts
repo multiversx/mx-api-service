@@ -232,32 +232,39 @@ export class CollectionService {
     return await this.elasticService.getCount('tokens', elasticQuery);
   }
 
-  async getNftCollection(collection: string): Promise<NftCollection | undefined> {
-    const nftCollection = await this.elasticService.getItem('tokens', '_id', collection);
-    if (!nftCollection) {
+  async getNftCollection(identifier: string): Promise<NftCollection | undefined> {
+    const elasticCollection = await this.elasticService.getItem('tokens', '_id', identifier);
+    if (!elasticCollection) {
       return undefined;
     }
 
-    const [collectionWithProperties] = await this.applyPropertiesToCollections([collection]);
+    const [collection] = await this.applyPropertiesToCollections([identifier]);
 
-    collectionWithProperties.timestamp = nftCollection.timestamp;
+    collection.timestamp = elasticCollection.timestamp;
+    collection.roles = await this.getNftCollectionRoles(elasticCollection);
 
+    return collection;
+  }
+
+  private async getNftCollectionRoles(elasticCollection: any): Promise<TokenAddressRoles[]> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
-      await this.applySpecialRoles(collectionWithProperties);
-
-      return collectionWithProperties;
+      return await this.getNftCollectionRolesFromEsdtContract(elasticCollection.token);
     }
 
-    if (!nftCollection.roles) {
-      return collectionWithProperties;
+    return this.getNftCollectionRolesFromElasticResponse(elasticCollection);
+  }
+
+  private getNftCollectionRolesFromElasticResponse(elasticCollection: any): TokenAddressRoles[] {
+    if (!elasticCollection.roles) {
+      return [];
     }
 
-    const roles: TokenAddressRoles[] = [];
-    for (const role of Object.keys(nftCollection.roles)) {
-      const addresses = nftCollection.roles[role].distinct();
+    const allRoles: TokenAddressRoles[] = [];
+    for (const role of Object.keys(elasticCollection.roles)) {
+      const addresses = elasticCollection.roles[role].distinct();
 
       for (const address of addresses) {
-        const foundAddressRoles = roles.find((addressRole) => addressRole.address === address);
+        const foundAddressRoles = allRoles.find((addressRole) => addressRole.address === address);
         if (foundAddressRoles) {
           TokenUtils.setRole(foundAddressRoles, role);
           continue;
@@ -267,25 +274,26 @@ export class CollectionService {
         addressRole.address = address;
         TokenUtils.setRole(addressRole, role);
 
-        roles.push(addressRole);
+        allRoles.push(addressRole);
       }
     }
 
-    collectionWithProperties.roles = roles;
-    return collectionWithProperties;
+    return allRoles;
   }
 
-  private async applySpecialRoles(nftCollection: NftCollection) {
+  private async getNftCollectionRolesFromEsdtContract(identifier: string): Promise<TokenAddressRoles[]> {
     const collectionRolesEncoded = await this.vmQueryService.vmQuery(
       this.apiConfigService.getEsdtContractAddress(),
       'getSpecialRoles',
       undefined,
-      [BinaryUtils.stringToHex(nftCollection.collection)]
+      [BinaryUtils.stringToHex(identifier)]
     );
 
     if (!collectionRolesEncoded) {
-      return;
+      return [];
     }
+
+    const allRoles: TokenAddressRoles[] = [];
 
     for (const rolesForAddressEncoded of collectionRolesEncoded) {
       const rolesForAddressDecoded = BinaryUtils.base64Decode(rolesForAddressEncoded);
@@ -298,8 +306,10 @@ export class CollectionService {
         TokenUtils.setRole(roleForAddress, role);
       }
 
-      nftCollection.roles.push(roleForAddress);
+      allRoles.push(roleForAddress);
     }
+
+    return allRoles;
   }
 
   async getCollectionForAddress(address: string, collection: string): Promise<NftCollectionAccount | undefined> {

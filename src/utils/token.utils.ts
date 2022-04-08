@@ -50,27 +50,21 @@ export class TokenUtils {
     switch (role) {
       case 'ESDTRoleNFTCreate':
         tokenRoles.canCreate = true;
-
         break;
       case 'ESDTRoleNFTBurn':
         tokenRoles.canBurn = true;
-
         break;
       case 'ESDTRoleNFTAddQuantity':
         tokenRoles.canAddQuantity = true;
-
         break;
       case 'ESDTRoleNFTAddURI':
         tokenRoles.canAddQuantity = true;
-
         break;
       case 'ESDTTransferRole':
         tokenRoles.canAddQuantity = true;
-
         break;
       case 'ESDTRoleNFTUpdateAttributes':
         tokenRoles.canAddQuantity = true;
-
         break;
       default:
         break;
