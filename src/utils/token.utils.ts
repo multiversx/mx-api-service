@@ -2,7 +2,7 @@ import { ApiUtils } from "./api.utils";
 import * as crypto from 'crypto-js';
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
-import { TokenRoles } from "src/endpoints/tokens/entities/token.roles";
+import { CollectionRoles } from "src/endpoints/tokens/entities/collection.role";
 
 export class TokenUtils {
   static isEsdt(tokenIdentifier: string) {
@@ -46,7 +46,7 @@ export class TokenUtils {
     return true;
   }
 
-  static setRole(tokenRoles: TokenRoles, role: string) {
+  static setCollectionRole(tokenRoles: CollectionRoles, role: string) {
     switch (role) {
       case 'ESDTRoleNFTCreate':
         tokenRoles.canCreate = true;

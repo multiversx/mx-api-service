@@ -16,7 +16,7 @@ import { TokenUtils } from "src/utils/token.utils";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { CachingService } from "../../common/caching/caching.service";
 import { GatewayService } from "../../common/gateway/gateway.service";
-import { TokenAddressRoles } from "../tokens/entities/token.address.roles";
+import { CollectionRoleForAddress } from "../tokens/entities/collection.role.for.address";
 import { TokenAssets } from "../tokens/entities/token.assets";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { TokenAssetService } from "../tokens/token.asset.service";
@@ -200,7 +200,7 @@ export class EsdtService {
     return tokenProps;
   }
 
-  async getEsdtAddressesRoles(identifier: string): Promise<TokenAddressRoles[] | undefined> {
+  async getEsdtAddressesRoles(identifier: string): Promise<CollectionRoleForAddress[] | undefined> {
     const addressesRoles = await this.cachingService.getOrSetCache(
       CacheInfo.EsdtAddressesRoles(identifier).key,
       async () => await this.getEsdtAddressesRolesRaw(identifier),
@@ -215,7 +215,7 @@ export class EsdtService {
     return addressesRoles;
   }
 
-  async getEsdtAddressesRolesRaw(identifier: string): Promise<TokenAddressRoles[] | null> {
+  async getEsdtAddressesRolesRaw(identifier: string): Promise<CollectionRoleForAddress[] | null> {
     const arg = BinaryUtils.stringToHex(identifier);
 
     const tokenAddressesAndRolesEncoded = await this.vmQueryService.vmQuery(
@@ -231,8 +231,8 @@ export class EsdtService {
       return [];
     }
 
-    const tokenAddressesAndRoles: TokenAddressRoles[] = [];
-    let currentAddressRoles = new TokenAddressRoles();
+    const tokenAddressesAndRoles: CollectionRoleForAddress[] = [];
+    let currentAddressRoles = new CollectionRoleForAddress();
     for (const valueEncoded of tokenAddressesAndRolesEncoded) {
       const address = BinaryUtils.tryBase64ToAddress(valueEncoded);
       if (address) {
@@ -240,14 +240,14 @@ export class EsdtService {
           tokenAddressesAndRoles.push(currentAddressRoles);
         }
 
-        currentAddressRoles = new TokenAddressRoles();
+        currentAddressRoles = new CollectionRoleForAddress();
         currentAddressRoles.address = address;
 
         continue;
       }
 
       const role = BinaryUtils.base64Decode(valueEncoded);
-      TokenUtils.setRole(currentAddressRoles, role);
+      TokenUtils.setCollectionRole(currentAddressRoles, role);
     }
 
     if (currentAddressRoles.address) {

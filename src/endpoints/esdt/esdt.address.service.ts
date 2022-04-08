@@ -23,7 +23,7 @@ import { CollectionService } from "../collections/collection.service";
 import { NftCollection } from "../collections/entities/nft.collection";
 import { CollectionFilter } from "../collections/entities/collection.filter";
 import { AddressUtils } from "src/utils/address.utils";
-import { TokenAddressRoles } from "../tokens/entities/token.address.roles";
+import { CollectionRoleForAddress } from "../tokens/entities/collection.role.for.address";
 import { ApiUtils } from "src/utils/api.utils";
 
 @Injectable()
@@ -195,13 +195,13 @@ export class EsdtAddressService {
         accountCollection.timestamp = indexedCollection.timestamp;
 
         if (indexedCollection.roles) {
-          const addressRoles: TokenAddressRoles = new TokenAddressRoles();
+          const addressRoles: CollectionRoleForAddress = new CollectionRoleForAddress();
           addressRoles.address = address;
 
           for (const role of Object.keys(indexedCollection.roles)) {
             const addresses = indexedCollection.roles[role].distinct();
             if (addresses.includes(address)) {
-              TokenUtils.setRole(addressRoles, role);
+              TokenUtils.setCollectionRole(addressRoles, role);
             }
           }
 
@@ -213,7 +213,7 @@ export class EsdtAddressService {
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       const nftAccountCollections: NftCollectionAccount[] = [];
       for (const collection of accountCollections) {
-        const role = collection.roles.find(x => x.address === address) ?? new TokenAddressRoles();
+        const role = collection.roles.find(x => x.address === address) ?? new CollectionRoleForAddress();
 
         if (collection.type === NftType.NonFungibleESDT) {
           //@ts-ignore

@@ -1,4 +1,4 @@
-export class TokenRoles {
+export class CollectionRoles {
   canCreate: boolean = false;
   canBurn: boolean = false;
   canAddQuantity: boolean = false;
