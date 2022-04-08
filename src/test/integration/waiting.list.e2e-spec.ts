@@ -1,12 +1,21 @@
 import { WaitingListService } from "../../endpoints/waiting-list/waiting.list.service";
 import { Test } from "@nestjs/testing";
 import { WaitingList } from "../../endpoints/waiting-list/entities/waiting.list";
-import userAccount from "../data/accounts/user.account";
 import { WaitingListModule } from "src/endpoints/waiting-list/waiting.list.module";
+import { CachingService } from "src/common/caching/caching.service";
 import '../../utils/extensions/jest.extensions';
 
 describe('WaitingListService', () => {
   let waitingListService: WaitingListService;
+
+  const waitingList = [{
+
+    address: 'erd1wcat0qk32u5xquuds9etauayqs29tqrzs5x3plc6djy54rmatdpsejg6qx',
+    value: '270000000000000000001',
+    nonce: 8859612,
+    rank: 54,
+  },
+  ];
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -16,30 +25,63 @@ describe('WaitingListService', () => {
     waitingListService = moduleRef.get<WaitingListService>(WaitingListService);
   });
 
-  describe('Waiting List', () => {
-    it('should return a list of waiting lists', async () => {
-      const waitingList = await waitingListService.getWaitingList();
+  beforeEach(() => {
+    jest.restoreAllMocks();
+  });
 
-      for (const item of waitingList) {
-        expect(item).toHaveStructure(Object.keys(new WaitingList()));
+  describe("getWaitingList", () => {
+    it("should return waiting list", async () => {
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
+
+      const results = await waitingListService.getWaitingList();
+
+      for (const result of results) {
+        expect(result).toHaveProperties(['address', 'value', 'nonce', 'rank']);
+        expect(result).toHaveStructure(Object.keys(new WaitingList()));
       }
     });
   });
 
-  describe('Waiting List For Address', () => {
+
+  describe('getWaitingListForAddress', () => {
     it('should return a list of waitings for a specified address ', async () => {
-      const waitingList = await waitingListService.getWaitingListForAddress(userAccount.address);
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
-      for (const item of waitingList) {
-        expect(item).toHaveStructure(Object.keys(new WaitingList()));
-      }
+      jest
+        .spyOn(WaitingListService.prototype, 'getWaitingList')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => waitingList));
+
+      const results = await waitingListService.getWaitingListForAddress("erd1wcat0qk32u5xquuds9etauayqs29tqrzs5x3plc6djy54rmatdpsejg6qx");
+
+      expect(results).toHaveLength(1);
+      expect(results).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          address: "erd1wcat0qk32u5xquuds9etauayqs29tqrzs5x3plc6djy54rmatdpsejg6qx",
+          value: "27000000000000000000",
+          nonce: 8859612,
+          rank: 54,
+        }),
+      ]));
     });
   });
 
-  describe('Waiting List Count', () => {
-    it('should return count of lists', async () => {
-      const count = await waitingListService.getWaitingListCount();
-      expect(typeof count).toBe('number');
+  describe('getWaitingListCount', () => {
+    it('should return total count of waiting list ', async () => {
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_key: string, _promise: any) => waitingList));
+
+      const result = await waitingListService.getWaitingListCount();
+
+      expect(result).toStrictEqual(1);
     });
   });
 });
