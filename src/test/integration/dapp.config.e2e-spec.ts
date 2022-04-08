@@ -31,6 +31,7 @@ describe('Dapp Config Service', () => {
 
       expect(config.id).toStrictEqual('mainnet');
       expect(config.name).toStrictEqual('Mainnet');
+      expect(config.chainId).toStrictEqual('1');
     });
 
     it("should return devnet dapp configuration", () => {
@@ -42,6 +43,7 @@ describe('Dapp Config Service', () => {
 
       expect(config.id).toStrictEqual('devnet');
       expect(config.name).toStrictEqual('Devnet');
+      expect(config.chainId).toStrictEqual('D');
     });
 
     it("should return testnet dapp configuration", () => {
@@ -53,6 +55,7 @@ describe('Dapp Config Service', () => {
 
       expect(config.id).toStrictEqual('testnet');
       expect(config.name).toStrictEqual('Testnet');
+      expect(config.chainId).toStrictEqual('T');
     });
   });
 });

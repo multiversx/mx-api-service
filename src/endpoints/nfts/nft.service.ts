@@ -25,11 +25,11 @@ import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 import { NftMedia } from "./entities/nft.media";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { PersistenceInterface } from "src/common/persistence/persistence.interface";
 import { RecordUtils } from "src/utils/record.utils";
 import { EsdtSupply } from "../esdt/entities/esdt.supply";
 import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
+import { PersistenceService } from "src/common/persistence/persistence.service";
 
 @Injectable()
 export class NftService {
@@ -47,8 +47,7 @@ export class NftService {
     private readonly pluginService: PluginService,
     private readonly nftMetadataService: NftMetadataService,
     private readonly nftMediaService: NftMediaService,
-    @Inject('PersistenceService')
-    private readonly persistenceService: PersistenceInterface,
+    private readonly persistenceService: PersistenceService,
     @Inject(forwardRef(() => EsdtAddressService))
     private readonly esdtAddressService: EsdtAddressService,
   ) {

@@ -17,7 +17,7 @@ describe("Usernames Controller", () => {
     await app.init();
   });
 
-  it("/usernames/{username} - should return 302 status code and account details based on username", async () => {
+  it("/usernames/:username - should return 302 status code and account details based on username", async () => {
     const username: string = "alice";
 
     await request(app.getHttpServer())
@@ -25,7 +25,7 @@ describe("Usernames Controller", () => {
       .expect(302);
   });
 
-  it("/usernames{username} - should return 404 status code Error: Not Found", async () => {
+  it("/usernames/:username - should return 404 status code Error: Not Found", async () => {
     const username: string = "aliceTest";
 
     await request(app.getHttpServer())

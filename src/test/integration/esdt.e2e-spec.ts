@@ -82,7 +82,6 @@ describe('ESDT Service', () => {
 
     it('gateway & elastic esdts of address should be the same', async () => {
       const esdtAddress: string = 'erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3';
-
       const gatewayNfts = await esdtAddressService.getNftsForAddress(esdtAddress, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.gateway);
       const elasticNfts = await esdtAddressService.getNftsForAddress(esdtAddress, new NftFilter(), { from: 0, size: 25 }, EsdtDataSource.elastic);
 

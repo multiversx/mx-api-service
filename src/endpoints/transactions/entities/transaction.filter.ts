@@ -1,6 +1,7 @@
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { SortOrder } from "src/common/entities/sort.order";
 import { TransactionStatus } from "./transaction.status";
+import { TransactionType } from "./transaction.type";
 
 export class TransactionFilter {
     sender?: string;
@@ -17,4 +18,5 @@ export class TransactionFilter {
     after?: number;
     condition?: QueryConditionOptions;
     order?: SortOrder;
+    type?: TransactionType;
 }

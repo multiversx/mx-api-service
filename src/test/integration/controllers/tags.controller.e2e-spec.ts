@@ -33,7 +33,7 @@ describe("Tags Controller", () => {
       .expect(200);
   });
 
-  it("/tags?{tag} - should return 200 status code and specific tag details", async () => {
+  it("/tags/:tag - should return 200 status code and specific tag details", async () => {
     const tag: string = "RWxyb25k";
 
     await request(app.getHttpServer())
@@ -41,7 +41,7 @@ describe("Tags Controller", () => {
       .expect(200);
   });
 
-  it("/tags?{tag} - should return 404 status code Error: Not Found", async () => {
+  it("/tags/:tag - should return 404 status code Error: Not Found", async () => {
     const tag: string = "RWxyb25kT";
 
     await request(app.getHttpServer())

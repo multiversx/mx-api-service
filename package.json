@@ -91,6 +91,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^8.5.1",
+    "mongodb": "^3.7.3",
     "mysql2": "^2.3.3",
     "nest-winston": "^1.6.2",
     "node-object-hash": "^2.3.10",
