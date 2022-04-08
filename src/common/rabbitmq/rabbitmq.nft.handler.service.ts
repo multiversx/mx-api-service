@@ -17,6 +17,10 @@ export class RabbitMqNftHandlerService {
 
   public async handleNftCreateEvent(event: NftCreateEvent): Promise<void> {
     const identifier = event.getTopics()?.identifier;
+    if (!identifier) {
+      this.logger.error(`Could not extract identifier from NFT create event '${JSON.stringify(event)}'`);
+      return;
+    }
 
     this.logger.log(`Detected 'ESDTNFTCreate' event for NFT with identifier '${identifier}'`);
 
