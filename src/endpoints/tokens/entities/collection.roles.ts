@@ -1,4 +1,5 @@
 export class CollectionRoles {
+  address: string | undefined = undefined;
   canCreate: boolean = false;
   canBurn: boolean = false;
   canAddQuantity: boolean = false;

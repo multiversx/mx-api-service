@@ -2,7 +2,7 @@ import { ApiUtils } from "./api.utils";
 import * as crypto from 'crypto-js';
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
-import { CollectionRoles } from "src/endpoints/tokens/entities/collection.role";
+import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles";
 
 export class TokenUtils {
   static isEsdt(tokenIdentifier: string) {

@@ -23,7 +23,7 @@ import { RecordUtils } from "src/utils/record.utils";
 import { TokenAssets } from "../tokens/entities/token.assets";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
-import { CollectionRoleForAddress } from "../tokens/entities/collection.role.for.address";
+import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { TokenUtils } from "src/utils/token.utils";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 
@@ -246,7 +246,7 @@ export class CollectionService {
     return collection;
   }
 
-  private async getNftCollectionRoles(elasticCollection: any): Promise<CollectionRoleForAddress[]> {
+  private async getNftCollectionRoles(elasticCollection: any): Promise<CollectionRoles[]> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       return await this.getNftCollectionRolesFromEsdtContract(elasticCollection.token);
     }
@@ -254,12 +254,12 @@ export class CollectionService {
     return this.getNftCollectionRolesFromElasticResponse(elasticCollection);
   }
 
-  private getNftCollectionRolesFromElasticResponse(elasticCollection: any): CollectionRoleForAddress[] {
+  private getNftCollectionRolesFromElasticResponse(elasticCollection: any): CollectionRoles[] {
     if (!elasticCollection.roles) {
       return [];
     }
 
-    const allRoles: CollectionRoleForAddress[] = [];
+    const allRoles: CollectionRoles[] = [];
     for (const role of Object.keys(elasticCollection.roles)) {
       const addresses = elasticCollection.roles[role].distinct();
 
@@ -270,7 +270,7 @@ export class CollectionService {
           continue;
         }
 
-        const addressRole = new CollectionRoleForAddress();
+        const addressRole = new CollectionRoles();
         addressRole.address = address;
         TokenUtils.setCollectionRole(addressRole, role);
 
@@ -281,7 +281,7 @@ export class CollectionService {
     return allRoles;
   }
 
-  private async getNftCollectionRolesFromEsdtContract(identifier: string): Promise<CollectionRoleForAddress[]> {
+  private async getNftCollectionRolesFromEsdtContract(identifier: string): Promise<CollectionRoles[]> {
     const collectionRolesEncoded = await this.vmQueryService.vmQuery(
       this.apiConfigService.getEsdtContractAddress(),
       'getSpecialRoles',
@@ -293,13 +293,13 @@ export class CollectionService {
       return [];
     }
 
-    const allRoles: CollectionRoleForAddress[] = [];
+    const allRoles: CollectionRoles[] = [];
 
     for (const rolesForAddressEncoded of collectionRolesEncoded) {
       const rolesForAddressDecoded = BinaryUtils.base64Decode(rolesForAddressEncoded);
       const components = rolesForAddressDecoded.split(':');
 
-      const roleForAddress = new CollectionRoleForAddress();
+      const roleForAddress = new CollectionRoles();
       roleForAddress.address = components[0];
       const roles = components[1].split(',');
       for (const role of roles) {
