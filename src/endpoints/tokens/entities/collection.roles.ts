@@ -6,4 +6,5 @@ export class CollectionRoles {
   canUpdateAttributes: boolean = false;
   canAddUri: boolean = false;
   canTransferRole: boolean = false;
+  roles: string[] = [];
 }
