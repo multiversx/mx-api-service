@@ -659,11 +659,21 @@ describe('Token Service', () => {
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_identifier: string) => [{
           address: "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8",
-          roles: ["ESDTRoleLocalMint", "ESDTRoleLocalBurn", "ESDTRoleLocalTransfer"],
+          canCreate: true,
+          canBurn: true,
+          canAddQuantity: false,
+          canUpdateAttributes: false,
+          canAddUri: false,
+          canTransferRole: false,
         },
         {
           address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
-          roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
+          canCreate: true,
+          canBurn: true,
+          canAddQuantity: false,
+          canUpdateAttributes: false,
+          canAddUri: false,
+          canTransferRole: false,
         },
         ]));
 
@@ -671,8 +681,22 @@ describe('Token Service', () => {
 
       expect(results).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ roles: ["ESDTRoleLocalMint", "ESDTRoleLocalBurn", "ESDTRoleLocalTransfer"] }),
-          expect.objectContaining({ roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'] }),
+          expect.objectContaining({
+            canCreate: true,
+            canBurn: true,
+            canAddQuantity: false,
+            canUpdateAttributes: false,
+            canAddUri: false,
+            canTransferRole: false,
+          }),
+          expect.objectContaining({
+            canCreate: true,
+            canBurn: true,
+            canAddQuantity: false,
+            canUpdateAttributes: false,
+            canAddUri: false,
+            canTransferRole: false,
+          }),
         ])
       );
     });
@@ -701,13 +725,25 @@ describe('Token Service', () => {
         .mockImplementation(jest.fn(async (_identifier: string) => [
           {
             address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
-            roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
+            canCreate: true,
+            canBurn: true,
+            canAddQuantity: false,
+            canUpdateAttributes: false,
+            canAddUri: false,
+            canTransferRole: false,
           },
         ]));
 
       const results = await tokenService.getTokenRolesForAddress(identifier, address);
 
-      expect(results).toEqual(expect.objectContaining({ roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'] }));
+      expect(results).toEqual(expect.objectContaining({
+        canCreate: true,
+        canBurn: true,
+        canAddQuantity: false,
+        canUpdateAttributes: false,
+        canAddUri: false,
+        canTransferRole: false,
+      }));
 
     });
 
