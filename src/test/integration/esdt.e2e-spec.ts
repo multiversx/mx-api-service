@@ -3,12 +3,12 @@ import { Test } from "@nestjs/testing";
 import { EsdtService } from "../../endpoints/esdt/esdt.service";
 import { PublicAppModule } from "src/public.app.module";
 import { CachingService } from "src/common/caching/caching.service";
-import { CollectionRoleForAddress } from "src/endpoints/tokens/entities/collection.role.for.address";
 import { EsdtSupply } from "src/endpoints/esdt/entities/esdt.supply";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { EsdtDataSource } from 'src/endpoints/esdt/entities/esdt.data.source';
 import '../../utils/extensions/jest.extensions';
+import { TokenRoles } from 'src/endpoints/tokens/entities/token.roles';
 
 describe('ESDT Service', () => {
   let esdtService: EsdtService;
@@ -155,7 +155,7 @@ describe('ESDT Service', () => {
       }
 
       for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new CollectionRoleForAddress()));
+        expect(result).toHaveStructure(Object.keys(new TokenRoles()));
       }
     });
   });
@@ -170,7 +170,7 @@ describe('ESDT Service', () => {
       }
 
       for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new CollectionRoleForAddress()));
+        expect(result).toHaveStructure(Object.keys(new TokenRoles()));
       }
     });
   });
