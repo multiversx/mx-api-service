@@ -59,6 +59,8 @@ export class TokenService {
 
     await this.processToken(token);
 
+    token.roles = await this.getTokenRoles(identifier);
+
     return token;
   }
 

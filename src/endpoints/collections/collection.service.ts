@@ -246,7 +246,7 @@ export class CollectionService {
     return collection;
   }
 
-  private async getNftCollectionRoles(elasticCollection: any): Promise<CollectionRoles[]> {
+  async getNftCollectionRoles(elasticCollection: any): Promise<CollectionRoles[]> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       return await this.getNftCollectionRolesFromEsdtContract(elasticCollection.token);
     }
