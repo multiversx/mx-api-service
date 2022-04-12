@@ -691,7 +691,7 @@ describe('Token Service', () => {
 
     it("should return undefined because test simulates that roles are not defined for token", async () => {
       const results = await tokenService.getTokenRoles('UNKNOWN');
-      expect(results).toBeUndefined();
+      expect(results).toStrictEqual([]);
     });
   });
 
