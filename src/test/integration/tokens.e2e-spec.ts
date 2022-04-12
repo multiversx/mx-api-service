@@ -661,13 +661,13 @@ describe('Token Service', () => {
           address: "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8",
           canMint: true,
           canBurn: true,
-          roles: [],
+          roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
         },
         {
           address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
           canMint: true,
-          canBurn: true,
-          roles: [],
+          canBurn: false,
+          roles: ['ESDTRoleLocalBurn'],
         },
         ]));
 
@@ -676,20 +676,14 @@ describe('Token Service', () => {
       expect(results).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            canCreate: true,
+            canMint: true,
             canBurn: true,
-            canAddQuantity: false,
-            canUpdateAttributes: false,
-            canAddUri: false,
-            canTransferRole: false,
+            roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
           }),
           expect.objectContaining({
-            canCreate: true,
-            canBurn: true,
-            canAddQuantity: false,
-            canUpdateAttributes: false,
-            canAddUri: false,
-            canTransferRole: false,
+            canMint: true,
+            canBurn: false,
+            roles: ['ESDTRoleLocalBurn'],
           }),
         ])
       );
