@@ -311,7 +311,10 @@ export class NftService {
     const elasticQuery = this.buildElasticNftFilter(filter, identifier);
     elasticQuery
       .withPagination({ from, size })
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'nonce', order: ElasticSortOrder.descending },
+      ]);
 
     const elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
 
