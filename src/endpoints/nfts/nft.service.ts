@@ -239,7 +239,8 @@ export class NftService {
   }
 
   async applyAssetsAndTicker(token: Nft) {
-    token.assets = await this.tokenAssetService.getAssets(token.collection);
+    token.assets = await this.tokenAssetService.getAssets(token.identifier) ??
+      await this.tokenAssetService.getAssets(token.collection);
 
     if (token.assets) {
       token.ticker = token.collection.split('-')[0];
