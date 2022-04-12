@@ -9,6 +9,7 @@ import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { EsdtDataSource } from 'src/endpoints/esdt/entities/esdt.data.source';
 import '../../utils/extensions/jest.extensions';
+import { TokenRoles } from 'src/endpoints/tokens/entities/token.roles';
 
 describe('ESDT Service', () => {
   let esdtService: EsdtService;
@@ -155,7 +156,7 @@ describe('ESDT Service', () => {
       }
 
       for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new CollectionRoles()));
+        expect(result).toHaveStructure(Object.keys(new TokenRoles()));
       }
     });
   });
@@ -170,7 +171,7 @@ describe('ESDT Service', () => {
       }
 
       for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new CollectionRoles()));
+        expect(result).toHaveStructure(Object.keys(new TokenRoles()));
       }
     });
   });
