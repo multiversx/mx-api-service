@@ -240,6 +240,10 @@ export class CollectionService {
 
     const [collection] = await this.applyPropertiesToCollections([identifier]);
 
+    if (!collection) {
+      return undefined;
+    }
+
     collection.timestamp = elasticCollection.timestamp;
     collection.roles = await this.getNftCollectionRoles(elasticCollection);
 
