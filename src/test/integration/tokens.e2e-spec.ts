@@ -659,21 +659,15 @@ describe('Token Service', () => {
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_identifier: string) => [{
           address: "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8",
-          canCreate: true,
+          canMint: true,
           canBurn: true,
-          canAddQuantity: false,
-          canUpdateAttributes: false,
-          canAddUri: false,
-          canTransferRole: false,
+          roles: [],
         },
         {
           address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
-          canCreate: true,
+          canMint: true,
           canBurn: true,
-          canAddQuantity: false,
-          canUpdateAttributes: false,
-          canAddUri: false,
-          canTransferRole: false,
+          roles: [],
         },
         ]));
 
@@ -725,24 +719,18 @@ describe('Token Service', () => {
         .mockImplementation(jest.fn(async (_identifier: string) => [
           {
             address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
-            canCreate: true,
+            canMint: true,
             canBurn: true,
-            canAddQuantity: false,
-            canUpdateAttributes: false,
-            canAddUri: false,
-            canTransferRole: false,
+            roles: [],
           },
         ]));
 
       const results = await tokenService.getTokenRolesForAddress(identifier, address);
 
       expect(results).toEqual(expect.objectContaining({
-        canCreate: true,
+        canMint: true,
         canBurn: true,
-        canAddQuantity: false,
-        canUpdateAttributes: false,
-        canAddUri: false,
-        canTransferRole: false,
+        roles: [],
       }));
 
     });
