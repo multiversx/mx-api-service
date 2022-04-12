@@ -110,7 +110,10 @@ export class EsdtAddressService {
       .withPagination(pagination);
 
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      elasticQuery = elasticQuery.withSort([{ name: "timestamp", order: ElasticSortOrder.descending }]);
+      elasticQuery = elasticQuery.withSort([
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'tokenNonce', order: ElasticSortOrder.descending },
+      ]);
     }
 
     const esdts = await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
