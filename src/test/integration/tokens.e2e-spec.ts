@@ -690,14 +690,7 @@ describe('Token Service', () => {
     });
 
     it("should return undefined because test simulates that roles are not defined for token", async () => {
-      const identifier: string = token.identifier;
-
-      jest
-        .spyOn(TokenService.prototype, 'getToken')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_identifier: string) => undefined));
-
-      const results = await tokenService.getTokenRoles(identifier);
+      const results = await tokenService.getTokenRoles('UNKNOWN');
       expect(results).toBeUndefined();
     });
   });

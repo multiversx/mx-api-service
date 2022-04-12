@@ -3,7 +3,6 @@ import { Test } from "@nestjs/testing";
 import { EsdtService } from "../../endpoints/esdt/esdt.service";
 import { PublicAppModule } from "src/public.app.module";
 import { CachingService } from "src/common/caching/caching.service";
-import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles";
 import { EsdtSupply } from "src/endpoints/esdt/entities/esdt.supply";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
