@@ -391,11 +391,6 @@ export class TokenService {
   }
 
   async getTokenRoles(identifier: string): Promise<TokenRoles[] | undefined> {
-    const token = await this.getToken(identifier);
-    if (!token) {
-      return undefined;
-    }
-
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       return await this.getTokenRolesFromElastic(identifier);
     }

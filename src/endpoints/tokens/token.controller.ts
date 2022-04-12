@@ -299,10 +299,14 @@ export class TokenController {
   async getTokenRoles(
     @Param('identifier') identifier: string,
   ): Promise<TokenRoles[]> {
-    const roles = await this.tokenService.getTokenRoles(identifier);
-
-    if (!roles) {
+    const token = await this.getToken(identifier);
+    if (!token) {
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+    }
+
+    const roles = await this.tokenService.getTokenRoles(identifier);
+    if (!roles) {
+      throw new HttpException('Token roles not found', HttpStatus.NOT_FOUND);
     }
 
     return roles;
