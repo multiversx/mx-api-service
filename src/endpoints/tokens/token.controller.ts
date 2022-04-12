@@ -10,9 +10,9 @@ import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { TransactionStatus } from "../transactions/entities/transaction.status";
 import { TransactionService } from "../transactions/transaction.service";
 import { TokenAccount } from "./entities/token.account";
-import { CollectionRoleForAddress } from "./entities/collection.role.for.address";
 import { TokenDetailed } from "./entities/token.detailed";
 import { TokenService } from "./token.service";
+import { TokenRoles } from "./entities/token.roles";
 
 @Controller()
 @ApiTags('tokens')
@@ -298,11 +298,15 @@ export class TokenController {
   })
   async getTokenRoles(
     @Param('identifier') identifier: string,
-  ): Promise<CollectionRoleForAddress[]> {
-    const roles = await this.tokenService.getTokenRoles(identifier);
-
-    if (!roles) {
+  ): Promise<TokenRoles[]> {
+    const token = await this.getToken(identifier);
+    if (!token) {
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+    }
+
+    const roles = await this.tokenService.getTokenRoles(identifier);
+    if (!roles) {
+      throw new HttpException('Token roles not found', HttpStatus.NOT_FOUND);
     }
 
     return roles;
@@ -320,7 +324,7 @@ export class TokenController {
   async getTokenRolesForAddress(
     @Param('identifier') identifier: string,
     @Param('address') address: string,
-  ): Promise<CollectionRoleForAddress> {
+  ): Promise<TokenRoles> {
     const roles = await this.tokenService.getTokenRolesForAddress(identifier, address);
 
     if (!roles) {

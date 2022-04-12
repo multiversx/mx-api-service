@@ -659,11 +659,15 @@ describe('Token Service', () => {
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_identifier: string) => [{
           address: "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8",
-          roles: ["ESDTRoleLocalMint", "ESDTRoleLocalBurn", "ESDTRoleLocalTransfer"],
+          canMint: true,
+          canBurn: true,
+          roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
         },
         {
           address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
-          roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
+          canMint: true,
+          canBurn: false,
+          roles: ['ESDTRoleLocalBurn'],
         },
         ]));
 
@@ -671,22 +675,23 @@ describe('Token Service', () => {
 
       expect(results).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ roles: ["ESDTRoleLocalMint", "ESDTRoleLocalBurn", "ESDTRoleLocalTransfer"] }),
-          expect.objectContaining({ roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'] }),
+          expect.objectContaining({
+            canMint: true,
+            canBurn: true,
+            roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
+          }),
+          expect.objectContaining({
+            canMint: true,
+            canBurn: false,
+            roles: ['ESDTRoleLocalBurn'],
+          }),
         ])
       );
     });
 
     it("should return undefined because test simulates that roles are not defined for token", async () => {
-      const identifier: string = token.identifier;
-
-      jest
-        .spyOn(TokenService.prototype, 'getToken')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_identifier: string) => undefined));
-
-      const results = await tokenService.getTokenRoles(identifier);
-      expect(results).toBeUndefined();
+      const results = await tokenService.getTokenRoles('UNKNOWN');
+      expect(results).toStrictEqual([]);
     });
   });
 
@@ -701,13 +706,19 @@ describe('Token Service', () => {
         .mockImplementation(jest.fn(async (_identifier: string) => [
           {
             address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
-            roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
+            canMint: true,
+            canBurn: true,
+            roles: [],
           },
         ]));
 
       const results = await tokenService.getTokenRolesForAddress(identifier, address);
 
-      expect(results).toEqual(expect.objectContaining({ roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'] }));
+      expect(results).toEqual(expect.objectContaining({
+        canMint: true,
+        canBurn: true,
+        roles: [],
+      }));
 
     });
 
