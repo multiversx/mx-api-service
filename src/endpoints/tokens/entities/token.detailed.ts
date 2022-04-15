@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Token } from "./token";
+import { TokenRoles } from "./token.roles";
 
 export class TokenDetailed extends Token {
   @ApiProperty()
@@ -28,4 +29,7 @@ export class TokenDetailed extends Token {
 
   @ApiProperty()
   circulatingSupply: string | undefined = undefined;
+
+  @ApiProperty()
+  roles: TokenRoles[] | undefined = undefined;
 }
