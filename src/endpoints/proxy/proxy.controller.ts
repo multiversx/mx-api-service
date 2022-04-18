@@ -292,7 +292,7 @@ export class ProxyController {
 
           return false;
         }),
-        Constants.oneDay(),
+        Constants.oneHour(),
       );
     } catch (error: any) {
       throw new BadRequestException(error.response);

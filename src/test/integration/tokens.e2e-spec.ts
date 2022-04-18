@@ -45,6 +45,7 @@ describe('Token Service', () => {
     supply: '1861656',
     circulatingSupply: '1861656',
   };
+
   beforeAll(async () => {
 
     const moduleRef = await Test.createTestingModule({
@@ -53,6 +54,7 @@ describe('Token Service', () => {
 
     tokenService = moduleRef.get<TokenService>(TokenService);
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
+
   });
 
   beforeEach(() => { jest.restoreAllMocks(); });
@@ -66,6 +68,7 @@ describe('Token Service', () => {
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
 
       const results = await tokenService.getTokens({ from: 0, size: 3 }, new TokenFilter());
 
@@ -131,6 +134,7 @@ describe('Token Service', () => {
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
 
       const results = await tokenService.getTokens({ from: 0, size: 1 }, new TokenFilter());
+
       expect(results).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ name: "WrappedEGLD" }),
@@ -150,6 +154,7 @@ describe('Token Service', () => {
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
 
       const results = await tokenService.getTokens({ from: 0, size: 1 }, new TokenFilter());
+
       expect(results).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
@@ -191,6 +196,7 @@ describe('Token Service', () => {
     });
 
     it("should return undefined because test simulates that token is undefined", async () => {
+
       jest
         .spyOn(ElasticService.prototype, 'get')
         // eslint-disable-next-line require-await
@@ -215,6 +221,7 @@ describe('Token Service', () => {
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
 
       const results = await tokenService.getFilteredTokens(filter);
+
       expect(results).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
@@ -234,6 +241,7 @@ describe('Token Service', () => {
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
 
       const results = await tokenService.getFilteredTokens(filter);
+
       expect(results).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ name: "WrappedEGLD" }),
@@ -253,6 +261,7 @@ describe('Token Service', () => {
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
 
       const results = await tokenService.getFilteredTokens(filter);
+
       expect(results).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
@@ -272,6 +281,7 @@ describe('Token Service', () => {
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
 
       const results = await tokenService.getFilteredTokens(filter);
+
       expect(results).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
@@ -287,6 +297,7 @@ describe('Token Service', () => {
         .mockImplementation(jest.fn(async () => []));
 
       const results = await tokenService.getFilteredTokens(new TokenFilter());
+
       expect(results).toStrictEqual([]);
     });
   });
@@ -304,6 +315,7 @@ describe('Token Service', () => {
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
 
       const result = await tokenService.getTokenCount(filter);
+
       expect(result).toStrictEqual(1);
     });
 
@@ -428,6 +440,7 @@ describe('Token Service', () => {
         .mockImplementation(jest.fn(async () => count));
 
       const result = await tokenService.getTokenCountForAddress(address);
+
       expect(result).toStrictEqual(1);
     });
 
@@ -441,6 +454,7 @@ describe('Token Service', () => {
         .mockImplementation(jest.fn(async () => count));
 
       const result = await tokenService.getTokenCountForAddress(address);
+
       expect(result).toStrictEqual(1);
     });
   });
@@ -449,6 +463,7 @@ describe('Token Service', () => {
     it("should return a list of tokens for a specific address", async () => {
       const MOCK_PATH = apiConfigService.getMockPath();
       const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+
       const filter: TokenFilter = new TokenFilter();
       filter.identifier = "RIDE-7d18e9";
 
@@ -470,6 +485,7 @@ describe('Token Service', () => {
     it("should return a list of tokens for a specific smart contract address", async () => {
       const MOCK_PATH = apiConfigService.getMockPath();
       const address: string = "erd1qqqqqqqqqqqqqpgqmqq78c5htmdnws8hm5u4suvags36eq092jpsaxv3e7";
+
       const filter: TokenFilter = new TokenFilter();
       filter.identifier = "RIDE-7d18e9";
 
@@ -490,6 +506,7 @@ describe('Token Service', () => {
 
     it("should return an empty list because test simulates that address does not contain a specific token", async () => {
       const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+
       const filter: TokenFilter = new TokenFilter();
       filter.identifier = "OXSY-3dc78b";
 
@@ -499,6 +516,7 @@ describe('Token Service', () => {
         .mockImplementation(jest.fn(async () => []));
 
       const results = await tokenService.getTokensForAddress(address, { from: 0, size: 1 }, filter);
+
       expect(results).toEqual([]);
     });
   });
@@ -507,6 +525,7 @@ describe('Token Service', () => {
     it("should return one token for a specific address with source ELASTIC and identifier filter applied", async () => {
       const MOCK_PATH = apiConfigService.getMockPath();
       const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+
       const filter: TokenFilter = new TokenFilter();
       filter.identifier = "RIDE-7d18e9";
 
@@ -528,6 +547,7 @@ describe('Token Service', () => {
     it("should return a list of two tokens for a specific address with source ELASTIC and identifiers filter applied", async () => {
       const MOCK_PATH = apiConfigService.getMockPath();
       const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
+
       const filter: TokenFilter = new TokenFilter();
       filter.identifiers = ["WATER-9ed400", "WEGLD-bd4d79"];
 
@@ -556,6 +576,7 @@ describe('Token Service', () => {
       if (!result) {
         throw new Error('Properties not defined');
       }
+
       expect(result).toHaveProperties(['supply', 'circulatingSupply']);
     });
 
@@ -575,6 +596,7 @@ describe('Token Service', () => {
   describe("getTokenAccounts", () => {
     it("should return a list of account witch contains a specific token", async () => {
       const identifier: string = token.identifier;
+
       const results = await tokenService.getTokenAccounts({ from: 0, size: 10 }, identifier);
 
       if (!results) {
@@ -611,6 +633,7 @@ describe('Token Service', () => {
         .mockImplementation(jest.fn(async () => 1000));
 
       const results = await tokenService.getTokenAccountsCount(identifier);
+
       expect(results).toStrictEqual(1000);
     });
 
@@ -630,62 +653,45 @@ describe('Token Service', () => {
   describe("getTokenRoles", () => {
     it("should return token roles", async () => {
       const identifier: string = token.identifier;
+
       jest
         .spyOn(EsdtService.prototype, 'getEsdtAddressesRoles')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_identifier: string) => [{
           address: "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8",
-          canCreate: true,
+          canMint: true,
           canBurn: true,
-          canAddQuantity: false,
-          canUpdateAttributes: false,
-          canAddUri: false,
-          canTransferRole: false,
+          roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
         },
-          {
-            address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
-            canCreate: true,
-            canBurn: true,
-            canAddQuantity: false,
-            canUpdateAttributes: false,
-            canAddUri: false,
-            canTransferRole: false,
-          },
+        {
+          address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
+          canMint: true,
+          canBurn: false,
+          roles: ['ESDTRoleLocalBurn'],
+        },
         ]));
+
       const results = await tokenService.getTokenRoles(identifier);
 
       expect(results).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            canCreate: true,
+            canMint: true,
             canBurn: true,
-            canAddQuantity: false,
-            canUpdateAttributes: false,
-            canAddUri: false,
-            canTransferRole: false,
+            roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
           }),
           expect.objectContaining({
-            canCreate: true,
-            canBurn: true,
-            canAddQuantity: false,
-            canUpdateAttributes: false,
-            canAddUri: false,
-            canTransferRole: false,
+            canMint: true,
+            canBurn: false,
+            roles: ['ESDTRoleLocalBurn'],
           }),
         ])
       );
     });
 
     it("should return undefined because test simulates that roles are not defined for token", async () => {
-      const identifier: string = token.identifier;
-
-      jest
-        .spyOn(TokenService.prototype, 'getToken')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_identifier: string) => undefined));
-
-      const results = await tokenService.getTokenRoles(identifier);
-      expect(results).toBeUndefined();
+      const results = await tokenService.getTokenRoles('UNKNOWN');
+      expect(results).toStrictEqual([]);
     });
   });
 
@@ -693,30 +699,27 @@ describe('Token Service', () => {
     it("should return token roles for a specific address", async () => {
       const identifier: string = token.identifier;
       const address: string = "erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy";
+
       jest
         .spyOn(EsdtService.prototype, 'getEsdtAddressesRoles')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_identifier: string) => [
           {
             address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
-            canCreate: true,
+            canMint: true,
             canBurn: true,
-            canAddQuantity: false,
-            canUpdateAttributes: false,
-            canAddUri: false,
-            canTransferRole: false,
+            roles: [],
           },
         ]));
+
       const results = await tokenService.getTokenRolesForAddress(identifier, address);
 
       expect(results).toEqual(expect.objectContaining({
-        canCreate: true,
+        canMint: true,
         canBurn: true,
-        canAddQuantity: false,
-        canUpdateAttributes: false,
-        canAddUri: false,
-        canTransferRole: false,
+        roles: [],
       }));
+
     });
 
     it("should return undefined because test simulates that roles are not defined for token", async () => {

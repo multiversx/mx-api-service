@@ -160,14 +160,14 @@ export class CacheInfo {
   static NftMetadata(identifier: string): CacheInfo {
     return {
       key: `nftMetadata:${identifier}`,
-      ttl: Constants.oneHour(),
+      ttl: Constants.oneMinute() * 10,
     };
   }
 
   static NftMedia(identifier: string): CacheInfo {
     return {
       key: `nftMedia:${identifier}`,
-      ttl: Constants.oneHour(),
+      ttl: Constants.oneMinute() * 10,
     };
   }
 
