@@ -3,6 +3,8 @@
 - [ ] Feature  
 - [ ] Refactoring
 - [ ] Performance improvement
+- [ ] Integration test
+
 
 ## Problem setting
 - 
