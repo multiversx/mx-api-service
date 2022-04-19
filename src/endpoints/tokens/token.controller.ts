@@ -13,6 +13,7 @@ import { TokenAccount } from "./entities/token.account";
 import { TokenDetailed } from "./entities/token.detailed";
 import { TokenService } from "./token.service";
 import { TokenRoles } from "./entities/token.roles";
+import { TokenSupplyResult } from "./entities/token.supply.result";
 
 @Controller()
 @ApiTags('tokens')
@@ -110,7 +111,7 @@ export class TokenController {
   async getTokenSupply(
     @Param('identifier') identifier: string,
     @Query('denominated', new ParseOptionalBoolPipe) denominated: boolean | undefined,
-  ): Promise<{ supply: string, circulatingSupply: string }> {
+  ): Promise<TokenSupplyResult> {
     const getSupplyResult = await this.tokenService.getTokenSupply(identifier, denominated);
     if (!getSupplyResult) {
       throw new NotFoundException();

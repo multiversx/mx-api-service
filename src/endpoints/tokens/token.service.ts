@@ -27,6 +27,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { AddressUtils } from "src/utils/address.utils";
 import { TokenProperties } from "./entities/token.properties";
 import { TokenRoles } from "./entities/token.roles";
+import { TokenSupplyResult } from "./entities/token.supply.result";
 
 @Injectable()
 export class TokenService {
@@ -449,7 +450,7 @@ export class TokenService {
     token.initialMinted = supply.initialMinted;
   }
 
-  async getTokenSupply(identifier: string, denominated: boolean | undefined): Promise<{ supply: string, circulatingSupply: string, minted: string | number, burnt: string | number, initialMinted: string | number } | undefined> {
+  async getTokenSupply(identifier: string, denominated: boolean | undefined): Promise<TokenSupplyResult | undefined> {
     const properties = await this.getTokenProperties(identifier);
     if (!properties) {
       return undefined;
@@ -457,9 +458,12 @@ export class TokenService {
 
     const result = await this.esdtService.getTokenSupply(identifier);
 
+    const totalSupply = NumberUtils.denominateString(result.totalSupply, properties.decimals);
+    const circulatingSupply = NumberUtils.denominateString(result.circulatingSupply, properties.decimals);
+
     return {
-      supply: NumberUtils.denominateString(result.totalSupply, properties.decimals).toFixed(),
-      circulatingSupply: NumberUtils.denominateString(result.circulatingSupply, properties.decimals).toFixed(),
+      supply: denominated === true ? totalSupply : totalSupply.toFixed(),
+      circulatingSupply: denominated === true ? circulatingSupply : circulatingSupply.toFixed(),
       minted: denominated === true ? NumberUtils.denominateString(result.minted, properties.decimals) : result.minted,
       burnt: denominated === true ? NumberUtils.denominateString(result.burned, properties.decimals) : result.burned,
       initialMinted: denominated === true ? NumberUtils.denominateString(result.initialMinted, properties.decimals) : result.initialMinted,
