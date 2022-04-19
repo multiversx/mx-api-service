@@ -440,13 +440,16 @@ export class TokenService {
   }
 
   async applySupply(token: TokenDetailed): Promise<void> {
-    const { totalSupply, circulatingSupply } = await this.esdtService.getTokenSupply(token.identifier);
+    const supply = await this.esdtService.getTokenSupply(token.identifier);
 
-    token.supply = NumberUtils.denominate(BigInt(totalSupply), token.decimals).toFixed();
-    token.circulatingSupply = NumberUtils.denominate(BigInt(circulatingSupply), token.decimals).toFixed();
+    token.supply = NumberUtils.denominate(BigInt(supply.totalSupply), token.decimals).toFixed();
+    token.circulatingSupply = NumberUtils.denominate(BigInt(supply.circulatingSupply), token.decimals).toFixed();
+    token.minted = supply.minted;
+    token.burnt = supply.burned;
+    token.initialMinted = supply.initialMinted;
   }
 
-  async getTokenSupply(identifier: string): Promise<{ supply: string, circulatingSupply: string } | undefined> {
+  async getTokenSupply(identifier: string, denominated: boolean | undefined): Promise<{ supply: string, circulatingSupply: string, minted: string | number, burnt: string | number, initialMinted: string | number } | undefined> {
     const properties = await this.getTokenProperties(identifier);
     if (!properties) {
       return undefined;
@@ -457,6 +460,9 @@ export class TokenService {
     return {
       supply: NumberUtils.denominateString(result.totalSupply, properties.decimals).toFixed(),
       circulatingSupply: NumberUtils.denominateString(result.circulatingSupply, properties.decimals).toFixed(),
+      minted: denominated === true ? NumberUtils.denominateString(result.minted, properties.decimals) : result.minted,
+      burnt: denominated === true ? NumberUtils.denominateString(result.burned, properties.decimals) : result.burned,
+      initialMinted: denominated === true ? NumberUtils.denominateString(result.initialMinted, properties.decimals) : result.initialMinted,
     };
   }
 
