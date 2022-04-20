@@ -1,5 +1,5 @@
-import { ScamType } from '../../../plugins/shared/scam/entities/scam-type.enum';
 import { ApiProperty } from "@nestjs/swagger";
+import { ScamType } from "src/plugins/shared/scam/entities/scam-type.enum";
 
 export class Account {
   @ApiProperty({ description: 'The address of the account' })
@@ -14,6 +14,6 @@ export class Account {
   @ApiProperty({ description: 'The shard identifier of the account' })
   shard: number = 0;
 
-  @ApiProperty({enum: ScamType})
+  @ApiProperty({ enum: ScamType })
   scamInfo: any | undefined = undefined;
 }
