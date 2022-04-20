@@ -20,7 +20,7 @@ export class WaitingListController {
   }
 
   @Get("/waiting-list/count")
-  @ApiOperation({ summary: 'Total accounts in waiting-list', description: 'Returns the number of accounts on the waiting list' })
+  @ApiOperation({ summary: 'Total accounts in waiting-list', description: 'Returns the number of accounts in waiting' })
   @ApiResponse({
     status: 200,
     type: Number,
