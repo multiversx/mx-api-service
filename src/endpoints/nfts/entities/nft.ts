@@ -20,7 +20,7 @@ export class Nft {
   @ApiProperty()
   nonce: number = 0;
 
-  @ApiProperty()
+  @ApiProperty({ enum: NftType })
   type: NftType = NftType.NonFungibleESDT;
 
   @ApiProperty()
@@ -29,7 +29,7 @@ export class Nft {
   @ApiProperty()
   creator: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: Number, nullable: true })
   royalties: number | undefined = undefined;
 
   @ApiProperty()
@@ -38,7 +38,7 @@ export class Nft {
   @ApiProperty()
   url: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: NftMedia })
   media: NftMedia[] | undefined = undefined;
 
   @ApiProperty()
@@ -50,19 +50,19 @@ export class Nft {
   @ApiProperty()
   tags: string[] = [];
 
-  @ApiProperty()
+  @ApiProperty({ type: NftMetadata })
   metadata: NftMetadata | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   owner: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   balance: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   supply: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   decimals: number | undefined = undefined;
 
   @ApiProperty()
@@ -71,6 +71,6 @@ export class Nft {
   @ApiProperty()
   ticker?: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   scamInfo: any | undefined = undefined;
 }

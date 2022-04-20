@@ -5,70 +5,70 @@ export class Transaction {
   @ApiProperty()
   txHash: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   gasLimit: number | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   gasPrice: number | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   gasUsed: number | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   miniBlockHash: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   nonce: number | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   receiver: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   receiverShard: number = 0;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   round: number | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   sender: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   senderShard: number = 0;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   signature: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   status: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   value: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   fee: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   timestamp: number = 0;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   data: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   function: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   action: any | undefined = undefined;
 
   @ApiProperty()
   scamInfo: any | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ enum: TransactionType })
   type: TransactionType | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   originalTxHash: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, nullable: true })
   pendingResults: boolean | undefined = undefined;
 
   getDate(): Date | undefined {

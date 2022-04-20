@@ -26,12 +26,12 @@ export class Token {
   @ApiProperty()
   isPaused: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: TokenAssets })
   assets: TokenAssets | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   transactions: number | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   accounts: number | undefined = undefined;
 }

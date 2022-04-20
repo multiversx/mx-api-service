@@ -10,6 +10,6 @@ export class AccountHistory {
     @ApiProperty({ description: 'The timestamp of snapshot for account balance' })
     timestamp: number = 0;
 
-    @ApiProperty({ description: 'Is the account sender of transaction' })
+    @ApiProperty({ description: 'Is the account sender of transaction', type: Boolean, nullable: true })
     isSender?: boolean | undefined = undefined;
 }

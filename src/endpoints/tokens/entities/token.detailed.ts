@@ -24,12 +24,12 @@ export class TokenDetailed extends Token {
   @ApiProperty()
   canWipe: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   supply: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   circulatingSupply: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: TokenRoles })
   roles: TokenRoles[] | undefined = undefined;
 }

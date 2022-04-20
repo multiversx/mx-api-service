@@ -2,21 +2,21 @@ import { ApiProperty } from "@nestjs/swagger";
 import { NftCollection } from "./nft.collection";
 
 export class NftCollectionAccount extends NftCollection {
-  @ApiProperty()
+  @ApiProperty({ type: Boolean })
   canCreate: boolean | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean })
   canBurn: boolean | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean })
   canAddQuantity: boolean | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean })
   canUpdateAttributes: boolean | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean })
   canAddUri: boolean | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean })
   canTransferRole: boolean | undefined = undefined;
 }
