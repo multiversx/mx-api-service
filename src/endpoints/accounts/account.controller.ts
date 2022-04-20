@@ -883,7 +883,7 @@ export class AccountController {
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @Get("/accounts/:address/sc-results")
-  @ApiOperation({ summary: 'Account smart contract details', description: 'Return smart contract response for a given address' })
+  @ApiOperation({ summary: 'Account smart contract details', description: 'Returns smart contracts response for a given address' })
   @ApiResponse({
     status: 200,
     description: 'All smart contract results for a given account',
