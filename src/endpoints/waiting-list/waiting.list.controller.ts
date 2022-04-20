@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiExcludeEndpoint, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiExcludeEndpoint, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WaitingList } from './entities/waiting.list';
 import { WaitingListService } from './waiting.list.service';
 
@@ -20,6 +20,11 @@ export class WaitingListController {
   }
 
   @Get("/waiting-list/count")
+  @ApiOperation({ summary: 'Total accounts in waiting-list', description: 'Returns the number of accounts on the waiting list' })
+  @ApiResponse({
+    status: 200,
+    type: Number,
+  })
   getWaitingListCount(): Promise<number> {
     return this.waitingListService.getWaitingListCount();
   }
