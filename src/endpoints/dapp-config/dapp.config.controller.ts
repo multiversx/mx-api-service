@@ -1,5 +1,6 @@
+import { DappConfig } from './entities/dapp-config';
 import { Controller, Get, HttpException, HttpStatus } from "@nestjs/common";
-import { ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { DappConfigService } from "./dapp.config.service";
 
 @Controller()
@@ -10,9 +11,11 @@ export class DappConfigController {
   ) { }
 
   @Get("/dapp/config")
+  @ApiOperation({ summary: 'Dapp configuration network', description: 'Returns Dapp configuration for a specified network' })
   @ApiResponse({
     status: 200,
     description: 'Dapp configuration for specified network',
+    type: DappConfig,
   })
   @ApiResponse({
     status: 404,
