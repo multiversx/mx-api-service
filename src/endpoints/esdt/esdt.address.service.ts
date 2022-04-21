@@ -114,6 +114,8 @@ export class EsdtAddressService {
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'tokenNonce', order: ElasticSortOrder.descending },
       ]);
+    } else {
+      elasticQuery = elasticQuery.withSort([{ name: '_id', order: ElasticSortOrder.ascending }]);
     }
 
     const esdts = await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
@@ -178,14 +180,9 @@ export class EsdtAddressService {
       throw new BadRequestException('canCreate / canBurn / canAddQuantity / canUpdateAttributes / canAddUri / canTransferRole filter not supported when fetching account collections from elastic');
     }
 
-    let elasticQuery = this.collectionService.buildCollectionFilter(filter, address)
+    const elasticQuery = this.collectionService.buildCollectionFilter(filter, address)
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
       .withPagination(pagination);
-
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      elasticQuery = elasticQuery.withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
-    } else {
-      elasticQuery = elasticQuery.withSort([{ name: 'identifier', order: ElasticSortOrder.ascending }]);
-    }
 
     const tokenCollections = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
     const collectionsIdentifiers = tokenCollections.map((collection) => collection.token);
