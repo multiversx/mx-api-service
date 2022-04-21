@@ -212,4 +212,11 @@ export class CacheInfo {
       ttl: Constants.oneMinute() * 15,
     };
   }
+
+  static CollectionType(collectionIdentifier: string): CacheInfo {
+    return {
+      key: `collectionType:${collectionIdentifier}`,
+      ttl: Constants.oneMinute() * 10,
+    };
+  }
 }
