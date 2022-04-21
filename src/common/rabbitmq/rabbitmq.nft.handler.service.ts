@@ -44,8 +44,6 @@ export class RabbitMqNftHandlerService {
       return undefined;
     }
 
-    this.logger.log(`Collection type for collection with identifier '${collectionIdentifier}' is '${collection.type}'`);
-
     return collection.type;
   }
 
@@ -59,7 +57,6 @@ export class RabbitMqNftHandlerService {
     const collectionIdentifier = identifier.split('-').slice(0, 2).join('-');
     const collectionType = await this.getCollectionType(collectionIdentifier);
     if (collectionType === NftType.MetaESDT) {
-      this.logger.log(`Skipped 'ESDTNFTCreate' event for NFT with identifier '${identifier}'`);
       return;
     }
 
