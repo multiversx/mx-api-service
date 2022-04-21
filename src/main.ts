@@ -6,7 +6,6 @@ import { join } from 'path';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { ApiConfigService } from './common/api-config/api.config.service';
 import { CachingService } from './common/caching/caching.service';
-import { TokenAssetService } from './endpoints/tokens/token.asset.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { FieldsInterceptor } from './interceptors/fields.interceptor';
 import { PrivateAppModule } from './private.app.module';
@@ -54,7 +53,6 @@ async function bootstrap() {
   const cachingService = publicApp.get<CachingService>(CachingService);
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
   const metricsService = publicApp.get<MetricsService>(MetricsService);
-  const tokenAssetService = publicApp.get<TokenAssetService>(TokenAssetService);
   const protocolService = publicApp.get<ProtocolService>(ProtocolService);
   const pluginService = publicApp.get<PluginService>(PluginService);
 
@@ -65,8 +63,6 @@ async function bootstrap() {
   const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
   httpServer.keepAliveTimeout = apiConfigService.getServerTimeout();
   httpServer.headersTimeout = apiConfigService.getHeadersTimeout(); //`keepAliveTimeout + server's expected response time`
-
-  await tokenAssetService.checkout();
 
   const globalInterceptors: NestInterceptor[] = [];
   globalInterceptors.push(new LoggingInterceptor(metricsService));
