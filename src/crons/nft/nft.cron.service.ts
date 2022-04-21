@@ -52,12 +52,17 @@ export class NftCronService {
 
       for (const nft of nfts) {
         if (nft.identifier && !nftIdentifiers.has(nft.identifier)) {
-          const neededProcessing = await handler(nft);
-          if (neededProcessing) {
-            totalProcessedNfts++;
-          }
+          try {
+            const neededProcessing = await handler(nft);
+            if (neededProcessing) {
+              totalProcessedNfts++;
+            }
 
-          nftIdentifiers.add(nft.identifier);
+            nftIdentifiers.add(nft.identifier);
+          } catch (error) {
+            this.logger.error(`Failure when determining whether the NFT with the identifier '${nft.identifier}' needs processing`);
+            this.logger.error(error);
+          }
         }
       }
 
