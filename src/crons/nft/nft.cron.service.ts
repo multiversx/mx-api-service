@@ -40,7 +40,7 @@ export class NftCronService {
 
   private async processNftsFromLast24Hours(handler: (nft: Nft) => Promise<boolean>): Promise<void> {
     let before = Math.floor(Date.now() / 1000);
-    const after = before - Constants.oneDay() * 30;
+    const after = before - Constants.oneDay();
 
     const nftIdentifiers = new Set<string>();
     let totalProcessedNfts = 0;
