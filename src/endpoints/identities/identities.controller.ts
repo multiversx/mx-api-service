@@ -1,5 +1,5 @@
 import { Controller, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
-import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
 import { Identity } from "./entities/identity";
 import { IdentitiesService } from "./identities.service";
@@ -10,6 +10,7 @@ export class IdentitiesController {
   constructor(private readonly identitiesService: IdentitiesService) { }
 
   @Get("/identities")
+  @ApiOperation({ summary: 'Identities details', description: 'Returns providers information details as well a specific provider for a given identity ' })
   @ApiResponse({
     status: 200,
     description: 'The identities available on the blockchain',
@@ -24,6 +25,7 @@ export class IdentitiesController {
   }
 
   @Get('/identities/:identifier')
+  @ApiOperation({ summary: 'Identity details', description: 'Returns provider information details for a given identifier' })
   @ApiResponse({
     status: 200,
     description: 'Identity details',
