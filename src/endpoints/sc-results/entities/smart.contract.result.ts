@@ -41,12 +41,12 @@ export class SmartContractResult {
     @ApiProperty()
     callType: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: String, nullable: true })
     miniBlockHash: string | undefined = undefined;
 
-    @ApiProperty({ type: TransactionLog })
+    @ApiProperty({ type: TransactionLog, nullable: true })
     logs: TransactionLog | undefined = undefined;
 
-    @ApiProperty()
+    @ApiProperty({ type: String, nullable: true })
     returnMessage: string | undefined = undefined;
 }
