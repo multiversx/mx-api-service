@@ -450,7 +450,7 @@ export class TokenService {
     token.initialMinted = supply.initialMinted;
   }
 
-  async getTokenSupply(identifier: string, denominated: boolean | undefined): Promise<TokenSupplyResult | undefined> {
+  async getTokenSupply(identifier: string, denominated: boolean | undefined = undefined): Promise<TokenSupplyResult | undefined> {
     const properties = await this.getTokenProperties(identifier);
     if (!properties) {
       return undefined;
