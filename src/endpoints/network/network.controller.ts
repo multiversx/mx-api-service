@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NetworkConstants } from './entities/constants';
 import { Economics } from './entities/economics';
 import { NetworkService } from './network.service';
@@ -13,6 +13,7 @@ export class NetworkController {
   ) { }
 
   @Get("/constants")
+  @ApiOperation({ summary: 'Network constants', description: 'Returns network constants' })
   @ApiResponse({
     status: 200,
     description: 'The network constants',
@@ -23,6 +24,7 @@ export class NetworkController {
   }
 
   @Get("/economics")
+  @ApiOperation({ summary: 'Economics details', description: 'Returns economics details' })
   @ApiResponse({
     status: 200,
     description: 'The economics details',
@@ -33,6 +35,7 @@ export class NetworkController {
   }
 
   @Get("/stats")
+  @ApiOperation({ summary: 'Statistics details', description: 'Returns network statistics details' })
   @ApiResponse({
     status: 200,
     description: 'The network statistics',
