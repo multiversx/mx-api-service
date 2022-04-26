@@ -1,5 +1,5 @@
 import { Controller, Get } from "@nestjs/common";
-import { ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { StakeService } from "./stake.service";
 
 @Controller()
@@ -10,6 +10,7 @@ export class StakeController {
   ) { }
 
   @Get('/stake')
+  @ApiOperation({ summary: 'Stake details', description: 'Returns stake informations as well as total/active validators and nodes queue size ' })
   @ApiResponse({
     status: 200,
     description: 'Stake details',
