@@ -282,7 +282,7 @@ export class EsdtService {
   }
 
   async getTokenSupply(identifier: string): Promise<EsdtSupply> {
-    const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
+    const { supply, minted, burned, initialMinted } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
 
     const isCollectionOrToken = identifier.split('-').length === 2;
     if (isCollectionOrToken) {
@@ -296,12 +296,18 @@ export class EsdtService {
       return {
         totalSupply: supply,
         circulatingSupply: circulatingSupply.toString(),
+        minted,
+        burned,
+        initialMinted,
       };
     }
 
     return {
       totalSupply: supply,
       circulatingSupply: supply,
+      minted,
+      burned,
+      initialMinted,
     };
   }
 }

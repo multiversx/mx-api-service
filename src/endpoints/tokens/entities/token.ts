@@ -21,6 +21,9 @@ export class Token {
   burnt: string = '';
 
   @ApiProperty()
+  initialMinted: string = '';
+
+  @ApiProperty()
   decimals: number = 0;
 
   @ApiProperty()

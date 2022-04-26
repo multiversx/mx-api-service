@@ -114,6 +114,8 @@ export class EsdtAddressService {
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'tokenNonce', order: ElasticSortOrder.descending },
       ]);
+    } else {
+      elasticQuery = elasticQuery.withSort([{ name: '_id', order: ElasticSortOrder.ascending }]);
     }
 
     const esdts = await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);

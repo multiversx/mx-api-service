@@ -15,6 +15,8 @@ import { TokenService } from "./token.service";
 import { TokenRoles } from "./entities/token.roles";
 import { EsdtSupply } from "../esdt/entities/esdt.supply";
 import { Transaction } from "../transactions/entities/transaction";
+import { TokenSupplyResult } from "./entities/token.supply.result";
+
 
 @Controller()
 @ApiTags('tokens')
@@ -105,6 +107,8 @@ export class TokenController {
 
   @Get('/tokens/:identifier/supply')
   @ApiOperation({ summary: 'Token supply details', description: 'Returns supply and circulating supply details for a specific token' })
+  @ApiQuery({ name: 'denominated', description: 'Return results denominated', required: false })
+
   @ApiResponse({
     status: 200,
     description: 'Non-fungible / semi-fungible token supply',
@@ -114,8 +118,11 @@ export class TokenController {
     status: 404,
     description: 'Token not found',
   })
-  async getTokenSupply(@Param('identifier') identifier: string): Promise<{ supply: string, circulatingSupply: string }> {
-    const getSupplyResult = await this.tokenService.getTokenSupply(identifier);
+  async getTokenSupply(
+    @Param('identifier') identifier: string,
+    @Query('denominated', new ParseOptionalBoolPipe) denominated: boolean | undefined,
+  ): Promise<TokenSupplyResult> {
+    const getSupplyResult = await this.tokenService.getTokenSupply(identifier, denominated);
     if (!getSupplyResult) {
       throw new NotFoundException();
     }

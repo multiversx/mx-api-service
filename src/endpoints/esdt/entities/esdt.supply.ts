@@ -1,9 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class EsdtSupply {
-  @ApiProperty()
   totalSupply: string = '0';
-
-  @ApiProperty()
   circulatingSupply: string = '0';
+  minted: string = '0';
+  burned: string = '0';
+  initialMinted: string = '0';
 }
