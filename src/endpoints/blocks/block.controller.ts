@@ -1,5 +1,5 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
 import { ParseBlsHashPipe } from "src/utils/pipes/parse.bls.hash.pipe";
 import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
@@ -13,6 +13,7 @@ export class BlockController {
   constructor(private readonly blockService: BlockService) { }
 
   @Get("/blocks")
+  @ApiOperation({ summary: 'Blocks details', description: 'Returns blocks information details available on the blockchain as well as blocks details from a specific shard, epoch, nonce, validator and proposer' })
   @ApiResponse({
     status: 200,
     description: 'The blocks available on the blockchain',
@@ -39,9 +40,11 @@ export class BlockController {
   }
 
   @Get("/blocks/count")
+  @ApiOperation({ summary: 'Total number of blocks', description: 'Returns total number of blocks available on blockchain as well as total number of blocks in a specific shard, epoch, validator and proposer' })
   @ApiResponse({
     status: 200,
     description: 'The number of blocks available on the blockchain',
+    type: Number,
   })
   @ApiQuery({ name: 'shard', description: 'Id of the shard the block belongs to', required: false })
   @ApiQuery({ name: 'proposer', description: 'Filter by proposer', required: false })
@@ -71,6 +74,7 @@ export class BlockController {
   }
 
   @Get("/blocks/:hash")
+  @ApiOperation({ summary: 'Block details', description: 'Returns block information details for a given hash' })
   @ApiResponse({
     status: 200,
     description: 'The details of a given block',
