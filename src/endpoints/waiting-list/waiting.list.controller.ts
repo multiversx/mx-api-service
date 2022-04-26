@@ -9,6 +9,7 @@ export class WaitingListController {
   constructor(private readonly waitingListService: WaitingListService) { }
 
   @Get("/waiting-list")
+  @ApiOperation({ summary: 'Waiting list details', description: 'Returns all accounts informations in waiting' })
   @ApiResponse({
     status: 200,
     description: 'Waiting list',
@@ -20,7 +21,7 @@ export class WaitingListController {
   }
 
   @Get("/waiting-list/count")
-  @ApiOperation({ summary: 'Total accounts in waiting-list', description: 'Returns the number of accounts in waiting' })
+  @ApiOperation({ summary: 'Total accounts in waiting', description: 'Returns total number of accounts in waiting' })
   @ApiResponse({
     status: 200,
     type: Number,
