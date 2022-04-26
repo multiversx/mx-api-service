@@ -1,5 +1,5 @@
 import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { SortOrder } from "src/common/entities/sort.order";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
@@ -13,6 +13,8 @@ import { TokenAccount } from "./entities/token.account";
 import { TokenDetailed } from "./entities/token.detailed";
 import { TokenService } from "./token.service";
 import { TokenRoles } from "./entities/token.roles";
+import { EsdtSupply } from "../esdt/entities/esdt.supply";
+import { Transaction } from "../transactions/entities/transaction";
 
 @Controller()
 @ApiTags('tokens')
@@ -26,6 +28,7 @@ export class TokenController {
   }
 
   @Get("/tokens")
+  @ApiOperation({ summary: 'Tokens details', description: 'Returns all tokens details as well as a specific token for a given identifier' })
   @ApiResponse({
     status: 200,
     description: 'The list of tokens available on the blockchain',
@@ -50,9 +53,11 @@ export class TokenController {
   }
 
   @Get("/tokens/count")
+  @ApiOperation({ summary: 'Total number of tokens', description: 'Return total number of tokens available on blockchain' })
   @ApiResponse({
     status: 200,
     description: 'The number of tokens available on the blockchain',
+    type: Number,
   })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
@@ -79,6 +84,7 @@ export class TokenController {
   }
 
   @Get('/tokens/:identifier')
+  @ApiOperation({ summary: 'Token details', description: 'Returns token details based on a specific token identifier' })
   @ApiResponse({
     status: 200,
     description: 'Token details',
@@ -98,9 +104,11 @@ export class TokenController {
   }
 
   @Get('/tokens/:identifier/supply')
+  @ApiOperation({ summary: 'Token supply details', description: 'Returns supply and circulating supply details for a specific token' })
   @ApiResponse({
     status: 200,
     description: 'Non-fungible / semi-fungible token supply',
+    type: EsdtSupply,
   })
   @ApiResponse({
     status: 404,
@@ -116,9 +124,10 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/accounts")
+  @ApiOperation({ summary: 'Token accounts details', description: 'Returns a list of all accounts that have a specific token' })
   @ApiResponse({
     status: 200,
-    description: 'The specific token accounts available on the blockchain',
+    description: 'Specific token accounts',
     type: TokenAccount,
     isArray: true,
   })
@@ -142,9 +151,11 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/accounts/count")
+  @ApiOperation({ summary: 'Total number of accounts', description: 'Returns the total number of accounts that hold a specific token' })
   @ApiResponse({
     status: 200,
     description: 'The number of specific token accounts available on the blockchain',
+    type: Number,
   })
   @ApiResponse({
     status: 404,
@@ -162,10 +173,12 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/transactions")
+  @ApiOperation({ summary: 'Transactions token details', description: 'Returns the transaction history for a specific token, it can also return all transactions that have success / pending / fail status and at the same time the transactions on certain shards. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs' })
   @ApiResponse({
     status: 200,
     description: 'The specific token transactions history on the blockchain',
     isArray: true,
+    type: Transaction,
   })
   @ApiResponse({
     status: 404,
@@ -235,10 +248,11 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/transactions/count")
+  @ApiOperation({ summary: 'Total number of transactions', description: 'Returns the total number of transactions for a specific token' })
   @ApiResponse({
     status: 200,
     description: 'The specific token transactions count on the blockchain',
-    isArray: true,
+    type: Number,
   })
   @ApiResponse({
     status: 404,
@@ -288,9 +302,11 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/roles")
+  @ApiOperation({ summary: 'Accounts token roles', description: 'Returns a list of accounts that have certain roles for a specific token' })
   @ApiResponse({
     status: 200,
     description: 'Roles of every address to a specific ESDT',
+    type: TokenRoles,
   })
   @ApiResponse({
     status: 404,
@@ -313,9 +329,11 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/roles/:address")
+  @ApiOperation({ summary: 'Token address roles details', description: 'Returns the roles of an address for a specific token' })
   @ApiResponse({
     status: 200,
     description: 'Roles for a specific address to a specific ESDT',
+    type: TokenRoles,
   })
   @ApiResponse({
     status: 404,
