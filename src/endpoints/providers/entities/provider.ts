@@ -5,7 +5,7 @@ export class Provider extends NodesInfos {
   @ApiProperty()
   provider: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   owner: string | null = null;
 
   @ApiProperty()
@@ -23,7 +23,7 @@ export class Provider extends NodesInfos {
   @ApiProperty()
   numUsers: number = 0;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   cumulatedRewards: string | null = null;
 
   @ApiProperty()
