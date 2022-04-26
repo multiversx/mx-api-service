@@ -1,5 +1,17 @@
-import { BadRequestException, Body, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
-import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  DefaultValuePipe,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
+import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 import { SortOrder } from 'src/common/entities/sort.order';
 import { ParseAddressPipe } from 'src/utils/pipes/parse.address.pipe';
@@ -23,16 +35,20 @@ export class TransactionController {
   constructor(private readonly transactionService: TransactionService) { }
 
   @Get("/transactions")
+  @ApiOperation({
+    summary: 'Transactions details',
+    description: 'Returns a list of transactions available on the blockchain as well as a list of transactions filtered by certain parameters',
+  })
   @ApiResponse({
     status: 200,
-    description: 'List transactions',
+    description: 'Transactions details',
     type: Transaction,
     isArray: true,
   })
-  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
-  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
-  @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
-  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
+  @ApiQuery({name: 'sender', description: 'Address of the transaction sender', required: false})
+  @ApiQuery({name: 'receiver', description: 'Address of the transaction receiver', required: false})
+  @ApiQuery({name: 'token', description: 'Identifier of the token', required: false})
+  @ApiQuery({name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false})
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
@@ -92,18 +108,24 @@ export class TransactionController {
   }
 
   @Get("/transactions/count")
-  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
-  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
-  @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
-  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
-  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
-  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
-  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
-  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false })
-  @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false, deprecated: true })
-  @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiOperation({summary: "Total transactions number", description: 'Return the total number of transactions'})
+  @ApiResponse({
+    status: 200,
+    description: 'Transactions count',
+    type: Number,
+  })
+  @ApiQuery({name: 'sender', description: 'Address of the transaction sender', required: false})
+  @ApiQuery({name: 'receiver', description: 'Address of the transaction receiver', required: false})
+  @ApiQuery({name: 'token', description: 'Identifier of the token', required: false})
+  @ApiQuery({name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false})
+  @ApiQuery({name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false})
+  @ApiQuery({name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false})
+  @ApiQuery({name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false})
+  @ApiQuery({name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false})
+  @ApiQuery({name: 'condition', description: 'Condition for elastic search queries', required: false, deprecated: true})
+  @ApiQuery({name: 'search', description: 'Search in data object', required: false})
+  @ApiQuery({name: 'before', description: 'Before timestamp', required: false})
+  @ApiQuery({name: 'after', description: 'After timestamp', required: false})
   getTransactionCount(
     @Query('sender', ParseAddressPipe) sender: string | undefined,
     @Query('receiver', ParseAddressPipe) receiver: string | undefined,
@@ -167,6 +189,7 @@ export class TransactionController {
   }
 
   @Get('/transactions/:txHash')
+  @ApiOperation({summary: 'Transaction details', description: 'Return transaction details of a given transaction hash'})
   @ApiResponse({
     status: 200,
     description: 'Transaction details',
@@ -191,6 +214,7 @@ export class TransactionController {
   }
 
   @Post('/transactions')
+  @ApiOperation({summary: 'Create a transaction', description: ''})
   @ApiResponse({
     status: 201,
     description: 'Create a transaction',
@@ -219,6 +243,7 @@ export class TransactionController {
   }
 
   @Post('/transactions/decode')
+  @ApiOperation({summary: 'Decode transaction'})
   @ApiResponse({
     status: 201,
     description: 'Decode a transaction',
@@ -233,8 +258,6 @@ export class TransactionController {
       throw new BadRequestException('Receiver must be provided');
     }
 
-    const result = await this.transactionService.decodeTransaction(transaction);
-
-    return result;
+    return await this.transactionService.decodeTransaction(transaction);
   }
 }
