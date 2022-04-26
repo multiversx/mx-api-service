@@ -1,5 +1,14 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+  Controller,
+  DefaultValuePipe,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Query,
+} from "@nestjs/common";
+import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { ParseBlsHashPipe } from "src/utils/pipes/parse.bls.hash.pipe";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
@@ -14,14 +23,18 @@ export class RoundController {
   constructor(private readonly roundService: RoundService) { }
 
   @Get("/rounds")
+  @ApiOperation({
+    summary: 'Rounds details',
+    description: 'Returns rounds details from a specific epoch, shard and validator and also return a list of all rounds available on blockchain',
+  })
   @ApiResponse({
     status: 200,
     description: 'The rounds available on the blockchain',
     type: Round,
     isArray: true,
   })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({name: 'from', description: 'Number of items to skip for the result set', required: false})
+  @ApiQuery({name: 'size', description: 'Number of items to retrieve', required: false})
   @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
   @ApiQuery({ name: 'shard', description: 'Filter by shard identifier', required: false })
   @ApiQuery({ name: 'epoch', description: 'Filter by epoch number', required: false })
@@ -37,9 +50,14 @@ export class RoundController {
   }
 
   @Get("/rounds/count")
+  @ApiOperation({
+    summary: 'Total rounds number',
+    description: 'Return total number of rounds as well returns total number of rounds from a certain epoch, from a certain shard and validator',
+  })
   @ApiResponse({
     status: 200,
     description: 'The number of rounds available on the blockchain',
+    type: Number,
   })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -71,6 +89,10 @@ export class RoundController {
   }
 
   @Get("/rounds/:shard/:round")
+  @ApiOperation({
+    summary: 'Details of a given round',
+    description: 'Returns details of a given round from a specific shard',
+  })
   @ApiResponse({
     status: 200,
     description: 'The details of a given round',
