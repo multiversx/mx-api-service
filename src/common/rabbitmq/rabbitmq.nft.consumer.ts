@@ -3,6 +3,7 @@ import { CompetingRabbitConsumer } from './rabbitmq.consumers';
 import { NftCreateEvent } from './entities/nft/nft-create.event';
 import { NftEventEnum } from './entities/nft/nft-events.enum';
 import { RabbitMqNftHandlerService } from './rabbitmq.nft.handler.service';
+import configuration from 'config/configuration';
 
 @Injectable()
 export class RabbitMqNftConsumer {
@@ -16,7 +17,7 @@ export class RabbitMqNftConsumer {
 
   @CompetingRabbitConsumer({
     exchange: 'all_events',
-    queueName: 'api-process-logs-and-events',
+    queueName: configuration().features?.eventsNotifier?.queue ?? 'api-process-logs-and-events',
   })
   async consumeEvents(rawEvents: any) {
     try {

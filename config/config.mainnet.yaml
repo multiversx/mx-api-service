@@ -25,8 +25,9 @@ features:
   eventsNotifier:
     enabled: true
     port: 5674
-    url: 'amqp://guest:guest@127.0.0.1:5673'
+    url: 'amqp://guest:guest@127.0.0.1:5672'
     exchange: 'all_events'
+    queue: 'api-process-logs-and-events'
 image:
   width: 600
   height: 600
