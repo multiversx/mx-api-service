@@ -1,5 +1,5 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { Node } from "src/endpoints/nodes/entities/node";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
@@ -18,6 +18,7 @@ export class NodeController {
 	constructor(private readonly nodeService: NodeService) { }
 
 	@Get("/nodes")
+	@ApiOperation({ summary: 'Nodes details', description: 'Returns details about all existing nodes in the blockchain. Returns details about the nodes of a specific provider / owner. Returns details about nodes that are on a certain shard and also returns a list of nodes that have a certain status / type' })
 	@ApiResponse({
 		status: 200,
 		description: 'The nodes available on the blockchain',
@@ -56,6 +57,7 @@ export class NodeController {
 	}
 
 	@Get("/nodes/versions")
+	@ApiOperation({ summary: 'Node version details', description: 'Returns details about the current version of the nodes' })
 	@ApiResponse({
 		status: 200,
 		description: 'The node versions available on the blockchain',
@@ -65,9 +67,11 @@ export class NodeController {
 	}
 
 	@Get("/nodes/count")
+	@ApiOperation({ summary: 'Total number of nodes', description: 'Returns the total number of nodes in the blockchain, it can also return the total number of nodes that have a certain status / type but also the total number of nodes on certain shards' })
 	@ApiResponse({
 		status: 200,
 		description: 'The number of nodes available on the blockchain',
+		type: Number,
 	})
 	@ApiQuery({ name: 'search', description: 'Search by name, bls or version', required: false })
 	@ApiQuery({ name: 'online', description: 'Whether node is online or not', required: false, type: 'boolean' })
@@ -115,6 +119,7 @@ export class NodeController {
 	}
 
 	@Get('/nodes/:bls')
+	@ApiOperation({ summary: 'Node details', description: 'Returns details about a specific node of a given bls address' })
 	@ApiResponse({
 		status: 200,
 		description: 'Node details',
