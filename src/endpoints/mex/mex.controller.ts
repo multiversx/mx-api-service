@@ -1,5 +1,5 @@
 import { Controller, Get, HttpException, HttpStatus, Param } from "@nestjs/common";
-import { ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { MexWeek } from "./entities/mex.week";
 import { MexService } from "./mex.service";
@@ -10,6 +10,7 @@ export class MexController {
   constructor(private readonly mexService: MexService) { }
 
   @Get('/mex/:address')
+  @ApiOperation({ summary: 'Mex account details', description: 'Returns mex information details for a given address' })
   @ApiResponse({
     status: 200,
     description: 'Mex details for address',
