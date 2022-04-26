@@ -1,5 +1,5 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from '@nestjs/common';
-import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Tag } from './entities/tag';
 import { TagService } from './tag.service';
 
@@ -12,6 +12,7 @@ export class TagController {
   ) { }
 
   @Get("/tags")
+  @ApiOperation({ summary: 'Tags details', description: 'Return all nft tags informations available on blockchain with nft tag property in base64' })
   @ApiResponse({
     status: 200,
     description: 'The nft tags available',
@@ -28,6 +29,7 @@ export class TagController {
   }
 
   @Get("/tags/:tag")
+  @ApiOperation({ summary: 'Tag details', description: 'Return nft tag informations for a given nft tag in base64' })
   @ApiResponse({
     status: 200,
     description: 'The details of a given nft tag',
