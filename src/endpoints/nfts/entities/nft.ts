@@ -32,7 +32,7 @@ export class Nft {
   @ApiProperty({ type: Number, nullable: true })
   royalties: number | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ isArray: true })
   uris: string[] = [];
 
   @ApiProperty({ type: String })
@@ -47,7 +47,7 @@ export class Nft {
   @ApiProperty({ type: String })
   thumbnailUrl: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ isArray: true })
   tags: string[] = [];
 
   @ApiProperty({ type: NftMetadata })

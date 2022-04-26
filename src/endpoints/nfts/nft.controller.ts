@@ -1,4 +1,16 @@
-import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { NftSupply } from './entities/nft.supply';
+import {
+  BadRequestException,
+  Controller,
+  DefaultValuePipe,
+  Get,
+  HttpException,
+  HttpStatus,
+  NotFoundException,
+  Param,
+  ParseIntPipe,
+  Query,
+} from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
@@ -17,6 +29,10 @@ export class NftController {
   ) { }
 
   @Get("/nfts")
+  @ApiOperation({
+    summary: 'Non-Fungible and Semi-Fungible tokens details',
+    description: 'Returns a list of Non-Fungible and Semi-Fungible tokens available on blockchain',
+  })
   @ApiResponse({
     status: 200,
     description: 'List non-fungible and semi-fungible tokens',
@@ -59,9 +75,14 @@ export class NftController {
   }
 
   @Get("/nfts/count")
+  @ApiOperation({
+    summary: 'Total number of Non-Fungible and Semi-Fungible tokens',
+    description: 'Returns the total number of Non-Fungible and Semi-Fungible tokens and returns the number of tokens that are whitelisted in storage and also returns the total number of tokens of a certain type NonFungibleESDT/SemiFungibleESDT/MetaESDT',
+  })
   @ApiResponse({
     status: 200,
     description: 'The number of non-fungible and semi-fungible tokens available on the blockchain',
+    type: Number,
   })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
@@ -103,6 +124,10 @@ export class NftController {
   }
 
   @Get('/nfts/:identifier')
+  @ApiOperation({
+    summary: 'Non-Fungible or Semi-Fungible token details',
+    description: 'Returns the details of an Non-Fungible or Semi-Fungible token for a given identifier',
+  })
   @ApiResponse({
     status: 200,
     description: 'Non-fungible / semi-fungible token details',
@@ -122,10 +147,14 @@ export class NftController {
   }
 
   @Get('/nfts/:identifier/supply')
+  @ApiOperation({
+    summary: 'Non-Fungible or Semi-Fungible token supply',
+    description: 'Returns Non-Fungible or Semi-Fungible token supply details',
+  })
   @ApiResponse({
     status: 200,
     description: 'Non-fungible / semi-fungible token supply',
-    type: Nft,
+    type: NftSupply,
   })
   @ApiResponse({
     status: 404,
@@ -183,6 +212,10 @@ export class NftController {
   }
 
   @Get('/nfts/:identifier/accounts')
+  @ApiOperation({
+    summary: 'Non-Fungible or Semi-Fungible token owners',
+    description: 'Returns a list of addresses that hold a specific Non-Fungible or Semi-Fungible token',
+  })
   @ApiResponse({
     status: 200,
     description: 'Non-fungible / semi-fungible token owners',
@@ -192,8 +225,8 @@ export class NftController {
     status: 404,
     description: 'Token not found',
   })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({name: 'from', description: 'Number of items to skip for the result set', required: false})
+  @ApiQuery({name: 'size', description: 'Number of items to retrieve', required: false})
   async getNftAccounts(
     @Param('identifier') identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -208,6 +241,10 @@ export class NftController {
   }
 
   @Get('/nfts/:identifier/accounts/count')
+  @ApiOperation({
+    summary: 'Non-Fungible or Semi-Fungible token accounts count',
+    description: 'Returns total number of accounts that hold a specific Non-Fungible or Semi-Fungible token',
+  })
   @ApiResponse({
     status: 200,
     description: 'Non-fungible / semi-fungible token owners count',
@@ -218,7 +255,6 @@ export class NftController {
     if (ownersCount === undefined) {
       throw new HttpException('NFT not found', HttpStatus.NOT_FOUND);
     }
-
     return ownersCount;
   }
 }
