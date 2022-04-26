@@ -4,34 +4,34 @@ import { NftType } from "../../nfts/entities/nft.type";
 import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles";
 
 export class NftCollection {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   collection: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ enum: NftType })
   type: NftType = NftType.NonFungibleESDT;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   name: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   ticker: string = '';
 
   @ApiProperty({ type: String })
   owner: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   timestamp: number = 0;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean })
   canFreeze: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean })
   canWipe: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean })
   canPause: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean })
   canTransferNftCreateRole: boolean = false;
 
   @ApiProperty({ type: Number })

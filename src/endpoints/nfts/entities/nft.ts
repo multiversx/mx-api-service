@@ -5,28 +5,28 @@ import { NftMetadata } from "./nft.metadata";
 import { NftType } from "./nft.type";
 
 export class Nft {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   identifier: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   collection: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   timestamp?: number = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   attributes: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   nonce: number = 0;
 
   @ApiProperty({ enum: NftType })
   type: NftType = NftType.NonFungibleESDT;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   name: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   creator: string = '';
 
   @ApiProperty({ type: Number, nullable: true })
@@ -35,16 +35,16 @@ export class Nft {
   @ApiProperty()
   uris: string[] = [];
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   url: string = '';
 
   @ApiProperty({ type: NftMedia })
   media: NftMedia[] | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean })
   isWhitelistedStorage: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   thumbnailUrl: string = '';
 
   @ApiProperty()
@@ -68,8 +68,8 @@ export class Nft {
   @ApiProperty()
   assets?: TokenAssets;
 
-  @ApiProperty()
-  ticker?: string;
+  @ApiProperty({ type: String })
+  ticker?: string = '';
 
   @ApiProperty({ type: String, nullable: true })
   scamInfo: any | undefined = undefined;
