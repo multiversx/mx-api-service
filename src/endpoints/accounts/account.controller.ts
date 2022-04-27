@@ -845,6 +845,12 @@ export class AccountController {
     return this.accountService.getAccountContractsCount(address);
   }
 
+  @Get("/accounts/:address/contracts/c")
+  @ApiExcludeEndpoint()
+  getAccountContractsCountAlternative(@Param('address', ParseAddressPipe) address: string): Promise<number> {
+    return this.accountService.getAccountContractsCount(address);
+  }
+
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @Get("/accounts/:address/sc-results")
