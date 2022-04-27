@@ -8,8 +8,6 @@ import { Transaction } from "src/endpoints/transactions/entities/transaction";
 export class PluginService {
   async processTransaction(_: Transaction): Promise<void> { }
 
-  async handleEveryMinuteCron(): Promise<void> { }
-
   async processTransactionSend(_: any): Promise<any> { }
 
   async processNft(_: Nft): Promise<void> { }
