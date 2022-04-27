@@ -89,6 +89,7 @@
     "crypto-js": "^4.1.1",
     "dd-trace": "^1.6.0",
     "fluent-ffmpeg": "^2.1.2",
+    "graphql-request": "^4.2.0",
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.7.3",

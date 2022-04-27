@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
+import { gql } from "graphql-request";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { ApiService } from "src/common/network/api.service";
+import { GraphQlService } from "src/common/graphql/graphql.service";
 import { Constants } from "src/utils/constants";
 import { TransactionMetadata } from "../../entities/transaction.metadata";
 import { TransactionMetadataTransfer } from "../../entities/transaction.metadata.transfer";
@@ -12,8 +12,7 @@ import { MexSettings } from "./entities/mex.settings";
 export class MexSettingsService {
   constructor(
     private readonly cachingService: CachingService,
-    private readonly configService: ConfigService,
-    private readonly apiService: ApiService
+    private readonly graphQlService: GraphQlService,
   ) { }
 
   getTransfers(metadata: TransactionMetadata): TransactionMetadataTransfer[] | undefined {
@@ -73,15 +72,57 @@ export class MexSettingsService {
   }
 
   public async getSettingsRaw(): Promise<MexSettings | null> {
-    const params = {
-      "variables": {
-        "offset": 0,
-        "limit": 500,
-      },
-      "query": "query ($offset: Int, $limit: Int) {\r\n  pairs(offset: $offset, limit: $limit) {\r\n    state\r\n     address\r\n    firstToken {\r\n      name\r\n      identifier\r\n      decimals\r\n      __typename\r\n    }\r\n    secondToken {\r\n      name\r\n      identifier\r\n      decimals\r\n      __typename\r\n    } }\r\n  proxy {\r\n    address\r\n  }\r\n  farms {\r\n    state\r\n    address\r\n  }\r\n  wrappingInfo {\r\n    address\r\n    shard\r\n  }\r\n  distribution {\r\n    address\r\n  }\r\n  lockedAssetFactory {\r\n    address\r\n  }\r\n  stakingFarms {\r\n    state\r\n    address\r\n  }\r\n  stakingProxies {\r\n    address\r\n  }\r\n}\r\n",
+    const variables = {
+      offset: 0,
+      limit: 500,
     };
 
-    const result = await this.apiCall(params);
+    const query = gql`
+    query ($offset: Int, $limit: Int) {
+      pairs(offset: $offset, limit: $limit) {
+        state
+        address
+        firstToken {
+          name
+          identifier
+          decimals
+          __typename
+        }
+        secondToken {
+          name
+          identifier
+          decimals
+          __typename
+        } 
+      }
+      proxy {
+        address
+      }
+      farms {
+        state
+        address
+      }
+      wrappingInfo {
+        address
+        shard
+      }
+      distribution {
+        address
+      }
+      lockedAssetFactory {
+        address
+      }
+      stakingFarms {
+        state
+        address
+      }
+      stakingProxies {
+        address
+      }
+    }
+    `;
+
+    const result = await this.graphQlService.getData(query, variables);
     if (!result) {
       return null;
     }
@@ -110,28 +151,7 @@ export class MexSettingsService {
     return settings;
   }
 
-  getMicroServiceUrlMandatory(): string {
-    const microServiceUrl = this.getMicroServiceUrl();
-    if (!microServiceUrl) {
-      throw new Error('No transaction-action.mex.microServiceUrl present');
-    }
-
-    return microServiceUrl;
-  }
-
   getWegldId(): string | undefined {
     return this.settings?.wegldId;
-  }
-
-  getMicroServiceUrl(): string | undefined {
-    return this.configService.get<string>('transaction-action.mex.microServiceUrl') ?? this.configService.get<string>('plugins.transaction-action.mex.microServiceUrl');
-  }
-
-  private async apiCall(params: any): Promise<any> {
-    const microServiceUrl = this.getMicroServiceUrlMandatory();
-
-    const result = await this.apiService.post(microServiceUrl, params);
-
-    return result.data.data;
   }
 }
