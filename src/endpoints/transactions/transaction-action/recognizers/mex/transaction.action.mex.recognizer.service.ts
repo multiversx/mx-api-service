@@ -8,6 +8,7 @@ import { MexWrapActionRecognizerService } from "./mex.wrap.action.recognizer.ser
 import { MexDistributionActionRecognizerService } from "./mex.distribution.action.recognizer.service";
 import { MexLockedAssetActionRecognizerService } from "./mex.locked.asset.action.recognizer.service";
 import { MexSettingsService } from "./mex.settings.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Injectable()
 export class TransactionActionMexRecognizerService implements TransactionActionRecognizerInterface {
@@ -18,10 +19,11 @@ export class TransactionActionMexRecognizerService implements TransactionActionR
     private readonly distributionRecognizer: MexDistributionActionRecognizerService,
     private readonly lockedAssetRecognizer: MexLockedAssetActionRecognizerService,
     private readonly mexSettingsService: MexSettingsService,
+    private readonly apiConfigService: ApiConfigService
   ) { }
 
   async isActive(): Promise<boolean> {
-    const microServiceUrl = this.mexSettingsService.getMicroServiceUrl();
+    const microServiceUrl = this.apiConfigService.getMicroServiceUrl();
     if (!microServiceUrl) {
       return false;
     }
