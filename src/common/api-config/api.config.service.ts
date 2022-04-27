@@ -588,12 +588,12 @@ export class ApiConfigService {
     return this.configService.get<number>('nftProcess.maxRetries') ?? 3;
   }
 
-  getMicroServiceUrl(): string | undefined {
+  getMaiarExchangeUrl(): string | undefined {
     return this.configService.get<string>('transaction-action.mex.microServiceUrl') ?? this.configService.get<string>('plugins.transaction-action.mex.microServiceUrl');
   }
 
-  getMicroServiceUrlMandatory(): string {
-    const microServiceUrl = this.getMicroServiceUrl();
+  getMaiarExchangeUrlMandatory(): string {
+    const microServiceUrl = this.getMaiarExchangeUrl();
     if (!microServiceUrl) {
       throw new Error('No transaction-action.mex.microServiceUrl present');
     }
