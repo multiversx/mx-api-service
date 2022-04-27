@@ -219,4 +219,18 @@ export class CacheInfo {
       ttl: Constants.oneMinute() * 10,
     };
   }
+
+  static EsdtSupply(identifier: string): CacheInfo {
+    return {
+      key: `esdtSupply:${identifier}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
+  static EsdtPrice(identifier: string): CacheInfo {
+    return {
+      key: `esdtPrice:${identifier}`,
+      ttl: Constants.oneSecond() * 6,
+    };
+  }
 }

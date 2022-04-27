@@ -281,7 +281,7 @@ export class EsdtService {
     return esdtLockedAccounts.sumBigInt(x => x.balance).toString();
   }
 
-  async getTokenSupply(identifier: string): Promise<EsdtSupply> {
+  private async getTokenSupplyRaw(identifier: string): Promise<EsdtSupply> {
     const { supply, minted, burned, initialMinted } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
 
     const isCollectionOrToken = identifier.split('-').length === 2;
@@ -309,5 +309,17 @@ export class EsdtService {
       burned,
       initialMinted,
     };
+  }
+
+  async getTokenSupply(identifier: string): Promise<EsdtSupply> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.EsdtSupply(identifier).key,
+      async () => await this.getTokenSupplyRaw(identifier),
+      CacheInfo.EsdtSupply(identifier).ttl
+    );
+  }
+
+  private async getTokenPriceRaw(identifier: string): Promise<number> {
+
   }
 }

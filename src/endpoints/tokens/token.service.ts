@@ -74,6 +74,13 @@ export class TokenService {
 
     for (const token of tokens) {
       this.applyTickerFromAssets(token);
+
+      if (token.assets) {
+        // breanded token
+        await this.applySupply(token);
+
+        token.marketCap = token.price ? Number(token.supply) * token.price : 0;
+      }
     }
 
     await this.batchProcessTokens(tokens);

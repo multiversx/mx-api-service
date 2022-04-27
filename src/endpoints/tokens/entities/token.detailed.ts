@@ -25,11 +25,5 @@ export class TokenDetailed extends Token {
   canWipe: boolean = false;
 
   @ApiProperty()
-  supply: string | undefined = undefined;
-
-  @ApiProperty()
-  circulatingSupply: string | undefined = undefined;
-
-  @ApiProperty()
   roles: TokenRoles[] | undefined = undefined;
 }

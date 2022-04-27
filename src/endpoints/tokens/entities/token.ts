@@ -37,4 +37,16 @@ export class Token {
 
   @ApiProperty()
   accounts: number | undefined = undefined;
+
+  @ApiProperty()
+  supply: string | undefined = undefined;
+
+  @ApiProperty()
+  circulatingSupply: string | undefined = undefined;
+
+  @ApiProperty()
+  price: number | undefined = undefined;
+
+  @ApiProperty()
+  marketCap: number | undefined = undefined;
 }
