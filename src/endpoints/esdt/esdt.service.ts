@@ -6,6 +6,7 @@ import { QueryConditionOptions } from "src/common/elastic/entities/query.conditi
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { ApiService } from "src/common/network/api.service";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { AddressUtils } from "src/utils/address.utils";
@@ -34,6 +35,7 @@ export class EsdtService {
     private readonly elasticService: ElasticService,
     @Inject(forwardRef(() => TokenAssetService))
     private readonly tokenAssetService: TokenAssetService,
+    private readonly apiService: ApiService,
   ) {
     this.logger = new Logger(EsdtService.name);
   }
@@ -320,6 +322,25 @@ export class EsdtService {
   }
 
   private async getTokenPriceRaw(identifier: string): Promise<number> {
+    const priceFeedUrl = this.apiConfigService.getDataUrl();
 
+    try {
+      const tokenPrice = await this.apiService.get(`${priceFeedUrl}/latest/quotes/${identifier}/price`);
+
+      return tokenPrice;
+    } catch (error) {
+      this.logger.log(`Unexpected error when trying to get price for esdt '${identifier}'`);
+      this.logger.error(error);
+
+      return 0; //assuming that token does not have any price set
+    }
+  }
+
+  async getTokenPrice(identifier: string): Promise<number> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.EsdtPrice(identifier).key,
+      async () => await this.getTokenPriceRaw(identifier),
+      CacheInfo.EsdtPrice(identifier).ttl
+    );
   }
 }

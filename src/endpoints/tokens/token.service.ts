@@ -58,6 +58,10 @@ export class TokenService {
 
     await this.applySupply(token);
 
+    token.price = await this.esdtService.getTokenPrice(token.identifier);
+
+    token.marketCap = token.price ? Number(token.supply) * token.price : 0;
+
     await this.processToken(token);
 
     token.roles = await this.getTokenRoles(identifier);
@@ -70,18 +74,22 @@ export class TokenService {
 
     let tokens = await this.getFilteredTokens(filter);
 
-    tokens = tokens.slice(from, from + size);
-
     for (const token of tokens) {
       this.applyTickerFromAssets(token);
 
       if (token.assets) {
-        // breanded token
+        // branded token
         await this.applySupply(token);
+
+        token.price = await this.esdtService.getTokenPrice(token.identifier);
 
         token.marketCap = token.price ? Number(token.supply) * token.price : 0;
       }
     }
+
+    tokens = tokens.sortedDescending(token => token.marketCap ?? 0);
+
+    tokens = tokens.slice(from, from + size);
 
     await this.batchProcessTokens(tokens);
 
