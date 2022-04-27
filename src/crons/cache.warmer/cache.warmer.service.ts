@@ -22,6 +22,8 @@ import { PluginService } from "src/common/plugins/plugin.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { TokenService } from "src/endpoints/tokens/token.service";
 import { MexSettingsService } from "src/endpoints/mex.analytics/mex.settings.service";
+import { MexEconomicsService } from "src/endpoints/mex.analytics/mex.economics.service";
+import { MexPairsService } from "src/endpoints/mex.analytics/mex.pairs.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -40,7 +42,8 @@ export class CacheWarmerService {
     private readonly gatewayService: GatewayService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly tokenAssetService: TokenAssetService,
-    private readonly pluginService: PluginService,
+    private readonly mexEconomicsService: MexEconomicsService,
+    private readonly mexPairsService: MexPairsService,
     private readonly tokenService: TokenService,
     private readonly mexSettingsService: MexSettingsService,
   ) {
@@ -205,8 +208,14 @@ export class CacheWarmerService {
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
-  async handleCronPlugins() {
-    await this.pluginService.handleEveryMinuteCron();
+  async handleMexInvalidations() {
+    await Locker.lock('Refreshing mex pairs', async () => {
+      await this.mexPairsService.refreshMexPairs();
+    }, true);
+
+    await Locker.lock('Refreshing mex economics', async () => {
+      await this.mexEconomicsService.refreshMexEconomics();
+    }, true);
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
