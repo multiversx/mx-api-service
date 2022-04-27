@@ -47,4 +47,20 @@ export class DataApiService {
       return undefined;
     }
   }
+
+  async getEsdtPriceLatest(identifier: string): Promise<number | undefined> {
+    if (!this.dataUrl) {
+      return undefined;
+    }
+
+    try {
+      const { data } = await this.apiService.get(`${this.dataUrl}/latest/quotes/${identifier}/${DataQuoteType.price}`);
+
+      return data;
+    } catch (error) {
+      this.logger.error(`An unhandled error occurred when fetching price for esdt '${identifier}'`);
+      this.logger.error(error);
+      return undefined;
+    }
+  }
 }

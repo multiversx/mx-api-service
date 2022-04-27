@@ -5,8 +5,8 @@ import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { QueryType } from "src/common/elastic/entities/query.type";
+import { DataApiService } from "src/common/external/data.api.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
-import { ApiService } from "src/common/network/api.service";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { AddressUtils } from "src/utils/address.utils";
@@ -35,7 +35,7 @@ export class EsdtService {
     private readonly elasticService: ElasticService,
     @Inject(forwardRef(() => TokenAssetService))
     private readonly tokenAssetService: TokenAssetService,
-    private readonly apiService: ApiService,
+    private readonly dataApiService: DataApiService,
   ) {
     this.logger = new Logger(EsdtService.name);
   }
@@ -322,18 +322,9 @@ export class EsdtService {
   }
 
   private async getTokenPriceRaw(identifier: string): Promise<number> {
-    const priceFeedUrl = this.apiConfigService.getDataUrl();
+    const tokenPrice = await this.dataApiService.getEsdtPriceLatest(identifier);
 
-    try {
-      const tokenPrice = await this.apiService.get(`${priceFeedUrl}/latest/quotes/${identifier}/price`);
-
-      return tokenPrice;
-    } catch (error) {
-      this.logger.log(`Unexpected error when trying to get price for esdt '${identifier}'`);
-      this.logger.error(error);
-
-      return 0; //assuming that token does not have any price set
-    }
+    return tokenPrice ?? 0;
   }
 
   async getTokenPrice(identifier: string): Promise<number> {
