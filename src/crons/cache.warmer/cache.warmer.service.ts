@@ -18,7 +18,6 @@ import { DataQuoteType } from "src/common/external/entities/data.quote.type";
 import { EsdtService } from "src/endpoints/esdt/esdt.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
-import { PluginService } from "src/common/plugins/plugin.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { TokenService } from "src/endpoints/tokens/token.service";
 import { MexSettingsService } from "src/endpoints/mex.analytics/mex.settings.service";
