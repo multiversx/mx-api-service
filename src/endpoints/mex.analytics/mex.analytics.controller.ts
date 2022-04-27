@@ -1,7 +1,7 @@
 import { Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { MexSettings } from "src/endpoints/transactions/transaction-action/recognizers/mex/entities/mex.settings";
 import { MexPair } from "./entities/mex.pair";
+import { MexSettings } from "./entities/mex.settings";
 import { MexEconomicsService } from "./mex.economics.service";
 import { MexPairsService } from "./mex.pairs.service";
 import { MexSettingsService } from "./mex.settings.service";
