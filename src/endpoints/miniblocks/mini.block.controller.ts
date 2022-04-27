@@ -12,7 +12,7 @@ export class MiniBlockController {
   @Get("/miniblocks/:miniBlockHash")
   @ApiOperation({
     summary: 'Miniblock details',
-    description: 'Returns miniblock informations for a given miniblock hash',
+    description: 'Returns miniblock details for a given miniblock hash',
   })
   @ApiResponse({
     status: 200,

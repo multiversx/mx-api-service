@@ -92,7 +92,7 @@ export class CollectionController {
   }
 
   @Get("/collections/:collection/nfts")
-  @ApiOperation({ summary: 'Nfts details of a collection', description: 'Returns details about nfts that belong to a collection, also returns details about supply, owner and if the nft is whitelisted in storage as well as token details of a certain type from a specific collection' })
+  @ApiOperation({ summary: 'Non-Fungilbe/Semi-Fungible tokens details in a collection', description: 'Returns details about Non-Fungilbe/Semi-Fungible tokens that belong to a collection, also returns details about supply, owner and if the nft is whitelisted in storage as well as token details of a certain type from a specific collection' })
   @ApiResponse({
     status: 200,
     description: 'List non-fungible and semi-fungible tokens',
@@ -134,7 +134,7 @@ export class CollectionController {
   }
 
   @Get("/collections/:collection/nfts/count")
-  @ApiOperation({ summary: 'Total number of nfts from a collection', description: 'Return total number of Non-Fungible and Semi-Fungilbe tokens for a given collection.' })
+  @ApiOperation({ summary: 'Total number of Non-Fungilbe/Semi-Fungible tokens from a collection', description: 'Return total number of Non-Fungible and Semi-Fungilbe tokens for a given collection.' })
   @ApiResponse({
     status: 200,
     description: 'The number of non-fungible and semi-fungible tokens from a collection',

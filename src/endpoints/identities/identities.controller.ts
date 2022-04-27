@@ -10,7 +10,7 @@ export class IdentitiesController {
   constructor(private readonly identitiesService: IdentitiesService) { }
 
   @Get("/identities")
-  @ApiOperation({ summary: 'Identities details', description: 'Returns providers information details as well a specific provider for a given identity ' })
+  @ApiOperation({ summary: 'Identities details', description: 'Returns providers details as well as details about a specific provider for a given identity ' })
   @ApiResponse({
     status: 200,
     description: 'The identities available on the blockchain',
@@ -25,7 +25,7 @@ export class IdentitiesController {
   }
 
   @Get('/identities/:identifier')
-  @ApiOperation({ summary: 'Identity details', description: 'Returns provider information details for a given identifier' })
+  @ApiOperation({ summary: 'Identity details', description: 'Returns provider details for a given identifier' })
   @ApiResponse({
     status: 200,
     description: 'Identity details',
