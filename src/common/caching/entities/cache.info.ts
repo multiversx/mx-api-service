@@ -223,7 +223,7 @@ export class CacheInfo {
   static EsdtSupply(identifier: string): CacheInfo {
     return {
       key: `esdtSupply:${identifier}`,
-      ttl: Constants.oneDay(),
+      ttl: Constants.oneHour(),
     };
   }
 

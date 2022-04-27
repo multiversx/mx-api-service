@@ -98,6 +98,9 @@ export class CacheWarmerService {
         if (asset.lockedAccounts) {
           const lockedSupply = await this.esdtService.getLockedSupplyRaw(identifier);
           await this.invalidateKey(CacheInfo.TokenLockedSupply(identifier).key, lockedSupply, CacheInfo.TokenLockedSupply(identifier).ttl);
+
+          const esdtSupply = await this.esdtService.getTokenSupplyRaw(identifier);
+          await this.invalidateKey(CacheInfo.EsdtSupply(identifier).key, esdtSupply, CacheInfo.EsdtSupply(identifier).ttl);
         }
       }
     }, true);

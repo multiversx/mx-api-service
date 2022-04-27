@@ -283,7 +283,7 @@ export class EsdtService {
     return esdtLockedAccounts.sumBigInt(x => x.balance).toString();
   }
 
-  private async getTokenSupplyRaw(identifier: string): Promise<EsdtSupply> {
+  async getTokenSupplyRaw(identifier: string): Promise<EsdtSupply> {
     const { supply, minted, burned, initialMinted } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
 
     const isCollectionOrToken = identifier.split('-').length === 2;
