@@ -9,6 +9,7 @@ import { DelegationModule } from "./delegation/delegation.module";
 import { EsdtModule } from "./esdt/esdt.module";
 import { IdentitiesModule } from "./identities/identities.module";
 import { KeysModule } from "./keys/keys.module";
+import { MexAnalyticsModule } from "./mex.analytics/mex.analytics.module";
 import { MexModule } from "./mex/mex.module";
 import { MiniBlockModule } from "./miniblocks/miniblock.module";
 import { NetworkModule } from "./network/network.module";
@@ -61,12 +62,13 @@ import { WebsocketModule } from "./websocket/websocket.module";
     TransferModule,
     TransactionActionModule,
     WebsocketModule,
+    MexAnalyticsModule,
   ],
   exports: [
     AccountModule, CollectionModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
     MexModule, MiniBlockModule, NetworkModule, NftModule, TagModule, NodeModule, ProviderModule,
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
-    WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, TransactionActionModule, WebsocketModule,
+    WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, TransactionActionModule, WebsocketModule, MexAnalyticsModule,
   ],
 })
 export class EndpointsServicesModule { }
