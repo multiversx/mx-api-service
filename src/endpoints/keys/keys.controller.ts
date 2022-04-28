@@ -10,10 +10,12 @@ export class KeysController {
   constructor(private readonly keysService: KeysService) { }
 
   @Get("/keys/:key/unbond-period")
-  @ApiOperation({ summary: 'Unbonding details', description: 'Returns unbonding period remaining for a given bls key' })
+  @ApiOperation({
+    summary: 'Unbonding details',
+    description: 'Returns remaining unbonding period for a given bls key',
+  })
   @ApiResponse({
     status: 200,
-    description: 'The unbonding period remaining for the given BLS key',
     type: KeyUnbondPeriod,
   })
   @ApiQuery({ name: 'key', description: 'The BLS key of the node', required: true })
