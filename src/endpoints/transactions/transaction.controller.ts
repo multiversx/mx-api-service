@@ -41,25 +41,24 @@ export class TransactionController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Transactions details',
-    type: Transaction,
     isArray: true,
+    type: Transaction,
   })
   @ApiQuery({name: 'sender', description: 'Address of the transaction sender', required: false})
   @ApiQuery({name: 'receiver', description: 'Address of the transaction receiver', required: false})
   @ApiQuery({name: 'token', description: 'Identifier of the token', required: false})
   @ApiQuery({name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false})
-  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
-  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
-  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
-  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false })
-  @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
-  @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
-  @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false})
+  @ApiQuery({name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false})
+  @ApiQuery({name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false})
+  @ApiQuery({name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false})
+  @ApiQuery({name: 'search', description: 'Search in data object', required: false})
+  @ApiQuery({name: 'function', description: 'Filter transactions by function name', required: false})
+  @ApiQuery({name: 'before', description: 'Before timestamp', required: false})
+  @ApiQuery({name: 'after', description: 'After timestamp', required: false})
+  @ApiQuery({name: 'order', description: 'Sort order (asc/desc)', required: false})
+  @ApiQuery({name: 'from', description: 'Number of items to skip for the result set', required: false})
+  @ApiQuery({name: 'size', description: 'Number of items to retrieve', required: false})
   @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return results for transactions', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
@@ -108,10 +107,12 @@ export class TransactionController {
   }
 
   @Get("/transactions/count")
-  @ApiOperation({summary: "Total transactions number", description: 'Return the total number of transactions'})
+  @ApiOperation({
+    summary: "Transactions count",
+    description: 'Returns the total number of transactions',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Transactions count',
     type: Number,
   })
   @ApiQuery({name: 'sender', description: 'Address of the transaction sender', required: false})
@@ -189,18 +190,19 @@ export class TransactionController {
   }
 
   @Get('/transactions/:txHash')
-  @ApiOperation({summary: 'Transaction details', description: 'Return transaction details of a given transaction hash'})
+  @ApiOperation({
+    summary: 'Transaction details',
+    description: 'Return transaction details for a given transaction hash',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Transaction details',
     type: TransactionDetailed,
-    isArray: true,
   })
   @ApiResponse({
     status: 404,
     description: 'Transaction not found',
   })
-  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
+  @ApiQuery({name: 'fields', description: 'List of fields to filter by', required: false})
   async getTransaction(
     @Param('txHash', ParseTransactionHashPipe) txHash: string,
     @Query('fields', ParseArrayPipe) fields?: string[],
@@ -214,10 +216,12 @@ export class TransactionController {
   }
 
   @Post('/transactions')
-  @ApiOperation({summary: 'Create a transaction', description: ''})
+  @ApiOperation({
+    summary: 'Create transaction',
+    description: '',
+  })
   @ApiResponse({
     status: 201,
-    description: 'Create a transaction',
     type: TransactionSendResult,
   })
   async createTransaction(@Body() transaction: TransactionCreate): Promise<TransactionSendResult> {
@@ -243,10 +247,11 @@ export class TransactionController {
   }
 
   @Post('/transactions/decode')
-  @ApiOperation({summary: 'Decode transaction'})
+  @ApiOperation({
+    summary: 'Decode transaction',
+  })
   @ApiResponse({
     status: 201,
-    description: 'Decode a transaction',
     type: TransactionDecodeDto,
   })
   async decodeTransaction(@Body() transaction: TransactionDecodeDto): Promise<TransactionDecodeDto> {
