@@ -3,7 +3,6 @@ import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ProviderService } from "./provider.service";
 import { Provider } from "./entities/provider";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
-import { Node } from "../nodes/entities/node";
 
 @Controller()
 @ApiTags('providers')
@@ -18,7 +17,7 @@ export class ProviderController {
   @ApiResponse({
     status: 200,
     isArray: true,
-    type: Node,
+    type: Provider,
   })
   @ApiQuery({ name: 'identity', description: 'Search by identity', required: false })
   async getProviders(
