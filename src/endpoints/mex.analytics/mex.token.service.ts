@@ -68,14 +68,24 @@ export class MexTokenService {
       return [];
     }
 
-    return result.pairs.map((pair: any) => this.getMexToken(pair));
+    const mexTokens: MexToken[] = [];
+    for (const pair of result.pairs) {
+      const mexToken = this.getMexToken(pair);
+      if (!mexToken) {
+        continue;
+      }
+
+      mexTokens.push(mexToken);
+    }
+
+    return mexTokens;
   }
 
-  private getMexToken(pair: any): MexToken {
+  private getMexToken(pair: any): MexToken | null {
     const firstTokenSymbol = pair.firstToken.identifier.split('-')[0];
     const secondTokenSymbol = pair.secondToken.identifier.split('-')[0];
 
-    if ((firstTokenSymbol === 'WEGLD' && secondTokenSymbol === 'USDC') || secondTokenSymbol === 'WEGLD') {
+    if (secondTokenSymbol === 'WEGLD') {
       return {
         token: pair.firstToken.identifier,
         name: pair.firstToken.name,
@@ -84,11 +94,15 @@ export class MexTokenService {
       };
     }
 
-    return {
-      token: pair.secondToken.identifier,
-      name: pair.secondToken.name,
-      priceUsd: new BigNumber(pair.secondTokenPriceUSD).toFixed(),
-      priceEgld: new BigNumber(pair.secondTokenPrice).toFixed(),
-    };
+    if (firstTokenSymbol === 'WEGLD') {
+      return {
+        token: pair.secondToken.identifier,
+        name: pair.secondToken.name,
+        priceUsd: new BigNumber(pair.secondTokenPriceUSD).toFixed(),
+        priceEgld: new BigNumber(pair.secondTokenPrice).toFixed(),
+      };
+    }
+
+    return null;
   }
 }
