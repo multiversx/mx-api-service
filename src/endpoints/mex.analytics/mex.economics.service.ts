@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { CachingService } from "src/common/caching/caching.service";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { GraphQlService } from "src/common/graphql/graphql.service";
 import { Constants } from "src/utils/constants";
 import { MexSettingsService } from "./mex.settings.service";
@@ -15,14 +16,14 @@ export class MexEconomicsService {
 
   async refreshMexEconomics() {
     const economics = await this.getMexEconomicsRaw();
-    await this.cachingService.setCacheRemote('mexEconomics', economics, Constants.oneMinute() * 10);
+    await this.cachingService.setCacheRemote(CacheInfo.MexEconomics.key, economics, CacheInfo.MexEconomics.ttl);
   }
 
   async getMexEconomics() {
     return await this.cachingService.getOrSetCache(
-      'mexEconomics',
+      CacheInfo.MexEconomics.key,
       async () => await this.getMexEconomicsRaw(),
-      Constants.oneMinute() * 10,
+      CacheInfo.MexEconomics.ttl,
     );
   }
 
