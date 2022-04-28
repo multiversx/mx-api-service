@@ -224,4 +224,9 @@ export class CacheInfo {
     key: "mexEconomics",
     ttl: Constants.oneMinute() * 10,
   };
+
+  static MexPairs: CacheInfo = {
+    key: "mexPairs",
+    ttl: Constants.oneMinute() * 10,
+  };
 }

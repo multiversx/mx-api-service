@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { CachingService } from "src/common/caching/caching.service";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { GraphQlService } from "src/common/graphql/graphql.service";
 import { Constants } from "src/utils/constants";
 import { MexPair } from "./entities/mex.pair";
@@ -16,7 +17,7 @@ export class MexPairsService {
 
   async refreshMexPairs(): Promise<void> {
     const pairs = await this.getAllMexPairsRaw();
-    await this.cachingService.setCacheRemote('mexPairs', pairs, Constants.oneMinute() * 10);
+    await this.cachingService.setCacheRemote(CacheInfo.MexPairs.key, pairs, CacheInfo.MexPairs.ttl);
   }
 
   async getMexPairs(from: number, size: number): Promise<any> {
@@ -32,9 +33,9 @@ export class MexPairsService {
 
   async getAllMexPairs(): Promise<MexPair[]> {
     return await this.cachingService.getOrSetCache(
-      'mexPairs',
+      CacheInfo.MexPairs.key,
       async () => await this.getAllMexPairsRaw(),
-      Constants.oneMinute() * 10,
+      CacheInfo.MexPairs.ttl,
       Constants.oneSecond() * 30
     );
   }
