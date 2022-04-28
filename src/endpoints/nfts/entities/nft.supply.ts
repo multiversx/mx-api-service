@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 export class NftSupply {
-    @ApiProperty()
+    @ApiProperty({ type: String, default: 0 })
     supply: string = '0';
 }

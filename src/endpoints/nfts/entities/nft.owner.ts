@@ -1,9 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class NftOwner {
-  @ApiProperty()
+  @ApiProperty({type: String})
   address: string = '';
 
-  @ApiProperty()
+  @ApiProperty({type: String, default: 0})
   balance: string = '';
 }
