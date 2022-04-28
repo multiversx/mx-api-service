@@ -1,41 +1,41 @@
 import { ApiProperty } from "@nestjs/swagger";
 export class DappConfig {
-    @ApiProperty()
+    @ApiProperty({ type: String })
     id: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     name: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     egldLabel: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     decimals: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     egldDenomination: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     gasPerDataByte: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     apiTimeout: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     walletConnectDeepLink: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     walletConnectBridgeAddresses: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     walletAddress: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     apiAddress: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     explorerAddress: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     chainId: string = '';
 }

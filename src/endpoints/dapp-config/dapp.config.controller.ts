@@ -11,10 +11,12 @@ export class DappConfigController {
   ) { }
 
   @Get("/dapp/config")
-  @ApiOperation({ summary: 'Dapp configuration network', description: 'Returns Dapp configuration for a specified network' })
+  @ApiOperation({
+    summary: 'Dapp configuration network',
+    description: 'Returns dapp configuration',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Dapp configuration for specified network',
     type: DappConfig,
   })
   @ApiResponse({
