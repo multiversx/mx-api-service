@@ -23,7 +23,7 @@ flags:
   indexer-v3: false
 features:
   eventsNotifier:
-    enabled: true
+    enabled: false
     port: 5674
     url: 'amqp://guest:guest@127.0.0.1:5672'
     exchange: 'all_events'
