@@ -5,6 +5,7 @@ import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { GraphQlService } from "src/common/graphql/graphql.service";
 import { Constants } from "src/utils/constants";
 import { MexToken } from "./entities/mex.token";
+import BigNumber from "bignumber.js";
 
 @Injectable()
 export class MexTokenService {
@@ -67,7 +68,7 @@ export class MexTokenService {
       return [];
     }
 
-    return result.map((pair: any) => this.getMexToken(pair));
+    return result.pairs.map((pair: any) => this.getMexToken(pair));
   }
 
   private getMexToken(pair: any): MexToken {
@@ -78,16 +79,16 @@ export class MexTokenService {
       return {
         token: pair.firstToken.identifier,
         name: pair.firstToken.name,
-        priceUsd: Number(pair.firstTokenPriceUSD),
-        priceEgld: Number(pair.firstTokenPrice),
+        priceUsd: new BigNumber(pair.firstTokenPriceUSD).toFixed(),
+        priceEgld: new BigNumber(pair.firstTokenPrice).toFixed(),
       };
     }
 
     return {
       token: pair.secondToken.identifier,
       name: pair.secondToken.name,
-      priceUsd: Number(pair.secondTokenPriceUSD),
-      priceEgld: Number(pair.secondTokenPrice),
+      priceUsd: new BigNumber(pair.secondTokenPriceUSD).toFixed(),
+      priceEgld: new BigNumber(pair.secondTokenPrice).toFixed(),
     };
   }
 }
