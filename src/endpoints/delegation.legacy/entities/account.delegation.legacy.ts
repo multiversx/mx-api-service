@@ -1,21 +1,21 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class AccountDelegationLegacy {
-  @ApiProperty()
+  @ApiProperty({ type: String, default: 0 })
   claimableRewards: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String, default: 0 })
   userActiveStake: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String, default: 0 })
   userDeferredPaymentStake: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String, default: 0 })
   userUnstakedStake: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String, default: 0 })
   userWaitingStake: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String, default: 0 })
   userWithdrawOnlyStake: string = '';
 }

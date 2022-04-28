@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 export class TokenRoles {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   address: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   canMint: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   canBurn: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: [String] })
   roles: string[] = [];
 }

@@ -1,15 +1,15 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class WaitingList {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   address: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   nonce: number = 0;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   rank: number = 0;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, default: 0 })
   value: string = '';
 }

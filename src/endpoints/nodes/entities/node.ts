@@ -3,78 +3,78 @@ import { NodeStatus } from "./node.status";
 import { NodeType } from "./node.type";
 
 export class Node {
-    @ApiProperty()
+    @ApiProperty({type: String})
     bls: string = '';
 
-    @ApiProperty()
+    @ApiProperty({type: String})
     name: string = '';
 
-    @ApiProperty()
+    @ApiProperty({type: String})
     version: string = '';
 
-    @ApiProperty()
+    @ApiProperty({type: Number})
     rating: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({type: Number})
     tempRating: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({type: Number})
     ratingModifier: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({type: Number, nullable: true})
     shard: number | undefined = undefined;
 
-    @ApiProperty()
+    @ApiProperty({enum: NodeType, nullable: true})
     type: NodeType | undefined = undefined;
 
-    @ApiProperty()
+    @ApiProperty({enum: NodeStatus, nullable: true})
     status: NodeStatus | undefined = undefined;
 
-    @ApiProperty()
+    @ApiProperty({type: Boolean, default: false})
     online: boolean = false;
 
-    @ApiProperty()
+    @ApiProperty({type: Number})
     nonce: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({type: Number})
     instances: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({type: String})
     owner: string = '';
 
-    @ApiProperty()
+    @ApiProperty({type: String, nullable: true})
     identity: string | undefined = undefined;
 
-    @ApiProperty()
+    @ApiProperty({type: String})
     provider: string = '';
 
-    @ApiProperty()
+    @ApiProperty({type: [ String ]})
     issues: string[] = [];
 
-    @ApiProperty()
+    @ApiProperty({type: String})
     stake: string = '';
 
-    @ApiProperty()
+    @ApiProperty({type: String})
     topUp: string = '';
 
-    @ApiProperty()
+    @ApiProperty({type: String})
     locked: string = '';
 
-    @ApiProperty()
+    @ApiProperty({type: Number})
     leaderFailure: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({type: Number})
     leaderSuccess: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({type: Number})
     validatorFailure: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({type: Number})
     validatorIgnoredSignatures: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({type: Number})
     validatorSuccess: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({type: Number})
     position: number = 0;
 }

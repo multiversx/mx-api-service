@@ -2,39 +2,39 @@ import { ApiProperty } from "@nestjs/swagger";
 import { TokenAssets } from "./token.assets";
 
 export class Token {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   identifier: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   name: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   ticker: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   owner: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   minted: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   burnt: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   initialMinted: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   decimals: number = 0;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   isPaused: boolean = false;
 
-  @ApiProperty({ type: TokenAssets })
+  @ApiProperty({ type: TokenAssets, nullable: true })
   assets: TokenAssets | undefined = undefined;
 
-  @ApiProperty({ type: Number })
+  @ApiProperty({ type: Number, nullable: true })
   transactions: number | undefined = undefined;
 
-  @ApiProperty({ type: Number })
+  @ApiProperty({ type: Number, nullable: true })
   accounts: number | undefined = undefined;
 }

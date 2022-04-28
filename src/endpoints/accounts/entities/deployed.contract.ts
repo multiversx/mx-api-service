@@ -1,12 +1,12 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class DeployedContract {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   address: string = "";
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   deployTxHash: string = "";
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   timestamp: number = 0;
 }

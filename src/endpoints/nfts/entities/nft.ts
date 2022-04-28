@@ -38,10 +38,10 @@ export class Nft {
   @ApiProperty({ type: String })
   url: string = '';
 
-  @ApiProperty({ type: NftMedia })
+  @ApiProperty({ type: NftMedia, nullable: true })
   media: NftMedia[] | undefined = undefined;
 
-  @ApiProperty({ type: Boolean })
+  @ApiProperty({ type: Boolean, default: false })
   isWhitelistedStorage: boolean = false;
 
   @ApiProperty({ type: String })
@@ -50,19 +50,19 @@ export class Nft {
   @ApiProperty({ isArray: true })
   tags: string[] = [];
 
-  @ApiProperty({ type: NftMetadata })
+  @ApiProperty({ type: NftMetadata, nullable: true })
   metadata: NftMetadata | undefined = undefined;
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, nullable: true })
   owner: string | undefined = undefined;
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, nullable: true })
   balance: string | undefined = undefined;
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, nullable: true })
   supply: string | undefined = undefined;
 
-  @ApiProperty({ type: Number })
+  @ApiProperty({ type: Number, nullable: true })
   decimals: number | undefined = undefined;
 
   @ApiProperty()

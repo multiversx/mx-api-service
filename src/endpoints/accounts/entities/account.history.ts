@@ -1,15 +1,15 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class AccountHistory {
-    @ApiProperty({ description: 'The address of the account' })
+    @ApiProperty({ type: String })
     address: string = '';
 
-    @ApiProperty({ description: 'The current balance of the account (must be denominated to obtain the real value)' })
+    @ApiProperty({ type: String, default: 0 })
     balance: string = '';
 
-    @ApiProperty({ description: 'The timestamp of snapshot for account balance' })
+    @ApiProperty({ type: Number })
     timestamp: number = 0;
 
-    @ApiProperty({ description: 'Is the account sender of transaction', type: Boolean, nullable: true })
+    @ApiProperty({ type: Boolean, nullable: true })
     isSender?: boolean | undefined = undefined;
 }
