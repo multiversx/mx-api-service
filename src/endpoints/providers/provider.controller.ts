@@ -1,9 +1,9 @@
 import { Controller, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { Node } from "src/endpoints/nodes/entities/node";
 import { ProviderService } from "./provider.service";
 import { Provider } from "./entities/provider";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
+import { Node } from "../nodes/entities/node";
 
 @Controller()
 @ApiTags('providers')
@@ -11,12 +11,14 @@ export class ProviderController {
   constructor(private readonly providerService: ProviderService) { }
 
   @Get("/providers")
-  @ApiOperation({ summary: 'Providers details', description: 'Returns providers informations as well as provider details for a given identity ' })
+  @ApiOperation({
+    summary: 'Providers',
+    description: 'Returns a list of all providers',
+  })
   @ApiResponse({
     status: 200,
-    description: 'The providers available on the blockchain',
-    type: Node,
     isArray: true,
+    type: Node,
   })
   @ApiQuery({ name: 'identity', description: 'Search by identity', required: false })
   async getProviders(
@@ -26,10 +28,12 @@ export class ProviderController {
   }
 
   @Get('/providers/:address')
-  @ApiOperation({ summary: 'Provider details', description: 'Returns provider details for a given address' })
+  @ApiOperation({
+    summary: 'Provider',
+    description: 'Returns provider details for a given address',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Provider details',
     type: Provider,
   })
   @ApiResponse({
