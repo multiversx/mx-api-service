@@ -225,7 +225,7 @@ describe("Accounts Controller", () => {
 
   it("/accounts/:address/tokens/:tokens - should return 404 status code with no token found", async () => {
     const address: string = "erd12xspx5z0nm08tvtt8v3nyu3w8mxfr36rj27u99yesmr7uxj6h7cscsvsw5";
-    const token: string = "RIDE-7d18e9";
+    const token: string = "MAND-1f4b00";
     await request(app.getHttpServer())
       .get(route + "/" + address + "/tokens" + "/" + token)
       .set("header", "content-type")

@@ -16,28 +16,28 @@ export class NftCollection {
   @ApiProperty({ type: String })
   ticker: string = '';
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, nullable: true })
   owner: string | undefined = undefined;
 
   @ApiProperty({ type: Number })
   timestamp: number = 0;
 
-  @ApiProperty({ type: Boolean })
+  @ApiProperty({ type: Boolean, default: false })
   canFreeze: boolean = false;
 
-  @ApiProperty({ type: Boolean })
+  @ApiProperty({ type: Boolean, default: false })
   canWipe: boolean = false;
 
-  @ApiProperty({ type: Boolean })
+  @ApiProperty({ type: Boolean, default: false })
   canPause: boolean = false;
 
-  @ApiProperty({ type: Boolean })
+  @ApiProperty({ type: Boolean, default: false })
   canTransferNftCreateRole: boolean = false;
 
-  @ApiProperty({ type: Number })
+  @ApiProperty({ type: Number, nullable: true })
   decimals: number | undefined = undefined;
 
-  @ApiProperty({ type: TokenAssets })
+  @ApiProperty({ type: TokenAssets, nullable: true })
   assets: TokenAssets | undefined = undefined;
 
   @ApiProperty({ type: CollectionRoles })

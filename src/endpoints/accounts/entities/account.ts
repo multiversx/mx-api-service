@@ -1,17 +1,18 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class Account {
-  @ApiProperty({ description: 'The address of the account' })
+  @ApiProperty({ type: String })
   address: string = '';
 
-  @ApiProperty({ description: 'The current balance of the account (must be denominated to obtain the real value)' })
+  @ApiProperty({ type: String })
   balance: string = '';
 
-  @ApiProperty({ description: 'The current nonce of the account' })
-  nonce: string = '';
+  @ApiProperty({ type: Number })
+  nonce: number = 0;
 
-  @ApiProperty({ description: 'The shard identifier of the account' })
+  @ApiProperty({ type: Number })
   shard: number = 0;
 
+  @ApiProperty({ type: Object, nullable: true })
   scamInfo: any | undefined = undefined;
 }

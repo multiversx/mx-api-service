@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 export class AccountDeferred {
-  @ApiProperty()
+  @ApiProperty({type: String, default: 0})
   deferredPayment: string = '';
 
-  @ApiProperty()
+  @ApiProperty({type: Number})
   secondsLeft: number = 0;
 }

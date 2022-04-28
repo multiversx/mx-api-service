@@ -2,24 +2,24 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class AccountKey {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   blsKey: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String, default: 0 })
   stake: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String, default: 0 })
   topUp: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   status: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   rewardAddress: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   queueIndex: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   queueSize: string | undefined = undefined;
 }

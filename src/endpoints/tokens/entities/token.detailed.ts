@@ -3,33 +3,33 @@ import { Token } from "./token";
 import { TokenRoles } from "./token.roles";
 
 export class TokenDetailed extends Token {
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   canUpgrade: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   canMint: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   canBurn: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   canChangeOwner: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   canPause: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   canFreeze: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   canWipe: boolean = false;
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, nullable: true })
   supply: string | undefined = undefined;
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, nullable: true })
   circulatingSupply: string | undefined = undefined;
 
-  @ApiProperty({ type: TokenRoles })
+  @ApiProperty({ type: TokenRoles, nullable: true })
   roles: TokenRoles[] | undefined = undefined;
 }
