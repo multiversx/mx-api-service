@@ -23,16 +23,18 @@ export class RabbitMqNftConsumer {
     try {
       const events = rawEvents?.events;
 
-      for (const rawEvent of events) {
-        switch (rawEvent.identifier) {
-          case NftEventEnum.ESDTNFTCreate:
-            await this.nftHandlerService.handleNftCreateEvent(new NftCreateEvent(rawEvent));
-            break;
-        }
-      }
+      await Promise.all(events.map((event: any) => this.handleEvent(event)));
     } catch (error) {
       this.logger.error(`An unhandled error occurred when consuming events: ${JSON.stringify(rawEvents)}`);
       this.logger.error(error);
+    }
+  }
+
+  private async handleEvent(rawEvent: any) {
+    switch (rawEvent.identifier) {
+      case NftEventEnum.ESDTNFTCreate:
+        await this.nftHandlerService.handleNftCreateEvent(new NftCreateEvent(rawEvent));
+        break;
     }
   }
 }
