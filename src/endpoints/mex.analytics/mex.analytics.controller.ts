@@ -5,6 +5,7 @@ import { MexSettings } from "./entities/mex.settings";
 import { MexEconomicsService } from "./mex.economics.service";
 import { MexPairsService } from "./mex.pairs.service";
 import { MexSettingsService } from "./mex.settings.service";
+import { MexTokenService } from "./mex.token.service";
 
 @Controller()
 @ApiTags('network')
@@ -12,7 +13,8 @@ export class MexAnalyticsController {
   constructor(
     private readonly mexEconomicsService: MexEconomicsService,
     private readonly mexSettingsService: MexSettingsService,
-    private readonly mexPairsService: MexPairsService
+    private readonly mexPairsService: MexPairsService,
+    private readonly mexTokensService: MexTokenService,
   ) { }
 
   @Get("/mex-settings")
@@ -51,6 +53,20 @@ export class MexAnalyticsController {
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<any> {
     return await this.mexPairsService.getMexPairs(from, size);
+  }
+
+  @Get("/mex-tokens")
+  @ApiResponse({
+    status: 200,
+    description: 'A list of mex tokens listed on the Maiar Exchange',
+  })
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  async getMexTokens(
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+  ): Promise<any> {
+    return await this.mexTokensService.getMexTokens(from, size);
   }
 
   @Get("/mex-pairs/:baseId/:quoteId")
