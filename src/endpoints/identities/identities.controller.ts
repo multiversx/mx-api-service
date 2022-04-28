@@ -13,9 +13,8 @@ export class IdentitiesController {
   @ApiOperation({ summary: 'Identities details', description: 'Returns providers details as well as details about a specific provider for a given identity ' })
   @ApiResponse({
     status: 200,
-    description: 'The identities available on the blockchain',
-    type: Identity,
     isArray: true,
+    type: Identity,
   })
   @ApiQuery({ name: 'identities', description: 'Filter by comma-separated list of identities', required: false })
   async getIdentities(
@@ -28,7 +27,6 @@ export class IdentitiesController {
   @ApiOperation({ summary: 'Identity details', description: 'Returns provider details for a given identifier' })
   @ApiResponse({
     status: 200,
-    description: 'Identity details',
     type: Identity,
   })
   @ApiResponse({

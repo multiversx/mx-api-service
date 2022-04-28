@@ -11,7 +11,7 @@ export class Nft {
   @ApiProperty({ type: String })
   collection: string = '';
 
-  @ApiProperty({ type: Number })
+  @ApiProperty({ type: Number, nullable: true })
   timestamp?: number = undefined;
 
   @ApiProperty({ type: String })
