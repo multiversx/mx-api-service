@@ -9,10 +9,9 @@ export class DelegationLegacyController {
   constructor(private readonly delegationLegacyService: DelegationLegacyService) { }
 
   @Get("/delegation-legacy")
-  @ApiOperation({ summary: 'Delegation-Legacy details', description: 'Returns delegation legacy details as well as total withdraw/unstake/waiting stake, total deferred payment stake and total number of users' })
+  @ApiOperation({ summary: 'Delegation-legacy details', description: 'Returns delegation legacy details as well as total withdraw/unstake/waiting stake, total deferred payment stake and total number of users' })
   @ApiResponse({
     status: 200,
-    description: 'The delegation legacy details',
     type: DelegationLegacy,
   })
   async getBlock(): Promise<DelegationLegacy> {

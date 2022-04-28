@@ -14,7 +14,6 @@ export class DelegationController {
   @ApiOperation({ summary: 'Delegation details', description: 'Returns delegation stake details' })
   @ApiResponse({
     status: 200,
-    description: 'Delegation details',
     type: Delegation,
   })
   async getDelegationDetails(): Promise<Delegation> {
