@@ -10,10 +10,12 @@ export class UsernameController {
   constructor(private readonly usernameService: UsernameService) { }
 
   @Get("/usernames/:username")
-  @ApiOperation({ summary: 'Account details', description: 'Returns account details for a given username' })
+  @ApiOperation({
+    summary: 'Account details',
+    description: 'Returns account details for a given username',
+  })
   @ApiResponse({
     status: 200,
-    description: 'The details of a given username',
     type: AccountUsername,
   })
   @ApiResponse({
