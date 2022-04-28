@@ -24,20 +24,19 @@ export class RoundController {
 
   @Get("/rounds")
   @ApiOperation({
-    summary: 'Rounds details',
-    description: 'Returns rounds details from a specific epoch, shard and validator and also return a list of all rounds available on blockchain',
+    summary: 'Rounds',
+    description: 'Return a list of all rounds available on blockchain',
   })
   @ApiResponse({
     status: 200,
-    description: 'The rounds available on the blockchain',
-    type: Round,
     isArray: true,
+    type: Round,
   })
   @ApiQuery({name: 'from', description: 'Number of items to skip for the result set', required: false})
   @ApiQuery({name: 'size', description: 'Number of items to retrieve', required: false})
-  @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
-  @ApiQuery({ name: 'shard', description: 'Filter by shard identifier', required: false })
-  @ApiQuery({ name: 'epoch', description: 'Filter by epoch number', required: false })
+  @ApiQuery({name: 'validator', description: 'Filter by validator', required: false})
+  @ApiQuery({name: 'shard', description: 'Filter by shard identifier', required: false})
+  @ApiQuery({name: 'epoch', description: 'Filter by epoch number', required: false})
   getRounds(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -51,16 +50,15 @@ export class RoundController {
 
   @Get("/rounds/count")
   @ApiOperation({
-    summary: 'Total rounds number',
-    description: 'Return total number of rounds as well returns total number of rounds from a certain epoch, from a certain shard and validator',
+    summary: 'Rounds count',
+    description: 'Returns total number of rounds',
   })
   @ApiResponse({
     status: 200,
-    description: 'The number of rounds available on the blockchain',
     type: Number,
   })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({name: 'from', description: 'Number of items to skip for the result set', required: false})
+  @ApiQuery({name: 'size', description: 'Number of items to retrieve', required: false})
   @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
   @ApiQuery({ name: 'shard', description: 'Filter by shard identifier', required: false })
   @ApiQuery({ name: 'epoch', description: 'Filter by epoch number', required: false })
@@ -90,12 +88,11 @@ export class RoundController {
 
   @Get("/rounds/:shard/:round")
   @ApiOperation({
-    summary: 'Details of a given round',
+    summary: 'Round',
     description: 'Returns details of a given round from a specific shard',
   })
   @ApiResponse({
     status: 200,
-    description: 'The details of a given round',
     type: RoundDetailed,
   })
   @ApiResponse({
