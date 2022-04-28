@@ -3,7 +3,6 @@ import { gql } from "graphql-request";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { GraphQlService } from "src/common/graphql/graphql.service";
-import { Constants } from "src/utils/constants";
 import { MexSettingsService } from "./mex.settings.service";
 
 @Injectable()
