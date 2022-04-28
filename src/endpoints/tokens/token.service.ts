@@ -464,9 +464,9 @@ export class TokenService {
     return {
       supply: denominated === true ? totalSupply : totalSupply.toFixed(),
       circulatingSupply: denominated === true ? circulatingSupply : circulatingSupply.toFixed(),
-      minted: denominated === true ? NumberUtils.denominateString(result.minted, properties.decimals) : result.minted,
-      burnt: denominated === true ? NumberUtils.denominateString(result.burned, properties.decimals) : result.burned,
-      initialMinted: denominated === true ? NumberUtils.denominateString(result.initialMinted, properties.decimals) : result.initialMinted,
+      minted: denominated === true && result.minted ? NumberUtils.denominateString(result.minted, properties.decimals) : result.minted,
+      burnt: denominated === true && result.burned ? NumberUtils.denominateString(result.burned, properties.decimals) : result.burned,
+      initialMinted: denominated === true && result.initialMinted ? NumberUtils.denominateString(result.initialMinted, properties.decimals) : result.initialMinted,
     };
   }
 
