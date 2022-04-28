@@ -1,15 +1,16 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { SwaggerUtils } from "src/utils/swagger.utils";
 
 export class Delegation {
-  @ApiProperty({ type: String, default: 0 })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   stake: string = '';
 
-  @ApiProperty({ type: String, default: 0 })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   topUp: string = '';
 
-  @ApiProperty({ type: String, default: 0 })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   locked: string = '';
 
-  @ApiProperty({ type: String, default: 0 })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   minDelegation: string = '';
 }

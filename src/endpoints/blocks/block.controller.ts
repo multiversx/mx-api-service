@@ -13,7 +13,7 @@ export class BlockController {
   constructor(private readonly blockService: BlockService) { }
 
   @Get("/blocks")
-  @ApiOperation({ summary: 'Blocks details', description: 'Returns blocks information details available on the blockchain as well as blocks details from a specific shard, epoch, nonce, validator and proposer' })
+  @ApiOperation({ summary: 'Blocks', description: 'Returns a list of all blocks from all shards' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -22,9 +22,9 @@ export class BlockController {
   @ApiQuery({ name: 'shard', description: 'Id of the shard the block belongs to', required: false })
   @ApiQuery({ name: 'proposer', description: 'Filter by proposer', required: false })
   @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
-  @ApiQuery({name: 'epoch', description: 'Filter by epoch', required: false})
-  @ApiQuery({name: 'from', description: 'Number of items to skip for the result set', required: false})
-  @ApiQuery({name: 'size', description: 'Number of items to retrieve', required: false})
+  @ApiQuery({ name: 'epoch', description: 'Filter by epoch', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'nonce', description: 'Filter by nonce', required: false })
   getBlocks(
     @Query('shard', ParseOptionalIntPipe) shard: number | undefined,
@@ -39,10 +39,7 @@ export class BlockController {
   }
 
   @Get("/blocks/count")
-  @ApiOperation({
-    summary: 'Blocks count',
-    description: 'Returns total number of blocks available on blockchain as well as total number of blocks in a specific shard, epoch, validator and proposer',
-  })
+  @ApiOperation({ summary: 'Block count', description: 'Returns count of all blocks from all shards' })
   @ApiResponse({
     status: 200,
     type: Number,

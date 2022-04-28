@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { SwaggerUtils } from "src/utils/swagger.utils";
 import { TransactionLog } from "../../transactions/entities/transaction.log";
 
 export class SmartContractResult {
@@ -17,7 +18,7 @@ export class SmartContractResult {
     @ApiProperty({ type: Number })
     gasPrice: number = 0;
 
-    @ApiProperty({ type: String })
+    @ApiProperty(SwaggerUtils.amountPropertyOptions())
     value: string = '';
 
     @ApiProperty({ type: String })

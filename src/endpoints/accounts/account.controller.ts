@@ -979,10 +979,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/sc-results/:scHash")
-  @ApiOperation({
-    summary: 'Smart contract result',
-    description: 'Returns details of a smart contract result where the account is sender or receiver',
-  })
+  @ApiOperation({ summary: 'Account smart contract result', description: 'Returns details of a smart contract result where the account is sender or receiver' })
   @ApiResponse({
     status: 200,
     type: SmartContractResult,
@@ -1004,12 +1001,9 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/history")
-  @ApiOperation({
-    summary: 'Account history details',
-    description: 'Return account EGDL balance history details for a given account where the account is sender or receiver ',
-  })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiOperation({ summary: 'Account history', description: 'Return account EGLD balance history' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -1028,13 +1022,9 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/history/:tokenIdentifier")
-  @ApiOperation({
-    summary: 'Account token history details',
-    description: 'Returns account token balance history details for a given account where the account hold a certain token and is sender or receiver ',
-  })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-
+  @ApiOperation({ summary: 'Account token history', description: 'Returns account token balance history' })
   @ApiResponse({
     status: 200,
     isArray: true,

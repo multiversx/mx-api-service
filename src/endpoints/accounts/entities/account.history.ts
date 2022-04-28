@@ -1,10 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { SwaggerUtils } from "src/utils/swagger.utils";
 
 export class AccountHistory {
     @ApiProperty({ type: String })
     address: string = '';
 
-    @ApiProperty({ type: String, default: 0 })
+    @ApiProperty(SwaggerUtils.amountPropertyOptions())
     balance: string = '';
 
     @ApiProperty({ type: Number })
