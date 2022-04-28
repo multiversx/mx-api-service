@@ -70,6 +70,27 @@ export class MexTokenService {
 
     const mexTokens: MexToken[] = [];
     for (const pair of result.pairs) {
+      const firstTokenSymbol = pair.firstToken.identifier.split('-')[0];
+      const secondTokenSymbol = pair.secondToken.identifier.split('-')[0];
+      if (firstTokenSymbol === 'WEGLD' && secondTokenSymbol === "USDC") {
+        const wegldToken = new MexToken();
+        wegldToken.token = pair.firstToken.identifier;
+        wegldToken.name = pair.firstToken.name;
+        wegldToken.priceUsd = new BigNumber(pair.firstTokenPriceUSD).toFixed();
+        wegldToken.priceEgld = '1';
+
+        const usdcToken = new MexToken();
+        usdcToken.token = pair.secondToken.identifier;
+        usdcToken.name = pair.secondToken.name;
+        usdcToken.priceUsd = '1';
+        usdcToken.priceEgld = new BigNumber(pair.secondTokenPrice).toFixed();
+
+        mexTokens.push(wegldToken);
+        mexTokens.push(usdcToken);
+
+        continue;
+      }
+
       const mexToken = this.getMexToken(pair);
       if (!mexToken) {
         continue;
