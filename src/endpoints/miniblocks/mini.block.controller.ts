@@ -16,7 +16,6 @@ export class MiniBlockController {
   })
   @ApiResponse({
     status: 200,
-    description: 'The details of a given MiniBlock',
     type: MiniBlockDetailed,
   })
   @ApiResponse({
