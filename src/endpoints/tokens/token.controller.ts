@@ -30,18 +30,20 @@ export class TokenController {
   }
 
   @Get("/tokens")
-  @ApiOperation({ summary: 'Tokens details', description: 'Returns all tokens details as well as a specific token for a given identifier' })
+  @ApiOperation({
+    summary: 'Tokens',
+    description: 'Returns a list of tokens as well as a specific token for a given identifier',
+  })
   @ApiResponse({
     status: 200,
-    description: 'The list of tokens available on the blockchain',
-    type: TokenDetailed,
     isArray: true,
+    type: TokenDetailed,
   })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
-  @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
-  @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
+  @ApiQuery({name: 'from', description: 'Number of items to skip for the result set', required: false})
+  @ApiQuery({name: 'size', description: 'Number of items to retrieve', required: false})
+  @ApiQuery({name: 'search', description: 'Search by collection identifier', required: false})
+  @ApiQuery({name: 'name', description: 'Search by token name', required: false})
+  @ApiQuery({name: 'identifier', description: 'Search by token identifier', required: false})
   @ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
   async getTokens(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -55,16 +57,22 @@ export class TokenController {
   }
 
   @Get("/tokens/count")
-  @ApiOperation({ summary: 'Total number of tokens', description: 'Return total number of tokens available on blockchain' })
+  @ApiOperation({
+    summary: 'Tokens count',
+    description: 'Return total number of tokens available on blockchain',
+  })
   @ApiResponse({
     status: 200,
-    description: 'The number of tokens available on the blockchain',
     type: Number,
   })
-  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
-  @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
-  @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
-  @ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
+  @ApiQuery({name: 'search', description: 'Search by collection identifier', required: false})
+  @ApiQuery({name: 'name', description: 'Search by token name', required: false})
+  @ApiQuery({name: 'identifier', description: 'Search by token identifier', required: false})
+  @ApiQuery({
+    name: 'identifiers',
+    description: 'Search by multiple token identifiers, comma-separated',
+    required: false,
+  })
   async getTokenCount(
     @Query('search') search: string | undefined,
     @Query('name') name: string | undefined,
@@ -86,10 +94,12 @@ export class TokenController {
   }
 
   @Get('/tokens/:identifier')
-  @ApiOperation({ summary: 'Token details', description: 'Returns token details based on a specific token identifier' })
+  @ApiOperation({
+    summary: 'Token',
+    description: 'Returns token details based on a specific token identifier',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Token details',
     type: TokenDetailed,
   })
   @ApiResponse({
@@ -106,12 +116,14 @@ export class TokenController {
   }
 
   @Get('/tokens/:identifier/supply')
-  @ApiOperation({ summary: 'Token supply details', description: 'Returns supply and circulating supply details for a specific token' })
-  @ApiQuery({ name: 'denominated', description: 'Return results denominated', required: false })
+  @ApiOperation({
+    summary: 'Token supply',
+    description: 'Returns supply and circulating supply details for a specific token',
+  })
+  @ApiQuery({name: 'denominated', description: 'Return results denominated', required: false})
 
   @ApiResponse({
     status: 200,
-    description: 'Non-fungible / semi-fungible token supply',
     type: EsdtSupply,
   })
   @ApiResponse({
@@ -131,19 +143,21 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/accounts")
-  @ApiOperation({ summary: 'Token accounts details', description: 'Returns a list of all accounts that have a specific token' })
+  @ApiOperation({
+    summary: 'Token accounts',
+    description: 'Returns a list of all accounts that have a specific token',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Specific token accounts',
-    type: TokenAccount,
     isArray: true,
+    type: TokenAccount,
   })
   @ApiResponse({
     status: 404,
     description: 'Token not found',
   })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({name: 'from', description: 'Number of items to skip for the result set', required: false})
+  @ApiQuery({name: 'size', description: 'Number of items to retrieve', required: false})
   async getTokenAccounts(
     @Param('identifier') identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -158,10 +172,12 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/accounts/count")
-  @ApiOperation({ summary: 'Total number of accounts', description: 'Returns the total number of accounts that hold a specific token' })
+  @ApiOperation({
+    summary: 'Token accounts count',
+    description: 'Returns the total number of accounts that hold a specific token',
+  })
   @ApiResponse({
     status: 200,
-    description: 'The number of specific token accounts available on the blockchain',
     type: Number,
   })
   @ApiResponse({
@@ -180,10 +196,13 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/transactions")
-  @ApiOperation({ summary: 'Transactions token details', description: 'Returns the transaction history for a specific token, it can also return all transactions that have success / pending / fail status and at the same time the transactions on certain shards. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs' })
+  @ApiOperation({
+    summary: 'Token transactions',
+    description: `Returns a list of transactions for a specific token, it can also return all transactions that have success / pending / fail status and 
+    at the same time the transactions on certain shards. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs`,
+  })
   @ApiResponse({
     status: 200,
-    description: 'The specific token transactions history on the blockchain',
     isArray: true,
     type: Transaction,
   })
@@ -191,7 +210,7 @@ export class TokenController {
     status: 404,
     description: 'Token not found',
   })
-  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
+  @ApiQuery({name: 'sender', description: 'Address of the transaction sender', required: false})
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
@@ -202,9 +221,9 @@ export class TokenController {
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
-  @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({name: 'order', description: 'Sort order (asc/desc)', required: false})
+  @ApiQuery({name: 'from', description: 'Number of items to skip for the result set', required: false})
+  @ApiQuery({name: 'size', description: 'Number of items to retrieve', required: false})
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false })
@@ -255,18 +274,20 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/transactions/count")
-  @ApiOperation({ summary: 'Total number of transactions', description: 'Returns the total number of transactions for a specific token' })
+  @ApiOperation({
+    summary: 'Token transactions count',
+    description: 'Returns the total number of transactions for a specific token',
+  })
   @ApiResponse({
     status: 200,
-    description: 'The specific token transactions count on the blockchain',
     type: Number,
   })
   @ApiResponse({
     status: 404,
     description: 'Token not found',
   })
-  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
-  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
+  @ApiQuery({name: 'sender', description: 'Address of the transaction sender', required: false})
+  @ApiQuery({name: 'receiver', description: 'Address of the transaction receiver', required: false})
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
@@ -309,10 +330,13 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/roles")
-  @ApiOperation({ summary: 'Accounts token roles', description: 'Returns a list of accounts that have certain roles for a specific token' })
+  @ApiOperation({
+    summary: 'Token roles',
+    description: 'Returns a list of accounts that have certain roles for a specific token',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Roles of every address to a specific ESDT',
+    isArray: true,
     type: TokenRoles,
   })
   @ApiResponse({
@@ -336,10 +360,12 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/roles/:address")
-  @ApiOperation({ summary: 'Token address roles details', description: 'Returns the roles of an address for a specific token' })
+  @ApiOperation({
+    summary: 'Token address roles',
+    description: 'Returns the roles of an address for a specific token',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Roles for a specific address to a specific ESDT',
     type: TokenRoles,
   })
   @ApiResponse({
