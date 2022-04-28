@@ -1,5 +1,6 @@
 import { Controller, Get } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { GlobalStake } from "./entities/global.stake";
 import { StakeService } from "./stake.service";
 
 @Controller()
@@ -10,10 +11,13 @@ export class StakeController {
   ) { }
 
   @Get('/stake')
-  @ApiOperation({ summary: 'Stake details', description: 'Returns stake informations as well as total/active validators and nodes queue size ' })
+  @ApiOperation({
+    summary: 'Stake',
+    description: 'Returns stake details as well as total active validators and nodes queue size ',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Stake details',
+    type: GlobalStake,
   })
   async getGlobalStake() {
     return await this.stakeService.getGlobalStake();
