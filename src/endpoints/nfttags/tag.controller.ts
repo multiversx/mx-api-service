@@ -12,12 +12,14 @@ export class TagController {
   ) { }
 
   @Get("/tags")
-  @ApiOperation({ summary: 'Tags details', description: 'Return all nft tags informations available on blockchain with nft tag property in base64' })
+  @ApiOperation({
+    summary: 'Tags details',
+    description: 'Returns all tags details available on blockchain',
+  })
   @ApiResponse({
     status: 200,
-    description: 'The nft tags available',
-    type: Tag,
     isArray: true,
+    type: Tag,
   })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -29,10 +31,12 @@ export class TagController {
   }
 
   @Get("/tags/:tag")
-  @ApiOperation({ summary: 'Tag details', description: 'Return nft tag informations for a given nft tag in base64' })
+  @ApiOperation({
+    summary: 'Tag details',
+    description: 'Return tag details for a given tag',
+  })
   @ApiResponse({
     status: 200,
-    description: 'The details of a given nft tag',
     type: Tag,
   })
   @ApiResponse({
