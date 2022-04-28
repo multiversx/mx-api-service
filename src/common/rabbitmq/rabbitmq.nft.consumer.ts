@@ -4,7 +4,6 @@ import { NftCreateEvent } from './entities/nft/nft-create.event';
 import { NftEventEnum } from './entities/nft/nft-events.enum';
 import { RabbitMqNftHandlerService } from './rabbitmq.nft.handler.service';
 import configuration from 'config/configuration';
-import { PerformanceProfiler } from 'src/utils/performance.profiler';
 
 @Injectable()
 export class RabbitMqNftConsumer {
@@ -24,11 +23,7 @@ export class RabbitMqNftConsumer {
     try {
       const events = rawEvents?.events;
 
-      const profiler = new PerformanceProfiler();
-
       await Promise.all(events.map((event: any) => this.handleEvent(event)));
-
-      profiler.stop(`Consuming events for block with hash '${rawEvents.hash}'`, true);
     } catch (error) {
       this.logger.error(`An unhandled error occurred when consuming events: ${JSON.stringify(rawEvents)}`);
       this.logger.error(error);
