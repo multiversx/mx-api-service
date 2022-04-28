@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { SwaggerUtils } from 'src/utils/swagger.utils';
 export class DelegationLegacy {
 
-  @ApiProperty({ type: String, default: 0 })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   totalWithdrawOnlyStake: string = '';
 
   @ApiProperty({ type: String, default: 0 })
