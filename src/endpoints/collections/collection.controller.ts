@@ -19,15 +19,17 @@ export class CollectionController {
   ) { }
 
   @Get("/collections")
-  @ApiOperation({ summary: 'Collections details', description: 'Returns collections details of NonFungibleESDT/SemiFungibleESDT/MetaESDT, as well as specific collections for a given address' })
+  @ApiOperation({
+    summary: 'Collections details',
+    description: 'Returns collections details of NFTs/SFTs and MetaESDT, as well as specific collections for a given address',
+  })
   @ApiResponse({
     status: 200,
-    description: 'List non-fungible and semi-fungible token collections',
-    type: NftCollection,
     isArray: true,
+    type: NftCollection,
   })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({name: 'from', description: 'Number of items to skip for the result set', required: false})
+  @ApiQuery({name: 'size', description: 'Number of items to retrieve', required: false})
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by collection identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
@@ -44,13 +46,15 @@ export class CollectionController {
   }
 
   @Get("/collections/count")
-  @ApiOperation({ summary: 'Total number of collections available on the blockchain', description: 'Returns total number of collections where the account is creator, as well as total number of collections of a certain type NonFungibleESDT/SemiFungibleESDT/MetaESDT' })
-  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
+  @ApiOperation({
+    summary: 'Collections count',
+    description: 'Returns total number of collections where the account is creator, as well as total number of collections of a certain type NFT/SFT/MetaESDT',
+  })
+  @ApiQuery({name: 'search', description: 'Search by collection identifier', required: false})
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
   @ApiQuery({ name: 'creator', description: 'Filter NFTs where the given address has a creator role', required: false })
   @ApiResponse({
     status: 200,
-    description: 'The number of non-fungible and semi-fungible token collections available on the blockchain',
     type: Number,
   })
   async getCollectionCount(
@@ -75,7 +79,6 @@ export class CollectionController {
   @ApiOperation({ summary: 'Collection details', description: 'Returns collection details for a given collection identifier' })
   @ApiResponse({
     status: 200,
-    description: 'Non-fungible / semi-fungible token collection details',
     type: NftCollection,
   })
   @ApiResponse({
@@ -92,15 +95,17 @@ export class CollectionController {
   }
 
   @Get("/collections/:collection/nfts")
-  @ApiOperation({ summary: 'Non-Fungilbe/Semi-Fungible tokens details in a collection', description: 'Returns details about Non-Fungilbe/Semi-Fungible tokens that belong to a collection, also returns details about supply, owner and if the nft is whitelisted in storage as well as token details of a certain type from a specific collection' })
+  @ApiOperation({
+    summary: 'Fungible tokens details in a collection',
+    description: 'Returns details about all fungible tokens that belong to a collection, also returns details about supply, owner and if the nft is whitelisted in storage as well as token details of a certain type from a specific collection',
+  })
   @ApiResponse({
     status: 200,
-    description: 'List non-fungible and semi-fungible tokens',
-    type: Nft,
     isArray: true,
+    type: Nft,
   })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({name: 'from', description: 'Number of items to skip for the result set', required: false})
+  @ApiQuery({name: 'size', description: 'Number of items to retrieve', required: false})
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
@@ -134,10 +139,12 @@ export class CollectionController {
   }
 
   @Get("/collections/:collection/nfts/count")
-  @ApiOperation({ summary: 'Total number of Non-Fungilbe/Semi-Fungible tokens from a collection', description: 'Return total number of Non-Fungible and Semi-Fungilbe tokens for a given collection.' })
+  @ApiOperation({
+    summary: 'Collection tokens count',
+    description: 'Return total number of fungible tokens for a given collection',
+  })
   @ApiResponse({
     status: 200,
-    description: 'The number of non-fungible and semi-fungible tokens from a collection',
     type: Number,
   })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
