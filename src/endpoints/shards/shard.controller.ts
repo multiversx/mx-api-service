@@ -9,12 +9,14 @@ export class ShardController {
   constructor(private readonly shardService: ShardService) { }
 
   @Get("/shards")
-  @ApiOperation({ summary: 'Shards details', description: 'Returns all shards details available on the blockchain' })
+  @ApiOperation({
+    summary: 'Shards',
+    description: 'Returns all shards details',
+  })
   @ApiResponse({
     status: 200,
-    description: 'The shards available on the blockchain',
-    type: Shard,
     isArray: true,
+    type: Shard,
   })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
