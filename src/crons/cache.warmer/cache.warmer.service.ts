@@ -23,6 +23,7 @@ import { TokenService } from "src/endpoints/tokens/token.service";
 import { MexSettingsService } from "src/endpoints/mex.analytics/mex.settings.service";
 import { MexEconomicsService } from "src/endpoints/mex.analytics/mex.economics.service";
 import { MexPairsService } from "src/endpoints/mex.analytics/mex.pairs.service";
+import { MexTokenService } from "src/endpoints/mex.analytics/mex.token.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -43,6 +44,7 @@ export class CacheWarmerService {
     private readonly tokenAssetService: TokenAssetService,
     private readonly mexEconomicsService: MexEconomicsService,
     private readonly mexPairsService: MexPairsService,
+    private readonly mexTokensService: MexTokenService,
     private readonly tokenService: TokenService,
     private readonly mexSettingsService: MexSettingsService,
   ) {
@@ -214,6 +216,10 @@ export class CacheWarmerService {
 
     await Locker.lock('Refreshing mex economics', async () => {
       await this.mexEconomicsService.refreshMexEconomics();
+    }, true);
+
+    await Locker.lock('Refreshing mex tokens', async () => {
+      await this.mexTokensService.refreshMexTokens();
     }, true);
   }
 
