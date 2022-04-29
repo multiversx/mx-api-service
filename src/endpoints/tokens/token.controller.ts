@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, DefaultValuePipe, Get, Logger, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { SortOrder } from "src/common/entities/sort.order";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
@@ -313,7 +313,7 @@ export class TokenController {
   })
   async getTokenRoles(
     @Param('identifier') identifier: string,
-  ): Promise<TokenAddressRoles[]> {
+  ): Promise<TokenRoles[]> {
     const token = await this.getToken(identifier);
     if (!token) {
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
