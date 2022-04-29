@@ -18,12 +18,12 @@ export class ParseHashPipe implements PipeTransform<string | string[] | undefine
       try {
         const values = Array.isArray(value) ? value : [value];
 
-        values.map(_value => {
+        for (const _value of values) {
           const hash = new Hash(_value);
           if (hash.toString().length !== this.length) {
             throw Error();
           }
-        });
+        }
 
         return resolve(value);
       } catch (error) {
