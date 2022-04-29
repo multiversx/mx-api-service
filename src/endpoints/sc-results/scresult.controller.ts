@@ -4,6 +4,7 @@ import { ParseTransactionHashPipe } from "src/utils/pipes/parse.transaction.hash
 import { SmartContractResult } from "./entities/smart.contract.result";
 import { SmartContractResultService } from "./scresult.service";
 import { ParseArrayPipe } from 'src/utils/pipes/parse.array.pipe';
+import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
 
 @Controller()
 @ApiTags('sc-results')
@@ -22,7 +23,7 @@ export class SmartContractResultController {
   getScResults(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('miniBlockHash', ParseTransactionHashPipe) miniBlockHash?: string,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('originalTxHashes', ParseArrayPipe, ParseTransactionHashPipe) originalTxHashes?: string[],
   ): Promise<SmartContractResult[]> {
     return this.scResultService.getScResults({ from, size }, { miniBlockHash, originalTxHashes });
