@@ -9,7 +9,7 @@ export class ParseHashPipe implements PipeTransform<string | string[] | undefine
     this.length = length;
   }
 
-  transform(value: string | string[] | undefined, _: ArgumentMetadata): Promise<string | string[] | undefined> {
+  transform(value: string | string[] | undefined, metadata: ArgumentMetadata): Promise<string | string[] | undefined> {
     return new Promise(resolve => {
       if (value === undefined || value === '') {
         return resolve(undefined);
@@ -27,7 +27,7 @@ export class ParseHashPipe implements PipeTransform<string | string[] | undefine
 
         return resolve(value);
       } catch (error) {
-        throw new HttpException(`Validation failed (a valid hash with size ${this.length} for ${this.entity} is expected)`, HttpStatus.BAD_REQUEST);
+        throw new HttpException(`Validation failed (a valid ${this.entity} hash for parameter ${metadata.data} is expected)`, HttpStatus.BAD_REQUEST);
       }
     });
   }
