@@ -46,6 +46,11 @@ export class TokenService {
     this.logger = new Logger(TokenService.name);
   }
 
+  async isToken(identifier: string): Promise<boolean> {
+    const tokens = await this.esdtService.getAllEsdtTokens();
+    return tokens.find(x => x.identifier === identifier) !== undefined;
+  }
+
   async getToken(identifier: string): Promise<TokenDetailed | undefined> {
     const tokens = await this.esdtService.getAllEsdtTokens();
     let token = tokens.find(x => x.identifier === identifier);
@@ -333,8 +338,8 @@ export class TokenService {
   }
 
   async getTokenAccounts(pagination: QueryPagination, identifier: string): Promise<TokenAccount[] | undefined> {
-    const token = await this.getToken(identifier);
-    if (!token) {
+    const isToken = await this.isToken(identifier);
+    if (!isToken) {
       return undefined;
     }
 
@@ -355,8 +360,8 @@ export class TokenService {
   }
 
   async getTokenAccountsCount(identifier: string): Promise<number | undefined> {
-    const token = await this.getToken(identifier);
-    if (!token) {
+    const isToken = await this.isToken(identifier);
+    if (!isToken) {
       return undefined;
     }
 
@@ -437,8 +442,8 @@ export class TokenService {
       return addressRoles;
     }
 
-    const token = await this.getToken(identifier);
-    if (!token) {
+    const isToken = await this.isToken(identifier);
+    if (!isToken) {
       return undefined;
     }
 
@@ -471,8 +476,8 @@ export class TokenService {
   }
 
   async getTokenSupply(identifier: string, denominated: boolean | undefined = undefined): Promise<TokenSupplyResult | undefined> {
-    const token = await this.getToken(identifier);
-    if (!token) {
+    const isToken = await this.isToken(identifier);
+    if (!isToken) {
       return undefined;
     }
 

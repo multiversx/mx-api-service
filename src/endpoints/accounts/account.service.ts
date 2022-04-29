@@ -383,8 +383,8 @@ export class AccountService {
   }
 
   async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<AccountEsdtHistory[] | undefined> {
-    const token = await this.tokenService.getToken(tokenIdentifier);
-    if (!token) {
+    const isToken = await this.tokenService.isToken(tokenIdentifier);
+    if (!isToken) {
       return undefined;
     }
 

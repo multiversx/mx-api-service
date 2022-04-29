@@ -218,8 +218,8 @@ export class TokenController {
     }
 
     try {
-      const token = await this.tokenService.getToken(identifier);
-      if (!token) {
+      const isToken = await this.tokenService.isToken(identifier);
+      if (!isToken) {
         throw new NotFoundException('Token not found');
       }
 
@@ -278,8 +278,8 @@ export class TokenController {
     @Query('after', ParseOptionalIntPipe) after: number | undefined,
   ) {
     try {
-      const token = await this.tokenService.getToken(identifier);
-      if (!token) {
+      const isToken = await this.tokenService.isToken(identifier);
+      if (!isToken) {
         throw new NotFoundException('Token not found');
       }
 
