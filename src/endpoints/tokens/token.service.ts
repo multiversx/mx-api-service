@@ -285,7 +285,7 @@ export class TokenService {
 
     await this.applyTickerFromAssets(tokenWithBalance);
 
-    await this.applySupply(token);
+    await this.applySupply(tokenWithBalance);
 
     return tokenWithBalance;
   }
@@ -445,9 +445,18 @@ export class TokenService {
 
     token.supply = NumberUtils.denominate(BigInt(supply.totalSupply), token.decimals).toFixed();
     token.circulatingSupply = NumberUtils.denominate(BigInt(supply.circulatingSupply), token.decimals).toFixed();
-    token.minted = supply.minted;
-    token.burnt = supply.burned;
-    token.initialMinted = supply.initialMinted;
+
+    if (supply.minted) {
+      token.minted = supply.minted;
+    }
+
+    if (supply.burned) {
+      token.burnt = supply.burned;
+    }
+
+    if (supply.initialMinted) {
+      token.initialMinted = supply.initialMinted;
+    }
   }
 
   async getTokenSupply(identifier: string, denominated: boolean | undefined = undefined): Promise<TokenSupplyResult | undefined> {
