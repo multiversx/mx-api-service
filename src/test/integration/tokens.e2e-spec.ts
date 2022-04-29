@@ -7,7 +7,6 @@ import { TokenService } from 'src/endpoints/tokens/token.service';
 import { PublicAppModule } from 'src/public.app.module';
 import { TokenDetailed } from 'src/endpoints/tokens/entities/token.detailed';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { TokenWithBalance } from 'src/endpoints/tokens/entities/token.with.balance';
 import { Test } from '@nestjs/testing';
 import { FileUtils } from 'src/utils/file.utils';
 import '../../utils/extensions/jest.extensions';
