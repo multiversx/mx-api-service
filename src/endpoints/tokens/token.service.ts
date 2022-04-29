@@ -28,6 +28,7 @@ import { AddressUtils } from "src/utils/address.utils";
 import { TokenProperties } from "./entities/token.properties";
 import { TokenRoles } from "./entities/token.roles";
 import { TokenSupplyResult } from "./entities/token.supply.result";
+import { TokenDetailedWithBalance } from "./entities/token.detailed.with.balance";
 
 @Injectable()
 export class TokenService {
@@ -259,7 +260,7 @@ export class TokenService {
     return tokens;
   }
 
-  async getTokenForAddress(address: string, identifier: string): Promise<TokenWithBalance | undefined> {
+  async getTokenForAddress(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {
     const tokens = await this.getFilteredTokens({ identifier });
     if (!tokens.length) {
       this.logger.log(`Error when fetching token ${identifier} details for address ${address}`);
@@ -279,7 +280,7 @@ export class TokenService {
       ...token,
       balance,
     };
-    tokenWithBalance = ApiUtils.mergeObjects(new TokenWithBalance(), tokenWithBalance);
+    tokenWithBalance = ApiUtils.mergeObjects(new TokenDetailedWithBalance(), tokenWithBalance);
 
     tokenWithBalance.identifier = token.identifier;
 
