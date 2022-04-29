@@ -101,8 +101,6 @@ describe('ESDT Service', () => {
         expect(result.hasOwnProperty("name")).toBeTruthy();
         expect(result.hasOwnProperty("ticker")).toBeTruthy();
         expect(result.hasOwnProperty("owner")).toBeTruthy();
-        expect(result.hasOwnProperty("minted")).toBeTruthy();
-        expect(result.hasOwnProperty("burnt")).toBeTruthy();
         expect(result.hasOwnProperty("isPaused")).toBeTruthy();
         expect(result.hasOwnProperty("canUpgrade")).toBeTruthy();
         expect(result.hasOwnProperty("canMint")).toBeTruthy();

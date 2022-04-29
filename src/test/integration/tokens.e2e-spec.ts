@@ -11,6 +11,7 @@ import { TokenWithBalance } from 'src/endpoints/tokens/entities/token.with.balan
 import { Test } from '@nestjs/testing';
 import { FileUtils } from 'src/utils/file.utils';
 import '../../utils/extensions/jest.extensions';
+import { TokenDetailedWithBalance } from 'src/endpoints/tokens/entities/token.detailed.with.balance';
 
 describe('Token Service', () => {
   let tokenService: TokenService;
@@ -383,8 +384,7 @@ describe('Token Service', () => {
       const result = await tokenService.getTokenProperties(identifier);
 
       expect(result).toHaveProperties([
-        'identifier', 'name', 'type',
-        'owner', 'minted', 'burnt',
+        'identifier', 'name', 'type', 'owner',
         'decimals', 'isPaused', 'canUpgrade',
         'canMint', 'canBurn', 'canChangeOwner',
         'canPause', 'canFreeze', 'canWipe']);
@@ -743,7 +743,7 @@ describe('Token Service', () => {
       const identifier: string = "RIDE-7d18e9";
       const result = await tokenService.getTokenForAddress(address, identifier);
 
-      expect(result).toHaveStructure(Object.keys(new TokenWithBalance()));
+      expect(result).toHaveStructure(Object.keys(new TokenDetailedWithBalance()));
     });
 
     it("should return undefined because test simulates that token is not defined for address", async () => {
