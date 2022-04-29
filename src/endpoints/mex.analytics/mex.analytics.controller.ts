@@ -1,5 +1,7 @@
+import { MexEconomics } from './entities/mex.economics';
+import { MexToken } from './entities/mex.token';
 import { Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { MexPair } from "./entities/mex.pair";
 import { MexSettings } from "./entities/mex.settings";
 import { MexEconomicsService } from "./mex.economics.service";
@@ -33,21 +35,30 @@ export class MexAnalyticsController {
   }
 
   @Get("/mex-economics")
+  @ApiOperation({
+    summary: 'Maiar Exchange economics',
+    description: 'Returns economics details of Maiar Exchange',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Details of the economics of the Maiar Exchange',
+    type: MexEconomics,
   })
   async getMexEconomics(): Promise<any> {
     return await this.mexEconomicsService.getMexEconomics();
   }
 
   @Get("/mex-pairs")
+  @ApiOperation({
+    summary: 'Maiar Exchange pairs',
+    description: 'Returns active liquidity pools available on Maiar Exchange',
+  })
   @ApiResponse({
     status: 200,
-    description: 'A list of pairs listed on the Maiar Exchange',
+    isArray: true,
+    type: MexPair,
   })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({name: 'from', description: 'Number of items to skip for the result set', required: false})
+  @ApiQuery({name: 'size', description: 'Number of items to retrieve', required: false})
   async getMexPairs(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
@@ -56,12 +67,17 @@ export class MexAnalyticsController {
   }
 
   @Get("/mex-tokens")
+  @ApiOperation({
+    summary: 'Maiar Exchange tokens details',
+    description: 'Returns a list of tokens listed on Maiar Exchange',
+  })
   @ApiResponse({
     status: 200,
-    description: 'A list of mex tokens listed on the Maiar Exchange',
+    isArray: true,
+    type: MexToken,
   })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({name: 'from', description: 'Number of items to skip for the result set', required: false})
+  @ApiQuery({name: 'size', description: 'Number of items to retrieve', required: false})
   async getMexTokens(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
@@ -70,9 +86,13 @@ export class MexAnalyticsController {
   }
 
   @Get("/mex-pairs/:baseId/:quoteId")
+  @ApiOperation({
+    summary: 'Maiar Exchange pairs details',
+    description: 'Returns liquidity pool details by providing a combination of two tokens',
+  })
   @ApiResponse({
     status: 200,
-    description: 'A list of pairs listed on the Maiar Exchange',
+    type: MexPair,
   })
   async getMexPair(
     @Param('baseId') baseId: string,
