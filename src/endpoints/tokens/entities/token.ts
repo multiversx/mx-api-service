@@ -29,7 +29,6 @@ export class Token {
   @ApiProperty()
   accounts: number | undefined = undefined;
 
-
   @ApiProperty()
   canUpgrade: boolean = false;
 
