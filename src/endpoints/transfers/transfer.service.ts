@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
@@ -21,6 +21,7 @@ export class TransferService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly elasticService: ElasticService,
+    @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
   ) { }
 
@@ -49,6 +50,10 @@ export class TransferService {
           QueryType.Match('receivers', address),
         ]),
       ]));
+
+    if (filter.type) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('type', filter.type === TransactionType.Transaction ? 'normal' : 'unsigned'));
+    }
 
     if (filter.sender) {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('sender', filter.sender));

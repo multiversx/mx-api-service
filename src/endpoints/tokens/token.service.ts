@@ -14,7 +14,6 @@ import { QueryType } from "src/common/elastic/entities/query.type";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { TokenAccount } from "./entities/token.account";
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
-import { TokenAddressRoles } from "./entities/token.address.roles";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { TransactionService } from "../transactions/transaction.service";
@@ -24,8 +23,12 @@ import { NumberUtils } from "src/utils/number.utils";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { AddressUtils } from "src/utils/address.utils";
 import { TokenProperties } from "./entities/token.properties";
+import { TokenRoles } from "./entities/token.roles";
+import { TokenSupplyResult } from "./entities/token.supply.result";
+import { TokenDetailedWithBalance } from "./entities/token.detailed.with.balance";
 
 @Injectable()
 export class TokenService {
@@ -37,7 +40,8 @@ export class TokenService {
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
     private readonly esdtAddressService: EsdtAddressService,
-    private readonly gatewayService: GatewayService
+    private readonly gatewayService: GatewayService,
+    private readonly apiConfigService: ApiConfigService
   ) {
     this.logger = new Logger(TokenService.name);
   }
@@ -56,6 +60,8 @@ export class TokenService {
     await this.applySupply(token);
 
     await this.processToken(token);
+
+    token.roles = await this.getTokenRoles(identifier);
 
     return token;
   }
@@ -254,7 +260,7 @@ export class TokenService {
     return tokens;
   }
 
-  async getTokenForAddress(address: string, identifier: string): Promise<TokenWithBalance | undefined> {
+  async getTokenForAddress(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {
     const tokens = await this.getFilteredTokens({ identifier });
     if (!tokens.length) {
       this.logger.log(`Error when fetching token ${identifier} details for address ${address}`);
@@ -274,13 +280,13 @@ export class TokenService {
       ...token,
       balance,
     };
-    tokenWithBalance = ApiUtils.mergeObjects(new TokenWithBalance(), tokenWithBalance);
+    tokenWithBalance = ApiUtils.mergeObjects(new TokenDetailedWithBalance(), tokenWithBalance);
 
     tokenWithBalance.identifier = token.identifier;
 
     await this.applyTickerFromAssets(tokenWithBalance);
 
-    await this.applySupply(token);
+    await this.applySupply(tokenWithBalance);
 
     return tokenWithBalance;
   }
@@ -367,23 +373,77 @@ export class TokenService {
     return count;
   }
 
-  async getTokenRoles(identifier: string): Promise<TokenAddressRoles[] | undefined> {
-    const token = await this.getToken(identifier);
+  private async getTokenRolesFromElastic(identifier: string): Promise<TokenRoles[] | undefined> {
+    const token = await this.elasticService.getItem('tokens', 'identifier', identifier);
     if (!token) {
       return undefined;
+    }
+
+    if (!token.roles) {
+      return undefined;
+    }
+
+    const roles: TokenRoles[] = [];
+    for (const role of Object.keys(token.roles)) {
+      const addresses = token.roles[role].distinct();
+
+      for (const address of addresses) {
+        let addressRole = roles.find((addressRole) => addressRole.address === address);
+        if (!addressRole) {
+          addressRole = new TokenRoles();
+          addressRole.address = address;
+          roles.push(addressRole);
+        }
+
+        TokenUtils.setTokenRole(addressRole, role);
+      }
+    }
+
+    return roles;
+  }
+
+  async getTokenRoles(identifier: string): Promise<TokenRoles[] | undefined> {
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+      return await this.getTokenRolesFromElastic(identifier);
     }
 
     return await this.esdtService.getEsdtAddressesRoles(identifier);
   }
 
-  async getTokenRolesForAddress(identifier: string, address: string): Promise<TokenAddressRoles | undefined> {
+  async getTokenRolesForAddress(identifier: string, address: string): Promise<TokenRoles | undefined> {
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+      const token = await this.elasticService.getItem('tokens', 'identifier', identifier);
+
+      if (!token) {
+        return undefined;
+      }
+
+      if (!token.roles) {
+        return undefined;
+      }
+
+      const addressRoles: TokenRoles = new TokenRoles();
+      addressRoles.address = address;
+      for (const role of Object.keys(token.roles)) {
+        const addresses = token.roles[role].distinct();
+        if (addresses.includes(address)) {
+          TokenUtils.setTokenRole(addressRoles, role);
+        }
+      }
+
+      //@ts-ignore
+      delete addressRoles.address;
+
+      return addressRoles;
+    }
+
     const token = await this.getToken(identifier);
     if (!token) {
       return undefined;
     }
 
     const tokenAddressesRoles = await this.esdtService.getEsdtAddressesRoles(identifier);
-    const addressRoles = tokenAddressesRoles?.find((role: TokenAddressRoles) => role.address === address);
+    const addressRoles = tokenAddressesRoles?.find((role: TokenRoles) => role.address === address);
 
     //@ts-ignore
     delete addressRoles?.address;
@@ -392,13 +452,25 @@ export class TokenService {
   }
 
   async applySupply(token: TokenDetailed): Promise<void> {
-    const { totalSupply, circulatingSupply } = await this.esdtService.getTokenSupply(token.identifier);
+    const supply = await this.esdtService.getTokenSupply(token.identifier);
 
-    token.supply = NumberUtils.denominate(BigInt(totalSupply), token.decimals).toFixed();
-    token.circulatingSupply = NumberUtils.denominate(BigInt(circulatingSupply), token.decimals).toFixed();
+    token.supply = NumberUtils.denominate(BigInt(supply.totalSupply), token.decimals).toFixed();
+    token.circulatingSupply = NumberUtils.denominate(BigInt(supply.circulatingSupply), token.decimals).toFixed();
+
+    if (supply.minted) {
+      token.minted = supply.minted;
+    }
+
+    if (supply.burned) {
+      token.burnt = supply.burned;
+    }
+
+    if (supply.initialMinted) {
+      token.initialMinted = supply.initialMinted;
+    }
   }
 
-  async getTokenSupply(identifier: string): Promise<{ supply: string, circulatingSupply: string } | undefined> {
+  async getTokenSupply(identifier: string, denominated: boolean | undefined = undefined): Promise<TokenSupplyResult | undefined> {
     const token = await this.getToken(identifier);
     if (!token) {
       return undefined;
@@ -411,9 +483,15 @@ export class TokenService {
 
     const result = await this.esdtService.getTokenSupply(identifier);
 
+    const totalSupply = NumberUtils.denominateString(result.totalSupply, properties.decimals);
+    const circulatingSupply = NumberUtils.denominateString(result.circulatingSupply, properties.decimals);
+
     return {
-      supply: NumberUtils.denominateString(result.totalSupply, properties.decimals).toFixed(),
-      circulatingSupply: NumberUtils.denominateString(result.circulatingSupply, properties.decimals).toFixed(),
+      supply: denominated === true ? totalSupply : totalSupply.toFixed(),
+      circulatingSupply: denominated === true ? circulatingSupply : circulatingSupply.toFixed(),
+      minted: denominated === true && result.minted ? NumberUtils.denominateString(result.minted, properties.decimals) : result.minted,
+      burnt: denominated === true && result.burned ? NumberUtils.denominateString(result.burned, properties.decimals) : result.burned,
+      initialMinted: denominated === true && result.initialMinted ? NumberUtils.denominateString(result.initialMinted, properties.decimals) : result.initialMinted,
     };
   }
 

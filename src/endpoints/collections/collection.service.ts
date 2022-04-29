@@ -5,7 +5,6 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { EsdtService } from "../esdt/esdt.service";
-import { AddresCollectionRoles } from "./entities/address.collection.roles";
 import { CollectionFilter } from "./entities/collection.filter";
 import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
@@ -16,7 +15,6 @@ import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.com
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
-import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 import { TokenProperties } from "../tokens/entities/token.properties";
 import { CachingService } from "src/common/caching/caching.service";
@@ -25,6 +23,9 @@ import { RecordUtils } from "src/utils/record.utils";
 import { TokenAssets } from "../tokens/entities/token.assets";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
+import { CollectionRoles } from "../tokens/entities/collection.roles";
+import { TokenUtils } from "src/utils/token.utils";
+import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 
 @Injectable()
 export class CollectionService {
@@ -41,41 +42,64 @@ export class CollectionService {
   ) { }
 
   buildCollectionFilter(filter: CollectionFilter, address?: string) {
-    const mustNotQueries = [];
-    mustNotQueries.push(QueryType.Exists('identifier'));
+    let elasticQuery = ElasticQuery.create();
+    elasticQuery = elasticQuery.withMustNotCondition(QueryType.Exists('identifier'));
 
-    const mustQueries = [];
     if (address) {
-      mustQueries.push(QueryType.Match("currentOwner", address));
+      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+        elasticQuery = elasticQuery.withMustCondition(QueryType.Should(
+          [
+            QueryType.Match('currentOwner', address),
+            QueryType.Nested('roles', { 'roles.ESDTRoleNFTCreate': address }),
+            QueryType.Nested('roles', { 'roles.ESDTRoleNFTBurn': address }),
+            QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddQuantity': address }),
+            QueryType.Nested('roles', { 'roles.ESDTRoleNFTUpdateAttributes': address }),
+            QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddURI': address }),
+            QueryType.Nested('roles', { 'roles.ESDTTransferRole': address }),
+          ]
+        ));
+      } else {
+        elasticQuery = elasticQuery.withMustCondition(QueryType.Match('currentOwner', address));
+      }
     }
 
-    if (filter.collection !== undefined) {
-      mustQueries.push(QueryType.Match('token', filter.collection, QueryOperator.AND));
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+      if (filter.canCreate !== undefined) {
+        const condition = filter.canCreate === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
+        elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleNFTCreate': address }));
+      }
+
+      if (filter.canBurn !== undefined) {
+        const condition = filter.canBurn === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
+        elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleNFTBurn': address }));
+      }
+
+      if (filter.canAddQuantity !== undefined) {
+        const condition = filter.canAddQuantity === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
+        elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddQuantity': address }));
+      }
+
+      if (filter.canUpdateAttributes !== undefined) {
+        const condition = filter.canUpdateAttributes === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
+        elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleNFTUpdateAttributes': address }));
+      }
+
+      if (filter.canAddUri !== undefined) {
+        const condition = filter.canAddUri === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
+        elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddURI': address }));
+      }
+
+      if (filter.canTransferRole !== undefined) {
+        const condition = filter.canTransferRole === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
+        elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTTransferRole': address }));
+      }
     }
 
-    if (filter.identifiers !== undefined) {
-      mustQueries.push(QueryType.Should(filter.identifiers.map(identifier => QueryType.Match('token', identifier, QueryOperator.AND))));
-    }
-
-    if (filter.search !== undefined) {
-      mustQueries.push(QueryType.Wildcard('token', `*${filter.search}*`));
-    }
-
-    if (filter.type !== undefined) {
-      mustQueries.push(QueryType.Match('type', filter.type));
-    }
-
-    const shouldQueries = [];
-    shouldQueries.push(QueryType.Match('type', NftType.SemiFungibleESDT));
-    shouldQueries.push(QueryType.Match('type', NftType.NonFungibleESDT));
-    shouldQueries.push(QueryType.Match('type', NftType.MetaESDT));
-
-    const elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, mustQueries)
-      .withCondition(QueryConditionOptions.should, shouldQueries)
-      .withCondition(QueryConditionOptions.mustNot, mustNotQueries);
-
-    return elasticQuery;
+    return elasticQuery.withMustMatchCondition('token', filter.collection, QueryOperator.AND)
+      .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
+      .withMustWildcardCondition('token', filter.search)
+      .withMustMatchCondition('type', filter.type)
+      .withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT, NftType.MetaESDT], type => QueryType.Match('type', type));
   }
 
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
@@ -104,9 +128,11 @@ export class CollectionService {
 
     for (const nftCollection of nftColections) {
       const indexedCollection = indexedCollections[nftCollection.collection];
-      if (indexedCollection) {
-        nftCollection.timestamp = indexedCollection.timestamp;
+      if (!indexedCollection) {
+        continue;
       }
+
+      nftCollection.timestamp = indexedCollection.timestamp;
     }
 
     return nftColections;
@@ -133,7 +159,7 @@ export class CollectionService {
       nftCollection.canFreeze = collectionProperties.canFreeze;
       nftCollection.canWipe = collectionProperties.canWipe;
       nftCollection.canPause = collectionProperties.canPause;
-      nftCollection.canTransferRole = collectionProperties.canTransferNFTCreateRole;
+      nftCollection.canTransferNftCreateRole = collectionProperties.canTransferNFTCreateRole;
       nftCollection.owner = collectionProperties.owner;
 
       if (nftCollection.type === NftType.MetaESDT) {
@@ -206,41 +232,88 @@ export class CollectionService {
     return await this.elasticService.getCount('tokens', elasticQuery);
   }
 
-  async getNftCollection(collection: string): Promise<NftCollection | undefined> {
-    const result = await this.getNftCollections({ from: 0, size: 1 }, { collection });
-    if (result.length === 0 || result[0].collection.toLowerCase() !== collection.toLowerCase()) {
+  async getNftCollection(identifier: string): Promise<NftCollection | undefined> {
+    const elasticCollection = await this.elasticService.getItem('tokens', '_id', identifier);
+    if (!elasticCollection) {
       return undefined;
     }
 
-    const nftCollection = result[0];
+    const [collection] = await this.applyPropertiesToCollections([identifier]);
 
-    await this.applySpecialRoles(nftCollection);
+    if (!collection) {
+      return undefined;
+    }
 
-    return nftCollection;
+    collection.timestamp = elasticCollection.timestamp;
+    collection.roles = await this.getNftCollectionRoles(elasticCollection);
+
+    return collection;
   }
 
-  private async applySpecialRoles(nftCollection: NftCollection) {
+  async getNftCollectionRoles(elasticCollection: any): Promise<CollectionRoles[]> {
+    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
+      return await this.getNftCollectionRolesFromEsdtContract(elasticCollection.token);
+    }
+
+    return this.getNftCollectionRolesFromElasticResponse(elasticCollection);
+  }
+
+  private getNftCollectionRolesFromElasticResponse(elasticCollection: any): CollectionRoles[] {
+    if (!elasticCollection.roles) {
+      return [];
+    }
+
+    const allRoles: CollectionRoles[] = [];
+    for (const role of Object.keys(elasticCollection.roles)) {
+      const addresses = elasticCollection.roles[role].distinct();
+
+      for (const address of addresses) {
+        const foundAddressRoles = allRoles.find((addressRole) => addressRole.address === address);
+        if (foundAddressRoles) {
+          TokenUtils.setCollectionRole(foundAddressRoles, role);
+          continue;
+        }
+
+        const addressRole = new CollectionRoles();
+        addressRole.address = address;
+        TokenUtils.setCollectionRole(addressRole, role);
+
+        allRoles.push(addressRole);
+      }
+    }
+
+    return allRoles;
+  }
+
+  private async getNftCollectionRolesFromEsdtContract(identifier: string): Promise<CollectionRoles[]> {
     const collectionRolesEncoded = await this.vmQueryService.vmQuery(
       this.apiConfigService.getEsdtContractAddress(),
       'getSpecialRoles',
       undefined,
-      [BinaryUtils.stringToHex(nftCollection.collection)]
+      [BinaryUtils.stringToHex(identifier)]
     );
 
     if (!collectionRolesEncoded) {
-      return;
+      return [];
     }
+
+    const allRoles: CollectionRoles[] = [];
 
     for (const rolesForAddressEncoded of collectionRolesEncoded) {
       const rolesForAddressDecoded = BinaryUtils.base64Decode(rolesForAddressEncoded);
       const components = rolesForAddressDecoded.split(':');
 
-      const roleForAddress = new AddresCollectionRoles();
+      const roleForAddress = new CollectionRoles();
       roleForAddress.address = components[0];
-      roleForAddress.roles = components[1].split(',');
+      const roles = components[1].split(',');
+      for (const role of roles) {
+        TokenUtils.setCollectionRole(roleForAddress, role);
+      }
 
-      nftCollection.roles.push(roleForAddress);
+      allRoles.push(roleForAddress);
     }
+
+    return allRoles;
   }
 
   async getCollectionForAddress(address: string, collection: string): Promise<NftCollectionAccount | undefined> {

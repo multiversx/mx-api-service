@@ -24,7 +24,7 @@ import { AccountService } from "./account.service";
     SmartContractResultModule,
     forwardRef(() => CollectionModule),
     forwardRef(() => PluginModule),
-    TransferModule,
+    forwardRef(() => TransferModule),
     forwardRef(() => TokenModule),
   ],
   providers: [

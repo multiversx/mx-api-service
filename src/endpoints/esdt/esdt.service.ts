@@ -16,9 +16,9 @@ import { TokenUtils } from "src/utils/token.utils";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { CachingService } from "../../common/caching/caching.service";
 import { GatewayService } from "../../common/gateway/gateway.service";
-import { TokenAddressRoles } from "../tokens/entities/token.address.roles";
 import { TokenAssets } from "../tokens/entities/token.assets";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
+import { TokenRoles } from "../tokens/entities/token.roles";
 import { TokenAssetService } from "../tokens/token.asset.service";
 import { EsdtSupply } from "./entities/esdt.supply";
 
@@ -146,8 +146,8 @@ export class EsdtService {
       name,
       type,
       owner,
-      minted,
-      burnt,
+      _,
+      __,
       decimals,
       isPaused,
       canUpgrade,
@@ -169,8 +169,6 @@ export class EsdtService {
       // @ts-ignore
       type,
       owner: AddressUtils.bech32Encode(owner),
-      minted,
-      burnt,
       decimals: parseInt(decimals.split('-').pop() ?? '0'),
       isPaused: TokenUtils.canBool(isPaused),
       canUpgrade: TokenUtils.canBool(canUpgrade),
@@ -200,7 +198,7 @@ export class EsdtService {
     return tokenProps;
   }
 
-  async getEsdtAddressesRoles(identifier: string): Promise<TokenAddressRoles[] | undefined> {
+  async getEsdtAddressesRoles(identifier: string): Promise<TokenRoles[] | undefined> {
     const addressesRoles = await this.cachingService.getOrSetCache(
       CacheInfo.EsdtAddressesRoles(identifier).key,
       async () => await this.getEsdtAddressesRolesRaw(identifier),
@@ -215,7 +213,7 @@ export class EsdtService {
     return addressesRoles;
   }
 
-  async getEsdtAddressesRolesRaw(identifier: string): Promise<TokenAddressRoles[] | null> {
+  async getEsdtAddressesRolesRaw(identifier: string): Promise<TokenRoles[] | null> {
     const arg = BinaryUtils.stringToHex(identifier);
 
     const tokenAddressesAndRolesEncoded = await this.vmQueryService.vmQuery(
@@ -231,8 +229,8 @@ export class EsdtService {
       return [];
     }
 
-    const tokenAddressesAndRoles: TokenAddressRoles[] = [];
-    let currentAddressRoles = new TokenAddressRoles();
+    const tokenAddressesAndRoles: TokenRoles[] = [];
+    let currentAddressRoles = new TokenRoles();
     for (const valueEncoded of tokenAddressesAndRolesEncoded) {
       const address = BinaryUtils.tryBase64ToAddress(valueEncoded);
       if (address) {
@@ -240,14 +238,14 @@ export class EsdtService {
           tokenAddressesAndRoles.push(currentAddressRoles);
         }
 
-        currentAddressRoles = new TokenAddressRoles();
+        currentAddressRoles = new TokenRoles();
         currentAddressRoles.address = address;
-        currentAddressRoles.roles = [];
+
         continue;
       }
 
       const role = BinaryUtils.base64Decode(valueEncoded);
-      currentAddressRoles.roles?.push(role);
+      TokenUtils.setTokenRole(currentAddressRoles, role);
     }
 
     if (currentAddressRoles.address) {
@@ -282,7 +280,7 @@ export class EsdtService {
   }
 
   async getTokenSupply(identifier: string): Promise<EsdtSupply> {
-    const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
+    const { supply, minted, burned, initialMinted } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
 
     const isCollectionOrToken = identifier.split('-').length === 2;
     if (isCollectionOrToken) {
@@ -296,12 +294,18 @@ export class EsdtService {
       return {
         totalSupply: supply,
         circulatingSupply: circulatingSupply.toString(),
+        minted,
+        burned,
+        initialMinted,
       };
     }
 
     return {
       totalSupply: supply,
       circulatingSupply: supply,
+      minted,
+      burned,
+      initialMinted,
     };
   }
 }

@@ -88,14 +88,14 @@ export class BlockService {
   }
 
   async computeProposerAndValidators(item: any) {
-    const { shardId: shard, epoch, searchOrder, ...rest } = item;
+    const { shardId, epoch, searchOrder, ...rest } = item;
     let { proposer, validators } = item;
 
-    let blses: any = await this.cachingService.getCacheLocal(CacheInfo.ShardAndEpochBlses(shard, epoch).key);
+    let blses: any = await this.cachingService.getCacheLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key);
     if (!blses) {
-      blses = await this.blsService.getPublicKeys(shard, epoch);
+      blses = await this.blsService.getPublicKeys(shardId, epoch);
 
-      await this.cachingService.setCacheLocal(CacheInfo.ShardAndEpochBlses(shard, epoch).key, blses, CacheInfo.ShardAndEpochBlses(shard, epoch).ttl);
+      await this.cachingService.setCacheLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key, blses, CacheInfo.ShardAndEpochBlses(shardId, epoch).ttl);
     }
 
     proposer = blses[proposer];
@@ -104,7 +104,7 @@ export class BlockService {
       validators = validators.map((index: number) => blses[index]);
     }
 
-    return { shard, epoch, proposer, validators, ...rest };
+    return { shardId, epoch, proposer, validators, ...rest };
   }
 
   async getBlock(hash: string): Promise<BlockDetailed> {

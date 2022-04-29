@@ -5,5 +5,6 @@ export enum NodeStatus {
     eligible = 'eligible',
     jailed = 'jailed',
     queued = 'queued',
-    leaving = 'leaving'
+    leaving = 'leaving',
+    inactive = 'inactive'
 }

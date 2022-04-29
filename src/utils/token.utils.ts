@@ -2,6 +2,8 @@ import { ApiUtils } from "./api.utils";
 import * as crypto from 'crypto-js';
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
+import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles";
+import { TokenRoles } from "src/endpoints/tokens/entities/token.roles";
 
 export class TokenUtils {
   static isEsdt(tokenIdentifier: string) {
@@ -43,5 +45,43 @@ export class TokenUtils {
     }
 
     return true;
+  }
+
+  static setTokenRole(tokenRoles: TokenRoles, role: string) {
+    tokenRoles.roles.push(role);
+
+    switch (role) {
+      case 'ESDTRoleLocalMint':
+        tokenRoles.canMint = true;
+        break;
+      case 'ESDTRoleLocalBurn':
+        tokenRoles.canBurn = true;
+        break;
+    }
+  }
+
+  static setCollectionRole(tokenRoles: CollectionRoles, role: string) {
+    tokenRoles.roles.push(role);
+
+    switch (role) {
+      case 'ESDTRoleNFTCreate':
+        tokenRoles.canCreate = true;
+        break;
+      case 'ESDTRoleNFTBurn':
+        tokenRoles.canBurn = true;
+        break;
+      case 'ESDTRoleNFTAddQuantity':
+        tokenRoles.canAddQuantity = true;
+        break;
+      case 'ESDTRoleNFTAddURI':
+        tokenRoles.canAddQuantity = true;
+        break;
+      case 'ESDTTransferRole':
+        tokenRoles.canAddQuantity = true;
+        break;
+      case 'ESDTRoleNFTUpdateAttributes':
+        tokenRoles.canAddQuantity = true;
+        break;
+    }
   }
 }

@@ -10,9 +10,10 @@ import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { TransactionStatus } from "../transactions/entities/transaction.status";
 import { TransactionService } from "../transactions/transaction.service";
 import { TokenAccount } from "./entities/token.account";
-import { TokenAddressRoles } from "./entities/token.address.roles";
 import { TokenDetailed } from "./entities/token.detailed";
 import { TokenService } from "./token.service";
+import { TokenRoles } from "./entities/token.roles";
+import { TokenSupplyResult } from "./entities/token.supply.result";
 
 @Controller()
 @ApiTags('tokens')
@@ -98,6 +99,7 @@ export class TokenController {
   }
 
   @Get('/tokens/:identifier/supply')
+  @ApiQuery({ name: 'denominated', description: 'Return results denominated', required: false })
   @ApiResponse({
     status: 200,
     description: 'Non-fungible / semi-fungible token supply',
@@ -106,8 +108,11 @@ export class TokenController {
     status: 404,
     description: 'Token not found',
   })
-  async getTokenSupply(@Param('identifier') identifier: string): Promise<{ supply: string, circulatingSupply: string }> {
-    const getSupplyResult = await this.tokenService.getTokenSupply(identifier);
+  async getTokenSupply(
+    @Param('identifier') identifier: string,
+    @Query('denominated', new ParseOptionalBoolPipe) denominated: boolean | undefined,
+  ): Promise<TokenSupplyResult> {
+    const getSupplyResult = await this.tokenService.getTokenSupply(identifier, denominated);
     if (!getSupplyResult) {
       throw new NotFoundException('Token not found');
     }
@@ -309,9 +314,14 @@ export class TokenController {
   async getTokenRoles(
     @Param('identifier') identifier: string,
   ): Promise<TokenAddressRoles[]> {
+    const token = await this.getToken(identifier);
+    if (!token) {
+      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+    }
+
     const roles = await this.tokenService.getTokenRoles(identifier);
     if (!roles) {
-      throw new NotFoundException('Token not found');
+      throw new HttpException('Token roles not found', HttpStatus.NOT_FOUND);
     }
 
     return roles;
@@ -329,7 +339,7 @@ export class TokenController {
   async getTokenRolesForAddress(
     @Param('identifier') identifier: string,
     @Param('address') address: string,
-  ): Promise<TokenAddressRoles> {
+  ): Promise<TokenRoles> {
     const roles = await this.tokenService.getTokenRolesForAddress(identifier, address);
     if (!roles) {
       throw new NotFoundException('Token not found');

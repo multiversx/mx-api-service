@@ -480,7 +480,7 @@ export class NodeService {
       let nodeType: NodeType | undefined = undefined;
       let nodeStatus: NodeStatus | undefined = undefined;
 
-      const status = validatorStatus ? validatorStatus : peerType;
+      const status = peerType ? peerType : validatorStatus;
       nodeStatus = status;
 
       if (status === 'observer') {

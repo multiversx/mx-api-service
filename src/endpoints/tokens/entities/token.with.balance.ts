@@ -1,5 +1,5 @@
-import { TokenDetailed } from "./token.detailed";
+import { Token } from "./token";
 
-export class TokenWithBalance extends TokenDetailed {
+export class TokenWithBalance extends Token {
   balance: string = '';
 }

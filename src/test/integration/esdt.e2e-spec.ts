@@ -3,12 +3,12 @@ import { Test } from "@nestjs/testing";
 import { EsdtService } from "../../endpoints/esdt/esdt.service";
 import { PublicAppModule } from "src/public.app.module";
 import { CachingService } from "src/common/caching/caching.service";
-import { TokenAddressRoles } from "src/endpoints/tokens/entities/token.address.roles";
 import { EsdtSupply } from "src/endpoints/esdt/entities/esdt.supply";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { EsdtDataSource } from 'src/endpoints/esdt/entities/esdt.data.source';
 import '../../utils/extensions/jest.extensions';
+import { TokenRoles } from 'src/endpoints/tokens/entities/token.roles';
 
 describe('ESDT Service', () => {
   let esdtService: EsdtService;
@@ -101,8 +101,6 @@ describe('ESDT Service', () => {
         expect(result.hasOwnProperty("name")).toBeTruthy();
         expect(result.hasOwnProperty("ticker")).toBeTruthy();
         expect(result.hasOwnProperty("owner")).toBeTruthy();
-        expect(result.hasOwnProperty("minted")).toBeTruthy();
-        expect(result.hasOwnProperty("burnt")).toBeTruthy();
         expect(result.hasOwnProperty("isPaused")).toBeTruthy();
         expect(result.hasOwnProperty("canUpgrade")).toBeTruthy();
         expect(result.hasOwnProperty("canMint")).toBeTruthy();
@@ -132,8 +130,6 @@ describe('ESDT Service', () => {
       expect(results.hasOwnProperty("identifier")).toBeTruthy();
       expect(results.hasOwnProperty("name")).toBeTruthy();
       expect(results.hasOwnProperty("owner")).toBeTruthy();
-      expect(results.hasOwnProperty("minted")).toBeTruthy();
-      expect(results.hasOwnProperty("burnt")).toBeTruthy();
       expect(results.hasOwnProperty("isPaused")).toBeTruthy();
       expect(results.hasOwnProperty("canUpgrade")).toBeTruthy();
       expect(results.hasOwnProperty("canMint")).toBeTruthy();
@@ -155,7 +151,7 @@ describe('ESDT Service', () => {
       }
 
       for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new TokenAddressRoles()));
+        expect(result).toHaveStructure(Object.keys(new TokenRoles()));
       }
     });
   });
@@ -170,7 +166,7 @@ describe('ESDT Service', () => {
       }
 
       for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new TokenAddressRoles()));
+        expect(result).toHaveStructure(Object.keys(new TokenRoles()));
       }
     });
   });

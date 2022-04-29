@@ -10,4 +10,7 @@ export class CollectionFilter {
   canCreate?: boolean;
   canBurn?: boolean;
   canAddQuantity?: boolean;
+  canUpdateAttributes?: boolean;
+  canAddUri?: boolean;
+  canTransferRole?: boolean;
 }

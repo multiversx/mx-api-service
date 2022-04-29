@@ -8,11 +8,9 @@ import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
-import { NftCreateTransactionExtractor } from "src/crons/transaction.processor/extractor/nft.create.transaction.extractor";
 import { NftUpdateAttributesTransactionExtractor as NftUpdateAttributesTransactionExtractor } from "./extractor/nft.update.attributes.transaction.extractor";
 import { SftChangeTransactionExtractor } from "./extractor/sft.change.transaction.extractor";
 import { TransactionExtractorInterface } from "./extractor/transaction.extractor.interface";
@@ -31,7 +29,6 @@ export class TransactionProcessorService {
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly nodeService: NodeService,
     private readonly nftWorkerService: NftWorkerService,
-    private readonly transactionService: TransactionService,
     private readonly nftService: NftService,
     // private readonly nftExtendedAttributesService: NftExtendedAttributesService,
   ) {
@@ -57,9 +54,6 @@ export class TransactionProcessorService {
 
           for (const transaction of transactions) {
             if (this.apiConfigService.getIsProcessNftsFlagActive()) {
-              // eslint-disable-next-line @typescript-eslint/no-floating-promises
-              this.tryHandleNftCreate(transaction);
-
               const nftUpdateAttributesResult = new NftUpdateAttributesTransactionExtractor().extract(transaction);
               if (nftUpdateAttributesResult) {
                 this.logger.log(`Detected NFT update attributes for NFT with identifier '${nftUpdateAttributesResult.identifier}' and tx hash '${transaction.hash}'`);
@@ -116,51 +110,6 @@ export class TransactionProcessorService {
       await this.nftWorkerService.addProcessNftQueueJob(nft, processSettings);
     } catch (error) {
       this.logger.error(`Unexpected error when handling NFT update metadata for transaction with hash '${transaction.hash}'`);
-      this.logger.error(error);
-    }
-  }
-
-  private async tryHandleNftCreate(transaction: ShardTransaction) {
-    try {
-      const nftCreateExtractor = new NftCreateTransactionExtractor();
-      let nftCreateResult = nftCreateExtractor.extract(transaction);
-
-      if (!nftCreateResult && !nftCreateExtractor.canDetectNftCreateTransactionFromLogs(transaction)) {
-        return;
-      }
-
-      // we wait for the transaction and its operations to be fully indexed
-      await new Promise(resolve => setTimeout(resolve, 5000));
-
-      const transactionDetailed = await this.transactionService.getTransaction(transaction.hash);
-      if (!transactionDetailed || !transactionDetailed.operations || transactionDetailed.operations.length === 0) {
-        this.logger.error(`NFT create: could not fetch transaction information for transaction with hash '${transaction.hash}'`);
-        return;
-      }
-
-      //check if it is an ESDTNFTCreate from transaction logs
-      if (!nftCreateResult) {
-        nftCreateResult = nftCreateExtractor.extract(transaction, transactionDetailed);
-        if (!nftCreateResult) {
-          return;
-        }
-      }
-
-      const nftIdentifier = transactionDetailed.operations.find(x => x.action === 'create' && x.type === 'nft')?.identifier;
-      if (!nftIdentifier) {
-        this.logger.error(`NFT create: could not fetch nft identifier from operation of transaction with hash '${transaction.hash}'`);
-        return;
-      }
-
-      const nft = await this.nftService.getSingleNft(nftIdentifier);
-      if (!nft) {
-        this.logger.error(`NFT create: could not fetch nft details for NFT with identifier '${nftIdentifier}' and transaction hash '${transaction.hash}'`);
-        return;
-      }
-
-      await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
-    } catch (error) {
-      this.logger.error(`Unexpected error when handling NFT create for transaction with hash '${transaction.hash}'`);
       this.logger.error(error);
     }
   }

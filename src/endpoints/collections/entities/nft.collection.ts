@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { TokenAssets } from "src/endpoints/tokens/entities/token.assets";
-import { AddresCollectionRoles } from "./address.collection.roles";
 import { NftType } from "../../nfts/entities/nft.type";
+import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles";
 
 export class NftCollection {
   @ApiProperty()
@@ -32,7 +32,7 @@ export class NftCollection {
   canPause: boolean = false;
 
   @ApiProperty()
-  canTransferRole: boolean = false;
+  canTransferNftCreateRole: boolean = false;
 
   @ApiProperty()
   decimals: number | undefined = undefined;
@@ -41,5 +41,5 @@ export class NftCollection {
   assets: TokenAssets | undefined = undefined;
 
   @ApiProperty()
-  roles: AddresCollectionRoles[] = [];
+  roles: CollectionRoles[] = [];
 }

@@ -160,14 +160,14 @@ export class CacheInfo {
   static NftMetadata(identifier: string): CacheInfo {
     return {
       key: `nftMetadata:${identifier}`,
-      ttl: Constants.oneHour(),
+      ttl: Constants.oneMinute() * 10,
     };
   }
 
   static NftMedia(identifier: string): CacheInfo {
     return {
       key: `nftMedia:${identifier}`,
-      ttl: Constants.oneHour(),
+      ttl: Constants.oneMinute() * 10,
     };
   }
 
@@ -210,6 +210,13 @@ export class CacheInfo {
     return {
       key: `stakeTopup:${address}`,
       ttl: Constants.oneMinute() * 15,
+    };
+  }
+
+  static CollectionType(collectionIdentifier: string): CacheInfo {
+    return {
+      key: `collectionType:${collectionIdentifier}`,
+      ttl: Constants.oneMinute() * 10,
     };
   }
 }

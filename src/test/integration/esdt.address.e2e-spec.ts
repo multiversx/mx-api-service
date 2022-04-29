@@ -109,7 +109,6 @@ describe('EsdtAddressService', () => {
         expect(collection.hasOwnProperty('canFreeze')).toBe(true);
         expect(collection.hasOwnProperty('canWipe')).toBe(true);
         expect(collection.hasOwnProperty('canPause')).toBe(true);
-        expect(collection.hasOwnProperty('canTransferRole')).toBe(true);
         expect(collection.hasOwnProperty('assets')).toBe(true);
         expect(collection.hasOwnProperty('roles')).toBe(true);
       }
@@ -124,8 +123,6 @@ describe('EsdtAddressService', () => {
 
       for (const collection of collectionEsdtGateway) {
         expect(collection).toBeInstanceOf(Object);
-        expect(collection.hasOwnProperty('canBurn')).toBe(true);
-        expect(collection.hasOwnProperty('canCreate')).toBe(true);
       }
     });
   });
