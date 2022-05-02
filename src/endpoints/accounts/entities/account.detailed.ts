@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ScamInfo } from "src/plugins/shared/scam/entities/scam-info.dto";
+import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { Account } from "./account";
 
 export class AccountDetailed extends Account {
