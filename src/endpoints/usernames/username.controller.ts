@@ -11,8 +11,8 @@ export class UsernameController {
 
   @Get("/usernames/:username")
   @ApiOperation({
-    summary: 'Account details',
-    description: 'Returns account details for a given username',
+    summary: 'Account details by herotag',
+    description: 'Returns account details for a given herotag. Performs a redirect on the proper account address',
   })
   @ApiResponse({
     status: 200,

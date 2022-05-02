@@ -1,13 +1,4 @@
-import {
-  Controller,
-  DefaultValuePipe,
-  Get,
-  HttpException,
-  HttpStatus,
-  Param,
-  ParseIntPipe,
-  Query,
-} from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { ParseBlsHashPipe } from "src/utils/pipes/parse.bls.hash.pipe";
@@ -32,11 +23,11 @@ export class RoundController {
     isArray: true,
     type: Round,
   })
-  @ApiQuery({name: 'from', description: 'Number of items to skip for the result set', required: false})
-  @ApiQuery({name: 'size', description: 'Number of items to retrieve', required: false})
-  @ApiQuery({name: 'validator', description: 'Filter by validator', required: false})
-  @ApiQuery({name: 'shard', description: 'Filter by shard identifier', required: false})
-  @ApiQuery({name: 'epoch', description: 'Filter by epoch number', required: false})
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
+  @ApiQuery({ name: 'shard', description: 'Filter by shard identifier', required: false })
+  @ApiQuery({ name: 'epoch', description: 'Filter by epoch number', required: false })
   getRounds(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -57,8 +48,8 @@ export class RoundController {
     status: 200,
     type: Number,
   })
-  @ApiQuery({name: 'from', description: 'Number of items to skip for the result set', required: false})
-  @ApiQuery({name: 'size', description: 'Number of items to retrieve', required: false})
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
   @ApiQuery({ name: 'shard', description: 'Filter by shard identifier', required: false })
   @ApiQuery({ name: 'epoch', description: 'Filter by epoch number', required: false })

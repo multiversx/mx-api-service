@@ -11,7 +11,7 @@ export class KeysController {
 
   @Get("/keys/:key/unbond-period")
   @ApiOperation({
-    summary: 'Unbonding details',
+    summary: 'Unbonding period',
     description: 'Returns remaining unbonding period for a given bls key',
   })
   @ApiResponse({

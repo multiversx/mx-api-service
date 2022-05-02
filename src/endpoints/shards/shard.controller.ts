@@ -11,7 +11,7 @@ export class ShardController {
   @Get("/shards")
   @ApiOperation({
     summary: 'Shards',
-    description: 'Returns all shards details',
+    description: 'Returns all available shards',
   })
   @ApiResponse({
     status: 200,

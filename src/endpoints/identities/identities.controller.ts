@@ -10,7 +10,7 @@ export class IdentitiesController {
   constructor(private readonly identitiesService: IdentitiesService) { }
 
   @Get("/identities")
-  @ApiOperation({ summary: 'Identities', description: 'Returns providers details as well as details about a specific provider for a given identity ' })
+  @ApiOperation({ summary: 'Identities', description: 'List of all node identities, used to group nodes by the same entity. "Free-floating" nodes that do not belong to any identity will also be returned' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -24,7 +24,7 @@ export class IdentitiesController {
   }
 
   @Get('/identities/:identifier')
-  @ApiOperation({ summary: 'Identity details', description: 'Returns provider details for a given identifier' })
+  @ApiOperation({ summary: 'Identity details', description: 'Returns the details of a single identity' })
   @ApiResponse({
     status: 200,
     type: Identity,

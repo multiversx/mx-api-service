@@ -13,7 +13,7 @@ export class StakeController {
   @Get('/stake')
   @ApiOperation({
     summary: 'Stake',
-    description: 'Returns stake details as well as total active validators and nodes queue size ',
+    description: 'Returns general staking information',
   })
   @ApiResponse({
     status: 200,

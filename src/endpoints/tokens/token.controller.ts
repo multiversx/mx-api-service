@@ -29,10 +29,9 @@ export class TokenController {
   @Get("/tokens")
   @ApiOperation({
     summary: 'Tokens',
-    description: 'Returns a list of tokens as well as a specific token for a given identifier',
+    description: 'Returns all tokens available on the blockchain',
   })
   @ApiResponse({
-    status: 200,
     isArray: true,
     type: TokenDetailed,
   })
@@ -115,7 +114,7 @@ export class TokenController {
   @Get('/tokens/:identifier/supply')
   @ApiOperation({
     summary: 'Token supply',
-    description: 'Returns supply and circulating supply details for a specific token',
+    description: 'Returns general supply information for a specific token',
   })
   @ApiQuery({ name: 'denominated', description: 'Return results denominated', required: false })
 
@@ -147,7 +146,7 @@ export class TokenController {
   @Get("/tokens/:identifier/accounts")
   @ApiOperation({
     summary: 'Token accounts',
-    description: 'Returns a list of all accounts that have a specific token',
+    description: 'Returns a list of accounts that hold a specific token',
   })
   @ApiResponse({
     status: 200,
@@ -210,8 +209,7 @@ export class TokenController {
   @Get("/tokens/:identifier/transactions")
   @ApiOperation({
     summary: 'Token transactions',
-    description: `Returns a list of transactions for a specific token, it can also return all transactions that have success / pending / fail status and 
-    at the same time the transactions on certain shards. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs`,
+    description: `Returns a list of transactions for a specific token. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs`,
   })
   @ApiResponse({
     status: 200,
@@ -344,7 +342,7 @@ export class TokenController {
   @Get("/tokens/:identifier/roles")
   @ApiOperation({
     summary: 'Token roles',
-    description: 'Returns a list of accounts that have certain roles for a specific token',
+    description: 'Returns a list of accounts that can perform various actions on a specific token',
   })
   @ApiResponse({
     status: 200,
@@ -374,7 +372,7 @@ export class TokenController {
   @Get("/tokens/:identifier/roles/:address")
   @ApiOperation({
     summary: 'Token address roles',
-    description: 'Returns the roles of an address for a specific token',
+    description: 'Returns role information for a specific address on a given token',
   })
   @ApiResponse({
     status: 200,
