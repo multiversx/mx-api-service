@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { ScamInfo } from "src/plugins/shared/scam/entities/scam-info.dto";
 import { Account } from "./account";
 
 export class AccountDetailed extends Account {
@@ -40,4 +41,7 @@ export class AccountDetailed extends Account {
 
     @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
     isPayableBySmartContract?: boolean | undefined = undefined;
+
+    @ApiProperty({ type: ScamInfo, nullable: true })
+    scamInfo: ScamInfo | undefined = undefined;
 }

@@ -37,7 +37,6 @@ import { TransferService } from '../transfers/transfer.service';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { Transaction } from '../transactions/entities/transaction';
 import { ProviderStake } from '../stake/entities/provider.stake';
-import { AccountDetails } from './entities/account.details';
 
 @Controller()
 @ApiTags('accounts')
@@ -105,7 +104,7 @@ export class AccountController {
   })
   @ApiResponse({
     status: 200,
-    type: AccountDetails,
+    type: AccountDetailed,
   })
   @ApiResponse({
     status: 404,
@@ -308,6 +307,35 @@ export class AccountController {
     }
   }
 
+  @Get("/accounts/:address/tokens/:token")
+  @ApiOperation({
+    summary: 'Account token details',
+    description: 'Returns details about a specific fungible token from a given address',
+  })
+  @ApiResponse({
+    status: 200,
+    type: TokenWithBalance,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Token not found',
+  })
+  async getAccountToken(
+    @Param('address', ParseAddressPipe) address: string,
+    @Param('token') token: string,
+  ): Promise<TokenWithBalance> {
+    const result = await this.tokenService.getTokenForAddress(address, token);
+    if (!result) {
+      throw new HttpException('Token for given account not found', HttpStatus.NOT_FOUND);
+    }
+
+    return result;
+  }
+
   @Get("/accounts/:address/collections/c")
   @ApiExcludeEndpoint()
   async getCollectionCountAlternative(
@@ -353,35 +381,6 @@ export class AccountController {
     const result = await this.collectionService.getCollectionForAddress(address, collection);
     if (!result) {
       throw new NotFoundException('Collection for given account not found');
-    }
-
-    return result;
-  }
-
-  @Get("/accounts/:address/tokens/:token")
-  @ApiOperation({
-    summary: 'Account token details',
-    description: 'Returns details about a specific fungible token from a given address',
-  })
-  @ApiResponse({
-    status: 200,
-    type: TokenWithBalance,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Account not found',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Token not found',
-  })
-  async getAccountToken(
-    @Param('address', ParseAddressPipe) address: string,
-    @Param('token') token: string,
-  ): Promise<TokenWithBalance> {
-    const result = await this.tokenService.getTokenForAddress(address, token);
-    if (!result) {
-      throw new HttpException('Token for given account not found', HttpStatus.NOT_FOUND);
     }
 
     return result;

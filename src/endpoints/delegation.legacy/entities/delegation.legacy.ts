@@ -5,18 +5,18 @@ export class DelegationLegacy {
   @ApiProperty(SwaggerUtils.amountPropertyOptions())
   totalWithdrawOnlyStake: string = '';
 
-  @ApiProperty({ type: String, default: 0 })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   totalWaitingStake: string = '';
 
-  @ApiProperty({ type: String, default: 0 })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   totalActiveStake: string = '';
 
-  @ApiProperty({ type: String, default: 0 })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   totalUnstakedStake: string = '';
 
-  @ApiProperty({ type: String, default: 0 })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   totalDeferredPaymentStake: string = '';
 
-  @ApiProperty({ type: String, default: 0 })
-  numUsers: string = '';
+  @ApiProperty()
+  numUsers: number = 0;
 }

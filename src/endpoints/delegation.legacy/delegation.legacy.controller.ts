@@ -9,7 +9,7 @@ export class DelegationLegacyController {
   constructor(private readonly delegationLegacyService: DelegationLegacyService) { }
 
   @Get("/delegation-legacy")
-  @ApiOperation({ summary: 'Legacy delegation details', description: 'Returns delegation legacy details as well as total withdraw/unstake/waiting stake, total deferred payment stake and total number of users' })
+  @ApiOperation({ summary: 'Legacy delegation statistics', description: 'Returns legacy delegation contract global information' })
   @ApiResponse({
     status: 200,
     type: DelegationLegacy,

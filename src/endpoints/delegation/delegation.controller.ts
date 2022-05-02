@@ -11,7 +11,7 @@ export class DelegationController {
   ) { }
 
   @Get("/delegation")
-  @ApiOperation({ summary: 'Delegation statistics', description: 'Returns delegation staking contract infos' })
+  @ApiOperation({ summary: 'Delegation statistics', description: 'Returns delegation staking contract information' })
   @ApiResponse({
     status: 200,
     type: Delegation,

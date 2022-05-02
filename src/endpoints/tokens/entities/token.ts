@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { SwaggerUtils } from "src/utils/swagger.utils";
 import { TokenAssets } from "./token.assets";
 
 export class Token {
@@ -14,13 +15,13 @@ export class Token {
   @ApiProperty({ type: String })
   owner: string = '';
 
-  @ApiProperty({ type: String })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   minted: string = '';
 
-  @ApiProperty({ type: String })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   burnt: string = '';
 
-  @ApiProperty({ type: String })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   initialMinted: string = '';
 
   @ApiProperty({ type: Number })

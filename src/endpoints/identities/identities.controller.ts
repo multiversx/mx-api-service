@@ -10,7 +10,7 @@ export class IdentitiesController {
   constructor(private readonly identitiesService: IdentitiesService) { }
 
   @Get("/identities")
-  @ApiOperation({ summary: 'Identities details', description: 'Returns providers details as well as details about a specific provider for a given identity ' })
+  @ApiOperation({ summary: 'Identities', description: 'Returns providers details as well as details about a specific provider for a given identity ' })
   @ApiResponse({
     status: 200,
     isArray: true,
