@@ -338,11 +338,6 @@ export class TokenService {
   }
 
   async getTokenAccounts(pagination: QueryPagination, identifier: string): Promise<TokenAccount[] | undefined> {
-    const isToken = await this.isToken(identifier);
-    if (!isToken) {
-      return undefined;
-    }
-
     const properties = await this.getTokenProperties(identifier);
     if (!properties) {
       return undefined;
@@ -360,11 +355,6 @@ export class TokenService {
   }
 
   async getTokenAccountsCount(identifier: string): Promise<number | undefined> {
-    const isToken = await this.isToken(identifier);
-    if (!isToken) {
-      return undefined;
-    }
-
     const properties = await this.getTokenProperties(identifier);
     if (!properties) {
       return undefined;
@@ -442,11 +432,6 @@ export class TokenService {
       return addressRoles;
     }
 
-    const isToken = await this.isToken(identifier);
-    if (!isToken) {
-      return undefined;
-    }
-
     const tokenAddressesRoles = await this.esdtService.getEsdtAddressesRoles(identifier);
     const addressRoles = tokenAddressesRoles?.find((role: TokenRoles) => role.address === address);
 
@@ -476,11 +461,6 @@ export class TokenService {
   }
 
   async getTokenSupply(identifier: string, denominated: boolean | undefined = undefined): Promise<TokenSupplyResult | undefined> {
-    const isToken = await this.isToken(identifier);
-    if (!isToken) {
-      return undefined;
-    }
-
     const properties = await this.getTokenProperties(identifier);
     if (!properties) {
       return undefined;
