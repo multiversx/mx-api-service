@@ -6,7 +6,6 @@ import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { QueryType } from "src/common/elastic/entities/query.type";
-import { TermsQuery } from "src/common/elastic/entities/terms.query";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { ApiUtils } from "src/utils/api.utils";
 import { SmartContractResult } from "./entities/smart.contract.result";
@@ -47,7 +46,7 @@ export class SmartContractResultService {
     }
 
     if (filter.originalTxHashes) {
-      query = query.withTerms(new TermsQuery('originalTxHash', filter.originalTxHashes));
+      query = query.withShouldCondition(filter.originalTxHashes.map(originalTxHash => QueryType.Match('originalTxHash', originalTxHash)));
     }
 
     const elasticResult = await this.elasticService.getList('scresults', 'hash', query);

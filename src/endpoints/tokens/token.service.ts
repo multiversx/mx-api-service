@@ -46,6 +46,11 @@ export class TokenService {
     this.logger = new Logger(TokenService.name);
   }
 
+  async isToken(identifier: string): Promise<boolean> {
+    const tokens = await this.esdtService.getAllEsdtTokens();
+    return tokens.find(x => x.identifier === identifier) !== undefined;
+  }
+
   async getToken(identifier: string): Promise<TokenDetailed | undefined> {
     const tokens = await this.esdtService.getAllEsdtTokens();
     let token = tokens.find(x => x.identifier === identifier);
@@ -425,11 +430,6 @@ export class TokenService {
       delete addressRoles.address;
 
       return addressRoles;
-    }
-
-    const token = await this.getToken(identifier);
-    if (!token) {
-      return undefined;
     }
 
     const tokenAddressesRoles = await this.esdtService.getEsdtAddressesRoles(identifier);
