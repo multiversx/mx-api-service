@@ -72,7 +72,7 @@ describe("Block Controller", () => {
       .get(route + "?" + params)
       .expect(400)
       .then(res => {
-        expect(res.body.message).toEqual("Validation failed (a valid hash with size 192 for bls is expected)");
+        expect(res.body.message).toEqual("Validation failed (a valid bls hash for parameter validator is expected)");
       });
   });
 
@@ -167,7 +167,7 @@ describe("Block Controller", () => {
       .get(route + "/" + hash)
       .expect(400)
       .then(res => {
-        expect(res.body.message).toEqual("Validation failed (a valid hash with size 64 for block is expected)");
+        expect(res.body.message).toEqual("Validation failed (a valid block hash for parameter hash is expected)");
       });
   });
 });
