@@ -11,7 +11,7 @@ export class WaitingListController {
   @Get("/waiting-list")
   @ApiOperation({
     summary: 'Waiting list',
-    description: 'Returns a list of all waiting accounts',
+    description: 'Returns node waiting list',
   })
   @ApiResponse({
     status: 200,
@@ -24,8 +24,8 @@ export class WaitingListController {
 
   @Get("/waiting-list/count")
   @ApiOperation({
-    summary: 'Waiting accounts count',
-    description: 'Returns total number of accounts in waiting',
+    summary: 'Waiting list count',
+    description: 'Returns count of node waiting list',
   })
   @ApiResponse({
     status: 200,
