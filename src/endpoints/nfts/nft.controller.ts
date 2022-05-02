@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, ParseIntPipe, Query, Res, Response } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
@@ -119,6 +119,31 @@ export class NftController {
     }
 
     return token;
+  }
+
+  @Get('/nfts/:identifier/thumbnail')
+  @ApiResponse({
+    status: 200,
+    description: 'Non-fungible / semi-fungible token details',
+    type: Nft,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Token not found',
+  })
+  async resolveNftThumbnail(@Param('identifier') identifier: string, @Res() response: Response) {
+    const token = await this.nftService.getSingleNft(identifier);
+    if (token === undefined) {
+      throw new NotFoundException('NFT not found');
+    }
+
+    const media = token.media;
+    if (!media) {
+      throw new NotFoundException('NFT does not have any media attached to it');
+    }
+
+    // @ts-ignore
+    response.redirect(media[0].thumbnailUrl);
   }
 
   @Get('/nfts/:identifier/supply')
