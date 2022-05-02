@@ -32,4 +32,13 @@ export class TokenDetailed extends Token {
 
   @ApiProperty({ type: TokenRoles, nullable: true })
   roles: TokenRoles[] | undefined = undefined;
+
+  @ApiProperty()
+  minted: string = '';
+
+  @ApiProperty()
+  burnt: string = '';
+
+  @ApiProperty()
+  initialMinted: string = '';
 }

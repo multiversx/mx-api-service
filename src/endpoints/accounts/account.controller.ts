@@ -1040,11 +1040,11 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<AccountEsdtHistory[]> {
-    const history = await this.accountService.getAccountTokenHistory(address, tokenIdentifier, { from, size });
-    if (!history) {
+    const isToken = await this.tokenService.isToken(tokenIdentifier);
+    if (!isToken) {
       throw new NotFoundException(`Token '${tokenIdentifier}' not found`);
     }
 
-    return history;
+    return await this.accountService.getAccountTokenHistory(address, tokenIdentifier, { from, size });
   }
 }
