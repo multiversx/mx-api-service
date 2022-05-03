@@ -28,11 +28,11 @@ export class NftMediaService {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
   }
 
-  async getMedia(nft: Nft): Promise<NftMedia[] | null> {
+  async getMedia(identifier: string): Promise<NftMedia[] | null> {
     return await this.cachingService.getOrSetCache(
-      CacheInfo.NftMedia(nft.identifier).key,
-      async () => await this.persistenceService.getMedia(nft.identifier),
-      CacheInfo.NftMedia(nft.identifier).ttl,
+      CacheInfo.NftMedia(identifier).key,
+      async () => await this.persistenceService.getMedia(identifier),
+      CacheInfo.NftMedia(identifier).ttl,
     );
   }
 
