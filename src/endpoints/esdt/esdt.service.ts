@@ -103,7 +103,7 @@ export class EsdtService {
       );
     }
 
-    tokens = tokens.sortedDescending(token => token.accounts ?? 0);
+    tokens = tokens.sortedDescending(token => token.transactions ?? 0);
 
     return tokens;
   }
