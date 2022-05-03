@@ -17,7 +17,6 @@ export class VmQueryController {
   })
   @ApiResponse({
     status: 201,
-    description: 'Returns the result of the query',
   })
   async query(@Body() query: VmQueryRequest) {
     let result: any;

@@ -9,10 +9,7 @@ export class WaitingListController {
   constructor(private readonly waitingListService: WaitingListService) { }
 
   @Get("/waiting-list")
-  @ApiOperation({
-    summary: 'Waiting list',
-    description: 'Returns node waiting list',
-  })
+  @ApiOperation({ summary: 'Waiting list', description: 'Returns node waiting list' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -23,10 +20,7 @@ export class WaitingListController {
   }
 
   @Get("/waiting-list/count")
-  @ApiOperation({
-    summary: 'Waiting list count',
-    description: 'Returns count of node waiting list',
-  })
+  @ApiOperation({ summary: 'Waiting list count', description: 'Returns count of node waiting list' })
   @ApiResponse({
     status: 200,
     type: Number,

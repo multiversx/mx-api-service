@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { SwaggerUtils } from "src/utils/swagger.utils";
 
 export class Identity {
   @ApiProperty({ type: String })
@@ -28,13 +29,13 @@ export class Identity {
   @ApiProperty({ type: Number })
   validators?: number;
 
-  @ApiProperty({ type: String, default: 0 })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   stake?: string;
 
-  @ApiProperty({ type: String, default: 0 })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   topUp?: string;
 
-  @ApiProperty({ type: String, default: 0 })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   locked: string = '';
 
   @ApiProperty()

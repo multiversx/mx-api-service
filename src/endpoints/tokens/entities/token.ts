@@ -39,24 +39,24 @@ export class Token {
   @ApiProperty({ type: Number, nullable: true })
   accounts: number | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   canUpgrade: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   canMint: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   canBurn: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   canChangeOwner: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   canPause: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   canFreeze: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   canWipe: boolean = false;
 }

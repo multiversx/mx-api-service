@@ -11,10 +11,7 @@ export class WebsocketController {
   ) { }
 
   @Get("/config")
-  @ApiOperation({
-    summary: 'Websocket configuration',
-    description: 'Returns config used for accessing websocket on the same cluster',
-  })
+  @ApiOperation({ summary: 'Websocket configuration', description: 'Returns config used for accessing websocket on the same cluster' })
   @ApiResponse({
     type: WebsocketConfig,
   })

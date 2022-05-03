@@ -11,10 +11,7 @@ export class StakeController {
   ) { }
 
   @Get('/stake')
-  @ApiOperation({
-    summary: 'Stake',
-    description: 'Returns general staking information',
-  })
+  @ApiOperation({ summary: 'Stake', description: 'Returns general staking information' })
   @ApiResponse({
     status: 200,
     type: GlobalStake,

@@ -60,10 +60,7 @@ export class AccountController {
   }
 
   @Get("/accounts")
-  @ApiOperation({
-    summary: 'Accounts details',
-    description: 'Returns all accounts available on blockchain. By default it returns 25 accounts',
-  })
+  @ApiOperation({ summary: 'Accounts details', description: 'Returns all accounts available on blockchain. By default it returns 25 accounts' })
   @ApiResponse({
     status: 200,
     type: Account,
@@ -79,10 +76,7 @@ export class AccountController {
   }
 
   @Get("/accounts/count")
-  @ApiOperation({
-    summary: 'Total number of accounts',
-    description: 'Returns total number of accounts available on blockchain',
-  })
+  @ApiOperation({ summary: 'Total number of accounts', description: 'Returns total number of accounts available on blockchain' })
   @ApiResponse({
     status: 200,
     type: Number,
@@ -98,10 +92,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address")
-  @ApiOperation({
-    summary: 'Account details',
-    description: 'Returns account details for a given address',
-  })
+  @ApiOperation({ summary: 'Account details', description: 'Returns account details for a given address' })
   @ApiResponse({
     status: 200,
     type: AccountDetailed,
@@ -120,10 +111,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/deferred")
-  @ApiOperation({
-    summary: 'Account deferred payment details',
-    description: 'Returns deferred payments from legacy staking',
-  })
+  @ApiOperation({ summary: 'Account deferred payment details', description: 'Returns deferred payments from legacy staking' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -144,10 +132,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/tokens")
-  @ApiOperation({
-    summary: 'Account tokens',
-    description: 'Returns a list of all available fungible tokens for a given address, together with their balance',
-  })
+  @ApiOperation({ summary: 'Account tokens', description: 'Returns a list of all available fungible tokens for a given address, together with their balance' })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
@@ -183,10 +168,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/tokens/count")
-  @ApiOperation({
-    summary: 'Account token count',
-    description: 'Returns the total number of tokens for a given address',
-  })
+  @ApiOperation({ summary: 'Account token count', description: 'Returns the total number of tokens for a given address' })
   @ApiResponse({
     status: 200,
     type: Number,
@@ -220,10 +202,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/collections")
-  @ApiOperation({
-    summary: 'Account collections',
-    description: 'Returns NFT/SFT/MetaESDT collections where the account is owner or has some special roles assigned to it',
-  })
+  @ApiOperation({ summary: 'Account collections', description: 'Returns NFT/SFT/MetaESDT collections where the account is owner or has some special roles assigned to it' })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
@@ -270,10 +249,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/collections/count")
-  @ApiOperation({
-    summary: ' Account collection count',
-    description: 'Returns the total number of NFT/SFT/MetaESDT collections where the account is owner or has some special roles assigned to it',
-  })
+  @ApiOperation({ summary: ' Account collection count', description: 'Returns the total number of NFT/SFT/MetaESDT collections where the account is owner or has some special roles assigned to it' })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
   @ApiQuery({ name: 'owner', description: 'Filter by collection owner', required: false })
@@ -308,10 +284,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/tokens/:token")
-  @ApiOperation({
-    summary: 'Account token details',
-    description: 'Returns details about a specific fungible token from a given address',
-  })
+  @ApiOperation({ summary: 'Account token details', description: 'Returns details about a specific fungible token from a given address' })
   @ApiResponse({
     status: 200,
     type: TokenWithBalance,
@@ -358,10 +331,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/collections/:collection")
-  @ApiOperation({
-    summary: 'Account collection details',
-    description: 'Returns details about a specific NFT/SFT/MetaESDT collection from a given address',
-  })
+  @ApiOperation({ summary: 'Account collection details', description: 'Returns details about a specific NFT/SFT/MetaESDT collection from a given address' })
   @ApiResponse({
     status: 200,
     type: NftCollectionAccount,
@@ -387,10 +357,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/nfts")
-  @ApiOperation({
-    summary: 'Account NFTs',
-    description: 'Returns a list of all available NFTs/SFTs/MetaESDTs owned by the provided address',
-  })
+  @ApiOperation({ summary: 'Account NFTs', description: 'Returns a list of all available NFTs/SFTs/MetaESDTs owned by the provided address' })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
@@ -441,10 +408,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/nfts/count")
-  @ApiOperation({
-    summary: 'Account NFT/SFT tokens count',
-    description: 'Returns the total number of NFT/SFT tokens from a given address, as well as the total number of a certain type of ESDT ',
-  })
+  @ApiOperation({ summary: 'Account NFT/SFT tokens count', description: 'Returns the total number of NFT/SFT tokens from a given address, as well as the total number of a certain type of ESDT ' })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Filter by identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
@@ -510,10 +474,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/nfts/:nft")
-  @ApiOperation({
-    summary: 'Account NFT/SFT token details',
-    description: 'Returns details about a specific fungible token for a given address',
-  })
+  @ApiOperation({ summary: 'Account NFT/SFT token details', description: 'Returns details about a specific fungible token for a given address' })
   @ApiResponse({
     status: 200,
     type: NftAccount,
@@ -539,10 +500,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/stake")
-  @ApiOperation({
-    summary: 'Account stake information',
-    description: 'Summarizes total staked amount for the given provider, as well as when and how much unbond will be performed',
-  })
+  @ApiOperation({ summary: 'Account stake details', description: 'Summarizes total staked amount for the given provider, as well as when and how much unbond will be performed' })
   @ApiResponse({
     status: 200,
     type: ProviderStake,
@@ -562,10 +520,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/delegation-legacy")
-  @ApiOperation({
-    summary: 'Account legacy delegation information',
-    description: 'Returns staking information related to the legacy delegation pool',
-  })
+  @ApiOperation({ summary: 'Account legacy delegation details', description: 'Returns staking information related to the legacy delegation pool' })
   @ApiResponse({
     status: 200,
     type: AccountDelegationLegacy,
@@ -585,10 +540,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/keys")
-  @ApiOperation({
-    summary: 'Account nodes',
-    description: 'Returns all active / queued nodes where the account is owner',
-  })
+  @ApiOperation({ summary: 'Account nodes', description: 'Returns all active / queued nodes where the account is owner' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -609,10 +561,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/waiting-list")
-  @ApiOperation({
-    summary: 'Account queued nodes',
-    description: 'Returns all nodes in the node queue where the account is owner',
-  })
+  @ApiOperation({ summary: 'Account queued nodes', description: 'Returns all nodes in the node queue where the account is owner' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -623,10 +572,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/transactions")
-  @ApiOperation({
-    summary: 'Account transactions details',
-    description: 'Returns details of all transactions where the account is sender or receiver',
-  })
+  @ApiOperation({ summary: 'Account transactions details', description: 'Returns details of all transactions where the account is sender or receiver' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -700,10 +646,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/transactions/count")
-  @ApiOperation({
-    summary: 'Account transactions count',
-    description: 'Returns total number of transactions for a given address where the account is sender or receiver, as well as total transactions count that have a certain status',
-  })
+  @ApiOperation({ summary: 'Account transactions count', description: 'Returns total number of transactions for a given address where the account is sender or receiver, as well as total transactions count that have a certain status' })
   @ApiResponse({
     status: 200,
     type: Number,
@@ -757,10 +700,7 @@ export class AccountController {
 
 
   @Get("/accounts/:address/transfers")
-  @ApiOperation({
-    summary: 'Account value transfers',
-    description: 'Returns both transfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult), thus providing a full picture of all in/out value transfers for a given account',
-  })
+  @ApiOperation({ summary: 'Account value transfers', description: 'Returns both transfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult), thus providing a full picture of all in/out value transfers for a given account' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -828,10 +768,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/transfers/count")
-  @ApiOperation({
-    summary: 'Account transfer count',
-    description: 'Return total count of tranfers triggerred by a user account (type = Transactions), as well as transfers triggerred by smart contracts (type = SmartContractResult)',
-  })
+  @ApiOperation({ summary: 'Account transfer count', description: 'Return total count of tranfers triggerred by a user account (type = Transactions), as well as transfers triggerred by smart contracts (type = SmartContractResult)' })
   @ApiResponse({
     status: 200,
     type: Number,
@@ -888,10 +825,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/contracts")
-  @ApiOperation({
-    summary: 'Account smart contracts details',
-    description: 'Returns smart contracts details for a given account',
-  })
+  @ApiOperation({ summary: 'Account smart contracts details', description: 'Returns smart contracts details for a given account' })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiResponse({
@@ -912,10 +846,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/contracts/count")
-  @ApiOperation({
-    summary: 'Account contracts count',
-    description: 'Returns total number of deployed contracts for a given address',
-  })
+  @ApiOperation({ summary: 'Account contracts count', description: 'Returns total number of deployed contracts for a given address' })
   @ApiResponse({
     status: 200,
     type: Number,
@@ -935,10 +866,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/sc-results")
-  @ApiOperation({
-    summary: 'Account smart contract results',
-    description: 'Returns smart contract results where the account is sender or receiver',
-  })
+  @ApiOperation({ summary: 'Account smart contract results', description: 'Returns smart contract results where the account is sender or receiver' })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiResponse({
@@ -959,10 +887,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/sc-results/count")
-  @ApiOperation({
-    summary: 'Account smart contracts results count',
-    description: 'Returns number of smart contract results where the account is sender or receiver',
-  })
+  @ApiOperation({ summary: 'Account smart contracts results count', description: 'Returns number of smart contract results where the account is sender or receiver' })
   @ApiResponse({
     status: 200,
     type: Number,
@@ -1000,9 +925,9 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/history")
+  @ApiOperation({ summary: 'Account history', description: 'Return account EGLD balance history' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  @ApiOperation({ summary: 'Account history', description: 'Return account EGLD balance history' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -1021,9 +946,9 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/history/:tokenIdentifier")
+  @ApiOperation({ summary: 'Account token history', description: 'Returns account token balance history' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  @ApiOperation({ summary: 'Account token history', description: 'Returns account token balance history' })
   @ApiResponse({
     status: 200,
     isArray: true,

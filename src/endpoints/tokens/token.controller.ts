@@ -27,10 +27,7 @@ export class TokenController {
   ) { }
 
   @Get("/tokens")
-  @ApiOperation({
-    summary: 'Tokens',
-    description: 'Returns all tokens available on the blockchain',
-  })
+  @ApiOperation({ summary: 'Tokens', description: 'Returns all tokens available on the blockchain' })
   @ApiResponse({
     isArray: true,
     type: TokenDetailed,
@@ -53,10 +50,7 @@ export class TokenController {
   }
 
   @Get("/tokens/count")
-  @ApiOperation({
-    summary: 'Tokens count',
-    description: 'Return total number of tokens available on blockchain',
-  })
+  @ApiOperation({ summary: 'Tokens count', description: 'Return total number of tokens available on blockchain' })
   @ApiResponse({
     status: 200,
     type: Number,
@@ -90,10 +84,7 @@ export class TokenController {
   }
 
   @Get('/tokens/:identifier')
-  @ApiOperation({
-    summary: 'Token',
-    description: 'Returns token details based on a specific token identifier',
-  })
+  @ApiOperation({ summary: 'Token', description: 'Returns token details based on a specific token identifier' })
   @ApiResponse({
     status: 200,
     type: TokenDetailed,
@@ -112,10 +103,7 @@ export class TokenController {
   }
 
   @Get('/tokens/:identifier/supply')
-  @ApiOperation({
-    summary: 'Token supply',
-    description: 'Returns general supply information for a specific token',
-  })
+  @ApiOperation({ summary: 'Token supply', description: 'Returns general supply information for a specific token' })
   @ApiQuery({ name: 'denominated', description: 'Return results denominated', required: false })
 
   @ApiResponse({
@@ -144,10 +132,7 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/accounts")
-  @ApiOperation({
-    summary: 'Token accounts',
-    description: 'Returns a list of accounts that hold a specific token',
-  })
+  @ApiOperation({ summary: 'Token accounts', description: 'Returns a list of accounts that hold a specific token' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -178,10 +163,7 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/accounts/count")
-  @ApiOperation({
-    summary: 'Token accounts count',
-    description: 'Returns the total number of accounts that hold a specific token',
-  })
+  @ApiOperation({ summary: 'Token accounts count', description: 'Returns the total number of accounts that hold a specific token' })
   @ApiResponse({
     status: 200,
     type: Number,
@@ -207,10 +189,7 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/transactions")
-  @ApiOperation({
-    summary: 'Token transactions',
-    description: `Returns a list of transactions for a specific token. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs`,
-  })
+  @ApiOperation({ summary: 'Token transactions', description: `Returns a list of transactions for a specific token. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs` })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -284,10 +263,7 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/transactions/count")
-  @ApiOperation({
-    summary: 'Token transactions count',
-    description: 'Returns the total number of transactions for a specific token',
-  })
+  @ApiOperation({ summary: 'Token transactions count', description: 'Returns the total number of transactions for a specific token' })
   @ApiResponse({
     status: 200,
     type: Number,
@@ -340,10 +316,7 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/roles")
-  @ApiOperation({
-    summary: 'Token roles',
-    description: 'Returns a list of accounts that can perform various actions on a specific token',
-  })
+  @ApiOperation({ summary: 'Token roles', description: 'Returns a list of accounts that can perform various actions on a specific token' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -370,10 +343,7 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/roles/:address")
-  @ApiOperation({
-    summary: 'Token address roles',
-    description: 'Returns role information for a specific address on a given token',
-  })
+  @ApiOperation({ summary: 'Token address roles', description: 'Returns roles detalils for a specific address of a given token' })
   @ApiResponse({
     status: 200,
     type: TokenRoles,

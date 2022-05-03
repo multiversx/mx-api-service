@@ -14,10 +14,7 @@ export class RoundController {
   constructor(private readonly roundService: RoundService) { }
 
   @Get("/rounds")
-  @ApiOperation({
-    summary: 'Rounds',
-    description: 'Return a list of all rounds available on blockchain',
-  })
+  @ApiOperation({ summary: 'Rounds', description: 'Returns a list of all rounds available on blockchain' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -40,10 +37,7 @@ export class RoundController {
   }
 
   @Get("/rounds/count")
-  @ApiOperation({
-    summary: 'Rounds count',
-    description: 'Returns total number of rounds',
-  })
+  @ApiOperation({ summary: 'Rounds count', description: 'Returns total number of rounds' })
   @ApiResponse({
     status: 200,
     type: Number,
@@ -78,10 +72,7 @@ export class RoundController {
   }
 
   @Get("/rounds/:shard/:round")
-  @ApiOperation({
-    summary: 'Round',
-    description: 'Returns details of a given round from a specific shard',
-  })
+  @ApiOperation({ summary: 'Round', description: 'Returns details of a given round from a specific shard' })
   @ApiResponse({
     status: 200,
     type: RoundDetailed,

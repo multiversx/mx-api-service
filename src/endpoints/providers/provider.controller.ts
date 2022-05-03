@@ -10,10 +10,7 @@ export class ProviderController {
   constructor(private readonly providerService: ProviderService) { }
 
   @Get("/providers")
-  @ApiOperation({
-    summary: 'Providers',
-    description: 'Returns a list of all providers',
-  })
+  @ApiOperation({ summary: 'Providers', description: 'Returns a list of all providers' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -27,10 +24,7 @@ export class ProviderController {
   }
 
   @Get('/providers/:address')
-  @ApiOperation({
-    summary: 'Provider',
-    description: 'Returns provider details for a given address',
-  })
+  @ApiOperation({ summary: 'Provider', description: 'Returns provider details for a given address' })
   @ApiResponse({
     status: 200,
     type: Provider,

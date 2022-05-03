@@ -18,10 +18,7 @@ export class NodeController {
   constructor(private readonly nodeService: NodeService) { }
 
   @Get("/nodes")
-  @ApiOperation({
-    summary: 'Nodes',
-    description: 'Returns a list of all observer/validator nodes available on blockchain',
-  })
+  @ApiOperation({ summary: 'Nodes', description: 'Returns a list of nodes of type observer or validator' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -59,10 +56,7 @@ export class NodeController {
   }
 
   @Get("/nodes/versions")
-  @ApiOperation({
-    summary: 'Node versions',
-    description: 'Returns breakdown of node versions for validator nodes',
-  })
+  @ApiOperation({ summary: 'Node versions', description: 'Returns breakdown of node versions for validator nodes' })
   @ApiResponse({
     status: 200,
   })
@@ -71,10 +65,7 @@ export class NodeController {
   }
 
   @Get("/nodes/count")
-  @ApiOperation({
-    summary: 'Nodes count',
-    description: 'Returns number of all observer/validator nodes available on blockchain',
-  })
+  @ApiOperation({ summary: 'Nodes count', description: 'Returns number of all observer/validator nodes available on blockchain' })
   @ApiResponse({
     status: 200,
     type: Number,
@@ -125,10 +116,7 @@ export class NodeController {
   }
 
   @Get('/nodes/:bls')
-  @ApiOperation({
-    summary: 'Node',
-    description: 'Returns details about a specific node for a given bls key',
-  })
+  @ApiOperation({ summary: 'Node', description: 'Returns details about a specific node for a given bls key' })
   @ApiResponse({
     status: 200,
     type: Node,

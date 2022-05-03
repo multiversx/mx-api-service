@@ -12,10 +12,7 @@ export class TagController {
   ) { }
 
   @Get("/tags")
-  @ApiOperation({
-    summary: 'NFT Tags',
-    description: 'Returns all distinct NFT tags',
-  })
+  @ApiOperation({ summary: 'NFT Tags', description: 'Returns all distinct NFT tags' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -31,10 +28,7 @@ export class TagController {
   }
 
   @Get("/tags/:tag")
-  @ApiOperation({
-    summary: 'Tag details',
-    description: 'Return NFT tag details',
-  })
+  @ApiOperation({ summary: 'Tag details', description: 'Return NFT tag details' })
   @ApiResponse({
     status: 200,
     type: Tag,

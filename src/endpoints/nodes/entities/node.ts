@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { SwaggerUtils } from "src/utils/swagger.utils";
 import { NodeStatus } from "./node.status";
 import { NodeType } from "./node.type";
 
@@ -51,30 +52,30 @@ export class Node {
     @ApiProperty({ type: [String] })
     issues: string[] = [];
 
-    @ApiProperty({ type: String, default: 0 })
+    @ApiProperty(SwaggerUtils.amountPropertyOptions())
     stake: string = '';
 
-    @ApiProperty({ type: String, default: 0 })
+    @ApiProperty(SwaggerUtils.amountPropertyOptions())
     topUp: string = '';
 
-    @ApiProperty({ type: String, default: 0 })
+    @ApiProperty(SwaggerUtils.amountPropertyOptions())
     locked: string = '';
 
-    @ApiProperty({ type: Number })
+    @ApiProperty({ type: Number, default: 0 })
     leaderFailure: number = 0;
 
-    @ApiProperty({ type: Number })
+    @ApiProperty({ type: Number, default: 15 })
     leaderSuccess: number = 0;
 
-    @ApiProperty({ type: Number })
+    @ApiProperty({ type: Number, default: 0 })
     validatorFailure: number = 0;
 
-    @ApiProperty({ type: Number })
+    @ApiProperty({ type: Number, default: 0 })
     validatorIgnoredSignatures: number = 0;
 
-    @ApiProperty({ type: Number })
+    @ApiProperty({ type: Number, default: 10000 })
     validatorSuccess: number = 0;
 
-    @ApiProperty({ type: Number })
+    @ApiProperty({ type: Number, default: 0 })
     position: number = 0;
 }

@@ -35,10 +35,7 @@ export class TransactionController {
   constructor(private readonly transactionService: TransactionService) { }
 
   @Get("/transactions")
-  @ApiOperation({
-    summary: 'Transactions details',
-    description: 'Returns a list of transactions available on the blockchain. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs',
-  })
+  @ApiOperation({ summary: 'Transactions details', description: 'Returns a list of transactions available on the blockchain. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -107,10 +104,7 @@ export class TransactionController {
   }
 
   @Get("/transactions/count")
-  @ApiOperation({
-    summary: "Transactions count",
-    description: 'Returns the total number of transactions',
-  })
+  @ApiOperation({ summary: "Transactions count", description: 'Returns the total number of transactions' })
   @ApiResponse({
     status: 200,
     type: Number,
@@ -190,10 +184,7 @@ export class TransactionController {
   }
 
   @Get('/transactions/:txHash')
-  @ApiOperation({
-    summary: 'Transaction details',
-    description: 'Return transaction details for a given transaction hash',
-  })
+  @ApiOperation({ summary: 'Transaction details', description: 'Return transaction details for a given transaction hash' })
   @ApiResponse({
     status: 200,
     type: TransactionDetailed,
@@ -216,10 +207,7 @@ export class TransactionController {
   }
 
   @Post('/transactions')
-  @ApiOperation({
-    summary: 'Send transaction',
-    description: 'Posts a signed transaction on the blockchain',
-  })
+  @ApiOperation({ summary: 'Send transaction', description: 'Posts a signed transaction on the blockchain' })
   @ApiResponse({
     status: 201,
     type: TransactionSendResult,
@@ -247,10 +235,7 @@ export class TransactionController {
   }
 
   @Post('/transactions/decode')
-  @ApiOperation({
-    summary: 'Decode transaction',
-    description: 'Decodes transaction action, given a minimum set of transaction details',
-  })
+  @ApiOperation({ summary: 'Decode transaction', description: 'Decodes transaction action, given a minimum set of transaction details' })
   @ApiResponse({
     status: 201,
     type: TransactionDecodeDto,

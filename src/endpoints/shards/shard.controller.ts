@@ -9,10 +9,7 @@ export class ShardController {
   constructor(private readonly shardService: ShardService) { }
 
   @Get("/shards")
-  @ApiOperation({
-    summary: 'Shards',
-    description: 'Returns all available shards',
-  })
+  @ApiOperation({ summary: 'Shards', description: 'Returns all available shards' })
   @ApiResponse({
     status: 200,
     isArray: true,

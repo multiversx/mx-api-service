@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 
 export class Transaction {
@@ -59,8 +60,8 @@ export class Transaction {
   @ApiProperty({ type: String, nullable: true })
   action: any | undefined = undefined;
 
-  @ApiProperty({ type: Object, nullable: true })
-  scamInfo: any | undefined = undefined;
+  @ApiProperty({ type: ScamInfo, nullable: true })
+  scamInfo: ScamInfo | undefined = undefined;
 
   @ApiProperty({ enum: TransactionType, nullable: true })
   type: TransactionType | undefined = undefined;

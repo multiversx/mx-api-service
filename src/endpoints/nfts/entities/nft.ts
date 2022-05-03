@@ -1,5 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { TokenAssets } from "src/endpoints/tokens/entities/token.assets";
+import { SwaggerUtils } from "src/utils/swagger.utils";
 import { NftMedia } from "./nft.media";
 import { NftMetadata } from "./nft.metadata";
 import { NftType } from "./nft.type";
@@ -59,7 +61,7 @@ export class Nft {
   @ApiProperty({ type: String, nullable: true })
   balance: string | undefined = undefined;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   supply: string | undefined = undefined;
 
   @ApiProperty({ type: Number, nullable: true })
@@ -71,6 +73,6 @@ export class Nft {
   @ApiProperty({ type: String })
   ticker?: string = '';
 
-  @ApiProperty({ type: String, nullable: true })
-  scamInfo: any | undefined = undefined;
+  @ApiProperty({ type: ScamInfo, nullable: true })
+  scamInfo: ScamInfo | undefined = undefined;
 }

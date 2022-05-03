@@ -27,7 +27,7 @@ export class AccountDetailed extends Account {
     @ApiProperty({ description: 'The address in bech 32 format of owner account' })
     ownerAddress: string = '';
 
-    @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
+    @ApiProperty({ description: 'Specific property flag for smart contract', type: Number })
     deployedAt?: number;
 
     @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
@@ -39,7 +39,7 @@ export class AccountDetailed extends Account {
     @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
     isPayable?: boolean;
 
-    @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
+    @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean, nullable: true })
     isPayableBySmartContract?: boolean | undefined = undefined;
 
     @ApiProperty({ type: ScamInfo, nullable: true })

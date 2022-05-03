@@ -29,10 +29,7 @@ export class NftController {
   ) { }
 
   @Get("/nfts")
-  @ApiOperation({
-    summary: 'Global NFTs',
-    description: 'Returns a list of Non-Fungible / Semi-Fungible / MetaESDT tokens available on blockchain',
-  })
+  @ApiOperation({ summary: 'Global NFTs', description: 'Returns a list of Non-Fungible / Semi-Fungible / MetaESDT tokens available on blockchain' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -74,10 +71,7 @@ export class NftController {
   }
 
   @Get("/nfts/count")
-  @ApiOperation({
-    summary: 'Global NFT count',
-    description: 'Returns the total number of Non-Fungible / Semi-Fungible / MetaESDT tokens',
-  })
+  @ApiOperation({ summary: 'Global NFT count', description: 'Returns the total number of Non-Fungible / Semi-Fungible / MetaESDT tokens' })
   @ApiResponse({
     status: 200,
     type: Number,
@@ -122,10 +116,7 @@ export class NftController {
   }
 
   @Get('/nfts/:identifier')
-  @ApiOperation({
-    summary: 'NFT details',
-    description: 'Returns the details of an Non-Fungible / Semi-Fungible / MetaESDT token for a given identifier',
-  })
+  @ApiOperation({ summary: 'NFT details', description: 'Returns the details of an Non-Fungible / Semi-Fungible / MetaESDT token for a given identifier' })
   @ApiResponse({
     status: 200,
     type: Nft,
@@ -144,10 +135,7 @@ export class NftController {
   }
 
   @Get('/nfts/:identifier/supply')
-  @ApiOperation({
-    summary: 'NFT supply',
-    description: 'Returns Non-Fungible / Semi-Fungible / MetaESDT token supply details',
-  })
+  @ApiOperation({ summary: 'NFT supply', description: 'Returns Non-Fungible / Semi-Fungible / MetaESDT token supply details' })
   @ApiResponse({
     status: 200,
     type: NftSupply,
@@ -208,10 +196,7 @@ export class NftController {
   }
 
   @Get('/nfts/:identifier/accounts')
-  @ApiOperation({
-    summary: 'NFT accounts',
-    description: 'Returns a list of addresses that hold balances for a specific Non-Fungible / Semi-Fungible / MetaESDT token',
-  })
+  @ApiOperation({ summary: 'NFT accounts', description: 'Returns a list of addresses that hold balances for a specific Non-Fungible / Semi-Fungible / MetaESDT token' })
   @ApiResponse({
     status: 200,
     isArray: true,
@@ -237,10 +222,7 @@ export class NftController {
   }
 
   @Get('/nfts/:identifier/accounts/count')
-  @ApiOperation({
-    summary: 'NFT accounts count',
-    description: 'Returns number of addresses that hold balances for a specific Non-Fungible / Semi-Fungible / MetaESDT token',
-  })
+  @ApiOperation({ summary: 'NFT accounts count', description: 'Returns number of addresses that hold balances for a specific Non-Fungible / Semi-Fungible / MetaESDT token' })
   @ApiResponse({
     status: 200,
     type: Number,

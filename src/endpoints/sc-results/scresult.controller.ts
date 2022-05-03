@@ -12,10 +12,7 @@ export class SmartContractResultController {
   constructor(private readonly scResultService: SmartContractResultService) { }
 
   @Get("/sc-results")
-  @ApiOperation({
-    summary: 'Smart contract results',
-    description: 'Returns all smart contract results available on the blockchain',
-  })
+  @ApiOperation({ summary: 'Smart contract results', description: 'Returns all smart contract results available on the blockchain' })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'The hash of the parent miniBlock', required: false })
@@ -34,10 +31,7 @@ export class SmartContractResultController {
   }
 
   @Get("/sc-results/count")
-  @ApiOperation({
-    summary: 'Smart contract results count',
-    description: 'Returns count of smart contract results',
-  })
+  @ApiOperation({ summary: 'Smart contracts count', description: 'Returns total number of smart contracts results' })
   @ApiResponse({
     status: 200,
     type: Number,
@@ -47,10 +41,7 @@ export class SmartContractResultController {
   }
 
   @Get("/sc-results/:scHash")
-  @ApiOperation({
-    summary: 'Smart contract results details',
-    description: 'Returns smart contract details for a given hash',
-  })
+  @ApiOperation({ summary: 'Smart contract results details', description: 'Returns smart contract details for a given hash' })
   @ApiResponse({
     status: 200,
     type: SmartContractResult,

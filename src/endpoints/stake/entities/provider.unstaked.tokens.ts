@@ -8,5 +8,6 @@ export class ProviderUnstakedTokens {
     @ApiProperty({ type: Number, nullable: true })
     expires: number | undefined = undefined;
 
+    @ApiProperty({ type: Number, nullable: true })
     epochs: number | undefined;
 }

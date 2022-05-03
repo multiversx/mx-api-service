@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { SwaggerUtils } from "src/utils/swagger.utils";
 import { Token } from "./token";
 import { TokenRoles } from "./token.roles";
 
@@ -24,21 +25,21 @@ export class TokenDetailed extends Token {
   @ApiProperty({ type: Boolean, default: false })
   canWipe: boolean = false;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions({ description: 'Supply amount' }))
   supply: string | undefined = undefined;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions({ description: 'Circulating supply amount' }))
   circulatingSupply: string | undefined = undefined;
 
   @ApiProperty({ type: TokenRoles, nullable: true })
   roles: TokenRoles[] | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty(SwaggerUtils.amountPropertyOptions({ description: 'Minted amount' }))
   minted: string = '';
 
-  @ApiProperty()
+  @ApiProperty(SwaggerUtils.amountPropertyOptions({ description: 'Burnt amount' }))
   burnt: string = '';
 
-  @ApiProperty()
+  @ApiProperty(SwaggerUtils.amountPropertyOptions({ description: 'Initial minted amount' }))
   initialMinted: string = '';
 }

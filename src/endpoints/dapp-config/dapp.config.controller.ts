@@ -11,10 +11,7 @@ export class DappConfigController {
   ) { }
 
   @Get("/dapp/config")
-  @ApiOperation({
-    summary: 'Dapp configuration',
-    description: 'Returns configuration used in dapps',
-  })
+  @ApiOperation({ summary: 'Dapp configuration', description: 'Returns configuration used in dapps' })
   @ApiResponse({
     status: 200,
     type: DappConfig,
