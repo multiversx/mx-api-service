@@ -28,6 +28,7 @@ import { AddressUtils } from "src/utils/address.utils";
 import { TokenProperties } from "./entities/token.properties";
 import { TokenRoles } from "./entities/token.roles";
 import { TokenSupplyResult } from "./entities/token.supply.result";
+import { TokenDetailedWithBalance } from "./entities/token.detailed.with.balance";
 
 @Injectable()
 export class TokenService {
@@ -43,6 +44,11 @@ export class TokenService {
     private readonly apiConfigService: ApiConfigService
   ) {
     this.logger = new Logger(TokenService.name);
+  }
+
+  async isToken(identifier: string): Promise<boolean> {
+    const tokens = await this.esdtService.getAllEsdtTokens();
+    return tokens.find(x => x.identifier === identifier) !== undefined;
   }
 
   async getToken(identifier: string): Promise<TokenDetailed | undefined> {
@@ -259,7 +265,7 @@ export class TokenService {
     return tokens;
   }
 
-  async getTokenForAddress(address: string, identifier: string): Promise<TokenWithBalance | undefined> {
+  async getTokenForAddress(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {
     const tokens = await this.getFilteredTokens({ identifier });
     if (!tokens.length) {
       this.logger.log(`Error when fetching token ${identifier} details for address ${address}`);
@@ -279,13 +285,13 @@ export class TokenService {
       ...token,
       balance,
     };
-    tokenWithBalance = ApiUtils.mergeObjects(new TokenWithBalance(), tokenWithBalance);
+    tokenWithBalance = ApiUtils.mergeObjects(new TokenDetailedWithBalance(), tokenWithBalance);
 
     tokenWithBalance.identifier = token.identifier;
 
     await this.applyTickerFromAssets(tokenWithBalance);
 
-    await this.applySupply(token);
+    await this.applySupply(tokenWithBalance);
 
     return tokenWithBalance;
   }
@@ -426,11 +432,6 @@ export class TokenService {
       return addressRoles;
     }
 
-    const token = await this.getToken(identifier);
-    if (!token) {
-      return undefined;
-    }
-
     const tokenAddressesRoles = await this.esdtService.getEsdtAddressesRoles(identifier);
     const addressRoles = tokenAddressesRoles?.find((role: TokenRoles) => role.address === address);
 
@@ -445,9 +446,18 @@ export class TokenService {
 
     token.supply = NumberUtils.denominate(BigInt(supply.totalSupply), token.decimals).toFixed();
     token.circulatingSupply = NumberUtils.denominate(BigInt(supply.circulatingSupply), token.decimals).toFixed();
-    token.minted = supply.minted;
-    token.burnt = supply.burned;
-    token.initialMinted = supply.initialMinted;
+
+    if (supply.minted) {
+      token.minted = supply.minted;
+    }
+
+    if (supply.burned) {
+      token.burnt = supply.burned;
+    }
+
+    if (supply.initialMinted) {
+      token.initialMinted = supply.initialMinted;
+    }
   }
 
   async getTokenSupply(identifier: string, denominated: boolean | undefined = undefined): Promise<TokenSupplyResult | undefined> {
@@ -464,9 +474,9 @@ export class TokenService {
     return {
       supply: denominated === true ? totalSupply : totalSupply.toFixed(),
       circulatingSupply: denominated === true ? circulatingSupply : circulatingSupply.toFixed(),
-      minted: denominated === true ? NumberUtils.denominateString(result.minted, properties.decimals) : result.minted,
-      burnt: denominated === true ? NumberUtils.denominateString(result.burned, properties.decimals) : result.burned,
-      initialMinted: denominated === true ? NumberUtils.denominateString(result.initialMinted, properties.decimals) : result.initialMinted,
+      minted: denominated === true && result.minted ? NumberUtils.denominateString(result.minted, properties.decimals) : result.minted,
+      burnt: denominated === true && result.burned ? NumberUtils.denominateString(result.burned, properties.decimals) : result.burned,
+      initialMinted: denominated === true && result.initialMinted ? NumberUtils.denominateString(result.initialMinted, properties.decimals) : result.initialMinted,
     };
   }
 

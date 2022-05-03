@@ -23,7 +23,7 @@ export class NftWorkerService {
 
   async addProcessNftQueueJob(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
     nft.metadata = await this.nftMetadataService.getMetadata(nft) ?? undefined;
-    nft.media = await this.nftMediaService.getMedia(nft) ?? undefined;
+    nft.media = await this.nftMediaService.getMedia(nft.identifier) ?? undefined;
 
     const needsProcessing = await this.needsProcessing(nft, settings);
     if (!needsProcessing) {
