@@ -331,14 +331,14 @@ export class EsdtService {
 
     const isCollectionOrToken = identifier.split('-').length === 2;
     if (isCollectionOrToken) {
+      let circulatingSupply = BigInt(supply);
+
       const lockedAccounts = await this.getLockedAccounts(identifier);
-      if (!lockedAccounts || lockedAccounts.length === 0) {
-        return supply;
+      if (lockedAccounts && lockedAccounts.length > 0) {
+        const totalLockedSupply = lockedAccounts.sumBigInt(x => BigInt(x.balance));
+
+        circulatingSupply = BigInt(supply) - totalLockedSupply;
       }
-
-      const totalLockedSupply = lockedAccounts.sumBigInt(x => BigInt(x.balance));
-
-      const circulatingSupply = BigInt(supply) - totalLockedSupply;
 
       return {
         totalSupply: supply,
