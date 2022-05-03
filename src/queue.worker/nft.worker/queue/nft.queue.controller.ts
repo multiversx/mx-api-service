@@ -81,7 +81,7 @@ export class NftQueueController {
         nft.metadata = await this.refreshMetadata(nft);
       }
 
-      nft.media = await this.nftMediaService.getMedia(nft) ?? undefined;
+      nft.media = await this.nftMediaService.getMedia(nft.identifier) ?? undefined;
 
       if (settings.forceRefreshMedia || !nft.media) {
         nft.media = await this.nftMediaService.refreshMedia(nft);
