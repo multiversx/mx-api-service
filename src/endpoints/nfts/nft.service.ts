@@ -177,7 +177,7 @@ export class NftService {
   private async batchApplySupply(nfts: Nft[]) {
     await this.cachingService.batchApply(
       nfts,
-      nft => CacheInfo.TokenLockedSupply(nft.identifier).key,
+      nft => CacheInfo.TokenLockedAccounts(nft.identifier).key,
       async nfts => {
         const result: Record<string, EsdtSupply> = {};
 
@@ -185,10 +185,10 @@ export class NftService {
           result[nft.identifier] = await this.esdtService.getTokenSupply(nft.identifier);
         }
 
-        return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenLockedSupply(identifier).key);
+        return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenLockedAccounts(identifier).key);
       },
       (nft, value) => nft.supply = value.totalSupply,
-      CacheInfo.TokenLockedSupply('').ttl,
+      CacheInfo.TokenLockedAccounts('').ttl,
     );
   }
 

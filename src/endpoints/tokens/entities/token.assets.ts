@@ -18,5 +18,8 @@ export class TokenAssets {
   svgUrl: string = '';
 
   @ApiProperty()
-  lockedAccounts: string[] | undefined = undefined;
+  lockedAccounts: string[] | Record<string, string> | undefined = undefined;
+
+  @ApiProperty()
+  extraTokens: string[] | undefined = undefined;
 }
