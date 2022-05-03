@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { NftMediaModule } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.module";
 import { AccountModule } from "./accounts/account.module";
 import { BlockModule } from "./blocks/block.module";
 import { BlsModule } from "./bls/bls.module";
@@ -42,6 +43,7 @@ import { WebsocketModule } from "./websocket/websocket.module";
     MiniBlockModule,
     NetworkModule,
     NftModule,
+    NftMediaModule,
     TagModule,
     NodeModule,
     ProviderModule,
@@ -64,7 +66,7 @@ import { WebsocketModule } from "./websocket/websocket.module";
   ],
   exports: [
     AccountModule, CollectionModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
-    MexModule, MiniBlockModule, NetworkModule, NftModule, TagModule, NodeModule, ProviderModule,
+    MexModule, MiniBlockModule, NetworkModule, NftModule, NftMediaModule, TagModule, NodeModule, ProviderModule,
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
     WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, TransactionActionModule, WebsocketModule,
   ],

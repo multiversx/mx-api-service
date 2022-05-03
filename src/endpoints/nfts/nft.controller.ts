@@ -1,10 +1,12 @@
 import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, ParseIntPipe, Query, Res, Response } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.service";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { Nft } from "./entities/nft";
+import { NftFilter } from "./entities/nft.filter";
 import { NftOwner } from "./entities/nft.owner";
 import { NftType } from "./entities/nft.type";
 import { NftService } from "./nft.service";
@@ -14,6 +16,7 @@ import { NftService } from "./nft.service";
 export class NftController {
   constructor(
     private readonly nftService: NftService,
+    private readonly nftMediaService: NftMediaService,
   ) { }
 
   @Get("/nfts")
@@ -124,26 +127,27 @@ export class NftController {
   @Get('/nfts/:identifier/thumbnail')
   @ApiResponse({
     status: 200,
-    description: 'Non-fungible / semi-fungible token details',
+    description: 'Non-fungible / semi-fungible token thumbnail',
     type: Nft,
   })
   @ApiResponse({
     status: 404,
-    description: 'Token not found',
+    description: 'NFT not found',
   })
   async resolveNftThumbnail(@Param('identifier') identifier: string, @Res() response: Response) {
-    const token = await this.nftService.getSingleNft(identifier);
-    if (token === undefined) {
+    const nfts = await this.nftService.getNftsInternal(0, 1, new NftFilter(), identifier);
+    if (nfts.length === 0) {
       throw new NotFoundException('NFT not found');
     }
 
-    const media = token.media;
-    if (!media) {
-      throw new NotFoundException('NFT does not have any media attached to it');
+    const media = await this.nftMediaService.getMedia(identifier);
+    if (!media || media.length === 0) {
+      // @ts-ignore
+      response.redirect(this.nftService.DEFAULT_MEDIA[0].thumbnailUrl);
+    } else {
+      // @ts-ignore
+      response.redirect(media[0].thumbnailUrl);
     }
-
-    // @ts-ignore
-    response.redirect(media[0].thumbnailUrl);
   }
 
   @Get('/nfts/:identifier/supply')
