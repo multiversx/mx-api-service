@@ -370,8 +370,9 @@ export class EsdtService {
 
       await this.elasticService.getScrollableList('accountsesdt', 'id', query, async items => {
         const distinctAccounts: string[] = items.map(x => x.address).distinct();
-
-        await this.cachingService.setAdd(key, ...distinctAccounts);
+        if (distinctAccounts.length > 0) {
+          await this.cachingService.setAdd(key, ...distinctAccounts);
+        }
       });
     }
 
