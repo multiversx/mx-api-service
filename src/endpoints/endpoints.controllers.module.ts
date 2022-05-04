@@ -11,7 +11,6 @@ import { HealthCheckController } from "./health-check/health.check.controller";
 import { IdentitiesController } from "./identities/identities.controller";
 import { KeysController } from "./keys/keys.controller";
 import { MexAnalyticsController } from "./mex.analytics/mex.analytics.controller";
-import { MexController } from "./mex/mex.controller";
 import { MiniBlockController } from "./miniblocks/mini.block.controller";
 import { NetworkController } from "./network/network.controller";
 import { NftController } from "./nfts/nft.controller";
@@ -39,7 +38,7 @@ import { WebsocketController } from "./websocket/websocket.controller";
   ],
   controllers: [
     AccountController, BlockController, CollectionController, DelegationController, DelegationLegacyController, IdentitiesController,
-    KeysController, MexController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
+    KeysController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
     ProviderController, ProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
     TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
     HealthCheckController, DappConfigController, WebsocketController, MexAnalyticsController,
