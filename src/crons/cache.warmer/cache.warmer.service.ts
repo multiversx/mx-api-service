@@ -19,7 +19,6 @@ import { EsdtService } from "src/endpoints/esdt/esdt.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
-import { TokenService } from "src/endpoints/tokens/token.service";
 import { MexSettingsService } from "src/endpoints/mex.analytics/mex.settings.service";
 import { MexEconomicsService } from "src/endpoints/mex.analytics/mex.economics.service";
 import { MexPairsService } from "src/endpoints/mex.analytics/mex.pairs.service";
@@ -45,8 +44,6 @@ export class CacheWarmerService {
     private readonly mexEconomicsService: MexEconomicsService,
     private readonly mexPairsService: MexPairsService,
     private readonly mexTokensService: MexTokenService,
-    private readonly tokenService: TokenService,
-    private readonly pluginService: PluginService,
     private readonly mexSettingsService: MexSettingsService,
   ) {
     this.configCronJob(
