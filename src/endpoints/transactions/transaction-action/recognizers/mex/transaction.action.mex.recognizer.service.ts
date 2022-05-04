@@ -7,7 +7,7 @@ import { MexPairActionRecognizerService } from "./mex.pair.action.recognizer.ser
 import { MexWrapActionRecognizerService } from "./mex.wrap.action.recognizer.service";
 import { MexDistributionActionRecognizerService } from "./mex.distribution.action.recognizer.service";
 import { MexLockedAssetActionRecognizerService } from "./mex.locked.asset.action.recognizer.service";
-import { MexSettingsService } from "../../../../mex.analytics/mex.settings.service";
+import { MexSettingsService } from "../../../../mex/mex.settings.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Injectable()

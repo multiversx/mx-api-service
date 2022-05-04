@@ -4,7 +4,7 @@ import { TransactionActionCategory } from "../../entities/transaction.action.cat
 import { TransactionMetadata } from "../../entities/transaction.metadata";
 import { TransactionActionEsdtNftRecognizerService } from "../esdt/transaction.action.esdt.nft.recognizer.service";
 import { MexFunction } from "./entities/mex.function.options";
-import { MexSettings } from "../../../../mex.analytics/entities/mex.settings";
+import { MexSettings } from "../../../../mex/entities/mex.settings";
 
 @Injectable()
 export class MexFarmActionRecognizerService {

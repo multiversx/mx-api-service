@@ -22,4 +22,4 @@ import { MexTokenService } from "./mex.token.service";
     MexTokenService,
   ],
 })
-export class MexAnalyticsModule { }
+export class MexModule { }

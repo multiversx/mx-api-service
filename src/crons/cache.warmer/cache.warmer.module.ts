@@ -5,14 +5,14 @@ import { EndpointsServicesModule } from '../../endpoints/endpoints.services.modu
 import { KeybaseModule } from 'src/common/keybase/keybase.module';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservices';
-import { MexAnalyticsModule } from 'src/endpoints/mex.analytics/mex.analytics.module';
+import { MexModule } from 'src/endpoints/mex/mex.module';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     EndpointsServicesModule,
     KeybaseModule,
-    MexAnalyticsModule,
+    MexModule,
   ],
   providers: [
     {
