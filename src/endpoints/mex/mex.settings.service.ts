@@ -4,8 +4,8 @@ import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { GraphQlService } from "src/common/graphql/graphql.service";
 import { Constants } from "src/utils/constants";
-import { TransactionMetadata } from "../../entities/transaction.metadata";
-import { TransactionMetadataTransfer } from "../../entities/transaction.metadata.transfer";
+import { TransactionMetadata } from "../transactions/transaction-action/entities/transaction.metadata";
+import { TransactionMetadataTransfer } from "../transactions/transaction-action/entities/transaction.metadata.transfer";
 import { MexSettings } from "./entities/mex.settings";
 
 @Injectable()
