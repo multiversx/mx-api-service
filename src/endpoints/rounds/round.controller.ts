@@ -1,5 +1,5 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { ParseBlsHashPipe } from "src/utils/pipes/parse.bls.hash.pipe";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
@@ -14,13 +14,13 @@ export class RoundController {
   constructor(private readonly roundService: RoundService) { }
 
   @Get("/rounds")
+  @ApiOperation({ summary: 'Rounds', description: 'Returns a list of all rounds available on blockchain' })
   @ApiResponse({
     status: 200,
-    description: 'The rounds available on the blockchain',
-    type: Round,
     isArray: true,
+    type: Round,
   })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
   @ApiQuery({ name: 'shard', description: 'Filter by shard identifier', required: false })
@@ -37,11 +37,12 @@ export class RoundController {
   }
 
   @Get("/rounds/count")
+  @ApiOperation({ summary: 'Rounds count', description: 'Returns total number of rounds' })
   @ApiResponse({
     status: 200,
-    description: 'The number of rounds available on the blockchain',
+    type: Number,
   })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
   @ApiQuery({ name: 'shard', description: 'Filter by shard identifier', required: false })
@@ -71,9 +72,9 @@ export class RoundController {
   }
 
   @Get("/rounds/:shard/:round")
+  @ApiOperation({ summary: 'Round', description: 'Returns details of a given round from a specific shard' })
   @ApiResponse({
     status: 200,
-    description: 'The details of a given round',
     type: RoundDetailed,
   })
   @ApiResponse({

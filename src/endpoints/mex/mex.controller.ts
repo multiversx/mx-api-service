@@ -10,7 +10,7 @@ export class MexController {
   constructor(private readonly mexService: MexService) { }
 
   @Get('/mex/:address')
-  @ApiOperation({ deprecated: true })
+  @ApiOperation({ summary: 'Mex account details', description: 'Returns mex information details for a given address', deprecated: true })
   @ApiResponse({
     status: 200,
     description: 'Mex details for address',

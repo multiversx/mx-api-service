@@ -1,31 +1,32 @@
+import { SwaggerUtils } from 'src/utils/swagger.utils';
 import { ApiProperty } from "@nestjs/swagger";
 import { NodesInfos } from "./nodes.infos";
 
 export class Provider extends NodesInfos {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   provider: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   owner: string | null = null;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   featured: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   serviceFee: number = 0;
 
-  @ApiProperty()
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   delegationCap: string = '';
 
-  @ApiProperty()
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   apr: number = 0;
 
-  @ApiProperty()
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   numUsers: number = 0;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   cumulatedRewards: string | null = null;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   identity: string | undefined = undefined;
 }

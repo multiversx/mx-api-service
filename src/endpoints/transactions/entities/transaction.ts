@@ -1,74 +1,75 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 
 export class Transaction {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   txHash: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: Number, nullable: true })
   gasLimit: number | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number, nullable: true })
   gasPrice: number | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number, nullable: true })
   gasUsed: number | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   miniBlockHash: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number, nullable: true })
   nonce: number | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   receiver: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   receiverShard: number = 0;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number, nullable: true })
   round: number | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   sender: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   senderShard: number = 0;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   signature: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   status: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   value: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   fee: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   timestamp: number = 0;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   data: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   function: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   action: any | undefined = undefined;
 
-  @ApiProperty()
-  scamInfo: any | undefined = undefined;
+  @ApiProperty({ type: ScamInfo, nullable: true })
+  scamInfo: ScamInfo | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ enum: TransactionType, nullable: true })
   type: TransactionType | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   originalTxHash: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, nullable: true })
   pendingResults: boolean | undefined = undefined;
 
   getDate(): Date | undefined {

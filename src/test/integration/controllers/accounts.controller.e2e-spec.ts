@@ -781,7 +781,7 @@ describe("Accounts Controller", () => {
       .set("header", "content-type")
       .expect(400)
       .then(res => {
-        expect(res.body.message).toEqual("Validation failed (a valid hash with size 64 for transaction is expected)");
+        expect(res.body.message).toEqual("Validation failed (a valid transaction hash for parameter scHash is expected)");
       });
   });
 

@@ -1,5 +1,5 @@
 import { Controller, Get } from "@nestjs/common";
-import { ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { DelegationService } from "./delegation.service";
 import { Delegation } from "./entities/delegation";
 
@@ -11,9 +11,9 @@ export class DelegationController {
   ) { }
 
   @Get("/delegation")
+  @ApiOperation({ summary: 'Delegation statistics', description: 'Returns delegation staking contract information' })
   @ApiResponse({
     status: 200,
-    description: 'The delegation details',
     type: Delegation,
   })
   async getDelegationDetails(): Promise<Delegation> {
