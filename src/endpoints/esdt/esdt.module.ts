@@ -5,6 +5,7 @@ import { TokenModule } from "../tokens/token.module";
 import { EsdtAddressService } from "./esdt.address.service";
 import { NftModule } from "../nfts/nft.module";
 import { CollectionModule } from "../collections/collection.module";
+import { TransactionModule } from "../transactions/transaction.module";
 
 
 @Module({
@@ -13,6 +14,7 @@ import { CollectionModule } from "../collections/collection.module";
     forwardRef(() => CollectionModule),
     forwardRef(() => TokenModule),
     VmQueryModule,
+    forwardRef(() => TransactionModule),
   ],
   providers: [
     EsdtService, EsdtAddressService,

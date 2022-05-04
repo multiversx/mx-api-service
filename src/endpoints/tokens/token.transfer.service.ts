@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { BinaryUtils } from "src/utils/binary.utils";
@@ -21,6 +21,7 @@ export class TokenTransferService {
 
   constructor(
     private readonly cachingService: CachingService,
+    @Inject(forwardRef(() => EsdtService))
     private readonly esdtService: EsdtService,
     private readonly tokenAssetService: TokenAssetService
   ) {

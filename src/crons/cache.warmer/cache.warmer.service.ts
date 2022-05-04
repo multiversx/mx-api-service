@@ -20,7 +20,6 @@ import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
-import { TokenService } from "src/endpoints/tokens/token.service";
 import { MexSettingsService } from "src/endpoints/transactions/transaction-action/recognizers/mex/mex.settings.service";
 
 @Injectable()
@@ -41,7 +40,6 @@ export class CacheWarmerService {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly tokenAssetService: TokenAssetService,
     private readonly pluginService: PluginService,
-    private readonly tokenService: TokenService,
     private readonly mexSettingsService: MexSettingsService,
   ) {
     this.configCronJob(
@@ -90,24 +88,26 @@ export class CacheWarmerService {
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
-  async handleTokenSupplyInvalidations() {
-    await Locker.lock('Token supply invalidations', async () => {
+  async handleTokenAssetsExtraInfoInvalidations() {
+    await Locker.lock('Token assets extra info invalidations', async () => {
       const assets = await this.tokenAssetService.getAllAssets();
       for (const identifier of Object.keys(assets)) {
         const asset = assets[identifier];
+
         if (asset.lockedAccounts) {
-          const lockedSupply = await this.esdtService.getLockedSupplyRaw(identifier);
-          await this.invalidateKey(CacheInfo.TokenLockedSupply(identifier).key, lockedSupply, CacheInfo.TokenLockedSupply(identifier).ttl);
+          const lockedAccounts = await this.esdtService.getLockedAccountsRaw(identifier);
+          await this.invalidateKey(CacheInfo.TokenLockedAccounts(identifier).key, lockedAccounts, CacheInfo.TokenLockedAccounts(identifier).ttl);
+        }
+
+        if (asset.extraTokens) {
+          const accounts = await this.esdtService.countAllAccounts([identifier, ...asset.extraTokens]);
+          await this.cachingService.setCacheRemote(
+            CacheInfo.TokenAccountsExtra(identifier).key,
+            accounts,
+            CacheInfo.TokenAccountsExtra(identifier).ttl
+          );
         }
       }
-    }, true);
-  }
-
-  @Cron(CronExpression.EVERY_10_MINUTES)
-  async handleEsdtTokenTransactionsAndAccountsInvalidations() {
-    await Locker.lock('Esdt tokens transactions and accounts invalidations', async () => {
-      const tokens = await this.esdtService.getAllEsdtTokensRaw();
-      await this.tokenService.batchProcessTokens(tokens);
     }, true);
   }
 

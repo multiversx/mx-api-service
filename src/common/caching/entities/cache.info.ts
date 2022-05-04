@@ -178,9 +178,9 @@ export class CacheInfo {
     };
   }
 
-  static TokenLockedSupply(identifier: string): CacheInfo {
+  static TokenLockedAccounts(identifier: string): CacheInfo {
     return {
-      key: `tokenLockedSupply:${identifier}`,
+      key: `tokenLockedAccounts:${identifier}`,
       ttl: Constants.oneHour(),
     };
   }
@@ -188,13 +188,20 @@ export class CacheInfo {
   static TokenTransactions(identifier: string): CacheInfo {
     return {
       key: `tokenTransactions:${identifier}`,
-      ttl: Constants.oneHour(),
+      ttl: Constants.oneMinute() * 10,
     };
   }
 
   static TokenAccounts(identifier: string): CacheInfo {
     return {
       key: `tokenAccounts:${identifier}`,
+      ttl: Constants.oneMinute() * 10,
+    };
+  }
+
+  static TokenAccountsExtra(identifier: string): CacheInfo {
+    return {
+      key: `tokenAccountsExtra:${identifier}`,
       ttl: Constants.oneHour(),
     };
   }
