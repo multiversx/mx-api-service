@@ -1,22 +1,12 @@
 import { NftSupply } from './entities/nft.supply';
-import {
-  BadRequestException,
-  Controller,
-  DefaultValuePipe,
-  Get,
-  HttpException,
-  HttpStatus,
-  NotFoundException,
-  Param,
-  ParseIntPipe,
-  Query,
-} from "@nestjs/common";
+import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, ParseIntPipe, Query, Res, Response } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.service";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
-import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { Nft } from "./entities/nft";
+import { NftFilter } from "./entities/nft.filter";
 import { NftOwner } from "./entities/nft.owner";
 import { NftType } from "./entities/nft.type";
 import { NftService } from "./nft.service";
@@ -26,6 +16,7 @@ import { NftService } from "./nft.service";
 export class NftController {
   constructor(
     private readonly nftService: NftService,
+    private readonly nftMediaService: NftMediaService,
   ) { }
 
   @Get("/nfts")
@@ -104,7 +95,7 @@ export class NftController {
   async getNftCountAlternative(
     @Query('search') search: string | undefined,
     @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+    @Query('type') type: NftType | undefined,
     @Query('collection') collection: string | undefined,
     @Query('name') name: string | undefined,
     @Query('tags', ParseArrayPipe) tags: string[] | undefined,
@@ -132,6 +123,32 @@ export class NftController {
     }
 
     return token;
+  }
+
+  @Get('/nfts/:identifier/thumbnail')
+  @ApiResponse({
+    status: 200,
+    description: 'Non-fungible / semi-fungible token thumbnail',
+    type: Nft,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'NFT not found',
+  })
+  async resolveNftThumbnail(@Param('identifier') identifier: string, @Res() response: Response) {
+    const nfts = await this.nftService.getNftsInternal(0, 1, new NftFilter(), identifier);
+    if (nfts.length === 0) {
+      throw new NotFoundException('NFT not found');
+    }
+
+    const media = await this.nftMediaService.getMedia(identifier);
+    if (!media || media.length === 0) {
+      // @ts-ignore
+      response.redirect(this.nftService.DEFAULT_MEDIA[0].thumbnailUrl);
+    } else {
+      // @ts-ignore
+      response.redirect(media[0].thumbnailUrl);
+    }
   }
 
   @Get('/nfts/:identifier/supply')
