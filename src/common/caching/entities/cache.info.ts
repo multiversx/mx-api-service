@@ -188,14 +188,14 @@ export class CacheInfo {
   static TokenTransactions(identifier: string): CacheInfo {
     return {
       key: `tokenTransactions:${identifier}`,
-      ttl: Constants.oneHour(),
+      ttl: Constants.oneMinute() * 10,
     };
   }
 
   static TokenAccounts(identifier: string): CacheInfo {
     return {
       key: `tokenAccounts:${identifier}`,
-      ttl: Constants.oneHour(),
+      ttl: Constants.oneMinute() * 10,
     };
   }
 

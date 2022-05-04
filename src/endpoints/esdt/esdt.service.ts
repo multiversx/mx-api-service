@@ -98,7 +98,7 @@ export class EsdtService {
 
       token.transactions = await this.cachingService.getOrSetCache(
         CacheInfo.TokenTransactions(token.identifier).key,
-        async () => await this.transactionService.getTransactionCount({ token: token.identifier }),
+        async () => await this.transactionService.getTransactionCount({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }),
         CacheInfo.TokenTransactions(token.identifier).ttl
       );
     }
