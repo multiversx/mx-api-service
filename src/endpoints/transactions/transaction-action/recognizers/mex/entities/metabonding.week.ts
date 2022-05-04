@@ -1,5 +1,5 @@
 export class MetabondingWeek {
-  week?: number;
-  egld_staked?: string;
-  lkmex_staked?: string;
+  week: number = 0;
+  egldStaked: string = '';
+  lkmexStaked: string = '';
 }

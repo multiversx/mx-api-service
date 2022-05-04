@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import BigNumber from "bignumber.js";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { BatchUtils } from "src/utils/batch.utils";
+import { BinaryUtils } from "src/utils/binary.utils";
 import { NumberUtils } from "src/utils/number.utils";
 import { TransactionAction } from "../../entities/transaction.action";
 import { TransactionActionCategory } from "../../entities/transaction.action.category";
@@ -40,19 +40,9 @@ export class MetabondingActionRecognizerService {
     const metabondingWeeks: MetabondingWeek[] = [];
     for (const chunk of chunks) {
       const week = new MetabondingWeek();
-      week.week = new BigNumber(`0x${chunk[0]}`).toNumber();
-
-      let egldStakedHex = chunk[1];
-      if (!egldStakedHex) {
-        egldStakedHex = '00';
-      }
-      week.egld_staked = NumberUtils.toDenominatedString(BigInt(`0x${egldStakedHex}`));
-
-      let lkmexStakedHex = chunk[2];
-      if (!lkmexStakedHex) {
-        lkmexStakedHex = '00';
-      }
-      week.lkmex_staked = NumberUtils.toDenominatedString(BigInt(`0x${lkmexStakedHex}`));
+      week.week = BinaryUtils.hexToNumber(chunk[0]);
+      week.egldStaked = BinaryUtils.hexToBigInt(chunk[1]).toString();
+      week.lkmexStaked = BinaryUtils.hexToBigInt(chunk[2]).toString();
 
       metabondingWeeks.push(week);
     }
@@ -60,7 +50,12 @@ export class MetabondingActionRecognizerService {
     const result = new TransactionAction();
     result.name = MexFunction.claimRewards;
     result.category = TransactionActionCategory.mex;
-    result.description = `Eligible stake for ${metabondingWeeks.map((week) => `week ${week.week}: EGLD ${week.egld_staked}, LKMEX ${week.lkmex_staked}`).join(', ')}`;
+    result.description = `Eligible stake for ${metabondingWeeks.map((week) => `week ${week.week}: EGLD ${NumberUtils.toDenominatedString(BigInt(week.egldStaked))}, LKMEX ${NumberUtils.toDenominatedString(BigInt(week.lkmexStaked))}`).join('; ')}`;
+    result.arguments = {
+      weeks: metabondingWeeks,
+      functionName: metadata.functionName,
+      functionArgs: metadata.functionArgs,
+    };
 
     return result;
   }
