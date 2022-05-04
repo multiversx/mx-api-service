@@ -1,7 +1,6 @@
-import { Global, Module } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { GraphQlService } from "./graphql.service";
 
-@Global()
 @Module({
   providers: [
     GraphQlService,

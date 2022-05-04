@@ -1,80 +1,81 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { SwaggerUtils } from "src/utils/swagger.utils";
 import { NodeStatus } from "./node.status";
 import { NodeType } from "./node.type";
 
 export class Node {
-    @ApiProperty()
+    @ApiProperty({ type: String })
     bls: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     name: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: String, default: 0 })
     version: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: Number })
     rating: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number })
     tempRating: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number })
     ratingModifier: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number, nullable: true })
     shard: number | undefined = undefined;
 
-    @ApiProperty()
+    @ApiProperty({ enum: NodeType, nullable: true })
     type: NodeType | undefined = undefined;
 
-    @ApiProperty()
+    @ApiProperty({ enum: NodeStatus, nullable: true })
     status: NodeStatus | undefined = undefined;
 
-    @ApiProperty()
+    @ApiProperty({ type: Boolean, default: false })
     online: boolean = false;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number })
     nonce: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number })
     instances: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     owner: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: String, nullable: true })
     identity: string | undefined = undefined;
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     provider: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: [String] })
     issues: string[] = [];
 
-    @ApiProperty()
+    @ApiProperty(SwaggerUtils.amountPropertyOptions())
     stake: string = '';
 
-    @ApiProperty()
+    @ApiProperty(SwaggerUtils.amountPropertyOptions())
     topUp: string = '';
 
-    @ApiProperty()
+    @ApiProperty(SwaggerUtils.amountPropertyOptions())
     locked: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: Number, default: 0 })
     leaderFailure: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number, default: 15 })
     leaderSuccess: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number, default: 0 })
     validatorFailure: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number, default: 0 })
     validatorIgnoredSignatures: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number, default: 10000 })
     validatorSuccess: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number, default: 0 })
     position: number = 0;
 }

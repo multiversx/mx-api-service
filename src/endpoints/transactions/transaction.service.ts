@@ -124,6 +124,9 @@ export class TransactionService {
       .withCondition(QueryConditionOptions.should, shouldQueries)
       .withCondition(QueryConditionOptions.must, mustQueries);
 
+    if (filter.tokens) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.tokens, token => QueryType.Match('tokens', token, QueryOperator.AND));
+    }
 
     if (filter.before || filter.after) {
       elasticQuery = elasticQuery

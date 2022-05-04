@@ -5,9 +5,9 @@ import { TransactionAction } from "../../entities/transaction.action";
 import { TransactionActionCategory } from "../../entities/transaction.action.category";
 import { TransactionMetadata } from "../../entities/transaction.metadata";
 import { MexFunction } from "./entities/mex.function.options";
-import { MexSettings } from "./entities/mex.settings";
+import { MexSettings } from "../../../../mex/entities/mex.settings";
 import { TokenTransferService } from "src/endpoints/tokens/token.transfer.service";
-import { MexSettingsService } from "./mex.settings.service";
+import { MexSettingsService } from "../../../../mex/mex.settings.service";
 import { TransactionActionEsdtNftRecognizerService } from "../esdt/transaction.action.esdt.nft.recognizer.service";
 
 @Injectable()

@@ -2,18 +2,18 @@ import { ApiProperty } from "@nestjs/swagger";
 import { TransactionAction } from "../../transaction-action/entities/transaction.action";
 
 export class TransactionDecodeDto {
-  @ApiProperty()
+  @ApiProperty({ type: TransactionAction, nullable: true })
   action: TransactionAction | undefined = new TransactionAction();
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   data: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   receiver: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   sender: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   value: string = '';
 }

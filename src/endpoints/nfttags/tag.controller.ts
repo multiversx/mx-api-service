@@ -1,5 +1,5 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from '@nestjs/common';
-import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Tag } from './entities/tag';
 import { TagService } from './tag.service';
 
@@ -12,11 +12,11 @@ export class TagController {
   ) { }
 
   @Get("/tags")
+  @ApiOperation({ summary: 'NFT Tags', description: 'Returns all distinct NFT tags' })
   @ApiResponse({
     status: 200,
-    description: 'The nft tags available',
-    type: Tag,
     isArray: true,
+    type: Tag,
   })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -28,9 +28,9 @@ export class TagController {
   }
 
   @Get("/tags/:tag")
+  @ApiOperation({ summary: 'Tag details', description: 'Return NFT tag details' })
   @ApiResponse({
     status: 200,
-    description: 'The details of a given nft tag',
     type: Tag,
   })
   @ApiResponse({

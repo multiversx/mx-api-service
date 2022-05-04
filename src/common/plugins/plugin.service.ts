@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { NestExpressApplication } from "@nestjs/platform-express";
-import { Account } from "src/endpoints/accounts/entities/account";
+import { AccountDetailed } from "src/endpoints/accounts/entities/account.detailed";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { Transaction } from "src/endpoints/transactions/entities/transaction";
 
@@ -8,15 +8,13 @@ import { Transaction } from "src/endpoints/transactions/entities/transaction";
 export class PluginService {
   async processTransaction(_: Transaction): Promise<void> { }
 
-  async handleEveryMinuteCron(): Promise<void> { }
-
   async processTransactionSend(_: any): Promise<any> { }
 
   async processNft(_: Nft): Promise<void> { }
 
   async batchProcessNfts(_: Nft[]): Promise<void> { }
 
-  async processAccount(_: Account): Promise<void> { }
+  async processAccount(_: AccountDetailed): Promise<void> { }
 
   async bootstrapPublicApp(_: NestExpressApplication): Promise<void> { }
 }

@@ -7,9 +7,9 @@ import { MexWrapActionRecognizerService } from "./mex.wrap.action.recognizer.ser
 import { MexDistributionActionRecognizerService } from "./mex.distribution.action.recognizer.service";
 import { TransactionActionModule } from "../../transaction.action.module";
 import { MexLockedAssetActionRecognizerService } from "./mex.locked.asset.action.recognizer.service";
-import { MexSettingsModule } from "./mex.settings.module";
 import { MetabondingActionRecognizerService } from "./mex.metabonding.action.recognizer.service";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
+import { MexModule } from "src/endpoints/mex/mex.module";
 
 @Module({
   imports: [
@@ -17,6 +17,7 @@ import { ApiConfigModule } from "src/common/api-config/api.config.module";
     forwardRef(() => TransactionActionModule),
     MexSettingsModule,
     ApiConfigModule,
+    MexModule,
   ],
   providers: [
     TransactionActionMexRecognizerService,

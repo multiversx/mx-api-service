@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
 import { TokenDetailed } from "./entities/token.detailed";
@@ -14,10 +14,6 @@ import { QueryType } from "src/common/elastic/entities/query.type";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { TokenAccount } from "./entities/token.account";
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
-import { CachingService } from "src/common/caching/caching.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { TransactionService } from "../transactions/transaction.service";
-import { RecordUtils } from "src/utils/record.utils";
 import { TokenType } from "./entities/token.type";
 import { NumberUtils } from "src/utils/number.utils";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
@@ -29,6 +25,8 @@ import { TokenProperties } from "./entities/token.properties";
 import { TokenRoles } from "./entities/token.roles";
 import { TokenSupplyResult } from "./entities/token.supply.result";
 import { TokenDetailedWithBalance } from "./entities/token.detailed.with.balance";
+import { SortOrder } from "src/common/entities/sort.order";
+import { TokenSort } from "./entities/token.sort";
 
 @Injectable()
 export class TokenService {
@@ -36,9 +34,6 @@ export class TokenService {
   constructor(
     private readonly esdtService: EsdtService,
     private readonly elasticService: ElasticService,
-    private readonly cachingService: CachingService,
-    @Inject(forwardRef(() => TransactionService))
-    private readonly transactionService: TransactionService,
     private readonly esdtAddressService: EsdtAddressService,
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService
@@ -64,8 +59,6 @@ export class TokenService {
 
     await this.applySupply(token);
 
-    await this.processToken(token);
-
     token.roles = await this.getTokenRoles(identifier);
 
     return token;
@@ -82,8 +75,6 @@ export class TokenService {
       this.applyTickerFromAssets(token);
     }
 
-    await this.batchProcessTokens(tokens);
-
     return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
   }
 
@@ -93,57 +84,6 @@ export class TokenService {
     } else {
       token.ticker = token.identifier;
     }
-  }
-
-  async processToken(token: TokenDetailed) {
-    token.transactions = await this.cachingService.getOrSetCache(
-      CacheInfo.TokenTransactions(token.identifier).key,
-      async () => await this.transactionService.getTransactionCount({ token: token.identifier }),
-      CacheInfo.TokenTransactions(token.identifier).ttl
-    );
-
-    token.accounts = await this.cachingService.getOrSetCache(
-      CacheInfo.TokenAccounts(token.identifier).key,
-      async () => await this.esdtService.getEsdtAccountsCount(token.identifier),
-      CacheInfo.TokenAccounts(token.identifier).ttl
-    );
-  }
-
-  async batchProcessTokens(tokens: TokenDetailed[]) {
-    await this.cachingService.batchApply
-      (tokens,
-        token => CacheInfo.TokenTransactions(token.identifier).key,
-        async tokens => {
-          const result: { [key: string]: number } = {};
-
-          for (const token of tokens) {
-            const transactions = await this.transactionService.getTransactionCount({ token: token.identifier });
-
-            result[token.identifier] = transactions;
-          }
-
-          return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenTransactions(identifier).key);
-        },
-        (token, transactions) => token.transactions = transactions,
-        CacheInfo.TokenTransactions('').ttl,
-      );
-
-    await this.cachingService.batchApply
-      (tokens,
-        token => CacheInfo.TokenAccounts(token.identifier).key,
-        async tokens => {
-          const result: { [key: string]: number } = {};
-
-          for (const token of tokens) {
-            const accounts = await this.esdtService.getEsdtAccountsCount(token.identifier);
-            result[token.identifier] = accounts;
-          }
-
-          return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenAccounts(identifier).key);
-        },
-        (token, accounts) => token.accounts = accounts,
-        CacheInfo.TokenAccounts('').ttl,
-      );
   }
 
   async getFilteredTokens(filter: TokenFilter): Promise<TokenDetailed[]> {
@@ -171,6 +111,37 @@ export class TokenService {
       const identifierArray = filter.identifiers.map(identifier => identifier.toLowerCase());
 
       tokens = tokens.filter(token => identifierArray.includes(token.identifier.toLowerCase()));
+    }
+
+    if (filter.sort) {
+      tokens = this.sortTokens(tokens, filter.sort, filter.order ?? SortOrder.desc);
+    }
+
+    return tokens;
+  }
+
+  private sortTokens(tokens: TokenDetailed[], sort: TokenSort, order: SortOrder): TokenDetailed[] {
+    let criteria: (token: Token) => number;
+
+    switch (sort) {
+      case TokenSort.accounts:
+        criteria = token => token.accounts ?? 0;
+        break;
+      case TokenSort.transactions:
+        criteria = token => token.transactions ?? 0;
+        break;
+      default:
+        criteria = _ => 0;
+        break;
+    }
+
+    switch (order) {
+      case SortOrder.asc:
+        tokens = tokens.sorted(criteria);
+        break;
+      case SortOrder.desc:
+        tokens = tokens.sortedDescending(criteria);
+        break;
     }
 
     return tokens;
@@ -477,6 +448,7 @@ export class TokenService {
       minted: denominated === true && result.minted ? NumberUtils.denominateString(result.minted, properties.decimals) : result.minted,
       burnt: denominated === true && result.burned ? NumberUtils.denominateString(result.burned, properties.decimals) : result.burned,
       initialMinted: denominated === true && result.initialMinted ? NumberUtils.denominateString(result.initialMinted, properties.decimals) : result.initialMinted,
+      lockedAccounts: result.lockedAccounts,
     };
   }
 
