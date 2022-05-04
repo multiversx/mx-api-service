@@ -43,6 +43,7 @@ export class TransactionService {
     private readonly elasticService: ElasticService,
     private readonly gatewayService: GatewayService,
     private readonly transactionPriceService: TransactionPriceService,
+    @Inject(forwardRef(() => TransactionGetService))
     private readonly transactionGetService: TransactionGetService,
     private readonly tokenTransferService: TokenTransferService,
     private readonly pluginsService: PluginService,

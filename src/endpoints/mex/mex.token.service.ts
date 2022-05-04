@@ -15,7 +15,7 @@ export class MexTokenService {
   ) { }
 
   async refreshMexTokens(): Promise<void> {
-    const pairs = await this.getMexTokensRaw();
+    const pairs = await this.getAllMexTokensRaw();
     await this.cachingService.setCacheRemote(CacheInfo.MexTokens.key, pairs, CacheInfo.MexTokens.ttl);
   }
 
@@ -25,15 +25,36 @@ export class MexTokenService {
     return allMexTokens.slice(from, from + size);
   }
 
+  async getIndexedMexTokens(): Promise<Record<string, MexToken>> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.MexTokensIndexed.key,
+      async () => await this.getIndexedMexTokensRaw(),
+      CacheInfo.MexTokensIndexed.ttl,
+      Constants.oneSecond() * 30
+    );
+  }
+
+  async getIndexedMexTokensRaw(): Promise<Record<string, MexToken>> {
+    const result: Record<string, MexToken> = {};
+
+    const tokens = await this.getAllMexTokensRaw();
+    for (const token of tokens) {
+      result[token.token] = token;
+    }
+
+    return result;
+  }
+
   private async getAllMexTokens(): Promise<MexToken[]> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.MexTokens.key,
-      async () => await this.getMexTokensRaw(),
+      async () => await this.getAllMexTokensRaw(),
       CacheInfo.MexTokens.ttl,
       Constants.oneSecond() * 30
     );
   }
-  private async getMexTokensRaw(): Promise<MexToken[]> {
+
+  private async getAllMexTokensRaw(): Promise<MexToken[]> {
     const variables = {
       "offset": 0,
       "pairsLimit": 100,
@@ -76,14 +97,14 @@ export class MexTokenService {
         const wegldToken = new MexToken();
         wegldToken.token = pair.firstToken.identifier;
         wegldToken.name = pair.firstToken.name;
-        wegldToken.priceUsd = new BigNumber(pair.firstTokenPriceUSD).toFixed();
-        wegldToken.priceEgld = '1';
+        wegldToken.priceUsd = new BigNumber(pair.firstTokenPriceUSD).toNumber();
+        wegldToken.priceEgld = 1;
 
         const usdcToken = new MexToken();
         usdcToken.token = pair.secondToken.identifier;
         usdcToken.name = pair.secondToken.name;
-        usdcToken.priceUsd = '1';
-        usdcToken.priceEgld = new BigNumber(pair.secondTokenPrice).toFixed();
+        usdcToken.priceUsd = 1;
+        usdcToken.priceEgld = new BigNumber(pair.secondTokenPrice).toNumber();
 
         mexTokens.push(wegldToken);
         mexTokens.push(usdcToken);
@@ -110,8 +131,8 @@ export class MexTokenService {
       return {
         token: pair.firstToken.identifier,
         name: pair.firstToken.name,
-        priceUsd: new BigNumber(pair.firstTokenPriceUSD).toFixed(),
-        priceEgld: new BigNumber(pair.firstTokenPrice).toFixed(),
+        priceUsd: new BigNumber(pair.firstTokenPriceUSD).toNumber(),
+        priceEgld: new BigNumber(pair.firstTokenPrice).toNumber(),
       };
     }
 
@@ -119,8 +140,8 @@ export class MexTokenService {
       return {
         token: pair.secondToken.identifier,
         name: pair.secondToken.name,
-        priceUsd: new BigNumber(pair.secondTokenPriceUSD).toFixed(),
-        priceEgld: new BigNumber(pair.secondTokenPrice).toFixed(),
+        priceUsd: new BigNumber(pair.secondTokenPriceUSD).toNumber(),
+        priceEgld: new BigNumber(pair.secondTokenPrice).toNumber(),
       };
     }
 

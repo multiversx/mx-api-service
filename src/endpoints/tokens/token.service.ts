@@ -213,14 +213,25 @@ export class TokenService {
     const result: TokenWithBalance[] = [];
     for (const token of allTokens) {
       if (elasticTokensWithBalance[token.identifier]) {
-        result.push({
+        const tokenWithBalance: TokenWithBalance = {
           ...token,
           balance: elasticTokensWithBalance[token.identifier],
-        });
+          valueUsd: undefined,
+        };
+
+        this.applyValueUsd(tokenWithBalance);
+
+        result.push(tokenWithBalance);
       }
     }
 
     return result;
+  }
+
+  applyValueUsd(tokenWithBalance: TokenWithBalance) {
+    if (tokenWithBalance.priceUsd) {
+      tokenWithBalance.valueUsd = tokenWithBalance.priceUsd * NumberUtils.denominateString(tokenWithBalance.balance, tokenWithBalance.decimals);
+    }
   }
 
   async getTokensForAddressFromGateway(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
@@ -230,7 +241,9 @@ export class TokenService {
     tokens = tokens.map(token => ApiUtils.mergeObjects(new TokenWithBalance(), token));
 
     for (const token of tokens) {
-      await this.applyTickerFromAssets(token);
+      this.applyTickerFromAssets(token);
+
+      this.applyValueUsd(token);
     }
 
     return tokens;
@@ -252,11 +265,14 @@ export class TokenService {
     }
 
     const balance = esdt.tokenData.balance;
-    let tokenWithBalance = {
+    let tokenWithBalance: TokenDetailedWithBalance = {
       ...token,
       balance,
+      valueUsd: undefined,
     };
     tokenWithBalance = ApiUtils.mergeObjects(new TokenDetailedWithBalance(), tokenWithBalance);
+
+    this.applyValueUsd(tokenWithBalance);
 
     tokenWithBalance.identifier = token.identifier;
 
