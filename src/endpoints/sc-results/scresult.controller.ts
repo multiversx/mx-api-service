@@ -1,5 +1,5 @@
 import { Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ParseTransactionHashPipe } from "src/utils/pipes/parse.transaction.hash.pipe";
 import { SmartContractResult } from "./entities/smart.contract.result";
 import { SmartContractResultService } from "./scresult.service";
@@ -11,13 +11,14 @@ import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
 export class SmartContractResultController {
   constructor(private readonly scResultService: SmartContractResultService) { }
 
+  @Get("/sc-results")
+  @ApiOperation({ summary: 'Smart contract results', description: 'Returns all smart contract results available on the blockchain' })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'The hash of the parent miniBlock', required: false })
-  @Get("/sc-results")
   @ApiResponse({
     status: 200,
-    description: 'All smart contract results available on the blockchain',
+    isArray: true,
     type: SmartContractResult,
   })
   getScResults(
@@ -30,19 +31,19 @@ export class SmartContractResultController {
   }
 
   @Get("/sc-results/count")
+  @ApiOperation({ summary: 'Smart contracts count', description: 'Returns total number of smart contracts results' })
   @ApiResponse({
     status: 200,
-    description: 'The count of all smart contract results available on the blockchain',
-    type: SmartContractResult,
+    type: Number,
   })
   getScResultsCount(): Promise<number> {
     return this.scResultService.getScResultsCount();
   }
 
   @Get("/sc-results/:scHash")
+  @ApiOperation({ summary: 'Smart contract results details', description: 'Returns smart contract details for a given hash' })
   @ApiResponse({
     status: 200,
-    description: 'The specific smart contract result',
     type: SmartContractResult,
   })
   @ApiResponse({

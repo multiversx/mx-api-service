@@ -19,6 +19,8 @@ export class CachingService {
   private asyncExpire = promisify(this.client.expire).bind(this.client);
   private asyncFlushDb = promisify(this.client.flushdb).bind(this.client);
   private asyncMGet = promisify(this.client.mget).bind(this.client);
+  private asyncSAdd = promisify(this.client.sadd).bind(this.client);
+  private asyncSCard = promisify(this.client.scard).bind(this.client);
   private asyncMulti = (commands: any[]) => {
     const multi = this.client.multi(commands);
     return promisify(multi.exec).call(multi);
@@ -284,6 +286,28 @@ export class CachingService {
     } finally {
       profiler.stop();
       this.metricsService.setRedisDuration('MDEL', profiler.duration);
+    }
+  }
+
+  async setAdd(key: string, ...values: string[]): Promise<void> {
+    const profiler = new PerformanceProfiler();
+
+    try {
+      await this.asyncSAdd(key, ...values);
+    } finally {
+      profiler.stop();
+      this.metricsService.setRedisDuration('SADD', profiler.duration);
+    }
+  }
+
+  async setCount(key: string): Promise<number> {
+    const profiler = new PerformanceProfiler();
+
+    try {
+      return await this.asyncSCard(key);
+    } finally {
+      profiler.stop();
+      this.metricsService.setRedisDuration('SCARD', profiler.duration);
     }
   }
 
