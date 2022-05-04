@@ -187,14 +187,14 @@ export class CacheInfo {
 
   static TokenTransactions(identifier: string): CacheInfo {
     return {
-      key: `tokenTransactions:v2:${identifier}`,
+      key: `tokenTransactions:${identifier}`,
       ttl: Constants.oneMinute() * 10,
     };
   }
 
   static TokenAccounts(identifier: string): CacheInfo {
     return {
-      key: `tokenAccounts:v2:${identifier}`,
+      key: `tokenAccounts:${identifier}`,
       ttl: Constants.oneMinute() * 10,
     };
   }
