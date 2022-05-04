@@ -9,7 +9,6 @@ import { MexDistributionActionRecognizerService } from "./mex.distribution.actio
 import { MexLockedAssetActionRecognizerService } from "./mex.locked.asset.action.recognizer.service";
 import { MexSettingsService } from "../../../../mex/mex.settings.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { MetabondingActionRecognizerService } from "./mex.metabonding.action.recognizer.service";
 
 @Injectable()
 export class TransactionActionMexRecognizerService implements TransactionActionRecognizerInterface {
@@ -19,7 +18,6 @@ export class TransactionActionMexRecognizerService implements TransactionActionR
     private readonly wrapActionRecognizer: MexWrapActionRecognizerService,
     private readonly distributionRecognizer: MexDistributionActionRecognizerService,
     private readonly lockedAssetRecognizer: MexLockedAssetActionRecognizerService,
-    private readonly metabondingRecognizer: MetabondingActionRecognizerService,
     private readonly mexSettingsService: MexSettingsService,
     private readonly apiConfigService: ApiConfigService
   ) { }
@@ -41,7 +39,7 @@ export class TransactionActionMexRecognizerService implements TransactionActionR
     }
 
     const isMexInteraction = await this.mexSettingsService.isMexInteraction(metadata);
-    if (!isMexInteraction && metadata.receiver !== this.apiConfigService.getMetabondingContractAddress()) {
+    if (!isMexInteraction) {
       return undefined;
     }
 
@@ -49,7 +47,6 @@ export class TransactionActionMexRecognizerService implements TransactionActionR
       (await this.pairActionRecognizer.recognize(settings, metadata)) ??
       this.farmActionRecognizer.recognize(settings, metadata) ??
       this.wrapActionRecognizer.recognize(settings, metadata) ??
-      this.lockedAssetRecognizer.recognize(settings, metadata) ??
-      this.metabondingRecognizer.recognize(metadata);
+      this.lockedAssetRecognizer.recognize(settings, metadata);
   }
 }

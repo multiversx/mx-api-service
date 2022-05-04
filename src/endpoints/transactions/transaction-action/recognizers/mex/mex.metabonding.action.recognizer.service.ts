@@ -15,9 +15,9 @@ export class MetabondingActionRecognizerService {
     private readonly apiConfigService: ApiConfigService,
   ) { }
 
-  recognize(metadata: TransactionMetadata): TransactionAction | undefined {
-    const METABONDING_CONTRACT = this.apiConfigService.getMetabondingContractAddress();
-    if (metadata.receiver !== METABONDING_CONTRACT) {
+  // eslint-disable-next-line require-await
+  async recognize(metadata: TransactionMetadata): Promise<TransactionAction | undefined> {
+    if (metadata.receiver !== this.apiConfigService.getMetabondingContractAddress()) {
       return undefined;
     }
 

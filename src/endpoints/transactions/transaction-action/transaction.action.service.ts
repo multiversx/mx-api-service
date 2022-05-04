@@ -12,6 +12,7 @@ import { TransactionActionEsdtNftRecognizerService } from "./recognizers/esdt/tr
 import { TokenTransferService } from "src/endpoints/tokens/token.transfer.service";
 import { StringUtils } from "src/utils/string.utils";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
+import { MetabondingActionRecognizerService } from "./recognizers/mex/mex.metabonding.action.recognizer.service";
 
 @Injectable()
 export class TransactionActionService {
@@ -24,6 +25,7 @@ export class TransactionActionService {
     private readonly stakeRecognizer: StakeActionRecognizerService,
     private readonly scCallRecognizer: SCCallActionRecognizerService,
     private readonly tokenTransferService: TokenTransferService,
+    private readonly metabondingRecognizer: MetabondingActionRecognizerService,
   ) {
     this.logger = new Logger(TransactionActionService.name);
   }
@@ -35,6 +37,7 @@ export class TransactionActionService {
         this.recognizers.push(this.mexRecognizer);
       }
 
+      this.recognizers.push(this.metabondingRecognizer);
       this.recognizers.push(this.esdtNftRecognizer);
       this.recognizers.push(this.stakeRecognizer);
       this.recognizers.push(this.scCallRecognizer);
