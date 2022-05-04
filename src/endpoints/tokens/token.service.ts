@@ -25,6 +25,8 @@ import { TokenProperties } from "./entities/token.properties";
 import { TokenRoles } from "./entities/token.roles";
 import { TokenSupplyResult } from "./entities/token.supply.result";
 import { TokenDetailedWithBalance } from "./entities/token.detailed.with.balance";
+import { SortOrder } from "src/common/entities/sort.order";
+import { TokenSort } from "./entities/token.sort";
 
 @Injectable()
 export class TokenService {
@@ -109,6 +111,33 @@ export class TokenService {
       const identifierArray = filter.identifiers.map(identifier => identifier.toLowerCase());
 
       tokens = tokens.filter(token => identifierArray.includes(token.identifier.toLowerCase()));
+    }
+
+    if (filter.sort) {
+      const order = filter.order ?? SortOrder.desc;
+
+      let criteria: (token: Token) => number;
+
+      switch (filter.sort) {
+        case TokenSort.accounts:
+          criteria = token => token.accounts ?? 0;
+          break;
+        case TokenSort.transactions:
+          criteria = token => token.transactions ?? 0;
+          break;
+        default:
+          criteria = _ => 0;
+          break;
+      }
+
+      switch (order) {
+        case SortOrder.asc:
+          tokens = tokens.sorted(criteria);
+          break;
+        case SortOrder.desc:
+          tokens = tokens.sortedDescending(criteria);
+          break;
+      }
     }
 
     return tokens;

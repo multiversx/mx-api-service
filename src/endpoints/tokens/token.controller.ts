@@ -14,6 +14,7 @@ import { TokenDetailed } from "./entities/token.detailed";
 import { TokenService } from "./token.service";
 import { TokenRoles } from "./entities/token.roles";
 import { TokenSupplyResult } from "./entities/token.supply.result";
+import { TokenSort } from "./entities/token.sort";
 
 @Controller()
 @ApiTags('tokens')
@@ -36,6 +37,8 @@ export class TokenController {
   @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
+  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false })
+  @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false })
   async getTokens(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -43,8 +46,10 @@ export class TokenController {
     @Query('name') name: string | undefined,
     @Query('identifier') identifier: string | undefined,
     @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
+    @Query('sort', new ParseOptionalEnumPipe(TokenSort)) sort: TokenSort | undefined,
+    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
   ): Promise<TokenDetailed[]> {
-    return await this.tokenService.getTokens({ from, size }, { search, name, identifier, identifiers });
+    return await this.tokenService.getTokens({ from, size }, { search, name, identifier, identifiers, sort, order });
   }
 
   @Get("/tokens/count")
