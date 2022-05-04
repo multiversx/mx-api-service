@@ -4,7 +4,6 @@ import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
-import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { Nft } from "./entities/nft";
 import { NftFilter } from "./entities/nft.filter";
 import { NftOwner } from "./entities/nft.owner";
@@ -94,7 +93,7 @@ export class NftController {
   async getNftCountAlternative(
     @Query('search') search: string | undefined,
     @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+    @Query('type') type: NftType | undefined,
     @Query('collection') collection: string | undefined,
     @Query('name') name: string | undefined,
     @Query('tags', ParseArrayPipe) tags: string[] | undefined,
