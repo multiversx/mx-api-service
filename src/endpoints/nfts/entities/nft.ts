@@ -1,76 +1,78 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { TokenAssets } from "src/endpoints/tokens/entities/token.assets";
+import { SwaggerUtils } from "src/utils/swagger.utils";
 import { NftMedia } from "./nft.media";
 import { NftMetadata } from "./nft.metadata";
 import { NftType } from "./nft.type";
 
 export class Nft {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   identifier: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   collection: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: Number, nullable: true })
   timestamp?: number = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   attributes: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   nonce: number = 0;
 
-  @ApiProperty()
+  @ApiProperty({ enum: NftType })
   type: NftType = NftType.NonFungibleESDT;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   name: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   creator: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: Number, nullable: true })
   royalties: number | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ isArray: true })
   uris: string[] = [];
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   url: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: NftMedia, nullable: true })
   media: NftMedia[] | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Boolean, default: false })
   isWhitelistedStorage: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   thumbnailUrl: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ isArray: true })
   tags: string[] = [];
 
-  @ApiProperty()
+  @ApiProperty({ type: NftMetadata, nullable: true })
   metadata: NftMetadata | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   owner: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   balance: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   supply: string | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number, nullable: true })
   decimals: number | undefined = undefined;
 
   @ApiProperty()
   assets?: TokenAssets;
 
-  @ApiProperty()
-  ticker?: string;
+  @ApiProperty({ type: String })
+  ticker?: string = '';
 
-  @ApiProperty()
-  scamInfo: any | undefined = undefined;
+  @ApiProperty({ type: ScamInfo, nullable: true })
+  scamInfo: ScamInfo | undefined = undefined;
 }

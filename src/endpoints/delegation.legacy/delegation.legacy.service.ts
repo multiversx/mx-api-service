@@ -32,7 +32,7 @@ export class DelegationLegacyService {
       totalDeferredPaymentStake,
     ] = totalStakeByTypeEncoded.map((encoded) => this.numberDecode(encoded));
 
-    const numUsers = this.numberDecode(numUsersEncoded[0]);
+    const numUsers = Number(this.numberDecode(numUsersEncoded[0]));
 
     return {
       totalWithdrawOnlyStake,

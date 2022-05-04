@@ -1,54 +1,55 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { SwaggerUtils } from "src/utils/swagger.utils";
 
 export class Identity {
-  @ApiProperty()
-  identity?: string;
+  @ApiProperty({ type: String })
+  identity?: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   name?: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   description?: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   avatar?: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   website?: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   twitter?: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   location?: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   score?: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   validators?: number;
 
-  @ApiProperty()
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   stake?: string;
 
-  @ApiProperty()
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
   topUp?: string;
 
-  @ApiProperty()
-  locked: string = '0';
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
+  locked: string = '';
 
   @ApiProperty()
   distribution?: { [index: string]: number } = {};
 
-  @ApiProperty()
+  @ApiProperty({ type: [String] })
   providers?: string[];
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   stakePercent?: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   rank?: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   apr?: number;
 }

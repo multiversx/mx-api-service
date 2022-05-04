@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NetworkConstants } from './entities/constants';
 import { Economics } from './entities/economics';
 import { NetworkService } from './network.service';
@@ -13,9 +13,9 @@ export class NetworkController {
   ) { }
 
   @Get("/constants")
+  @ApiOperation({ summary: 'Network constants', description: 'Returns network-specific constants that can be used to automatically configure dapps' })
   @ApiResponse({
     status: 200,
-    description: 'The network constants',
     type: NetworkConstants,
   })
   getConstants(): Promise<NetworkConstants> {
@@ -23,9 +23,9 @@ export class NetworkController {
   }
 
   @Get("/economics")
+  @ApiOperation({ summary: 'Network economics', description: 'Returns general economics information' })
   @ApiResponse({
     status: 200,
-    description: 'The economics details',
     type: Economics,
   })
   async getEconomics(): Promise<Economics> {
@@ -33,9 +33,9 @@ export class NetworkController {
   }
 
   @Get("/stats")
+  @ApiOperation({ summary: 'Network statistics', description: 'Returns general network statistics' })
   @ApiResponse({
     status: 200,
-    description: 'The network statistics',
     type: Stats,
   })
   async getStats(): Promise<Stats> {
