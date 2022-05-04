@@ -114,30 +114,34 @@ export class TokenService {
     }
 
     if (filter.sort) {
-      const order = filter.order ?? SortOrder.desc;
+      tokens = this.sortTokens(tokens, filter.sort, filter.order ?? SortOrder.desc);
+    }
 
-      let criteria: (token: Token) => number;
+    return tokens;
+  }
 
-      switch (filter.sort) {
-        case TokenSort.accounts:
-          criteria = token => token.accounts ?? 0;
-          break;
-        case TokenSort.transactions:
-          criteria = token => token.transactions ?? 0;
-          break;
-        default:
-          criteria = _ => 0;
-          break;
-      }
+  private sortTokens(tokens: TokenDetailed[], sort: TokenSort, order: SortOrder): TokenDetailed[] {
+    let criteria: (token: Token) => number;
 
-      switch (order) {
-        case SortOrder.asc:
-          tokens = tokens.sorted(criteria);
-          break;
-        case SortOrder.desc:
-          tokens = tokens.sortedDescending(criteria);
-          break;
-      }
+    switch (sort) {
+      case TokenSort.accounts:
+        criteria = token => token.accounts ?? 0;
+        break;
+      case TokenSort.transactions:
+        criteria = token => token.transactions ?? 0;
+        break;
+      default:
+        criteria = _ => 0;
+        break;
+    }
+
+    switch (order) {
+      case SortOrder.asc:
+        tokens = tokens.sorted(criteria);
+        break;
+      case SortOrder.desc:
+        tokens = tokens.sortedDescending(criteria);
+        break;
     }
 
     return tokens;
