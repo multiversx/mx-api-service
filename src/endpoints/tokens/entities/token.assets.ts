@@ -20,6 +20,6 @@ export class TokenAssets {
   @ApiProperty({ type: String, isArray: true })
   lockedAccounts: string[] | Record<string, string> | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, isArray: true })
   extraTokens: string[] | undefined = undefined;
 }
