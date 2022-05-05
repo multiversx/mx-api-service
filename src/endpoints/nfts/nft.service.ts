@@ -265,11 +265,26 @@ export class NftService {
 
     await this.applyNftOwner(nft);
 
+    await this.applyNftAttributes(nft);
+
     await this.applyAssetsAndTicker(nft);
 
     await this.processNft(nft);
 
     return nft;
+  }
+
+  private async applyNftAttributes(nft: Nft): Promise<void> {
+    if (!nft.owner) {
+      return;
+    }
+
+    const nftsForAddress = await this.esdtAddressService.getNftsForAddress(nft.owner, { identifiers: [nft.identifier] }, { from: 0, size: 1 });
+    if (nftsForAddress.length === 0) {
+      return;
+    }
+
+    nft.attributes = nftsForAddress[0].attributes;
   }
 
   private async applyMedia(nft: Nft) {
