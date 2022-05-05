@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { Transaction } from "src/endpoints/transactions/entities/transaction";
 import { AddressUtils } from "src/utils/address.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
@@ -23,6 +23,7 @@ export class TransactionActionService {
     private readonly esdtNftRecognizer: TransactionActionEsdtNftRecognizerService,
     private readonly stakeRecognizer: StakeActionRecognizerService,
     private readonly scCallRecognizer: SCCallActionRecognizerService,
+    @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
   ) {
     this.logger = new Logger(TransactionActionService.name);

@@ -45,6 +45,7 @@ export class TransactionService {
     private readonly transactionPriceService: TransactionPriceService,
     @Inject(forwardRef(() => TransactionGetService))
     private readonly transactionGetService: TransactionGetService,
+    @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
     private readonly pluginsService: PluginService,
     private readonly cachingService: CachingService,
