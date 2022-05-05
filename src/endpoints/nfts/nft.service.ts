@@ -35,7 +35,7 @@ import { PersistenceService } from "src/common/persistence/persistence.service";
 export class NftService {
   private readonly logger: Logger;
   private readonly NFT_THUMBNAIL_PREFIX: string;
-  private readonly DEFAULT_MEDIA: NftMedia[];
+  readonly DEFAULT_MEDIA: NftMedia[];
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
@@ -177,7 +177,7 @@ export class NftService {
   private async batchApplySupply(nfts: Nft[]) {
     await this.cachingService.batchApply(
       nfts,
-      nft => CacheInfo.TokenLockedSupply(nft.identifier).key,
+      nft => CacheInfo.TokenLockedAccounts(nft.identifier).key,
       async nfts => {
         const result: Record<string, EsdtSupply> = {};
 
@@ -185,10 +185,10 @@ export class NftService {
           result[nft.identifier] = await this.esdtService.getTokenSupply(nft.identifier);
         }
 
-        return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenLockedSupply(identifier).key);
+        return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenLockedAccounts(identifier).key);
       },
       (nft, value) => nft.supply = value.totalSupply,
-      CacheInfo.TokenLockedSupply('').ttl,
+      CacheInfo.TokenLockedAccounts('').ttl,
     );
   }
 
@@ -273,7 +273,7 @@ export class NftService {
   }
 
   private async applyMedia(nft: Nft) {
-    nft.media = await this.nftMediaService.getMedia(nft) ?? undefined;
+    nft.media = await this.nftMediaService.getMedia(nft.identifier) ?? undefined;
   }
 
   private async applyMetadata(nft: Nft) {
@@ -354,10 +354,6 @@ export class NftService {
           nft.isWhitelistedStorage = elasticNft.data.whiteListedStorage;
         } else {
           nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
-        }
-
-        if (elasticNftData.metadata) {
-          nft.attributes = BinaryUtils.base64Encode(`metadata:${elasticNftData.metadata}`);
         }
       }
 

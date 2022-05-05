@@ -34,3 +34,16 @@ services:
       - 5672:5672
       - 15672:15672
 
+  notifier:
+    image: 331leo/rabbitmq3-management-mqtt
+    hostname: notifier
+    environment:
+      HOSTNAME: notifier
+      RABBITMQ_NODENAME: rabbitmq
+      RABBITMQ_DEFAULT_USER: 'guest'
+      RABBITMQ_DEFAULT_PASS: 'guest'
+    volumes:
+      - /var/lib/notifier
+    ports:
+      - 5673:5672
+      - 15673:15672

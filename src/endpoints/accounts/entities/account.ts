@@ -1,18 +1,16 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { SwaggerUtils } from "src/utils/swagger.utils";
 
 export class Account {
-  @ApiProperty({ description: 'The address of the account' })
+  @ApiProperty({ type: String, description: 'Account bech32 address', example: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz' })
   address: string = '';
 
-  @ApiProperty({ description: 'The current balance of the account (must be denominated to obtain the real value)' })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions({ description: 'Account current balance' }))
   balance: string = '';
 
-  @ApiProperty({ description: 'The current nonce of the account' })
-  nonce: string = '';
+  @ApiProperty({ type: Number, description: 'Account current nonce', example: 42 })
+  nonce: number = 0;
 
-  @ApiProperty({ description: 'The shard identifier of the account' })
+  @ApiProperty({ type: Number, description: 'The shard ID allocated to the account', example: 0 })
   shard: number = 0;
-
-  @ApiProperty()
-  scamInfo: any | undefined = undefined;
 }

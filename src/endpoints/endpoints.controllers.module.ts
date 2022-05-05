@@ -38,10 +38,10 @@ import { WebsocketController } from "./websocket/websocket.controller";
   ],
   controllers: [
     AccountController, BlockController, CollectionController, DelegationController, DelegationLegacyController, IdentitiesController,
-    KeysController, MexController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
+    KeysController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
     ProviderController, ProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
     TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
-    HealthCheckController, DappConfigController, WebsocketController,
+    HealthCheckController, DappConfigController, WebsocketController, MexController,
   ],
 })
 export class EndpointsControllersModule { }

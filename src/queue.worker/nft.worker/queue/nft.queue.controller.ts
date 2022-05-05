@@ -68,7 +68,7 @@ export class NftQueueController {
 
       if (nft.metadata && settings.forceRefreshMetadata) {
         const oldMetadata = nft.metadata;
-        nft.metadata = await this.refreshMetadata(nft.identifier);
+        nft.metadata = await this.refreshMetadata(nft);
         const newMetadata = nft.metadata;
         if (newMetadata) {
           this.logger.log(`Refreshed NFT metadata. Old: '${JSON.stringify(oldMetadata)}', New: '${JSON.stringify(newMetadata)}'`);
@@ -78,10 +78,10 @@ export class NftQueueController {
 
         this.clientProxy.emit('deleteCacheKeys', [CacheInfo.NftMetadata(nft.identifier).key]);
       } else if (!nft.metadata) {
-        nft.metadata = await this.refreshMetadata(nft.identifier);
+        nft.metadata = await this.refreshMetadata(nft);
       }
 
-      nft.media = await this.nftMediaService.getMedia(nft) ?? undefined;
+      nft.media = await this.nftMediaService.getMedia(nft.identifier) ?? undefined;
 
       if (settings.forceRefreshMedia || !nft.media) {
         nft.media = await this.nftMediaService.refreshMedia(nft);
@@ -102,17 +102,7 @@ export class NftQueueController {
     }
   }
 
-  private async refreshMetadata(identifier: string) {
-    const owners = await this.nftService.getNftOwners(identifier, { from: 0, size: 1 });
-    if (!owners) {
-      throw new Error(`Could not fetch owners for NFT with identifier '${identifier}'`);
-    }
-
-    const nft = await this.nftService.getNftForAddress(owners[0].address, identifier);
-    if (!nft) {
-      throw new Error(`Could not fetch details for NFT with identifier '${identifier}'`);
-    }
-
+  private async refreshMetadata(nft: Nft) {
     return await this.nftMetadataService.refreshMetadata(nft);
   }
 

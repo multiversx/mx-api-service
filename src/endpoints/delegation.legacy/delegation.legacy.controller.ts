@@ -1,5 +1,5 @@
 import { Controller, Get } from "@nestjs/common";
-import { ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { DelegationLegacyService } from "./delegation.legacy.service";
 import { DelegationLegacy } from "./entities/delegation.legacy";
 
@@ -9,9 +9,9 @@ export class DelegationLegacyController {
   constructor(private readonly delegationLegacyService: DelegationLegacyService) { }
 
   @Get("/delegation-legacy")
+  @ApiOperation({ summary: 'Legacy delegation statistics', description: 'Returns legacy delegation contract global information' })
   @ApiResponse({
     status: 200,
-    description: 'The delegation legacy details',
     type: DelegationLegacy,
   })
   async getBlock(): Promise<DelegationLegacy> {

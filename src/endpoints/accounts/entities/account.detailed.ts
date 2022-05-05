@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { Account } from "./account";
 
 export class AccountDetailed extends Account {
@@ -17,27 +18,30 @@ export class AccountDetailed extends Account {
     @ApiProperty({ description: 'The number of smart contract results of this account' })
     scrCount: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ description: 'The username specific for this account' })
     username: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ description: 'The developer reward' })
     developerReward: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ description: 'The address in bech 32 format of owner account' })
     ownerAddress: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ description: 'Specific property flag for smart contract', type: Number })
     deployedAt?: number;
 
-    @ApiProperty()
+    @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
     isUpgradeable?: boolean;
 
-    @ApiProperty()
+    @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
     isReadable?: boolean;
 
-    @ApiProperty()
+    @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
     isPayable?: boolean;
 
-    @ApiProperty()
-    isPayableBySmartContract?: boolean;
+    @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean, nullable: true })
+    isPayableBySmartContract?: boolean | undefined = undefined;
+
+    @ApiProperty({ type: ScamInfo, nullable: true })
+    scamInfo: ScamInfo | undefined = undefined;
 }

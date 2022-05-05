@@ -2,21 +2,24 @@ import { ApiProperty } from "@nestjs/swagger";
 import { TokenAssetStatus } from "./token.asset.status";
 
 export class TokenAssets {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   website: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   description: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ enum: TokenAssetStatus, default: 'inactive' })
   status: TokenAssetStatus = TokenAssetStatus.inactive;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   pngUrl: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   svgUrl: string = '';
 
-  @ApiProperty()
-  lockedAccounts: string[] | undefined = undefined;
+  @ApiProperty({ type: String, isArray: true })
+  lockedAccounts: string[] | Record<string, string> | undefined = undefined;
+
+  @ApiProperty({ type: String, isArray: true })
+  extraTokens: string[] | undefined = undefined;
 }

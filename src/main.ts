@@ -6,7 +6,6 @@ import { join } from 'path';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { ApiConfigService } from './common/api-config/api.config.service';
 import { CachingService } from './common/caching/caching.service';
-import { TokenAssetService } from './endpoints/tokens/token.asset.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { FieldsInterceptor } from './interceptors/fields.interceptor';
 import { PrivateAppModule } from './private.app.module';
@@ -32,6 +31,7 @@ import configuration from "config/configuration";
 import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './websockets/socket-adapter';
+import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
 
 async function bootstrap() {
   const conf = configuration();
@@ -53,7 +53,6 @@ async function bootstrap() {
   const cachingService = publicApp.get<CachingService>(CachingService);
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
   const metricsService = publicApp.get<MetricsService>(MetricsService);
-  const tokenAssetService = publicApp.get<TokenAssetService>(TokenAssetService);
   const protocolService = publicApp.get<ProtocolService>(ProtocolService);
   const pluginService = publicApp.get<PluginService>(PluginService);
 
@@ -64,8 +63,6 @@ async function bootstrap() {
   const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
   httpServer.keepAliveTimeout = apiConfigService.getServerTimeout();
   httpServer.headersTimeout = apiConfigService.getHeadersTimeout(); //`keepAliveTimeout + server's expected response time`
-
-  await tokenAssetService.checkout();
 
   const globalInterceptors: NestInterceptor[] = [];
   globalInterceptors.push(new LoggingInterceptor(metricsService));
@@ -160,6 +157,11 @@ async function bootstrap() {
     await queueWorkerApp.listen();
   }
 
+  if (apiConfigService.isEventsNotifierFeatureActive()) {
+    const eventsNotifierApp = await NestFactory.create(RabbitMqProcessorModule);
+    await eventsNotifierApp.listen(apiConfigService.getEventsNotifierFeaturePort());
+  }
+
   const logger = new Logger('Bootstrapper');
 
   const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
@@ -186,6 +188,7 @@ async function bootstrap() {
   logger.log(`Transaction completed cron active: ${apiConfigService.getIsTransactionCompletedCronActive()}`);
   logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
   logger.log(`Queue worker active: ${apiConfigService.getIsQueueWorkerCronActive()}`);
+  logger.log(`Events notifier active: ${apiConfigService.isEventsNotifierFeatureActive()}`);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

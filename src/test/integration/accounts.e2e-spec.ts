@@ -1,4 +1,3 @@
-import { TokenService } from '../../endpoints/tokens/token.service';
 import { AccountEsdtHistory } from '../../endpoints/accounts/entities/account.esdt.history';
 import { AccountKey } from '../../endpoints/accounts/entities/account.key';
 import { AddressUtils } from 'src/utils/address.utils';
@@ -298,22 +297,22 @@ describe('Account Service', () => {
       }
     });
 
-    it("should return undefined because test simulates that token is not defined/found", async () => {
+    it("should return empty list because test simulates that token is not defined/found", async () => {
       jest
         .spyOn(CachingService.prototype, 'getOrSetCache')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
       jest
-        .spyOn(TokenService.prototype, 'getToken')
+        .spyOn(ElasticService.prototype, 'getList')
         // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async () => undefined));
+        .mockImplementation(jest.fn(async () => []));
 
       const token: string = "";
       const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
       const results = await accountService.getAccountTokenHistory(address, token, { from: 0, size: 1 });
 
-      expect(results).toBeUndefined();
+      expect(results).toStrictEqual([]);
     });
   });
 

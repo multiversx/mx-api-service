@@ -2,19 +2,17 @@ import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CacheWarmerService } from './cache.warmer.service';
 import { EndpointsServicesModule } from '../../endpoints/endpoints.services.module';
-import { PluginModule } from 'src/plugins/plugin.module';
 import { KeybaseModule } from 'src/common/keybase/keybase.module';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservices';
-import { MexSettingsModule } from 'src/endpoints/transactions/transaction-action/recognizers/mex/mex.settings.module';
+import { MexModule } from 'src/endpoints/mex/mex.module';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     EndpointsServicesModule,
-    PluginModule,
     KeybaseModule,
-    MexSettingsModule,
+    MexModule,
   ],
   providers: [
     {
