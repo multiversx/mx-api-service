@@ -1,17 +1,17 @@
 import { Injectable } from "@nestjs/common";
-import { gql } from "graphql-request";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { GraphQlService } from "src/common/graphql/graphql.service";
 import { Constants } from "src/utils/constants";
 import { MexToken } from "./entities/mex.token";
-import BigNumber from "bignumber.js";
+import { MexPairsService } from "./mex.pairs.service";
+import { MexPairState } from "./entities/mex.pair.state";
+import { MexPair } from "./entities/mex.pair";
 
 @Injectable()
 export class MexTokenService {
   constructor(
     private readonly cachingService: CachingService,
-    private readonly graphQlService: GraphQlService
+    private readonly mexPairsService: MexPairsService,
   ) { }
 
   async refreshMexTokens(): Promise<void> {
@@ -39,7 +39,7 @@ export class MexTokenService {
 
     const tokens = await this.getAllMexTokensRaw();
     for (const token of tokens) {
-      result[token.token] = token;
+      result[token.symbol] = token;
     }
 
     return result;
@@ -55,56 +55,21 @@ export class MexTokenService {
   }
 
   private async getAllMexTokensRaw(): Promise<MexToken[]> {
-    const variables = {
-      "offset": 0,
-      "pairsLimit": 100,
-    };
-
-    const query = gql`
-      query ($offset: Int, $pairsLimit: Int) {
-        pairs(offset: $offset, limit: $pairsLimit) { 
-          address 
-          firstToken {
-            name
-            identifier
-            decimals
-            __typename
-          }
-          secondToken {
-            name
-            identifier
-            decimals
-            __typename
-          }
-          firstTokenPrice
-          firstTokenPriceUSD
-          secondTokenPrice
-          secondTokenPriceUSD
-        }
-      }
-    `;
-
-    const result: any = await this.graphQlService.getData(query, variables);
-    if (!result) {
-      return [];
-    }
+    const pairs = await this.mexPairsService.getAllMexPairsRaw();
+    const filteredPairs = pairs.filter(x => x.state === MexPairState.active);
 
     const mexTokens: MexToken[] = [];
-    for (const pair of result.pairs) {
-      const firstTokenSymbol = pair.firstToken.identifier.split('-')[0];
-      const secondTokenSymbol = pair.secondToken.identifier.split('-')[0];
-      if (firstTokenSymbol === 'WEGLD' && secondTokenSymbol === "USDC") {
+    for (const pair of filteredPairs) {
+      if (pair.baseSymbol === 'WEGLD' && pair.quoteSymbol === "USDC") {
         const wegldToken = new MexToken();
-        wegldToken.token = pair.firstToken.identifier;
-        wegldToken.name = pair.firstToken.name;
-        wegldToken.priceUsd = new BigNumber(pair.firstTokenPriceUSD).toNumber();
-        wegldToken.priceEgld = 1;
+        wegldToken.symbol = pair.baseId;
+        wegldToken.name = pair.baseName;
+        wegldToken.price = pair.basePrice;
 
         const usdcToken = new MexToken();
-        usdcToken.token = pair.secondToken.identifier;
-        usdcToken.name = pair.secondToken.name;
-        usdcToken.priceUsd = 1;
-        usdcToken.priceEgld = new BigNumber(pair.secondTokenPrice).toNumber();
+        usdcToken.symbol = pair.quoteId;
+        usdcToken.name = pair.quoteName;
+        usdcToken.price = 1;
 
         mexTokens.push(wegldToken);
         mexTokens.push(usdcToken);
@@ -123,25 +88,20 @@ export class MexTokenService {
     return mexTokens;
   }
 
-  private getMexToken(pair: any): MexToken | null {
-    const firstTokenSymbol = pair.firstToken.identifier.split('-')[0];
-    const secondTokenSymbol = pair.secondToken.identifier.split('-')[0];
-
-    if (secondTokenSymbol === 'WEGLD') {
+  private getMexToken(pair: MexPair): MexToken | null {
+    if (pair.quoteSymbol === 'WEGLD') {
       return {
-        token: pair.firstToken.identifier,
-        name: pair.firstToken.name,
-        priceUsd: new BigNumber(pair.firstTokenPriceUSD).toNumber(),
-        priceEgld: new BigNumber(pair.firstTokenPrice).toNumber(),
+        symbol: pair.baseId,
+        name: pair.baseName,
+        price: pair.basePrice,
       };
     }
 
-    if (firstTokenSymbol === 'WEGLD') {
+    if (pair.baseSymbol === 'WEGLD') {
       return {
-        token: pair.secondToken.identifier,
-        name: pair.secondToken.name,
-        priceUsd: new BigNumber(pair.secondTokenPriceUSD).toNumber(),
-        priceEgld: new BigNumber(pair.secondTokenPrice).toNumber(),
+        symbol: pair.quoteSymbol,
+        name: pair.quoteName,
+        price: pair.quotePrice,
       };
     }
 

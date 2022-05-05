@@ -1,6 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { MexPairState } from "./mex.pair.state";
 
 export class MexPair {
+  @ApiProperty()
+  address: string = '';
+
   @ApiProperty({ type: String, example: 'MEX-455c57' })
   baseId: string = '';
 
@@ -30,4 +34,7 @@ export class MexPair {
 
   @ApiProperty({ type: Number, example: '2109423.4531209776' })
   volume24h: number = 0;
+
+  @ApiProperty({ enum: MexPairState })
+  state: MexPairState = MexPairState.inactive;
 }
