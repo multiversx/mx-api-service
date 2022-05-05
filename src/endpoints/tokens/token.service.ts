@@ -130,9 +130,14 @@ export class TokenService {
       case TokenSort.transactions:
         criteria = token => token.transactions ?? 0;
         break;
-      default:
-        criteria = _ => 0;
+      case TokenSort.price:
+        criteria = token => token.price ?? 0;
         break;
+      case TokenSort.marketCap:
+        criteria = token => token.marketCap ?? 0;
+        break;
+      default:
+        throw new Error(`Unsupported sorting criteria '${sort}'`);
     }
 
     switch (order) {
@@ -229,8 +234,8 @@ export class TokenService {
   }
 
   applyValueUsd(tokenWithBalance: TokenWithBalance) {
-    if (tokenWithBalance.priceUsd) {
-      tokenWithBalance.valueUsd = tokenWithBalance.priceUsd * NumberUtils.denominateString(tokenWithBalance.balance, tokenWithBalance.decimals);
+    if (tokenWithBalance.price) {
+      tokenWithBalance.valueUsd = tokenWithBalance.price * NumberUtils.denominateString(tokenWithBalance.balance, tokenWithBalance.decimals);
     }
   }
 

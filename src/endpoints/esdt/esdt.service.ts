@@ -111,8 +111,8 @@ export class EsdtService {
       if (indexedTokens[token.identifier]) {
         const supply = await this.getTokenSupply(token.identifier);
 
-        token.priceUsd = indexedTokens[token.identifier].priceUsd;
-        token.marketCapUsd = indexedTokens[token.identifier].priceUsd * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+        token.price = indexedTokens[token.identifier].priceUsd;
+        token.marketCap = indexedTokens[token.identifier].priceUsd * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
       }
     }
 
