@@ -24,7 +24,12 @@ export class MexLockedAssetActionRecognizerService {
       case MexFunction.lockAssets:
         return this.getAssetsAction(metadata, 'Lock');
       case MexFunction.unlockAssets:
-        return this.getAssetsAction(metadata, 'Unlock');
+        const action = this.getAssetsAction(metadata, 'Unlock');
+        if (action) {
+          action.description = 'Unlock assets';
+        }
+
+        return action;
       case MexFunction.mergeLockedAssetTokens:
         return this.getMergeLockedAssetTokens(metadata);
       default:
