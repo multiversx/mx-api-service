@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { TokenTransferProperties } from "src/endpoints/tokens/entities/token.transfer.properties";
 import { TokenType } from "src/endpoints/tokens/entities/token.type";
@@ -17,6 +17,7 @@ import { TransactionActionRecognizerInterface } from "../../transaction.action.r
 export class TransactionActionEsdtNftRecognizerService implements TransactionActionRecognizerInterface {
   constructor(
     private readonly apiConfigService: ApiConfigService,
+    @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
   ) { }
 

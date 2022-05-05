@@ -5,6 +5,7 @@ import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { GraphQlService } from "src/common/graphql/graphql.service";
 import { Constants } from "src/utils/constants";
 import { MexPair } from "./entities/mex.pair";
+import { MexPairState } from "./entities/mex.pair.state";
 import { MexSettingsService } from "./mex.settings.service";
 
 @Injectable()
@@ -130,6 +131,7 @@ export class MexPairsService {
 
     if ((firstTokenSymbol === 'WEGLD' && secondTokenSymbol === 'USDC') || secondTokenSymbol === 'WEGLD') {
       return {
+        address: pair.address,
         baseId: pair.firstToken.identifier,
         basePrice: Number(pair.firstTokenPriceUSD),
         baseSymbol: firstTokenSymbol,
@@ -140,10 +142,12 @@ export class MexPairsService {
         quoteName: pair.secondToken.name,
         totalValue: Number(pair.lockedValueUSD),
         volume24h: Number(pair.volumeUSD24h),
+        state: this.getPairState(pair.state),
       };
     }
 
     return {
+      address: pair.address,
       baseId: pair.secondToken.identifier,
       basePrice: Number(pair.secondTokenPriceUSD),
       baseSymbol: secondTokenSymbol,
@@ -154,6 +158,20 @@ export class MexPairsService {
       quoteName: pair.firstToken.name,
       totalValue: Number(pair.lockedValueUSD),
       volume24h: Number(pair.volumeUSD24h),
+      state: this.getPairState(pair.state),
     };
+  }
+
+  private getPairState(state: string): MexPairState {
+    switch (state) {
+      case 'Active':
+        return MexPairState.active;
+      case 'Inactive':
+        return MexPairState.inactive;
+      case 'ActiveNoSwaps':
+        return MexPairState.paused;
+      default:
+        throw new Error(`Unsupported pair state '${state}'`);
+    }
   }
 }
