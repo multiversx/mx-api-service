@@ -32,10 +32,6 @@ export default class Initializer {
 
     if (Initializer.apiConfigService.getMockKeybases()) {
       jest
-        .spyOn(KeybaseService.prototype, 'confirmKeybase')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async () => true));
-      jest
         .spyOn(KeybaseService.prototype, 'getProfile')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => new KeybaseIdentity()));
