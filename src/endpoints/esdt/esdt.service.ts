@@ -12,10 +12,12 @@ import { AddressUtils } from "src/utils/address.utils";
 import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
+import { NumberUtils } from "src/utils/number.utils";
 import { TokenUtils } from "src/utils/token.utils";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { CachingService } from "../../common/caching/caching.service";
 import { GatewayService } from "../../common/gateway/gateway.service";
+import { MexTokenService } from "../mex/mex.token.service";
 import { TokenAssets } from "../tokens/entities/token.assets";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { TokenRoles } from "../tokens/entities/token.roles";
@@ -38,6 +40,7 @@ export class EsdtService {
     private readonly tokenAssetService: TokenAssetService,
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
+    private readonly mexTokenService: MexTokenService,
   ) {
     this.logger = new Logger(EsdtService.name);
   }
@@ -101,6 +104,16 @@ export class EsdtService {
         async () => await this.transactionService.getTransactionCount({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }),
         CacheInfo.TokenTransactions(token.identifier).ttl
       );
+    }
+
+    const indexedTokens = await this.mexTokenService.getIndexedMexTokens();
+    for (const token of tokens) {
+      if (indexedTokens[token.identifier]) {
+        const supply = await this.getTokenSupply(token.identifier);
+
+        token.price = indexedTokens[token.identifier].price;
+        token.marketCap = indexedTokens[token.identifier].price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+      }
     }
 
     tokens = tokens.sortedDescending(token => token.transactions ?? 0);

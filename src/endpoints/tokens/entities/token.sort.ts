@@ -1,4 +1,6 @@
 export enum TokenSort {
   accounts = 'accounts',
-  transactions = 'transactions'
+  transactions = 'transactions',
+  price = 'price',
+  marketCap = 'marketCap'
 }

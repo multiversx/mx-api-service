@@ -59,4 +59,10 @@ export class Token {
 
   @ApiProperty({ type: Boolean, default: false })
   canWipe: boolean = false;
+
+  @ApiProperty({ type: Number, nullable: true })
+  price: number | undefined = undefined;
+
+  @ApiProperty({ type: Number, nullable: true })
+  marketCap: number | undefined = undefined;
 }
