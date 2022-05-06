@@ -12,12 +12,11 @@ import { AddressUtils } from "src/utils/address.utils";
 import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
-import { NumberUtils } from "src/utils/number.utils";
+import { RecordUtils } from "src/utils/record.utils";
 import { TokenUtils } from "src/utils/token.utils";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { CachingService } from "../../common/caching/caching.service";
 import { GatewayService } from "../../common/gateway/gateway.service";
-import { MexTokenService } from "../mex/mex.token.service";
 import { TokenAssets } from "../tokens/entities/token.assets";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { TokenRoles } from "../tokens/entities/token.roles";
@@ -40,7 +39,6 @@ export class EsdtService {
     private readonly tokenAssetService: TokenAssetService,
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
-    private readonly mexTokenService: MexTokenService,
   ) {
     this.logger = new Logger(EsdtService.name);
   }
@@ -83,42 +81,52 @@ export class EsdtService {
 
     let tokens = tokensProperties.zip(tokensAssets, (first, second) => ApiUtils.mergeObjects(new TokenDetailed, { ...first, assets: second }));
 
-    for (const token of tokens) {
-      if (!token.assets) {
-        continue;
-      }
-
-      let accounts = await this.cachingService.getCacheRemote<number>(CacheInfo.TokenAccountsExtra(token.identifier).key);
-      if (!accounts) {
-        accounts = await this.cachingService.getOrSetCache(
-          CacheInfo.TokenAccounts(token.identifier).key,
-          async () => await this.getEsdtAccountsCount(token.identifier),
-          CacheInfo.TokenAccounts(token.identifier).ttl
-        );
-      }
-
-      token.accounts = accounts;
-
-      token.transactions = await this.cachingService.getOrSetCache(
-        CacheInfo.TokenTransactions(token.identifier).key,
-        async () => await this.transactionService.getTransactionCount({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }),
-        CacheInfo.TokenTransactions(token.identifier).ttl
-      );
-    }
-
-    const indexedTokens = await this.mexTokenService.getIndexedMexTokens();
-    for (const token of tokens) {
-      if (indexedTokens[token.identifier]) {
-        const supply = await this.getTokenSupply(token.identifier);
-
-        token.price = indexedTokens[token.identifier].price;
-        token.marketCap = indexedTokens[token.identifier].price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
-      }
-    }
+    await this.batchProcessTokens(tokens);
 
     tokens = tokens.sortedDescending(token => token.transactions ?? 0);
 
     return tokens;
+  }
+
+  async batchProcessTokens(tokens: TokenDetailed[]) {
+    await this.cachingService.batchApply
+      (tokens,
+        token => CacheInfo.TokenTransactions(token.identifier).key,
+        async tokens => {
+          const result: { [key: string]: number } = {};
+
+          for (const token of tokens) {
+            const transactions = await this.transactionService.getTransactionCount({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] });
+
+            result[token.identifier] = transactions;
+          }
+
+          return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenTransactions(identifier).key);
+        },
+        (token, transactions) => token.transactions = transactions,
+        CacheInfo.TokenTransactions('').ttl,
+      );
+
+    await this.cachingService.batchApply
+      (tokens,
+        token => CacheInfo.TokenAccounts(token.identifier).key,
+        async tokens => {
+          const result: { [key: string]: number } = {};
+
+          for (const token of tokens) {
+            let accounts = await this.cachingService.getCacheRemote<number>(CacheInfo.TokenAccountsExtra(token.identifier).key);
+            if (!accounts) {
+              accounts = await this.getEsdtAccountsCount(token.identifier);
+            }
+
+            result[token.identifier] = accounts;
+          }
+
+          return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenAccounts(identifier).key);
+        },
+        (token, accounts) => token.accounts = accounts,
+        CacheInfo.TokenAccounts('').ttl,
+      );
   }
 
   async getEsdtAccountsCount(identifier: string): Promise<number> {
