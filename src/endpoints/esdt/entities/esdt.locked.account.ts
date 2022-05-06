@@ -4,9 +4,9 @@ export class EsdtLockedAccount {
   @ApiProperty()
   address: string = '';
 
-  @ApiProperty()
-  name: string = '';
+  @ApiProperty({ type: String, nullable: true })
+  name: string | undefined = undefined;
 
-  @ApiProperty()
-  balance: string = '';
+  @ApiProperty({ type: String })
+  balance: string | number = '';
 }
