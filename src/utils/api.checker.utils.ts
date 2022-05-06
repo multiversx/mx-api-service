@@ -12,10 +12,10 @@ export class ApiChecker {
   async checkPagination() {
     const items = await this.requestList({ size: 100 });
 
-    await this.checkPaginationInternal(items, 0, 10);
-    await this.checkPaginationInternal(items, 1, 1);
-    await this.checkPaginationInternal(items, 1, 2);
-    await this.checkPaginationInternal(items, 3, 5);
+    await this.checkPaginationInternal(items, 0, 1);
+    await this.checkPaginationInternal(items, 1, 5);
+    await this.checkPaginationInternal(items, 5, 5);
+    await this.checkPaginationInternal(items, 5, 10);
     await this.checkPaginationInternal(items, 10, 20);
   }
 
@@ -28,6 +28,17 @@ export class ApiChecker {
     const details = await this.requestItem(id, { fields: Object.keys(item).join(',') });
 
     expect(details).toEqual(item);
+  }
+
+  async checkAlternativeCount(fields: Record<string, any>) {
+    const count = await this.requestCount(fields);
+    const alternativeCount = await this.requestAlternativeCount(fields);
+
+    try {
+      expect(count).toStrictEqual(alternativeCount);
+    } catch (error) {
+      throw new Error(`Count value ${count} for '/count' is not equal with count value ${alternativeCount} of '/c' endpoint`);
+    }
   }
 
   async checkFilter(criterias: string[]) {
@@ -121,6 +132,18 @@ export class ApiChecker {
 
     const { body: result } = await request(this.httpServer)
       .get(`/${this.endpoint}/count?${urlParams}`);
+
+    return result;
+  }
+
+  private async requestAlternativeCount(params: Record<string, any>): Promise<number> {
+    const urlParams = new URLSearchParams({
+      ...this.defaultParams,
+      ...params,
+    });
+
+    const { body: result } = await request(this.httpServer)
+      .get(`/${this.endpoint}/c?${urlParams}`);
 
     return result;
   }

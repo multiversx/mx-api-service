@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { CleanupInterceptor } from 'src/interceptors/cleanup.interceptor';
 import { FieldsInterceptor } from 'src/interceptors/fields.interceptor';
 import { PublicAppModule } from 'src/public.app.module';
-import { ApiChecker } from './api.checker';
+import { ApiChecker } from 'src/utils/api.checker.utils';
 
 describe("API Testing", () => {
   let app: INestApplication;
@@ -21,14 +21,6 @@ describe("API Testing", () => {
     await app.init();
   });
 
-  it("/blocks", async () => {
-    const checker = new ApiChecker('blocks', app.getHttpServer());
-    checker.defaultParams = { epoch: 500 };
-    await checker.checkPagination();
-    await checker.checkDetails();
-    await checker.checkFilter(['shard', 'epoch', 'nonce']);
-  });
-
   it("/accounts", async () => {
     const checker = new ApiChecker('accounts', app.getHttpServer());
     checker.skipFields = ['balance', 'nonce'];
@@ -36,10 +28,77 @@ describe("API Testing", () => {
     await checker.checkDetails();
   });
 
+
+  it("/blocks", async () => {
+    const checker = new ApiChecker('blocks', app.getHttpServer());
+    checker.defaultParams = { epoch: 500 };
+    await checker.checkPagination();
+    await checker.checkDetails();
+    await checker.checkFilter(['shard', 'epoch', 'nonce']);
+    await checker.checkAlternativeCount(['validator']);
+  });
+
   it("/collections", async () => {
     const checker = new ApiChecker('collections', app.getHttpServer());
     await checker.checkPagination();
     await checker.checkDetails();
     await checker.checkFilter(['type']);
+    await checker.checkAlternativeCount(['type']);
+  });
+
+  it("/nfts", async () => {
+    const checker = new ApiChecker('nfts', app.getHttpServer());
+    checker.skipFields = ['message', 'statusCode'];
+    await checker.checkFilter(['collection', 'creator']);
+    await checker.checkAlternativeCount(['type', 'collection']);
+  });
+
+  it("/tags", async () => {
+    const checker = new ApiChecker('tags', app.getHttpServer());
+    await checker.checkPagination();
+    await checker.checkDetails();
+  });
+
+  it("/nodes", async () => {
+    const checker = new ApiChecker('nodes', app.getHttpServer());
+    await checker.checkPagination();
+    await checker.checkDetails();
+    await checker.checkFilter(['shard']);
+    await checker.checkAlternativeCount(['type', 'online']);
+  });
+
+  it("/providers", async () => {
+    const checker = new ApiChecker('providers', app.getHttpServer());
+    await checker.checkDetails();
+    await checker.checkFilter(['identity']);
+  });
+
+  it("/rounds", async () => {
+    const checker = new ApiChecker('rounds', app.getHttpServer());
+    await checker.checkFilter(['epoch', 'shard']);
+    await checker.checkAlternativeCount(['shard']);
+  });
+
+  it("/sc-results", async () => {
+    const checker = new ApiChecker('sc-results', app.getHttpServer());
+    await checker.checkPagination();
+  });
+
+  it("shards", async () => {
+    const checker = new ApiChecker('shards', app.getHttpServer());
+    await checker.checkPagination();
+  });
+
+  it("tokens", async () => {
+    const checker = new ApiChecker('tokens', app.getHttpServer());
+    await checker.checkPagination();
+    await checker.checkDetails();
+    await checker.checkAlternativeCount(['identifier']);
+  });
+
+  it("transactions", async () => {
+    const checker = new ApiChecker('transactions', app.getHttpServer());
+    await checker.checkDetails();
+    await checker.checkAlternativeCount(['miniBlockHash']);
   });
 });
