@@ -58,6 +58,8 @@ jobs:
       - run: npm ci
       - name: Initialize
         run: npm run init
+      - name: API Validation
+        run: npm run test:e2e api.e2e-spec.ts
       - name: Warm
         run: |
           if ${{ github.ref == 'refs/heads/main' }}; then
