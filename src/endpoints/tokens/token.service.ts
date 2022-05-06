@@ -463,9 +463,11 @@ export class TokenService {
     const totalSupply = NumberUtils.denominateString(result.totalSupply, properties.decimals);
     const circulatingSupply = NumberUtils.denominateString(result.circulatingSupply, properties.decimals);
 
-    if (result.lockedAccounts) {
-      const lockedAccounts = JSON.parse(JSON.stringify(result.lockedAccounts));
+    let lockedAccounts = result.lockedAccounts;
+    if (lockedAccounts !== undefined) {
+      lockedAccounts = JSON.parse(JSON.stringify(lockedAccounts));
       if (denominated === true) {
+        // @ts-ignore
         for (const lockedAccount of lockedAccounts) {
           lockedAccount.balance = NumberUtils.denominateString(lockedAccount.balance.toString(), properties.decimals);
         }
@@ -478,7 +480,7 @@ export class TokenService {
       minted: denominated === true && result.minted ? NumberUtils.denominateString(result.minted, properties.decimals) : result.minted,
       burnt: denominated === true && result.burned ? NumberUtils.denominateString(result.burned, properties.decimals) : result.burned,
       initialMinted: denominated === true && result.initialMinted ? NumberUtils.denominateString(result.initialMinted, properties.decimals) : result.initialMinted,
-      lockedAccounts: result.lockedAccounts,
+      lockedAccounts,
     };
   }
 
