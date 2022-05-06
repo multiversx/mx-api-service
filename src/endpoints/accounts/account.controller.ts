@@ -37,6 +37,7 @@ import { TransferService } from '../transfers/transfer.service';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { Transaction } from '../transactions/entities/transaction';
 import { ProviderStake } from '../stake/entities/provider.stake';
+import { TokenDetailedWithBalance } from '../tokens/entities/token.detailed.with.balance';
 
 @Controller()
 @ApiTags('accounts')
@@ -300,7 +301,7 @@ export class AccountController {
   async getAccountToken(
     @Param('address', ParseAddressPipe) address: string,
     @Param('token') token: string,
-  ): Promise<TokenWithBalance> {
+  ): Promise<TokenDetailedWithBalance> {
     const result = await this.tokenService.getTokenForAddress(address, token);
     if (!result) {
       throw new HttpException('Token for given account not found', HttpStatus.NOT_FOUND);

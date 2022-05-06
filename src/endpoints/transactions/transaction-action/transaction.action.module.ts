@@ -8,6 +8,7 @@ import { StakeActionRecognizerService } from "./recognizers/staking/transaction.
 import { SCCallActionRecognizerService } from "./recognizers/sc-calls/transaction.action.sc-calls.recognizer.service";
 import { ProviderModule } from "src/endpoints/providers/provider.module";
 import { IdentitiesModule } from "src/endpoints/identities/identities.module";
+import { MetabondingActionRecognizerService } from "./recognizers/mex/mex.metabonding.action.recognizer.service";
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { IdentitiesModule } from "src/endpoints/identities/identities.module";
     TransactionActionEsdtNftRecognizerService,
     StakeActionRecognizerService,
     SCCallActionRecognizerService,
+    MetabondingActionRecognizerService,
   ],
   exports: [
     TransactionActionService,

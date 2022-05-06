@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { NumberUtils } from "src/utils/number.utils";
 import { TransactionAction } from "../../entities/transaction.action";
@@ -14,6 +14,7 @@ import { TransactionActionEsdtNftRecognizerService } from "../esdt/transaction.a
 export class MexPairActionRecognizerService {
   constructor(
     private readonly mexSettingsService: MexSettingsService,
+    @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
     private readonly transactionActionEsdtNftRecognizerService: TransactionActionEsdtNftRecognizerService,
   ) { }

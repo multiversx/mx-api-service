@@ -95,6 +95,15 @@ export class ApiConfigService {
     return address;
   }
 
+  getMetabondingContractAddress(): string {
+    const address = this.configService.get<string>('contracts.metabonding');
+    if (!address) {
+      throw new Error('No metabonding contract present');
+    }
+
+    return address;
+  }
+
   getDelegationContractShardId(): number {
     const shardId = this.configService.get<number>(
       'contracts.delegationShardId',

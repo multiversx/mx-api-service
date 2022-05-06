@@ -75,6 +75,7 @@ contracts:
   staking: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7'
   delegationManager: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6'
   delegation: 'erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx'
+  metabonding: 'erd1qqqqqqqqqqqqqpgq2l9w0qv98htrhdwuz6ppsw47tn3hhff3d8ssqqjpvu'
   delegationShardId: 2
 inflation:
   - 1952123

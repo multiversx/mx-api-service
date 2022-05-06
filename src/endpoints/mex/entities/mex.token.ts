@@ -3,14 +3,11 @@ import { ApiProperty } from "@nestjs/swagger";
 export class MexToken {
 
   @ApiProperty({ type: String, example: 'MEX-455c57' })
-  token?: string;
+  symbol: string = '';
 
   @ApiProperty({ type: String, example: 'MEX' })
-  name?: string;
+  name: string = '';
 
-  @ApiProperty({ type: String, example: '0.000206738758250580072306' })
-  priceUsd?: string;
-
-  @ApiProperty({ type: String, example: '0.000001418110772165' })
-  priceEgld?: string;
+  @ApiProperty({ type: Number, example: 0.000206738758250580 })
+  price: number = 0;
 }

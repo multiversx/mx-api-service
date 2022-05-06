@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
@@ -27,6 +27,7 @@ export class TransactionGetService {
     private readonly elasticService: ElasticService,
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
+    @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
   ) {
     this.logger = new Logger(TransactionGetService.name);
