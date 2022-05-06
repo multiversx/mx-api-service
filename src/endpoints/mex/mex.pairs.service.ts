@@ -122,7 +122,7 @@ export class MexPairsService {
       return [];
     }
 
-    return result.pairs.map((pair: any) => this.getPairInfo(pair));
+    return result.pairs.map((pair: any) => this.getPairInfo(pair)).filter((x: MexPair) => x.state === MexPairState.active);
   }
 
   private getPairInfo(pair: any): MexPair {
