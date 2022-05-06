@@ -16,5 +16,5 @@
   "modulePaths": [
     "../.."
   ],
-  "testTimeout": 120000
+  "testTimeout": 60000
 }
