@@ -205,11 +205,7 @@ export class KeybaseService {
   }
 
   async getProfile(identity: string): Promise<KeybaseIdentity | null> {
-    const profile = await this.getProfileFromGithub(identity) ?? this.getProfileFromKeybase(identity);
-
-    console.log({ profile });
-
-    return profile;
+    return await this.getProfileFromGithub(identity) ?? this.getProfileFromKeybase(identity);
   }
 
   async getProfileFromGithub(identity: string): Promise<KeybaseIdentity | null> {
