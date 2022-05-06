@@ -463,6 +463,13 @@ export class TokenService {
     const totalSupply = NumberUtils.denominateString(result.totalSupply, properties.decimals);
     const circulatingSupply = NumberUtils.denominateString(result.circulatingSupply, properties.decimals);
 
+    const lockedAccounts = result.lockedAccounts;
+    if (lockedAccounts && denominated === true) {
+      for (const lockedAccount of lockedAccounts) {
+        lockedAccount.balance = NumberUtils.denominateString(lockedAccount.balance.toString(), properties.decimals);
+      }
+    }
+
     return {
       supply: denominated === true ? totalSupply : totalSupply.toFixed(),
       circulatingSupply: denominated === true ? circulatingSupply : circulatingSupply.toFixed(),
