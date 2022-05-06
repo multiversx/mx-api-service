@@ -67,6 +67,8 @@ jobs:
           else
             npm run test:e2e:warm:mocked
           fi
+      - name: API Validation
+        run: npm run test:e2e:sanity
         shell: bash
        -name: API Validation
         run: npm run test:e2e:sanity
