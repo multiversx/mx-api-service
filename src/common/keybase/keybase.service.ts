@@ -116,7 +116,15 @@ export class KeybaseService {
 
   async confirmKeybasesAgainstGithubForIdentity(identity: string): Promise<boolean> {
     try {
-      const { data: keys } = await this.apiService.get(`https://raw.githubusercontent.com/${identity}/elrond/main/keys.json`);
+      // @ts-ignore
+      const result = await this.apiService.get(`https://raw.githubusercontent.com/${identity}/elrond/main/keys.json`, undefined, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
+      if (!result) {
+        return false;
+      }
+
+      const keys = result.data;
+
+      this.logger.log(`github.com validation: for identity '${identity}', found ${keys.length} keys`);
 
       await this.cachingService.batchProcess(
         [keys],
@@ -128,12 +136,9 @@ export class KeybaseService {
 
       return true;
     } catch (error) {
-      // @ts-ignore
-      if (error?.status === HttpStatus.NOT_FOUND) {
-        return false;
-      }
-
-      throw error;
+      this.logger.log(`Error when confirming keybase against github for identity '${identity}'`);
+      this.logger.error(error);
+      return false;
     }
   }
 
@@ -162,7 +167,7 @@ export class KeybaseService {
       addresses.push(bls);
     }
 
-    this.logger.log(`For identity '${identity}', found ${blses.length} blses and addresses ${addresses}`);
+    this.logger.log(`keybase.pub validation: for identity '${identity}', found ${blses.length} blses and addresses ${addresses}`);
 
     await this.cachingService.batchProcess(
       [...blses, ...addresses],
