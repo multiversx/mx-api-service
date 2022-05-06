@@ -84,10 +84,6 @@ export class EsdtService {
     let tokens = tokensProperties.zip(tokensAssets, (first, second) => ApiUtils.mergeObjects(new TokenDetailed, { ...first, assets: second }));
 
     for (const token of tokens) {
-      if (!token.assets) {
-        continue;
-      }
-
       let accounts = await this.cachingService.getCacheRemote<number>(CacheInfo.TokenAccountsExtra(token.identifier).key);
       if (!accounts) {
         accounts = await this.cachingService.getOrSetCache(
