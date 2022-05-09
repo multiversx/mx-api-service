@@ -60,6 +60,16 @@ export class ApiChecker {
     }
   }
 
+  async checkStatus() {
+    const status = await this.requestStatus();
+
+    try {
+      expect(status).toStrictEqual(200);
+    } catch (error) {
+      throw new Error(`Endpoint status code ${status}`);
+    }
+  }
+
   async checkFilterValueInternal(criteria: string, value: string) {
     const items = await this.requestList({ size: 100, [criteria]: value, fields: criteria });
     const count = await this.requestCount({ [criteria]: value, fields: criteria });
@@ -146,5 +156,12 @@ export class ApiChecker {
       .get(`/${this.endpoint}/c?${urlParams}`);
 
     return result;
+  }
+
+  private async requestStatus(): Promise<number> {
+    const result = await request(this.httpServer)
+      .get(`/${this.endpoint}`);
+
+    return result.status;
   }
 }

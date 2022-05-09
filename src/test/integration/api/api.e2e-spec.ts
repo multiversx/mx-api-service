@@ -26,6 +26,7 @@ describe("API Testing", () => {
     checker.skipFields = ['balance', 'nonce'];
     await checker.checkPagination();
     await checker.checkDetails();
+    await checker.checkStatus();
   });
 
 
@@ -36,6 +37,7 @@ describe("API Testing", () => {
     await checker.checkDetails();
     await checker.checkFilter(['shard', 'epoch', 'nonce']);
     await checker.checkAlternativeCount(['validator']);
+    await checker.checkStatus();
   });
 
   it("/collections", async () => {
@@ -44,6 +46,7 @@ describe("API Testing", () => {
     await checker.checkDetails();
     await checker.checkFilter(['type']);
     await checker.checkAlternativeCount(['type']);
+    await checker.checkStatus();
   });
 
   it("/nfts", async () => {
@@ -51,12 +54,14 @@ describe("API Testing", () => {
     checker.skipFields = ['message', 'statusCode'];
     await checker.checkFilter(['collection', 'creator']);
     await checker.checkAlternativeCount(['type', 'collection']);
+    await checker.checkStatus();
   });
 
   it("/tags", async () => {
     const checker = new ApiChecker('tags', app.getHttpServer());
     await checker.checkPagination();
     await checker.checkDetails();
+    await checker.checkStatus();
   });
 
   it("/nodes", async () => {
@@ -65,28 +70,33 @@ describe("API Testing", () => {
     await checker.checkDetails();
     await checker.checkFilter(['shard']);
     await checker.checkAlternativeCount(['type', 'online']);
+    await checker.checkStatus();
   });
 
   it("/providers", async () => {
     const checker = new ApiChecker('providers', app.getHttpServer());
-    // await checker.checkDetails();
+    await checker.checkDetails();
     await checker.checkFilter(['identity']);
+    await checker.checkStatus();
   });
 
   it("/rounds", async () => {
     const checker = new ApiChecker('rounds', app.getHttpServer());
     await checker.checkFilter(['epoch', 'shard']);
     await checker.checkAlternativeCount(['shard']);
+    await checker.checkStatus();
   });
 
   it("/sc-results", async () => {
     const checker = new ApiChecker('sc-results', app.getHttpServer());
     await checker.checkPagination();
+    await checker.checkStatus();
   });
 
   it("shards", async () => {
     const checker = new ApiChecker('shards', app.getHttpServer());
     await checker.checkPagination();
+    await checker.checkStatus();
   });
 
   it("tokens", async () => {
@@ -94,11 +104,13 @@ describe("API Testing", () => {
     await checker.checkPagination();
     await checker.checkDetails();
     await checker.checkAlternativeCount(['identifier']);
+    await checker.checkStatus();
   });
 
   it("transactions", async () => {
     const checker = new ApiChecker('transactions', app.getHttpServer());
     await checker.checkDetails();
     await checker.checkAlternativeCount(['miniBlockHash']);
+    await checker.checkStatus();
   });
 });
