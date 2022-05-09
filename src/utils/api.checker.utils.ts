@@ -162,6 +162,6 @@ export class ApiChecker {
     const result = await request(this.httpServer)
       .get(`/${this.endpoint}`);
 
-    return result.status;
+    return result.statusCode;
   }
 }
