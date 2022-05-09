@@ -15,8 +15,8 @@ export class MexTokenService {
   ) { }
 
   async refreshMexTokens(): Promise<void> {
-    const pairs = await this.getAllMexTokensRaw();
-    await this.cachingService.setCacheRemote(CacheInfo.MexTokens.key, pairs, CacheInfo.MexTokens.ttl);
+    const tokens = await this.getAllMexTokensRaw();
+    await this.cachingService.setCacheRemote(CacheInfo.MexTokens.key, tokens, CacheInfo.MexTokens.ttl);
   }
 
   async getMexTokens(from: number, size: number): Promise<MexToken[]> {
