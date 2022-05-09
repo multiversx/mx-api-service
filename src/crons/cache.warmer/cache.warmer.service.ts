@@ -23,6 +23,7 @@ import { MexSettingsService } from "src/endpoints/mex/mex.settings.service";
 import { MexEconomicsService } from "src/endpoints/mex/mex.economics.service";
 import { MexPairsService } from "src/endpoints/mex/mex.pairs.service";
 import { MexTokenService } from "src/endpoints/mex/mex.token.service";
+import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -45,6 +46,7 @@ export class CacheWarmerService {
     private readonly mexPairsService: MexPairsService,
     private readonly mexTokensService: MexTokenService,
     private readonly mexSettingsService: MexSettingsService,
+    private readonly mexFarmsService: MexFarmService,
   ) {
     this.configCronJob(
       'handleKeybaseAgainstKeybasePubInvalidations',
@@ -220,6 +222,10 @@ export class CacheWarmerService {
 
     await Locker.lock('Refreshing mex tokens', async () => {
       await this.mexTokensService.refreshMexTokens();
+    }, true);
+
+    await Locker.lock('Refreshing mex farms', async () => {
+      await this.mexFarmsService.refreshMexFarms();
     }, true);
   }
 

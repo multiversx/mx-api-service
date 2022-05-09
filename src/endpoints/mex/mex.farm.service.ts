@@ -16,6 +16,11 @@ export class MexFarmService {
     private readonly mexTokenService: MexTokenService
   ) { }
 
+  async refreshMexFarms(): Promise<void> {
+    const farms = await this.getAllMexFarmsRaw();
+    await this.cachingService.setCacheRemote(CacheInfo.MexFarms.key, farms, CacheInfo.MexFarms.ttl);
+  }
+
   async getMexFarms(from: number, size: number): Promise<MexFarm[]> {
     const mexFarms = await this.cachingService.getOrSetCache(
       CacheInfo.MexFarms.key,
