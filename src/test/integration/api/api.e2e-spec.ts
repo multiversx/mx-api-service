@@ -75,7 +75,7 @@ describe("API Testing", () => {
 
   it("/providers", async () => {
     const checker = new ApiChecker('providers', app.getHttpServer());
-    await checker.checkDetails();
+    // await checker.checkDetails();
     await checker.checkFilter(['identity']);
     await checker.checkStatus();
   });
