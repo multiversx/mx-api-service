@@ -116,7 +116,7 @@ export class KeybaseService {
 
   async confirmKeybasesAgainstGithubForIdentity(identity: string): Promise<boolean> {
     try {
-      // @ts-ignore
+      // eslint-disable-next-line require-await
       const result = await this.apiService.get(`https://raw.githubusercontent.com/${identity}/elrond/main/keys.json`, undefined, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
       if (!result) {
         return false;
