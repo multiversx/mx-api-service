@@ -8,6 +8,8 @@ import { MexEconomicsService } from "./mex.economics.service";
 import { MexPairsService } from "./mex.pairs.service";
 import { MexSettingsService } from "./mex.settings.service";
 import { MexTokenService } from "./mex.token.service";
+import { MexFarmService } from './mex.farm.service';
+import { MexFarm } from './entities/mex.farm';
 
 @Controller()
 @ApiTags('maiar.exchange')
@@ -17,6 +19,7 @@ export class MexController {
     private readonly mexSettingsService: MexSettingsService,
     private readonly mexPairsService: MexPairsService,
     private readonly mexTokensService: MexTokenService,
+    private readonly mexFarmsService: MexFarmService
   ) { }
 
   @Get("/mex/settings")
@@ -83,6 +86,25 @@ export class MexController {
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<any> {
     return await this.mexTokensService.getMexTokens(from, size);
+  }
+
+  @Get("/mex/farms")
+  @ApiOperation({
+    summary: 'Maiar Exchange farms details',
+    description: 'Returns a list of farms listed on Maiar Exchange',
+  })
+  @ApiResponse({
+    status: 200,
+    isArray: true,
+    type: MexFarm,
+  })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  async getMexFarms(
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+  ): Promise<any> {
+    return await this.mexFarmsService.getMexFarms(from, size);
   }
 
   @Get("/mex/pairs/:baseId/:quoteId")
@@ -174,6 +196,25 @@ export class MexController {
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<any> {
     return await this.mexTokensService.getMexTokens(from, size);
+  }
+
+  @Get("/mex-farms")
+  @ApiOperation({
+    summary: 'Maiar Exchange farms details',
+    description: 'Returns a list of farms listed on Maiar Exchange',
+  })
+  @ApiResponse({
+    status: 200,
+    isArray: true,
+    type: MexFarm,
+  })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  async getMexFarmsLegacy(
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+  ): Promise<any> {
+    return await this.mexFarmsService.getMexFarms(from, size);
   }
 
   @Get("/mex-pairs/:baseId/:quoteId")
