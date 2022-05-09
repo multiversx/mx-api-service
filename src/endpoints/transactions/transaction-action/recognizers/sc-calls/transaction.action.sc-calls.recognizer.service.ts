@@ -53,7 +53,7 @@ export class SCCallActionRecognizerService implements TransactionActionRecognize
   }
 
   private isSmartContractCall(metadata: TransactionMetadata): boolean {
-    if (!AddressUtils.isSmartContractAddress(metadata.receiver)) {
+    if (AddressUtils.isSmartContractAddress(metadata.receiver)) {
       return true;
     }
 
