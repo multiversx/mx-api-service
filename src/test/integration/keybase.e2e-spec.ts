@@ -1,6 +1,5 @@
 import { Test } from "@nestjs/testing";
 import { KeybaseService } from "../../common/keybase/keybase.service";
-import { Keybase } from "../../common/keybase/entities/keybase";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
 import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
 import '../../utils/extensions/jest.extensions';
@@ -67,30 +66,6 @@ describe('Keybase Service', () => {
       for (const node of nodes) {
         expect(node).toHaveStructure(Object.keys(new KeybaseState()));
       }
-    });
-  });
-
-  describe('is Keybase Pub Up', () => {
-    it(`verify is keybase is pub up`, async () => {
-      const key = await keybaseService.isKeybasePubUp();
-      expect(key).toStrictEqual(true);
-    });
-  });
-
-  describe('is Keybase Io Up', () => {
-    it(`verify is keybase is Io up`, async () => {
-      const key = await keybaseService.isKeybaseIoUp();
-      expect(key).toStrictEqual(true);
-    });
-  });
-
-  describe('Confirm Keybase', () => {
-    it('should confirm Keybase', async () => {
-      const keybase = new Keybase();
-      keybase.identity = identity;
-
-      const key = await keybaseService.confirmKeybase(keybase);
-      expect(key).toStrictEqual(true);
     });
   });
 

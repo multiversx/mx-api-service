@@ -18,7 +18,6 @@ import { TransferOwnershipExtractor } from "./extractor/transfer.ownership.extra
 
 @Injectable()
 export class TransactionProcessorService {
-  isProcessing: boolean = false;
   private readonly logger: Logger;
   private transactionProcessor: TransactionProcessor = new TransactionProcessor();
 
@@ -37,64 +36,56 @@ export class TransactionProcessorService {
 
   @Cron('*/1 * * * * *')
   async handleNewTransactions() {
-    if (this.isProcessing) {
-      return;
-    }
+    await this.transactionProcessor.start({
+      gatewayUrl: this.apiConfigService.getGatewayUrl(),
+      maxLookBehind: this.apiConfigService.getTransactionProcessorMaxLookBehind(),
+      onTransactionsReceived: async (shard, nonce, transactions) => {
+        const profiler = new PerformanceProfiler('Processing new transactions');
 
-    try {
-      await this.transactionProcessor.start({
-        gatewayUrl: this.apiConfigService.getGatewayUrl(),
-        maxLookBehind: this.apiConfigService.getTransactionProcessorMaxLookBehind(),
-        onTransactionsReceived: async (shard, nonce, transactions) => {
-          const profiler = new PerformanceProfiler('Processing new transactions');
+        this.logger.log(`New transactions: ${transactions.length} for shard ${shard} and nonce ${nonce}`);
 
-          this.logger.log(`New transactions: ${transactions.length} for shard ${shard} and nonce ${nonce}`);
+        const allInvalidatedKeys = [];
 
-          const allInvalidatedKeys = [];
-
-          for (const transaction of transactions) {
-            if (this.apiConfigService.getIsProcessNftsFlagActive()) {
-              const nftUpdateAttributesResult = new NftUpdateAttributesTransactionExtractor().extract(transaction);
-              if (nftUpdateAttributesResult) {
-                this.logger.log(`Detected NFT update attributes for NFT with identifier '${nftUpdateAttributesResult.identifier}' and tx hash '${transaction.hash}'`);
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                this.tryHandleNftUpdateMetadata(transaction, nftUpdateAttributesResult.identifier);
-              }
+        for (const transaction of transactions) {
+          if (this.apiConfigService.getIsProcessNftsFlagActive()) {
+            const nftUpdateAttributesResult = new NftUpdateAttributesTransactionExtractor().extract(transaction);
+            if (nftUpdateAttributesResult) {
+              this.logger.log(`Detected NFT update attributes for NFT with identifier '${nftUpdateAttributesResult.identifier}' and tx hash '${transaction.hash}'`);
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+              this.tryHandleNftUpdateMetadata(transaction, nftUpdateAttributesResult.identifier);
             }
-
-            const invalidatedTokenProperties = await this.cachingService.tryInvalidateTokenProperties(transaction);
-            const invalidatedOwnerKeys = await this.tryInvalidateOwner(transaction);
-            const invalidatedCollectionPropertiesKeys = await this.tryInvalidateCollectionProperties(transaction);
-
-            allInvalidatedKeys.push(
-              ...invalidatedTokenProperties,
-              ...invalidatedOwnerKeys,
-              ...invalidatedCollectionPropertiesKeys
-            );
           }
 
-          const uniqueInvalidatedKeys = allInvalidatedKeys.distinct();
-          if (uniqueInvalidatedKeys.length > 0) {
-            this.clientProxy.emit('deleteCacheKeys', uniqueInvalidatedKeys);
-          }
+          const invalidatedTokenProperties = await this.cachingService.tryInvalidateTokenProperties(transaction);
+          const invalidatedOwnerKeys = await this.tryInvalidateOwner(transaction);
+          const invalidatedCollectionPropertiesKeys = await this.tryInvalidateCollectionProperties(transaction);
 
-          const distinctSendersAndReceivers = transactions.selectMany(transaction => [transaction.sender, transaction.receiver]).distinct();
-          const txCountInvalidationKeys = distinctSendersAndReceivers.map(address => CacheInfo.TxCount(address).key);
-          await this.cachingService.batchDelCache(txCountInvalidationKeys);
+          allInvalidatedKeys.push(
+            ...invalidatedTokenProperties,
+            ...invalidatedOwnerKeys,
+            ...invalidatedCollectionPropertiesKeys
+          );
+        }
 
-          profiler.stop();
-        },
-        getLastProcessedNonce: async (shardId) => {
-          return await this.cachingService.getCache<number>(CacheInfo.TransactionProcessorShardNonce(shardId).key);
-        },
-        setLastProcessedNonce: async (shardId, nonce) => {
-          this.metricsService.setLastProcessedNonce(shardId, nonce);
-          await this.cachingService.setCache<number>(CacheInfo.TransactionProcessorShardNonce(shardId).key, nonce, CacheInfo.TransactionProcessorShardNonce(shardId).ttl);
-        },
-      });
-    } finally {
-      this.isProcessing = false;
-    }
+        const uniqueInvalidatedKeys = allInvalidatedKeys.distinct();
+        if (uniqueInvalidatedKeys.length > 0) {
+          this.clientProxy.emit('deleteCacheKeys', uniqueInvalidatedKeys);
+        }
+
+        const distinctSendersAndReceivers = transactions.selectMany(transaction => [transaction.sender, transaction.receiver]).distinct();
+        const txCountInvalidationKeys = distinctSendersAndReceivers.map(address => CacheInfo.TxCount(address).key);
+        await this.cachingService.batchDelCache(txCountInvalidationKeys);
+
+        profiler.stop();
+      },
+      getLastProcessedNonce: async (shardId) => {
+        return await this.cachingService.getCache<number>(CacheInfo.TransactionProcessorShardNonce(shardId).key);
+      },
+      setLastProcessedNonce: async (shardId, nonce) => {
+        this.metricsService.setLastProcessedNonce(shardId, nonce);
+        await this.cachingService.setCache<number>(CacheInfo.TransactionProcessorShardNonce(shardId).key, nonce, CacheInfo.TransactionProcessorShardNonce(shardId).ttl);
+      },
+    });
   }
 
   private async tryHandleNftUpdateMetadata(transaction: ShardTransaction, identifier: string) {
