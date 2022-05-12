@@ -24,7 +24,7 @@ export class NodeController {
     isArray: true,
     type: Node,
   })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by name, bls or version', required: false })
   @ApiQuery({ name: 'online', description: 'Whether node is online or not', required: false, type: 'boolean' })

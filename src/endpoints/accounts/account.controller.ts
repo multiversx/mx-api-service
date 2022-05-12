@@ -68,7 +68,7 @@ export class AccountController {
     type: Account,
     isArray: true,
   })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -135,7 +135,7 @@ export class AccountController {
 
   @Get("/accounts/:address/tokens")
   @ApiOperation({ summary: 'Account tokens', description: 'Returns a list of all available fungible tokens for a given address, together with their balance' })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
@@ -205,7 +205,7 @@ export class AccountController {
 
   @Get("/accounts/:address/collections")
   @ApiOperation({ summary: 'Account collections', description: 'Returns NFT/SFT/MetaESDT collections where the account is owner or has some special roles assigned to it' })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
@@ -280,7 +280,7 @@ export class AccountController {
 
   @Get("/accounts/:address/nft-collections")
   @ApiOperation({ summary: 'Account collections', description: 'Returns NFT/SFT/MetaESDT collections where the account owns one or more NFTs' })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
@@ -442,7 +442,7 @@ export class AccountController {
 
   @Get("/accounts/:address/nfts")
   @ApiOperation({ summary: 'Account NFTs', description: 'Returns a list of all available NFTs/SFTs/MetaESDTs owned by the provided address' })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Filter by identifiers, comma-separated', required: false })
@@ -666,7 +666,7 @@ export class AccountController {
     status: 404,
     description: 'Account not found',
   })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
@@ -794,7 +794,7 @@ export class AccountController {
     status: 404,
     description: 'Account not found',
   })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transfer receiver', required: false })
@@ -910,7 +910,7 @@ export class AccountController {
 
   @Get("/accounts/:address/contracts")
   @ApiOperation({ summary: 'Account smart contracts details', description: 'Returns smart contracts details for a given account' })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiResponse({
     status: 200,
@@ -951,7 +951,7 @@ export class AccountController {
 
   @Get("/accounts/:address/sc-results")
   @ApiOperation({ summary: 'Account smart contract results', description: 'Returns smart contract results where the account is sender or receiver' })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiResponse({
     status: 200,
