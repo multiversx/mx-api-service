@@ -361,6 +361,7 @@ export class CollectionService {
         aggs: {
           collections: {
             composite: {
+              size: 10000,
               sources: [
                 {
                   collection: {
