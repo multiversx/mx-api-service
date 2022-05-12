@@ -324,9 +324,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/nft-collections/c")
-  @ApiOperation({ summary: 'Account collection count', description: 'Returns the total number of NFT/SFT/MetaESDT collections where the account is owner or has some special roles assigned to it' })
-  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
-  @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
+  @ApiExcludeEndpoint()
   @ApiResponse({
     status: 200,
     type: Number,
