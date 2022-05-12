@@ -4,7 +4,7 @@ import { Test } from "@nestjs/testing";
 import { CollectionService } from "src/endpoints/collections/collection.service";
 import { PublicAppModule } from "src/public.app.module";
 import { NftCollection } from 'src/endpoints/collections/entities/nft.collection';
-import { NftCollectionAccount } from 'src/endpoints/collections/entities/nft.collection.account';
+import { NftCollectionRole } from 'src/endpoints/collections/entities/nft.collection.role';
 import '../../utils/extensions/jest.extensions';
 
 describe('Collection Service', () => {
@@ -264,7 +264,7 @@ describe('Collection Service', () => {
       const address: string = "erd1gv55fk7gn0f437eq53x7u5zux824a9ff86v5pvnneg7yvsucpp0svncsmz";
       const collectionIdentifier: string = 'DEITIES-0d1f10';
       const collection = await collectionService.getCollectionForAddress(address, collectionIdentifier);
-      const collectionResults = new NftCollectionAccount();
+      const collectionResults = new NftCollectionRole();
 
       // @ts-ignore
       delete collectionResults.timestamp;

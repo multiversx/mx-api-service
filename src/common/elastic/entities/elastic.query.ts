@@ -24,6 +24,7 @@ export class ElasticQuery {
   filter: AbstractQuery[] = [];
   condition: QueryCondition = new QueryCondition();
   terms?: TermsQuery;
+  extra?: Record<string, any>;
 
   static create(): ElasticQuery {
     return new ElasticQuery();
@@ -65,6 +66,14 @@ export class ElasticQuery {
     return this.withMustCondition(QueryType.Should(values.map(value => action(value))));
   }
 
+  withMustExistCondition(key: string): ElasticQuery {
+    return this.withMustCondition(QueryType.Exists(key));
+  }
+
+  withMustNotExistCondition(key: string): ElasticQuery {
+    return this.withMustNotCondition(QueryType.Exists(key));
+  }
+
   withMustCondition(queries: AbstractQuery[] | AbstractQuery): ElasticQuery {
     return this.withCondition(QueryConditionOptions.must, queries);
   }
@@ -103,6 +112,12 @@ export class ElasticQuery {
     return this;
   }
 
+  withExtra(extra: Record<string, any>): ElasticQuery {
+    this.extra = extra;
+
+    return this;
+  }
+
   toJson() {
     const elasticSort = buildElasticIndexerSort(this.sort);
 
@@ -119,6 +134,7 @@ export class ElasticQuery {
         },
         terms: this.terms?.getQuery(),
       },
+      ...this.extra ?? {},
     };
 
     ApiUtils.cleanupApiValueRecursively(elasticQuery);

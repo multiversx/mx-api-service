@@ -190,7 +190,7 @@ export class ElasticService {
     return await this.apiService.get(url);
   }
 
-  private async post(url: string, body: any) {
+  public async post(url: string, body: any) {
     return await this.apiService.post(url, body);
   }
 

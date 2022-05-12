@@ -3,7 +3,7 @@ import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 import { Test } from "@nestjs/testing";
 import { EsdtDataSource } from 'src/endpoints/esdt/entities/esdt.data.source';
 import { NftCollection } from 'src/endpoints/collections/entities/nft.collection';
-import { NftCollectionAccount } from 'src/endpoints/collections/entities/nft.collection.account';
+import { NftCollectionRole } from 'src/endpoints/collections/entities/nft.collection.role';
 import { NftType } from 'src/endpoints/nfts/entities/nft.type';
 import { CollectionFilter } from 'src/endpoints/collections/entities/collection.filter';
 import '../../utils/extensions/jest.extensions';
@@ -96,7 +96,7 @@ describe('EsdtAddressService', () => {
       const collectionFilter = new CollectionFilter();
       collectionFilter.collection = 'HMORGOTH-ecd5fb';
 
-      const collections: NftCollection[] | NftCollectionAccount[] = await esdtAddressService.getCollectionsForAddress(address, collectionFilter, { from: 0, size: 1 }, EsdtDataSource.elastic);
+      const collections: NftCollection[] | NftCollectionRole[] = await esdtAddressService.getCollectionsForAddress(address, collectionFilter, { from: 0, size: 1 }, EsdtDataSource.elastic);
 
       expect(collections).toHaveLength(1);
       expect(collections).toBeInstanceOf(Object);
@@ -119,7 +119,7 @@ describe('EsdtAddressService', () => {
       const collectionFilter = new CollectionFilter();
       collectionFilter.collection = 'HMORGOTH-ecd5fb';
 
-      const collectionEsdtGateway: NftCollection[] | NftCollectionAccount[] = await esdtAddressService.getCollectionsForAddress(address, collectionFilter, { from: 0, size: 1 }, EsdtDataSource.gateway);
+      const collectionEsdtGateway: NftCollection[] | NftCollectionRole[] = await esdtAddressService.getCollectionsForAddress(address, collectionFilter, { from: 0, size: 1 }, EsdtDataSource.gateway);
 
       for (const collection of collectionEsdtGateway) {
         expect(collection).toBeInstanceOf(Object);

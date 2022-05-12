@@ -24,7 +24,7 @@ import { DeployedContract } from './entities/deployed.contract';
 import { SmartContractResult } from '../sc-results/entities/smart.contract.result';
 import { SmartContractResultService } from '../sc-results/scresult.service';
 import { CollectionService } from '../collections/collection.service';
-import { NftCollectionAccount } from '../collections/entities/nft.collection.account';
+import { NftCollectionRole } from '../collections/entities/nft.collection.role';
 import { ParseAddressPipe } from 'src/utils/pipes/parse.address.pipe';
 import { ParseTransactionHashPipe } from 'src/utils/pipes/parse.transaction.hash.pipe';
 import { ParseBlockHashPipe } from 'src/utils/pipes/parse.block.hash.pipe';
@@ -38,6 +38,7 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { Transaction } from '../transactions/entities/transaction';
 import { ProviderStake } from '../stake/entities/provider.stake';
 import { TokenDetailedWithBalance } from '../tokens/entities/token.detailed.with.balance';
+import { NftCollectionAccount } from '../collections/entities/nft.collection.account';
 
 @Controller()
 @ApiTags('accounts')
@@ -219,13 +220,13 @@ export class AccountController {
   @ApiResponse({
     status: 200,
     isArray: true,
-    type: NftCollectionAccount,
+    type: NftCollectionRole,
   })
   @ApiResponse({
     status: 404,
     description: 'Account not found',
   })
-  async getAccountCollections(
+  async getAccountCollectionsWithRoles(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -238,9 +239,9 @@ export class AccountController {
     @Query('canAddUri', new ParseOptionalBoolPipe) canAddUri?: boolean,
     @Query('canTransferRole', new ParseOptionalBoolPipe) canTransferRole?: boolean,
     @Query('source', new ParseOptionalEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
-  ): Promise<NftCollectionAccount[]> {
+  ): Promise<NftCollectionRole[]> {
     try {
-      return await this.collectionService.getCollectionsForAddress(address, { search, type, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole }, { from, size }, source);
+      return await this.collectionService.getCollectionsWithRolesForAddress(address, { search, type, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole }, { from, size }, source);
     } catch (error) {
       this.logger.error(`Error in getAccountCollections for address ${address}`);
       this.logger.error(error);
@@ -250,7 +251,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/collections/count")
-  @ApiOperation({ summary: ' Account collection count', description: 'Returns the total number of NFT/SFT/MetaESDT collections where the account is owner or has some special roles assigned to it' })
+  @ApiOperation({ summary: 'Account collection count', description: 'Returns the total number of NFT/SFT/MetaESDT collections where the account is owner or has some special roles assigned to it' })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
   @ApiQuery({ name: 'owner', description: 'Filter by collection owner', required: false })
@@ -265,7 +266,7 @@ export class AccountController {
     status: 404,
     description: 'Account not found',
   })
-  async getCollectionCount(
+  async getCollectionWithRolesCount(
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
     @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
@@ -274,14 +275,98 @@ export class AccountController {
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
     @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity?: boolean,
   ): Promise<number> {
-    try {
-      return await this.collectionService.getCollectionCountForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
-    } catch (error) {
-      this.logger.error(`Error in getCollectionCount for address ${address}`);
-      this.logger.error(error);
-      // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
-      return 0;
+    return await this.collectionService.getCollectionCountForAddressWithRoles(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
+  }
+
+  @Get("/accounts/:address/nft-collections")
+  @ApiOperation({ summary: 'Account collections', description: 'Returns NFT/SFT/MetaESDT collections where the account owns one or more NFTs' })
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
+  @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
+  @ApiResponse({
+    status: 200,
+    isArray: true,
+    type: NftCollectionAccount,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found',
+  })
+  async getAccountNftCollections(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('search') search?: string,
+    @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
+  ): Promise<NftCollectionAccount[]> {
+    return await this.collectionService.getCollectionsForAddress(address, { search, type }, { from, size });
+  }
+
+  @Get("/accounts/:address/nft-collections/count")
+  @ApiOperation({ summary: 'Account collection count', description: 'Returns the total number of NFT/SFT/MetaESDT collections where the account is owner or has some special roles assigned to it' })
+  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
+  @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
+  @ApiResponse({
+    status: 200,
+    type: Number,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found',
+  })
+  async getNftCollectionCount(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('search') search?: string,
+    @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
+  ): Promise<number> {
+    return await this.collectionService.getCollectionCountForAddress(address, { search, type });
+  }
+
+  @Get("/accounts/:address/nft-collections/c")
+  @ApiOperation({ summary: 'Account collection count', description: 'Returns the total number of NFT/SFT/MetaESDT collections where the account is owner or has some special roles assigned to it' })
+  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
+  @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
+  @ApiResponse({
+    status: 200,
+    type: Number,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found',
+  })
+  async getNftCollectionCountAlternative(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('search') search?: string,
+    @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
+  ): Promise<number> {
+    return await this.collectionService.getCollectionCountForAddress(address, { search, type });
+  }
+
+  @Get("/accounts/:address/nft-collections/:collection")
+  @ApiOperation({ summary: 'Account collection details', description: 'Returns details about a specific NFT/SFT/MetaESDT collection from a given address' })
+  @ApiResponse({
+    status: 200,
+    type: NftCollectionAccount,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Collection not found',
+  })
+  async getAccountNftCollection(
+    @Param('address', ParseAddressPipe) address: string,
+    @Param('collection') collection: string,
+  ): Promise<NftCollectionAccount> {
+    const result = await this.collectionService.getCollectionForAddress(address, collection);
+    if (!result) {
+      throw new NotFoundException('Collection for given account not found');
     }
+
+    return result;
   }
 
   @Get("/accounts/:address/tokens/:token")
@@ -322,7 +407,7 @@ export class AccountController {
     @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity?: boolean,
   ): Promise<number> {
     try {
-      return await this.collectionService.getCollectionCountForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
+      return await this.collectionService.getCollectionCountForAddressWithRoles(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
     } catch (error) {
       this.logger.error(`Error in getCollectionCountAlternative for address ${address}`);
       this.logger.error(error);
@@ -335,7 +420,7 @@ export class AccountController {
   @ApiOperation({ summary: 'Account collection details', description: 'Returns details about a specific NFT/SFT/MetaESDT collection from a given address' })
   @ApiResponse({
     status: 200,
-    type: NftCollectionAccount,
+    type: NftCollectionRole,
   })
   @ApiResponse({
     status: 404,
@@ -348,8 +433,8 @@ export class AccountController {
   async getAccountCollection(
     @Param('address', ParseAddressPipe) address: string,
     @Param('collection') collection: string,
-  ): Promise<NftCollectionAccount> {
-    const result = await this.collectionService.getCollectionForAddress(address, collection);
+  ): Promise<NftCollectionRole> {
+    const result = await this.collectionService.getCollectionForAddressWithRole(address, collection);
     if (!result) {
       throw new NotFoundException('Collection for given account not found');
     }
