@@ -533,11 +533,11 @@ export class TokenService {
         const resultItem = ApiUtils.mergeObjects(new TokenWithRoles(), token);
         if (item.roles) {
           if (item.roles.ESDTRoleLocalMint && item.roles.ESDTRoleLocalMint.includes(address)) {
-            resultItem.canMint = true;
+            resultItem.canLocalMint = true;
           }
 
           if (item.roles.ESDTRoleLocalBurn && item.roles.ESDTRoleLocalBurn.includes(address)) {
-            resultItem.canBurn = true;
+            resultItem.canLocalBurn = true;
           }
         }
 

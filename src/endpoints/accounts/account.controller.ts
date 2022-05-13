@@ -452,7 +452,7 @@ export class AccountController {
     return result;
   }
 
-  @Get("/accounts/:address/nft-collections")
+  @Get("/accounts/:address/collections")
   @ApiOperation({ summary: 'Account collections', description: 'Returns NFT/SFT/MetaESDT collections where the account owns one or more NFTs' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -477,7 +477,7 @@ export class AccountController {
     return await this.collectionService.getCollectionsForAddress(address, { search, type }, { from, size });
   }
 
-  @Get("/accounts/:address/nft-collections/count")
+  @Get("/accounts/:address/collections/count")
   @ApiOperation({ summary: 'Account collection count', description: 'Returns the total number of NFT/SFT/MetaESDT collections where the account is owner or has some special roles assigned to it' })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
@@ -497,7 +497,7 @@ export class AccountController {
     return await this.collectionService.getCollectionCountForAddress(address, { search, type });
   }
 
-  @Get("/accounts/:address/nft-collections/c")
+  @Get("/accounts/:address/collections/c")
   @ApiExcludeEndpoint()
   @ApiResponse({
     status: 200,
@@ -515,7 +515,7 @@ export class AccountController {
     return await this.collectionService.getCollectionCountForAddress(address, { search, type });
   }
 
-  @Get("/accounts/:address/nft-collections/:collection")
+  @Get("/accounts/:address/collections/:collection")
   @ApiOperation({ summary: 'Account collection details', description: 'Returns details about a specific NFT/SFT/MetaESDT collection from a given address' })
   @ApiResponse({
     status: 200,
