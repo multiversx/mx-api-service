@@ -6,12 +6,14 @@ import { MexToken } from "./entities/mex.token";
 import { MexPairsService } from "./mex.pairs.service";
 import { MexPairState } from "./entities/mex.pair.state";
 import { MexPair } from "./entities/mex.pair";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Injectable()
 export class MexTokenService {
   constructor(
     private readonly cachingService: CachingService,
     private readonly mexPairsService: MexPairsService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   async refreshMexTokens(): Promise<void> {
@@ -26,6 +28,10 @@ export class MexTokenService {
   }
 
   async getIndexedMexTokens(): Promise<Record<string, MexToken>> {
+    if (!this.apiConfigService.getMaiarExchangeUrl()) {
+      return {};
+    }
+
     return await this.cachingService.getOrSetCache(
       CacheInfo.MexTokensIndexed.key,
       async () => await this.getIndexedMexTokensRaw(),
@@ -46,6 +52,10 @@ export class MexTokenService {
   }
 
   private async getAllMexTokens(): Promise<MexToken[]> {
+    if (!this.apiConfigService.getMaiarExchangeUrl()) {
+      return [];
+    }
+
     return await this.cachingService.getOrSetCache(
       CacheInfo.MexTokens.key,
       async () => await this.getAllMexTokensRaw(),

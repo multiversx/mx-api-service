@@ -366,7 +366,7 @@ export class TokenController {
       throw new NotFoundException('Token not found');
     }
 
-    const roles = await this.tokenService.getTokenRolesForAddress(identifier, address);
+    const roles = await this.tokenService.getTokenRolesForIdentifierAndAddress(identifier, address);
     if (!roles) {
       throw new NotFoundException('Token not found');
     }

@@ -711,7 +711,7 @@ describe('Token Service', () => {
           },
         ]));
 
-      const results = await tokenService.getTokenRolesForAddress(identifier, address);
+      const results = await tokenService.getTokenRolesForIdentifierAndAddress(identifier, address);
 
       expect(results).toEqual(expect.objectContaining({
         canMint: true,
@@ -735,7 +735,7 @@ describe('Token Service', () => {
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_collection: string, _key: string, _identifier: string) => undefined));
 
-      const results = await tokenService.getTokenRolesForAddress(identifier, address);
+      const results = await tokenService.getTokenRolesForIdentifierAndAddress(identifier, address);
       expect(results).toBeUndefined();
     });
   });
