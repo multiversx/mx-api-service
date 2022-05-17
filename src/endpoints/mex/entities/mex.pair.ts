@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { MexPairState } from "./mex.pair.state";
+import { MexPairType } from "./mex.pair.type";
 
 export class MexPair {
   @ApiProperty()
@@ -37,4 +38,7 @@ export class MexPair {
 
   @ApiProperty({ enum: MexPairState })
   state: MexPairState = MexPairState.inactive;
+
+  @ApiProperty({ enum: MexPairType })
+  type: MexPairType = MexPairType.experimental;
 }
