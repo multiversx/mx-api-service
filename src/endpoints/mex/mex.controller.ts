@@ -198,25 +198,6 @@ export class MexController {
     return await this.mexTokensService.getMexTokens(from, size);
   }
 
-  @Get("/mex-farms")
-  @ApiOperation({
-    summary: 'Maiar Exchange farms details',
-    description: 'Returns a list of farms listed on Maiar Exchange',
-  })
-  @ApiResponse({
-    status: 200,
-    isArray: true,
-    type: MexFarm,
-  })
-  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  async getMexFarmsLegacy(
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
-  ): Promise<any> {
-    return await this.mexFarmsService.getMexFarms(from, size);
-  }
-
   @Get("/mex-pairs/:baseId/:quoteId")
   @ApiOperation({
     deprecated: true,
