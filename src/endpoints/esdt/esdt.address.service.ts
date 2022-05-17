@@ -262,27 +262,27 @@ export class EsdtAddressService {
     }
 
     if (filter.canCreate !== undefined) {
-      collections = collections.filter(x => x.roles[0].canCreate === filter.canCreate);
+      collections = collections.filter(x => x.canCreate === filter.canCreate);
     }
 
     if (filter.canBurn !== undefined) {
-      collections = collections.filter(x => x.roles[0].canBurn === filter.canBurn);
+      collections = collections.filter(x => x.canBurn === filter.canBurn);
     }
 
     if (filter.canAddQuantity !== undefined) {
-      collections = collections.filter(x => x.roles[0].canAddQuantity === filter.canAddQuantity);
+      collections = collections.filter(x => x.canAddQuantity === filter.canAddQuantity);
     }
 
     if (filter.canUpdateAttributes !== undefined) {
-      collections = collections.filter(x => x.roles[0].canUpdateAttributes === filter.canAddQuantity);
+      collections = collections.filter(x => x.canUpdateAttributes === filter.canUpdateAttributes);
     }
 
     if (filter.canAddUri !== undefined) {
-      collections = collections.filter(x => x.roles[0].canAddUri === filter.canAddUri);
+      collections = collections.filter(x => x.canAddUri === filter.canAddUri);
     }
 
     if (filter.canTransferRole !== undefined) {
-      collections = collections.filter(x => x.roles[0].canTransferRole === filter.canTransferRole);
+      collections = collections.filter(x => x.canTransferRole === filter.canTransferRole);
     }
 
     collections = collections.slice(pagination.from, pagination.from + pagination.size);

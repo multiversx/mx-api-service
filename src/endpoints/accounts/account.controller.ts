@@ -267,14 +267,7 @@ export class AccountController {
     @Query('canTransferRole', new ParseOptionalBoolPipe) canTransferRole?: boolean,
     @Query('source', new ParseOptionalEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
   ): Promise<NftCollectionRole[]> {
-    try {
-      return await this.collectionService.getCollectionsWithRolesForAddress(address, { search, type, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole }, { from, size }, source);
-    } catch (error) {
-      this.logger.error(`Error in getAccountCollections for address ${address}`);
-      this.logger.error(error);
-      // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
-      return [];
-    }
+    return await this.collectionService.getCollectionsWithRolesForAddress(address, { search, type, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole }, { from, size }, source);
   }
 
   @Get("/accounts/:address/roles/collections/count")
@@ -316,14 +309,7 @@ export class AccountController {
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
     @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity?: boolean,
   ): Promise<number> {
-    try {
-      return await this.collectionService.getCollectionCountForAddressWithRoles(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
-    } catch (error) {
-      this.logger.error(`Error in getCollectionCountAlternative for address ${address}`);
-      this.logger.error(error);
-      // throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
-      return 0;
-    }
+    return await this.collectionService.getCollectionCountForAddressWithRoles(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
   }
 
   @Get("/accounts/:address/roles/collections/:collection")
@@ -583,13 +569,7 @@ export class AccountController {
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean,
     @Query('source', new ParseOptionalEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
   ): Promise<NftAccount[]> {
-    try {
-      return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }, { withSupply }, source);
-    } catch (error) {
-      this.logger.error(`Error in getAccountNfts for address ${address}`);
-      this.logger.error(error);
-      return [];
-    }
+    return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }, { withSupply }, source);
   }
 
   @Get("/accounts/:address/nfts/count")
@@ -625,13 +605,7 @@ export class AccountController {
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseOptionalBoolPipe) includeFlagged?: boolean,
   ): Promise<number> {
-    try {
-      return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged });
-    } catch (error) {
-      this.logger.error(`Error in getNftCount for address ${address}`);
-      this.logger.error(error);
-      return 0;
-    }
+    return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged });
   }
 
   @Get("/accounts/:address/nfts/c")
@@ -649,13 +623,7 @@ export class AccountController {
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseOptionalBoolPipe) includeFlagged?: boolean,
   ): Promise<number> {
-    try {
-      return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged });
-    } catch (error) {
-      this.logger.error(`Error in getNftCountAlternative for address ${address}`);
-      this.logger.error(error);
-      return 0;
-    }
+    return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged });
   }
 
   @Get("/accounts/:address/nfts/:nft")
@@ -695,13 +663,7 @@ export class AccountController {
     description: 'Account not found',
   })
   async getAccountStake(@Param('address', ParseAddressPipe) address: string): Promise<ProviderStake> {
-    try {
-      return await this.stakeService.getStakeForAddress(address);
-    } catch (error) {
-      this.logger.error(`Error in getAccountStake for address ${address}`);
-      this.logger.error(error);
-      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
-    }
+    return await this.stakeService.getStakeForAddress(address);
   }
 
   @Get("/accounts/:address/delegation-legacy")
@@ -715,13 +677,7 @@ export class AccountController {
     description: 'Account not found',
   })
   async getAccountDelegationLegacy(@Param('address', ParseAddressPipe) address: string): Promise<AccountDelegationLegacy> {
-    try {
-      return await this.delegationLegacyService.getDelegationForAddress(address);
-    } catch (error) {
-      this.logger.error(`Error in getAccountDelegationLegacy for address ${address}`);
-      this.logger.error(error);
-      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
-    }
+    return await this.delegationLegacyService.getDelegationForAddress(address);
   }
 
   @Get("/accounts/:address/keys")
@@ -736,13 +692,7 @@ export class AccountController {
     description: 'Account not found',
   })
   async getAccountKeys(@Param('address', ParseAddressPipe) address: string): Promise<AccountKey[]> {
-    try {
-      return await this.accountService.getKeys(address);
-    } catch (error) {
-      this.logger.error(`Error in getAccountKeys for address ${address}`);
-      this.logger.error(error);
-      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
-    }
+    return await this.accountService.getKeys(address);
   }
 
   @Get("/accounts/:address/waiting-list")
@@ -930,26 +880,20 @@ export class AccountController {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
-    try {
-      return await this.transferService.getTransfers({
-        sender,
-        receiver,
-        token,
-        senderShard,
-        receiverShard,
-        miniBlockHash,
-        hashes,
-        status,
-        search,
-        before,
-        after,
-        order,
-      }, { from, size }, address);
-    } catch (error) {
-      this.logger.error(`Error in getAccountTransfers for address ${address}`);
-      this.logger.error(error);
-      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
-    }
+    return await this.transferService.getTransfers({
+      sender,
+      receiver,
+      token,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      search,
+      before,
+      after,
+      order,
+    }, { from, size }, address);
   }
 
   @Get("/accounts/:address/transfers/count")
