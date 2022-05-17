@@ -34,12 +34,15 @@ export class TransactionOperation {
   @ApiProperty({ type: String })
   receiver: string = '';
 
-  @ApiProperty({ type: Number })
+  @ApiProperty({ type: Number, nullable: true })
   decimals?: number;
 
-  @ApiProperty({ type: String })
-  data?: string = '';
+  @ApiProperty({ type: String, nullable: true })
+  data?: string;
 
-  @ApiProperty({ type: String })
-  message?: string = '';
+  @ApiProperty({ type: String, nullable: true })
+  message?: string;
+
+  @ApiProperty({ type: String, nullable: true })
+  svgUrl?: string;
 }
