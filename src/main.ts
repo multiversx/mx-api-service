@@ -32,6 +32,7 @@ import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './websockets/socket-adapter';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
+import { QueryCheckInterceptor } from './interceptors/query.check.interceptor';
 
 async function bootstrap() {
   const conf = configuration();
@@ -86,6 +87,7 @@ async function bootstrap() {
   globalInterceptors.push(new ExtractInterceptor());
   globalInterceptors.push(new CleanupInterceptor());
   globalInterceptors.push(new PaginationInterceptor());
+  globalInterceptors.push(new QueryCheckInterceptor(httpAdapterHostService));
 
   await pluginService.bootstrapPublicApp(publicApp);
 
