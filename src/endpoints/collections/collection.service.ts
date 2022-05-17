@@ -97,8 +97,8 @@ export class CollectionService {
 
     return elasticQuery.withMustMatchCondition('token', filter.collection, QueryOperator.AND)
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
-      .withMustWildcardCondition('token', filter.search)
       .withMustMatchCondition('type', filter.type)
+      .withSearchWildcardCondition(filter.search, ['token', 'name'])
       .withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT, NftType.MetaESDT], type => QueryType.Match('type', type));
   }
 

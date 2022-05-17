@@ -7,9 +7,41 @@ import { PublicAppModule } from "src/public.app.module";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftOwner } from 'src/endpoints/nfts/entities/nft.owner';
+import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
+import { NftAccount } from 'src/endpoints/nfts/entities/nft.account';
+
 
 describe('Nft Service', () => {
   let nftService: NftService;
+
+  const mockNftAccount: NftAccount = {
+    identifier: 'MOS-b9b4b2-2710',
+    collection: 'MOS-b9b4b2',
+    timestamp: undefined,
+    attributes: 'dGFnczpTdHJhbW9zaSxSb21hbmlhLEVscm9uZCxSb21hbmlhREFPO21ldGFkYXRhOlFtVVVoQW1CUUtHa1NxTjc3NU5aQUFZVWFxZDhzc01hZEZnMlVZU0VDU0VSejYvOTE0Lmpzb24=',
+    nonce: 10000,
+    type: NftType.NonFungibleESDT,
+    name: 'Stramosi #10000',
+    creator: 'erd1qqqqqqqqqqqqqpgq0p9k56lutyjsz288gsrtu64nfj43ll8vys5sjy7luv',
+    royalties: 10,
+    uris: [
+      'aHR0cHM6Ly9pcGZzLmlvL2lwZnMvUW1VVWhBbUJRS0drU3FONzc1TlpBQVlVYXFkOHNzTWFkRmcyVVlTRUNTRVJ6Ni85MTQucG5n',
+      'aHR0cHM6Ly9pcGZzLmlvL2lwZnMvUW1VVWhBbUJRS0drU3FONzc1TlpBQVlVYXFkOHNzTWFkRmcyVVlTRUNTRVJ6Ni85MTQuanNvbg==',
+      'aHR0cHM6Ly9pcGZzLmlvL2lwZnMvUW1VVWhBbUJRS0drU3FONzc1TlpBQVlVYXFkOHNzTWFkRmcyVVlTRUNTRVJ6Ni9jb2xsZWN0aW9uLmpzb24=',
+    ],
+    url: 'https://media.elrond.com/nfts/asset/QmUUhAmBQKGkSqN775NZAAYUaqd8ssMadFg2UYSECSERz6/914.png',
+    media: undefined,
+    isWhitelistedStorage: true,
+    thumbnailUrl: '',
+    tags: ['Stramosi', 'Romania', 'Elrond', 'RomaniaDAO'],
+    metadata: undefined,
+    owner: undefined,
+    balance: '',
+    supply: undefined,
+    decimals: undefined,
+    ticker: '',
+    scamInfo: undefined,
+  };
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -353,9 +385,14 @@ describe('Nft Service', () => {
   });
 
   describe("NFT Address", () => {
-    it("should return a list of nfts for a specific address", async () => {
-      const address: string = "erd1fs7dp439gw2at58a2pqn3hdnxqh5vskq5uzjdf9kajkxy3p0vy7qeh7k00";
-      const identifier: string = "EROBOT-527a29-c4";
+    it("should return one nft for a specific account", async () => {
+      const address: string = "erd15gculjmu3r62ldlwyguqdgddez35r2lv6ka8j7s6pwhqlc80httqljzwgm";
+      const identifier: string = "MOS-b9b4b2-2710";
+
+      jest
+        .spyOn(EsdtAddressService.prototype, 'getNftsForAddress')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => [mockNftAccount]));
 
       const results = await nftService.getNftForAddress(address, identifier);
 
@@ -371,6 +408,20 @@ describe('Nft Service', () => {
       expect(results.hasOwnProperty("name")).toBeTruthy();
       expect(results.hasOwnProperty("creator")).toBeTruthy();
       expect(results.hasOwnProperty("royalties")).toBeTruthy();
+    });
+
+    it("should return undefined if account does not contains an nft", async () => {
+      const address: string = "erd15gculjmu3r62ldlwyguqdgddez35r2lv6ka8j7s6pwhqlc80httqljzwgm";
+      const identifier: string = "MOS-b9b4b2-2710";
+
+      jest
+        .spyOn(EsdtAddressService.prototype, 'getNftsForAddress')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () => []));
+
+      const results = await nftService.getNftForAddress(address, identifier);
+      expect(results).toBeUndefined();
+
     });
   });
 
