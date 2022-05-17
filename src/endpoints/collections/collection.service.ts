@@ -95,16 +95,10 @@ export class CollectionService {
       }
     }
 
-    if (filter.search) {
-      elasticQuery = elasticQuery.withShouldCondition([
-        QueryType.Wildcard('token', filter.search.toLowerCase()),
-        QueryType.Wildcard('name', filter.search.toLowerCase()),
-      ]);
-    }
-
     return elasticQuery.withMustMatchCondition('token', filter.collection, QueryOperator.AND)
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
       .withMustMatchCondition('type', filter.type)
+      .withSearchWildcardCondition(filter.search, ['token', 'name'])
       .withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT, NftType.MetaESDT], type => QueryType.Match('type', type));
   }
 
