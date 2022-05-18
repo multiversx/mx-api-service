@@ -73,7 +73,7 @@ export class NftService {
     }
 
     if (filter.search !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Wildcard('token', `*${filter.search}*`));
+      elasticQuery = elasticQuery.withSearchWildcardCondition(filter.search, ['token', 'name']);
     }
 
     if (filter.type !== undefined) {
