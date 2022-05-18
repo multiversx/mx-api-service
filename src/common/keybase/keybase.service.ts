@@ -216,7 +216,7 @@ export class KeybaseService {
 
   async getProfileFromGithub(identity: string): Promise<KeybaseIdentity | null> {
     const profile = await this.githubService.getUserInfo(identity);
-    if (!profile) {
+    if (!profile || !profile.name || !profile.avatar_url || !profile.bio) {
       return null;
     }
 
