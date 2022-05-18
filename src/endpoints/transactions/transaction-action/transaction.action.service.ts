@@ -108,7 +108,7 @@ export class TransactionActionService {
           relayedTransaction.receiver = AddressUtils.bech32Encode(BinaryUtils.base64ToHex(relayedTransaction.receiver));
           return this.getNormalTransactionMetadata(relayedTransaction);
         } catch (error) {
-          this.logger.error(`Unhandled error when interpreting relayed transaction`);
+          this.logger.error(`Unhandled error when interpreting relayed transaction with hash '${transaction.txHash}'`);
           this.logger.error(error);
         }
       }
@@ -123,7 +123,7 @@ export class TransactionActionService {
 
           return this.getNormalTransactionMetadata(relayedTransaction);
         } catch (error) {
-          this.logger.error(`Unhandled error when interpreting relayed transaction v2`);
+          this.logger.error(`Unhandled error when interpreting relayed transaction v2 with hash '${transaction.txHash}'`);
           this.logger.error(error);
         }
       }
@@ -146,7 +146,7 @@ export class TransactionActionService {
         }
       }
     } catch (error) {
-      this.logger.error(`Unhandled error when interpreting MultiESDTNFTTransfer / ESDTNFTTransfer for a smart contract result`);
+      this.logger.error(`Unhandled error when interpreting MultiESDTNFTTransfer / ESDTNFTTransfer for smart contract result with hash '${transaction.txHash}'`);
       this.logger.error(error);
     }
 
