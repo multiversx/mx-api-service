@@ -139,9 +139,9 @@ export class TransactionActionService {
         }
 
         if (metadata.functionName === 'ESDTNFTTransfer' &&
-          metadata.functionArgs.length > 3 &&
-          AddressUtils.bech32Encode(metadata.functionArgs[3]) === metadata.receiver
+          metadata.functionArgs.length > 3
         ) {
+          metadata.functionArgs[3] = AddressUtils.bech32Decode(metadata.receiver);
           metadata.receiver = metadata.sender;
         }
       }
