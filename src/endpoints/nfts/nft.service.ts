@@ -73,7 +73,7 @@ export class NftService {
     }
 
     if (filter.search !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Wildcard('token', `*${filter.search}*`));
+      elasticQuery = elasticQuery.withSearchWildcardCondition(filter.search, ['token', 'name']);
     }
 
     if (filter.type !== undefined) {
@@ -331,7 +331,10 @@ export class NftService {
         { name: 'nonce', order: ElasticSortOrder.descending },
       ]);
 
-    const elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+    let elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+    if (elasticNfts.length === 0 && identifier !== undefined) {
+      elasticNfts = await this.elasticService.getList('accountsesdt', 'identifier', ElasticQuery.create().withMustMatchCondition('identifier', identifier, QueryOperator.AND));
+    }
 
     const nfts: Nft[] = [];
 

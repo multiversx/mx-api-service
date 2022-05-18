@@ -93,7 +93,15 @@ export class ProxyController {
       return pluginTransaction;
     }
 
-    return await this.gatewayPost('transaction/send', GatewayComponentRequest.sendTransaction, body);
+    // eslint-disable-next-line require-await
+    return await this.gatewayPost('transaction/send', GatewayComponentRequest.sendTransaction, body, async (error) => {
+      const message = error.response?.data?.error;
+      if (message && message.includes('transaction generation failed')) {
+        throw error;
+      }
+
+      return false;
+    });
   }
 
   @Post('/transaction/simulate')
@@ -327,13 +335,17 @@ export class ProxyController {
     }
   }
 
-  private async gatewayPost(url: string, component: GatewayComponentRequest, data: any) {
+  private async gatewayPost(url: string, component: GatewayComponentRequest, data: any, errorHandler?: (error: any) => Promise<boolean>) {
     try {
-      const result = await this.gatewayService.createRaw(url, component, data);
+      const result = await this.gatewayService.createRaw(url, component, data, errorHandler);
       return result.data;
     } catch (error: any) {
       if (error.response) {
-        throw new BadRequestException(error.response.data);
+        if (error.response.data) {
+          throw new BadRequestException(error.response.data);
+        }
+
+        throw new BadRequestException(error.response);
       }
 
       this.logger.error(`Unhandled exception when calling gateway url '${url}'`);
