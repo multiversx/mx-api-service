@@ -132,9 +132,9 @@ export class TransactionActionService {
     try {
       if (transaction.type === TransactionType.SmartContractResult) {
         if (metadata.functionName === 'MultiESDTNFTTransfer' &&
-          metadata.functionArgs.length > 0 &&
-          AddressUtils.bech32Encode(metadata.functionArgs[0]) === metadata.receiver
+          metadata.functionArgs.length > 0
         ) {
+          metadata.functionArgs.splice(0, 0, AddressUtils.bech32Decode(metadata.receiver));
           metadata.receiver = metadata.sender;
         }
 
