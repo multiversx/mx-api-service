@@ -96,7 +96,7 @@ export class ProxyController {
     // eslint-disable-next-line require-await
     return await this.gatewayPost('transaction/send', GatewayComponentRequest.sendTransaction, body, async (error) => {
       const message = error.response?.data?.error;
-      if (message && message.includes('insufficient funds')) {
+      if (message && message.includes('transaction generation failed')) {
         throw error;
       }
 
