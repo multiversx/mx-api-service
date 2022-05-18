@@ -126,7 +126,7 @@ describe("Accounts Controller", () => {
     const params = new URLSearchParams({
       'from': '0',
       'size': '1',
-      'identifier': 'WEGLD-bd4d79',
+      'identifier': 'WATER-9ed400',
     });
 
     const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
@@ -136,7 +136,7 @@ describe("Accounts Controller", () => {
       .expect(200)
       .then(res => {
         expect(res.body).toHaveLength(1);
-        expect(res.body[0].identifier).toStrictEqual("WEGLD-bd4d79");
+        expect(res.body[0].identifier).toStrictEqual("WATER-9ed400");
       });
   });
 
@@ -144,7 +144,7 @@ describe("Accounts Controller", () => {
     const params = new URLSearchParams({
       'from': '0',
       'size': '2',
-      'identifiers': 'WEGLD-bd4d79, WATER-9ed400',
+      'identifiers': 'RIDE-7d18e9, WATER-9ed400',
     });
 
     const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
@@ -161,7 +161,7 @@ describe("Accounts Controller", () => {
     const params = new URLSearchParams({
       'from': '0',
       'size': '2',
-      'identifiers': 'WEGLD-bd4d79,WATER-9ed400',
+      'identifiers': 'RIDE-7d18e9,WATER-9ed400',
     });
 
     const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
