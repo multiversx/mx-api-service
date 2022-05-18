@@ -609,4 +609,8 @@ export class ApiConfigService {
 
     return microServiceUrl;
   }
+
+  getGithubToken(): string | undefined {
+    return this.configService.get<string>('github.token');
+  }
 }

@@ -40,7 +40,7 @@ export class ApiService {
     const timeout = settings.timeout || this.defaultTimeout;
     const maxRedirects = settings.skipRedirects === true ? 0 : undefined;
 
-    const headers = {};
+    const headers = settings.headers ?? {};
 
     const rateLimiterSecret = this.apiConfigService.getRateLimiterSecret();
     if (rateLimiterSecret) {
