@@ -548,7 +548,7 @@ describe('Token Service', () => {
       const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
 
       const filter: TokenFilter = new TokenFilter();
-      filter.identifiers = ["WATER-9ed400", "WEGLD-bd4d79"];
+      filter.identifiers = ["WATER-9ed400", "RIDE-7d18e9"];
 
       jest
         .spyOn(ElasticService.prototype, 'get')
@@ -561,7 +561,7 @@ describe('Token Service', () => {
       expect(results).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ identifier: "WATER-9ed400" }),
-          expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
+          expect.objectContaining({ identifier: "RIDE-7d18e9" }),
         ])
       );
     });

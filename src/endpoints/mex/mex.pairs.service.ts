@@ -6,6 +6,7 @@ import { GraphQlService } from "src/common/graphql/graphql.service";
 import { Constants } from "src/utils/constants";
 import { MexPair } from "./entities/mex.pair";
 import { MexPairState } from "./entities/mex.pair.state";
+import { MexPairType } from "./entities/mex.pair.type";
 import { MexSettingsService } from "./mex.settings.service";
 
 @Injectable()
@@ -106,6 +107,7 @@ export class MexPairsService {
             __typename
           }
           state
+          type
           lockedValueUSD
           volumeUSD24h
           __typename
@@ -143,6 +145,7 @@ export class MexPairsService {
         totalValue: Number(pair.lockedValueUSD),
         volume24h: Number(pair.volumeUSD24h),
         state: this.getPairState(pair.state),
+        type: this.getPairType(pair.type),
       };
     }
 
@@ -159,6 +162,7 @@ export class MexPairsService {
       totalValue: Number(pair.lockedValueUSD),
       volume24h: Number(pair.volumeUSD24h),
       state: this.getPairState(pair.state),
+      type: this.getPairType(pair.type),
     };
   }
 
@@ -172,6 +176,21 @@ export class MexPairsService {
         return MexPairState.paused;
       default:
         throw new Error(`Unsupported pair state '${state}'`);
+    }
+  }
+
+  private getPairType(type: string): MexPairType {
+    switch (type) {
+      case 'Core':
+        return MexPairType.core;
+      case 'Community':
+        return MexPairType.community;
+      case 'Ecosystem':
+        return MexPairType.ecosystem;
+      case 'Experimental':
+        return MexPairType.experimental;
+      default:
+        throw new Error(`Unsupported pair type '${type}'`);
     }
   }
 }

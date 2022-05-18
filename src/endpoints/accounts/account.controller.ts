@@ -994,7 +994,7 @@ export class AccountController {
     return this.accountService.getAccountContractsCount(address);
   }
 
-  @Get("/accounts/:address/sc-results")
+  @Get("/accounts/:address/results")
   @ApiOperation({ summary: 'Account smart contract results', description: 'Returns smart contract results where the account is sender or receiver' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -1015,7 +1015,7 @@ export class AccountController {
     return this.scResultService.getAccountScResults(address, { from, size });
   }
 
-  @Get("/accounts/:address/sc-results/count")
+  @Get("/accounts/:address/results/count")
   @ApiOperation({ summary: 'Account smart contracts results count', description: 'Returns number of smart contract results where the account is sender or receiver' })
   @ApiResponse({
     status: 200,
@@ -1031,7 +1031,7 @@ export class AccountController {
     return this.scResultService.getAccountScResultsCount(address);
   }
 
-  @Get("/accounts/:address/sc-results/:scHash")
+  @Get("/accounts/:address/results/:scHash")
   @ApiOperation({ summary: 'Account smart contract result', description: 'Returns details of a smart contract result where the account is sender or receiver' })
   @ApiResponse({
     status: 200,
@@ -1042,11 +1042,70 @@ export class AccountController {
     description: 'Account not found',
   })
   async getAccountScResult(
-    @Param('address', ParseAddressPipe) _: string,
+    @Param('address', ParseAddressPipe) address: string,
     @Param('scHash', ParseTransactionHashPipe) scHash: string,
   ): Promise<SmartContractResult> {
     const scResult = await this.scResultService.getScResult(scHash);
-    if (!scResult) {
+    if (!scResult || (scResult.sender !== address && scResult.receiver !== address)) {
+      throw new NotFoundException('Smart contract result not found');
+    }
+
+    return scResult;
+  }
+
+  @Get("/accounts/:address/sc-results")
+  @ApiOperation({ summary: 'Account smart contract results', description: 'Returns smart contract results where the account is sender or receiver', deprecated: true })
+  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiResponse({
+    status: 200,
+    isArray: true,
+    type: SmartContractResult,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found',
+  })
+  getAccountScResultsDeprecated(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<SmartContractResult[]> {
+    return this.scResultService.getAccountScResults(address, { from, size });
+  }
+
+  @Get("/accounts/:address/sc-results/count")
+  @ApiOperation({ summary: 'Account smart contracts results count', description: 'Returns number of smart contract results where the account is sender or receiver', deprecated: true })
+  @ApiResponse({
+    status: 200,
+    type: Number,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found',
+  })
+  getAccountScResultsCountDeprecated(
+    @Param('address', ParseAddressPipe) address: string,
+  ): Promise<number> {
+    return this.scResultService.getAccountScResultsCount(address);
+  }
+
+  @Get("/accounts/:address/sc-results/:scHash")
+  @ApiOperation({ summary: 'Account smart contract result', description: 'Returns details of a smart contract result where the account is sender or receiver', deprecated: true })
+  @ApiResponse({
+    status: 200,
+    type: SmartContractResult,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Account not found',
+  })
+  async getAccountScResultDeprecated(
+    @Param('address', ParseAddressPipe) address: string,
+    @Param('scHash', ParseTransactionHashPipe) scHash: string,
+  ): Promise<SmartContractResult> {
+    const scResult = await this.scResultService.getScResult(scHash);
+    if (!scResult || (scResult.sender !== address && scResult.receiver !== address)) {
       throw new NotFoundException('Smart contract result not found');
     }
 

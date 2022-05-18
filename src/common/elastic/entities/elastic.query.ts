@@ -86,6 +86,29 @@ export class ElasticQuery {
     return this.withCondition(QueryConditionOptions.should, queries);
   }
 
+  withSearchWildcardCondition(search: string | undefined, keys: string[]): ElasticQuery {
+    return this.withSearchCondition(search, term => keys.map(key => QueryType.Wildcard(key, `*${term.toLowerCase()}*`)));
+  }
+
+  withSearchCondition(search: string | undefined, func: (term: string) => AbstractQuery[]): ElasticQuery {
+    if (!search) {
+      return this;
+    }
+
+    const searchConditions = [];
+
+    const components = search.matchAll(/\w{3,}/g);
+    for (const component of components) {
+      const term = component[0];
+
+      const conditions = func(term);
+
+      searchConditions.push(QueryType.Should(conditions));
+    }
+
+    return this.withMustCondition(searchConditions);
+  }
+
   withCondition(queryCondition: QueryConditionOptions, queries: AbstractQuery[] | AbstractQuery): ElasticQuery {
     if (!Array.isArray(queries)) {
       queries = [queries];

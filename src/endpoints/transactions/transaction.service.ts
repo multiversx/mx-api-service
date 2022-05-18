@@ -259,14 +259,21 @@ export class TransactionService {
 
     let txHash: string;
     try {
-      const result = await this.gatewayService.create('transaction/send', GatewayComponentRequest.sendTransaction, transaction);
-      txHash = result.txHash;
+      // eslint-disable-next-line require-await
+      const result = await this.gatewayService.create('transaction/send', GatewayComponentRequest.sendTransaction, transaction, async (error) => {
+        const message = error.response?.data?.error;
+        if (message && message.includes('transaction generation failed')) {
+          throw error;
+        }
+
+        return false;
+      });
+
+      txHash = result?.txHash;
     } catch (error: any) {
-      this.logger.error(error);
-      return error.response.error;
+      return error.response?.error ?? '';
     }
 
-    // TODO: pending alignment
     return {
       txHash,
       receiver: transaction.receiver,
