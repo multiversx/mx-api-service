@@ -134,7 +134,13 @@ export class TransactionActionService {
         if (metadata.functionName === 'MultiESDTNFTTransfer' &&
           metadata.functionArgs.length > 0
         ) {
-          metadata.functionArgs.splice(0, 0, AddressUtils.bech32Decode(metadata.receiver));
+          // if the first argument has up to 4 hex chars (meaning it will contain up to 65536 transfers)
+          // then we insert the address as the first parameter. otherwise we assume that the address
+          // is the first parameter, which will be correctly interpreted by the recognizers
+          if (metadata.functionArgs[0].length <= 4) {
+            metadata.functionArgs.splice(0, 0, AddressUtils.bech32Decode(metadata.receiver));
+          }
+
           metadata.receiver = metadata.sender;
         }
 
