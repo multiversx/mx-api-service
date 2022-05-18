@@ -62,7 +62,19 @@ export class MongoDbService implements PersistenceInterface {
     metadata.id = identifier;
     metadata.content = content;
 
-    await this.nftMetadataRepository.save(metadata);
+    await this.save(this.nftMetadataRepository, metadata);
+  }
+
+  private async save<T>(repository: Repository<T>, entity: T) {
+    try {
+      // @ts-ignore
+      await repository.save(entity);
+    } catch (error) {
+      // @ts-ignore
+      if (error.code !== 11000) {
+        throw error;
+      }
+    }
   }
 
   async deleteMetadata(identifier: string): Promise<void> {
@@ -117,7 +129,6 @@ export class MongoDbService implements PersistenceInterface {
     value.id = identifier;
     value.content = media;
 
-
-    await this.nftMediaRepository.save(value);
+    await this.save(this.nftMediaRepository, value);
   }
 }
