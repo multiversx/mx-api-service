@@ -10,6 +10,7 @@ import { KeybaseState } from "./entities/keybase.state";
 import { ApiService } from "../network/api.service";
 import { CacheInfo } from "../caching/entities/cache.info";
 import asyncPool from "tiny-async-pool";
+import { GithubService } from "../github/github.service";
 
 @Injectable()
 export class KeybaseService {
@@ -21,7 +22,8 @@ export class KeybaseService {
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
     @Inject(forwardRef(() => ProviderService))
-    private readonly providerService: ProviderService
+    private readonly providerService: ProviderService,
+    private readonly githubService: GithubService,
   ) {
     this.logger = new Logger(KeybaseService.name);
   }
@@ -116,13 +118,12 @@ export class KeybaseService {
 
   async confirmKeybasesAgainstGithubForIdentity(identity: string): Promise<boolean> {
     try {
-      // eslint-disable-next-line require-await
-      const result = await this.apiService.get(`https://raw.githubusercontent.com/${identity}/elrond/main/keys.json`, undefined, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
+      const result = await this.githubService.getRepoFileContents(identity, 'elrond', 'keys.json');
       if (!result) {
         return false;
       }
 
-      const keys = result.data;
+      const keys = JSON.parse(result);
 
       this.logger.log(`github.com validation: for identity '${identity}', found ${keys.length} keys`);
 
@@ -214,7 +215,10 @@ export class KeybaseService {
   }
 
   async getProfileFromGithub(identity: string): Promise<KeybaseIdentity | null> {
-    const { data: profile } = await this.apiService.get(`https://api.github.com/users/${identity}`);
+    const profile = await this.githubService.getUserInfo(identity);
+    if (!profile) {
+      return null;
+    }
 
     return {
       identity,
