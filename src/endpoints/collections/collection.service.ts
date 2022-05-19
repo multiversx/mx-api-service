@@ -132,6 +132,7 @@ export class CollectionService {
         continue;
       }
 
+      nftCollection.type = indexedCollection.type;
       nftCollection.timestamp = indexedCollection.timestamp;
     }
 
