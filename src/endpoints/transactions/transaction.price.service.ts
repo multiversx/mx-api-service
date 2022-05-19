@@ -28,6 +28,10 @@ export class TransactionPriceService {
       return undefined;
     }
 
+    if (transactionDate.isLessThan(new Date(2020, 9, 10))) {
+      return undefined;
+    }
+
     let price = await this.getTransactionPriceForDate(transactionDate);
     if (price) {
       price = Number(price).toRounded(2);

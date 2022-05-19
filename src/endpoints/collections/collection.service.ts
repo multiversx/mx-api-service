@@ -132,6 +132,7 @@ export class CollectionService {
         continue;
       }
 
+      nftCollection.type = indexedCollection.type;
       nftCollection.timestamp = indexedCollection.timestamp;
     }
 
@@ -244,6 +245,7 @@ export class CollectionService {
       return undefined;
     }
 
+    collection.type = elasticCollection.type;
     collection.timestamp = elasticCollection.timestamp;
     collection.roles = await this.getNftCollectionRoles(elasticCollection);
 
