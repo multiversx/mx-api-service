@@ -719,20 +719,20 @@ describe("Accounts Controller", () => {
       .expect(200);
   });
 
-  it("/accounts/:address/sc-results - should return 200 status code and sc-results details for a specific address", async () => {
+  it("/accounts/:address/results - should return 200 status code and sc-results details for a specific address", async () => {
     const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
 
     await request(app.getHttpServer())
-      .get(route + "/" + address + "/sc-results")
+      .get(route + "/" + address + "/results")
       .set("header", "content-type")
       .expect(200);
   });
 
-  it("/accounts/:address/sc-results - should return 400 status code with Error: Bad Request ", async () => {
+  it("/accounts/:address/results - should return 400 status code with Error: Bad Request ", async () => {
     const address: string = "erd1dgctxljv7f6x8ngssqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
 
     await request(app.getHttpServer())
-      .get(route + "/" + address + "/sc-results")
+      .get(route + "/" + address + "/results")
       .set("header", "content-type")
       .expect(400)
       .then(res => {
@@ -740,7 +740,7 @@ describe("Accounts Controller", () => {
       });
   });
 
-  it("/accounts/:address/sc-results?from&size - should return 200 status code and two sc-results details for a specific address", async () => {
+  it("/accounts/:address/results?from&size - should return 200 status code and two sc-results details for a specific address", async () => {
     const params = new URLSearchParams({
       'from': '0',
       'size': '2',
@@ -748,41 +748,28 @@ describe("Accounts Controller", () => {
     const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
 
     await request(app.getHttpServer())
-      .get(route + "/" + address + "/sc-results" + "?" + params)
+      .get(route + "/" + address + "/results" + "?" + params)
       .set("header", "content-type")
       .expect(200);
   });
 
-  it("/accounts/:address/sc-results/count - should return 200 status code and sc-results count for a specific address", async () => {
+  it("/accounts/:address/results/count - should return 200 status code and sc-results count for a specific address", async () => {
     const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
 
     await request(app.getHttpServer())
-      .get(route + "/" + address + "/sc-results/count")
+      .get(route + "/" + address + "/results/count")
       .set("header", "content-type")
       .expect(200);
   });
 
-  it("/accounts/:address/sc-results/{scHash} - should return 200 status code and sc-results details based on hash for a specific address", async () => {
+  it("/accounts/:address/results/{scHash} - should return 200 status code and sc-results details based on hash for a specific address", async () => {
     const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
     const hash: string = "f7377cc5cb24136ec806d3b8053d4ab9ef5a1b59aad70f909ee78ea38d65eb7e";
 
     await request(app.getHttpServer())
-      .get(route + "/" + address + "/sc-results/" + hash)
+      .get(route + "/" + address + "/results/" + hash)
       .set("header", "content-type")
       .expect(200);
-  });
-
-  it("/accounts/:address/sc-results/{scHash} - should return 400 status code Error: Bad Request with invalid schash ", async () => {
-    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
-    const hash: string = "f7377cc5cb24136ec806d3b8053d4sab9ef5a1b59aad70f909ee78ea38d65eb7e";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + address + "/sc-results/" + hash)
-      .set("header", "content-type")
-      .expect(400)
-      .then(res => {
-        expect(res.body.message).toEqual("Validation failed (a valid transaction hash for parameter scHash is expected)");
-      });
   });
 
   it("/accounts/:address/history - should return 200 status code and address history details ", async () => {
