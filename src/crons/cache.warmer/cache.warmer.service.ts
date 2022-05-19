@@ -227,6 +227,10 @@ export class CacheWarmerService {
     await Locker.lock('Refreshing mex farms', async () => {
       await this.mexFarmsService.refreshMexFarms();
     }, true);
+
+    await Locker.lock('Refreshing mex settings', async () => {
+      await this.mexSettingsService.refreshSettings();
+    }, true);
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)

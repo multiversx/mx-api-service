@@ -10,6 +10,8 @@ import { MexSettings } from "./entities/mex.settings";
 
 @Injectable()
 export class MexSettingsService {
+  private wegldId: string | undefined;
+
   constructor(
     private readonly cachingService: CachingService,
     private readonly graphQlService: GraphQlService,
@@ -29,47 +31,53 @@ export class MexSettingsService {
     return mexContracts.has(metadata.receiver);
   }
 
-  private settings: MexSettings | null | undefined;
+  async refreshSettings(): Promise<void> {
+    const settings = await this.getSettingsRaw();
+    await this.cachingService.setCacheRemote(CacheInfo.MexSettings.key, settings, CacheInfo.MexSettings.ttl);
+    await this.cachingService.setCacheLocal(CacheInfo.MexSettings.key, settings, Constants.oneMinute() * 10);
+
+    const contracts = await this.getMexContractsRaw();
+    await this.cachingService.setCacheRemote(CacheInfo.MexContracts.key, contracts, CacheInfo.MexContracts.ttl);
+    await this.cachingService.setCacheLocal(CacheInfo.MexContracts.key, contracts, Constants.oneMinute() * 10);
+  }
 
   async getSettings(): Promise<MexSettings | null> {
-    let settings = this.settings;
-    if (settings === undefined) {
-      settings = await this.cachingService.getOrSetCache(
-        CacheInfo.MexSettings.key,
-        async () => await this.getSettingsRaw(),
-        CacheInfo.MexSettings.ttl,
-        Constants.oneMinute() * 10,
-      );
+    const settings = await this.cachingService.getOrSetCache(
+      CacheInfo.MexSettings.key,
+      async () => await this.getSettingsRaw(),
+      CacheInfo.MexSettings.ttl,
+      Constants.oneMinute() * 10,
+    );
 
-      this.settings = settings;
-    }
+    this.wegldId = settings?.wegldId;
 
     return settings;
   }
 
-  private mexContracts?: Set<string>;
-
   async getMexContracts(): Promise<Set<string>> {
-    let mexContracts = this.mexContracts;
-    if (!mexContracts) {
-      const settings = await this.getSettings();
-      if (!settings) {
-        return new Set<string>();
-      }
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.MexContracts.key,
+      async () => await this.getMexContractsRaw(),
+      CacheInfo.MexContracts.ttl,
+      Constants.oneMinute() * 10,
+    );
+  }
 
-      mexContracts = new Set<string>([
-        settings.distributionContract,
-        settings.lockedAssetContract,
-        ...settings.farmContracts,
-        ...settings.pairContracts,
-        ...settings.wrapContracts,
-      ]);
-
-      this.mexContracts = mexContracts;
+  async getMexContractsRaw(): Promise<Set<string>> {
+    const settings = await this.getSettings();
+    if (!settings) {
+      return new Set<string>();
     }
 
-    return mexContracts;
+    return new Set<string>([
+      settings.distributionContract,
+      settings.lockedAssetContract,
+      ...settings.farmContracts,
+      ...settings.pairContracts,
+      ...settings.wrapContracts,
+    ]);
   }
+
 
   public async getSettingsRaw(): Promise<MexSettings | null> {
     const variables = {
@@ -157,6 +165,6 @@ export class MexSettingsService {
   }
 
   getWegldId(): string | undefined {
-    return this.settings?.wegldId;
+    return this.wegldId;
   }
 }
