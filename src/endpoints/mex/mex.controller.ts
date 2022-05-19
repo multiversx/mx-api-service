@@ -5,7 +5,7 @@ import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse, ApiTags } from
 import { MexPair } from "./entities/mex.pair";
 import { MexSettings } from "./entities/mex.settings";
 import { MexEconomicsService } from "./mex.economics.service";
-import { MexPairsService } from "./mex.pairs.service";
+import { MexPairService } from "./mex.pair.service";
 import { MexSettingsService } from "./mex.settings.service";
 import { MexTokenService } from "./mex.token.service";
 import { MexFarmService } from './mex.farm.service';
@@ -17,7 +17,7 @@ export class MexController {
   constructor(
     private readonly mexEconomicsService: MexEconomicsService,
     private readonly mexSettingsService: MexSettingsService,
-    private readonly mexPairsService: MexPairsService,
+    private readonly mexPairsService: MexPairService,
     private readonly mexTokensService: MexTokenService,
     private readonly mexFarmsService: MexFarmService
   ) { }

@@ -86,13 +86,15 @@ export class EsdtService {
 
     await this.batchProcessTokens(tokens);
 
-    const indexedTokens = await this.mexTokenService.getIndexedMexTokens();
+    const indexedTokens = await this.mexTokenService.getMexPricesRaw();
     for (const token of tokens) {
-      if (indexedTokens[token.identifier]) {
+      const price = indexedTokens[token.identifier];
+      console.log({ identifier: token.identifier, price });
+      if (price) {
         const supply = await this.getTokenSupply(token.identifier);
 
-        token.price = indexedTokens[token.identifier].price;
-        token.marketCap = indexedTokens[token.identifier].price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+        token.price = price;
+        token.marketCap = price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
       }
     }
 

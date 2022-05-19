@@ -251,4 +251,9 @@ export class CacheInfo {
     key: "mexTokensIndexed",
     ttl: Constants.oneMinute() * 10,
   };
+
+  static MexPrices: CacheInfo = {
+    key: "mexPrices",
+    ttl: Constants.oneMinute() * 10,
+  };
 }
