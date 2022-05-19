@@ -723,7 +723,7 @@ describe("Accounts Controller", () => {
     const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
 
     await request(app.getHttpServer())
-      .get(route + "/" + address + "/sc-results")
+      .get(route + "/" + address + "/results")
       .set("header", "content-type")
       .expect(200);
   });
@@ -732,7 +732,7 @@ describe("Accounts Controller", () => {
     const address: string = "erd1dgctxljv7f6x8ngssqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
 
     await request(app.getHttpServer())
-      .get(route + "/" + address + "/sc-results")
+      .get(route + "/" + address + "/results")
       .set("header", "content-type")
       .expect(400)
       .then(res => {
@@ -748,7 +748,7 @@ describe("Accounts Controller", () => {
     const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
 
     await request(app.getHttpServer())
-      .get(route + "/" + address + "/sc-results" + "?" + params)
+      .get(route + "/" + address + "/results" + "?" + params)
       .set("header", "content-type")
       .expect(200);
   });
@@ -757,7 +757,7 @@ describe("Accounts Controller", () => {
     const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
 
     await request(app.getHttpServer())
-      .get(route + "/" + address + "/sc-results/count")
+      .get(route + "/" + address + "/results/count")
       .set("header", "content-type")
       .expect(200);
   });
@@ -767,7 +767,7 @@ describe("Accounts Controller", () => {
     const hash: string = "f7377cc5cb24136ec806d3b8053d4ab9ef5a1b59aad70f909ee78ea38d65eb7e";
 
     await request(app.getHttpServer())
-      .get(route + "/" + address + "/sc-results/" + hash)
+      .get(route + "/" + address + "/results/" + hash)
       .set("header", "content-type")
       .expect(200);
   });
