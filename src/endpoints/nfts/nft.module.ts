@@ -4,6 +4,7 @@ import { NftMediaModule } from "src/queue.worker/nft.worker/queue/job-services/m
 import { NftMetadataModule } from "src/queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.module";
 import { CollectionModule } from "../collections/collection.module";
 import { EsdtModule } from "../esdt/esdt.module";
+import { MexModule } from "../mex/mex.module";
 import { TokenModule } from "../tokens/token.module";
 import { NftExtendedAttributesService } from "./nft.extendedattributes.service";
 import { NftService } from "./nft.service";
@@ -15,6 +16,7 @@ import { NftService } from "./nft.service";
     forwardRef(() => CollectionModule),
     forwardRef(() => PluginModule),
     forwardRef(() => NftMetadataModule),
+    forwardRef(() => MexModule),
     NftMediaModule,
   ],
   providers: [

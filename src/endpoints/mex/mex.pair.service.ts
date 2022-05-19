@@ -10,7 +10,7 @@ import { MexPairType } from "./entities/mex.pair.type";
 import { MexSettingsService } from "./mex.settings.service";
 
 @Injectable()
-export class MexPairsService {
+export class MexPairService {
   constructor(
     private readonly cachingService: CachingService,
     private readonly mexSettingService: MexSettingsService,
@@ -20,6 +20,7 @@ export class MexPairsService {
   async refreshMexPairs(): Promise<void> {
     const pairs = await this.getAllMexPairsRaw();
     await this.cachingService.setCacheRemote(CacheInfo.MexPairs.key, pairs, CacheInfo.MexPairs.ttl);
+    await this.cachingService.setCacheLocal(CacheInfo.MexPairs.key, pairs, Constants.oneSecond() * 30);
   }
 
   async getMexPairs(from: number, size: number): Promise<any> {
@@ -49,41 +50,20 @@ export class MexPairsService {
     }
 
     const variables = {
-      "mexID": settings.mexId,
-      "wegldID": settings.wegldId,
-      "days": 7,
       "offset": 0,
       "pairsLimit": 100,
     };
 
     const query = gql`
-      query ($days: Int!, $mexID: String!, $wegldID: String!, $offset: Int, $pairsLimit: Int) {
-        totalAggregatedRewards(days: $days) 
-        wegldPriceUSD: getTokenPriceUSD (tokenID: $wegldID)
-        mexPriceUSD: getTokenPriceUSD(tokenID: $mexID)
-        mexSupply: totalTokenSupply(tokenID: $mexID)
-        totalLockedValueUSDFarms
-        totalValueLockedUSD
-        farms {
-          address
-          farmingToken {
-            name
-            identifier
-            decimals
-            __typename
-          }
-          farmTokenPriceUSD
-          farmedTokenPriceUSD
-          farmingTokenPriceUSD
-          farmingTokenReserve
-          perBlockRewards
-          penaltyPercent
-          totalValueLockedUSD
-          __typename
-        }
-
+      query ($offset: Int, $pairsLimit: Int) {
         pairs(offset: $offset, limit: $pairsLimit) { 
           address 
+          liquidityPoolToken {
+            identifier
+            name
+            __typename
+          }
+          liquidityPoolTokenPriceUSD
           firstToken {
             name
             identifier
@@ -112,10 +92,6 @@ export class MexPairsService {
           volumeUSD24h
           __typename
         }
-        factory {
-          totalVolumeUSD24h
-          __typename
-        }
       }
     `;
 
@@ -134,6 +110,10 @@ export class MexPairsService {
     if ((firstTokenSymbol === 'WEGLD' && secondTokenSymbol === 'USDC') || secondTokenSymbol === 'WEGLD') {
       return {
         address: pair.address,
+        id: pair.liquidityPoolToken.identifier,
+        symbol: pair.liquidityPoolToken.identifier.split('-')[0],
+        name: pair.liquidityPoolToken.name,
+        price: Number(pair.liquidityPoolTokenPriceUSD),
         baseId: pair.firstToken.identifier,
         basePrice: Number(pair.firstTokenPriceUSD),
         baseSymbol: firstTokenSymbol,
@@ -151,6 +131,10 @@ export class MexPairsService {
 
     return {
       address: pair.address,
+      id: pair.liquidityPoolToken.identifier,
+      symbol: pair.liquidityPoolToken.identifier.split('-')[0],
+      name: pair.liquidityPoolToken.name,
+      price: Number(pair.liquidityPoolTokenPriceUSD),
       baseId: pair.secondToken.identifier,
       basePrice: Number(pair.secondTokenPriceUSD),
       baseSymbol: secondTokenSymbol,

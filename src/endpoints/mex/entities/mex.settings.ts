@@ -4,6 +4,7 @@ export class MexSettings {
   wrapContracts: string[] = [];
   distributionContract: string = '';
   lockedAssetContract: string = '';
+  lockedAssetIdentifier: string = '';
   mexId: string = '';
   wegldId: string = '';
 }

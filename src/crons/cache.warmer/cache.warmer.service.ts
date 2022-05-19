@@ -21,8 +21,9 @@ import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { MexSettingsService } from "src/endpoints/mex/mex.settings.service";
 import { MexEconomicsService } from "src/endpoints/mex/mex.economics.service";
-import { MexPairsService } from "src/endpoints/mex/mex.pairs.service";
+import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexTokenService } from "src/endpoints/mex/mex.token.service";
+import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -42,9 +43,10 @@ export class CacheWarmerService {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly tokenAssetService: TokenAssetService,
     private readonly mexEconomicsService: MexEconomicsService,
-    private readonly mexPairsService: MexPairsService,
+    private readonly mexPairsService: MexPairService,
     private readonly mexTokensService: MexTokenService,
     private readonly mexSettingsService: MexSettingsService,
+    private readonly mexFarmsService: MexFarmService,
   ) {
     this.configCronJob(
       'handleKeybaseAgainstKeybasePubInvalidations',
@@ -220,6 +222,14 @@ export class CacheWarmerService {
 
     await Locker.lock('Refreshing mex tokens', async () => {
       await this.mexTokensService.refreshMexTokens();
+    }, true);
+
+    await Locker.lock('Refreshing mex farms', async () => {
+      await this.mexFarmsService.refreshMexFarms();
+    }, true);
+
+    await Locker.lock('Refreshing mex settings', async () => {
+      await this.mexSettingsService.refreshSettings();
     }, true);
   }
 
