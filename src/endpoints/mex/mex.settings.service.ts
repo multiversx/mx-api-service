@@ -55,12 +55,13 @@ export class MexSettingsService {
   }
 
   async getMexContracts(): Promise<Set<string>> {
-    return await this.cachingService.getOrSetCache(
-      CacheInfo.MexContracts.key,
-      async () => await this.getMexContractsRaw(),
-      CacheInfo.MexContracts.ttl,
-      Constants.oneMinute() * 10,
-    );
+    let contracts = await this.cachingService.getCacheLocal<Set<string>>(CacheInfo.MexContracts.key);
+    if (!contracts) {
+      contracts = await this.getMexContractsRaw();
+      await this.cachingService.setCacheLocal(CacheInfo.MexContracts.key, contracts, Constants.oneMinute() * 10);
+    }
+
+    return contracts;
   }
 
   async getMexContractsRaw(): Promise<Set<string>> {
@@ -77,7 +78,6 @@ export class MexSettingsService {
       ...settings.wrapContracts,
     ]);
   }
-
 
   public async getSettingsRaw(): Promise<MexSettings | null> {
     const variables = {
