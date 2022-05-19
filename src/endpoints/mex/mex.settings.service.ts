@@ -97,6 +97,10 @@ export class MexSettingsService {
       }
       proxy {
         address
+        lockedAssetToken {
+          collection
+          __typename
+        }
       }
       farms {
         state
@@ -141,6 +145,7 @@ export class MexSettingsService {
     settings.wrapContracts = result.wrappingInfo.map((x: any) => x.address);
     settings.distributionContract = result.distribution.address;
     settings.lockedAssetContract = result.lockedAssetFactory.address;
+    settings.lockedAssetIdentifier = result.proxy.lockedAssetToken.collection;
 
     const mexEgldPairs = result.pairs.filter((x: any) => x.firstToken.name === 'WrappedEGLD' && x.secondToken.name === 'MEX');
     if (mexEgldPairs.length > 0) {

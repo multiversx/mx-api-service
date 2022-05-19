@@ -89,7 +89,6 @@ export class EsdtService {
     const indexedTokens = await this.mexTokenService.getMexPricesRaw();
     for (const token of tokens) {
       const price = indexedTokens[token.identifier];
-      console.log({ identifier: token.identifier, price });
       if (price) {
         const supply = await this.getTokenSupply(token.identifier);
 

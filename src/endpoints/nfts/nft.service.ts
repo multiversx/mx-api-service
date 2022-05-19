@@ -461,11 +461,7 @@ export class NftService {
     const price = prices[nft.collection];
     if (price) {
       nft.price = price;
-      nft.valueUsd = price * NumberUtils.denominateString(nft.balance, nft.decimals) * 2;
-
-      if (nft.collection.split('-')[0] === 'EGLDUSDCFL') {
-        nft.valueUsd /= 10 ** 12;
-      }
+      nft.valueUsd = price * NumberUtils.denominateString(nft.balance, nft.decimals);
     }
   }
 

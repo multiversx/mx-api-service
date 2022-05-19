@@ -91,13 +91,21 @@ export class MexFarmService {
     const pairs = await this.mexTokenService.getIndexedMexTokens();
 
     const farms = result.farms.map((farm: any) => {
+      let price = Number(farm.farmTokenPriceUSD);
+
+      const symbol = farm.farmToken.collection.split('-')[0];
+      if (['EGLDUSDCF', 'EGLDUSDCFL'].includes(symbol)) {
+        console.log({ symbol, price });
+        price = price / (10 ** 12) * 2;
+      }
+
       const mexFarm = new MexFarm();
       mexFarm.type = MexFarmType.standard;
       mexFarm.address = farm.address;
       mexFarm.id = farm.farmToken.collection;
-      mexFarm.symbol = farm.farmToken.collection.split('-')[0];
+      mexFarm.symbol = symbol;
       mexFarm.name = farm.farmToken.name;
-      mexFarm.price = Number(farm.farmTokenPriceUSD);
+      mexFarm.price = price;
       mexFarm.farmingId = farm.farmingToken.identifier;
       mexFarm.farmingSymbol = farm.farmingToken.identifier.split('-')[0];
       mexFarm.farmingName = farm.farmingToken.name;

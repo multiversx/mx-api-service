@@ -7,6 +7,7 @@ import { MexPairService } from "./mex.pair.service";
 import { MexPairState } from "./entities/mex.pair.state";
 import { MexPair } from "./entities/mex.pair";
 import { MexFarmService } from "./mex.farm.service";
+import { MexSettingsService } from "./mex.settings.service";
 
 @Injectable()
 export class MexTokenService {
@@ -15,12 +16,21 @@ export class MexTokenService {
     private readonly mexPairService: MexPairService,
     @Inject(forwardRef(() => MexFarmService))
     private readonly mexFarmService: MexFarmService,
+    private readonly mexSettingsService: MexSettingsService,
   ) { }
 
   async refreshMexTokens(): Promise<void> {
     const tokens = await this.getAllMexTokensRaw();
     await this.cachingService.setCacheRemote(CacheInfo.MexTokens.key, tokens, CacheInfo.MexTokens.ttl);
     await this.cachingService.setCacheLocal(CacheInfo.MexTokens.key, tokens, Constants.oneSecond() * 30);
+
+    const indexedTokens = await this.getIndexedMexTokensRaw();
+    await this.cachingService.setCacheRemote(CacheInfo.MexTokensIndexed.key, indexedTokens, CacheInfo.MexTokensIndexed.ttl);
+    await this.cachingService.setCacheLocal(CacheInfo.MexTokensIndexed.key, indexedTokens, Constants.oneSecond() * 30);
+
+    const indexedPrices = await this.getMexPricesRaw();
+    await this.cachingService.setCacheRemote(CacheInfo.MexPrices.key, indexedPrices, CacheInfo.MexPrices.ttl);
+    await this.cachingService.setCacheLocal(CacheInfo.MexPrices.key, indexedPrices, Constants.oneSecond() * 30);
   }
 
   async getMexTokens(from: number, size: number): Promise<MexToken[]> {
@@ -54,6 +64,17 @@ export class MexTokenService {
     const farms = await this.mexFarmService.getAllMexFarms();
     for (const farm of farms) {
       result[farm.id] = farm.price;
+    }
+
+    const settings = await this.mexSettingsService.getSettings();
+    if (settings) {
+      const lkmexIdentifier = settings.lockedAssetIdentifier;
+      if (lkmexIdentifier) {
+        const mexToken = tokens.find(x => x.symbol === 'MEX');
+        if (mexToken) {
+          result[lkmexIdentifier] = mexToken.price;
+        }
+      }
     }
 
     return result;
