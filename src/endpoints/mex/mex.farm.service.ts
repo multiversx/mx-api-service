@@ -95,7 +95,6 @@ export class MexFarmService {
 
       const symbol = farm.farmToken.collection.split('-')[0];
       if (['EGLDUSDCF', 'EGLDUSDCFL'].includes(symbol)) {
-        console.log({ symbol, price });
         price = price / (10 ** 12) * 2;
       }
 
