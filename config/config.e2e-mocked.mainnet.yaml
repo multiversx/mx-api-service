@@ -66,3 +66,6 @@ test:
   mockNodes: true
   mockTokens: true
   mockPath: './src/test/mocks/'
+transaction-action:
+  mex:
+    microServiceUrl: 'https://graph.maiar.exchange/graphql'
