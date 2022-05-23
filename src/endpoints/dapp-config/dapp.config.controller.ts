@@ -1,6 +1,6 @@
 import { DappConfig } from './entities/dapp-config';
 import { Controller, Get, HttpException, HttpStatus } from "@nestjs/common";
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { DappConfigService } from "./dapp.config.service";
 
 @Controller()
@@ -12,14 +12,9 @@ export class DappConfigController {
 
   @Get("/dapp/config")
   @ApiOperation({ summary: 'Dapp configuration', description: 'Returns configuration used in dapps' })
-  @ApiResponse({
-    status: 200,
-    type: DappConfig,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Network configuration not found',
-  })
+  @ApiOkResponse({ type: DappConfig })
+  @ApiNotFoundResponse({ description: 'Network configuration not found' })
+
   getDappConfiguration(): any {
     const configuration = this.dappConfigService.getDappConfiguration();
     if (!configuration) {

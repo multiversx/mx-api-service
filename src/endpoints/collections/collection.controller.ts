@@ -1,5 +1,5 @@
 import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
@@ -20,11 +20,8 @@ export class CollectionController {
 
   @Get("/collections")
   @ApiOperation({ summary: 'Collections', description: 'Returns non-fungible/semi-fungible/meta-esdt collections' })
-  @ApiResponse({
-    status: 200,
-    isArray: true,
-    type: NftCollection,
-  })
+  @ApiOkResponse({ type: [NftCollection] })
+
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
@@ -47,10 +44,8 @@ export class CollectionController {
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
   @ApiQuery({ name: 'creator', description: 'Filter NFTs where the given address has a creator role', required: false })
-  @ApiResponse({
-    status: 200,
-    type: Number,
-  })
+  @ApiOkResponse({ type: Number })
+
   async getCollectionCount(
     @Query('search') search: string | undefined,
     @Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
@@ -71,14 +66,9 @@ export class CollectionController {
 
   @Get('/collections/:collection')
   @ApiOperation({ summary: 'Collection details', description: 'Returns non-fungible/semi-fungible/meta-esdt collection details' })
-  @ApiResponse({
-    status: 200,
-    type: NftCollection,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Token collection not found',
-  })
+  @ApiOkResponse({ type: NftCollection })
+  @ApiNotFoundResponse({ description: 'Token collection not found' })
+
   async getNftCollection(@Param('collection') collection: string): Promise<NftCollection> {
     const token = await this.collectionService.getNftCollection(collection);
     if (token === undefined) {
@@ -90,11 +80,9 @@ export class CollectionController {
 
   @Get("/collections/:collection/nfts")
   @ApiOperation({ summary: 'Collection NFTs', description: 'Returns non-fungible/semi-fungible/meta-esdt tokens that belong to a collection' })
-  @ApiResponse({
-    status: 200,
-    isArray: true,
-    type: Nft,
-  })
+  @ApiOkResponse({ type: [Nft] })
+  @ApiNotFoundResponse({ description: 'Token collection not found' })
+
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
@@ -131,10 +119,8 @@ export class CollectionController {
 
   @Get("/collections/:collection/nfts/count")
   @ApiOperation({ summary: 'Collection NFT count', description: 'Returns non-fungible/semi-fungible/meta-esdt token count that belong to a collection' })
-  @ApiResponse({
-    status: 200,
-    type: Number,
-  })
+  @ApiOkResponse({ type: Number })
+
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
