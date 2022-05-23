@@ -1,7 +1,7 @@
 import { MexEconomics } from './entities/mex.economics';
 import { MexToken } from './entities/mex.token';
 import { Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { MexPair } from "./entities/mex.pair";
 import { MexSettings } from "./entities/mex.settings";
 import { MexEconomicsService } from "./mex.economics.service";
@@ -38,30 +38,20 @@ export class MexController {
   }
 
   @Get("/mex/economics")
-  @ApiOperation({
-    summary: 'Maiar Exchange economics',
-    description: 'Returns economics details of Maiar Exchange',
-  })
-  @ApiResponse({
-    status: 200,
-    type: MexEconomics,
-  })
+  @ApiOperation({ summary: 'Maiar Exchange economics', description: 'Returns economics details of Maiar Exchange' })
+  @ApiOkResponse({ type: MexEconomics })
+
   async getMexEconomics(): Promise<any> {
     return await this.mexEconomicsService.getMexEconomics();
   }
 
   @Get("/mex/pairs")
-  @ApiOperation({
-    summary: 'Maiar Exchange pairs',
-    description: 'Returns active liquidity pools available on Maiar Exchange',
-  })
-  @ApiResponse({
-    status: 200,
-    isArray: true,
-    type: MexPair,
-  })
+  @ApiOperation({ summary: 'Maiar Exchange pairs', description: 'Returns active liquidity pools available on Maiar Exchange' })
+  @ApiOkResponse({ type: [MexPair] })
+
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+
   async getMexPairs(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
@@ -70,15 +60,9 @@ export class MexController {
   }
 
   @Get("/mex/tokens")
-  @ApiOperation({
-    summary: 'Maiar Exchange tokens details',
-    description: 'Returns a list of tokens listed on Maiar Exchange',
-  })
-  @ApiResponse({
-    status: 200,
-    isArray: true,
-    type: MexToken,
-  })
+  @ApiOperation({ summary: 'Maiar Exchange tokens details', description: 'Returns a list of tokens listed on Maiar Exchange' })
+  @ApiOkResponse({ type: [MexToken] })
+
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   async getMexTokens(
@@ -89,15 +73,9 @@ export class MexController {
   }
 
   @Get("/mex/farms")
-  @ApiOperation({
-    summary: 'Maiar Exchange farms details',
-    description: 'Returns a list of farms listed on Maiar Exchange',
-  })
-  @ApiResponse({
-    status: 200,
-    isArray: true,
-    type: MexFarm,
-  })
+  @ApiOperation({ summary: 'Maiar Exchange farms details', description: 'Returns a list of farms listed on Maiar Exchange' })
+  @ApiOkResponse({ type: [MexFarm] })
+
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   async getMexFarms(
@@ -108,14 +86,9 @@ export class MexController {
   }
 
   @Get("/mex/pairs/:baseId/:quoteId")
-  @ApiOperation({
-    summary: 'Maiar Exchange pairs details',
-    description: 'Returns liquidity pool details by providing a combination of two tokens',
-  })
-  @ApiResponse({
-    status: 200,
-    type: MexPair,
-  })
+  @ApiOperation({ summary: 'Maiar Exchange pairs details', description: 'Returns liquidity pool details by providing a combination of two tokens' })
+  @ApiOkResponse({ type: MexPair })
+
   async getMexPair(
     @Param('baseId') baseId: string,
     @Param('quoteId') quoteId: string,
@@ -129,15 +102,9 @@ export class MexController {
   }
 
   @Get("/mex-economics")
-  @ApiOperation({
-    deprecated: true,
-    summary: 'Maiar Exchange economics',
-    description: 'Returns economics details of Maiar Exchange',
-  })
-  @ApiResponse({
-    status: 200,
-    type: MexEconomics,
-  })
+  @ApiOperation({ deprecated: true, summary: 'Maiar Exchange economics', description: 'Returns economics details of Maiar Exchange' })
+  @ApiOkResponse({ type: MexEconomics })
+
   async getMexEconomicsLegacy(): Promise<any> {
     return await this.mexEconomicsService.getMexEconomics();
   }
