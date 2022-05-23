@@ -1,5 +1,5 @@
 import { NativeAuthServer } from '@elrondnetwork/native-auth';
-import { Injectable, CanActivate, ExecutionContext, Logger } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, Logger, UnauthorizedException } from '@nestjs/common';
 import { CachingService } from 'src/common/caching/caching.service';
 
 @Injectable()
@@ -54,7 +54,7 @@ export class NativeAuthGuard implements CanActivate {
       return true;
     } catch (error) {
       this.logger.error(error);
-      return false;
+      throw new UnauthorizedException();
     }
   }
 }
