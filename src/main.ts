@@ -1,5 +1,5 @@
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/swagger';
 import { PublicAppModule } from './public.app.module';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -99,7 +99,7 @@ async function bootstrap() {
     .setTitle('Elrond API')
     .setDescription(description)
     .setVersion('1.0.1')
-    .setExternalDoc('Elrond Docs', 'https://docs.elrond.com');
+    .setExternalDoc('Find out more about Elrond API', 'https://docs.elrond.com/sdk-and-tools/rest-api/rest-api/');
 
   const apiUrls = apiConfigService.getApiUrls();
   for (const apiUrl of apiUrls) {
@@ -107,16 +107,21 @@ async function bootstrap() {
   }
 
   const config = documentBuilder.build();
-
   const document = SwaggerModule.createDocument(publicApp, config);
-  SwaggerModule.setup('docs', publicApp, document);
-  SwaggerModule.setup('', publicApp, document, {
+
+  const options: SwaggerCustomOptions = {
+    customSiteTitle: 'Elrond API',
+    customCss: `.swagger-ui .topbar {
+      background: #4267B2`,
+
     swaggerOptions: {
       filter: true,
       displayRequestDuration: true,
     },
-  });
+  };
 
+  SwaggerModule.setup('docs', publicApp, document);
+  SwaggerModule.setup('', publicApp, document, options);
 
   if (apiConfigService.getIsPublicApiActive()) {
     await publicApp.listen(3001);
