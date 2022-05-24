@@ -10,7 +10,18 @@ This API is organized around REST principles, so if you've interacted with RESTf
 * Some endpoints accept optional parameters which can be passed as query string params. 
 * All parameters are documented along each endpoint.
 
-  e.g. `GET /blocks?fields=hash,epoch,round,sizeTxs`
+## Fields
+
+* In order to fetch only specific fields from the response, the `fields` parameter can be used:
+    * `/accounts?fields=address,balance for arrays`
+    * `/economics?fields=price,marketCap for object`
+
+## Extract
+* In order to extract a scalar value from an object response, the `extract` parameter can be used:
+    * `/economics?extract=price`
+
+## Cleanup
+* If the value of an attribute is `undefined`, `" " (empty string)`, `null`, `[ ] (empty array)` the attribute will be omitted.
 
 ## Pagination
 
