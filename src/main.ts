@@ -98,7 +98,7 @@ async function bootstrap() {
   let documentBuilder = new DocumentBuilder()
     .setTitle('Elrond API')
     .setDescription(description)
-    .setVersion('1.0.0')
+    .setVersion('1.0.1')
     .setExternalDoc('Elrond Docs', 'https://docs.elrond.com');
 
   const apiUrls = apiConfigService.getApiUrls();
@@ -110,7 +110,12 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(publicApp, config);
   SwaggerModule.setup('docs', publicApp, document);
-  SwaggerModule.setup('', publicApp, document);
+  SwaggerModule.setup('', publicApp, document, {
+    swaggerOptions: {
+      filter: true,
+      displayRequestDuration: true,
+    },
+  });
 
 
   if (apiConfigService.getIsPublicApiActive()) {
