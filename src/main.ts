@@ -1,5 +1,5 @@
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PublicAppModule } from './public.app.module';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -32,6 +32,7 @@ import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './websockets/socket-adapter';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
+import { SwaggerCustomTypes } from './utils/swagger-custom-styles.utils';
 
 async function bootstrap() {
   const conf = configuration();
@@ -48,6 +49,7 @@ async function bootstrap() {
   publicApp.useLogger(publicApp.get(WINSTON_MODULE_NEST_PROVIDER));
   publicApp.disable('etag');
   publicApp.disable('x-powered-by');
+  publicApp.useStaticAssets(join(__dirname, 'public/assets'));
 
   const apiConfigService = publicApp.get<ApiConfigService>(ApiConfigService);
   const cachingService = publicApp.get<CachingService>(CachingService);
@@ -109,19 +111,8 @@ async function bootstrap() {
   const config = documentBuilder.build();
   const document = SwaggerModule.createDocument(publicApp, config);
 
-  const options: SwaggerCustomOptions = {
-    customSiteTitle: 'Elrond API',
-    customCss: `.swagger-ui .topbar {
-      background: #4267B2`,
-
-    swaggerOptions: {
-      filter: true,
-      displayRequestDuration: true,
-    },
-  };
-
   SwaggerModule.setup('docs', publicApp, document);
-  SwaggerModule.setup('', publicApp, document, options);
+  SwaggerModule.setup('', publicApp, document, SwaggerCustomTypes.customSwagger());
 
   if (apiConfigService.getIsPublicApiActive()) {
     await publicApp.listen(3001);
