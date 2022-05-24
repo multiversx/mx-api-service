@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { Constants } from "src/utils/constants";
@@ -11,13 +11,17 @@ import { MexSettingsService } from "./mex.settings.service";
 
 @Injectable()
 export class MexTokenService {
+  private readonly logger: Logger;
+
   constructor(
     private readonly cachingService: CachingService,
     private readonly mexPairService: MexPairService,
     @Inject(forwardRef(() => MexFarmService))
     private readonly mexFarmService: MexFarmService,
     private readonly mexSettingsService: MexSettingsService,
-  ) { }
+  ) {
+    this.logger = new Logger(MexTokenService.name);
+  }
 
   async refreshMexTokens(): Promise<void> {
     const tokens = await this.getAllMexTokensRaw();
@@ -49,35 +53,41 @@ export class MexTokenService {
   }
 
   async getMexPricesRaw(): Promise<Record<string, number>> {
-    const result: Record<string, number> = {};
+    try {
+      const result: Record<string, number> = {};
 
-    const tokens = await this.getAllMexTokens();
-    for (const token of tokens) {
-      result[token.id] = token.price;
-    }
+      const tokens = await this.getAllMexTokens();
+      for (const token of tokens) {
+        result[token.id] = token.price;
+      }
 
-    const pairs = await this.mexPairService.getAllMexPairs();
-    for (const pair of pairs) {
-      result[pair.id] = pair.price;
-    }
+      const pairs = await this.mexPairService.getAllMexPairs();
+      for (const pair of pairs) {
+        result[pair.id] = pair.price;
+      }
 
-    const farms = await this.mexFarmService.getAllMexFarms();
-    for (const farm of farms) {
-      result[farm.id] = farm.price;
-    }
+      const farms = await this.mexFarmService.getAllMexFarms();
+      for (const farm of farms) {
+        result[farm.id] = farm.price;
+      }
 
-    const settings = await this.mexSettingsService.getSettings();
-    if (settings) {
-      const lkmexIdentifier = settings.lockedAssetIdentifier;
-      if (lkmexIdentifier) {
-        const mexToken = tokens.find(x => x.symbol === 'MEX');
-        if (mexToken) {
-          result[lkmexIdentifier] = mexToken.price;
+      const settings = await this.mexSettingsService.getSettings();
+      if (settings) {
+        const lkmexIdentifier = settings.lockedAssetIdentifier;
+        if (lkmexIdentifier) {
+          const mexToken = tokens.find(x => x.symbol === 'MEX');
+          if (mexToken) {
+            result[lkmexIdentifier] = mexToken.price;
+          }
         }
       }
-    }
 
-    return result;
+      return result;
+    } catch (error) {
+      this.logger.error('An error occurred while fetching mex prices');
+      this.logger.error(error);
+      return {};
+    }
   }
 
   async getIndexedMexTokens(): Promise<Record<string, MexToken>> {

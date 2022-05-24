@@ -456,12 +456,21 @@ export class NftService {
   }
 
   private async applyPriceUsd(nft: NftAccount) {
-    const prices = await this.mexTokenService.getMexPrices();
+    if (nft.type !== NftType.MetaESDT) {
+      return;
+    }
 
-    const price = prices[nft.collection];
-    if (price) {
-      nft.price = price;
-      nft.valueUsd = price * NumberUtils.denominateString(nft.balance, nft.decimals);
+    try {
+      const prices = await this.mexTokenService.getMexPrices();
+
+      const price = prices[nft.collection];
+      if (price) {
+        nft.price = price;
+        nft.valueUsd = price * NumberUtils.denominateString(nft.balance, nft.decimals);
+      }
+    } catch (error) {
+      this.logger.error(`Unable to apply price on MetaESDT with identifier '${nft.identifier}'`);
+      this.logger.error(error);
     }
   }
 

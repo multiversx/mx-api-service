@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
@@ -11,11 +11,15 @@ import { MexSettingsService } from "./mex.settings.service";
 
 @Injectable()
 export class MexPairService {
+  private readonly logger: Logger;
+
   constructor(
     private readonly cachingService: CachingService,
     private readonly mexSettingService: MexSettingsService,
     private readonly graphQlService: GraphQlService,
-  ) { }
+  ) {
+    this.logger = new Logger(MexPairService.name);
+  }
 
   async refreshMexPairs(): Promise<void> {
     const pairs = await this.getAllMexPairsRaw();
@@ -44,63 +48,69 @@ export class MexPairService {
   }
 
   async getAllMexPairsRaw(): Promise<MexPair[]> {
-    const settings = await this.mexSettingService.getSettings();
-    if (!settings) {
-      throw new BadRequestException('Could not fetch MEX settings');
-    }
-
-    const variables = {
-      "offset": 0,
-      "pairsLimit": 100,
-    };
-
-    const query = gql`
-      query ($offset: Int, $pairsLimit: Int) {
-        pairs(offset: $offset, limit: $pairsLimit) { 
-          address 
-          liquidityPoolToken {
-            identifier
-            name
-            __typename
-          }
-          liquidityPoolTokenPriceUSD
-          firstToken {
-            name
-            identifier
-            decimals
-            __typename
-          }
-          secondToken {
-            name
-            identifier
-            decimals
-            __typename
-          }
-          firstTokenPrice
-          firstTokenPriceUSD
-          secondTokenPrice
-          secondTokenPriceUSD
-          info {
-            reserves0
-            reserves1
-            totalSupply
-            __typename
-          }
-          state
-          type
-          lockedValueUSD
-          volumeUSD24h
-          __typename
-        }
+    try {
+      const settings = await this.mexSettingService.getSettings();
+      if (!settings) {
+        throw new BadRequestException('Could not fetch MEX settings');
       }
-    `;
 
-    const result: any = await this.graphQlService.getData(query, variables);
-    if (!result) {
+      const variables = {
+        "offset": 0,
+        "pairsLimit": 100,
+      };
+
+      const query = gql`
+        query ($offset: Int, $pairsLimit: Int) {
+          pairs(offset: $offset, limit: $pairsLimit) { 
+            address 
+            liquidityPoolToken {
+              identifier
+              name
+              __typename
+            }
+            liquidityPoolTokenPriceUSD
+            firstToken {
+              name
+              identifier
+              decimals
+              __typename
+            }
+            secondToken {
+              name
+              identifier
+              decimals
+              __typename
+            }
+            firstTokenPrice
+            firstTokenPriceUSD
+            secondTokenPrice
+            secondTokenPriceUSD
+            info {
+              reserves0
+              reserves1
+              totalSupply
+              __typename
+            }
+            state
+            type
+            lockedValueUSD
+            volumeUSD24h
+            __typename
+          }
+        }
+      `;
+
+      const result: any = await this.graphQlService.getData(query, variables);
+      if (!result) {
+        return [];
+      }
+
+      return result.pairs.map((pair: any) => this.getPairInfo(pair)).filter((x: MexPair) => x.state === MexPairState.active);
+    } catch (error) {
+      this.logger.error('An error occurred while getting all mex pairs');
+      this.logger.error(error);
       return [];
     }
-
-    return result.pairs.map((pair: any) => this.getPairInfo(pair)).filter((x: MexPair) => x.state === MexPairState.active);
   }
 
   private getPairInfo(pair: any): MexPair {
