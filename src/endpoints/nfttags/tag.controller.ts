@@ -1,5 +1,5 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Tag } from './entities/tag';
 import { TagService } from './tag.service';
 
@@ -13,11 +13,7 @@ export class TagController {
 
   @Get("/tags")
   @ApiOperation({ summary: 'NFT Tags', description: 'Returns all distinct NFT tags' })
-  @ApiResponse({
-    status: 200,
-    isArray: true,
-    type: Tag,
-  })
+  @ApiOkResponse({ type: [Tag] })
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   getAccounts(
@@ -29,14 +25,8 @@ export class TagController {
 
   @Get("/tags/:tag")
   @ApiOperation({ summary: 'Tag details', description: 'Return NFT tag details' })
-  @ApiResponse({
-    status: 200,
-    type: Tag,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Nft tag not found',
-  })
+  @ApiOkResponse({ type: Tag })
+  @ApiNotFoundResponse({ description: 'Nft tag not found' })
   async getAccountDetails(@Param('tag') tag: string): Promise<Tag> {
     try {
       return await this.nftTagsService.getNftTag(tag);
