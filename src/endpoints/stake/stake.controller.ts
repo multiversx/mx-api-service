@@ -13,7 +13,6 @@ export class StakeController {
   @Get('/stake')
   @ApiOperation({ summary: 'Stake', description: 'Returns general staking information' })
   @ApiOkResponse({ type: GlobalStake })
-
   async getGlobalStake() {
     return await this.stakeService.getGlobalStake();
   }

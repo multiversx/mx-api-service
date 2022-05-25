@@ -15,7 +15,6 @@ export class BlockController {
   @Get("/blocks")
   @ApiOperation({ summary: 'Blocks', description: 'Returns a list of all blocks from all shards' })
   @ApiOkResponse({ type: [Block] })
-
   @ApiQuery({ name: 'shard', description: 'Id of the shard the block belongs to', required: false })
   @ApiQuery({ name: 'proposer', description: 'Filter by proposer', required: false })
   @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
@@ -38,7 +37,6 @@ export class BlockController {
   @Get("/blocks/count")
   @ApiOperation({ summary: 'Blocks count', description: 'Returns count of all blocks from all shards' })
   @ApiOkResponse({ type: Number })
-
   @ApiQuery({ name: 'shard', description: 'Id of the shard the block belongs to', required: false })
   @ApiQuery({ name: 'proposer', description: 'Filter by proposer', required: false })
   @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
@@ -70,7 +68,6 @@ export class BlockController {
   @ApiOperation({ summary: 'Block details', description: 'Returns block information details for a given hash' })
   @ApiOkResponse({ type: BlockDetailed })
   @ApiNotFoundResponse({ description: 'Block not found' })
-
   async getBlock(@Param('hash', ParseBlockHashPipe) hash: string): Promise<BlockDetailed> {
     try {
       return await this.blockService.getBlock(hash);

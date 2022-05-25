@@ -17,7 +17,6 @@ export class SmartContractResultController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'The hash of the parent miniBlock', required: false })
   @ApiOkResponse({ type: [SmartContractResult] })
-
   getScResults(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -30,7 +29,6 @@ export class SmartContractResultController {
   @Get("/results/count")
   @ApiOperation({ summary: 'Smart contracts count', description: 'Returns total number of smart contracts results' })
   @ApiOkResponse({ type: Number })
-
   getScResultsCount(): Promise<number> {
     return this.scResultService.getScResultsCount();
   }
@@ -39,7 +37,6 @@ export class SmartContractResultController {
   @ApiOperation({ summary: 'Smart contract results details', description: 'Returns smart contract details for a given hash' })
   @ApiOkResponse({ type: SmartContractResult })
   @ApiNotFoundResponse({ description: 'Smart contract result not found' })
-
   async getScResult(@Param('scHash', ParseTransactionHashPipe) scHash: string): Promise<SmartContractResult> {
     const scResult = await this.scResultService.getScResult(scHash);
     if (!scResult) {
@@ -55,7 +52,6 @@ export class SmartContractResultController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'The hash of the parent miniBlock', required: false })
   @ApiOkResponse({ type: [SmartContractResult] })
-
   getScResultsDeprecated(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -68,7 +64,6 @@ export class SmartContractResultController {
   @Get("/sc-results/count")
   @ApiOperation({ summary: 'Smart contracts count', description: 'Returns total number of smart contracts results', deprecated: true })
   @ApiOkResponse({ type: Number })
-
   getScResultsCountDeprecated(): Promise<number> {
     return this.scResultService.getScResultsCount();
   }
@@ -77,7 +72,6 @@ export class SmartContractResultController {
   @ApiOperation({ summary: 'Smart contract results details', description: 'Returns smart contract details for a given hash', deprecated: true })
   @ApiOkResponse({ type: SmartContractResult })
   @ApiNotFoundResponse({ description: 'Smart contract result not found' })
-
   async getScResultDeprecated(@Param('scHash', ParseTransactionHashPipe) scHash: string): Promise<SmartContractResult> {
     const scResult = await this.scResultService.getScResult(scHash);
     if (!scResult) {

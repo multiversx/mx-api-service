@@ -13,7 +13,6 @@ export class DelegationController {
   @Get("/delegation")
   @ApiOperation({ summary: 'Delegation statistics', description: 'Returns delegation staking contract information' })
   @ApiOkResponse({ type: Delegation })
-
   async getDelegationDetails(): Promise<Delegation> {
     return await this.delegationService.getDelegation();
   }

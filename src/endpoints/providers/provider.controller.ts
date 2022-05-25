@@ -12,7 +12,6 @@ export class ProviderController {
   @Get("/providers")
   @ApiOperation({ summary: 'Providers', description: 'Returns a list of all providers' })
   @ApiOkResponse({ type: [Provider] })
-
   @ApiQuery({ name: 'identity', description: 'Search by identity', required: false })
   async getProviders(
     @Query('identity') identity: string | undefined,
@@ -24,7 +23,6 @@ export class ProviderController {
   @ApiOperation({ summary: 'Provider', description: 'Returns provider details for a given address' })
   @ApiOkResponse({ type: Provider })
   @ApiNotFoundResponse({ description: 'Provider not found' })
-
   async getProvider(@Param('address', ParseAddressPipe) address: string): Promise<Provider> {
     const provider = await this.providerService.getProvider(address);
     if (provider === undefined) {

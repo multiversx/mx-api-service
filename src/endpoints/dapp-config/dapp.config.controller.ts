@@ -14,7 +14,6 @@ export class DappConfigController {
   @ApiOperation({ summary: 'Dapp configuration', description: 'Returns configuration used in dapps' })
   @ApiOkResponse({ type: DappConfig })
   @ApiNotFoundResponse({ description: 'Network configuration not found' })
-
   getDappConfiguration(): any {
     const configuration = this.dappConfigService.getDappConfiguration();
     if (!configuration) {

@@ -37,7 +37,6 @@ export class TransactionController {
   @Get("/transactions")
   @ApiOperation({ summary: 'Transactions details', description: 'Returns a list of transactions available on the blockchain. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs' })
   @ApiOkResponse({ type: [Transaction] })
-
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
@@ -103,7 +102,6 @@ export class TransactionController {
   @Get("/transactions/count")
   @ApiOperation({ summary: "Transactions count", description: 'Returns the total number of transactions' })
   @ApiOkResponse({ type: Number })
-
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
@@ -182,7 +180,6 @@ export class TransactionController {
   @ApiOperation({ summary: 'Transaction details', description: 'Return transaction details for a given transaction hash' })
   @ApiOkResponse({ type: TransactionDetailed })
   @ApiNotFoundResponse({ description: 'Transaction not found' })
-
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
   async getTransaction(
     @Param('txHash', ParseTransactionHashPipe) txHash: string,
@@ -199,7 +196,6 @@ export class TransactionController {
   @Post('/transactions')
   @ApiOperation({ summary: 'Send transaction', description: 'Posts a signed transaction on the blockchain' })
   @ApiCreatedResponse({ type: TransactionSendResult })
-
   async createTransaction(@Body() transaction: TransactionCreate): Promise<TransactionSendResult> {
     if (!transaction.sender) {
       throw new BadRequestException('Sender must be provided');
@@ -225,7 +221,6 @@ export class TransactionController {
   @Post('/transactions/decode')
   @ApiOperation({ summary: 'Decode transaction', description: 'Decodes transaction action, given a minimum set of transaction details' })
   @ApiCreatedResponse({ type: TransactionDecodeDto })
-
   async decodeTransaction(@Body() transaction: TransactionDecodeDto): Promise<TransactionDecodeDto> {
     if (!transaction.sender) {
       throw new BadRequestException('Sender must be provided');

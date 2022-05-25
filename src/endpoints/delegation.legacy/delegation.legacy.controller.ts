@@ -11,7 +11,6 @@ export class DelegationLegacyController {
   @Get("/delegation-legacy")
   @ApiOperation({ summary: 'Legacy delegation statistics', description: 'Returns legacy delegation contract global information' })
   @ApiOkResponse({ type: DelegationLegacy })
-
   async getBlock(): Promise<DelegationLegacy> {
     return await this.delegationLegacyService.getDelegation();
   }

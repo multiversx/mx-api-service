@@ -20,7 +20,6 @@ export class NodeController {
   @Get("/nodes")
   @ApiOperation({ summary: 'Nodes', description: 'Returns a list of nodes of type observer or validator' })
   @ApiOkResponse({ type: [Node] })
-
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by name, bls or version', required: false })
@@ -55,7 +54,6 @@ export class NodeController {
   @Get("/nodes/versions")
   @ApiOperation({ summary: 'Node versions', description: 'Returns breakdown of node versions for validator nodes' })
   @ApiOkResponse()
-
   async getNodeVersions() {
     return await this.nodeService.getNodeVersions();
   }
@@ -63,7 +61,6 @@ export class NodeController {
   @Get("/nodes/count")
   @ApiOperation({ summary: 'Nodes count', description: 'Returns number of all observer/validator nodes available on blockchain' })
   @ApiOkResponse({ type: Number })
-
   @ApiQuery({ name: 'search', description: 'Search by name, bls or version', required: false })
   @ApiQuery({ name: 'online', description: 'Whether node is online or not', required: false, type: 'boolean' })
   @ApiQuery({ name: 'type', description: 'Type of node', required: false, enum: NodeType })
@@ -113,7 +110,6 @@ export class NodeController {
   @ApiOperation({ summary: 'Node', description: 'Returns details about a specific node for a given bls key' })
   @ApiOkResponse({ type: Node })
   @ApiNotFoundResponse({ description: 'Node not found' })
-
   async getNode(@Param('bls', ParseBlsHashPipe) bls: string): Promise<Node> {
     const provider = await this.nodeService.getNode(bls);
     if (provider === undefined) {

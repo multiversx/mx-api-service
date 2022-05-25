@@ -63,7 +63,6 @@ export class AccountController {
   @Get("/accounts")
   @ApiOperation({ summary: 'Accounts details', description: 'Returns all accounts available on blockchain. By default it returns 25 accounts' })
   @ApiOkResponse({ type: [Account] })
-
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   getAccounts(
@@ -76,7 +75,6 @@ export class AccountController {
   @Get("/accounts/count")
   @ApiOperation({ summary: 'Total number of accounts', description: 'Returns total number of accounts available on blockchain' })
   @ApiOkResponse({ type: Number })
-
   async getAccountsCount(): Promise<number> {
     return await this.accountService.getAccountsCount();
   }
@@ -91,7 +89,6 @@ export class AccountController {
   @ApiOperation({ summary: 'Account details', description: 'Returns account details for a given address' })
   @ApiOkResponse({ type: AccountDetailed })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   async getAccountDetails(@Param('address', ParseAddressPipe) address: string): Promise<AccountDetailed> {
     const account = await this.accountService.getAccount(address);
     if (!account) {
@@ -105,7 +102,6 @@ export class AccountController {
   @ApiOperation({ summary: 'Account deferred payment details', description: 'Returns deferred payments from legacy staking' })
   @ApiOkResponse({ type: [AccountDeferred] })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   async getAccountDeferred(@Param('address', ParseAddressPipe) address: string): Promise<AccountDeferred[]> {
     try {
       return await this.accountService.getDeferredAccount(address);
@@ -150,7 +146,6 @@ export class AccountController {
   @ApiOperation({ summary: 'Account token count', description: 'Returns the total number of tokens for a given address' })
   @ApiOkResponse({ type: Number })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   async getTokenCount(@Param('address', ParseAddressPipe) address: string): Promise<number> {
     try {
       return await this.tokenService.getTokenCountForAddress(address);
@@ -226,7 +221,6 @@ export class AccountController {
   @ApiQuery({ name: 'canAddQuantity', description: 'Filter by property canAddQuantity (boolean)', required: false })
   @ApiOkResponse({ type: Number })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   async getCollectionCount(
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
@@ -251,7 +245,6 @@ export class AccountController {
   @ApiOkResponse({ type: TokenWithBalance })
   @ApiNotFoundResponse({ description: 'Account not found' })
   @ApiNotFoundResponse({ description: 'Token not found' })
-
   async getAccountToken(
     @Param('address', ParseAddressPipe) address: string,
     @Param('token') token: string,
@@ -290,7 +283,6 @@ export class AccountController {
   @ApiOkResponse({ type: NftCollectionAccount })
   @ApiNotFoundResponse({ description: 'Account not found' })
   @ApiNotFoundResponse({ description: 'Collection not found' })
-
   async getAccountCollection(
     @Param('address', ParseAddressPipe) address: string,
     @Param('collection') collection: string,
@@ -309,7 +301,7 @@ export class AccountController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Filter by identifiers, comma-separated', required: false })
-  @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
+  @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', enum: NftType, required: false })
   @ApiQuery({ name: 'collection', description: 'Get all tokens by token collection. Deprecated, replaced by collections parameter', required: false, deprecated: true })
   @ApiQuery({ name: 'collections', description: 'Get all tokens by token collections, comma-separated', required: false })
   @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
@@ -362,7 +354,6 @@ export class AccountController {
   @ApiQuery({ name: 'includeFlagged', description: 'Include NFTs that are flagged or not', required: false })
   @ApiOkResponse({ type: Number })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   async getNftCount(
     @Param('address', ParseAddressPipe) address: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
@@ -414,7 +405,6 @@ export class AccountController {
   @ApiOkResponse({ type: NftAccount })
   @ApiNotFoundResponse({ description: 'Account not found' })
   @ApiNotFoundResponse({ description: 'Token not found' })
-
   async getAccountNft(
     @Param('address', ParseAddressPipe) address: string,
     @Param('nft') nft: string,
@@ -431,7 +421,6 @@ export class AccountController {
   @ApiOperation({ summary: 'Account stake details', description: 'Summarizes total staked amount for the given provider, as well as when and how much unbond will be performed' })
   @ApiOkResponse({ type: ProviderStake })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   async getAccountStake(@Param('address', ParseAddressPipe) address: string): Promise<ProviderStake> {
     try {
       return await this.stakeService.getStakeForAddress(address);
@@ -446,7 +435,6 @@ export class AccountController {
   @ApiOperation({ summary: 'Account legacy delegation details', description: 'Returns staking information related to the legacy delegation pool' })
   @ApiOkResponse({ type: AccountDelegationLegacy })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   async getAccountDelegationLegacy(@Param('address', ParseAddressPipe) address: string): Promise<AccountDelegationLegacy> {
     try {
       return await this.delegationLegacyService.getDelegationForAddress(address);
@@ -461,7 +449,6 @@ export class AccountController {
   @ApiOperation({ summary: 'Account nodes', description: 'Returns all active / queued nodes where the account is owner' })
   @ApiOkResponse({ type: [AccountKey] })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   async getAccountKeys(@Param('address', ParseAddressPipe) address: string): Promise<AccountKey[]> {
     try {
       return await this.accountService.getKeys(address);
@@ -475,7 +462,6 @@ export class AccountController {
   @Get("/accounts/:address/waiting-list")
   @ApiOperation({ summary: 'Account queued nodes', description: 'Returns all nodes in the node queue where the account is owner' })
   @ApiOkResponse({ type: [WaitingList] })
-
   async getAccountWaitingList(@Param('address', ParseAddressPipe) address: string): Promise<WaitingList[]> {
     return await this.waitingListService.getWaitingListForAddress(address);
   }
@@ -484,7 +470,6 @@ export class AccountController {
   @ApiOperation({ summary: 'Account transactions details', description: 'Returns details of all transactions where the account is sender or receiver' })
   @ApiOkResponse({ type: [Transaction] })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
@@ -552,7 +537,6 @@ export class AccountController {
   @ApiOperation({ summary: 'Account transactions count', description: 'Returns total number of transactions for a given address where the account is sender or receiver, as well as total transactions count that have a certain status' })
   @ApiOkResponse({ type: Number })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
@@ -601,7 +585,6 @@ export class AccountController {
   @ApiOperation({ summary: 'Account value transfers', description: 'Returns both transfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult), thus providing a full picture of all in/out value transfers for a given account' })
   @ApiOkResponse({ type: [Transaction] })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
@@ -663,7 +646,6 @@ export class AccountController {
   @ApiOperation({ summary: 'Account transfer count', description: 'Return total count of tranfers triggerred by a user account (type = Transactions), as well as transfers triggerred by smart contracts (type = SmartContractResult)' })
   @ApiOkResponse({ type: Number })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transfer receiver', required: false })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
@@ -717,7 +699,6 @@ export class AccountController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiOkResponse({ type: [DeployedContract] })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   getAccountContracts(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -730,7 +711,6 @@ export class AccountController {
   @ApiOperation({ summary: 'Account contracts count', description: 'Returns total number of deployed contracts for a given address' })
   @ApiOkResponse({ type: Number })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   getAccountContractsCount(@Param('address', ParseAddressPipe) address: string): Promise<number> {
     return this.accountService.getAccountContractsCount(address);
   }
@@ -760,7 +740,6 @@ export class AccountController {
   @ApiOperation({ summary: 'Account smart contracts results count', description: 'Returns number of smart contract results where the account is sender or receiver' })
   @ApiOkResponse({ type: Number })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   getAccountScResultsCount(
     @Param('address', ParseAddressPipe) address: string,
   ): Promise<number> {
@@ -771,7 +750,6 @@ export class AccountController {
   @ApiOperation({ summary: 'Account smart contract result', description: 'Returns details of a smart contract result where the account is sender or receiver' })
   @ApiOkResponse({ type: SmartContractResult })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   async getAccountScResult(
     @Param('address', ParseAddressPipe) address: string,
     @Param('scHash', ParseTransactionHashPipe) scHash: string,
@@ -790,7 +768,6 @@ export class AccountController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiOkResponse({ type: [SmartContractResult] })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   getAccountScResultsDeprecated(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -803,7 +780,6 @@ export class AccountController {
   @ApiOperation({ summary: 'Account smart contracts results count', description: 'Returns number of smart contract results where the account is sender or receiver', deprecated: true })
   @ApiOkResponse({ type: Number })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   getAccountScResultsCountDeprecated(
     @Param('address', ParseAddressPipe) address: string,
   ): Promise<number> {
@@ -814,7 +790,6 @@ export class AccountController {
   @ApiOperation({ summary: 'Account smart contract result', description: 'Returns details of a smart contract result where the account is sender or receiver', deprecated: true })
   @ApiOkResponse({ type: SmartContractResult })
   @ApiNotFoundResponse({ description: 'Account not found' })
-
   async getAccountScResultDeprecated(
     @Param('address', ParseAddressPipe) address: string,
     @Param('scHash', ParseTransactionHashPipe) scHash: string,
@@ -833,7 +808,6 @@ export class AccountController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiOkResponse({ type: [AccountHistory] })
   @ApiNotFoundResponse({ description: 'Account EGLD balance history not found' })
-
   getAccountHistory(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -848,7 +822,6 @@ export class AccountController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiOkResponse({ type: [AccountEsdtHistory] })
   @ApiNotFoundResponse({ description: 'Token balance history not found for this account' })
-
   async getAccountTokenHistory(
     @Param('address', ParseAddressPipe) address: string,
     @Param('tokenIdentifier') tokenIdentifier: string,

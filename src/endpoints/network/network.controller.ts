@@ -15,7 +15,6 @@ export class NetworkController {
   @Get("/constants")
   @ApiOperation({ summary: 'Network constants', description: 'Returns network-specific constants that can be used to automatically configure dapps' })
   @ApiOkResponse({ type: NetworkConstants })
-
   getConstants(): Promise<NetworkConstants> {
     return this.networkService.getConstants();
   }
@@ -23,7 +22,6 @@ export class NetworkController {
   @Get("/economics")
   @ApiOperation({ summary: 'Network economics', description: 'Returns general economics information' })
   @ApiOkResponse({ type: Economics })
-
   async getEconomics(): Promise<Economics> {
     return await this.networkService.getEconomics();
   }
@@ -31,7 +29,6 @@ export class NetworkController {
   @Get("/stats")
   @ApiOperation({ summary: 'Network statistics', description: 'Returns general network statistics' })
   @ApiOkResponse({ type: Stats })
-
   async getStats(): Promise<Stats> {
     return await this.networkService.getStats();
   }

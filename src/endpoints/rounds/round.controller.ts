@@ -16,7 +16,6 @@ export class RoundController {
   @Get("/rounds")
   @ApiOperation({ summary: 'Rounds', description: 'Returns a list of all rounds available on blockchain' })
   @ApiOkResponse({ type: [Round] })
-
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
@@ -36,7 +35,6 @@ export class RoundController {
   @Get("/rounds/count")
   @ApiOperation({ summary: 'Rounds count', description: 'Returns total number of rounds' })
   @ApiOkResponse({ type: Number })
-
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
@@ -70,7 +68,6 @@ export class RoundController {
   @ApiOperation({ summary: 'Round', description: 'Returns details of a given round from a specific shard' })
   @ApiOkResponse({ type: RoundDetailed })
   @ApiNotFoundResponse({ description: 'Round not found' })
-
   async getRound(
     @Param('shard', ParseOptionalIntPipe) shard: number,
     @Param('round', ParseOptionalIntPipe) round: number

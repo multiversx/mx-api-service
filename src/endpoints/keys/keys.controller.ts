@@ -14,7 +14,6 @@ export class KeysController {
   @ApiQuery({ name: 'key', description: 'The BLS key of the node', required: true })
   @ApiOkResponse({ type: KeyUnbondPeriod })
   @ApiNotFoundResponse({ description: 'Key not found' })
-
   async getKeyUnbondPeriod(
     @Param('key', ParseBlsHashPipe) key: string
   ): Promise<KeyUnbondPeriod> {
@@ -22,7 +21,6 @@ export class KeysController {
     if (!result) {
       throw new HttpException('Key not found', HttpStatus.NOT_FOUND);
     }
-
     return result;
   }
 }

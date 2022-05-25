@@ -30,7 +30,6 @@ export class TokenController {
   @Get("/tokens")
   @ApiOperation({ summary: 'Tokens', description: 'Returns all tokens available on the blockchain' })
   @ApiOkResponse({ type: [TokenDetailed] })
-
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
@@ -55,15 +54,10 @@ export class TokenController {
   @Get("/tokens/count")
   @ApiOperation({ summary: 'Tokens count', description: 'Return total number of tokens available on blockchain' })
   @ApiOkResponse({ type: Number })
-
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
-  @ApiQuery({
-    name: 'identifiers',
-    description: 'Search by multiple token identifiers, comma-separated',
-    required: false,
-  })
+  @ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
   async getTokenCount(
     @Query('search') search: string | undefined,
     @Query('name') name: string | undefined,
@@ -88,7 +82,6 @@ export class TokenController {
   @ApiOperation({ summary: 'Token', description: 'Returns token details based on a specific token identifier' })
   @ApiOkResponse({ type: TokenDetailed })
   @ApiNotFoundResponse({ description: 'Token not found' })
-
   async getToken(@Param('identifier') identifier: string): Promise<TokenDetailed> {
     const token = await this.tokenService.getToken(identifier);
     if (token === undefined) {
@@ -103,7 +96,6 @@ export class TokenController {
   @ApiQuery({ name: 'denominated', description: 'Return results denominated', required: false })
   @ApiOkResponse({ type: EsdtSupply })
   @ApiNotFoundResponse({ description: 'Token not found' })
-
   async getTokenSupply(
     @Param('identifier') identifier: string,
     @Query('denominated', new ParseOptionalBoolPipe) denominated: boolean | undefined,
@@ -125,7 +117,6 @@ export class TokenController {
   @ApiOperation({ summary: 'Token accounts', description: 'Returns a list of accounts that hold a specific token' })
   @ApiOkResponse({ type: [TokenAccount] })
   @ApiNotFoundResponse({ description: 'Token not found' })
-
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   async getTokenAccounts(
@@ -150,7 +141,6 @@ export class TokenController {
   @ApiOperation({ summary: 'Token accounts count', description: 'Returns the total number of accounts that hold a specific token' })
   @ApiOkResponse({ type: Number })
   @ApiNotFoundResponse({ description: 'Token not found' })
-
   async getTokenAccountsCount(
     @Param('identifier') identifier: string,
   ): Promise<number> {
@@ -171,7 +161,6 @@ export class TokenController {
   @ApiOperation({ summary: 'Token transactions', description: `Returns a list of transactions for a specific token. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs` })
   @ApiOkResponse({ type: [Transaction] })
   @ApiNotFoundResponse({ description: 'Token not found' })
-
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
@@ -239,7 +228,6 @@ export class TokenController {
   @ApiOperation({ summary: 'Token transactions count', description: 'Returns the total number of transactions for a specific token' })
   @ApiOkResponse({ type: Number })
   @ApiNotFoundResponse({ description: 'Token not found' })
-
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
@@ -287,7 +275,6 @@ export class TokenController {
   @ApiOperation({ summary: 'Token roles', description: 'Returns a list of accounts that can perform various actions on a specific token' })
   @ApiOkResponse({ type: [TokenRoles] })
   @ApiNotFoundResponse({ description: 'Token not found' })
-
   async getTokenRoles(
     @Param('identifier') identifier: string,
   ): Promise<TokenRoles[]> {
@@ -308,7 +295,6 @@ export class TokenController {
   @ApiOperation({ summary: 'Token address roles', description: 'Returns roles detalils for a specific address of a given token' })
   @ApiOkResponse({ type: TokenRoles })
   @ApiNotFoundResponse({ description: 'Token not found' })
-
   async getTokenRolesForAddress(
     @Param('identifier') identifier: string,
     @Param('address') address: string,

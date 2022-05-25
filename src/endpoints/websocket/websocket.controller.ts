@@ -14,7 +14,6 @@ export class WebsocketController {
   @ApiOperation({ summary: 'Websocket configuration', description: 'Returns config used for accessing websocket on the same cluster' })
   @ApiOkResponse({ type: WebsocketConfig })
   @ApiNotFoundResponse({ description: 'Websocket configuration not found' })
-
   getConfiguration(): WebsocketConfig {
     return this.websocketConfigService.getConfiguration();
   }

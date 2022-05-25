@@ -13,7 +13,6 @@ export class VmQueryController {
   @Post('/query')
   @ApiOperation({ summary: 'VM query', description: 'Performs a vm query on a given smart contract and returns its results' })
   @ApiCreatedResponse()
-
   async query(@Body() query: VmQueryRequest) {
     let result: any;
     try {

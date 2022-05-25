@@ -13,7 +13,6 @@ export class MiniBlockController {
   @ApiOperation({ summary: 'Miniblock details', description: 'Returns miniblock details for a given identifier.' })
   @ApiOkResponse({ type: MiniBlockDetailed })
   @ApiNotFoundResponse({ description: 'Miniblock not found' })
-
   async getBlock(@Param('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string): Promise<MiniBlockDetailed> {
     try {
       return await this.miniBlockService.getMiniBlock(miniBlockHash);

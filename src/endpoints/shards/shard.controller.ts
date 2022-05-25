@@ -11,7 +11,6 @@ export class ShardController {
   @Get("/shards")
   @ApiOperation({ summary: 'Shards', description: 'Returns all available shards' })
   @ApiOkResponse({ type: [Shard] })
-
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   async getShards(
