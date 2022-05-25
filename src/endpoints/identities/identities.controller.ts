@@ -1,5 +1,5 @@
 import { Controller, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
 import { Identity } from "./entities/identity";
 import { IdentitiesService } from "./identities.service";
@@ -11,11 +11,7 @@ export class IdentitiesController {
 
   @Get("/identities")
   @ApiOperation({ summary: 'Identities', description: 'List of all node identities, used to group nodes by the same entity. "Free-floating" nodes that do not belong to any identity will also be returned' })
-  @ApiResponse({
-    status: 200,
-    isArray: true,
-    type: Identity,
-  })
+  @ApiOkResponse({ type: [Identity] })
   @ApiQuery({ name: 'identities', description: 'Filter by comma-separated list of identities', required: false })
   async getIdentities(
     @Query('identities', ParseArrayPipe) identities: string[] = []
@@ -25,14 +21,8 @@ export class IdentitiesController {
 
   @Get('/identities/:identifier')
   @ApiOperation({ summary: 'Identity details', description: 'Returns the details of a single identity' })
-  @ApiResponse({
-    status: 200,
-    type: Identity,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Identity not found',
-  })
+  @ApiOkResponse({ type: Identity })
+  @ApiNotFoundResponse({ description: 'Identity not found' })
   async getIdentity(@Param('identifier') identifier: string): Promise<Identity> {
     const identity = await this.identitiesService.getIdentity(identifier);
     if (identity === undefined) {

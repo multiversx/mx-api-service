@@ -1,5 +1,5 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { ParseBlsHashPipe } from "src/utils/pipes/parse.bls.hash.pipe";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
@@ -15,11 +15,7 @@ export class RoundController {
 
   @Get("/rounds")
   @ApiOperation({ summary: 'Rounds', description: 'Returns a list of all rounds available on blockchain' })
-  @ApiResponse({
-    status: 200,
-    isArray: true,
-    type: Round,
-  })
+  @ApiOkResponse({ type: [Round] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
@@ -38,10 +34,7 @@ export class RoundController {
 
   @Get("/rounds/count")
   @ApiOperation({ summary: 'Rounds count', description: 'Returns total number of rounds' })
-  @ApiResponse({
-    status: 200,
-    type: Number,
-  })
+  @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
@@ -73,14 +66,8 @@ export class RoundController {
 
   @Get("/rounds/:shard/:round")
   @ApiOperation({ summary: 'Round', description: 'Returns details of a given round from a specific shard' })
-  @ApiResponse({
-    status: 200,
-    type: RoundDetailed,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Round not found',
-  })
+  @ApiOkResponse({ type: RoundDetailed })
+  @ApiNotFoundResponse({ description: 'Round not found' })
   async getRound(
     @Param('shard', ParseOptionalIntPipe) shard: number,
     @Param('round', ParseOptionalIntPipe) round: number

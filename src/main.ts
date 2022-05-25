@@ -32,6 +32,7 @@ import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './websockets/socket-adapter';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
+import { SwaggerCustomTypes } from './utils/swagger-custom-styles.utils';
 
 async function bootstrap() {
   const conf = configuration();
@@ -48,6 +49,7 @@ async function bootstrap() {
   publicApp.useLogger(publicApp.get(WINSTON_MODULE_NEST_PROVIDER));
   publicApp.disable('etag');
   publicApp.disable('x-powered-by');
+  publicApp.useStaticAssets(join(__dirname, 'public/assets'));
 
   const apiConfigService = publicApp.get<ApiConfigService>(ApiConfigService);
   const cachingService = publicApp.get<CachingService>(CachingService);
@@ -98,8 +100,8 @@ async function bootstrap() {
   let documentBuilder = new DocumentBuilder()
     .setTitle('Elrond API')
     .setDescription(description)
-    .setVersion('1.0.0')
-    .setExternalDoc('Elrond Docs', 'https://docs.elrond.com');
+    .setVersion('1.0.1')
+    .setExternalDoc('Find out more about Elrond API', 'https://docs.elrond.com/sdk-and-tools/rest-api/rest-api/');
 
   const apiUrls = apiConfigService.getApiUrls();
   for (const apiUrl of apiUrls) {
@@ -107,11 +109,12 @@ async function bootstrap() {
   }
 
   const config = documentBuilder.build();
+  const options = SwaggerCustomTypes.customSwagger();
 
   const document = SwaggerModule.createDocument(publicApp, config);
-  SwaggerModule.setup('docs', publicApp, document);
-  SwaggerModule.setup('', publicApp, document);
 
+  SwaggerModule.setup('docs', publicApp, document);
+  SwaggerModule.setup('', publicApp, document, options);
 
   if (apiConfigService.getIsPublicApiActive()) {
     await publicApp.listen(3001);
