@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 export class NumberUtils {
   static denominate(value: BigInt, decimals: number = 18): number {
-    return Number(value.valueOf() / BigInt(Math.pow(10, decimals)));
+    return new BigNumber(value.toString()).dividedBy(new BigNumber(10).pow(decimals)).toNumber();
   }
 
   static denominateString(value: string, decimals: number = 18): number {

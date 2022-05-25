@@ -70,6 +70,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.54.0",
     "@elrondnetwork/erdjs": "^8.0.0",
+    "@elrondnetwork/native-auth": "^0.1.19",
     "@elrondnetwork/transaction-processor": "0.1.23",
     "@golevelup/nestjs-rabbitmq": "^2.2.0",
     "@nestjs/common": "^8.4.1",
