@@ -3,7 +3,11 @@ The API is built to allow you to create apps or integrations quickly and easily.
 This API is organized around REST principles, so if you've interacted with RESTful APIs before, many of the concepts will look familiar.
 
 ## Request
-* Requests with a message body use JSON as well. Successful requests will return a `2xx` HTTP status.
+* Requests with a message body use JSON. Successful requests will return a `2xx` HTTP status.
+
+## Response
+
+* JSON will be returned for all responses, including errors.
 
 ## Parameters
 
@@ -21,13 +25,9 @@ This API is organized around REST principles, so if you've interacted with RESTf
     * `/economics?extract=price`
 
 ## Cleanup
-* If the value of an attribute is `undefined`, `" " (empty string)`, `null`, `[ ] (empty array)` the attribute will be omitted.
+* If the value of an attribute is `undefined`, `""` (empty string), `null`, `[ ]` (empty array) the attribute will be omitted.
 
 ## Pagination
 
 * Requests that return multiple items will be paginated to 25 items by default. 
 * For a different number of items or for the next pages `?from=` and `size=` can be used.
-
-## Response Format
-
-* JSON will be returned for all responses, including errors. Empty or blank fields are omitted. 
