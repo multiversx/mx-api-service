@@ -1,5 +1,5 @@
 import { Controller, DefaultValuePipe, Get, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ShardService } from "./shard.service";
 import { Shard } from "./entities/shard";
 
@@ -10,11 +10,7 @@ export class ShardController {
 
   @Get("/shards")
   @ApiOperation({ summary: 'Shards', description: 'Returns all available shards' })
-  @ApiResponse({
-    status: 200,
-    isArray: true,
-    type: Shard,
-  })
+  @ApiOkResponse({ type: [Shard] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   async getShards(
