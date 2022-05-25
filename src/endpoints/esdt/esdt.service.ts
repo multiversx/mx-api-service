@@ -86,20 +86,29 @@ export class EsdtService {
 
     await this.batchProcessTokens(tokens);
 
-    const indexedTokens = await this.mexTokenService.getMexPricesRaw();
-    for (const token of tokens) {
-      const price = indexedTokens[token.identifier];
-      if (price) {
-        const supply = await this.getTokenSupply(token.identifier);
-
-        token.price = price;
-        token.marketCap = price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
-      }
-    }
+    await this.applyMexPrices(tokens);
 
     tokens = tokens.sortedDescending(token => token.transactions ?? 0);
 
     return tokens;
+  }
+
+  private async applyMexPrices(tokens: TokenDetailed[]): Promise<void> {
+    try {
+      const indexedTokens = await this.mexTokenService.getMexPricesRaw();
+      for (const token of tokens) {
+        const price = indexedTokens[token.identifier];
+        if (price) {
+          const supply = await this.getTokenSupply(token.identifier);
+
+          token.price = price;
+          token.marketCap = price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+        }
+      }
+    } catch (error) {
+      this.logger.error('Could not apply mex tokens prices');
+      this.logger.error(error);
+    }
   }
 
   async batchProcessTokens(tokens: TokenDetailed[]) {
