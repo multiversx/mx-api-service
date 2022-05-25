@@ -8,7 +8,9 @@ export class SwaggerCustomTypes {
             {
               content:url(\'/img/customElrondLogo.png\'); width:250px; height:auto;
             }
-            .swagger-ui .topbar { background-color: #FAFAFA; }`,
+            .swagger-ui .topbar { background-color: #FAFAFA; }
+            .swagger-ui .scheme-container {background-color: #FAFAFA;}`,
+
 
       customfavIcon: '/img/customElrondFavIcon.png',
       swaggerOptions: {

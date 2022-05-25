@@ -109,10 +109,12 @@ async function bootstrap() {
   }
 
   const config = documentBuilder.build();
+  const options = SwaggerCustomTypes.customSwagger();
+
   const document = SwaggerModule.createDocument(publicApp, config);
 
   SwaggerModule.setup('docs', publicApp, document);
-  SwaggerModule.setup('', publicApp, document, SwaggerCustomTypes.customSwagger());
+  SwaggerModule.setup('', publicApp, document, options);
 
   if (apiConfigService.getIsPublicApiActive()) {
     await publicApp.listen(3001);
