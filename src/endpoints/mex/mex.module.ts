@@ -1,7 +1,8 @@
 import { Module } from "@nestjs/common";
 import { GraphQlModule } from "src/common/graphql/graphql.module";
 import { MexEconomicsService } from "./mex.economics.service";
-import { MexPairsService } from "./mex.pairs.service";
+import { MexFarmService } from "./mex.farm.service";
+import { MexPairService } from "./mex.pair.service";
 import { MexSettingsService } from "./mex.settings.service";
 import { MexTokenService } from "./mex.token.service";
 
@@ -12,14 +13,16 @@ import { MexTokenService } from "./mex.token.service";
   providers: [
     MexEconomicsService,
     MexSettingsService,
-    MexPairsService,
+    MexPairService,
     MexTokenService,
+    MexFarmService,
   ],
   exports: [
     MexEconomicsService,
-    MexPairsService,
+    MexPairService,
     MexSettingsService,
     MexTokenService,
+    MexFarmService,
   ],
 })
 export class MexModule { }

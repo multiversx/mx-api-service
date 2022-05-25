@@ -30,6 +30,8 @@ import { EsdtSupply } from "../esdt/entities/esdt.supply";
 import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
+import { MexTokenService } from "../mex/mex.token.service";
+import { NumberUtils } from "src/utils/number.utils";
 
 @Injectable()
 export class NftService {
@@ -50,6 +52,7 @@ export class NftService {
     private readonly persistenceService: PersistenceService,
     @Inject(forwardRef(() => EsdtAddressService))
     private readonly esdtAddressService: EsdtAddressService,
+    private readonly mexTokenService: MexTokenService,
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -440,6 +443,7 @@ export class NftService {
 
     for (const nft of nfts) {
       await this.applyAssetsAndTicker(nft);
+      await this.applyPriceUsd(nft);
     }
 
     if (queryOptions && queryOptions.withSupply) {
@@ -449,6 +453,25 @@ export class NftService {
     await this.batchProcessNfts(nfts);
 
     return nfts;
+  }
+
+  private async applyPriceUsd(nft: NftAccount) {
+    if (nft.type !== NftType.MetaESDT) {
+      return;
+    }
+
+    try {
+      const prices = await this.mexTokenService.getMexPrices();
+
+      const price = prices[nft.collection];
+      if (price) {
+        nft.price = price;
+        nft.valueUsd = price * NumberUtils.denominateString(nft.balance, nft.decimals);
+      }
+    } catch (error) {
+      this.logger.error(`Unable to apply price on MetaESDT with identifier '${nft.identifier}'`);
+      this.logger.error(error);
+    }
   }
 
   async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {

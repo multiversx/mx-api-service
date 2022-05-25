@@ -35,12 +35,14 @@ describe('Nft Service', () => {
     thumbnailUrl: '',
     tags: ['Stramosi', 'Romania', 'Elrond', 'RomaniaDAO'],
     metadata: undefined,
-    owner: undefined,
+    owner: 'erd15gculjmu3r62ldlwyguqdgddez35r2lv6ka8j7s6pwhqlc80httqljzwgm',
     balance: '',
     supply: undefined,
     decimals: undefined,
     ticker: '',
     scamInfo: undefined,
+    price: undefined,
+    valueUsd: undefined,
   };
 
   beforeAll(async () => {
