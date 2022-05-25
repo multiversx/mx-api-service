@@ -1,5 +1,5 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
 import { ParseBlsHashPipe } from "src/utils/pipes/parse.bls.hash.pipe";
 import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
@@ -14,11 +14,7 @@ export class BlockController {
 
   @Get("/blocks")
   @ApiOperation({ summary: 'Blocks', description: 'Returns a list of all blocks from all shards' })
-  @ApiResponse({
-    status: 200,
-    isArray: true,
-    type: Block,
-  })
+  @ApiOkResponse({ type: [Block] })
   @ApiQuery({ name: 'shard', description: 'Id of the shard the block belongs to', required: false })
   @ApiQuery({ name: 'proposer', description: 'Filter by proposer', required: false })
   @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
@@ -39,11 +35,8 @@ export class BlockController {
   }
 
   @Get("/blocks/count")
-  @ApiOperation({ summary: 'Block count', description: 'Returns count of all blocks from all shards' })
-  @ApiResponse({
-    status: 200,
-    type: Number,
-  })
+  @ApiOperation({ summary: 'Blocks count', description: 'Returns count of all blocks from all shards' })
+  @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'shard', description: 'Id of the shard the block belongs to', required: false })
   @ApiQuery({ name: 'proposer', description: 'Filter by proposer', required: false })
   @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
@@ -73,14 +66,8 @@ export class BlockController {
 
   @Get("/blocks/:hash")
   @ApiOperation({ summary: 'Block details', description: 'Returns block information details for a given hash' })
-  @ApiResponse({
-    status: 200,
-    type: BlockDetailed,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Block not found',
-  })
+  @ApiOkResponse({ type: BlockDetailed })
+  @ApiNotFoundResponse({ description: 'Block not found' })
   async getBlock(@Param('hash', ParseBlockHashPipe) hash: string): Promise<BlockDetailed> {
     try {
       return await this.blockService.getBlock(hash);
