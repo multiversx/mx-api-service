@@ -133,11 +133,9 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   publicApp.disable('x-powered-by');
   publicApp.useStaticAssets(join(__dirname, 'public/assets'));
 
-  const cachingService = publicApp.get<CachingService>(CachingService);
-  const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
   const metricsService = publicApp.get<MetricsService>(MetricsService);
-  const protocolService = publicApp.get<ProtocolService>(ProtocolService);
   const pluginService = publicApp.get<PluginService>(PluginService);
+  const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
 
   if (apiConfigService.getIsAuthActive()) {
     publicApp.useGlobalGuards(new JwtAuthenticateGuard(apiConfigService));
@@ -151,14 +149,17 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   globalInterceptors.push(new LoggingInterceptor(metricsService));
 
   if (apiConfigService.getUseRequestCachingFlag()) {
-    globalInterceptors.push(
-      new CachingInterceptor(
-        cachingService,
-        httpAdapterHostService,
-        metricsService,
-        protocolService,
-      ),
+    const cachingService = publicApp.get<CachingService>(CachingService);
+    const protocolService = publicApp.get<ProtocolService>(ProtocolService);
+
+    const cachingInterceptor = new CachingInterceptor(
+      cachingService,
+      httpAdapterHostService,
+      metricsService,
+      protocolService,
     );
+
+    globalInterceptors.push(cachingInterceptor);
   }
 
   if (apiConfigService.getUseRequestLoggingFlag()) {
