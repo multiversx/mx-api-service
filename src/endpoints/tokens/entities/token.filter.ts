@@ -1,3 +1,6 @@
+import { SortOrder } from "src/common/entities/sort.order";
+import { TokenSort } from "./token.sort";
+
 export class TokenFilter {
   search?: string;
 
@@ -6,4 +9,8 @@ export class TokenFilter {
   identifier?: string;
 
   identifiers?: string[];
+
+  sort?: TokenSort;
+
+  order?: SortOrder;
 }

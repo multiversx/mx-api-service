@@ -129,7 +129,7 @@ export class ElasticService {
     return documents.map((document: any) => this.formatItem(document, key));
   }
 
-  async getListWithScroll(collection: string, key: string, elasticQuery: ElasticQuery, callback: (items: any[]) => Promise<void>): Promise<void> {
+  async getScrollableList(collection: string, key: string, elasticQuery: ElasticQuery, action: (items: any[]) => Promise<void>): Promise<void> {
     const url = `${this.url}/${collection}/_search?scroll=10m`;
 
     const profiler = new PerformanceProfiler();
@@ -140,11 +140,12 @@ export class ElasticService {
 
     this.metricsService.setElasticDuration(collection, ElasticMetricType.list, profiler.duration);
 
+    const documents = result.data.hits.hits;
     const scrollId = result.data._scroll_id;
-    let documents = result.data.hits.hits.map((document: any) => this.formatItem(document, key));
-    await callback(documents);
 
-    while (documents.length > 0) {
+    await action(documents.map((document: any) => this.formatItem(document, key)));
+
+    while (true) {
       const scrollProfiler = new PerformanceProfiler();
 
       const scrollResult = await this.post(`${this.url}/_search/scroll`, {
@@ -153,10 +154,14 @@ export class ElasticService {
       });
 
       scrollProfiler.stop();
-      this.metricsService.setElasticDuration(collection, ElasticMetricType.scroll, scrollProfiler.duration);
+      this.metricsService.setElasticDuration(collection, ElasticMetricType.list, profiler.duration);
 
-      documents = scrollResult.data.hits.hits.map((document: any) => this.formatItem(document, key));
-      await callback(documents);
+      const scrollDocuments = scrollResult.data.hits.hits;
+      if (scrollDocuments.length === 0) {
+        break;
+      }
+
+      await action(scrollDocuments.map((document: any) => this.formatItem(document, key)));
     }
   }
 
@@ -199,7 +204,8 @@ export class ElasticService {
     elasticQuery = elasticQuery
       .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
-      .withCondition(QueryConditionOptions.should, queries);
+      .withCondition(QueryConditionOptions.should, queries)
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
     const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
 
@@ -228,7 +234,7 @@ export class ElasticService {
     return await this.apiService.get(url);
   }
 
-  private async post(url: string, body: any) {
+  public async post(url: string, body: any) {
     return await this.apiService.post(url, body);
   }
 

@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { AbstractQuery } from "src/common/elastic/entities/abstract.query";
@@ -6,9 +6,11 @@ import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { QueryType } from "src/common/elastic/entities/query.type";
-import { TermsQuery } from "src/common/elastic/entities/terms.query";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { ApiUtils } from "src/utils/api.utils";
+import { Transaction } from "../transactions/entities/transaction";
+import { TransactionType } from "../transactions/entities/transaction.type";
+import { TransactionActionService } from "../transactions/transaction-action/transaction.action.service";
 import { SmartContractResult } from "./entities/smart.contract.result";
 import { SmartContractResultFilter } from "./entities/smart.contract.result.filter";
 
@@ -17,6 +19,8 @@ export class SmartContractResultService {
   constructor(
     private readonly elasticService: ElasticService,
     private readonly apiConfigService: ApiConfigService,
+    @Inject(forwardRef(() => TransactionActionService))
+    private readonly transactionActionService: TransactionActionService,
   ) { }
 
   private buildSmartContractResultFilterQuery(address?: string): ElasticQuery {
@@ -47,12 +51,21 @@ export class SmartContractResultService {
     }
 
     if (filter.originalTxHashes) {
-      query = query.withTerms(new TermsQuery('originalTxHash', filter.originalTxHashes));
+      query = query.withShouldCondition(filter.originalTxHashes.map(originalTxHash => QueryType.Match('originalTxHash', originalTxHash)));
     }
 
     const elasticResult = await this.elasticService.getList('scresults', 'hash', query);
 
-    return elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+    const smartContractResults = elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+
+    for (const smartContractResult of smartContractResults) {
+      const transaction = ApiUtils.mergeObjects(new Transaction(), smartContractResult);
+      transaction.type = TransactionType.SmartContractResult;
+
+      smartContractResult.action = await this.transactionActionService.getTransactionAction(transaction);
+    }
+
+    return smartContractResults;
   }
 
   async getScResult(scHash: string): Promise<SmartContractResult | undefined> {
@@ -61,7 +74,13 @@ export class SmartContractResultService {
       return undefined;
     }
 
-    return ApiUtils.mergeObjects(new SmartContractResult(), scResult);
+    const smartContractResult = ApiUtils.mergeObjects(new SmartContractResult(), scResult);
+    const transaction = ApiUtils.mergeObjects(new Transaction(), smartContractResult);
+    transaction.type = TransactionType.SmartContractResult;
+
+    smartContractResult.action = await this.transactionActionService.getTransactionAction(transaction);
+
+    return smartContractResult;
   }
 
   async getScResultsCount(): Promise<number> {
@@ -76,7 +95,16 @@ export class SmartContractResultService {
 
     const elasticResult = await this.elasticService.getList('scresults', 'hash', elasticQuery);
 
-    return elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+    const smartContractResults = elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+
+    for (const smartContractResult of smartContractResults) {
+      const transaction = ApiUtils.mergeObjects(new Transaction(), smartContractResult);
+      transaction.type = TransactionType.SmartContractResult;
+
+      smartContractResult.action = await this.transactionActionService.getTransactionAction(transaction);
+    }
+
+    return smartContractResults;
   }
 
   async getAccountScResultsCount(address: string): Promise<number> {

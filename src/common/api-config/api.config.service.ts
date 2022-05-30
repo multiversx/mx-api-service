@@ -95,6 +95,15 @@ export class ApiConfigService {
     return address;
   }
 
+  getMetabondingContractAddress(): string {
+    const address = this.configService.get<string>('contracts.metabonding');
+    if (!address) {
+      throw new Error('No metabonding contract present');
+    }
+
+    return address;
+  }
+
   getDelegationContractShardId(): number {
     const shardId = this.configService.get<number>(
       'contracts.delegationShardId',
@@ -271,6 +280,42 @@ export class ApiConfigService {
     }
 
     return isCronActive;
+  }
+
+  isEventsNotifierFeatureActive(): boolean {
+    const isEventsNotifierActive = this.configService.get<boolean>('features.eventsNotifier.enabled');
+    if (isEventsNotifierActive === undefined) {
+      return false;
+    }
+
+    return isEventsNotifierActive;
+  }
+
+  getEventsNotifierFeaturePort(): number {
+    const eventsNotifierPort = this.configService.get<number>('features.eventsNotifier.port');
+    if (eventsNotifierPort === undefined) {
+      throw new Error('No events notifier port present');
+    }
+
+    return eventsNotifierPort;
+  }
+
+  getEventsNotifierUrl(): string {
+    const url = this.configService.get<string>('features.eventsNotifier.url');
+    if (!url) {
+      throw new Error('No events notifier url present');
+    }
+
+    return url;
+  }
+
+  getEventsNotifierExchange(): string {
+    const exchange = this.configService.get<string>('features.eventsNotifier.exchange');
+    if (!exchange) {
+      throw new Error('No events notifier exchange present');
+    }
+
+    return exchange;
   }
 
   getIsProcessNftsFlagActive(): boolean {
@@ -554,5 +599,22 @@ export class ApiConfigService {
 
   getNftProcessMaxRetries(): number {
     return this.configService.get<number>('nftProcess.maxRetries') ?? 3;
+  }
+
+  getMaiarExchangeUrl(): string | undefined {
+    return this.configService.get<string>('transaction-action.mex.microServiceUrl') ?? this.configService.get<string>('plugins.transaction-action.mex.microServiceUrl');
+  }
+
+  getMaiarExchangeUrlMandatory(): string {
+    const microServiceUrl = this.getMaiarExchangeUrl();
+    if (!microServiceUrl) {
+      throw new Error('No transaction-action.mex.microServiceUrl present');
+    }
+
+    return microServiceUrl;
+  }
+
+  getGithubToken(): string | undefined {
+    return this.configService.get<string>('github.token');
   }
 }

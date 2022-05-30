@@ -7,8 +7,14 @@ import { TransactionActionRecognizerInterface } from "../../transaction.action.r
 
 @Injectable()
 export class SCCallActionRecognizerService implements TransactionActionRecognizerInterface {
-  constructor(
-  ) { }
+  private builtInSelfFunctions = [
+    'ESDTLocalMint',
+    'ESDTLocalBurn',
+    'ESDTNFTCreate',
+    'ESDTNFTAddQuantity',
+    'ESDTNFTAddURI',
+    'ESDTNFTUpdateAttributes',
+  ];
 
   // eslint-disable-next-line require-await
   async recognize(metadata: TransactionMetadata): Promise<TransactionAction | undefined> {
@@ -29,7 +35,7 @@ export class SCCallActionRecognizerService implements TransactionActionRecognize
   }
 
   private getSCCallAction(metadata: TransactionMetadata): TransactionAction | undefined {
-    if (!AddressUtils.isSmartContractAddress(metadata.receiver)) {
+    if (!this.isSmartContractCall(metadata)) {
       return undefined;
     }
 
@@ -44,5 +50,13 @@ export class SCCallActionRecognizerService implements TransactionActionRecognize
     }
 
     return result;
+  }
+
+  private isSmartContractCall(metadata: TransactionMetadata): boolean {
+    return AddressUtils.isSmartContractAddress(metadata.receiver) || this.isSelfBuiltInFunctionCall(metadata);
+  }
+
+  private isSelfBuiltInFunctionCall(metadata: TransactionMetadata): boolean {
+    return metadata.sender === metadata.receiver && this.builtInSelfFunctions.includes(metadata.functionName ?? '');
   }
 }

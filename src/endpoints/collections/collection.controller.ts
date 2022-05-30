@@ -1,6 +1,5 @@
 import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
+import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
 import { CollectionService } from "./collection.service";
@@ -9,6 +8,7 @@ import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
 import { Nft } from "../nfts/entities/nft";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { NftService } from "../nfts/nft.service";
+import { ParseOptionalEnumArrayPipe } from "src/utils/pipes/parse.optional.enum.array.pipe";
 
 @Controller()
 @ApiTags('collections')
@@ -19,65 +19,111 @@ export class CollectionController {
   ) { }
 
   @Get("/collections")
-  @ApiResponse({
-    status: 200,
-    description: 'List non-fungible and semi-fungible token collections',
-    type: NftCollection,
-    isArray: true,
-  })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiOperation({ summary: 'Collections', description: 'Returns non-fungible/semi-fungible/meta-esdt collections' })
+  @ApiOkResponse({ type: [NftCollection] })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by collection identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
-  @ApiQuery({ name: 'creator', description: 'Filter NFTs where the given address has a creator role', required: false })
+  @ApiQuery({ name: 'creator', description: 'Filter NFTs where the given address has a creator role', required: false, deprecated: true })
+  @ApiQuery({ name: 'canCreate', description: 'Filter by address with canCreate role', required: false })
+  @ApiQuery({ name: 'canBurn', description: 'Filter by address with canBurn role', required: false })
+  @ApiQuery({ name: 'canAddQuantity', description: 'Filter by address with canAddQuantity role', required: false })
+  @ApiQuery({ name: 'canUpdateAttributes', description: 'Filter by address with canUpdateAttributes role', required: false })
+  @ApiQuery({ name: 'canAddUri', description: 'Filter by address with canAddUri role', required: false })
+  @ApiQuery({ name: 'canTransferRole', description: 'Filter by address with canTransferRole role', required: false })
   async getNftCollections(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search: string | undefined,
     @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+    @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type: NftType[] | undefined,
     @Query('creator', ParseAddressPipe) creator: string | undefined,
+    @Query('canCreate', new ParseAddressPipe) canCreate?: string,
+    @Query('canBurn', new ParseAddressPipe) canBurn?: string,
+    @Query('canAddQuantity', new ParseAddressPipe) canAddQuantity?: string,
+    @Query('canUpdateAttributes', new ParseAddressPipe) canUpdateAttributes?: string,
+    @Query('canAddUri', new ParseAddressPipe) canAddUri?: string,
+    @Query('canTransferRole', new ParseAddressPipe) canTransferRole?: string,
   ): Promise<NftCollection[]> {
-    return await this.collectionService.getNftCollections({ from, size }, { search, type, creator, identifiers });
+    return await this.collectionService.getNftCollections({ from, size }, {
+      search,
+      type,
+      identifiers,
+      canCreate: canCreate ?? creator,
+      canBurn,
+      canAddQuantity,
+      canUpdateAttributes,
+      canAddUri,
+      canTransferRole,
+    });
   }
 
   @Get("/collections/count")
+  @ApiOperation({ summary: 'Collection count', description: 'Returns non-fungible/semi-fungible/meta-esdt collection count' })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
-  @ApiQuery({ name: 'creator', description: 'Filter NFTs where the given address has a creator role', required: false })
-  @ApiResponse({
-    status: 200,
-    description: 'The number of non-fungible and semi-fungible token collections available on the blockchain',
-  })
+  @ApiQuery({ name: 'creator', description: 'Filter NFTs where the given address has a creator role', required: false, deprecated: true })
+  @ApiQuery({ name: 'canCreate', description: 'Filter by address with canCreate role', required: false })
+  @ApiQuery({ name: 'canBurn', description: 'Filter by address with canBurn role', required: false })
+  @ApiQuery({ name: 'canAddQuantity', description: 'Filter by address with canAddQuantity role', required: false })
+  @ApiQuery({ name: 'canUpdateAttributes', description: 'Filter by address with canUpdateAttributes role', required: false })
+  @ApiQuery({ name: 'canAddUri', description: 'Filter by address with canAddUri role', required: false })
+  @ApiQuery({ name: 'canTransferRole', description: 'Filter by address with canTransferRole role', required: false })
+  @ApiOkResponse({ type: Number })
   async getCollectionCount(
     @Query('search') search: string | undefined,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+    @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type: NftType[] | undefined,
     @Query('creator', ParseAddressPipe) creator: string | undefined,
+    @Query('canCreate', new ParseAddressPipe) canCreate?: string,
+    @Query('canBurn', new ParseAddressPipe) canBurn?: string,
+    @Query('canAddQuantity', new ParseAddressPipe) canAddQuantity?: string,
+    @Query('canUpdateAttributes', new ParseAddressPipe) canUpdateAttributes?: string,
+    @Query('canAddUri', new ParseAddressPipe) canAddUri?: string,
+    @Query('canTransferRole', new ParseAddressPipe) canTransferRole?: string,
   ): Promise<number> {
-    return await this.collectionService.getNftCollectionCount({ search, type, creator });
+    return await this.collectionService.getNftCollectionCount({
+      search,
+      type,
+      canCreate: canCreate ?? creator,
+      canBurn,
+      canAddQuantity,
+      canUpdateAttributes,
+      canAddUri,
+      canTransferRole,
+    });
   }
 
   @Get("/collections/c")
   @ApiExcludeEndpoint()
   async getCollectionCountAlternative(
     @Query('search') search: string | undefined,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+    @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type: NftType[] | undefined,
     @Query('creator', ParseAddressPipe) creator: string | undefined,
+    @Query('canCreate', new ParseAddressPipe) canCreate?: string,
+    @Query('canBurn', new ParseAddressPipe) canBurn?: string,
+    @Query('canAddQuantity', new ParseAddressPipe) canAddQuantity?: string,
+    @Query('canUpdateAttributes', new ParseAddressPipe) canUpdateAttributes?: string,
+    @Query('canAddUri', new ParseAddressPipe) canAddUri?: string,
+    @Query('canTransferRole', new ParseAddressPipe) canTransferRole?: string,
   ): Promise<number> {
-    return await this.collectionService.getNftCollectionCount({ search, type, creator });
+    return await this.collectionService.getNftCollectionCount({
+      search,
+      type,
+      canCreate: canCreate ?? creator,
+      canBurn,
+      canAddQuantity,
+      canUpdateAttributes,
+      canAddUri,
+      canTransferRole,
+    });
   }
 
   @Get('/collections/:collection')
-  @ApiResponse({
-    status: 200,
-    description: 'Non-fungible / semi-fungible token collection details',
-    type: NftCollection,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Token collection not found',
-  })
+  @ApiOperation({ summary: 'Collection details', description: 'Returns non-fungible/semi-fungible/meta-esdt collection details' })
+  @ApiOkResponse({ type: NftCollection })
+  @ApiNotFoundResponse({ description: 'Token collection not found' })
   async getNftCollection(@Param('collection') collection: string): Promise<NftCollection> {
     const token = await this.collectionService.getNftCollection(collection);
     if (token === undefined) {
@@ -88,13 +134,10 @@ export class CollectionController {
   }
 
   @Get("/collections/:collection/nfts")
-  @ApiResponse({
-    status: 200,
-    description: 'List non-fungible and semi-fungible tokens',
-    type: Nft,
-    isArray: true,
-  })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiOperation({ summary: 'Collection NFTs', description: 'Returns non-fungible/semi-fungible/meta-esdt tokens that belong to a collection' })
+  @ApiOkResponse({ type: [Nft] })
+  @ApiNotFoundResponse({ description: 'Token collection not found' })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
@@ -129,10 +172,8 @@ export class CollectionController {
   }
 
   @Get("/collections/:collection/nfts/count")
-  @ApiResponse({
-    status: 200,
-    description: 'The number of non-fungible and semi-fungible tokens available on the blockchain',
-  })
+  @ApiOperation({ summary: 'Collection NFT count', description: 'Returns non-fungible/semi-fungible/meta-esdt token count that belong to a collection' })
+  @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })

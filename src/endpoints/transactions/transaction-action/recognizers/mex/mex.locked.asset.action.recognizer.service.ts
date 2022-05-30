@@ -5,8 +5,8 @@ import { TransactionActionCategory } from "../../entities/transaction.action.cat
 import { TransactionMetadata } from "../../entities/transaction.metadata";
 import { TransactionActionEsdtNftRecognizerService } from "../esdt/transaction.action.esdt.nft.recognizer.service";
 import { MexFunction } from "./entities/mex.function.options";
-import { MexSettings } from "./entities/mex.settings";
-import { MexSettingsService } from "./mex.settings.service";
+import { MexSettings } from "../../../../mex/entities/mex.settings";
+import { MexSettingsService } from "../../../../mex/mex.settings.service";
 
 @Injectable()
 export class MexLockedAssetActionRecognizerService {
@@ -24,7 +24,12 @@ export class MexLockedAssetActionRecognizerService {
       case MexFunction.lockAssets:
         return this.getAssetsAction(metadata, 'Lock');
       case MexFunction.unlockAssets:
-        return this.getAssetsAction(metadata, 'Unlock');
+        const action = this.getAssetsAction(metadata, 'Unlock');
+        if (action) {
+          action.description = 'Unlock assets';
+        }
+
+        return action;
       case MexFunction.mergeLockedAssetTokens:
         return this.getMergeLockedAssetTokens(metadata);
       default:

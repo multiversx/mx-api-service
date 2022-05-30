@@ -126,7 +126,7 @@ describe("Tokens Controller", () => {
       .get(route + "/" + identifier + "/supply")
       .expect(404)
       .then(res => {
-        expect(res.body.message).toEqual("Not Found");
+        expect(res.body.message).toEqual("Token not found");
       });
   });
 

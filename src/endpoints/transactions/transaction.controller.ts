@@ -1,5 +1,17 @@
-import { BadRequestException, Body, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
-import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  DefaultValuePipe,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
+import { ApiCreatedResponse, ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 import { SortOrder } from 'src/common/entities/sort.order';
 import { ParseAddressPipe } from 'src/utils/pipes/parse.address.pipe';
@@ -23,12 +35,8 @@ export class TransactionController {
   constructor(private readonly transactionService: TransactionService) { }
 
   @Get("/transactions")
-  @ApiResponse({
-    status: 200,
-    description: 'List transactions',
-    type: Transaction,
-    isArray: true,
-  })
+  @ApiOperation({ summary: 'Transactions details', description: 'Returns a list of transactions available on the blockchain. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs' })
+  @ApiOkResponse({ type: [Transaction] })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
@@ -42,7 +50,7 @@ export class TransactionController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return results for transactions', required: false })
@@ -92,6 +100,8 @@ export class TransactionController {
   }
 
   @Get("/transactions/count")
+  @ApiOperation({ summary: "Transactions count", description: 'Returns the total number of transactions' })
+  @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
@@ -167,16 +177,9 @@ export class TransactionController {
   }
 
   @Get('/transactions/:txHash')
-  @ApiResponse({
-    status: 200,
-    description: 'Transaction details',
-    type: TransactionDetailed,
-    isArray: true,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Transaction not found',
-  })
+  @ApiOperation({ summary: 'Transaction details', description: 'Return transaction details for a given transaction hash' })
+  @ApiOkResponse({ type: TransactionDetailed })
+  @ApiNotFoundResponse({ description: 'Transaction not found' })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
   async getTransaction(
     @Param('txHash', ParseTransactionHashPipe) txHash: string,
@@ -191,11 +194,8 @@ export class TransactionController {
   }
 
   @Post('/transactions')
-  @ApiResponse({
-    status: 201,
-    description: 'Create a transaction',
-    type: TransactionSendResult,
-  })
+  @ApiOperation({ summary: 'Send transaction', description: 'Posts a signed transaction on the blockchain' })
+  @ApiCreatedResponse({ type: TransactionSendResult })
   async createTransaction(@Body() transaction: TransactionCreate): Promise<TransactionSendResult> {
     if (!transaction.sender) {
       throw new BadRequestException('Sender must be provided');
@@ -219,11 +219,8 @@ export class TransactionController {
   }
 
   @Post('/transactions/decode')
-  @ApiResponse({
-    status: 201,
-    description: 'Decode a transaction',
-    type: TransactionDecodeDto,
-  })
+  @ApiOperation({ summary: 'Decode transaction', description: 'Decodes transaction action, given a minimum set of transaction details' })
+  @ApiCreatedResponse({ type: TransactionDecodeDto })
   async decodeTransaction(@Body() transaction: TransactionDecodeDto): Promise<TransactionDecodeDto> {
     if (!transaction.sender) {
       throw new BadRequestException('Sender must be provided');
@@ -233,8 +230,6 @@ export class TransactionController {
       throw new BadRequestException('Receiver must be provided');
     }
 
-    const result = await this.transactionService.decodeTransaction(transaction);
-
-    return result;
+    return await this.transactionService.decodeTransaction(transaction);
   }
 }

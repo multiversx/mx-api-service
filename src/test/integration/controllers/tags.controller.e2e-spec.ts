@@ -34,7 +34,7 @@ describe("Tags Controller", () => {
   });
 
   it("/tags/:tag - should return 200 status code and specific tag details", async () => {
-    const tag: string = "RWxyb25k";
+    const tag: string = "ZWxyb25k";
 
     await request(app.getHttpServer())
       .get(route + "/" + tag)
@@ -42,7 +42,7 @@ describe("Tags Controller", () => {
   });
 
   it("/tags/:tag - should return 404 status code Error: Not Found", async () => {
-    const tag: string = "RWxyb25kT";
+    const tag: string = "RWxyb25k";
 
     await request(app.getHttpServer())
       .get(route + "/" + tag)

@@ -2,55 +2,55 @@ import { ApiProperty } from "@nestjs/swagger";
 import { ApiUtils } from "src/utils/api.utils";
 
 export class Block {
-    @ApiProperty()
+    @ApiProperty({ type: String })
     hash: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: Number })
     epoch: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number })
     nonce: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     prevHash: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     proposer: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     pubKeyBitmap: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: Number })
     round: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number })
     shard: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number })
     size: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number })
     sizeTxs: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: String })
     stateRootHash: string = '';
 
-    @ApiProperty()
+    @ApiProperty({ type: Number })
     timestamp: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number })
     txCount: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number })
     gasConsumed: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number })
     gasRefunded: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number })
     gasPenalized: number = 0;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number })
     maxGasLimit: number = 0;
 
     static mergeWithElasticResponse<T extends Block>(newBlock: T, blockRaw: any): T {

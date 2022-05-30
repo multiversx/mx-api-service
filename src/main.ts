@@ -6,7 +6,6 @@ import { join } from 'path';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { ApiConfigService } from './common/api-config/api.config.service';
 import { CachingService } from './common/caching/caching.service';
-import { TokenAssetService } from './endpoints/tokens/token.asset.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { FieldsInterceptor } from './interceptors/fields.interceptor';
 import { PrivateAppModule } from './private.app.module';
@@ -28,96 +27,27 @@ import { PaginationInterceptor } from './interceptors/pagination.interceptor';
 import { LogRequestsInterceptor } from './interceptors/log.requests.interceptor';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { NftQueueModule } from './queue.worker/nft.worker/queue/nft.queue.module';
-import configuration from "config/configuration";
 import { ElasticUpdaterModule } from './crons/elastic.updater/elastic.updater.module';
 import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './websockets/socket-adapter';
+import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
+import { ApiConfigModule } from './common/api-config/api.config.module';
+import { SwaggerCustomTypes } from './utils/swagger-custom-styles.utils';
 
 async function bootstrap() {
-  const conf = configuration();
-  if (conf.flags?.useTracing === true) {
+  const apiConfigApp = await NestFactory.create(ApiConfigModule);
+  const apiConfigService = apiConfigApp.get<ApiConfigService>(ApiConfigService);
+
+  if (apiConfigService.getUseTracingFlag() === true) {
     require('dd-trace').init();
   }
 
-  const publicApp = await NestFactory.create<NestExpressApplication>(
-    PublicAppModule,
-  );
-  publicApp.use(bodyParser.json({ limit: '1mb' }));
-  publicApp.use(requestIp.mw());
-  publicApp.enableCors();
-  publicApp.useLogger(publicApp.get(WINSTON_MODULE_NEST_PROVIDER));
-  publicApp.disable('etag');
-  publicApp.disable('x-powered-by');
-
-  const apiConfigService = publicApp.get<ApiConfigService>(ApiConfigService);
-  const cachingService = publicApp.get<CachingService>(CachingService);
-  const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
-  const metricsService = publicApp.get<MetricsService>(MetricsService);
-  const tokenAssetService = publicApp.get<TokenAssetService>(TokenAssetService);
-  const protocolService = publicApp.get<ProtocolService>(ProtocolService);
-  const pluginService = publicApp.get<PluginService>(PluginService);
-
-  if (apiConfigService.getIsAuthActive()) {
-    publicApp.useGlobalGuards(new JwtAuthenticateGuard(apiConfigService));
-  }
-
-  const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
-  httpServer.keepAliveTimeout = apiConfigService.getServerTimeout();
-  httpServer.headersTimeout = apiConfigService.getHeadersTimeout(); //`keepAliveTimeout + server's expected response time`
-
-  await tokenAssetService.checkout();
-
-  const globalInterceptors: NestInterceptor[] = [];
-  globalInterceptors.push(new LoggingInterceptor(metricsService));
-
-  if (apiConfigService.getUseRequestCachingFlag()) {
-    globalInterceptors.push(
-      new CachingInterceptor(
-        cachingService,
-        httpAdapterHostService,
-        metricsService,
-        protocolService,
-      ),
-    );
-  }
-
-  if (apiConfigService.getUseRequestLoggingFlag()) {
-    globalInterceptors.push(new LogRequestsInterceptor(httpAdapterHostService));
-  }
-
-  globalInterceptors.push(new FieldsInterceptor());
-  globalInterceptors.push(new ExtractInterceptor());
-  globalInterceptors.push(new CleanupInterceptor());
-  globalInterceptors.push(new PaginationInterceptor());
-
-  await pluginService.bootstrapPublicApp(publicApp);
-
-  publicApp.useGlobalInterceptors(...globalInterceptors);
-  const description = readFileSync(
-    join(__dirname, '..', 'docs', 'swagger.md'),
-    'utf8',
-  );
-
-  let documentBuilder = new DocumentBuilder()
-    .setTitle('Elrond API')
-    .setDescription(description)
-    .setVersion('1.0.0')
-    .setExternalDoc('Elrond Docs', 'https://docs.elrond.com');
-
-  const apiUrls = apiConfigService.getApiUrls();
-  for (const apiUrl of apiUrls) {
-    documentBuilder = documentBuilder.addServer(apiUrl);
-  }
-
-  const config = documentBuilder.build();
-
-  const document = SwaggerModule.createDocument(publicApp, config);
-  SwaggerModule.setup('docs', publicApp, document);
-  SwaggerModule.setup('', publicApp, document);
-
-
   if (apiConfigService.getIsPublicApiActive()) {
+    const publicApp = await NestFactory.create<NestExpressApplication>(PublicAppModule);
+
+    await configurePublicApp(publicApp, apiConfigService);
+
     await publicApp.listen(3001);
   }
 
@@ -166,6 +96,11 @@ async function bootstrap() {
     await queueWorkerApp.listen();
   }
 
+  if (apiConfigService.isEventsNotifierFeatureActive()) {
+    const eventsNotifierApp = await NestFactory.create(RabbitMqProcessorModule);
+    await eventsNotifierApp.listen(apiConfigService.getEventsNotifierFeaturePort());
+  }
+
   const logger = new Logger('Bootstrapper');
 
   const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
@@ -193,6 +128,81 @@ async function bootstrap() {
   logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
   logger.log(`Queue worker active: ${apiConfigService.getIsQueueWorkerCronActive()}`);
   logger.log(`Elastic updater active: ${apiConfigService.getIsElasticUpdaterCronActive()}`);
+  logger.log(`Events notifier active: ${apiConfigService.isEventsNotifierFeatureActive()}`);
+}
+
+async function configurePublicApp(publicApp: NestExpressApplication, apiConfigService: ApiConfigService) {
+  publicApp.use(bodyParser.json({ limit: '1mb' }));
+  publicApp.use(requestIp.mw());
+  publicApp.enableCors();
+  publicApp.useLogger(publicApp.get(WINSTON_MODULE_NEST_PROVIDER));
+  publicApp.disable('etag');
+  publicApp.disable('x-powered-by');
+  publicApp.useStaticAssets(join(__dirname, 'public/assets'));
+
+  const metricsService = publicApp.get<MetricsService>(MetricsService);
+  const pluginService = publicApp.get<PluginService>(PluginService);
+  const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
+
+  if (apiConfigService.getIsAuthActive()) {
+    publicApp.useGlobalGuards(new JwtAuthenticateGuard(apiConfigService));
+  }
+
+  const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
+  httpServer.keepAliveTimeout = apiConfigService.getServerTimeout();
+  httpServer.headersTimeout = apiConfigService.getHeadersTimeout(); //`keepAliveTimeout + server's expected response time`
+
+  const globalInterceptors: NestInterceptor[] = [];
+  globalInterceptors.push(new LoggingInterceptor(metricsService));
+
+  if (apiConfigService.getUseRequestCachingFlag()) {
+    const cachingService = publicApp.get<CachingService>(CachingService);
+    const protocolService = publicApp.get<ProtocolService>(ProtocolService);
+
+    const cachingInterceptor = new CachingInterceptor(
+      cachingService,
+      httpAdapterHostService,
+      metricsService,
+      protocolService,
+    );
+
+    globalInterceptors.push(cachingInterceptor);
+  }
+
+  if (apiConfigService.getUseRequestLoggingFlag()) {
+    globalInterceptors.push(new LogRequestsInterceptor(httpAdapterHostService));
+  }
+
+  globalInterceptors.push(new FieldsInterceptor());
+  globalInterceptors.push(new ExtractInterceptor());
+  globalInterceptors.push(new CleanupInterceptor());
+  globalInterceptors.push(new PaginationInterceptor());
+
+  await pluginService.bootstrapPublicApp(publicApp);
+
+  publicApp.useGlobalInterceptors(...globalInterceptors);
+  const description = readFileSync(
+    join(__dirname, '..', 'docs', 'swagger.md'),
+    'utf8',
+  );
+
+  let documentBuilder = new DocumentBuilder()
+    .setTitle('Elrond API')
+    .setDescription(description)
+    .setVersion('1.0.0')
+    .setExternalDoc('Find out more about Elrond API', 'https://docs.elrond.com/sdk-and-tools/rest-api/rest-api/');
+
+  const apiUrls = apiConfigService.getApiUrls();
+  for (const apiUrl of apiUrls) {
+    documentBuilder = documentBuilder.addServer(apiUrl);
+  }
+
+  const config = documentBuilder.build();
+  const options = SwaggerCustomTypes.customSwagger();
+
+  const document = SwaggerModule.createDocument(publicApp, config);
+  SwaggerModule.setup('docs', publicApp, document, options);
+  SwaggerModule.setup('', publicApp, document, options);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

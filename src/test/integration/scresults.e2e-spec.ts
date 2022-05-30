@@ -1,7 +1,6 @@
 import { SmartContractResultService } from "../../endpoints/sc-results/scresult.service";
 import { Test } from "@nestjs/testing";
 import { SmartContractResultFilter } from "../../endpoints/sc-results/entities/smart.contract.result.filter";
-import smartContractResults from "../data/smartcontract/scresults";
 import { SmartContractResult } from "../../endpoints/sc-results/entities/smart.contract.result";
 import '../../utils/extensions/jest.extensions';
 import { PublicAppModule } from "src/public.app.module";
@@ -28,16 +27,19 @@ describe('Scresults Service', () => {
 
   describe('Scresults list', () => {
     it('scresults should have hash, nonce and timestamp', async () => {
+      const scResultFilter = new SmartContractResultFilter();
+      scResultFilter.originalTxHashes = ['f01660479c8481a1c07e78508898130e45dc8657bf2fc5c2f377623eb18f734d'];
+
       const results = await scResultsService.getScResults({ from: 0, size: 1 }, new SmartContractResultFilter());
 
-      expect(results).toHaveLength(1);
-      expect(results[0].hash).toStrictEqual(smartContractResults[0].hash);
+      for (const result of results) {
+        expect(result).toHaveStructure(Object.keys(new SmartContractResult()));
+      }
     });
 
     it(`should return a list with 25 scresults`, async () => {
       const results = await scResultsService.getScResults({ from: 0, size: 25 }, new SmartContractResultFilter());
 
-      expect(results).toBeInstanceOf(Array);
       expect(results).toHaveLength(25);
 
       for (const result of results) {
@@ -48,7 +50,6 @@ describe('Scresults Service', () => {
     it(`should return a list with 50 scresults`, async () => {
       const results = await scResultsService.getScResults({ from: 0, size: 50 }, new SmartContractResultFilter());
 
-      expect(results).toBeInstanceOf(Array);
       expect(results).toHaveLength(50);
 
       for (const result of results) {

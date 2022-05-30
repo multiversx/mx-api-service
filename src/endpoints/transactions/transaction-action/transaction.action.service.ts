@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { Transaction } from "src/endpoints/transactions/entities/transaction";
 import { AddressUtils } from "src/utils/address.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
@@ -12,6 +12,7 @@ import { TransactionActionEsdtNftRecognizerService } from "./recognizers/esdt/tr
 import { TokenTransferService } from "src/endpoints/tokens/token.transfer.service";
 import { StringUtils } from "src/utils/string.utils";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
+import { MetabondingActionRecognizerService } from "./recognizers/mex/mex.metabonding.action.recognizer.service";
 
 @Injectable()
 export class TransactionActionService {
@@ -23,7 +24,9 @@ export class TransactionActionService {
     private readonly esdtNftRecognizer: TransactionActionEsdtNftRecognizerService,
     private readonly stakeRecognizer: StakeActionRecognizerService,
     private readonly scCallRecognizer: SCCallActionRecognizerService,
+    @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
+    private readonly metabondingRecognizer: MetabondingActionRecognizerService,
   ) {
     this.logger = new Logger(TransactionActionService.name);
   }
@@ -35,6 +38,7 @@ export class TransactionActionService {
         this.recognizers.push(this.mexRecognizer);
       }
 
+      this.recognizers.push(this.metabondingRecognizer);
       this.recognizers.push(this.esdtNftRecognizer);
       this.recognizers.push(this.stakeRecognizer);
       this.recognizers.push(this.scCallRecognizer);
@@ -104,7 +108,7 @@ export class TransactionActionService {
           relayedTransaction.receiver = AddressUtils.bech32Encode(BinaryUtils.base64ToHex(relayedTransaction.receiver));
           return this.getNormalTransactionMetadata(relayedTransaction);
         } catch (error) {
-          this.logger.error(`Unhandled error when interpreting relayed transaction`);
+          this.logger.error(`Unhandled error when interpreting relayed transaction with hash '${transaction.txHash}'`);
           this.logger.error(error);
         }
       }
@@ -119,7 +123,7 @@ export class TransactionActionService {
 
           return this.getNormalTransactionMetadata(relayedTransaction);
         } catch (error) {
-          this.logger.error(`Unhandled error when interpreting relayed transaction v2`);
+          this.logger.error(`Unhandled error when interpreting relayed transaction v2 with hash '${transaction.txHash}'`);
           this.logger.error(error);
         }
       }
@@ -128,21 +132,27 @@ export class TransactionActionService {
     try {
       if (transaction.type === TransactionType.SmartContractResult) {
         if (metadata.functionName === 'MultiESDTNFTTransfer' &&
-          metadata.functionArgs.length > 0 &&
-          AddressUtils.bech32Encode(metadata.functionArgs[0]) === metadata.receiver
+          metadata.functionArgs.length > 0
         ) {
+          // if the first argument has up to 4 hex chars (meaning it will contain up to 65536 transfers)
+          // then we insert the address as the first parameter. otherwise we assume that the address
+          // is the first parameter, which will be correctly interpreted by the recognizers
+          if (metadata.functionArgs[0].length <= 4) {
+            metadata.functionArgs.splice(0, 0, AddressUtils.bech32Decode(metadata.receiver));
+          }
+
           metadata.receiver = metadata.sender;
         }
 
         if (metadata.functionName === 'ESDTNFTTransfer' &&
-          metadata.functionArgs.length > 3 &&
-          AddressUtils.bech32Encode(metadata.functionArgs[3]) === metadata.receiver
+          metadata.functionArgs.length > 3
         ) {
+          metadata.functionArgs[3] = AddressUtils.bech32Decode(metadata.receiver);
           metadata.receiver = metadata.sender;
         }
       }
     } catch (error) {
-      this.logger.error(`Unhandled error when interpreting MultiESDTNFTTransfer / ESDTNFTTransfer for a smart contract result`);
+      this.logger.error(`Unhandled error when interpreting MultiESDTNFTTransfer / ESDTNFTTransfer for smart contract result with hash '${transaction.txHash}'`);
       this.logger.error(error);
     }
 

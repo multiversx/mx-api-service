@@ -30,12 +30,14 @@ import { EsdtSupply } from "../esdt/entities/esdt.supply";
 import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
+import { MexTokenService } from "../mex/mex.token.service";
+import { NumberUtils } from "src/utils/number.utils";
 
 @Injectable()
 export class NftService {
   private readonly logger: Logger;
   private readonly NFT_THUMBNAIL_PREFIX: string;
-  private readonly DEFAULT_MEDIA: NftMedia[];
+  readonly DEFAULT_MEDIA: NftMedia[];
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
@@ -50,6 +52,7 @@ export class NftService {
     private readonly persistenceService: PersistenceService,
     @Inject(forwardRef(() => EsdtAddressService))
     private readonly esdtAddressService: EsdtAddressService,
+    private readonly mexTokenService: MexTokenService,
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -73,7 +76,7 @@ export class NftService {
     }
 
     if (filter.search !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Wildcard('token', `*${filter.search}*`));
+      elasticQuery = elasticQuery.withSearchWildcardCondition(filter.search, ['token', 'name']);
     }
 
     if (filter.type !== undefined) {
@@ -177,7 +180,7 @@ export class NftService {
   private async batchApplySupply(nfts: Nft[]) {
     await this.cachingService.batchApply(
       nfts,
-      nft => CacheInfo.TokenLockedSupply(nft.identifier).key,
+      nft => CacheInfo.TokenLockedAccounts(nft.identifier).key,
       async nfts => {
         const result: Record<string, EsdtSupply> = {};
 
@@ -185,10 +188,10 @@ export class NftService {
           result[nft.identifier] = await this.esdtService.getTokenSupply(nft.identifier);
         }
 
-        return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenLockedSupply(identifier).key);
+        return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenLockedAccounts(identifier).key);
       },
       (nft, value) => nft.supply = value.totalSupply,
-      CacheInfo.TokenLockedSupply('').ttl,
+      CacheInfo.TokenLockedAccounts('').ttl,
     );
   }
 
@@ -265,6 +268,8 @@ export class NftService {
 
     await this.applyNftOwner(nft);
 
+    await this.applyNftAttributes(nft);
+
     await this.applyAssetsAndTicker(nft);
 
     await this.processNft(nft);
@@ -272,8 +277,21 @@ export class NftService {
     return nft;
   }
 
+  private async applyNftAttributes(nft: Nft): Promise<void> {
+    if (!nft.owner) {
+      return;
+    }
+
+    const nftsForAddress = await this.esdtAddressService.getNftsForAddress(nft.owner, { identifiers: [nft.identifier] }, { from: 0, size: 1 });
+    if (nftsForAddress.length === 0) {
+      return;
+    }
+
+    nft.attributes = nftsForAddress[0].attributes;
+  }
+
   private async applyMedia(nft: Nft) {
-    nft.media = await this.nftMediaService.getMedia(nft) ?? undefined;
+    nft.media = await this.nftMediaService.getMedia(nft.identifier) ?? undefined;
   }
 
   private async applyMetadata(nft: Nft) {
@@ -316,7 +334,10 @@ export class NftService {
         { name: 'nonce', order: ElasticSortOrder.descending },
       ]);
 
-    const elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+    let elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+    if (elasticNfts.length === 0 && identifier !== undefined) {
+      elasticNfts = await this.elasticService.getList('accountsesdt', 'identifier', ElasticQuery.create().withMustMatchCondition('identifier', identifier, QueryOperator.AND));
+    }
 
     const nfts: Nft[] = [];
 
@@ -354,10 +375,6 @@ export class NftService {
           nft.isWhitelistedStorage = elasticNft.data.whiteListedStorage;
         } else {
           nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
-        }
-
-        if (elasticNftData.metadata) {
-          nft.attributes = BinaryUtils.base64Encode(`metadata:${elasticNftData.metadata}`);
         }
       }
 
@@ -443,6 +460,7 @@ export class NftService {
 
     for (const nft of nfts) {
       await this.applyAssetsAndTicker(nft);
+      await this.applyPriceUsd(nft);
     }
 
     if (queryOptions && queryOptions.withSupply) {
@@ -452,6 +470,25 @@ export class NftService {
     await this.batchProcessNfts(nfts);
 
     return nfts;
+  }
+
+  private async applyPriceUsd(nft: NftAccount) {
+    if (nft.type !== NftType.MetaESDT) {
+      return;
+    }
+
+    try {
+      const prices = await this.mexTokenService.getMexPrices();
+
+      const price = prices[nft.collection];
+      if (price) {
+        nft.price = price;
+        nft.valueUsd = price * NumberUtils.denominateString(nft.balance, nft.decimals);
+      }
+    } catch (error) {
+      this.logger.error(`Unable to apply price on MetaESDT with identifier '${nft.identifier}'`);
+      this.logger.error(error);
+    }
   }
 
   async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {

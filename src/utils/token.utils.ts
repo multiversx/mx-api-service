@@ -4,6 +4,7 @@ import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles";
 import { TokenRoles } from "src/endpoints/tokens/entities/token.roles";
+import '../utils/extensions/string.extensions';
 
 export class TokenUtils {
   static isEsdt(tokenIdentifier: string) {
@@ -20,6 +21,11 @@ export class TokenUtils {
     uri = ApiUtils.replaceUri(uri, 'https://gateway.pinata.cloud/ipfs', prefix);
     uri = ApiUtils.replaceUri(uri, 'https://dweb.link/ipfs', prefix);
     uri = ApiUtils.replaceUri(uri, 'ipfs:/', prefix);
+
+    if (uri.endsWith('.ipfs.dweb.link')) {
+      const id = uri.removeSuffix('.ipfs.dweb.link').removePrefix('https://');
+      uri = `${prefix}/${id}`;
+    }
 
     return uri;
   }
@@ -52,10 +58,10 @@ export class TokenUtils {
 
     switch (role) {
       case 'ESDTRoleLocalMint':
-        tokenRoles.canMint = true;
+        tokenRoles.canLocalMint = true;
         break;
       case 'ESDTRoleLocalBurn':
-        tokenRoles.canBurn = true;
+        tokenRoles.canLocalBurn = true;
         break;
     }
   }

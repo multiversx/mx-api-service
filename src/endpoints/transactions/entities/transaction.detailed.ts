@@ -9,13 +9,13 @@ export class TransactionDetailed extends Transaction {
     @ApiProperty({ type: SmartContractResult, isArray: true })
     results: SmartContractResult[] = [];
 
-    @ApiProperty({ type: TransactionReceipt })
+    @ApiProperty({ type: TransactionReceipt, nullable: true })
     receipt: TransactionReceipt | undefined = undefined;
 
-    @ApiProperty()
+    @ApiProperty({ type: Number, nullable: true })
     price: number | undefined = undefined;
 
-    @ApiProperty({ type: TransactionLog })
+    @ApiProperty({ type: TransactionLog, nullable: true })
     logs: TransactionLog | undefined = undefined;
 
     @ApiProperty({ type: TransactionOperation, isArray: true })

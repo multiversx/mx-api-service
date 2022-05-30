@@ -43,7 +43,9 @@ export class TransactionService {
     private readonly elasticService: ElasticService,
     private readonly gatewayService: GatewayService,
     private readonly transactionPriceService: TransactionPriceService,
+    @Inject(forwardRef(() => TransactionGetService))
     private readonly transactionGetService: TransactionGetService,
+    @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
     private readonly pluginsService: PluginService,
     private readonly cachingService: CachingService,
@@ -124,6 +126,9 @@ export class TransactionService {
       .withCondition(QueryConditionOptions.should, shouldQueries)
       .withCondition(QueryConditionOptions.must, mustQueries);
 
+    if (filter.tokens) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.tokens, token => QueryType.Match('tokens', token, QueryOperator.AND));
+    }
 
     if (filter.before || filter.after) {
       elasticQuery = elasticQuery
@@ -254,14 +259,21 @@ export class TransactionService {
 
     let txHash: string;
     try {
-      const result = await this.gatewayService.create('transaction/send', GatewayComponentRequest.sendTransaction, transaction);
-      txHash = result.txHash;
+      // eslint-disable-next-line require-await
+      const result = await this.gatewayService.create('transaction/send', GatewayComponentRequest.sendTransaction, transaction, async (error) => {
+        const message = error.response?.data?.error;
+        if (message && message.includes('transaction generation failed')) {
+          throw error;
+        }
+
+        return false;
+      });
+
+      txHash = result?.txHash;
     } catch (error: any) {
-      this.logger.error(error);
-      return error.response.error;
+      return error.response?.error ?? '';
     }
 
-    // TODO: pending alignment
     return {
       txHash,
       receiver: transaction.receiver,

@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
 import { TokenDetailed } from "./entities/token.detailed";
@@ -14,10 +14,6 @@ import { QueryType } from "src/common/elastic/entities/query.type";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { TokenAccount } from "./entities/token.account";
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
-import { CachingService } from "src/common/caching/caching.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { TransactionService } from "../transactions/transaction.service";
-import { RecordUtils } from "src/utils/record.utils";
 import { TokenType } from "./entities/token.type";
 import { NumberUtils } from "src/utils/number.utils";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
@@ -27,6 +23,12 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { AddressUtils } from "src/utils/address.utils";
 import { TokenProperties } from "./entities/token.properties";
 import { TokenRoles } from "./entities/token.roles";
+import { TokenSupplyResult } from "./entities/token.supply.result";
+import { TokenDetailedWithBalance } from "./entities/token.detailed.with.balance";
+import { SortOrder } from "src/common/entities/sort.order";
+import { TokenSort } from "./entities/token.sort";
+import { TokenWithRoles } from "./entities/token.with.roles";
+import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
 
 @Injectable()
 export class TokenService {
@@ -34,14 +36,16 @@ export class TokenService {
   constructor(
     private readonly esdtService: EsdtService,
     private readonly elasticService: ElasticService,
-    private readonly cachingService: CachingService,
-    @Inject(forwardRef(() => TransactionService))
-    private readonly transactionService: TransactionService,
     private readonly esdtAddressService: EsdtAddressService,
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService
   ) {
     this.logger = new Logger(TokenService.name);
+  }
+
+  async isToken(identifier: string): Promise<boolean> {
+    const tokens = await this.esdtService.getAllEsdtTokens();
+    return tokens.find(x => x.identifier === identifier) !== undefined;
   }
 
   async getToken(identifier: string): Promise<TokenDetailed | undefined> {
@@ -56,8 +60,6 @@ export class TokenService {
     await this.applyTickerFromAssets(token);
 
     await this.applySupply(token);
-
-    await this.processToken(token);
 
     token.roles = await this.getTokenRoles(identifier);
 
@@ -75,8 +77,6 @@ export class TokenService {
       this.applyTickerFromAssets(token);
     }
 
-    await this.batchProcessTokens(tokens);
-
     return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
   }
 
@@ -86,57 +86,6 @@ export class TokenService {
     } else {
       token.ticker = token.identifier;
     }
-  }
-
-  async processToken(token: TokenDetailed) {
-    token.transactions = await this.cachingService.getOrSetCache(
-      CacheInfo.TokenTransactions(token.identifier).key,
-      async () => await this.transactionService.getTransactionCount({ token: token.identifier }),
-      CacheInfo.TokenTransactions(token.identifier).ttl
-    );
-
-    token.accounts = await this.cachingService.getOrSetCache(
-      CacheInfo.TokenAccounts(token.identifier).key,
-      async () => await this.esdtService.getEsdtAccountsCount(token.identifier),
-      CacheInfo.TokenAccounts(token.identifier).ttl
-    );
-  }
-
-  async batchProcessTokens(tokens: TokenDetailed[]) {
-    await this.cachingService.batchApply
-      (tokens,
-        token => CacheInfo.TokenTransactions(token.identifier).key,
-        async tokens => {
-          const result: { [key: string]: number } = {};
-
-          for (const token of tokens) {
-            const transactions = await this.transactionService.getTransactionCount({ token: token.identifier });
-
-            result[token.identifier] = transactions;
-          }
-
-          return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenTransactions(identifier).key);
-        },
-        (token, transactions) => token.transactions = transactions,
-        CacheInfo.TokenTransactions('').ttl,
-      );
-
-    await this.cachingService.batchApply
-      (tokens,
-        token => CacheInfo.TokenAccounts(token.identifier).key,
-        async tokens => {
-          const result: { [key: string]: number } = {};
-
-          for (const token of tokens) {
-            const accounts = await this.esdtService.getEsdtAccountsCount(token.identifier);
-            result[token.identifier] = accounts;
-          }
-
-          return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenAccounts(identifier).key);
-        },
-        (token, accounts) => token.accounts = accounts,
-        CacheInfo.TokenAccounts('').ttl,
-      );
   }
 
   async getFilteredTokens(filter: TokenFilter): Promise<TokenDetailed[]> {
@@ -164,6 +113,42 @@ export class TokenService {
       const identifierArray = filter.identifiers.map(identifier => identifier.toLowerCase());
 
       tokens = tokens.filter(token => identifierArray.includes(token.identifier.toLowerCase()));
+    }
+
+    if (filter.sort) {
+      tokens = this.sortTokens(tokens, filter.sort, filter.order ?? SortOrder.desc);
+    }
+
+    return tokens;
+  }
+
+  private sortTokens(tokens: TokenDetailed[], sort: TokenSort, order: SortOrder): TokenDetailed[] {
+    let criteria: (token: Token) => number;
+
+    switch (sort) {
+      case TokenSort.accounts:
+        criteria = token => token.accounts ?? 0;
+        break;
+      case TokenSort.transactions:
+        criteria = token => token.transactions ?? 0;
+        break;
+      case TokenSort.price:
+        criteria = token => token.price ?? 0;
+        break;
+      case TokenSort.marketCap:
+        criteria = token => token.marketCap ?? 0;
+        break;
+      default:
+        throw new Error(`Unsupported sorting criteria '${sort}'`);
+    }
+
+    switch (order) {
+      case SortOrder.asc:
+        tokens = tokens.sorted(criteria);
+        break;
+      case SortOrder.desc:
+        tokens = tokens.sortedDescending(criteria);
+        break;
     }
 
     return tokens;
@@ -235,14 +220,25 @@ export class TokenService {
     const result: TokenWithBalance[] = [];
     for (const token of allTokens) {
       if (elasticTokensWithBalance[token.identifier]) {
-        result.push({
+        const tokenWithBalance: TokenWithBalance = {
           ...token,
           balance: elasticTokensWithBalance[token.identifier],
-        });
+          valueUsd: undefined,
+        };
+
+        this.applyValueUsd(tokenWithBalance);
+
+        result.push(tokenWithBalance);
       }
     }
 
     return result;
+  }
+
+  applyValueUsd(tokenWithBalance: TokenWithBalance) {
+    if (tokenWithBalance.price) {
+      tokenWithBalance.valueUsd = tokenWithBalance.price * NumberUtils.denominateString(tokenWithBalance.balance, tokenWithBalance.decimals);
+    }
   }
 
   async getTokensForAddressFromGateway(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
@@ -252,13 +248,15 @@ export class TokenService {
     tokens = tokens.map(token => ApiUtils.mergeObjects(new TokenWithBalance(), token));
 
     for (const token of tokens) {
-      await this.applyTickerFromAssets(token);
+      this.applyTickerFromAssets(token);
+
+      this.applyValueUsd(token);
     }
 
     return tokens;
   }
 
-  async getTokenForAddress(address: string, identifier: string): Promise<TokenWithBalance | undefined> {
+  async getTokenForAddress(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {
     const tokens = await this.getFilteredTokens({ identifier });
     if (!tokens.length) {
       this.logger.log(`Error when fetching token ${identifier} details for address ${address}`);
@@ -266,25 +264,35 @@ export class TokenService {
     }
 
     const token = tokens[0];
-    const esdt = await this.gatewayService.get(`address/${address}/esdt/${identifier}`, GatewayComponentRequest.addressEsdtBalance);
+    // eslint-disable-next-line require-await
+    const esdt = await this.gatewayService.get(`address/${address}/esdt/${identifier}`, GatewayComponentRequest.addressEsdtBalance, async (error) => {
+      const errorMessage = error?.response?.data?.error;
+      if (errorMessage && errorMessage.includes('account was not found')) {
+        return true;
+      }
+
+      return false;
+    });
 
     if (!esdt || !esdt.tokenData || esdt.tokenData.balance === '0') {
-      this.logger.log(`Error when fetching token ${identifier} balance for address ${address}`);
       return undefined;
     }
 
     const balance = esdt.tokenData.balance;
-    let tokenWithBalance = {
+    let tokenWithBalance: TokenDetailedWithBalance = {
       ...token,
       balance,
+      valueUsd: undefined,
     };
-    tokenWithBalance = ApiUtils.mergeObjects(new TokenWithBalance(), tokenWithBalance);
+    tokenWithBalance = ApiUtils.mergeObjects(new TokenDetailedWithBalance(), tokenWithBalance);
+
+    this.applyValueUsd(tokenWithBalance);
 
     tokenWithBalance.identifier = token.identifier;
 
     await this.applyTickerFromAssets(tokenWithBalance);
 
-    await this.applySupply(token);
+    await this.applySupply(tokenWithBalance);
 
     return tokenWithBalance;
   }
@@ -398,7 +406,7 @@ export class TokenService {
     return await this.esdtService.getEsdtAddressesRoles(identifier);
   }
 
-  async getTokenRolesForAddress(identifier: string, address: string): Promise<TokenRoles | undefined> {
+  async getTokenRolesForIdentifierAndAddress(identifier: string, address: string): Promise<TokenRoles | undefined> {
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       const token = await this.elasticService.getItem('tokens', 'identifier', identifier);
 
@@ -425,11 +433,6 @@ export class TokenService {
       return addressRoles;
     }
 
-    const token = await this.getToken(identifier);
-    if (!token) {
-      return undefined;
-    }
-
     const tokenAddressesRoles = await this.esdtService.getEsdtAddressesRoles(identifier);
     const addressRoles = tokenAddressesRoles?.find((role: TokenRoles) => role.address === address);
 
@@ -440,13 +443,25 @@ export class TokenService {
   }
 
   async applySupply(token: TokenDetailed): Promise<void> {
-    const { totalSupply, circulatingSupply } = await this.esdtService.getTokenSupply(token.identifier);
+    const supply = await this.esdtService.getTokenSupply(token.identifier);
 
-    token.supply = NumberUtils.denominate(BigInt(totalSupply), token.decimals).toFixed();
-    token.circulatingSupply = NumberUtils.denominate(BigInt(circulatingSupply), token.decimals).toFixed();
+    token.supply = NumberUtils.denominate(BigInt(supply.totalSupply), token.decimals).toFixed();
+    token.circulatingSupply = NumberUtils.denominate(BigInt(supply.circulatingSupply), token.decimals).toFixed();
+
+    if (supply.minted) {
+      token.minted = supply.minted;
+    }
+
+    if (supply.burned) {
+      token.burnt = supply.burned;
+    }
+
+    if (supply.initialMinted) {
+      token.initialMinted = supply.initialMinted;
+    }
   }
 
-  async getTokenSupply(identifier: string): Promise<{ supply: string, circulatingSupply: string } | undefined> {
+  async getTokenSupply(identifier: string, denominated: boolean | undefined = undefined): Promise<TokenSupplyResult | undefined> {
     const properties = await this.getTokenProperties(identifier);
     if (!properties) {
       return undefined;
@@ -454,9 +469,27 @@ export class TokenService {
 
     const result = await this.esdtService.getTokenSupply(identifier);
 
+    const totalSupply = NumberUtils.denominateString(result.totalSupply, properties.decimals);
+    const circulatingSupply = NumberUtils.denominateString(result.circulatingSupply, properties.decimals);
+
+    let lockedAccounts = result.lockedAccounts;
+    if (lockedAccounts !== undefined) {
+      lockedAccounts = JSON.parse(JSON.stringify(lockedAccounts));
+      if (denominated === true) {
+        // @ts-ignore
+        for (const lockedAccount of lockedAccounts) {
+          lockedAccount.balance = NumberUtils.denominateString(lockedAccount.balance.toString(), properties.decimals);
+        }
+      }
+    }
+
     return {
-      supply: NumberUtils.denominateString(result.totalSupply, properties.decimals).toFixed(),
-      circulatingSupply: NumberUtils.denominateString(result.circulatingSupply, properties.decimals).toFixed(),
+      supply: denominated === true ? totalSupply : totalSupply.toFixed(),
+      circulatingSupply: denominated === true ? circulatingSupply : circulatingSupply.toFixed(),
+      minted: denominated === true && result.minted ? NumberUtils.denominateString(result.minted, properties.decimals) : result.minted,
+      burnt: denominated === true && result.burned ? NumberUtils.denominateString(result.burned, properties.decimals) : result.burned,
+      initialMinted: denominated === true && result.initialMinted ? NumberUtils.denominateString(result.initialMinted, properties.decimals) : result.initialMinted,
+      lockedAccounts,
     };
   }
 
@@ -475,5 +508,89 @@ export class TokenService {
     }
 
     return properties;
+  }
+
+  async getTokensWithRolesForAddressCount(address: string, filter: TokenWithRolesFilter): Promise<number> {
+    const elasticQuery = this.buildTokensWithRolesForAddressQuery(address, filter);
+
+    return await this.elasticService.getCount('tokens', elasticQuery);
+  }
+
+  async getTokenWithRolesForAddress(address: string, identifier: string): Promise<TokenWithRoles | undefined> {
+    const tokens = await this.getTokensWithRolesForAddress(address, { identifier }, { from: 0, size: 1 });
+    if (tokens.length === 0) {
+      return undefined;
+    }
+
+    return tokens[0];
+  }
+
+  async getTokensWithRolesForAddress(address: string, filter: TokenWithRolesFilter, pagination: QueryPagination): Promise<TokenWithRoles[]> {
+    const elasticQuery = this.buildTokensWithRolesForAddressQuery(address, filter, pagination);
+
+    const tokenList = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+
+    const allTokens = await this.esdtService.getAllEsdtTokens();
+
+    const result: TokenWithRoles[] = [];
+
+    for (const item of tokenList) {
+      const token = allTokens.find(x => x.identifier === item.identifier);
+      if (token) {
+        const resultItem = ApiUtils.mergeObjects(new TokenWithRoles(), token);
+        if (item.roles) {
+          if (item.roles.ESDTRoleLocalMint && item.roles.ESDTRoleLocalMint.includes(address)) {
+            resultItem.canLocalMint = true;
+          }
+
+          if (item.roles.ESDTRoleLocalBurn && item.roles.ESDTRoleLocalBurn.includes(address)) {
+            resultItem.canLocalBurn = true;
+          }
+        }
+
+        result.push(resultItem);
+      }
+    }
+
+    return result;
+  }
+
+  private buildTokensWithRolesForAddressQuery(address: string, filter: TokenWithRolesFilter, pagination?: QueryPagination): ElasticQuery {
+    let elasticQuery = ElasticQuery.create()
+      .withMustNotExistCondition('identifier')
+      .withMustCondition(QueryType.Should(
+        [
+          QueryType.Match('currentOwner', address),
+          QueryType.Nested('roles', { 'roles.ESDTRoleLocalMint': address }),
+          QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }),
+        ]
+      ))
+      .withMustMatchCondition('type', TokenType.FungibleESDT)
+      .withMustMatchCondition('token', filter.identifier)
+      .withMustMatchCondition('currentOwner', filter.owner);
+
+    if (filter.search) {
+      elasticQuery = elasticQuery
+        .withShouldCondition([
+          QueryType.Wildcard('token', filter.search),
+          QueryType.Wildcard('name', filter.search),
+        ]);
+    }
+
+    if (filter.canMint !== undefined) {
+      const condition = filter.canMint === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
+      elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleLocalMint': address }));
+    }
+
+    if (filter.canBurn !== undefined) {
+      const condition = filter.canBurn === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
+      elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }));
+    }
+
+    if (pagination) {
+      elasticQuery = elasticQuery.withPagination(pagination);
+    }
+
+    return elasticQuery;
   }
 }

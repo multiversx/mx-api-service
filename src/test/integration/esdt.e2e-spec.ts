@@ -101,8 +101,6 @@ describe('ESDT Service', () => {
         expect(result.hasOwnProperty("name")).toBeTruthy();
         expect(result.hasOwnProperty("ticker")).toBeTruthy();
         expect(result.hasOwnProperty("owner")).toBeTruthy();
-        expect(result.hasOwnProperty("minted")).toBeTruthy();
-        expect(result.hasOwnProperty("burnt")).toBeTruthy();
         expect(result.hasOwnProperty("isPaused")).toBeTruthy();
         expect(result.hasOwnProperty("canUpgrade")).toBeTruthy();
         expect(result.hasOwnProperty("canMint")).toBeTruthy();
@@ -116,7 +114,7 @@ describe('ESDT Service', () => {
   });
 
   describe("Get ESDT Token Properties", () => {
-    it("should return the properties of the token ( tiker property should not be present )", async () => {
+    it("should return the properties of the token ( ticker property should not be present )", async () => {
       jest
         .spyOn(CachingService.prototype, 'getOrSetCache')
         // eslint-disable-next-line require-await
@@ -132,8 +130,6 @@ describe('ESDT Service', () => {
       expect(results.hasOwnProperty("identifier")).toBeTruthy();
       expect(results.hasOwnProperty("name")).toBeTruthy();
       expect(results.hasOwnProperty("owner")).toBeTruthy();
-      expect(results.hasOwnProperty("minted")).toBeTruthy();
-      expect(results.hasOwnProperty("burnt")).toBeTruthy();
       expect(results.hasOwnProperty("isPaused")).toBeTruthy();
       expect(results.hasOwnProperty("canUpgrade")).toBeTruthy();
       expect(results.hasOwnProperty("canMint")).toBeTruthy();

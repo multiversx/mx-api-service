@@ -218,6 +218,25 @@ describe('API Config', () => {
     });
   });
 
+  describe("getMetabondingContractAddress", () => {
+    it("should return metabonding contract address", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'erd1qqqqqqqqqqqqqpgq50dge6rrpcra4tp9hl57jl0893a4r2r72jpsk39rjj'));
+
+      const results = apiConfigService.getMetabondingContractAddress();
+      expect(results).toEqual('erd1qqqqqqqqqqqqqpgq50dge6rrpcra4tp9hl57jl0893a4r2r72jpsk39rjj');
+    });
+
+    it("should throw error because test simulates that metabonding contract address is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      expect(() => apiConfigService.getMetabondingContractAddress()).toThrowError('No metabonding contract present');
+    });
+  });
+
   describe("getDelegationContractShardId", () => {
     it("should return delegation contract shardId address", () => {
       jest

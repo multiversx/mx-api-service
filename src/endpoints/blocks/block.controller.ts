@@ -1,5 +1,5 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
 import { ParseBlsHashPipe } from "src/utils/pipes/parse.bls.hash.pipe";
 import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
@@ -13,17 +13,13 @@ export class BlockController {
   constructor(private readonly blockService: BlockService) { }
 
   @Get("/blocks")
-  @ApiResponse({
-    status: 200,
-    description: 'The blocks available on the blockchain',
-    type: Block,
-    isArray: true,
-  })
+  @ApiOperation({ summary: 'Blocks', description: 'Returns a list of all blocks from all shards' })
+  @ApiOkResponse({ type: [Block] })
   @ApiQuery({ name: 'shard', description: 'Id of the shard the block belongs to', required: false })
   @ApiQuery({ name: 'proposer', description: 'Filter by proposer', required: false })
   @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
   @ApiQuery({ name: 'epoch', description: 'Filter by epoch', required: false })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'nonce', description: 'Filter by nonce', required: false })
   getBlocks(
@@ -39,10 +35,8 @@ export class BlockController {
   }
 
   @Get("/blocks/count")
-  @ApiResponse({
-    status: 200,
-    description: 'The number of blocks available on the blockchain',
-  })
+  @ApiOperation({ summary: 'Blocks count', description: 'Returns count of all blocks from all shards' })
+  @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'shard', description: 'Id of the shard the block belongs to', required: false })
   @ApiQuery({ name: 'proposer', description: 'Filter by proposer', required: false })
   @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
@@ -71,15 +65,9 @@ export class BlockController {
   }
 
   @Get("/blocks/:hash")
-  @ApiResponse({
-    status: 200,
-    description: 'The details of a given block',
-    type: BlockDetailed,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Block not found',
-  })
+  @ApiOperation({ summary: 'Block details', description: 'Returns block information details for a given hash' })
+  @ApiOkResponse({ type: BlockDetailed })
+  @ApiNotFoundResponse({ description: 'Block not found' })
   async getBlock(@Param('hash', ParseBlockHashPipe) hash: string): Promise<BlockDetailed> {
     try {
       return await this.blockService.getBlock(hash);

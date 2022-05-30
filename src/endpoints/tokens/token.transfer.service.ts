@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { BinaryUtils } from "src/utils/binary.utils";
@@ -21,6 +21,7 @@ export class TokenTransferService {
 
   constructor(
     private readonly cachingService: CachingService,
+    @Inject(forwardRef(() => EsdtService))
     private readonly esdtService: EsdtService,
     private readonly tokenAssetService: TokenAssetService
   ) {
@@ -222,6 +223,7 @@ export class TokenTransferService {
       const decimals = properties ? properties.decimals : undefined;
       const name = properties ? properties.name : undefined;
       const esdtType = properties ? properties.type : undefined;
+      const svgUrl = properties ? properties.svgUrl : undefined;
 
       let collection: string | undefined = undefined;
       if (nonce) {
@@ -231,7 +233,7 @@ export class TokenTransferService {
 
       const type = nonce ? TransactionOperationType.nft : TransactionOperationType.esdt;
 
-      return { id: log.id ?? '', action, type, esdtType, collection, identifier, name, sender: event.address, receiver, value, decimals };
+      return { id: log.id ?? '', action, type, esdtType, collection, identifier, name, sender: event.address, receiver, value, decimals, svgUrl };
     } catch (error) {
       this.logger.error(`Error when parsing NFT transaction log for tx hash '${txHash}' with action '${action}' and topics: ${event.topics}`);
       this.logger.error(error);

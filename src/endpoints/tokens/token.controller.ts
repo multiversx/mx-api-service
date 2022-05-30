@@ -1,5 +1,5 @@
-import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { SortOrder } from "src/common/entities/sort.order";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
@@ -13,31 +13,31 @@ import { TokenAccount } from "./entities/token.account";
 import { TokenDetailed } from "./entities/token.detailed";
 import { TokenService } from "./token.service";
 import { TokenRoles } from "./entities/token.roles";
+import { EsdtSupply } from "../esdt/entities/esdt.supply";
+import { Transaction } from "../transactions/entities/transaction";
+import { TokenSupplyResult } from "./entities/token.supply.result";
+import { TokenSort } from "./entities/token.sort";
+
 
 @Controller()
 @ApiTags('tokens')
 export class TokenController {
-  private readonly logger: Logger;
   constructor(
     private readonly tokenService: TokenService,
     private readonly transactionService: TransactionService,
-  ) {
-    this.logger = new Logger(TokenController.name);
-  }
+  ) { }
 
   @Get("/tokens")
-  @ApiResponse({
-    status: 200,
-    description: 'The list of tokens available on the blockchain',
-    type: TokenDetailed,
-    isArray: true,
-  })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiOperation({ summary: 'Tokens', description: 'Returns all tokens available on the blockchain' })
+  @ApiOkResponse({ type: [TokenDetailed] })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
+  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false })
+  @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false })
   async getTokens(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -45,15 +45,15 @@ export class TokenController {
     @Query('name') name: string | undefined,
     @Query('identifier') identifier: string | undefined,
     @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
+    @Query('sort', new ParseOptionalEnumPipe(TokenSort)) sort: TokenSort | undefined,
+    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
   ): Promise<TokenDetailed[]> {
-    return await this.tokenService.getTokens({ from, size }, { search, name, identifier, identifiers });
+    return await this.tokenService.getTokens({ from, size }, { search, name, identifier, identifiers, sort, order });
   }
 
   @Get("/tokens/count")
-  @ApiResponse({
-    status: 200,
-    description: 'The number of tokens available on the blockchain',
-  })
+  @ApiOperation({ summary: 'Tokens count', description: 'Return total number of tokens available on blockchain' })
+  @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
@@ -79,15 +79,9 @@ export class TokenController {
   }
 
   @Get('/tokens/:identifier')
-  @ApiResponse({
-    status: 200,
-    description: 'Token details',
-    type: TokenDetailed,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Token not found',
-  })
+  @ApiOperation({ summary: 'Token', description: 'Returns token details based on a specific token identifier' })
+  @ApiOkResponse({ type: TokenDetailed })
+  @ApiNotFoundResponse({ description: 'Token not found' })
   async getToken(@Param('identifier') identifier: string): Promise<TokenDetailed> {
     const token = await this.tokenService.getToken(identifier);
     if (token === undefined) {
@@ -98,41 +92,43 @@ export class TokenController {
   }
 
   @Get('/tokens/:identifier/supply')
-  @ApiResponse({
-    status: 200,
-    description: 'Non-fungible / semi-fungible token supply',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Token not found',
-  })
-  async getTokenSupply(@Param('identifier') identifier: string): Promise<{ supply: string, circulatingSupply: string }> {
-    const getSupplyResult = await this.tokenService.getTokenSupply(identifier);
+  @ApiOperation({ summary: 'Token supply', description: 'Returns general supply information for a specific token' })
+  @ApiQuery({ name: 'denominated', description: 'Return results denominated', required: false })
+  @ApiOkResponse({ type: EsdtSupply })
+  @ApiNotFoundResponse({ description: 'Token not found' })
+  async getTokenSupply(
+    @Param('identifier') identifier: string,
+    @Query('denominated', new ParseOptionalBoolPipe) denominated: boolean | undefined,
+  ): Promise<TokenSupplyResult> {
+    const isToken = await this.tokenService.isToken(identifier);
+    if (!isToken) {
+      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+    }
+
+    const getSupplyResult = await this.tokenService.getTokenSupply(identifier, denominated);
     if (!getSupplyResult) {
-      throw new NotFoundException();
+      throw new NotFoundException('Token not found');
     }
 
     return getSupplyResult;
   }
 
   @Get("/tokens/:identifier/accounts")
-  @ApiResponse({
-    status: 200,
-    description: 'The specific token accounts available on the blockchain',
-    type: TokenAccount,
-    isArray: true,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Token not found',
-  })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiOperation({ summary: 'Token accounts', description: 'Returns a list of accounts that hold a specific token' })
+  @ApiOkResponse({ type: [TokenAccount] })
+  @ApiNotFoundResponse({ description: 'Token not found' })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   async getTokenAccounts(
     @Param('identifier') identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<TokenAccount[]> {
+    const isToken = await this.tokenService.isToken(identifier);
+    if (!isToken) {
+      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+    }
+
     const accounts = await this.tokenService.getTokenAccounts({ from, size }, identifier);
     if (!accounts) {
       throw new NotFoundException('Token not found');
@@ -142,17 +138,17 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/accounts/count")
-  @ApiResponse({
-    status: 200,
-    description: 'The number of specific token accounts available on the blockchain',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Token not found',
-  })
+  @ApiOperation({ summary: 'Token accounts count', description: 'Returns the total number of accounts that hold a specific token' })
+  @ApiOkResponse({ type: Number })
+  @ApiNotFoundResponse({ description: 'Token not found' })
   async getTokenAccountsCount(
     @Param('identifier') identifier: string,
   ): Promise<number> {
+    const isToken = await this.tokenService.isToken(identifier);
+    if (!isToken) {
+      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+    }
+
     const count = await this.tokenService.getTokenAccountsCount(identifier);
     if (count === undefined) {
       throw new NotFoundException('Token not found');
@@ -162,15 +158,9 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/transactions")
-  @ApiResponse({
-    status: 200,
-    description: 'The specific token transactions history on the blockchain',
-    isArray: true,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Token not found',
-  })
+  @ApiOperation({ summary: 'Token transactions', description: `Returns a list of transactions for a specific token. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs` })
+  @ApiOkResponse({ type: [Transaction] })
+  @ApiNotFoundResponse({ description: 'Token not found' })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
@@ -183,7 +173,7 @@ export class TokenController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
@@ -212,38 +202,32 @@ export class TokenController {
       throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
     }
 
-    try {
-      return await this.transactionService.getTransactions({
-        sender,
-        receiver,
-        token: identifier,
-        function: scFunction,
-        senderShard,
-        receiverShard,
-        miniBlockHash,
-        hashes,
-        status,
-        search,
-        before,
-        after,
-        order,
-      }, { from, size }, { withScResults, withOperations, withLogs });
-    } catch (error) {
-      this.logger.error(error);
-      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+    const isToken = await this.tokenService.isToken(identifier);
+    if (!isToken) {
+      throw new NotFoundException('Token not found');
     }
+
+    return await this.transactionService.getTransactions({
+      sender,
+      receiver,
+      token: identifier,
+      function: scFunction,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      search,
+      before,
+      after,
+      order,
+    }, { from, size }, { withScResults, withOperations, withLogs });
   }
 
   @Get("/tokens/:identifier/transactions/count")
-  @ApiResponse({
-    status: 200,
-    description: 'The specific token transactions count on the blockchain',
-    isArray: true,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Token not found',
-  })
+  @ApiOperation({ summary: 'Token transactions count', description: 'Returns the total number of transactions for a specific token' })
+  @ApiOkResponse({ type: Number })
+  @ApiNotFoundResponse({ description: 'Token not found' })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
@@ -267,40 +251,35 @@ export class TokenController {
     @Query('before', ParseOptionalIntPipe) before: number | undefined,
     @Query('after', ParseOptionalIntPipe) after: number | undefined,
   ) {
-    try {
-      return await this.transactionService.getTransactionCount({
-        sender,
-        receiver,
-        token: identifier,
-        senderShard,
-        receiverShard,
-        miniBlockHash,
-        hashes,
-        status,
-        search,
-        before,
-        after,
-      });
-    } catch (error) {
-      this.logger.error(error);
-      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+    const isToken = await this.tokenService.isToken(identifier);
+    if (!isToken) {
+      throw new NotFoundException('Token not found');
     }
+
+    return await this.transactionService.getTransactionCount({
+      sender,
+      receiver,
+      token: identifier,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      search,
+      before,
+      after,
+    });
   }
 
   @Get("/tokens/:identifier/roles")
-  @ApiResponse({
-    status: 200,
-    description: 'Roles of every address to a specific ESDT',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Token not found',
-  })
+  @ApiOperation({ summary: 'Token roles', description: 'Returns a list of accounts that can perform various actions on a specific token' })
+  @ApiOkResponse({ type: [TokenRoles] })
+  @ApiNotFoundResponse({ description: 'Token not found' })
   async getTokenRoles(
     @Param('identifier') identifier: string,
   ): Promise<TokenRoles[]> {
-    const token = await this.getToken(identifier);
-    if (!token) {
+    const isToken = await this.tokenService.isToken(identifier);
+    if (!isToken) {
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
     }
 
@@ -313,22 +292,21 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/roles/:address")
-  @ApiResponse({
-    status: 200,
-    description: 'Roles for a specific address to a specific ESDT',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Token not found',
-  })
+  @ApiOperation({ summary: 'Token address roles', description: 'Returns roles detalils for a specific address of a given token' })
+  @ApiOkResponse({ type: TokenRoles })
+  @ApiNotFoundResponse({ description: 'Token not found' })
   async getTokenRolesForAddress(
     @Param('identifier') identifier: string,
     @Param('address') address: string,
   ): Promise<TokenRoles> {
-    const roles = await this.tokenService.getTokenRolesForAddress(identifier, address);
+    const isToken = await this.tokenService.isToken(identifier);
+    if (!isToken) {
+      throw new NotFoundException('Token not found');
+    }
 
+    const roles = await this.tokenService.getTokenRolesForIdentifierAndAddress(identifier, address);
     if (!roles) {
-      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Token not found');
     }
 
     return roles;

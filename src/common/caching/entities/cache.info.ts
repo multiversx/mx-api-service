@@ -126,7 +126,12 @@ export class CacheInfo {
 
   static MexSettings: CacheInfo = {
     key: 'mex:settings',
-    ttl: Constants.oneDay(),
+    ttl: Constants.oneHour(),
+  };
+
+  static MexContracts: CacheInfo = {
+    key: 'mex:contracts',
+    ttl: Constants.oneHour(),
   };
 
   static TokenTransferProperties(identifier: string): CacheInfo {
@@ -178,9 +183,9 @@ export class CacheInfo {
     };
   }
 
-  static TokenLockedSupply(identifier: string): CacheInfo {
+  static TokenLockedAccounts(identifier: string): CacheInfo {
     return {
-      key: `tokenLockedSupply:${identifier}`,
+      key: `tokenLockedAccounts:${identifier}`,
       ttl: Constants.oneHour(),
     };
   }
@@ -188,13 +193,20 @@ export class CacheInfo {
   static TokenTransactions(identifier: string): CacheInfo {
     return {
       key: `tokenTransactions:${identifier}`,
-      ttl: Constants.oneHour(),
+      ttl: Constants.oneMinute() * 10,
     };
   }
 
   static TokenAccounts(identifier: string): CacheInfo {
     return {
       key: `tokenAccounts:${identifier}`,
+      ttl: Constants.oneMinute() * 10,
+    };
+  }
+
+  static TokenAccountsExtra(identifier: string): CacheInfo {
+    return {
+      key: `tokenAccountsExtra:${identifier}`,
       ttl: Constants.oneHour(),
     };
   }
@@ -212,4 +224,41 @@ export class CacheInfo {
       ttl: Constants.oneMinute() * 15,
     };
   }
+
+  static CollectionType(collectionIdentifier: string): CacheInfo {
+    return {
+      key: `collectionType:${collectionIdentifier}`,
+      ttl: Constants.oneMinute() * 10,
+    };
+  }
+
+  static MexEconomics: CacheInfo = {
+    key: "mexEconomics",
+    ttl: Constants.oneMinute() * 10,
+  };
+
+  static MexPairs: CacheInfo = {
+    key: "mexPairs",
+    ttl: Constants.oneMinute() * 10,
+  };
+
+  static MexTokens: CacheInfo = {
+    key: "mexTokens",
+    ttl: Constants.oneMinute() * 10,
+  };
+
+  static MexFarms: CacheInfo = {
+    key: "mexFarms",
+    ttl: Constants.oneMinute() * 10,
+  };
+
+  static MexTokensIndexed: CacheInfo = {
+    key: "mexTokensIndexed",
+    ttl: Constants.oneMinute() * 10,
+  };
+
+  static MexPrices: CacheInfo = {
+    key: "mexPrices",
+    ttl: Constants.oneMinute() * 10,
+  };
 }

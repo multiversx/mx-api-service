@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, HttpStatus, Post } from "@nestjs/common";
-import { ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { VmQueryRequest } from "./entities/vm.query.request";
 import { VmQueryService } from "./vm.query.service";
 
@@ -11,10 +11,8 @@ export class VmQueryController {
   ) { }
 
   @Post('/query')
-  @ApiResponse({
-    status: 201,
-    description: 'Returns the result of the query',
-  })
+  @ApiOperation({ summary: 'VM query', description: 'Performs a vm query on a given smart contract and returns its results' })
+  @ApiCreatedResponse()
   async query(@Body() query: VmQueryRequest) {
     let result: any;
     try {

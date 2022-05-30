@@ -25,7 +25,6 @@ import { AccountEsdtHistory } from "./entities/account.esdt.history";
 import { AbstractQuery } from "../../common/elastic/entities/abstract.query";
 import { AccountHistory } from "./entities/account.history";
 import { QueryOperator } from 'src/common/elastic/entities/query.operator';
-import { TokenService } from '../tokens/token.service';
 import { StakeService } from '../stake/stake.service';
 import { TransferService } from '../transfers/transfer.service';
 import { SmartContractResultService } from '../sc-results/scresult.service';
@@ -45,8 +44,6 @@ export class AccountService {
     private readonly transactionService: TransactionService,
     @Inject(forwardRef(() => PluginService))
     private readonly pluginService: PluginService,
-    @Inject(forwardRef(() => TokenService))
-    private readonly tokenService: TokenService,
     @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
     @Inject(forwardRef(() => TransferService))
@@ -382,12 +379,7 @@ export class AccountService {
       .withCondition(QueryConditionOptions.must, mustQueries);
   }
 
-  async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<AccountEsdtHistory[] | undefined> {
-    const token = await this.tokenService.getToken(tokenIdentifier);
-    if (!token) {
-      return undefined;
-    }
-
+  async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<AccountEsdtHistory[]> {
     const elasticQuery: ElasticQuery = AccountService.buildAccountHistoryFilterQuery(address, tokenIdentifier)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);

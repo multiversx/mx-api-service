@@ -20,7 +20,14 @@ flags:
   useRequestLogging: false
   useVmQueryTracing: false
   processNfts: true
-  indexer-v3: false
+  indexer-v3: true
+features:
+  eventsNotifier:
+    enabled: false
+    port: 5674
+    url: 'amqp://guest:guest@127.0.0.1:5672'
+    exchange: 'all_events'
+    queue: 'api-process-logs-and-events'
 image:
   width: 600
   height: 600
@@ -49,6 +56,7 @@ urls:
   socket: 'devnet-socket-fra.elrond.com'
 database:
   enabled: false
+  url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
   type: 'mysql'
   host: 'localhost'
   port: 3306
@@ -68,6 +76,7 @@ contracts:
   staking: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7'
   delegationManager: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6'
   delegation: 'erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx'
+  metabonding: 'erd1qqqqqqqqqqqqqpgqkg7we73j769ew5we4yyx7uyvnn0nefqgd8ssm6vjc2'
   delegationShardId: 2
 inflation:
   - 1952123
@@ -87,3 +96,4 @@ nftProcess:
 transaction-action:
   mex:
     microServiceUrl: ''
+

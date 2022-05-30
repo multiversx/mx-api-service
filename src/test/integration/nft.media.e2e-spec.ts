@@ -31,9 +31,7 @@ describe('Nft Media Service', () => {
 
   describe('Get Media', () => {
     it('should return null', async () => {
-      const nftFilter = new Nft();
-      nftFilter.identifier = nftIdentifier;
-      const nftGetMedia = await nftMediaService.getMedia(nftFilter);
+      const nftGetMedia = await nftMediaService.getMedia(nftIdentifier);
       expect(nftGetMedia).toBeNull();
     });
   });

@@ -21,7 +21,7 @@ import { AccountService } from "./account.service";
     WaitingListModule,
     forwardRef(() => StakeModule),
     forwardRef(() => TransactionModule),
-    SmartContractResultModule,
+    forwardRef(() => SmartContractResultModule),
     forwardRef(() => CollectionModule),
     forwardRef(() => PluginModule),
     forwardRef(() => TransferModule),

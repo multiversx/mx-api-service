@@ -10,10 +10,10 @@ export class Economics {
   @ApiProperty()
   staked: number = 0;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   price: number | undefined = undefined;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number })
   marketCap: number | undefined = undefined;
 
   @ApiProperty()

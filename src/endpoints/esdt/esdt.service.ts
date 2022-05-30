@@ -12,14 +12,19 @@ import { AddressUtils } from "src/utils/address.utils";
 import { ApiUtils } from "src/utils/api.utils";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { Constants } from "src/utils/constants";
+import { NumberUtils } from "src/utils/number.utils";
+import { RecordUtils } from "src/utils/record.utils";
 import { TokenUtils } from "src/utils/token.utils";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { CachingService } from "../../common/caching/caching.service";
 import { GatewayService } from "../../common/gateway/gateway.service";
+import { MexTokenService } from "../mex/mex.token.service";
 import { TokenAssets } from "../tokens/entities/token.assets";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { TokenRoles } from "../tokens/entities/token.roles";
 import { TokenAssetService } from "../tokens/token.asset.service";
+import { TransactionService } from "../transactions/transaction.service";
+import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
 
 @Injectable()
@@ -34,6 +39,9 @@ export class EsdtService {
     private readonly elasticService: ElasticService,
     @Inject(forwardRef(() => TokenAssetService))
     private readonly tokenAssetService: TokenAssetService,
+    @Inject(forwardRef(() => TransactionService))
+    private readonly transactionService: TransactionService,
+    private readonly mexTokenService: MexTokenService,
   ) {
     this.logger = new Logger(EsdtService.name);
   }
@@ -76,21 +84,72 @@ export class EsdtService {
 
     let tokens = tokensProperties.zip(tokensAssets, (first, second) => ApiUtils.mergeObjects(new TokenDetailed, { ...first, assets: second }));
 
-    for (const token of tokens) {
-      if (!token.assets) {
-        continue;
-      }
+    await this.batchProcessTokens(tokens);
 
-      token.accounts = await this.cachingService.getOrSetCache(
-        CacheInfo.TokenAccounts(token.identifier).key,
-        async () => await this.getEsdtAccountsCount(token.identifier),
-        CacheInfo.TokenAccounts(token.identifier).ttl
-      );
-    }
+    await this.applyMexPrices(tokens);
 
-    tokens = tokens.sortedDescending(token => token.accounts ?? 0);
+    tokens = tokens.sortedDescending(token => token.transactions ?? 0);
 
     return tokens;
+  }
+
+  private async applyMexPrices(tokens: TokenDetailed[]): Promise<void> {
+    try {
+      const indexedTokens = await this.mexTokenService.getMexPricesRaw();
+      for (const token of tokens) {
+        const price = indexedTokens[token.identifier];
+        if (price) {
+          const supply = await this.getTokenSupply(token.identifier);
+
+          token.price = price;
+          token.marketCap = price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+        }
+      }
+    } catch (error) {
+      this.logger.error('Could not apply mex tokens prices');
+      this.logger.error(error);
+    }
+  }
+
+  async batchProcessTokens(tokens: TokenDetailed[]) {
+    await this.cachingService.batchApply
+      (tokens,
+        token => CacheInfo.TokenTransactions(token.identifier).key,
+        async tokens => {
+          const result: { [key: string]: number } = {};
+
+          for (const token of tokens) {
+            const transactions = await this.transactionService.getTransactionCount({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] });
+
+            result[token.identifier] = transactions;
+          }
+
+          return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenTransactions(identifier).key);
+        },
+        (token, transactions) => token.transactions = transactions,
+        CacheInfo.TokenTransactions('').ttl,
+      );
+
+    await this.cachingService.batchApply
+      (tokens,
+        token => CacheInfo.TokenAccounts(token.identifier).key,
+        async tokens => {
+          const result: { [key: string]: number } = {};
+
+          for (const token of tokens) {
+            let accounts = await this.cachingService.getCacheRemote<number>(CacheInfo.TokenAccountsExtra(token.identifier).key);
+            if (!accounts) {
+              accounts = await this.getEsdtAccountsCount(token.identifier);
+            }
+
+            result[token.identifier] = accounts;
+          }
+
+          return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenAccounts(identifier).key);
+        },
+        (token, accounts) => token.accounts = accounts,
+        CacheInfo.TokenAccounts('').ttl,
+      );
   }
 
   async getEsdtAccountsCount(identifier: string): Promise<number> {
@@ -146,8 +205,8 @@ export class EsdtService {
       name,
       type,
       owner,
-      minted,
-      burnt,
+      _,
+      __,
       decimals,
       isPaused,
       canUpgrade,
@@ -169,8 +228,6 @@ export class EsdtService {
       // @ts-ignore
       type,
       owner: AddressUtils.bech32Encode(owner),
-      minted,
-      burnt,
       decimals: parseInt(decimals.split('-').pop() ?? '0'),
       isPaused: TokenUtils.canBool(isPaused),
       canUpgrade: TokenUtils.canBool(canUpgrade),
@@ -257,51 +314,116 @@ export class EsdtService {
     return tokenAddressesAndRoles;
   }
 
-  private async getLockedSupply(identifier: string): Promise<string> {
+  private async getLockedAccounts(identifier: string): Promise<EsdtLockedAccount[]> {
     return await this.cachingService.getOrSetCache(
-      CacheInfo.TokenLockedSupply(identifier).key,
-      async () => await this.getLockedSupplyRaw(identifier),
-      CacheInfo.TokenLockedSupply(identifier).ttl,
+      CacheInfo.TokenLockedAccounts(identifier).key,
+      async () => await this.getLockedAccountsRaw(identifier),
+      CacheInfo.TokenLockedAccounts(identifier).ttl,
     );
   }
 
-  async getLockedSupplyRaw(identifier: string): Promise<string> {
+  async getLockedAccountsRaw(identifier: string): Promise<EsdtLockedAccount[]> {
     const tokenAssets = await this.tokenAssetService.getAssets(identifier);
     if (!tokenAssets) {
-      return '0';
+      return [];
     }
 
     const lockedAccounts = tokenAssets.lockedAccounts;
-    if (!lockedAccounts || lockedAccounts.length === 0) {
-      return '0';
+    if (!lockedAccounts) {
+      return [];
     }
 
-    const esdtLockedAccounts = await this.elasticService.getAccountEsdtByAddressesAndIdentifier(identifier, lockedAccounts);
+    const lockedAccountsWithDescriptions: EsdtLockedAccount[] = [];
+    if (Array.isArray(lockedAccounts)) {
+      for (const lockedAccount of lockedAccounts) {
+        lockedAccountsWithDescriptions.push({
+          address: lockedAccount,
+          name: undefined,
+          balance: '0',
+        });
+      }
+    } else {
+      for (const address of Object.keys(lockedAccounts)) {
+        lockedAccountsWithDescriptions.push({
+          address,
+          name: lockedAccounts[address],
+          balance: '0',
+        });
+      }
+    }
 
-    return esdtLockedAccounts.sumBigInt(x => x.balance).toString();
+    if (Object.keys(lockedAccounts).length === 0) {
+      return [];
+    }
+
+    const addresses = lockedAccountsWithDescriptions.map(x => x.address);
+
+    const esdtLockedAccounts = await this.elasticService.getAccountEsdtByAddressesAndIdentifier(identifier, addresses);
+
+    for (const esdtLockedAccount of esdtLockedAccounts) {
+      const lockedAccountWithDescription = lockedAccountsWithDescriptions.find(x => x.address === esdtLockedAccount.address);
+      if (lockedAccountWithDescription) {
+        lockedAccountWithDescription.balance = esdtLockedAccount.balance;
+      }
+    }
+
+    return lockedAccountsWithDescriptions;
   }
 
   async getTokenSupply(identifier: string): Promise<EsdtSupply> {
-    const { supply } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
+    const { supply, minted, burned, initialMinted } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
 
     const isCollectionOrToken = identifier.split('-').length === 2;
     if (isCollectionOrToken) {
-      const lockedSupply = await this.getLockedSupply(identifier);
-      if (!lockedSupply) {
-        return supply;
-      }
+      let circulatingSupply = BigInt(supply);
 
-      const circulatingSupply = BigInt(supply) - BigInt(lockedSupply);
+      const lockedAccounts = await this.getLockedAccounts(identifier);
+      if (lockedAccounts && lockedAccounts.length > 0) {
+        const totalLockedSupply = lockedAccounts.sumBigInt(x => BigInt(x.balance));
+
+        circulatingSupply = BigInt(supply) - totalLockedSupply;
+      }
 
       return {
         totalSupply: supply,
         circulatingSupply: circulatingSupply.toString(),
+        minted,
+        burned,
+        initialMinted,
+        lockedAccounts,
       };
     }
 
     return {
       totalSupply: supply,
       circulatingSupply: supply,
+      minted,
+      burned,
+      initialMinted,
+      lockedAccounts: undefined,
     };
+  }
+
+  async countAllAccounts(identifiers: string[]): Promise<number> {
+    const key = `tokens:${identifiers[0]}:distinctAccounts`;
+
+    for (const identifier of identifiers) {
+      const query = ElasticQuery.create()
+        .withPagination({ from: 0, size: 10000 })
+        .withMustMatchCondition('token', identifier, QueryOperator.AND);
+
+      await this.elasticService.getScrollableList('accountsesdt', 'id', query, async items => {
+        const distinctAccounts: string[] = items.map(x => x.address).distinct();
+        if (distinctAccounts.length > 0) {
+          await this.cachingService.setAdd(key, ...distinctAccounts);
+        }
+      });
+    }
+
+    const count = await this.cachingService.setCount(key);
+
+    await this.cachingService.deleteInCache(key);
+
+    return count;
   }
 }

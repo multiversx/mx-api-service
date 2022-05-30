@@ -25,6 +25,7 @@ export class ElasticQuery {
   filter: AbstractQuery[] = [];
   condition: QueryCondition = new QueryCondition();
   terms?: TermsQuery;
+  extra?: Record<string, any>;
 
   static create(): ElasticQuery {
     return new ElasticQuery();
@@ -72,6 +73,14 @@ export class ElasticQuery {
     return this.withMustCondition(QueryType.Should(values.map(value => action(value))));
   }
 
+  withMustExistCondition(key: string): ElasticQuery {
+    return this.withMustCondition(QueryType.Exists(key));
+  }
+
+  withMustNotExistCondition(key: string): ElasticQuery {
+    return this.withMustNotCondition(QueryType.Exists(key));
+  }
+
   withMustCondition(queries: AbstractQuery[] | AbstractQuery): ElasticQuery {
     return this.withCondition(QueryConditionOptions.must, queries);
   }
@@ -82,6 +91,29 @@ export class ElasticQuery {
 
   withShouldCondition(queries: AbstractQuery[] | AbstractQuery): ElasticQuery {
     return this.withCondition(QueryConditionOptions.should, queries);
+  }
+
+  withSearchWildcardCondition(search: string | undefined, keys: string[]): ElasticQuery {
+    return this.withSearchCondition(search, term => keys.map(key => QueryType.Wildcard(key, `*${term.toLowerCase()}*`)));
+  }
+
+  withSearchCondition(search: string | undefined, func: (term: string) => AbstractQuery[]): ElasticQuery {
+    if (!search) {
+      return this;
+    }
+
+    const searchConditions = [];
+
+    const components = search.matchAll(/\w{3,}/g);
+    for (const component of components) {
+      const term = component[0];
+
+      const conditions = func(term);
+
+      searchConditions.push(QueryType.Should(conditions));
+    }
+
+    return this.withMustCondition(searchConditions);
   }
 
   withCondition(queryCondition: QueryConditionOptions, queries: AbstractQuery[] | AbstractQuery): ElasticQuery {
@@ -110,6 +142,16 @@ export class ElasticQuery {
     return this;
   }
 
+  withExtra(extra: Record<string, any>): ElasticQuery {
+    this.extra = extra;
+
+    return this;
+  }
+
+  debug() {
+    console.log({ elasticQuery: JSON.stringify(this.toJson()) });
+  }
+
   toJson() {
     const elasticSort = buildElasticIndexerSort(this.sort);
 
@@ -127,6 +169,7 @@ export class ElasticQuery {
         },
         terms: this.terms?.getQuery(),
       },
+      ...this.extra ?? {},
     };
 
     ApiUtils.cleanupApiValueRecursively(elasticQuery);
