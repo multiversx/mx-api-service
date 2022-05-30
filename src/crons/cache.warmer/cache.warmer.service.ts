@@ -19,10 +19,8 @@ import { EsdtService } from "src/endpoints/esdt/esdt.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
-import { TokenService } from "src/endpoints/tokens/token.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import * as JsonDiff from "json-diff";
-import { MexSettingsService } from "src/endpoints/transactions/transaction-action/recognizers/mex/mex.settings.service";
 import { MexSettingsService } from "src/endpoints/mex/mex.settings.service";
 import { MexEconomicsService } from "src/endpoints/mex/mex.economics.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
@@ -47,8 +45,6 @@ export class CacheWarmerService {
     private readonly gatewayService: GatewayService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly tokenAssetService: TokenAssetService,
-    private readonly pluginService: PluginService,
-    private readonly tokenService: TokenService,
     private readonly elasticService: ElasticService,
     private readonly mexEconomicsService: MexEconomicsService,
     private readonly mexPairsService: MexPairService,

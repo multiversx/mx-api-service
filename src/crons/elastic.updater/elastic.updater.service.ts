@@ -65,7 +65,7 @@ export class ElasticUpdaterService {
         ])
         .withPagination({ from: 0, size: 10000 });
 
-      await this.elasticService.getListWithScroll('tokens', 'identifier', query, async items => {
+      await this.elasticService.getScrollableList('tokens', 'identifier', query, async items => {
         const whitelistStorageItems = items.map(item => ({
           identifier: item.identifier,
           uris: item.data?.uris,
