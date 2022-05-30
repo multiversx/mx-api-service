@@ -1,6 +1,5 @@
 import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
-import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
 import { CollectionService } from "./collection.service";
@@ -9,6 +8,7 @@ import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
 import { Nft } from "../nfts/entities/nft";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { NftService } from "../nfts/nft.service";
+import { ParseOptionalEnumArrayPipe } from "src/utils/pipes/parse.optional.enum.array.pipe";
 
 @Controller()
 @ApiTags('collections')
@@ -38,7 +38,7 @@ export class CollectionController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search: string | undefined,
     @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+    @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type: NftType[] | undefined,
     @Query('creator', ParseAddressPipe) creator: string | undefined,
     @Query('canCreate', new ParseAddressPipe) canCreate?: string,
     @Query('canBurn', new ParseAddressPipe) canBurn?: string,
@@ -74,7 +74,7 @@ export class CollectionController {
   @ApiOkResponse({ type: Number })
   async getCollectionCount(
     @Query('search') search: string | undefined,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+    @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type: NftType[] | undefined,
     @Query('creator', ParseAddressPipe) creator: string | undefined,
     @Query('canCreate', new ParseAddressPipe) canCreate?: string,
     @Query('canBurn', new ParseAddressPipe) canBurn?: string,
@@ -99,7 +99,7 @@ export class CollectionController {
   @ApiExcludeEndpoint()
   async getCollectionCountAlternative(
     @Query('search') search: string | undefined,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
+    @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type: NftType[] | undefined,
     @Query('creator', ParseAddressPipe) creator: string | undefined,
     @Query('canCreate', new ParseAddressPipe) canCreate?: string,
     @Query('canBurn', new ParseAddressPipe) canBurn?: string,

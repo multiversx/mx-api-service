@@ -22,7 +22,7 @@ describe('Collection Service', () => {
   describe("NFT Collections", () => {
     it("shoult return 10 NonFungibleESDT collections", async () => {
       const filter = new CollectionFilter();
-      filter.type = NftType.NonFungibleESDT;
+      filter.type = [NftType.NonFungibleESDT];
       const results = await collectionService.getNftCollections({ from: 0, size: 10 }, filter);
 
       expect(results).toHaveLength(10);
@@ -34,7 +34,7 @@ describe('Collection Service', () => {
     });
 
     it(`should return a list with SemiFungibleESDT collections`, async () => {
-      const results = await collectionService.getNftCollections({ from: 0, size: 10 }, { type: NftType.SemiFungibleESDT });
+      const results = await collectionService.getNftCollections({ from: 0, size: 10 }, { type: [NftType.SemiFungibleESDT] });
 
       expect(results).toHaveLength(10);
 
@@ -153,7 +153,7 @@ describe('Collection Service', () => {
 
     it("should return collection count for collection of type NonFungibleESDT", async () => {
       const filters = new CollectionFilter();
-      filters.type = NftType.NonFungibleESDT;
+      filters.type = [NftType.NonFungibleESDT];
 
       const results = await collectionService.getNftCollectionCount(filters);
       expect(typeof results).toBe("number");
@@ -161,7 +161,7 @@ describe('Collection Service', () => {
 
     it("should return collection count for collection of type SemiFungibleESDT", async () => {
       const filters = new CollectionFilter();
-      filters.type = NftType.SemiFungibleESDT;
+      filters.type = [NftType.SemiFungibleESDT];
 
       const results = await collectionService.getNftCollectionCount(filters);
       expect(typeof results).toBe("number");
@@ -221,7 +221,7 @@ describe('Collection Service', () => {
     it("should return collection of NonFungibleESDT for address", async () => {
       const address: string = "erd1qqqqqqqqqqqqqpgq09vq93grfqy7x5fhgmh44ncqfp3xaw57ys5s7j9fed";
       const filter = new CollectionFilter();
-      filter.type = NftType.NonFungibleESDT;
+      filter.type = [NftType.NonFungibleESDT];
 
       const results = await collectionService.getCollectionsForAddress(address, filter, { from: 0, size: 10 });
 
