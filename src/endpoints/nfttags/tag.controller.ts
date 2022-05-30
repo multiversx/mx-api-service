@@ -14,7 +14,7 @@ export class TagController {
   @Get("/tags")
   @ApiOperation({ summary: 'NFT Tags', description: 'Returns all distinct NFT tags' })
   @ApiOkResponse({ type: [Tag] })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,

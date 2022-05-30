@@ -193,28 +193,7 @@ describe("Accounts Controller", () => {
       });
   });
 
-  it("/accounts/:address/tokens/:collection - should return 200 status code and collection details for a specific address", async () => {
-    const address: string = "erd1qqqqqqqqqqqqqpgqaz6dvegfmlm2ftatg3qx550e2zq07k4ryl5sh0qx2e";
-    const collection: string = "OVERTURE-276027";
-    await request(app.getHttpServer())
-      .get(route + "/" + address + "/collections" + "/" + collection)
-      .set("header", "content-type")
-      .expect(200);
-  });
-
-  it(`/accounts/:address/tokens/:collection - should return 404 status code and response body with message "Collection for given account not found" `, async () => {
-    const address: string = "erd1qqqqqqqqqqqqqpgq09vq93grfqy7x5fhgmh44ncqfp3xaw57ys5s7j9fed";
-    const collection: string = "OGS-3f1408";
-    await request(app.getHttpServer())
-      .get(route + "/" + address + "/collections" + "/" + collection)
-      .set("header", "content-type")
-      .expect(404)
-      .then(res => {
-        expect(res.body.message).toEqual("Collection for given account not found");
-      });
-  });
-
-  it("/accounts/:address/tokens/:tokens - should return 200 status code and token details for a specific address", async () => {
+  it("/accounts/:address/tokens/:token - should return 200 status code and token details for a specific address", async () => {
     const address: string = "erd12xspx5z0nm08tvtt8v3nyu3w8mxfr36rj27u99yesmr7uxj6h7cscsvsw5";
     const token: string = "WEGLD-bd4d79";
     await request(app.getHttpServer())
@@ -223,7 +202,7 @@ describe("Accounts Controller", () => {
       .expect(200);
   });
 
-  it("/accounts/:address/tokens/:tokens - should return 404 status code with no token found", async () => {
+  it("/accounts/:address/tokens/:token - should return 404 status code with no token found", async () => {
     const address: string = "erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3";
     const token: string = "RIDE-7d18e9";
     await request(app.getHttpServer())
@@ -233,6 +212,58 @@ describe("Accounts Controller", () => {
       .then(res => {
         expect(res.body.message).toEqual("Token for given account not found");
       });
+  });
+
+  it("/accounts/:address/roles/collections - should return collections details where the account is owner or has some special roles assigned to it", async () => {
+    const address: string = "erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/roles/collections")
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/:address/roles/collections/count - should return total number of collections where the account is owner or has some special roles assigned to it", async () => {
+    const address: string = "erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/roles/collections/count")
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/:address/roles/collections/:collection - should returns details about a specific NFT/SFT/MetaESDT collection from a given address and collection", async () => {
+    const address: string = "erd18zueldepfw569qdy0vklysqm73rskzg2a9pdut2527jqruqu6pps79jcyw";
+    const collection: string = 'GRAFIKA-16e177';
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/roles/collections/" + collection)
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/:address/roles/tokens - should return fungible token roles where the account is owner or has some special roles assigned to it", async () => {
+    const address: string = "erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/roles/tokens")
+      .set("header", "content-type")
+      .expect(200);
+  });
+
+  it("/accounts/:address/roles/tokens - should return no details if account does not have some special roles", async () => {
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/roles/tokens")
+      .set("header", "content-type")
+      .expect(200)
+      .then(res => {
+        expect(res.body).toStrictEqual([]);
+      });
+  });
+
+  it("/accounts/:address/roles/tokens/count - should return the total number of fungible token roles where the account is owner or has some special roles assigned to it", async () => {
+    const address: string = "erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/roles/tokens/count")
+      .set("header", "content-type")
+      .expect(200);
   });
 
   it("/accounts/:address/nfts - should return 200 status code and nfts details for a specific address", async () => {
