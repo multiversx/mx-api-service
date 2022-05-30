@@ -20,7 +20,7 @@ export class QueryCheckInterceptor implements NestInterceptor {
     const supportedQueryNames = Object.values(metadata).map((x: any) => x.data);
 
     for (const paramName of Object.keys(request.query)) {
-      if (!supportedQueryNames.includes(paramName)) {
+      if (!['fields', 'extract'].includes(paramName) && !supportedQueryNames.includes(paramName)) {
         throw new BadRequestException(`Unsupported parameter '${paramName}'. Supported parameters are: ${supportedQueryNames.join(', ')}`);
       }
     }
