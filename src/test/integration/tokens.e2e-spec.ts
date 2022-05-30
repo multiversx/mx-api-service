@@ -650,23 +650,29 @@ describe('Token Service', () => {
   });
 
   describe("getTokenRoles", () => {
-    it("should return token roles", async () => {
+    it.only("should return token roles", async () => {
       const identifier: string = token.identifier;
 
       jest
         .spyOn(EsdtService.prototype, 'getEsdtAddressesRoles')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_identifier: string) => [{
-          address: "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8",
-          canMint: true,
-          canBurn: true,
+          address: "erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy",
+          canLocalMint: true,
+          canLocalBurn: true,
           roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
         },
         {
-          address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
-          canMint: true,
-          canBurn: false,
-          roles: ['ESDTRoleLocalBurn'],
+          address: "erd1qqqqqqqqqqqqqpgqmuk0q2saj0mgutxm4teywre6dl8wqf58xamqdrukln",
+          canLocalMint: true,
+          canLocalBurn: true,
+          roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
+        },
+        {
+          address: 'erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3',
+          canLocalMint: true,
+          canLocalBurn: true,
+          roles: ['ESDTRoleLocalMint'],
         },
         ]));
 
@@ -675,14 +681,19 @@ describe('Token Service', () => {
       expect(results).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            canMint: true,
-            canBurn: true,
+            canLocalMint: true,
+            canLocalBurn: true,
             roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
           }),
           expect.objectContaining({
-            canMint: true,
-            canBurn: false,
-            roles: ['ESDTRoleLocalBurn'],
+            canLocalMint: true,
+            canLocalBurn: true,
+            roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
+          }),
+          expect.objectContaining({
+            canLocalMint: true,
+            canLocalBurn: true,
+            roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
           }),
         ])
       );
@@ -705,8 +716,8 @@ describe('Token Service', () => {
         .mockImplementation(jest.fn(async (_identifier: string) => [
           {
             address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
-            canMint: true,
-            canBurn: true,
+            canLocalMint: true,
+            canLocalBurn: true,
             roles: [],
           },
         ]));
@@ -714,9 +725,9 @@ describe('Token Service', () => {
       const results = await tokenService.getTokenRolesForIdentifierAndAddress(identifier, address);
 
       expect(results).toEqual(expect.objectContaining({
-        canMint: true,
-        canBurn: true,
-        roles: [],
+        canLocalMint: true,
+        canLocalBurn: true,
+        roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
       }));
 
     });
