@@ -3,7 +3,7 @@ import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 import { Test } from "@nestjs/testing";
 import { EsdtDataSource } from 'src/endpoints/esdt/entities/esdt.data.source';
 import { NftCollection } from 'src/endpoints/collections/entities/nft.collection';
-import { NftCollectionAccount } from 'src/endpoints/collections/entities/nft.collection.account';
+import { NftCollectionRole } from 'src/endpoints/collections/entities/nft.collection.role';
 import { NftType } from 'src/endpoints/nfts/entities/nft.type';
 import { CollectionFilter } from 'src/endpoints/collections/entities/collection.filter';
 import '../../utils/extensions/jest.extensions';
@@ -91,12 +91,12 @@ describe('EsdtAddressService', () => {
   });
 
   describe('getEsdtCollectionsForAddress', () => {
-    it('should return esdt collection for address based on collection identifier and source "ELASTIC" ', async () => {
+    it('should return esdt collection for address based on collection identifier', async () => {
       const address: string = 'erd1yt24jpcm58k2734lf53ws96lqtkzy46vlxwnjud7ce3vl02eahmsele6j8';
       const collectionFilter = new CollectionFilter();
       collectionFilter.collection = 'HMORGOTH-ecd5fb';
 
-      const collections: NftCollection[] | NftCollectionAccount[] = await esdtAddressService.getCollectionsForAddress(address, collectionFilter, { from: 0, size: 1 }, EsdtDataSource.elastic);
+      const collections: NftCollection[] | NftCollectionRole[] = await esdtAddressService.getCollectionsForAddress(address, collectionFilter, { from: 0, size: 1 });
 
       expect(collections).toHaveLength(1);
       expect(collections).toBeInstanceOf(Object);
@@ -110,16 +110,15 @@ describe('EsdtAddressService', () => {
         expect(collection.hasOwnProperty('canWipe')).toBe(true);
         expect(collection.hasOwnProperty('canPause')).toBe(true);
         expect(collection.hasOwnProperty('assets')).toBe(true);
-        expect(collection.hasOwnProperty('roles')).toBe(true);
       }
     });
 
-    it('should return esdt collection for address based on collection identifier and response from gateway contain canBurn and canCreate ', async () => {
+    it('should return esdt collection for address based on collection identifier and contain canBurn and canCreate ', async () => {
       const address: string = 'erd1yt24jpcm58k2734lf53ws96lqtkzy46vlxwnjud7ce3vl02eahmsele6j8';
       const collectionFilter = new CollectionFilter();
       collectionFilter.collection = 'HMORGOTH-ecd5fb';
 
-      const collectionEsdtGateway: NftCollection[] | NftCollectionAccount[] = await esdtAddressService.getCollectionsForAddress(address, collectionFilter, { from: 0, size: 1 }, EsdtDataSource.gateway);
+      const collectionEsdtGateway: NftCollection[] | NftCollectionRole[] = await esdtAddressService.getCollectionsForAddress(address, collectionFilter, { from: 0, size: 1 });
 
       for (const collection of collectionEsdtGateway) {
         expect(collection).toBeInstanceOf(Object);

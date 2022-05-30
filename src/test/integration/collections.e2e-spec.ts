@@ -4,8 +4,9 @@ import { Test } from "@nestjs/testing";
 import { CollectionService } from "src/endpoints/collections/collection.service";
 import { PublicAppModule } from "src/public.app.module";
 import { NftCollection } from 'src/endpoints/collections/entities/nft.collection';
-import { NftCollectionAccount } from 'src/endpoints/collections/entities/nft.collection.account';
+import { NftCollectionRole } from 'src/endpoints/collections/entities/nft.collection.role';
 import '../../utils/extensions/jest.extensions';
+import { NftCollectionAccount } from 'src/endpoints/collections/entities/nft.collection.account';
 
 describe('Collection Service', () => {
   let collectionService: CollectionService;
@@ -44,7 +45,7 @@ describe('Collection Service', () => {
 
     it("shoult return a list of collections with creator filter", async () => {
       const filter = new CollectionFilter();
-      filter.creator = "erd1qqqqqqqqqqqqqpgqlxyw866pd8pvfqvphgsz9dgx5mr44uv5ys5sew4epr";
+      filter.canCreate = "erd1qqqqqqqqqqqqqpgqlxyw866pd8pvfqvphgsz9dgx5mr44uv5ys5sew4epr";
       const results = await collectionService.getNftCollections({ from: 0, size: 10 }, filter);
 
       for (const result of results) {
@@ -247,7 +248,7 @@ describe('Collection Service', () => {
 
   describe("Collection For Address", () => {
     it("should return collection of NonFungibleESDT for address", async () => {
-      const address: string = "erd1qqqqqqqqqqqqqpgq09vq93grfqy7x5fhgmh44ncqfp3xaw57ys5s7j9fed";
+      const address: string = "erd159r7g930sauzahvslnve4rpp5xfhwku2rxzp5awycrpfsys8r7zsp4jy65";
       const collection: string = "EBULB-36c762";
 
       const results = await collectionService.getCollectionForAddress(address, collection);
@@ -255,17 +256,14 @@ describe('Collection Service', () => {
       if (!results) {
         throw new Error("Properties are not defined");
       }
-      expect(results.collection).toStrictEqual("EBULB-36c762");
-      expect(results.type).toStrictEqual(NftType.NonFungibleESDT);
-      expect(results.name).toStrictEqual("eBulb");
+      expect(results).toHaveStructure(Object.keys(new NftCollectionAccount()));
     });
 
     it(`should return collection for a specific address`, async () => {
       const address: string = "erd1gv55fk7gn0f437eq53x7u5zux824a9ff86v5pvnneg7yvsucpp0svncsmz";
-      const collectionIdentifier: string = 'DEITIES-0d1f10';
+      const collectionIdentifier: string = 'AEROCIA-487b5f';
       const collection = await collectionService.getCollectionForAddress(address, collectionIdentifier);
-      const collectionResults = new NftCollectionAccount();
-
+      const collectionResults = new NftCollectionRole();
       // @ts-ignore
       delete collectionResults.timestamp;
 

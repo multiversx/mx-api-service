@@ -1,5 +1,5 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { Node } from "src/endpoints/nodes/entities/node";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
@@ -19,12 +19,8 @@ export class NodeController {
 
   @Get("/nodes")
   @ApiOperation({ summary: 'Nodes', description: 'Returns a list of nodes of type observer or validator' })
-  @ApiResponse({
-    status: 200,
-    isArray: true,
-    type: Node,
-  })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiOkResponse({ type: [Node] })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by name, bls or version', required: false })
   @ApiQuery({ name: 'online', description: 'Whether node is online or not', required: false, type: 'boolean' })
@@ -57,19 +53,14 @@ export class NodeController {
 
   @Get("/nodes/versions")
   @ApiOperation({ summary: 'Node versions', description: 'Returns breakdown of node versions for validator nodes' })
-  @ApiResponse({
-    status: 200,
-  })
+  @ApiOkResponse()
   async getNodeVersions() {
     return await this.nodeService.getNodeVersions();
   }
 
   @Get("/nodes/count")
   @ApiOperation({ summary: 'Nodes count', description: 'Returns number of all observer/validator nodes available on blockchain' })
-  @ApiResponse({
-    status: 200,
-    type: Number,
-  })
+  @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'search', description: 'Search by name, bls or version', required: false })
   @ApiQuery({ name: 'online', description: 'Whether node is online or not', required: false, type: 'boolean' })
   @ApiQuery({ name: 'type', description: 'Type of node', required: false, enum: NodeType })
@@ -117,14 +108,8 @@ export class NodeController {
 
   @Get('/nodes/:bls')
   @ApiOperation({ summary: 'Node', description: 'Returns details about a specific node for a given bls key' })
-  @ApiResponse({
-    status: 200,
-    type: Node,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Node not found',
-  })
+  @ApiOkResponse({ type: Node })
+  @ApiNotFoundResponse({ description: 'Node not found' })
   async getNode(@Param('bls', ParseBlsHashPipe) bls: string): Promise<Node> {
     const provider = await this.nodeService.getNode(bls);
     if (provider === undefined) {

@@ -48,6 +48,7 @@ contracts:
   staking: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7'
   delegationManager: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6'
   delegation: 'erd1qqqqqqqqqqqqqpgqxwakt2g7u9atsnr03gqcgmhcv38pt7mkd94q6shuwt'
+  metabonding: 'erd1qqqqqqqqqqqqqpgq50dge6rrpcra4tp9hl57jl0893a4r2r72jpsk39rjj'
   delegationShardId: 2
 inflation:
   - 1952123
@@ -65,3 +66,6 @@ test:
   mockNodes: true
   mockTokens: true
   mockPath: './src/test/mocks/'
+transaction-action:
+  mex:
+    microServiceUrl: 'https://graph.maiar.exchange/graphql'

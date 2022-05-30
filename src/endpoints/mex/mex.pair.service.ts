@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
@@ -10,16 +10,21 @@ import { MexPairType } from "./entities/mex.pair.type";
 import { MexSettingsService } from "./mex.settings.service";
 
 @Injectable()
-export class MexPairsService {
+export class MexPairService {
+  private readonly logger: Logger;
+
   constructor(
     private readonly cachingService: CachingService,
     private readonly mexSettingService: MexSettingsService,
     private readonly graphQlService: GraphQlService,
-  ) { }
+  ) {
+    this.logger = new Logger(MexPairService.name);
+  }
 
   async refreshMexPairs(): Promise<void> {
     const pairs = await this.getAllMexPairsRaw();
     await this.cachingService.setCacheRemote(CacheInfo.MexPairs.key, pairs, CacheInfo.MexPairs.ttl);
+    await this.cachingService.setCacheLocal(CacheInfo.MexPairs.key, pairs, Constants.oneSecond() * 30);
   }
 
   async getMexPairs(from: number, size: number): Promise<any> {
@@ -43,88 +48,69 @@ export class MexPairsService {
   }
 
   async getAllMexPairsRaw(): Promise<MexPair[]> {
-    const settings = await this.mexSettingService.getSettings();
-    if (!settings) {
-      throw new BadRequestException('Could not fetch MEX settings');
-    }
-
-    const variables = {
-      "mexID": settings.mexId,
-      "wegldID": settings.wegldId,
-      "days": 7,
-      "offset": 0,
-      "pairsLimit": 100,
-    };
-
-    const query = gql`
-      query ($days: Int!, $mexID: String!, $wegldID: String!, $offset: Int, $pairsLimit: Int) {
-        totalAggregatedRewards(days: $days) 
-        wegldPriceUSD: getTokenPriceUSD (tokenID: $wegldID)
-        mexPriceUSD: getTokenPriceUSD(tokenID: $mexID)
-        mexSupply: totalTokenSupply(tokenID: $mexID)
-        totalLockedValueUSDFarms
-        totalValueLockedUSD
-        farms {
-          address
-          farmingToken {
-            name
-            identifier
-            decimals
-            __typename
-          }
-          farmTokenPriceUSD
-          farmedTokenPriceUSD
-          farmingTokenPriceUSD
-          farmingTokenReserve
-          perBlockRewards
-          penaltyPercent
-          totalValueLockedUSD
-          __typename
-        }
-
-        pairs(offset: $offset, limit: $pairsLimit) { 
-          address 
-          firstToken {
-            name
-            identifier
-            decimals
-            __typename
-          }
-          secondToken {
-            name
-            identifier
-            decimals
-            __typename
-          }
-          firstTokenPrice
-          firstTokenPriceUSD
-          secondTokenPrice
-          secondTokenPriceUSD
-          info {
-            reserves0
-            reserves1
-            totalSupply
-            __typename
-          }
-          state
-          type
-          lockedValueUSD
-          volumeUSD24h
-          __typename
-        }
-        factory {
-          totalVolumeUSD24h
-          __typename
-        }
+    try {
+      const settings = await this.mexSettingService.getSettings();
+      if (!settings) {
+        throw new BadRequestException('Could not fetch MEX settings');
       }
-    `;
 
-    const result: any = await this.graphQlService.getData(query, variables);
-    if (!result) {
+      const variables = {
+        "offset": 0,
+        "pairsLimit": 100,
+      };
+
+      const query = gql`
+        query ($offset: Int, $pairsLimit: Int) {
+          pairs(offset: $offset, limit: $pairsLimit) { 
+            address 
+            liquidityPoolToken {
+              identifier
+              name
+              __typename
+            }
+            liquidityPoolTokenPriceUSD
+            firstToken {
+              name
+              identifier
+              decimals
+              __typename
+            }
+            secondToken {
+              name
+              identifier
+              decimals
+              __typename
+            }
+            firstTokenPrice
+            firstTokenPriceUSD
+            secondTokenPrice
+            secondTokenPriceUSD
+            info {
+              reserves0
+              reserves1
+              totalSupply
+              __typename
+            }
+            state
+            type
+            lockedValueUSD
+            volumeUSD24h
+            __typename
+          }
+        }
+      `;
+
+      const result: any = await this.graphQlService.getData(query, variables);
+      if (!result) {
+        return [];
+      }
+
+      return result.pairs.map((pair: any) => this.getPairInfo(pair)).filter((x: MexPair) => x.state === MexPairState.active);
+    } catch (error) {
+      this.logger.error('An error occurred while getting all mex pairs');
+      this.logger.error(error);
       return [];
     }
-
-    return result.pairs.map((pair: any) => this.getPairInfo(pair)).filter((x: MexPair) => x.state === MexPairState.active);
   }
 
   private getPairInfo(pair: any): MexPair {
@@ -134,6 +120,10 @@ export class MexPairsService {
     if ((firstTokenSymbol === 'WEGLD' && secondTokenSymbol === 'USDC') || secondTokenSymbol === 'WEGLD') {
       return {
         address: pair.address,
+        id: pair.liquidityPoolToken.identifier,
+        symbol: pair.liquidityPoolToken.identifier.split('-')[0],
+        name: pair.liquidityPoolToken.name,
+        price: Number(pair.liquidityPoolTokenPriceUSD),
         baseId: pair.firstToken.identifier,
         basePrice: Number(pair.firstTokenPriceUSD),
         baseSymbol: firstTokenSymbol,
@@ -151,6 +141,10 @@ export class MexPairsService {
 
     return {
       address: pair.address,
+      id: pair.liquidityPoolToken.identifier,
+      symbol: pair.liquidityPoolToken.identifier.split('-')[0],
+      name: pair.liquidityPoolToken.name,
+      price: Number(pair.liquidityPoolTokenPriceUSD),
       baseId: pair.secondToken.identifier,
       basePrice: Number(pair.secondTokenPriceUSD),
       baseSymbol: secondTokenSymbol,
