@@ -44,7 +44,7 @@ describe('Collection Service', () => {
 
     it("shoult return a list of collections with creator filter", async () => {
       const filter = new CollectionFilter();
-      filter.creator = "erd1qqqqqqqqqqqqqpgqlxyw866pd8pvfqvphgsz9dgx5mr44uv5ys5sew4epr";
+      filter.canCreate = "erd1qqqqqqqqqqqqqpgqlxyw866pd8pvfqvphgsz9dgx5mr44uv5ys5sew4epr";
       const results = await collectionService.getNftCollections({ from: 0, size: 10 }, filter);
 
       for (const result of results) {

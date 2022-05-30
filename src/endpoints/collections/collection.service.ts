@@ -2,7 +2,6 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { GatewayService } from "src/common/gateway/gateway.service";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { EsdtService } from "../esdt/esdt.service";
 import { CollectionFilter } from "./entities/collection.filter";
@@ -11,7 +10,6 @@ import { NftType } from "../nfts/entities/nft.type";
 import { TokenAssetService } from "../tokens/token.asset.service";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { NftCollectionRole } from "./entities/nft.collection.role";
-import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
@@ -32,7 +30,6 @@ import { ApiUtils } from "src/utils/api.utils";
 @Injectable()
 export class CollectionService {
   constructor(
-    private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
     private readonly elasticService: ElasticService,
     private readonly esdtService: EsdtService,
@@ -67,33 +64,27 @@ export class CollectionService {
 
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       if (filter.canCreate !== undefined) {
-        const condition = filter.canCreate === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
-        elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleNFTCreate': address }));
+        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTCreate', address, filter.canCreate);
       }
 
       if (filter.canBurn !== undefined) {
-        const condition = filter.canBurn === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
-        elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleNFTBurn': address }));
+        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTBurn', address, filter.canBurn);
       }
 
       if (filter.canAddQuantity !== undefined) {
-        const condition = filter.canAddQuantity === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
-        elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddQuantity': address }));
+        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTAddQuantity', address, filter.canAddQuantity);
       }
 
       if (filter.canUpdateAttributes !== undefined) {
-        const condition = filter.canUpdateAttributes === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
-        elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleNFTUpdateAttributes': address }));
+        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTUpdateAttributes', address, filter.canUpdateAttributes);
       }
 
       if (filter.canAddUri !== undefined) {
-        const condition = filter.canAddUri === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
-        elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddURI': address }));
+        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTAddURI', address, filter.canAddUri);
       }
 
       if (filter.canTransferRole !== undefined) {
-        const condition = filter.canTransferRole === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
-        elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTTransferRole': address }));
+        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTTransferRole', address, filter.canTransferRole);
       }
     }
 
@@ -104,16 +95,14 @@ export class CollectionService {
       .withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT, NftType.MetaESDT], type => QueryType.Match('type', type));
   }
 
+  private getRoleCondition(query: ElasticQuery, name: string, address: string | undefined, value: string | boolean) {
+    const condition = value === false ? QueryConditionOptions.mustNot : QueryConditionOptions.must;
+    const targetAddress = typeof value === 'string' ? value : address;
+
+    return query.withCondition(condition, QueryType.Nested('roles', { [`roles.${name}`]: targetAddress }));
+  }
+
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
-    if (filter.creator) {
-      const creatorResult = await this.gatewayService.get(`address/${filter.creator}/esdts-with-role/ESDTRoleNFTCreate`, GatewayComponentRequest.addressEsdtWithRole);
-      if (creatorResult.tokens.length === 0) {
-        return [];
-      }
-
-      filter.identifiers = creatorResult.tokens;
-    }
-
     const elasticQuery = this.buildCollectionRolesFilter(filter)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
@@ -225,11 +214,6 @@ export class CollectionService {
 
 
   async getNftCollectionCount(filter: CollectionFilter): Promise<number> {
-    if (filter.creator) {
-      const creatorResult = await this.gatewayService.get(`address/${filter.creator}/esdts-with-role/ESDTRoleNFTCreate`, GatewayComponentRequest.addressEsdtWithRole);
-      return creatorResult.tokens.length;
-    }
-
     const elasticQuery = this.buildCollectionRolesFilter(filter);
 
     return await this.elasticService.getCount('tokens', elasticQuery);

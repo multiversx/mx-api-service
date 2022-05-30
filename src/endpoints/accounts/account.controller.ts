@@ -203,6 +203,7 @@ export class AccountController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
     @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
+    @Query('owner') owner?: string,
     @Query('canCreate', new ParseOptionalBoolPipe) canCreate?: boolean,
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
     @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity?: boolean,
@@ -211,7 +212,7 @@ export class AccountController {
     @Query('canTransferRole', new ParseOptionalBoolPipe) canTransferRole?: boolean,
     @Query('source', new ParseOptionalEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
   ): Promise<NftCollectionRole[]> {
-    return await this.collectionService.getCollectionsWithRolesForAddress(address, { search, type, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole }, { from, size }, source);
+    return await this.collectionService.getCollectionsWithRolesForAddress(address, { search, type, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole, owner }, { from, size }, source);
   }
 
   @Get("/accounts/:address/roles/collections/count")

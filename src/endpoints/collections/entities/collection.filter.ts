@@ -5,12 +5,11 @@ export class CollectionFilter {
   identifiers?: string[];
   search?: string;
   type?: NftType;
-  creator?: string;
   owner?: string;
-  canCreate?: boolean;
-  canBurn?: boolean;
-  canAddQuantity?: boolean;
-  canUpdateAttributes?: boolean;
-  canAddUri?: boolean;
-  canTransferRole?: boolean;
+  canCreate?: boolean | string;
+  canBurn?: boolean | string;
+  canAddQuantity?: boolean | string;
+  canUpdateAttributes?: boolean | string;
+  canAddUri?: boolean | string;
+  canTransferRole?: boolean | string;
 }
