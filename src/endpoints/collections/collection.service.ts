@@ -89,8 +89,8 @@ export class CollectionService {
 
     return elasticQuery.withMustMatchCondition('token', filter.collection, QueryOperator.AND)
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
-      .withMustMatchCondition('type', filter.type)
       .withSearchWildcardCondition(filter.search, ['token', 'name'])
+      .withMustMultiShouldCondition(filter.type, type => QueryType.Match('type', type))
       .withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT, NftType.MetaESDT], type => QueryType.Match('type', type));
   }
 
@@ -327,7 +327,7 @@ export class CollectionService {
   }
 
   async getCollectionForAddress(address: string, identifier: string): Promise<NftCollectionAccount | undefined> {
-    const collections = await this.getCollectionsForAddress(address, {}, { from: 0, size: 10000 });
+    const collections = await this.getCollectionsForAddress(address, { collection: identifier }, { from: 0, size: 1 });
 
     return collections.find(x => x.collection === identifier);
   }
@@ -340,7 +340,7 @@ export class CollectionService {
       .withMustMatchCondition('token', filter.collection, QueryOperator.AND)
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
       .withMustWildcardCondition('token', filter.search)
-      .withMustMatchCondition('type', filter.type)
+      .withMustMultiShouldCondition(filter.type, type => QueryType.Match('type', type))
       .withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT, NftType.MetaESDT], type => QueryType.Match('type', type))
       .withExtra({
         aggs: {

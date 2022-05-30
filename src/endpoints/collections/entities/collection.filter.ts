@@ -4,7 +4,7 @@ export class CollectionFilter {
   collection?: string;
   identifiers?: string[];
   search?: string;
-  type?: NftType;
+  type?: NftType[];
   owner?: string;
   canCreate?: boolean | string;
   canBurn?: boolean | string;

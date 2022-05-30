@@ -1,4 +1,3 @@
-import { Logger } from "@nestjs/common";
 import { ApiUtils } from "src/utils/api.utils";
 import { AbstractQuery } from "./abstract.query";
 import { ElasticPagination } from "./elastic.pagination";
@@ -143,8 +142,7 @@ export class ElasticQuery {
   }
 
   debug() {
-    const logger = new Logger(ElasticQuery.name);
-    logger.log({ elasticQuery: JSON.stringify(this.toJson()) });
+    console.log({ elasticQuery: JSON.stringify(this.toJson()) });
   }
 
   toJson() {
