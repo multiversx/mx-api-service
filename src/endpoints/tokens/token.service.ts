@@ -27,6 +27,8 @@ import { TokenSupplyResult } from "./entities/token.supply.result";
 import { TokenDetailedWithBalance } from "./entities/token.detailed.with.balance";
 import { SortOrder } from "src/common/entities/sort.order";
 import { TokenSort } from "./entities/token.sort";
+import { TokenWithRoles } from "./entities/token.with.roles";
+import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
 
 @Injectable()
 export class TokenService {
@@ -404,7 +406,7 @@ export class TokenService {
     return await this.esdtService.getEsdtAddressesRoles(identifier);
   }
 
-  async getTokenRolesForAddress(identifier: string, address: string): Promise<TokenRoles | undefined> {
+  async getTokenRolesForIdentifierAndAddress(identifier: string, address: string): Promise<TokenRoles | undefined> {
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       const token = await this.elasticService.getItem('tokens', 'identifier', identifier);
 
@@ -506,5 +508,89 @@ export class TokenService {
     }
 
     return properties;
+  }
+
+  async getTokensWithRolesForAddressCount(address: string, filter: TokenWithRolesFilter): Promise<number> {
+    const elasticQuery = this.buildTokensWithRolesForAddressQuery(address, filter);
+
+    return await this.elasticService.getCount('tokens', elasticQuery);
+  }
+
+  async getTokenWithRolesForAddress(address: string, identifier: string): Promise<TokenWithRoles | undefined> {
+    const tokens = await this.getTokensWithRolesForAddress(address, { identifier }, { from: 0, size: 1 });
+    if (tokens.length === 0) {
+      return undefined;
+    }
+
+    return tokens[0];
+  }
+
+  async getTokensWithRolesForAddress(address: string, filter: TokenWithRolesFilter, pagination: QueryPagination): Promise<TokenWithRoles[]> {
+    const elasticQuery = this.buildTokensWithRolesForAddressQuery(address, filter, pagination);
+
+    const tokenList = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+
+    const allTokens = await this.esdtService.getAllEsdtTokens();
+
+    const result: TokenWithRoles[] = [];
+
+    for (const item of tokenList) {
+      const token = allTokens.find(x => x.identifier === item.identifier);
+      if (token) {
+        const resultItem = ApiUtils.mergeObjects(new TokenWithRoles(), token);
+        if (item.roles) {
+          if (item.roles.ESDTRoleLocalMint && item.roles.ESDTRoleLocalMint.includes(address)) {
+            resultItem.canLocalMint = true;
+          }
+
+          if (item.roles.ESDTRoleLocalBurn && item.roles.ESDTRoleLocalBurn.includes(address)) {
+            resultItem.canLocalBurn = true;
+          }
+        }
+
+        result.push(resultItem);
+      }
+    }
+
+    return result;
+  }
+
+  private buildTokensWithRolesForAddressQuery(address: string, filter: TokenWithRolesFilter, pagination?: QueryPagination): ElasticQuery {
+    let elasticQuery = ElasticQuery.create()
+      .withMustNotExistCondition('identifier')
+      .withMustCondition(QueryType.Should(
+        [
+          QueryType.Match('currentOwner', address),
+          QueryType.Nested('roles', { 'roles.ESDTRoleLocalMint': address }),
+          QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }),
+        ]
+      ))
+      .withMustMatchCondition('type', TokenType.FungibleESDT)
+      .withMustMatchCondition('token', filter.identifier)
+      .withMustMatchCondition('currentOwner', filter.owner);
+
+    if (filter.search) {
+      elasticQuery = elasticQuery
+        .withShouldCondition([
+          QueryType.Wildcard('token', filter.search),
+          QueryType.Wildcard('name', filter.search),
+        ]);
+    }
+
+    if (filter.canMint !== undefined) {
+      const condition = filter.canMint === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
+      elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleLocalMint': address }));
+    }
+
+    if (filter.canBurn !== undefined) {
+      const condition = filter.canBurn === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
+      elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }));
+    }
+
+    if (pagination) {
+      elasticQuery = elasticQuery.withPagination(pagination);
+    }
+
+    return elasticQuery;
   }
 }

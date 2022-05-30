@@ -18,7 +18,7 @@ import { NftType } from "../nfts/entities/nft.type";
 import { NftExtendedAttributesService } from "../nfts/nft.extendedattributes.service";
 import { NftService } from "../nfts/nft.service";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
-import { NftCollectionAccount } from "../collections/entities/nft.collection.account";
+import { NftCollectionRole } from "../collections/entities/nft.collection.role";
 import { CollectionService } from "../collections/collection.service";
 import { NftCollection } from "../collections/entities/nft.collection";
 import { CollectionFilter } from "../collections/entities/collection.filter";
@@ -65,14 +65,6 @@ export class EsdtAddressService {
     return await this.getNftsForAddressFromGateway(address, filter, pagination);
   }
 
-  async getCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftCollectionAccount[]> {
-    if (source === EsdtDataSource.elastic) {
-      return await this.getCollectionsForAddressFromElastic(address, filter, pagination);
-    }
-
-    return await this.getCollectionsForAddressFromGateway(address, filter, pagination);
-  }
-
   private async getNftsForAddressWithTypeFilter(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
     if (AddressUtils.isSmartContractAddress(address)) {
       const nftType = (filter.type ?? '').split(',');
@@ -100,7 +92,7 @@ export class EsdtAddressService {
   }
 
   async getCollectionCountForAddressFromElastic(address: string, filter: CollectionFilter): Promise<number> {
-    const elasticQuery = this.collectionService.buildCollectionFilter(filter, address);
+    const elasticQuery = this.collectionService.buildCollectionRolesFilter(filter, address);
 
     return await this.elasticService.getCount('tokens', elasticQuery);
   }
@@ -150,37 +142,12 @@ export class EsdtAddressService {
     return nftAccounts;
   }
 
-  private async getCollectionsForAddressFromGateway(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
-    const esdtResult = await this.gatewayService.get(`address/${address}/registered-nfts`, GatewayComponentRequest.addressNfts);
-
-    let collectionsIdentifiers = esdtResult.tokens;
-    if (collectionsIdentifiers.length === 0) {
-      return [];
-    }
-
-    if (filter.collection) {
-      if (!collectionsIdentifiers.includes(filter.collection)) {
-        return [];
-      }
-
-      collectionsIdentifiers = [filter.collection];
-    }
-
-    const accountCollections: NftCollection[] = await this.collectionService.applyPropertiesToCollections(collectionsIdentifiers);
-
-    const accountCollectionsWithRoles: NftCollectionAccount[] = await this.applyRolesToAccountCollections(address, accountCollections);
-
-    const filteredColections: NftCollectionAccount[] = this.filterCollectionsForAddress(accountCollectionsWithRoles, filter, pagination);
-
-    return filteredColections;
-  }
-
-  private async getCollectionsForAddressFromElastic(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
+  async getCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionRole[]> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive() && (filter.canCreate !== undefined || filter.canBurn !== undefined || filter.canAddQuantity !== undefined || filter.canUpdateAttributes !== undefined || filter.canAddUri !== undefined || filter.canTransferRole !== undefined)) {
       throw new BadRequestException('canCreate / canBurn / canAddQuantity / canUpdateAttributes / canAddUri / canTransferRole filter not supported when fetching account collections from elastic');
     }
 
-    const elasticQuery = this.collectionService.buildCollectionFilter(filter, address)
+    const elasticQuery = this.collectionService.buildCollectionRolesFilter(filter, address)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
       .withPagination(pagination);
 
@@ -216,7 +183,7 @@ export class EsdtAddressService {
     }
 
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      const nftAccountCollections: NftCollectionAccount[] = [];
+      const nftAccountCollections: NftCollectionRole[] = [];
       for (const collection of accountCollections) {
         const role = collection.roles.find(x => x.address === address) ?? new CollectionRoles();
 
@@ -225,7 +192,7 @@ export class EsdtAddressService {
           delete role.canAddQuantity;
         }
 
-        const accountCollection = ApiUtils.mergeObjects(new NftCollectionAccount(), { ...collection, ...role });
+        const accountCollection = ApiUtils.mergeObjects(new NftCollectionRole(), { ...collection, ...role });
 
         if (accountCollection.timestamp === 0) {
           // @ts-ignore
@@ -241,62 +208,18 @@ export class EsdtAddressService {
       return nftAccountCollections;
     }
 
-    const accountCollectionsWithRoles: NftCollectionAccount[] = await this.applyRolesToAccountCollections(address, accountCollections);
+    const accountCollectionsWithRoles: NftCollectionRole[] = await this.applyRolesToAccountCollections(address, accountCollections);
 
     return accountCollectionsWithRoles;
   }
 
-  private filterCollectionsForAddress(collections: NftCollectionAccount[], filter: CollectionFilter, pagination: QueryPagination): NftCollectionAccount[] {
-    if (filter.type !== undefined) {
-      collections = collections.filter(x => x.type === filter.type);
-    }
-
-    if (filter.search !== undefined) {
-      const searchLower = filter.search.toLowerCase();
-
-      collections = collections.filter(x => x.name.toLowerCase().includes(searchLower) || x.collection.toLowerCase().includes(searchLower));
-    }
-
-    if (filter.owner !== undefined) {
-      collections = collections.filter(x => x.owner === filter.owner);
-    }
-
-    if (filter.canCreate !== undefined) {
-      collections = collections.filter(x => x.roles[0].canCreate === filter.canCreate);
-    }
-
-    if (filter.canBurn !== undefined) {
-      collections = collections.filter(x => x.roles[0].canBurn === filter.canBurn);
-    }
-
-    if (filter.canAddQuantity !== undefined) {
-      collections = collections.filter(x => x.roles[0].canAddQuantity === filter.canAddQuantity);
-    }
-
-    if (filter.canUpdateAttributes !== undefined) {
-      collections = collections.filter(x => x.roles[0].canUpdateAttributes === filter.canAddQuantity);
-    }
-
-    if (filter.canAddUri !== undefined) {
-      collections = collections.filter(x => x.roles[0].canAddUri === filter.canAddUri);
-    }
-
-    if (filter.canTransferRole !== undefined) {
-      collections = collections.filter(x => x.roles[0].canTransferRole === filter.canTransferRole);
-    }
-
-    collections = collections.slice(pagination.from, pagination.from + pagination.size);
-
-    return collections;
-  }
-
-  private async applyRolesToAccountCollections(address: string, collections: NftCollection[]): Promise<NftCollectionAccount[]> {
+  private async applyRolesToAccountCollections(address: string, collections: NftCollection[]): Promise<NftCollectionRole[]> {
     const rolesResult = await this.gatewayService.get(`address/${address}/esdts/roles`, GatewayComponentRequest.addressEsdtAllRoles);
     const roles = rolesResult.roles;
 
-    const nftCollections: NftCollectionAccount[] = [];
+    const nftCollections: NftCollectionRole[] = [];
     for (const collection of collections) {
-      const accountCollection: NftCollectionAccount = ApiUtils.mergeObjects(new NftCollectionAccount(), collection);
+      const accountCollection: NftCollectionRole = ApiUtils.mergeObjects(new NftCollectionRole(), collection);
 
       const role = roles[collection.collection];
       accountCollection.canCreate = role ? role.includes('ESDTRoleNFTCreate') : false;

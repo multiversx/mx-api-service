@@ -13,7 +13,7 @@ export class SmartContractResultController {
 
   @Get("/results")
   @ApiOperation({ summary: 'Smart contract results', description: 'Returns all smart contract results available on the blockchain' })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'The hash of the parent miniBlock', required: false })
   @ApiOkResponse({ type: [SmartContractResult] })
@@ -48,7 +48,7 @@ export class SmartContractResultController {
 
   @Get("/sc-results")
   @ApiOperation({ summary: 'Smart contract results', description: 'Returns all smart contract results available on the blockchain', deprecated: true })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'The hash of the parent miniBlock', required: false })
   @ApiOkResponse({ type: [SmartContractResult] })
