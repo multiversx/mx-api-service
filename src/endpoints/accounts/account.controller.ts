@@ -360,6 +360,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/collections/c")
+  @ApiExcludeEndpoint()
   async getNftCollectionCountAlternative(
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
