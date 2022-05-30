@@ -431,29 +431,25 @@ describe('Token Service', () => {
   describe("getTokenCountForAddress", () => {
     it("should return total number of tokens for address", async () => {
       const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
-      const count: number = 1;
 
       jest
-        .spyOn(ElasticService.prototype, 'get')
+        .spyOn(TokenService.prototype, 'getTokenCountForAddressFromGateway')
         // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async () => count));
+        .mockImplementation(jest.fn(async () => 1));
 
       const result = await tokenService.getTokenCountForAddress(address);
-
       expect(result).toStrictEqual(1);
     });
 
     it("should return total number of tokens for smart contract address", async () => {
       const address: string = "erd1qqqqqqqqqqqqqpgqmqq78c5htmdnws8hm5u4suvags36eq092jpsaxv3e7";
-      const count: number = 1;
 
       jest
-        .spyOn(ElasticService.prototype, 'get')
+        .spyOn(TokenService.prototype, 'getTokenCountForAddressFromElastic')
         // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async () => count));
+        .mockImplementation(jest.fn(async () => 1));
 
       const result = await tokenService.getTokenCountForAddress(address);
-
       expect(result).toStrictEqual(1);
     });
   });
@@ -650,7 +646,7 @@ describe('Token Service', () => {
   });
 
   describe("getTokenRoles", () => {
-    it.only("should return token roles", async () => {
+    it("should return token roles", async () => {
       const identifier: string = token.identifier;
 
       jest
@@ -718,7 +714,7 @@ describe('Token Service', () => {
             address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
             canLocalMint: true,
             canLocalBurn: true,
-            roles: [],
+            roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
           },
         ]));
 
