@@ -193,15 +193,6 @@ describe("Accounts Controller", () => {
       });
   });
 
-  it("/accounts/:address/tokens/:collection - should return 200 status code and collection details for a specific address", async () => {
-    const address: string = "erd1qqqqqqqqqqqqqpgqaz6dvegfmlm2ftatg3qx550e2zq07k4ryl5sh0qx2e";
-    const collection: string = "OVERTURE-276027";
-    await request(app.getHttpServer())
-      .get(route + "/" + address + "/collections" + "/" + collection)
-      .set("header", "content-type")
-      .expect(200);
-  });
-
   it("/accounts/:address/tokens/:token - should return 200 status code and token details for a specific address", async () => {
     const address: string = "erd12xspx5z0nm08tvtt8v3nyu3w8mxfr36rj27u99yesmr7uxj6h7cscsvsw5";
     const token: string = "WEGLD-bd4d79";
@@ -257,7 +248,7 @@ describe("Accounts Controller", () => {
   });
 
   it("/accounts/:address/roles/tokens - should return no details if account does not have some special roles", async () => {
-    const address: string = "erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3";
+    const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
     await request(app.getHttpServer())
       .get(route + "/" + address + "/roles/tokens")
       .set("header", "content-type")
