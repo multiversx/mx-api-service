@@ -42,6 +42,7 @@ async function bootstrap() {
   if (apiConfigService.getUseTracingFlag() === true) {
     require('dd-trace').init();
   }
+
   if (apiConfigService.getIsPublicApiActive()) {
     const publicApp = await NestFactory.create<NestExpressApplication>(PublicAppModule);
 
