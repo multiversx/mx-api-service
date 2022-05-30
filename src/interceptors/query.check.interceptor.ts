@@ -16,6 +16,9 @@ export class QueryCheckInterceptor implements NestInterceptor {
     }
 
     const metadata = Reflect.getOwnMetadata('__routeArguments__', context.getClass(), context.getHandler().name);
+    if (!metadata) {
+      return next.handle();
+    }
 
     const supportedQueryNames = Object.values(metadata).map((x: any) => x.data);
 
