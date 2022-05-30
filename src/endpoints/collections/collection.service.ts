@@ -20,7 +20,6 @@ import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { RecordUtils } from "src/utils/record.utils";
 import { TokenAssets } from "../tokens/entities/token.assets";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
-import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { TokenUtils } from "src/utils/token.utils";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
@@ -315,8 +314,8 @@ export class CollectionService {
     return collections[0];
   }
 
-  async getCollectionsWithRolesForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftCollectionRole[]> {
-    const collections = await this.esdtAddressService.getCollectionsForAddress(address, filter, pagination, source);
+  async getCollectionsWithRolesForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionRole[]> {
+    const collections = await this.esdtAddressService.getCollectionsForAddress(address, filter, pagination);
 
     return collections;
   }

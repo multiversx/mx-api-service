@@ -195,7 +195,6 @@ export class AccountController {
   @ApiQuery({ name: 'canUpdateAttributes', description: 'Filter by property canUpdateAttributes (boolean)', required: false })
   @ApiQuery({ name: 'canAddUri', description: 'Filter by property canAddUri (boolean)', required: false })
   @ApiQuery({ name: 'canTransferRole', description: 'Filter by property canTransferRole (boolean)', required: false })
-  @ApiQuery({ name: 'source', description: 'Data source of request', required: false })
   @ApiOkResponse({ type: [NftCollectionRole] })
   async getAccountCollectionsWithRoles(
     @Param('address', ParseAddressPipe) address: string,
@@ -210,9 +209,8 @@ export class AccountController {
     @Query('canUpdateAttributes', new ParseOptionalBoolPipe) canUpdateAttributes?: boolean,
     @Query('canAddUri', new ParseOptionalBoolPipe) canAddUri?: boolean,
     @Query('canTransferRole', new ParseOptionalBoolPipe) canTransferRole?: boolean,
-    @Query('source', new ParseOptionalEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
   ): Promise<NftCollectionRole[]> {
-    return await this.collectionService.getCollectionsWithRolesForAddress(address, { search, type, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole, owner }, { from, size }, source);
+    return await this.collectionService.getCollectionsWithRolesForAddress(address, { search, type, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole, owner }, { from, size });
   }
 
   @Get("/accounts/:address/roles/collections/count")
