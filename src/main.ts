@@ -61,19 +61,19 @@ async function bootstrap() {
     await processorApp.listen(5001);
   }
 
-  if (apiConfigService.getIsTransactionCompletedCronActive()) {
-    const processorApp = await NestFactory.create(TransactionCompletedModule);
-    await processorApp.listen(7001);
-  }
-
   if (apiConfigService.getIsCacheWarmerCronActive()) {
     const cacheWarmerApp = await NestFactory.create(CacheWarmerModule);
     await cacheWarmerApp.listen(6001);
   }
 
+  if (apiConfigService.getIsTransactionCompletedCronActive()) {
+    const processorApp = await NestFactory.create(TransactionCompletedModule);
+    await processorApp.listen(7001);
+  }
+
   if (apiConfigService.getIsElasticUpdaterCronActive()) {
-    const cacheWarmerApp = await NestFactory.create(ElasticUpdaterModule);
-    await cacheWarmerApp.listen(7001);
+    const elasticUpdaterApp = await NestFactory.create(ElasticUpdaterModule);
+    await elasticUpdaterApp.listen(8001);
   }
 
   if (apiConfigService.getIsQueueWorkerCronActive()) {
