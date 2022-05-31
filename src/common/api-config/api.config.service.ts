@@ -260,6 +260,10 @@ export class ApiConfigService {
     return isCronActive;
   }
 
+  getIsElasticUpdaterCronActive(): boolean {
+    return this.configService.get<boolean>('cron.elasticUpdater') ?? false;
+  }
+
   getIsQueueWorkerCronActive(): boolean {
     const isQueueWorkerActive = this.configService.get<boolean>('cron.queueWorker');
     if (isQueueWorkerActive === undefined) {

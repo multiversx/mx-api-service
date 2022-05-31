@@ -19,6 +19,7 @@ function buildElasticIndexerSort(sorts: ElasticSortProperty[]): any[] {
 }
 
 export class ElasticQuery {
+  fields?: string[];
   pagination?: ElasticPagination;
   sort: ElasticSortProperty[] = [];
   filter: AbstractQuery[] = [];
@@ -28,6 +29,12 @@ export class ElasticQuery {
 
   static create(): ElasticQuery {
     return new ElasticQuery();
+  }
+
+  withFields(fields: string[]): ElasticQuery {
+    this.fields = fields;
+
+    return this;
   }
 
   withPagination(pagination: ElasticPagination): ElasticQuery {
@@ -149,6 +156,7 @@ export class ElasticQuery {
     const elasticSort = buildElasticIndexerSort(this.sort);
 
     const elasticQuery = {
+      _source: this.fields,
       ...this.pagination,
       sort: elasticSort,
       query: {
