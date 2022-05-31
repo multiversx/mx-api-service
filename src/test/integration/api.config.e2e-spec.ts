@@ -228,12 +228,12 @@ describe('API Config', () => {
       expect(results).toEqual('erd1qqqqqqqqqqqqqpgq50dge6rrpcra4tp9hl57jl0893a4r2r72jpsk39rjj');
     });
 
-    it("should throw error because test simulates that metabonding contract address is not defined", () => {
+    it("should return undefined", () => {
       jest
         .spyOn(ConfigService.prototype, 'get')
         .mockImplementation(jest.fn(() => undefined));
 
-      expect(() => apiConfigService.getMetabondingContractAddress()).toThrowError('No metabonding contract present');
+      expect(() => apiConfigService.getMetabondingContractAddress()).toBeUndefined();
     });
   });
 
