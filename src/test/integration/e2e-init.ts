@@ -89,6 +89,16 @@ export default class Initializer {
     await this.fetch(CacheInfo.Providers.key, async () => await providerService.getAllProvidersRaw());
     await this.fetch(CacheInfo.AllEsdtTokens.key, async () => await esdtService.getAllEsdtTokensRaw());
 
+    const providers = await providerService.getAllProviders();
+    for (const provider of providers) {
+      await this.cachingService.setCache(`keybase:${provider.provider}`, true);
+    }
+
+    const nodes = await nodeService.getAllNodes();
+    for (const node of nodes) {
+      await this.cachingService.setCache(`keybase:${node.bls}`, true);
+    }
+
     await Initializer.cachingService.setCacheRemote<boolean>(
       'isInitialized',
       true,
