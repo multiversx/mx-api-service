@@ -49,7 +49,7 @@ export class ElasticUpdaterService {
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
-  async handleUpdateIsWhitelisted() {
+  async handleUpdateTokenExtraDetails() {
     await Locker.lock('Elastic updater: Update tokens isWhitelisted, media, metadata', async () => {
       const query = ElasticQuery.create()
         .withFields([
@@ -58,11 +58,8 @@ export class ElasticUpdaterService {
           'api_metadata',
           'data.uris',
         ])
-        .withMustCondition(QueryType.Exists('identifier'))
-        .withShouldCondition([
-          QueryType.Match('type', TokenType.NonFungibleESDT),
-          QueryType.Match('type', TokenType.SemiFungibleESDT),
-        ])
+        .withMustExistCondition('identifier')
+        .withMustMultiShouldCondition([TokenType.NonFungibleESDT, TokenType.SemiFungibleESDT], type => QueryType.Match('type', type))
         .withPagination({ from: 0, size: 10000 });
 
       await this.elasticService.getScrollableList('tokens', 'identifier', query, async items => {
