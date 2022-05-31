@@ -48,7 +48,7 @@ export class ElasticUpdaterService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_HOUR)
   async handleUpdateTokenExtraDetails() {
     await Locker.lock('Elastic updater: Update tokens isWhitelisted, media, metadata', async () => {
       const query = ElasticQuery.create()
