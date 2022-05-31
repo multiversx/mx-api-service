@@ -69,10 +69,21 @@ export default class Initializer {
         .spyOn(NodeService.prototype, 'getQueue')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => queue));
+
+      jest.spyOn(KeybaseService.prototype, 'confirmKeybasesAgainstKeybasePub')
+        .mockImplementation(jest.fn(async () => {
+          const providers = await providerService.getProviderAddresses();
+          for (const provider of providers) {
+            await this.cachingService.setCache(`keybase:${provider}`, true, Constants.oneHour());
+          }
+
+          for (const node of nodes) {
+            await this.cachingService.setCache(`keybase:${node.bls}`, true, Constants.oneHour());
+          }
+        }));
     }
 
-    const isInitialized =
-      await Initializer.cachingService.getCacheRemote<boolean>('isInitialized');
+    const isInitialized = await Initializer.cachingService.getCacheRemote<boolean>('isInitialized');
     if (isInitialized === true) {
       return;
     }
@@ -88,16 +99,6 @@ export default class Initializer {
     await this.fetch(CacheInfo.Nodes.key, async () => await nodeService.getAllNodesRaw());
     await this.fetch(CacheInfo.Providers.key, async () => await providerService.getAllProvidersRaw());
     await this.fetch(CacheInfo.AllEsdtTokens.key, async () => await esdtService.getAllEsdtTokensRaw());
-
-    const providers = await providerService.getAllProviders();
-    for (const provider of providers) {
-      await this.cachingService.setCache(`keybase:${provider.provider}`, true);
-    }
-
-    const nodes = await nodeService.getAllNodes();
-    for (const node of nodes) {
-      await this.cachingService.setCache(`keybase:${node.bls}`, true);
-    }
 
     await Initializer.cachingService.setCacheRemote<boolean>(
       'isInitialized',
