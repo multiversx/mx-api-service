@@ -233,7 +233,7 @@ describe('API Config', () => {
         .spyOn(ConfigService.prototype, 'get')
         .mockImplementation(jest.fn(() => undefined));
 
-      expect(() => apiConfigService.getMetabondingContractAddress()).toBeUndefined();
+      expect(apiConfigService.getMetabondingContractAddress()).toBeUndefined();
     });
   });
 
