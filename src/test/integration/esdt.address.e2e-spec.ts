@@ -129,24 +129,23 @@ describe('EsdtAddressService', () => {
   describe('getEsdtCollectionsCountForAddressFromElastic', () => {
     it('should return esdt collections count for address from "ELASTIC"', async () => {
       const address: string = 'erd1yt24jpcm58k2734lf53ws96lqtkzy46vlxwnjud7ce3vl02eahmsele6j8';
-      const filter = new NftFilter();
+      const filter = new CollectionFilter();
       filter.collection = 'HMORGOTH-ecd5fb';
       const count = await esdtAddressService.getCollectionCountForAddressFromElastic(address, filter);
 
       expect(typeof count).toBe('number');
     });
 
-    it('should return esdt collections of type NonFungibleESDT for address from "ELASTIC" source', async () => {
+    it('should return esdt collections of type NonFungibleESDT and SemiFungibleESDT for a specific address', async () => {
       const address: string = 'erd1yt24jpcm58k2734lf53ws96lqtkzy46vlxwnjud7ce3vl02eahmsele6j8';
-      const filter = new NftFilter();
+      const filter = new CollectionFilter();
       filter.collection = 'HMORGOTH-ecd5fb';
-      filter.type = NftType.NonFungibleESDT;
-      const results = await esdtAddressService.getCollectionsForAddress(address, filter, { from: 0, size: 1 });
+      filter.type = [NftType.NonFungibleESDT, NftType.SemiFungibleESDT];
+      const results = await esdtAddressService.getCollectionsForAddress(address, filter, { from: 0, size: 2 });
 
-      for (const result of results) {
-        expect(result).toBeInstanceOf(Object);
-        expect(result.type).toStrictEqual('NonFungibleESDT');
-      }
+      const collectionResults = results.map((result) => result.type);
+      expect(collectionResults.includes(NftType.NonFungibleESDT));
+      expect(collectionResults.includes(NftType.SemiFungibleESDT));
     });
   });
 });
