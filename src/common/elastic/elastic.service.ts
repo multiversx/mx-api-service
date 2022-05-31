@@ -28,7 +28,7 @@ export class ElasticService {
   }
 
   async getCustomValue(collection: string, identifier: string, attribute: string): Promise<any> {
-    const url = `${this.url}/${collection}/_search?q=_id:${identifier}`;
+    const url = `${this.url}/${collection}/_search?q=_id:${encodeURIComponent(identifier)}`;
 
     const profiler = new PerformanceProfiler();
     const fullAttribute = 'api_' + attribute;
@@ -87,7 +87,7 @@ export class ElasticService {
   }
 
   async getItem(collection: string, key: string, identifier: string) {
-    const url = `${this.url}/${collection}/_search?q=_id:${identifier}`;
+    const url = `${this.url}/${collection}/_search?q=_id:${encodeURIComponent(identifier)}`;
 
     const profiler = new PerformanceProfiler();
 
