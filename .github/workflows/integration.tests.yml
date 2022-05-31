@@ -66,8 +66,8 @@ jobs:
             npm run test:e2e:warm:mocked
           fi
         shell: bash
-      - name: Validation
-        run: npm run test:e2e api.e2e-spec.ts
+      - name: Run API tests
+        run: npm run test:api
       - name: Run integration tests
         run: npm run test:e2e
       - uses: codecov/codecov-action@v2
