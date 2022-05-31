@@ -94,7 +94,7 @@ export class KeybaseService {
     return keybaseGetResults.filter(x => x !== undefined && x !== null);
   }
 
-  async confirmKeybasesAgainstKeybasePub(): Promise<void> {
+  async confirmKeybasesAgainstKeybasePub(skip: boolean = false): Promise<void> {
     const providerKeybases: Keybase[] = await this.getProvidersKeybasesRaw();
     const nodeKeybases: Keybase[] = await this.getNodesKeybasesRaw();
 
@@ -105,11 +105,15 @@ export class KeybaseService {
     await asyncPool(
       1,
       distinctIdentities,
-      identity => this.confirmKeybasesForIdentity(identity)
+      identity => this.confirmKeybasesForIdentity(identity, skip)
     );
   }
 
-  async confirmKeybasesForIdentity(identity: string): Promise<void> {
+  async confirmKeybasesForIdentity(identity: string, skip: boolean): Promise<void> {
+    if (skip === true) {
+      return;
+    }
+
     const githubSuccess = await this.confirmKeybasesAgainstGithubForIdentity(identity);
     if (!githubSuccess) {
       await this.confirmKeybasesAgainstKeybasePubForIdentity(identity);

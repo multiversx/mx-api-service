@@ -82,7 +82,7 @@ export default class Initializer {
       async () => await Initializer.cachingService.flushDb(),
     );
 
-    await this.execute('Confirm keybases against keybase.pub', async () => await keybaseService.confirmKeybasesAgainstKeybasePub());
+    await this.execute('Confirm keybases against keybase.pub', async () => await keybaseService.confirmKeybasesAgainstKeybasePub(true));
     await this.execute('Confirm keybase against keybase.io', async () => await keybaseService.confirmIdentityProfilesAgainstKeybaseIo());
     await this.fetch(CacheInfo.Keybases.key, async () => await keybaseService.confirmKeybasesAgainstCache());
     await this.fetch(CacheInfo.Nodes.key, async () => await nodeService.getAllNodesRaw());
