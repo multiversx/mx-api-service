@@ -4,7 +4,6 @@ import { Test } from "@nestjs/testing";
 import { CollectionService } from "src/endpoints/collections/collection.service";
 import { PublicAppModule } from "src/public.app.module";
 import { NftCollection } from 'src/endpoints/collections/entities/nft.collection';
-import { NftCollectionRole } from 'src/endpoints/collections/entities/nft.collection.role';
 import '../../utils/extensions/jest.extensions';
 import { NftCollectionAccount } from 'src/endpoints/collections/entities/nft.collection.account';
 
@@ -22,7 +21,7 @@ describe('Collection Service', () => {
   describe("NFT Collections", () => {
     it("shoult return 10 NonFungibleESDT collections", async () => {
       const filter = new CollectionFilter();
-      filter.type = NftType.NonFungibleESDT;
+      filter.type = [NftType.NonFungibleESDT];
       const results = await collectionService.getNftCollections({ from: 0, size: 10 }, filter);
 
       expect(results).toHaveLength(10);
@@ -34,7 +33,7 @@ describe('Collection Service', () => {
     });
 
     it(`should return a list with SemiFungibleESDT collections`, async () => {
-      const results = await collectionService.getNftCollections({ from: 0, size: 10 }, { type: NftType.SemiFungibleESDT });
+      const results = await collectionService.getNftCollections({ from: 0, size: 10 }, { type: [NftType.SemiFungibleESDT] });
 
       expect(results).toHaveLength(10);
 
@@ -153,7 +152,7 @@ describe('Collection Service', () => {
 
     it("should return collection count for collection of type NonFungibleESDT", async () => {
       const filters = new CollectionFilter();
-      filters.type = NftType.NonFungibleESDT;
+      filters.type = [NftType.NonFungibleESDT];
 
       const results = await collectionService.getNftCollectionCount(filters);
       expect(typeof results).toBe("number");
@@ -161,7 +160,7 @@ describe('Collection Service', () => {
 
     it("should return collection count for collection of type SemiFungibleESDT", async () => {
       const filters = new CollectionFilter();
-      filters.type = NftType.SemiFungibleESDT;
+      filters.type = [NftType.SemiFungibleESDT];
 
       const results = await collectionService.getNftCollectionCount(filters);
       expect(typeof results).toBe("number");
@@ -221,7 +220,7 @@ describe('Collection Service', () => {
     it("should return collection of NonFungibleESDT for address", async () => {
       const address: string = "erd1qqqqqqqqqqqqqpgq09vq93grfqy7x5fhgmh44ncqfp3xaw57ys5s7j9fed";
       const filter = new CollectionFilter();
-      filter.type = NftType.NonFungibleESDT;
+      filter.type = [NftType.NonFungibleESDT];
 
       const results = await collectionService.getCollectionsForAddress(address, filter, { from: 0, size: 10 });
 
@@ -263,12 +262,8 @@ describe('Collection Service', () => {
       const address: string = "erd1gv55fk7gn0f437eq53x7u5zux824a9ff86v5pvnneg7yvsucpp0svncsmz";
       const collectionIdentifier: string = 'AEROCIA-487b5f';
       const collection = await collectionService.getCollectionForAddress(address, collectionIdentifier);
-      const collectionResults = new NftCollectionRole();
-      // @ts-ignore
-      delete collectionResults.timestamp;
 
-      expect(collection).toBeDefined();
-      expect(collection).toHaveStructure(Object.keys(collectionResults));
+      expect(collection).toHaveStructure(Object.keys(new NftCollectionAccount()));
     });
   });
 });

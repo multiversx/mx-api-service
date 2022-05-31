@@ -40,6 +40,7 @@ import { ProviderStake } from '../stake/entities/provider.stake';
 import { TokenDetailedWithBalance } from '../tokens/entities/token.detailed.with.balance';
 import { NftCollectionAccount } from '../collections/entities/nft.collection.account';
 import { TokenWithRoles } from '../tokens/entities/token.with.roles';
+import { ParseOptionalEnumArrayPipe } from 'src/utils/pipes/parse.optional.enum.array.pipe';
 
 @Controller()
 @ApiTags('accounts')
@@ -201,7 +202,7 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
+    @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type?: NftType[],
     @Query('owner') owner?: string,
     @Query('canCreate', new ParseOptionalBoolPipe) canCreate?: boolean,
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
@@ -225,7 +226,7 @@ export class AccountController {
   async getCollectionWithRolesCount(
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
+    @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type?: NftType[],
     @Query('owner', ParseAddressPipe) owner?: string,
     @Query('canCreate', new ParseOptionalBoolPipe) canCreate?: boolean,
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
@@ -239,7 +240,7 @@ export class AccountController {
   async getCollectionCountAlternative(
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
+    @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type?: NftType[],
     @Query('owner', ParseAddressPipe) owner?: string,
     @Query('canCreate', new ParseOptionalBoolPipe) canCreate?: boolean,
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
@@ -341,7 +342,7 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
+    @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type?: NftType[],
   ): Promise<NftCollectionAccount[]> {
     return await this.collectionService.getCollectionsForAddress(address, { search, type }, { from, size });
   }
@@ -354,7 +355,7 @@ export class AccountController {
   async getNftCollectionCount(
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
+    @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type?: NftType[],
   ): Promise<number> {
     return await this.collectionService.getCollectionCountForAddress(address, { search, type });
   }
@@ -364,7 +365,7 @@ export class AccountController {
   async getNftCollectionCountAlternative(
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
+    @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type?: NftType[],
   ): Promise<number> {
     return await this.collectionService.getCollectionCountForAddress(address, { search, type });
   }

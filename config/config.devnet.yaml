@@ -12,6 +12,7 @@ cron:
   cacheWarmer: true
   fastWarm: true
   queueWorker: true
+  elasticUpdater: false
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true

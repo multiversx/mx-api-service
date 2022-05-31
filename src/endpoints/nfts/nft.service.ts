@@ -405,6 +405,23 @@ export class NftService {
     return nfts;
   }
 
+  public isWhitelistedStorage(uris: string[] | undefined): boolean {
+    if (!uris || uris.length === 0) {
+      return false;
+    }
+
+    let url = '';
+    try {
+      url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(uris[0]), this.NFT_THUMBNAIL_PREFIX);
+    } catch (error) {
+      this.logger.error(`Error when computing uri from '${uris[0]}'`);
+      this.logger.error(error);
+      return false;
+    }
+
+    return url.startsWith(this.NFT_THUMBNAIL_PREFIX);
+  }
+
   async getNftOwnersCount(identifier: string): Promise<number | undefined> {
     const owners = await this.cachingService.getOrSetCache(
       `nftOwnerCount:${identifier}`,
