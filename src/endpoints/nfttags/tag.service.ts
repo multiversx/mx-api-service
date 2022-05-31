@@ -7,6 +7,7 @@ import { Tag } from "./entities/tag";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
+import { BinaryUtils } from "src/utils/binary.utils";
 
 @Injectable()
 export class TagService {
@@ -34,12 +35,19 @@ export class TagService {
 
     const nftTags: Tag[] = result.map(item => ApiUtils.mergeObjects(new Tag(), item));
 
+    for (const tag of nftTags) {
+      tag.tag = BinaryUtils.base64Decode(tag.tag);
+    }
+
     return nftTags;
   }
 
   async getNftTag(tag: string): Promise<Tag> {
-    const result = await this.elasticService.getItem('tags', 'tag', tag);
+    const result = await this.elasticService.getItem('tags', 'tag', BinaryUtils.base64Encode(tag));
 
-    return ApiUtils.mergeObjects(new Tag(), result);
+    const nftTag = ApiUtils.mergeObjects(new Tag(), result);
+    nftTag.tag = BinaryUtils.base64Decode(nftTag.tag);
+
+    return nftTag;
   }
 }
