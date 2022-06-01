@@ -3,10 +3,12 @@ import { NftType } from 'src/endpoints/nfts/entities/nft.type';
 import { NftService } from 'src/endpoints/nfts/nft.service';
 import { ProcessNftSettings } from 'src/endpoints/process-nfts/entities/process.nft.settings';
 import { NftWorkerService } from 'src/queue.worker/nft.worker/nft.worker.service';
+import { BinaryUtils } from 'src/utils/binary.utils';
 import { CachingService } from '../caching/caching.service';
 import { CacheInfo } from '../caching/entities/cache.info';
 import { ElasticService } from '../elastic/elastic.service';
-import { NftCreateEvent } from './entities/nft/nft-create.event';
+import { NotifierEventIdentifier } from './entities/notifier.event.identifier';
+import { NotifierEvent } from './entities/notifier.event';
 
 @Injectable()
 export class RabbitMqNftHandlerService {
@@ -47,17 +49,46 @@ export class RabbitMqNftHandlerService {
     return collection.type;
   }
 
-  public async handleNftCreateEvent(event: NftCreateEvent): Promise<void> {
-    const identifier = event.getTopics()?.identifier;
-    if (!identifier) {
-      this.logger.error(`Could not extract identifier from NFT create event '${JSON.stringify(event)}'`);
-      return;
+  public async handleNftUpdateAttributesEvent(event: NotifierEvent): Promise<boolean | null> {
+    if (event.identifier !== NotifierEventIdentifier.ESDTNFTUpdateAttributes) {
+      return null;
     }
+
+    const identifier = this.getNftIdentifier(event.topics);
+    const attributes = BinaryUtils.base64Decode(event.topics[3]);
+
+    this.logger.log(`Detected 'ESDTNFTUpdateAttributes' event for NFT with identifier '${identifier}' and attributes '${attributes}'`);
+
+    const nft = await this.nftService.getSingleNft(identifier);
+    if (!nft) {
+      this.logger.log(`Could not fetch NFT details for NFT with identifier '${identifier}'`);
+      return false;
+    }
+
+    // we make sure the attributes from the event are used
+    nft.attributes = attributes;
+
+    try {
+      await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ forceRefreshMetadata: true }));
+    } catch (error) {
+      this.logger.error(`An unhandled error occurred when processing NFT update attributes event for NFT with identifier '${identifier}'`);
+      this.logger.error(error);
+    } finally {
+      return true;
+    }
+  }
+
+  public async handleNftCreateEvent(event: NotifierEvent): Promise<boolean | null> {
+    if (event.identifier !== NotifierEventIdentifier.ESDTNFTCreate) {
+      return null;
+    }
+
+    const identifier = this.getNftIdentifier(event.topics);
 
     const collectionIdentifier = identifier.split('-').slice(0, 2).join('-');
     const collectionType = await this.getCollectionType(collectionIdentifier);
     if (collectionType === NftType.MetaESDT) {
-      return;
+      return false;
     }
 
     this.logger.log(`Detected 'ESDTNFTCreate' event for NFT with identifier '${identifier}' and collection type '${collectionType}'`);
@@ -68,7 +99,7 @@ export class RabbitMqNftHandlerService {
     const nft = await this.nftService.getSingleNft(identifier);
     if (!nft) {
       this.logger.log(`Could not fetch NFT details for NFT with identifier '${identifier}'`);
-      return;
+      return false;
     }
 
     try {
@@ -76,9 +107,19 @@ export class RabbitMqNftHandlerService {
       if (needsProcessing) {
         await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
       }
+
+      return true;
     } catch (error) {
-      this.logger.error(`An unhandled error occurred when processing NFT with identifier '${identifier}'`);
+      this.logger.error(`An unhandled error occurred when processing NFT Create event for NFT with identifier '${identifier}'`);
       this.logger.error(error);
+      return false;
     }
+  }
+
+  private getNftIdentifier(topics: string[]): string {
+    const collection = BinaryUtils.base64Decode(topics[0]);
+    const nonce = BinaryUtils.base64ToHex(topics[1]);
+
+    return `${collection}-${nonce}`;
   }
 }
