@@ -122,7 +122,7 @@ export class NftController {
       throw new NotFoundException('NFT not found');
     }
 
-    const media = await this.nftMediaService.getMedia(identifier);
+    const media = await this.nftMediaService.getMedia(nfts[0].identifier);
     if (!media || media.length === 0) {
       // @ts-ignore
       response.redirect(this.nftService.DEFAULT_MEDIA[0].thumbnailUrl);
