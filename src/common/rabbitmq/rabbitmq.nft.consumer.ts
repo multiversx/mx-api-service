@@ -1,9 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CompetingRabbitConsumer } from './rabbitmq.consumers';
-import { NftCreateEvent } from './entities/nft/nft-create.event';
-import { NftEventEnum } from './entities/nft/nft-events.enum';
 import { RabbitMqNftHandlerService } from './rabbitmq.nft.handler.service';
 import configuration from 'config/configuration';
+import { NotifierEvent as NotifierEvent } from './entities/notifier.event';
 
 @Injectable()
 export class RabbitMqNftConsumer {
@@ -30,11 +29,8 @@ export class RabbitMqNftConsumer {
     }
   }
 
-  private async handleEvent(rawEvent: any) {
-    switch (rawEvent.identifier) {
-      case NftEventEnum.ESDTNFTCreate:
-        await this.nftHandlerService.handleNftCreateEvent(new NftCreateEvent(rawEvent));
-        break;
-    }
+  private async handleEvent(event: NotifierEvent) {
+    await this.nftHandlerService.handleNftCreateEvent(event) ??
+      await this.nftHandlerService.handleNftUpdateAttributesEvent(event);
   }
 }
