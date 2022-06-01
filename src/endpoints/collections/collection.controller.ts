@@ -5,6 +5,7 @@ import { NftType } from "../nfts/entities/nft.type";
 import { CollectionService } from "./collection.service";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
+import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { Nft } from "../nfts/entities/nft";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { NftService } from "../nfts/nft.service";
@@ -155,7 +156,7 @@ export class CollectionController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search: string | undefined,
     @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
-    @Query('type') type: NftType | undefined,
+    @Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
     @Query('name') name: string | undefined,
     @Query('tags', ParseArrayPipe) tags: string[] | undefined,
     @Query('creator', ParseAddressPipe) creator: string | undefined,
@@ -186,7 +187,7 @@ export class CollectionController {
     @Param('collection') collection: string,
     @Query('search') search: string | undefined,
     @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
-    @Query('type') type: NftType | undefined,
+    @Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
     @Query('name') name: string | undefined,
     @Query('tags', ParseArrayPipe) tags: string[] | undefined,
     @Query('creator', ParseAddressPipe) creator: string | undefined,
