@@ -77,3 +77,4 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: true
           verbose: true
+          version: "v0.1.15"
