@@ -67,7 +67,7 @@ jobs:
           fi
         shell: bash
       - name: Run integration tests
-        run: npm run test:e2e
+        run: npm run test:e2e:cov
       - uses: codecov/codecov-action@v2
         with:
           files: ./coverage/e2e/clover.xml
