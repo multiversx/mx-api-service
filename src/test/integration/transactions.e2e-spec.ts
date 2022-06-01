@@ -147,26 +147,6 @@ describe('Transaction Service', () => {
         }
       });
 
-      it(`should return transactions for an address`, async () => {
-        const address = transactionSender;
-        const transactionFilter = new TransactionFilter();
-        transactionFilter.sender = address;
-        transactionFilter.receiver = address;
-        transactionFilter.condition = QueryConditionOptions.should;
-
-        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
-        expect(transactions).toBeInstanceOf(Array);
-        expect(transactions.length).toBeGreaterThan(0);
-
-        for (const transaction of transactions) {
-          expect(transaction).toHaveStructure(Object.keys(new Transaction()));
-          expect(transaction.sender === address && transaction.receiver === address);
-        }
-
-        const accountTransactionsList = await transactionService.getTransactions(new TransactionFilter(), { from: 0, size: 25 }, undefined, address);
-        expect(transactions).toEqual(accountTransactionsList);
-      });
-
       it(`should return transactions for an address with self transactions`, async () => {
         const address = transactionSender;
         const transactionFilter = new TransactionFilter();
