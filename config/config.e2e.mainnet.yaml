@@ -30,6 +30,7 @@ urls:
   nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
 database:
   enabled: false
+  url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
   host: 'localhost'
   port: 3306
   username: 'root'

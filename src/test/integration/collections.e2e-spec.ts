@@ -259,8 +259,8 @@ describe('Collection Service', () => {
     });
 
     it(`should return collection for a specific address`, async () => {
-      const address: string = "erd1gv55fk7gn0f437eq53x7u5zux824a9ff86v5pvnneg7yvsucpp0svncsmz";
-      const collectionIdentifier: string = 'AEROCIA-487b5f';
+      const address: string = "erd159r7g930sauzahvslnve4rpp5xfhwku2rxzp5awycrpfsys8r7zsp4jy65";
+      const collectionIdentifier: string = 'EBULB-36c762';
       const collection = await collectionService.getCollectionForAddress(address, collectionIdentifier);
 
       expect(collection).toHaveStructure(Object.keys(new NftCollectionAccount()));
