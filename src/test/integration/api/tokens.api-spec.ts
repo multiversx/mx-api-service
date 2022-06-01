@@ -21,7 +21,7 @@ describe("API Testing", () => {
     await app.init();
   });
 
-  it("tokens", async () => {
+  it("/tokens", async () => {
     const checker = new ApiChecker('tokens', app.getHttpServer());
     await checker.checkStatus();
     await checker.checkPagination();

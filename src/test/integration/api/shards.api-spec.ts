@@ -21,7 +21,7 @@ describe("API Testing", () => {
     await app.init();
   });
 
-  it("shards", async () => {
+  it("/shards", async () => {
     const checker = new ApiChecker('shards', app.getHttpServer());
     await checker.checkStatus();
     await checker.checkPagination();

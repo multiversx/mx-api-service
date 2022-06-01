@@ -19,7 +19,7 @@ describe("API Testing", () => {
       new CleanupInterceptor(),
     );
     await app.init();
-  }, 180000);
+  });
 
   it("/collections", async () => {
     const checker = new ApiChecker('collections', app.getHttpServer());

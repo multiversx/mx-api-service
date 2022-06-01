@@ -21,7 +21,7 @@ describe("API Testing", () => {
     await app.init();
   });
 
-  it("transactions", async () => {
+  it("/transactions", async () => {
     const checker = new ApiChecker('transactions', app.getHttpServer());
     await checker.checkStatus();
     await checker.checkDetails();
