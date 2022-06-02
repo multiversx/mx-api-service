@@ -79,12 +79,12 @@ describe('Elastic Query', () => {
   describe('Add range filter to elastic query', () => {
     const elasticQuery: ElasticQuery = ElasticQuery.create();
 
-    elasticQuery.withFilter([new RangeQuery('test', 100, undefined)]);
+    elasticQuery.withFilter(new RangeQuery('test', 100, undefined));
     expect(elasticQuery.filter.length).toEqual(1);
     expect(elasticQuery.filter[0].getQuery()).toMatchObject({ range: { test: { lte: 100 } } });
 
 
-    elasticQuery.withFilter([new RangeQuery('test', 100, 1)]);
+    elasticQuery.withFilter(new RangeQuery('test', 100, 1));
     expect(elasticQuery.filter.length).toEqual(1);
     expect(elasticQuery.filter[0].getQuery()).toMatchObject({ range: { test: { lte: 100, gte: 1 } } });
 

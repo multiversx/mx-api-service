@@ -18,7 +18,6 @@ import { TransactionLog } from './entities/transaction.log';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { ElasticService } from 'src/common/elastic/elastic.service';
 import { ElasticQuery } from 'src/common/elastic/entities/elastic.query';
-import { AbstractQuery } from 'src/common/elastic/entities/abstract.query';
 import { QueryType } from 'src/common/elastic/entities/query.type';
 import { ElasticSortProperty } from 'src/common/elastic/entities/elastic.sort.property';
 import { ElasticSortOrder } from 'src/common/elastic/entities/elastic.sort.order';
@@ -57,82 +56,51 @@ export class TransactionService {
   }
 
   private buildTransactionFilterQuery(filter: TransactionFilter, address?: string): ElasticQuery {
-    const queries: AbstractQuery[] = [];
-    let shouldQueries: AbstractQuery[] = [];
-    let mustQueries: AbstractQuery[] = [];
-
-    if (address) {
-      shouldQueries.push(QueryType.Match('sender', address));
-      shouldQueries.push(QueryType.Match('receiver', address));
-
-      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-        shouldQueries.push(QueryType.Match('receivers', address));
-      }
-    }
-
-    if (filter.sender) {
-      queries.push(QueryType.Match('sender', filter.sender));
-    }
-
-    if (filter.receiver) {
-      shouldQueries.push(QueryType.Match('receiver', filter.receiver));
-
-      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-        shouldQueries.push(QueryType.Match('receivers', filter.receiver));
-      }
-    }
-
-    if (filter.token) {
-      queries.push(QueryType.Match('tokens', filter.token, QueryOperator.AND));
-    }
-
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      if (filter.function) {
-        queries.push(QueryType.Match('function', filter.function));
-      }
-    }
-
-    if (filter.senderShard !== undefined) {
-      queries.push(QueryType.Match('senderShard', filter.senderShard));
-    }
-
-    if (filter.receiverShard !== undefined) {
-      queries.push(QueryType.Match('receiverShard', filter.receiverShard));
-    }
-
-    if (filter.miniBlockHash) {
-      queries.push(QueryType.Match('miniBlockHash', filter.miniBlockHash));
-    }
-
-    if (filter.hashes) {
-      queries.push(QueryType.Should(filter.hashes.map(hash => QueryType.Match('_id', hash))));
-    }
-
-    if (filter.status) {
-      queries.push(QueryType.Match('status', filter.status));
-    }
-
-    if (filter.search) {
-      queries.push(QueryType.Wildcard('data', `*${filter.search}*`));
-    }
+    let elasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('tokens', filter.token)
+      .withMustMatchCondition('function', this.apiConfigService.getIsIndexerV3FlagActive() ? filter.function : undefined)
+      .withMustMatchCondition('senderShard', filter.senderShard)
+      .withMustMatchCondition('receiverShard', filter.receiverShard)
+      .withMustMatchCondition('miniBlockHash', filter.miniBlockHash)
+      .withMustMultiShouldCondition(filter.hashes, hash => QueryType.Match('_id', hash))
+      .withMustMatchCondition('status', filter.status)
+      .withMustWildcardCondition('data', filter.search)
+      .withMustMultiShouldCondition(filter.tokens, token => QueryType.Match('tokens', token, QueryOperator.AND))
+      .withDateRangeFilter('timestamp', filter.before, filter.after);
 
     if (filter.condition === QueryConditionOptions.should) {
-      shouldQueries = [...shouldQueries, ...queries];
+      if (filter.sender) {
+        elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('sender', filter.sender));
+      }
+
+      if (filter.receiver) {
+        elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receiver', filter.receiver));
+
+        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+          elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receivers', filter.receiver));
+        }
+      }
     } else {
-      mustQueries = queries;
+      elasticQuery = elasticQuery.withMustMatchCondition('sender', filter.sender);
+
+      if (filter.receiver) {
+        const keys = ['receiver'];
+        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+          keys.push('receivers');
+        }
+
+        elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, filter.receiver));
+      }
     }
 
-    let elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.should, shouldQueries)
-      .withCondition(QueryConditionOptions.must, mustQueries);
+    if (address) {
+      const keys: string[] = ['sender', 'receiver'];
 
-    if (filter.tokens) {
-      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.tokens, token => QueryType.Match('tokens', token, QueryOperator.AND));
-    }
+      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+        keys.push('receivers');
+      }
 
-    if (filter.before || filter.after) {
-      elasticQuery = elasticQuery
-        .withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, address));
     }
 
     return elasticQuery;

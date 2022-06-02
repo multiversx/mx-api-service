@@ -180,7 +180,7 @@ export class ElasticService {
       .withPagination({ from: 0, size: addresses.length })
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match("address", "pending-")])
       .withCondition(QueryConditionOptions.must, [QueryType.Match('token', identifier, QueryOperator.AND)])
-      .withFilter([new RangeQuery("balanceNum", undefined, 0)])
+      .withFilter(new RangeQuery("balanceNum", undefined, 0))
       .withCondition(QueryConditionOptions.should, queries);
 
     const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
