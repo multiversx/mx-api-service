@@ -194,7 +194,7 @@ describe("Accounts Controller", () => {
   });
 
   it("/accounts/:address/tokens/:token - should return 200 status code and token details for a specific address", async () => {
-    const address: string = "erd12xspx5z0nm08tvtt8v3nyu3w8mxfr36rj27u99yesmr7uxj6h7cscsvsw5";
+    const address: string = "erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2";
     const token: string = "WEGLD-bd4d79";
     await request(app.getHttpServer())
       .get(route + "/" + address + "/tokens" + "/" + token)

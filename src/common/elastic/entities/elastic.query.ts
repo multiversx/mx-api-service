@@ -136,8 +136,16 @@ export class ElasticQuery {
     return this;
   }
 
-  withFilter(filter: RangeQuery[]): ElasticQuery {
-    this.filter = filter;
+  withDateRangeFilter(key: string, before: number | undefined, after: number | undefined) {
+    if (!before && !after) {
+      return this;
+    }
+
+    return this.withFilter(QueryType.Range(key, before ?? Date.now(), after ?? 0));
+  }
+
+  withFilter(filter: RangeQuery): ElasticQuery {
+    this.filter.push(filter);
 
     return this;
   }
