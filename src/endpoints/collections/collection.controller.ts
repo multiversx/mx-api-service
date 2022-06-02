@@ -5,7 +5,6 @@ import { NftType } from "../nfts/entities/nft.type";
 import { CollectionService } from "./collection.service";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
-import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { Nft } from "../nfts/entities/nft";
 import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { NftService } from "../nfts/nft.service";
@@ -142,7 +141,6 @@ export class CollectionController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
-  @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
   @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
   @ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
   @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
@@ -156,7 +154,6 @@ export class CollectionController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search: string | undefined,
     @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
     @Query('name') name: string | undefined,
     @Query('tags', ParseArrayPipe) tags: string[] | undefined,
     @Query('creator', ParseAddressPipe) creator: string | undefined,
@@ -169,7 +166,7 @@ export class CollectionController {
       throw new BadRequestException(`Maximum size of 100 is allowed when activating flags 'withOwner' or 'withSupply'`);
     }
 
-    return await this.nftService.getNfts({ from, size }, { search, identifiers, type, collection, name, tags, creator, hasUris, isWhitelistedStorage }, { withOwner, withSupply });
+    return await this.nftService.getNfts({ from, size }, { search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage }, { withOwner, withSupply });
   }
 
   @Get("/collections/:collection/nfts/count")
@@ -177,7 +174,6 @@ export class CollectionController {
   @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
-  @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
   @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
   @ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
   @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
@@ -187,13 +183,12 @@ export class CollectionController {
     @Param('collection') collection: string,
     @Query('search') search: string | undefined,
     @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
     @Query('name') name: string | undefined,
     @Query('tags', ParseArrayPipe) tags: string[] | undefined,
     @Query('creator', ParseAddressPipe) creator: string | undefined,
     @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage: boolean | undefined,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
   ): Promise<number> {
-    return await this.nftService.getNftCount({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris });
+    return await this.nftService.getNftCount({ search, identifiers, collection, name, tags, creator, isWhitelistedStorage, hasUris });
   }
 }
