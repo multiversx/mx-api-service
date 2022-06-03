@@ -120,7 +120,7 @@ export class NftService {
     }
 
     if (filter.before || filter.after) {
-      elasticQuery = elasticQuery.withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
+      elasticQuery = elasticQuery.withFilter(QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0));
     }
 
     return elasticQuery;

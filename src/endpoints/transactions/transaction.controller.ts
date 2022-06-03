@@ -52,7 +52,7 @@ export class TransactionController {
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false })
+  @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false, deprecated: true })
   @ApiQuery({ name: 'withScResults', description: 'Return results for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
