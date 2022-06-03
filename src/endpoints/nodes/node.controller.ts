@@ -71,7 +71,7 @@ export class NodeController {
   @ApiQuery({ name: 'identity', description: 'Node identity', required: false })
   @ApiQuery({ name: 'provider', description: 'Node provider', required: false })
   @ApiQuery({ name: 'owner', description: 'Node owner', required: false })
-  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false })
+  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortNodes })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   getNodeCount(
     @Query('search') search: string | undefined,
