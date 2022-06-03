@@ -57,7 +57,7 @@ export class TransactionService {
 
   private buildTransactionFilterQuery(filter: TransactionFilter, address?: string): ElasticQuery {
     let elasticQuery = ElasticQuery.create()
-      .withMustMatchCondition('tokens', filter.token)
+      .withMustMatchCondition('tokens', filter.token, QueryOperator.AND)
       .withMustMatchCondition('function', this.apiConfigService.getIsIndexerV3FlagActive() ? filter.function : undefined)
       .withMustMatchCondition('senderShard', filter.senderShard)
       .withMustMatchCondition('receiverShard', filter.receiverShard)
