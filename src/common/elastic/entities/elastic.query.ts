@@ -62,7 +62,7 @@ export class ElasticQuery {
       return this;
     }
 
-    return this.withMustCondition(QueryType.Wildcard(key, `*${value}*`));
+    return this.withMustCondition(QueryType.Wildcard(key, `*${value.toLowerCase()}*`));
   }
 
   withMustMultiShouldCondition<T>(values: T[] | undefined, action: (value: T) => MatchQuery) {
