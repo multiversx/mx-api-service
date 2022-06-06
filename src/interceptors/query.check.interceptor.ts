@@ -1,4 +1,4 @@
-import { CallHandler, ExecutionContext, HttpAdapterHost, Injectable, Logger, NestInterceptor } from "@nestjs/common";
+import { CallHandler, ExecutionContext, HttpAdapterHost, Injectable, NestInterceptor } from "@nestjs/common";
 import { Observable } from "rxjs";
 
 @Injectable()
@@ -25,10 +25,10 @@ export class QueryCheckInterceptor implements NestInterceptor {
     for (const paramName of Object.keys(request.query)) {
       if (!['fields', 'extract'].includes(paramName) && !supportedQueryNames.includes(paramName)) {
         // throw new BadRequestException(`Unsupported parameter '${paramName}'. Supported parameters are: ${supportedQueryNames.join(', ')}`);
-        const origin = request.headers['origin'];
-        const apiFunction = context.getClass().name + '.' + context.getHandler().name;
-        const logger = new Logger(QueryCheckInterceptor.name);
-        logger.error(`Unsupported parameter '${paramName}' for function '${apiFunction}', origin '${origin}', ip '${request.clientIp}'`);
+        // const origin = request.headers['origin'];
+        // const apiFunction = context.getClass().name + '.' + context.getHandler().name;
+        // const logger = new Logger(QueryCheckInterceptor.name);
+        // logger.error(`Unsupported parameter '${paramName}' for function '${apiFunction}', origin '${origin}', ip '${request.clientIp}'`);
       }
     }
 
