@@ -16,11 +16,13 @@ export class TagController {
   @ApiOkResponse({ type: [Tag] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'search', description: 'Search by tag name', required: false })
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('search') search: string | undefined,
   ): Promise<Tag[]> {
-    return this.nftTagsService.getNftTags({ from, size });
+    return this.nftTagsService.getNftTags({ from, size }, search);
   }
 
   @Get("/tags/:tag")

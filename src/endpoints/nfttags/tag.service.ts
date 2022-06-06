@@ -18,7 +18,11 @@ export class TagService {
     private readonly cachingService: CachingService,
   ) { }
 
-  async getNftTags(pagination: QueryPagination): Promise<Tag[]> {
+  async getNftTags(pagination: QueryPagination, search?: string): Promise<Tag[]> {
+    if (search) {
+      return await this.getNftTagsRaw(pagination, search);
+    }
+
     return await this.cachingService.getOrSetCache(
       `nftTags:${pagination.from}:${pagination.size}`,
       async () => await this.getNftTagsRaw(pagination),
@@ -26,9 +30,10 @@ export class TagService {
     );
   }
 
-  async getNftTagsRaw(pagination: QueryPagination): Promise<Tag[]> {
+  async getNftTagsRaw(pagination: QueryPagination, search?: string): Promise<Tag[]> {
     const elasticQuery = ElasticQuery.create()
       .withPagination(pagination)
+      .withSearchWildcardCondition(search, ['tag'])
       .withSort([{ name: 'count', order: ElasticSortOrder.descending }]);
 
     const result = await this.elasticService.getList('tags', 'tag', elasticQuery);
