@@ -17,12 +17,21 @@ export class TagController {
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by tag name', required: false })
-  getTags(
+  async getTags(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search: string | undefined,
   ): Promise<Tag[]> {
-    return this.nftTagsService.getNftTags({ from, size }, search);
+    return await this.nftTagsService.getNftTags({ from, size }, search);
+  }
+
+  @Get("/tags/count")
+  @ApiOperation({ summary: 'Total number of NFT Tags', description: 'Returns total number of distinct NFT Tags available on blockchain' })
+  @ApiOkResponse({ type: Number })
+  async getTagCount(
+    @Query('search') search: string | undefined,
+  ): Promise<number> {
+    return await this.nftTagsService.getNftTagCount(search);
   }
 
   @Get("/tags/:tag")
