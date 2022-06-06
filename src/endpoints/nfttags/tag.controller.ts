@@ -17,7 +17,7 @@ export class TagController {
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by tag name', required: false })
-  getAccounts(
+  getTags(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search: string | undefined,
@@ -29,7 +29,7 @@ export class TagController {
   @ApiOperation({ summary: 'Tag details', description: 'Return NFT tag details' })
   @ApiOkResponse({ type: Tag })
   @ApiNotFoundResponse({ description: 'Nft tag not found' })
-  async getAccountDetails(@Param('tag') tag: string): Promise<Tag> {
+  async getTagDetails(@Param('tag') tag: string): Promise<Tag> {
     try {
       return await this.nftTagsService.getNftTag(tag);
     } catch {
