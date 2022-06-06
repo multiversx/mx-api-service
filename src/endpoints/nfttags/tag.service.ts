@@ -30,6 +30,29 @@ export class TagService {
     );
   }
 
+  async getNftTagCount(search?: string): Promise<number> {
+    if (search) {
+      return this.getNftTagCountRaw(search);
+    }
+
+    return await this.cachingService.getOrSetCache(
+      'nftTagsCount',
+      async () => await this.getNftTagCountRaw(),
+      Constants.oneHour()
+    );
+  }
+
+  private async getNftTagCountRaw(search?: string): Promise<number> {
+    const query = this.buildNftTagQuery(search);
+
+    return await this.elasticService.getCount('tags', query);
+  }
+
+  private buildNftTagQuery(search?: string): ElasticQuery {
+    return ElasticQuery.create()
+      .withSearchWildcardCondition(search, ['tag']);
+  }
+
   async getNftTagsRaw(pagination: QueryPagination, search?: string): Promise<Tag[]> {
     const elasticQuery = ElasticQuery.create()
       .withPagination(pagination)
