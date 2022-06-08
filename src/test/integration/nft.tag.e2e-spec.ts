@@ -16,28 +16,56 @@ describe('NFT Tag Service', () => {
 
   });
 
-  it(`should return list of tags for 2 nft`, async () => {
-    const tags = await tagService.getNftTags({ from: 0, size: 2 });
+  describe('getNftTags', () => {
+    it(`should return list of tags for 2 nft`, async () => {
+      const tags = await tagService.getNftTags({ from: 0, size: 2 });
 
-    for (const tag of tags) {
-      expect(tag).toHaveStructure(Object.keys(new Tag()));
-    }
-    expect(tags).toHaveLength(2);
+      expect(tags).toHaveLength(2);
+
+      for (const tag of tags) {
+        expect(tag).toHaveStructure(Object.keys(new Tag()));
+      }
+    });
+
+    it(`should return list of tags for 2 nft`, async () => {
+      const tags = await tagService.getNftTags({ from: 0, size: 2 });
+
+      expect(tags).toHaveLength(2);
+
+      for (const tag of tags) {
+        expect(tag).toHaveStructure(Object.keys(new Tag()));
+      }
+    });
+
+    it(`should return list of tags for 2 nft`, async () => {
+      const tags = await tagService.getNftTags({ from: 0, size: 2 });
+
+      expect(tags).toHaveLength(2);
+
+      for (const tag of tags) {
+        expect(tag).toHaveStructure(Object.keys(new Tag()));
+      }
+    });
+
   });
 
-  it(`should return a list of tags raw for 2 nft`, async () => {
-    const tagsRaw = await tagService.getNftTagsRaw({ from: 0, size: 2 });
 
-    for (const tag of tagsRaw) {
-      expect(tag).toHaveStructure(Object.keys(new Tag()));
-    }
-    expect(tagsRaw).toHaveLength(2);
+  describe('getNftTagsRaw', () => {
+    it(`should return a list of tags raw for 2 nft`, async () => {
+      const tagsRaw = await tagService.getNftTagsRaw({ from: 0, size: 2 });
+
+      for (const tag of tagsRaw) {
+        expect(tag).toHaveStructure(Object.keys(new Tag()));
+      }
+      expect(tagsRaw).toHaveLength(2);
+    });
   });
+
 
   describe('Get Nft Tag', () => {
     it('should return a specific tag', async () => {
       const tag = await tagService.getNftTag('elrond');
-
+      console.log(tag);
       expect(tag.tag).toStrictEqual('elrond');
     });
   });

@@ -28,4 +28,10 @@ describe("Waiting-List Controller", () => {
       .get(route + "/count")
       .expect(200);
   });
+
+  it("/waiting-list/c - should return 200 status code and waiting-lists total count (alternative)", async () => {
+    await request(app.getHttpServer())
+      .get(route + "/c")
+      .expect(200);
+  });
 });
