@@ -61,21 +61,12 @@ export class TagService {
 
     const result = await this.elasticService.getList('tags', 'tag', elasticQuery);
 
-    const nftTags: Tag[] = result.map(item => ApiUtils.mergeObjects(new Tag(), item));
-
-    for (const tag of nftTags) {
-      tag.tag = BinaryUtils.base64Decode(tag.tag);
-    }
-
-    return nftTags;
+    return result.map(item => ApiUtils.mergeObjects(new Tag(), item));
   }
 
   async getNftTag(tag: string): Promise<Tag> {
     const result = await this.elasticService.getItem('tags', 'tag', BinaryUtils.base64Encode(tag));
 
-    const nftTag = ApiUtils.mergeObjects(new Tag(), result);
-    nftTag.tag = BinaryUtils.base64Decode(nftTag.tag);
-
-    return nftTag;
+    return ApiUtils.mergeObjects(new Tag(), result);
   }
 }

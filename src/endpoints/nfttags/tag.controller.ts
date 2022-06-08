@@ -27,6 +27,7 @@ export class TagController {
 
   @Get("/tags/count")
   @ApiOperation({ summary: 'Total number of NFT Tags', description: 'Returns total number of distinct NFT Tags available on blockchain' })
+  @ApiQuery({ name: 'search', description: 'Search by tag name', required: false })
   @ApiOkResponse({ type: Number })
   async getTagCount(
     @Query('search') search: string | undefined,
