@@ -111,7 +111,7 @@ export class ElasticService {
     const item: any = {};
     item[key] = _id;
 
-    return { ...item, ..._source };
+    return { ..._source, ...item };
   }
 
   async getList(collection: string, key: string, elasticQuery: ElasticQuery, overrideUrl?: string): Promise<any[]> {
