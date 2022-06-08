@@ -9,6 +9,8 @@ import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftOwner } from 'src/endpoints/nfts/entities/nft.owner';
 import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 import { NftAccount } from 'src/endpoints/nfts/entities/nft.account';
+import { CachingService } from 'src/common/caching/caching.service';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
 
 
 describe('Nft Service', () => {
@@ -53,6 +55,9 @@ describe('Nft Service', () => {
     nftService = moduleRef.get<NftService>(NftService);
 
   });
+
+  beforeEach(() => { jest.restoreAllMocks(); });
+
 
   describe("NFT List", () => {
     it(`should return a list with 25 nfts and verify if nft contains property`, async () => {
@@ -238,7 +243,7 @@ describe('Nft Service', () => {
       expect(nftOwners).toHaveLength(25);
     });
 
-    it("should verify if all esdt of type MetaEsdt contains owner property and need to bedefined ", async () => {
+    it("should verify if all esdt of type MetaEsdt contains owner property and need to be defined ", async () => {
       const options = new NftQueryOptions();
       options.withOwner = true;
 
@@ -256,6 +261,68 @@ describe('Nft Service', () => {
       const nftOwners = nfts.map((nft) => nft.owner);
 
       expect(nftOwners).toHaveLength(25);
+    });
+
+    it('should return all esdt of type NonFungibleESDT details from two collections', async () => {
+      const filter = new NftFilter();
+      filter.collections = ["EROBOT-527a29", "COLLARV2-467a53"];
+
+      const results = await nftService.getNfts({ from: 0, size: 10 }, filter);
+
+      for (const result of results) {
+        expect(result.type).toStrictEqual('NonFungibleESDT');
+      }
+    });
+
+    it('should return nft details with search filter applied and expect that collection name to be found based on search term', async () => {
+      const filter = new NftFilter();
+      filter.search = 'eRobots';
+
+      const results = await nftService.getNfts({ from: 0, size: 1 }, filter);
+
+      for (const result of results) {
+        expect(result.collection).toStrictEqual('EROBOT-527a29');
+      }
+    });
+
+    it('should return 10 nfts that have uris defined', async () => {
+      const filter = new NftFilter();
+      filter.hasUris = true;
+
+      const results = await nftService.getNfts({ from: 0, size: 10 }, filter);
+      expect(results.length).toStrictEqual(10);
+
+      for (const result of results) {
+        expect(result.uris).toBeDefined();
+      }
+    });
+
+    it('should return 10 nfts that have isWhitelisted property true', async () => {
+      jest.spyOn(ApiConfigService.prototype, 'getIsIndexerV3FlagActive')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(() => true));
+
+      const filter = new NftFilter();
+      filter.hasUris = true;
+
+      const results = await nftService.getNfts({ from: 0, size: 10 }, filter);
+      expect(results.length).toStrictEqual(10);
+
+      for (const result of results) {
+        expect(result.isWhitelistedStorage).toStrictEqual(true);
+      }
+    });
+
+    it('should return 10 nfts that have timestamp > 1654630698 ', async () => {
+      const filter = new NftFilter();
+      filter.after = 1654630698;
+
+      const results = await nftService.getNfts({ from: 0, size: 10 }, filter);
+      expect(results.length).toStrictEqual(10);
+
+      for (const result of results) {
+        expect(result.timestamp).toBeGreaterThanOrEqual(1654630698);
+      }
     });
   });
 
@@ -298,6 +365,15 @@ describe('Nft Service', () => {
 
       expect(typeof count).toBe("number");
       expect(count).toBeGreaterThanOrEqual(10000);
+    });
+
+    it("should return the number of nfts with collection filter applied", async () => {
+      const filters = new NftFilter();
+      filters.collections = ['EROBOT-527a29', 'MEDAL-ae074f'];
+
+      const count = await nftService.getNftCount(filters);
+
+      expect(count).toBeGreaterThanOrEqual(100);
     });
 
     it("should return 0 if one collection isWhitelistedStorage = true ", async () => {
@@ -388,14 +464,13 @@ describe('Nft Service', () => {
 
   describe("NFT Address", () => {
     it("should return one nft for a specific account", async () => {
-      const address: string = "erd15gculjmu3r62ldlwyguqdgddez35r2lv6ka8j7s6pwhqlc80httqljzwgm";
-      const identifier: string = "MOS-b9b4b2-2710";
-
       jest
         .spyOn(EsdtAddressService.prototype, 'getNftsForAddress')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => [mockNftAccount]));
 
+      const address: string = "erd15gculjmu3r62ldlwyguqdgddez35r2lv6ka8j7s6pwhqlc80httqljzwgm";
+      const identifier: string = "MOS-b9b4b2-2710";
       const results = await nftService.getNftForAddress(address, identifier);
 
       if (!results) {
@@ -413,17 +488,16 @@ describe('Nft Service', () => {
     });
 
     it("should return undefined if account does not contains an nft", async () => {
-      const address: string = "erd15gculjmu3r62ldlwyguqdgddez35r2lv6ka8j7s6pwhqlc80httqljzwgm";
-      const identifier: string = "MOS-b9b4b2-2710";
-
       jest
         .spyOn(EsdtAddressService.prototype, 'getNftsForAddress')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => []));
 
+      const address: string = "erd15gculjmu3r62ldlwyguqdgddez35r2lv6ka8j7s6pwhqlc80httqljzwgm";
+      const identifier: string = "MOS-b9b4b2-2710";
       const results = await nftService.getNftForAddress(address, identifier);
-      expect(results).toBeUndefined();
 
+      expect(results).toBeUndefined();
     });
   });
 
@@ -443,6 +517,13 @@ describe('Nft Service', () => {
         expect(owner.balance).toStrictEqual("1");
       }
     });
+
+    it('should return undefined because test simulates that the given identifier is not an nft', async () => {
+      const identifier: string = 'WEGLD-bd4d79';
+      const results = await nftService.getNftOwners(identifier, { from: 0, size: 1 });
+
+      expect(results).toBeUndefined();
+    });
   });
 
   describe("Single NFT", () => {
@@ -457,6 +538,17 @@ describe('Nft Service', () => {
       expect(result.type).toStrictEqual(NftType.NonFungibleESDT);
       expect(result.identifier).toStrictEqual("EROBOT-527a29-c4");
       expect(result.creator).toBeDefined();
+    });
+
+    it('should return undefined', async () => {
+      jest.spyOn(NftService.prototype, 'getNftsInternal')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_from: number, _size: number, _filter: NftFilter, _identifier?: string) => []));
+
+      const identifier: string = " ";
+      const result = await nftService.getSingleNft(identifier);
+
+      expect(result).toBeUndefined();
     });
   });
 
@@ -475,6 +567,73 @@ describe('Nft Service', () => {
       for (const nft of nfts) {
         expect(nft.media).toStrictEqual(singleNft.media);
       }
+    });
+  });
+
+  describe('getNftSupply', () => {
+    it('should return nft supply details', async () => {
+      const identifier: string = "EROBOT-527a29-c4";
+      const result = await nftService.getNftSupply(identifier);
+
+      expect(result).toStrictEqual("1");
+    });
+
+    it('should return undefined because test simulates that identifier does not have the correct format', async () => {
+      const identifier: string = "EROBOT527a29c4";
+      const result = await nftService.getNftSupply(identifier);
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined because test simulates that nft length is equal with 0', async () => {
+      jest.spyOn(NftService.prototype, 'getNftsInternal')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_from: number, _size: number, _filter: NftFilter, _identifier?: string) => []));
+
+      const identifier: string = 'EROBOT-527a29-c4';
+      const result = await nftService.getNftSupply(identifier);
+
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('getNftOwnersCount', () => {
+    it('should return total number of esdts token', async () => {
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
+
+      jest.spyOn(NftService.prototype, 'getNftOwnersCountRaw')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_dentifier: string) => 1));
+
+      const identifier: string = "EROBOT-527a29";
+      const result = await nftService.getNftOwnersCount(identifier);
+
+      expect(result).toStrictEqual(1);
+    });
+
+    it('should return undefined because test simulates that esdt owners are null', async () => {
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
+
+      jest.spyOn(NftService.prototype, 'getNftOwnersCountRaw')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_dentifier: string) => null));
+
+      const identifier: string = "EROBOT-527a29";
+      const result = await nftService.getNftOwnersCount(identifier);
+
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('buildElasticNftFilter', () => {
+    it('build elastic NFT Filter', async () => {
+
     });
   });
 });

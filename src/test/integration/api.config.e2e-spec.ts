@@ -1419,13 +1419,207 @@ describe('API Config', () => {
       expect(results).toEqual(3);
     });
 
-    it("should return default value 1 if nft process max retries is not defined", () => {
+    it("should return default value 3 if nft process max retries is not defined", () => {
       jest
         .spyOn(ConfigService.prototype, 'get')
         .mockImplementation(jest.fn(() => undefined));
 
       const results = apiConfigService.getNftProcessMaxRetries();
       expect(results).toEqual(3);
+    });
+  });
+
+  describe("getGithubToken", () => {
+    it("should return GitHub token details", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'test'));
+
+      const results = apiConfigService.getGithubToken();
+      expect(results).toEqual('test');
+    });
+
+    it("should return undefined if GitHub token is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      const results = apiConfigService.getGithubToken();
+      expect(results).toStrictEqual(undefined);
+    });
+  });
+
+  describe("getMaiarExchangeUrlMandatory", () => {
+    it("should return Maiar Exchange Url", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'https://graph.maiar.exchange/graphql'));
+
+      const results = apiConfigService.getMaiarExchangeUrlMandatory();
+      expect(results).toEqual('https://graph.maiar.exchange/graphql');
+    });
+
+    it("should throw new error because test simulates that Maiar Exchange Url is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      expect(() => apiConfigService.getMaiarExchangeUrlMandatory()).toThrowError('No transaction-action.mex.microServiceUrl present');
+    });
+  });
+
+  describe("getDatabaseType", () => {
+    it("should return database type details", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'mysql'));
+
+      const results = apiConfigService.getDatabaseType();
+      expect(results).toEqual('mysql');
+    });
+
+    it("should throw new error because test simulates that database type is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => false));
+
+      expect(() => apiConfigService.getDatabaseType()).toThrowError('No database.type present');
+    });
+  });
+
+  describe("getEventsNotifierExchange", () => {
+    it("should return events notifier exchange details ( all_events) ", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'all_events'));
+
+      const results = apiConfigService.getEventsNotifierExchange();
+      expect(results).toEqual('all_events');
+    });
+
+    it("should throw new error because test simulates that events notifier exchange is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => false));
+
+      expect(() => apiConfigService.getEventsNotifierExchange()).toThrowError('No events notifier exchange present');
+    });
+  });
+
+  describe("getEventsNotifierUrl", () => {
+    it("should return events notifier url", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'amqp://guest:guest@127.0.0.1:5672'));
+
+      const results = apiConfigService.getEventsNotifierUrl();
+      expect(results).toEqual('amqp://guest:guest@127.0.0.1:5672');
+    });
+
+    it("should throw new error because test simulates that events notifier url is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => false));
+
+      expect(() => apiConfigService.getEventsNotifierUrl()).toThrowError('No events notifier url present');
+    });
+  });
+
+  describe("getEventsNotifierFeaturePort", () => {
+    it("should return events notifier port", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => '5674'));
+
+      const results = apiConfigService.getEventsNotifierFeaturePort();
+      expect(results).toEqual('5674');
+    });
+
+    it("should throw new error because test simulates that events notifier port is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      expect(() => apiConfigService.getEventsNotifierFeaturePort()).toThrowError('No events notifier port present');
+    });
+  });
+
+  describe("isEventsNotifierFeatureActive", () => {
+    it("should return events notifier event flag", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => true));
+
+      const results = apiConfigService.isEventsNotifierFeatureActive();
+      expect(results).toEqual(true);
+    });
+
+    it("should return false  because test simulates that events notifier flag is false", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      const results = apiConfigService.isEventsNotifierFeatureActive();
+      expect(results).toEqual(false);
+    });
+  });
+
+  describe("getIsElasticUpdaterCronActive", () => {
+    it("should return true if elastic updater cron active is enabled", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => true));
+
+      const results = apiConfigService.getIsElasticUpdaterCronActive();
+      expect(results).toEqual(true);
+    });
+
+    it("should return false  because test simulates that elastic updater cron is not active ( false )", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => false));
+
+      const results = apiConfigService.getIsElasticUpdaterCronActive();
+      expect(results).toEqual(false);
+    });
+  });
+
+  describe("getConfig", () => {
+    it("should return true if elastic updater cron active is enabled", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => [
+          'https://api.elrond.com',
+          'https://devnet-api.elrond.com',
+          'https://testnet-api.elrond.com',
+        ]));
+
+      const results = apiConfigService.getConfig('urls.api');
+
+      expect(results).toEqual(expect.arrayContaining([
+        'https://api.elrond.com',
+        'https://devnet-api.elrond.com',
+        'https://testnet-api.elrond.com',
+      ]));
+    });
+  });
+
+  describe("getDatabaseUrl", () => {
+    it("should return database url details", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'localhost'));
+
+      const results = apiConfigService.getDatabaseUrl();
+      expect(results).toEqual('localhost');
+    });
+
+    it("should throw new error because test simulates that database url is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => false));
+
+      expect(() => apiConfigService.getDatabaseUrl()).toThrowError('No database.url present');
     });
   });
 });
