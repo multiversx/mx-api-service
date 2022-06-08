@@ -65,7 +65,6 @@ describe('NFT Tag Service', () => {
   describe('Get Nft Tag', () => {
     it('should return a specific tag', async () => {
       const tag = await tagService.getNftTag('elrond');
-      console.log(tag);
       expect(tag.tag).toStrictEqual('elrond');
     });
   });
