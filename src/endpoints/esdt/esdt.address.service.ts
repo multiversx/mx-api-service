@@ -54,10 +54,6 @@ export class EsdtAddressService {
       return await this.getNftsForAddressFromGateway(address, filter, pagination);
     }
 
-    if (filter.type) {
-      return await this.getNftsForAddressWithTypeFilter(address, filter, pagination);
-    }
-
     if (source === EsdtDataSource.elastic || AddressUtils.isSmartContractAddress(address)) {
       return await this.getNftsForAddressFromElastic(address, filter, pagination);
     }
@@ -65,28 +61,7 @@ export class EsdtAddressService {
     return await this.getNftsForAddressFromGateway(address, filter, pagination);
   }
 
-  private async getNftsForAddressWithTypeFilter(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
-    if (AddressUtils.isSmartContractAddress(address)) {
-      const nftType = (filter.type ?? '').split(',');
-      filter.type = undefined;
-      let allEsdts = await this.getNftsForAddressFromElastic(address, filter, { from: 0, size: 10000 });
-      allEsdts = allEsdts.filter(x => nftType.includes(x.type));
-      allEsdts = allEsdts.slice(pagination.from, pagination.from + pagination.size);
-      return allEsdts;
-    }
-
-    const allEsdts = await this.getNftsForAddressFromGateway(address, filter, pagination);
-    return allEsdts;
-  }
-
   async getNftCountForAddressFromElastic(address: string, filter: NftFilter): Promise<number> {
-    // temporary fix until we have type on the accountsesdt elastic collection
-    if (filter.type) {
-      const allEsdts = await this.getNftsForAddressWithTypeFilter(address, filter, { from: 0, size: 10000 });
-      return allEsdts.length;
-    }
-
-
     const elasticQuery = this.nftService.buildElasticNftFilter(filter, undefined, address);
     return await this.elasticService.getCount('accountsesdt', elasticQuery);
   }
