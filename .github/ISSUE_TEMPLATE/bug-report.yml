@@ -6,9 +6,9 @@ assignees:
   -members
 body:
   -type: markdown
-   attributes:
-     value: |
-       Thanks for taking the time to fill out this bug report!
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
   -type: input
     id: contact
     attributes:
@@ -46,8 +46,7 @@ body:
     id: terms
     attributes: 
       label: Code of Conduct
-      description: By submitting this issue, you aggre to follow our [Code of Conduct](https://www.contributor-covenant.org/version/1/4/code-of-conduct/)
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://www.contributor-covenant.org/version/1/4/code-of-conduct/)
       options:
         - label: I agree to follow this project's Code of Conduct
           required: true
-      
