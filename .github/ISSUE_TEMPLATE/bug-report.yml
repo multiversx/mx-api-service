@@ -1,0 +1,53 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: [bug, triage]
+assignees:
+  -members
+body:
+  -type: markdown
+   attributes:
+     value: |
+       Thanks for taking the time to fill out this bug report!
+  -type: input
+    id: contact
+    attributes:
+      label: Contact details
+      description: How can we get in touch with you if we need more info?
+      placeholder: ex. email@example.com
+      validation:
+        required: false
+  -type: textarea
+    id: what-happend
+    attributes:
+      label: What happend?
+      description: Also tell us, what did you expect to happend?
+      placeholder: Tell us what you see!
+      value: "A bug happend"
+      validation:
+        required: true
+  - type: dropdown
+    id: Version
+    attributes:
+      description: What network are you seeing the problem on?
+      options: 
+      - Mainnet
+      - Devnet
+      - Testnet
+    validation:
+      required: true
+  - type: textarea
+    id: logs
+    attributes: 
+      label: Relevant log output
+      description: Please copy and paste any relevant log output.This will be automatically formatted into code, so no need for backticks.
+      render: shell
+  - type: checkboxes
+    id: terms
+    attributes: 
+      label: Code of Conduct
+      description: By submitting this issue, you aggre to follow our [Code of Conduct](https://www.contributor-covenant.org/version/1/4/code-of-conduct/)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
+      
