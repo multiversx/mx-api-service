@@ -14,7 +14,7 @@ export class ProviderController {
   @ApiOkResponse({ type: [Provider] })
   @ApiQuery({ name: 'identity', description: 'Search by identity', required: false })
   async getProviders(
-    @Query('identity') identity: string | undefined,
+    @Query('identity') identity?: string,
   ): Promise<Provider[]> {
     return await this.providerService.getProviders({ identity });
   }

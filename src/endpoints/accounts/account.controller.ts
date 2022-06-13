@@ -192,6 +192,7 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
+    @Query('owner') owner?: string,
     @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
     @Query('canCreate', new ParseOptionalBoolPipe) canCreate?: boolean,
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
@@ -202,7 +203,7 @@ export class AccountController {
     @Query('source', new ParseOptionalEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
   ): Promise<NftCollectionAccount[]> {
     try {
-      return await this.collectionService.getCollectionsForAddress(address, { search, type, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole }, { from, size }, source);
+      return await this.collectionService.getCollectionsForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole }, { from, size }, source);
     } catch (error) {
       this.logger.error(`Error in getAccountCollections for address ${address}`);
       this.logger.error(error);
@@ -486,7 +487,7 @@ export class AccountController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
-  @ApiQuery({ name: 'withOperations', description: 'Return logs for transactions', required: false })
+  @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false })
   async getAccountTransactions(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -560,7 +561,7 @@ export class AccountController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
-    @Query('function') scFunction?: string | undefined,
+    @Query('function') scFunction?: string,
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
@@ -669,7 +670,7 @@ export class AccountController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
-    @Query('function') scFunction?: string | undefined,
+    @Query('function') scFunction?: string,
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {

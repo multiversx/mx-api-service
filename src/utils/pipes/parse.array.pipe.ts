@@ -11,7 +11,7 @@ export class ParseArrayPipe implements PipeTransform<string | undefined, Promise
   transform(value: string | undefined, _: ArgumentMetadata): Promise<string[] | undefined> {
     return new Promise(resolve => {
       if (value === undefined || value === '') {
-        return resolve(undefined);
+        return resolve([""]);
       }
 
       const valueArray = value.split(',');

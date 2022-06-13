@@ -30,10 +30,10 @@ export class CollectionController {
   async getNftCollections(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('search') search: string | undefined,
-    @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-    @Query('creator', ParseAddressPipe) creator: string | undefined,
+    @Query('search') search?: string,
+    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
+    @Query('creator', ParseAddressPipe) creator?: string,
   ): Promise<NftCollection[]> {
     return await this.collectionService.getNftCollections({ from, size }, { search, type, creator, identifiers });
   }
@@ -45,9 +45,9 @@ export class CollectionController {
   @ApiQuery({ name: 'creator', description: 'Filter NFTs where the given address has a creator role', required: false })
   @ApiOkResponse({ type: Number })
   async getCollectionCount(
-    @Query('search') search: string | undefined,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-    @Query('creator', ParseAddressPipe) creator: string | undefined,
+    @Query('search') search?: string,
+    @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
+    @Query('creator', ParseAddressPipe) creator?: string,
   ): Promise<number> {
     return await this.collectionService.getNftCollectionCount({ search, type, creator });
   }
@@ -55,9 +55,9 @@ export class CollectionController {
   @Get("/collections/c")
   @ApiExcludeEndpoint()
   async getCollectionCountAlternative(
-    @Query('search') search: string | undefined,
-    @Query('type', new ParseOptionalEnumPipe(NftType)) type: NftType | undefined,
-    @Query('creator', ParseAddressPipe) creator: string | undefined,
+    @Query('search') search?: string,
+    @Query('type', new ParseOptionalEnumPipe(NftType)) type?: NftType,
+    @Query('creator', ParseAddressPipe) creator?: string,
   ): Promise<number> {
     return await this.collectionService.getNftCollectionCount({ search, type, creator });
   }
@@ -95,16 +95,16 @@ export class CollectionController {
     @Param('collection') collection: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('search') search: string | undefined,
-    @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
-    @Query('type') type: NftType | undefined,
-    @Query('name') name: string | undefined,
-    @Query('tags', ParseArrayPipe) tags: string[] | undefined,
-    @Query('creator', ParseAddressPipe) creator: string | undefined,
-    @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage: boolean | undefined,
-    @Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
-    @Query('withOwner', new ParseOptionalBoolPipe) withOwner?: boolean | undefined,
-    @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean | undefined,
+    @Query('search') search?: string,
+    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('type') type?: NftType,
+    @Query('name') name?: string,
+    @Query('tags', ParseArrayPipe) tags?: string[],
+    @Query('creator', ParseAddressPipe) creator?: string,
+    @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage?: boolean,
+    @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
+    @Query('withOwner', new ParseOptionalBoolPipe) withOwner?: boolean,
+    @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean,
   ): Promise<Nft[]> {
     if (withOwner === true && size > 100) {
       throw new BadRequestException(`Maximum size of 100 is allowed when activating flags 'withOwner' or 'withSupply'`);
@@ -126,14 +126,14 @@ export class CollectionController {
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
   async getNftCount(
     @Param('collection') collection: string,
-    @Query('search') search: string | undefined,
-    @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
-    @Query('type') type: NftType | undefined,
-    @Query('name') name: string | undefined,
-    @Query('tags', ParseArrayPipe) tags: string[] | undefined,
-    @Query('creator', ParseAddressPipe) creator: string | undefined,
-    @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage: boolean | undefined,
-    @Query('hasUris', new ParseOptionalBoolPipe) hasUris: boolean | undefined,
+    @Query('search') search?: string,
+    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('type') type?: NftType,
+    @Query('name') name?: string,
+    @Query('tags', ParseArrayPipe) tags?: string[],
+    @Query('creator', ParseAddressPipe) creator?: string,
+    @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage?: boolean,
+    @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
   ): Promise<number> {
     return await this.nftService.getNftCount({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris });
   }
