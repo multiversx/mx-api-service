@@ -42,12 +42,12 @@ export class TokenController {
   async getTokens(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('search') search: string | undefined,
-    @Query('name') name: string | undefined,
-    @Query('identifier') identifier: string | undefined,
-    @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
-    @Query('sort', new ParseOptionalEnumPipe(TokenSort)) sort: TokenSort | undefined,
-    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
+    @Query('search') search?: string,
+    @Query('name') name?: string,
+    @Query('identifier') identifier?: string,
+    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('sort', new ParseOptionalEnumPipe(TokenSort)) sort?: TokenSort,
+    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<TokenDetailed[]> {
     return await this.tokenService.getTokens({ from, size }, { search, name, identifier, identifiers, sort, order });
   }
@@ -60,10 +60,10 @@ export class TokenController {
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
   async getTokenCount(
-    @Query('search') search: string | undefined,
-    @Query('name') name: string | undefined,
-    @Query('identifier') identifier: string | undefined,
-    @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
+    @Query('search') search?: string,
+    @Query('name') name?: string,
+    @Query('identifier') identifier?: string,
+    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
   ): Promise<number> {
     return await this.tokenService.getTokenCount({ search, name, identifier, identifiers });
   }
@@ -71,10 +71,10 @@ export class TokenController {
   @Get("/tokens/c")
   @ApiExcludeEndpoint()
   async getTokenCountAlternative(
-    @Query('search') search: string | undefined,
-    @Query('name') name: string | undefined,
-    @Query('identifier') identifier: string | undefined,
-    @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
+    @Query('search') search?: string,
+    @Query('name') name?: string,
+    @Query('identifier') identifier?: string,
+    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
   ): Promise<number> {
     return await this.tokenService.getTokenCount({ search, name, identifier, identifiers });
   }
@@ -99,7 +99,7 @@ export class TokenController {
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getTokenSupply(
     @Param('identifier') identifier: string,
-    @Query('denominated', new ParseOptionalBoolPipe) denominated: boolean | undefined,
+    @Query('denominated', new ParseOptionalBoolPipe) denominated?: boolean,
   ): Promise<TokenSupplyResult> {
     const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
@@ -181,23 +181,23 @@ export class TokenController {
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
   async getTokenTransactions(
     @Param('identifier') identifier: string,
-    @Query('sender', ParseAddressPipe) sender: string | undefined,
-    @Query('receiver', ParseAddressPipe) receiver: string | undefined,
-    @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
-    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined,
-    @Query('hashes', ParseArrayPipe) hashes: string[] | undefined,
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined,
-    @Query('search') search: string | undefined,
-    @Query('function') scFunction: string | undefined,
-    @Query('before', ParseOptionalIntPipe) before: number | undefined,
-    @Query('after', ParseOptionalIntPipe) after: number | undefined,
-    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('withScResults', new ParseOptionalBoolPipe) withScResults: boolean | undefined,
-    @Query('withOperations', new ParseOptionalBoolPipe) withOperations: boolean | undefined,
-    @Query('withLogs', new ParseOptionalBoolPipe) withLogs: boolean | undefined,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('search') search?: string,
+    @Query('function') scFunction?: string,
+    @Query('before', ParseOptionalIntPipe) before?: number,
+    @Query('after', ParseOptionalIntPipe) after?: number,
+    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('withScResults', new ParseOptionalBoolPipe) withScResults?: boolean,
+    @Query('withOperations', new ParseOptionalBoolPipe) withOperations?: boolean,
+    @Query('withLogs', new ParseOptionalBoolPipe) withLogs?: boolean,
   ) {
     if ((withScResults === true || withOperations === true || withLogs) && size > 50) {
       throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
@@ -241,16 +241,16 @@ export class TokenController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getTokenTransactionsCount(
     @Param('identifier') identifier: string,
-    @Query('sender', ParseAddressPipe) sender: string | undefined,
-    @Query('receiver', ParseAddressPipe) receiver: string | undefined,
-    @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
-    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined,
-    @Query('hashes', ParseArrayPipe) hashes: string[] | undefined,
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined,
-    @Query('search') search: string | undefined,
-    @Query('before', ParseOptionalIntPipe) before: number | undefined,
-    @Query('after', ParseOptionalIntPipe) after: number | undefined,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('search') search?: string,
+    @Query('before', ParseOptionalIntPipe) before?: number,
+    @Query('after', ParseOptionalIntPipe) after?: number,
   ) {
     const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {

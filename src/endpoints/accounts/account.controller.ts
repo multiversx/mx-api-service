@@ -211,7 +211,7 @@ export class AccountController {
     @Query('canAddUri', new ParseOptionalBoolPipe) canAddUri?: boolean,
     @Query('canTransferRole', new ParseOptionalBoolPipe) canTransferRole?: boolean,
   ): Promise<NftCollectionRole[]> {
-    return await this.collectionService.getCollectionsWithRolesForAddress(address, { search, type, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole, owner }, { from, size });
+    return await this.collectionService.getCollectionsWithRolesForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole }, { from, size });
   }
 
   @Get("/accounts/:address/roles/collections/count")
@@ -531,7 +531,7 @@ export class AccountController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
-  @ApiQuery({ name: 'withOperations', description: 'Return logs for transactions', required: false })
+  @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false })
   async getAccountTransactions(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -604,7 +604,7 @@ export class AccountController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
-    @Query('function') scFunction?: string | undefined,
+    @Query('function') scFunction?: string,
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
@@ -705,7 +705,7 @@ export class AccountController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
-    @Query('function') scFunction?: string | undefined,
+    @Query('function') scFunction?: string,
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
