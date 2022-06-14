@@ -102,23 +102,13 @@ describe('Identities Service', () => {
       const results = await identityService.getIdentities(ids);
 
       for (const result of results) {
-        expect(result).toBeInstanceOf(Object);
-        expect(result.hasOwnProperty('apr')).toBe(true);
-        expect(result.hasOwnProperty('avatar')).toBe(true);
-        expect(result.hasOwnProperty('description')).toBe(true);
-        expect(result.hasOwnProperty('distribution')).toBe(true);
-        expect(result.hasOwnProperty('identity')).toBe(true);
-        expect(result.hasOwnProperty('location')).toBe(true);
-        expect(result.hasOwnProperty('locked')).toBe(true);
-        expect(result.hasOwnProperty('name')).toBe(true);
-        expect(result.hasOwnProperty('providers')).toBe(true);
-        expect(result.hasOwnProperty('rank')).toBe(true);
-        expect(result.hasOwnProperty('score')).toBe(true);
-        expect(result.hasOwnProperty('stake')).toBe(true);
-        expect(result.hasOwnProperty('stakePercent')).toBe(true);
-        expect(result.hasOwnProperty('topUp')).toBe(true);
-        expect(result.hasOwnProperty('validators')).toBe(true);
-        expect(result.hasOwnProperty('website')).toBe(true);
+        expect(result).toHaveProperties([
+          'apr', 'avatar', 'description',
+          'distribution', 'identity', 'location',
+          'locked', 'name', 'providers',
+          'rank', 'score', 'stake',
+          'stakePercent', 'topUp', 'validators', 'website',
+        ]);
       }
     });
   });

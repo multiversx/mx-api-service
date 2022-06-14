@@ -31,10 +31,10 @@ export class NftController {
   @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
   @ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
   @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
-  @ApiQuery({ name: 'isWhitelistedStorage', description: 'Return all NFTs that are whitelisted in storage', required: false })
-  @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
-  @ApiQuery({ name: 'withOwner', description: 'Return owner where type = NonFungibleESDT', required: false })
-  @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false })
+  @ApiQuery({ name: 'isWhitelistedStorage', description: 'Return all NFTs that are whitelisted in storage', required: false, type: Boolean })
+  @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false, type: Boolean })
+  @ApiQuery({ name: 'withOwner', description: 'Return owner where type = NonFungibleESDT', required: false, type: Boolean })
+  @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false, type: Boolean })
   async getNfts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -67,8 +67,8 @@ export class NftController {
   @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
   @ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
   @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
-  @ApiQuery({ name: 'isWhitelistedStorage', description: 'Return all NFTs that are whitelisted in storage', required: false })
-  @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
+  @ApiQuery({ name: 'isWhitelistedStorage', description: 'Return all NFTs that are whitelisted in storage', required: false, type: Boolean })
+  @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false, type: Boolean })
   async getNftCount(
     @Query('search') search?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
@@ -122,7 +122,7 @@ export class NftController {
       throw new NotFoundException('NFT not found');
     }
 
-    const media = await this.nftMediaService.getMedia(identifier);
+    const media = await this.nftMediaService.getMedia(nfts[0].identifier);
     if (!media || media.length === 0) {
       // @ts-ignore
       response.redirect(this.nftService.DEFAULT_MEDIA[0].thumbnailUrl);

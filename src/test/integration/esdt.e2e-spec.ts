@@ -114,7 +114,7 @@ describe('ESDT Service', () => {
   });
 
   describe("Get ESDT Token Properties", () => {
-    it("should return the properties of the token ( tiker property should not be present )", async () => {
+    it("should return the properties of the token ( ticker property should not be present )", async () => {
       jest
         .spyOn(CachingService.prototype, 'getOrSetCache')
         // eslint-disable-next-line require-await

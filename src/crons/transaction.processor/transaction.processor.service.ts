@@ -8,10 +8,6 @@ import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { NftService } from "src/endpoints/nfts/nft.service";
-import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
-import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
-import { NftUpdateAttributesTransactionExtractor as NftUpdateAttributesTransactionExtractor } from "./extractor/nft.update.attributes.transaction.extractor";
 import { SftChangeTransactionExtractor } from "./extractor/sft.change.transaction.extractor";
 import { TransactionExtractorInterface } from "./extractor/transaction.extractor.interface";
 import { TransferOwnershipExtractor } from "./extractor/transfer.ownership.extractor";
@@ -27,9 +23,6 @@ export class TransactionProcessorService {
     private readonly metricsService: MetricsService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly nodeService: NodeService,
-    private readonly nftWorkerService: NftWorkerService,
-    private readonly nftService: NftService,
-    // private readonly nftExtendedAttributesService: NftExtendedAttributesService,
   ) {
     this.logger = new Logger(TransactionProcessorService.name);
   }
@@ -47,15 +40,6 @@ export class TransactionProcessorService {
         const allInvalidatedKeys = [];
 
         for (const transaction of transactions) {
-          if (this.apiConfigService.getIsProcessNftsFlagActive()) {
-            const nftUpdateAttributesResult = new NftUpdateAttributesTransactionExtractor().extract(transaction);
-            if (nftUpdateAttributesResult) {
-              this.logger.log(`Detected NFT update attributes for NFT with identifier '${nftUpdateAttributesResult.identifier}' and tx hash '${transaction.hash}'`);
-              // eslint-disable-next-line @typescript-eslint/no-floating-promises
-              this.tryHandleNftUpdateMetadata(transaction, nftUpdateAttributesResult.identifier);
-            }
-          }
-
           const invalidatedTokenProperties = await this.cachingService.tryInvalidateTokenProperties(transaction);
           const invalidatedOwnerKeys = await this.tryInvalidateOwner(transaction);
           const invalidatedCollectionPropertiesKeys = await this.tryInvalidateCollectionProperties(transaction);
@@ -86,23 +70,6 @@ export class TransactionProcessorService {
         await this.cachingService.setCache<number>(CacheInfo.TransactionProcessorShardNonce(shardId).key, nonce, CacheInfo.TransactionProcessorShardNonce(shardId).ttl);
       },
     });
-  }
-
-  private async tryHandleNftUpdateMetadata(transaction: ShardTransaction, identifier: string) {
-    try {
-      const nft = await this.nftService.getSingleNft(identifier);
-      if (!nft) {
-        this.logger.error(`NFT update metadata: could not fetch nft details for NFT with identifier '${identifier}' and transaction hash '${transaction.hash}'`);
-        return;
-      }
-
-      const processSettings = new ProcessNftSettings();
-      processSettings.forceRefreshMetadata = true;
-      await this.nftWorkerService.addProcessNftQueueJob(nft, processSettings);
-    } catch (error) {
-      this.logger.error(`Unexpected error when handling NFT update metadata for transaction with hash '${transaction.hash}'`);
-      this.logger.error(error);
-    }
   }
 
   async tryInvalidateOwner(transaction: ShardTransaction): Promise<string[]> {

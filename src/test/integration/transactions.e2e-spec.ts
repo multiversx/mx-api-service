@@ -3,7 +3,6 @@ import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import { TransactionStatus } from 'src/endpoints/transactions/entities/transaction.status';
 import { TransactionService } from 'src/endpoints/transactions/transaction.service';
 import { TransactionFilter } from 'src/endpoints/transactions/entities/transaction.filter';
-import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 import { TransactionOptionalFieldOption } from 'src/endpoints/transactions/entities/transaction.optional.field.options';
 import transactionDetails from "../data/transactions/transaction.details";
 import { TransactionDetailed } from "../../endpoints/transactions/entities/transaction.detailed";
@@ -145,26 +144,6 @@ describe('Transaction Service', () => {
           expect(transaction).toHaveStructure(Object.keys(new Transaction()));
           expect(transaction.timestamp).toBeLessThanOrEqual(transactionFilter.before);
         }
-      });
-
-      it(`should return transactions for an address`, async () => {
-        const address = transactionSender;
-        const transactionFilter = new TransactionFilter();
-        transactionFilter.sender = address;
-        transactionFilter.receiver = address;
-        transactionFilter.condition = QueryConditionOptions.should;
-
-        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
-        expect(transactions).toBeInstanceOf(Array);
-        expect(transactions.length).toBeGreaterThan(0);
-
-        for (const transaction of transactions) {
-          expect(transaction).toHaveStructure(Object.keys(new Transaction()));
-          expect(transaction.sender === address && transaction.receiver === address);
-        }
-
-        const accountTransactionsList = await transactionService.getTransactions(new TransactionFilter(), { from: 0, size: 25 }, undefined, address);
-        expect(transactions).toEqual(accountTransactionsList);
       });
 
       it(`should return transactions for an address with self transactions`, async () => {

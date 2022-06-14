@@ -95,13 +95,8 @@ export class ApiConfigService {
     return address;
   }
 
-  getMetabondingContractAddress(): string {
-    const address = this.configService.get<string>('contracts.metabonding');
-    if (!address) {
-      throw new Error('No metabonding contract present');
-    }
-
-    return address;
+  getMetabondingContractAddress(): string | undefined {
+    return this.configService.get<string>('contracts.metabonding');
   }
 
   getDelegationContractShardId(): number {
@@ -258,6 +253,10 @@ export class ApiConfigService {
     }
 
     return isCronActive;
+  }
+
+  getIsElasticUpdaterCronActive(): boolean {
+    return this.configService.get<boolean>('cron.elasticUpdater') ?? false;
   }
 
   getIsQueueWorkerCronActive(): boolean {

@@ -69,10 +69,21 @@ export default class Initializer {
         .spyOn(NodeService.prototype, 'getQueue')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => queue));
+
+      jest.spyOn(KeybaseService.prototype, 'confirmKeybasesAgainstKeybasePub')
+        .mockImplementation(jest.fn(async () => {
+          const providers = await providerService.getProviderAddresses();
+          for (const provider of providers) {
+            await this.cachingService.setCache(`keybase:${provider}`, true, Constants.oneHour());
+          }
+
+          for (const node of nodes) {
+            await this.cachingService.setCache(`keybase:${node.bls}`, true, Constants.oneHour());
+          }
+        }));
     }
 
-    const isInitialized =
-      await Initializer.cachingService.getCacheRemote<boolean>('isInitialized');
+    const isInitialized = await Initializer.cachingService.getCacheRemote<boolean>('isInitialized');
     if (isInitialized === true) {
       return;
     }

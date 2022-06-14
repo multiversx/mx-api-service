@@ -27,6 +27,49 @@ export class ElasticService {
     this.url = apiConfigService.getElasticUrl();
   }
 
+  async getCustomValue(collection: string, identifier: string, attribute: string): Promise<any> {
+    const url = `${this.url}/${collection}/_search?q=_id:${encodeURIComponent(identifier)}`;
+
+    const profiler = new PerformanceProfiler();
+    const fullAttribute = 'api_' + attribute;
+
+    const payload = {
+      _source: fullAttribute,
+    };
+
+    const result = await this.post(url, payload);
+
+    profiler.stop();
+    this.metricsService.setElasticDuration(collection, ElasticMetricType.item, profiler.duration);
+
+    const hits = result.data?.hits?.hits;
+    if (hits && hits.length > 0) {
+      const document = hits[0];
+
+      return document._source[fullAttribute];
+    }
+
+    return null;
+  }
+
+  async setCustomValue<T>(collection: string, identifier: string, attribute: string, value: T): Promise<void> {
+    const url = `${this.url}/${collection}/_update/${identifier}`;
+
+    const profiler = new PerformanceProfiler();
+    const fullAttribute = 'api_' + attribute;
+
+    const payload = {
+      doc: {
+        [fullAttribute]: value,
+      },
+    };
+
+    await this.post(url, payload);
+
+    profiler.stop();
+    this.metricsService.setElasticDuration(collection, ElasticMetricType.item, profiler.duration);
+  }
+
   async getCount(collection: string, elasticQuery: ElasticQuery | undefined = undefined) {
     const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_count`;
 
@@ -44,7 +87,7 @@ export class ElasticService {
   }
 
   async getItem(collection: string, key: string, identifier: string) {
-    const url = `${this.url}/${collection}/_search?q=_id:${identifier}`;
+    const url = `${this.url}/${collection}/_search?q=_id:${encodeURIComponent(identifier)}`;
 
     const profiler = new PerformanceProfiler();
 
@@ -137,7 +180,7 @@ export class ElasticService {
       .withPagination({ from: 0, size: addresses.length })
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match("address", "pending-")])
       .withCondition(QueryConditionOptions.must, [QueryType.Match('token', identifier, QueryOperator.AND)])
-      .withFilter([new RangeQuery("balanceNum", undefined, 0)])
+      .withFilter(new RangeQuery("balanceNum", undefined, 0))
       .withCondition(QueryConditionOptions.should, queries);
 
     const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());
@@ -191,7 +234,7 @@ export class ElasticService {
     return await this.apiService.get(url);
   }
 
-  private async post(url: string, body: any) {
+  public async post(url: string, body: any) {
     return await this.apiService.post(url, body);
   }
 

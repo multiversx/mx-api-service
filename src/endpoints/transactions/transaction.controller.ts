@@ -35,7 +35,7 @@ export class TransactionController {
   constructor(private readonly transactionService: TransactionService) { }
 
   @Get("/transactions")
-  @ApiOperation({ summary: 'Transactions details', description: 'Returns a list of transactions available on the blockchain. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs' })
+  @ApiOperation({ summary: 'Transaction list', description: 'Returns a list of transactions available on the blockchain. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs' })
   @ApiOkResponse({ type: [Transaction] })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
@@ -44,18 +44,18 @@ export class TransactionController {
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
-  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
-  @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false })
+  @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false })
-  @ApiQuery({ name: 'withScResults', description: 'Return results for transactions', required: false })
-  @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
-  @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false })
+  @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false, deprecated: true })
+  @ApiQuery({ name: 'withScResults', description: 'Return results for transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
   getTransactions(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -109,7 +109,7 @@ export class TransactionController {
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
-  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false, deprecated: true })
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })

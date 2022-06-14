@@ -11,6 +11,7 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { NodeSort } from "./entities/node.sort";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseBlsHashPipe } from "src/utils/pipes/parse.bls.hash.pipe";
+import { SortNodes } from "src/common/entities/sort.nodes";
 
 @Controller()
 @ApiTags('nodes')
@@ -20,7 +21,7 @@ export class NodeController {
   @Get("/nodes")
   @ApiOperation({ summary: 'Nodes', description: 'Returns a list of nodes of type observer or validator' })
   @ApiOkResponse({ type: [Node] })
-  @ApiQuery({ name: 'from', description: 'Numer of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by name, bls or version', required: false })
   @ApiQuery({ name: 'online', description: 'Whether node is online or not', required: false, type: 'boolean' })
@@ -31,8 +32,8 @@ export class NodeController {
   @ApiQuery({ name: 'identity', description: 'Node identity', required: false })
   @ApiQuery({ name: 'provider', description: 'Node provider', required: false })
   @ApiQuery({ name: 'owner', description: 'Node owner', required: false })
-  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false })
-  @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false })
+  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortNodes })
+  @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   async getNodes(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -70,8 +71,8 @@ export class NodeController {
   @ApiQuery({ name: 'identity', description: 'Node identity', required: false })
   @ApiQuery({ name: 'provider', description: 'Node provider', required: false })
   @ApiQuery({ name: 'owner', description: 'Node owner', required: false })
-  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false })
-  @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false })
+  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortNodes })
+  @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   getNodeCount(
     @Query('search') search?: string,
     @Query('online', ParseOptionalBoolPipe) online?: boolean,

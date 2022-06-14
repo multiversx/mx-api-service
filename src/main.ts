@@ -27,10 +27,12 @@ import { PaginationInterceptor } from './interceptors/pagination.interceptor';
 import { LogRequestsInterceptor } from './interceptors/log.requests.interceptor';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { NftQueueModule } from './queue.worker/nft.worker/queue/nft.queue.module';
+import { ElasticUpdaterModule } from './crons/elastic.updater/elastic.updater.module';
 import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './websockets/socket-adapter';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
+import { QueryCheckInterceptor } from './interceptors/query.check.interceptor';
 import { ApiConfigModule } from './common/api-config/api.config.module';
 import { SwaggerCustomTypes } from './utils/swagger-custom-styles.utils';
 
@@ -60,14 +62,19 @@ async function bootstrap() {
     await processorApp.listen(5001);
   }
 
+  if (apiConfigService.getIsCacheWarmerCronActive()) {
+    const cacheWarmerApp = await NestFactory.create(CacheWarmerModule);
+    await cacheWarmerApp.listen(6001);
+  }
+
   if (apiConfigService.getIsTransactionCompletedCronActive()) {
     const processorApp = await NestFactory.create(TransactionCompletedModule);
     await processorApp.listen(7001);
   }
 
-  if (apiConfigService.getIsCacheWarmerCronActive()) {
-    const processorApp = await NestFactory.create(CacheWarmerModule);
-    await processorApp.listen(6001);
+  if (apiConfigService.getIsElasticUpdaterCronActive()) {
+    const elasticUpdaterApp = await NestFactory.create(ElasticUpdaterModule);
+    await elasticUpdaterApp.listen(8001);
   }
 
   if (apiConfigService.getIsQueueWorkerCronActive()) {
@@ -121,6 +128,7 @@ async function bootstrap() {
   logger.log(`Transaction completed cron active: ${apiConfigService.getIsTransactionCompletedCronActive()}`);
   logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
   logger.log(`Queue worker active: ${apiConfigService.getIsQueueWorkerCronActive()}`);
+  logger.log(`Elastic updater active: ${apiConfigService.getIsElasticUpdaterCronActive()}`);
   logger.log(`Events notifier active: ${apiConfigService.isEventsNotifierFeatureActive()}`);
 }
 
@@ -170,6 +178,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   globalInterceptors.push(new ExtractInterceptor());
   globalInterceptors.push(new CleanupInterceptor());
   globalInterceptors.push(new PaginationInterceptor());
+  globalInterceptors.push(new QueryCheckInterceptor(httpAdapterHostService));
 
   await pluginService.bootstrapPublicApp(publicApp);
 

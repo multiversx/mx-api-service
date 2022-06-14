@@ -4,10 +4,10 @@ export class TokenRoles {
   address: string = '';
 
   @ApiProperty({ type: Boolean, default: false })
-  canMint: boolean = false;
+  canLocalMint: boolean = false;
 
   @ApiProperty({ type: Boolean, default: false })
-  canBurn: boolean = false;
+  canLocalBurn: boolean = false;
 
   @ApiProperty({ type: [String] })
   roles: string[] = [];

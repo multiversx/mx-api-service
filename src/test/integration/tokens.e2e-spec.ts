@@ -11,6 +11,11 @@ import { Test } from '@nestjs/testing';
 import { FileUtils } from 'src/utils/file.utils';
 import '../../utils/extensions/jest.extensions';
 import { TokenDetailedWithBalance } from 'src/endpoints/tokens/entities/token.detailed.with.balance';
+import { TokenSort } from 'src/endpoints/tokens/entities/token.sort';
+import { SortOrder } from 'src/common/entities/sort.order';
+import { ElasticQuery } from 'src/common/elastic/entities/elastic.query';
+import { TokenWithRolesFilter } from 'src/endpoints/tokens/entities/token.with.roles.filter';
+import { QueryPagination } from 'src/common/entities/query.pagination';
 
 describe('Token Service', () => {
   let tokenService: TokenService;
@@ -269,7 +274,7 @@ describe('Token Service', () => {
       );
     });
 
-    it("should return a list of tokens with identifier filter applied", async () => {
+    it("should return a list of tokens with identifiers filter applied", async () => {
       const MOCK_PATH = apiConfigService.getMockPath();
       const filter = new TokenFilter();
       filter.identifiers = ["WEGLD-bd4d79", "RIDE-7d18e9"];
@@ -290,7 +295,7 @@ describe('Token Service', () => {
       );
     });
 
-    it("should return an empty token list if tokens are not present", async () => {
+    it("should return an empty token list if tokens are undefined", async () => {
       jest
         .spyOn(CachingService.prototype, 'getOrSetCache')
         // eslint-disable-next-line require-await
@@ -300,6 +305,110 @@ describe('Token Service', () => {
 
       expect(results).toStrictEqual([]);
     });
+
+    it("should verify if first returned elemenent (accounts) is always 0 because test simulates that order of the list is ascending by accounts", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const filter = new TokenFilter();
+      filter.sort = TokenSort.accounts;
+      filter.order = SortOrder.asc;
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const results = await tokenService.getFilteredTokens(filter);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identifier: "CRB-62d525" }),
+          expect.objectContaining({ accounts: 1 }),
+        ])
+      );
+    });
+
+    it("should verify if first returned elemenent (transactions) is always 1 because test simulates that order of the list is ascending by transactions", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const filter = new TokenFilter();
+      filter.sort = TokenSort.transactions;
+      filter.order = SortOrder.asc;
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const results = await tokenService.getFilteredTokens(filter);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identifier: "CRB-62d525" }),
+          expect.objectContaining({ transactions: 1 }),
+        ])
+      );
+    });
+
+    it("should return a list of tokens in ascending order sorted by price and first element in array should be WEGLD-bd4d79", async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const filter = new TokenFilter();
+      filter.sort = TokenSort.price;
+      filter.order = SortOrder.asc;
+
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const results = await tokenService.getFilteredTokens(filter);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
+        ])
+      );
+    });
+  });
+
+  it("should return a list of tokens ordered descending by accounts", async () => {
+    const MOCK_PATH = apiConfigService.getMockPath();
+    const filter = new TokenFilter();
+    filter.sort = TokenSort.accounts;
+    filter.order = SortOrder.desc;
+
+    jest
+      .spyOn(CachingService.prototype, 'getOrSetCache')
+      // eslint-disable-next-line require-await
+      .mockImplementation(jest.fn(async () =>
+        FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+    const results = await tokenService.getFilteredTokens(filter);
+
+    expect(results).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
+      ])
+    );
+  });
+
+
+  it("should return a list of tokens in ascending order sorted by marketCap and first element in array should be WEGLD-bd4d79", async () => {
+    const MOCK_PATH = apiConfigService.getMockPath();
+    const filter = new TokenFilter();
+    filter.sort = TokenSort.marketCap;
+    filter.order = SortOrder.asc;
+
+    jest
+      .spyOn(CachingService.prototype, 'getOrSetCache')
+      // eslint-disable-next-line require-await
+      .mockImplementation(jest.fn(async () =>
+        FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+    const results = await tokenService.getFilteredTokens(filter);
+
+    expect(results[0].identifier).toStrictEqual('WEGLD-bd4d79');
   });
 
   describe("getTokenCount", () => {
@@ -426,34 +535,37 @@ describe('Token Service', () => {
     });
 
     //ToDo: properties of TokenType.FungibleESDT
+
+    it('should return undefined because test simulates that token type is not NonfugibleESDT', async () => {
+      const identifier: string = 'METAUTKLK-e6a445';
+      const result = await tokenService.getTokenProperties(identifier);
+
+      expect(result).toBeUndefined();
+    });
   });
 
   describe("getTokenCountForAddress", () => {
     it("should return total number of tokens for address", async () => {
       const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
-      const count: number = 1;
 
       jest
-        .spyOn(ElasticService.prototype, 'get')
+        .spyOn(TokenService.prototype, 'getTokenCountForAddressFromGateway')
         // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async () => count));
+        .mockImplementation(jest.fn(async () => 1));
 
       const result = await tokenService.getTokenCountForAddress(address);
-
       expect(result).toStrictEqual(1);
     });
 
     it("should return total number of tokens for smart contract address", async () => {
       const address: string = "erd1qqqqqqqqqqqqqpgqmqq78c5htmdnws8hm5u4suvags36eq092jpsaxv3e7";
-      const count: number = 1;
 
       jest
-        .spyOn(ElasticService.prototype, 'get')
+        .spyOn(TokenService.prototype, 'getTokenCountForAddressFromElastic')
         // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async () => count));
+        .mockImplementation(jest.fn(async () => 1));
 
       const result = await tokenService.getTokenCountForAddress(address);
-
       expect(result).toStrictEqual(1);
     });
   });
@@ -565,6 +677,50 @@ describe('Token Service', () => {
         ])
       );
     });
+
+    it.skip('should return token details with name filter applied ', async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
+
+      const filter: TokenFilter = new TokenFilter();
+      filter.name = 'Water';
+
+      jest
+        .spyOn(ElasticService.prototype, 'get')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const results = await tokenService.getTokensForAddressFromElastic(address, { from: 0, size: 1 }, filter);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identifier: "WATER-9ed400" }),
+        ])
+      );
+    });
+
+    it.skip('should return token details with search filter applied ', async () => {
+      const MOCK_PATH = apiConfigService.getMockPath();
+      const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
+
+      const filter: TokenFilter = new TokenFilter();
+      filter.search = 'Water';
+
+      jest
+        .spyOn(ElasticService.prototype, 'get')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async () =>
+          FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
+
+      const results = await tokenService.getTokensForAddressFromElastic(address, { from: 0, size: 1 }, filter);
+
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ identifier: "WATER-9ed400" }),
+        ])
+      );
+    });
   });
 
   describe("getTokenSupply", () => {
@@ -657,16 +813,22 @@ describe('Token Service', () => {
         .spyOn(EsdtService.prototype, 'getEsdtAddressesRoles')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_identifier: string) => [{
-          address: "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8",
-          canMint: true,
-          canBurn: true,
+          address: "erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy",
+          canLocalMint: true,
+          canLocalBurn: true,
           roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
         },
         {
-          address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
-          canMint: true,
-          canBurn: false,
-          roles: ['ESDTRoleLocalBurn'],
+          address: "erd1qqqqqqqqqqqqqpgqmuk0q2saj0mgutxm4teywre6dl8wqf58xamqdrukln",
+          canLocalMint: true,
+          canLocalBurn: true,
+          roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
+        },
+        {
+          address: 'erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3',
+          canLocalMint: true,
+          canLocalBurn: true,
+          roles: ['ESDTRoleLocalMint'],
         },
         ]));
 
@@ -675,17 +837,92 @@ describe('Token Service', () => {
       expect(results).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            canMint: true,
-            canBurn: true,
+            canLocalMint: true,
+            canLocalBurn: true,
             roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
           }),
           expect.objectContaining({
-            canMint: true,
-            canBurn: false,
-            roles: ['ESDTRoleLocalBurn'],
+            canLocalMint: true,
+            canLocalBurn: true,
+            roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
+          }),
+          expect.objectContaining({
+            canLocalMint: true,
+            canLocalBurn: true,
+            roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
           }),
         ])
       );
+    });
+
+    it('should return tokens roles from elastic source is IndexerV3FlagActive = true', async () => {
+      const identifier: string = token.identifier;
+
+      jest.spyOn(ApiConfigService.prototype, 'getIsIndexerV3FlagActive')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(() => true));
+
+      const results = await tokenService.getTokenRoles(identifier);
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            canLocalMint: true,
+            canLocalBurn: true,
+            roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
+          }),
+          expect.objectContaining({
+            canLocalMint: true,
+            canLocalBurn: true,
+            roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
+          }),
+          expect.objectContaining({
+            canLocalMint: true,
+            canLocalBurn: true,
+            roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
+          }),
+        ])
+      );
+    });
+
+    it('should return undefined if token identifier is not defined', async () => {
+      jest.spyOn(ApiConfigService.prototype, 'getIsIndexerV3FlagActive')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(() => true));
+
+      jest.spyOn(ElasticService.prototype, 'getItem')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_collection: string, _key: string, _identifier: string) => undefined));
+
+      const results = await tokenService.getTokenRoles('');
+
+      expect(results).toBeUndefined();
+    });
+
+    it('should return undefined if token roles are not defined', async () => {
+      const identifier: string = token.identifier;
+
+      jest.spyOn(ApiConfigService.prototype, 'getIsIndexerV3FlagActive')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(() => true));
+
+      jest
+        .spyOn(EsdtService.prototype, 'getEsdtAddressesRoles')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_identifier: string) => [
+          {
+            address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
+            canLocalMint: true,
+            canLocalBurn: true,
+            roles: [''],
+          }]));
+
+      jest.spyOn(ElasticService.prototype, 'getItem')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_collection: string, _key: string, _identifier: string) => identifier));
+
+      const results = await tokenService.getTokenRoles('');
+
+      expect(results).toBeUndefined();
     });
 
     it("should return undefined because test simulates that roles are not defined for token", async () => {
@@ -705,20 +942,46 @@ describe('Token Service', () => {
         .mockImplementation(jest.fn(async (_identifier: string) => [
           {
             address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
-            canMint: true,
-            canBurn: true,
-            roles: [],
+            canLocalMint: true,
+            canLocalBurn: true,
+            roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
           },
         ]));
 
-      const results = await tokenService.getTokenRolesForAddress(identifier, address);
+      const results = await tokenService.getTokenRolesForIdentifierAndAddress(identifier, address);
 
       expect(results).toEqual(expect.objectContaining({
-        canMint: true,
-        canBurn: true,
-        roles: [],
+        canLocalMint: true,
+        canLocalBurn: true,
+        roles: ['ESDTRoleLocalMint', 'ESDTRoleLocalBurn'],
       }));
+    });
 
+    it('should return undefined if token roles are not defined', async () => {
+      jest.spyOn(ApiConfigService.prototype, 'getIsIndexerV3FlagActive')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(() => true));
+
+      jest.spyOn(ElasticService.prototype, 'getItem')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_collection: string, _key: string, _identifier: string) => identifier));
+
+      jest
+        .spyOn(EsdtService.prototype, 'getEsdtAddressesRoles')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_identifier: string) => [
+          {
+            address: 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy',
+            canLocalMint: true,
+            canLocalBurn: true,
+            roles: [''],
+          }]));
+
+      const address: string = "erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy";
+      const identifier: string = "RIDE-7d18e9";
+      const result = await tokenService.getTokenRolesForIdentifierAndAddress(identifier, address);
+
+      expect(result).toBeUndefined();
     });
 
     it("should return undefined because test simulates that roles are not defined for address", async () => {
@@ -735,7 +998,7 @@ describe('Token Service', () => {
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_collection: string, _key: string, _identifier: string) => undefined));
 
-      const results = await tokenService.getTokenRolesForAddress(identifier, address);
+      const results = await tokenService.getTokenRolesForIdentifierAndAddress(identifier, address);
       expect(results).toBeUndefined();
     });
   });
@@ -760,6 +1023,188 @@ describe('Token Service', () => {
         .mockImplementation(jest.fn(async (_filter: TokenFilter) => []));
 
       const result = await tokenService.getTokenForAddress(address, identifier);
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('isToken', () => {
+    it('should verify if given identifier is a token and should return true', async () => {
+      const result = await tokenService.isToken('RIDE-7d18e9');
+
+      expect(result).toStrictEqual(true);
+    });
+
+    it('should return false because esdt identifier is an NonFungibleESDT', async () => {
+      const result = await tokenService.isToken('EROBOT-527a29');
+
+      expect(result).toStrictEqual(false);
+    });
+  });
+
+  describe('getTokenCountForAddressFromElastic', () => {
+    it('should return total number of tokens for a specific address from Elastic source', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2';
+      const result = await tokenService.getTokenCountForAddressFromElastic(address);
+
+      jest.spyOn(ElasticService.prototype, 'getCount')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_collection: string, _elasticQuery: ElasticQuery | undefined) => 3));
+
+      expect(result).toStrictEqual(3);
+    });
+  });
+
+  describe('getTokenCountForAddressFromGateway', () => {
+    it('should return total number of tokens for a specific address from Gateway source', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2';
+      const result = await tokenService.getTokenCountForAddressFromGateway(address);
+
+      expect(result).toStrictEqual(3);
+    });
+  });
+
+  describe('getTokenCountForAddressFromGateway & getTokenCountForAddressFromElastic', () => {
+    it('should return total number of tokens for a specific address from Gateway source', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2';
+      const elasticResult = await tokenService.getTokenCountForAddressFromElastic(address);
+      const gatewayResult = await tokenService.getTokenCountForAddressFromGateway(address);
+
+      expect(elasticResult).toStrictEqual(gatewayResult);
+    });
+  });
+
+  describe('getTokensWithRolesForAddressCount', () => {
+    it('should return total number of tokens with roles with identifier filter for a specific address', async () => {
+      const address: string = 'erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc';
+      const filter: TokenWithRolesFilter = new TokenWithRolesFilter();
+      filter.identifier = 'RIDE-7d18e9';
+
+      jest.spyOn(ElasticService.prototype, 'getCount')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_collection: string, _elasticQuery: ElasticQuery | undefined) => 3));
+
+      const result = await tokenService.getTokensWithRolesForAddressCount(address, filter);
+
+      expect(result).toStrictEqual(3);
+    });
+
+    it('should return total number of tokens with roles with identifier filter for a specific address', async () => {
+      const address: string = 'erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc';
+      const filter: TokenWithRolesFilter = new TokenWithRolesFilter();
+      filter.search = 'RIDE';
+
+      jest.spyOn(ElasticService.prototype, 'getCount')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_collection: string, _elasticQuery: ElasticQuery | undefined) => 1));
+
+      const result = await tokenService.getTokensWithRolesForAddressCount(address, filter);
+
+      expect(result).toStrictEqual(1);
+    });
+
+    it('should return total number of tokens with roles with owner filter for a specific address', async () => {
+      const address: string = 'erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc';
+      const filter: TokenWithRolesFilter = new TokenWithRolesFilter();
+      filter.owner = 'erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97';
+
+      jest.spyOn(ElasticService.prototype, 'getCount')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_collection: string, _elasticQuery: ElasticQuery | undefined) => 1));
+
+      const result = await tokenService.getTokensWithRolesForAddressCount(address, filter);
+
+      expect(result).toStrictEqual(1);
+    });
+
+    it('should return total number of tokens with roles with canMint = true property filter for a specific address', async () => {
+      const address: string = 'erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc';
+      const filter: TokenWithRolesFilter = new TokenWithRolesFilter();
+      filter.canMint = true;
+
+      jest.spyOn(ElasticService.prototype, 'getCount')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_collection: string, _elasticQuery: ElasticQuery | undefined) => 2));
+
+      const result = await tokenService.getTokensWithRolesForAddressCount(address, filter);
+
+      expect(result).toStrictEqual(2);
+    });
+
+    it('should return total number of tokens with roles with canMint = false property filter for a specific address', async () => {
+      const address: string = 'erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc';
+      const filter: TokenWithRolesFilter = new TokenWithRolesFilter();
+      filter.canMint = false;
+
+      jest.spyOn(ElasticService.prototype, 'getCount')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_collection: string, _elasticQuery: ElasticQuery | undefined) => 1));
+
+      const result = await tokenService.getTokensWithRolesForAddressCount(address, filter);
+
+      expect(result).toStrictEqual(1);
+    });
+
+    it('should return total number of tokens with roles with canBurn = true property filter for a specific address', async () => {
+      const address: string = 'erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc';
+      const filter: TokenWithRolesFilter = new TokenWithRolesFilter();
+      filter.canBurn = true;
+
+      jest.spyOn(ElasticService.prototype, 'getCount')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_collection: string, _elasticQuery: ElasticQuery | undefined) => 5));
+
+      const result = await tokenService.getTokensWithRolesForAddressCount(address, filter);
+
+      expect(result).toStrictEqual(5);
+    });
+
+    it('should return total number of tokens with roles with canBurn = false property filter for a specific address', async () => {
+      const address: string = 'erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc';
+      const filter: TokenWithRolesFilter = new TokenWithRolesFilter();
+      filter.canBurn = false;
+
+      jest.spyOn(ElasticService.prototype, 'getCount')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_collection: string, _elasticQuery: ElasticQuery | undefined) => 4));
+
+      const result = await tokenService.getTokensWithRolesForAddressCount(address, filter);
+
+      expect(result).toStrictEqual(4);
+    });
+  });
+
+  describe('getTokenWithRolesForAddress', () => {
+    it('should return tokens details with roles for a specific address', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy';
+      const identifier: string = 'WEGLD-bd4d79';
+
+      const result = await tokenService.getTokenWithRolesForAddress(address, identifier);
+
+      if (!result) {
+        throw new Error('Properties are not defined');
+      }
+      expect(result.identifier).toStrictEqual('WEGLD-bd4d79');
+      expect(result.canLocalMint).toStrictEqual(true);
+      expect(result.canLocalBurn).toStrictEqual(true);
+      expect(result.canWipe).toStrictEqual(true);
+      expect(result.canFreeze).toStrictEqual(true);
+      expect(result.canPause).toStrictEqual(true);
+      expect(result.canChangeOwner).toStrictEqual(true);
+      expect(result.canBurn).toStrictEqual(true);
+      expect(result.canMint).toStrictEqual(true);
+      expect(result.canUpgrade).toStrictEqual(true);
+    });
+
+    it('should return undefined because test simulates that identifier is not defined', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy';
+      const identifier: string = '';
+
+      jest.spyOn(TokenService.prototype, 'getTokensWithRolesForAddress')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_address: string, _filter: TokenWithRolesFilter, _pagination: QueryPagination) => []));
+
+      const result = await tokenService.getTokenWithRolesForAddress(address, identifier);
+
       expect(result).toBeUndefined();
     });
   });

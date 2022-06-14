@@ -58,10 +58,10 @@ export class TokenUtils {
 
     switch (role) {
       case 'ESDTRoleLocalMint':
-        tokenRoles.canMint = true;
+        tokenRoles.canLocalMint = true;
         break;
       case 'ESDTRoleLocalBurn':
-        tokenRoles.canBurn = true;
+        tokenRoles.canLocalBurn = true;
         break;
     }
   }
