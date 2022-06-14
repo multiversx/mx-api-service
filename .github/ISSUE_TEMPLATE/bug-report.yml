@@ -8,7 +8,7 @@ body:
   -type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report!
+        Thank you for taking the time to fill out this bug report!
   -type: input
     id: contact
     attributes:
@@ -17,19 +17,25 @@ body:
       placeholder: ex. email@example.com
       validation:
         required: false
-  -type: textarea
-    id: what-happend
+  -type: input
+    id: description
     attributes:
-      label: What happend?
-      description: Also tell us, what did you expect to happend?
-      placeholder: Tell us what you see!
-      value: "A bug happend"
+      label: Description
+      description: A short, concise description of the problem
+      placeholder: Description
       validation:
         required: true
-  - type: dropdown
-    id: Version
+  -type: textarea
+    id: steps-to-reproduce
     attributes:
-      description: What network are you seeing the problem on?
+      label: Steps to reproduce
+      description: A minimum list of steps for validating the behavior of the bug
+      validation:
+        required: false
+  - type: dropdown
+    id: network
+    attributes:
+      description: On which network is the bug manifesting itself?
       options: 
       - Mainnet
       - Devnet
@@ -40,7 +46,7 @@ body:
     id: logs
     attributes: 
       label: Relevant log output
-      description: Please copy and paste any relevant log output.This will be automatically formatted into code, so no need for backticks.
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
       render: shell
   - type: checkboxes
     id: terms
