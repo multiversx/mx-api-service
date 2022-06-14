@@ -6,7 +6,7 @@ export class ParseOptionalEnumPipe<T extends { [name: string]: any }> implements
   transform(value: string | undefined, _: ArgumentMetadata): Promise<string | undefined> {
     return new Promise(resolve => {
       if (value === undefined || value === '') {
-        return resolve('');
+        return resolve(undefined);
       }
 
       const values = this.getValues(this.type);
