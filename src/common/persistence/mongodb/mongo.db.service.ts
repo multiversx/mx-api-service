@@ -21,7 +21,7 @@ export class MongoDbService implements PersistenceInterface {
 
   async getMetadata(identifier: string): Promise<any | null> {
     try {
-      const metadataDb: NftMetadataDb | undefined = await this.nftMetadataRepository.findOne({ id: identifier });
+      const metadataDb: NftMetadataDb | null = await this.nftMetadataRepository.findOne({ where: { id: identifier } });
       if (!metadataDb) {
         return null;
       }
@@ -39,6 +39,7 @@ export class MongoDbService implements PersistenceInterface {
       const metadatasDb = await this.nftMetadataRepository.find({
         where: {
           id: {
+            // @ts-ignore
             $in: identifiers,
           },
         },
@@ -54,7 +55,7 @@ export class MongoDbService implements PersistenceInterface {
   }
 
   async setMetadata(identifier: string, content: any): Promise<void> {
-    let metadata = await this.nftMetadataRepository.findOne({ id: identifier });
+    let metadata = await this.nftMetadataRepository.findOne({ where: { id: identifier } });
     if (!metadata) {
       metadata = new NftMetadataDb();
     }
@@ -88,7 +89,7 @@ export class MongoDbService implements PersistenceInterface {
 
   async getMedia(identifier: string): Promise<NftMedia[] | null> {
     try {
-      const media: NftMediaDb | undefined = await this.nftMediaRepository.findOne({ id: identifier });
+      const media: NftMediaDb | null = await this.nftMediaRepository.findOne({ where: { id: identifier } });
       if (!media) {
         return null;
       }
@@ -106,6 +107,7 @@ export class MongoDbService implements PersistenceInterface {
       const mediasDb = await this.nftMediaRepository.find({
         where: {
           id: {
+            // @ts-ignore
             $in: identifiers,
           },
         },
@@ -121,7 +123,7 @@ export class MongoDbService implements PersistenceInterface {
   }
 
   async setMedia(identifier: string, media: NftMedia[]): Promise<void> {
-    let value = await this.nftMediaRepository.findOne({ id: identifier });
+    let value = await this.nftMediaRepository.findOne({ where: { id: identifier } });
     if (!value) {
       value = new NftMediaDb();
     }

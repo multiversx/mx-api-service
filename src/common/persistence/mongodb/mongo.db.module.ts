@@ -15,7 +15,7 @@ import { MongoDbService } from "./mongo.db.service";
           type: 'mongodb',
           entities: [NftMetadataDb, NftMediaDb],
           url: apiConfigService.getDatabaseUrl(),
-          keepConnectionAlive: true,
+          keepAlive: 120000,
           sslValidate: false,
           retryAttempts: 300,
           useUnifiedTopology: true,
