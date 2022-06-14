@@ -210,8 +210,8 @@ export class AccountController {
     @Query('canUpdateAttributes', new ParseOptionalBoolPipe) canUpdateAttributes?: boolean,
     @Query('canAddUri', new ParseOptionalBoolPipe) canAddUri?: boolean,
     @Query('canTransferRole', new ParseOptionalBoolPipe) canTransferRole?: boolean,
-  ): Promise<NftCollectionAccount[]> {
-    return await this.collectionService.getCollectionsWithRolesForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole, owner }, { from, size });
+  ): Promise<NftCollectionRole[]> {
+    return await this.collectionService.getCollectionsWithRolesForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole }, { from, size });
   }
 
   @Get("/accounts/:address/roles/collections/count")
