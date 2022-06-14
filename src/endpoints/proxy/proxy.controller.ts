@@ -134,8 +134,8 @@ export class ProxyController {
   @ApiQuery({ name: 'withResults', description: 'Include results which correspond to the hash', required: false })
   async getTransaction(
     @Param('hash', ParseTransactionHashPipe) hash: string,
-    @Query('sender', ParseAddressPipe) sender: string | undefined,
-    @Query('withResults') withResults: string | undefined,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('withResults') withResults?: string,
   ) {
     return await this.gatewayGet(`transaction/${hash}`, GatewayComponentRequest.transactionDetails, { sender, withResults });
   }
@@ -260,7 +260,7 @@ export class ProxyController {
   async getBlockByShardAndNonce(
     @Param('shard') shard: string,
     @Param('nonce') nonce: number,
-    @Query('withTxs') withTxs: string | undefined,
+    @Query('withTxs') withTxs?: string,
   ) {
     return await this.gatewayGet(`block/${shard}/by-nonce/${nonce}`, GatewayComponentRequest.blockByNonce, { withTxs });
   }
@@ -271,7 +271,7 @@ export class ProxyController {
   async getBlockByShardAndHash(
     @Param('shard') shard: string,
     @Param('hash') hash: number,
-    @Query('withTxs') withTxs: string | undefined,
+    @Query('withTxs') withTxs?: string,
   ) {
     return await this.gatewayGet(`block/${shard}/by-hash/${hash}`, GatewayComponentRequest.blockByHash, { withTxs });
   }
