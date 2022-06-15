@@ -37,8 +37,8 @@ Below some guidelines regarding writing unit tests:
 
 To make sure the test suite passes, run the following commands before opening a pull request:
 - `npm run test` to run unit tests
-- `npm run test:e2e:warm` to warm-up integration tests
-- `npm run test:e2e:warm:mocked` to run against mocked data, for performance purposes
+- `npm run test:e2e:warm:mocked` to warm-up integration tests with mocked data, for performance purposes
+- `npm run test:e2e` to run integration tests
 
 ## Manual testing
 
