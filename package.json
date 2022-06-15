@@ -81,11 +81,11 @@
     "@nestjs/platform-socket.io": "^8.4.1",
     "@nestjs/schedule": "^1.0.2",
     "@nestjs/swagger": "^5.2.0",
-    "@nestjs/typeorm": "^8.0.3",
+    "@nestjs/typeorm": "^8.1.3",
     "@nestjs/websockets": "8.4.1",
     "agentkeepalive": "^4.2.1",
-    "amqp-connection-manager": "^4.0.0",
-    "amqplib": "^0.8.0",
+    "amqp-connection-manager": "^4.1.3",
+    "amqplib": "^0.10.0",
     "anchorme": "^2.1.2",
     "bignumber.js": "^9.0.2",
     "crypto-js": "^4.1.1",
@@ -110,7 +110,7 @@
     "simple-git": "^2.48.0",
     "swagger-ui-express": "^4.3.0",
     "tiny-async-pool": "^1.2.0",
-    "typeorm": "^0.3.0",
+    "typeorm": "^0.3.6",
     "winston": "^3.6.0",
     "winston-daily-rotate-file": "^4.6.1"
   },
@@ -145,8 +145,9 @@
     "ts-jest": "^27.1.3",
     "ts-loader": "^9.2.8",
     "ts-node": "^10.7.0",
-    "tsconfig-paths": "^3.14.0",
-    "typescript": "^4.6.2"
+    "tsconfig-paths": "^4.0.0",
+    "typescript": "^4.6.2",
+    "webpack": "^5.73.0"
   },
   "jest": {
     "moduleFileExtensions": [
