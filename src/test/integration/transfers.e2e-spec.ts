@@ -1,7 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { TransactionStatus } from 'src/endpoints/transactions/entities/transaction.status';
 import { TransactionFilter } from 'src/endpoints/transactions/entities/transaction.filter';
-import Initializer from './e2e-init';
 import { Constants } from 'src/utils/constants';
 import transactionDetails from "../data/transactions/transaction.details";
 import { TransferModule } from 'src/endpoints/transfers/transfer.module';
@@ -10,6 +9,8 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { ApiConfigModule } from 'src/common/api-config/api.config.module';
 import { BinaryUtils } from 'src/utils/binary.utils';
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
+import { ElasticService } from 'src/common/elastic/elastic.service';
+import { ElasticQuery } from 'src/common/elastic/entities/elastic.query';
 
 describe.skip('Transfer Service', () => {
   let transferService: TransferService;
@@ -18,8 +19,6 @@ describe.skip('Transfer Service', () => {
   let transactionReceiver: string;
 
   beforeAll(async () => {
-    await Initializer.initialize();
-
     const moduleRef = await Test.createTestingModule({
       imports: [TransferModule, ApiConfigModule],
     }).compile();
@@ -29,7 +28,7 @@ describe.skip('Transfer Service', () => {
 
     const transactionFilter = new TransactionFilter();
 
-    const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 1 }, '');
+    const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 1 });
     expect(transfers).toHaveLength(1);
 
     const transfer = transfers[0];
@@ -41,7 +40,7 @@ describe.skip('Transfer Service', () => {
   describe('Transfers list', () => {
     describe('Transfers pagination', () => {
       it(`should return a list with 25 transfers`, async () => {
-        const transfers = await transferService.getTransfers(new TransactionFilter(), { from: 0, size: 25 }, '');
+        const transfers = await transferService.getTransfers(new TransactionFilter(), { from: 0, size: 25 });
 
         expect(transfers).toHaveLength(25);
 
@@ -51,7 +50,7 @@ describe.skip('Transfer Service', () => {
       });
 
       it(`should return a list with 100 transfers`, async () => {
-        const transfers = await transferService.getTransfers(new TransactionFilter(), { from: 0, size: 100 }, '');
+        const transfers = await transferService.getTransfers(new TransactionFilter(), { from: 0, size: 100 });
 
         expect(transfers).toHaveLength(100);
 
@@ -67,7 +66,7 @@ describe.skip('Transfer Service', () => {
         transactionFilter.sender = transactionSender;
         transactionFilter.receiver = transactionReceiver;
 
-        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 }, '');
+        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
         expect(transfers.length).toBeGreaterThan(0);
 
         for (const transfer of transfers) {
@@ -81,7 +80,7 @@ describe.skip('Transfer Service', () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.status = TransactionStatus.pending;
 
-        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 }, '');
+        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
         expect(transfers.length).toBeGreaterThan(0);
 
         for (const transfer of transfers) {
@@ -95,7 +94,7 @@ describe.skip('Transfer Service', () => {
         transactionFilter.before = 1625559162;
         transactionFilter.after = 1625559108;
 
-        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 }, '');
+        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
         expect(transfers.length).toBeGreaterThan(0);
 
         for (const transfer of transfers) {
@@ -109,7 +108,7 @@ describe.skip('Transfer Service', () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.after = 1625559108;
 
-        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 }, '');
+        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
         expect(transfers.length).toBeGreaterThan(0);
 
         for (const transfer of transfers) {
@@ -122,7 +121,7 @@ describe.skip('Transfer Service', () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.before = 1625559108;
 
-        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 }, '');
+        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
         expect(transfers.length).toBeGreaterThan(0);
 
         for (const transfer of transfers) {
@@ -135,16 +134,16 @@ describe.skip('Transfer Service', () => {
         const address = transactionSender;
         const transactionFilter = new TransactionFilter();
 
-        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 }, address);
+        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
         expect(transfers).toBeInstanceOf(Array);
         expect(transfers.length).toBeGreaterThan(0);
 
         for (const transfer of transfers) {
           expect(transfer).toHaveStructure(Object.keys(new Transaction()));
-          expect(transfer.sender === address && transfer.receiver === address).toBe(true);
+          expect(transfer.sender === address && transfer.receiver === address).toStrictEqual(true);
         }
 
-        const accountTransactionsList = await transferService.getTransfers(new TransactionFilter(), { from: 0, size: 25 }, address);
+        const accountTransactionsList = await transferService.getTransfers(new TransactionFilter(), { from: 0, size: 25 });
         expect(transfers).toEqual(accountTransactionsList);
       });
 
@@ -154,12 +153,12 @@ describe.skip('Transfer Service', () => {
         transactionFilter.sender = address;
         transactionFilter.receiver = address;
 
-        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 }, address);
+        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
         expect(transfers).toBeInstanceOf(Array);
 
         for (const transfer of transfers) {
           expect(transfer).toHaveStructure(Object.keys(new Transaction()));
-          expect(transfer.sender === address && transfer.receiver === address);
+          expect(transfer.sender === address && transfer.receiver === address).toStrictEqual(true);
         }
       });
 
@@ -170,7 +169,7 @@ describe.skip('Transfer Service', () => {
         transactionFilter.sender = address;
         transactionFilter.status = TransactionStatus.success;
 
-        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 }, '');
+        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
         expect(transfers).toBeInstanceOf(Array);
         expect(transfers.length).toBeGreaterThan(0);
 
@@ -187,11 +186,11 @@ describe.skip('Transfer Service', () => {
           const transactionFilter = new TransactionFilter();
           transactionFilter.function = 'ESDTNFTTransfer';
 
-          const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 }, '');
+          const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
 
           for (const transfer of transfers) {
             expect(transfer).toHaveStructure(Object.keys(new Transaction()));
-            expect(BinaryUtils.base64Decode(transfer.data ?? '').startsWith('ESDTNFTTransfer')).toBe(true);
+            expect(BinaryUtils.base64Decode(transfer.data ?? '').startsWith('ESDTNFTTransfer')).toStrictEqual(true);
           }
         }
       });
@@ -205,7 +204,7 @@ describe.skip('Transfer Service', () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.hashes = hashes;
 
-        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 }, '');
+        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
         expect(transfers).toHaveLength(2);
         const transactionsHashes = transfers.map(({ txHash }) => txHash);
         expect(transactionsHashes.includes('8149581fe858edf8971a73491ff4b26ce2532aa7951ffefafb7b7823ffacc182'));
@@ -218,11 +217,15 @@ describe.skip('Transfer Service', () => {
 
   describe('Transfers count', () => {
     it(`should return transfers count based on token indentifier`, async () => {
+      jest.spyOn(ElasticService.prototype, 'getCount')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_collection: string, _elasticQuery: ElasticQuery | undefined) => 10100));
+
       const transactionFilter = new TransactionFilter();
       transactionFilter.token = transactionDetails.tokenIdentifier;
 
-      const count = await transferService.getTransfersCount(transactionFilter, '');
-      expect(typeof count).toBe('number');
+      const count = await transferService.getTransfersCount(transactionFilter);
+      expect(count).toStrictEqual(10100);
     });
   });
 });
