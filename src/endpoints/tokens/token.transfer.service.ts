@@ -140,6 +140,8 @@ export class TokenTransferService {
         let operation;
         if (action === TransactionOperationAction.writeLog || action === TransactionOperationAction.signalError) {
           operation = this.getTransactionLogOperation(log, event, action, sender);
+        } else if (action === TransactionOperationAction.transferValueOnly) {
+          operation = this.getTransactionTransferValueOperation(txHash, log, event, action);
         } else {
           operation = this.getTransactionNftOperation(txHash, log, event, action, tokensProperties);
         }
@@ -184,6 +186,8 @@ export class TokenTransferService {
     switch (identifier) {
       case TransactionLogEventIdentifier.ESDTNFTTransfer:
         return TransactionOperationAction.transfer;
+      case TransactionLogEventIdentifier.transferValueOnly:
+        return TransactionOperationAction.transferValueOnly;
       case TransactionLogEventIdentifier.ESDTNFTBurn:
         return TransactionOperationAction.burn;
       case TransactionLogEventIdentifier.ESDTNFTAddQuantity:
@@ -236,6 +240,28 @@ export class TokenTransferService {
       return { id: log.id ?? '', action, type, esdtType, collection, identifier, name, sender: event.address, receiver, value, decimals, svgUrl };
     } catch (error) {
       this.logger.error(`Error when parsing NFT transaction log for tx hash '${txHash}' with action '${action}' and topics: ${event.topics}`);
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
+  private getTransactionTransferValueOperation(txHash: string, log: TransactionLog, event: TransactionLogEvent, action: TransactionOperationAction): TransactionOperation | undefined {
+    try {
+      const sender = BinaryUtils.base64ToAddress(event.topics[0]);
+      const receiver = BinaryUtils.base64ToAddress(event.topics[1]);
+      const value = BinaryUtils.base64ToBigInt(event.topics[2]).toString();
+
+      const operation = new TransactionOperation();
+      operation.id = log.id ?? '';
+      operation.action = TransactionOperationAction.transfer;
+      operation.type = TransactionOperationType.egld;
+      operation.sender = sender;
+      operation.receiver = receiver;
+      operation.value = value;
+
+      return operation;
+    } catch (error) {
+      this.logger.error(`Error when parsing valueTransferOnly transaction log for tx hash '${txHash}' with action '${action}' and topics: ${event.topics}`);
       this.logger.error(error);
       return undefined;
     }
