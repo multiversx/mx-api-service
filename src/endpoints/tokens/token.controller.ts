@@ -316,7 +316,7 @@ export class TokenController {
     return roles;
   }
 
-  @Get("/tokens/:token/transfers")
+  @Get("/tokens/:identifier/transfers")
   @ApiOperation({ summary: 'Token value transfers', description: 'Returns both transfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult), thus providing a full picture of all in/out value transfers for a given account' })
   @ApiOkResponse({ type: [Transaction] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
@@ -333,7 +333,7 @@ export class TokenController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getTokenTransfers(
-    @Param('token') token: string,
+    @Param('identifier') identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressPipe) sender?: string,
@@ -352,7 +352,7 @@ export class TokenController {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
-    const isToken = await this.tokenService.isToken(token);
+    const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
       throw new NotFoundException('Token not found');
     }
@@ -360,7 +360,7 @@ export class TokenController {
     return await this.transferService.getTransfers({
       sender,
       receiver,
-      token,
+      token: identifier,
       senderShard,
       receiverShard,
       miniBlockHash,
@@ -373,7 +373,7 @@ export class TokenController {
     }, { from, size });
   }
 
-  @Get("/tokens/:token/transfers/count")
+  @Get("/tokens/:identifier/transfers/count")
   @ApiOperation({ summary: 'Account transfer count', description: 'Return total count of tranfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult)' })
   @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
@@ -388,7 +388,7 @@ export class TokenController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getTokenTransfersCount(
-    @Param('token') token: string,
+    @Param('identifier') identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressPipe) receiver?: string,
     @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
@@ -405,7 +405,7 @@ export class TokenController {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
-    const isToken = await this.tokenService.isToken(token);
+    const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
       throw new NotFoundException('Token not found');
     }
@@ -413,7 +413,7 @@ export class TokenController {
     return await this.transferService.getTransfersCount({
       sender,
       receiver,
-      token,
+      token: identifier,
       function: scFunction,
       senderShard,
       receiverShard,
@@ -426,10 +426,10 @@ export class TokenController {
     });
   }
 
-  @Get("/tokens/:token/transfers/c")
+  @Get("/tokens/:identifier/transfers/c")
   @ApiExcludeEndpoint()
   async getAccountTransfersCountAlternative(
-    @Param('token') token: string,
+    @Param('identifier') identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressPipe) receiver?: string,
     @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
@@ -446,7 +446,7 @@ export class TokenController {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
-    const isToken = await this.tokenService.isToken(token);
+    const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
       throw new NotFoundException('Token not found');
     }
@@ -454,7 +454,7 @@ export class TokenController {
     return await this.transferService.getTransfersCount({
       sender,
       receiver,
-      token,
+      token: identifier,
       function: scFunction,
       senderShard,
       receiverShard,
