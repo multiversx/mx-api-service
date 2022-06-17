@@ -1,6 +1,7 @@
 export enum TransactionOperationAction {
   none = 'none',
   transfer = 'transfer',
+  transferValueOnly = 'transferValueOnly',
   burn = 'burn',
   addQuantity = 'addQuantity',
   create = 'create',

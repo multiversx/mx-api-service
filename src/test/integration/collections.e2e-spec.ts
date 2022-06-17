@@ -305,7 +305,6 @@ describe('Collection Service', () => {
       expect(results.canTransferRole).toStrictEqual(false);
       expect(results.canUpdateAttributes).toStrictEqual(false);
       expect(results.canTransferNftCreateRole).toStrictEqual(false);
-      expect(results).toHaveStructure(Object.keys(new NftCollectionRole()));
     });
 
     it('should return undefined because test simulate that address does not contains any collection', async () => {
@@ -379,6 +378,27 @@ describe('Collection Service', () => {
       for (const result of results) {
         expect(result.type).toStrictEqual(NftType.NonFungibleESDT);
         expect(result).toHaveStructure(Object.keys(new NftCollectionAccount()));
+      }
+    });
+    it('should return a specific collection details if search filter is applied', async () => {
+      const address: string = 'erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj';
+      const filter = new CollectionFilter();
+      filter.search = 'MEDAL-ae074f';
+      const results = await collectionService.getCollectionsForAddress(address, filter, { from: 0, size: 1 });
+
+      for (const result of results) {
+        expect(result.collection).toStrictEqual('MEDAL-ae074f');
+        expect(result).toHaveStructure(Object.keys(new NftCollectionAccount()));
+      }
+    });
+    it('should return an empty array if search filter is applied with wrong collection identifier details', async () => {
+      const address: string = 'erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj';
+      const filter = new CollectionFilter();
+      filter.search = 'MEDAL-ae074fTest';
+      const results = await collectionService.getCollectionsForAddress(address, filter, { from: 0, size: 1 });
+
+      for (const result of results) {
+        expect(result).toStrictEqual([]);
       }
     });
   });
