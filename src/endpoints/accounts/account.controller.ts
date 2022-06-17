@@ -624,7 +624,6 @@ export class AccountController {
     }, address);
   }
 
-
   @Get("/accounts/:address/transfers")
   @ApiOperation({ summary: 'Account value transfers', description: 'Returns both transfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult), thus providing a full picture of all in/out value transfers for a given account' })
   @ApiOkResponse({ type: [Transaction] })
@@ -664,6 +663,7 @@ export class AccountController {
     }
 
     return await this.transferService.getTransfers({
+      address,
       sender,
       receiver,
       token,
@@ -676,11 +676,11 @@ export class AccountController {
       before,
       after,
       order,
-    }, { from, size }, address);
+    }, { from, size });
   }
 
   @Get("/accounts/:address/transfers/count")
-  @ApiOperation({ summary: 'Account transfer count', description: 'Return total count of tranfers triggerred by a user account (type = Transactions), as well as transfers triggerred by smart contracts (type = SmartContractResult)' })
+  @ApiOperation({ summary: 'Account transfer count', description: 'Return total count of tranfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult)' })
   @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transfer receiver', required: false })
@@ -714,6 +714,7 @@ export class AccountController {
     }
 
     return await this.transferService.getTransfersCount({
+      address,
       sender,
       receiver,
       token,
@@ -726,7 +727,45 @@ export class AccountController {
       search,
       before,
       after,
-    }, address);
+    });
+  }
+
+  @Get("/accounts/:address/transfers/c")
+  @ApiExcludeEndpoint()
+  async getAccountTransfersCountAlternative(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('token') token?: string,
+    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('search') search?: string,
+    @Query('function') scFunction?: string,
+    @Query('before', ParseOptionalIntPipe) before?: number,
+    @Query('after', ParseOptionalIntPipe) after?: number,
+  ): Promise<number> {
+    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
+      throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    return await this.transferService.getTransfersCount({
+      address,
+      sender,
+      receiver,
+      token,
+      function: scFunction,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      search,
+      before,
+      after,
+    });
   }
 
   @Get("/accounts/:address/contracts")

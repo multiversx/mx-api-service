@@ -62,7 +62,6 @@ describe('Nft Service', () => {
   describe("NFT List", () => {
     it(`should return a list with 25 nfts and verify if nft contains property`, async () => {
       const nfts = await nftService.getNfts({ from: 0, size: 25 }, new NftFilter());
-
       expect(nfts.length).toBe(25);
 
       for (const nft of nfts) {
@@ -95,13 +94,13 @@ describe('Nft Service', () => {
   describe("NFT Filters", () => {
     it("should return a list with NonFungibleESDTs from a specific collection", async () => {
       const filters = new NftFilter();
-      filters.collection = 'EROBOT-527a29';
+      filters.collection = 'CPA-c6d2fb';
       filters.type = NftType.NonFungibleESDT;
 
       const nfts = await nftService.getNfts({ from: 0, size: 10 }, filters);
 
       for (const nft of nfts) {
-        expect(nft.collection).toStrictEqual("EROBOT-527a29");
+        expect(nft.collection).toStrictEqual("CPA-c6d2fb");
         expect(nft.type).toStrictEqual(NftType.NonFungibleESDT);
       }
     });
@@ -297,7 +296,7 @@ describe('Nft Service', () => {
       }
     });
 
-    it('should return 10 nfts that have isWhitelisted property true', async () => {
+    it.skip('should return 10 nfts that have isWhitelisted property true', async () => {
       jest.spyOn(ApiConfigService.prototype, 'getIsIndexerV3FlagActive')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(() => true));
@@ -394,7 +393,7 @@ describe('Nft Service', () => {
       expect(count).toStrictEqual(10000);
     });
 
-    it(`should return esdt count for address with type MetaESDT`, async () => {
+    it(`should return total number of nfts from address with type MetaESDT`, async () => {
       const address: string = "erd1qqqqqqqqqqqqqpgqr8z5hkwek0pmytcvla86qjusn4hkufjlrp8s7hhkjk";
       const count = await nftService.getNftCountForAddress(address, { type: NftType.MetaESDT });
 
