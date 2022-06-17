@@ -166,10 +166,10 @@ export class CollectionController {
       throw new BadRequestException(`Maximum size of 100 is allowed when activating flags 'withOwner' or 'withSupply'`);
     }
 
-    const token = await this.collectionService.getNftCollection(collection);
+    const isCollection = await this.collectionService.isCollection(collection);
 
-    if (token === undefined) {
-      throw new HttpException('NFT collection not found', HttpStatus.NOT_FOUND);
+    if (!isCollection) {
+      throw new HttpException('NFT Collection not found', HttpStatus.NOT_FOUND);
     }
 
     return await this.nftService.getNfts({ from, size }, { search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage }, { withOwner, withSupply });
@@ -196,10 +196,10 @@ export class CollectionController {
     @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage?: boolean,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
   ): Promise<number> {
-    const token = await this.collectionService.getNftCollection(collection);
+    const isCollection = await this.collectionService.isCollection(collection);
 
-    if (token === undefined) {
-      throw new HttpException('NFT collection not found', HttpStatus.NOT_FOUND);
+    if (!isCollection) {
+      throw new HttpException('NFT Collection not found', HttpStatus.NOT_FOUND);
     }
 
     return await this.nftService.getNftCount({ search, identifiers, collection, name, tags, creator, isWhitelistedStorage, hasUris });
