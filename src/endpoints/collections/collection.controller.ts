@@ -166,12 +166,18 @@ export class CollectionController {
       throw new BadRequestException(`Maximum size of 100 is allowed when activating flags 'withOwner' or 'withSupply'`);
     }
 
+    const isCollection = await this.collectionService.isCollection(collection);
+    if (!isCollection) {
+      throw new HttpException('NFT Collection not found', HttpStatus.NOT_FOUND);
+    }
+
     return await this.nftService.getNfts({ from, size }, { search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage }, { withOwner, withSupply });
   }
 
   @Get("/collections/:collection/nfts/count")
   @ApiOperation({ summary: 'Collection NFT count', description: 'Returns non-fungible/semi-fungible/meta-esdt token count that belong to a collection' })
   @ApiOkResponse({ type: Number })
+  @ApiNotFoundResponse({ description: 'Token collection not found' })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
@@ -189,6 +195,11 @@ export class CollectionController {
     @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage?: boolean,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
   ): Promise<number> {
+    const isCollection = await this.collectionService.isCollection(collection);
+    if (!isCollection) {
+      throw new HttpException('NFT Collection not found', HttpStatus.NOT_FOUND);
+    }
+
     return await this.nftService.getNftCount({ search, identifiers, collection, name, tags, creator, isWhitelistedStorage, hasUris });
   }
 }
