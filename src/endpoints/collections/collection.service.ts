@@ -101,6 +101,11 @@ export class CollectionService {
     return query.withCondition(condition, QueryType.Nested('roles', { [`roles.${name}`]: targetAddress }));
   }
 
+  async isCollection(identifier: string): Promise<boolean> {
+    const collection = await this.elasticService.getItem('tokens', '_id', identifier);
+    return collection !== undefined;
+  }
+
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
     const elasticQuery = this.buildCollectionRolesFilter(filter)
       .withPagination(pagination)
