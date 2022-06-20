@@ -167,7 +167,6 @@ export class CollectionController {
     }
 
     const isCollection = await this.collectionService.isCollection(collection);
-
     if (!isCollection) {
       throw new HttpException('NFT Collection not found', HttpStatus.NOT_FOUND);
     }
@@ -197,7 +196,6 @@ export class CollectionController {
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
   ): Promise<number> {
     const isCollection = await this.collectionService.isCollection(collection);
-
     if (!isCollection) {
       throw new HttpException('NFT Collection not found', HttpStatus.NOT_FOUND);
     }
