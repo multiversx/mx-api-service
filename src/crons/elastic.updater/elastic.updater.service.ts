@@ -26,7 +26,7 @@ export class ElasticUpdaterService {
     this.logger = new Logger(ElasticUpdaterService.name);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
   async handleUpdateAssets() {
     await Locker.lock('Elastic updater: Update assets', async () => {
       const allAssets = await this.tokenAssetService.getAllAssets();
