@@ -261,4 +261,11 @@ export class CacheInfo {
     key: "mexPrices",
     ttl: Constants.oneMinute() * 10,
   };
+
+  static GenerateThumbnails(identifier: string): CacheInfo {
+    return {
+      key: `generateThumbnails:${identifier}`,
+      ttl: Constants.oneHour() * 24,
+    };
+  }
 }

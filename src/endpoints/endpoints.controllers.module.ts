@@ -16,6 +16,7 @@ import { NetworkController } from "./network/network.controller";
 import { NftController } from "./nfts/nft.controller";
 import { TagController } from "./nfttags/tag.controller";
 import { NodeController } from "./nodes/node.controller";
+import { ProcessNftsPublicController } from "./process-nfts/process.nfts.public.controller";
 import { ProviderController } from "./providers/provider.controller";
 import { ProxyController } from "./proxy/proxy.controller";
 import { ProxyModule } from "./proxy/proxy.module";
@@ -43,6 +44,7 @@ import { WebsocketController } from "./websocket/websocket.controller";
     ProviderController, ProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
     TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
     HealthCheckController, DappConfigController, WebsocketController, MexController, TransferController,
+    ProcessNftsPublicController,
   ],
 })
 export class EndpointsControllersModule { }

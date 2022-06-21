@@ -4,13 +4,13 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { HealthCheckController } from "src/endpoints/health-check/health.check.controller";
 
 @Injectable()
-export class JwtAuthenticateGuard implements CanActivate {
+export class JwtAuthenticateGlobalGuard implements CanActivate {
   private readonly logger: Logger;
 
   constructor(
     private readonly apiConfigService: ApiConfigService
   ) {
-    this.logger = new Logger(JwtAuthenticateGuard.name);
+    this.logger = new Logger(JwtAuthenticateGlobalGuard.name);
   }
 
   async canActivate(

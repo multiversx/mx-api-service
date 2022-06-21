@@ -19,7 +19,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CleanupInterceptor } from './interceptors/cleanup.interceptor';
 import { RedisClient } from 'redis';
 import { ExtractInterceptor } from './interceptors/extract.interceptor';
-import { JwtAuthenticateGuard } from './interceptors/access.interceptor';
+import { JwtAuthenticateGlobalGuard } from './interceptors/access.interceptor';
 import { TransactionProcessorModule } from './crons/transaction.processor/transaction.processor.module';
 import { PubSubListenerModule } from './common/pubsub/pub.sub.listener.module';
 import { ProtocolService } from './common/protocol/protocol.service';
@@ -146,7 +146,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
 
   if (apiConfigService.getIsAuthActive()) {
-    publicApp.useGlobalGuards(new JwtAuthenticateGuard(apiConfigService));
+    publicApp.useGlobalGuards(new JwtAuthenticateGlobalGuard(apiConfigService));
   }
 
   const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
