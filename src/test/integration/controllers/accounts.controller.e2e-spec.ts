@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
+import { AddressUtils } from 'src/utils/address.utils';
 import request = require('supertest');
 
 describe("Accounts Controller", () => {
@@ -16,6 +17,8 @@ describe("Accounts Controller", () => {
     app = moduleRef.createNestApplication();
     await app.init();
   });
+
+  beforeEach(() => { jest.restoreAllMocks(); });
 
   it("/accounts - should return 200 for request of 100 accounts", async () => {
     const params = new URLSearchParams({
@@ -37,12 +40,29 @@ describe("Accounts Controller", () => {
       .expect(200);
   });
 
-  it("/accounts/:address - should return 200 status code and return address details fora specific address", async () => {
+  it("/accounts/c - should return 200 for request of accounts alternative count", async () => {
+    await request(app.getHttpServer())
+      .get(route + "/c")
+      .expect(200);
+  });
+
+  it("/accounts/:address - should return 200 status code and return address details for a specific address", async () => {
     const address: string = "erd1vup7q384decm8l8mu4ehz75c5mfs089nd32fteru95tm8d0a8dqs8g0yst";
     await request(app.getHttpServer())
       .get(route + "/" + address)
       .set("header", "content-type")
       .expect(200);
+  });
+
+  it("/accounts/:address - should return 404 status code if account is not found", async () => {
+    const mock_isAddressValid = jest.spyOn(AddressUtils, 'isAddressValid');
+    mock_isAddressValid.mockImplementation(() => false);
+
+    const address: string = "erd1vup7q384decm8l8mu4ehz75c5mfs089nd32fteru95tm8d0a8dqs8g0yst";
+    await request(app.getHttpServer())
+      .get(route + "/" + address)
+      .set("header", "content-type")
+      .expect(404);
   });
 
   it("/accounts/:address - should return 400 status code of a specific invalid address account", async () => {
@@ -54,6 +74,14 @@ describe("Accounts Controller", () => {
       .then(res => {
         expect(res.body.message).toEqual("Validation failed (a bech32 address is expected)");
       });
+  });
+
+  it("/accounts/:address/deffered - should return 200 status code and return address deffered details for a specific address", async () => {
+    const address: string = "erd1vup7q384decm8l8mu4ehz75c5mfs089nd32fteru95tm8d0a8dqs8g0yst";
+    await request(app.getHttpServer())
+      .get(route + "/" + address + "/deferred")
+      .set("header", "content-type")
+      .expect(200);
   });
 
   it("/accounts/:address/tokens - should return 200 status code and return a list of tokens for a specifc address", async () => {
@@ -194,7 +222,7 @@ describe("Accounts Controller", () => {
   });
 
   it("/accounts/:address/tokens/:token - should return 200 status code and token details for a specific address", async () => {
-    const address: string = "erd12xspx5z0nm08tvtt8v3nyu3w8mxfr36rj27u99yesmr7uxj6h7cscsvsw5";
+    const address: string = "erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2";
     const token: string = "WEGLD-bd4d79";
     await request(app.getHttpServer())
       .get(route + "/" + address + "/tokens" + "/" + token)

@@ -25,31 +25,34 @@ export class TransferService {
     private readonly transactionService: TransactionService,
   ) { }
 
-  private buildTransferFilterQuery(filter: TransactionFilter, address: string): ElasticQuery {
-    const smartContractResultConditions = [
-      QueryType.Match('receiver', address),
-      QueryType.Match('receivers', address),
-    ];
+  private buildTransferFilterQuery(filter: TransactionFilter): ElasticQuery {
+    let elasticQuery = ElasticQuery.create();
 
-    if (AddressUtils.isSmartContractAddress(address)) {
-      smartContractResultConditions.push(QueryType.Match('sender', address));
-    }
+    if (filter.address) {
+      const smartContractResultConditions = [
+        QueryType.Match('receiver', filter.address),
+        QueryType.Match('receivers', filter.address),
+      ];
 
-    let elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.should, QueryType.Must([
+      if (AddressUtils.isSmartContractAddress(filter.address)) {
+        smartContractResultConditions.push(QueryType.Match('sender', filter.address));
+      }
+
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.should, QueryType.Must([
         QueryType.Match('type', 'unsigned'),
         QueryType.Should(smartContractResultConditions),
       ], [
         QueryType.Exists('canBeIgnored'),
       ]))
-      .withCondition(QueryConditionOptions.should, QueryType.Must([
-        QueryType.Match('type', 'normal'),
-        QueryType.Should([
-          QueryType.Match('sender', address),
-          QueryType.Match('receiver', address),
-          QueryType.Match('receivers', address),
-        ]),
-      ]));
+        .withCondition(QueryConditionOptions.should, QueryType.Must([
+          QueryType.Match('type', 'normal'),
+          QueryType.Should([
+            QueryType.Match('sender', filter.address),
+            QueryType.Match('receiver', filter.address),
+            QueryType.Match('receivers', filter.address),
+          ]),
+        ]));
+    }
 
     if (filter.type) {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('type', filter.type === TransactionType.Transaction ? 'normal' : 'unsigned'));
@@ -99,7 +102,7 @@ export class TransferService {
     }
 
     if (filter.before || filter.after) {
-      elasticQuery = elasticQuery.withFilter([QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0)]);
+      elasticQuery = elasticQuery.withFilter(QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0));
     }
 
     return elasticQuery;
@@ -130,13 +133,13 @@ export class TransferService {
     return elasticTransfers;
   }
 
-  async getTransfers(filter: TransactionFilter, pagination: QueryPagination, address: string): Promise<Transaction[]> {
+  async getTransfers(filter: TransactionFilter, pagination: QueryPagination): Promise<Transaction[]> {
     const sortOrder: ElasticSortOrder = !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
 
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: sortOrder };
     const nonce: ElasticSortProperty = { name: 'nonce', order: sortOrder };
 
-    const elasticQuery = this.buildTransferFilterQuery(filter, address)
+    const elasticQuery = this.buildTransferFilterQuery(filter)
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
@@ -165,8 +168,8 @@ export class TransferService {
     return transactions;
   }
 
-  async getTransfersCount(filter: TransactionFilter, address: string): Promise<number> {
-    const elasticQuery = this.buildTransferFilterQuery(filter, address);
+  async getTransfersCount(filter: TransactionFilter): Promise<number> {
+    const elasticQuery = this.buildTransferFilterQuery(filter);
 
     return await this.elasticService.getCount('operations', elasticQuery);
   }

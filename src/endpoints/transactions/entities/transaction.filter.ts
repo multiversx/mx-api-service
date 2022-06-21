@@ -4,6 +4,7 @@ import { TransactionStatus } from "./transaction.status";
 import { TransactionType } from "./transaction.type";
 
 export class TransactionFilter {
+  address?: string;
   sender?: string;
   receiver?: string;
   token?: string;

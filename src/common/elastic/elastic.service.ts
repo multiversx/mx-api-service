@@ -28,7 +28,7 @@ export class ElasticService {
   }
 
   async getCustomValue(collection: string, identifier: string, attribute: string): Promise<any> {
-    const url = `${this.url}/${collection}/_search?q=_id:${identifier}`;
+    const url = `${this.url}/${collection}/_search?q=_id:${encodeURIComponent(identifier)}`;
 
     const profiler = new PerformanceProfiler();
     const fullAttribute = 'api_' + attribute;
@@ -87,7 +87,7 @@ export class ElasticService {
   }
 
   async getItem(collection: string, key: string, identifier: string) {
-    const url = `${this.url}/${collection}/_search?q=_id:${identifier}`;
+    const url = `${this.url}/${collection}/_search?q=_id:${encodeURIComponent(identifier)}`;
 
     const profiler = new PerformanceProfiler();
 
@@ -180,7 +180,7 @@ export class ElasticService {
       .withPagination({ from: 0, size: addresses.length })
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match("address", "pending-")])
       .withCondition(QueryConditionOptions.must, [QueryType.Match('token', identifier, QueryOperator.AND)])
-      .withFilter([new RangeQuery("balanceNum", undefined, 0)])
+      .withFilter(new RangeQuery("balanceNum", undefined, 0))
       .withCondition(QueryConditionOptions.should, queries);
 
     const documents = await this.getDocuments('accountsesdt', elasticQuery.toJson());

@@ -35,7 +35,7 @@ export class TransactionController {
   constructor(private readonly transactionService: TransactionService) { }
 
   @Get("/transactions")
-  @ApiOperation({ summary: 'Transactions details', description: 'Returns a list of transactions available on the blockchain. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs' })
+  @ApiOperation({ summary: 'Transaction list', description: 'Returns a list of transactions available on the blockchain. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs' })
   @ApiOkResponse({ type: [Transaction] })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
@@ -44,38 +44,38 @@ export class TransactionController {
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
-  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
-  @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false })
+  @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false })
-  @ApiQuery({ name: 'withScResults', description: 'Return results for transactions', required: false })
-  @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
-  @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false })
+  @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false, deprecated: true })
+  @ApiQuery({ name: 'withScResults', description: 'Return results for transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
   getTransactions(
-    @Query('sender', ParseAddressPipe) sender: string | undefined,
-    @Query('receiver', ParseAddressPipe) receiver: string | undefined,
-    @Query('token') token: string | undefined,
-    @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
-    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined,
-    @Query('hashes', ParseArrayPipe) hashes: string[] | undefined,
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined,
-    @Query('search') search: string | undefined,
-    @Query('function') scFunction: string | undefined,
-    @Query('condition') condition: QueryConditionOptions | undefined,
-    @Query('before', ParseOptionalIntPipe) before: number | undefined,
-    @Query('after', ParseOptionalIntPipe) after: number | undefined,
-    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('withScResults', new ParseOptionalBoolPipe) withScResults: boolean | undefined,
-    @Query('withOperations', new ParseOptionalBoolPipe) withOperations: boolean | undefined,
-    @Query('withLogs', new ParseOptionalBoolPipe) withLogs: boolean | undefined,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('token') token?: string,
+    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('search') search?: string,
+    @Query('function') scFunction?: string,
+    @Query('condition') condition?: QueryConditionOptions,
+    @Query('before', ParseOptionalIntPipe) before?: number,
+    @Query('after', ParseOptionalIntPipe) after?: number,
+    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('withScResults', new ParseOptionalBoolPipe) withScResults?: boolean,
+    @Query('withOperations', new ParseOptionalBoolPipe) withOperations?: boolean,
+    @Query('withLogs', new ParseOptionalBoolPipe) withLogs?: boolean,
   ): Promise<Transaction[]> {
     if ((withScResults === true || withOperations === true || withLogs) && size > 50) {
       throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
@@ -109,24 +109,24 @@ export class TransactionController {
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
-  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false, deprecated: true })
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   getTransactionCount(
-    @Query('sender', ParseAddressPipe) sender: string | undefined,
-    @Query('receiver', ParseAddressPipe) receiver: string | undefined,
-    @Query('token') token: string | undefined,
-    @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
-    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined,
-    @Query('hashes', ParseArrayPipe) hashes: string[] | undefined,
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined,
-    @Query('search') search: string | undefined,
-    @Query('condition') condition: QueryConditionOptions | undefined,
-    @Query('before', ParseOptionalIntPipe) before: number | undefined,
-    @Query('after', ParseOptionalIntPipe) after: number | undefined,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('token') token?: string,
+    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('search') search?: string,
+    @Query('condition') condition?: QueryConditionOptions,
+    @Query('before', ParseOptionalIntPipe) before?: number,
+    @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
     return this.transactionService.getTransactionCount({
       sender,
@@ -147,18 +147,18 @@ export class TransactionController {
   @Get("/transactions/c")
   @ApiExcludeEndpoint()
   getTransactionCountAlternative(
-    @Query('sender', ParseAddressPipe) sender: string | undefined,
-    @Query('receiver', ParseAddressPipe) receiver: string | undefined,
-    @Query('token') token: string | undefined,
-    @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
-    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined,
-    @Query('hashes', ParseArrayPipe) hashes: string[] | undefined,
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined,
-    @Query('search') search: string | undefined,
-    @Query('condition') condition: QueryConditionOptions | undefined,
-    @Query('before', ParseOptionalIntPipe) before: number | undefined,
-    @Query('after', ParseOptionalIntPipe) after: number | undefined,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('token') token?: string,
+    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('search') search?: string,
+    @Query('condition') condition?: QueryConditionOptions,
+    @Query('before', ParseOptionalIntPipe) before?: number,
+    @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
     return this.transactionService.getTransactionCount({
       sender,

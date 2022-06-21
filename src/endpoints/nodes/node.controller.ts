@@ -11,6 +11,7 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { NodeSort } from "./entities/node.sort";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseBlsHashPipe } from "src/utils/pipes/parse.bls.hash.pipe";
+import { SortNodes } from "src/common/entities/sort.nodes";
 
 @Controller()
 @ApiTags('nodes')
@@ -31,22 +32,22 @@ export class NodeController {
   @ApiQuery({ name: 'identity', description: 'Node identity', required: false })
   @ApiQuery({ name: 'provider', description: 'Node provider', required: false })
   @ApiQuery({ name: 'owner', description: 'Node owner', required: false })
-  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false })
-  @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false })
+  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortNodes })
+  @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   async getNodes(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('search') search: string | undefined,
-    @Query('online', ParseOptionalBoolPipe) online: boolean | undefined,
-    @Query('type', new ParseOptionalEnumPipe(NodeType)) type: NodeType | undefined,
-    @Query('status', new ParseOptionalEnumPipe(NodeStatus)) status: NodeStatus | undefined,
-    @Query('shard', ParseOptionalIntPipe) shard: number | undefined,
-    @Query('issues', ParseOptionalBoolPipe) issues: boolean | undefined,
-    @Query('identity') identity: string | undefined,
-    @Query('provider', ParseAddressPipe) provider: string | undefined,
-    @Query('owner', ParseAddressPipe) owner: string | undefined,
-    @Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort: NodeSort | undefined,
-    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
+    @Query('search') search?: string,
+    @Query('online', ParseOptionalBoolPipe) online?: boolean,
+    @Query('type', new ParseOptionalEnumPipe(NodeType)) type?: NodeType,
+    @Query('status', new ParseOptionalEnumPipe(NodeStatus)) status?: NodeStatus,
+    @Query('shard', ParseOptionalIntPipe) shard?: number,
+    @Query('issues', ParseOptionalBoolPipe) issues?: boolean,
+    @Query('identity') identity?: string,
+    @Query('provider', ParseAddressPipe) provider?: string,
+    @Query('owner', ParseAddressPipe) owner?: string,
+    @Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort?: NodeSort,
+    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<Node[]> {
     return await this.nodeService.getNodes({ from, size }, { search, online, type, status, shard, issues, identity, provider, owner, sort, order });
   }
@@ -70,20 +71,20 @@ export class NodeController {
   @ApiQuery({ name: 'identity', description: 'Node identity', required: false })
   @ApiQuery({ name: 'provider', description: 'Node provider', required: false })
   @ApiQuery({ name: 'owner', description: 'Node owner', required: false })
-  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false })
-  @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false })
+  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortNodes })
+  @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   getNodeCount(
-    @Query('search') search: string | undefined,
-    @Query('online', ParseOptionalBoolPipe) online: boolean | undefined,
-    @Query('type', new ParseOptionalEnumPipe(NodeType)) type: NodeType | undefined,
-    @Query('status', new ParseOptionalEnumPipe(NodeStatus)) status: NodeStatus | undefined,
-    @Query('shard', ParseOptionalIntPipe) shard: number | undefined,
-    @Query('issues', ParseOptionalBoolPipe) issues: boolean | undefined,
-    @Query('identity') identity: string | undefined,
-    @Query('provider', ParseAddressPipe) provider: string | undefined,
-    @Query('owner', ParseAddressPipe) owner: string | undefined,
-    @Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort: NodeSort | undefined,
-    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
+    @Query('search') search?: string,
+    @Query('online', ParseOptionalBoolPipe) online?: boolean,
+    @Query('type', new ParseOptionalEnumPipe(NodeType)) type?: NodeType,
+    @Query('status', new ParseOptionalEnumPipe(NodeStatus)) status?: NodeStatus,
+    @Query('shard', ParseOptionalIntPipe) shard?: number,
+    @Query('issues', ParseOptionalBoolPipe) issues?: boolean,
+    @Query('identity') identity?: string,
+    @Query('provider', ParseAddressPipe) provider?: string,
+    @Query('owner', ParseAddressPipe) owner?: string,
+    @Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort?: NodeSort,
+    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<number> {
     return this.nodeService.getNodeCount({ search, online, type, status, shard, issues, identity, provider, owner, sort, order });
   }
@@ -91,17 +92,17 @@ export class NodeController {
   @Get("/nodes/c")
   @ApiExcludeEndpoint()
   getNodeCountAlternative(
-    @Query('search') search: string | undefined,
-    @Query('online', ParseOptionalBoolPipe) online: boolean | undefined,
-    @Query('type', new ParseOptionalEnumPipe(NodeType)) type: NodeType | undefined,
-    @Query('status', new ParseOptionalEnumPipe(NodeStatus)) status: NodeStatus | undefined,
-    @Query('shard', ParseOptionalIntPipe) shard: number | undefined,
-    @Query('issues', ParseOptionalBoolPipe) issues: boolean | undefined,
-    @Query('identity') identity: string | undefined,
-    @Query('provider', ParseAddressPipe) provider: string | undefined,
-    @Query('owner', ParseAddressPipe) owner: string | undefined,
-    @Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort: NodeSort | undefined,
-    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
+    @Query('search') search?: string,
+    @Query('online', ParseOptionalBoolPipe) online?: boolean,
+    @Query('type', new ParseOptionalEnumPipe(NodeType)) type?: NodeType,
+    @Query('status', new ParseOptionalEnumPipe(NodeStatus)) status?: NodeStatus,
+    @Query('shard', ParseOptionalIntPipe) shard?: number,
+    @Query('issues', ParseOptionalBoolPipe) issues?: boolean,
+    @Query('identity') identity?: string,
+    @Query('provider', ParseAddressPipe) provider?: string,
+    @Query('owner', ParseAddressPipe) owner?: string,
+    @Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort?: NodeSort,
+    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<number> {
     return this.nodeService.getNodeCount({ search, online, type, status, shard, issues, identity, provider, owner, sort, order });
   }

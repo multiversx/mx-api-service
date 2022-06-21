@@ -25,6 +25,7 @@ import { ShardController } from "./shards/shard.controller";
 import { StakeController } from "./stake/stake.controller";
 import { TokenController } from "./tokens/token.controller";
 import { TransactionController } from "./transactions/transaction.controller";
+import { TransferController } from "./transfers/transfer.controller";
 import { UsernameController } from "./usernames/username.controller";
 import { VmQueryController } from "./vm.query/vm.query.controller";
 import { WaitingListController } from "./waiting-list/waiting.list.controller";
@@ -41,7 +42,7 @@ import { WebsocketController } from "./websocket/websocket.controller";
     KeysController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
     ProviderController, ProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
     TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
-    HealthCheckController, DappConfigController, WebsocketController, MexController,
+    HealthCheckController, DappConfigController, WebsocketController, MexController, TransferController,
   ],
 })
 export class EndpointsControllersModule { }

@@ -126,7 +126,7 @@ export class AccountService {
       return this.transactionService.getTransactionCountForAddress(address);
     }
 
-    return await this.transferService.getTransfersCount({ type: TransactionType.Transaction }, address);
+    return await this.transferService.getTransfersCount({ address, type: TransactionType.Transaction });
   }
 
   private async getAccountScResults(address: string): Promise<number> {
@@ -138,7 +138,7 @@ export class AccountService {
       return await this.smartContractResultService.getAccountScResultsCount(address);
     }
 
-    return await this.transferService.getTransfersCount({ type: TransactionType.SmartContractResult }, address);
+    return await this.transferService.getTransfersCount({ address, type: TransactionType.SmartContractResult });
   }
 
   async getAccountDeployedAt(address: string): Promise<number | null> {

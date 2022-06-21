@@ -480,17 +480,18 @@ export class NodeService {
       let nodeType: NodeType | undefined = undefined;
       let nodeStatus: NodeStatus | undefined = undefined;
 
-      const status = peerType ? peerType : validatorStatus;
-      nodeStatus = status;
-
-      if (status === 'observer') {
+      if (validatorStatus === 'new') {
+        nodeType = NodeType.validator;
+        nodeStatus = NodeStatus.new;
+      } else if (validatorStatus && validatorStatus.includes('leaving')) {
+        nodeType = NodeType.validator;
+        nodeStatus = NodeStatus.leaving;
+      } else if (peerType === 'observer') {
         nodeType = NodeType.observer;
         nodeStatus = undefined;
       } else {
         nodeType = NodeType.validator;
-        if (status && status.includes('leaving')) {
-          nodeStatus = NodeStatus.leaving;
-        }
+        nodeStatus = peerType ? peerType : validatorStatus;
       }
 
       const node: Node = {

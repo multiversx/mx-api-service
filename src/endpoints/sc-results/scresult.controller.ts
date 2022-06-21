@@ -16,6 +16,7 @@ export class SmartContractResultController {
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'The hash of the parent miniBlock', required: false })
+  @ApiQuery({ name: 'originalTxHashes', description: 'Original transaction hashes', required: false })
   @ApiOkResponse({ type: [SmartContractResult] })
   getScResults(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -51,6 +52,7 @@ export class SmartContractResultController {
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'The hash of the parent miniBlock', required: false })
+  @ApiQuery({ name: 'originalTxHashes', description: 'Original transaction hashes', required: false })
   @ApiOkResponse({ type: [SmartContractResult] })
   getScResultsDeprecated(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,

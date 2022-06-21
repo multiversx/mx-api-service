@@ -101,6 +101,11 @@ export class CollectionService {
     return query.withCondition(condition, QueryType.Nested('roles', { [`roles.${name}`]: targetAddress }));
   }
 
+  async isCollection(identifier: string): Promise<boolean> {
+    const collection = await this.elasticService.getItem('tokens', '_id', identifier);
+    return collection !== undefined;
+  }
+
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
     const elasticQuery = this.buildCollectionRolesFilter(filter)
       .withPagination(pagination)
@@ -339,7 +344,7 @@ export class CollectionService {
       .withPagination({ from: 0, size: 0 })
       .withMustMatchCondition('token', filter.collection, QueryOperator.AND)
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
-      .withMustWildcardCondition('token', filter.search)
+      .withSearchWildcardCondition(filter.search, ['token', 'name'])
       .withMustMultiShouldCondition(filter.type, type => QueryType.Match('type', type))
       .withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT, NftType.MetaESDT], type => QueryType.Match('type', type))
       .withExtra({

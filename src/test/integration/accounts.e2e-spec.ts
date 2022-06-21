@@ -8,6 +8,7 @@ import { PublicAppModule } from 'src/public.app.module';
 import { ElasticService } from 'src/common/elastic/elastic.service';
 import { DeployedContract } from 'src/endpoints/accounts/entities/deployed.contract';
 import '../../utils/extensions/jest.extensions';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
 
 describe('Account Service', () => {
   let accountService: AccountService;
@@ -78,7 +79,6 @@ describe('Account Service', () => {
 
   describe("getAccount", () => {
     it("should return null because test simulates that address is not valid ", async () => {
-
       const mock_isAddressValid = jest.spyOn(AddressUtils, 'isAddressValid');
       mock_isAddressValid.mockImplementation(() => false);
 
@@ -89,9 +89,44 @@ describe('Account Service', () => {
     });
 
     it("should return account details", async () => {
+      const mock_isAddressValid = jest.spyOn(AddressUtils, 'isAddressValid');
+      mock_isAddressValid.mockImplementation(() => true);
+
+      const address: string = "erd1cnyng48s8lrjn95rpdfgykxl5993c5qhn5jqt0ar960f7v3umnrsy9yx0s";
+      const results = await accountService.getAccount(address);
+
+      expect(results).toHaveProperties(
+        ['address', 'balance', 'nonce', 'shard', 'code',
+          'codeHash', 'rootHash', 'txCount', 'scrCount',
+          'username', 'shard', 'developerReward', 'ownerAddress', 'scamInfo',
+        ]);
+    });
+
+    it("should return account details if IndexerV3Flag is active", async () => {
+      jest.spyOn(ApiConfigService.prototype, 'getIsIndexerV3FlagActive')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(() => true));
 
       const mock_isAddressValid = jest.spyOn(AddressUtils, 'isAddressValid');
       mock_isAddressValid.mockImplementation(() => true);
+
+      const address: string = "erd1cnyng48s8lrjn95rpdfgykxl5993c5qhn5jqt0ar960f7v3umnrsy9yx0s";
+      const results = await accountService.getAccount(address);
+
+      expect(results).toHaveProperties(
+        ['address', 'balance', 'nonce', 'shard', 'code',
+          'codeHash', 'rootHash', 'txCount', 'scrCount',
+          'username', 'shard', 'developerReward', 'ownerAddress', 'scamInfo',
+        ]);
+    });
+
+    it("should return account details if getUseLegacyElastic is active", async () => {
+      const mock_isAddressValid = jest.spyOn(AddressUtils, 'isAddressValid');
+      mock_isAddressValid.mockImplementation(() => true);
+
+      jest.spyOn(ApiConfigService.prototype, 'getUseLegacyElastic')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(() => true));
 
       const address: string = "erd1cnyng48s8lrjn95rpdfgykxl5993c5qhn5jqt0ar960f7v3umnrsy9yx0s";
       const results = await accountService.getAccount(address);
@@ -147,8 +182,14 @@ describe('Account Service', () => {
   });
 
   describe("getAccountDeployedAtRaw", () => {
-    it("should return null because test simulates that scDeployed is undefined", async () => {
+    it("should return account deployed timestamp because test simulates that account is a smart-contract", async () => {
+      const address: string = "erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy";
+      const results = await accountService.getAccountDeployedAtRaw(address);
 
+      expect(results).toStrictEqual(1636897470);
+    });
+
+    it("should return null because test simulates that scDeployed is undefined and should return null", async () => {
       jest
         .spyOn(ElasticService.prototype, 'getItem')
         // eslint-disable-next-line require-await
@@ -332,6 +373,13 @@ describe('Account Service', () => {
       const results = await accountService.getAccountUsernameRaw(address);
 
       expect(results).toBeNull();
+    });
+
+    it('should return account username details', async () => {
+      const address: string = "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz";
+      const results = await accountService.getAccountUsernameRaw(address);
+
+      expect(results).toStrictEqual('alice.elrond');
     });
   });
 });

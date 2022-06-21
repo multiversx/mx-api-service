@@ -17,7 +17,9 @@ import { EsdtSupply } from "../esdt/entities/esdt.supply";
 import { Transaction } from "../transactions/entities/transaction";
 import { TokenSupplyResult } from "./entities/token.supply.result";
 import { TokenSort } from "./entities/token.sort";
-
+import { SortTokens } from "src/common/entities/sort.tokens";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { TransferService } from "../transfers/transfer.service";
 
 @Controller()
 @ApiTags('tokens')
@@ -25,6 +27,8 @@ export class TokenController {
   constructor(
     private readonly tokenService: TokenService,
     private readonly transactionService: TransactionService,
+    private readonly apiConfigService: ApiConfigService,
+    private readonly transferService: TransferService,
   ) { }
 
   @Get("/tokens")
@@ -36,17 +40,17 @@ export class TokenController {
   @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
-  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false })
-  @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false })
+  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortTokens })
+  @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   async getTokens(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('search') search: string | undefined,
-    @Query('name') name: string | undefined,
-    @Query('identifier') identifier: string | undefined,
-    @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
-    @Query('sort', new ParseOptionalEnumPipe(TokenSort)) sort: TokenSort | undefined,
-    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
+    @Query('search') search?: string,
+    @Query('name') name?: string,
+    @Query('identifier') identifier?: string,
+    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('sort', new ParseOptionalEnumPipe(TokenSort)) sort?: TokenSort,
+    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<TokenDetailed[]> {
     return await this.tokenService.getTokens({ from, size }, { search, name, identifier, identifiers, sort, order });
   }
@@ -59,10 +63,10 @@ export class TokenController {
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
   async getTokenCount(
-    @Query('search') search: string | undefined,
-    @Query('name') name: string | undefined,
-    @Query('identifier') identifier: string | undefined,
-    @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
+    @Query('search') search?: string,
+    @Query('name') name?: string,
+    @Query('identifier') identifier?: string,
+    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
   ): Promise<number> {
     return await this.tokenService.getTokenCount({ search, name, identifier, identifiers });
   }
@@ -70,10 +74,10 @@ export class TokenController {
   @Get("/tokens/c")
   @ApiExcludeEndpoint()
   async getTokenCountAlternative(
-    @Query('search') search: string | undefined,
-    @Query('name') name: string | undefined,
-    @Query('identifier') identifier: string | undefined,
-    @Query('identifiers', ParseArrayPipe) identifiers: string[] | undefined,
+    @Query('search') search?: string,
+    @Query('name') name?: string,
+    @Query('identifier') identifier?: string,
+    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
   ): Promise<number> {
     return await this.tokenService.getTokenCount({ search, name, identifier, identifiers });
   }
@@ -98,7 +102,7 @@ export class TokenController {
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getTokenSupply(
     @Param('identifier') identifier: string,
-    @Query('denominated', new ParseOptionalBoolPipe) denominated: boolean | undefined,
+    @Query('denominated', new ParseOptionalBoolPipe) denominated?: boolean,
   ): Promise<TokenSupplyResult> {
     const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
@@ -167,36 +171,36 @@ export class TokenController {
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
-  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / fail)', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
-  @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false })
+  @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false })
-  @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false })
-  @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false })
+  @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
   async getTokenTransactions(
     @Param('identifier') identifier: string,
-    @Query('sender', ParseAddressPipe) sender: string | undefined,
-    @Query('receiver', ParseAddressPipe) receiver: string | undefined,
-    @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
-    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined,
-    @Query('hashes', ParseArrayPipe) hashes: string[] | undefined,
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined,
-    @Query('search') search: string | undefined,
-    @Query('function') scFunction: string | undefined,
-    @Query('before', ParseOptionalIntPipe) before: number | undefined,
-    @Query('after', ParseOptionalIntPipe) after: number | undefined,
-    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order: SortOrder | undefined,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('withScResults', new ParseOptionalBoolPipe) withScResults: boolean | undefined,
-    @Query('withOperations', new ParseOptionalBoolPipe) withOperations: boolean | undefined,
-    @Query('withLogs', new ParseOptionalBoolPipe) withLogs: boolean | undefined,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('search') search?: string,
+    @Query('function') scFunction?: string,
+    @Query('before', ParseOptionalIntPipe) before?: number,
+    @Query('after', ParseOptionalIntPipe) after?: number,
+    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('withScResults', new ParseOptionalBoolPipe) withScResults?: boolean,
+    @Query('withOperations', new ParseOptionalBoolPipe) withOperations?: boolean,
+    @Query('withLogs', new ParseOptionalBoolPipe) withLogs?: boolean,
   ) {
     if ((withScResults === true || withOperations === true || withLogs) && size > 50) {
       throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
@@ -234,22 +238,22 @@ export class TokenController {
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
-  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid)', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getTokenTransactionsCount(
     @Param('identifier') identifier: string,
-    @Query('sender', ParseAddressPipe) sender: string | undefined,
-    @Query('receiver', ParseAddressPipe) receiver: string | undefined,
-    @Query('senderShard', ParseOptionalIntPipe) senderShard: number | undefined,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard: number | undefined,
-    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash: string | undefined,
-    @Query('hashes', ParseArrayPipe) hashes: string[] | undefined,
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status: TransactionStatus | undefined,
-    @Query('search') search: string | undefined,
-    @Query('before', ParseOptionalIntPipe) before: number | undefined,
-    @Query('after', ParseOptionalIntPipe) after: number | undefined,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('search') search?: string,
+    @Query('before', ParseOptionalIntPipe) before?: number,
+    @Query('after', ParseOptionalIntPipe) after?: number,
   ) {
     const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
@@ -310,5 +314,156 @@ export class TokenController {
     }
 
     return roles;
+  }
+
+  @Get("/tokens/:identifier/transfers")
+  @ApiOperation({ summary: 'Token value transfers', description: 'Returns both transfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult), thus providing a full picture of all in/out value transfers for a given account' })
+  @ApiOkResponse({ type: [Transaction] })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Address of the transfer receiver', required: false })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transfer hashes', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
+  @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
+  @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  async getTokenTransfers(
+    @Param('identifier') identifier: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('search') search?: string,
+    @Query('before', ParseOptionalIntPipe) before?: number,
+    @Query('after', ParseOptionalIntPipe) after?: number,
+    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
+  ): Promise<Transaction[]> {
+    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
+      throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    const isToken = await this.tokenService.isToken(identifier);
+    if (!isToken) {
+      throw new NotFoundException('Token not found');
+    }
+
+    return await this.transferService.getTransfers({
+      sender,
+      receiver,
+      token: identifier,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      search,
+      before,
+      after,
+      order,
+    }, { from, size });
+  }
+
+  @Get("/tokens/:identifier/transfers/count")
+  @ApiOperation({ summary: 'Account transfer count', description: 'Return total count of tranfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult)' })
+  @ApiOkResponse({ type: Number })
+  @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Address of the transfer receiver', required: false })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transfer hashes', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
+  @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
+  @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  async getTokenTransfersCount(
+    @Param('identifier') identifier: string,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('search') search?: string,
+    @Query('function') scFunction?: string,
+    @Query('before', ParseOptionalIntPipe) before?: number,
+    @Query('after', ParseOptionalIntPipe) after?: number,
+  ): Promise<number> {
+    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
+      throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    const isToken = await this.tokenService.isToken(identifier);
+    if (!isToken) {
+      throw new NotFoundException('Token not found');
+    }
+
+    return await this.transferService.getTransfersCount({
+      sender,
+      receiver,
+      token: identifier,
+      function: scFunction,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      search,
+      before,
+      after,
+    });
+  }
+
+  @Get("/tokens/:identifier/transfers/c")
+  @ApiExcludeEndpoint()
+  async getAccountTransfersCountAlternative(
+    @Param('identifier') identifier: string,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('search') search?: string,
+    @Query('function') scFunction?: string,
+    @Query('before', ParseOptionalIntPipe) before?: number,
+    @Query('after', ParseOptionalIntPipe) after?: number,
+  ): Promise<number> {
+    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
+      throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    const isToken = await this.tokenService.isToken(identifier);
+    if (!isToken) {
+      throw new NotFoundException('Token not found');
+    }
+
+    return await this.transferService.getTransfersCount({
+      sender,
+      receiver,
+      token: identifier,
+      function: scFunction,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      search,
+      before,
+      after,
+    });
   }
 }

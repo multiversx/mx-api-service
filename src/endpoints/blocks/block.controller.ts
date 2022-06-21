@@ -23,13 +23,13 @@ export class BlockController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'nonce', description: 'Filter by nonce', required: false })
   getBlocks(
-    @Query('shard', ParseOptionalIntPipe) shard: number | undefined,
-    @Query('proposer', ParseBlsHashPipe) proposer: string | undefined,
-    @Query('validator', ParseBlsHashPipe) validator: string | undefined,
-    @Query('epoch', ParseOptionalIntPipe) epoch: number | undefined,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('nonce', ParseOptionalIntPipe) nonce: number | undefined,
+    @Query('shard', ParseOptionalIntPipe) shard?: number,
+    @Query('proposer', ParseBlsHashPipe) proposer?: string,
+    @Query('validator', ParseBlsHashPipe) validator?: string,
+    @Query('epoch', ParseOptionalIntPipe) epoch?: number,
+    @Query('nonce', ParseOptionalIntPipe) nonce?: number,
   ): Promise<Block[]> {
     return this.blockService.getBlocks({ shard, proposer, validator, epoch, nonce }, { from, size });
   }
@@ -43,11 +43,11 @@ export class BlockController {
   @ApiQuery({ name: 'epoch', description: 'Filter by epoch', required: false })
   @ApiQuery({ name: 'nonce', description: 'Filter by nonce', required: false })
   getBlocksCount(
-    @Query('shard', ParseOptionalIntPipe) shard: number | undefined,
-    @Query('proposer', ParseBlsHashPipe) proposer: string | undefined,
-    @Query('validator', ParseBlsHashPipe) validator: string | undefined,
-    @Query('epoch', ParseOptionalIntPipe) epoch: number | undefined,
-    @Query('nonce', ParseOptionalIntPipe) nonce: number | undefined,
+    @Query('shard', ParseOptionalIntPipe) shard?: number,
+    @Query('proposer', ParseBlsHashPipe) proposer?: string,
+    @Query('validator', ParseBlsHashPipe) validator?: string,
+    @Query('epoch', ParseOptionalIntPipe) epoch?: number,
+    @Query('nonce', ParseOptionalIntPipe) nonce?: number,
   ): Promise<number> {
     return this.blockService.getBlocksCount({ shard, proposer, validator, epoch, nonce });
   }
@@ -55,11 +55,11 @@ export class BlockController {
   @Get("/blocks/c")
   @ApiExcludeEndpoint()
   getBlocksCountAlternative(
-    @Query('shard', ParseOptionalIntPipe) shard: number | undefined,
-    @Query('proposer', ParseBlsHashPipe) proposer: string | undefined,
-    @Query('validator', ParseBlsHashPipe) validator: string | undefined,
-    @Query('epoch', ParseOptionalIntPipe) epoch: number | undefined,
-    @Query('nonce', ParseOptionalIntPipe) nonce: number | undefined,
+    @Query('shard', ParseOptionalIntPipe) shard?: number,
+    @Query('proposer', ParseBlsHashPipe) proposer?: string,
+    @Query('validator', ParseBlsHashPipe) validator?: string,
+    @Query('epoch', ParseOptionalIntPipe) epoch?: number,
+    @Query('nonce', ParseOptionalIntPipe) nonce?: number,
   ): Promise<number> {
     return this.blockService.getBlocksCount({ shard, proposer, validator, epoch, nonce });
   }

@@ -21,7 +21,7 @@ export class DatabaseService implements PersistenceInterface {
 
   async getMetadata(identifier: string): Promise<any | null> {
     try {
-      const metadataDb: NftMetadataDb | undefined = await this.nftMetadataRepository.findOne({ id: identifier });
+      const metadataDb: NftMetadataDb | null = await this.nftMetadataRepository.findOne({ where: { id: identifier } });
       if (!metadataDb) {
         return null;
       }
@@ -66,7 +66,7 @@ export class DatabaseService implements PersistenceInterface {
 
   async getMedia(identifier: string): Promise<NftMedia[] | null> {
     try {
-      const media: NftMediaDb | undefined = await this.nftMediaRepository.findOne({ id: identifier });
+      const media: NftMediaDb | null = await this.nftMediaRepository.findOne({ where: { id: identifier } });
       if (!media) {
         return null;
       }

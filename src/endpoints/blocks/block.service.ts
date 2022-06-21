@@ -71,7 +71,10 @@ export class BlockService {
 
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from, size })
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'shardId', order: ElasticSortOrder.ascending },
+      ])
       .withCondition(QueryConditionOptions.must, await this.buildElasticBlocksFilter(filter));
 
     const result = await this.elasticService.getList('blocks', 'hash', elasticQuery);
@@ -104,7 +107,7 @@ export class BlockService {
       validators = validators.map((index: number) => blses[index]);
     }
 
-    return { shardId, epoch, proposer, validators, ...rest };
+    return { shardId, epoch, validators, ...rest, proposer };
   }
 
   async getBlock(hash: string): Promise<BlockDetailed> {
