@@ -64,7 +64,7 @@ export class ProcessNftsService {
     return result;
   }
 
-  private async processCollection(collection: string, settings: ProcessNftSettings): Promise<{ [key: string]: boolean }> {
+  public async processCollection(collection: string, settings: ProcessNftSettings): Promise<{ [key: string]: boolean }> {
     const nfts = await this.nftService.getNfts({ from: 0, size: 10000 }, { collection });
 
     const results = await asyncPool(
@@ -81,7 +81,7 @@ export class ProcessNftsService {
     return result;
   }
 
-  private async processNft(identifier: string, settings: ProcessNftSettings): Promise<boolean> {
+  public async processNft(identifier: string, settings: ProcessNftSettings): Promise<boolean> {
     const nft = await this.nftService.getSingleNft(identifier);
     if (!nft) {
       this.logger.error(`Could not get details for nft with identifier '${identifier}'`);
