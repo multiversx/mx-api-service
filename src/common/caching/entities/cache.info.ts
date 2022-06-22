@@ -266,4 +266,18 @@ export class CacheInfo {
     key: "mexPrices",
     ttl: Constants.oneMinute() * 10,
   };
+
+  static GenerateThumbnails(identifier: string): CacheInfo {
+    return {
+      key: `generateThumbnails:${identifier}`,
+      ttl: Constants.oneHour() * 24,
+    };
+  }
+
+  static CollectionNonScOwner(collection: string): CacheInfo {
+    return {
+      key: `collectionNonScOwner:${collection}`,
+      ttl: Constants.oneMinute() * 10,
+    };
+  }
 }

@@ -6,7 +6,7 @@ import { NftWorkerModule } from "src/queue.worker/nft.worker/nft.worker.module";
 import { NftType } from "../../endpoints/nfts/entities/nft.type";
 import { NftThumbnailService } from "src/queue.worker/nft.worker/queue/job-services/thumbnails/nft.thumbnail.service";
 
-describe('Nft Worker Service', () => {
+describe.skip('Nft Worker Service', () => {
   let nftWorkerService: NftWorkerService;
 
   beforeAll(async () => {

@@ -96,5 +96,3 @@ nftProcess:
 transaction-action:
   mex:
     microServiceUrl: ''
-
-

@@ -5,7 +5,7 @@ import { CacheController } from './common/caching/cache.controller';
 import { LoggingModule } from './common/logging/logging.module';
 import { MetricsController } from './common/metrics/metrics.controller';
 import { HealthCheckController } from './endpoints/health-check/health.check.controller';
-import { ProcessNftsController } from './endpoints/process-nfts/process.nfts.controller';
+import { ProcessNftsPrivateController } from './endpoints/process-nfts/process.nfts.private.controller';
 import { ProcessNftsModule } from './endpoints/process-nfts/process.nfts.module';
 
 @Module({
@@ -38,7 +38,7 @@ import { ProcessNftsModule } from './endpoints/process-nfts/process.nfts.module'
     MetricsController,
     CacheController,
     HealthCheckController,
-    ProcessNftsController,
+    ProcessNftsPrivateController,
   ],
 })
 export class PrivateAppModule { }
