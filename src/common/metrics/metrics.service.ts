@@ -17,6 +17,7 @@ export class MetricsService {
   private static elasticTookHistogram: Histogram<string>;
   private static redisDurationHistogram: Histogram<string>;
   private static persistenceDurationHistogram: Histogram<string>;
+  private static indexerDurationHistogram: Histogram<string>;
   private static jobsHistogram: Histogram<string>;
   private static currentNonceGauge: Gauge<string>;
   private static lastProcessedNonceGauge: Gauge<string>;
@@ -110,6 +111,15 @@ export class MetricsService {
       });
     }
 
+    if (!MetricsService.indexerDurationHistogram) {
+      MetricsService.indexerDurationHistogram = new Histogram({
+        name: 'indexer_duration',
+        help: 'Indexer Duration',
+        labelNames: ['action'],
+        buckets: [],
+      });
+    }
+
     if (!MetricsService.jobsHistogram) {
       MetricsService.jobsHistogram = new Histogram({
         name: 'jobs',
@@ -189,6 +199,11 @@ export class MetricsService {
   setPersistenceDuration(action: string, duration: number) {
     MetricsService.externalCallsHistogram.labels('persistence').observe(duration);
     MetricsService.persistenceDurationHistogram.labels(action).observe(duration);
+  }
+
+  setIndexerDuration(action: string, duration: number) {
+    MetricsService.externalCallsHistogram.labels('indexer').observe(duration);
+    MetricsService.indexerDurationHistogram.labels(action).observe(duration);
   }
 
   static setJobResult(job: string, result: 'success' | 'error', duration: number) {

@@ -54,6 +54,8 @@ urls:
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'devnet-socket-fra.elrond.com'
+indexer:
+  type: 'elastic'
 database:
   enabled: false
   url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
@@ -96,4 +98,3 @@ nftProcess:
 transaction-action:
   mex:
     microServiceUrl: ''
-
