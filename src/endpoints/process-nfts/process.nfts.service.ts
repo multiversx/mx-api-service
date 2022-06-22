@@ -1,12 +1,11 @@
-import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
-import { GatewayService } from "src/common/gateway/gateway.service";
 import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
 import { AddressUtils } from "src/utils/address.utils";
 import asyncPool from "tiny-async-pool";
+import { AccountService } from "../accounts/account.service";
 import { CollectionService } from "../collections/collection.service";
 import { Nft } from "../nfts/entities/nft";
 import { NftService } from "../nfts/nft.service";
@@ -24,7 +23,7 @@ export class ProcessNftsService {
     private readonly nftWorkerService: NftWorkerService,
     private readonly nftService: NftService,
     private readonly collectionService: CollectionService,
-    private readonly gatewayService: GatewayService,
+    private readonly accountService: AccountService,
     private readonly cachingService: CachingService,
   ) {
     this.logger = new Logger(ProcessNftsService.name);
@@ -43,7 +42,7 @@ export class ProcessNftsService {
 
       return result;
     } else {
-      throw new HttpException('Provide an identifier or a collection to generate thumbnails for', HttpStatus.BAD_REQUEST);
+      throw new Error('Provide an identifier or a collection to generate thumbnails for');
     }
   }
 
@@ -52,7 +51,7 @@ export class ProcessNftsService {
 
     const wasProcessed = await this.cachingService.getCache<boolean>(CacheInfo.GenerateThumbnails(collectionOrIdentifier).key);
     if (wasProcessed) {
-      throw new HttpException('Thumbnails have already been generated', HttpStatus.TOO_MANY_REQUESTS);
+      throw new Error('Thumbnails have already been generated');
     }
 
     await this.checkCollectionOwner(address, processNftRequest.collection, processNftRequest.identifier);
@@ -95,43 +94,44 @@ export class ProcessNftsService {
     if (identifier) {
       const nft = await this.nftService.getSingleNft(identifier);
       if (!nft) {
-        throw new HttpException('Provide a valid identifier or a collection to generate thumbnails for', HttpStatus.BAD_REQUEST);
+        throw new Error('Provide a valid identifier or a collection to generate thumbnails for');
       }
 
       collection = nft.collection;
     }
 
     if (!collection) {
-      throw new HttpException('Provide a valid identifier or a collection to generate thumbnails for', HttpStatus.BAD_REQUEST);
+      throw new Error('Provide a valid identifier or a collection to generate thumbnails for');
     }
 
     const nftCollection = await this.collectionService.getNftCollection(collection);
     if (!nftCollection) {
-      throw new HttpException('Provide a valid identifier or a collection to generate thumbnails for', HttpStatus.BAD_REQUEST);
+      throw new Error('Provide a valid identifier or a collection to generate thumbnails for');
     }
 
     if (!nftCollection.owner) {
-      throw new HttpException(`The owner's address could not be found`, HttpStatus.BAD_REQUEST);
+      throw new Error(`The owner's address could not be found`);
     }
 
     let collectionOwner = nftCollection.owner;
 
     let currentDepth = 0;
     while (AddressUtils.isSmartContractAddress(collectionOwner) && currentDepth < ProcessNftsService.MAX_DEPTH) {
-      const {
-        account: { ownerAddress },
-      } = await this.gatewayService.get(`address/${collectionOwner}`, GatewayComponentRequest.addressDetails);
+      const account = await this.accountService.getAccount(collectionOwner);
+      if (!account) {
+        throw new Error(`The owner's address could not be found`);
+      }
 
       currentDepth++;
-      collectionOwner = ownerAddress;
+      collectionOwner = account.ownerAddress;
     }
 
     if (AddressUtils.isSmartContractAddress(collectionOwner)) {
-      throw new HttpException(`The owner's address could not be found`, HttpStatus.BAD_REQUEST);
+      throw new Error(`The owner's address could not be found`);
     }
 
     if (address !== collectionOwner) {
-      throw new HttpException('Only the collection owner can generate thumbnails', HttpStatus.FORBIDDEN);
+      throw new Error('Only the collection owner can generate thumbnails');
     }
   }
 }

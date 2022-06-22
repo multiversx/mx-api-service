@@ -19,7 +19,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CleanupInterceptor } from './interceptors/cleanup.interceptor';
 import { RedisClient } from 'redis';
 import { ExtractInterceptor } from './interceptors/extract.interceptor';
-import { JwtAuthenticateGlobalGuard } from './interceptors/access.interceptor';
 import { TransactionProcessorModule } from './crons/transaction.processor/transaction.processor.module';
 import { PubSubListenerModule } from './common/pubsub/pub.sub.listener.module';
 import { ProtocolService } from './common/protocol/protocol.service';
@@ -35,6 +34,7 @@ import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
 import { QueryCheckInterceptor } from './interceptors/query.check.interceptor';
 import { ApiConfigModule } from './common/api-config/api.config.module';
 import { SwaggerCustomTypes } from './utils/swagger-custom-styles.utils';
+import { JwtAuthenticateGlobalGuard } from './utils/guards/jwt.authenticate.global.guard';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);

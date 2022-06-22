@@ -11,12 +11,11 @@ export class ProcessNftSettings {
   }
 
   static fromRequest(processNftRequest: ProcessNftRequest): ProcessNftSettings {
-    const settings: ProcessNftSettings = {
+    return new ProcessNftSettings({
       forceRefreshMedia: processNftRequest.forceRefreshMedia ?? false,
       forceRefreshMetadata: processNftRequest.forceRefreshMetadata ?? false,
       forceRefreshThumbnail: processNftRequest.forceRefreshThumbnail ?? false,
       skipRefreshThumbnail: processNftRequest.skipRefreshThumbnail ?? false,
-    };
-    return settings;
+    });
   }
 }
