@@ -55,7 +55,7 @@ export class ProcessNftsService {
       throw new HttpException('Thumbnails have already been generated', HttpStatus.TOO_MANY_REQUESTS);
     }
 
-    await this.checkNftOrCollectionOwner(address, processNftRequest.collection, processNftRequest.identifier);
+    await this.checkCollectionOwner(address, processNftRequest.collection, processNftRequest.identifier);
 
     const result = await this.generateThumbnails(processNftRequest);
 
@@ -91,7 +91,7 @@ export class ProcessNftsService {
     return await this.nftWorkerService.addProcessNftQueueJob(nft, settings);
   }
 
-  private async checkNftOrCollectionOwner(address: string, collection?: string, identifier?: string): Promise<void> {
+  private async checkCollectionOwner(address: string, collection?: string, identifier?: string): Promise<void> {
     if (identifier) {
       const nft = await this.nftService.getSingleNft(identifier);
       if (!nft) {
