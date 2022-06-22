@@ -14,7 +14,8 @@ import { ProcessNftSettings } from "./entities/process.nft.settings";
 
 @Injectable()
 export class ProcessNftsService {
-  public static readonly MAX_DEPTH = 10;
+  private static readonly MAX_DEPTH = 10;
+  private static readonly MAXIMUM_PROCESS_RETRIES = 2;
 
   private readonly logger: Logger;
 
@@ -29,7 +30,7 @@ export class ProcessNftsService {
     this.logger = new Logger(ProcessNftsService.name);
   }
 
-  public async generateThumbnails(processNftRequest: ProcessNftRequest) {
+  public async process(processNftRequest: ProcessNftRequest) {
     const settings = ProcessNftSettings.fromRequest(processNftRequest);
 
     if (processNftRequest.collection) {
@@ -46,19 +47,25 @@ export class ProcessNftsService {
     }
   }
 
-  public async generateThumbnailsAsOwner(address: string, processNftRequest: ProcessNftRequest) {
-    const collectionOrIdentifier = processNftRequest.identifier ?? processNftRequest.collection ?? '';
+  public async processWithOwnerCheck(address: string, processNftRequest: ProcessNftRequest) {
+    const collectionOrIdentifier = processNftRequest.identifier ?? processNftRequest.collection;
+    if (!collectionOrIdentifier) {
+      throw new Error('No collection or identifier has been provided');
+    }
 
-    const wasProcessed = await this.cachingService.getCache<boolean>(CacheInfo.GenerateThumbnails(collectionOrIdentifier).key);
-    if (wasProcessed) {
+    const wasProcessed = await this.cachingService.incrementRemote(CacheInfo.GenerateThumbnails(collectionOrIdentifier).key);
+    if (wasProcessed > ProcessNftsService.MAXIMUM_PROCESS_RETRIES) {
       throw new Error('Thumbnails have already been generated');
     }
 
-    await this.checkCollectionOwner(address, processNftRequest.collection, processNftRequest.identifier);
+    const collection = collectionOrIdentifier.split('-').slice(0, 2).join('-');
 
-    const result = await this.generateThumbnails(processNftRequest);
+    const isCollectionOwner = await this.isCollectionOwner(address, collection);
+    if (!isCollectionOwner) {
+      throw new Error(`Provided address '${address}' is not collection owner`);
+    }
 
-    await this.cachingService.setCache(CacheInfo.GenerateThumbnails(collectionOrIdentifier).key, true, CacheInfo.GenerateThumbnails(collectionOrIdentifier).ttl);
+    const result = await this.process(processNftRequest);
 
     return result;
   }
@@ -90,27 +97,28 @@ export class ProcessNftsService {
     return await this.nftWorkerService.addProcessNftQueueJob(nft, settings);
   }
 
-  private async checkCollectionOwner(address: string, collection?: string, identifier?: string): Promise<void> {
-    if (identifier) {
-      const nft = await this.nftService.getSingleNft(identifier);
-      if (!nft) {
-        throw new Error('Provide a valid identifier or a collection to generate thumbnails for');
-      }
+  private async isCollectionOwner(address: string, collection: string): Promise<boolean> {
+    const collectionOwner = await this.getCollectionNonScOwner(collection);
 
-      collection = nft.collection;
-    }
+    return address === collectionOwner;
+  }
 
-    if (!collection) {
-      throw new Error('Provide a valid identifier or a collection to generate thumbnails for');
-    }
+  private async getCollectionNonScOwner(collection: string): Promise<string> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.CollectionNonScOwner(collection).key,
+      async () => await this.getCollectionNonScOwnerRaw(collection),
+      CacheInfo.CollectionNonScOwner(collection).ttl,
+    );
+  }
 
+  private async getCollectionNonScOwnerRaw(collection: string): Promise<string> {
     const nftCollection = await this.collectionService.getNftCollection(collection);
     if (!nftCollection) {
-      throw new Error('Provide a valid identifier or a collection to generate thumbnails for');
+      throw new Error(`NFT Collection with identifier '${collection}' not found`);
     }
 
     if (!nftCollection.owner) {
-      throw new Error(`The owner's address could not be found`);
+      throw new Error(`NFT Collection with identifier '${collection}' does not have any owner`);
     }
 
     let collectionOwner = nftCollection.owner;
@@ -119,7 +127,7 @@ export class ProcessNftsService {
     while (AddressUtils.isSmartContractAddress(collectionOwner) && currentDepth < ProcessNftsService.MAX_DEPTH) {
       const account = await this.accountService.getAccount(collectionOwner);
       if (!account) {
-        throw new Error(`The owner's address could not be found`);
+        throw new Error(`Could not fetch account details for address '${collectionOwner}'`);
       }
 
       currentDepth++;
@@ -127,11 +135,9 @@ export class ProcessNftsService {
     }
 
     if (AddressUtils.isSmartContractAddress(collectionOwner)) {
-      throw new Error(`The owner's address could not be found`);
+      throw new Error(`Collection owner '${collectionOwner}' should not be smart contract`);
     }
 
-    if (address !== collectionOwner) {
-      throw new Error('Only the collection owner can generate thumbnails');
-    }
+    return collectionOwner;
   }
 }

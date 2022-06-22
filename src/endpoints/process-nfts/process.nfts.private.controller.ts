@@ -13,7 +13,7 @@ export class ProcessNftsPrivateController {
     @Body() processNftRequest: ProcessNftRequest,
   ): Promise<{ [key: string]: boolean }> {
     try {
-      return await this.processNftService.generateThumbnails(processNftRequest);
+      return await this.processNftService.process(processNftRequest);
     } catch (error: any) {
       throw new BadRequestException(error.message);
     }

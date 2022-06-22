@@ -268,4 +268,11 @@ export class CacheInfo {
       ttl: Constants.oneHour() * 24,
     };
   }
+
+  static CollectionNonScOwner(collection: string): CacheInfo {
+    return {
+      key: `collectionNonScOwner:${collection}`,
+      ttl: Constants.oneMinute() * 10,
+    };
+  }
 }

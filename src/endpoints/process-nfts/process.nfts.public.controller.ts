@@ -20,7 +20,7 @@ export class ProcessNftsPublicController {
     @Body() processNftRequest: ProcessNftRequest,
   ): Promise<{ [key: string]: boolean }> {
     try {
-      return await this.processNftService.generateThumbnailsAsOwner(address, processNftRequest);
+      return await this.processNftService.processWithOwnerCheck(address, processNftRequest);
     } catch (error: any) {
       throw new BadRequestException(error.message);
     }
