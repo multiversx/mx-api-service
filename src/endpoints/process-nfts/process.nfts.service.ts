@@ -53,8 +53,8 @@ export class ProcessNftsService {
       throw new Error('No collection or identifier has been provided');
     }
 
-    const wasProcessed = await this.cachingService.incrementRemote(CacheInfo.GenerateThumbnails(collectionOrIdentifier).key);
-    if (wasProcessed > ProcessNftsService.MAXIMUM_PROCESS_RETRIES) {
+    const generateRetries = await this.cachingService.incrementRemote(CacheInfo.GenerateThumbnails(collectionOrIdentifier).key);
+    if (generateRetries > ProcessNftsService.MAXIMUM_PROCESS_RETRIES) {
       throw new Error('Thumbnails have already been generated');
     }
 
