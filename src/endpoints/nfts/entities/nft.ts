@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
-import { TokenAssets } from "src/endpoints/tokens/entities/token.assets";
+import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { SwaggerUtils } from "src/utils/swagger.utils";
 import { NftMedia } from "./nft.media";
 import { NftMetadata } from "./nft.metadata";

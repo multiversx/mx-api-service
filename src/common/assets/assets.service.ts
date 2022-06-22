@@ -1,23 +1,25 @@
 import { Injectable, Logger } from "@nestjs/common";
 import simpleGit, { SimpleGit, SimpleGitOptions } from 'simple-git';
 import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { TokenAssets } from "src/endpoints/tokens/entities/token.assets";
+import { TokenAssets } from "src/common/assets/entities/token.assets";
+import { ApiUtils } from "src/utils/api.utils";
 import { FileUtils } from "src/utils/file.utils";
-import { ApiConfigService } from "../../common/api-config/api.config.service";
-import { CachingService } from "../../common/caching/caching.service";
+import { ApiConfigService } from "../api-config/api.config.service";
+import { CachingService } from "../caching/caching.service";
+import { AccountAssets } from "./entities/account.assets";
 const rimraf = require("rimraf");
 const path = require('path');
 const fs = require('fs');
 
 @Injectable()
-export class TokenAssetService {
+export class AssetsService {
   private readonly logger: Logger;
 
   constructor(
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService
   ) {
-    this.logger = new Logger(TokenAssetService.name);
+    this.logger = new Logger(AssetsService.name);
   }
 
   checkout(): Promise<void> {
@@ -56,7 +58,7 @@ export class TokenAssetService {
     });
   }
 
-  private readAssetDetails(tokenIdentifier: string, assetPath: string): TokenAssets {
+  private readTokenAssetDetails(tokenIdentifier: string, assetPath: string): TokenAssets {
     const jsonPath = path.join(assetPath, 'info.json');
     const jsonContents = fs.readFileSync(jsonPath);
     const json = JSON.parse(jsonContents);
@@ -68,33 +70,44 @@ export class TokenAssetService {
     };
   }
 
+  private readAccountAssets(path: string): AccountAssets {
+    const jsonContents = fs.readFileSync(path);
+    const json = JSON.parse(jsonContents);
+
+    return ApiUtils.mergeObjects(new AccountAssets(), json);
+  }
+
   private getImageUrl(tokenIdentifier: string, name: string) {
     return `${this.apiConfigService.getExternalMediaUrl()}/tokens/asset/${tokenIdentifier}/${name}`;
   }
 
-  private getTokensPath() {
-    return path.join(process.cwd(), 'dist/repos/assets', this.getTokensRelativePath());
+  private getTokenAssetsPath() {
+    return path.join(process.cwd(), 'dist/repos/assets', this.getRelativePath('tokens'));
   }
 
-  private getTokensRelativePath() {
+  private getAccountAssetsPath() {
+    return path.join(process.cwd(), 'dist/repos/assets', this.getRelativePath('accounts'));
+  }
+
+  private getRelativePath(name: string): string {
     const network = this.apiConfigService.getNetwork();
     if (network !== 'mainnet') {
-      return path.join(network, 'tokens');
+      return path.join(network, name);
     }
 
-    return 'tokens';
+    return name;
   }
 
-  async getAllAssets(): Promise<{ [key: string]: TokenAssets }> {
+  async getAllTokenAssets(): Promise<{ [key: string]: TokenAssets }> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.TokenAssets.key,
-      async () => await this.getAllAssetsRaw(),
+      async () => await this.getAllTokenAssetsRaw(),
       CacheInfo.TokenAssets.ttl
     );
   }
 
-  getAllAssetsRaw(): { [key: string]: TokenAssets } {
-    const tokensPath = this.getTokensPath();
+  getAllTokenAssetsRaw(): { [key: string]: TokenAssets } {
+    const tokensPath = this.getTokenAssetsPath();
     if (!fs.existsSync(tokensPath)) {
       return {};
     }
@@ -106,9 +119,9 @@ export class TokenAssetService {
     for (const tokenIdentifier of tokenIdentifiers) {
       const tokenPath = path.join(tokensPath, tokenIdentifier);
       try {
-        assets[tokenIdentifier] = this.readAssetDetails(tokenIdentifier, tokenPath);
+        assets[tokenIdentifier] = this.readTokenAssetDetails(tokenIdentifier, tokenPath);
       } catch (error) {
-        this.logger.error(`An error ocurred while reading assets for token with identifier '${tokenIdentifier}'`);
+        this.logger.error(`An error occurred while reading assets for token with identifier '${tokenIdentifier}'`);
         this.logger.error(error);
       }
     }
@@ -116,9 +129,49 @@ export class TokenAssetService {
     return assets;
   }
 
+  async getAllAccountAssets(): Promise<{ [key: string]: AccountAssets }> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.AccountAssets.key,
+      async () => await this.getAllAccountAssetsRaw(),
+      CacheInfo.AccountAssets.ttl
+    );
+  }
+
+  getAllAccountAssetsRaw(): { [key: string]: AccountAssets } {
+    const accountAssetsPath = this.getAccountAssetsPath();
+    if (!fs.existsSync(accountAssetsPath)) {
+      return {};
+    }
+
+    const fileNames = FileUtils.getFiles(accountAssetsPath);
+
+    const allAssets: { [key: string]: AccountAssets } = {};
+    for (const fileName of fileNames) {
+      const assetsPath = path.join(accountAssetsPath, fileName);
+      const address = fileName.removeSuffix('.json');
+      try {
+        const assets = this.readAccountAssets(assetsPath);
+        if (assets.icon) {
+          const relativePath = this.getRelativePath(`accounts/icons/${assets.icon}`);
+          assets.iconPng = `https://raw.githubusercontent.com/ElrondNetwork/assets/master/${relativePath}.png`;
+          assets.iconSvg = `https://raw.githubusercontent.com/ElrondNetwork/assets/master/${relativePath}.svg`;
+
+          delete assets.icon;
+        }
+
+        allAssets[address] = assets;
+      } catch (error) {
+        this.logger.error(`An error occurred while reading assets for account with address '${address}'`);
+        this.logger.error(error);
+      }
+    }
+
+    return allAssets;
+  }
+
   async getAssets(tokenIdentifier: string): Promise<TokenAssets | undefined> {
     // get the dictionary from the local cache
-    const assets = await this.getAllAssets();
+    const assets = await this.getAllTokenAssets();
 
     // if the tokenIdentifier key exists in the dictionary, return the associated value, else undefined
     return assets[tokenIdentifier];

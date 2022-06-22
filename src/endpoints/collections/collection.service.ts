@@ -7,7 +7,7 @@ import { EsdtService } from "../esdt/esdt.service";
 import { CollectionFilter } from "./entities/collection.filter";
 import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
-import { TokenAssetService } from "../tokens/token.asset.service";
+import { AssetsService } from "../../common/assets/assets.service";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { NftCollectionRole } from "./entities/nft.collection.role";
 import { QueryType } from "src/common/elastic/entities/query.type";
@@ -18,7 +18,7 @@ import { TokenProperties } from "../tokens/entities/token.properties";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { RecordUtils } from "src/utils/record.utils";
-import { TokenAssets } from "../tokens/entities/token.assets";
+import { TokenAssets } from "../../common/assets/entities/token.assets";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { TokenUtils } from "src/utils/token.utils";
@@ -32,7 +32,7 @@ export class CollectionService {
     private readonly apiConfigService: ApiConfigService,
     private readonly elasticService: ElasticService,
     private readonly esdtService: EsdtService,
-    private readonly tokenAssetService: TokenAssetService,
+    private readonly assetsService: AssetsService,
     private readonly vmQueryService: VmQueryService,
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => EsdtAddressService))
@@ -203,7 +203,7 @@ export class CollectionService {
         const result: { [key: string]: TokenAssets | undefined } = {};
 
         for (const collectionIdentifier of collectionsIdentifiers) {
-          const collectionAssets = await this.tokenAssetService.getAssets(collectionIdentifier);
+          const collectionAssets = await this.assetsService.getAssets(collectionIdentifier);
           result[collectionIdentifier] = collectionAssets;
         }
 

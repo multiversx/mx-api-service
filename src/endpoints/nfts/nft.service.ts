@@ -12,7 +12,7 @@ import { NftType } from "./entities/nft.type";
 import { NftQueryOptions } from "./entities/nft.query.options";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { EsdtService } from "../esdt/esdt.service";
-import { TokenAssetService } from "../tokens/token.asset.service";
+import { AssetsService } from "../../common/assets/assets.service";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { QueryType } from "src/common/elastic/entities/query.type";
@@ -43,7 +43,7 @@ export class NftService {
     private readonly apiConfigService: ApiConfigService,
     private readonly elasticService: ElasticService,
     private readonly esdtService: EsdtService,
-    private readonly tokenAssetService: TokenAssetService,
+    private readonly assetsService: AssetsService,
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => PluginService))
     private readonly pluginService: PluginService,
@@ -242,8 +242,8 @@ export class NftService {
   }
 
   async applyAssetsAndTicker(token: Nft) {
-    token.assets = await this.tokenAssetService.getAssets(token.identifier) ??
-      await this.tokenAssetService.getAssets(token.collection);
+    token.assets = await this.assetsService.getAssets(token.identifier) ??
+      await this.assetsService.getAssets(token.collection);
 
     if (token.assets) {
       token.ticker = token.collection.split('-')[0];
@@ -512,7 +512,7 @@ export class NftService {
       await this.applySupply(nft);
     }
 
-    nft.assets = await this.tokenAssetService.getAssets(nft.collection);
+    nft.assets = await this.assetsService.getAssets(nft.collection);
 
     await this.processNft(nft);
 

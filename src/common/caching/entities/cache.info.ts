@@ -124,6 +124,11 @@ export class CacheInfo {
     ttl: Constants.oneDay(),
   };
 
+  static AccountAssets: CacheInfo = {
+    key: 'accountLabels',
+    ttl: Constants.oneDay(),
+  };
+
   static MexSettings: CacheInfo = {
     key: 'mex:settings',
     ttl: Constants.oneHour(),
