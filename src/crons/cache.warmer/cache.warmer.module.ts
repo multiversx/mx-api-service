@@ -6,6 +6,7 @@ import { KeybaseModule } from 'src/common/keybase/keybase.module';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { MexModule } from 'src/endpoints/mex/mex.module';
+import { AssetsModule } from 'src/common/assets/assets.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { MexModule } from 'src/endpoints/mex/mex.module';
     EndpointsServicesModule,
     KeybaseModule,
     MexModule,
+    AssetsModule,
   ],
   providers: [
     {

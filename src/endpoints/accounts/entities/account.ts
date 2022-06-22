@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { SwaggerUtils } from "src/utils/swagger.utils";
 
 export class Account {
@@ -13,4 +14,7 @@ export class Account {
 
   @ApiProperty({ type: Number, description: 'The shard ID allocated to the account', example: 0 })
   shard: number = 0;
+
+  @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })
+  assets: AccountAssets | undefined = undefined;
 }

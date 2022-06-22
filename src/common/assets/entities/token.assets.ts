@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { TokenAssetStatus } from "./token.asset.status";
+import { TokenAssetStatus } from "../../../endpoints/tokens/entities/token.asset.status";
 
 export class TokenAssets {
   @ApiProperty({ type: String })

@@ -1,4 +1,5 @@
 import { forwardRef, Module } from "@nestjs/common";
+import { AssetsModule } from "src/common/assets/assets.module";
 import { PluginModule } from "src/plugins/plugin.module";
 import { CollectionModule } from "../collections/collection.module";
 import { DelegationLegacyModule } from "../delegation.legacy/delegation.legacy.module";
@@ -26,6 +27,7 @@ import { AccountService } from "./account.service";
     forwardRef(() => PluginModule),
     forwardRef(() => TransferModule),
     forwardRef(() => TokenModule),
+    forwardRef(() => AssetsModule),
   ],
   providers: [
     AccountService,

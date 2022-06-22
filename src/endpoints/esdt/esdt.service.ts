@@ -19,10 +19,10 @@ import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { CachingService } from "../../common/caching/caching.service";
 import { GatewayService } from "../../common/gateway/gateway.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { TokenAssets } from "../tokens/entities/token.assets";
+import { TokenAssets } from "../../common/assets/entities/token.assets";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { TokenRoles } from "../tokens/entities/token.roles";
-import { TokenAssetService } from "../tokens/token.asset.service";
+import { AssetsService } from "../../common/assets/assets.service";
 import { TransactionService } from "../transactions/transaction.service";
 import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
@@ -37,8 +37,8 @@ export class EsdtService {
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
     private readonly elasticService: ElasticService,
-    @Inject(forwardRef(() => TokenAssetService))
-    private readonly tokenAssetService: TokenAssetService,
+    @Inject(forwardRef(() => AssetsService))
+    private readonly assetsService: AssetsService,
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
     private readonly mexTokenService: MexTokenService,
@@ -162,7 +162,7 @@ export class EsdtService {
   }
 
   private async getEsdtTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
-    return await this.tokenAssetService.getAssets(identifier);
+    return await this.assetsService.getAssets(identifier);
   }
 
   async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
@@ -323,7 +323,7 @@ export class EsdtService {
   }
 
   async getLockedAccountsRaw(identifier: string): Promise<EsdtLockedAccount[]> {
-    const tokenAssets = await this.tokenAssetService.getAssets(identifier);
+    const tokenAssets = await this.assetsService.getAssets(identifier);
     if (!tokenAssets) {
       return [];
     }
