@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Post } from "@nestjs/common";
 import { ProcessNftRequest } from "./entities/process.nft.request";
 import { ProcessNftsService } from "./process.nfts.service";
 
@@ -12,6 +12,10 @@ export class ProcessNftsPrivateController {
   async generateThumbnails(
     @Body() processNftRequest: ProcessNftRequest,
   ): Promise<{ [key: string]: boolean }> {
-    return await this.processNftService.generateThumbnails(processNftRequest);
+    try {
+      return await this.processNftService.generateThumbnails(processNftRequest);
+    } catch (error: any) {
+      throw new BadRequestException(error.message);
+    }
   }
 }

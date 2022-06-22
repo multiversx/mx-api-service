@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Post, UseGuards } from "@nestjs/common";
 import { ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { Jwt } from "src/decorators/jwt";
 import { JwtAuthenticateGuard } from "src/utils/guards/jwt.authenticate.guard";
@@ -15,11 +15,14 @@ export class ProcessNftsPublicController {
   @Post("/nfts/process")
   @ApiOperation({ summary: 'Trigger NFT media/metadata reprocessing', description: 'Triggers NFT media/metadata reprocessing for collection owners' })
   @ApiResponse({ status: 201, description: 'NFT media/metadata reprocessing has been triggered' })
-  @ApiResponse({ status: 429, description: 'Thumbnails have already been generated' })
   public async generateThumbnails(
     @Jwt('address') address: string,
     @Body() processNftRequest: ProcessNftRequest,
   ): Promise<{ [key: string]: boolean }> {
-    return await this.processNftService.generateThumbnailsAsOwner(address, processNftRequest);
+    try {
+      return await this.processNftService.generateThumbnailsAsOwner(address, processNftRequest);
+    } catch (error: any) {
+      throw new BadRequestException(error.message);
+    }
   }
 }
