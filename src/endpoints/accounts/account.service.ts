@@ -29,6 +29,7 @@ import { StakeService } from '../stake/stake.service';
 import { TransferService } from '../transfers/transfer.service';
 import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
+import { AssetsService } from 'src/common/assets/assets.service';
 
 @Injectable()
 export class AccountService {
@@ -50,6 +51,7 @@ export class AccountService {
     private readonly transferService: TransferService,
     @Inject(forwardRef(() => SmartContractResultService))
     private readonly smartContractResultService: SmartContractResultService,
+    private readonly assetsService: AssetsService,
   ) {
     this.logger = new Logger(AccountService.name);
   }
@@ -84,6 +86,8 @@ export class AccountService {
       return null;
     }
 
+    const assets = await this.assetsService.getAllAccountAssets();
+
     try {
       const [
         txCount,
@@ -98,7 +102,7 @@ export class AccountService {
       ]);
 
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
-      let account: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, username, shard, developerReward, ownerAddress, scamInfo: undefined };
+      let account: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, username, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address] };
 
       const codeAttributes = AddressUtils.decodeCodeMetadata(codeMetadata);
       if (codeAttributes) {
@@ -185,9 +189,12 @@ export class AccountService {
 
     const result = await this.elasticService.getList('accounts', 'address', elasticQuery);
 
+    const assets = await this.assetsService.getAllAccountAssets();
+
     const accounts: Account[] = result.map(item => ApiUtils.mergeObjects(new Account(), item));
     for (const account of accounts) {
       account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address));
+      account.assets = assets[account.address];
     }
 
     return accounts;

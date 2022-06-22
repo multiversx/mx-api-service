@@ -1,23 +1,21 @@
 import { Test } from "@nestjs/testing";
-import { TokenAssetService } from "../../endpoints/tokens/token.asset.service";
+import { AssetsService } from "../../common/assets/assets.service";
 import { PublicAppModule } from "src/public.app.module";
 
 describe('Token Service', () => {
-  let tokenAssetService: TokenAssetService;
+  let assetsService: AssetsService;
 
   beforeAll(async () => {
-
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
-    tokenAssetService = moduleRef.get<TokenAssetService>(TokenAssetService);
-
+    assetsService = moduleRef.get<AssetsService>(AssetsService);
   });
 
   describe('Get All Assets', () => {
     it(`should return all assets`, async () => {
-      const assets = await tokenAssetService.getAllAssets();
+      const assets = await assetsService.getAllTokenAssets();
       const assetValues = Object.values(assets);
 
       for (const asset of assetValues) {
@@ -32,7 +30,7 @@ describe('Token Service', () => {
 
   describe('Get All Assets Raw', () => {
     it('should return all assets raw', async () => {
-      const assets = await tokenAssetService.getAllAssetsRaw();
+      const assets = await assetsService.getAllTokenAssetsRaw();
       const assetValues = Object.values(assets);
 
       for (const asset of assetValues) {

@@ -9,6 +9,12 @@ export class FileUtils {
       .map((dirent: any) => dirent.name);
   }
 
+  static getFiles(source: string) {
+    return readdirSync(source, { withFileTypes: true })
+      .filter((dirent: any) => !dirent.isDirectory())
+      .map((dirent: any) => dirent.name);
+  }
+
   static parseJSONFile(source: string) {
     return JSON.parse(readFileSync(source, { encoding: 'utf8' }));
   }

@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { TokenAssets } from "src/endpoints/tokens/entities/token.assets";
+import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { NftType } from "../../nfts/entities/nft.type";
 import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles";
 

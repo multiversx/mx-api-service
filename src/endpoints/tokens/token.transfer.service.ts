@@ -3,7 +3,7 @@ import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { BinaryUtils } from "src/utils/binary.utils";
 import { EsdtService } from "../esdt/esdt.service";
-import { TokenAssetService } from "./token.asset.service";
+import { AssetsService } from "../../common/assets/assets.service";
 import { TokenTransferProperties } from "./entities/token.transfer.properties";
 import { TransactionLog } from "../transactions/entities/transaction.log";
 import { TransactionLogEventIdentifier } from "../transactions/entities/transaction.log.event.identifier";
@@ -23,7 +23,7 @@ export class TokenTransferService {
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => EsdtService))
     private readonly esdtService: EsdtService,
-    private readonly tokenAssetService: TokenAssetService
+    private readonly assetsService: AssetsService
   ) {
     this.logger = new Logger(TokenTransferService.name);
   }
@@ -290,7 +290,7 @@ export class TokenTransferService {
       return null;
     }
 
-    const assets = await this.tokenAssetService.getAssets(identifier);
+    const assets = await this.assetsService.getAssets(identifier);
 
     const result: TokenTransferProperties = {
       type: properties.type,

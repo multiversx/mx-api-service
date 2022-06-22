@@ -17,7 +17,7 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { DataQuoteType } from "src/common/external/entities/data.quote.type";
 import { EsdtService } from "src/endpoints/esdt/esdt.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
+import { AssetsService } from "src/common/assets/assets.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { MexSettingsService } from "src/endpoints/mex/mex.settings.service";
 import { MexEconomicsService } from "src/endpoints/mex/mex.economics.service";
@@ -41,7 +41,7 @@ export class CacheWarmerService {
     private readonly accountService: AccountService,
     private readonly gatewayService: GatewayService,
     private readonly schedulerRegistry: SchedulerRegistry,
-    private readonly tokenAssetService: TokenAssetService,
+    private readonly assetsService: AssetsService,
     private readonly mexEconomicsService: MexEconomicsService,
     private readonly mexPairsService: MexPairService,
     private readonly mexTokensService: MexTokenService,
@@ -90,30 +90,6 @@ export class CacheWarmerService {
     await Locker.lock('Esdt tokens invalidations', async () => {
       const tokens = await this.esdtService.getAllEsdtTokensRaw();
       await this.invalidateKey(CacheInfo.AllEsdtTokens.key, tokens, CacheInfo.AllEsdtTokens.ttl);
-    }, true);
-  }
-
-  @Cron(CronExpression.EVERY_10_MINUTES)
-  async handleTokenAssetsExtraInfoInvalidations() {
-    await Locker.lock('Token assets extra info invalidations', async () => {
-      const assets = await this.tokenAssetService.getAllAssets();
-      for (const identifier of Object.keys(assets)) {
-        const asset = assets[identifier];
-
-        if (asset.lockedAccounts) {
-          const lockedAccounts = await this.esdtService.getLockedAccountsRaw(identifier);
-          await this.invalidateKey(CacheInfo.TokenLockedAccounts(identifier).key, lockedAccounts, CacheInfo.TokenLockedAccounts(identifier).ttl);
-        }
-
-        if (asset.extraTokens) {
-          const accounts = await this.esdtService.countAllAccounts([identifier, ...asset.extraTokens]);
-          await this.cachingService.setCacheRemote(
-            CacheInfo.TokenAccountsExtra(identifier).key,
-            accounts,
-            CacheInfo.TokenAccountsExtra(identifier).ttl
-          );
-        }
-      }
     }, true);
   }
 
@@ -204,9 +180,36 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_10_MINUTES)
   async handleTokenAssetsInvalidations() {
     await Locker.lock('Token assets invalidations', async () => {
-      await this.tokenAssetService.checkout();
-      const assets = await this.tokenAssetService.getAllAssetsRaw();
+      await this.assetsService.checkout();
+      const assets = this.assetsService.getAllTokenAssetsRaw();
       await this.invalidateKey(CacheInfo.TokenAssets.key, assets, CacheInfo.TokenAssets.ttl);
+
+      const accountLabels = await this.assetsService.getAllAccountAssetsRaw();
+      await this.invalidateKey(CacheInfo.AccountAssets.key, accountLabels, CacheInfo.AccountAssets.ttl);
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleTokenAssetsExtraInfoInvalidations() {
+    await Locker.lock('Token assets extra info invalidations', async () => {
+      const assets = await this.assetsService.getAllTokenAssets();
+      for (const identifier of Object.keys(assets)) {
+        const asset = assets[identifier];
+
+        if (asset.lockedAccounts) {
+          const lockedAccounts = await this.esdtService.getLockedAccountsRaw(identifier);
+          await this.invalidateKey(CacheInfo.TokenLockedAccounts(identifier).key, lockedAccounts, CacheInfo.TokenLockedAccounts(identifier).ttl);
+        }
+
+        if (asset.extraTokens) {
+          const accounts = await this.esdtService.countAllAccounts([identifier, ...asset.extraTokens]);
+          await this.cachingService.setCacheRemote(
+            CacheInfo.TokenAccountsExtra(identifier).key,
+            accounts,
+            CacheInfo.TokenAccountsExtra(identifier).ttl
+          );
+        }
+      }
     }, true);
   }
 
