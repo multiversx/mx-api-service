@@ -5,13 +5,13 @@ api:
   private: true
   auth: false
 cron:
-  transactionProcessor: false
+  transactionProcessor: true
   transactionProcessorMaxLookBehind: 100
   transactionCompleted: false
   transactionCompletedMaxLookBehind: 100
-  cacheWarmer: false
-  fastWarm: false
-  queueWorker: false
+  cacheWarmer: true
+  fastWarm: true
+  queueWorker: true
   elasticUpdater: false
 flags:
   useRequestCaching: true
@@ -19,7 +19,7 @@ flags:
   useTracing: false
   useRequestLogging: false
   useVmQueryTracing: false
-  processNfts: false
+  processNfts: true
   indexer-v3: true
 features:
   eventsNotifier:
@@ -88,7 +88,7 @@ inflation:
   - 719203
 security:
   admins:
-  jwtSecret: '123456789'
+  jwtSecret:
   accessAddress:
 nftProcess:
   parallelism: 1
