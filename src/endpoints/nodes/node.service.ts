@@ -20,6 +20,7 @@ import { KeybaseState } from "src/common/keybase/entities/keybase.state";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { Auction } from "src/common/gateway/entities/auction";
 
 @Injectable()
 export class NodeService {
@@ -305,7 +306,30 @@ export class NodeService {
 
     await this.getNodesStakeDetails(nodes);
 
+    if (this.apiConfigService.isStakingV4Enabled()) {
+      const auctions = await this.gatewayService.getAuctions();
+      this.processAuctions(nodes, auctions);
+    }
+
     return nodes;
+  }
+
+  processAuctions(nodes: Node[], auctions: Auction[]) {
+    for (const node of nodes) {
+      let rank = 1;
+      for (const auction of auctions) {
+        for (const auctionNode of auction.auctionList) {
+          if (node.bls === auctionNode.blsKey) {
+            node.auctioned = true;
+            node.auctionRank = rank;
+            node.auctionTopUp = auction.qualifiedTopUp;
+            node.auctionSelected = auctionNode.selected;
+          }
+
+          rank++;
+        }
+      }
+    }
   }
 
   async getOwners(blses: string[], epoch: number) {
@@ -520,6 +544,10 @@ export class NodeService {
         validatorSuccess,
         issues: [],
         position: 0,
+        auctioned: undefined,
+        auctionRank: undefined,
+        auctionTopUp: undefined,
+        auctionSelected: undefined,
       };
 
       if (['queued', 'jailed'].includes(peerType)) {
