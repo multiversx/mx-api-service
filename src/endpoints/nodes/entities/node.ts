@@ -87,7 +87,7 @@ export class Node {
   auctioned: boolean | undefined = undefined;
 
   @ApiProperty({ type: Number, nullable: true })
-  auctionRank: number | undefined = undefined;
+  auctionPosition: number | undefined = undefined;
 
   @ApiProperty({ type: String, nullable: true })
   auctionTopUp: string | undefined = undefined;

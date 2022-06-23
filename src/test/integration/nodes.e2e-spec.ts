@@ -552,9 +552,9 @@ describe('Node Service', () => {
       nodeService.processAuctions(nodes, auctions);
 
       expect(nodes).toEqual([
-        new Node({ bls: '59ba4e8c', auctioned: true, auctionSelected: true, auctionRank: 1, auctionTopUp: '100' }),
+        new Node({ bls: '59ba4e8c', auctioned: true, auctionSelected: true, auctionPosition: 1, auctionTopUp: '100' }),
         new Node({ bls: '6a0a0796' }),
-        new Node({ bls: 'aee9b832', auctioned: true, auctionSelected: false, auctionRank: 2, auctionTopUp: '300' }),
+        new Node({ bls: 'aee9b832', auctioned: true, auctionSelected: false, auctionPosition: 2, auctionTopUp: '300' }),
       ]);
     });
   });

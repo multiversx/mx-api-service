@@ -159,6 +159,10 @@ export class NodeService {
         return false;
       }
 
+      if (query.auctioned !== undefined && node.auctioned !== query.auctioned) {
+        return false;
+      }
+
       if (query.sort && !(query.sort in node)) {
         return false;
       }
@@ -316,17 +320,17 @@ export class NodeService {
 
   processAuctions(nodes: Node[], auctions: Auction[]) {
     for (const node of nodes) {
-      let rank = 1;
+      let position = 1;
       for (const auction of auctions) {
         for (const auctionNode of auction.auctionList) {
           if (node.bls === auctionNode.blsKey) {
             node.auctioned = true;
-            node.auctionRank = rank;
+            node.auctionPosition = position;
             node.auctionTopUp = auction.qualifiedTopUp;
             node.auctionSelected = auctionNode.selected;
           }
 
-          rank++;
+          position++;
         }
       }
     }
@@ -545,7 +549,7 @@ export class NodeService {
         issues: [],
         position: 0,
         auctioned: undefined,
-        auctionRank: undefined,
+        auctionPosition: undefined,
         auctionTopUp: undefined,
         auctionSelected: undefined,
       };
