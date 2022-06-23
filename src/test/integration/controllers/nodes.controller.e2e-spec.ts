@@ -176,7 +176,7 @@ describe("Nodes Controller", () => {
       .get(route + "?" + params)
       .expect(400)
       .then(res => {
-        expect(res.body.message).toEqual("Validation failed (one of the following values is expected: name, version, tempRating, leaderSuccess, leaderFailure, validatorSuccess, validatorFailure, validatorIgnoredSignatures, position)");
+        expect(res.body.message).toEqual("Validation failed (one of the following values is expected: name, version, tempRating, leaderSuccess, leaderFailure, validatorSuccess, validatorFailure, validatorIgnoredSignatures, position, auctionPosition)");
       });
   });
 
