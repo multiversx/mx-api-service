@@ -1,6 +1,6 @@
+import { ApiUtils } from "@elrondnetwork/nestjs-microservice-template";
 import { Injectable } from "@nestjs/common";
 import { ElasticService } from "src/common/elastic/elastic.service";
-import { ApiUtils } from "src/utils/api.utils";
 import { MiniBlockDetailed } from "./entities/mini.block.detailed";
 
 @Injectable()

@@ -3,7 +3,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { DelegationLegacy } from "./entities/delegation.legacy";
 import { AccountDelegationLegacy } from "./entities/account.delegation.legacy";
-import { AddressUtils } from "src/utils/address.utils";
+import { AddressUtils } from "@elrondnetwork/nestjs-microservice-template";
 
 @Injectable()
 export class DelegationLegacyService {

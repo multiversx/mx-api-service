@@ -2,18 +2,14 @@ import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Pa
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { Node } from "src/endpoints/nodes/entities/node";
-import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { NodeType } from "./entities/node.type";
-import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { NodeStatus } from "./entities/node.status";
-import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { SortOrder } from "src/common/entities/sort.order";
 import { NodeSort } from "./entities/node.sort";
-import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
-import { ParseBlsHashPipe } from "src/utils/pipes/parse.bls.hash.pipe";
 import { SortNodes } from "src/common/entities/sort.nodes";
 import { NodeFilter } from "./entities/node.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { ParseAddressPipe, ParseBlsHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe } from "@elrondnetwork/nestjs-microservice-template";
 
 @Controller()
 @ApiTags('nodes')

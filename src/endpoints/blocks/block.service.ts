@@ -1,11 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { Block } from "./entities/block";
 import { BlockDetailed } from "./entities/block.detailed";
-import { CachingService } from "src/common/caching/caching.service";
 import { BlockFilter } from "./entities/block.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlsService } from "src/endpoints/bls/bls.service";
-import { Constants } from "src/utils/constants";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { AbstractQuery } from "src/common/elastic/entities/abstract.query";
@@ -13,6 +11,7 @@ import { QueryType } from "src/common/elastic/entities/query.type";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CachingService, Constants } from "@elrondnetwork/nestjs-microservice-template";
 
 @Injectable()
 export class BlockService {

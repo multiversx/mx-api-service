@@ -1,9 +1,7 @@
+import { CachingService, JwtAdminGuard, JwtAuthenticateGuard } from "@elrondnetwork/nestjs-microservice-template";
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Param, Put, Query, UseGuards } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { ApiResponse } from "@nestjs/swagger";
-import { CachingService } from "src/common/caching/caching.service";
-import { JwtAdminGuard } from "src/utils/guards/jwt.admin.guard";
-import { JwtAuthenticateGuard } from "src/utils/guards/jwt.authenticate.guard";
 import { CacheValue } from "./entities/cache.value";
 
 @Controller()

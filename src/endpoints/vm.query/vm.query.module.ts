@@ -1,5 +1,5 @@
+import { CachingModule } from "@elrondnetwork/nestjs-microservice-template";
 import { Module } from "@nestjs/common";
-import { CachingModule } from "src/common/caching/caching.module";
 import { VmQueryService } from "./vm.query.service";
 
 @Module({

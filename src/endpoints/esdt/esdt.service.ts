@@ -8,15 +8,8 @@ import { QueryType } from "src/common/elastic/entities/query.type";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
-import { AddressUtils } from "src/utils/address.utils";
-import { ApiUtils } from "src/utils/api.utils";
-import { BinaryUtils } from "src/utils/binary.utils";
-import { Constants } from "src/utils/constants";
-import { NumberUtils } from "src/utils/number.utils";
-import { RecordUtils } from "src/utils/record.utils";
 import { TokenUtils } from "src/utils/token.utils";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
-import { CachingService } from "../../common/caching/caching.service";
 import { GatewayService } from "../../common/gateway/gateway.service";
 import { MexTokenService } from "../mex/mex.token.service";
 import { TokenAssets } from "../../common/assets/entities/token.assets";
@@ -26,6 +19,7 @@ import { AssetsService } from "../../common/assets/assets.service";
 import { TransactionService } from "../transactions/transaction.service";
 import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
+import { AddressUtils, ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService } from "@elrondnetwork/nestjs-microservice-template";
 
 @Injectable()
 export class EsdtService {

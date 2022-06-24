@@ -1,10 +1,10 @@
-import { ApiUtils } from "./api.utils";
 import * as crypto from 'crypto-js';
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles";
 import { TokenRoles } from "src/endpoints/tokens/entities/token.roles";
-import '../utils/extensions/string.extensions';
+import { ApiUtils } from '@elrondnetwork/nestjs-microservice-template';
+import '@elrondnetwork/nestjs-microservice-template/lib/src/utils/extensions/string.extensions';
 
 export class TokenUtils {
   static isEsdt(tokenIdentifier: string) {

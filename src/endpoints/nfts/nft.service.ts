@@ -1,8 +1,6 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { ApiUtils } from "src/utils/api.utils";
-import { BinaryUtils } from "src/utils/binary.utils";
 import { TokenUtils } from "src/utils/token.utils";
 import { Nft } from "./entities/nft";
 import { NftAccount } from "./entities/nft.account";
@@ -17,21 +15,18 @@ import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { QueryOperator } from "src/common/elastic/entities/query.operator";
-import { CachingService } from "src/common/caching/caching.service";
-import { Constants } from "src/utils/constants";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { NftMetadataService } from "src/queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.service";
 import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.service";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 import { NftMedia } from "./entities/nft.media";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { RecordUtils } from "src/utils/record.utils";
 import { EsdtSupply } from "../esdt/entities/esdt.supply";
 import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { NumberUtils } from "src/utils/number.utils";
+import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService } from "@elrondnetwork/nestjs-microservice-template";
 
 @Injectable()
 export class NftService {

@@ -1,15 +1,10 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
-import { CachingService } from 'src/common/caching/caching.service';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { AccountDeferred } from './entities/account.deferred';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { Constants } from 'src/utils/constants';
-import { AddressUtils } from 'src/utils/address.utils';
-import { ApiUtils } from 'src/utils/api.utils';
-import { BinaryUtils } from 'src/utils/binary.utils';
 import { AccountKey } from './entities/account.key';
 import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 import { GatewayService } from 'src/common/gateway/gateway.service';
@@ -30,6 +25,7 @@ import { TransferService } from '../transfers/transfer.service';
 import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
+import { AddressUtils, ApiUtils, BinaryUtils, Constants, CachingService } from '@elrondnetwork/nestjs-microservice-template';
 
 @Injectable()
 export class AccountService {

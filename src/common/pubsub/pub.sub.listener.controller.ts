@@ -1,8 +1,8 @@
+import { CachingService } from "@elrondnetwork/nestjs-microservice-template";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Controller, Logger } from "@nestjs/common";
 import { EventPattern } from "@nestjs/microservices";
 import { WebSocketPublisherService } from "src/websockets/web-socket-publisher-service";
-import { CachingService } from "../caching/caching.service";
 
 @Controller()
 export class PubSubListenerController {

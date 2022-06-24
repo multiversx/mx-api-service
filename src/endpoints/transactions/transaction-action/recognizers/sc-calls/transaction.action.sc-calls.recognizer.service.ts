@@ -1,5 +1,5 @@
+import { AddressUtils } from "@elrondnetwork/nestjs-microservice-template";
 import { Injectable } from "@nestjs/common";
-import { AddressUtils } from "src/utils/address.utils";
 import { TransactionAction } from "../../entities/transaction.action";
 import { TransactionActionCategory } from "../../entities/transaction.action.category";
 import { TransactionMetadata } from "../../entities/transaction.metadata";

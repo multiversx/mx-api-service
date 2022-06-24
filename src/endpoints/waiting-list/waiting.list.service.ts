@@ -1,11 +1,8 @@
+import { AddressUtils, Constants, NumberUtils, CachingService } from "@elrondnetwork/nestjs-microservice-template";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CachingService } from "src/common/caching/caching.service";
-import { AddressUtils } from "src/utils/address.utils";
-import { Constants } from "src/utils/constants";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { WaitingList } from "./entities/waiting.list";
-import { NumberUtils } from 'src/utils/number.utils';
 
 @Injectable()
 export class WaitingListService {

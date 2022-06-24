@@ -1,3 +1,4 @@
+import { Constants, Locker } from "@elrondnetwork/nestjs-microservice-template";
 import { Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
@@ -5,8 +6,6 @@ import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
-import { Constants } from "src/utils/constants";
-import { Locker } from "src/utils/locker";
 
 @Injectable()
 export class NftCronService {

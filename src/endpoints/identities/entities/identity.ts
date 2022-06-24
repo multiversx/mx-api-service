@@ -1,5 +1,5 @@
+import { SwaggerUtils } from "@elrondnetwork/nestjs-microservice-template";
 import { ApiProperty } from "@nestjs/swagger";
-import { SwaggerUtils } from "src/utils/swagger.utils";
 
 export class Identity {
   @ApiProperty({ type: String })

@@ -5,7 +5,6 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { ApiConfigService } from './common/api-config/api.config.service';
-import { CachingService } from './common/caching/caching.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { FieldsInterceptor } from './interceptors/fields.interceptor';
 import { PrivateAppModule } from './private.app.module';
@@ -33,8 +32,7 @@ import { SocketAdapter } from './websockets/socket-adapter';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
 import { QueryCheckInterceptor } from './interceptors/query.check.interceptor';
 import { ApiConfigModule } from './common/api-config/api.config.module';
-import { SwaggerCustomTypes } from './utils/swagger-custom-styles.utils';
-import { JwtAuthenticateGlobalGuard } from './utils/guards/jwt.authenticate.global.guard';
+import { JwtAuthenticateGlobalGuard, CachingService } from '@elrondnetwork/nestjs-microservice-template';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
@@ -146,7 +144,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
 
   if (apiConfigService.getIsAuthActive()) {
-    publicApp.useGlobalGuards(new JwtAuthenticateGlobalGuard(apiConfigService));
+    publicApp.useGlobalGuards(new JwtAuthenticateGlobalGuard());
   }
 
   const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
@@ -200,7 +198,22 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   }
 
   const config = documentBuilder.build();
-  const options = SwaggerCustomTypes.customSwagger();
+  const options = {
+    customSiteTitle: 'Elrond API',
+    customCss: `.topbar-wrapper img 
+          {
+            content:url(\'/img/customElrondLogo.png\'); width:250px; height:auto;
+          }
+          .swagger-ui .topbar { background-color: #FAFAFA; }
+          .swagger-ui .scheme-container {background-color: #FAFAFA;}`,
+
+
+    customfavIcon: '/img/customElrondFavIcon.png',
+    swaggerOptions: {
+      filter: true,
+      displayRequestDuration: true,
+    },
+  };
 
   const document = SwaggerModule.createDocument(publicApp, config);
   SwaggerModule.setup('docs', publicApp, document, options);

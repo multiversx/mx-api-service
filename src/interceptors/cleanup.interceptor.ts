@@ -1,7 +1,7 @@
+import { ApiUtils } from "@elrondnetwork/nestjs-microservice-template";
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { tap } from 'rxjs/operators';
-import { ApiUtils } from "src/utils/api.utils";
 
 @Injectable()
 export class CleanupInterceptor implements NestInterceptor {

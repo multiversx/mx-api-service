@@ -1,3 +1,4 @@
+import { ParseAddressPipe, ParseBlockHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseTransactionHashPipe } from '@elrondnetwork/nestjs-microservice-template';
 import {
   BadRequestException,
   Body,
@@ -7,6 +8,7 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  ParseArrayPipe,
   ParseIntPipe,
   Post,
   Query,
@@ -14,13 +16,6 @@ import {
 import { ApiCreatedResponse, ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 import { SortOrder } from 'src/common/entities/sort.order';
-import { ParseAddressPipe } from 'src/utils/pipes/parse.address.pipe';
-import { ParseArrayPipe } from 'src/utils/pipes/parse.array.pipe';
-import { ParseBlockHashPipe } from 'src/utils/pipes/parse.block.hash.pipe';
-import { ParseOptionalBoolPipe } from 'src/utils/pipes/parse.optional.bool.pipe';
-import { ParseOptionalEnumPipe } from 'src/utils/pipes/parse.optional.enum.pipe';
-import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
-import { ParseTransactionHashPipe } from 'src/utils/pipes/parse.transaction.hash.pipe';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';

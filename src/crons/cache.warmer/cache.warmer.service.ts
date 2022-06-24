@@ -3,9 +3,6 @@ import { Cron, CronExpression, SchedulerRegistry } from "@nestjs/schedule";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
-import { Constants } from "src/utils/constants";
-import { Locker } from "src/utils/locker";
-import { CachingService } from "src/common/caching/caching.service";
 import { ClientProxy } from "@nestjs/microservices";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NetworkService } from "src/endpoints/network/network.service";
@@ -25,6 +22,7 @@ import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexTokenService } from "src/endpoints/mex/mex.token.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import AsyncLock from "async-lock";
+import { CachingService, Constants, Locker } from "@elrondnetwork/nestjs-microservice-template";
 
 @Injectable()
 export class CacheWarmerService {

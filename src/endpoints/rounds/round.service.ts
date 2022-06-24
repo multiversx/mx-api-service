@@ -4,14 +4,13 @@ import { RoundDetailed } from "./entities/round.detailed";
 import { RoundFilter } from "./entities/round.filter";
 import { BlsService } from "src/endpoints/bls/bls.service";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
-import { RoundUtils } from "src/utils/round.utils";
-import { ApiUtils } from "src/utils/api.utils";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { AbstractQuery } from "src/common/elastic/entities/abstract.query";
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { ApiUtils, RoundUtils } from "@elrondnetwork/nestjs-microservice-template";
 
 @Injectable()
 export class RoundService {

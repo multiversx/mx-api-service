@@ -1,5 +1,5 @@
+import { PerformanceProfiler } from "@elrondnetwork/nestjs-microservice-template";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { MetricsService } from "../metrics/metrics.service";
 import { ApiService } from "../network/api.service";

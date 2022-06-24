@@ -1,6 +1,7 @@
+import { CachingService } from "@elrondnetwork/nestjs-microservice-template";
+import { Constants, FileUtils } from "@elrondnetwork/nestjs-microservice-template";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
 import { KeybaseService } from "src/common/keybase/keybase.service";
@@ -8,8 +9,6 @@ import { EsdtService } from "src/endpoints/esdt/esdt.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { PublicAppModule } from "src/public.app.module";
-import { Constants } from "src/utils/constants";
-import { FileUtils } from "src/utils/file.utils";
 import "../../utils/extensions/jest.extensions";
 
 export default class Initializer {

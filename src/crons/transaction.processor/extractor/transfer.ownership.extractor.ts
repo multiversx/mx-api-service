@@ -1,6 +1,6 @@
+import { BinaryUtils } from "@elrondnetwork/nestjs-microservice-template";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Logger } from "@nestjs/common";
-import { BinaryUtils } from "src/utils/binary.utils";
 import { TransactionExtractorInterface } from "./transaction.extractor.interface";
 
 export class TransferOwnershipExtractor implements TransactionExtractorInterface<{ identifier: string }> {

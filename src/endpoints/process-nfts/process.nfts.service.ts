@@ -1,9 +1,8 @@
+import { AddressUtils, CachingService } from "@elrondnetwork/nestjs-microservice-template";
 import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
-import { AddressUtils } from "src/utils/address.utils";
 import asyncPool from "tiny-async-pool";
 import { AccountService } from "../accounts/account.service";
 import { CollectionService } from "../collections/collection.service";

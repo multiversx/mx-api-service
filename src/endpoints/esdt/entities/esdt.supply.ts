@@ -1,6 +1,6 @@
 import { EsdtLockedAccount } from "./esdt.locked.account";
-import { SwaggerUtils } from 'src/utils/swagger.utils';
 import { ApiProperty } from "@nestjs/swagger";
+import { SwaggerUtils } from "@elrondnetwork/nestjs-microservice-template";
 
 export class EsdtSupply {
   @ApiProperty(SwaggerUtils.amountPropertyOptions())

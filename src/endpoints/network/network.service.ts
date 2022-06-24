@@ -1,9 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Stats } from 'src/endpoints/network/entities/stats';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { CachingService } from 'src/common/caching/caching.service';
-import { Constants } from 'src/utils/constants';
-import { NumberUtils } from 'src/utils/number.utils';
 import { AccountService } from '../accounts/account.service';
 import { BlockService } from '../blocks/block.service';
 import { BlockFilter } from '../blocks/entities/block.filter';
@@ -20,6 +17,7 @@ import { ApiService } from 'src/common/network/api.service';
 import { DataQuoteType } from 'src/common/external/entities/data.quote.type';
 import { CacheInfo } from 'src/common/caching/entities/cache.info';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
+import { Constants, NumberUtils, CachingService } from '@elrondnetwork/nestjs-microservice-template';
 
 @Injectable()
 export class NetworkService {

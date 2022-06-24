@@ -1,10 +1,10 @@
+import { PerformanceProfiler } from "@elrondnetwork/nestjs-microservice-template";
 import { CallHandler, ExecutionContext, HttpStatus, Injectable, Logger, NestInterceptor } from "@nestjs/common";
 import { Observable, throwError } from "rxjs";
 import { catchError, tap } from 'rxjs/operators';
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { ProxyController } from "src/endpoints/proxy/proxy.controller";
 import { TransactionController } from "src/endpoints/transactions/transaction.controller";
-import { PerformanceProfiler } from "src/utils/performance.profiler";
 import winston from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
 

@@ -1,11 +1,10 @@
+import { PerformanceProfiler, CachingService } from "@elrondnetwork/nestjs-microservice-template";
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CachingService } from "src/common/caching/caching.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
-import { PerformanceProfiler } from "src/utils/performance.profiler";
 
 @Injectable()
 export class VmQueryService {

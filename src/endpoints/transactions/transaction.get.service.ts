@@ -8,8 +8,6 @@ import { QueryConditionOptions } from "src/common/elastic/entities/query.conditi
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { ApiUtils } from "src/utils/api.utils";
-import { BinaryUtils } from "src/utils/binary.utils";
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
 import { Transaction } from "./entities/transaction";
 import { TransactionDetailed } from "./entities/transaction.detailed";
@@ -17,7 +15,8 @@ import { TransactionLog } from "./entities/transaction.log";
 import { TransactionOptionalFieldOption } from "./entities/transaction.optional.field.options";
 import { TransactionReceipt } from "./entities/transaction.receipt";
 import { TokenTransferService } from "../tokens/token.transfer.service";
-import { TransactionUtils } from "src/utils/transaction.utils";
+import { ApiUtils, BinaryUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { TransactionUtils } from "./transaction.utils";
 
 @Injectable()
 export class TransactionGetService {

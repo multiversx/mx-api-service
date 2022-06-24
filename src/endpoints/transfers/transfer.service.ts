@@ -9,12 +9,11 @@ import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { QueryType } from "src/common/elastic/entities/query.type";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { SortOrder } from "src/common/entities/sort.order";
-import { ApiUtils } from "src/utils/api.utils";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionType } from "../transactions/entities/transaction.type";
 import { Transaction } from "../transactions/entities/transaction";
 import { TransactionService } from "../transactions/transaction.service";
-import { AddressUtils } from "src/utils/address.utils";
+import { AddressUtils, ApiUtils } from "@elrondnetwork/nestjs-microservice-template";
 
 @Injectable()
 export class TransferService {

@@ -1,8 +1,8 @@
+import { CachingModule } from '@elrondnetwork/nestjs-microservice-template';
 import { forwardRef, Module } from '@nestjs/common';
 import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { WebSocketPublisherModule } from 'src/websockets/web-socket-publisher-module';
 import { ApiConfigService } from '../api-config/api.config.service';
-import { CachingModule } from '../caching/caching.module';
 import { PubSubListenerController } from './pub.sub.listener.controller';
 
 @Module({

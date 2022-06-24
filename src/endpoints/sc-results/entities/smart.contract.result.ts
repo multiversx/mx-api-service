@@ -1,6 +1,6 @@
+import { SwaggerUtils } from "@elrondnetwork/nestjs-microservice-template";
 import { ApiProperty } from "@nestjs/swagger";
 import { TransactionAction } from "src/endpoints/transactions/transaction-action/entities/transaction.action";
-import { SwaggerUtils } from "src/utils/swagger.utils";
 import { TransactionLog } from "../../transactions/entities/transaction.log";
 
 export class SmartContractResult {

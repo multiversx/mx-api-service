@@ -3,8 +3,8 @@ import axios, { AxiosRequestConfig } from "axios";
 import Agent from 'agentkeepalive';
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { ApiConfigService } from "../api-config/api.config.service";
-import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { ApiSettings } from "./entities/api.settings";
+import { PerformanceProfiler } from "@elrondnetwork/nestjs-microservice-template";
 
 @Injectable()
 export class ApiService {

@@ -1,7 +1,5 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
-import { AddressUtils } from 'src/utils/address.utils';
-import { ApiUtils } from 'src/utils/api.utils';
 import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
@@ -23,16 +21,15 @@ import { ElasticSortProperty } from 'src/common/elastic/entities/elastic.sort.pr
 import { ElasticSortOrder } from 'src/common/elastic/entities/elastic.sort.order';
 import { TermsQuery } from 'src/common/elastic/entities/terms.query';
 import { PluginService } from 'src/common/plugins/plugin.service';
-import { CachingService } from 'src/common/caching/caching.service';
 import { CacheInfo } from 'src/common/caching/entities/cache.info';
-import { Constants } from 'src/utils/constants';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { SortOrder } from 'src/common/entities/sort.order';
-import { TransactionUtils } from 'src/utils/transaction.utils';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
+import { AddressUtils, ApiUtils, Constants, CachingService } from '@elrondnetwork/nestjs-microservice-template';
+import { TransactionUtils } from './transaction.utils';
 
 @Injectable()
 export class TransactionService {

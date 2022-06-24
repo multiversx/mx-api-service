@@ -1,7 +1,7 @@
+import { JwtAuthenticateGuard } from "@elrondnetwork/nestjs-microservice-template";
 import { BadRequestException, Body, Controller, Post, UseGuards } from "@nestjs/common";
 import { ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { Jwt } from "src/decorators/jwt";
-import { JwtAuthenticateGuard } from "src/utils/guards/jwt.authenticate.guard";
 import { ProcessNftRequest } from "./entities/process.nft.request";
 import { ProcessNftsService } from "./process.nfts.service";
 

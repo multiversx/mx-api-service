@@ -2,9 +2,9 @@ import { Injectable } from "@nestjs/common";
 import { NodeService } from "../nodes/node.service";
 import { NodeStatus } from "../nodes/entities/node.status";
 import { Shard } from "./entities/shard";
-import { CachingService } from "src/common/caching/caching.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CachingService } from "@elrondnetwork/nestjs-microservice-template";
 
 @Injectable()
 export class ShardService {

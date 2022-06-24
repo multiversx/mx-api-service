@@ -1,7 +1,6 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
 import { ApiService } from "../network/api.service";
-import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { ElasticQuery } from "./entities/elastic.query";
@@ -12,6 +11,7 @@ import { QueryPagination } from "../entities/query.pagination";
 import { ElasticSortOrder } from "./entities/elastic.sort.order";
 import { ElasticMetricType } from "../metrics/entities/elastic.metric.type";
 import { RangeQuery } from "./entities/range.query";
+import { PerformanceProfiler } from "@elrondnetwork/nestjs-microservice-template";
 
 @Injectable()
 export class ElasticService {

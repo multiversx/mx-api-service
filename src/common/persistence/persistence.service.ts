@@ -1,6 +1,6 @@
+import { PerformanceProfiler } from "@elrondnetwork/nestjs-microservice-template";
 import { Inject, Injectable } from "@nestjs/common";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
-import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { MetricsService } from "../metrics/metrics.service";
 import { PersistenceInterface } from "./persistence.interface";
 

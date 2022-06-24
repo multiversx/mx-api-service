@@ -1,9 +1,9 @@
+import { CachingModule } from '@elrondnetwork/nestjs-microservice-template';
 import { Module } from '@nestjs/common';
 import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ApiConfigModule } from 'src/common/api-config/api.config.module';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { CachingModule } from 'src/common/caching/caching.module';
 import { TransactionCompletedService } from './transaction.completed.service';
 
 @Module({

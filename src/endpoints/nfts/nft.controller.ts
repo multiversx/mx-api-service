@@ -1,15 +1,13 @@
 import { NftSupply } from './entities/nft.supply';
-import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, ParseIntPipe, Query, Res, Response } from "@nestjs/common";
+import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, ParseArrayPipe, ParseIntPipe, Query, Res, Response } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.service";
-import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
-import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
-import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { Nft } from "./entities/nft";
 import { NftFilter } from "./entities/nft.filter";
 import { NftOwner } from "./entities/nft.owner";
 import { NftType } from "./entities/nft.type";
 import { NftService } from "./nft.service";
+import { ParseAddressPipe, ParseOptionalBoolPipe } from '@elrondnetwork/nestjs-microservice-template';
 
 @Controller()
 @ApiTags('nfts')

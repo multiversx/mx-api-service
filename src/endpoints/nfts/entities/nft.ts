@@ -1,10 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
-import { SwaggerUtils } from "src/utils/swagger.utils";
 import { NftMedia } from "./nft.media";
 import { NftMetadata } from "./nft.metadata";
 import { NftType } from "./nft.type";
+import { SwaggerUtils } from "@elrondnetwork/nestjs-microservice-template";
 
 export class Nft {
   @ApiProperty({ type: String })
