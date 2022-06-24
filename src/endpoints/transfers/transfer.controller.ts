@@ -1,5 +1,5 @@
-import { ParseAddressPipe, ParseBlockHashPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe } from "@elrondnetwork/nestjs-microservice-template";
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, ParseArrayPipe, ParseIntPipe, Query } from "@nestjs/common";
+import { ParseAddressPipe, ParseBlockHashPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseArrayPipe } from "@elrondnetwork/nestjs-microservice-template";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { SortOrder } from "src/common/entities/sort.order";

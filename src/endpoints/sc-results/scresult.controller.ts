@@ -1,5 +1,6 @@
+import { ParseArrayPipe } from "@elrondnetwork/nestjs-microservice-template";
 import { ParseBlockHashPipe, ParseTransactionHashPipe } from "@elrondnetwork/nestjs-microservice-template";
-import { Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseArrayPipe, ParseIntPipe, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { SmartContractResult } from "./entities/smart.contract.result";
 import { SmartContractResultService } from "./scresult.service";

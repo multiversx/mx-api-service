@@ -1,4 +1,5 @@
-import { Controller, Get, HttpException, HttpStatus, Param, ParseArrayPipe, Query } from "@nestjs/common";
+import { ParseArrayPipe } from "@elrondnetwork/nestjs-microservice-template";
+import { Controller, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { Identity } from "./entities/identity";
 import { IdentitiesService } from "./identities.service";
