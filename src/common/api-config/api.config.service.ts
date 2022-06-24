@@ -612,4 +612,17 @@ export class ApiConfigService {
   getGithubToken(): string | undefined {
     return this.configService.get<string>('github.token');
   }
+
+  isStakingV4Enabled(): boolean {
+    return this.configService.get<boolean>('features.stakingV4.enabled') ?? false;
+  }
+
+  getStakingV4CronExpression(): string {
+    const cronExpression = this.configService.get<string>('features.stakingV4.cronExpression');
+    if (!cronExpression) {
+      throw new Error('No staking V4 cron expression present');
+    }
+
+    return cronExpression;
+  }
 }

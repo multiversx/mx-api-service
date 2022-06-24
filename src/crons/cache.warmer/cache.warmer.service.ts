@@ -24,9 +24,12 @@ import { MexEconomicsService } from "src/endpoints/mex/mex.economics.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexTokenService } from "src/endpoints/mex/mex.token.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
+import AsyncLock from "async-lock";
 
 @Injectable()
 export class CacheWarmerService {
+  private readonly lock: AsyncLock;
+
   constructor(
     private readonly nodeService: NodeService,
     private readonly esdtService: EsdtService,
@@ -48,6 +51,8 @@ export class CacheWarmerService {
     private readonly mexSettingsService: MexSettingsService,
     private readonly mexFarmsService: MexFarmService,
   ) {
+    this.lock = new AsyncLock();
+
     this.configCronJob(
       'handleKeybaseAgainstKeybasePubInvalidations',
       CronExpression.EVERY_MINUTE,
@@ -68,6 +73,12 @@ export class CacheWarmerService {
       CronExpression.EVERY_5_MINUTES,
       async () => await this.handleIdentityInvalidations()
     );
+
+    if (this.apiConfigService.isStakingV4Enabled()) {
+      const handleNodeAuctionInvalidationsCronJob = new CronJob(this.apiConfigService.getStakingV4CronExpression(), async () => await this.handleNodeAuctionInvalidations());
+      this.schedulerRegistry.addCronJob(this.handleNodeAuctionInvalidations.name, handleNodeAuctionInvalidationsCronJob);
+      handleNodeAuctionInvalidationsCronJob.start();
+    }
   }
 
   private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {
@@ -79,9 +90,25 @@ export class CacheWarmerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleNodeInvalidations() {
-    await Locker.lock('Nodes invalidations', async () => {
-      const nodes = await this.nodeService.getAllNodesRaw();
-      await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
+    await Locker.lock('Node invalidations', async () => {
+      await this.lock.acquire('nodes', async () => {
+        const nodes = await this.nodeService.getAllNodesRaw();
+        await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleNodeAuctionInvalidations() {
+    await Locker.lock('Node auction invalidations', async () => {
+      await this.lock.acquire('nodes', async () => {
+        const nodes = await this.nodeService.getAllNodes();
+        const auctions = await this.gatewayService.getAuctions();
+
+        this.nodeService.processAuctions(nodes, auctions);
+
+        await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
+      });
     }, true);
   }
 

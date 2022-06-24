@@ -1,6 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class Economics {
+  constructor(init?: Partial<Economics>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty()
   totalSupply: number = 0;
 
@@ -24,4 +28,7 @@ export class Economics {
 
   @ApiProperty()
   baseApr: number = 0;
+
+  @ApiProperty({ type: String, nullable: true })
+  minimumAuctionTopUp: string | undefined = undefined;
 }

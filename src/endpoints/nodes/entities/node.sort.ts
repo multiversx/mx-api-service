@@ -8,4 +8,5 @@ export enum NodeSort {
   validatorFailure = 'validatorFailure',
   validatorIgnoredSignatures = 'validatorIgnoredSignatures',
   position = 'position',
+  auctionPosition = 'auctionPosition',
 }
