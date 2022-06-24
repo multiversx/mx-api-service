@@ -9,7 +9,7 @@ import '@elrondnetwork/nestjs-microservice-template/lib/src/utils/extensions/num
 import '@elrondnetwork/nestjs-microservice-template/lib/src/utils/extensions/string.extensions';
 import { EndpointsServicesModule } from './endpoints/endpoints.services.module';
 import { EndpointsControllersModule } from './endpoints/endpoints.controllers.module';
-import { LoggingModule } from './common/logging/logging.module';
+import { LoggingModule } from '@elrondnetwork/nestjs-microservice-template';
 
 @Module({
   imports: [

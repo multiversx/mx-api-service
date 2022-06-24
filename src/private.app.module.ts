@@ -2,11 +2,11 @@ import { Module } from '@nestjs/common';
 import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { ApiConfigService } from './common/api-config/api.config.service';
 import { CacheController } from './common/caching/cache.controller';
-import { LoggingModule } from './common/logging/logging.module';
 import { MetricsController } from './common/metrics/metrics.controller';
 import { HealthCheckController } from './endpoints/health-check/health.check.controller';
 import { ProcessNftsPrivateController } from './endpoints/process-nfts/process.nfts.private.controller';
 import { ProcessNftsModule } from './endpoints/process-nfts/process.nfts.module';
+import { LoggingModule } from '@elrondnetwork/nestjs-microservice-template';
 
 @Module({
   imports: [
