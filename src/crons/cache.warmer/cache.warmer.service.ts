@@ -98,7 +98,6 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
   async handleNodeAuctionInvalidations() {
     await Locker.lock('Node auction invalidations', async () => {
       await this.lock.acquire('nodes', async () => {
