@@ -19,7 +19,7 @@ export class JwtAuthenticateGuard implements CanActivate {
   ): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 
-    const noAuthMethodMetadata = DecoratorUtils.getMethodDecorator(NoAuthOptions, context.getClass());
+    const noAuthMethodMetadata = DecoratorUtils.getMethodDecorator(NoAuthOptions, context.getHandler());
     if (noAuthMethodMetadata) {
       return true;
     }
