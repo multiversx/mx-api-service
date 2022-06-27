@@ -1,6 +1,8 @@
 import { Injectable, CanActivate, ExecutionContext, Logger } from '@nestjs/common';
 import { TokenExpiredError, verify } from 'jsonwebtoken';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { NoAuthOptions } from 'src/decorators/no.auth';
+import { DecoratorUtils } from '../decorator.utils';
 
 @Injectable()
 export class JwtAuthenticateGuard implements CanActivate {
@@ -16,6 +18,11 @@ export class JwtAuthenticateGuard implements CanActivate {
     context: ExecutionContext,
   ): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
+
+    const noAuthMethodMetadata = DecoratorUtils.getMethodDecorator(NoAuthOptions, context.getHandler());
+    if (noAuthMethodMetadata) {
+      return true;
+    }
 
     const authorization: string = request.headers['authorization'];
     if (!authorization) {
