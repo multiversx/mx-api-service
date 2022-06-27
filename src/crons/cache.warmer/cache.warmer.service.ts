@@ -25,6 +25,7 @@ import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexTokenService } from "src/endpoints/mex/mex.token.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import AsyncLock from "async-lock";
+import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -50,6 +51,7 @@ export class CacheWarmerService {
     private readonly mexTokensService: MexTokenService,
     private readonly mexSettingsService: MexSettingsService,
     private readonly mexFarmsService: MexFarmService,
+    private readonly delegationLegacyService: DelegationLegacyService,
   ) {
     this.lock = new AsyncLock();
 
@@ -95,6 +97,14 @@ export class CacheWarmerService {
         const nodes = await this.nodeService.getAllNodesRaw();
         await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
       });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleDelegationLegacyInvalidations() {
+    await Locker.lock('Delegation legacy invalidations', async () => {
+      const delegation = await this.delegationLegacyService.getDelegationRaw();
+      await this.invalidateKey(CacheInfo.DelegationLegacy.key, delegation, CacheInfo.DelegationLegacy.ttl);
     }, true);
   }
 
