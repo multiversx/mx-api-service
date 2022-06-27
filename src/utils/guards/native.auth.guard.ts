@@ -1,6 +1,8 @@
 import { NativeAuthServer } from '@elrondnetwork/native-auth';
 import { Injectable, CanActivate, ExecutionContext, Logger, UnauthorizedException } from '@nestjs/common';
 import { CachingService } from 'src/common/caching/caching.service';
+import { NoAuthOptions } from 'src/decorators/no.auth';
+import { DecoratorUtils } from '../decorator.utils';
 
 @Injectable()
 export class NativeAuthGuard implements CanActivate {
@@ -29,6 +31,11 @@ export class NativeAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
+
+    const noAuthMethodMetadata = DecoratorUtils.getMethodDecorator(NoAuthOptions, context.getHandler());
+    if (noAuthMethodMetadata) {
+      return true;
+    }
 
     const host = new URL(request.headers['origin']).hostname;
 

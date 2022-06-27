@@ -1,7 +1,8 @@
 import { CanActivate, ExecutionContext, Injectable, Logger } from "@nestjs/common";
 import { TokenExpiredError, verify } from 'jsonwebtoken';
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { HealthCheckController } from "src/endpoints/health-check/health.check.controller";
+import { NoAuthOptions } from "src/decorators/no.auth";
+import { DecoratorUtils } from "../decorator.utils";
 
 @Injectable()
 export class JwtAuthenticateGlobalGuard implements CanActivate {
@@ -18,7 +19,8 @@ export class JwtAuthenticateGlobalGuard implements CanActivate {
   ): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 
-    if (context.getClass().name === HealthCheckController.name) {
+    const noAuthMethodMetadata = DecoratorUtils.getMethodDecorator(NoAuthOptions, context.getHandler());
+    if (noAuthMethodMetadata) {
       return true;
     }
 
