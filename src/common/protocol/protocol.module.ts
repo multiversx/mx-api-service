@@ -1,4 +1,4 @@
-import { CachingModule } from "@elrondnetwork/nestjs-microservice-template";
+import { CachingModule } from "@elrondnetwork/nestjs-microservice-common";
 import { forwardRef, Global, Module } from "@nestjs/common";
 import { ElasticModule } from "../elastic/elastic.module";
 import { GatewayModule } from "../gateway/gateway.module";

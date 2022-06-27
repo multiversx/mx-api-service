@@ -1,4 +1,4 @@
-import { ParseBlockHashPipe } from "@elrondnetwork/nestjs-microservice-template";
+import { ParseBlockHashPipe } from "@elrondnetwork/nestjs-microservice-common";
 import { Controller, Get, HttpException, HttpStatus, Param } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { MiniBlockDetailed } from "./entities/mini.block.detailed";

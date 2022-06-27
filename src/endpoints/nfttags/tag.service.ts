@@ -4,7 +4,7 @@ import { Tag } from "./entities/tag";
 import { ElasticService } from "src/common/elastic/elastic.service";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
-import { ApiUtils, BinaryUtils, Constants, CachingService } from "@elrondnetwork/nestjs-microservice-template";
+import { ApiUtils, BinaryUtils, Constants, CachingService } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class TagService {

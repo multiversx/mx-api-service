@@ -22,7 +22,7 @@ import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexTokenService } from "src/endpoints/mex/mex.token.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import AsyncLock from "async-lock";
-import { CachingService, Constants, Locker } from "@elrondnetwork/nestjs-microservice-template";
+import { CachingService, Constants, Locker } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class CacheWarmerService {

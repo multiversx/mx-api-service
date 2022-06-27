@@ -7,7 +7,7 @@ import { Response } from "express";
 import { NoCache } from "src/decorators/no.cache";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { PluginService } from "src/common/plugins/plugin.service";
-import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseTransactionHashPipe, CachingService } from "@elrondnetwork/nestjs-microservice-template";
+import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseTransactionHashPipe, CachingService } from "@elrondnetwork/nestjs-microservice-common";
 
 @Controller()
 @ApiTags('proxy')

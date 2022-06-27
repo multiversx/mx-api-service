@@ -1,4 +1,4 @@
-import { FileUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { FileUtils } from "@elrondnetwork/nestjs-microservice-common";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 

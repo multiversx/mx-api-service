@@ -1,4 +1,4 @@
-import { CachingModule } from '@elrondnetwork/nestjs-microservice-template';
+import { CachingModule } from '@elrondnetwork/nestjs-microservice-common';
 import { forwardRef, Module } from '@nestjs/common';
 import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { WebSocketPublisherModule } from 'src/websockets/web-socket-publisher-module';

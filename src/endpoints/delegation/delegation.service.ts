@@ -3,7 +3,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Delegation } from "./entities/delegation";
 import { NodeService } from "../nodes/node.service";
-import { Constants, CachingService } from "@elrondnetwork/nestjs-microservice-template";
+import { Constants, CachingService } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class DelegationService {

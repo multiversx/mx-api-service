@@ -1,4 +1,4 @@
-import { PerformanceProfiler } from "@elrondnetwork/nestjs-microservice-template";
+import { PerformanceProfiler } from "@elrondnetwork/nestjs-microservice-common";
 import { CallHandler, ExecutionContext, HttpStatus, Injectable, Logger, NestInterceptor } from "@nestjs/common";
 import { Observable, throwError } from "rxjs";
 import { catchError, tap } from 'rxjs/operators';

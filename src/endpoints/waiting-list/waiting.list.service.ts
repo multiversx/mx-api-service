@@ -1,4 +1,4 @@
-import { AddressUtils, Constants, NumberUtils, CachingService } from "@elrondnetwork/nestjs-microservice-template";
+import { AddressUtils, Constants, NumberUtils, CachingService } from "@elrondnetwork/nestjs-microservice-common";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { VmQueryService } from "../vm.query/vm.query.service";

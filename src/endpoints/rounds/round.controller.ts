@@ -1,4 +1,4 @@
-import { ParseBlsHashPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe } from "@elrondnetwork/nestjs-microservice-template";
+import { ParseBlsHashPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe } from "@elrondnetwork/nestjs-microservice-common";
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";

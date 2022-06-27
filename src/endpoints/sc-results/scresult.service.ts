@@ -1,4 +1,4 @@
-import { ApiUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { ApiUtils } from "@elrondnetwork/nestjs-microservice-common";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { ElasticService } from "src/common/elastic/elastic.service";

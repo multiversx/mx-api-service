@@ -4,7 +4,7 @@ import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { NftMedia } from "./nft.media";
 import { NftMetadata } from "./nft.metadata";
 import { NftType } from "./nft.type";
-import { SwaggerUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { SwaggerUtils } from "@elrondnetwork/nestjs-microservice-common";
 
 export class Nft {
   @ApiProperty({ type: String })

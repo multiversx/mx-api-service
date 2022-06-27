@@ -1,4 +1,4 @@
-import { DecoratorUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { DecoratorUtils } from "@elrondnetwork/nestjs-microservice-common";
 
 export class NoCacheOptions { }
 

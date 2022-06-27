@@ -15,7 +15,7 @@ import { TransactionLog } from "./entities/transaction.log";
 import { TransactionOptionalFieldOption } from "./entities/transaction.optional.field.options";
 import { TransactionReceipt } from "./entities/transaction.receipt";
 import { TokenTransferService } from "../tokens/token.transfer.service";
-import { ApiUtils, BinaryUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { ApiUtils, BinaryUtils } from "@elrondnetwork/nestjs-microservice-common";
 import { TransactionUtils } from "./transaction.utils";
 
 @Injectable()

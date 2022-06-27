@@ -17,7 +17,7 @@ import { ApiService } from 'src/common/network/api.service';
 import { DataQuoteType } from 'src/common/external/entities/data.quote.type';
 import { CacheInfo } from 'src/common/caching/entities/cache.info';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
-import { Constants, NumberUtils, CachingService } from '@elrondnetwork/nestjs-microservice-template';
+import { Constants, NumberUtils, CachingService } from '@elrondnetwork/nestjs-microservice-common';
 
 @Injectable()
 export class NetworkService {

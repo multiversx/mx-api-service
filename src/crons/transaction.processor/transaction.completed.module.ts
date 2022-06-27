@@ -1,4 +1,4 @@
-import { CachingModule } from '@elrondnetwork/nestjs-microservice-template';
+import { CachingModule } from '@elrondnetwork/nestjs-microservice-common';
 import { Module } from '@nestjs/common';
 import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { ScheduleModule } from '@nestjs/schedule';

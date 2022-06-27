@@ -11,7 +11,7 @@ import { QueryType } from "src/common/elastic/entities/query.type";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { CachingService, Constants } from "@elrondnetwork/nestjs-microservice-template";
+import { CachingService, Constants } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class BlockService {

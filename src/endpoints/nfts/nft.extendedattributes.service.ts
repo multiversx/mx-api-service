@@ -1,4 +1,4 @@
-import { Constants, MatchUtils, CachingService } from "@elrondnetwork/nestjs-microservice-template";
+import { Constants, MatchUtils, CachingService } from "@elrondnetwork/nestjs-microservice-common";
 import { Injectable, Logger } from "@nestjs/common";
 import { ApiService } from "src/common/network/api.service";
 import { NftMetadata } from "src/endpoints/nfts/entities/nft.metadata";

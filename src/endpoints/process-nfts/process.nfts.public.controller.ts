@@ -1,4 +1,4 @@
-import { JwtAuthenticateGuard } from "@elrondnetwork/nestjs-microservice-template";
+import { JwtAuthenticateGuard } from "@elrondnetwork/nestjs-microservice-common";
 import { BadRequestException, Body, Controller, Post, UseGuards } from "@nestjs/common";
 import { ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { Jwt } from "src/decorators/jwt";

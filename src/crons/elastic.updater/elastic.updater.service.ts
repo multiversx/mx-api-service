@@ -9,7 +9,7 @@ import { TokenType } from "src/endpoints/tokens/entities/token.type";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import asyncPool from "tiny-async-pool";
 import { PersistenceInterface } from "src/common/persistence/persistence.interface";
-import { BatchUtils, Locker } from "@elrondnetwork/nestjs-microservice-template";
+import { BatchUtils, Locker } from "@elrondnetwork/nestjs-microservice-common";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 @Injectable()
 export class ElasticUpdaterService {

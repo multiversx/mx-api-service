@@ -25,7 +25,7 @@ import { TransferService } from '../transfers/transfer.service';
 import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
-import { AddressUtils, ApiUtils, BinaryUtils, Constants, CachingService } from '@elrondnetwork/nestjs-microservice-template';
+import { AddressUtils, ApiUtils, BinaryUtils, Constants, CachingService } from '@elrondnetwork/nestjs-microservice-common';
 
 @Injectable()
 export class AccountService {

@@ -28,7 +28,7 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
-import { AddressUtils, ApiUtils, Constants, CachingService } from '@elrondnetwork/nestjs-microservice-template';
+import { AddressUtils, ApiUtils, Constants, CachingService } from '@elrondnetwork/nestjs-microservice-common';
 import { TransactionUtils } from './transaction.utils';
 
 @Injectable()

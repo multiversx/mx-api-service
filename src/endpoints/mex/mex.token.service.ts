@@ -7,7 +7,7 @@ import { MexPair } from "./entities/mex.pair";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { MexFarmService } from "./mex.farm.service";
 import { MexSettingsService } from "./mex.settings.service";
-import { Constants, CachingService } from "@elrondnetwork/nestjs-microservice-template";
+import { Constants, CachingService } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class MexTokenService {

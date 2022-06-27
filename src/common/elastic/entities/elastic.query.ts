@@ -1,4 +1,4 @@
-import { ApiUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { ApiUtils } from "@elrondnetwork/nestjs-microservice-common";
 import { AbstractQuery } from "./abstract.query";
 import { ElasticPagination } from "./elastic.pagination";
 import { ElasticSortProperty } from "./elastic.sort.property";

@@ -11,7 +11,7 @@ import { QueryPagination } from "../entities/query.pagination";
 import { ElasticSortOrder } from "./entities/elastic.sort.order";
 import { ElasticMetricType } from "../metrics/entities/elastic.metric.type";
 import { RangeQuery } from "./entities/range.query";
-import { PerformanceProfiler } from "@elrondnetwork/nestjs-microservice-template";
+import { PerformanceProfiler } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class ElasticService {

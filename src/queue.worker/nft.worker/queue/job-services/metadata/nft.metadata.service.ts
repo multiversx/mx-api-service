@@ -1,4 +1,4 @@
-import { CachingService } from "@elrondnetwork/nestjs-microservice-template";
+import { CachingService } from "@elrondnetwork/nestjs-microservice-common";
 import { Injectable, Logger } from "@nestjs/common";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { PersistenceService } from "src/common/persistence/persistence.service";

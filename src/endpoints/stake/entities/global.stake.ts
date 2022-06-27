@@ -1,4 +1,4 @@
-import { SwaggerUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { SwaggerUtils } from "@elrondnetwork/nestjs-microservice-common";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class GlobalStake {

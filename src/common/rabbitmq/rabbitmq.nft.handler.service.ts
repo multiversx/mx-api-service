@@ -7,7 +7,7 @@ import { CacheInfo } from '../caching/entities/cache.info';
 import { ElasticService } from '../elastic/elastic.service';
 import { NotifierEventIdentifier } from './entities/notifier.event.identifier';
 import { NotifierEvent } from './entities/notifier.event';
-import { BinaryUtils, CachingService } from '@elrondnetwork/nestjs-microservice-template';
+import { BinaryUtils, CachingService } from '@elrondnetwork/nestjs-microservice-common';
 
 @Injectable()
 export class RabbitMqNftHandlerService {

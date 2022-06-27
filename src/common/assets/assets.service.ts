@@ -4,7 +4,7 @@ import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { AccountAssets } from "./entities/account.assets";
-import { ApiUtils, CachingService, FileUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { ApiUtils, CachingService, FileUtils } from "@elrondnetwork/nestjs-microservice-common";
 const rimraf = require("rimraf");
 const path = require('path');
 const fs = require('fs');

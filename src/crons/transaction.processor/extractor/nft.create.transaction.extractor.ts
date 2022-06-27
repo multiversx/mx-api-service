@@ -1,4 +1,4 @@
-import { AddressUtils, BinaryUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { AddressUtils, BinaryUtils } from "@elrondnetwork/nestjs-microservice-common";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Logger } from "@nestjs/common";
 import { TransactionDetailed } from "src/endpoints/transactions/entities/transaction.detailed";

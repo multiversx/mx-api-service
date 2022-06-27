@@ -1,4 +1,4 @@
-import { CachingModule } from "@elrondnetwork/nestjs-microservice-template";
+import { CachingModule } from "@elrondnetwork/nestjs-microservice-common";
 import { Module } from "@nestjs/common";
 import { AssetsService } from "../../common/assets/assets.service";
 import { ApiConfigModule } from "../api-config/api.config.module";

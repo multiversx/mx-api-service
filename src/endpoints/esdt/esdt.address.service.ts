@@ -21,7 +21,7 @@ import { CollectionService } from "../collections/collection.service";
 import { NftCollection } from "../collections/entities/nft.collection";
 import { CollectionFilter } from "../collections/entities/collection.filter";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
-import { AddressUtils, ApiUtils, BinaryUtils, CachingService } from "@elrondnetwork/nestjs-microservice-template";
+import { AddressUtils, ApiUtils, BinaryUtils, CachingService } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class EsdtAddressService {

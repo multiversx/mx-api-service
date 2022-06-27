@@ -1,4 +1,4 @@
-import { ParseBlockHashPipe, ParseBlsHashPipe, ParseOptionalIntPipe } from "@elrondnetwork/nestjs-microservice-template";
+import { ParseBlockHashPipe, ParseBlsHashPipe, ParseOptionalIntPipe } from "@elrondnetwork/nestjs-microservice-common";
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { BlockService } from "./block.service";

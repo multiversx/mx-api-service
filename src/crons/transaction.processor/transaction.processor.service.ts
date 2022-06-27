@@ -9,7 +9,7 @@ import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { SftChangeTransactionExtractor } from "./extractor/sft.change.transaction.extractor";
 import { TransactionExtractorInterface } from "./extractor/transaction.extractor.interface";
 import { TransferOwnershipExtractor } from "./extractor/transfer.ownership.extractor";
-import { PerformanceProfiler, CachingService, BinaryUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { PerformanceProfiler, CachingService, BinaryUtils } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class TransactionProcessorService {

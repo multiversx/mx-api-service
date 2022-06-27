@@ -6,7 +6,7 @@ import { MetricsController } from './common/metrics/metrics.controller';
 import { HealthCheckController } from './endpoints/health-check/health.check.controller';
 import { ProcessNftsPrivateController } from './endpoints/process-nfts/process.nfts.private.controller';
 import { ProcessNftsModule } from './endpoints/process-nfts/process.nfts.module';
-import { LoggingModule } from '@elrondnetwork/nestjs-microservice-template';
+import { LoggingModule } from '@elrondnetwork/nestjs-microservice-common';
 
 @Module({
   imports: [

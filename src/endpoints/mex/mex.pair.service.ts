@@ -1,4 +1,4 @@
-import { Constants, CachingService } from "@elrondnetwork/nestjs-microservice-template";
+import { Constants, CachingService } from "@elrondnetwork/nestjs-microservice-common";
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { CacheInfo } from "src/common/caching/entities/cache.info";

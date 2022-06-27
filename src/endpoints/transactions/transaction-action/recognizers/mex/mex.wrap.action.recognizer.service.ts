@@ -7,7 +7,7 @@ import { TransactionActionEsdtNftRecognizerService } from "../esdt/transaction.a
 import { MexFunction } from "./entities/mex.function.options";
 import { MexSettings } from "../../../../mex/entities/mex.settings";
 import { MexSettingsService } from "../../../../mex/mex.settings.service";
-import { NumberUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { NumberUtils } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class MexWrapActionRecognizerService {

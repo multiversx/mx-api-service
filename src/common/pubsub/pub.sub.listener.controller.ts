@@ -1,4 +1,4 @@
-import { CachingService } from "@elrondnetwork/nestjs-microservice-template";
+import { CachingService } from "@elrondnetwork/nestjs-microservice-common";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Controller, Logger } from "@nestjs/common";
 import { EventPattern } from "@nestjs/microservices";

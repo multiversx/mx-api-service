@@ -5,7 +5,7 @@ import { catchError, tap } from 'rxjs/operators';
 import { MetricsService } from "src/common/metrics/metrics.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { NoCacheOptions } from "src/decorators/no.cache";
-import { DecoratorUtils, CachingService } from "@elrondnetwork/nestjs-microservice-template";
+import { DecoratorUtils, CachingService } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class CachingInterceptor implements NestInterceptor {

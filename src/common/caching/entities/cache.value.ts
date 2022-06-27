@@ -1,4 +1,4 @@
-import { Constants } from "@elrondnetwork/nestjs-microservice-template";
+import { Constants } from "@elrondnetwork/nestjs-microservice-common";
 
 export class CacheValue {
   value?: string;

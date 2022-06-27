@@ -1,4 +1,4 @@
-import { BinaryUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { BinaryUtils } from "@elrondnetwork/nestjs-microservice-common";
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { ApiService } from "../network/api.service";

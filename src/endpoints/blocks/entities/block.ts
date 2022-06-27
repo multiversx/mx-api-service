@@ -1,4 +1,4 @@
-import { ApiUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { ApiUtils } from "@elrondnetwork/nestjs-microservice-common";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class Block {

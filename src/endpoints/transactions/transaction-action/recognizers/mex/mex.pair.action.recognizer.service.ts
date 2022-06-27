@@ -7,7 +7,7 @@ import { MexSettings } from "../../../../mex/entities/mex.settings";
 import { TokenTransferService } from "src/endpoints/tokens/token.transfer.service";
 import { MexSettingsService } from "../../../../mex/mex.settings.service";
 import { TransactionActionEsdtNftRecognizerService } from "../esdt/transaction.action.esdt.nft.recognizer.service";
-import { BinaryUtils, NumberUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { BinaryUtils, NumberUtils } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class MexPairActionRecognizerService {

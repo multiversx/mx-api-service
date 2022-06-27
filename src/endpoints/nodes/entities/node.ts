@@ -1,4 +1,4 @@
-import { SwaggerUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { SwaggerUtils } from "@elrondnetwork/nestjs-microservice-common";
 import { ApiProperty } from "@nestjs/swagger";
 import { NodeStatus } from "./node.status";
 import { NodeType } from "./node.type";

@@ -1,4 +1,4 @@
-import { Constants, Locker } from "@elrondnetwork/nestjs-microservice-template";
+import { Constants, Locker } from "@elrondnetwork/nestjs-microservice-common";
 import { Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { ApiConfigService } from "src/common/api-config/api.config.service";

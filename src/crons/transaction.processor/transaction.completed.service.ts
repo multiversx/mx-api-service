@@ -1,4 +1,4 @@
-import { CachingService } from "@elrondnetwork/nestjs-microservice-template";
+import { CachingService } from "@elrondnetwork/nestjs-microservice-common";
 import { TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { Inject, Injectable } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";

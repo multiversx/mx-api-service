@@ -21,7 +21,7 @@ import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { TokenUtils } from "src/utils/token.utils";
 import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
-import { ApiUtils, BinaryUtils, RecordUtils, CachingService } from "@elrondnetwork/nestjs-microservice-template";
+import { ApiUtils, BinaryUtils, RecordUtils, CachingService } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class CollectionService {

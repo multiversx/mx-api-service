@@ -26,7 +26,7 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
-import { AddressUtils, ApiUtils, NumberUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { AddressUtils, ApiUtils, NumberUtils } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class TokenService {

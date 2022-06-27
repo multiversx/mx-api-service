@@ -13,7 +13,7 @@ import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionType } from "../transactions/entities/transaction.type";
 import { Transaction } from "../transactions/entities/transaction";
 import { TransactionService } from "../transactions/transaction.service";
-import { AddressUtils, ApiUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { AddressUtils, ApiUtils } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class TransferService {

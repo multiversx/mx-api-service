@@ -1,5 +1,5 @@
-import { CachingService } from "@elrondnetwork/nestjs-microservice-template";
-import { Constants, FileUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { CachingService } from "@elrondnetwork/nestjs-microservice-common";
+import { Constants, FileUtils } from "@elrondnetwork/nestjs-microservice-common";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";

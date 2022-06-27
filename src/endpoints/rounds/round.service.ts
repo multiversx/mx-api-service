@@ -10,7 +10,7 @@ import { QueryType } from "src/common/elastic/entities/query.type";
 import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
 import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { ApiUtils, RoundUtils } from "@elrondnetwork/nestjs-microservice-template";
+import { ApiUtils, RoundUtils } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class RoundService {
