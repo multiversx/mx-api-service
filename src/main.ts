@@ -32,7 +32,7 @@ import { SocketAdapter } from './websockets/socket-adapter';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
 import { QueryCheckInterceptor } from './interceptors/query.check.interceptor';
 import { ApiConfigModule } from './common/api-config/api.config.module';
-import { JwtAuthenticateGlobalGuard, CachingService } from '@elrondnetwork/nestjs-microservice-template';
+import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer } from '@elrondnetwork/nestjs-microservice-template';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
@@ -101,6 +101,9 @@ async function bootstrap() {
   }
 
   const logger = new Logger('Bootstrapper');
+
+  // @ts-ignore
+  LoggerInitializer.initialize(logger);
 
   const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
     PubSubListenerModule,
