@@ -3,7 +3,6 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { ApiMetricsService } from "src/common/metrics/api.metrics.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { TokenUtils } from "src/utils/token.utils";
 import { EsdtDataSource } from "./entities/esdt.data.source";
@@ -19,7 +18,7 @@ import { CollectionService } from "../collections/collection.service";
 import { NftCollection } from "../collections/entities/nft.collection";
 import { CollectionFilter } from "../collections/entities/collection.filter";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
-import { AddressUtils, ApiUtils, BinaryUtils, CachingService, ElasticService, ElasticSortOrder } from "@elrondnetwork/nestjs-microservice-common";
+import { AddressUtils, ApiUtils, BinaryUtils, CachingService, ElasticService, ElasticSortOrder, MetricsService } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class EsdtAddressService {
@@ -32,7 +31,7 @@ export class EsdtAddressService {
     private readonly elasticService: ElasticService,
     private readonly gatewayService: GatewayService,
     private readonly cachingService: CachingService,
-    private readonly metricsService: ApiMetricsService,
+    private readonly metricsService: MetricsService,
     private readonly protocolService: ProtocolService,
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     @Inject(forwardRef(() => NftService))

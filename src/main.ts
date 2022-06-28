@@ -4,7 +4,6 @@ import { PublicAppModule } from './public.app.module';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { ApiConfigService } from './common/api-config/api.config.service';
-import { FieldsInterceptor } from './interceptors/fields.interceptor';
 import { PrivateAppModule } from './private.app.module';
 import { CacheWarmerModule } from './crons/cache.warmer/cache.warmer.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
@@ -12,13 +11,9 @@ import { Logger, NestInterceptor } from '@nestjs/common';
 import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { CleanupInterceptor } from './interceptors/cleanup.interceptor';
 import { RedisClient } from 'redis';
-import { ExtractInterceptor } from './interceptors/extract.interceptor';
 import { TransactionProcessorModule } from './crons/transaction.processor/transaction.processor.module';
 import { PubSubListenerModule } from './common/pubsub/pub.sub.listener.module';
-import { PaginationInterceptor } from './interceptors/pagination.interceptor';
-import { LogRequestsInterceptor } from './interceptors/log.requests.interceptor';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { NftQueueModule } from './queue.worker/nft.worker/queue/nft.queue.module';
 import { ElasticUpdaterModule } from './crons/elastic.updater/elastic.updater.module';
@@ -26,9 +21,8 @@ import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './websockets/socket-adapter';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
-import { QueryCheckInterceptor } from './interceptors/query.check.interceptor';
 import { ApiConfigModule } from './common/api-config/api.config.module';
-import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor } from '@elrondnetwork/nestjs-microservice-common';
+import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor } from '@elrondnetwork/nestjs-microservice-common';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
@@ -115,6 +109,7 @@ async function bootstrap() {
       },
     },
   );
+  pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
   pubSubApp.useWebSocketAdapter(new SocketAdapter(pubSubApp));
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   pubSubApp.listen();
@@ -167,6 +162,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   }
 
   if (apiConfigService.getUseRequestLoggingFlag()) {
+    // @ts-ignore
     globalInterceptors.push(new LogRequestsInterceptor(httpAdapterHostService));
   }
 
@@ -174,6 +170,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   globalInterceptors.push(new ExtractInterceptor());
   globalInterceptors.push(new CleanupInterceptor());
   globalInterceptors.push(new PaginationInterceptor());
+  // @ts-ignore
   globalInterceptors.push(new QueryCheckInterceptor(httpAdapterHostService));
 
   await pluginService.bootstrapPublicApp(publicApp);

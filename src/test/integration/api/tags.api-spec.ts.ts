@@ -1,7 +1,6 @@
+import { CleanupInterceptor, FieldsInterceptor } from '@elrondnetwork/nestjs-microservice-common';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { CleanupInterceptor } from 'src/interceptors/cleanup.interceptor';
-import { FieldsInterceptor } from 'src/interceptors/fields.interceptor';
 import { PublicAppModule } from 'src/public.app.module';
 import { ApiChecker } from 'src/utils/api.checker';
 
