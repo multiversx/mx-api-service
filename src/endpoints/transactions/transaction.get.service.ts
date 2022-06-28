@@ -41,7 +41,7 @@ export class TransactionGetService {
     return transactions.firstOrUndefined();
   }
 
-  async getTransactionLogsFromElastic(hashes: string[]): Promise<any[]> {
+  async getTransactionLogsFromElastic(hashes: string[]): Promise<TransactionLog[]> {
     let currentHashes = hashes.slice(0, 1000);
     const result = [];
     while (currentHashes.length > 0) {
@@ -52,7 +52,7 @@ export class TransactionGetService {
       currentHashes = hashes.slice(0, 1000);
     }
 
-    return result;
+    return result.map(x => ApiUtils.mergeObjects(new TransactionLog(), x));
   }
 
   private async getTransactionLogsFromElasticInternal(hashes: string[]): Promise<any[]> {
@@ -124,19 +124,17 @@ export class TransactionGetService {
 
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs)) {
           const logs = await this.getTransactionLogsFromElastic(hashes);
-          const transactionLogs: TransactionLog[] = logs.map(log => ({ ...ApiUtils.mergeObjects(new TransactionLog(), log) }));
 
-          transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, transactionLogs);
+          transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, logs);
           transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
 
           for (const log of logs) {
-            if (log._id === txHash) {
-              transactionDetailed.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
-            }
-            else {
-              const foundScResult = transactionDetailed.results.find(({ hash }) => log._id === hash);
+            if (log.id === txHash) {
+              transactionDetailed.logs = log;
+            } else {
+              const foundScResult = transactionDetailed.results.find(({ hash }) => log.id === hash);
               if (foundScResult) {
-                foundScResult.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
+                foundScResult.logs = log;
               }
             }
           }

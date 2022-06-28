@@ -322,20 +322,18 @@ export class TransactionService {
           previousHashes[scResult.hash] = scResult.prevTxHash;
         }
 
-        const transactionLogsFromElastic = logs.filter((log) => transactionHashes.includes(log.id));
-        const transactionLogs: TransactionLog[] = transactionLogsFromElastic.map(log => ({ ...ApiUtils.mergeObjects(new TransactionLog(), log) }));
+        const transactionLogs: TransactionLog[] = logs.filter((log) => transactionHashes.includes(log.id ?? ''));
 
         transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, transactionLogs);
         transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
 
-        for (const log of transactionLogsFromElastic) {
-          if (log._id === transactionDetailed.txHash) {
-            transactionDetailed.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
-          }
-          else {
-            const foundScResult = transactionDetailed.results.find(({ hash }) => log._id === hash);
+        for (const log of logs) {
+          if (log.id === transactionDetailed.txHash) {
+            transactionDetailed.logs = log;
+          } else {
+            const foundScResult = transactionDetailed.results.find(({ hash }) => log.id === hash);
             if (foundScResult) {
-              foundScResult.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
+              foundScResult.logs = log;
             }
           }
         }
