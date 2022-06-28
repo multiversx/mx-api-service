@@ -4,10 +4,9 @@ import { NftService } from 'src/endpoints/nfts/nft.service';
 import { ProcessNftSettings } from 'src/endpoints/process-nfts/entities/process.nft.settings';
 import { NftWorkerService } from 'src/queue.worker/nft.worker/nft.worker.service';
 import { CacheInfo } from '../caching/entities/cache.info';
-import { ElasticService } from '../elastic/elastic.service';
 import { NotifierEventIdentifier } from './entities/notifier.event.identifier';
 import { NotifierEvent } from './entities/notifier.event';
-import { BinaryUtils, CachingService } from '@elrondnetwork/nestjs-microservice-common';
+import { BinaryUtils, CachingService, ElasticService } from '@elrondnetwork/nestjs-microservice-common';
 
 @Injectable()
 export class RabbitMqNftHandlerService {

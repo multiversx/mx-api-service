@@ -1,5 +1,5 @@
+import { ElasticModule } from "@elrondnetwork/nestjs-microservice-common";
 import { Global, Module } from "@nestjs/common";
-import { ElasticModule } from "src/common/elastic/elastic.module";
 import { BlsService } from "./bls.service";
 
 @Global()

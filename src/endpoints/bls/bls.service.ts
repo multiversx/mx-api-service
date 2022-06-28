@@ -1,6 +1,6 @@
+import { ElasticService } from "@elrondnetwork/nestjs-microservice-common";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
-import { ElasticService } from "../../common/elastic/elastic.service";
 
 @Injectable()
 export class BlsService {

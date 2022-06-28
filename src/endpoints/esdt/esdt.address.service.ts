@@ -1,6 +1,5 @@
 import { BadRequestException, forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { ElasticService } from "src/common/elastic/elastic.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
@@ -15,13 +14,12 @@ import { NftFilter } from "../nfts/entities/nft.filter";
 import { NftType } from "../nfts/entities/nft.type";
 import { NftExtendedAttributesService } from "../nfts/nft.extendedattributes.service";
 import { NftService } from "../nfts/nft.service";
-import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 import { NftCollectionRole } from "../collections/entities/nft.collection.role";
 import { CollectionService } from "../collections/collection.service";
 import { NftCollection } from "../collections/entities/nft.collection";
 import { CollectionFilter } from "../collections/entities/collection.filter";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
-import { AddressUtils, ApiUtils, BinaryUtils, CachingService } from "@elrondnetwork/nestjs-microservice-common";
+import { AddressUtils, ApiUtils, BinaryUtils, CachingService, ElasticService, ElasticSortOrder } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class EsdtAddressService {

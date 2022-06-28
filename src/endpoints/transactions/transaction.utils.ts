@@ -1,8 +1,8 @@
-import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionOperation } from "src/endpoints/transactions/entities/transaction.operation";
 import { TransactionOperationAction } from "src/endpoints/transactions/entities/transaction.operation.action";
 import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/array.extensions';
+import { QueryConditionOptions } from "@elrondnetwork/nestjs-microservice-common";
 
 export class TransactionUtils {
   static isTransactionCountQueryWithAddressOnly(filter: TransactionFilter, address?: string) {

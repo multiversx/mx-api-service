@@ -1,10 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { Tag } from "./entities/tag";
-import { ElasticService } from "src/common/elastic/elastic.service";
-import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
-import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
-import { ApiUtils, BinaryUtils, Constants, CachingService } from "@elrondnetwork/nestjs-microservice-common";
+import { ApiUtils, BinaryUtils, Constants, CachingService, ElasticService, ElasticQuery, ElasticSortOrder } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class TagService {

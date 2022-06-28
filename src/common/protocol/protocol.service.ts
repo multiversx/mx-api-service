@@ -1,7 +1,6 @@
-import { CachingService } from "@elrondnetwork/nestjs-microservice-common";
+import { CachingService, ElasticService } from "@elrondnetwork/nestjs-microservice-common";
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { CacheInfo } from "../caching/entities/cache.info";
-import { ElasticService } from "../elastic/elastic.service";
 import { GatewayComponentRequest } from "../gateway/entities/gateway.component.request";
 import { GatewayService } from "../gateway/gateway.service";
 

@@ -1,11 +1,5 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { ElasticService } from "src/common/elastic/elastic.service";
-import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
-import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
-import { ElasticSortProperty } from "src/common/elastic/entities/elastic.sort.property";
-import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
-import { QueryType } from "src/common/elastic/entities/query.type";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
@@ -15,7 +9,7 @@ import { TransactionLog } from "./entities/transaction.log";
 import { TransactionOptionalFieldOption } from "./entities/transaction.optional.field.options";
 import { TransactionReceipt } from "./entities/transaction.receipt";
 import { TokenTransferService } from "../tokens/token.transfer.service";
-import { ApiUtils, BinaryUtils } from "@elrondnetwork/nestjs-microservice-common";
+import { ApiUtils, BinaryUtils, ElasticQuery, ElasticService, ElasticSortOrder, ElasticSortProperty, QueryConditionOptions, QueryType } from "@elrondnetwork/nestjs-microservice-common";
 import { TransactionUtils } from "./transaction.utils";
 
 @Injectable()
@@ -71,7 +65,7 @@ export class TransactionGetService {
       .withPagination({ from: 0, size: 10000 })
       .withCondition(QueryConditionOptions.should, queries);
 
-    return await this.elasticService.getLogsForTransactionHashes(elasticQueryLogs);
+    return await this.elasticService.getList('logs', '_id', elasticQueryLogs);
   }
 
   async getTransactionScResultsFromElastic(txHash: string): Promise<SmartContractResult[]> {

@@ -1,5 +1,5 @@
+import { QueryConditionOptions } from "@elrondnetwork/nestjs-microservice-common";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 
 export class RoundFilter extends QueryPagination {
   condition: QueryConditionOptions | undefined = QueryConditionOptions.must;

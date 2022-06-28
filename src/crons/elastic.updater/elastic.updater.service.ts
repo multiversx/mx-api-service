@@ -1,15 +1,12 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
-import { ElasticService } from "src/common/elastic/elastic.service";
 import * as JsonDiff from "json-diff";
 import { AssetsService } from "src/common/assets/assets.service";
-import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
-import { QueryType } from "src/common/elastic/entities/query.type";
 import { TokenType } from "src/endpoints/tokens/entities/token.type";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import asyncPool from "tiny-async-pool";
 import { PersistenceInterface } from "src/common/persistence/persistence.interface";
-import { BatchUtils, Locker } from "@elrondnetwork/nestjs-microservice-common";
+import { BatchUtils, ElasticQuery, ElasticService, Locker, QueryType } from "@elrondnetwork/nestjs-microservice-common";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 @Injectable()
 export class ElasticUpdaterService {
@@ -25,13 +22,21 @@ export class ElasticUpdaterService {
     this.logger = new Logger(ElasticUpdaterService.name);
   }
 
+  async getCustomValue(collection: string, identifier: string, attribute: string): Promise<any> {
+    return await this.elasticService.getCustomValue(collection, 'api', identifier, attribute);
+  }
+
+  async setCustomValue<T>(collection: string, identifier: string, attribute: string, value: T): Promise<void> {
+    await this.elasticService.setCustomValue(collection, 'api', identifier, attribute, value);
+  }
+
   @Cron(CronExpression.EVERY_DAY_AT_1AM)
   async handleUpdateAssets() {
     await Locker.lock('Elastic updater: Update assets', async () => {
       const allAssets = await this.assetsService.getAllTokenAssets();
 
       for (const key of Object.keys(allAssets)) {
-        const elasticAssets = await this.elasticService.getCustomValue('tokens', key, 'assets');
+        const elasticAssets = await this.getCustomValue('tokens', key, 'assets');
         if (elasticAssets === null) {
           this.logger.log(`Could not find token with identifier '${key}' when updating assets in elastic`);
           continue;
@@ -41,7 +46,7 @@ export class ElasticUpdaterService {
 
         if (!elasticAssets || JsonDiff.diff(githubAssets, elasticAssets)) {
           this.logger.log(`Updating assets for token with identifier '${key}'`);
-          await this.elasticService.setCustomValue('tokens', key, 'assets', githubAssets);
+          await this.setCustomValue('tokens', key, 'assets', githubAssets);
         }
       }
     }, true);
@@ -186,7 +191,7 @@ export class ElasticUpdaterService {
   private async updateIsWhitelistedStorageForToken(identifier: string, isWhitelistedStorage: boolean): Promise<void> {
     try {
       this.logger.log(`Setting api_isWhitelistedStorage for token with identifier '${identifier}'`);
-      await this.elasticService.setCustomValue('tokens', identifier, 'isWhitelistedStorage', isWhitelistedStorage);
+      await this.setCustomValue('tokens', identifier, 'isWhitelistedStorage', isWhitelistedStorage);
     } catch (error) {
       this.logger.error(`Unexpected error when updating isWhitelistedStorage for token with identifier '${identifier}'`);
     }
@@ -195,7 +200,7 @@ export class ElasticUpdaterService {
   private async updateMediaForToken(identifier: string, media: NftMedia[]): Promise<void> {
     try {
       this.logger.log(`Setting api_media for token with identifier '${identifier}'`);
-      await this.elasticService.setCustomValue('tokens', identifier, 'media', media);
+      await this.setCustomValue('tokens', identifier, 'media', media);
     } catch (error) {
       this.logger.error(`Unexpected error when updating media for token with identifier '${identifier}'`);
     }
@@ -204,7 +209,7 @@ export class ElasticUpdaterService {
   private async updateMetadataForToken(identifier: string, metadata: any): Promise<void> {
     try {
       this.logger.log(`Setting api_metadata for token with identifier '${identifier}'`);
-      await this.elasticService.setCustomValue('tokens', identifier, 'metadata', metadata);
+      await this.setCustomValue('tokens', identifier, 'metadata', metadata);
     } catch (error) {
       this.logger.error(`Unexpected error when updating metadata for token with identifier '${identifier}'`);
     }
