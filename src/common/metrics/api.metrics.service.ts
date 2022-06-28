@@ -91,7 +91,10 @@ export class ApiMetricsService {
       }
     }
 
-    return register.metrics();
+    const baseMetrics = await this.metricsService.getMetrics();
+    const currentMetrics = await register.metrics();
+
+    return baseMetrics + '\n' + currentMetrics;
   }
 
   private async getCurrentNonces(): Promise<number[]> {
