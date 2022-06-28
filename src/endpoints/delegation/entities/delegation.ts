@@ -2,6 +2,10 @@ import { ApiProperty } from "@nestjs/swagger";
 import { SwaggerUtils } from "src/utils/swagger.utils";
 
 export class Delegation {
+  constructor(init?: Partial<Delegation>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty(SwaggerUtils.amountPropertyOptions())
   stake: string = '';
 

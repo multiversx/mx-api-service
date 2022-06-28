@@ -4,6 +4,10 @@ import { SwaggerUtils } from "src/utils/swagger.utils";
 import { TransactionLog } from "../../transactions/entities/transaction.log";
 
 export class SmartContractResult {
+  constructor(init?: Partial<SmartContractResult>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String })
   hash: string = '';
 

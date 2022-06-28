@@ -3,6 +3,10 @@ import { ApiProperty } from "@nestjs/swagger";
 import { SwaggerUtils } from "src/utils/swagger.utils";
 
 export class AccountKey {
+  constructor(init?: Partial<AccountKey>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String, example: '2ef384d4d38bf3aad5cef34ce6eab047fba6d52b9735dbfdf7591289ed9c26ac7e816c9bb56ebf4f09129f045860f401275a91009befb4dc8ddc24ea4bc597290bd916b9f984c2a415ec9b2cfbc4a09de42c032314e6a21e69daf76302fcaa99' })
   blsKey: string = '';
 

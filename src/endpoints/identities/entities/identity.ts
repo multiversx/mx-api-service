@@ -2,6 +2,10 @@ import { ApiProperty } from "@nestjs/swagger";
 import { SwaggerUtils } from "src/utils/swagger.utils";
 
 export class Identity {
+  constructor(init?: Partial<Identity>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String })
   identity?: string = '';
 

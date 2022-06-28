@@ -2,6 +2,7 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { CachingService } from "src/common/caching/caching.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { QueryPagination } from "src/common/entities/query.pagination";
 import { GraphQlService } from "src/common/graphql/graphql.service";
 import { Constants } from "src/utils/constants";
 import { MexFarm } from "./entities/mex.farm";
@@ -23,8 +24,9 @@ export class MexFarmService {
     await this.cachingService.setCacheLocal(CacheInfo.MexFarms.key, farms, Constants.oneSecond() * 30);
   }
 
-  async getMexFarms(from: number, size: number): Promise<MexFarm[]> {
+  async getMexFarms(pagination: QueryPagination): Promise<MexFarm[]> {
     const mexFarms = await this.getAllMexFarms();
+    const { from, size } = pagination;
 
     return mexFarms.slice(from, from + size);
   }

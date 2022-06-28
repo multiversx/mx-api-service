@@ -1,4 +1,8 @@
 export class MexSettings {
+  constructor(init?: Partial<MexSettings>) {
+    Object.assign(this, init);
+  }
+
   pairContracts: string[] = [];
   farmContracts: string[] = [];
   wrapContracts: string[] = [];

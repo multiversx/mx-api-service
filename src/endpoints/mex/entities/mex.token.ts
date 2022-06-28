@@ -1,6 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class MexToken {
+  constructor(init?: Partial<MexToken>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String, example: 'MEX-455c57' })
   id: string = '';
 

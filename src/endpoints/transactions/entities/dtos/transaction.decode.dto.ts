@@ -2,6 +2,10 @@ import { ApiProperty } from "@nestjs/swagger";
 import { TransactionAction } from "../../transaction-action/entities/transaction.action";
 
 export class TransactionDecodeDto {
+  constructor(init?: Partial<TransactionDecodeDto>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: TransactionAction, nullable: true })
   action: TransactionAction | undefined = new TransactionAction();
 

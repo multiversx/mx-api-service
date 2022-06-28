@@ -7,6 +7,10 @@ import { NftMetadata } from "./nft.metadata";
 import { NftType } from "./nft.type";
 
 export class Nft {
+  constructor(init?: Partial<Nft>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String })
   identifier: string = '';
 

@@ -122,7 +122,7 @@ export class NftController {
   @ApiOkResponse({ type: Nft })
   @ApiNotFoundResponse({ description: 'NFT thumbnail not found' })
   async resolveNftThumbnail(@Param('identifier') identifier: string, @Res() response: Response) {
-    const nfts = await this.nftService.getNftsInternal(0, 1, new NftFilter(), identifier);
+    const nfts = await this.nftService.getNftsInternal(new QueryPagination({ from: 0, size: 1 }), new NftFilter(), identifier);
     if (nfts.length === 0) {
       throw new NotFoundException('NFT not found');
     }

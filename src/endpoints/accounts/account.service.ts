@@ -30,6 +30,7 @@ import { TransferService } from '../transfers/transfer.service';
 import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
+import { TransactionFilter } from '../transactions/entities/transaction.filter';
 
 @Injectable()
 export class AccountService {
@@ -130,7 +131,7 @@ export class AccountService {
       return this.transactionService.getTransactionCountForAddress(address);
     }
 
-    return await this.transferService.getTransfersCount({ address, type: TransactionType.Transaction });
+    return await this.transferService.getTransfersCount(new TransactionFilter({ address, type: TransactionType.Transaction }));
   }
 
   private async getAccountScResults(address: string): Promise<number> {
@@ -142,7 +143,7 @@ export class AccountService {
       return await this.smartContractResultService.getAccountScResultsCount(address);
     }
 
-    return await this.transferService.getTransfersCount({ address, type: TransactionType.SmartContractResult });
+    return await this.transferService.getTransfersCount(new TransactionFilter({ address, type: TransactionType.SmartContractResult }));
   }
 
   async getAccountDeployedAt(address: string): Promise<number | null> {
@@ -181,10 +182,8 @@ export class AccountService {
   }
 
   async getAccountsRaw(queryPagination: QueryPagination): Promise<Account[]> {
-    const { from, size } = queryPagination;
-
     const elasticQuery = ElasticQuery.create()
-      .withPagination({ from, size })
+      .withPagination(queryPagination)
       .withSort([{ name: 'balanceNum', order: ElasticSortOrder.descending }]);
 
     const result = await this.elasticService.getList('accounts', 'address', elasticQuery);

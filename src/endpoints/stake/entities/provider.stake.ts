@@ -3,9 +3,13 @@ import { SwaggerUtils } from "src/utils/swagger.utils";
 import { ProviderUnstakedTokens } from "./provider.unstaked.tokens";
 
 export class ProviderStake {
-    @ApiProperty(SwaggerUtils.amountPropertyOptions())
-    totalStaked: string = '';
+  constructor(init?: Partial<ProviderStake>) {
+    Object.assign(this, init);
+  }
 
-    @ApiProperty({ type: ProviderUnstakedTokens, isArray: true, nullable: true })
-    unstakedTokens: ProviderUnstakedTokens[] | undefined = undefined;
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
+  totalStaked: string = '';
+
+  @ApiProperty({ type: ProviderUnstakedTokens, isArray: true, nullable: true })
+  unstakedTokens: ProviderUnstakedTokens[] | undefined = undefined;
 }

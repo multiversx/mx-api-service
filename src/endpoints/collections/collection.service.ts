@@ -311,7 +311,7 @@ export class CollectionService {
   async getCollectionForAddressWithRole(address: string, collection: string): Promise<NftCollectionRole | undefined> {
     const filter: CollectionFilter = { collection };
 
-    const collections = await this.esdtAddressService.getCollectionsForAddress(address, filter, { from: 0, size: 1 });
+    const collections = await this.esdtAddressService.getCollectionsForAddress(address, filter, new QueryPagination({ from: 0, size: 1 }));
     if (collections.length === 0) {
       return undefined;
     }
@@ -326,13 +326,13 @@ export class CollectionService {
   }
 
   async getCollectionCountForAddress(address: string, filter: CollectionFilter): Promise<number> {
-    const collections = await this.getCollectionsForAddress(address, filter, { from: 0, size: 10000 });
+    const collections = await this.getCollectionsForAddress(address, filter, new QueryPagination({ from: 0, size: 10000 }));
 
     return collections.length;
   }
 
   async getCollectionForAddress(address: string, identifier: string): Promise<NftCollectionAccount | undefined> {
-    const collections = await this.getCollectionsForAddress(address, { collection: identifier }, { from: 0, size: 1 });
+    const collections = await this.getCollectionsForAddress(address, new CollectionFilter({ collection: identifier }), new QueryPagination({ from: 0, size: 1 }));
 
     return collections.find(x => x.collection === identifier);
   }
@@ -385,7 +385,7 @@ export class CollectionService {
 
     data = data.slice(pagination.from, pagination.from + pagination.size);
 
-    const collections = await this.getNftCollections({ from: 0, size: data.length }, { identifiers: data.map((x: any) => x.collection) });
+    const collections = await this.getNftCollections(new QueryPagination({ from: 0, size: data.length }), new CollectionFilter({ identifiers: data.map((x: any) => x.collection) }));
     const accountCollections = collections.map(collection => ApiUtils.mergeObjects(new NftCollectionAccount(), collection));
 
     for (const collection of accountCollections) {
