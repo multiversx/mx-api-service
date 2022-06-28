@@ -1,4 +1,4 @@
-import { DecoratorUtils } from "src/utils/decorator.utils";
+import { DecoratorUtils } from "@elrondnetwork/nestjs-microservice-common";
 
 export class NoAuthOptions { }
 
