@@ -180,8 +180,7 @@ export class CollectionService {
         const result: { [key: string]: TokenProperties | undefined } = {};
 
         for (const collectionIdentifier of collectionsIdentifiers) {
-          const collectionProperties = await this.esdtService.getEsdtTokenProperties(collectionIdentifier);
-          result[collectionIdentifier] = collectionProperties;
+          result[collectionIdentifier] = await this.esdtService.getEsdtTokenProperties(collectionIdentifier);
         }
 
         return RecordUtils.mapKeys(result, identifier => CacheInfo.EsdtProperties(identifier).key);
@@ -203,8 +202,7 @@ export class CollectionService {
         const result: { [key: string]: TokenAssets | undefined } = {};
 
         for (const collectionIdentifier of collectionsIdentifiers) {
-          const collectionAssets = await this.assetsService.getAssets(collectionIdentifier);
-          result[collectionIdentifier] = collectionAssets;
+          result[collectionIdentifier] = await this.assetsService.getAssets(collectionIdentifier);
         }
 
         return RecordUtils.mapKeys(result, identifier => CacheInfo.EsdtAssets(identifier).key);
@@ -320,9 +318,7 @@ export class CollectionService {
   }
 
   async getCollectionsWithRolesForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionRole[]> {
-    const collections = await this.esdtAddressService.getCollectionsForAddress(address, filter, pagination);
-
-    return collections;
+    return await this.esdtAddressService.getCollectionsForAddress(address, filter, pagination);
   }
 
   async getCollectionCountForAddress(address: string, filter: CollectionFilter): Promise<number> {
@@ -399,8 +395,6 @@ export class CollectionService {
   }
 
   async getCollectionCountForAddressWithRoles(address: string, filter: CollectionFilter): Promise<number> {
-    const count = await this.esdtAddressService.getCollectionCountForAddressFromElastic(address, filter);
-
-    return count;
+    return await this.esdtAddressService.getCollectionCountForAddressFromElastic(address, filter);
   }
 }

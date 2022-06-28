@@ -261,9 +261,7 @@ export class AccountService {
     );
 
     const rewardsPublicKey = Buffer.from(encodedRewardsPublicKey, 'base64').toString();
-    const rewardAddress = AddressUtils.bech32Encode(rewardsPublicKey);
-
-    return rewardAddress;
+    return AddressUtils.bech32Encode(rewardsPublicKey);
   }
 
   async getKeys(address: string): Promise<AccountKey[]> {

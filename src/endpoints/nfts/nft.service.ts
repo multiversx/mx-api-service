@@ -492,9 +492,7 @@ export class NftService {
   }
 
   async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {
-    const count = await this.esdtAddressService.getNftCountForAddressFromElastic(address, filter);
-
-    return count;
+    return await this.esdtAddressService.getNftCountForAddressFromElastic(address, filter);
   }
 
   async getNftForAddress(address: string, identifier: string): Promise<NftAccount | undefined> {
