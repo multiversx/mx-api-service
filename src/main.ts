@@ -3,7 +3,6 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PublicAppModule } from './public.app.module';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { ApiConfigService } from './common/api-config/api.config.service';
 import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { FieldsInterceptor } from './interceptors/fields.interceptor';
@@ -32,7 +31,7 @@ import { SocketAdapter } from './websockets/socket-adapter';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
 import { QueryCheckInterceptor } from './interceptors/query.check.interceptor';
 import { ApiConfigModule } from './common/api-config/api.config.module';
-import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer } from '@elrondnetwork/nestjs-microservice-common';
+import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor } from '@elrondnetwork/nestjs-microservice-common';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
