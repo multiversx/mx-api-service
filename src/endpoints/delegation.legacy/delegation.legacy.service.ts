@@ -4,15 +4,26 @@ import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { DelegationLegacy } from "./entities/delegation.legacy";
 import { AccountDelegationLegacy } from "./entities/account.delegation.legacy";
 import { AddressUtils } from "src/utils/address.utils";
+import { CachingService } from "src/common/caching/caching.service";
+import { CacheInfo } from "src/common/caching/entities/cache.info";
 
 @Injectable()
 export class DelegationLegacyService {
   constructor(
     private readonly vmQueryService: VmQueryService,
-    private readonly apiConfigService: ApiConfigService
+    private readonly apiConfigService: ApiConfigService,
+    private readonly cachingService: CachingService,
   ) { }
 
   async getDelegation(): Promise<DelegationLegacy> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.DelegationLegacy.key,
+      async () => await this.getDelegationRaw(),
+      CacheInfo.DelegationLegacy.ttl,
+    );
+  }
+
+  async getDelegationRaw(): Promise<DelegationLegacy> {
     const [totalStakeByTypeEncoded, numUsersEncoded] = await Promise.all([
       this.vmQueryService.vmQuery(
         this.apiConfigService.getDelegationContractAddress(),
