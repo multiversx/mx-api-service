@@ -1,5 +1,5 @@
+import { ApiModule } from "@elrondnetwork/nestjs-microservice-common";
 import { Module } from "@nestjs/common";
-import { ApiModule } from "../network/api.module";
 import { GithubService } from "./github.service";
 
 @Module({

@@ -8,9 +8,8 @@ import { ProviderFilter } from "src/endpoints/providers/entities/provider.filter
 import { NodesInfos } from "./entities/nodes.infos";
 import { DelegationData } from "./entities/delegation.data";
 import { KeybaseService } from "src/common/keybase/keybase.service";
-import { ApiService } from "src/common/network/api.service";
 import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { AddressUtils, Constants, CachingService } from "@elrondnetwork/nestjs-microservice-common";
+import { AddressUtils, Constants, CachingService, ApiService } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()
 export class ProviderService {

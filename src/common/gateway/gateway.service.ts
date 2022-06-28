@@ -1,9 +1,7 @@
-import { PerformanceProfiler } from "@elrondnetwork/nestjs-microservice-common";
+import { ApiService, ApiSettings, PerformanceProfiler } from "@elrondnetwork/nestjs-microservice-common";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { MetricsService } from "../metrics/metrics.service";
-import { ApiService } from "../network/api.service";
-import { ApiSettings } from "../network/entities/api.settings";
 import { Auction } from "./entities/auction";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
 
