@@ -2,7 +2,7 @@ import { CallHandler, ExecutionContext, HttpException, Injectable, NestIntercept
 import { HttpAdapterHost } from "@nestjs/core";
 import { Observable, of, throwError } from "rxjs";
 import { catchError, tap } from 'rxjs/operators';
-import { MetricsService } from "src/common/metrics/metrics.service";
+import { ApiMetricsService } from "src/common/metrics/api.metrics.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { NoCacheOptions } from "src/decorators/no.cache";
 import { DecoratorUtils, CachingService } from "@elrondnetwork/nestjs-microservice-common";
@@ -14,7 +14,7 @@ export class CachingInterceptor implements NestInterceptor {
   constructor(
     private readonly cachingService: CachingService,
     private readonly httpAdapterHost: HttpAdapterHost,
-    private readonly metricsService: MetricsService,
+    private readonly metricsService: ApiMetricsService,
     private readonly protocolService: ProtocolService,
   ) { }
 

@@ -1,7 +1,7 @@
 import { ApiService, ApiSettings, PerformanceProfiler } from "@elrondnetwork/nestjs-microservice-common";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
-import { MetricsService } from "../metrics/metrics.service";
+import { ApiMetricsService } from "../metrics/api.metrics.service";
 import { Auction } from "./entities/auction";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
 
@@ -11,8 +11,8 @@ export class GatewayService {
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => ApiService))
     private readonly apiService: ApiService,
-    @Inject(forwardRef(() => MetricsService))
-    private readonly metricsService: MetricsService,
+    @Inject(forwardRef(() => ApiMetricsService))
+    private readonly metricsService: ApiMetricsService,
   ) { }
 
   async getAuctions(): Promise<Auction[]> {

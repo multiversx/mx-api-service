@@ -2,7 +2,7 @@ import { CachingModule } from "@elrondnetwork/nestjs-microservice-common";
 import { Module } from "@nestjs/common";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import { GatewayModule } from "src/common/gateway/gateway.module";
-import { MetricsModule } from "src/common/metrics/metrics.module";
+import { ApiMetricsModule } from "src/common/metrics/api.metrics.module";
 import { ProtocolModule } from "src/common/protocol/protocol.module";
 import { VmQueryService } from "./vm.query.service";
 
@@ -12,7 +12,7 @@ import { VmQueryService } from "./vm.query.service";
     GatewayModule,
     ProtocolModule,
     ApiConfigModule,
-    MetricsModule,
+    ApiMetricsModule,
   ],
   providers: [
     VmQueryService,

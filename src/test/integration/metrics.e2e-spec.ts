@@ -1,11 +1,11 @@
-import { MetricsService } from 'src/common/metrics/metrics.service';
+import { ApiMetricsService } from 'src/common/metrics/api.metrics.service';
 import { EsdtModule } from '../../endpoints/esdt/esdt.module';
 import { Test } from '@nestjs/testing';
 import { Constants } from 'src/utils/constants';
 import Initializer from './e2e-init';
 
 describe('Metrics Service', () => {
-  let metricsService: MetricsService;
+  let metricsService: ApiMetricsService;
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -14,7 +14,7 @@ describe('Metrics Service', () => {
       imports: [EsdtModule],
     }).compile();
 
-    metricsService = moduleRef.get<MetricsService>(MetricsService);
+    metricsService = moduleRef.get<ApiMetricsService>(ApiMetricsService);
 
   }, Constants.oneHour() * 1000);
 

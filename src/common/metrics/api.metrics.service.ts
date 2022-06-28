@@ -7,8 +7,7 @@ import { ProtocolService } from "../protocol/protocol.service";
 import { ElasticMetricType } from "./entities/elastic.metric.type";
 
 @Injectable()
-export class MetricsService {
-  private static apiCallsHistogram: Histogram<string>;
+export class ApiMetricsService {
   private static vmQueriesHistogram: Histogram<string>;
   private static pendingRequestsHistogram: Gauge<string>;
   private static externalCallsHistogram: Histogram<string>;
@@ -30,17 +29,8 @@ export class MetricsService {
     @Inject(forwardRef(() => ProtocolService))
     private readonly protocolService: ProtocolService,
   ) {
-    if (!MetricsService.apiCallsHistogram) {
-      MetricsService.apiCallsHistogram = new Histogram({
-        name: 'api',
-        help: 'API Calls',
-        labelNames: ['endpoint', 'origin', 'code'],
-        buckets: [],
-      });
-    }
-
-    if (!MetricsService.vmQueriesHistogram) {
-      MetricsService.vmQueriesHistogram = new Histogram({
+    if (!ApiMetricsService.vmQueriesHistogram) {
+      ApiMetricsService.vmQueriesHistogram = new Histogram({
         name: 'vm_query',
         help: 'VM Queries',
         labelNames: ['address', 'function'],
@@ -48,16 +38,16 @@ export class MetricsService {
       });
     }
 
-    if (!MetricsService.pendingRequestsHistogram) {
-      MetricsService.pendingRequestsHistogram = new Gauge({
+    if (!ApiMetricsService.pendingRequestsHistogram) {
+      ApiMetricsService.pendingRequestsHistogram = new Gauge({
         name: 'pending_requests',
         help: 'Pending requests',
         labelNames: ['endpoint'],
       });
     }
 
-    if (!MetricsService.externalCallsHistogram) {
-      MetricsService.externalCallsHistogram = new Histogram({
+    if (!ApiMetricsService.externalCallsHistogram) {
+      ApiMetricsService.externalCallsHistogram = new Histogram({
         name: 'external_apis',
         help: 'External Calls',
         labelNames: ['system'],
@@ -65,8 +55,8 @@ export class MetricsService {
       });
     }
 
-    if (!MetricsService.elasticDurationHistogram) {
-      MetricsService.elasticDurationHistogram = new Histogram({
+    if (!ApiMetricsService.elasticDurationHistogram) {
+      ApiMetricsService.elasticDurationHistogram = new Histogram({
         name: 'elastic_duration',
         help: 'Elastic Duration',
         labelNames: ['type', 'index'],
@@ -74,8 +64,8 @@ export class MetricsService {
       });
     }
 
-    if (!MetricsService.gatewayDurationHistogram) {
-      MetricsService.gatewayDurationHistogram = new Histogram({
+    if (!ApiMetricsService.gatewayDurationHistogram) {
+      ApiMetricsService.gatewayDurationHistogram = new Histogram({
         name: 'gateway_duration',
         help: 'Gateway Duration',
         labelNames: ['endpoint'],
@@ -83,8 +73,8 @@ export class MetricsService {
       });
     }
 
-    if (!MetricsService.elasticTookHistogram) {
-      MetricsService.elasticTookHistogram = new Histogram({
+    if (!ApiMetricsService.elasticTookHistogram) {
+      ApiMetricsService.elasticTookHistogram = new Histogram({
         name: 'elastic_took',
         help: 'Elastic Took',
         labelNames: ['index'],
@@ -92,8 +82,8 @@ export class MetricsService {
       });
     }
 
-    if (!MetricsService.redisDurationHistogram) {
-      MetricsService.redisDurationHistogram = new Histogram({
+    if (!ApiMetricsService.redisDurationHistogram) {
+      ApiMetricsService.redisDurationHistogram = new Histogram({
         name: 'redis_duration',
         help: 'Redis Duration',
         labelNames: ['action'],
@@ -101,8 +91,8 @@ export class MetricsService {
       });
     }
 
-    if (!MetricsService.persistenceDurationHistogram) {
-      MetricsService.persistenceDurationHistogram = new Histogram({
+    if (!ApiMetricsService.persistenceDurationHistogram) {
+      ApiMetricsService.persistenceDurationHistogram = new Histogram({
         name: 'persistence_duration',
         help: 'Persistence Duration',
         labelNames: ['action'],
@@ -110,8 +100,8 @@ export class MetricsService {
       });
     }
 
-    if (!MetricsService.jobsHistogram) {
-      MetricsService.jobsHistogram = new Histogram({
+    if (!ApiMetricsService.jobsHistogram) {
+      ApiMetricsService.jobsHistogram = new Histogram({
         name: 'jobs',
         help: 'Jobs',
         labelNames: ['job_identifier', 'result'],
@@ -119,92 +109,88 @@ export class MetricsService {
       });
     }
 
-    if (!MetricsService.currentNonceGauge) {
-      MetricsService.currentNonceGauge = new Gauge({
+    if (!ApiMetricsService.currentNonceGauge) {
+      ApiMetricsService.currentNonceGauge = new Gauge({
         name: 'current_nonce',
         help: 'Current nonce of the given shard',
         labelNames: ['shardId'],
       });
     }
 
-    if (!MetricsService.lastProcessedNonceGauge) {
-      MetricsService.lastProcessedNonceGauge = new Gauge({
+    if (!ApiMetricsService.lastProcessedNonceGauge) {
+      ApiMetricsService.lastProcessedNonceGauge = new Gauge({
         name: 'last_processed_nonce',
         help: 'Last processed nonce of the given shard',
         labelNames: ['shardId'],
       });
     }
 
-    if (!MetricsService.pendingApiHitGauge) {
-      MetricsService.pendingApiHitGauge = new Gauge({
+    if (!ApiMetricsService.pendingApiHitGauge) {
+      ApiMetricsService.pendingApiHitGauge = new Gauge({
         name: 'pending_api_hits',
         help: 'Number of hits for pending API calls',
         labelNames: ['endpoint'],
       });
     }
 
-    if (!MetricsService.cachedApiHitGauge) {
-      MetricsService.cachedApiHitGauge = new Gauge({
+    if (!ApiMetricsService.cachedApiHitGauge) {
+      ApiMetricsService.cachedApiHitGauge = new Gauge({
         name: 'cached_api_hits',
         help: 'Number of hits for cached API calls',
         labelNames: ['endpoint'],
       });
     }
 
-    if (!MetricsService.isDefaultMetricsRegistered) {
-      MetricsService.isDefaultMetricsRegistered = true;
+    if (!ApiMetricsService.isDefaultMetricsRegistered) {
+      ApiMetricsService.isDefaultMetricsRegistered = true;
       collectDefaultMetrics();
     }
   }
 
-  setApiCall(endpoint: string, origin: string, status: number, duration: number) {
-    MetricsService.apiCallsHistogram.labels(endpoint, origin, status.toString()).observe(duration);
-  }
-
   setVmQuery(address: string, func: string, duration: number) {
-    MetricsService.vmQueriesHistogram.labels(address, func).observe(duration);
+    ApiMetricsService.vmQueriesHistogram.labels(address, func).observe(duration);
   }
 
   setPendingRequestsCount(count: number) {
-    MetricsService.pendingRequestsHistogram.set(count);
+    ApiMetricsService.pendingRequestsHistogram.set(count);
   }
 
   setExternalCall(system: string, duration: number) {
-    MetricsService.externalCallsHistogram.labels(system).observe(duration);
+    ApiMetricsService.externalCallsHistogram.labels(system).observe(duration);
   }
 
   setElasticDuration(collection: string, type: ElasticMetricType, duration: number) {
-    MetricsService.elasticDurationHistogram.labels(type, collection).observe(duration);
+    ApiMetricsService.elasticDurationHistogram.labels(type, collection).observe(duration);
   }
 
   setGatewayDuration(name: string, duration: number) {
-    MetricsService.gatewayDurationHistogram.labels(name).observe(duration);
+    ApiMetricsService.gatewayDurationHistogram.labels(name).observe(duration);
   }
 
   setRedisDuration(action: string, duration: number) {
-    MetricsService.externalCallsHistogram.labels('redis').observe(duration);
-    MetricsService.redisDurationHistogram.labels(action).observe(duration);
+    ApiMetricsService.externalCallsHistogram.labels('redis').observe(duration);
+    ApiMetricsService.redisDurationHistogram.labels(action).observe(duration);
   }
 
   setPersistenceDuration(action: string, duration: number) {
-    MetricsService.externalCallsHistogram.labels('persistence').observe(duration);
-    MetricsService.persistenceDurationHistogram.labels(action).observe(duration);
+    ApiMetricsService.externalCallsHistogram.labels('persistence').observe(duration);
+    ApiMetricsService.persistenceDurationHistogram.labels(action).observe(duration);
   }
 
   static setJobResult(job: string, result: 'success' | 'error', duration: number) {
-    MetricsService.jobsHistogram.labels(job, result).observe(duration);
+    ApiMetricsService.jobsHistogram.labels(job, result).observe(duration);
   }
 
   setLastProcessedNonce(shardId: number, nonce: number) {
-    MetricsService.lastProcessedNonceGauge.set({ shardId }, nonce);
+    ApiMetricsService.lastProcessedNonceGauge.set({ shardId }, nonce);
   }
 
   incrementPendingApiHit(endpoint: string) {
-    MetricsService.pendingApiHitGauge.inc({ endpoint });
+    ApiMetricsService.pendingApiHitGauge.inc({ endpoint });
   }
 
   incrementCachedApiHit(endpoint: string) {
-    MetricsService.cachedApiHitGauge.inc({ endpoint });
+    ApiMetricsService.cachedApiHitGauge.inc({ endpoint });
   }
 
   async getMetrics(): Promise<string> {
@@ -212,7 +198,7 @@ export class MetricsService {
     if (this.apiConfigService.getIsTransactionProcessorCronActive()) {
       const currentNonces = await this.getCurrentNonces();
       for (const [index, shardId] of shardIds.entries()) {
-        MetricsService.currentNonceGauge.set({ shardId }, currentNonces[index]);
+        ApiMetricsService.currentNonceGauge.set({ shardId }, currentNonces[index]);
       }
     }
 

@@ -3,7 +3,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { MetricsService } from "src/common/metrics/metrics.service";
+import { ApiMetricsService } from "src/common/metrics/api.metrics.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { TokenUtils } from "src/utils/token.utils";
 import { EsdtDataSource } from "./entities/esdt.data.source";
@@ -32,7 +32,7 @@ export class EsdtAddressService {
     private readonly elasticService: ElasticService,
     private readonly gatewayService: GatewayService,
     private readonly cachingService: CachingService,
-    private readonly metricsService: MetricsService,
+    private readonly metricsService: ApiMetricsService,
     private readonly protocolService: ProtocolService,
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     @Inject(forwardRef(() => NftService))

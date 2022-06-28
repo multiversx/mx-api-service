@@ -4,10 +4,8 @@ import { PublicAppModule } from './public.app.module';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { ApiConfigService } from './common/api-config/api.config.service';
-import { CachingInterceptor } from './interceptors/caching.interceptor';
 import { FieldsInterceptor } from './interceptors/fields.interceptor';
 import { PrivateAppModule } from './private.app.module';
-import { MetricsService } from './common/metrics/metrics.service';
 import { CacheWarmerModule } from './crons/cache.warmer/cache.warmer.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Logger, NestInterceptor } from '@nestjs/common';
@@ -19,7 +17,6 @@ import { RedisClient } from 'redis';
 import { ExtractInterceptor } from './interceptors/extract.interceptor';
 import { TransactionProcessorModule } from './crons/transaction.processor/transaction.processor.module';
 import { PubSubListenerModule } from './common/pubsub/pub.sub.listener.module';
-import { ProtocolService } from './common/protocol/protocol.service';
 import { PaginationInterceptor } from './interceptors/pagination.interceptor';
 import { LogRequestsInterceptor } from './interceptors/log.requests.interceptor';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -31,7 +28,7 @@ import { SocketAdapter } from './websockets/socket-adapter';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
 import { QueryCheckInterceptor } from './interceptors/query.check.interceptor';
 import { ApiConfigModule } from './common/api-config/api.config.module';
-import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor } from '@elrondnetwork/nestjs-microservice-common';
+import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor } from '@elrondnetwork/nestjs-microservice-common';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
@@ -158,13 +155,12 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
 
   if (apiConfigService.getUseRequestCachingFlag()) {
     const cachingService = publicApp.get<CachingService>(CachingService);
-    const protocolService = publicApp.get<ProtocolService>(ProtocolService);
 
     const cachingInterceptor = new CachingInterceptor(
       cachingService,
+      // @ts-ignore
       httpAdapterHostService,
       metricsService,
-      protocolService,
     );
 
     globalInterceptors.push(cachingInterceptor);

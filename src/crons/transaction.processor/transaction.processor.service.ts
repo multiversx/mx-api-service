@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
-import { MetricsService } from "src/common/metrics/metrics.service";
+import { ApiMetricsService } from "src/common/metrics/api.metrics.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
@@ -19,7 +19,7 @@ export class TransactionProcessorService {
   constructor(
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly metricsService: MetricsService,
+    private readonly metricsService: ApiMetricsService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly nodeService: NodeService,
   ) {

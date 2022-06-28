@@ -1,10 +1,10 @@
 import { Controller, Get } from "@nestjs/common";
-import { MetricsService } from "./metrics.service";
+import { ApiMetricsService } from "./api.metrics.service";
 
 @Controller()
-export class MetricsController {
+export class ApiMetricsController {
   constructor(
-    private readonly metricsService: MetricsService
+    private readonly metricsService: ApiMetricsService
   ) { }
 
   @Get("/metrics")
