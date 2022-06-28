@@ -280,4 +280,9 @@ export class CacheInfo {
       ttl: Constants.oneMinute() * 10,
     };
   }
+
+  static DelegationLegacy: CacheInfo = {
+    key: "delegationLegacy",
+    ttl: Constants.oneMinute() * 10,
+  };
 }

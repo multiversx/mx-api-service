@@ -23,6 +23,7 @@ import { MexTokenService } from "src/endpoints/mex/mex.token.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import AsyncLock from "async-lock";
 import { CachingService, Constants, Locker } from "@elrondnetwork/nestjs-microservice-common";
+import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -48,6 +49,7 @@ export class CacheWarmerService {
     private readonly mexTokensService: MexTokenService,
     private readonly mexSettingsService: MexSettingsService,
     private readonly mexFarmsService: MexFarmService,
+    private readonly delegationLegacyService: DelegationLegacyService,
   ) {
     this.lock = new AsyncLock();
 
@@ -97,6 +99,13 @@ export class CacheWarmerService {
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
+  async handleDelegationLegacyInvalidations() {
+    await Locker.lock('Delegation legacy invalidations', async () => {
+      const delegation = await this.delegationLegacyService.getDelegationRaw();
+      await this.invalidateKey(CacheInfo.DelegationLegacy.key, delegation, CacheInfo.DelegationLegacy.ttl);
+    }, true);
+  }
+
   async handleNodeAuctionInvalidations() {
     await Locker.lock('Node auction invalidations', async () => {
       await this.lock.acquire('nodes', async () => {

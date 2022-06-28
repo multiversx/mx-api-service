@@ -91,9 +91,13 @@ export class EsdtService {
     try {
       const indexedTokens = await this.mexTokenService.getMexPricesRaw();
       for (const token of tokens) {
-        const price = indexedTokens[token.identifier];
+        let price = indexedTokens[token.identifier];
         if (price) {
           const supply = await this.getTokenSupply(token.identifier);
+
+          if (token.assets && token.identifier.split('-')[0] === 'EGLDUSDC') {
+            price = price / (10 ** 12) * 2;
+          }
 
           token.price = price;
           token.marketCap = price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
