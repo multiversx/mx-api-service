@@ -322,8 +322,8 @@ export class TransactionService {
           previousHashes[scResult.hash] = scResult.prevTxHash;
         }
 
-        const transactionLogsFromElastic = logs.filter((log) => transactionHashes.includes(log._id));
-        const transactionLogs: TransactionLog[] = transactionLogsFromElastic.map(log => ({ id: log._id, ...ApiUtils.mergeObjects(new TransactionLog(), log._source) }));
+        const transactionLogsFromElastic = logs.filter((log) => transactionHashes.includes(log.id));
+        const transactionLogs: TransactionLog[] = transactionLogsFromElastic.map(log => ({ ...ApiUtils.mergeObjects(new TransactionLog(), log) }));
 
         transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, transactionLogs);
         transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);

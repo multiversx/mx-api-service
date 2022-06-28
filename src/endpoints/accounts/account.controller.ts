@@ -549,26 +549,20 @@ export class AccountController {
       throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
     }
 
-    try {
-      return await this.transactionService.getTransactions({
-        sender,
-        receiver,
-        token,
-        senderShard,
-        receiverShard,
-        miniBlockHash,
-        hashes,
-        status,
-        search,
-        before,
-        after,
-        order,
-      }, { from, size }, { withScResults, withOperations, withLogs }, address);
-    } catch (error) {
-      this.logger.error(`Error in getAccountTransactions for address ${address}`);
-      this.logger.error(error);
-      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
-    }
+    return await this.transactionService.getTransactions({
+      sender,
+      receiver,
+      token,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      search,
+      before,
+      after,
+      order,
+    }, { from, size }, { withScResults, withOperations, withLogs }, address);
   }
 
   @Get("/accounts/:address/transactions/count")

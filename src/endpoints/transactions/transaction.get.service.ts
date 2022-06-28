@@ -65,7 +65,7 @@ export class TransactionGetService {
       .withPagination({ from: 0, size: 10000 })
       .withCondition(QueryConditionOptions.should, queries);
 
-    return await this.elasticService.getList('logs', '_id', elasticQueryLogs);
+    return await this.elasticService.getList('logs', 'id', elasticQueryLogs);
   }
 
   async getTransactionScResultsFromElastic(txHash: string): Promise<SmartContractResult[]> {
@@ -124,7 +124,7 @@ export class TransactionGetService {
 
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs)) {
           const logs = await this.getTransactionLogsFromElastic(hashes);
-          const transactionLogs: TransactionLog[] = logs.map(log => ({ id: log._id, ...ApiUtils.mergeObjects(new TransactionLog(), log._source) }));
+          const transactionLogs: TransactionLog[] = logs.map(log => ({ ...ApiUtils.mergeObjects(new TransactionLog(), log) }));
 
           transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, transactionLogs);
           transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
