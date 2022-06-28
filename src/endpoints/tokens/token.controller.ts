@@ -20,6 +20,10 @@ import { TokenSort } from "./entities/token.sort";
 import { SortTokens } from "src/common/entities/sort.tokens";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { TransferService } from "../transfers/transfer.service";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { TokenFilter } from "./entities/token.filter";
+import { TransactionFilter } from "../transactions/entities/transaction.filter";
+import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
 
 @Controller()
 @ApiTags('tokens')
@@ -52,7 +56,9 @@ export class TokenController {
     @Query('sort', new ParseOptionalEnumPipe(TokenSort)) sort?: TokenSort,
     @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<TokenDetailed[]> {
-    return await this.tokenService.getTokens({ from, size }, { search, name, identifier, identifiers, sort, order });
+    return await this.tokenService.getTokens(
+      new QueryPagination({ from, size }),
+      new TokenFilter({ search, name, identifier, identifiers, sort, order }));
   }
 
   @Get("/tokens/count")
@@ -68,7 +74,7 @@ export class TokenController {
     @Query('identifier') identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
   ): Promise<number> {
-    return await this.tokenService.getTokenCount({ search, name, identifier, identifiers });
+    return await this.tokenService.getTokenCount(new TokenFilter({ search, name, identifier, identifiers }));
   }
 
   @Get("/tokens/c")
@@ -79,7 +85,7 @@ export class TokenController {
     @Query('identifier') identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
   ): Promise<number> {
-    return await this.tokenService.getTokenCount({ search, name, identifier, identifiers });
+    return await this.tokenService.getTokenCount(new TokenFilter({ search, name, identifier, identifiers }));
   }
 
   @Get('/tokens/:identifier')
@@ -133,7 +139,7 @@ export class TokenController {
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
     }
 
-    const accounts = await this.tokenService.getTokenAccounts({ from, size }, identifier);
+    const accounts = await this.tokenService.getTokenAccounts(new QueryPagination({ from, size }), identifier);
     if (!accounts) {
       throw new NotFoundException('Token not found');
     }
@@ -211,7 +217,7 @@ export class TokenController {
       throw new NotFoundException('Token not found');
     }
 
-    return await this.transactionService.getTransactions({
+    return await this.transactionService.getTransactions(new TransactionFilter({
       sender,
       receiver,
       token: identifier,
@@ -225,7 +231,7 @@ export class TokenController {
       before,
       after,
       order,
-    }, { from, size }, { withScResults, withOperations, withLogs });
+    }), new QueryPagination({ from, size }), new TransactionQueryOptions({ withScResults, withOperations, withLogs }));
   }
 
   @Get("/tokens/:identifier/transactions/count")
@@ -260,7 +266,7 @@ export class TokenController {
       throw new NotFoundException('Token not found');
     }
 
-    return await this.transactionService.getTransactionCount({
+    return await this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
       receiver,
       token: identifier,
@@ -272,7 +278,7 @@ export class TokenController {
       search,
       before,
       after,
-    });
+    }));
   }
 
   @Get("/tokens/:identifier/roles")
@@ -357,7 +363,7 @@ export class TokenController {
       throw new NotFoundException('Token not found');
     }
 
-    return await this.transferService.getTransfers({
+    return await this.transferService.getTransfers(new TransactionFilter({
       sender,
       receiver,
       token: identifier,
@@ -370,7 +376,7 @@ export class TokenController {
       before,
       after,
       order,
-    }, { from, size });
+    }), new QueryPagination({ from, size }));
   }
 
   @Get("/tokens/:identifier/transfers/count")
@@ -410,7 +416,7 @@ export class TokenController {
       throw new NotFoundException('Token not found');
     }
 
-    return await this.transferService.getTransfersCount({
+    return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
       receiver,
       token: identifier,
@@ -423,7 +429,7 @@ export class TokenController {
       search,
       before,
       after,
-    });
+    }));
   }
 
   @Get("/tokens/:identifier/transfers/c")
@@ -451,7 +457,7 @@ export class TokenController {
       throw new NotFoundException('Token not found');
     }
 
-    return await this.transferService.getTransfersCount({
+    return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
       receiver,
       token: identifier,
@@ -464,6 +470,6 @@ export class TokenController {
       search,
       before,
       after,
-    });
+    }));
   }
 }

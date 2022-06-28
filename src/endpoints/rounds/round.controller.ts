@@ -6,6 +6,7 @@ import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe"
 import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { Round } from "./entities/round";
 import { RoundDetailed } from "./entities/round.detailed";
+import { RoundFilter } from "./entities/round.filter";
 import { RoundService } from "./round.service";
 
 @Controller()
@@ -30,7 +31,7 @@ export class RoundController {
     @Query("shard", new ParseOptionalIntPipe) shard?: number,
     @Query("epoch", new ParseOptionalIntPipe) epoch?: number,
   ): Promise<Round[]> {
-    return this.roundService.getRounds({ from, size, condition, validator, shard, epoch });
+    return this.roundService.getRounds(new RoundFilter({ from, size, condition, validator, shard, epoch }));
   }
 
   @Get("/rounds/count")
@@ -50,7 +51,7 @@ export class RoundController {
     @Query("shard", new ParseOptionalIntPipe) shard?: number,
     @Query("epoch", new ParseOptionalIntPipe) epoch?: number,
   ): Promise<number> {
-    return this.roundService.getRoundCount({ from, size, condition, validator, shard, epoch });
+    return this.roundService.getRoundCount(new RoundFilter({ from, size, condition, validator, shard, epoch }));
   }
 
   @Get("/rounds/c")
@@ -63,7 +64,7 @@ export class RoundController {
     @Query("shard", new ParseOptionalIntPipe) shard?: number,
     @Query("epoch", new ParseOptionalIntPipe) epoch?: number,
   ): Promise<number> {
-    return this.roundService.getRoundCount({ from, size, condition, validator, shard, epoch });
+    return this.roundService.getRoundCount(new RoundFilter({ from, size, condition, validator, shard, epoch }));
   }
 
   @Get("/rounds/:shard/:round")

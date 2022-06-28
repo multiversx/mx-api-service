@@ -1,6 +1,10 @@
 import { NftType } from "../../nfts/entities/nft.type";
 
 export class CollectionFilter {
+  constructor(init?: Partial<CollectionFilter>) {
+    Object.assign(this, init);
+  }
+
   collection?: string;
   identifiers?: string[];
   search?: string;

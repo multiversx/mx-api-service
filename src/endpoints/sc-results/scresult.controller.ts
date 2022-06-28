@@ -5,6 +5,8 @@ import { SmartContractResult } from "./entities/smart.contract.result";
 import { SmartContractResultService } from "./scresult.service";
 import { ParseArrayPipe } from 'src/utils/pipes/parse.array.pipe';
 import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { SmartContractResultFilter } from "./entities/smart.contract.result.filter";
 
 @Controller()
 @ApiTags('sc-results')
@@ -24,7 +26,9 @@ export class SmartContractResultController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('originalTxHashes', ParseArrayPipe, ParseTransactionHashPipe) originalTxHashes?: string[],
   ): Promise<SmartContractResult[]> {
-    return this.scResultService.getScResults({ from, size }, { miniBlockHash, originalTxHashes });
+    return this.scResultService.getScResults(
+      new QueryPagination({ from, size }),
+      new SmartContractResultFilter({ miniBlockHash, originalTxHashes }));
   }
 
   @Get("/results/count")
@@ -60,7 +64,9 @@ export class SmartContractResultController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('originalTxHashes', ParseArrayPipe, ParseTransactionHashPipe) originalTxHashes?: string[],
   ): Promise<SmartContractResult[]> {
-    return this.scResultService.getScResults({ from, size }, { miniBlockHash, originalTxHashes });
+    return this.scResultService.getScResults(
+      new QueryPagination({ from, size }),
+      new SmartContractResultFilter({ miniBlockHash, originalTxHashes }));
   }
 
   @Get("/sc-results/count")

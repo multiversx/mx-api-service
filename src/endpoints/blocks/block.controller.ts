@@ -1,11 +1,13 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
+import { QueryPagination } from "src/common/entities/query.pagination";
 import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
 import { ParseBlsHashPipe } from "src/utils/pipes/parse.bls.hash.pipe";
 import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { BlockService } from "./block.service";
 import { Block } from "./entities/block";
 import { BlockDetailed } from "./entities/block.detailed";
+import { BlockFilter } from "./entities/block.filter";
 
 @Controller()
 @ApiTags('blocks')
@@ -31,7 +33,7 @@ export class BlockController {
     @Query('epoch', ParseOptionalIntPipe) epoch?: number,
     @Query('nonce', ParseOptionalIntPipe) nonce?: number,
   ): Promise<Block[]> {
-    return this.blockService.getBlocks({ shard, proposer, validator, epoch, nonce }, { from, size });
+    return this.blockService.getBlocks(new BlockFilter({ shard, proposer, validator, epoch, nonce }), new QueryPagination({ from, size }));
   }
 
   @Get("/blocks/count")
@@ -49,7 +51,7 @@ export class BlockController {
     @Query('epoch', ParseOptionalIntPipe) epoch?: number,
     @Query('nonce', ParseOptionalIntPipe) nonce?: number,
   ): Promise<number> {
-    return this.blockService.getBlocksCount({ shard, proposer, validator, epoch, nonce });
+    return this.blockService.getBlocksCount(new BlockFilter({ shard, proposer, validator, epoch, nonce }));
   }
 
   @Get("/blocks/c")
@@ -61,7 +63,7 @@ export class BlockController {
     @Query('epoch', ParseOptionalIntPipe) epoch?: number,
     @Query('nonce', ParseOptionalIntPipe) nonce?: number,
   ): Promise<number> {
-    return this.blockService.getBlocksCount({ shard, proposer, validator, epoch, nonce });
+    return this.blockService.getBlocksCount(new BlockFilter({ shard, proposer, validator, epoch, nonce }));
   }
 
   @Get("/blocks/:hash")

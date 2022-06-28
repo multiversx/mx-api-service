@@ -10,6 +10,8 @@ import { NftFilter } from "./entities/nft.filter";
 import { NftOwner } from "./entities/nft.owner";
 import { NftType } from "./entities/nft.type";
 import { NftService } from "./nft.service";
+import { QueryPagination } from 'src/common/entities/query.pagination';
+import { NftQueryOptions } from './entities/nft.query.options';
 
 @Controller()
 @ApiTags('nfts')
@@ -54,7 +56,10 @@ export class NftController {
       throw new BadRequestException(`Maximum size of 100 is allowed when activating flags 'withOwner' or 'withSupply'`);
     }
 
-    return await this.nftService.getNfts({ from, size }, { search, identifiers, type, collection, name, tags, creator, hasUris, isWhitelistedStorage }, { withOwner, withSupply });
+    return await this.nftService.getNfts(
+      new QueryPagination({ from, size }),
+      new NftFilter({ search, identifiers, type, collection, name, tags, creator, hasUris, isWhitelistedStorage }),
+      new NftQueryOptions({ withOwner, withSupply }));
   }
 
   @Get("/nfts/count")
@@ -80,7 +85,7 @@ export class NftController {
     @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage?: boolean,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
   ): Promise<number> {
-    return await this.nftService.getNftCount({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris });
+    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris }));
   }
 
   @Get("/nfts/c")
@@ -96,7 +101,7 @@ export class NftController {
     @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage?: boolean,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
   ): Promise<number> {
-    return await this.nftService.getNftCount({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris });
+    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris }));
   }
 
   @Get('/nfts/:identifier')
@@ -147,15 +152,8 @@ export class NftController {
 
   @Get('/nfts/:identifier/owners')
   @ApiOperation({ deprecated: true })
-  @ApiResponse({
-    status: 200,
-    description: 'Non-fungible / semi-fungible token owners',
-    type: NftOwner,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Token not found',
-  })
+  @ApiResponse({ status: 200, description: 'Non-fungible / semi-fungible token owners', type: NftOwner })
+  @ApiResponse({ status: 404, description: 'Token not found' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   async getNftOwners(
@@ -163,7 +161,7 @@ export class NftController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<NftOwner[]> {
-    const owners = await this.nftService.getNftOwners(identifier, { from, size });
+    const owners = await this.nftService.getNftOwners(identifier, new QueryPagination({ from, size }));
     if (owners === undefined) {
       throw new HttpException('NFT not found', HttpStatus.NOT_FOUND);
     }
@@ -198,7 +196,7 @@ export class NftController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<NftOwner[]> {
-    const owners = await this.nftService.getNftOwners(identifier, { from, size });
+    const owners = await this.nftService.getNftOwners(identifier, new QueryPagination({ from, size }));
     if (owners === undefined) {
       throw new HttpException('NFT not found', HttpStatus.NOT_FOUND);
     }

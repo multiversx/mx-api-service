@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiCreatedResponse, ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
+import { QueryPagination } from 'src/common/entities/query.pagination';
 import { SortOrder } from 'src/common/entities/sort.order';
 import { ParseAddressPipe } from 'src/utils/pipes/parse.address.pipe';
 import { ParseArrayPipe } from 'src/utils/pipes/parse.array.pipe';
@@ -25,8 +26,10 @@ import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
+import { TransactionFilter } from './entities/transaction.filter';
 import { TransactionSendResult } from './entities/transaction.send.result';
 import { TransactionStatus } from './entities/transaction.status';
+import { TransactionQueryOptions } from './entities/transactions.query.options';
 import { TransactionService } from './transaction.service';
 
 @Controller()
@@ -81,7 +84,7 @@ export class TransactionController {
       throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
     }
 
-    return this.transactionService.getTransactions({
+    return this.transactionService.getTransactions(new TransactionFilter({
       sender,
       receiver,
       token,
@@ -96,7 +99,7 @@ export class TransactionController {
       after,
       condition,
       order,
-    }, { from, size }, { withScResults, withOperations, withLogs });
+    }), new QueryPagination({ from, size }), new TransactionQueryOptions({ withScResults, withOperations, withLogs }));
   }
 
   @Get("/transactions/count")
@@ -128,7 +131,7 @@ export class TransactionController {
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
-    return this.transactionService.getTransactionCount({
+    return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
       receiver,
       token,
@@ -141,7 +144,7 @@ export class TransactionController {
       before,
       after,
       condition,
-    });
+    }));
   }
 
   @Get("/transactions/c")
@@ -160,7 +163,7 @@ export class TransactionController {
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
-    return this.transactionService.getTransactionCount({
+    return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
       receiver,
       token,
@@ -173,7 +176,7 @@ export class TransactionController {
       before,
       after,
       condition,
-    });
+    }));
   }
 
   @Get('/transactions/:txHash')

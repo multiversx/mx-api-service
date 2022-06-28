@@ -1,6 +1,7 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { QueryPagination } from "src/common/entities/query.pagination";
 import { SortOrder } from "src/common/entities/sort.order";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
 import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
@@ -8,6 +9,7 @@ import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
 import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { Transaction } from "../transactions/entities/transaction";
+import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionStatus } from "../transactions/entities/transaction.status";
 import { TransferService } from "./transfer.service";
 
@@ -56,7 +58,7 @@ export class TransferController {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
-    return await this.transferService.getTransfers({
+    return await this.transferService.getTransfers(new TransactionFilter({
       sender,
       receiver,
       token,
@@ -69,7 +71,7 @@ export class TransferController {
       before,
       after,
       order,
-    }, { from, size });
+    }), new QueryPagination({ from, size }));
   }
 
   @Get("/transfers/count")
@@ -105,7 +107,7 @@ export class TransferController {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
-    return await this.transferService.getTransfersCount({
+    return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
       receiver,
       token,
@@ -118,7 +120,7 @@ export class TransferController {
       search,
       before,
       after,
-    });
+    }));
   }
 
   @Get("/transfers/c")
@@ -141,7 +143,7 @@ export class TransferController {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
-    return await this.transferService.getTransfersCount({
+    return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
       receiver,
       token,
@@ -154,6 +156,6 @@ export class TransferController {
       search,
       before,
       after,
-    });
+    }));
   }
 }

@@ -3,6 +3,7 @@ import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } f
 import { ProviderService } from "./provider.service";
 import { Provider } from "./entities/provider";
 import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
+import { ProviderFilter } from "./entities/provider.filter";
 
 @Controller()
 @ApiTags('providers')
@@ -16,7 +17,7 @@ export class ProviderController {
   async getProviders(
     @Query('identity') identity?: string,
   ): Promise<Provider[]> {
-    return await this.providerService.getProviders({ identity });
+    return await this.providerService.getProviders(new ProviderFilter({ identity }));
   }
 
   @Get('/providers/:address')
