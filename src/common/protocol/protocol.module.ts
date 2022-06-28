@@ -6,7 +6,7 @@ import { ProtocolService } from "./protocol.service";
 @Global()
 @Module({
   imports: [
-    GatewayModule,
+    forwardRef(() => GatewayModule),
     forwardRef(() => CachingModule),
     ElasticModule,
   ],

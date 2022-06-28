@@ -1,9 +1,8 @@
 import { Test } from "@nestjs/testing";
-import { FileUtils } from "../../utils/file.utils";
 import { PublicAppModule } from "src/public.app.module";
 import { BlsService } from "../../endpoints/bls/bls.service";
-import { ElasticService } from "../../common/elastic/elastic.service";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
+import { ElasticService, FileUtils } from "@elrondnetwork/nestjs-microservice-common";
 
 describe('Bls Service', () => {
   let blsService: BlsService;

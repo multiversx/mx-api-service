@@ -1,8 +1,6 @@
 
+import { CachingModule, CachingService, Constants } from "@elrondnetwork/nestjs-microservice-common";
 import { Test } from "@nestjs/testing";
-import { CachingModule } from "src/common/caching/caching.module";
-import { CachingService } from "src/common/caching/caching.service";
-import { Constants } from "src/utils/constants";
 import Initializer from "./e2e-init";
 
 describe('Warm for tests', () => {

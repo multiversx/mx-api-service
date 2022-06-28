@@ -6,11 +6,11 @@ import { TransactionFilter } from 'src/endpoints/transactions/entities/transacti
 import { TransactionOptionalFieldOption } from 'src/endpoints/transactions/entities/transaction.optional.field.options';
 import transactionDetails from "../data/transactions/transaction.details";
 import { TransactionDetailed } from "../../endpoints/transactions/entities/transaction.detailed";
-import '../../utils/extensions/jest.extensions';
-import '../../utils/extensions/array.extensions';
+import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/jest.extensions';
+import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/array.extensions';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { BinaryUtils } from 'src/utils/binary.utils';
 import { PublicAppModule } from 'src/public.app.module';
+import { BinaryUtils } from '@elrondnetwork/nestjs-microservice-common';
 
 describe('Transaction Service', () => {
   let transactionService: TransactionService;

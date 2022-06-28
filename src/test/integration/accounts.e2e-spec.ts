@@ -1,14 +1,12 @@
 import { AccountEsdtHistory } from '../../endpoints/accounts/entities/account.esdt.history';
 import { AccountKey } from '../../endpoints/accounts/entities/account.key';
-import { AddressUtils } from 'src/utils/address.utils';
-import { CachingService } from '../../common/caching/caching.service';
 import { Test } from '@nestjs/testing';
 import { AccountService } from 'src/endpoints/accounts/account.service';
 import { PublicAppModule } from 'src/public.app.module';
-import { ElasticService } from 'src/common/elastic/elastic.service';
 import { DeployedContract } from 'src/endpoints/accounts/entities/deployed.contract';
-import '../../utils/extensions/jest.extensions';
+import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/jest.extensions';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { AddressUtils, CachingService, ElasticService } from '@elrondnetwork/nestjs-microservice-common';
 
 describe('Account Service', () => {
   let accountService: AccountService;

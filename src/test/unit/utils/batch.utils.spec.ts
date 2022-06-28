@@ -1,5 +1,6 @@
 /* eslint-disable require-await */
-import { BatchUtils } from "src/utils/batch.utils";
+
+import { BatchUtils } from "@elrondnetwork/nestjs-microservice-common";
 
 describe('Batch Utils', () => {
   it('splitArrayIntoChunks', () => {

@@ -1,8 +1,8 @@
 import { ApiMetricsService } from 'src/common/metrics/api.metrics.service';
 import { EsdtModule } from '../../endpoints/esdt/esdt.module';
 import { Test } from '@nestjs/testing';
-import { Constants } from 'src/utils/constants';
 import Initializer from './e2e-init';
+import { Constants } from '@elrondnetwork/nestjs-microservice-common';
 
 describe('Metrics Service', () => {
   let metricsService: ApiMetricsService;

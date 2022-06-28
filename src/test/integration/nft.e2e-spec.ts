@@ -1,16 +1,16 @@
 import { NftQueryOptions } from '../../endpoints/nfts/entities/nft.query.options';
 import { Test } from "@nestjs/testing";
 import { NftService } from "src/endpoints/nfts/nft.service";
-import '../../utils/extensions/jest.extensions';
-import '../../utils/extensions/array.extensions';
+import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/jest.extensions';
+import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/array.extensions';
 import { PublicAppModule } from "src/public.app.module";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftOwner } from 'src/endpoints/nfts/entities/nft.owner';
 import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 import { NftAccount } from 'src/endpoints/nfts/entities/nft.account';
-import { CachingService } from 'src/common/caching/caching.service';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { CachingService } from '@elrondnetwork/nestjs-microservice-common';
 
 
 describe('Nft Service', () => {

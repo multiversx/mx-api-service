@@ -1,16 +1,13 @@
 import { Test } from '@nestjs/testing';
 import { TransactionStatus } from 'src/endpoints/transactions/entities/transaction.status';
 import { TransactionFilter } from 'src/endpoints/transactions/entities/transaction.filter';
-import { Constants } from 'src/utils/constants';
 import transactionDetails from "../data/transactions/transaction.details";
 import { TransferModule } from 'src/endpoints/transfers/transfer.module';
 import { TransferService } from 'src/endpoints/transfers/transfer.service';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { ApiConfigModule } from 'src/common/api-config/api.config.module';
-import { BinaryUtils } from 'src/utils/binary.utils';
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
-import { ElasticService } from 'src/common/elastic/elastic.service';
-import { ElasticQuery } from 'src/common/elastic/entities/elastic.query';
+import { BinaryUtils, Constants, ElasticQuery, ElasticService } from '@elrondnetwork/nestjs-microservice-common';
 
 describe.skip('Transfer Service', () => {
   let transferService: TransferService;

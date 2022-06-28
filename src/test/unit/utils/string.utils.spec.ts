@@ -1,4 +1,4 @@
-import { StringUtils } from "src/utils/string.utils";
+import { StringUtils } from "@elrondnetwork/nestjs-microservice-common";
 
 describe('String Utils', () => {
   describe('isHex', () => {

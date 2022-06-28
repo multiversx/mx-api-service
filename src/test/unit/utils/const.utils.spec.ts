@@ -1,4 +1,4 @@
-import { Constants } from "src/utils/constants";
+import { Constants } from "@elrondnetwork/nestjs-microservice-common";
 
 describe('Constants Utils', () => {
     describe('Constants conversion', () => {

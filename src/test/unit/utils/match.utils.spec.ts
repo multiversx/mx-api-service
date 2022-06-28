@@ -1,4 +1,4 @@
-import { MatchUtils } from "src/utils/match.utils";
+import { MatchUtils } from "@elrondnetwork/nestjs-microservice-common";
 
 describe('Match Utils', () => {
     it('getTagsFromBase64Attributes', () => {

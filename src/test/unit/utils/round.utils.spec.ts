@@ -1,5 +1,4 @@
-import { RoundUtils } from "src/utils/round.utils";
-
+import { RoundUtils } from "@elrondnetwork/nestjs-microservice-common";
 
 describe('Round Utils', () => {
     describe('getExpires', () => {

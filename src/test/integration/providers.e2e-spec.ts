@@ -5,9 +5,9 @@ import { ProviderService } from 'src/endpoints/providers/provider.service';
 import { PublicAppModule } from 'src/public.app.module';
 import { ProviderConfig } from '../../endpoints/providers/entities/provider.config';
 import { Provider } from 'src/endpoints/providers/entities/provider';
-import { CachingService } from 'src/common/caching/caching.service';
-import '../../utils/extensions/array.extensions';
-import '../../utils/extensions/jest.extensions';
+import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/array.extensions';
+import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/jest.extensions';
+import { CachingService } from '@elrondnetwork/nestjs-microservice-common';
 
 describe('Provider Service', () => {
   let providerService: ProviderService;

@@ -1,7 +1,7 @@
 import { TagService } from "../../endpoints/nfttags/tag.service";
 import { Test } from "@nestjs/testing";
 import { Tag } from "../../endpoints/nfttags/entities/tag";
-import '../../utils/extensions/jest.extensions';
+import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/jest.extensions';
 import { PublicAppModule } from "src/public.app.module";
 
 describe('NFT Tag Service', () => {

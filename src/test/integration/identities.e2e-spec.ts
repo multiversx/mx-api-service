@@ -4,9 +4,9 @@ import { Identity } from "src/endpoints/identities/entities/identity";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { Provider } from "src/endpoints/providers/entities/provider";
 import { ProviderService } from "src/endpoints/providers/provider.service";
-import '../../utils/extensions/jest.extensions';
-import '../../utils/extensions/array.extensions';
-import '../../utils/extensions/number.extensions';
+import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/jest.extensions';
+import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/array.extensions';
+import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/number.extensions';
 import { PublicAppModule } from "src/public.app.module";
 
 describe('Identities Service', () => {

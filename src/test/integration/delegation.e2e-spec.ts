@@ -1,8 +1,8 @@
 import { DelegationService } from "../../endpoints/delegation/delegation.service";
 import { Test } from "@nestjs/testing";
 import { Delegation } from "../../endpoints/delegation/entities/delegation";
-import '../../utils/extensions/jest.extensions';
-import '../../utils/extensions/array.extensions';
+import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/jest.extensions';
+import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/array.extensions';
 import { PublicAppModule } from "src/public.app.module";
 
 describe('Delegation Service', () => {

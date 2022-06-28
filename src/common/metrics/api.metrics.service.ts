@@ -16,6 +16,7 @@ export class ApiMetricsService {
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
+    @Inject(forwardRef(() => GatewayService))
     private readonly gatewayService: GatewayService,
     @Inject(forwardRef(() => ProtocolService))
     private readonly protocolService: ProtocolService,
