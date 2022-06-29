@@ -17,6 +17,7 @@ export class RabbitMqNftConsumer {
   @CompetingRabbitConsumer({
     exchange: 'all_events',
     queueName: configuration().features?.eventsNotifier?.queue ?? 'api-process-logs-and-events',
+    deadLetterExchange: configuration().features?.eventsNotifier?.dlq ?? 'api-process-logs-and-events-dlq',
   })
   async consumeEvents(rawEvents: any) {
     try {
