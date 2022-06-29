@@ -3,4 +3,5 @@ export enum MexPairType {
   community = 'community',
   ecosystem = 'ecosystem',
   experimental = 'experimental',
+  jungle = 'jungle',
 }
