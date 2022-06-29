@@ -13,7 +13,7 @@ import { DataApiService } from "src/common/external/data.api.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { DataQuoteType } from "src/common/external/entities/data.quote.type";
 import { EsdtService } from "src/endpoints/esdt/esdt.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { AssetsService } from "src/common/assets/assets.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { MexSettingsService } from "src/endpoints/mex/mex.settings.service";

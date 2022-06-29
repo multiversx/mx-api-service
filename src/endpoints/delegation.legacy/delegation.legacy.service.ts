@@ -4,7 +4,7 @@ import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { DelegationLegacy } from "./entities/delegation.legacy";
 import { AccountDelegationLegacy } from "./entities/account.delegation.legacy";
 import { AddressUtils, CachingService } from "@elrondnetwork/nestjs-microservice-common";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 
 @Injectable()
 export class DelegationLegacyService {

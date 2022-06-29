@@ -1,7 +1,7 @@
 import { Constants, CachingService } from "@elrondnetwork/nestjs-microservice-common";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { GraphQlService } from "src/common/graphql/graphql.service";
 import { MexFarm } from "./entities/mex.farm";
 import { MexFarmType } from "./entities/mex.farm.type";

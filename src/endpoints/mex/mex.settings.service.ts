@@ -1,7 +1,7 @@
 import { Constants, CachingService } from "@elrondnetwork/nestjs-microservice-common";
 import { Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { GraphQlService } from "src/common/graphql/graphql.service";
 import { TransactionMetadata } from "../transactions/transaction-action/entities/transaction.metadata";
 import { TransactionMetadataTransfer } from "../transactions/transaction-action/entities/transaction.metadata.transfer";

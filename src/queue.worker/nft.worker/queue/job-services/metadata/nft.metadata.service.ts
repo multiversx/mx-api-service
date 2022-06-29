@@ -1,6 +1,6 @@
 import { CachingService } from "@elrondnetwork/nestjs-microservice-common";
 import { Injectable, Logger } from "@nestjs/common";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";

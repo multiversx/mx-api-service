@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { MexToken } from "./entities/mex.token";
 import { MexPairService } from "./mex.pair.service";
 import { MexPairState } from "./entities/mex.pair.state";

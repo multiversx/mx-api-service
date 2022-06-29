@@ -9,7 +9,7 @@ import { StakeTopup } from "./entities/stake.topup";
 import { NetworkService } from "../network/network.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { AddressUtils, ApiUtils, Constants, RoundUtils, CachingService } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()

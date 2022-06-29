@@ -13,7 +13,7 @@ import { GatewayService } from 'src/common/gateway/gateway.service';
 import { TransactionLog } from './entities/transaction.log';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { PluginService } from 'src/common/plugins/plugin.service';
-import { CacheInfo } from 'src/common/caching/entities/cache.info';
+import { CacheInfo } from 'src/utils/cache.info';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { SortOrder } from 'src/common/entities/sort.order';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';

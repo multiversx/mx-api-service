@@ -3,7 +3,7 @@ import { NftType } from 'src/endpoints/nfts/entities/nft.type';
 import { NftService } from 'src/endpoints/nfts/nft.service';
 import { ProcessNftSettings } from 'src/endpoints/process-nfts/entities/process.nft.settings';
 import { NftWorkerService } from 'src/queue.worker/nft.worker/nft.worker.service';
-import { CacheInfo } from '../caching/entities/cache.info';
+import { CacheInfo } from '../../utils/cache.info';
 import { NotifierEventIdentifier } from './entities/notifier.event.identifier';
 import { NotifierEvent } from './entities/notifier.event';
 import { BinaryUtils, CachingService, ElasticService } from '@elrondnetwork/nestjs-microservice-common';

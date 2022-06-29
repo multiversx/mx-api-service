@@ -4,7 +4,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 
 @Injectable()
 export class TransactionCompletedService {

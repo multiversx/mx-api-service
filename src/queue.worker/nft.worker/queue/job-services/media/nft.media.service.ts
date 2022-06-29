@@ -2,7 +2,7 @@ import { ApiService, CachingService } from "@elrondnetwork/nestjs-microservice-c
 import { BinaryUtils, Constants } from "@elrondnetwork/nestjs-microservice-common";
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MediaMimeTypeEnum } from "src/endpoints/nfts/entities/media.mime.type";
 import { Nft } from "src/endpoints/nfts/entities/nft";

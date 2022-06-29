@@ -9,7 +9,7 @@ import { AssetsService } from "../../common/assets/assets.service";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { NftCollectionRole } from "./entities/nft.collection.role";
 import { TokenProperties } from "../tokens/entities/token.properties";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { TokenAssets } from "../../common/assets/entities/token.assets";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { CollectionRoles } from "../tokens/entities/collection.roles";

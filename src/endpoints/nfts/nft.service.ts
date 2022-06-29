@@ -14,7 +14,7 @@ import { PluginService } from "src/common/plugins/plugin.service";
 import { NftMetadataService } from "src/queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.service";
 import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.service";
 import { NftMedia } from "./entities/nft.media";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { EsdtSupply } from "../esdt/entities/esdt.supply";
 import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";

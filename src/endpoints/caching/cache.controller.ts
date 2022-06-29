@@ -6,7 +6,6 @@ import { CacheValue } from "./entities/cache.value";
 
 @Controller()
 export class CacheController {
-
   constructor(
     private readonly cachingService: CachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,

@@ -1,7 +1,7 @@
 import { CachingService } from "@elrondnetwork/nestjs-microservice-common";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import BigNumber from "bignumber.js";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { NetworkService } from "../network/network.service";

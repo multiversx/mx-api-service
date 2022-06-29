@@ -5,7 +5,7 @@ import { ApiMetricsService } from "src/common/metrics/api.metrics.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { SftChangeTransactionExtractor } from "./extractor/sft.change.transaction.extractor";
 import { TransactionExtractorInterface } from "./extractor/transaction.extractor.interface";
 import { TransferOwnershipExtractor } from "./extractor/transfer.ownership.extractor";

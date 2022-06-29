@@ -4,7 +4,7 @@ import { BlockDetailed } from "./entities/block.detailed";
 import { BlockFilter } from "./entities/block.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlsService } from "src/endpoints/bls/bls.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { AbstractQuery, CachingService, Constants, ElasticQuery, ElasticService, ElasticSortOrder, QueryConditionOptions, QueryType } from "@elrondnetwork/nestjs-microservice-common";
 
 @Injectable()

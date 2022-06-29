@@ -4,7 +4,7 @@ import { ProviderService } from "src/endpoints/providers/provider.service";
 import { Keybase } from "./entities/keybase";
 import { KeybaseIdentity } from "./entities/keybase.identity";
 import { KeybaseState } from "./entities/keybase.state";
-import { CacheInfo } from "../caching/entities/cache.info";
+import { CacheInfo } from "../../utils/cache.info";
 import asyncPool from "tiny-async-pool";
 import { GithubService } from "../github/github.service";
 import { ApiService, ApiUtils, CachingService, Constants } from "@elrondnetwork/nestjs-microservice-common";

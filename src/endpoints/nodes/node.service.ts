@@ -14,7 +14,7 @@ import { BlockService } from "../blocks/block.service";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { Auction } from "src/common/gateway/entities/auction";

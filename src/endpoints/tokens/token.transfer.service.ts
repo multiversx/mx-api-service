@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { EsdtService } from "../esdt/esdt.service";
 import { AssetsService } from "../../common/assets/assets.service";
 import { TokenTransferProperties } from "./entities/token.transfer.properties";

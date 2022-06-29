@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";

@@ -1,7 +1,7 @@
 import { Constants, CachingService } from "@elrondnetwork/nestjs-microservice-common";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { DataApiService } from "src/common/external/data.api.service";
 import { DataQuoteType } from "src/common/external/entities/data.quote.type";
 import { TransactionDetailed } from "./entities/transaction.detailed";

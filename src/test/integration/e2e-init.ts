@@ -2,7 +2,7 @@ import { CachingService } from "@elrondnetwork/nestjs-microservice-common";
 import { Constants, FileUtils } from "@elrondnetwork/nestjs-microservice-common";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { EsdtService } from "src/endpoints/esdt/esdt.service";
