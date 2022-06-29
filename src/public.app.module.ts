@@ -6,12 +6,16 @@ import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/strin
 import { EndpointsServicesModule } from './endpoints/endpoints.services.module';
 import { EndpointsControllersModule } from './endpoints/endpoints.controllers.module';
 import { LoggingModule } from '@elrondnetwork/nestjs-microservice-common';
+import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 
 @Module({
   imports: [
     LoggingModule,
     EndpointsServicesModule,
     EndpointsControllersModule,
+  ],
+  providers: [
+    DynamicModuleUtils.getNestJsApiConfigService(),
   ],
   exports: [
     EndpointsServicesModule,

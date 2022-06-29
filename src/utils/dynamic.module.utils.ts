@@ -1,7 +1,9 @@
-import { ApiModule, CachingModule, ElasticModule, ApiModuleOptions, ElasticModuleOptions, CachingModuleOptions } from "@elrondnetwork/nestjs-microservice-common";
-import { DynamicModule } from "@nestjs/common";
+import { ApiModule, CachingModule, ElasticModule, ApiModuleOptions, ElasticModuleOptions, CachingModuleOptions, NESTJS_API_CONFIG_SERVICE } from "@elrondnetwork/nestjs-microservice-common";
+import { DynamicModule, Provider } from "@nestjs/common";
+import { ClientOptions, ClientProxyFactory, Transport } from "@nestjs/microservices";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { NestJsApiConfigServiceImpl } from "src/common/api-config/nestjs.api.config.service.impl";
 
 export class DynamicModuleUtils {
   static getElasticModule(): DynamicModule {
@@ -38,5 +40,34 @@ export class DynamicModuleUtils {
       }),
       inject: [ApiConfigService],
     });
+  }
+
+  static getNestJsApiConfigService(): Provider {
+    return {
+      provide: NESTJS_API_CONFIG_SERVICE,
+      useClass: NestJsApiConfigServiceImpl,
+    };
+  }
+
+  static getPubSubService(): Provider {
+    return {
+      provide: 'PUBSUB_SERVICE',
+      useFactory: (apiConfigService: ApiConfigService) => {
+        const clientOptions: ClientOptions = {
+          transport: Transport.REDIS,
+          options: {
+            url: `redis://${apiConfigService.getRedisUrl()}:6379`,
+            retryDelay: 1000,
+            retryAttempts: 10,
+            retry_strategy: function (_: any) {
+              return 1000;
+            },
+          },
+        };
+
+        return ClientProxyFactory.create(clientOptions);
+      },
+      inject: [ApiConfigService],
+    };
   }
 }

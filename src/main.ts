@@ -23,6 +23,7 @@ import { SocketAdapter } from './websockets/socket-adapter';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
 import { ApiConfigModule } from './common/api-config/api.config.module';
 import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor } from '@elrondnetwork/nestjs-microservice-common';
+import { NestJsApiConfigServiceImpl } from './common/api-config/nestjs.api.config.service.impl';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
@@ -138,7 +139,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
 
   if (apiConfigService.getIsAuthActive()) {
-    publicApp.useGlobalGuards(new JwtAuthenticateGlobalGuard());
+    publicApp.useGlobalGuards(new JwtAuthenticateGlobalGuard(new NestJsApiConfigServiceImpl(apiConfigService)));
   }
 
   const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
