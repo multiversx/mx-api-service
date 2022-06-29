@@ -1,6 +1,7 @@
 
 import { CachingService, Constants } from "@elrondnetwork/nestjs-microservice-common";
 import { Test } from "@nestjs/testing";
+import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import Initializer from "./e2e-init";
 
@@ -11,7 +12,10 @@ describe('Warm for tests', () => {
     await Initializer.initialize();
 
     const module = await Test.createTestingModule({
-      imports: [DynamicModuleUtils.getCachingModule()],
+      imports: [
+        ApiConfigModule,
+        DynamicModuleUtils.getCachingModule(),
+      ],
     }).compile();
 
     cachingService = module.get<CachingService>(CachingService);

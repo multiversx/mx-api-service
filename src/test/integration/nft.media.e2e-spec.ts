@@ -26,14 +26,6 @@ describe('Nft Media Service', () => {
 
     const nft = nfts[0];
     nftIdentifier = nft.identifier;
-
-  });
-
-  describe('Get Media', () => {
-    it('should return null', async () => {
-      const nftGetMedia = await nftMediaService.getMedia(nftIdentifier);
-      expect(nftGetMedia).toBeNull();
-    });
   });
 
   describe("Refresh Media", () => {

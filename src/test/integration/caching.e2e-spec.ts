@@ -1,5 +1,6 @@
 import { CachingService, Constants } from '@elrondnetwork/nestjs-microservice-common';
 import { Test } from '@nestjs/testing';
+import { ApiConfigModule } from 'src/common/api-config/api.config.module';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('Caching Service', () => {
@@ -7,7 +8,10 @@ describe('Caching Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [DynamicModuleUtils.getCachingModule()],
+      imports: [
+        ApiConfigModule,
+        DynamicModuleUtils.getCachingModule(),
+      ],
     }).compile();
 
     cachingService = moduleRef.get<CachingService>(CachingService);
