@@ -17,12 +17,14 @@ export class RabbitMqNftConsumer {
   @CompetingRabbitConsumer({
     exchange: 'all_events',
     queueName: configuration().features?.eventsNotifier?.queue ?? 'api-process-logs-and-events',
+    deadLetterExchange: configuration().features?.eventsNotifier?.dlx ?? 'api-process-logs-and-events-dlx',
   })
   async consumeEvents(rawEvents: any) {
     try {
       const events = rawEvents?.events;
-
-      await Promise.all(events.map((event: any) => this.handleEvent(event)));
+      if (events) {
+        await Promise.all(events.map((event: any) => this.handleEvent(event)));
+      }
     } catch (error) {
       this.logger.error(`An unhandled error occurred when consuming events: ${JSON.stringify(rawEvents)}`);
       this.logger.error(error);
