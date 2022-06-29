@@ -1,11 +1,11 @@
-import { ElasticModule } from "@elrondnetwork/nestjs-microservice-common";
 import { Global, Module } from "@nestjs/common";
+import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import { BlsService } from "./bls.service";
 
 @Global()
 @Module({
   imports: [
-    ElasticModule,
+    DynamicModuleUtils.getElasticModule(),
   ],
   providers: [
     BlsService,

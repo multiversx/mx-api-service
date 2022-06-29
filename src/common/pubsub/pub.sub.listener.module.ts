@@ -1,13 +1,13 @@
-import { CachingModule } from '@elrondnetwork/nestjs-microservice-common';
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservices';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { WebSocketPublisherModule } from 'src/websockets/web-socket-publisher-module';
 import { ApiConfigService } from '../api-config/api.config.service';
 import { PubSubListenerController } from './pub.sub.listener.controller';
 
 @Module({
   imports: [
-    forwardRef(() => CachingModule),
+    DynamicModuleUtils.getCachingModule(),
     WebSocketPublisherModule,
   ],
   controllers: [

@@ -1,6 +1,5 @@
-import { ApiModule } from "@elrondnetwork/nestjs-microservice-common";
-import { forwardRef } from "@nestjs/common";
 import { Global, Module } from "@nestjs/common";
+import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import { ApiConfigModule } from "../api-config/api.config.module";
 import { DataApiService } from "./data.api.service";
 
@@ -8,7 +7,7 @@ import { DataApiService } from "./data.api.service";
 @Module({
   imports: [
     ApiConfigModule,
-    forwardRef(() => ApiModule),
+    DynamicModuleUtils.getApiModule(),
   ],
   providers: [
     DataApiService,

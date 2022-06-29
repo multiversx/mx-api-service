@@ -1,12 +1,13 @@
-import { CachingModule, CachingService, Constants } from '@elrondnetwork/nestjs-microservice-common';
+import { CachingService, Constants } from '@elrondnetwork/nestjs-microservice-common';
 import { Test } from '@nestjs/testing';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('Caching Service', () => {
   let cachingService: CachingService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [CachingModule],
+      imports: [DynamicModuleUtils.getCachingModule()],
     }).compile();
 
     cachingService = moduleRef.get<CachingService>(CachingService);

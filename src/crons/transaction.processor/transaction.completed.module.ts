@@ -1,16 +1,16 @@
-import { CachingModule } from '@elrondnetwork/nestjs-microservice-common';
 import { Module } from '@nestjs/common';
 import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ApiConfigModule } from 'src/common/api-config/api.config.module';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { TransactionCompletedService } from './transaction.completed.service';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     ApiConfigModule,
-    CachingModule,
+    DynamicModuleUtils.getCachingModule(),
   ],
   providers: [
     {

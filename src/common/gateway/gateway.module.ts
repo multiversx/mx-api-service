@@ -1,5 +1,5 @@
-import { ApiModule } from "@elrondnetwork/nestjs-microservice-common";
 import { Global, Module } from "@nestjs/common";
+import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import { ApiConfigModule } from "../api-config/api.config.module";
 import { ApiMetricsModule } from "../metrics/api.metrics.module";
 import { GatewayService } from "./gateway.service";
@@ -9,7 +9,7 @@ import { GatewayService } from "./gateway.service";
   imports: [
     ApiConfigModule,
     ApiMetricsModule,
-    ApiModule,
+    DynamicModuleUtils.getApiModule(),
   ],
   providers: [
     GatewayService,
