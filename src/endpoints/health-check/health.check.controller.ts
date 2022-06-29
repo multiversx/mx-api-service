@@ -1,6 +1,6 @@
+import { NoAuth } from "@elrondnetwork/nestjs-microservice-common";
 import { Controller, Get } from "@nestjs/common";
 import { ApiOperation } from "@nestjs/swagger";
-import { NoAuth } from "src/decorators/no.auth";
 
 @Controller()
 export class HealthCheckController {
