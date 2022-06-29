@@ -21,8 +21,9 @@ export class RabbitMqNftConsumer {
   async consumeEvents(rawEvents: any) {
     try {
       const events = rawEvents?.events;
-
-      await Promise.all(events.map((event: any) => this.handleEvent(event)));
+      if (events) {
+        await Promise.all(events.map((event: any) => this.handleEvent(event)));
+      }
     } catch (error) {
       this.logger.error(`An unhandled error occurred when consuming events: ${JSON.stringify(rawEvents)}`);
       this.logger.error(error);
