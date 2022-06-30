@@ -34,6 +34,14 @@ import { TokenDetailedWithBalance } from '../tokens/entities/token.detailed.with
 import { NftCollectionAccount } from '../collections/entities/nft.collection.account';
 import { TokenWithRoles } from '../tokens/entities/token.with.roles';
 import { ParseAddressPipe, ParseArrayPipe, ParseBlockHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumArrayPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseTransactionHashPipe } from '@elrondnetwork/erdnest';
+import { QueryPagination } from 'src/common/entities/query.pagination';
+import { TransactionQueryOptions } from '../transactions/entities/transactions.query.options';
+import { TokenWithRolesFilter } from '../tokens/entities/token.with.roles.filter';
+import { CollectionFilter } from '../collections/entities/collection.filter';
+import { TokenFilter } from '../tokens/entities/token.filter';
+import { NftFilter } from '../nfts/entities/nft.filter';
+import { NftQueryOptions } from '../nfts/entities/nft.query.options';
+import { TransactionFilter } from '../transactions/entities/transaction.filter';
 
 @Controller()
 @ApiTags('accounts')

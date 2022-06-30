@@ -8,6 +8,8 @@ import { NftService } from "../nfts/nft.service";
 import { NftFilter } from "../nfts/entities/nft.filter";
 import { NftQueryOptions } from "../nfts/entities/nft.query.options";
 import { ParseAddressPipe, ParseArrayPipe, ParseOptionalBoolPipe, ParseOptionalEnumArrayPipe } from '@elrondnetwork/erdnest';
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { CollectionFilter } from "./entities/collection.filter";
 
 @Controller()
 @ApiTags('collections')
