@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
-import { WebSocketPublisherModule } from 'src/websockets/web-socket-publisher-module';
+import { WebSocketPublisherModule } from 'src/common/websockets/web-socket-publisher-module';
 import { PubSubListenerController } from './pub.sub.listener.controller';
 
 @Module({

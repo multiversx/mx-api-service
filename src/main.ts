@@ -19,7 +19,7 @@ import { NftQueueModule } from './queue.worker/nft.worker/queue/nft.queue.module
 import { ElasticUpdaterModule } from './crons/elastic.updater/elastic.updater.module';
 import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
-import { SocketAdapter } from './websockets/socket-adapter';
+import { SocketAdapter } from './common/websockets/socket-adapter';
 import { ApiConfigModule } from './common/api-config/api.config.module';
 import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor } from '@elrondnetwork/erdnest';
 import { NestJsApiConfigServiceImpl } from './common/api-config/nestjs.api.config.service.impl';

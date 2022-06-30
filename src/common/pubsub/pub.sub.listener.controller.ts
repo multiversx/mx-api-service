@@ -2,7 +2,7 @@ import { CachingService } from "@elrondnetwork/erdnest";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Controller, Logger } from "@nestjs/common";
 import { EventPattern } from "@nestjs/microservices";
-import { WebSocketPublisherService } from "src/websockets/web-socket-publisher-service";
+import { WebSocketPublisherService } from "src/common/websockets/web-socket-publisher-service";
 
 @Controller()
 export class PubSubListenerController {
