@@ -5,7 +5,7 @@ import { NftMediaService } from "../../queue.worker/nft.worker/queue/job-service
 import { Nft } from "../../endpoints/nfts/entities/nft";
 import { NftMedia } from "../../endpoints/nfts/entities/nft.media";
 import { NftMediaModule } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.module";
-import '../../utils/extensions/array.extensions';
+import '@elrondnetwork/erdnest/lib/utils/extensions/array.extensions';
 import { PublicAppModule } from "src/public.app.module";
 
 describe('Nft Media Service', () => {
@@ -26,14 +26,6 @@ describe('Nft Media Service', () => {
 
     const nft = nfts[0];
     nftIdentifier = nft.identifier;
-
-  });
-
-  describe('Get Media', () => {
-    it('should return null', async () => {
-      const nftGetMedia = await nftMediaService.getMedia(nftIdentifier);
-      expect(nftGetMedia).toBeNull();
-    });
   });
 
   describe("Refresh Media", () => {

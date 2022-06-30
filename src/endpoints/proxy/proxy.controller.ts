@@ -2,16 +2,11 @@ import { BadRequestException, Body, Controller, Get, Logger, Param, Post, Query,
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { VmQueryRequest } from "../vm.query/entities/vm.query.request";
 import { VmQueryService } from "../vm.query/vm.query.service";
-import { CachingService } from "src/common/caching/caching.service";
-import { Constants } from "src/utils/constants";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
-import { ParseTransactionHashPipe } from "src/utils/pipes/parse.transaction.hash.pipe";
-import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
 import { Response } from "express";
-import { NoCache } from "src/decorators/no.cache";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { PluginService } from "src/common/plugins/plugin.service";
+import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseTransactionHashPipe, CachingService, NoCache } from "@elrondnetwork/erdnest";
 
 @Controller()
 @ApiTags('proxy')

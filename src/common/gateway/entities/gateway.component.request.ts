@@ -31,5 +31,6 @@ export enum GatewayComponentRequest {
   addressEsdtWithRole = 'addressEsdtWithRole',
   esdtSupply = 'esdtSupply',
   allFungibleTokens = 'allFungibleTokens',
-  addressNftByNonce = 'addressNftByNonce'
+  addressNftByNonce = 'addressNftByNonce',
+  validatorAuction = 'validatorAuction',
 }

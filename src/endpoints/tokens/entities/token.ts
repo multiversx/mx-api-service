@@ -1,6 +1,6 @@
+import { SwaggerUtils } from "@elrondnetwork/erdnest";
 import { ApiProperty } from "@nestjs/swagger";
-import { SwaggerUtils } from "src/utils/swagger.utils";
-import { TokenAssets } from "./token.assets";
+import { TokenAssets } from "../../../common/assets/entities/token.assets";
 
 export class Token {
   @ApiProperty({ type: String })

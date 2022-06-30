@@ -1,20 +1,16 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CachingService } from "src/common/caching/caching.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { NodeStatus } from "../nodes/entities/node.status";
 import { NodeType } from "../nodes/entities/node.type";
 import { NodeService } from "../nodes/node.service";
 import { Stake } from "./entities/stake";
 import { StakeTopup } from "./entities/stake.topup";
-import { Constants } from "src/utils/constants";
-import { AddressUtils } from "src/utils/address.utils";
 import { NetworkService } from "../network/network.service";
-import { RoundUtils } from "src/utils/round.utils";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
-import { ApiUtils } from "src/utils/api.utils";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
+import { AddressUtils, ApiUtils, Constants, RoundUtils, CachingService } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class StakeService {

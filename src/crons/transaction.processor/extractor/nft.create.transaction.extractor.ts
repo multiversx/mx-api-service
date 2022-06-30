@@ -1,8 +1,7 @@
+import { AddressUtils, BinaryUtils } from "@elrondnetwork/erdnest";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Logger } from "@nestjs/common";
 import { TransactionDetailed } from "src/endpoints/transactions/entities/transaction.detailed";
-import { AddressUtils } from "src/utils/address.utils";
-import { BinaryUtils } from "../../../utils/binary.utils";
 import { TransactionExtractorInterface } from "./transaction.extractor.interface";
 
 export class NftCreateTransactionExtractor implements TransactionExtractorInterface<{ collection: string }> {

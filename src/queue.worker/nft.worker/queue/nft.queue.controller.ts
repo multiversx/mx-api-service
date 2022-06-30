@@ -1,7 +1,7 @@
 import { Controller, Inject, Logger } from "@nestjs/common";
 import { ClientProxy, Ctx, MessagePattern, Payload, RmqContext } from "@nestjs/microservices";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { NftService } from "src/endpoints/nfts/nft.service";

@@ -1,13 +1,9 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
-import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
-import { AddressUtils } from 'src/utils/address.utils';
-import { ApiUtils } from 'src/utils/api.utils';
 import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
 import { TransactionFilter } from './entities/transaction.filter';
 import { TransactionSendResult } from './entities/transaction.send.result';
-import { QueryOperator } from 'src/common/elastic/entities/query.operator';
 import { TransactionGetService } from './transaction.get.service';
 import { TokenTransferService } from '../tokens/token.transfer.service';
 import { TransactionPriceService } from './transaction.price.service';
@@ -16,23 +12,16 @@ import { SmartContractResult } from '../sc-results/entities/smart.contract.resul
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { TransactionLog } from './entities/transaction.log';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { ElasticService } from 'src/common/elastic/elastic.service';
-import { ElasticQuery } from 'src/common/elastic/entities/elastic.query';
-import { QueryType } from 'src/common/elastic/entities/query.type';
-import { ElasticSortProperty } from 'src/common/elastic/entities/elastic.sort.property';
-import { ElasticSortOrder } from 'src/common/elastic/entities/elastic.sort.order';
-import { TermsQuery } from 'src/common/elastic/entities/terms.query';
 import { PluginService } from 'src/common/plugins/plugin.service';
-import { CachingService } from 'src/common/caching/caching.service';
-import { CacheInfo } from 'src/common/caching/entities/cache.info';
-import { Constants } from 'src/utils/constants';
+import { CacheInfo } from 'src/utils/cache.info';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { SortOrder } from 'src/common/entities/sort.order';
-import { TransactionUtils } from 'src/utils/transaction.utils';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
+import { AddressUtils, ApiUtils, Constants, CachingService, ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery } from '@elrondnetwork/erdnest';
+import { TransactionUtils } from './transaction.utils';
 
 @Injectable()
 export class TransactionService {
@@ -333,20 +322,18 @@ export class TransactionService {
           previousHashes[scResult.hash] = scResult.prevTxHash;
         }
 
-        const transactionLogsFromElastic = logs.filter((log) => transactionHashes.includes(log._id));
-        const transactionLogs: TransactionLog[] = transactionLogsFromElastic.map(log => ({ id: log._id, ...ApiUtils.mergeObjects(new TransactionLog(), log._source) }));
+        const transactionLogs: TransactionLog[] = logs.filter((log) => transactionHashes.includes(log.id ?? ''));
 
         transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, transactionLogs);
         transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
 
-        for (const log of transactionLogsFromElastic) {
-          if (log._id === transactionDetailed.txHash) {
-            transactionDetailed.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
-          }
-          else {
-            const foundScResult = transactionDetailed.results.find(({ hash }) => log._id === hash);
+        for (const log of logs) {
+          if (log.id === transactionDetailed.txHash) {
+            transactionDetailed.logs = log;
+          } else {
+            const foundScResult = transactionDetailed.results.find(({ hash }) => log.id === hash);
             if (foundScResult) {
-              foundScResult.logs = ApiUtils.mergeObjects(new TransactionLog(), log._source);
+              foundScResult.logs = log;
             }
           }
         }

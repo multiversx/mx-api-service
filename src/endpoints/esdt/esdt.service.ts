@@ -1,31 +1,20 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { ElasticService } from "src/common/elastic/elastic.service";
-import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
-import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
-import { QueryOperator } from "src/common/elastic/entities/query.operator";
-import { QueryType } from "src/common/elastic/entities/query.type";
+import { CacheInfo } from "src/utils/cache.info";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
-import { AddressUtils } from "src/utils/address.utils";
-import { ApiUtils } from "src/utils/api.utils";
-import { BinaryUtils } from "src/utils/binary.utils";
-import { Constants } from "src/utils/constants";
-import { NumberUtils } from "src/utils/number.utils";
-import { RecordUtils } from "src/utils/record.utils";
 import { TokenUtils } from "src/utils/token.utils";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
-import { CachingService } from "../../common/caching/caching.service";
 import { GatewayService } from "../../common/gateway/gateway.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { TokenAssets } from "../tokens/entities/token.assets";
+import { TokenAssets } from "../../common/assets/entities/token.assets";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { TokenRoles } from "../tokens/entities/token.roles";
-import { TokenAssetService } from "../tokens/token.asset.service";
+import { AssetsService } from "../../common/assets/assets.service";
 import { TransactionService } from "../transactions/transaction.service";
 import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
+import { AddressUtils, ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, RangeQuery } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class EsdtService {
@@ -37,8 +26,8 @@ export class EsdtService {
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
     private readonly elasticService: ElasticService,
-    @Inject(forwardRef(() => TokenAssetService))
-    private readonly tokenAssetService: TokenAssetService,
+    @Inject(forwardRef(() => AssetsService))
+    private readonly assetsService: AssetsService,
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
     private readonly mexTokenService: MexTokenService,
@@ -97,9 +86,13 @@ export class EsdtService {
     try {
       const indexedTokens = await this.mexTokenService.getMexPricesRaw();
       for (const token of tokens) {
-        const price = indexedTokens[token.identifier];
+        let price = indexedTokens[token.identifier];
         if (price) {
           const supply = await this.getTokenSupply(token.identifier);
+
+          if (token.assets && token.identifier.split('-')[0] === 'EGLDUSDC') {
+            price = price / (10 ** 12) * 2;
+          }
 
           token.price = price;
           token.marketCap = price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
@@ -162,7 +155,7 @@ export class EsdtService {
   }
 
   private async getEsdtTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
-    return await this.tokenAssetService.getAssets(identifier);
+    return await this.assetsService.getAssets(identifier);
   }
 
   async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
@@ -323,7 +316,7 @@ export class EsdtService {
   }
 
   async getLockedAccountsRaw(identifier: string): Promise<EsdtLockedAccount[]> {
-    const tokenAssets = await this.tokenAssetService.getAssets(identifier);
+    const tokenAssets = await this.assetsService.getAssets(identifier);
     if (!tokenAssets) {
       return [];
     }
@@ -358,7 +351,7 @@ export class EsdtService {
 
     const addresses = lockedAccountsWithDescriptions.map(x => x.address);
 
-    const esdtLockedAccounts = await this.elasticService.getAccountEsdtByAddressesAndIdentifier(identifier, addresses);
+    const esdtLockedAccounts = await this.getAccountEsdtByAddressesAndIdentifier(identifier, addresses);
 
     for (const esdtLockedAccount of esdtLockedAccounts) {
       const lockedAccountWithDescription = lockedAccountsWithDescriptions.find(x => x.address === esdtLockedAccount.address);
@@ -425,5 +418,22 @@ export class EsdtService {
     await this.cachingService.deleteInCache(key);
 
     return count;
+  }
+
+  async getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]): Promise<any[]> {
+    const queries = [];
+
+    for (const address of addresses) {
+      queries.push(QueryType.Match('address', address));
+    }
+
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: addresses.length })
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match("address", "pending-")])
+      .withCondition(QueryConditionOptions.must, [QueryType.Match('token', identifier, QueryOperator.AND)])
+      .withFilter(new RangeQuery("balanceNum", undefined, 0))
+      .withCondition(QueryConditionOptions.should, queries);
+
+    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
   }
 }

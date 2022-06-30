@@ -1,3 +1,5 @@
+import { ProcessNftRequest } from "./process.nft.request";
+
 export class ProcessNftSettings {
   forceRefreshMedia: boolean = false;
   forceRefreshMetadata: boolean = false;
@@ -6,5 +8,14 @@ export class ProcessNftSettings {
 
   constructor(init?: Partial<ProcessNftSettings>) {
     Object.assign(this, init);
+  }
+
+  static fromRequest(processNftRequest: ProcessNftRequest): ProcessNftSettings {
+    return new ProcessNftSettings({
+      forceRefreshMedia: processNftRequest.forceRefreshMedia ?? false,
+      forceRefreshMetadata: processNftRequest.forceRefreshMetadata ?? false,
+      forceRefreshThumbnail: processNftRequest.forceRefreshThumbnail ?? false,
+      skipRefreshThumbnail: processNftRequest.skipRefreshThumbnail ?? false,
+    });
   }
 }

@@ -1,5 +1,6 @@
 /* eslint-disable require-await */
-import { BatchUtils } from "src/utils/batch.utils";
+
+import { BatchUtils } from "@elrondnetwork/erdnest";
 
 describe('Batch Utils', () => {
   it('splitArrayIntoChunks', () => {

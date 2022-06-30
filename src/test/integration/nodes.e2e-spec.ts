@@ -3,7 +3,6 @@ import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { Queue } from 'src/endpoints/nodes/entities/queue';
 import { NodeFilter } from 'src/endpoints/nodes/entities/node.filter';
 import { Test } from "@nestjs/testing";
-import { CachingService } from "src/common/caching/caching.service";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
 import { Node } from "src/endpoints/nodes/entities/node";
 import { NodeService } from "src/endpoints/nodes/node.service";
@@ -15,10 +14,12 @@ import { PublicAppModule } from "src/public.app.module";
 import { NodeType } from 'src/endpoints/nodes/entities/node.type';
 import { NodeStatus } from 'src/endpoints/nodes/entities/node.status';
 import { NodeSort } from 'src/endpoints/nodes/entities/node.sort';
-import { FileUtils } from "src/utils/file.utils";
-import '../../utils/extensions/array.extensions';
-import '../../utils/extensions/jest.extensions';
-import '../../utils/extensions/number.extensions';
+import { Auction } from 'src/common/gateway/entities/auction';
+import '@elrondnetwork/erdnest/lib/utils/extensions/array.extensions';
+import '@elrondnetwork/erdnest/lib/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest/lib/utils/extensions/number.extensions';
+import { AuctionNode } from 'src/common/gateway/entities/auction.node';
+import { CachingService, FileUtils } from '@elrondnetwork/erdnest';
 
 describe('Node Service', () => {
   let nodeService: NodeService;
@@ -521,6 +522,39 @@ describe('Node Service', () => {
       expect(results).toEqual(expect.arrayContaining([
         "owner:613:003ba6237f0f7c269eebfecb6a0a0796076c02593846e1ce89aee9b832b94dd54e93d35b03dc3d5944b1aae916722506faf959a47cabf2d00f567ad50b10f8f1a40ab0316fdf302454f7aea58b23109ccfdce082bd16fb262342a1382b802c10",
       ]));
+    });
+  });
+
+  describe('processAuctions', () => {
+    it('should correctly attach auction-related values to nodes', () => {
+      const nodes = [
+        new Node({ bls: '59ba4e8c' }),
+        new Node({ bls: '6a0a0796' }),
+        new Node({ bls: 'aee9b832' }),
+      ];
+
+      const auctions = [
+        new Auction({
+          qualifiedTopUp: '100',
+          auctionList: [
+            new AuctionNode({ blsKey: '59ba4e8c', selected: true }),
+          ],
+        }),
+        new Auction({
+          qualifiedTopUp: '300',
+          auctionList: [
+            new AuctionNode({ blsKey: 'aee9b832', selected: false }),
+          ],
+        }),
+      ];
+
+      nodeService.processAuctions(nodes, auctions);
+
+      expect(nodes).toEqual([
+        new Node({ bls: '59ba4e8c', auctioned: true, auctionSelected: true, auctionPosition: 1, auctionTopUp: '100' }),
+        new Node({ bls: '6a0a0796' }),
+        new Node({ bls: 'aee9b832', auctioned: true, auctionSelected: false, auctionPosition: 2, auctionTopUp: '300' }),
+      ]);
     });
   });
 });

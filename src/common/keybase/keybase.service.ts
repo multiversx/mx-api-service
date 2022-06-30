@@ -1,16 +1,13 @@
 import { forwardRef, HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
-import { ApiUtils } from "src/utils/api.utils";
-import { Constants } from "src/utils/constants";
-import { CachingService } from "../caching/caching.service";
 import { Keybase } from "./entities/keybase";
 import { KeybaseIdentity } from "./entities/keybase.identity";
 import { KeybaseState } from "./entities/keybase.state";
-import { ApiService } from "../network/api.service";
-import { CacheInfo } from "../caching/entities/cache.info";
+import { CacheInfo } from "../../utils/cache.info";
 import asyncPool from "tiny-async-pool";
 import { GithubService } from "../github/github.service";
+import { ApiService, ApiUtils, CachingService, Constants } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class KeybaseService {

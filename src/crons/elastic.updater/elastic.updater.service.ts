@@ -1,23 +1,19 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
-import { Locker } from "src/utils/locker";
-import { ElasticService } from "src/common/elastic/elastic.service";
 import * as JsonDiff from "json-diff";
-import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
-import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
-import { QueryType } from "src/common/elastic/entities/query.type";
+import { AssetsService } from "src/common/assets/assets.service";
 import { TokenType } from "src/endpoints/tokens/entities/token.type";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import asyncPool from "tiny-async-pool";
 import { PersistenceInterface } from "src/common/persistence/persistence.interface";
-import { BatchUtils } from "src/utils/batch.utils";
+import { BatchUtils, ElasticQuery, ElasticService, Locker, QueryType } from "@elrondnetwork/erdnest";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 @Injectable()
 export class ElasticUpdaterService {
   private readonly logger: Logger;
 
   constructor(
-    private readonly tokenAssetService: TokenAssetService,
+    private readonly assetsService: AssetsService,
     private readonly elasticService: ElasticService,
     private readonly nftService: NftService,
     @Inject('PersistenceService')
@@ -29,7 +25,7 @@ export class ElasticUpdaterService {
   @Cron(CronExpression.EVERY_DAY_AT_1AM)
   async handleUpdateAssets() {
     await Locker.lock('Elastic updater: Update assets', async () => {
-      const allAssets = await this.tokenAssetService.getAllAssets();
+      const allAssets = await this.assetsService.getAllTokenAssets();
 
       for (const key of Object.keys(allAssets)) {
         const elasticAssets = await this.elasticService.getCustomValue('tokens', key, 'assets');

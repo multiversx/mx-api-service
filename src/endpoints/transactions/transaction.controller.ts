@@ -1,26 +1,8 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  DefaultValuePipe,
-  Get,
-  HttpException,
-  HttpStatus,
-  Param,
-  ParseIntPipe,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { ParseArrayPipe, QueryConditionOptions } from '@elrondnetwork/erdnest';
+import { ParseAddressPipe, ParseBlockHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseTransactionHashPipe } from '@elrondnetwork/erdnest';
+import { BadRequestException, Body, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
 import { SortOrder } from 'src/common/entities/sort.order';
-import { ParseAddressPipe } from 'src/utils/pipes/parse.address.pipe';
-import { ParseArrayPipe } from 'src/utils/pipes/parse.array.pipe';
-import { ParseBlockHashPipe } from 'src/utils/pipes/parse.block.hash.pipe';
-import { ParseOptionalBoolPipe } from 'src/utils/pipes/parse.optional.bool.pipe';
-import { ParseOptionalEnumPipe } from 'src/utils/pipes/parse.optional.enum.pipe';
-import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
-import { ParseTransactionHashPipe } from 'src/utils/pipes/parse.transaction.hash.pipe';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
@@ -112,6 +94,7 @@ export class TransactionController {
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false, deprecated: true })
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
+  @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   getTransactionCount(
@@ -124,6 +107,7 @@ export class TransactionController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
+    @Query('function') scFunction?: string,
     @Query('condition') condition?: QueryConditionOptions,
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
@@ -138,6 +122,7 @@ export class TransactionController {
       hashes,
       status,
       search,
+      function: scFunction,
       before,
       after,
       condition,
@@ -156,6 +141,7 @@ export class TransactionController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
+    @Query('function') scFunction?: string,
     @Query('condition') condition?: QueryConditionOptions,
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
@@ -170,6 +156,7 @@ export class TransactionController {
       hashes,
       status,
       search,
+      function: scFunction,
       before,
       after,
       condition,

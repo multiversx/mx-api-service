@@ -1,19 +1,17 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
-import { CachingService } from "src/common/caching/caching.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { BinaryUtils } from "src/utils/binary.utils";
+import { CacheInfo } from "src/utils/cache.info";
 import { EsdtService } from "../esdt/esdt.service";
-import { TokenAssetService } from "./token.asset.service";
+import { AssetsService } from "../../common/assets/assets.service";
 import { TokenTransferProperties } from "./entities/token.transfer.properties";
 import { TransactionLog } from "../transactions/entities/transaction.log";
 import { TransactionLogEventIdentifier } from "../transactions/entities/transaction.log.event.identifier";
 import { TransactionOperation } from "../transactions/entities/transaction.operation";
 import { TransactionOperationAction } from "../transactions/entities/transaction.operation.action";
-import { RecordUtils } from "src/utils/record.utils";
 import { TransactionLogEvent } from "../transactions/entities/transaction.log.event";
 import { TransactionOperationType } from "../transactions/entities/transaction.operation.type";
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
+import { BinaryUtils, RecordUtils, CachingService } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class TokenTransferService {
@@ -23,7 +21,7 @@ export class TokenTransferService {
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => EsdtService))
     private readonly esdtService: EsdtService,
-    private readonly tokenAssetService: TokenAssetService
+    private readonly assetsService: AssetsService
   ) {
     this.logger = new Logger(TokenTransferService.name);
   }
@@ -290,7 +288,7 @@ export class TokenTransferService {
       return null;
     }
 
-    const assets = await this.tokenAssetService.getAssets(identifier);
+    const assets = await this.assetsService.getAssets(identifier);
 
     const result: TokenTransferProperties = {
       type: properties.type,

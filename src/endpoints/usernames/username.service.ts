@@ -1,10 +1,7 @@
+import { AddressUtils, BinaryUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
-import { CachingService } from "src/common/caching/caching.service";
-import { AddressUtils } from "src/utils/address.utils";
-import { BinaryUtils } from "src/utils/binary.utils";
-import { Constants } from "src/utils/constants";
-import { UsernameUtils } from "src/utils/username.utils";
 import { VmQueryService } from "../vm.query/vm.query.service";
+import { UsernameUtils } from "./username.utils";
 
 @Injectable()
 export class UsernameService {

@@ -2,16 +2,14 @@ import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Pa
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { Node } from "src/endpoints/nodes/entities/node";
-import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { NodeType } from "./entities/node.type";
-import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
 import { NodeStatus } from "./entities/node.status";
-import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { SortOrder } from "src/common/entities/sort.order";
 import { NodeSort } from "./entities/node.sort";
-import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
-import { ParseBlsHashPipe } from "src/utils/pipes/parse.bls.hash.pipe";
 import { SortNodes } from "src/common/entities/sort.nodes";
+import { NodeFilter } from "./entities/node.filter";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { ParseAddressPipe, ParseBlsHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe } from "@elrondnetwork/erdnest";
 
 @Controller()
 @ApiTags('nodes')
@@ -32,6 +30,7 @@ export class NodeController {
   @ApiQuery({ name: 'identity', description: 'Node identity', required: false })
   @ApiQuery({ name: 'provider', description: 'Node provider', required: false })
   @ApiQuery({ name: 'owner', description: 'Node owner', required: false })
+  @ApiQuery({ name: 'auctioned', description: 'Whether node is auctioned or not', required: false, type: 'boolean' })
   @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortNodes })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   async getNodes(
@@ -46,10 +45,11 @@ export class NodeController {
     @Query('identity') identity?: string,
     @Query('provider', ParseAddressPipe) provider?: string,
     @Query('owner', ParseAddressPipe) owner?: string,
+    @Query('auctioned', ParseOptionalBoolPipe) auctioned?: boolean,
     @Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort?: NodeSort,
     @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<Node[]> {
-    return await this.nodeService.getNodes({ from, size }, { search, online, type, status, shard, issues, identity, provider, owner, sort, order });
+    return await this.nodeService.getNodes(new QueryPagination({ from, size }), new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, sort, order }));
   }
 
   @Get("/nodes/versions")
@@ -71,6 +71,7 @@ export class NodeController {
   @ApiQuery({ name: 'identity', description: 'Node identity', required: false })
   @ApiQuery({ name: 'provider', description: 'Node provider', required: false })
   @ApiQuery({ name: 'owner', description: 'Node owner', required: false })
+  @ApiQuery({ name: 'auctioned', description: 'Whether node is auctioned or not', required: false, type: 'boolean' })
   @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortNodes })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   getNodeCount(
@@ -83,10 +84,11 @@ export class NodeController {
     @Query('identity') identity?: string,
     @Query('provider', ParseAddressPipe) provider?: string,
     @Query('owner', ParseAddressPipe) owner?: string,
+    @Query('auctioned', ParseOptionalBoolPipe) auctioned?: boolean,
     @Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort?: NodeSort,
     @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<number> {
-    return this.nodeService.getNodeCount({ search, online, type, status, shard, issues, identity, provider, owner, sort, order });
+    return this.nodeService.getNodeCount(new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, sort, order }));
   }
 
   @Get("/nodes/c")
@@ -100,11 +102,12 @@ export class NodeController {
     @Query('issues', ParseOptionalBoolPipe) issues?: boolean,
     @Query('identity') identity?: string,
     @Query('provider', ParseAddressPipe) provider?: string,
+    @Query('auctioned', ParseOptionalBoolPipe) auctioned?: boolean,
     @Query('owner', ParseAddressPipe) owner?: string,
     @Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort?: NodeSort,
     @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<number> {
-    return this.nodeService.getNodeCount({ search, online, type, status, shard, issues, identity, provider, owner, sort, order });
+    return this.nodeService.getNodeCount(new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, sort, order }));
   }
 
   @Get('/nodes/:bls')

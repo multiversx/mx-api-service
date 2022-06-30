@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { PluginModule } from "src/plugins/plugin.module";
+import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import { AccountController } from "./accounts/account.controller";
 import { BlockController } from "./blocks/block.controller";
 import { CollectionController } from "./collections/collection.controller";
@@ -16,6 +17,7 @@ import { NetworkController } from "./network/network.controller";
 import { NftController } from "./nfts/nft.controller";
 import { TagController } from "./nfttags/tag.controller";
 import { NodeController } from "./nodes/node.controller";
+import { ProcessNftsPublicController } from "./process-nfts/process.nfts.public.controller";
 import { ProviderController } from "./providers/provider.controller";
 import { ProxyController } from "./proxy/proxy.controller";
 import { ProxyModule } from "./proxy/proxy.module";
@@ -37,12 +39,16 @@ import { WebsocketController } from "./websocket/websocket.controller";
     ProxyModule,
     PluginModule,
   ],
+  providers: [
+    DynamicModuleUtils.getNestJsApiConfigService(),
+  ],
   controllers: [
     AccountController, BlockController, CollectionController, DelegationController, DelegationLegacyController, IdentitiesController,
     KeysController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
     ProviderController, ProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
     TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
     HealthCheckController, DappConfigController, WebsocketController, MexController, TransferController,
+    ProcessNftsPublicController,
   ],
 })
 export class EndpointsControllersModule { }

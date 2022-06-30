@@ -1,7 +1,7 @@
+import { PerformanceProfiler } from "@elrondnetwork/erdnest";
 import { Inject, Injectable } from "@nestjs/common";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
-import { PerformanceProfiler } from "src/utils/performance.profiler";
-import { MetricsService } from "../metrics/metrics.service";
+import { ApiMetricsService } from "../metrics/api.metrics.service";
 import { PersistenceInterface } from "./persistence.interface";
 
 @Injectable()
@@ -9,7 +9,7 @@ export class PersistenceService implements PersistenceInterface {
   constructor(
     @Inject('PersistenceInterface')
     private readonly persistenceInterface: PersistenceInterface,
-    private readonly metricsService: MetricsService,
+    private readonly metricsService: ApiMetricsService,
   ) { }
 
   private async execute<T>(key: string, action: Promise<T>): Promise<T> {

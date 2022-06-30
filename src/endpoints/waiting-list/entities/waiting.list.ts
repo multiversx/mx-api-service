@@ -1,4 +1,4 @@
-import { SwaggerUtils } from 'src/utils/swagger.utils';
+import { SwaggerUtils } from "@elrondnetwork/erdnest";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class WaitingList {

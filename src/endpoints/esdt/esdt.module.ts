@@ -7,6 +7,7 @@ import { NftModule } from "../nfts/nft.module";
 import { CollectionModule } from "../collections/collection.module";
 import { TransactionModule } from "../transactions/transaction.module";
 import { MexModule } from "../mex/mex.module";
+import { AssetsModule } from "src/common/assets/assets.module";
 
 
 @Module({
@@ -17,6 +18,7 @@ import { MexModule } from "../mex/mex.module";
     VmQueryModule,
     forwardRef(() => TransactionModule),
     forwardRef(() => MexModule),
+    forwardRef(() => AssetsModule),
   ],
   providers: [
     EsdtService, EsdtAddressService,

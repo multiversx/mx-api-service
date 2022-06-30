@@ -16,6 +16,7 @@ import { NetworkModule } from "./network/network.module";
 import { NftModule } from "./nfts/nft.module";
 import { TagModule } from "./nfttags/tag.module";
 import { NodeModule } from "./nodes/node.module";
+import { ProcessNftsModule } from "./process-nfts/process.nfts.module";
 import { ProviderModule } from "./providers/provider.module";
 import { RoundModule } from "./rounds/round.module";
 import { SmartContractResultModule } from "./sc-results/scresult.module";
@@ -63,12 +64,14 @@ import { WebsocketModule } from "./websocket/websocket.module";
     TransactionActionModule,
     WebsocketModule,
     MexModule,
+    ProcessNftsModule,
   ],
   exports: [
     AccountModule, CollectionModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
     MiniBlockModule, NetworkModule, NftModule, NftMediaModule, TagModule, NodeModule, ProviderModule,
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
     WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, TransactionActionModule, WebsocketModule, MexModule,
+    ProcessNftsModule,
   ],
 })
 export class EndpointsServicesModule { }

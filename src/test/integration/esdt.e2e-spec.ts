@@ -2,13 +2,13 @@ import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 import { Test } from "@nestjs/testing";
 import { EsdtService } from "../../endpoints/esdt/esdt.service";
 import { PublicAppModule } from "src/public.app.module";
-import { CachingService } from "src/common/caching/caching.service";
 import { EsdtSupply } from "src/endpoints/esdt/entities/esdt.supply";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { EsdtDataSource } from 'src/endpoints/esdt/entities/esdt.data.source';
-import '../../utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest/lib/utils/extensions/jest.extensions';
 import { TokenRoles } from 'src/endpoints/tokens/entities/token.roles';
+import { CachingService } from '@elrondnetwork/erdnest';
 
 describe('ESDT Service', () => {
   let esdtService: EsdtService;

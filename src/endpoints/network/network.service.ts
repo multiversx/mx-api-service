@@ -1,9 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Stats } from 'src/endpoints/network/entities/stats';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { CachingService } from 'src/common/caching/caching.service';
-import { Constants } from 'src/utils/constants';
-import { NumberUtils } from 'src/utils/number.utils';
 import { AccountService } from '../accounts/account.service';
 import { BlockService } from '../blocks/block.service';
 import { BlockFilter } from '../blocks/entities/block.filter';
@@ -16,10 +13,10 @@ import { NetworkConfig } from './entities/network.config';
 import { StakeService } from '../stake/stake.service';
 import { DataApiService } from 'src/common/external/data.api.service';
 import { GatewayService } from 'src/common/gateway/gateway.service';
-import { ApiService } from 'src/common/network/api.service';
 import { DataQuoteType } from 'src/common/external/entities/data.quote.type';
-import { CacheInfo } from 'src/common/caching/entities/cache.info';
+import { CacheInfo } from 'src/utils/cache.info';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
+import { Constants, NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest';
 
 @Injectable()
 export class NetworkService {
@@ -36,7 +33,7 @@ export class NetworkService {
     private readonly dataApiService: DataApiService,
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => StakeService))
-    private readonly stakeService: StakeService
+    private readonly stakeService: StakeService,
   ) { }
 
   async getConstants(): Promise<NetworkConstants> {
@@ -103,6 +100,26 @@ export class NetworkService {
     );
   }
 
+  async getMinimumAuctionTopUp(): Promise<string | undefined> {
+    const auctions = await this.gatewayService.getAuctions();
+
+    if (auctions.length === 0) {
+      return undefined;
+    }
+
+    let minimumAuctionTopUp: string | undefined = undefined;
+
+    for (const auction of auctions) {
+      for (const auctionNode of auction.auctionList) {
+        if (auctionNode.selected === true && (!minimumAuctionTopUp || BigInt(minimumAuctionTopUp) > BigInt(auction.qualifiedTopUp))) {
+          minimumAuctionTopUp = auction.qualifiedTopUp;
+        }
+      }
+    }
+
+    return minimumAuctionTopUp;
+  }
+
   async getEconomicsRaw(): Promise<Economics> {
     const locked = 1330000;
     const [
@@ -127,6 +144,7 @@ export class NetworkService {
       this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price),
     ]);
 
+
     const totalWaitingStakeHex = Buffer.from(
       totalWaitingStakeBase64,
       'base64',
@@ -144,7 +162,7 @@ export class NetworkService {
 
     const aprInfo = await this.getApr();
 
-    return {
+    const economics = new Economics({
       totalSupply,
       circulatingSupply,
       staked,
@@ -153,7 +171,13 @@ export class NetworkService {
       apr: aprInfo.apr ? aprInfo.apr.toRounded(6) : 0,
       topUpApr: aprInfo.topUpApr ? aprInfo.topUpApr.toRounded(6) : 0,
       baseApr: aprInfo.baseApr ? aprInfo.baseApr.toRounded(6) : 0,
-    };
+    });
+
+    if (this.apiConfigService.isStakingV4Enabled()) {
+      economics.minimumAuctionTopUp = await this.getMinimumAuctionTopUp();
+    }
+
+    return economics;
   }
 
   async getStats(): Promise<Stats> {

@@ -5,21 +5,20 @@ import { NodeStatus } from "./entities/node.status";
 import { Queue } from "./entities/queue";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CachingService } from "src/common/caching/caching.service";
 import { NodeFilter } from "./entities/node.filter";
 import { ProviderService } from "../providers/provider.service";
 import { StakeService } from "../stake/stake.service";
 import { SortOrder } from "src/common/entities/sort.order";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockService } from "../blocks/block.service";
-import { Constants } from "src/utils/constants";
-import { AddressUtils } from "src/utils/address.utils";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { Auction } from "src/common/gateway/entities/auction";
+import { AddressUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class NodeService {
@@ -155,6 +154,10 @@ export class NodeService {
       }
 
       if (query.owner && node.owner !== query.owner) {
+        return false;
+      }
+
+      if (query.auctioned !== undefined && node.auctioned !== query.auctioned) {
         return false;
       }
 
@@ -305,7 +308,30 @@ export class NodeService {
 
     await this.getNodesStakeDetails(nodes);
 
+    if (this.apiConfigService.isStakingV4Enabled()) {
+      const auctions = await this.gatewayService.getAuctions();
+      this.processAuctions(nodes, auctions);
+    }
+
     return nodes;
+  }
+
+  processAuctions(nodes: Node[], auctions: Auction[]) {
+    for (const node of nodes) {
+      let position = 1;
+      for (const auction of auctions) {
+        for (const auctionNode of auction.auctionList) {
+          if (node.bls === auctionNode.blsKey) {
+            node.auctioned = true;
+            node.auctionPosition = position;
+            node.auctionTopUp = auction.qualifiedTopUp;
+            node.auctionSelected = auctionNode.selected;
+          }
+
+          position++;
+        }
+      }
+    }
   }
 
   async getOwners(blses: string[], epoch: number) {
@@ -520,6 +546,10 @@ export class NodeService {
         validatorSuccess,
         issues: [],
         position: 0,
+        auctioned: undefined,
+        auctionPosition: undefined,
+        auctionTopUp: undefined,
+        auctionSelected: undefined,
       };
 
       if (['queued', 'jailed'].includes(peerType)) {

@@ -5,7 +5,7 @@ import { DelegationLegacy } from "../../endpoints/delegation.legacy/entities/del
 import { AccountDelegationLegacy } from "../../endpoints/delegation.legacy/entities/account.delegation.legacy";
 import { AccountModule } from "src/endpoints/accounts/account.module";
 import { DelegationLegacyModule } from "src/endpoints/delegation.legacy/delegation.legacy.module";
-import '../../utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest/lib/utils/extensions/jest.extensions';
 
 describe('Delegation Legacy Service', () => {
   let delegationLegacyService: DelegationLegacyService;
