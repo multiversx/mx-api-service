@@ -20,10 +20,10 @@ import { ElasticUpdaterModule } from './crons/elastic.updater/elastic.updater.mo
 import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './websockets/socket-adapter';
-import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
 import { ApiConfigModule } from './common/api-config/api.config.module';
 import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor } from '@elrondnetwork/erdnest';
 import { NestJsApiConfigServiceImpl } from './common/api-config/nestjs.api.config.service.impl';
+import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
@@ -87,7 +87,7 @@ async function bootstrap() {
   }
 
   if (apiConfigService.isEventsNotifierFeatureActive()) {
-    const eventsNotifierApp = await NestFactory.create(RabbitMqProcessorModule);
+    const eventsNotifierApp = await NestFactory.create(RabbitMqModule.register());
     await eventsNotifierApp.listen(apiConfigService.getEventsNotifierFeaturePort());
   }
 
