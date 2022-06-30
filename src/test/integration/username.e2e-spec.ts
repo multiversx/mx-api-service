@@ -2,7 +2,7 @@ import { VmQueryService } from '../../endpoints/vm.query/vm.query.service';
 import { Test } from "@nestjs/testing";
 import { UsernameService } from "../../endpoints/usernames/username.service";
 import { UsernameModule } from "src/endpoints/usernames/username.module";
-import { CachingService } from '@elrondnetwork/nestjs-microservice-common';
+import { CachingService } from '@elrondnetwork/erdnest-common';
 
 describe('Username Service', () => {
   let usernameService: UsernameService;

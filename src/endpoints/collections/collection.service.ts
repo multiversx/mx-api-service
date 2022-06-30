@@ -15,7 +15,7 @@ import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { TokenUtils } from "src/utils/token.utils";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
-import { ApiUtils, BinaryUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryType, QueryOperator, QueryConditionOptions, ElasticSortOrder } from "@elrondnetwork/nestjs-microservice-common";
+import { ApiUtils, BinaryUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryType, QueryOperator, QueryConditionOptions, ElasticSortOrder } from "@elrondnetwork/erdnest-common";
 
 @Injectable()
 export class CollectionService {

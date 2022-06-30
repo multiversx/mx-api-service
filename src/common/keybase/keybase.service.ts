@@ -7,7 +7,7 @@ import { KeybaseState } from "./entities/keybase.state";
 import { CacheInfo } from "../../utils/cache.info";
 import asyncPool from "tiny-async-pool";
 import { GithubService } from "../github/github.service";
-import { ApiService, ApiUtils, CachingService, Constants } from "@elrondnetwork/nestjs-microservice-common";
+import { ApiService, ApiUtils, CachingService, Constants } from "@elrondnetwork/erdnest-common";
 
 @Injectable()
 export class KeybaseService {

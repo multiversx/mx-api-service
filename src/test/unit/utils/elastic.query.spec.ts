@@ -1,4 +1,4 @@
-import { ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType, RangeQuery, TermsQuery } from "@elrondnetwork/nestjs-microservice-common";
+import { ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType, RangeQuery, TermsQuery } from "@elrondnetwork/erdnest-common";
 
 describe('Elastic Query', () => {
   describe('Create Elastic Query', () => {

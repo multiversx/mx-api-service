@@ -6,7 +6,7 @@ import { NftCollection } from 'src/endpoints/collections/entities/nft.collection
 import { NftCollectionRole } from 'src/endpoints/collections/entities/nft.collection.role';
 import { NftType } from 'src/endpoints/nfts/entities/nft.type';
 import { CollectionFilter } from 'src/endpoints/collections/entities/collection.filter';
-import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/jest.extensions';
 import { PublicAppModule } from 'src/public.app.module';
 
 describe('EsdtAddressService', () => {

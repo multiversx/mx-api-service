@@ -10,7 +10,7 @@ import { TransactionActionEsdtNftRecognizerService } from "./recognizers/esdt/tr
 import { TokenTransferService } from "src/endpoints/tokens/token.transfer.service";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import { MetabondingActionRecognizerService } from "./recognizers/mex/mex.metabonding.action.recognizer.service";
-import { AddressUtils, BinaryUtils, StringUtils } from "@elrondnetwork/nestjs-microservice-common";
+import { AddressUtils, BinaryUtils, StringUtils } from "@elrondnetwork/erdnest-common";
 
 @Injectable()
 export class TransactionActionService {

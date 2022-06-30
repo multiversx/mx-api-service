@@ -1,4 +1,4 @@
-import { BinaryUtils } from "@elrondnetwork/nestjs-microservice-common";
+import { BinaryUtils } from "@elrondnetwork/erdnest-common";
 
 describe('Binary Utils', () => {
     describe('Based64Encode', () => {

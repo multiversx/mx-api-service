@@ -1,4 +1,4 @@
-import { QueryConditionOptions } from "@elrondnetwork/nestjs-microservice-common";
+import { QueryConditionOptions } from "@elrondnetwork/erdnest-common";
 import { SortOrder } from "src/common/entities/sort.order";
 import { TransactionStatus } from "./transaction.status";
 import { TransactionType } from "./transaction.type";

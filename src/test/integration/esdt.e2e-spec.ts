@@ -6,9 +6,9 @@ import { EsdtSupply } from "src/endpoints/esdt/entities/esdt.supply";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { EsdtDataSource } from 'src/endpoints/esdt/entities/esdt.data.source';
-import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/jest.extensions';
 import { TokenRoles } from 'src/endpoints/tokens/entities/token.roles';
-import { CachingService } from '@elrondnetwork/nestjs-microservice-common';
+import { CachingService } from '@elrondnetwork/erdnest-common';
 
 describe('ESDT Service', () => {
   let esdtService: EsdtService;

@@ -1,4 +1,4 @@
-import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/string.extensions';
+import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/string.extensions';
 
 describe('String Extensions', () => {
   it('removePrefix', () => {

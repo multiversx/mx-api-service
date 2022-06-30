@@ -1,4 +1,4 @@
-import { AbstractQuery, ApiUtils, ElasticQuery, ElasticService, ElasticSortOrder, QueryConditionOptions, QueryType } from "@elrondnetwork/nestjs-microservice-common";
+import { AbstractQuery, ApiUtils, ElasticQuery, ElasticService, ElasticSortOrder, QueryConditionOptions, QueryType } from "@elrondnetwork/erdnest-common";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";

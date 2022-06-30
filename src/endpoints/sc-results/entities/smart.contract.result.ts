@@ -1,4 +1,4 @@
-import { SwaggerUtils } from "@elrondnetwork/nestjs-microservice-common";
+import { SwaggerUtils } from "@elrondnetwork/erdnest-common";
 import { ApiProperty } from "@nestjs/swagger";
 import { TransactionAction } from "src/endpoints/transactions/transaction-action/entities/transaction.action";
 import { TransactionLog } from "../../transactions/entities/transaction.log";

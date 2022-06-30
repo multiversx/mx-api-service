@@ -3,9 +3,9 @@ import { Test } from "@nestjs/testing";
 import { ShardService } from "src/endpoints/shards/shard.service";
 import { PublicAppModule } from "src/public.app.module";
 import { Shard } from "src/endpoints/shards/entities/shard";
-import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/jest.extensions';
-import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/array.extensions';
-import { ElasticService, FileUtils } from '@elrondnetwork/nestjs-microservice-common';
+import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/array.extensions';
+import { ElasticService, FileUtils } from '@elrondnetwork/erdnest-common';
 
 describe('Shard Service', () => {
   let shardService: ShardService;

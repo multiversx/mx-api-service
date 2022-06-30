@@ -1,4 +1,4 @@
-import { SwaggerUtils } from "@elrondnetwork/nestjs-microservice-common";
+import { SwaggerUtils } from "@elrondnetwork/erdnest-common";
 import { ApiProperty } from "@nestjs/swagger";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 

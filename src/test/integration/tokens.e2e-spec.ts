@@ -6,13 +6,13 @@ import { PublicAppModule } from 'src/public.app.module';
 import { TokenDetailed } from 'src/endpoints/tokens/entities/token.detailed';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { Test } from '@nestjs/testing';
-import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/jest.extensions';
 import { TokenDetailedWithBalance } from 'src/endpoints/tokens/entities/token.detailed.with.balance';
 import { TokenSort } from 'src/endpoints/tokens/entities/token.sort';
 import { SortOrder } from 'src/common/entities/sort.order';
 import { TokenWithRolesFilter } from 'src/endpoints/tokens/entities/token.with.roles.filter';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { CachingService, ElasticQuery, ElasticService, FileUtils } from '@elrondnetwork/nestjs-microservice-common';
+import { CachingService, ElasticQuery, ElasticService, FileUtils } from '@elrondnetwork/erdnest-common';
 
 describe('Token Service', () => {
   let tokenService: TokenService;

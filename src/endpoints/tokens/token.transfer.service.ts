@@ -11,7 +11,7 @@ import { TransactionLogEvent } from "../transactions/entities/transaction.log.ev
 import { TransactionOperationType } from "../transactions/entities/transaction.operation.type";
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
-import { BinaryUtils, RecordUtils, CachingService } from "@elrondnetwork/nestjs-microservice-common";
+import { BinaryUtils, RecordUtils, CachingService } from "@elrondnetwork/erdnest-common";
 
 @Injectable()
 export class TokenTransferService {

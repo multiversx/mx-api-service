@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import { DappConfigService } from '../../endpoints/dapp-config/dapp.config.service';
 import Initializer from './e2e-init';
-import { Constants } from '@elrondnetwork/nestjs-microservice-common';
+import { Constants } from '@elrondnetwork/erdnest-common';
 
 describe('Dapp Config Service', () => {
   let dappConfigService: DappConfigService;

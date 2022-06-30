@@ -9,7 +9,7 @@ import { TransactionLog } from "./entities/transaction.log";
 import { TransactionOptionalFieldOption } from "./entities/transaction.optional.field.options";
 import { TransactionReceipt } from "./entities/transaction.receipt";
 import { TokenTransferService } from "../tokens/token.transfer.service";
-import { ApiUtils, BinaryUtils, ElasticQuery, ElasticService, ElasticSortOrder, ElasticSortProperty, QueryConditionOptions, QueryType } from "@elrondnetwork/nestjs-microservice-common";
+import { ApiUtils, BinaryUtils, ElasticQuery, ElasticService, ElasticSortOrder, ElasticSortProperty, QueryConditionOptions, QueryType } from "@elrondnetwork/erdnest-common";
 import { TransactionUtils } from "./transaction.utils";
 
 @Injectable()

@@ -7,7 +7,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GenerateThumbnailResult } from "./entities/generate.thumbnail.result";
 import { ThumbnailType } from "./entities/thumbnail.type";
 import { AWSService } from "./aws.service";
-import { ApiService, Constants, FileUtils } from "@elrondnetwork/nestjs-microservice-common";
+import { ApiService, Constants, FileUtils } from "@elrondnetwork/erdnest-common";
 import { TokenUtils } from "src/utils/token.utils";
 
 @Injectable()

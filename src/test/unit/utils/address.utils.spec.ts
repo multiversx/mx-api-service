@@ -1,4 +1,4 @@
-import { AddressUtils } from "@elrondnetwork/nestjs-microservice-common";
+import { AddressUtils } from "@elrondnetwork/erdnest-common";
 
 describe('Address utils', () => {
 

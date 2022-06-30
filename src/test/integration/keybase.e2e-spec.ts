@@ -2,7 +2,7 @@ import { Test } from "@nestjs/testing";
 import { KeybaseService } from "../../common/keybase/keybase.service";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
 import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
-import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/jest.extensions';
 import { PublicAppModule } from "src/public.app.module";
 
 describe('Keybase Service', () => {

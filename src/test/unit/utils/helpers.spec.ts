@@ -1,4 +1,4 @@
-import { ApiUtils } from "@elrondnetwork/nestjs-microservice-common";
+import { ApiUtils } from "@elrondnetwork/erdnest-common";
 
 describe('API helpers', () => {
   describe('Cleanup API response helper', () => {

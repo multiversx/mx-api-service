@@ -4,13 +4,13 @@ import { Test } from "@nestjs/testing";
 import { CollectionService } from "src/endpoints/collections/collection.service";
 import { PublicAppModule } from "src/public.app.module";
 import { NftCollection } from 'src/endpoints/collections/entities/nft.collection';
-import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/jest.extensions';
 import { NftCollectionAccount } from 'src/endpoints/collections/entities/nft.collection.account';
 import { NftCollectionRole } from 'src/endpoints/collections/entities/nft.collection.role';
 import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { ElasticQuery, ElasticService } from '@elrondnetwork/nestjs-microservice-common';
+import { ElasticQuery, ElasticService } from '@elrondnetwork/erdnest-common';
 
 describe('Collection Service', () => {
   let collectionService: CollectionService;

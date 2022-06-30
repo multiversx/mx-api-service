@@ -1,4 +1,4 @@
-import { AddressUtils } from '@elrondnetwork/nestjs-microservice-common';
+import { AddressUtils } from '@elrondnetwork/erdnest-common';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';

@@ -6,7 +6,7 @@ import { NftWorkerService } from 'src/queue.worker/nft.worker/nft.worker.service
 import { CacheInfo } from '../../utils/cache.info';
 import { NotifierEventIdentifier } from './entities/notifier.event.identifier';
 import { NotifierEvent } from './entities/notifier.event';
-import { BinaryUtils, CachingService, ElasticService } from '@elrondnetwork/nestjs-microservice-common';
+import { BinaryUtils, CachingService, ElasticService } from '@elrondnetwork/erdnest-common';
 
 @Injectable()
 export class RabbitMqNftHandlerService {

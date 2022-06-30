@@ -15,11 +15,11 @@ import { NodeType } from 'src/endpoints/nodes/entities/node.type';
 import { NodeStatus } from 'src/endpoints/nodes/entities/node.status';
 import { NodeSort } from 'src/endpoints/nodes/entities/node.sort';
 import { Auction } from 'src/common/gateway/entities/auction';
-import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/array.extensions';
-import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/jest.extensions';
-import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/number.extensions';
+import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/array.extensions';
+import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/number.extensions';
 import { AuctionNode } from 'src/common/gateway/entities/auction.node';
-import { CachingService, FileUtils } from '@elrondnetwork/nestjs-microservice-common';
+import { CachingService, FileUtils } from '@elrondnetwork/erdnest-common';
 
 describe('Node Service', () => {
   let nodeService: NodeService;

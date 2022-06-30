@@ -9,7 +9,7 @@ import { NodesInfos } from "./entities/nodes.infos";
 import { DelegationData } from "./entities/delegation.data";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { AddressUtils, Constants, CachingService, ApiService } from "@elrondnetwork/nestjs-microservice-common";
+import { AddressUtils, Constants, CachingService, ApiService } from "@elrondnetwork/erdnest-common";
 
 @Injectable()
 export class ProviderService {

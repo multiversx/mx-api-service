@@ -2,7 +2,7 @@ import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "src/public.app.module";
 import { BlsService } from "../../endpoints/bls/bls.service";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
-import { ElasticService, FileUtils } from "@elrondnetwork/nestjs-microservice-common";
+import { ElasticService, FileUtils } from "@elrondnetwork/erdnest-common";
 
 describe('Bls Service', () => {
   let blsService: BlsService;

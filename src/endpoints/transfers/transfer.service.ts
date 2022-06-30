@@ -6,7 +6,7 @@ import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionType } from "../transactions/entities/transaction.type";
 import { Transaction } from "../transactions/entities/transaction";
 import { TransactionService } from "../transactions/transaction.service";
-import { AddressUtils, ApiUtils, ElasticQuery, ElasticService, ElasticSortOrder, ElasticSortProperty, QueryConditionOptions, QueryOperator, QueryType } from "@elrondnetwork/nestjs-microservice-common";
+import { AddressUtils, ApiUtils, ElasticQuery, ElasticService, ElasticSortOrder, ElasticSortProperty, QueryConditionOptions, QueryOperator, QueryType } from "@elrondnetwork/erdnest-common";
 
 @Injectable()
 export class TransferService {

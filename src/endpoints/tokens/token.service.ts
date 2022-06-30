@@ -20,7 +20,7 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
-import { AddressUtils, ApiUtils, ElasticQuery, ElasticService, ElasticSortOrder, NumberUtils, QueryConditionOptions, QueryOperator, QueryType } from "@elrondnetwork/nestjs-microservice-common";
+import { AddressUtils, ApiUtils, ElasticQuery, ElasticService, ElasticSortOrder, NumberUtils, QueryConditionOptions, QueryOperator, QueryType } from "@elrondnetwork/erdnest-common";
 
 @Injectable()
 export class TokenService {

@@ -4,7 +4,7 @@ import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
 import { RoundService } from "src/endpoints/rounds/round.service";
 import { PublicAppModule } from "src/public.app.module";
 import { RoundDetailed } from "../../endpoints/rounds/entities/round.detailed";
-import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/jest.extensions';
 
 describe('Rounds Service', () => {
   let roundService: RoundService;

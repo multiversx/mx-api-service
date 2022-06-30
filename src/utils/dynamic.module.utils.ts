@@ -1,4 +1,4 @@
-import { ApiModule, CachingModule, ElasticModule, ApiModuleOptions, ElasticModuleOptions, CachingModuleOptions, NESTJS_API_CONFIG_SERVICE } from "@elrondnetwork/nestjs-microservice-common";
+import { ApiModule, CachingModule, ElasticModule, ApiModuleOptions, ElasticModuleOptions, CachingModuleOptions, NESTJS_API_CONFIG_SERVICE } from "@elrondnetwork/erdnest-common";
 import { DynamicModule, Provider } from "@nestjs/common";
 import { ClientOptions, ClientProxyFactory, Transport } from "@nestjs/microservices";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";

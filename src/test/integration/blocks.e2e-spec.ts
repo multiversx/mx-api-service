@@ -3,7 +3,7 @@ import { BlockService } from "src/endpoints/blocks/block.service";
 import { Block } from "src/endpoints/blocks/entities/block";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { PublicAppModule } from "src/public.app.module";
-import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/jest.extensions';
 
 describe('Blocks Service', () => {
   let blocksService: BlockService;

@@ -1,5 +1,5 @@
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
-import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/array.extensions';
+import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/array.extensions';
 
 describe('Array Extensions', () => {
   describe('Distinct', () => {

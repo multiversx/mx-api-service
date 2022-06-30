@@ -7,7 +7,7 @@ import { NftFilter } from "./entities/nft.filter";
 import { NftOwner } from "./entities/nft.owner";
 import { NftType } from "./entities/nft.type";
 import { NftService } from "./nft.service";
-import { ParseAddressPipe, ParseOptionalBoolPipe, ParseArrayPipe } from '@elrondnetwork/nestjs-microservice-common';
+import { ParseAddressPipe, ParseOptionalBoolPipe, ParseArrayPipe } from '@elrondnetwork/erdnest-common';
 
 @Controller()
 @ApiTags('nfts')

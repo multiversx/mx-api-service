@@ -20,7 +20,7 @@ import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, ElasticSortOrder } from "@elrondnetwork/nestjs-microservice-common";
+import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, ElasticSortOrder } from "@elrondnetwork/erdnest-common";
 
 @Injectable()
 export class NftService {

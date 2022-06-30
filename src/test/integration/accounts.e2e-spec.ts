@@ -4,9 +4,9 @@ import { Test } from '@nestjs/testing';
 import { AccountService } from 'src/endpoints/accounts/account.service';
 import { PublicAppModule } from 'src/public.app.module';
 import { DeployedContract } from 'src/endpoints/accounts/entities/deployed.contract';
-import '@elrondnetwork/nestjs-microservice-common/lib/src/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/jest.extensions';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { AddressUtils, CachingService, ElasticService } from '@elrondnetwork/nestjs-microservice-common';
+import { AddressUtils, CachingService, ElasticService } from '@elrondnetwork/erdnest-common';
 
 describe('Account Service', () => {
   let accountService: AccountService;
