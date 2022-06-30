@@ -94,6 +94,7 @@ export class TransactionController {
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false, deprecated: true })
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
+  @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   getTransactionCount(
@@ -106,6 +107,7 @@ export class TransactionController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
+    @Query('function') scFunction?: string,
     @Query('condition') condition?: QueryConditionOptions,
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
@@ -120,6 +122,7 @@ export class TransactionController {
       hashes,
       status,
       search,
+      function: scFunction,
       before,
       after,
       condition,
@@ -138,6 +141,7 @@ export class TransactionController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
+    @Query('function') scFunction?: string,
     @Query('condition') condition?: QueryConditionOptions,
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
@@ -152,6 +156,7 @@ export class TransactionController {
       hashes,
       status,
       search,
+      function: scFunction,
       before,
       after,
       condition,
