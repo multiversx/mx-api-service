@@ -153,7 +153,7 @@ describe('Process Nft Service', () => {
       const collection: string = "EROBOT-527a29";
       const process = await processNftService.processCollection(collection, filter);
 
-      expect(process).toStrictEqual({ "EROBOT-527a29-c4": false });
+      expect(process).toStrictEqual({ "EROBOT-527a29-c4": true });
     });
   });
 });
