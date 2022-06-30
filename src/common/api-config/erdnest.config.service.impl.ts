@@ -1,9 +1,9 @@
-import { NestjsApiConfigService } from "@elrondnetwork/erdnest";
+import { ErdnestConfigService } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "./api.config.service";
 
 @Injectable()
-export class NestJsApiConfigServiceImpl implements NestjsApiConfigService {
+export class ErdnestConfigServiceImpl implements ErdnestConfigService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
   ) { }

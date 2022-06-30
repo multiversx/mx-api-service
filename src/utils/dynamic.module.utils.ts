@@ -1,9 +1,9 @@
-import { ApiModule, CachingModule, ElasticModule, ApiModuleOptions, ElasticModuleOptions, CachingModuleOptions, NESTJS_API_CONFIG_SERVICE } from "@elrondnetwork/erdnest";
+import { ApiModule, CachingModule, ElasticModule, ApiModuleOptions, ElasticModuleOptions, CachingModuleOptions, ERDNEST_CONFIG_SERVICE } from "@elrondnetwork/erdnest";
 import { DynamicModule, Provider } from "@nestjs/common";
 import { ClientOptions, ClientProxyFactory, Transport } from "@nestjs/microservices";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { NestJsApiConfigServiceImpl } from "src/common/api-config/nestjs.api.config.service.impl";
+import { ErdnestConfigServiceImpl } from "src/common/api-config/erdnest.config.service.impl";
 
 export class DynamicModuleUtils {
   static getElasticModule(): DynamicModule {
@@ -44,8 +44,8 @@ export class DynamicModuleUtils {
 
   static getNestJsApiConfigService(): Provider {
     return {
-      provide: NESTJS_API_CONFIG_SERVICE,
-      useClass: NestJsApiConfigServiceImpl,
+      provide: ERDNEST_CONFIG_SERVICE,
+      useClass: ErdnestConfigServiceImpl,
     };
   }
 
