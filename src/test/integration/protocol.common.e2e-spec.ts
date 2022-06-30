@@ -1,7 +1,7 @@
 import { Test } from "@nestjs/testing";
 import { ProtocolService } from "../../common/protocol/protocol.service";
 import { ProtocolModule } from "src/common/protocol/protocol.module";
-import { CachingService } from "@elrondnetwork/erdnest-common";
+import { CachingService } from "@elrondnetwork/erdnest";
 
 describe('Protocol Service', () => {
   let protocolService: ProtocolService;

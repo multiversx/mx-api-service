@@ -9,7 +9,7 @@ import { NodesInfos } from "./entities/nodes.infos";
 import { DelegationData } from "./entities/delegation.data";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { AddressUtils, Constants, CachingService, ApiService } from "@elrondnetwork/erdnest-common";
+import { AddressUtils, Constants, CachingService, ApiService } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class ProviderService {

@@ -1,4 +1,4 @@
-import { AddressUtils, BinaryUtils, NumberUtils, StringUtils } from "@elrondnetwork/erdnest-common";
+import { AddressUtils, BinaryUtils, NumberUtils, StringUtils } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { TokenTransferProperties } from "src/endpoints/tokens/entities/token.transfer.properties";

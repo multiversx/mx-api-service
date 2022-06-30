@@ -10,7 +10,7 @@ import { QueryPagination } from 'src/common/entities/query.pagination';
 import { NftFilter } from 'src/endpoints/nfts/entities/nft.filter';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import nftCollection from '../data/esdt/nft/nft.example';
-import { Constants } from '@elrondnetwork/erdnest-common';
+import { Constants } from '@elrondnetwork/erdnest';
 
 describe('Process Nft Service', () => {
   let processNftService: ProcessNftsService;

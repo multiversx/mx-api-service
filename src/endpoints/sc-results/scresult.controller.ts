@@ -1,5 +1,5 @@
-import { ParseArrayPipe } from "@elrondnetwork/erdnest-common";
-import { ParseBlockHashPipe, ParseTransactionHashPipe } from "@elrondnetwork/erdnest-common";
+import { ParseArrayPipe } from "@elrondnetwork/erdnest";
+import { ParseBlockHashPipe, ParseTransactionHashPipe } from "@elrondnetwork/erdnest";
 import { Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { SmartContractResult } from "./entities/smart.contract.result";

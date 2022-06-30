@@ -1,4 +1,4 @@
-import { CachingService } from "@elrondnetwork/erdnest-common";
+import { CachingService } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import BigNumber from "bignumber.js";
 import { CacheInfo } from "src/utils/cache.info";

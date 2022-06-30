@@ -2,7 +2,7 @@ import { ApiMetricsService } from 'src/common/metrics/api.metrics.service';
 import { EsdtModule } from '../../endpoints/esdt/esdt.module';
 import { Test } from '@nestjs/testing';
 import Initializer from './e2e-init';
-import { Constants } from '@elrondnetwork/erdnest-common';
+import { Constants } from '@elrondnetwork/erdnest';
 
 describe('Metrics Service', () => {
   let metricsService: ApiMetricsService;

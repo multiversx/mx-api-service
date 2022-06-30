@@ -1,4 +1,4 @@
-import { RoundUtils } from "@elrondnetwork/erdnest-common";
+import { RoundUtils } from "@elrondnetwork/erdnest";
 
 describe('Round Utils', () => {
     describe('getExpires', () => {

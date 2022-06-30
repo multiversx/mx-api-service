@@ -1,8 +1,8 @@
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionOperation } from "src/endpoints/transactions/entities/transaction.operation";
 import { TransactionOperationAction } from "src/endpoints/transactions/entities/transaction.operation.action";
-import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/array.extensions';
-import { QueryConditionOptions } from "@elrondnetwork/erdnest-common";
+import '@elrondnetwork/erdnest/lib/utils/extensions/array.extensions';
+import { QueryConditionOptions } from "@elrondnetwork/erdnest";
 
 export class TransactionUtils {
   static isTransactionCountQueryWithAddressOnly(filter: TransactionFilter, address?: string) {

@@ -1,4 +1,4 @@
-import { PerformanceProfiler, CachingService } from "@elrondnetwork/erdnest-common";
+import { PerformanceProfiler, CachingService } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";

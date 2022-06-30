@@ -10,7 +10,7 @@ import { NetworkService } from "../network/network.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { CacheInfo } from "src/utils/cache.info";
-import { AddressUtils, ApiUtils, Constants, RoundUtils, CachingService } from "@elrondnetwork/erdnest-common";
+import { AddressUtils, ApiUtils, Constants, RoundUtils, CachingService } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class StakeService {

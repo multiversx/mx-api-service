@@ -1,4 +1,4 @@
-import { ParseBlsHashPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, QueryConditionOptions } from "@elrondnetwork/erdnest-common";
+import { ParseBlsHashPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, QueryConditionOptions } from "@elrondnetwork/erdnest";
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { Round } from "./entities/round";

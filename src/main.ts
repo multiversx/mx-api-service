@@ -22,7 +22,7 @@ import { TransactionCompletedModule } from './crons/transaction.processor/transa
 import { SocketAdapter } from './websockets/socket-adapter';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
 import { ApiConfigModule } from './common/api-config/api.config.module';
-import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor } from '@elrondnetwork/erdnest-common';
+import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor } from '@elrondnetwork/erdnest';
 import { NestJsApiConfigServiceImpl } from './common/api-config/nestjs.api.config.service.impl';
 
 async function bootstrap() {

@@ -1,4 +1,4 @@
-import { AddressUtils, Constants, NumberUtils, CachingService } from "@elrondnetwork/erdnest-common";
+import { AddressUtils, Constants, NumberUtils, CachingService } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { VmQueryService } from "../vm.query/vm.query.service";

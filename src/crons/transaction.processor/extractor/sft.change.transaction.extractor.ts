@@ -1,4 +1,4 @@
-import { BinaryUtils } from "@elrondnetwork/erdnest-common";
+import { BinaryUtils } from "@elrondnetwork/erdnest";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Logger } from "@nestjs/common";
 import { TransactionExtractorInterface } from "./transaction.extractor.interface";

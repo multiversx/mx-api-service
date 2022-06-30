@@ -1,4 +1,4 @@
-import { PerformanceProfiler } from "@elrondnetwork/erdnest-common";
+import { PerformanceProfiler } from "@elrondnetwork/erdnest";
 import { Inject, Injectable } from "@nestjs/common";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { ApiMetricsService } from "../metrics/api.metrics.service";

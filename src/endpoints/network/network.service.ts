@@ -16,7 +16,7 @@ import { GatewayService } from 'src/common/gateway/gateway.service';
 import { DataQuoteType } from 'src/common/external/entities/data.quote.type';
 import { CacheInfo } from 'src/utils/cache.info';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
-import { Constants, NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest-common';
+import { Constants, NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest';
 
 @Injectable()
 export class NetworkService {

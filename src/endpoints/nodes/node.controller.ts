@@ -9,7 +9,7 @@ import { NodeSort } from "./entities/node.sort";
 import { SortNodes } from "src/common/entities/sort.nodes";
 import { NodeFilter } from "./entities/node.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { ParseAddressPipe, ParseBlsHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe } from "@elrondnetwork/erdnest-common";
+import { ParseAddressPipe, ParseBlsHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe } from "@elrondnetwork/erdnest";
 
 @Controller()
 @ApiTags('nodes')

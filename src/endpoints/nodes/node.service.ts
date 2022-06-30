@@ -18,7 +18,7 @@ import { CacheInfo } from "src/utils/cache.info";
 import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { Auction } from "src/common/gateway/entities/auction";
-import { AddressUtils, Constants, CachingService } from "@elrondnetwork/erdnest-common";
+import { AddressUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class NodeService {

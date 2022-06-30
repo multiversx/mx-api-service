@@ -6,7 +6,7 @@ import { TokenType } from "src/endpoints/tokens/entities/token.type";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import asyncPool from "tiny-async-pool";
 import { PersistenceInterface } from "src/common/persistence/persistence.interface";
-import { BatchUtils, ElasticQuery, ElasticService, Locker, QueryType } from "@elrondnetwork/erdnest-common";
+import { BatchUtils, ElasticQuery, ElasticService, Locker, QueryType } from "@elrondnetwork/erdnest";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 @Injectable()
 export class ElasticUpdaterService {

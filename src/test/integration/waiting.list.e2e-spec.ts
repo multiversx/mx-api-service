@@ -2,8 +2,8 @@ import { WaitingListService } from "../../endpoints/waiting-list/waiting.list.se
 import { WaitingList } from "../../endpoints/waiting-list/entities/waiting.list";
 import { WaitingListModule } from "src/endpoints/waiting-list/waiting.list.module";
 import { Test } from "@nestjs/testing";
-import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/jest.extensions';
-import { CachingService } from "@elrondnetwork/erdnest-common";
+import '@elrondnetwork/erdnest/lib/utils/extensions/jest.extensions';
+import { CachingService } from "@elrondnetwork/erdnest";
 
 describe('WaitingListService', () => {
   let waitingListService: WaitingListService;

@@ -4,7 +4,7 @@ import { NodeStatus } from "../nodes/entities/node.status";
 import { Shard } from "./entities/shard";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { CacheInfo } from "src/utils/cache.info";
-import { CachingService } from "@elrondnetwork/erdnest-common";
+import { CachingService } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class ShardService {

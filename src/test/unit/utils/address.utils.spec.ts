@@ -1,4 +1,4 @@
-import { AddressUtils } from "@elrondnetwork/erdnest-common";
+import { AddressUtils } from "@elrondnetwork/erdnest";
 
 describe('Address utils', () => {
 

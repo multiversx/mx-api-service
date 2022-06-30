@@ -3,7 +3,7 @@ import { PublicAppModule } from 'src/public.app.module';
 import { MiniBlockService } from '../../endpoints/miniblocks/mini.block.service';
 import { MiniBlockDetailed } from "../../endpoints/miniblocks/entities/mini.block.detailed";
 import Initializer from './e2e-init';
-import { Constants, ElasticService } from '@elrondnetwork/erdnest-common';
+import { Constants, ElasticService } from '@elrondnetwork/erdnest';
 
 describe('MiniBlock Service', () => {
   let miniBlockService: MiniBlockService;

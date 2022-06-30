@@ -1,4 +1,4 @@
-import { BinaryUtils } from "@elrondnetwork/erdnest-common";
+import { BinaryUtils } from "@elrondnetwork/erdnest";
 
 describe('Binary Utils', () => {
     describe('Based64Encode', () => {

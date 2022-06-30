@@ -1,4 +1,4 @@
-import { Constants } from "@elrondnetwork/erdnest-common";
+import { Constants } from "@elrondnetwork/erdnest";
 
 describe('Constants Utils', () => {
     describe('Constants conversion', () => {

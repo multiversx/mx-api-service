@@ -1,4 +1,4 @@
-import { NestjsApiConfigService } from "@elrondnetwork/erdnest-common";
+import { NestjsApiConfigService } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "./api.config.service";
 

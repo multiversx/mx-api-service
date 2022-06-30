@@ -4,7 +4,7 @@ import { CacheInfo } from "src/utils/cache.info";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { AccountAssets } from "./entities/account.assets";
-import { ApiUtils, CachingService, FileUtils } from "@elrondnetwork/erdnest-common";
+import { ApiUtils, CachingService, FileUtils } from "@elrondnetwork/erdnest";
 const rimraf = require("rimraf");
 const path = require('path');
 const fs = require('fs');

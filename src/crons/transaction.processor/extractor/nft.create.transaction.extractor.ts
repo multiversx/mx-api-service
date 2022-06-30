@@ -1,4 +1,4 @@
-import { AddressUtils, BinaryUtils } from "@elrondnetwork/erdnest-common";
+import { AddressUtils, BinaryUtils } from "@elrondnetwork/erdnest";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Logger } from "@nestjs/common";
 import { TransactionDetailed } from "src/endpoints/transactions/entities/transaction.detailed";

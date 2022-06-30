@@ -7,7 +7,7 @@ import { TransferService } from 'src/endpoints/transfers/transfer.service';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { ApiConfigModule } from 'src/common/api-config/api.config.module';
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
-import { BinaryUtils, Constants, ElasticQuery, ElasticService } from '@elrondnetwork/erdnest-common';
+import { BinaryUtils, Constants, ElasticQuery, ElasticService } from '@elrondnetwork/erdnest';
 
 describe.skip('Transfer Service', () => {
   let transferService: TransferService;

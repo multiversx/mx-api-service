@@ -1,4 +1,4 @@
-import { ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType, RangeQuery, TermsQuery } from "@elrondnetwork/erdnest-common";
+import { ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType, RangeQuery, TermsQuery } from "@elrondnetwork/erdnest";
 
 describe('Elastic Query', () => {
   describe('Create Elastic Query', () => {

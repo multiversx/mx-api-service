@@ -5,9 +5,9 @@ import { ProviderService } from 'src/endpoints/providers/provider.service';
 import { PublicAppModule } from 'src/public.app.module';
 import { ProviderConfig } from '../../endpoints/providers/entities/provider.config';
 import { Provider } from 'src/endpoints/providers/entities/provider';
-import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/array.extensions';
-import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/jest.extensions';
-import { CachingService } from '@elrondnetwork/erdnest-common';
+import '@elrondnetwork/erdnest/lib/utils/extensions/array.extensions';
+import '@elrondnetwork/erdnest/lib/utils/extensions/jest.extensions';
+import { CachingService } from '@elrondnetwork/erdnest';
 
 describe('Provider Service', () => {
   let providerService: ProviderService;

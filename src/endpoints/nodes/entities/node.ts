@@ -1,4 +1,4 @@
-import { SwaggerUtils } from "@elrondnetwork/erdnest-common";
+import { SwaggerUtils } from "@elrondnetwork/erdnest";
 import { ApiProperty } from "@nestjs/swagger";
 import { NodeStatus } from "./node.status";
 import { NodeType } from "./node.type";

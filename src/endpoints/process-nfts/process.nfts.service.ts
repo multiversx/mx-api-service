@@ -1,4 +1,4 @@
-import { AddressUtils, CachingService } from "@elrondnetwork/erdnest-common";
+import { AddressUtils, CachingService } from "@elrondnetwork/erdnest";
 import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";

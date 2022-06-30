@@ -1,4 +1,4 @@
-import { ApiUtils, ElasticService } from "@elrondnetwork/erdnest-common";
+import { ApiUtils, ElasticService } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { MiniBlockDetailed } from "./entities/mini.block.detailed";
 

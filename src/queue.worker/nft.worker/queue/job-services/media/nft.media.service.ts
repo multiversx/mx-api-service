@@ -1,5 +1,5 @@
-import { ApiService, CachingService } from "@elrondnetwork/erdnest-common";
-import { BinaryUtils, Constants } from "@elrondnetwork/erdnest-common";
+import { ApiService, CachingService } from "@elrondnetwork/erdnest";
+import { BinaryUtils, Constants } from "@elrondnetwork/erdnest";
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";

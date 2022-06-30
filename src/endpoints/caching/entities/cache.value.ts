@@ -1,4 +1,4 @@
-import { Constants } from "@elrondnetwork/erdnest-common";
+import { Constants } from "@elrondnetwork/erdnest";
 
 export class CacheValue {
   value?: string;

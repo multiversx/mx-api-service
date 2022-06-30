@@ -1,4 +1,4 @@
-import { ApiService } from "@elrondnetwork/erdnest-common";
+import { ApiService } from "@elrondnetwork/erdnest";
 import { Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { DataQuoteType } from "./entities/data.quote.type";

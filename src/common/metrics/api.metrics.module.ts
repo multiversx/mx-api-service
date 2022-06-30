@@ -1,4 +1,4 @@
-import { MetricsModule } from "@elrondnetwork/erdnest-common";
+import { MetricsModule } from "@elrondnetwork/erdnest";
 import { Global, Module } from "@nestjs/common";
 import { ApiMetricsService } from "./api.metrics.service";
 

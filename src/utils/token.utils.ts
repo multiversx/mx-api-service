@@ -3,8 +3,8 @@ import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles";
 import { TokenRoles } from "src/endpoints/tokens/entities/token.roles";
-import { ApiUtils } from '@elrondnetwork/erdnest-common';
-import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/string.extensions';
+import { ApiUtils } from '@elrondnetwork/erdnest';
+import '@elrondnetwork/erdnest/lib/utils/extensions/string.extensions';
 
 export class TokenUtils {
   static isEsdt(tokenIdentifier: string) {

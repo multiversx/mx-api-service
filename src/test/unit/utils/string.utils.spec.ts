@@ -1,4 +1,4 @@
-import { StringUtils } from "@elrondnetwork/erdnest-common";
+import { StringUtils } from "@elrondnetwork/erdnest";
 
 describe('String Utils', () => {
   describe('isHex', () => {

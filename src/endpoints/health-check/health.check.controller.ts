@@ -1,4 +1,4 @@
-import { NoAuth } from "@elrondnetwork/erdnest-common";
+import { NoAuth } from "@elrondnetwork/erdnest";
 import { Controller, Get } from "@nestjs/common";
 import { ApiOperation } from "@nestjs/swagger";
 

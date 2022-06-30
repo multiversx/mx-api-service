@@ -4,7 +4,7 @@ import { RoundDetailed } from "./entities/round.detailed";
 import { RoundFilter } from "./entities/round.filter";
 import { BlsService } from "src/endpoints/bls/bls.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { AbstractQuery, ApiUtils, ElasticQuery, ElasticService, ElasticSortOrder, QueryConditionOptions, QueryType, RoundUtils } from "@elrondnetwork/erdnest-common";
+import { AbstractQuery, ApiUtils, ElasticQuery, ElasticService, ElasticSortOrder, QueryConditionOptions, QueryType, RoundUtils } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class RoundService {

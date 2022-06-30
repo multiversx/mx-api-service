@@ -1,4 +1,4 @@
-import { Constants, CachingService } from "@elrondnetwork/erdnest-common";
+import { Constants, CachingService } from "@elrondnetwork/erdnest";
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { CacheInfo } from "src/utils/cache.info";

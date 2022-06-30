@@ -1,5 +1,5 @@
-import { CachingService } from "@elrondnetwork/erdnest-common";
-import { Constants, FileUtils } from "@elrondnetwork/erdnest-common";
+import { CachingService } from "@elrondnetwork/erdnest";
+import { Constants, FileUtils } from "@elrondnetwork/erdnest";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -9,7 +9,7 @@ import { EsdtService } from "src/endpoints/esdt/esdt.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { PublicAppModule } from "src/public.app.module";
-import '@elrondnetwork/erdnest-common/lib/src/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest/lib/utils/extensions/jest.extensions';
 
 export default class Initializer {
   private static cachingService: CachingService;

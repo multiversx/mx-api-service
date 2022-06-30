@@ -1,4 +1,4 @@
-import { QueryConditionOptions } from "@elrondnetwork/erdnest-common";
+import { QueryConditionOptions } from "@elrondnetwork/erdnest";
 import { QueryPagination } from "src/common/entities/query.pagination";
 
 export class RoundFilter extends QueryPagination {

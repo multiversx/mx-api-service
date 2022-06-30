@@ -14,7 +14,7 @@ import { TokenSort } from "./entities/token.sort";
 import { SortTokens } from "src/common/entities/sort.tokens";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { TransferService } from "../transfers/transfer.service";
-import { ParseAddressPipe, ParseBlockHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseArrayPipe } from "@elrondnetwork/erdnest-common";
+import { ParseAddressPipe, ParseBlockHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseArrayPipe } from "@elrondnetwork/erdnest";
 
 @Controller()
 @ApiTags('tokens')

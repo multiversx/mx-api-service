@@ -5,7 +5,7 @@ import { NftType } from "../nfts/entities/nft.type";
 import { CollectionService } from "./collection.service";
 import { Nft } from "../nfts/entities/nft";
 import { NftService } from "../nfts/nft.service";
-import { ParseAddressPipe, ParseArrayPipe, ParseOptionalBoolPipe, ParseOptionalEnumArrayPipe } from '@elrondnetwork/erdnest-common';
+import { ParseAddressPipe, ParseArrayPipe, ParseOptionalBoolPipe, ParseOptionalEnumArrayPipe } from '@elrondnetwork/erdnest';
 
 @Controller()
 @ApiTags('collections')
