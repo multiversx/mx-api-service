@@ -1,8 +1,8 @@
-import { AccountUsername } from './entities/accountUsername';
+import { AccountUsername } from './entities/account.username';
 import { Controller, Get, HttpException, HttpStatus, Param, Res } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
-import { NoCache } from "src/decorators/no.cache";
 import { UsernameService } from "./username.service";
+import { NoCache } from '@elrondnetwork/erdnest';
 
 @Controller()
 @ApiTags('usernames')

@@ -1,7 +1,6 @@
+import { ApiService, BinaryUtils } from "@elrondnetwork/erdnest";
 import { HttpStatus, Injectable } from "@nestjs/common";
-import { BinaryUtils } from "src/utils/binary.utils";
 import { ApiConfigService } from "../api-config/api.config.service";
-import { ApiService } from "../network/api.service";
 import { GithubUserInfo } from "./entities/github.user.info";
 
 @Injectable()

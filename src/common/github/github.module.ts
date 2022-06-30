@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
-import { ApiModule } from "../network/api.module";
+import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import { GithubService } from "./github.service";
 
 @Module({
   imports: [
-    ApiModule,
+    DynamicModuleUtils.getApiModule(),
   ],
   providers: [
     GithubService,

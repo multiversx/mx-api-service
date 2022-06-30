@@ -1,5 +1,5 @@
+import { AddressUtils } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
-import { AddressUtils } from "src/utils/address.utils";
 import { TransactionAction } from "../../entities/transaction.action";
 import { TransactionActionCategory } from "../../entities/transaction.action.category";
 import { TransactionMetadata } from "../../entities/transaction.metadata";

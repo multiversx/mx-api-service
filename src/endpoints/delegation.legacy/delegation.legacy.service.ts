@@ -3,9 +3,8 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { DelegationLegacy } from "./entities/delegation.legacy";
 import { AccountDelegationLegacy } from "./entities/account.delegation.legacy";
-import { AddressUtils } from "src/utils/address.utils";
-import { CachingService } from "src/common/caching/caching.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { AddressUtils, CachingService } from "@elrondnetwork/erdnest";
+import { CacheInfo } from "src/utils/cache.info";
 
 @Injectable()
 export class DelegationLegacyService {

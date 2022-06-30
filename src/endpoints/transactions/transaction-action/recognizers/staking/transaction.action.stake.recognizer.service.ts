@@ -1,10 +1,7 @@
+import { BinaryUtils, Constants, NumberUtils, CachingService } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { CachingService } from "src/common/caching/caching.service";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
-import { BinaryUtils } from "src/utils/binary.utils";
-import { Constants } from "src/utils/constants";
-import { NumberUtils } from "src/utils/number.utils";
 import { TransactionAction } from "../../entities/transaction.action";
 import { TransactionActionCategory } from "../../entities/transaction.action.category";
 import { TransactionMetadata } from "../../entities/transaction.metadata";

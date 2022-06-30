@@ -1,7 +1,5 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { Transaction } from "src/endpoints/transactions/entities/transaction";
-import { AddressUtils } from "src/utils/address.utils";
-import { BinaryUtils } from "src/utils/binary.utils";
 import { TransactionMetadata } from "./entities/transaction.metadata";
 import { TransactionAction } from "./entities/transaction.action";
 import { TransactionActionMexRecognizerService } from "./recognizers/mex/transaction.action.mex.recognizer.service";
@@ -10,9 +8,9 @@ import { StakeActionRecognizerService } from "./recognizers/staking/transaction.
 import { SCCallActionRecognizerService } from "./recognizers/sc-calls/transaction.action.sc-calls.recognizer.service";
 import { TransactionActionEsdtNftRecognizerService } from "./recognizers/esdt/transaction.action.esdt.nft.recognizer.service";
 import { TokenTransferService } from "src/endpoints/tokens/token.transfer.service";
-import { StringUtils } from "src/utils/string.utils";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import { MetabondingActionRecognizerService } from "./recognizers/mex/mex.metabonding.action.recognizer.service";
+import { AddressUtils, BinaryUtils, StringUtils } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class TransactionActionService {

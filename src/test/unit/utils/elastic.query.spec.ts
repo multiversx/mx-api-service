@@ -1,9 +1,4 @@
-import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
-import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
-import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
-import { QueryType } from "src/common/elastic/entities/query.type";
-import { RangeQuery } from "src/common/elastic/entities/range.query";
-import { TermsQuery } from "src/common/elastic/entities/terms.query";
+import { ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType, RangeQuery, TermsQuery } from "@elrondnetwork/erdnest";
 
 describe('Elastic Query', () => {
   describe('Create Elastic Query', () => {

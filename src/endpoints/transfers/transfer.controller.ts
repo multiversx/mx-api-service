@@ -1,12 +1,8 @@
+import { ParseAddressPipe, ParseBlockHashPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseArrayPipe } from "@elrondnetwork/erdnest";
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { SortOrder } from "src/common/entities/sort.order";
-import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
-import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
-import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
-import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
-import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { Transaction } from "../transactions/entities/transaction";
 import { TransactionStatus } from "../transactions/entities/transaction.status";
 import { TransferService } from "./transfer.service";

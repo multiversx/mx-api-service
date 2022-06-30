@@ -1,8 +1,6 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { ApiUtils } from "src/utils/api.utils";
-import { BinaryUtils } from "src/utils/binary.utils";
 import { TokenUtils } from "src/utils/token.utils";
 import { Nft } from "./entities/nft";
 import { NftAccount } from "./entities/nft.account";
@@ -10,28 +8,19 @@ import { NftFilter } from "./entities/nft.filter";
 import { NftOwner } from "./entities/nft.owner";
 import { NftType } from "./entities/nft.type";
 import { NftQueryOptions } from "./entities/nft.query.options";
-import { ElasticService } from "src/common/elastic/elastic.service";
 import { EsdtService } from "../esdt/esdt.service";
 import { AssetsService } from "../../common/assets/assets.service";
-import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
-import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
-import { QueryType } from "src/common/elastic/entities/query.type";
-import { QueryOperator } from "src/common/elastic/entities/query.operator";
-import { CachingService } from "src/common/caching/caching.service";
-import { Constants } from "src/utils/constants";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { NftMetadataService } from "src/queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.service";
 import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.service";
-import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 import { NftMedia } from "./entities/nft.media";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { RecordUtils } from "src/utils/record.utils";
+import { CacheInfo } from "src/utils/cache.info";
 import { EsdtSupply } from "../esdt/entities/esdt.supply";
 import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { NumberUtils } from "src/utils/number.utils";
+import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, ElasticSortOrder } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class NftService {
@@ -138,7 +127,7 @@ export class NftService {
     if (queryOptions && queryOptions.withOwner) {
       const nftsIdentifiers = nfts.filter(x => x.type === NftType.NonFungibleESDT).map(x => x.identifier);
 
-      const accountsEsdts = await this.elasticService.getAccountEsdtByIdentifiers(nftsIdentifiers, { from: 0, size: nftsIdentifiers.length });
+      const accountsEsdts = await this.getAccountEsdtByIdentifiers(nftsIdentifiers, { from: 0, size: nftsIdentifiers.length });
 
       for (const nft of nfts) {
         if (nft.type === NftType.NonFungibleESDT) {
@@ -170,7 +159,7 @@ export class NftService {
 
   private async applyNftOwner(nft: Nft): Promise<void> {
     if (nft.type === NftType.NonFungibleESDT) {
-      const accountsEsdt = await this.elasticService.getAccountEsdtByIdentifier(nft.identifier);
+      const accountsEsdt = await this.getAccountEsdtByIdentifier(nft.identifier);
       if (accountsEsdt.length > 0) {
         nft.owner = accountsEsdt[0].address;
       }
@@ -314,7 +303,7 @@ export class NftService {
       return undefined;
     }
 
-    const accountsEsdt = await this.elasticService.getAccountEsdtByIdentifier(identifier, pagination);
+    const accountsEsdt = await this.getAccountEsdtByIdentifier(identifier, pagination);
 
     return accountsEsdt.map((esdt: any) => {
       const owner = new NftOwner();
@@ -538,5 +527,31 @@ export class NftService {
     const supply = await this.esdtService.getTokenSupply(identifier);
 
     return supply.totalSupply;
+  }
+
+  async getAccountEsdtByIdentifier(identifier: string, pagination?: QueryPagination) {
+    return await this.getAccountEsdtByIdentifiers([identifier], pagination);
+  }
+
+  async getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination) {
+    if (identifiers.length === 0) {
+      return [];
+    }
+
+    const queries = identifiers.map((identifier) => QueryType.Match('identifier', identifier, QueryOperator.AND));
+
+    let elasticQuery = ElasticQuery.create();
+
+    if (pagination) {
+      elasticQuery = elasticQuery.withPagination(pagination);
+    }
+
+    elasticQuery = elasticQuery
+      .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
+      .withCondition(QueryConditionOptions.should, queries)
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+
+    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
   }
 }

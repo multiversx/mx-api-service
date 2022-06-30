@@ -1,5 +1,5 @@
+import { ApiUtils } from "@elrondnetwork/erdnest";
 import { ApiProperty } from "@nestjs/swagger";
-import { ApiUtils } from "src/utils/api.utils";
 
 export class Block {
     @ApiProperty({ type: String })

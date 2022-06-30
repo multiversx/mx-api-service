@@ -1,11 +1,11 @@
 import { Global, Module } from "@nestjs/common";
-import { ElasticModule } from "src/common/elastic/elastic.module";
+import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import { BlsService } from "./bls.service";
 
 @Global()
 @Module({
   imports: [
-    ElasticModule,
+    DynamicModuleUtils.getElasticModule(),
   ],
   providers: [
     BlsService,

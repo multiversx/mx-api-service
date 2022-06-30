@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { PluginModule } from "src/plugins/plugin.module";
+import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import { AccountController } from "./accounts/account.controller";
 import { BlockController } from "./blocks/block.controller";
 import { CollectionController } from "./collections/collection.controller";
@@ -37,6 +38,9 @@ import { WebsocketController } from "./websocket/websocket.controller";
     EndpointsServicesModule,
     ProxyModule,
     PluginModule,
+  ],
+  providers: [
+    DynamicModuleUtils.getNestJsApiConfigService(),
   ],
   controllers: [
     AccountController, BlockController, CollectionController, DelegationController, DelegationLegacyController, IdentitiesController,
