@@ -1,6 +1,6 @@
+import { SwaggerUtils } from "@elrondnetwork/erdnest";
 import { ApiProperty } from "@nestjs/swagger";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
-import { SwaggerUtils } from "src/utils/swagger.utils";
 
 export class Account {
   constructor(init?: Partial<Account>) {

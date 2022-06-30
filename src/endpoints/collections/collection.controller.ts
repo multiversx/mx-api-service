@@ -3,16 +3,11 @@ import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, A
 import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
 import { CollectionService } from "./collection.service";
-import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
-import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
 import { Nft } from "../nfts/entities/nft";
-import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
 import { NftService } from "../nfts/nft.service";
-import { ParseOptionalEnumArrayPipe } from "src/utils/pipes/parse.optional.enum.array.pipe";
-import { QueryPagination } from "src/common/entities/query.pagination";
-import { CollectionFilter } from "./entities/collection.filter";
 import { NftFilter } from "../nfts/entities/nft.filter";
 import { NftQueryOptions } from "../nfts/entities/nft.query.options";
+import { ParseAddressPipe, ParseArrayPipe, ParseOptionalBoolPipe, ParseOptionalEnumArrayPipe } from '@elrondnetwork/erdnest';
 
 @Controller()
 @ApiTags('collections')

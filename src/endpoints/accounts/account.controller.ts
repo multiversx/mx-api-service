@@ -10,14 +10,11 @@ import { DelegationLegacyService } from '../delegation.legacy/delegation.legacy.
 import { AccountDelegationLegacy } from '../delegation.legacy/entities/account.delegation.legacy';
 import { AccountKey } from './entities/account.key';
 import { NftAccount } from '../nfts/entities/nft.account';
-import { ParseOptionalEnumPipe } from 'src/utils/pipes/parse.optional.enum.pipe';
 import { NftType } from '../nfts/entities/nft.type';
-import { ParseOptionalBoolPipe } from 'src/utils/pipes/parse.optional.bool.pipe';
 import { WaitingList } from '../waiting-list/entities/waiting.list';
 import { WaitingListService } from '../waiting-list/waiting.list.service';
 import { StakeService } from '../stake/stake.service';
 import { NftService } from '../nfts/nft.service';
-import { ParseOptionalIntPipe } from 'src/utils/pipes/parse.optional.int.pipe';
 import { TransactionStatus } from '../transactions/entities/transaction.status';
 import { TransactionService } from '../transactions/transaction.service';
 import { DeployedContract } from './entities/deployed.contract';
@@ -25,10 +22,6 @@ import { SmartContractResult } from '../sc-results/entities/smart.contract.resul
 import { SmartContractResultService } from '../sc-results/scresult.service';
 import { CollectionService } from '../collections/collection.service';
 import { NftCollectionRole } from '../collections/entities/nft.collection.role';
-import { ParseAddressPipe } from 'src/utils/pipes/parse.address.pipe';
-import { ParseTransactionHashPipe } from 'src/utils/pipes/parse.transaction.hash.pipe';
-import { ParseBlockHashPipe } from 'src/utils/pipes/parse.block.hash.pipe';
-import { ParseArrayPipe } from 'src/utils/pipes/parse.array.pipe';
 import { SortOrder } from 'src/common/entities/sort.order';
 import { AccountHistory } from "./entities/account.history";
 import { AccountEsdtHistory } from "./entities/account.esdt.history";
@@ -40,15 +33,7 @@ import { ProviderStake } from '../stake/entities/provider.stake';
 import { TokenDetailedWithBalance } from '../tokens/entities/token.detailed.with.balance';
 import { NftCollectionAccount } from '../collections/entities/nft.collection.account';
 import { TokenWithRoles } from '../tokens/entities/token.with.roles';
-import { ParseOptionalEnumArrayPipe } from 'src/utils/pipes/parse.optional.enum.array.pipe';
-import { QueryPagination } from 'src/common/entities/query.pagination';
-import { TokenFilter } from '../tokens/entities/token.filter';
-import { CollectionFilter } from '../collections/entities/collection.filter';
-import { TokenWithRolesFilter } from '../tokens/entities/token.with.roles.filter';
-import { NftFilter } from '../nfts/entities/nft.filter';
-import { NftQueryOptions } from '../nfts/entities/nft.query.options';
-import { TransactionFilter } from '../transactions/entities/transaction.filter';
-import { TransactionQueryOptions } from '../transactions/entities/transactions.query.options';
+import { ParseAddressPipe, ParseArrayPipe, ParseBlockHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumArrayPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseTransactionHashPipe } from '@elrondnetwork/erdnest';
 
 @Controller()
 @ApiTags('accounts')
@@ -564,26 +549,20 @@ export class AccountController {
       throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
     }
 
-    try {
-      return await this.transactionService.getTransactions(new TransactionFilter({
-        sender,
-        receiver,
-        token,
-        senderShard,
-        receiverShard,
-        miniBlockHash,
-        hashes,
-        status,
-        search,
-        before,
-        after,
-        order,
-      }), new QueryPagination({ from, size }), new TransactionQueryOptions({ withScResults, withOperations, withLogs }), address);
-    } catch (error) {
-      this.logger.error(`Error in getAccountTransactions for address ${address}`);
-      this.logger.error(error);
-      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
-    }
+    return await this.transactionService.getTransactions(new TransactionFilter({
+      sender,
+      receiver,
+      token,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      search,
+      before,
+      after,
+      order,
+    }), new QueryPagination({ from, size }), new TransactionQueryOptions({ withScResults, withOperations, withLogs }), address);
   }
 
   @Get("/accounts/:address/transactions/count")

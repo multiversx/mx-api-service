@@ -3,38 +3,27 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PublicAppModule } from './public.app.module';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { ApiConfigService } from './common/api-config/api.config.service';
-import { CachingService } from './common/caching/caching.service';
-import { CachingInterceptor } from './interceptors/caching.interceptor';
-import { FieldsInterceptor } from './interceptors/fields.interceptor';
 import { PrivateAppModule } from './private.app.module';
-import { MetricsService } from './common/metrics/metrics.service';
 import { CacheWarmerModule } from './crons/cache.warmer/cache.warmer.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Logger, NestInterceptor } from '@nestjs/common';
 import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { CleanupInterceptor } from './interceptors/cleanup.interceptor';
 import { RedisClient } from 'redis';
-import { ExtractInterceptor } from './interceptors/extract.interceptor';
 import { TransactionProcessorModule } from './crons/transaction.processor/transaction.processor.module';
 import { PubSubListenerModule } from './common/pubsub/pub.sub.listener.module';
-import { ProtocolService } from './common/protocol/protocol.service';
-import { PaginationInterceptor } from './interceptors/pagination.interceptor';
-import { LogRequestsInterceptor } from './interceptors/log.requests.interceptor';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { NftQueueModule } from './queue.worker/nft.worker/queue/nft.queue.module';
 import { ElasticUpdaterModule } from './crons/elastic.updater/elastic.updater.module';
 import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
-import { SocketAdapter } from './websockets/socket-adapter';
-import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
-import { QueryCheckInterceptor } from './interceptors/query.check.interceptor';
+import { SocketAdapter } from './common/websockets/socket-adapter';
 import { ApiConfigModule } from './common/api-config/api.config.module';
-import { SwaggerCustomTypes } from './utils/swagger-custom-styles.utils';
-import { JwtAuthenticateGlobalGuard } from './utils/guards/jwt.authenticate.global.guard';
+import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor } from '@elrondnetwork/erdnest';
+import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.service.impl';
+import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
@@ -98,11 +87,14 @@ async function bootstrap() {
   }
 
   if (apiConfigService.isEventsNotifierFeatureActive()) {
-    const eventsNotifierApp = await NestFactory.create(RabbitMqProcessorModule);
+    const eventsNotifierApp = await NestFactory.create(RabbitMqModule.register());
     await eventsNotifierApp.listen(apiConfigService.getEventsNotifierFeaturePort());
   }
 
   const logger = new Logger('Bootstrapper');
+
+  // @ts-ignore
+  LoggerInitializer.initialize(logger);
 
   const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
     PubSubListenerModule,
@@ -118,6 +110,7 @@ async function bootstrap() {
       },
     },
   );
+  pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
   pubSubApp.useWebSocketAdapter(new SocketAdapter(pubSubApp));
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   pubSubApp.listen();
@@ -146,7 +139,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
 
   if (apiConfigService.getIsAuthActive()) {
-    publicApp.useGlobalGuards(new JwtAuthenticateGlobalGuard(apiConfigService));
+    publicApp.useGlobalGuards(new JwtAuthenticateGlobalGuard(new ErdnestConfigServiceImpl(apiConfigService)));
   }
 
   const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
@@ -158,19 +151,19 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
 
   if (apiConfigService.getUseRequestCachingFlag()) {
     const cachingService = publicApp.get<CachingService>(CachingService);
-    const protocolService = publicApp.get<ProtocolService>(ProtocolService);
 
     const cachingInterceptor = new CachingInterceptor(
       cachingService,
+      // @ts-ignore
       httpAdapterHostService,
       metricsService,
-      protocolService,
     );
 
     globalInterceptors.push(cachingInterceptor);
   }
 
   if (apiConfigService.getUseRequestLoggingFlag()) {
+    // @ts-ignore
     globalInterceptors.push(new LogRequestsInterceptor(httpAdapterHostService));
   }
 
@@ -178,6 +171,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   globalInterceptors.push(new ExtractInterceptor());
   globalInterceptors.push(new CleanupInterceptor());
   globalInterceptors.push(new PaginationInterceptor());
+  // @ts-ignore
   globalInterceptors.push(new QueryCheckInterceptor(httpAdapterHostService));
 
   await pluginService.bootstrapPublicApp(publicApp);
@@ -200,7 +194,22 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   }
 
   const config = documentBuilder.build();
-  const options = SwaggerCustomTypes.customSwagger();
+  const options = {
+    customSiteTitle: 'Elrond API',
+    customCss: `.topbar-wrapper img 
+          {
+            content:url(\'/img/customElrondLogo.png\'); width:250px; height:auto;
+          }
+          .swagger-ui .topbar { background-color: #FAFAFA; }
+          .swagger-ui .scheme-container {background-color: #FAFAFA;}`,
+
+
+    customfavIcon: '/img/customElrondFavIcon.png',
+    swaggerOptions: {
+      filter: true,
+      displayRequestDuration: true,
+    },
+  };
 
   const document = SwaggerModule.createDocument(publicApp, config);
   SwaggerModule.setup('docs', publicApp, document, options);

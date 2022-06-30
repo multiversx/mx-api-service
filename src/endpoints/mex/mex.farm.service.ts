@@ -1,10 +1,9 @@
+import { Constants, CachingService } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
-import { CachingService } from "src/common/caching/caching.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { CacheInfo } from "src/utils/cache.info";
 import { GraphQlService } from "src/common/graphql/graphql.service";
-import { Constants } from "src/utils/constants";
 import { MexFarm } from "./entities/mex.farm";
 import { MexFarmType } from "./entities/mex.farm.type";
 import { MexTokenService } from "./mex.token.service";

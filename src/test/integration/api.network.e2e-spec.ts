@@ -1,6 +1,6 @@
+import { ApiService } from "@elrondnetwork/erdnest";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "src/public.app.module";
-import { ApiService } from "../../common/network/api.service";
 
 describe('API Service', () => {
   let apiService: ApiService;

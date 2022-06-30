@@ -1,21 +1,18 @@
 import { GatewayModule } from '../../common/gateway/gateway.module';
 import { EsdtService } from 'src/endpoints/esdt/esdt.service';
-import { ElasticService } from 'src/common/elastic/elastic.service';
-import { CachingService } from 'src/common/caching/caching.service';
 import { TokenFilter } from '../../endpoints/tokens/entities/token.filter';
 import { TokenService } from 'src/endpoints/tokens/token.service';
 import { PublicAppModule } from 'src/public.app.module';
 import { TokenDetailed } from 'src/endpoints/tokens/entities/token.detailed';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { Test } from '@nestjs/testing';
-import { FileUtils } from 'src/utils/file.utils';
-import '../../utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest/lib/utils/extensions/jest.extensions';
 import { TokenDetailedWithBalance } from 'src/endpoints/tokens/entities/token.detailed.with.balance';
 import { TokenSort } from 'src/endpoints/tokens/entities/token.sort';
 import { SortOrder } from 'src/common/entities/sort.order';
-import { ElasticQuery } from 'src/common/elastic/entities/elastic.query';
 import { TokenWithRolesFilter } from 'src/endpoints/tokens/entities/token.with.roles.filter';
 import { QueryPagination } from 'src/common/entities/query.pagination';
+import { CachingService, ElasticQuery, ElasticService, FileUtils } from '@elrondnetwork/erdnest';
 
 describe('Token Service', () => {
   let tokenService: TokenService;

@@ -1,7 +1,7 @@
+import { AddressUtils } from '@elrondnetwork/erdnest';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
-import { AddressUtils } from 'src/utils/address.utils';
 import request = require('supertest');
 
 describe("Accounts Controller", () => {

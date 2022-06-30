@@ -1,8 +1,6 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { ElasticService } from "src/common/elastic/elastic.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { BinaryUtils } from "src/utils/binary.utils";
 import { EsdtService } from "../esdt/esdt.service";
 import { CollectionFilter } from "./entities/collection.filter";
 import { NftCollection } from "./entities/nft.collection";
@@ -10,21 +8,14 @@ import { NftType } from "../nfts/entities/nft.type";
 import { AssetsService } from "../../common/assets/assets.service";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { NftCollectionRole } from "./entities/nft.collection.role";
-import { QueryType } from "src/common/elastic/entities/query.type";
-import { QueryOperator } from "src/common/elastic/entities/query.operator";
-import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
-import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
 import { TokenProperties } from "../tokens/entities/token.properties";
-import { CachingService } from "src/common/caching/caching.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { RecordUtils } from "src/utils/record.utils";
+import { CacheInfo } from "src/utils/cache.info";
 import { TokenAssets } from "../../common/assets/entities/token.assets";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { TokenUtils } from "src/utils/token.utils";
-import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
-import { ApiUtils } from "src/utils/api.utils";
+import { ApiUtils, BinaryUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryType, QueryOperator, QueryConditionOptions, ElasticSortOrder } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class CollectionService {

@@ -1,8 +1,6 @@
+import { BatchUtils, BinaryUtils, NumberUtils } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { BatchUtils } from "src/utils/batch.utils";
-import { BinaryUtils } from "src/utils/binary.utils";
-import { NumberUtils } from "src/utils/number.utils";
 import { TransactionAction } from "../../entities/transaction.action";
 import { TransactionActionCategory } from "../../entities/transaction.action.category";
 import { TransactionMetadata } from "../../entities/transaction.metadata";

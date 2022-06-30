@@ -1,16 +1,12 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
-import { Locker } from "src/utils/locker";
-import { ElasticService } from "src/common/elastic/elastic.service";
 import * as JsonDiff from "json-diff";
 import { AssetsService } from "src/common/assets/assets.service";
-import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
-import { QueryType } from "src/common/elastic/entities/query.type";
 import { TokenType } from "src/endpoints/tokens/entities/token.type";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import asyncPool from "tiny-async-pool";
 import { PersistenceInterface } from "src/common/persistence/persistence.interface";
-import { BatchUtils } from "src/utils/batch.utils";
+import { BatchUtils, ElasticQuery, ElasticService, Locker, QueryType } from "@elrondnetwork/erdnest";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 @Injectable()
 export class ElasticUpdaterService {

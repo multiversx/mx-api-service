@@ -6,7 +6,7 @@ export class TransactionLog {
     Object.assign(this, init);
   }
 
-  id?: string;
+  id: string | undefined = undefined;
 
   @ApiProperty()
   address: string = '';

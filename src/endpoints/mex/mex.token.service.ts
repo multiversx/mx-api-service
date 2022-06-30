@@ -1,7 +1,5 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
-import { CachingService } from "src/common/caching/caching.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { Constants } from "src/utils/constants";
+import { CacheInfo } from "src/utils/cache.info";
 import { MexToken } from "./entities/mex.token";
 import { MexPairService } from "./mex.pair.service";
 import { MexPairState } from "./entities/mex.pair.state";
@@ -9,6 +7,7 @@ import { MexPair } from "./entities/mex.pair";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { MexFarmService } from "./mex.farm.service";
 import { MexSettingsService } from "./mex.settings.service";
+import { Constants, CachingService } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class MexTokenService {

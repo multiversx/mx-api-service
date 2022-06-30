@@ -1,9 +1,8 @@
+import { Constants, CachingService } from "@elrondnetwork/erdnest";
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { gql } from "graphql-request";
-import { CachingService } from "src/common/caching/caching.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { GraphQlService } from "src/common/graphql/graphql.service";
-import { Constants } from "src/utils/constants";
 import { MexPair } from "./entities/mex.pair";
 import { MexPairState } from "./entities/mex.pair.state";
 import { MexPairType } from "./entities/mex.pair.type";
@@ -105,7 +104,7 @@ export class MexPairService {
         return [];
       }
 
-      return result.pairs.map((pair: any) => this.getPairInfo(pair)).filter((x: MexPair) => x.state === MexPairState.active);
+      return result.pairs.map((pair: any) => this.getPairInfo(pair)).filter((x: MexPair | undefined) => x && x.state === MexPairState.active);
     } catch (error) {
       this.logger.error('An error occurred while getting all mex pairs');
       this.logger.error(error);
@@ -113,9 +112,14 @@ export class MexPairService {
     }
   }
 
-  private getPairInfo(pair: any): MexPair {
+  private getPairInfo(pair: any): MexPair | undefined {
     const firstTokenSymbol = pair.firstToken.identifier.split('-')[0];
     const secondTokenSymbol = pair.secondToken.identifier.split('-')[0];
+    const state = this.getPairState(pair.state);
+    const type = this.getPairType(pair.type);
+    if (!type || type === MexPairType.jungle) {
+      return undefined;
+    }
 
     if ((firstTokenSymbol === 'WEGLD' && secondTokenSymbol === 'USDC') || secondTokenSymbol === 'WEGLD') {
       return {
@@ -134,8 +138,8 @@ export class MexPairService {
         quoteName: pair.secondToken.name,
         totalValue: Number(pair.lockedValueUSD),
         volume24h: Number(pair.volumeUSD24h),
-        state: this.getPairState(pair.state),
-        type: this.getPairType(pair.type),
+        state,
+        type,
       };
     }
 
@@ -155,8 +159,8 @@ export class MexPairService {
       quoteName: pair.firstToken.name,
       totalValue: Number(pair.lockedValueUSD),
       volume24h: Number(pair.volumeUSD24h),
-      state: this.getPairState(pair.state),
-      type: this.getPairType(pair.type),
+      state,
+      type,
     };
   }
 
@@ -173,7 +177,7 @@ export class MexPairService {
     }
   }
 
-  private getPairType(type: string): MexPairType {
+  private getPairType(type: string): MexPairType | undefined {
     switch (type) {
       case 'Core':
         return MexPairType.core;
@@ -183,8 +187,11 @@ export class MexPairService {
         return MexPairType.ecosystem;
       case 'Experimental':
         return MexPairType.experimental;
+      case 'Jungle':
+        return MexPairType.jungle;
       default:
-        throw new Error(`Unsupported pair type '${type}'`);
+        this.logger.error(`Unsupported pair type '${type}'`);
+        return undefined;
     }
   }
 }

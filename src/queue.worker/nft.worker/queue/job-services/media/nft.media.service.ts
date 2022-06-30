@@ -1,15 +1,13 @@
+import { ApiService, CachingService } from "@elrondnetwork/erdnest";
+import { BinaryUtils, Constants } from "@elrondnetwork/erdnest";
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CachingService } from "src/common/caching/caching.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { ApiService } from "src/common/network/api.service";
+import { CacheInfo } from "src/utils/cache.info";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MediaMimeTypeEnum } from "src/endpoints/nfts/entities/media.mime.type";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
-import { BinaryUtils } from "src/utils/binary.utils";
-import { Constants } from "src/utils/constants";
 import { TokenUtils } from "src/utils/token.utils";
 
 @Injectable()

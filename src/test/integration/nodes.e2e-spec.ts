@@ -3,7 +3,6 @@ import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { Queue } from 'src/endpoints/nodes/entities/queue';
 import { NodeFilter } from 'src/endpoints/nodes/entities/node.filter';
 import { Test } from "@nestjs/testing";
-import { CachingService } from "src/common/caching/caching.service";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
 import { Node } from "src/endpoints/nodes/entities/node";
 import { NodeService } from "src/endpoints/nodes/node.service";
@@ -15,12 +14,12 @@ import { PublicAppModule } from "src/public.app.module";
 import { NodeType } from 'src/endpoints/nodes/entities/node.type';
 import { NodeStatus } from 'src/endpoints/nodes/entities/node.status';
 import { NodeSort } from 'src/endpoints/nodes/entities/node.sort';
-import { FileUtils } from "src/utils/file.utils";
 import { Auction } from 'src/common/gateway/entities/auction';
-import '../../utils/extensions/array.extensions';
-import '../../utils/extensions/jest.extensions';
-import '../../utils/extensions/number.extensions';
+import '@elrondnetwork/erdnest/lib/utils/extensions/array.extensions';
+import '@elrondnetwork/erdnest/lib/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest/lib/utils/extensions/number.extensions';
 import { AuctionNode } from 'src/common/gateway/entities/auction.node';
+import { CachingService, FileUtils } from '@elrondnetwork/erdnest';
 
 describe('Node Service', () => {
   let nodeService: NodeService;

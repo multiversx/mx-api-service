@@ -3,24 +3,15 @@ import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
 import { TokenDetailed } from "./entities/token.detailed";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { ApiUtils } from "src/utils/api.utils";
 import { TokenFilter } from "./entities/token.filter";
 import { TokenUtils } from "src/utils/token.utils";
 import { EsdtService } from "../esdt/esdt.service";
-import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
-import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
-import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
-import { QueryType } from "src/common/elastic/entities/query.type";
-import { ElasticService } from "src/common/elastic/elastic.service";
 import { TokenAccount } from "./entities/token.account";
-import { QueryOperator } from "src/common/elastic/entities/query.operator";
 import { TokenType } from "./entities/token.type";
-import { NumberUtils } from "src/utils/number.utils";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { AddressUtils } from "src/utils/address.utils";
 import { TokenProperties } from "./entities/token.properties";
 import { TokenRoles } from "./entities/token.roles";
 import { TokenSupplyResult } from "./entities/token.supply.result";
@@ -29,6 +20,7 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
+import { AddressUtils, ApiUtils, ElasticQuery, ElasticService, ElasticSortOrder, NumberUtils, QueryConditionOptions, QueryOperator, QueryType } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class TokenService {

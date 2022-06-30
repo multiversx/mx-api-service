@@ -1,5 +1,5 @@
+import { SwaggerUtils } from "@elrondnetwork/erdnest";
 import { ApiProperty } from "@nestjs/swagger";
-import { SwaggerUtils } from "src/utils/swagger.utils";
 import { Token } from "./token";
 import { TokenRoles } from "./token.roles";
 

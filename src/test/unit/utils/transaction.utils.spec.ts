@@ -11,8 +11,8 @@ import { TransactionOperation } from "src/endpoints/transactions/entities/transa
 import { TransactionOperationAction } from "src/endpoints/transactions/entities/transaction.operation.action";
 import { TransactionOperationType } from "src/endpoints/transactions/entities/transaction.operation.type";
 import { TokenType } from "src/endpoints/tokens/entities/token.type";
-import { TransactionUtils } from "src/utils/transaction.utils";
-import '../../../utils/extensions/array.extensions';
+import { TransactionUtils } from "src/endpoints/transactions/transaction.utils";
+import '@elrondnetwork/erdnest/lib/utils/extensions/array.extensions';
 
 describe('Transaction Utils', () => {
   it('tryExtractCollectionIdentifierFromChangeSftToMetaEsdTransaction', () => {

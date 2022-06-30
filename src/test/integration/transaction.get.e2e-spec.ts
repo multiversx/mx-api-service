@@ -25,11 +25,7 @@ describe('Transaction Get Service', () => {
       const results = await transactionGetService.getTransactionLogsFromElastic(hashes);
 
       for (const result of results) {
-        expect(result).toHaveProperty("_index");
-        expect(result).toHaveProperty("_type");
-        expect(result).toHaveProperty("_id");
-        expect(result).toHaveProperty("_score");
-        expect(result).toHaveProperty("_source");
+        expect(result).toHaveProperty("id");
       }
     });
 
