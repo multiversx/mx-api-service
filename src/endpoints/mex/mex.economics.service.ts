@@ -1,7 +1,7 @@
+import { CachingService } from "@elrondnetwork/erdnest";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
-import { CachingService } from "src/common/caching/caching.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { GraphQlService } from "src/common/graphql/graphql.service";
 import { MexSettingsService } from "./mex.settings.service";
 

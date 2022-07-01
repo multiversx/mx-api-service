@@ -1,6 +1,4 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { BinaryUtils } from "src/utils/binary.utils";
-import { NumberUtils } from "src/utils/number.utils";
 import { TransactionAction } from "../../entities/transaction.action";
 import { TransactionActionCategory } from "../../entities/transaction.action.category";
 import { TransactionMetadata } from "../../entities/transaction.metadata";
@@ -9,6 +7,7 @@ import { MexSettings } from "../../../../mex/entities/mex.settings";
 import { TokenTransferService } from "src/endpoints/tokens/token.transfer.service";
 import { MexSettingsService } from "../../../../mex/mex.settings.service";
 import { TransactionActionEsdtNftRecognizerService } from "../esdt/transaction.action.esdt.nft.recognizer.service";
+import { BinaryUtils, NumberUtils } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class MexPairActionRecognizerService {

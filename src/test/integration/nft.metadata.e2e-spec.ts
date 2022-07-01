@@ -4,7 +4,7 @@ import { Nft } from "../../endpoints/nfts/entities/nft";
 import { NftFilter } from "../../endpoints/nfts/entities/nft.filter";
 import { NftService } from "../../endpoints/nfts/nft.service";
 import { NftType } from "../../endpoints/nfts/entities/nft.type";
-import '../../utils/extensions/array.extensions';
+import '@elrondnetwork/erdnest/lib/utils/extensions/array.extensions';
 import { PublicAppModule } from "src/public.app.module";
 
 describe('Nft Metadata Service', () => {

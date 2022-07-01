@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ClientOptions, ClientProxyFactory, Transport } from '@nestjs/microservices';
-import { ApiConfigService } from './common/api-config/api.config.service';
-import { CacheController } from './common/caching/cache.controller';
-import { LoggingModule } from './common/logging/logging.module';
-import { MetricsController } from './common/metrics/metrics.controller';
+import { CacheController } from './endpoints/caching/cache.controller';
+import { ApiMetricsController } from './common/metrics/api.metrics.controller';
 import { HealthCheckController } from './endpoints/health-check/health.check.controller';
 import { ProcessNftsPrivateController } from './endpoints/process-nfts/process.nfts.private.controller';
 import { ProcessNftsModule } from './endpoints/process-nfts/process.nfts.module';
+import { LoggingModule } from '@elrondnetwork/erdnest';
+import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 
 @Module({
   imports: [
@@ -14,28 +13,11 @@ import { ProcessNftsModule } from './endpoints/process-nfts/process.nfts.module'
     ProcessNftsModule,
   ],
   providers: [
-    {
-      provide: 'PUBSUB_SERVICE',
-      useFactory: (apiConfigService: ApiConfigService) => {
-        const clientOptions: ClientOptions = {
-          transport: Transport.REDIS,
-          options: {
-            url: `redis://${apiConfigService.getRedisUrl()}:6379`,
-            retryDelay: 1000,
-            retryAttempts: 10,
-            retry_strategy: function (_: any) {
-              return 1000;
-            },
-          },
-        };
-
-        return ClientProxyFactory.create(clientOptions);
-      },
-      inject: [ApiConfigService],
-    },
+    DynamicModuleUtils.getNestJsApiConfigService(),
+    DynamicModuleUtils.getPubSubService(),
   ],
   controllers: [
-    MetricsController,
+    ApiMetricsController,
     CacheController,
     HealthCheckController,
     ProcessNftsPrivateController,

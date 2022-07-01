@@ -1,14 +1,17 @@
+import { CachingService, Constants } from '@elrondnetwork/erdnest';
 import { Test } from '@nestjs/testing';
-import { CachingModule } from 'src/common/caching/caching.module';
-import { CachingService } from 'src/common/caching/caching.service';
-import { Constants } from 'src/utils/constants';
+import { ApiConfigModule } from 'src/common/api-config/api.config.module';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('Caching Service', () => {
   let cachingService: CachingService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [CachingModule],
+      imports: [
+        ApiConfigModule,
+        DynamicModuleUtils.getCachingModule(),
+      ],
     }).compile();
 
     cachingService = moduleRef.get<CachingService>(CachingService);

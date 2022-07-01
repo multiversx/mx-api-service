@@ -1,16 +1,15 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
-import { MetricsService } from "src/common/metrics/metrics.service";
+import { ApiMetricsService } from "src/common/metrics/api.metrics.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CachingService } from "src/common/caching/caching.service";
-import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { SftChangeTransactionExtractor } from "./extractor/sft.change.transaction.extractor";
 import { TransactionExtractorInterface } from "./extractor/transaction.extractor.interface";
 import { TransferOwnershipExtractor } from "./extractor/transfer.ownership.extractor";
+import { PerformanceProfiler, CachingService, BinaryUtils } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -20,7 +19,7 @@ export class TransactionProcessorService {
   constructor(
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly metricsService: MetricsService,
+    private readonly metricsService: ApiMetricsService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly nodeService: NodeService,
   ) {
@@ -40,7 +39,7 @@ export class TransactionProcessorService {
         const allInvalidatedKeys = [];
 
         for (const transaction of transactions) {
-          const invalidatedTokenProperties = await this.cachingService.tryInvalidateTokenProperties(transaction);
+          const invalidatedTokenProperties = await this.tryInvalidateTokenProperties(transaction);
           const invalidatedOwnerKeys = await this.tryInvalidateOwner(transaction);
           const invalidatedCollectionPropertiesKeys = await this.tryInvalidateCollectionProperties(transaction);
 
@@ -70,6 +69,25 @@ export class TransactionProcessorService {
         await this.cachingService.setCache<number>(CacheInfo.TransactionProcessorShardNonce(shardId).key, nonce, CacheInfo.TransactionProcessorShardNonce(shardId).ttl);
       },
     });
+  }
+
+  private async tryInvalidateTokenProperties(transaction: ShardTransaction): Promise<string[]> {
+    if (transaction.receiver !== this.apiConfigService.getEsdtContractAddress()) {
+      return [];
+    }
+
+    const transactionFuncName = transaction.getDataFunctionName();
+
+    if (transactionFuncName === 'controlChanges') {
+      const args = transaction.getDataArgs();
+      if (args && args.length > 0) {
+        const tokenIdentifier = BinaryUtils.hexToString(args[0]);
+        this.logger.log(`Invalidating token properties for token ${tokenIdentifier}`);
+        return await this.cachingService.deleteInCache(`tokenProperties:${tokenIdentifier}`);
+      }
+    }
+
+    return [];
   }
 
   async tryInvalidateOwner(transaction: ShardTransaction): Promise<string[]> {

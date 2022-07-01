@@ -1,9 +1,9 @@
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
-import { Constants } from 'src/utils/constants';
 import { DappConfigService } from '../../endpoints/dapp-config/dapp.config.service';
 import Initializer from './e2e-init';
+import { Constants } from '@elrondnetwork/erdnest';
 
 describe('Dapp Config Service', () => {
   let dappConfigService: DappConfigService;

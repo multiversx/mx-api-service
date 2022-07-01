@@ -1,15 +1,14 @@
 import { forwardRef, Global, Module } from "@nestjs/common";
-import { CachingModule } from "../caching/caching.module";
-import { ElasticModule } from "../elastic/elastic.module";
+import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import { GatewayModule } from "../gateway/gateway.module";
 import { ProtocolService } from "./protocol.service";
 
 @Global()
 @Module({
   imports: [
-    GatewayModule,
-    forwardRef(() => CachingModule),
-    ElasticModule,
+    forwardRef(() => GatewayModule),
+    DynamicModuleUtils.getCachingModule(),
+    DynamicModuleUtils.getElasticModule(),
   ],
   providers: [
     ProtocolService,

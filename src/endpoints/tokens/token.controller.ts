@@ -1,12 +1,6 @@
 import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { SortOrder } from "src/common/entities/sort.order";
-import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
-import { ParseArrayPipe } from "src/utils/pipes/parse.array.pipe";
-import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
-import { ParseOptionalBoolPipe } from "src/utils/pipes/parse.optional.bool.pipe";
-import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
-import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { TransactionStatus } from "../transactions/entities/transaction.status";
 import { TransactionService } from "../transactions/transaction.service";
 import { TokenAccount } from "./entities/token.account";
@@ -20,6 +14,7 @@ import { TokenSort } from "./entities/token.sort";
 import { SortTokens } from "src/common/entities/sort.tokens";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { TransferService } from "../transfers/transfer.service";
+import { ParseAddressPipe, ParseBlockHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseArrayPipe } from "@elrondnetwork/erdnest";
 
 @Controller()
 @ApiTags('tokens')

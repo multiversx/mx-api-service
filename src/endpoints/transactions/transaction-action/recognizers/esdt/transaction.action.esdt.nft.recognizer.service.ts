@@ -1,12 +1,9 @@
+import { AddressUtils, BinaryUtils, NumberUtils, StringUtils } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { TokenTransferProperties } from "src/endpoints/tokens/entities/token.transfer.properties";
 import { TokenType } from "src/endpoints/tokens/entities/token.type";
 import { TokenTransferService } from "src/endpoints/tokens/token.transfer.service";
-import { AddressUtils } from "src/utils/address.utils";
-import { BinaryUtils } from "src/utils/binary.utils";
-import { NumberUtils } from "src/utils/number.utils";
-import { StringUtils } from "src/utils/string.utils";
 import { TransactionAction } from "../../entities/transaction.action";
 import { TransactionActionCategory } from "../../entities/transaction.action.category";
 import { TransactionMetadata } from "../../entities/transaction.metadata";

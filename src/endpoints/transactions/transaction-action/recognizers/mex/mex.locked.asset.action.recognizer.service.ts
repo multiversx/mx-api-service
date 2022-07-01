@@ -1,5 +1,4 @@
 import { Injectable } from "@nestjs/common";
-import { NumberUtils } from "src/utils/number.utils";
 import { TransactionAction } from "../../entities/transaction.action";
 import { TransactionActionCategory } from "../../entities/transaction.action.category";
 import { TransactionMetadata } from "../../entities/transaction.metadata";
@@ -7,6 +6,7 @@ import { TransactionActionEsdtNftRecognizerService } from "../esdt/transaction.a
 import { MexFunction } from "./entities/mex.function.options";
 import { MexSettings } from "../../../../mex/entities/mex.settings";
 import { MexSettingsService } from "../../../../mex/mex.settings.service";
+import { NumberUtils } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class MexLockedAssetActionRecognizerService {

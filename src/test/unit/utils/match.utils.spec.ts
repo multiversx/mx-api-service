@@ -1,4 +1,4 @@
-import { MatchUtils } from "src/utils/match.utils";
+import { MatchUtils } from "@elrondnetwork/erdnest";
 
 describe('Match Utils', () => {
     it('getTagsFromBase64Attributes', () => {

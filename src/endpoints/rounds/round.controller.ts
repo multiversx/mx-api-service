@@ -1,9 +1,6 @@
+import { ParseBlsHashPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, QueryConditionOptions } from "@elrondnetwork/erdnest";
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
-import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
-import { ParseBlsHashPipe } from "src/utils/pipes/parse.bls.hash.pipe";
-import { ParseOptionalEnumPipe } from "src/utils/pipes/parse.optional.enum.pipe";
-import { ParseOptionalIntPipe } from "src/utils/pipes/parse.optional.int.pipe";
 import { Round } from "./entities/round";
 import { RoundDetailed } from "./entities/round.detailed";
 import { RoundService } from "./round.service";

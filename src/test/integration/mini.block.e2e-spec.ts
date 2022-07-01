@@ -1,10 +1,9 @@
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
-import { Constants } from 'src/utils/constants';
 import { MiniBlockService } from '../../endpoints/miniblocks/mini.block.service';
-import { ElasticService } from "../../common/elastic/elastic.service";
 import { MiniBlockDetailed } from "../../endpoints/miniblocks/entities/mini.block.detailed";
 import Initializer from './e2e-init';
+import { Constants, ElasticService } from '@elrondnetwork/erdnest';
 
 describe('MiniBlock Service', () => {
   let miniBlockService: MiniBlockService;
@@ -21,7 +20,7 @@ describe('MiniBlock Service', () => {
   beforeAll(async () => {
     await Initializer.initialize();
     const publicAppModule = await Test.createTestingModule({
-      imports: [ PublicAppModule ],
+      imports: [PublicAppModule],
 
     }).compile();
 

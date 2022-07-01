@@ -1,12 +1,11 @@
-import { ElasticService } from 'src/common/elastic/elastic.service';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { FileUtils } from 'src/utils/file.utils';
 import { Test } from "@nestjs/testing";
 import { ShardService } from "src/endpoints/shards/shard.service";
 import { PublicAppModule } from "src/public.app.module";
 import { Shard } from "src/endpoints/shards/entities/shard";
-import '../../utils/extensions/jest.extensions';
-import '../../utils/extensions/array.extensions';
+import '@elrondnetwork/erdnest/lib/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest/lib/utils/extensions/array.extensions';
+import { ElasticService, FileUtils } from '@elrondnetwork/erdnest';
 
 describe('Shard Service', () => {
   let shardService: ShardService;
