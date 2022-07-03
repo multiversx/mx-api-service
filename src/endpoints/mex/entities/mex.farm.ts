@@ -2,6 +2,10 @@ import { ApiProperty } from "@nestjs/swagger";
 import { MexFarmType } from "./mex.farm.type";
 
 export class MexFarm {
+  constructor(init?: Partial<MexFarm>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ enum: MexFarmType })
   type: MexFarmType = MexFarmType.standard;
 

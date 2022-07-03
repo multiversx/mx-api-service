@@ -3,6 +3,10 @@ import { MexPairState } from "./mex.pair.state";
 import { MexPairType } from "./mex.pair.type";
 
 export class MexPair {
+  constructor(init?: Partial<MexPair>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty()
   address: string = '';
 

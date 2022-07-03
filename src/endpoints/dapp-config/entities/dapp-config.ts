@@ -1,5 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
 export class DappConfig {
+  constructor(init?: Partial<DappConfig>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String, example: 'mainnet' })
   id: string = '';
 

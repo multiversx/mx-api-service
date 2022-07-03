@@ -10,6 +10,7 @@ import { MexSettingsService } from "./mex.settings.service";
 import { MexTokenService } from "./mex.token.service";
 import { MexFarmService } from './mex.farm.service';
 import { MexFarm } from './entities/mex.farm';
+import { QueryPagination } from 'src/common/entities/query.pagination';
 
 @Controller()
 @ApiTags('maiar.exchange')
@@ -76,7 +77,7 @@ export class MexController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<any> {
-    return await this.mexFarmsService.getMexFarms(from, size);
+    return await this.mexFarmsService.getMexFarms(new QueryPagination({ from, size }));
   }
 
   @Get("/mex/pairs/:baseId/:quoteId")

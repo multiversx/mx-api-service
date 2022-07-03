@@ -4,6 +4,10 @@ import { TransactionOperationAction } from "./transaction.operation.action";
 import { TransactionOperationType } from "./transaction.operation.type";
 
 export class TransactionOperation {
+  constructor(init?: Partial<TransactionOperation>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String })
   id: string = '';
 

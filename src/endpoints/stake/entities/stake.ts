@@ -1,6 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class Stake {
+  constructor(init?: Partial<Stake>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String })
   bls: string = '';
 

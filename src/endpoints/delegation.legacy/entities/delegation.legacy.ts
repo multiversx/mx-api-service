@@ -1,6 +1,10 @@
 import { SwaggerUtils } from '@elrondnetwork/erdnest';
 import { ApiProperty } from '@nestjs/swagger';
+
 export class DelegationLegacy {
+  constructor(init?: Partial<DelegationLegacy>) {
+    Object.assign(this, init);
+  }
 
   @ApiProperty(SwaggerUtils.amountPropertyOptions())
   totalWithdrawOnlyStake: string = '';

@@ -4,6 +4,11 @@ import { Token } from "./token";
 import { TokenRoles } from "./token.roles";
 
 export class TokenDetailed extends Token {
+  constructor(init?: Partial<TokenDetailed>) {
+    super();
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: Boolean, default: false })
   canUpgrade: boolean = false;
 

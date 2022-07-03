@@ -2,6 +2,7 @@ import { Controller, Get, HttpException, HttpStatus, Param, Query } from "@nestj
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ProviderService } from "./provider.service";
 import { Provider } from "./entities/provider";
+import { ProviderFilter } from "./entities/provider.filter";
 import { ParseAddressPipe } from "@elrondnetwork/erdnest";
 
 @Controller()
@@ -16,7 +17,7 @@ export class ProviderController {
   async getProviders(
     @Query('identity') identity?: string,
   ): Promise<Provider[]> {
-    return await this.providerService.getProviders({ identity });
+    return await this.providerService.getProviders(new ProviderFilter({ identity }));
   }
 
   @Get('/providers/:address')

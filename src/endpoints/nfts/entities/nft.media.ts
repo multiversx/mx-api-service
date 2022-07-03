@@ -1,6 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class NftMedia {
+  constructor(init?: Partial<NftMedia>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty()
   url: string = '';
 

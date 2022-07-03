@@ -10,6 +10,7 @@ import { NftOwner } from 'src/endpoints/nfts/entities/nft.owner';
 import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 import { NftAccount } from 'src/endpoints/nfts/entities/nft.account';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { QueryPagination } from 'src/common/entities/query.pagination';
 import { CachingService } from '@elrondnetwork/erdnest';
 
 
@@ -542,7 +543,7 @@ describe('Nft Service', () => {
     it('should return undefined', async () => {
       jest.spyOn(NftService.prototype, 'getNftsInternal')
         // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_from: number, _size: number, _filter: NftFilter, _identifier?: string) => []));
+        .mockImplementation(jest.fn(async (_pagination: QueryPagination, _filter: NftFilter, _identifier?: string) => []));
 
       const identifier: string = " ";
       const result = await nftService.getSingleNft(identifier);
@@ -587,7 +588,7 @@ describe('Nft Service', () => {
     it('should return undefined because test simulates that nft length is equal with 0', async () => {
       jest.spyOn(NftService.prototype, 'getNftsInternal')
         // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_from: number, _size: number, _filter: NftFilter, _identifier?: string) => []));
+        .mockImplementation(jest.fn(async (_pagination: QueryPagination, _filter: NftFilter, _identifier?: string) => []));
 
       const identifier: string = 'EROBOT-527a29-c4';
       const result = await nftService.getNftSupply(identifier);
@@ -627,12 +628,6 @@ describe('Nft Service', () => {
       const result = await nftService.getNftOwnersCount(identifier);
 
       expect(result).toBeUndefined();
-    });
-  });
-
-  describe('buildElasticNftFilter', () => {
-    it('build elastic NFT Filter', async () => {
-
     });
   });
 });

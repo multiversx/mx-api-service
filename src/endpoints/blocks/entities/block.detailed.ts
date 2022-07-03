@@ -2,12 +2,17 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Block } from "./block";
 
 export class BlockDetailed extends Block {
-    @ApiProperty({ type: [String] })
-    miniBlocksHashes: string[] = [];
+  constructor(init?: Partial<BlockDetailed>) {
+    super();
+    Object.assign(this, init);
+  }
 
-    @ApiProperty({ type: [String] })
-    notarizedBlocksHashes: string[] = [];
+  @ApiProperty({ type: [String] })
+  miniBlocksHashes: string[] = [];
 
-    @ApiProperty({ type: [String] })
-    validators: string[] = [];
+  @ApiProperty({ type: [String] })
+  notarizedBlocksHashes: string[] = [];
+
+  @ApiProperty({ type: [String] })
+  validators: string[] = [];
 }

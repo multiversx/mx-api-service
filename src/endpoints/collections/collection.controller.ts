@@ -5,7 +5,11 @@ import { NftType } from "../nfts/entities/nft.type";
 import { CollectionService } from "./collection.service";
 import { Nft } from "../nfts/entities/nft";
 import { NftService } from "../nfts/nft.service";
+import { NftFilter } from "../nfts/entities/nft.filter";
+import { NftQueryOptions } from "../nfts/entities/nft.query.options";
 import { ParseAddressPipe, ParseArrayPipe, ParseOptionalBoolPipe, ParseOptionalEnumArrayPipe } from '@elrondnetwork/erdnest';
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { CollectionFilter } from "./entities/collection.filter";
 
 @Controller()
 @ApiTags('collections')
@@ -44,7 +48,7 @@ export class CollectionController {
     @Query('canAddUri', new ParseAddressPipe) canAddUri?: string,
     @Query('canTransferRole', new ParseAddressPipe) canTransferRole?: string,
   ): Promise<NftCollection[]> {
-    return await this.collectionService.getNftCollections({ from, size }, {
+    return await this.collectionService.getNftCollections(new QueryPagination({ from, size }), new CollectionFilter({
       search,
       type,
       identifiers,
@@ -54,7 +58,7 @@ export class CollectionController {
       canUpdateAttributes,
       canAddUri,
       canTransferRole,
-    });
+    }));
   }
 
   @Get("/collections/count")
@@ -80,7 +84,7 @@ export class CollectionController {
     @Query('canAddUri', new ParseAddressPipe) canAddUri?: string,
     @Query('canTransferRole', new ParseAddressPipe) canTransferRole?: string,
   ): Promise<number> {
-    return await this.collectionService.getNftCollectionCount({
+    return await this.collectionService.getNftCollectionCount(new CollectionFilter({
       search,
       type,
       canCreate: canCreate ?? creator,
@@ -89,7 +93,7 @@ export class CollectionController {
       canUpdateAttributes,
       canAddUri,
       canTransferRole,
-    });
+    }));
   }
 
   @Get("/collections/c")
@@ -105,7 +109,7 @@ export class CollectionController {
     @Query('canAddUri', new ParseAddressPipe) canAddUri?: string,
     @Query('canTransferRole', new ParseAddressPipe) canTransferRole?: string,
   ): Promise<number> {
-    return await this.collectionService.getNftCollectionCount({
+    return await this.collectionService.getNftCollectionCount(new CollectionFilter({
       search,
       type,
       canCreate: canCreate ?? creator,
@@ -114,7 +118,7 @@ export class CollectionController {
       canUpdateAttributes,
       canAddUri,
       canTransferRole,
-    });
+    }));
   }
 
   @Get('/collections/:collection')
@@ -168,7 +172,10 @@ export class CollectionController {
       throw new HttpException('NFT Collection not found', HttpStatus.NOT_FOUND);
     }
 
-    return await this.nftService.getNfts({ from, size }, { search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage }, { withOwner, withSupply });
+    return await this.nftService.getNfts(
+      new QueryPagination({ from, size }),
+      new NftFilter({ search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage }),
+      new NftQueryOptions({ withOwner, withSupply }));
   }
 
   @Get("/collections/:collection/nfts/count")
@@ -197,6 +204,6 @@ export class CollectionController {
       throw new HttpException('NFT Collection not found', HttpStatus.NOT_FOUND);
     }
 
-    return await this.nftService.getNftCount({ search, identifiers, collection, name, tags, creator, isWhitelistedStorage, hasUris });
+    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, collection, name, tags, creator, isWhitelistedStorage, hasUris }));
   }
 }

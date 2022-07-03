@@ -1,6 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class TransactionSendResult {
+  constructor(init?: Partial<TransactionSendResult>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String })
   receiver: string = '';
 

@@ -1,6 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class EsdtLockedAccount {
+  constructor(init?: Partial<EsdtLockedAccount>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty()
   address: string = '';
 

@@ -4,6 +4,10 @@ import { TransactionType } from "src/endpoints/transactions/entities/transaction
 import { TransactionAction } from "../transaction-action/entities/transaction.action";
 
 export class Transaction {
+  constructor(init?: Partial<Transaction>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String })
   txHash: string = '';
 

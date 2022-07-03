@@ -4,6 +4,10 @@ import { TransactionStatus } from "./transaction.status";
 import { TransactionType } from "./transaction.type";
 
 export class TransactionFilter {
+  constructor(init?: Partial<TransactionFilter>) {
+    Object.assign(this, init);
+  }
+
   address?: string;
   sender?: string;
   receiver?: string;

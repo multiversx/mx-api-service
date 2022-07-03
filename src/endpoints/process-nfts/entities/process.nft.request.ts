@@ -1,6 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class ProcessNftRequest {
+  constructor(init?: Partial<ProcessNftRequest>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String, nullable: true })
   collection?: string;
 

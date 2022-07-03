@@ -1,6 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class Tag {
+  constructor(init?: Partial<Tag>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String, nullable: true, example: 'sunny' })
   tag: string = '';
 

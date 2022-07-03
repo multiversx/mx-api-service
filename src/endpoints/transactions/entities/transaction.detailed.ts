@@ -6,19 +6,24 @@ import { TransactionLog } from './transaction.log';
 import { TransactionOperation } from "./transaction.operation";
 
 export class TransactionDetailed extends Transaction {
-    @ApiProperty({ type: SmartContractResult, isArray: true })
-    results: SmartContractResult[] = [];
+  constructor(init?: Partial<TransactionDetailed>) {
+    super();
+    Object.assign(this, init);
+  }
 
-    @ApiProperty({ type: TransactionReceipt, nullable: true })
-    receipt: TransactionReceipt | undefined = undefined;
+  @ApiProperty({ type: SmartContractResult, isArray: true })
+  results: SmartContractResult[] = [];
 
-    @ApiProperty({ type: Number, nullable: true })
-    price: number | undefined = undefined;
+  @ApiProperty({ type: TransactionReceipt, nullable: true })
+  receipt: TransactionReceipt | undefined = undefined;
 
-    @ApiProperty({ type: TransactionLog, nullable: true })
-    logs: TransactionLog | undefined = undefined;
+  @ApiProperty({ type: Number, nullable: true })
+  price: number | undefined = undefined;
 
-    @ApiProperty({ type: TransactionOperation, isArray: true })
-    operations: TransactionOperation[] = [];
+  @ApiProperty({ type: TransactionLog, nullable: true })
+  logs: TransactionLog | undefined = undefined;
+
+  @ApiProperty({ type: TransactionOperation, isArray: true })
+  operations: TransactionOperation[] = [];
 }
 

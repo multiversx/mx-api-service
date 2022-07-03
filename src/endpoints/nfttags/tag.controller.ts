@@ -1,5 +1,6 @@
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { QueryPagination } from 'src/common/entities/query.pagination';
 import { Tag } from './entities/tag';
 import { TagService } from './tag.service';
 
@@ -22,7 +23,7 @@ export class TagController {
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search: string | undefined,
   ): Promise<Tag[]> {
-    return await this.nftTagsService.getNftTags({ from, size }, search);
+    return await this.nftTagsService.getNftTags(new QueryPagination({ from, size }), search);
   }
 
   @Get("/tags/count")

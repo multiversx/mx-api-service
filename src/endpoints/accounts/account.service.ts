@@ -17,6 +17,7 @@ import { TransferService } from '../transfers/transfer.service';
 import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
+import { TransactionFilter } from '../transactions/entities/transaction.filter';
 import { AddressUtils, ApiUtils, BinaryUtils, Constants, CachingService, ElasticService, ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType, AbstractQuery, QueryOperator } from '@elrondnetwork/erdnest';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 
@@ -119,7 +120,7 @@ export class AccountService {
       return this.transactionService.getTransactionCountForAddress(address);
     }
 
-    return await this.transferService.getTransfersCount({ address, type: TransactionType.Transaction });
+    return await this.transferService.getTransfersCount(new TransactionFilter({ address, type: TransactionType.Transaction }));
   }
 
   private async getAccountScResults(address: string): Promise<number> {
@@ -131,7 +132,7 @@ export class AccountService {
       return await this.smartContractResultService.getAccountScResultsCount(address);
     }
 
-    return await this.transferService.getTransfersCount({ address, type: TransactionType.SmartContractResult });
+    return await this.transferService.getTransfersCount(new TransactionFilter({ address, type: TransactionType.SmartContractResult }));
   }
 
   async getAccountDeployedAt(address: string): Promise<number | null> {
@@ -170,10 +171,8 @@ export class AccountService {
   }
 
   async getAccountsRaw(queryPagination: QueryPagination): Promise<Account[]> {
-    const { from, size } = queryPagination;
-
     const elasticQuery = ElasticQuery.create()
-      .withPagination({ from, size })
+      .withPagination(queryPagination)
       .withSort([{ name: 'balanceNum', order: ElasticSortOrder.descending }]);
 
     const result = await this.elasticService.getList('accounts', 'address', elasticQuery);
@@ -251,9 +250,7 @@ export class AccountService {
     );
 
     const rewardsPublicKey = Buffer.from(encodedRewardsPublicKey, 'base64').toString();
-    const rewardAddress = AddressUtils.bech32Encode(rewardsPublicKey);
-
-    return rewardAddress;
+    return AddressUtils.bech32Encode(rewardsPublicKey);
   }
 
   async getKeys(address: string): Promise<AccountKey[]> {

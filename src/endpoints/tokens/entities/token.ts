@@ -3,6 +3,10 @@ import { ApiProperty } from "@nestjs/swagger";
 import { TokenAssets } from "../../../common/assets/entities/token.assets";
 
 export class Token {
+  constructor(init?: Partial<Token>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String })
   identifier: string = '';
 

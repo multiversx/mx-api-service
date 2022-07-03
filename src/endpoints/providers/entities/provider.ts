@@ -3,6 +3,11 @@ import { ApiProperty } from "@nestjs/swagger";
 import { NodesInfos } from "./nodes.infos";
 
 export class Provider extends NodesInfos {
+  constructor(init?: Partial<Provider>) {
+    super();
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String })
   provider: string = '';
 

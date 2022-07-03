@@ -60,10 +60,8 @@ export class BlockService {
   }
 
   async getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<Block[]> {
-    const { from, size } = queryPagination;
-
     const elasticQuery = ElasticQuery.create()
-      .withPagination({ from, size })
+      .withPagination(queryPagination)
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'shardId', order: ElasticSortOrder.ascending },
@@ -118,7 +116,7 @@ export class BlockService {
   }
 
   async getCurrentEpoch(): Promise<number> {
-    const blocks = await this.getBlocks(new BlockFilter(), { from: 0, size: 1 });
+    const blocks = await this.getBlocks(new BlockFilter(), new QueryPagination({ from: 0, size: 1 }));
     if (blocks.length === 0) {
       return -1;
     }
