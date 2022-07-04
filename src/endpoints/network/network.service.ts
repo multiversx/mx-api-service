@@ -17,6 +17,7 @@ import { DataQuoteType } from 'src/common/external/entities/data.quote.type';
 import { CacheInfo } from 'src/utils/cache.info';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { Constants, NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest';
+import { About } from './entities/about';
 
 @Injectable()
 export class NetworkService {
@@ -273,6 +274,31 @@ export class NetworkService {
     const baseApr = (epochsInYear * baseReward) / networkBaseStake;
 
     return { apr, topUpApr, baseApr };
+  }
+
+  async getAbout(): Promise<About> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.About.key,
+      async () => await this.getAboutRaw(),
+      CacheInfo.About.ttl,
+    );
+  }
+
+  getAboutRaw(): About {
+    const appVersion = require('child_process')
+      .execSync('git rev-parse --short HEAD')
+      .toString().trim();
+
+    const pluginsVersion = require('child_process')
+      .execSync('git rev-parse --short HEAD', { cwd: 'src/plugins' })
+      .toString().trim();
+
+    return new About({
+      appVersion,
+      pluginsVersion,
+      network: this.apiConfigService.getNetwork(),
+      cluster: this.apiConfigService.getCluster(),
+    });
   }
 
   numberDecode(encoded: string): string {

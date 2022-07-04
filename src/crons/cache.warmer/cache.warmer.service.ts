@@ -89,6 +89,16 @@ export class CacheWarmerService {
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
+  async handleAboutInvalidation() {
+    await Locker.lock('About invalidation', async () => {
+      await this.lock.acquire('about', async () => {
+        const about = await this.networkService.getAboutRaw();
+        await this.invalidateKey(CacheInfo.About.key, about, CacheInfo.About.ttl);
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleNodeInvalidations() {
     await Locker.lock('Node invalidations', async () => {
       await this.lock.acquire('nodes', async () => {

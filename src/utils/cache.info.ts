@@ -4,6 +4,11 @@ export class CacheInfo {
   key: string = "";
   ttl: number = Constants.oneSecond() * 6;
 
+  static About: CacheInfo = {
+    key: 'about',
+    ttl: Constants.oneMinute() * 10,
+  };
+
   static Nodes: CacheInfo = {
     key: 'nodes',
     ttl: Constants.oneHour(),
@@ -13,7 +18,6 @@ export class CacheInfo {
     key: 'numShards',
     ttl: Constants.oneWeek(),
   };
-
 
   static GenesisTimestamp: CacheInfo = {
     key: 'genesisTimestamp',
