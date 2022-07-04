@@ -14,7 +14,7 @@ import { AssetsService } from "../../common/assets/assets.service";
 import { TransactionService } from "../transactions/transaction.service";
 import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
-import { AddressUtils, ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, RangeQuery } from "@elrondnetwork/erdnest";
+import { AddressUtils, ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, RangeGreaterThanOrEqual } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class EsdtService {
@@ -431,7 +431,7 @@ export class EsdtService {
       .withPagination({ from: 0, size: addresses.length })
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match("address", "pending-")])
       .withCondition(QueryConditionOptions.must, [QueryType.Match('token', identifier, QueryOperator.AND)])
-      .withFilter(new RangeQuery("balanceNum", undefined, 0))
+      .withRangeFilter("balanceNum", new RangeGreaterThanOrEqual(0))
       .withCondition(QueryConditionOptions.should, queries);
 
     return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
