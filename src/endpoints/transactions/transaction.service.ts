@@ -20,15 +20,16 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
-import { AddressUtils, ApiUtils, Constants, CachingService, ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiUtils, Constants, CachingService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery } from '@elrondnetwork/erdnest';
 import { TransactionUtils } from './transaction.utils';
+import { ElasticIndexerService } from 'src/common/indexer/elastic/elastic.indexer.service';
 
 @Injectable()
 export class TransactionService {
   private readonly logger: Logger;
 
   constructor(
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: ElasticIndexerService,
     private readonly gatewayService: GatewayService,
     private readonly transactionPriceService: TransactionPriceService,
     @Inject(forwardRef(() => TransactionGetService))
@@ -112,7 +113,7 @@ export class TransactionService {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.should, queries);
 
-    return await this.elasticService.getCount('transactions', elasticQuery);
+    return await this.indexerService.getCount('transactions', elasticQuery);
   }
 
   async getTransactionCount(filter: TransactionFilter, address?: string): Promise<number> {
@@ -126,7 +127,7 @@ export class TransactionService {
 
     const elasticQuery = this.buildTransactionFilterQuery(filter, address);
 
-    return await this.elasticService.getCount('transactions', elasticQuery);
+    return await this.indexerService.getCount('transactions', elasticQuery);
   }
 
   async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string): Promise<Transaction[]> {
@@ -139,7 +140,7 @@ export class TransactionService {
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
-    const elasticTransactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
+    const elasticTransactions = await this.indexerService.getList('transactions', 'txHash', elasticQuery);
 
     let transactions: Transaction[] = [];
 
@@ -295,7 +296,7 @@ export class TransactionService {
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
       .withTerms(new TermsQuery('originalTxHash', elasticTransactions.filter(x => x.hasScResults === true).map(x => x.txHash)));
 
-    const scResults = await this.elasticService.getList('scresults', 'scHash', elasticQuery);
+    const scResults = await this.indexerService.getList('scresults', 'scHash', elasticQuery);
     for (const scResult of scResults) {
       scResult.hash = scResult.scHash;
 

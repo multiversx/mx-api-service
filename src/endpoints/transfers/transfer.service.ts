@@ -6,13 +6,14 @@ import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionType } from "../transactions/entities/transaction.type";
 import { Transaction } from "../transactions/entities/transaction";
 import { TransactionService } from "../transactions/transaction.service";
-import { AddressUtils, ApiUtils, ElasticQuery, ElasticService, ElasticSortOrder, ElasticSortProperty, QueryConditionOptions, QueryOperator, QueryType } from "@elrondnetwork/erdnest";
+import { AddressUtils, ApiUtils, ElasticQuery, ElasticSortOrder, ElasticSortProperty, QueryConditionOptions, QueryOperator, QueryType } from "@elrondnetwork/erdnest";
+import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 
 @Injectable()
 export class TransferService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: ElasticIndexerService,
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
   ) { }
@@ -135,7 +136,7 @@ export class TransferService {
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
-    let elasticOperations = await this.elasticService.getList('operations', 'txHash', elasticQuery);
+    let elasticOperations = await this.indexerService.getList('operations', 'txHash', elasticQuery);
     elasticOperations = this.sortElasticTransfers(elasticOperations);
 
     const transactions: Transaction[] = [];
@@ -163,6 +164,6 @@ export class TransferService {
   async getTransfersCount(filter: TransactionFilter): Promise<number> {
     const elasticQuery = this.buildTransferFilterQuery(filter);
 
-    return await this.elasticService.getCount('operations', elasticQuery);
+    return await this.indexerService.getCount('operations', elasticQuery);
   }
 }

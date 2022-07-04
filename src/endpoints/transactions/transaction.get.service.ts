@@ -9,15 +9,16 @@ import { TransactionLog } from "./entities/transaction.log";
 import { TransactionOptionalFieldOption } from "./entities/transaction.optional.field.options";
 import { TransactionReceipt } from "./entities/transaction.receipt";
 import { TokenTransferService } from "../tokens/token.transfer.service";
-import { ApiUtils, BinaryUtils, ElasticQuery, ElasticService, ElasticSortOrder, ElasticSortProperty, QueryConditionOptions, QueryType } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, ElasticQuery, ElasticSortOrder, ElasticSortProperty, QueryConditionOptions, QueryType } from "@elrondnetwork/erdnest";
 import { TransactionUtils } from "./transaction.utils";
+import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 
 @Injectable()
 export class TransactionGetService {
   private readonly logger: Logger;
 
   constructor(
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: ElasticIndexerService,
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => TokenTransferService))
@@ -36,7 +37,7 @@ export class TransactionGetService {
       .withPagination({ from: 0, size: 1 })
       .withCondition(QueryConditionOptions.must, queries);
 
-    const transactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
+    const transactions = await this.indexerService.getList('transactions', 'txHash', elasticQuery);
 
     return transactions.firstOrUndefined();
   }
@@ -65,7 +66,7 @@ export class TransactionGetService {
       .withPagination({ from: 0, size: 10000 })
       .withCondition(QueryConditionOptions.should, queries);
 
-    return await this.elasticService.getList('logs', 'id', elasticQueryLogs);
+    return await this.indexerService.getList('logs', 'id', elasticQueryLogs);
   }
 
   async getTransactionScResultsFromElastic(txHash: string): Promise<SmartContractResult[]> {
@@ -77,14 +78,14 @@ export class TransactionGetService {
       .withSort([timestamp])
       .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
 
-    const scResults = await this.elasticService.getList('scresults', 'hash', elasticQuerySc);
+    const scResults = await this.indexerService.getList('scresults', 'hash', elasticQuerySc);
 
     return scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
   }
 
   async tryGetTransactionFromElastic(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
     try {
-      const result = await this.elasticService.getItem('transactions', 'txHash', txHash);
+      const result = await this.indexerService.getItem('transactions', 'txHash', txHash);
       if (!result) {
         return null;
       }
@@ -115,7 +116,7 @@ export class TransactionGetService {
             .withPagination({ from: 0, size: 1 })
             .withCondition(QueryConditionOptions.must, [receiptHashQuery]);
 
-          const receipts = await this.elasticService.getList('receipts', 'receiptHash', elasticQueryReceipts);
+          const receipts = await this.indexerService.getList('receipts', 'receiptHash', elasticQueryReceipts);
           if (receipts.length > 0) {
             const receipt = receipts[0];
             transactionDetailed.receipt = ApiUtils.mergeObjects(new TransactionReceipt(), receipt);

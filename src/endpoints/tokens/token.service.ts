@@ -20,14 +20,15 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
-import { AddressUtils, ApiUtils, ElasticQuery, ElasticService, ElasticSortOrder, NumberUtils, QueryConditionOptions, QueryOperator, QueryType } from "@elrondnetwork/erdnest";
+import { AddressUtils, ApiUtils, ElasticQuery, ElasticSortOrder, NumberUtils, QueryConditionOptions, QueryOperator, QueryType } from "@elrondnetwork/erdnest";
+import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 
 @Injectable()
 export class TokenService {
   private readonly logger: Logger;
   constructor(
     private readonly esdtService: EsdtService,
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: ElasticIndexerService,
     private readonly esdtAddressService: EsdtAddressService,
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService
@@ -165,7 +166,7 @@ export class TokenService {
       .withMustNotCondition(QueryType.Exists('identifier'))
       .withMustCondition(QueryType.Match('address', address));
 
-    return await this.elasticService.getCount('accountsesdt', query);
+    return await this.indexerService.getCount('accountsesdt', query);
   }
 
   async getTokenCountForAddressFromGateway(address: string): Promise<number> {
@@ -203,7 +204,7 @@ export class TokenService {
       query = query.withMustCondition(QueryType.Nested('data.name', filter.search));
     }
 
-    const elasticTokens = await this.elasticService.getList('accountsesdt', 'token', query);
+    const elasticTokens = await this.indexerService.getList('accountsesdt', 'token', query);
 
     const elasticTokensWithBalance = elasticTokens.toRecord(token => token.token, token => token.balance);
 
@@ -342,7 +343,7 @@ export class TokenService {
       .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')]);
 
-    const tokenAccounts = await this.elasticService.getList("accountsesdt", identifier, elasticQuery);
+    const tokenAccounts = await this.indexerService.getList("accountsesdt", identifier, elasticQuery);
 
     return tokenAccounts.map((tokenAccount) => ApiUtils.mergeObjects(new TokenAccount(), tokenAccount));
   }
@@ -356,13 +357,13 @@ export class TokenService {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
 
-    const count = await this.elasticService.getCount("accountsesdt", elasticQuery);
+    const count = await this.indexerService.getCount("accountsesdt", elasticQuery);
 
     return count;
   }
 
   private async getTokenRolesFromElastic(identifier: string): Promise<TokenRoles[] | undefined> {
-    const token = await this.elasticService.getItem('tokens', 'identifier', identifier);
+    const token = await this.indexerService.getItem('tokens', 'identifier', identifier);
     if (!token) {
       return undefined;
     }
@@ -400,7 +401,7 @@ export class TokenService {
 
   async getTokenRolesForIdentifierAndAddress(identifier: string, address: string): Promise<TokenRoles | undefined> {
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      const token = await this.elasticService.getItem('tokens', 'identifier', identifier);
+      const token = await this.indexerService.getItem('tokens', 'identifier', identifier);
 
       if (!token) {
         return undefined;
@@ -505,7 +506,7 @@ export class TokenService {
   async getTokensWithRolesForAddressCount(address: string, filter: TokenWithRolesFilter): Promise<number> {
     const elasticQuery = this.buildTokensWithRolesForAddressQuery(address, filter);
 
-    return await this.elasticService.getCount('tokens', elasticQuery);
+    return await this.indexerService.getCount('tokens', elasticQuery);
   }
 
   async getTokenWithRolesForAddress(address: string, identifier: string): Promise<TokenWithRoles | undefined> {
@@ -520,7 +521,7 @@ export class TokenService {
   async getTokensWithRolesForAddress(address: string, filter: TokenWithRolesFilter, pagination: QueryPagination): Promise<TokenWithRoles[]> {
     const elasticQuery = this.buildTokensWithRolesForAddressQuery(address, filter, pagination);
 
-    const tokenList = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+    const tokenList = await this.indexerService.getList('tokens', 'identifier', elasticQuery);
 
     const allTokens = await this.esdtService.getAllEsdtTokens();
 

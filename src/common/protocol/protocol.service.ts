@@ -3,6 +3,7 @@ import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { CacheInfo } from "../../utils/cache.info";
 import { GatewayComponentRequest } from "../gateway/entities/gateway.component.request";
 import { GatewayService } from "../gateway/gateway.service";
+import { ElasticIndexerService } from "../indexer/elastic/elastic.indexer.service";
 
 @Injectable()
 export class ProtocolService {
@@ -13,7 +14,7 @@ export class ProtocolService {
     @Inject(forwardRef(() => CachingService))
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => ElasticService))
-    private readonly elasticService: ElasticService
+    private readonly indexerService: ElasticIndexerService
   ) {
     this.logger = new Logger(ProtocolService.name);
   }
@@ -62,7 +63,7 @@ export class ProtocolService {
 
   private async getGenesisTimestampRaw(): Promise<number> {
     try {
-      const round = await this.elasticService.getItem('rounds', 'round', `${0}_${1}`);
+      const round = await this.indexerService.getItem('rounds', 'round', `${0}_${1}`);
       return round.timestamp;
     } catch (error) {
       this.logger.error(error);

@@ -18,15 +18,16 @@ import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
-import { AddressUtils, ApiUtils, BinaryUtils, Constants, CachingService, ElasticService, ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType, AbstractQuery, QueryOperator } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiUtils, BinaryUtils, Constants, CachingService, ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType, AbstractQuery, QueryOperator } from '@elrondnetwork/erdnest';
 import { GatewayService } from 'src/common/gateway/gateway.service';
+import { ElasticIndexerService } from 'src/common/indexer/elastic/elastic.indexer.service';
 
 @Injectable()
 export class AccountService {
   private readonly logger: Logger;
 
   constructor(
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: ElasticIndexerService,
     private readonly gatewayService: GatewayService,
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
@@ -49,7 +50,7 @@ export class AccountService {
   async getAccountsCount(): Promise<number> {
     return await this.cachingService.getOrSetCache(
       'account:count',
-      async () => await this.elasticService.getCount('accounts'),
+      async () => await this.indexerService.getCount('accounts'),
       Constants.oneMinute()
     );
   }
@@ -144,7 +145,7 @@ export class AccountService {
   }
 
   async getAccountDeployedAtRaw(address: string): Promise<number | null> {
-    const scDeploy = await this.elasticService.getItem('scdeploys', '_id', address);
+    const scDeploy = await this.indexerService.getItem('scdeploys', '_id', address);
     if (!scDeploy) {
       return null;
     }
@@ -154,7 +155,7 @@ export class AccountService {
       return null;
     }
 
-    const transaction = await this.elasticService.getItem('transactions', '_id', txHash);
+    const transaction = await this.indexerService.getItem('transactions', '_id', txHash);
     if (!transaction) {
       return null;
     }
@@ -175,7 +176,7 @@ export class AccountService {
       .withPagination(queryPagination)
       .withSort([{ name: 'balanceNum', order: ElasticSortOrder.descending }]);
 
-    const result = await this.elasticService.getList('accounts', 'address', elasticQuery);
+    const result = await this.indexerService.getList('accounts', 'address', elasticQuery);
 
     const assets = await this.assetsService.getAllAccountAssets();
 
@@ -330,7 +331,7 @@ export class AccountService {
       .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)])
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    const accountDeployedContracts = await this.elasticService.getList('scdeploys', "contract", elasticQuery);
+    const accountDeployedContracts = await this.indexerService.getList('scdeploys', "contract", elasticQuery);
 
     const accounts: DeployedContract[] = accountDeployedContracts.map(contract => ({
       address: contract.contract,
@@ -345,7 +346,7 @@ export class AccountService {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)]);
 
-    return await this.elasticService.getCount('scdeploys', elasticQuery);
+    return await this.indexerService.getCount('scdeploys', elasticQuery);
   }
 
   async getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]> {
@@ -353,7 +354,7 @@ export class AccountService {
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    const elasticResult = await this.elasticService.getList('accountshistory', 'address', elasticQuery);
+    const elasticResult = await this.indexerService.getList('accountshistory', 'address', elasticQuery);
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountHistory(), item));
   }
 
@@ -377,7 +378,7 @@ export class AccountService {
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    const elasticResult = await this.elasticService.getList('accountsesdthistory', 'address', elasticQuery);
+    const elasticResult = await this.indexerService.getList('accountsesdthistory', 'address', elasticQuery);
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
   }
 }

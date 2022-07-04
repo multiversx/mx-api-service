@@ -1,7 +1,5 @@
-import { PerformanceProfiler } from "@elrondnetwork/erdnest";
+import { ElasticQuery, PerformanceProfiler } from "@elrondnetwork/erdnest";
 import { Inject, Injectable } from "@nestjs/common";
-import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
-import { QueryPagination } from "../entities/query.pagination";
 import { ApiMetricsService } from "../metrics/api.metrics.service";
 import { IndexerInterface } from "./indexer.interface";
 
@@ -25,6 +23,22 @@ export class IndexerService implements IndexerInterface {
     }
   }
 
+  async getCount(collection: string, elasticQuery?: ElasticQuery): Promise<number> {
+    return await this.execute('getCount', this.indexerInterface.getCount(collection, elasticQuery));
+  }
+
+  async getItem(collection: string, key: string, identifier: string): Promise<any> {
+    return await this.execute('getItem', this.indexerInterface.getItem(collection, key, identifier));
+  }
+
+  async getList(collection: string, key: string, elasticQuery: ElasticQuery, overrideUrl?: string): Promise<any[]> {
+    return await this.execute('getList', this.indexerInterface.getList(collection, key, elasticQuery, overrideUrl));
+  }
+
+  async getScrollableList(collection: string, key: string, elasticQuery: ElasticQuery, action: (items: any[]) => Promise<void>): Promise<void> {
+    return await this.execute('getScrollableList', this.indexerInterface.getScrollableList(collection, key, elasticQuery, action));
+  }
+
   async getCustomValue(collection: string, identifier: string, attribute: string): Promise<any> {
     return await this.execute('getCustomValue', this.indexerInterface.getCustomValue(collection, identifier, attribute));
   }
@@ -33,39 +47,11 @@ export class IndexerService implements IndexerInterface {
     return await this.execute('setCustomValue', this.indexerInterface.setCustomValue(collection, identifier, attribute, value));
   }
 
-  async getCount(collection: string, elasticQuery?: any): Promise<number> {
-    return await this.execute('getCount', this.indexerInterface.getCount(collection, elasticQuery));
+  async get(url: string): Promise<any> {
+    return await this.execute('get', this.indexerInterface.get(url));
   }
 
-  async getItem(collection: string, key: string, identifier: string): Promise<any> {
-    return await this.execute('getItem', this.indexerInterface.getItem(collection, key, identifier));
-  }
-
-  async getList(collection: string, key: string, elasticQuery: any, overrideUrl?: string): Promise<any[]> {
-    return await this.execute('getList', this.indexerInterface.getList(collection, key, elasticQuery, overrideUrl));
-  }
-
-  async getScrollableList(collection: string, key: string, elasticQuery: any, action: (items: any[]) => Promise<void>): Promise<void> {
-    return await this.execute('getScrollableList', this.indexerInterface.getScrollableList(collection, key, elasticQuery, action));
-  }
-
-  async getAccountEsdtByIdentifier(identifier: string, pagination?: QueryPagination): Promise<any[]> {
-    return await this.execute('getAccountEsdtByIdentifier', this.indexerInterface.getAccountEsdtByIdentifier(identifier, pagination));
-  }
-
-  async getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]): Promise<any[]> {
-    return await this.execute('getAccountEsdtByAddressesAndIdentifier', this.indexerInterface.getAccountEsdtByAddressesAndIdentifier(identifier, addresses));
-  }
-
-  async getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination): Promise<any[]> {
-    return await this.execute('getAccountEsdtByIdentifiers', this.indexerInterface.getAccountEsdtByIdentifiers(identifiers, pagination));
-  }
-
-  async getAccountEsdtByAddressCount(address: string): Promise<number> {
-    return await this.execute('getAccountEsdtByAddressCount', this.indexerInterface.getAccountEsdtByAddressCount(address));
-  }
-
-  async getLogsForTransactionHashes(elasticQuery: any): Promise<TransactionLog[]> {
-    return await this.execute('getLogsForTransactionHashes', this.indexerInterface.getLogsForTransactionHashes(elasticQuery));
+  async post(url: string, body: any): Promise<any> {
+    return await this.execute('post', this.indexerInterface.post(url, body));
   }
 }

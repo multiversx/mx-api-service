@@ -20,7 +20,8 @@ import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, ElasticSortOrder } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, ElasticSortOrder } from "@elrondnetwork/erdnest";
+import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 
 @Injectable()
 export class NftService {
@@ -30,7 +31,7 @@ export class NftService {
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: ElasticIndexerService,
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
     private readonly cachingService: CachingService,
@@ -323,9 +324,9 @@ export class NftService {
         { name: 'nonce', order: ElasticSortOrder.descending },
       ]);
 
-    let elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+    let elasticNfts = await this.indexerService.getList('tokens', 'identifier', elasticQuery);
     if (elasticNfts.length === 0 && identifier !== undefined) {
-      elasticNfts = await this.elasticService.getList('accountsesdt', 'identifier', ElasticQuery.create().withMustMatchCondition('identifier', identifier, QueryOperator.AND));
+      elasticNfts = await this.indexerService.getList('accountsesdt', 'identifier', ElasticQuery.create().withMustMatchCondition('identifier', identifier, QueryOperator.AND));
     }
 
     const nfts: Nft[] = [];
@@ -435,13 +436,13 @@ export class NftService {
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
       .withCondition(QueryConditionOptions.must, [QueryType.Match('identifier', identifier, QueryOperator.AND)]);
 
-    return await this.elasticService.getCount('accountsesdt', elasticQuery);
+    return await this.indexerService.getCount('accountsesdt', elasticQuery);
   }
 
   async getNftCount(filter: NftFilter): Promise<number> {
     const elasticQuery = this.buildElasticNftFilter(filter);
 
-    return await this.elasticService.getCount('tokens', elasticQuery);
+    return await this.indexerService.getCount('tokens', elasticQuery);
   }
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
@@ -550,6 +551,6 @@ export class NftService {
       .withCondition(QueryConditionOptions.should, queries)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
+    return await this.indexerService.getList('accountsesdt', 'identifier', elasticQuery);
   }
 }

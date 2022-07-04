@@ -1,5 +1,6 @@
 import { ElasticService } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 
 @Injectable()
@@ -10,7 +11,7 @@ export class BlsService {
   constructor(
     private apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => ElasticService))
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: ElasticIndexerService,
   ) {
     this.url = this.apiConfigService.getElasticUrl();
   }
@@ -25,7 +26,7 @@ export class BlsService {
 
     const url = `${this.url}/validators/_search?q=_id:${key}`;
 
-    const result = await this.elasticService.get(url);
+    const result = await this.indexerService.get(url);
 
     const hits = result.data?.hits?.hits;
     if (hits && hits.length > 0) {

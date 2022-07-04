@@ -6,15 +6,16 @@ import { TokenType } from "src/endpoints/tokens/entities/token.type";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import asyncPool from "tiny-async-pool";
 import { PersistenceInterface } from "src/common/persistence/persistence.interface";
-import { BatchUtils, ElasticQuery, ElasticService, Locker, QueryType } from "@elrondnetwork/erdnest";
+import { BatchUtils, ElasticQuery, Locker, QueryType } from "@elrondnetwork/erdnest";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
+import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 @Injectable()
 export class ElasticUpdaterService {
   private readonly logger: Logger;
 
   constructor(
     private readonly assetsService: AssetsService,
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: ElasticIndexerService,
     private readonly nftService: NftService,
     @Inject('PersistenceService')
     private readonly persistenceService: PersistenceInterface,
@@ -28,7 +29,7 @@ export class ElasticUpdaterService {
       const allAssets = await this.assetsService.getAllTokenAssets();
 
       for (const key of Object.keys(allAssets)) {
-        const elasticAssets = await this.elasticService.getCustomValue('tokens', key, 'assets');
+        const elasticAssets = await this.indexerService.getCustomValue('tokens', key, 'assets');
         if (elasticAssets === null) {
           this.logger.log(`Could not find token with identifier '${key}' when updating assets in elastic`);
           continue;
@@ -38,7 +39,7 @@ export class ElasticUpdaterService {
 
         if (!elasticAssets || JsonDiff.diff(githubAssets, elasticAssets)) {
           this.logger.log(`Updating assets for token with identifier '${key}'`);
-          await this.elasticService.setCustomValue('tokens', key, 'assets', githubAssets);
+          await this.indexerService.setCustomValue('tokens', key, 'assets', githubAssets);
         }
       }
     }, true);
@@ -58,7 +59,7 @@ export class ElasticUpdaterService {
         .withMustMultiShouldCondition([TokenType.NonFungibleESDT, TokenType.SemiFungibleESDT], type => QueryType.Match('type', type))
         .withPagination({ from: 0, size: 10000 });
 
-      await this.elasticService.getScrollableList('tokens', 'identifier', query, async items => {
+      await this.indexerService.getScrollableList('tokens', 'identifier', query, async items => {
         const whitelistStorageItems = items.map(item => ({
           identifier: item.identifier,
           uris: item.data?.uris,
@@ -183,7 +184,7 @@ export class ElasticUpdaterService {
   private async updateIsWhitelistedStorageForToken(identifier: string, isWhitelistedStorage: boolean): Promise<void> {
     try {
       this.logger.log(`Setting api_isWhitelistedStorage for token with identifier '${identifier}'`);
-      await this.elasticService.setCustomValue('tokens', identifier, 'isWhitelistedStorage', isWhitelistedStorage);
+      await this.indexerService.setCustomValue('tokens', identifier, 'isWhitelistedStorage', isWhitelistedStorage);
     } catch (error) {
       this.logger.error(`Unexpected error when updating isWhitelistedStorage for token with identifier '${identifier}'`);
     }
@@ -192,7 +193,7 @@ export class ElasticUpdaterService {
   private async updateMediaForToken(identifier: string, media: NftMedia[]): Promise<void> {
     try {
       this.logger.log(`Setting api_media for token with identifier '${identifier}'`);
-      await this.elasticService.setCustomValue('tokens', identifier, 'media', media);
+      await this.indexerService.setCustomValue('tokens', identifier, 'media', media);
     } catch (error) {
       this.logger.error(`Unexpected error when updating media for token with identifier '${identifier}'`);
     }
@@ -201,7 +202,7 @@ export class ElasticUpdaterService {
   private async updateMetadataForToken(identifier: string, metadata: any): Promise<void> {
     try {
       this.logger.log(`Setting api_metadata for token with identifier '${identifier}'`);
-      await this.elasticService.setCustomValue('tokens', identifier, 'metadata', metadata);
+      await this.indexerService.setCustomValue('tokens', identifier, 'metadata', metadata);
     } catch (error) {
       this.logger.error(`Unexpected error when updating metadata for token with identifier '${identifier}'`);
     }

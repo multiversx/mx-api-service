@@ -4,12 +4,13 @@ import { RoundDetailed } from "./entities/round.detailed";
 import { RoundFilter } from "./entities/round.filter";
 import { BlsService } from "src/endpoints/bls/bls.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { AbstractQuery, ApiUtils, ElasticQuery, ElasticService, ElasticSortOrder, QueryConditionOptions, QueryType, RoundUtils } from "@elrondnetwork/erdnest";
+import { AbstractQuery, ApiUtils, ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType, RoundUtils } from "@elrondnetwork/erdnest";
+import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 
 @Injectable()
 export class RoundService {
   constructor(
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: ElasticIndexerService,
     private readonly blsService: BlsService,
     private readonly apiConfigService: ApiConfigService,
   ) { }
@@ -41,7 +42,7 @@ export class RoundService {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, await this.buildElasticRoundsFilter(filter));
 
-    return this.elasticService.getCount('rounds', elasticQuery);
+    return this.indexerService.getCount('rounds', elasticQuery);
   }
 
   async getRounds(filter: RoundFilter): Promise<Round[]> {
@@ -52,7 +53,7 @@ export class RoundService {
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
       .withCondition(filter.condition ?? QueryConditionOptions.must, await this.buildElasticRoundsFilter(filter));
 
-    const result = await this.elasticService.getList('rounds', 'round', elasticQuery);
+    const result = await this.indexerService.getList('rounds', 'round', elasticQuery);
 
     for (const item of result) {
       item.shard = item.shardId;
@@ -62,7 +63,7 @@ export class RoundService {
   }
 
   async getRound(shard: number, round: number): Promise<RoundDetailed> {
-    const result = await this.elasticService.getItem('rounds', 'round', `${shard}_${round}`);
+    const result = await this.indexerService.getItem('rounds', 'round', `${shard}_${round}`);
 
     const epoch = RoundUtils.roundToEpoch(round);
     const publicKeys = await this.blsService.getPublicKeys(shard, epoch);

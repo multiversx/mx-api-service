@@ -1,7 +1,8 @@
-import { AbstractQuery, ApiUtils, ElasticQuery, ElasticService, ElasticSortOrder, QueryConditionOptions, QueryType } from "@elrondnetwork/erdnest";
+import { AbstractQuery, ApiUtils, ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 import { Transaction } from "../transactions/entities/transaction";
 import { TransactionType } from "../transactions/entities/transaction.type";
 import { TransactionActionService } from "../transactions/transaction-action/transaction.action.service";
@@ -11,7 +12,7 @@ import { SmartContractResultFilter } from "./entities/smart.contract.result.filt
 @Injectable()
 export class SmartContractResultService {
   constructor(
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: ElasticIndexerService,
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => TransactionActionService))
     private readonly transactionActionService: TransactionActionService,
@@ -48,7 +49,7 @@ export class SmartContractResultService {
       query = query.withShouldCondition(filter.originalTxHashes.map(originalTxHash => QueryType.Match('originalTxHash', originalTxHash)));
     }
 
-    const elasticResult = await this.elasticService.getList('scresults', 'hash', query);
+    const elasticResult = await this.indexerService.getList('scresults', 'hash', query);
 
     const smartContractResults = elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
 
@@ -63,7 +64,7 @@ export class SmartContractResultService {
   }
 
   async getScResult(scHash: string): Promise<SmartContractResult | undefined> {
-    const scResult = await this.elasticService.getItem('scresults', 'hash', scHash);
+    const scResult = await this.indexerService.getItem('scresults', 'hash', scHash);
     if (!scResult) {
       return undefined;
     }
@@ -78,7 +79,7 @@ export class SmartContractResultService {
   }
 
   async getScResultsCount(): Promise<number> {
-    return await this.elasticService.getCount('scresults', ElasticQuery.create());
+    return await this.indexerService.getCount('scresults', ElasticQuery.create());
   }
 
   async getAccountScResults(address: string, pagination: QueryPagination): Promise<SmartContractResult[]> {
@@ -87,7 +88,7 @@ export class SmartContractResultService {
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    const elasticResult = await this.elasticService.getList('scresults', 'hash', elasticQuery);
+    const elasticResult = await this.indexerService.getList('scresults', 'hash', elasticQuery);
 
     const smartContractResults = elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
 
@@ -104,6 +105,6 @@ export class SmartContractResultService {
   async getAccountScResultsCount(address: string): Promise<number> {
     const elasticQuery: ElasticQuery = this.buildSmartContractResultFilterQuery(address);
 
-    return await this.elasticService.getCount('scresults', elasticQuery);
+    return await this.indexerService.getCount('scresults', elasticQuery);
   }
 }

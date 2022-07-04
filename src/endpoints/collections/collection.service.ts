@@ -15,13 +15,14 @@ import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { TokenUtils } from "src/utils/token.utils";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
-import { ApiUtils, BinaryUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryType, QueryOperator, QueryConditionOptions, ElasticSortOrder } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, RecordUtils, CachingService, ElasticQuery, QueryType, QueryOperator, QueryConditionOptions, ElasticSortOrder } from "@elrondnetwork/erdnest";
+import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 
 @Injectable()
 export class CollectionService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: ElasticIndexerService,
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
     private readonly vmQueryService: VmQueryService,
@@ -93,7 +94,7 @@ export class CollectionService {
   }
 
   async isCollection(identifier: string): Promise<boolean> {
-    const collection = await this.elasticService.getItem('tokens', '_id', identifier);
+    const collection = await this.indexerService.getItem('tokens', '_id', identifier);
     return collection !== undefined;
   }
 
@@ -102,7 +103,7 @@ export class CollectionService {
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    const tokenCollections = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+    const tokenCollections = await this.indexerService.getList('tokens', 'identifier', elasticQuery);
     const collectionsIdentifiers = tokenCollections.map((collection) => collection.token);
 
     const indexedCollections: Record<string, any> = {};
@@ -209,11 +210,11 @@ export class CollectionService {
   async getNftCollectionCount(filter: CollectionFilter): Promise<number> {
     const elasticQuery = this.buildCollectionRolesFilter(filter);
 
-    return await this.elasticService.getCount('tokens', elasticQuery);
+    return await this.indexerService.getCount('tokens', elasticQuery);
   }
 
   async getNftCollection(identifier: string): Promise<NftCollection | undefined> {
-    const elasticCollection = await this.elasticService.getItem('tokens', '_id', identifier);
+    const elasticCollection = await this.indexerService.getItem('tokens', '_id', identifier);
     if (!elasticCollection) {
       return undefined;
     }
@@ -360,7 +361,7 @@ export class CollectionService {
         },
       });
 
-    const result = await this.elasticService.post(`${this.apiConfigService.getElasticUrl()}/accountsesdt/_search`, elasticQuery.toJson());
+    const result = await this.indexerService.post(`${this.apiConfigService.getElasticUrl()}/accountsesdt/_search`, elasticQuery.toJson());
 
     const buckets = result?.data?.aggregations?.collections?.buckets;
 

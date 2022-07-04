@@ -5,12 +5,13 @@ import { BlockFilter } from "./entities/block.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlsService } from "src/endpoints/bls/bls.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { AbstractQuery, CachingService, Constants, ElasticQuery, ElasticService, ElasticSortOrder, QueryConditionOptions, QueryType } from "@elrondnetwork/erdnest";
+import { AbstractQuery, CachingService, Constants, ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType } from "@elrondnetwork/erdnest";
+import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 
 @Injectable()
 export class BlockService {
   constructor(
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: ElasticIndexerService,
     private readonly cachingService: CachingService,
     private readonly blsService: BlsService,
   ) { }
@@ -54,7 +55,7 @@ export class BlockService {
 
     return await this.cachingService.getOrSetCache(
       `blocks:count:${JSON.stringify(elasticQuery)}`,
-      async () => await this.elasticService.getCount('blocks', elasticQuery),
+      async () => await this.indexerService.getCount('blocks', elasticQuery),
       Constants.oneMinute()
     );
   }
@@ -68,7 +69,7 @@ export class BlockService {
       ])
       .withCondition(QueryConditionOptions.must, await this.buildElasticBlocksFilter(filter));
 
-    const result = await this.elasticService.getList('blocks', 'hash', elasticQuery);
+    const result = await this.indexerService.getList('blocks', 'hash', elasticQuery);
 
     const blocks = [];
     for (const item of result) {
@@ -102,7 +103,7 @@ export class BlockService {
   }
 
   async getBlock(hash: string): Promise<BlockDetailed> {
-    const result = await this.elasticService.getItem('blocks', 'hash', hash);
+    const result = await this.indexerService.getItem('blocks', 'hash', hash);
 
     if (result.round > 0) {
       const publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);

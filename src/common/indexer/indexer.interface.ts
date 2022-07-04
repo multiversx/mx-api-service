@@ -1,26 +1,19 @@
-import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
-import { QueryPagination } from "../entities/query.pagination";
+import { ElasticQuery } from "@elrondnetwork/erdnest";
 
 export interface IndexerInterface {
+  getCount(collection: string, elasticQuery?: ElasticQuery): Promise<number>
+
+  getItem(collection: string, key: string, identifier: string): Promise<any>
+
+  getList(collection: string, key: string, elasticQuery: ElasticQuery, overrideUrl?: string): Promise<any[]>
+
+  getScrollableList(collection: string, key: string, elasticQuery: ElasticQuery, action: (items: any[]) => Promise<void>): Promise<void>
+
   getCustomValue(collection: string, identifier: string, attribute: string): Promise<any>
 
   setCustomValue<T>(collection: string, identifier: string, attribute: string, value: T): Promise<void>
 
-  getCount(collection: string, elasticQuery?: any): Promise<number>
+  get(url: string): Promise<any>
 
-  getItem(collection: string, key: string, identifier: string): Promise<any | undefined>
-
-  getList(collection: string, key: string, elasticQuery: any, overrideUrl?: string): Promise<any[]>
-
-  getScrollableList(collection: string, key: string, elasticQuery: any, action: (items: any[]) => Promise<void>): Promise<void>
-
-  getAccountEsdtByIdentifier(identifier: string, pagination?: QueryPagination): Promise<any[]>
-
-  getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]): Promise<any[]>
-
-  getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination): Promise<any[]>
-
-  getAccountEsdtByAddressCount(address: string): Promise<number>
-
-  getLogsForTransactionHashes(elasticQuery: any): Promise<TransactionLog[]>
+  post(url: string, body: any): Promise<any>
 }

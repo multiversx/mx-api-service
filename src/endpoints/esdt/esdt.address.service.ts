@@ -18,7 +18,8 @@ import { CollectionService } from "../collections/collection.service";
 import { NftCollection } from "../collections/entities/nft.collection";
 import { CollectionFilter } from "../collections/entities/collection.filter";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
-import { AddressUtils, ApiUtils, BinaryUtils, CachingService, ElasticService, ElasticSortOrder, MetricsService } from "@elrondnetwork/erdnest";
+import { AddressUtils, ApiUtils, BinaryUtils, CachingService, ElasticSortOrder, MetricsService } from "@elrondnetwork/erdnest";
+import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 
 @Injectable()
 export class EsdtAddressService {
@@ -28,7 +29,7 @@ export class EsdtAddressService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly esdtService: EsdtService,
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: ElasticIndexerService,
     private readonly gatewayService: GatewayService,
     private readonly cachingService: CachingService,
     private readonly metricsService: MetricsService,
@@ -57,13 +58,13 @@ export class EsdtAddressService {
 
   async getNftCountForAddressFromElastic(address: string, filter: NftFilter): Promise<number> {
     const elasticQuery = this.nftService.buildElasticNftFilter(filter, undefined, address);
-    return await this.elasticService.getCount('accountsesdt', elasticQuery);
+    return await this.indexerService.getCount('accountsesdt', elasticQuery);
   }
 
   async getCollectionCountForAddressFromElastic(address: string, filter: CollectionFilter): Promise<number> {
     const elasticQuery = this.collectionService.buildCollectionRolesFilter(filter, address);
 
-    return await this.elasticService.getCount('tokens', elasticQuery);
+    return await this.indexerService.getCount('tokens', elasticQuery);
   }
 
   private async getNftsForAddressFromElastic(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
@@ -79,7 +80,7 @@ export class EsdtAddressService {
       elasticQuery = elasticQuery.withSort([{ name: '_id', order: ElasticSortOrder.ascending }]);
     }
 
-    const esdts = await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
+    const esdts = await this.indexerService.getList('accountsesdt', 'identifier', elasticQuery);
 
     const gatewayNfts: GatewayNft[] = [];
 
@@ -120,7 +121,7 @@ export class EsdtAddressService {
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
       .withPagination(pagination);
 
-    const tokenCollections = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+    const tokenCollections = await this.indexerService.getList('tokens', 'identifier', elasticQuery);
     const collectionsIdentifiers = tokenCollections.map((collection) => collection.token);
 
     const indexedCollections: Record<string, any> = {};

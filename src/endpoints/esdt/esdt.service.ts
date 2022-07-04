@@ -14,7 +14,8 @@ import { AssetsService } from "../../common/assets/assets.service";
 import { TransactionService } from "../transactions/transaction.service";
 import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
-import { AddressUtils, ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, RangeQuery } from "@elrondnetwork/erdnest";
+import { AddressUtils, ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, RangeQuery } from "@elrondnetwork/erdnest";
+import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 
 @Injectable()
 export class EsdtService {
@@ -25,7 +26,7 @@ export class EsdtService {
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: ElasticIndexerService,
     @Inject(forwardRef(() => AssetsService))
     private readonly assetsService: AssetsService,
     @Inject(forwardRef(() => TransactionService))
@@ -149,7 +150,7 @@ export class EsdtService {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
 
-    const count = await this.elasticService.getCount("accountsesdt", elasticQuery);
+    const count = await this.indexerService.getCount("accountsesdt", elasticQuery);
 
     return count;
   }
@@ -405,7 +406,7 @@ export class EsdtService {
         .withPagination({ from: 0, size: 10000 })
         .withMustMatchCondition('token', identifier, QueryOperator.AND);
 
-      await this.elasticService.getScrollableList('accountsesdt', 'id', query, async items => {
+      await this.indexerService.getScrollableList('accountsesdt', 'id', query, async items => {
         const distinctAccounts: string[] = items.map(x => x.address).distinct();
         if (distinctAccounts.length > 0) {
           await this.cachingService.setAdd(key, ...distinctAccounts);
@@ -434,6 +435,6 @@ export class EsdtService {
       .withFilter(new RangeQuery("balanceNum", undefined, 0))
       .withCondition(QueryConditionOptions.should, queries);
 
-    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
+    return await this.indexerService.getList('accountsesdt', 'identifier', elasticQuery);
   }
 }
