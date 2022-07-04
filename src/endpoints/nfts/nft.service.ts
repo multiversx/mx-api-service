@@ -109,10 +109,12 @@ export class NftService {
     }
 
     if (filter.isNsfw !== undefined) {
+      const nsfwThreshold = this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
+
       if (filter.isNsfw === true) {
-        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw', new RangeGreaterThanOrEqual(0.85));
+        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw', new RangeGreaterThanOrEqual(nsfwThreshold));
       } else {
-        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw', new RangeLowerThan(0.85));
+        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw', new RangeLowerThan(nsfwThreshold));
       }
     }
 
@@ -468,15 +470,17 @@ export class NftService {
 
     await this.batchProcessNfts(nfts);
 
-    const internalNfts = await this.getNftsInternal(new QueryPagination({ from: 0, size: nfts.length }), new NftFilter({ identifiers: nfts.map(x => x.identifier) }));
+    if (this.apiConfigService.isNftExtendedAttributesEnabled()) {
+      const internalNfts = await this.getNftsInternal(new QueryPagination({ from: 0, size: nfts.length }), new NftFilter({ identifiers: nfts.map(x => x.identifier) }));
 
-    const indexedInternalNfts = internalNfts.toRecord<Nft>(x => x.identifier);
-    for (const nft of nfts) {
-      const indexedNft = indexedInternalNfts[nft.identifier];
-      if (indexedNft) {
-        nft.score = indexedNft.score;
-        nft.rank = indexedNft.rank;
-        nft.isNsfw = indexedNft.isNsfw;
+      const indexedInternalNfts = internalNfts.toRecord<Nft>(x => x.identifier);
+      for (const nft of nfts) {
+        const indexedNft = indexedInternalNfts[nft.identifier];
+        if (indexedNft) {
+          nft.score = indexedNft.score;
+          nft.rank = indexedNft.rank;
+          nft.isNsfw = indexedNft.isNsfw;
+        }
       }
     }
 
@@ -570,7 +574,7 @@ export class NftService {
     nft.rank = elasticNft.nft_rank;
 
     if (elasticNft.nft_nsfw !== undefined) {
-      nft.isNsfw = elasticNft.nft_nsfw >= 0.85;
+      nft.isNsfw = elasticNft.nft_nsfw >= this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
     }
   }
 }
