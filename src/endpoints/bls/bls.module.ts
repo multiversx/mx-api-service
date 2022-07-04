@@ -1,5 +1,5 @@
 import { Global, Module } from "@nestjs/common";
-import { ElasticIndexerModule } from "src/common/indexer/elastic/elastic.indexer.module";
+import { IndexerModule } from "src/common/indexer/indexer.module";
 import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import { BlsService } from "./bls.service";
 
@@ -7,7 +7,7 @@ import { BlsService } from "./bls.service";
 @Module({
   imports: [
     DynamicModuleUtils.getElasticModule(),
-    ElasticIndexerModule, // TODO
+    IndexerModule.register(),
   ],
   providers: [
     BlsService,

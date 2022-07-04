@@ -1,20 +1,15 @@
 import { ElasticService } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
-import { ApiConfigService } from "../../common/api-config/api.config.service";
+import { IndexerService } from "src/common/indexer/indexer.service";
 
 @Injectable()
 export class BlsService {
-  private readonly url: string;
   private publicKeysCache: any = {};
 
   constructor(
-    private apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => ElasticService))
-    private readonly indexerService: ElasticIndexerService,
-  ) {
-    this.url = this.apiConfigService.getElasticUrl();
-  }
+    private readonly indexerService: IndexerService,
+  ) { }
 
 
   public async getPublicKeys(shard: number, epoch: number): Promise<string[]> {
@@ -24,16 +19,9 @@ export class BlsService {
       return this.publicKeysCache[key];
     }
 
-    const url = `${this.url}/validators/_search?q=_id:${key}`;
-
-    const result = await this.indexerService.get(url);
-
-    const hits = result.data?.hits?.hits;
-    if (hits && hits.length > 0) {
-      const publicKeys = hits[0]._source.publicKeys;
-
+    const publicKeys = await this.indexerService.getPublicKeys(shard, epoch);
+    if (publicKeys) {
       this.publicKeysCache[key] = publicKeys;
-
       return publicKeys;
     }
 

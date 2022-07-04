@@ -3,7 +3,7 @@ import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { CacheInfo } from "../../utils/cache.info";
 import { GatewayComponentRequest } from "../gateway/entities/gateway.component.request";
 import { GatewayService } from "../gateway/gateway.service";
-import { ElasticIndexerService } from "../indexer/elastic/elastic.indexer.service";
+import { IndexerService } from "../indexer/indexer.service";
 
 @Injectable()
 export class ProtocolService {
@@ -14,7 +14,7 @@ export class ProtocolService {
     @Inject(forwardRef(() => CachingService))
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => ElasticService))
-    private readonly indexerService: ElasticIndexerService
+    private readonly indexerService: IndexerService
   ) {
     this.logger = new Logger(ProtocolService.name);
   }

@@ -2,20 +2,20 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import * as JsonDiff from "json-diff";
 import { AssetsService } from "src/common/assets/assets.service";
-import { TokenType } from "src/endpoints/tokens/entities/token.type";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import asyncPool from "tiny-async-pool";
 import { PersistenceInterface } from "src/common/persistence/persistence.interface";
-import { BatchUtils, ElasticQuery, Locker, QueryType } from "@elrondnetwork/erdnest";
+import { BatchUtils, Locker } from "@elrondnetwork/erdnest";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
-import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
+import { IndexerService } from "src/common/indexer/indexer.service";
+
 @Injectable()
 export class ElasticUpdaterService {
   private readonly logger: Logger;
 
   constructor(
     private readonly assetsService: AssetsService,
-    private readonly indexerService: ElasticIndexerService,
+    private readonly indexerService: IndexerService,
     private readonly nftService: NftService,
     @Inject('PersistenceService')
     private readonly persistenceService: PersistenceInterface,
@@ -48,18 +48,7 @@ export class ElasticUpdaterService {
   @Cron(CronExpression.EVERY_HOUR)
   async handleUpdateTokenExtraDetails() {
     await Locker.lock('Elastic updater: Update tokens isWhitelisted, media, metadata', async () => {
-      const query = ElasticQuery.create()
-        .withFields([
-          'api_isWhitelistedStorage',
-          'api_media',
-          'api_metadata',
-          'data.uris',
-        ])
-        .withMustExistCondition('identifier')
-        .withMustMultiShouldCondition([TokenType.NonFungibleESDT, TokenType.SemiFungibleESDT], type => QueryType.Match('type', type))
-        .withPagination({ from: 0, size: 10000 });
-
-      await this.indexerService.getScrollableList('tokens', 'identifier', query, async items => {
+      await this.indexerService.getAllTokensMetadata(async items => {
         const whitelistStorageItems = items.map(item => ({
           identifier: item.identifier,
           uris: item.data?.uris,

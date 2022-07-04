@@ -7,7 +7,7 @@ import { CacheInfo } from '../../utils/cache.info';
 import { NotifierEventIdentifier } from './entities/notifier.event.identifier';
 import { NotifierEvent } from './entities/notifier.event';
 import { BinaryUtils, CachingService } from '@elrondnetwork/erdnest';
-import { ElasticIndexerService } from '../indexer/elastic/elastic.indexer.service';
+import { IndexerService } from '../indexer/indexer.service';
 
 @Injectable()
 export class RabbitMqNftHandlerService {
@@ -16,7 +16,7 @@ export class RabbitMqNftHandlerService {
   constructor(
     private readonly nftWorkerService: NftWorkerService,
     private readonly nftService: NftService,
-    private readonly indexerService: ElasticIndexerService,
+    private readonly indexerService: IndexerService,
     private readonly cachingService: CachingService,
   ) {
     this.logger = new Logger(RabbitMqNftHandlerService.name);

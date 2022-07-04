@@ -1,48 +1,164 @@
-import { ElasticQuery } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
+import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
+import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
+import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
+import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/smart.contract.result.filter";
+import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
+import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.roles.filter";
+import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { IndexerInterface } from "../indexer.interface";
 
 @Injectable()
 export class PostgresIndexerService implements IndexerInterface {
   constructor() { }
 
-  // eslint-disable-next-line require-await
-  async getCount(_collection: string, _elasticQuery?: ElasticQuery): Promise<number> {
-    return 0;
+  getCount(_collection: string): Promise<number> {
+    throw new Error("Method not implemented.");
   }
-
-  // eslint-disable-next-line require-await
-  async getItem(_collection: string, _key: string, _identifier: string): Promise<any> {
-    return {};
+  getAccountContractsCount(_address: string): Promise<number> {
+    throw new Error("Method not implemented.");
   }
-
-  // eslint-disable-next-line require-await
-  async getList(_collection: string, _key: string, _elasticQuery: ElasticQuery, _overrideUrl?: string): Promise<any[]> {
-    return [];
+  getBlocksCount(_filter: BlockFilter): Promise<number> {
+    throw new Error("Method not implemented.");
   }
-
-  // eslint-disable-next-line require-await
-  async getScrollableList(_collection: string, _key: string, _elasticQuery: ElasticQuery, _action: (items: any[]) => Promise<void>): Promise<void> {
-    return;
+  getBlocks(_filter: BlockFilter, _queryPagination: QueryPagination): Promise<any[]> {
+    throw new Error("Method not implemented.");
   }
-
-  // eslint-disable-next-line require-await
-  async getCustomValue(_collection: string, _identifier: string, _attribute: string): Promise<any> {
-    return {};
+  getNftCollectionCount(_filter: CollectionFilter): Promise<number> {
+    throw new Error("Method not implemented.");
   }
-
-  // eslint-disable-next-line require-await
-  async setCustomValue<T>(_collection: string, _identifier: string, _attribute: string, _value: T): Promise<void> {
-    return;
+  getNftCountForAddress(_address: string, _filter: NftFilter): Promise<number> {
+    throw new Error("Method not implemented.");
   }
-
-  // eslint-disable-next-line require-await
-  async get(_url: string): Promise<any> {
-    return {};
+  getCollectionCountForAddress(_address: string, _filter: CollectionFilter): Promise<number> {
+    throw new Error("Method not implemented.");
   }
-
-  // eslint-disable-next-line require-await
-  async post(_url: string, _body: any): Promise<any> {
-    return {};
+  getNftCount(_filter: NftFilter): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
+  getNftOwnersCount(_identifier: string): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
+  getTransfersCount(_filter: TransactionFilter): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
+  getTokenCountForAddress(_address: string): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
+  getTokenAccountsCount(_identifier: string): Promise<number | undefined> {
+    throw new Error("Method not implemented.");
+  }
+  getTokenAccounts(_pagination: QueryPagination, _identifier: string): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getTokensWithRolesForAddressCount(_address: string, _filter: TokenWithRolesFilter): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
+  getNftTagCount(_search?: string | undefined): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
+  getRoundCount(_filter: RoundFilter): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
+  getAccountScResultsCount(_address: string): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
+  getTransactionCountForAddress(_address: string): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
+  getTransactionCount(_filter: TransactionFilter, _address?: string | undefined): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
+  getItem(_collection: string, _key: string, _identifier: string): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  getTransfers(_filter: TransactionFilter, _pagination: QueryPagination): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getTokensWithRolesForAddress(_address: string, _filter: TokenWithRolesFilter, _pagination: QueryPagination): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getRounds(_filter: RoundFilter): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getNftCollections(_pagination: QueryPagination, _filter: CollectionFilter, _address?: string | undefined): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getAccountEsdtByAddressesAndIdentifier(_identifier: string, _addresses: string[]): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getNftTags(_pagination: QueryPagination, _search?: string | undefined): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getScResults(_pagination: QueryPagination, _filter: SmartContractResultFilter): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getAccountScResults(_address: string, _pagination: QueryPagination): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getAccounts(_queryPagination: QueryPagination): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getAccountContracts(_pagination: QueryPagination, _address: string): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getAccountHistory(_address: string, _pagination: QueryPagination): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getAccountTokenHistory(_address: string, _tokenIdentifier: string, _pagination: QueryPagination): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getTransactions(_filter: TransactionFilter, _pagination: QueryPagination, _address?: string | undefined): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getTokensForAddress(_address: string, _queryPagination: QueryPagination, _filter: TokenFilter): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getTransactionLogs(_hashes: string[]): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getTransactionScResults(_txHash: string): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getScResultsForTransactions(_elasticTransactions: any[]): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getAccountEsdtByIdentifiers(_identifiers: string[], _pagination?: QueryPagination | undefined): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getNftsForAddress(_address: string, _filter: NftFilter, _pagination: QueryPagination): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getNfts(_pagination: QueryPagination, _filter: NftFilter, _identifier?: string | undefined): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getTransactionBySenderAndNonce(_sender: string, _nonce: number): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getTransactionReceipts(_txHash: string): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getAllTokensMetadata(_action: (items: any[]) => Promise<void>): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  getEsdtAccountsCount(_identifier: string): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
+  getAllAccountsWithToken(_identifier: string, _action: (items: any[]) => Promise<void>): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  getCustomValue(_collection: string, _identifier: string, _attribute: string): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  setCustomValue<T>(_collection: string, _identifier: string, _attribute: string, _value: T): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  getPublicKeys(_shard: number, _epoch: number): Promise<string[] | undefined> {
+    throw new Error("Method not implemented.");
+  }
+  getCollectionsForAddress(_address: string, _filter: CollectionFilter, _pagination: QueryPagination): Promise<{ collection: string; count: number; balance: number; }[]> {
+    throw new Error("Method not implemented.");
   }
 }

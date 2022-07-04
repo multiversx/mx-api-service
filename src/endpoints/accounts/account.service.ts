@@ -18,16 +18,16 @@ import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
-import { AddressUtils, ApiUtils, BinaryUtils, Constants, CachingService, ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType, AbstractQuery, QueryOperator } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiUtils, BinaryUtils, Constants, CachingService } from '@elrondnetwork/erdnest';
 import { GatewayService } from 'src/common/gateway/gateway.service';
-import { ElasticIndexerService } from 'src/common/indexer/elastic/elastic.indexer.service';
+import { IndexerService } from "src/common/indexer/indexer.service";
 
 @Injectable()
 export class AccountService {
   private readonly logger: Logger;
 
   constructor(
-    private readonly indexerService: ElasticIndexerService,
+    private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
@@ -172,11 +172,7 @@ export class AccountService {
   }
 
   async getAccountsRaw(queryPagination: QueryPagination): Promise<Account[]> {
-    const elasticQuery = ElasticQuery.create()
-      .withPagination(queryPagination)
-      .withSort([{ name: 'balanceNum', order: ElasticSortOrder.descending }]);
-
-    const result = await this.indexerService.getList('accounts', 'address', elasticQuery);
+    const result = await this.indexerService.getAccounts(queryPagination);
 
     const assets = await this.assetsService.getAllAccountAssets();
 
@@ -326,12 +322,7 @@ export class AccountService {
   }
 
   async getAccountContracts(pagination: QueryPagination, address: string): Promise<DeployedContract[]> {
-    const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withPagination(pagination)
-      .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)])
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
-
-    const accountDeployedContracts = await this.indexerService.getList('scdeploys', "contract", elasticQuery);
+    const accountDeployedContracts = await this.indexerService.getAccountContracts(pagination, address);
 
     const accounts: DeployedContract[] = accountDeployedContracts.map(contract => ({
       address: contract.contract,
@@ -343,42 +334,16 @@ export class AccountService {
   }
 
   async getAccountContractsCount(address: string): Promise<number> {
-    const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)]);
-
-    return await this.indexerService.getCount('scdeploys', elasticQuery);
+    return await this.indexerService.getAccountContractsCount(address);
   }
 
   async getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]> {
-    const elasticQuery: ElasticQuery = AccountService.buildAccountHistoryFilterQuery(address)
-      .withPagination(pagination)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
-
-    const elasticResult = await this.indexerService.getList('accountshistory', 'address', elasticQuery);
+    const elasticResult = await this.indexerService.getAccountHistory(address, pagination);
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountHistory(), item));
   }
 
-  private static buildAccountHistoryFilterQuery(address?: string, token?: string): ElasticQuery {
-    const mustQueries: AbstractQuery[] = [];
-
-    if (address) {
-      mustQueries.push(QueryType.Match('address', address));
-    }
-
-    if (token) {
-      mustQueries.push(QueryType.Match('token', token, QueryOperator.AND));
-    }
-
-    return ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, mustQueries);
-  }
-
   async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<AccountEsdtHistory[]> {
-    const elasticQuery: ElasticQuery = AccountService.buildAccountHistoryFilterQuery(address, tokenIdentifier)
-      .withPagination(pagination)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
-
-    const elasticResult = await this.indexerService.getList('accountsesdthistory', 'address', elasticQuery);
+    const elasticResult = await this.indexerService.getAccountTokenHistory(address, tokenIdentifier, pagination);
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
   }
 }

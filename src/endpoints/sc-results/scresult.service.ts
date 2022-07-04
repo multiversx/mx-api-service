@@ -1,8 +1,7 @@
-import { AbstractQuery, ApiUtils, ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType } from "@elrondnetwork/erdnest";
+import { ApiUtils } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
+import { IndexerService } from "src/common/indexer/indexer.service";
 import { Transaction } from "../transactions/entities/transaction";
 import { TransactionType } from "../transactions/entities/transaction.type";
 import { TransactionActionService } from "../transactions/transaction-action/transaction.action.service";
@@ -12,44 +11,13 @@ import { SmartContractResultFilter } from "./entities/smart.contract.result.filt
 @Injectable()
 export class SmartContractResultService {
   constructor(
-    private readonly indexerService: ElasticIndexerService,
-    private readonly apiConfigService: ApiConfigService,
+    private readonly indexerService: IndexerService,
     @Inject(forwardRef(() => TransactionActionService))
     private readonly transactionActionService: TransactionActionService,
   ) { }
 
-  private buildSmartContractResultFilterQuery(address?: string): ElasticQuery {
-    const shouldQueries: AbstractQuery[] = [];
-    const mustQueries: AbstractQuery[] = [];
-
-    if (address) {
-      shouldQueries.push(QueryType.Match('sender', address));
-      shouldQueries.push(QueryType.Match('receiver', address));
-
-      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-        shouldQueries.push(QueryType.Match('receivers', address));
-      }
-    }
-
-    const elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.should, shouldQueries)
-      .withCondition(QueryConditionOptions.must, mustQueries);
-
-    return elasticQuery;
-  }
-
   async getScResults(pagination: QueryPagination, filter: SmartContractResultFilter): Promise<SmartContractResult[]> {
-    let query = ElasticQuery.create().withPagination(pagination);
-
-    if (filter.miniBlockHash) {
-      query = query.withCondition(QueryConditionOptions.must, [QueryType.Match('miniBlockHash', filter.miniBlockHash)]);
-    }
-
-    if (filter.originalTxHashes) {
-      query = query.withShouldCondition(filter.originalTxHashes.map(originalTxHash => QueryType.Match('originalTxHash', originalTxHash)));
-    }
-
-    const elasticResult = await this.indexerService.getList('scresults', 'hash', query);
+    const elasticResult = await this.indexerService.getScResults(pagination, filter);
 
     const smartContractResults = elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
 
@@ -79,16 +47,11 @@ export class SmartContractResultService {
   }
 
   async getScResultsCount(): Promise<number> {
-    return await this.indexerService.getCount('scresults', ElasticQuery.create());
+    return await this.indexerService.getCount('scresults');
   }
 
   async getAccountScResults(address: string, pagination: QueryPagination): Promise<SmartContractResult[]> {
-    const elasticQuery: ElasticQuery = this.buildSmartContractResultFilterQuery(address);
-    elasticQuery
-      .withPagination(pagination)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
-
-    const elasticResult = await this.indexerService.getList('scresults', 'hash', elasticQuery);
+    const elasticResult = await this.indexerService.getAccountScResults(address, pagination);
 
     const smartContractResults = elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
 
@@ -103,8 +66,6 @@ export class SmartContractResultService {
   }
 
   async getAccountScResultsCount(address: string): Promise<number> {
-    const elasticQuery: ElasticQuery = this.buildSmartContractResultFilterQuery(address);
-
-    return await this.indexerService.getCount('scresults', elasticQuery);
+    return await this.indexerService.getAccountScResultsCount(address);
   }
 }

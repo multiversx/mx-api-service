@@ -12,14 +12,13 @@ import { NftAccount } from "../nfts/entities/nft.account";
 import { NftFilter } from "../nfts/entities/nft.filter";
 import { NftType } from "../nfts/entities/nft.type";
 import { NftExtendedAttributesService } from "../nfts/nft.extendedattributes.service";
-import { NftService } from "../nfts/nft.service";
 import { NftCollectionRole } from "../collections/entities/nft.collection.role";
 import { CollectionService } from "../collections/collection.service";
 import { NftCollection } from "../collections/entities/nft.collection";
 import { CollectionFilter } from "../collections/entities/collection.filter";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
-import { AddressUtils, ApiUtils, BinaryUtils, CachingService, ElasticSortOrder, MetricsService } from "@elrondnetwork/erdnest";
-import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
+import { AddressUtils, ApiUtils, BinaryUtils, CachingService, MetricsService } from "@elrondnetwork/erdnest";
+import { IndexerService } from "src/common/indexer/indexer.service";
 
 @Injectable()
 export class EsdtAddressService {
@@ -29,14 +28,12 @@ export class EsdtAddressService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly esdtService: EsdtService,
-    private readonly indexerService: ElasticIndexerService,
+    private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
     private readonly cachingService: CachingService,
     private readonly metricsService: MetricsService,
     private readonly protocolService: ProtocolService,
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
-    @Inject(forwardRef(() => NftService))
-    private readonly nftService: NftService,
     @Inject(forwardRef(() => CollectionService))
     private readonly collectionService: CollectionService,
   ) {
@@ -57,30 +54,15 @@ export class EsdtAddressService {
   }
 
   async getNftCountForAddressFromElastic(address: string, filter: NftFilter): Promise<number> {
-    const elasticQuery = this.nftService.buildElasticNftFilter(filter, undefined, address);
-    return await this.indexerService.getCount('accountsesdt', elasticQuery);
+    return await this.indexerService.getNftCountForAddress(address, filter);
   }
 
   async getCollectionCountForAddressFromElastic(address: string, filter: CollectionFilter): Promise<number> {
-    const elasticQuery = this.collectionService.buildCollectionRolesFilter(filter, address);
-
-    return await this.indexerService.getCount('tokens', elasticQuery);
+    return await this.indexerService.getCollectionCountForAddress(address, filter);
   }
 
   private async getNftsForAddressFromElastic(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
-    let elasticQuery = this.nftService.buildElasticNftFilter(filter, undefined, address)
-      .withPagination(pagination);
-
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      elasticQuery = elasticQuery.withSort([
-        { name: 'timestamp', order: ElasticSortOrder.descending },
-        { name: 'tokenNonce', order: ElasticSortOrder.descending },
-      ]);
-    } else {
-      elasticQuery = elasticQuery.withSort([{ name: '_id', order: ElasticSortOrder.ascending }]);
-    }
-
-    const esdts = await this.indexerService.getList('accountsesdt', 'identifier', elasticQuery);
+    const esdts = await this.indexerService.getNftsForAddress(address, filter, pagination);
 
     const gatewayNfts: GatewayNft[] = [];
 
@@ -117,11 +99,7 @@ export class EsdtAddressService {
       throw new BadRequestException('canCreate / canBurn / canAddQuantity / canUpdateAttributes / canAddUri / canTransferRole filter not supported when fetching account collections from elastic');
     }
 
-    const elasticQuery = this.collectionService.buildCollectionRolesFilter(filter, address)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
-      .withPagination(pagination);
-
-    const tokenCollections = await this.indexerService.getList('tokens', 'identifier', elasticQuery);
+    const tokenCollections = await this.indexerService.getNftCollections(pagination, filter, address);
     const collectionsIdentifiers = tokenCollections.map((collection) => collection.token);
 
     const indexedCollections: Record<string, any> = {};

@@ -9,16 +9,16 @@ import { TransactionLog } from "./entities/transaction.log";
 import { TransactionOptionalFieldOption } from "./entities/transaction.optional.field.options";
 import { TransactionReceipt } from "./entities/transaction.receipt";
 import { TokenTransferService } from "../tokens/token.transfer.service";
-import { ApiUtils, BinaryUtils, ElasticQuery, ElasticSortOrder, ElasticSortProperty, QueryConditionOptions, QueryType } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils } from "@elrondnetwork/erdnest";
 import { TransactionUtils } from "./transaction.utils";
-import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
+import { IndexerService } from "src/common/indexer/indexer.service";
 
 @Injectable()
 export class TransactionGetService {
   private readonly logger: Logger;
 
   constructor(
-    private readonly indexerService: ElasticIndexerService,
+    private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => TokenTransferService))
@@ -28,17 +28,7 @@ export class TransactionGetService {
   }
 
   private async tryGetTransactionFromElasticBySenderAndNonce(sender: string, nonce: number): Promise<TransactionDetailed | undefined> {
-    const queries = [
-      QueryType.Match('sender', sender),
-      QueryType.Match('nonce', nonce),
-    ];
-
-    const elasticQuery = ElasticQuery.create()
-      .withPagination({ from: 0, size: 1 })
-      .withCondition(QueryConditionOptions.must, queries);
-
-    const transactions = await this.indexerService.getList('transactions', 'txHash', elasticQuery);
-
+    const transactions = await this.indexerService.getTransactionBySenderAndNonce(sender, nonce);
     return transactions.firstOrUndefined();
   }
 
@@ -57,29 +47,11 @@ export class TransactionGetService {
   }
 
   private async getTransactionLogsFromElasticInternal(hashes: string[]): Promise<any[]> {
-    const queries = [];
-    for (const hash of hashes) {
-      queries.push(QueryType.Match('_id', hash));
-    }
-
-    const elasticQueryLogs = ElasticQuery.create()
-      .withPagination({ from: 0, size: 10000 })
-      .withCondition(QueryConditionOptions.should, queries);
-
-    return await this.indexerService.getList('logs', 'id', elasticQueryLogs);
+    return await this.indexerService.getTransactionLogs(hashes);
   }
 
   async getTransactionScResultsFromElastic(txHash: string): Promise<SmartContractResult[]> {
-    const originalTxHashQuery = QueryType.Match('originalTxHash', txHash);
-    const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
-
-    const elasticQuerySc = ElasticQuery.create()
-      .withPagination({ from: 0, size: 100 })
-      .withSort([timestamp])
-      .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
-
-    const scResults = await this.indexerService.getList('scresults', 'hash', elasticQuerySc);
-
+    const scResults = await this.indexerService.getTransactionScResults(txHash);
     return scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
   }
 
@@ -111,12 +83,7 @@ export class TransactionGetService {
         }
 
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.receipt)) {
-          const receiptHashQuery = QueryType.Match('txHash', txHash);
-          const elasticQueryReceipts = ElasticQuery.create()
-            .withPagination({ from: 0, size: 1 })
-            .withCondition(QueryConditionOptions.must, [receiptHashQuery]);
-
-          const receipts = await this.indexerService.getList('receipts', 'receiptHash', elasticQueryReceipts);
+          const receipts = await this.indexerService.getTransactionReceipts(txHash);
           if (receipts.length > 0) {
             const receipt = receipts[0];
             transactionDetailed.receipt = ApiUtils.mergeObjects(new TransactionReceipt(), receipt);

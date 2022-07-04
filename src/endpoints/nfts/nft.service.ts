@@ -20,8 +20,8 @@ import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, ElasticSortOrder } from "@elrondnetwork/erdnest";
-import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
+import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator } from "@elrondnetwork/erdnest";
+import { IndexerService } from "src/common/indexer/indexer.service";
 
 @Injectable()
 export class NftService {
@@ -31,7 +31,7 @@ export class NftService {
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly indexerService: ElasticIndexerService,
+    private readonly indexerService: IndexerService,
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
     private readonly cachingService: CachingService,
@@ -316,18 +316,7 @@ export class NftService {
   }
 
   async getNftsInternal(pagination: QueryPagination, filter: NftFilter, identifier?: string): Promise<Nft[]> {
-    const elasticQuery = this.buildElasticNftFilter(filter, identifier);
-    elasticQuery
-      .withPagination(pagination)
-      .withSort([
-        { name: 'timestamp', order: ElasticSortOrder.descending },
-        { name: 'nonce', order: ElasticSortOrder.descending },
-      ]);
-
-    let elasticNfts = await this.indexerService.getList('tokens', 'identifier', elasticQuery);
-    if (elasticNfts.length === 0 && identifier !== undefined) {
-      elasticNfts = await this.indexerService.getList('accountsesdt', 'identifier', ElasticQuery.create().withMustMatchCondition('identifier', identifier, QueryOperator.AND));
-    }
+    const elasticNfts = await this.indexerService.getNfts(pagination, filter, identifier);
 
     const nfts: Nft[] = [];
 
@@ -432,17 +421,11 @@ export class NftService {
       return null;
     }
 
-    const elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
-      .withCondition(QueryConditionOptions.must, [QueryType.Match('identifier', identifier, QueryOperator.AND)]);
-
-    return await this.indexerService.getCount('accountsesdt', elasticQuery);
+    return await this.indexerService.getNftOwnersCount(identifier);
   }
 
   async getNftCount(filter: NftFilter): Promise<number> {
-    const elasticQuery = this.buildElasticNftFilter(filter);
-
-    return await this.indexerService.getCount('tokens', elasticQuery);
+    return await this.indexerService.getNftCount(filter);
   }
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
@@ -533,24 +516,6 @@ export class NftService {
   }
 
   async getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination) {
-    if (identifiers.length === 0) {
-      return [];
-    }
-
-    const queries = identifiers.map((identifier) => QueryType.Match('identifier', identifier, QueryOperator.AND));
-
-    let elasticQuery = ElasticQuery.create();
-
-    if (pagination) {
-      elasticQuery = elasticQuery.withPagination(pagination);
-    }
-
-    elasticQuery = elasticQuery
-      .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
-      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
-      .withCondition(QueryConditionOptions.should, queries)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
-
-    return await this.indexerService.getList('accountsesdt', 'identifier', elasticQuery);
+    return await this.indexerService.getAccountEsdtByIdentifiers(identifiers, pagination);
   }
 }
