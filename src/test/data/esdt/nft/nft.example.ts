@@ -36,6 +36,9 @@ const nftCollection = [{
   ticker: 'EROBOT-527a29',
   scamInfo: undefined,
   assets: undefined,
+  score: undefined,
+  isNsfw: undefined,
+  rank: undefined,
 },
 ];
 export default nftCollection;
