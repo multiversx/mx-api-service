@@ -289,9 +289,13 @@ export class NetworkService {
       .execSync('git rev-parse --short HEAD')
       .toString().trim();
 
-    const pluginsVersion = require('child_process')
+    let pluginsVersion = require('child_process')
       .execSync('git rev-parse --short HEAD', { cwd: 'src/plugins' })
       .toString().trim();
+
+    if (pluginsVersion === appVersion) {
+      pluginsVersion = undefined;
+    }
 
     return new About({
       appVersion,
