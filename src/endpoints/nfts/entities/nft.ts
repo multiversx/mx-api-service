@@ -7,6 +7,10 @@ import { NftType } from "./nft.type";
 import { SwaggerUtils } from "@elrondnetwork/erdnest";
 
 export class Nft {
+  constructor(init?: Partial<Nft>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String })
   identifier: string = '';
 

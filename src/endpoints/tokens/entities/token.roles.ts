@@ -1,5 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
+
 export class TokenRoles {
+  constructor(init?: Partial<TokenRoles>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String })
   address: string = '';
 

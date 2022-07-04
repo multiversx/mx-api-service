@@ -1,4 +1,8 @@
 export class StakeInfo {
+  constructor(init?: Partial<StakeInfo>) {
+    Object.assign(this, init);
+  }
+
   score?: number;
   validators?: number;
   stake?: string;

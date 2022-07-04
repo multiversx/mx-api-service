@@ -4,6 +4,10 @@ import { TransactionAction } from "src/endpoints/transactions/transaction-action
 import { TransactionLog } from "../../transactions/entities/transaction.log";
 
 export class SmartContractResult {
+  constructor(init?: Partial<SmartContractResult>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String })
   hash: string = '';
 

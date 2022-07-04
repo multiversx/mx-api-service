@@ -3,6 +3,10 @@ import { ApiProperty } from "@nestjs/swagger";
 import { SwaggerUtils } from "@elrondnetwork/erdnest";
 
 export class EsdtSupply {
+  constructor(init?: Partial<EsdtSupply>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty(SwaggerUtils.amountPropertyOptions())
   totalSupply: string = '0';
 

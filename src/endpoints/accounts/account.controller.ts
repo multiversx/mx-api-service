@@ -34,6 +34,14 @@ import { TokenDetailedWithBalance } from '../tokens/entities/token.detailed.with
 import { NftCollectionAccount } from '../collections/entities/nft.collection.account';
 import { TokenWithRoles } from '../tokens/entities/token.with.roles';
 import { ParseAddressPipe, ParseArrayPipe, ParseBlockHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumArrayPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseTransactionHashPipe } from '@elrondnetwork/erdnest';
+import { QueryPagination } from 'src/common/entities/query.pagination';
+import { TransactionQueryOptions } from '../transactions/entities/transactions.query.options';
+import { TokenWithRolesFilter } from '../tokens/entities/token.with.roles.filter';
+import { CollectionFilter } from '../collections/entities/collection.filter';
+import { TokenFilter } from '../tokens/entities/token.filter';
+import { NftFilter } from '../nfts/entities/nft.filter';
+import { NftQueryOptions } from '../nfts/entities/nft.query.options';
+import { TransactionFilter } from '../transactions/entities/transaction.filter';
 
 @Controller()
 @ApiTags('accounts')
@@ -125,7 +133,7 @@ export class AccountController {
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
   ): Promise<TokenWithBalance[]> {
     try {
-      return await this.tokenService.getTokensForAddress(address, { from, size }, { search, name, identifier, identifiers });
+      return await this.tokenService.getTokensForAddress(address, new QueryPagination({ from, size }), new TokenFilter({ search, name, identifier, identifiers }));
     } catch (error) {
       this.logger.error(`Error in getAccountTokens for address ${address}`);
       this.logger.error(error);
@@ -204,7 +212,7 @@ export class AccountController {
     @Query('canAddUri', new ParseOptionalBoolPipe) canAddUri?: boolean,
     @Query('canTransferRole', new ParseOptionalBoolPipe) canTransferRole?: boolean,
   ): Promise<NftCollectionRole[]> {
-    return await this.collectionService.getCollectionsWithRolesForAddress(address, { search, type, owner, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole }, { from, size });
+    return await this.collectionService.getCollectionsWithRolesForAddress(address, new CollectionFilter({ search, type, owner, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole }), new QueryPagination({ from, size }));
   }
 
   @Get("/accounts/:address/roles/collections/count")
@@ -225,7 +233,7 @@ export class AccountController {
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
     @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity?: boolean,
   ): Promise<number> {
-    return await this.collectionService.getCollectionCountForAddressWithRoles(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
+    return await this.collectionService.getCollectionCountForAddressWithRoles(address, new CollectionFilter({ search, type, owner, canCreate, canBurn, canAddQuantity }));
   }
 
   @Get("/accounts/:address/roles/collections/c")
@@ -239,7 +247,7 @@ export class AccountController {
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
     @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity?: boolean,
   ): Promise<number> {
-    return await this.collectionService.getCollectionCountForAddressWithRoles(address, { search, type, owner, canCreate, canBurn, canAddQuantity });
+    return await this.collectionService.getCollectionCountForAddressWithRoles(address, new CollectionFilter({ search, type, owner, canCreate, canBurn, canAddQuantity }));
   }
 
   @Get("/accounts/:address/roles/collections/:collection")
@@ -275,7 +283,7 @@ export class AccountController {
     @Query('canMint', new ParseOptionalBoolPipe) canMint?: boolean,
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
   ): Promise<TokenWithRoles[]> {
-    return await this.tokenService.getTokensWithRolesForAddress(address, { search, owner, canMint, canBurn }, { from, size });
+    return await this.tokenService.getTokensWithRolesForAddress(address, new TokenWithRolesFilter({ search, owner, canMint, canBurn }), new QueryPagination({ from, size }));
   }
 
   @Get("/accounts/:address/roles/tokens/count")
@@ -293,7 +301,7 @@ export class AccountController {
     @Query('canMint', new ParseOptionalBoolPipe) canMint?: boolean,
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
   ): Promise<number> {
-    return await this.tokenService.getTokensWithRolesForAddressCount(address, { search, owner, canMint, canBurn });
+    return await this.tokenService.getTokensWithRolesForAddressCount(address, new TokenWithRolesFilter({ search, owner, canMint, canBurn }));
   }
 
   @Get("/accounts/:address/roles/tokens/c")
@@ -305,7 +313,7 @@ export class AccountController {
     @Query('canMint', new ParseOptionalBoolPipe) canMint?: boolean,
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
   ): Promise<number> {
-    return await this.tokenService.getTokensWithRolesForAddressCount(address, { search, owner, canMint, canBurn });
+    return await this.tokenService.getTokensWithRolesForAddressCount(address, new TokenWithRolesFilter({ search, owner, canMint, canBurn }));
   }
 
   @Get("/accounts/:address/roles/tokens/:identifier")
@@ -337,7 +345,7 @@ export class AccountController {
     @Query('search') search?: string,
     @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type?: NftType[],
   ): Promise<NftCollectionAccount[]> {
-    return await this.collectionService.getCollectionsForAddress(address, { search, type }, { from, size });
+    return await this.collectionService.getCollectionsForAddress(address, new CollectionFilter({ search, type }), new QueryPagination({ from, size }));
   }
 
   @Get("/accounts/:address/collections/count")
@@ -350,7 +358,7 @@ export class AccountController {
     @Query('search') search?: string,
     @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type?: NftType[],
   ): Promise<number> {
-    return await this.collectionService.getCollectionCountForAddress(address, { search, type });
+    return await this.collectionService.getCollectionCountForAddress(address, new CollectionFilter({ search, type }));
   }
 
   @Get("/accounts/:address/collections/c")
@@ -360,7 +368,7 @@ export class AccountController {
     @Query('search') search?: string,
     @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type?: NftType[],
   ): Promise<number> {
-    return await this.collectionService.getCollectionCountForAddress(address, { search, type });
+    return await this.collectionService.getCollectionCountForAddress(address, new CollectionFilter({ search, type }));
   }
 
   @Get("/accounts/:address/collections/:collection")
@@ -412,7 +420,7 @@ export class AccountController {
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean,
     @Query('source', new ParseOptionalEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
   ): Promise<NftAccount[]> {
-    return await this.nftService.getNftsForAddress(address, { from, size }, { search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }, { withSupply }, source);
+    return await this.nftService.getNftsForAddress(address, new QueryPagination({ from, size }), new NftFilter({ search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }), new NftQueryOptions({ withSupply }), source);
   }
 
   @Get("/accounts/:address/nfts/count")
@@ -441,7 +449,7 @@ export class AccountController {
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseOptionalBoolPipe) includeFlagged?: boolean,
   ): Promise<number> {
-    return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged });
+    return await this.nftService.getNftCountForAddress(address, new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged }));
   }
 
   @Get("/accounts/:address/nfts/c")
@@ -459,7 +467,7 @@ export class AccountController {
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseOptionalBoolPipe) includeFlagged?: boolean,
   ): Promise<number> {
-    return await this.nftService.getNftCountForAddress(address, { search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged });
+    return await this.nftService.getNftCountForAddress(address, new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged }));
   }
 
   @Get("/accounts/:address/nfts/:nft")
@@ -549,7 +557,7 @@ export class AccountController {
       throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
     }
 
-    return await this.transactionService.getTransactions({
+    return await this.transactionService.getTransactions(new TransactionFilter({
       sender,
       receiver,
       token,
@@ -562,7 +570,7 @@ export class AccountController {
       before,
       after,
       order,
-    }, { from, size }, { withScResults, withOperations, withLogs }, address);
+    }), new QueryPagination({ from, size }), new TransactionQueryOptions({ withScResults, withOperations, withLogs }), address);
   }
 
   @Get("/accounts/:address/transactions/count")
@@ -595,7 +603,7 @@ export class AccountController {
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
-    return await this.transactionService.getTransactionCount({
+    return await this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
       receiver,
       token,
@@ -608,7 +616,7 @@ export class AccountController {
       search,
       before,
       after,
-    }, address);
+    }), address);
   }
 
   @Get("/accounts/:address/transfers")
@@ -649,7 +657,7 @@ export class AccountController {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
-    return await this.transferService.getTransfers({
+    return await this.transferService.getTransfers(new TransactionFilter({
       address,
       sender,
       receiver,
@@ -663,7 +671,7 @@ export class AccountController {
       before,
       after,
       order,
-    }, { from, size });
+    }), new QueryPagination({ from, size }));
   }
 
   @Get("/accounts/:address/transfers/count")
@@ -700,7 +708,7 @@ export class AccountController {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
-    return await this.transferService.getTransfersCount({
+    return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
       sender,
       receiver,
@@ -714,7 +722,7 @@ export class AccountController {
       search,
       before,
       after,
-    });
+    }));
   }
 
   @Get("/accounts/:address/transfers/c")
@@ -738,7 +746,7 @@ export class AccountController {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
-    return await this.transferService.getTransfersCount({
+    return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
       sender,
       receiver,
@@ -752,7 +760,7 @@ export class AccountController {
       search,
       before,
       after,
-    });
+    }));
   }
 
   @Get("/accounts/:address/contracts")
@@ -765,7 +773,7 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<DeployedContract[]> {
-    return this.accountService.getAccountContracts({ from, size }, address);
+    return this.accountService.getAccountContracts(new QueryPagination({ from, size }), address);
   }
 
   @Get("/accounts/:address/contracts/count")
@@ -791,7 +799,7 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<SmartContractResult[]> {
-    return this.scResultService.getAccountScResults(address, { from, size });
+    return this.scResultService.getAccountScResults(address, new QueryPagination({ from, size }));
   }
 
   @Get("/accounts/:address/results/count")
@@ -828,7 +836,7 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<SmartContractResult[]> {
-    return this.scResultService.getAccountScResults(address, { from, size });
+    return this.scResultService.getAccountScResults(address, new QueryPagination({ from, size }));
   }
 
   @Get("/accounts/:address/sc-results/count")
@@ -865,7 +873,7 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<AccountHistory[]> {
-    return this.accountService.getAccountHistory(address, { from, size });
+    return this.accountService.getAccountHistory(address, new QueryPagination({ from, size }));
   }
 
   @Get("/accounts/:address/history/:tokenIdentifier")
@@ -884,6 +892,6 @@ export class AccountController {
       throw new NotFoundException(`Token '${tokenIdentifier}' not found`);
     }
 
-    return await this.accountService.getAccountTokenHistory(address, tokenIdentifier, { from, size });
+    return await this.accountService.getAccountTokenHistory(address, tokenIdentifier, new QueryPagination({ from, size }));
   }
 }

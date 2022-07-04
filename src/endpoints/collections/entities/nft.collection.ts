@@ -4,6 +4,10 @@ import { NftType } from "../../nfts/entities/nft.type";
 import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles";
 
 export class NftCollection {
+  constructor(init?: Partial<NftCollection>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String })
   collection: string = '';
 

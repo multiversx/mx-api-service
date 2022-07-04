@@ -2,6 +2,11 @@ import { ApiProperty } from "@nestjs/swagger";
 import { NftCollection } from "./nft.collection";
 
 export class NftCollectionRole extends NftCollection {
+  constructor(init?: Partial<NftCollectionRole>) {
+    super();
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: Boolean, nullable: true })
   canCreate: boolean | undefined = undefined;
 

@@ -1,5 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
+
 export class Stats {
+  constructor(init?: Partial<Stats>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty()
   accounts: number = 0;
 

@@ -2,6 +2,10 @@ import { ApiProperty } from "@nestjs/swagger";
 import { TokenType } from "./token.type";
 
 export class TokenProperties {
+  constructor(init?: Partial<TokenProperties>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty()
   token: string = '';
 

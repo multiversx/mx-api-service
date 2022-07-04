@@ -2,6 +2,10 @@ import { SwaggerUtils } from "@elrondnetwork/erdnest";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class Identity {
+  constructor(init?: Partial<Identity>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String })
   identity?: string = '';
 

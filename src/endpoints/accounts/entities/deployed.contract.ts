@@ -1,6 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class DeployedContract {
+  constructor(init?: Partial<DeployedContract>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: String })
   address: string = "";
 

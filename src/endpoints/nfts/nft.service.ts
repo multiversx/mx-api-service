@@ -118,7 +118,7 @@ export class NftService {
   async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[]> {
     const { from, size } = queryPagination;
 
-    const nfts = await this.getNftsInternal(from, size, filter);
+    const nfts = await this.getNftsInternal({ from, size }, filter);
 
     for (const nft of nfts) {
       await this.applyAssetsAndTicker(nft);
@@ -242,7 +242,7 @@ export class NftService {
   }
 
   async getSingleNft(identifier: string): Promise<Nft | undefined> {
-    const nfts = await this.getNftsInternal(0, 1, new NftFilter(), identifier);
+    const nfts = await this.getNftsInternal(new QueryPagination({ from: 0, size: 1 }), new NftFilter(), identifier);
     if (nfts.length === 0) {
       return undefined;
     }
@@ -271,7 +271,7 @@ export class NftService {
       return;
     }
 
-    const nftsForAddress = await this.esdtAddressService.getNftsForAddress(nft.owner, { identifiers: [nft.identifier] }, { from: 0, size: 1 });
+    const nftsForAddress = await this.esdtAddressService.getNftsForAddress(nft.owner, new NftFilter({ identifiers: [nft.identifier] }), new QueryPagination({ from: 0, size: 1 }));
     if (nftsForAddress.length === 0) {
       return;
     }
@@ -292,7 +292,7 @@ export class NftService {
       return false;
     }
 
-    const nfts = await this.getNftsInternal(0, 1, new NftFilter(), identifier);
+    const nfts = await this.getNftsInternal(new QueryPagination({ from: 0, size: 1 }), new NftFilter(), identifier);
 
     return nfts.length > 0;
   }
@@ -314,10 +314,10 @@ export class NftService {
     });
   }
 
-  async getNftsInternal(from: number, size: number, filter: NftFilter, identifier?: string): Promise<Nft[]> {
+  async getNftsInternal(pagination: QueryPagination, filter: NftFilter, identifier?: string): Promise<Nft[]> {
     const elasticQuery = this.buildElasticNftFilter(filter, identifier);
     elasticQuery
-      .withPagination({ from, size })
+      .withPagination(pagination)
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'nonce', order: ElasticSortOrder.descending },
@@ -481,16 +481,14 @@ export class NftService {
   }
 
   async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {
-    const count = await this.esdtAddressService.getNftCountForAddressFromElastic(address, filter);
-
-    return count;
+    return await this.esdtAddressService.getNftCountForAddressFromElastic(address, filter);
   }
 
   async getNftForAddress(address: string, identifier: string): Promise<NftAccount | undefined> {
     const filter = new NftFilter();
     filter.identifiers = [identifier];
 
-    const nfts = await this.esdtAddressService.getNftsForAddress(address, filter, { from: 0, size: 1 });
+    const nfts = await this.esdtAddressService.getNftsForAddress(address, filter, new QueryPagination({ from: 0, size: 1 }));
     if (nfts.length === 0) {
       return undefined;
     }
@@ -519,7 +517,7 @@ export class NftService {
       return undefined;
     }
 
-    const nfts = await this.getNftsInternal(0, 1, new NftFilter(), identifier);
+    const nfts = await this.getNftsInternal(new QueryPagination({ from: 0, size: 1 }), new NftFilter(), identifier);
     if (nfts.length === 0) {
       return undefined;
     }

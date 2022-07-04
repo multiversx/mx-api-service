@@ -2,6 +2,10 @@ import { SwaggerUtils } from "@elrondnetwork/erdnest";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class GlobalStake {
+  constructor(init?: Partial<GlobalStake>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({ type: Number, default: 3200 })
   totalValidators: number = 0;
 
