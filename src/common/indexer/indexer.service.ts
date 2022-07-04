@@ -1,8 +1,8 @@
+import { PerformanceProfiler } from "@elrondnetwork/erdnest";
 import { Inject, Injectable } from "@nestjs/common";
 import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
-import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { QueryPagination } from "../entities/query.pagination";
-import { MetricsService } from "../metrics/metrics.service";
+import { ApiMetricsService } from "../metrics/api.metrics.service";
 import { IndexerInterface } from "./indexer.interface";
 
 @Injectable()
@@ -10,7 +10,7 @@ export class IndexerService implements IndexerInterface {
   constructor(
     @Inject('IndexerInterface')
     private readonly indexerInterface: IndexerInterface,
-    private readonly metricsService: MetricsService,
+    private readonly metricsService: ApiMetricsService,
   ) { }
 
   private async execute<T>(key: string, action: Promise<T>): Promise<T> {
