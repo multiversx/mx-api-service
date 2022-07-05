@@ -12,6 +12,8 @@ import { GatewayService } from 'src/common/gateway/gateway.service';
 import { Auction } from 'src/common/gateway/entities/auction';
 import { AuctionNode } from 'src/common/gateway/entities/auction.node';
 import { CachingService } from "@elrondnetwork/erdnest";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { About } from "src/endpoints/network/entities/about";
 
 describe('Network Service', () => {
   let networkService: NetworkService;
@@ -206,6 +208,55 @@ describe('Network Service', () => {
       const minimumAuctionTopUp = await networkService.getMinimumAuctionTopUp();
 
       expect(minimumAuctionTopUp).toBeUndefined();
+    });
+  });
+
+
+  describe('getAbout', () => {
+    it('should return API general information', async () => {
+      jest
+        .spyOn(CachingService.prototype, 'getOrSetCache')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
+
+      jest
+        .spyOn(NetworkService.prototype, 'getAboutRaw')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(() => {
+          return new About({
+            appVersion: '8f2b49d',
+            pluginsVersion: 'e0a77bc',
+            network: 'mainnet',
+            cluster: undefined,
+          });
+        }));
+
+      const result = await networkService.getAbout();
+      expect(result).toHaveStructure(Object.keys(new About()));
+    });
+  });
+
+  describe('getAboutRaw', () => {
+    it('should return mainnet API general configuration', async () => {
+      jest.mock("child_process", () => {
+        return {
+          execSync: () => "8f2b49d",
+        };
+      });
+
+      jest.spyOn(ApiConfigService.prototype, 'getNetwork')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(() => ('mainnet')));
+
+      jest.spyOn(ApiConfigService.prototype, 'getCluster')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(() => undefined));
+
+      const result = await networkService.getAboutRaw();
+
+      expect(result.appVersion).toStrictEqual('8f2b49d');
+      expect(result.network).toStrictEqual('mainnet');
+      expect(result.cluster).toBeUndefined();
     });
   });
 });
