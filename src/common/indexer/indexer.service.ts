@@ -33,8 +33,12 @@ export class IndexerService implements IndexerInterface {
     }
   }
 
-  async getCount(collection: string): Promise<number> {
-    return await this.execute('getCount', this.indexerInterface.getCount(collection));
+  async getAccountsCount(): Promise<number> {
+    return await this.execute('getAccountsCount', this.indexerInterface.getAccountsCount());
+  }
+
+  async getScResultsCount(): Promise<number> {
+    return await this.execute('getScResultsCount', this.indexerInterface.getScResultsCount());
   }
 
   async getAccountContractsCount(address: string): Promise<number> {
@@ -109,8 +113,40 @@ export class IndexerService implements IndexerInterface {
     return await this.execute('getTransactionCount', this.indexerInterface.getTransactionCount(filter, address));
   }
 
-  async getItem(collection: string, key: string, identifier: string): Promise<any> {
-    return await this.execute('getItem', this.indexerInterface.getItem(collection, key, identifier));
+  async getRound(shard: number, round: number): Promise<any> {
+    return await this.execute('getRound', this.indexerInterface.getRound(shard, round));
+  }
+
+  async getToken(identifier: string): Promise<any> {
+    return await this.execute('getToken', this.indexerInterface.getToken(identifier));
+  }
+
+  async getCollection(identifier: string): Promise<any> {
+    return await this.execute('getCollection', this.indexerInterface.getCollection(identifier));
+  }
+
+  async getTransaction(txHash: string): Promise<any> {
+    return await this.execute('getTransaction', this.indexerInterface.getTransaction(txHash));
+  }
+
+  async getScDeploy(address: string): Promise<any> {
+    return await this.execute('getScDeploy', this.indexerInterface.getScDeploy(address));
+  }
+
+  async getScResult(scHash: string): Promise<any> {
+    return await this.execute('getScResult', this.indexerInterface.getScResult(scHash));
+  }
+
+  async getBlock(hash: string): Promise<any> {
+    return await this.execute('getBlock', this.indexerInterface.getBlock(hash));
+  }
+
+  async getMiniBlock(miniBlockHash: string): Promise<any> {
+    return await this.execute('getMiniBlock', this.indexerInterface.getMiniBlock(miniBlockHash));
+  }
+
+  async getTag(tag: string): Promise<any> {
+    return await this.execute('getTag', this.indexerInterface.getTag(tag));
   }
 
   async getTransfers(filter: TransactionFilter, pagination: QueryPagination): Promise<any[]> {
@@ -213,19 +249,31 @@ export class IndexerService implements IndexerInterface {
     return await this.execute('getAllAccountsWithToken', this.indexerInterface.getAllAccountsWithToken(identifier, action));
   }
 
-  async getCustomValue(collection: string, identifier: string, attribute: string): Promise<any> {
-    return await this.execute('getCustomValue', this.indexerInterface.getCustomValue(collection, identifier, attribute));
-  }
-
-  async setCustomValue<T>(collection: string, identifier: string, attribute: string, value: T): Promise<void> {
-    return await this.execute('setCustomValue', this.indexerInterface.setCustomValue(collection, identifier, attribute, value));
-  }
-
   async getPublicKeys(shard: number, epoch: number): Promise<string[] | undefined> {
     return await this.execute('getPublicKeys', this.indexerInterface.getPublicKeys(shard, epoch));
   }
 
   async getCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<{ collection: string, count: number, balance: number }[]> {
     return await this.execute('getCollectionsForAddress', this.indexerInterface.getCollectionsForAddress(address, filter, pagination));
+  }
+
+  async getAssetsForToken(identifier: string): Promise<any> {
+    return await this.execute('getAssetsForToken', this.indexerInterface.getAssetsForToken(identifier));
+  }
+
+  async setAssetsForToken(identifier: string, value: any): Promise<void> {
+    return await this.execute('setAssetsForToken', this.indexerInterface.setAssetsForToken(identifier, value));
+  }
+
+  async setIsWhitelistedStorageForToken(identifier: string, value: boolean): Promise<void> {
+    return await this.execute('setIsWhitelistedStorageForToken', this.indexerInterface.setIsWhitelistedStorageForToken(identifier, value));
+  }
+
+  async setMediaForToken(identifier: string, value: any[]): Promise<void> {
+    return await this.execute('setMediaForToken', this.indexerInterface.setMediaForToken(identifier, value));
+  }
+
+  async setMetadataForToken(identifier: string, value: any): Promise<void> {
+    return await this.execute('setMetadataForToken', this.indexerInterface.setMetadataForToken(identifier, value));
   }
 }

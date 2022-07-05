@@ -94,7 +94,7 @@ export class CollectionService {
   }
 
   async isCollection(identifier: string): Promise<boolean> {
-    const collection = await this.indexerService.getItem('tokens', '_id', identifier);
+    const collection = await this.indexerService.getCollection(identifier);
     return collection !== undefined;
   }
 
@@ -207,7 +207,7 @@ export class CollectionService {
   }
 
   async getNftCollection(identifier: string): Promise<NftCollection | undefined> {
-    const elasticCollection = await this.indexerService.getItem('tokens', '_id', identifier);
+    const elasticCollection = await this.indexerService.getCollection(identifier);
     if (!elasticCollection) {
       return undefined;
     }

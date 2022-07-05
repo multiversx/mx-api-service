@@ -50,7 +50,7 @@ export class AccountService {
   async getAccountsCount(): Promise<number> {
     return await this.cachingService.getOrSetCache(
       'account:count',
-      async () => await this.indexerService.getCount('accounts'),
+      async () => await this.indexerService.getAccountsCount(),
       Constants.oneMinute()
     );
   }
@@ -145,7 +145,7 @@ export class AccountService {
   }
 
   async getAccountDeployedAtRaw(address: string): Promise<number | null> {
-    const scDeploy = await this.indexerService.getItem('scdeploys', '_id', address);
+    const scDeploy = await this.indexerService.getScDeploy(address);
     if (!scDeploy) {
       return null;
     }
@@ -155,7 +155,7 @@ export class AccountService {
       return null;
     }
 
-    const transaction = await this.indexerService.getItem('transactions', '_id', txHash);
+    const transaction = await this.indexerService.getTransaction(txHash);
     if (!transaction) {
       return null;
     }

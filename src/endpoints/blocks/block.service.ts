@@ -59,7 +59,7 @@ export class BlockService {
   }
 
   async getBlock(hash: string): Promise<BlockDetailed> {
-    const result = await this.indexerService.getItem('blocks', 'hash', hash);
+    const result = await this.indexerService.getBlock(hash);
 
     if (result.round > 0) {
       const publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);

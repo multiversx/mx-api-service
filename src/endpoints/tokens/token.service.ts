@@ -327,7 +327,7 @@ export class TokenService {
   }
 
   private async getTokenRolesFromElastic(identifier: string): Promise<TokenRoles[] | undefined> {
-    const token = await this.indexerService.getItem('tokens', 'identifier', identifier);
+    const token = await this.indexerService.getToken(identifier);
     if (!token) {
       return undefined;
     }
@@ -365,7 +365,7 @@ export class TokenService {
 
   async getTokenRolesForIdentifierAndAddress(identifier: string, address: string): Promise<TokenRoles | undefined> {
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      const token = await this.indexerService.getItem('tokens', 'identifier', identifier);
+      const token = await this.indexerService.getToken(identifier);
 
       if (!token) {
         return undefined;

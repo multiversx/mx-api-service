@@ -32,7 +32,7 @@ export class SmartContractResultService {
   }
 
   async getScResult(scHash: string): Promise<SmartContractResult | undefined> {
-    const scResult = await this.indexerService.getItem('scresults', 'hash', scHash);
+    const scResult = await this.indexerService.getScResult(scHash);
     if (!scResult) {
       return undefined;
     }
@@ -47,7 +47,7 @@ export class SmartContractResultService {
   }
 
   async getScResultsCount(): Promise<number> {
-    return await this.indexerService.getCount('scresults');
+    return await this.indexerService.getScResultsCount();
   }
 
   async getAccountScResults(address: string, pagination: QueryPagination): Promise<SmartContractResult[]> {

@@ -29,7 +29,7 @@ export class ElasticUpdaterService {
       const allAssets = await this.assetsService.getAllTokenAssets();
 
       for (const key of Object.keys(allAssets)) {
-        const elasticAssets = await this.indexerService.getCustomValue('tokens', key, 'assets');
+        const elasticAssets = await this.indexerService.getAssetsForToken(key);
         if (elasticAssets === null) {
           this.logger.log(`Could not find token with identifier '${key}' when updating assets in elastic`);
           continue;
@@ -39,7 +39,7 @@ export class ElasticUpdaterService {
 
         if (!elasticAssets || JsonDiff.diff(githubAssets, elasticAssets)) {
           this.logger.log(`Updating assets for token with identifier '${key}'`);
-          await this.indexerService.setCustomValue('tokens', key, 'assets', githubAssets);
+          await this.indexerService.setAssetsForToken(key, githubAssets);
         }
       }
     }, true);
@@ -173,7 +173,7 @@ export class ElasticUpdaterService {
   private async updateIsWhitelistedStorageForToken(identifier: string, isWhitelistedStorage: boolean): Promise<void> {
     try {
       this.logger.log(`Setting api_isWhitelistedStorage for token with identifier '${identifier}'`);
-      await this.indexerService.setCustomValue('tokens', identifier, 'isWhitelistedStorage', isWhitelistedStorage);
+      await this.indexerService.setIsWhitelistedStorageForToken(identifier, isWhitelistedStorage);
     } catch (error) {
       this.logger.error(`Unexpected error when updating isWhitelistedStorage for token with identifier '${identifier}'`);
     }
@@ -182,7 +182,7 @@ export class ElasticUpdaterService {
   private async updateMediaForToken(identifier: string, media: NftMedia[]): Promise<void> {
     try {
       this.logger.log(`Setting api_media for token with identifier '${identifier}'`);
-      await this.indexerService.setCustomValue('tokens', identifier, 'media', media);
+      await this.indexerService.setMediaForToken(identifier, media);
     } catch (error) {
       this.logger.error(`Unexpected error when updating media for token with identifier '${identifier}'`);
     }
@@ -191,7 +191,7 @@ export class ElasticUpdaterService {
   private async updateMetadataForToken(identifier: string, metadata: any): Promise<void> {
     try {
       this.logger.log(`Setting api_metadata for token with identifier '${identifier}'`);
-      await this.indexerService.setCustomValue('tokens', identifier, 'metadata', metadata);
+      await this.indexerService.setMetadataForToken(identifier, metadata);
     } catch (error) {
       this.logger.error(`Unexpected error when updating metadata for token with identifier '${identifier}'`);
     }

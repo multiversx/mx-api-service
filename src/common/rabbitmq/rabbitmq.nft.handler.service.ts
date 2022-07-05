@@ -40,7 +40,7 @@ export class RabbitMqNftHandlerService {
   }
 
   private async getCollectionTypeRaw(collectionIdentifier: string): Promise<NftType | undefined> {
-    const collection = await this.indexerService.getItem('tokens', '_id', collectionIdentifier);
+    const collection = await this.indexerService.getCollection(collectionIdentifier);
     if (!collection) {
       return undefined;
     }

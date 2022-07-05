@@ -28,7 +28,7 @@ export class RoundService {
   }
 
   async getRound(shard: number, round: number): Promise<RoundDetailed> {
-    const result = await this.indexerService.getItem('rounds', 'round', `${shard}_${round}`);
+    const result = await this.indexerService.getRound(shard, round);
 
     const epoch = RoundUtils.roundToEpoch(round);
     const publicKeys = await this.blsService.getPublicKeys(shard, epoch);

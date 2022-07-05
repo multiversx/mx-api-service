@@ -63,7 +63,7 @@ export class ProtocolService {
 
   private async getGenesisTimestampRaw(): Promise<number> {
     try {
-      const round = await this.indexerService.getItem('rounds', 'round', `${0}_${1}`);
+      const round = await this.indexerService.getRound(0, 1);
       return round.timestamp;
     } catch (error) {
       this.logger.error(error);

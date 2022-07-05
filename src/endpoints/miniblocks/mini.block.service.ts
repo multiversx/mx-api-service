@@ -8,7 +8,7 @@ export class MiniBlockService {
   constructor(private readonly indexerService: IndexerService) { }
 
   async getMiniBlock(miniBlockHash: string): Promise<MiniBlockDetailed> {
-    const result = await this.indexerService.getItem('miniblocks', 'miniBlockHash', miniBlockHash);
+    const result = await this.indexerService.getMiniBlock(miniBlockHash);
 
     return ApiUtils.mergeObjects(new MiniBlockDetailed(), result);
   }

@@ -9,7 +9,9 @@ import { TransactionFilter } from "src/endpoints/transactions/entities/transacti
 import { QueryPagination } from "../entities/query.pagination";
 
 export interface IndexerInterface {
-  getCount(collection: string): Promise<number>
+  getAccountsCount(): Promise<number>
+
+  getScResultsCount(): Promise<number>
 
   getAccountContractsCount(address: string): Promise<number>
 
@@ -47,7 +49,23 @@ export interface IndexerInterface {
 
   getTransactionCount(filter: TransactionFilter, address?: string): Promise<number>
 
-  getItem(collection: string, key: string, identifier: string): Promise<any>
+  getRound(shard: number, round: number): Promise<any>
+
+  getToken(identifier: string): Promise<any>
+
+  getCollection(identifier: string): Promise<any>
+
+  getTransaction(txHash: string): Promise<any>
+
+  getScDeploy(address: string): Promise<any>
+
+  getScResult(scHash: string): Promise<any>
+
+  getBlock(hash: string): Promise<any>
+
+  getMiniBlock(miniBlockHash: string): Promise<any>
+
+  getTag(tag: string): Promise<any>
 
   getTransfers(filter: TransactionFilter, pagination: QueryPagination): Promise<any[]>
 
@@ -99,11 +117,17 @@ export interface IndexerInterface {
 
   getAllAccountsWithToken(identifier: string, action: (items: any[]) => Promise<void>): Promise<void>
 
-  getCustomValue(collection: string, identifier: string, attribute: string): Promise<any>
-
-  setCustomValue<T>(collection: string, identifier: string, attribute: string, value: T): Promise<void>
-
   getPublicKeys(shard: number, epoch: number): Promise<string[] | undefined>
 
   getCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<{ collection: string, count: number, balance: number }[]>
+
+  getAssetsForToken(identifier: string): Promise<any>
+
+  setAssetsForToken(identifier: string, value: any): Promise<void>
+
+  setIsWhitelistedStorageForToken(identifier: string, value: boolean): Promise<void>
+
+  setMediaForToken(identifier: string, value: any[]): Promise<void>
+
+  setMetadataForToken(identifier: string, value: any): Promise<void>
 }

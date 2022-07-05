@@ -57,7 +57,7 @@ export class TransactionGetService {
 
   async tryGetTransactionFromElastic(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
     try {
-      const result = await this.indexerService.getItem('transactions', 'txHash', txHash);
+      const result = await this.indexerService.getTransaction(txHash);
       if (!result) {
         return null;
       }

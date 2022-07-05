@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { Tag } from "./entities/tag";
-import { ApiUtils, BinaryUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
+import { ApiUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
 
 @Injectable()
@@ -48,7 +48,7 @@ export class TagService {
   }
 
   async getNftTag(tag: string): Promise<Tag> {
-    const result = await this.indexerService.getItem('tags', 'tag', BinaryUtils.base64Encode(tag));
+    const result = await this.indexerService.getTag(tag);
 
     return ApiUtils.mergeObjects(new Tag(), result);
   }

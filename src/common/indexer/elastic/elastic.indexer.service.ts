@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, RangeQuery, TermsQuery } from "@elrondnetwork/erdnest";
+import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, RangeQuery, TermsQuery, BinaryUtils } from "@elrondnetwork/erdnest";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
@@ -24,8 +24,12 @@ export class ElasticIndexerService implements IndexerInterface {
     private readonly indexerHelper: ElasticIndexerHelper,
   ) { }
 
-  async getCount(collection: string): Promise<number> {
-    return await this.elasticService.getCount(collection);
+  async getAccountsCount(): Promise<number> {
+    return await this.elasticService.getCount('accounts');
+  }
+
+  async getScResultsCount(): Promise<number> {
+    return await this.elasticService.getCount('scresults');
   }
 
   async getAccountContractsCount(address: string): Promise<number> {
@@ -155,8 +159,40 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getCount('transactions', elasticQuery);
   }
 
-  async getItem(collection: string, key: string, identifier: string): Promise<any> {
-    return await this.elasticService.getItem(collection, key, identifier);
+  async getRound(shard: number, round: number): Promise<any> {
+    return await this.elasticService.getItem('rounds', 'round', `${shard}_${round}`);
+  }
+
+  async getToken(identifier: string): Promise<any> {
+    return await this.elasticService.getItem('tokens', 'identifier', identifier);
+  }
+
+  async getCollection(identifier: string): Promise<any> {
+    return await this.elasticService.getItem('tokens', '_id', identifier);
+  }
+
+  async getTransaction(txHash: string): Promise<any> {
+    return await this.elasticService.getItem('transactions', 'txHash', txHash);
+  }
+
+  async getScDeploy(address: string): Promise<any> {
+    return await this.elasticService.getItem('scdeploys', '_id', address);
+  }
+
+  async getScResult(scHash: string): Promise<any> {
+    return await this.elasticService.getItem('scresults', 'hash', scHash);
+  }
+
+  async getBlock(hash: string): Promise<any> {
+    return await this.elasticService.getItem('blocks', 'hash', hash);
+  }
+
+  async getMiniBlock(miniBlockHash: string): Promise<any> {
+    return await this.elasticService.getItem('miniblocks', 'miniBlockHash', miniBlockHash);
+  }
+
+  async getTag(tag: string): Promise<any> {
+    return await this.elasticService.getItem('tags', 'tag', BinaryUtils.base64Encode(tag));
   }
 
   async getTransfers(filter: TransactionFilter, pagination: QueryPagination): Promise<any[]> {
@@ -459,14 +495,6 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getScrollableList('accountsesdt', 'id', query, action);
   }
 
-  async getCustomValue(collection: string, identifier: string, attribute: string): Promise<any> {
-    return await this.elasticService.getCustomValue(collection, identifier, attribute);
-  }
-
-  async setCustomValue<T>(collection: string, identifier: string, attribute: string, value: T): Promise<void> {
-    return await this.elasticService.setCustomValue(collection, identifier, attribute, value);
-  }
-
   async getPublicKeys(shard: number, epoch: number): Promise<string[] | undefined> {
     const key = `${shard}_${epoch}`;
 
@@ -535,5 +563,25 @@ export class ElasticIndexerService implements IndexerInterface {
 
     data = data.slice(pagination.from, pagination.from + pagination.size);
     return data;
+  }
+
+  async getAssetsForToken(identifier: string): Promise<any> {
+    return await this.elasticService.getCustomValue('tokens', identifier, 'assets');
+  }
+
+  async setAssetsForToken(identifier: string, value: any): Promise<void> {
+    return await this.elasticService.setCustomValue('tokens', identifier, 'assets', value);
+  }
+
+  async setIsWhitelistedStorageForToken(identifier: string, value: boolean): Promise<void> {
+    return await this.elasticService.setCustomValue('tokens', identifier, 'isWhitelistedStorage', value);
+  }
+
+  async setMediaForToken(identifier: string, value: any[]): Promise<void> {
+    return await this.elasticService.setCustomValue('tokens', identifier, 'media', value);
+  }
+
+  async setMetadataForToken(identifier: string, value: any): Promise<void> {
+    return await this.elasticService.setCustomValue('tokens', identifier, 'metadata', value);
   }
 }
