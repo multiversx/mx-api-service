@@ -15,6 +15,89 @@ export class TransferService {
     private readonly transactionService: TransactionService,
   ) { }
 
+  private buildTransferFilterQuery(filter: TransactionFilter): ElasticQuery {
+    let elasticQuery = ElasticQuery.create();
+
+    if (filter.address) {
+      const smartContractResultConditions = [
+        QueryType.Match('receiver', filter.address),
+        QueryType.Match('receivers', filter.address),
+      ];
+
+      if (AddressUtils.isSmartContractAddress(filter.address)) {
+        smartContractResultConditions.push(QueryType.Match('sender', filter.address));
+      }
+
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.should, QueryType.Must([
+        QueryType.Match('type', 'unsigned'),
+        QueryType.Should(smartContractResultConditions),
+      ], [
+        QueryType.Exists('canBeIgnored'),
+      ]))
+        .withCondition(QueryConditionOptions.should, QueryType.Must([
+          QueryType.Match('type', 'normal'),
+          QueryType.Should([
+            QueryType.Match('sender', filter.address),
+            QueryType.Match('receiver', filter.address),
+            QueryType.Match('receivers', filter.address),
+          ]),
+        ]));
+    }
+
+    if (filter.type) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('type', filter.type === TransactionType.Transaction ? 'normal' : 'unsigned'));
+    }
+
+    if (filter.sender) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('sender', filter.sender));
+    }
+
+    if (filter.receiver) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Should([
+        QueryType.Match('receiver', filter.receiver),
+        QueryType.Match('receivers', filter.receiver),
+      ]));
+    }
+
+    if (filter.token) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('tokens', filter.token, QueryOperator.AND));
+    }
+
+    if (filter.function && this.apiConfigService.getIsIndexerV3FlagActive()) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('function', filter.function));
+    }
+
+    if (filter.senderShard !== undefined) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('senderShard', filter.senderShard));
+    }
+
+    if (filter.receiverShard !== undefined) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('receiverShard', filter.receiverShard));
+    }
+
+    if (filter.miniBlockHash) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('miniBlockHash', filter.miniBlockHash));
+    }
+
+    if (filter.hashes) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Should(filter.hashes.map(hash => QueryType.Match('_id', hash))));
+    }
+
+    if (filter.status) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('status', filter.status));
+    }
+
+    if (filter.search) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Wildcard('data', `*${filter.search}*`));
+    }
+
+    if (filter.before || filter.after) {
+      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
+    }
+
+    return elasticQuery;
+  }
+
   private sortElasticTransfers(elasticTransfers: any[]): any[] {
     for (const elasticTransfer of elasticTransfers) {
       if (elasticTransfer.originalTxHash) {

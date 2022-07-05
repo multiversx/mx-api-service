@@ -156,6 +156,10 @@ export class ApiConfigService {
     return network;
   }
 
+  getCluster(): string | undefined {
+    return this.configService.get<string>('cluster');
+  }
+
   getPoolLimit(): number {
     return this.configService.get<number>('caching.poolLimit') ?? 100;
   }
@@ -622,5 +626,13 @@ export class ApiConfigService {
     }
 
     return cronExpression;
+  }
+
+  isNftExtendedAttributesEnabled(): boolean {
+    return this.configService.get<boolean>('features.nftExtendedAttributes.enabled') ?? false;
+  }
+
+  getNftExtendedAttributesNsfwThreshold(): number {
+    return this.configService.get<number>('features.nftExtendedAttributes.nsfwThreshold') ?? 0.85;
   }
 }

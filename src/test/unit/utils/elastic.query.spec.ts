@@ -1,4 +1,4 @@
-import { ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType, RangeQuery, TermsQuery } from "@elrondnetwork/erdnest";
+import { ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType, RangeGreaterThanOrEqual, RangeLowerThanOrEqual, TermsQuery } from "@elrondnetwork/erdnest";
 
 describe('Elastic Query', () => {
   describe('Create Elastic Query', () => {
@@ -74,12 +74,12 @@ describe('Elastic Query', () => {
   describe('Add range filter to elastic query', () => {
     const elasticQuery1: ElasticQuery = ElasticQuery.create();
 
-    elasticQuery1.withFilter(new RangeQuery('test', 100, undefined));
+    elasticQuery1.withRangeFilter('test', new RangeLowerThanOrEqual(100));
     expect(elasticQuery1.filter.length).toEqual(1);
     expect(elasticQuery1.filter[0].getQuery()).toMatchObject({ range: { test: { lte: 100 } } });
 
     const elasticQuery2 = ElasticQuery.create();
-    elasticQuery2.withFilter(new RangeQuery('test', 100, 1));
+    elasticQuery2.withRangeFilter('test', new RangeGreaterThanOrEqual(1), new RangeLowerThanOrEqual(100));
     expect(elasticQuery2.filter.length).toEqual(1);
     expect(elasticQuery2.filter[0].getQuery()).toMatchObject({ range: { test: { lte: 100, gte: 1 } } });
 

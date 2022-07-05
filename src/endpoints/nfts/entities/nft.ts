@@ -79,4 +79,13 @@ export class Nft {
 
   @ApiProperty({ type: ScamInfo, nullable: true })
   scamInfo: ScamInfo | undefined = undefined;
+
+  @ApiProperty({ type: Number, nullable: true })
+  score: number | undefined = undefined;
+
+  @ApiProperty({ type: Number, nullable: true })
+  rank: number | undefined = undefined;
+
+  @ApiProperty({ type: Boolean, nullable: true })
+  isNsfw: boolean | undefined = undefined;
 }

@@ -18,4 +18,5 @@ export class NftFilter {
   before?: number;
   after?: number;
   isWhitelistedStorage?: boolean;
+  isNsfw?: boolean;
 }
