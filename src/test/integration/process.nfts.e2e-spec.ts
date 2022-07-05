@@ -11,6 +11,7 @@ import { NftFilter } from 'src/endpoints/nfts/entities/nft.filter';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import nftCollection from '../data/esdt/nft/nft.example';
 import { Constants } from '@elrondnetwork/erdnest';
+import { NftQueryOptions } from 'src/endpoints/nfts/entities/nft.query.options';
 
 describe('Process Nft Service', () => {
   let processNftService: ProcessNftsService;
@@ -51,6 +52,9 @@ describe('Process Nft Service', () => {
     ticker: 'EROBOT-527a29',
     scamInfo: undefined,
     assets: undefined,
+    score: undefined,
+    isNsfw: undefined,
+    rank: undefined,
   };
 
   beforeAll(async () => {
@@ -141,7 +145,7 @@ describe('Process Nft Service', () => {
     it("should process collection", async () => {
       jest.spyOn(NftService.prototype, 'getNfts')
         // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_queryPagination: QueryPagination, _filter: NftFilter) => nftCollection));
+        .mockImplementation(jest.fn(async (_queryPagination: QueryPagination, _filter: NftFilter, _queryOptions?: NftQueryOptions) => nftCollection));
 
       jest.spyOn(ApiConfigService.prototype, 'getPoolLimit')
         // eslint-disable-next-line require-await

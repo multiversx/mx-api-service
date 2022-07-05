@@ -46,6 +46,9 @@ describe('Nft Service', () => {
     scamInfo: undefined,
     price: undefined,
     valueUsd: undefined,
+    score: undefined,
+    isNsfw: undefined,
+    rank: undefined,
   };
 
   beforeAll(async () => {

@@ -627,4 +627,12 @@ export class ApiConfigService {
 
     return cronExpression;
   }
+
+  isNftExtendedAttributesEnabled(): boolean {
+    return this.configService.get<boolean>('features.nftExtendedAttributes.enabled') ?? false;
+  }
+
+  getNftExtendedAttributesNsfwThreshold(): number {
+    return this.configService.get<number>('features.nftExtendedAttributes.nsfwThreshold') ?? 0.85;
+  }
 }

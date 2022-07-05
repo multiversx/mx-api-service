@@ -420,7 +420,13 @@ export class AccountController {
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean,
     @Query('source', new ParseOptionalEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
   ): Promise<NftAccount[]> {
-    return await this.nftService.getNftsForAddress(address, new QueryPagination({ from, size }), new NftFilter({ search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }), new NftQueryOptions({ withSupply }), source);
+    return await this.nftService.getNftsForAddress(
+      address,
+      new QueryPagination({ from, size }),
+      new NftFilter({ search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }),
+      new NftQueryOptions({ withSupply }),
+      source
+    );
   }
 
   @Get("/accounts/:address/nfts/count")

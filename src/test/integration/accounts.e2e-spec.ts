@@ -100,7 +100,7 @@ describe('Account Service', () => {
         ]);
     });
 
-    it("should return account details if IndexerV3Flag is active", async () => {
+    it.skip("should return account details if IndexerV3Flag is active", async () => {
       jest.spyOn(ApiConfigService.prototype, 'getIsIndexerV3FlagActive')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(() => true));

@@ -20,7 +20,7 @@ import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, ElasticSortOrder } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, ElasticSortOrder, RangeGreaterThanOrEqual, RangeLowerThan } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class NftService {
@@ -108,8 +108,18 @@ export class NftService {
       elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
     }
 
+    if (filter.isNsfw !== undefined) {
+      const nsfwThreshold = this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
+
+      if (filter.isNsfw === true) {
+        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw', new RangeGreaterThanOrEqual(nsfwThreshold));
+      } else {
+        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw', new RangeLowerThan(nsfwThreshold));
+      }
+    }
+
     if (filter.before || filter.after) {
-      elasticQuery = elasticQuery.withFilter(QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0));
+      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
     }
 
     return elasticQuery;
@@ -337,6 +347,8 @@ export class NftService {
       nft.nonce = parseInt('0x' + nft.identifier.split('-')[2]);
       nft.timestamp = elasticNft.timestamp;
 
+      this.applyExtendedAttributes(nft, elasticNft);
+
       const elasticNftData = elasticNft.data;
       if (elasticNftData) {
         nft.name = elasticNftData.name;
@@ -458,6 +470,20 @@ export class NftService {
 
     await this.batchProcessNfts(nfts);
 
+    if (this.apiConfigService.isNftExtendedAttributesEnabled()) {
+      const internalNfts = await this.getNftsInternal(new QueryPagination({ from: 0, size: nfts.length }), new NftFilter({ identifiers: nfts.map(x => x.identifier) }));
+
+      const indexedInternalNfts = internalNfts.toRecord<Nft>(x => x.identifier);
+      for (const nft of nfts) {
+        const indexedNft = indexedInternalNfts[nft.identifier];
+        if (indexedNft) {
+          nft.score = indexedNft.score;
+          nft.rank = indexedNft.rank;
+          nft.isNsfw = indexedNft.isNsfw;
+        }
+      }
+    }
+
     return nfts;
   }
 
@@ -488,22 +514,12 @@ export class NftService {
     const filter = new NftFilter();
     filter.identifiers = [identifier];
 
-    const nfts = await this.esdtAddressService.getNftsForAddress(address, filter, new QueryPagination({ from: 0, size: 1 }));
+    const nfts = await this.getNftsForAddress(address, new QueryPagination({ from: 0, size: 1 }), filter);
     if (nfts.length === 0) {
       return undefined;
     }
 
-    const nft = nfts[0];
-
-    if (nft.type === NftType.SemiFungibleESDT) {
-      await this.applySupply(nft);
-    }
-
-    nft.assets = await this.assetsService.getAssets(nft.collection);
-
-    await this.processNft(nft);
-
-    return nft;
+    return nfts[0];
   }
 
   async applySupply(nft: Nft): Promise<void> {
@@ -551,5 +567,14 @@ export class NftService {
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
     return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
+  }
+
+  applyExtendedAttributes(nft: Nft, elasticNft: any) {
+    nft.score = elasticNft.nft_score;
+    nft.rank = elasticNft.nft_rank;
+
+    if (elasticNft.nft_nsfw !== undefined) {
+      nft.isNsfw = elasticNft.nft_nsfw >= this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
+    }
   }
 }
