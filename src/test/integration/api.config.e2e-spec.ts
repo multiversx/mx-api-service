@@ -1622,4 +1622,44 @@ describe('API Config', () => {
       expect(() => apiConfigService.getDatabaseUrl()).toThrowError('No database.url present');
     });
   });
+
+  describe("getCluster", () => {
+    it("should return cluster details", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'clusterTest'));
+
+      const results = apiConfigService.getCluster();
+      expect(results).toStrictEqual('clusterTest');
+    });
+
+    it("should return undefined  because test simulates that cluster is not defined in config", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      const results = apiConfigService.getCluster();
+      expect(results).toBeUndefined();
+    });
+  });
+
+  describe("isStakingV4Enabled", () => {
+    it("should return true if isStakingV4Enable flag is true", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => true));
+
+      const results = apiConfigService.isStakingV4Enabled();
+      expect(results).toStrictEqual(true);
+    });
+
+    it("should return false because test simulates that isStakingV4Enabled flag is not defined and by default flag value is false", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => false));
+
+      const results = apiConfigService.getCluster();
+      expect(results).toStrictEqual(false);
+    });
+  });
 });
