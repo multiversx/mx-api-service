@@ -1,4 +1,4 @@
-import { CachingService, ElasticService } from "@elrondnetwork/erdnest";
+import { CachingService } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { CacheInfo } from "../../utils/cache.info";
 import { GatewayComponentRequest } from "../gateway/entities/gateway.component.request";
@@ -13,7 +13,7 @@ export class ProtocolService {
     private readonly gatewayService: GatewayService,
     @Inject(forwardRef(() => CachingService))
     private readonly cachingService: CachingService,
-    @Inject(forwardRef(() => ElasticService))
+    @Inject(forwardRef(() => IndexerService))
     private readonly indexerService: IndexerService
   ) {
     this.logger = new Logger(ProtocolService.name);
