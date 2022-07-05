@@ -4,6 +4,7 @@ import { NetworkConstants } from './entities/constants';
 import { Economics } from './entities/economics';
 import { NetworkService } from './network.service';
 import { Stats } from 'src/endpoints/network/entities/stats';
+import { About } from './entities/about';
 
 @Controller()
 @ApiTags('network')
@@ -31,5 +32,12 @@ export class NetworkController {
   @ApiOkResponse({ type: Stats })
   async getStats(): Promise<Stats> {
     return await this.networkService.getStats();
+  }
+
+  @Get("/about")
+  @ApiOperation({ summary: 'About', description: 'Returns general information about API deployment' })
+  @ApiOkResponse({ type: About })
+  async getAbout(): Promise<About> {
+    return await this.networkService.getAbout();
   }
 }

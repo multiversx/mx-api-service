@@ -156,6 +156,10 @@ export class ApiConfigService {
     return network;
   }
 
+  getCluster(): string | undefined {
+    return this.configService.get<string>('cluster');
+  }
+
   getPoolLimit(): number {
     return this.configService.get<number>('caching.poolLimit') ?? 100;
   }

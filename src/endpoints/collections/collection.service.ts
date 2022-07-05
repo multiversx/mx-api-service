@@ -32,7 +32,8 @@ export class CollectionService {
 
   buildCollectionRolesFilter(filter: CollectionFilter, address?: string) {
     let elasticQuery = ElasticQuery.create();
-    elasticQuery = elasticQuery.withMustNotExistCondition('identifier');
+    elasticQuery = elasticQuery.withMustNotExistCondition('identifier')
+      .withMustMultiShouldCondition([NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT], type => QueryType.Match('type', type));
 
     if (address) {
       if (this.apiConfigService.getIsIndexerV3FlagActive()) {
@@ -215,6 +216,10 @@ export class CollectionService {
   async getNftCollection(identifier: string): Promise<NftCollection | undefined> {
     const elasticCollection = await this.elasticService.getItem('tokens', '_id', identifier);
     if (!elasticCollection) {
+      return undefined;
+    }
+
+    if (![NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT].includes(elasticCollection.type)) {
       return undefined;
     }
 
