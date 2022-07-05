@@ -15,7 +15,7 @@ import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { TokenUtils } from "src/utils/token.utils";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
-import { ApiUtils, BinaryUtils, RecordUtils, CachingService, ElasticQuery, QueryType, QueryOperator, QueryConditionOptions } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, RecordUtils, CachingService } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
 
 @Injectable()
@@ -30,69 +30,6 @@ export class CollectionService {
     @Inject(forwardRef(() => EsdtAddressService))
     private readonly esdtAddressService: EsdtAddressService,
   ) { }
-
-  buildCollectionRolesFilter(filter: CollectionFilter, address?: string) {
-    let elasticQuery = ElasticQuery.create();
-    elasticQuery = elasticQuery.withMustNotExistCondition('identifier')
-      .withMustMultiShouldCondition([NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT], type => QueryType.Match('type', type));
-
-    if (address) {
-      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-        elasticQuery = elasticQuery.withMustCondition(QueryType.Should(
-          [
-            QueryType.Match('currentOwner', address),
-            QueryType.Nested('roles', { 'roles.ESDTRoleNFTCreate': address }),
-            QueryType.Nested('roles', { 'roles.ESDTRoleNFTBurn': address }),
-            QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddQuantity': address }),
-            QueryType.Nested('roles', { 'roles.ESDTRoleNFTUpdateAttributes': address }),
-            QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddURI': address }),
-            QueryType.Nested('roles', { 'roles.ESDTTransferRole': address }),
-          ]
-        ));
-      } else {
-        elasticQuery = elasticQuery.withMustCondition(QueryType.Match('currentOwner', address));
-      }
-    }
-
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      if (filter.canCreate !== undefined) {
-        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTCreate', address, filter.canCreate);
-      }
-
-      if (filter.canBurn !== undefined) {
-        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTBurn', address, filter.canBurn);
-      }
-
-      if (filter.canAddQuantity !== undefined) {
-        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTAddQuantity', address, filter.canAddQuantity);
-      }
-
-      if (filter.canUpdateAttributes !== undefined) {
-        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTUpdateAttributes', address, filter.canUpdateAttributes);
-      }
-
-      if (filter.canAddUri !== undefined) {
-        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTAddURI', address, filter.canAddUri);
-      }
-
-      if (filter.canTransferRole !== undefined) {
-        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTTransferRole', address, filter.canTransferRole);
-      }
-    }
-
-    return elasticQuery.withMustMatchCondition('token', filter.collection, QueryOperator.AND)
-      .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
-      .withSearchWildcardCondition(filter.search, ['token', 'name'])
-      .withMustMultiShouldCondition(filter.type, type => QueryType.Match('type', type))
-      .withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT, NftType.MetaESDT], type => QueryType.Match('type', type));
-  }
-
-  private getRoleCondition(query: ElasticQuery, name: string, address: string | undefined, value: string | boolean) {
-    const condition = value === false ? QueryConditionOptions.mustNot : QueryConditionOptions.must;
-    const targetAddress = typeof value === 'string' ? value : address;
-
-    return query.withCondition(condition, QueryType.Nested('roles', { [`roles.${name}`]: targetAddress }));
-  }
 
   async isCollection(identifier: string): Promise<boolean> {
     const collection = await this.indexerService.getCollection(identifier);

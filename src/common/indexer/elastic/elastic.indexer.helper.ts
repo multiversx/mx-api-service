@@ -1,4 +1,4 @@
-import { AbstractQuery, AddressUtils, ElasticQuery, QueryConditionOptions, QueryOperator, QueryType } from "@elrondnetwork/erdnest";
+import { AbstractQuery, AddressUtils, ElasticQuery, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThanOrEqual, RangeLowerThan } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -55,7 +55,8 @@ export class ElasticIndexerHelper {
 
   buildCollectionRolesFilter(filter: CollectionFilter, address?: string) {
     let elasticQuery = ElasticQuery.create();
-    elasticQuery = elasticQuery.withMustNotExistCondition('identifier');
+    elasticQuery = elasticQuery.withMustNotExistCondition('identifier')
+      .withMustMultiShouldCondition([NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT], type => QueryType.Match('type', type));
 
     if (address) {
       if (this.apiConfigService.getIsIndexerV3FlagActive()) {
@@ -167,8 +168,18 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
     }
 
+    if (filter.isNsfw !== undefined) {
+      const nsfwThreshold = this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
+
+      if (filter.isNsfw === true) {
+        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw', new RangeGreaterThanOrEqual(nsfwThreshold));
+      } else {
+        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw', new RangeLowerThan(nsfwThreshold));
+      }
+    }
+
     if (filter.before || filter.after) {
-      elasticQuery = elasticQuery.withFilter(QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0));
+      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
     }
 
     return elasticQuery;
@@ -251,7 +262,7 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.before || filter.after) {
-      elasticQuery = elasticQuery.withFilter(QueryType.Range('timestamp', filter.before ?? Date.now(), filter.after ?? 0));
+      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
     }
 
     return elasticQuery;

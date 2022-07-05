@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, RangeQuery, TermsQuery, BinaryUtils } from "@elrondnetwork/erdnest";
+import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, BinaryUtils, RangeGreaterThanOrEqual } from "@elrondnetwork/erdnest";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
@@ -245,7 +245,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: 0, size: addresses.length })
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match("address", "pending-")])
       .withCondition(QueryConditionOptions.must, [QueryType.Match('token', identifier, QueryOperator.AND)])
-      .withFilter(new RangeQuery("balanceNum", undefined, 0))
+      .withRangeFilter("balanceNum", new RangeGreaterThanOrEqual(0))
       .withCondition(QueryConditionOptions.should, queries);
 
     return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
