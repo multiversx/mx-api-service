@@ -1,5 +1,6 @@
 import { DynamicModule, Global, Module, Type } from "@nestjs/common";
 import configuration from "config/configuration";
+import { ApiMetricsModule } from "../metrics/api.metrics.module";
 import { ElasticIndexerModule } from "./elastic/elastic.indexer.module";
 import { ElasticIndexerService } from "./elastic/elastic.indexer.service";
 import { IndexerInterface } from "./indexer.interface";
@@ -24,6 +25,7 @@ export class IndexerModule {
       module: IndexerModule,
       imports: [
         indexerModule,
+        ApiMetricsModule,
       ],
       providers: [
         {

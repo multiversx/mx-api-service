@@ -1,4 +1,3 @@
-import { ElasticService } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { IndexerService } from "src/common/indexer/indexer.service";
 
@@ -7,10 +6,9 @@ export class BlsService {
   private publicKeysCache: any = {};
 
   constructor(
-    @Inject(forwardRef(() => ElasticService))
+    @Inject(forwardRef(() => IndexerService))
     private readonly indexerService: IndexerService,
   ) { }
-
 
   public async getPublicKeys(shard: number, epoch: number): Promise<string[]> {
     const key = `${shard}_${epoch}`;

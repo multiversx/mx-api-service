@@ -1,5 +1,5 @@
 import { PerformanceProfiler } from "@elrondnetwork/erdnest";
-import { Inject, Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
@@ -17,6 +17,7 @@ export class IndexerService implements IndexerInterface {
   constructor(
     @Inject('IndexerInterface')
     private readonly indexerInterface: IndexerInterface,
+    @Inject(forwardRef(() => ApiMetricsService))
     private readonly metricsService: ApiMetricsService,
   ) { }
 

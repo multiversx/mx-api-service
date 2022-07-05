@@ -9,7 +9,6 @@ import { ProtocolService } from "./protocol.service";
   imports: [
     forwardRef(() => GatewayModule),
     DynamicModuleUtils.getCachingModule(),
-    DynamicModuleUtils.getElasticModule(),
     IndexerModule.register(),
   ],
   providers: [
