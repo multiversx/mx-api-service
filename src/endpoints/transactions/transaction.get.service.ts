@@ -29,7 +29,7 @@ export class TransactionGetService {
 
   private async tryGetTransactionFromElasticBySenderAndNonce(sender: string, nonce: number): Promise<TransactionDetailed | undefined> {
     const transactions = await this.indexerService.getTransactionBySenderAndNonce(sender, nonce);
-    return transactions.firstOrUndefined();
+    return transactions.firstOrUndefined() as TransactionDetailed | undefined;
   }
 
   async getTransactionLogsFromElastic(hashes: string[]): Promise<TransactionLog[]> {
@@ -57,7 +57,7 @@ export class TransactionGetService {
 
   async tryGetTransactionFromElastic(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
     try {
-      const result = await this.indexerService.getTransaction(txHash);
+      const result = await this.indexerService.getTransaction(txHash) as any;
       if (!result) {
         return null;
       }

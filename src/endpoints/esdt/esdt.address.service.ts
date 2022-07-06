@@ -62,7 +62,7 @@ export class EsdtAddressService {
   }
 
   private async getNftsForAddressFromElastic(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
-    const esdts = await this.indexerService.getNftsForAddress(address, filter, pagination);
+    const esdts = await this.indexerService.getNftsForAddress(address, filter, pagination) as any;
 
     const gatewayNfts: GatewayNft[] = [];
 

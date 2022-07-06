@@ -18,17 +18,17 @@ export class RoundService {
   }
 
   async getRounds(filter: RoundFilter): Promise<Round[]> {
-    const result = await this.indexerService.getRounds(filter);
+    const result = await this.indexerService.getRounds(filter) as any;
 
     for (const item of result) {
       item.shard = item.shardId;
     }
 
-    return result.map(item => ApiUtils.mergeObjects(new Round(), item));
+    return result.map((item: any) => ApiUtils.mergeObjects(new Round(), item));
   }
 
   async getRound(shard: number, round: number): Promise<RoundDetailed> {
-    const result = await this.indexerService.getRound(shard, round);
+    const result = await this.indexerService.getRound(shard, round) as any;
 
     const epoch = RoundUtils.roundToEpoch(round);
     const publicKeys = await this.blsService.getPublicKeys(shard, epoch);

@@ -49,7 +49,7 @@ export class ElasticUpdaterService {
   async handleUpdateTokenExtraDetails() {
     await Locker.lock('Elastic updater: Update tokens isWhitelisted, media, metadata', async () => {
       await this.indexerService.getAllTokensMetadata(async items => {
-        const whitelistStorageItems = items.map(item => ({
+        const whitelistStorageItems = items.map((item: any) => ({
           identifier: item.identifier,
           uris: item.data?.uris,
           isWhitelistedStorage: item.api_isWhitelistedStorage,
@@ -57,14 +57,14 @@ export class ElasticUpdaterService {
 
         await this.updateIsWhitelistedStorageForTokens(whitelistStorageItems);
 
-        const mediaItems = items.map(item => ({
+        const mediaItems = items.map((item: any) => ({
           identifier: item.identifier,
           media: item.api_media,
         }));
 
         await this.updateMediaForTokens(mediaItems);
 
-        const metadataItems = items.map(item => ({
+        const metadataItems = items.map((item: any) => ({
           identifier: item.identifier,
           metadata: item.api_metadata,
         }));

@@ -15,6 +15,8 @@ import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.r
 import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
 import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/smart.contract.result.filter";
 import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
+import { Block } from "../entities/block";
+import { Tag } from "../entities/tag";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -46,7 +48,7 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getCount('blocks', elasticQuery);
   }
 
-  async getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<any[]> {
+  async getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<Block[]> {
     const elasticQuery = ElasticQuery.create()
       .withPagination(queryPagination)
       .withSort([
@@ -183,7 +185,7 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getItem('scresults', 'hash', scHash);
   }
 
-  async getBlock(hash: string): Promise<any> {
+  async getBlock(hash: string): Promise<Block> {
     return await this.elasticService.getItem('blocks', 'hash', hash);
   }
 
@@ -191,7 +193,7 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getItem('miniblocks', 'miniBlockHash', miniBlockHash);
   }
 
-  async getTag(tag: string): Promise<any> {
+  async getTag(tag: string): Promise<Tag> {
     return await this.elasticService.getItem('tags', 'tag', BinaryUtils.base64Encode(tag));
   }
 

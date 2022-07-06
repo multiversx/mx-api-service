@@ -150,7 +150,7 @@ export class CollectionService {
       return undefined;
     }
 
-    if (![NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT].includes(elasticCollection.type)) {
+    if (![NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT].includes(elasticCollection.type as NftType)) {
       return undefined;
     }
 
@@ -160,7 +160,7 @@ export class CollectionService {
       return undefined;
     }
 
-    collection.type = elasticCollection.type;
+    collection.type = elasticCollection.type as NftType;
     collection.timestamp = elasticCollection.timestamp;
     collection.roles = await this.getNftCollectionRoles(elasticCollection);
 

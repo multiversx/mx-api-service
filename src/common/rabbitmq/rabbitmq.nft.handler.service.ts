@@ -45,7 +45,7 @@ export class RabbitMqNftHandlerService {
       return undefined;
     }
 
-    return collection.type;
+    return collection.type as NftType;
   }
 
   public async handleNftUpdateAttributesEvent(event: NotifierEvent): Promise<boolean | null> {

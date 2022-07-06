@@ -80,7 +80,7 @@ export class TransactionService {
 
     if (filter.hashes) {
       const txHashes: string[] = filter.hashes;
-      const elasticHashes = elasticTransactions.map(({ txHash }) => txHash);
+      const elasticHashes = elasticTransactions.map(({ txHash }: any) => txHash);
       const missingHashes: string[] = txHashes.findMissingElements(elasticHashes);
 
       const gatewayTransactions = await Promise.all(missingHashes.map((txHash) => this.transactionGetService.tryGetTransactionFromGatewayForList(txHash)));
@@ -219,23 +219,23 @@ export class TransactionService {
   }
 
   private async getExtraDetailsForTransactions(elasticTransactions: any[], transactions: Transaction[], queryOptions: TransactionQueryOptions): Promise<TransactionDetailed[]> {
-    const scResults = await this.indexerService.getScResultsForTransactions(elasticTransactions);
+    const scResults = await this.indexerService.getScResultsForTransactions(elasticTransactions) as any;
     for (const scResult of scResults) {
       scResult.hash = scResult.scHash;
 
       delete scResult.scHash;
     }
 
-    const hashes = [...transactions.map((transaction) => transaction.txHash), ...scResults.map((scResult) => scResult.hash)];
+    const hashes = [...transactions.map((transaction) => transaction.txHash), ...scResults.map((scResult: any) => scResult.hash)];
     const logs = await this.transactionGetService.getTransactionLogsFromElastic(hashes);
 
     const detailedTransactions: TransactionDetailed[] = [];
     for (const transaction of transactions) {
       const transactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), transaction);
-      const transactionScResults = scResults.filter(({ originalTxHash }) => originalTxHash == transaction.txHash);
+      const transactionScResults = scResults.filter(({ originalTxHash }: any) => originalTxHash == transaction.txHash);
 
       if (queryOptions.withScResults) {
-        transactionDetailed.results = transactionScResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+        transactionDetailed.results = transactionScResults.map((scResult: any) => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
       }
 
       if (queryOptions.withOperations) {
