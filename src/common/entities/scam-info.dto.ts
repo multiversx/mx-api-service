@@ -2,7 +2,7 @@ import { Field, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from '@nestjs/swagger';
 import { ScamType } from './scam-type.enum';
 
-@ObjectType("ScamInformation")
+@ObjectType("ScamInformation", { description: "Scam information object type." })
 export class ScamInfo {
   @Field(() => ScamType, { description: "Type for the given scam information." })
   @ApiProperty({ enum: ScamType })

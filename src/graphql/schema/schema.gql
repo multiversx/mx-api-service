@@ -2,6 +2,7 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+"""Account object type."""
 type Account {
   """Bech32 address for the given account."""
   address: String!
@@ -19,6 +20,7 @@ type Account {
   shard: Int!
 }
 
+"""Account assets object type."""
 type AccountAssets {
   """Description for the given account asset."""
   description: String!
@@ -42,6 +44,7 @@ type AccountAssets {
   tags: [String!]!
 }
 
+"""Detailed Account object type that extends Account."""
 type AccountDetailed {
   """Bech32 address for the given account."""
   address: String!
@@ -121,6 +124,7 @@ type Query {
   accountsCount: Int!
 }
 
+"""Scam information object type."""
 type ScamInformation {
   """Information for the given scam."""
   info: String
@@ -129,8 +133,14 @@ type ScamInformation {
   type: ScamType!
 }
 
+"""Scam type object type."""
 enum ScamType {
+  """No scam type."""
   none
+
+  """Potential scam type."""
   potentialScam
+
+  """Scam type."""
   scam
 }

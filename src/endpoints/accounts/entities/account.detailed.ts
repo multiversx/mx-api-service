@@ -3,7 +3,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { Account } from "./account";
 
-@ObjectType("AccountDetailed")
+@ObjectType("AccountDetailed", { description: "Detailed Account object type that extends Account." })
 export class AccountDetailed extends Account {
   constructor(init?: Partial<AccountDetailed>) {
     super();

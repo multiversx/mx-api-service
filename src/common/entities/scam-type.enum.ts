@@ -8,4 +8,16 @@ export enum ScamType {
 
 registerEnumType(ScamType, {
   name: 'ScamType',
+  description: 'Scam type object type.',
+  valuesMap: {
+    none: {
+      description: 'No scam type.',
+    },
+    potentialScam: {
+      description: 'Potential scam type.',
+    },
+    scam: {
+      description: 'Scam type.',
+    },
+  },
 });
