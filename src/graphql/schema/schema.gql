@@ -1,0 +1,136 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Account {
+  """Bech32 address for the given account."""
+  address: String!
+
+  """Account assets list for the given account."""
+  assets: AccountAssets
+
+  """Current balance for the given account."""
+  balance: String!
+
+  """Current nonce for the given account."""
+  nonce: Int!
+
+  """Shard identifier for the given account."""
+  shard: Int!
+}
+
+type AccountAssets {
+  """Description for the given account asset."""
+  description: String!
+
+  """Icon for the given account asset."""
+  icon: String!
+
+  """Icon PNG link for the given account asset."""
+  iconPng: String!
+
+  """Icon SVG link for the given account asset."""
+  iconSvg: String!
+
+  """Name for the given account asset."""
+  name: String!
+
+  """Proof for the given account asset."""
+  proof: String!
+
+  """Tags list for the given account asset."""
+  tags: [String!]!
+}
+
+type AccountDetailed {
+  """Bech32 address for the given account."""
+  address: String!
+
+  """Account assets list for the given account."""
+  assets: AccountAssets
+
+  """Current balance for the given account."""
+  balance: String!
+
+  """Source code in HEX format for the given detailed account."""
+  code: String!
+
+  """Hash of the source code for the given detailed account."""
+  codeHash: String!
+
+  """Deployment timestamp for the given detailed account."""
+  deployedAt: Int
+
+  """Developer reward for the given detailed account."""
+  developerReward: String!
+
+  """If the given detailed account is payable."""
+  isPayable: Boolean
+
+  """If the given detailed account is payable by smart contract."""
+  isPayableBySmartContract: Boolean
+
+  """If the given detailed account is readable."""
+  isReadable: Boolean
+
+  """If the given detailed account is upgradeable."""
+  isUpgradeable: Boolean
+
+  """Current nonce for the given account."""
+  nonce: Int!
+
+  """Bech32 address of the owner account for the given detailed account."""
+  ownerAddress: String!
+
+  """Hash of the root node for the given detailed account."""
+  rootHash: String!
+
+  """Scam information for the given detailed account."""
+  scamInfo: ScamInformation
+
+  """Number of smart contract results for the given detailed account."""
+  scrCount: Int!
+
+  """Shard identifier for the given account."""
+  shard: Int!
+
+  """Number of transactions performed for the given detailed account."""
+  txCount: Int!
+
+  """Username for the given detailed account."""
+  username: String!
+}
+
+type Query {
+  """Retrieve the account for the given address."""
+  account(
+    """Address to retrieve the corresponding account."""
+    address: String!
+  ): AccountDetailed
+
+  """Retrieve all accounts available."""
+  accounts(
+    """Number of accounts to retrieve for the given result set."""
+    size: Int = 25
+
+    """Number of accounts to skip for the given result set."""
+    skip: Int = 0
+  ): [Account!]!
+
+  """Retrieve all available accounts total count."""
+  accountsCount: Int!
+}
+
+type ScamInformation {
+  """Information for the given scam."""
+  info: String
+
+  """Type for the given scam information."""
+  type: ScamType!
+}
+
+enum ScamType {
+  none
+  potentialScam
+  scam
+}
