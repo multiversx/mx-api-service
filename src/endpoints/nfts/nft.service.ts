@@ -112,9 +112,9 @@ export class NftService {
       const nsfwThreshold = this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
 
       if (filter.isNsfw === true) {
-        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw', new RangeGreaterThanOrEqual(nsfwThreshold));
+        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw_mark', new RangeGreaterThanOrEqual(nsfwThreshold));
       } else {
-        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw', new RangeLowerThan(nsfwThreshold));
+        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw_mark', new RangeLowerThan(nsfwThreshold));
       }
     }
 
@@ -585,8 +585,8 @@ export class NftService {
     nft.score = elasticNft.nft_score;
     nft.rank = elasticNft.nft_rank;
 
-    if (elasticNft.nft_nsfw !== undefined) {
-      nft.isNsfw = elasticNft.nft_nsfw >= this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
+    if (elasticNft.nft_nsfw_mark !== undefined) {
+      nft.isNsfw = elasticNft.nft_nsfw_mark >= this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
     }
   }
 }
