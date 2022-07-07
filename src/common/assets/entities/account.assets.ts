@@ -11,15 +11,15 @@ export class AccountAssets {
   @Field(() => [String], { description: "Tags list for the given account asset." })
   tags: string[] = [];
 
-  @Field(() => String, { description: "Proof for the given account asset." })
+  @Field(() => String, { description: "Proof for the given account asset.", nullable: true })
   proof: string | undefined = undefined;
 
-  @Field(() => String, { description: "Icon for the given account asset." })
+  @Field(() => String, { description: "Icon for the given account asset.", nullable: true })
   icon: string | undefined = undefined;
 
-  @Field(() => String, { description: "Icon PNG link for the given account asset." })
+  @Field(() => String, { description: "Icon PNG link for the given account asset.", nullable: true })
   iconPng: string | undefined = undefined;
 
-  @Field(() => String, { description: "Icon SVG link for the given account asset." })
+  @Field(() => String, { description: "Icon SVG link for the given account asset.", nullable: true })
   iconSvg: string | undefined = undefined;
 }

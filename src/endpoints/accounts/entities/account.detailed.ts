@@ -42,23 +42,23 @@ export class AccountDetailed extends Account {
   @ApiProperty({ description: 'The address in bech 32 format of owner account' })
   ownerAddress: string = '';
 
-  @Field(() => Int, { nullable: true, description: 'Deployment timestamp for the given detailed account.' })
+  @Field(() => Int, { description: 'Deployment timestamp for the given detailed account.', nullable: true })
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Number })
   deployedAt?: number;
 
-  @Field(() => Boolean, { nullable: true, description: 'If the given detailed account is upgradeable.' })
+  @Field(() => Boolean, { description: 'If the given detailed account is upgradeable.', nullable: true })
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
   isUpgradeable?: boolean;
 
-  @Field(() => Boolean, { nullable: true, description: 'If the given detailed account is readable.' })
+  @Field(() => Boolean, { description: 'If the given detailed account is readable.', nullable: true })
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
   isReadable?: boolean;
 
-  @Field(() => Boolean, { nullable: true, description: 'If the given detailed account is payable.' })
+  @Field(() => Boolean, { description: 'If the given detailed account is payable.', nullable: true })
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
   isPayable?: boolean;
 
-  @Field(() => Boolean, { nullable: true, description: 'If the given detailed account is payable by smart contract.' })
+  @Field(() => Boolean, { description: 'If the given detailed account is payable by smart contract.', nullable: true })
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean, nullable: true })
   isPayableBySmartContract?: boolean | undefined = undefined;
 
