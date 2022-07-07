@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql";
+import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { SwaggerUtils } from "@elrondnetwork/erdnest";
 import { ApiProperty } from "@nestjs/swagger";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
@@ -17,11 +17,11 @@ export class Account {
   @ApiProperty(SwaggerUtils.amountPropertyOptions({ description: 'Account current balance' }))
   balance: string = '';
 
-  @Field(() => Int, { description: 'Current nonce for the given account.' })
+  @Field(() => Float, { description: 'Current nonce for the given account.' })
   @ApiProperty({ type: Number, description: 'Account current nonce', example: 42 })
   nonce: number = 0;
 
-  @Field(() => Int, { description: 'Shard identifier for the given account.' })
+  @Field(() => Float, { description: 'Shard identifier for the given account.' })
   @ApiProperty({ type: Number, description: 'The shard ID allocated to the account', example: 0 })
   shard: number = 0;
 

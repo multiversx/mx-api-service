@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql";
+import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { Account } from "./account";
@@ -22,11 +22,11 @@ export class AccountDetailed extends Account {
   @ApiProperty({ description: 'The hash of the root node' })
   rootHash: string = '';
 
-  @Field(() => Int, { description: 'Number of transactions performed for the given detailed account.' })
+  @Field(() => Float, { description: 'Number of transactions performed for the given detailed account.' })
   @ApiProperty({ description: 'The number of transactions performed on this account' })
   txCount: number = 0;
 
-  @Field(() => Int, { description: 'Number of smart contract results for the given detailed account.' })
+  @Field(() => Float, { description: 'Number of smart contract results for the given detailed account.' })
   @ApiProperty({ description: 'The number of smart contract results of this account' })
   scrCount: number = 0;
 
@@ -42,7 +42,7 @@ export class AccountDetailed extends Account {
   @ApiProperty({ description: 'The address in bech 32 format of owner account' })
   ownerAddress: string = '';
 
-  @Field(() => Int, { description: 'Deployment timestamp for the given detailed account.', nullable: true })
+  @Field(() => Float, { description: 'Deployment timestamp for the given detailed account.', nullable: true })
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Number })
   deployedAt?: number;
 

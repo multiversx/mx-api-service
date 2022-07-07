@@ -1,4 +1,4 @@
-import { Args, Int, Resolver, Query } from "@nestjs/graphql";
+import { Args, Float, Resolver, Query } from "@nestjs/graphql";
 
 import { Account } from "src/endpoints/accounts/entities/account";
 import { AccountDetailed } from "src/endpoints/accounts/entities/account.detailed";
@@ -14,7 +14,7 @@ export class AccountQueryResolver {
       return await this.accountService.getAccounts(GetAccountsInput.resolve(input));
   }
 
-  @Query(() => Int, { name: "accountsCount", description: "Retrieve all available accounts total count." })
+  @Query(() => Float, { name: "accountsCount", description: "Retrieve all available accounts total count." })
   public async getAccountsCount(): Promise<number> {
     return await this.accountService.getAccountsCount();
   }
