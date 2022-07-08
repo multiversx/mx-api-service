@@ -293,8 +293,22 @@ export class NetworkService {
       .execSync('git rev-parse --short HEAD', { cwd: 'src/plugins' })
       .toString().trim();
 
+    let apiVersion = require('child_process')
+      .execSync('git tag --points-at HEAD')
+      .toString().trim();
+
     if (pluginsVersion === appVersion) {
       pluginsVersion = undefined;
+    }
+
+    if (!apiVersion) {
+      apiVersion = require('child_process')
+        .execSync('git describe --tags --abbrev=0')
+        .toString().trim();
+
+      if (apiVersion) {
+        apiVersion = apiVersion + '-next';
+      }
     }
 
     return new About({
@@ -302,6 +316,7 @@ export class NetworkService {
       pluginsVersion,
       network: this.apiConfigService.getNetwork(),
       cluster: this.apiConfigService.getCluster(),
+      version: apiVersion,
     });
   }
 
