@@ -301,8 +301,6 @@ export class NetworkService {
       pluginsVersion = undefined;
     }
 
-    console.log({ apiVersion });
-
     if (!apiVersion) {
       apiVersion = require('child_process')
         .execSync('git describe --tags --abbrev=0')
