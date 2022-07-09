@@ -1,19 +1,19 @@
 import { CachingService, JwtAdminGuard, JwtAuthenticateGuard } from "@elrondnetwork/erdnest";
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Param, Put, Query, UseGuards } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
-import { ApiResponse } from "@nestjs/swagger";
+import { ApiExcludeController, ApiResponse } from "@nestjs/swagger";
 import { CacheValue } from "./entities/cache.value";
 
-@Controller()
-export class CacheController {
+@Controller('debug/cache/remote')
+@ApiExcludeController()
+export class RemoteCacheController {
   constructor(
     private readonly cachingService: CachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) { }
 
-
   @UseGuards(JwtAuthenticateGuard, JwtAdminGuard)
-  @Get("/caching/:key")
+  @Get("/:key")
   @ApiResponse({
     status: 200,
     description: 'The cache value for one key',
@@ -32,7 +32,7 @@ export class CacheController {
   }
 
   @UseGuards(JwtAuthenticateGuard, JwtAdminGuard)
-  @Put("/caching/:key")
+  @Put("/:key")
   @ApiResponse({
     status: 200,
     description: 'Key has been updated',
@@ -43,7 +43,7 @@ export class CacheController {
   }
 
   @UseGuards(JwtAuthenticateGuard, JwtAdminGuard)
-  @Delete("/caching/:key")
+  @Delete("/:key")
   @ApiResponse({
     status: 200,
     description: 'Key has been deleted from cache',
@@ -58,7 +58,7 @@ export class CacheController {
   }
 
   @UseGuards(JwtAuthenticateGuard, JwtAdminGuard)
-  @Get("/caching")
+  @Get("/")
   async getKeys(
     @Query('keys') keys: string | undefined,
   ): Promise<string[]> {

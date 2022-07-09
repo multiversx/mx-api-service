@@ -117,7 +117,7 @@ export class MexPairService {
     const secondTokenSymbol = pair.secondToken.identifier.split('-')[0];
     const state = this.getPairState(pair.state);
     const type = this.getPairType(pair.type);
-    if (!type || type === MexPairType.jungle) {
+    if (!type || [MexPairType.jungle, MexPairType.unlisted].includes(type)) {
       return undefined;
     }
 
@@ -189,6 +189,8 @@ export class MexPairService {
         return MexPairType.experimental;
       case 'Jungle':
         return MexPairType.jungle;
+      case 'Unlisted':
+        return MexPairType.unlisted;
       default:
         this.logger.error(`Unsupported pair type '${type}'`);
         return undefined;

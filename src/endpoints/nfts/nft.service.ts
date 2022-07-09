@@ -20,7 +20,7 @@ import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, ElasticSortOrder, RangeGreaterThanOrEqual, RangeLowerThan } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, ElasticSortOrder, RangeGreaterThanOrEqual, RangeLowerThan, BatchUtils } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class NftService {
@@ -112,9 +112,9 @@ export class NftService {
       const nsfwThreshold = this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
 
       if (filter.isNsfw === true) {
-        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw', new RangeGreaterThanOrEqual(nsfwThreshold));
+        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw_mark', new RangeGreaterThanOrEqual(nsfwThreshold));
       } else {
-        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw', new RangeLowerThan(nsfwThreshold));
+        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw_mark', new RangeLowerThan(nsfwThreshold));
       }
     }
 
@@ -471,7 +471,7 @@ export class NftService {
     await this.batchProcessNfts(nfts);
 
     if (this.apiConfigService.isNftExtendedAttributesEnabled()) {
-      const internalNfts = await this.getNftsInternal(new QueryPagination({ from: 0, size: nfts.length }), new NftFilter({ identifiers: nfts.map(x => x.identifier) }));
+      const internalNfts = await this.getNftsInternalByIdentifiers(nfts.map(x => x.identifier));
 
       const indexedInternalNfts = internalNfts.toRecord<Nft>(x => x.identifier);
       for (const nft of nfts) {
@@ -485,6 +485,18 @@ export class NftService {
     }
 
     return nfts;
+  }
+
+  private async getNftsInternalByIdentifiers(identifiers: string[]): Promise<Nft[]> {
+    const chunks = BatchUtils.splitArrayIntoChunks(identifiers, 1024);
+    const result: Nft[] = [];
+    for (const identifiers of chunks) {
+      const internalNfts = await this.getNftsInternal(new QueryPagination({ from: 0, size: identifiers.length }), new NftFilter({ identifiers }));
+
+      result.push(...internalNfts);
+    }
+
+    return result;
   }
 
   private async applyPriceUsd(nft: NftAccount) {
@@ -573,8 +585,8 @@ export class NftService {
     nft.score = elasticNft.nft_score;
     nft.rank = elasticNft.nft_rank;
 
-    if (elasticNft.nft_nsfw !== undefined) {
-      nft.isNsfw = elasticNft.nft_nsfw >= this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
+    if (elasticNft.nft_nsfw_mark !== undefined) {
+      nft.isNsfw = elasticNft.nft_nsfw_mark >= this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
     }
   }
 }
