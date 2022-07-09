@@ -7,12 +7,16 @@ import { EndpointsServicesModule } from './endpoints/endpoints.services.module';
 import { EndpointsControllersModule } from './endpoints/endpoints.controllers.module';
 import { LoggingModule } from '@elrondnetwork/erdnest';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
+import { LocalCacheController } from './endpoints/caching/local.cache.controller';
 
 @Module({
   imports: [
     LoggingModule,
     EndpointsServicesModule,
     EndpointsControllersModule,
+  ],
+  controllers: [
+    LocalCacheController,
   ],
   providers: [
     DynamicModuleUtils.getNestJsApiConfigService(),
