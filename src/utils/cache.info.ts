@@ -9,6 +9,11 @@ export class CacheInfo {
     ttl: Constants.oneMinute() * 10,
   };
 
+  static LastProcessedTimestamp: CacheInfo = {
+    key: 'lastProcessedTimestamp',
+    ttl: Constants.oneWeek() * 2,
+  };
+
   static Nodes: CacheInfo = {
     key: 'nodes',
     ttl: Constants.oneHour(),

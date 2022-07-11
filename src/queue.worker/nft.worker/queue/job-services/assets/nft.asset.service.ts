@@ -21,7 +21,8 @@ export class NftAssetService {
     const fileResult: any = await this.apiService.get(fileUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS });
     const file = fileResult.data;
 
-    const fileName = fileUrl.split('/').slice(-2, -1);
+    //TO DO: use a better euristic to extract file name
+    const fileName = fileUrl.split('/').slice(-2).join('/');
     this.logger.log(`Extracted filename '${fileName}' for NFT '${identifier}'`);
 
     const filePath = `${this.STANDARD_PATH}/${fileName}`;

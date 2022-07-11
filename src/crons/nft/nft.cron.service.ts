@@ -1,11 +1,14 @@
-import { Constants, Locker } from "@elrondnetwork/erdnest";
+import { CachingService, Constants, Locker } from "@elrondnetwork/erdnest";
 import { Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { QueryPagination } from "src/common/entities/query.pagination";
 import { Nft } from "src/endpoints/nfts/entities/nft";
+import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
+import { CacheInfo } from "src/utils/cache.info";
 
 @Injectable()
 export class NftCronService {
@@ -15,6 +18,7 @@ export class NftCronService {
     private readonly nftWorkerService: NftWorkerService,
     private readonly nftService: NftService,
     private readonly apiConfigService: ApiConfigService,
+    private readonly cachingService: CachingService,
   ) {
     this.logger = new Logger(NftCronService.name);
   }
@@ -36,6 +40,27 @@ export class NftCronService {
       });
     }, true);
   }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async triggerProcessWhitelistedNfts() {
+    if (!this.apiConfigService.getIsProcessNftsFlagActive()) {
+      return;
+    }
+
+    let lastProcessedTimestamp = await this.cachingService.getCache<number>(CacheInfo.LastProcessedTimestamp.key) ?? Math.floor(Date.now() / 1000);
+    this.logger.log(`Last processed timestamp until now: ${lastProcessedTimestamp} (${new Date(lastProcessedTimestamp)})`);
+
+    await Locker.lock('Process NFTs whitelisted', async () => {
+      const nfts = await this.nftService.getNfts(new QueryPagination({ from: 0, size: 10000 }), new NftFilter({ isWhitelistedStorage: true, hasUris: true, before: lastProcessedTimestamp }));
+
+      await Promise.all(nfts.map((nft: Nft) => this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ forceUploadAsset: true }))));
+
+      lastProcessedTimestamp = nfts[nfts.length - 1].timestamp ?? Math.floor(Date.now() / 1000);
+    }, true);
+
+    await this.cachingService.setCache(CacheInfo.LastProcessedTimestamp.key, lastProcessedTimestamp, CacheInfo.LastProcessedTimestamp.ttl);
+  }
+
 
   private async processNftsFromLast24Hours(handler: (nft: Nft) => Promise<boolean>): Promise<void> {
     let before = Math.floor(Date.now() / 1000) - (Constants.oneMinute() * 10);
