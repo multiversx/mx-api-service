@@ -10,6 +10,7 @@ import { NftMediaService } from "./job-services/media/nft.media.service";
 import { NftMetadataService } from "./job-services/metadata/nft.metadata.service";
 import { GenerateThumbnailResult } from "./job-services/thumbnails/entities/generate.thumbnail.result";
 import { NftThumbnailService } from "./job-services/thumbnails/nft.thumbnail.service";
+import { NftAssetService } from "./job-services/assets/nft.asset.service";
 
 @Controller()
 export class NftQueueController {
@@ -21,6 +22,7 @@ export class NftQueueController {
     private readonly nftMediaService: NftMediaService,
     private readonly nftThumbnailService: NftThumbnailService,
     private readonly nftService: NftService,
+    private readonly nftAssetService: NftAssetService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     apiConfigService: ApiConfigService,
   ) {
@@ -89,6 +91,10 @@ export class NftQueueController {
 
       if (nft.media && !settings.skipRefreshThumbnail) {
         await Promise.all(nft.media.map((media: any) => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
+      }
+
+      if (nft.media) {
+        await Promise.all(nft.media.map((media: NftMedia) => this.nftAssetService.uploadAsset(nft.identifier, media.originalUrl, media.fileType)));
       }
 
       this.logger.log({ type: 'consumer end', identifier: data.identifier });
