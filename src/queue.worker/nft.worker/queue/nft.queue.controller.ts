@@ -102,7 +102,7 @@ export class NftQueueController {
           if (!isAssetUploaded) {
             await this.nftAssetService.uploadAsset(nft.identifier, media.originalUrl, media.fileType);
           } else {
-            this.logger.log(`Asset already uploaded for NFT with identifier '${nft.identifier}'`);
+            this.logger.log(`Asset already uploaded for NFT with identifier '${nft.identifier}' and media url '${media.url}'`);
           }
         }
       }
