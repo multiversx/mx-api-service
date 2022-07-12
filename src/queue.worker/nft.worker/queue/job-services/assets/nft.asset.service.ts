@@ -1,5 +1,6 @@
 import { ApiService, Constants } from "@elrondnetwork/erdnest";
 import { Injectable, Logger } from "@nestjs/common";
+import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { AWSService } from "../thumbnails/aws.service";
 
 @Injectable()
@@ -30,5 +31,17 @@ export class NftAssetService {
     await this.awsService.uploadToS3(filePath, file, fileType);
 
     this.logger.log(`Asset uploaded to S3 for NFT '${identifier}'`);
+  }
+
+  async isAssetUploaded(identifier: string, media: NftMedia): Promise<boolean> {
+    try {
+      await this.apiService.head(media.url);
+
+      return true;
+    } catch (error: any) {
+      this.logger.log(`Asset not uploaded for NFT with identifier '${identifier}' and media url '${media.url}'`);
+
+      return false;
+    }
   }
 }
