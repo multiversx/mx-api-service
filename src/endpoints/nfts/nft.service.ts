@@ -582,8 +582,8 @@ export class NftService {
   }
 
   applyExtendedAttributes(nft: Nft, elasticNft: any) {
-    nft.score = elasticNft.nft_score;
-    nft.rank = elasticNft.nft_rank;
+    nft.score = elasticNft.nft_rarity_score;
+    nft.rank = elasticNft.nft_rarity_rank;
 
     if (elasticNft.nft_nsfw_mark !== undefined) {
       nft.isNsfw = elasticNft.nft_nsfw_mark >= this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
