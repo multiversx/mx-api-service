@@ -66,8 +66,8 @@ export class NftCronService {
           needProccessNfts.push(nft);
         }
 
-        // wait 0.1 seconds before another call
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // wait 0.05 seconds before another call
+        await new Promise(resolve => setTimeout(resolve, 50));
       }
 
       this.logger.log(`${needProccessNfts.length} that does not have asset uploaded in this batch`);
