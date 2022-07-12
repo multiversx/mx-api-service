@@ -5,6 +5,7 @@ import { GraphQLModule } from "@nestjs/graphql";
 import { join } from "path";
 
 import { AccountModule } from "src/graphql/account/account.module";
+import { TransactionModule } from "src/graphql/transaction/transaction.module";
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AccountModule } from "src/graphql/account/account.module";
       sortSchema: true,
     }),
     AccountModule,
+    TransactionModule,
   ],
 })
 export class GraphQlModule {}

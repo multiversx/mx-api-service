@@ -14,11 +14,11 @@ export class AccountDetailed extends Account {
   @ApiProperty({ description: 'The source code in hex format' })
   code: string = '';
 
-  @Field(() => String, { description: 'Hash of the source code for the given detailed account.' })
+  @Field(() => String, { description: 'Hash of the source code for the given detailed account.', nullable: true })
   @ApiProperty({ description: 'The hash of the source code' })
   codeHash: string = '';
 
-  @Field(() => String, { description: 'Hash of the root node for the given detailed account.' })
+  @Field(() => String, { description: 'Hash of the root node for the given detailed account.' , nullable: true })
   @ApiProperty({ description: 'The hash of the root node' })
   rootHash: string = '';
 

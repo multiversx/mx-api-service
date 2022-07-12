@@ -14,10 +14,10 @@ type Account {
   balance: String!
 
   """Current nonce for the given account."""
-  nonce: Int!
+  nonce: Float!
 
   """Shard identifier for the given account."""
-  shard: Int!
+  shard: Float!
 }
 
 """Account assets object type."""
@@ -26,19 +26,19 @@ type AccountAssets {
   description: String!
 
   """Icon for the given account asset."""
-  icon: String!
+  icon: String
 
   """Icon PNG link for the given account asset."""
-  iconPng: String!
+  iconPng: String
 
   """Icon SVG link for the given account asset."""
-  iconSvg: String!
+  iconSvg: String
 
   """Name for the given account asset."""
   name: String!
 
   """Proof for the given account asset."""
-  proof: String!
+  proof: String
 
   """Tags list for the given account asset."""
   tags: [String!]!
@@ -59,10 +59,10 @@ type AccountDetailed {
   code: String!
 
   """Hash of the source code for the given detailed account."""
-  codeHash: String!
+  codeHash: String
 
   """Deployment timestamp for the given detailed account."""
-  deployedAt: Int
+  deployedAt: Float
 
   """Developer reward for the given detailed account."""
   developerReward: String!
@@ -80,48 +80,199 @@ type AccountDetailed {
   isUpgradeable: Boolean
 
   """Current nonce for the given account."""
-  nonce: Int!
+  nonce: Float!
 
   """Bech32 address of the owner account for the given detailed account."""
   ownerAddress: String!
 
   """Hash of the root node for the given detailed account."""
-  rootHash: String!
+  rootHash: String
 
   """Scam information for the given detailed account."""
   scamInfo: ScamInformation
 
   """Number of smart contract results for the given detailed account."""
-  scrCount: Int!
+  scrCount: Float!
 
   """Shard identifier for the given account."""
-  shard: Int!
+  shard: Float!
 
   """Number of transactions performed for the given detailed account."""
-  txCount: Int!
+  txCount: Float!
 
   """Username for the given detailed account."""
   username: String!
 }
 
+"""Get account input."""
+input GetAccountInput {
+  """Address to retrieve the corresponding account."""
+  address: String = ""
+}
+
+"""Get accounts input."""
+input GetAccountsInput {
+  """Number of accounts to skip for the given result set."""
+  from: Float = 0
+
+  """Number of accounts to retrieve for the given result set."""
+  size: Float = 25
+}
+
+"""Get transaction input."""
+input GetTransactionInput {
+  """Fields to retrieve the corresponding transaction."""
+  fields: [String!]
+
+  """Hash to retrieve the corresponding transaction."""
+  hash: String = ""
+}
+
+"""Get transactions count input."""
+input GetTransactionsCountInput {
+  """After timestamp for the given result set."""
+  after: Float
+
+  """Before timestamp for the given result set."""
+  before: Float
+
+  """Condition for ElasticSearch queries for the given result set."""
+  condition: String
+
+  """Filter transactions by function name for the given result set."""
+  function: String
+
+  """
+  Filter by a comma-separated list of transaction hashes for the given result set.
+  """
+  hashes: [String!]
+
+  """Mini block hash for the given result set."""
+  miniBlockHash: String
+
+  """Address of the transaction receiver for the given result set."""
+  receiver: String
+
+  """Receiver shard identfier for the given result set."""
+  receiverShard: Float
+
+  """Search in data object for the given result set."""
+  search: String
+
+  """Address of the transaction sender for the given result set."""
+  sender: String
+
+  """Sender shard identfier for the given result set."""
+  senderShard: Float
+
+  """
+  Status of the transaction (success / pending / invalid / fail) for the given result set.
+  """
+  status: TransactionStatus
+
+  """Token identfier for the given result set."""
+  token: String
+}
+
+"""Get transactions input."""
+input GetTransactionsInput {
+  """After timestamp for the given result set."""
+  after: Float
+
+  """Before timestamp for the given result set."""
+  before: Float
+
+  """Sort order (ascending / descending) for the given result set."""
+  condition: SortOrder
+
+  """Number of transactions to skip for the given result set."""
+  from: Float = 0
+
+  """Filter transactions by function name for the given result set."""
+  function: String
+
+  """
+  Filter by a comma-separated list of transaction hashes for the given result set.
+  """
+  hashes: [String!]
+
+  """Mini block hash for the given result set."""
+  miniBlockHash: String
+
+  """Address of the transaction receiver for the given result set."""
+  receiver: String
+
+  """Receiver shard identfier for the given result set."""
+  receiverShard: Float
+
+  """Search in data object for the given result set."""
+  search: String
+
+  """Address of the transaction sender for the given result set."""
+  sender: String
+
+  """Sender shard identfier for the given result set."""
+  senderShard: Float
+
+  """Number of transactions to retrieve for the given result set."""
+  size: Float = 25
+
+  """
+  Status of the transaction (success / pending / invalid / fail) for the given result set.
+  """
+  status: TransactionStatus
+
+  """Token identfier for the given result set."""
+  token: String
+
+  """If to return logs for the given result set."""
+  withLogs: Boolean
+
+  """If to return operations for the given result set."""
+  withOperations: Boolean
+
+  """If to return smart contract results for the given result set."""
+  withScResults: Boolean
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
 type Query {
   """Retrieve the account for the given address."""
   account(
-    """Address to retrieve the corresponding account."""
-    address: String!
+    """Get account input."""
+    input: GetAccountInput!
   ): AccountDetailed
 
   """Retrieve all accounts available."""
   accounts(
-    """Number of accounts to retrieve for the given result set."""
-    size: Int = 25
-
-    """Number of accounts to skip for the given result set."""
-    skip: Int = 0
+    """Get accounts input."""
+    input: GetAccountsInput!
   ): [Account!]!
 
   """Retrieve all available accounts total count."""
-  accountsCount: Int!
+  accountsCount: Float!
+
+  """Retrieve the transaction for the given address."""
+  transaction(
+    """Get transaction input."""
+    input: GetTransactionInput!
+  ): TransactionDetailed!
+
+  """Retrieve all transactions available."""
+  transactions(
+    """Get transactions input."""
+    input: GetTransactionsInput!
+  ): [Transaction!]!
+
+  """Retrieve all available transactions total count."""
+  transactionsCount(
+    """Get transactions count input."""
+    input: GetTransactionsCountInput!
+  ): Float!
 }
 
 """Scam information object type."""
@@ -143,4 +294,421 @@ enum ScamType {
 
   """Scam type."""
   scam
+}
+
+"""Smart contract result object type."""
+type SmartContractResult {
+  """Transaction action for the given smart contract result."""
+  action: TransactionAction
+
+  """Call type for the given smart contract result."""
+  callType: String!
+
+  """Data for the given smart contract result."""
+  data: String!
+
+  """Gas limit for the given smart contract result."""
+  gasLimit: Float!
+
+  """Gas price for the given smart contract result."""
+  gasPrice: Float!
+
+  """Hash for the given smart contract result."""
+  hash: String!
+
+  """Transaction logs for the given smart contract result."""
+  logs: TransactionLog
+
+  """Mini block hash for the given smart contract result."""
+  miniBlockHash: String
+
+  """Nonce for the given smart contract result."""
+  nonce: Float!
+
+  """Original transaction hash for the given smart contract result."""
+  originalTxHash: String!
+
+  """Previous transaction hash for the given smart contract result."""
+  prevTxHash: String!
+
+  """Receiver address for the given smart contract result."""
+  receiver: String!
+
+  """Relayed value for the given smart contract result."""
+  relayedValue: String!
+
+  """Return message for the given smart contract result."""
+  returnMessage: String
+
+  """Sender address for the given smart contract result."""
+  sender: String!
+
+  """Timestamp for the given smart contract result."""
+  timestamp: Float!
+
+  """Value for the given smart contract result."""
+  value: String!
+}
+
+"""Sort order object type."""
+enum SortOrder {
+  """Ascending order."""
+  asc
+
+  """Descending order."""
+  desc
+}
+
+"""Token type object type."""
+enum TokenType {
+  """Fungible ESDT token type."""
+  FungibleESDT
+
+  """Meta ESDT token type."""
+  MetaESDT
+
+  """Non-fungible ESDT token type."""
+  NonFungibleESDT
+
+  """Semi-fungible ESDT token type."""
+  SemiFungibleESDT
+}
+
+"""Transaction object type."""
+type Transaction {
+  """Transaction action for the given transaction."""
+  action: TransactionAction
+
+  """Data for the given transaction."""
+  data: String
+
+  """Fee for the given transaction."""
+  fee: String
+
+  """Function for the given transaction."""
+  function: String
+
+  """Gas limit for the given transaction."""
+  gasLimit: Float
+
+  """Gas price for the given transaction."""
+  gasPrice: Float
+
+  """Gas used for the given transaction."""
+  gasUsed: Float
+
+  """Mini block hash for the given transaction."""
+  miniBlockHash: String
+
+  """Nonce for the given transaction."""
+  nonce: Float
+
+  """Original hash for the given transaction."""
+  originalTxHash: String
+
+  """Pending results for the given transaction."""
+  pendingResults: Boolean
+
+  """Receiver address for the given transaction."""
+  receiver: String!
+
+  """Receiver shard for the given transaction."""
+  receiverShard: Float!
+
+  """Round for the given transaction."""
+  round: Float
+
+  """Scam information for the given transaction."""
+  scamInfo: ScamInformation
+
+  """Sender address for the given transaction."""
+  sender: String!
+
+  """Sender shard identifier for the given transaction."""
+  senderShard: Float!
+
+  """Signature for the given transaction."""
+  signature: String
+
+  """Status for the given transaction."""
+  status: String!
+
+  """Timestamp for the given transaction."""
+  timestamp: Float!
+
+  """Hash for the given transaction."""
+  txHash: String!
+
+  """Transaction type for the given transaction."""
+  type: TransactionType
+
+  """Value for the given transaction."""
+  value: String!
+}
+
+"""Transaction action object type."""
+type TransactionAction {
+  """Description for the given transaction action."""
+  arguments: JSON
+
+  """Category for the given transaction action."""
+  category: String!
+
+  """Description for the given transaction action."""
+  description: String!
+
+  """Name for the given transaction action."""
+  name: String!
+}
+
+"""Detailed Transaction object type that extends Transaction."""
+type TransactionDetailed {
+  """Transaction action for the given transaction."""
+  action: TransactionAction
+
+  """Data for the given transaction."""
+  data: String
+
+  """Fee for the given transaction."""
+  fee: String
+
+  """Function for the given transaction."""
+  function: String
+
+  """Gas limit for the given transaction."""
+  gasLimit: Float
+
+  """Gas price for the given transaction."""
+  gasPrice: Float
+
+  """Gas used for the given transaction."""
+  gasUsed: Float
+
+  """Transaction log for the given detailed transaction."""
+  logs: TransactionLog
+
+  """Mini block hash for the given transaction."""
+  miniBlockHash: String
+
+  """Nonce for the given transaction."""
+  nonce: Float
+
+  """Transaction operation for the given detailed transaction."""
+  operations: [TransactionOperation!]!
+
+  """Original hash for the given transaction."""
+  originalTxHash: String
+
+  """Pending results for the given transaction."""
+  pendingResults: Boolean
+
+  """Price for the given detailed transaction."""
+  price: Float
+
+  """Transaction receipt for the given detailed transaction."""
+  receipt: TransactionReceipt
+
+  """Receiver address for the given transaction."""
+  receiver: String!
+
+  """Receiver shard for the given transaction."""
+  receiverShard: Float!
+
+  """Smart contract result for the given detailed transaction."""
+  results: [SmartContractResult!]!
+
+  """Round for the given transaction."""
+  round: Float
+
+  """Scam information for the given transaction."""
+  scamInfo: ScamInformation
+
+  """Sender address for the given transaction."""
+  sender: String!
+
+  """Sender shard identifier for the given transaction."""
+  senderShard: Float!
+
+  """Signature for the given transaction."""
+  signature: String
+
+  """Status for the given transaction."""
+  status: String!
+
+  """Timestamp for the given transaction."""
+  timestamp: Float!
+
+  """Hash for the given transaction."""
+  txHash: String!
+
+  """Transaction type for the given transaction."""
+  type: TransactionType
+
+  """Value for the given transaction."""
+  value: String!
+}
+
+"""Transaction log object type."""
+type TransactionLog {
+  """Address for the given transaction log."""
+  address: String!
+
+  """Transaction log events list for the given transaction log."""
+  events: [TransactionLogEvent!]!
+}
+
+"""Transaction log event object type."""
+type TransactionLogEvent {
+  """Address for the given transaction log event."""
+  address: String!
+
+  """Data for the given transaction log event."""
+  data: String!
+
+  """Identifier for the given transaction log event."""
+  identifier: String!
+
+  """Topics list for the given transaction log event."""
+  topics: [String!]!
+}
+
+"""Transaction operation object type."""
+type TransactionOperation {
+  """Transaction operation action for the transaction operation."""
+  action: TransactionOperationAction!
+
+  """Collection for the transaction operation."""
+  collection: String!
+
+  """Data for the transaction operation."""
+  data: String
+
+  """Decimals for the transaction operation."""
+  decimals: Float
+
+  """ESDT type for the transaction operation."""
+  esdtType: TokenType!
+
+  """Identifier for the transaction operation."""
+  id: String!
+
+  """Identifier for the transaction operation."""
+  identifier: String!
+
+  """Message for the transaction operation."""
+  message: String
+
+  """Name for the transaction operation."""
+  name: String!
+
+  """Receiver address for the transaction operation."""
+  receiver: String!
+
+  """Sender address for the transaction operation."""
+  sender: String!
+
+  """SVG URL for the transaction operation."""
+  svgUrl: String
+
+  """Transaction operation type for the transaction operation."""
+  type: TransactionOperationType!
+
+  """Value for the transaction operation."""
+  value: String!
+}
+
+"""Transaction operation action object type."""
+enum TransactionOperationAction {
+  """Add quantity operation action."""
+  addQuantity
+
+  """Burn operation action."""
+  burn
+
+  """Create operation action."""
+  create
+
+  """Freeze operation action."""
+  freeze
+
+  """Local burn operation action."""
+  localBurn
+
+  """Local mint operation action."""
+  localMint
+
+  """No operation operation action."""
+  none
+
+  """Signal error operation action."""
+  signalError
+
+  """Transafer operation action."""
+  transfer
+
+  """Transfer only value operation action."""
+  transferValueOnly
+
+  """Wipe operation action."""
+  wipe
+
+  """Write log operation action."""
+  writeLog
+}
+
+"""Transaction operation type object type."""
+enum TransactionOperationType {
+  """EGLD operation type."""
+  egld
+
+  """Error operation type."""
+  error
+
+  """ESDT operation type."""
+  esdt
+
+  """Log operation type."""
+  log
+
+  """NFT operation type."""
+  nft
+
+  """No operation type."""
+  none
+}
+
+"""Transaction receipt object type."""
+type TransactionReceipt {
+  """Data for the given transaction receipt."""
+  data: String!
+
+  """Sender address for the given transaction receipt."""
+  sender: String!
+
+  """Value for the given transaction receipt."""
+  value: String!
+}
+
+"""Transaction status object type."""
+enum TransactionStatus {
+  """Fail status."""
+  fail
+
+  """Invalid status."""
+  invalid
+
+  """Pending status."""
+  pending
+
+  """Success status."""
+  success
+}
+
+"""Transaction type object type."""
+enum TransactionType {
+  """Smart contract type."""
+  SmartContractResult
+
+  """Transaction type."""
+  Transaction
 }
