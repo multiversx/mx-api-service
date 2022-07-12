@@ -70,6 +70,8 @@ export class NftCronService {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
 
+      this.logger.log(`${needProccessNfts.length} that does not have asset uploaded in this batch`);
+
       await Promise.all(needProccessNfts.map((nft: Nft) => this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ uploadAsset: true }))));
 
       lastProcessedTimestamp = nfts[nfts.length - 1].timestamp ?? Math.floor(Date.now() / 1000);
