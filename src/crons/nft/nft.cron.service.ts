@@ -8,6 +8,7 @@ import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
+import { NftAssetService } from "src/queue.worker/nft.worker/queue/job-services/assets/nft.asset.service";
 import { CacheInfo } from "src/utils/cache.info";
 
 @Injectable()
@@ -19,6 +20,7 @@ export class NftCronService {
     private readonly nftService: NftService,
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
+    private readonly nftAssetService: NftAssetService
   ) {
     this.logger = new Logger(NftCronService.name);
   }
@@ -53,9 +55,24 @@ export class NftCronService {
     await Locker.lock('Process NFTs whitelisted', async () => {
       const nfts = await this.nftService.getNfts(new QueryPagination({ from: 0, size: 2500 }), new NftFilter({ isWhitelistedStorage: true, hasUris: true, before: lastProcessedTimestamp }));
 
-      await Promise.all(nfts.map((nft: Nft) => this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ uploadAsset: true }))));
+      const needProccessNfts: Nft[] = [];
+      for (const nft of nfts) {
+        if (!nft.media) {
+          continue;
+        }
 
-      lastProcessedTimestamp = nfts[nfts.length - 1].timestamp ?? Math.floor(Date.now() / 1000);
+        const isAssetUploaded = await this.nftAssetService.isAssetUploaded(nft.identifier, nft.media[0]);
+        if (!isAssetUploaded) {
+          needProccessNfts.push(nft);
+        }
+
+        // wait 0.1 seconds before another call
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      await Promise.all(needProccessNfts.map((nft: Nft) => this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ uploadAsset: true }))));
+
+      lastProcessedTimestamp = needProccessNfts[needProccessNfts.length - 1].timestamp ?? Math.floor(Date.now() / 1000);
     }, true);
 
     await this.cachingService.setCache(CacheInfo.LastProcessedTimestamp.key, lastProcessedTimestamp, CacheInfo.LastProcessedTimestamp.ttl);
