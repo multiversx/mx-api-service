@@ -1,4 +1,6 @@
+import { BinaryUtils } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
@@ -8,11 +10,20 @@ import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/sma
 import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.roles.filter";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
+import { Repository } from "typeorm";
+import { MiniBlock, Tag } from "../entities";
 import { IndexerInterface } from "../indexer.interface";
+import { MiniBlockDb } from "./entities/miniblock.db";
+import { TagsDb } from "./entities/tags.db";
 
 @Injectable()
 export class PostgresIndexerService implements IndexerInterface {
-  constructor() { }
+  constructor(
+    @InjectRepository(MiniBlockDb)
+    private readonly miniBlocksRepository: Repository<MiniBlockDb>,
+    @InjectRepository(TagsDb)
+    private readonly tagsRepository: Repository<TagsDb>,
+  ) { }
 
   getAccountsCount(): Promise<number> {
     throw new Error("Method not implemented.");
@@ -95,12 +106,23 @@ export class PostgresIndexerService implements IndexerInterface {
   getBlock(_hash: string): Promise<any> {
     throw new Error("Method not implemented.");
   }
-  getMiniBlock(_miniBlockHash: string): Promise<any> {
-    throw new Error("Method not implemented.");
+
+  async getMiniBlock(miniBlockHash: string): Promise<MiniBlock> {
+    const query = this.miniBlocksRepository
+      .createQueryBuilder()
+      .where('hash = :hash', { hash: miniBlockHash });
+
+    return await query.getOneOrFail();
   }
-  getTag(_tag: string): Promise<any> {
-    throw new Error("Method not implemented.");
+
+  async getTag(tag: string): Promise<Tag> {
+    const query = this.tagsRepository
+      .createQueryBuilder()
+      .where('tag = :tag', { tag: BinaryUtils.base64Encode(tag) });
+
+    return await query.getOneOrFail();
   }
+
   getTransfers(_filter: TransactionFilter, _pagination: QueryPagination): Promise<any[]> {
     throw new Error("Method not implemented.");
   }
@@ -116,9 +138,19 @@ export class PostgresIndexerService implements IndexerInterface {
   getAccountEsdtByAddressesAndIdentifier(_identifier: string, _addresses: string[]): Promise<any[]> {
     throw new Error("Method not implemented.");
   }
-  getNftTags(_pagination: QueryPagination, _search?: string | undefined): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getNftTags(pagination: QueryPagination, search?: string | undefined): Promise<Tag[]> {
+    let query = this.tagsRepository
+      .createQueryBuilder()
+      .skip(pagination.from)
+      .take(pagination.size)
+      .orderBy('count', 'DESC');
+    if (search) {
+      query = query.where('tag like :tag', { tag: `%${search}%` });
+    }
+    return await query.getMany();
   }
+
   getScResults(_pagination: QueryPagination, _filter: SmartContractResultFilter): Promise<any[]> {
     throw new Error("Method not implemented.");
   }
