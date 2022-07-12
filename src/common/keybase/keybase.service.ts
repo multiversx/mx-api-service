@@ -8,6 +8,7 @@ import { CacheInfo } from "../../utils/cache.info";
 import asyncPool from "tiny-async-pool";
 import { GithubService } from "../github/github.service";
 import { ApiService, ApiUtils, CachingService, Constants } from "@elrondnetwork/erdnest";
+import { ApiConfigService } from "../api-config/api.config.service";
 
 @Injectable()
 export class KeybaseService {
@@ -21,6 +22,7 @@ export class KeybaseService {
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
     private readonly githubService: GithubService,
+    private readonly apiConfigService: ApiConfigService
   ) {
     this.logger = new Logger(KeybaseService.name);
   }
@@ -141,8 +143,9 @@ export class KeybaseService {
   }
 
   async confirmKeybasesAgainstKeybasePubForIdentity(identity: string): Promise<void> {
+    const network = this.apiConfigService.getNetwork();
     // eslint-disable-next-line require-await
-    const result = await this.apiService.get(`https://keybase.pub/${identity}/elrond`, { timeout: 100000 }, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
+    const result = await this.apiService.get(`https://keybase.pub/${identity}/elrond${network !== "mainnet" ? `/${network}` : ''}`, { timeout: 100000 }, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
 
     if (!result) {
       this.logger.log(`For identity '${identity}', no keybase.pub entry was found`);
@@ -151,14 +154,16 @@ export class KeybaseService {
 
     const html = result.data;
 
-    const nodesRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/[0-9a-f]{192}", 'g');
+    const networkRegex = network !== "mainnet" ? `${network}\/` : '';
+
+    const nodesRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/" + networkRegex + "[0-9a-f]{192}", 'g');
     const blses: string[] = [];
     for (const keybaseUrl of html.match(nodesRegex) || []) {
       const bls = keybaseUrl.match(/[0-9a-f]{192}/)[0];
       blses.push(bls);
     }
 
-    const providersRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{13}", 'g');
+    const providersRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/" + networkRegex + "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{13}", 'g');
     const addresses: string[] = [];
     for (const keybaseUrl of html.match(providersRegex) || []) {
       const bls = keybaseUrl.match(/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{13}/)[0];
