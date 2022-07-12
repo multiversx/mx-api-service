@@ -11,6 +11,7 @@ import { NftMetadataService } from "./job-services/metadata/nft.metadata.service
 import { GenerateThumbnailResult } from "./job-services/thumbnails/entities/generate.thumbnail.result";
 import { NftThumbnailService } from "./job-services/thumbnails/nft.thumbnail.service";
 import { NftAssetService } from "./job-services/assets/nft.asset.service";
+import { ApiService } from "@elrondnetwork/erdnest";
 
 @Controller()
 export class NftQueueController {
@@ -23,6 +24,7 @@ export class NftQueueController {
     private readonly nftThumbnailService: NftThumbnailService,
     private readonly nftService: NftService,
     private readonly nftAssetService: NftAssetService,
+    private readonly apiService: ApiService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     apiConfigService: ApiConfigService,
   ) {
@@ -93,8 +95,16 @@ export class NftQueueController {
         await Promise.all(nft.media.map((media: any) => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
       }
 
-      if (nft.media) {
-        await Promise.all(nft.media.map((media: NftMedia) => this.nftAssetService.uploadAsset(nft.identifier, media.originalUrl, media.fileType)));
+      if (nft.media && settings.uploadAsset) {
+        for (const media of nft.media) {
+          const isAssetUploaded = await this.isAssetUploaded(nft.identifier, media);
+
+          if (!isAssetUploaded) {
+            await this.nftAssetService.uploadAsset(nft.identifier, media.originalUrl, media.fileType);
+          } else {
+            this.logger.log(`Asset already uploaded for NFT with identifier '${nft.identifier}'`);
+          }
+        }
       }
 
       this.logger.log({ type: 'consumer end', identifier: data.identifier });
@@ -112,6 +122,17 @@ export class NftQueueController {
     return await this.nftMetadataService.refreshMetadata(nft);
   }
 
+  private async isAssetUploaded(identifier: string, media: NftMedia): Promise<boolean> {
+    try {
+      await this.apiService.head(media.url);
+
+      return true;
+    } catch (error: any) {
+      this.logger.log(`Asset not uploaded for NFT with identifier '${identifier}' and media url '${media.url}'`);
+
+      return false;
+    }
+  }
   private async generateThumbnail(nft: Nft, media: NftMedia, forceRefresh: boolean = false): Promise<void> {
     let result: GenerateThumbnailResult;
     try {

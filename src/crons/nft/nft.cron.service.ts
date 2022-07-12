@@ -53,7 +53,7 @@ export class NftCronService {
     await Locker.lock('Process NFTs whitelisted', async () => {
       const nfts = await this.nftService.getNfts(new QueryPagination({ from: 0, size: 2500 }), new NftFilter({ isWhitelistedStorage: true, hasUris: true, before: lastProcessedTimestamp }));
 
-      await Promise.all(nfts.map((nft: Nft) => this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ forceUploadAsset: true }))));
+      await Promise.all(nfts.map((nft: Nft) => this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ uploadAsset: true }))));
 
       lastProcessedTimestamp = nfts[nfts.length - 1].timestamp ?? Math.floor(Date.now() / 1000);
     }, true);

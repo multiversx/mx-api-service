@@ -24,5 +24,5 @@ export class ProcessNftRequest {
   skipRefreshThumbnail?: boolean;
 
   @ApiProperty({ type: Boolean, nullable: true })
-  forceUploadAsset?: boolean;
+  uploadAsset?: boolean;
 }
