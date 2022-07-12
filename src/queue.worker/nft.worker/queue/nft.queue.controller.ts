@@ -89,10 +89,6 @@ export class NftQueueController {
         nft.media = await this.nftMediaService.refreshMedia(nft);
       }
 
-      if (nft.media && !settings.skipRefreshThumbnail) {
-        await Promise.all(nft.media.map((media: any) => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
-      }
-
       if (nft.media && settings.uploadAsset) {
         for (const media of nft.media) {
           const isAssetUploaded = await this.nftAssetService.isAssetUploaded(nft.identifier, media);
@@ -103,6 +99,10 @@ export class NftQueueController {
             this.logger.log(`Asset already uploaded for NFT with identifier '${nft.identifier}' and media url '${media.url}'`);
           }
         }
+      }
+
+      if (nft.media && !settings.skipRefreshThumbnail) {
+        await Promise.all(nft.media.map((media: any) => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
       }
 
       this.logger.log({ type: 'consumer end', identifier: data.identifier });
