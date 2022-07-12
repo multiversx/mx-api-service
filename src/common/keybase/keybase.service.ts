@@ -144,8 +144,10 @@ export class KeybaseService {
 
   async confirmKeybasesAgainstKeybasePubForIdentity(identity: string): Promise<void> {
     const network = this.apiConfigService.getNetwork();
+    const networkSuffix = network !== "mainnet" ? `/${network}` : '';
+
     // eslint-disable-next-line require-await
-    const result = await this.apiService.get(`https://keybase.pub/${identity}/elrond${network !== "mainnet" ? `/${network}` : ''}`, { timeout: 100000 }, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
+    const result = await this.apiService.get(`https://keybase.pub/${identity}/elrond${networkSuffix}`, { timeout: 100000 }, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
 
     if (!result) {
       this.logger.log(`For identity '${identity}', no keybase.pub entry was found`);
@@ -156,7 +158,7 @@ export class KeybaseService {
 
     const networkRegex = network !== "mainnet" ? `${network}\/` : '';
 
-    const nodesRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/" + networkRegex + "[0-9a-f]{192}", 'g');
+    const nodesRegex = new RegExp(`https:\/\/keybase.pub\/${identity}\/elrond\/${networkRegex}[0-9a-f]{192}`, 'g');
     const blses: string[] = [];
     for (const keybaseUrl of html.match(nodesRegex) || []) {
       const bls = keybaseUrl.match(/[0-9a-f]{192}/)[0];
