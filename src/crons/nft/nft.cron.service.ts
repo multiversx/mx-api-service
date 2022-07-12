@@ -72,7 +72,7 @@ export class NftCronService {
 
       await Promise.all(needProccessNfts.map((nft: Nft) => this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ uploadAsset: true }))));
 
-      lastProcessedTimestamp = needProccessNfts[needProccessNfts.length - 1].timestamp ?? Math.floor(Date.now() / 1000);
+      lastProcessedTimestamp = nfts[nfts.length - 1].timestamp ?? Math.floor(Date.now() / 1000);
     }, true);
 
     await this.cachingService.setCache(CacheInfo.LastProcessedTimestamp.key, lastProcessedTimestamp, CacheInfo.LastProcessedTimestamp.ttl);
