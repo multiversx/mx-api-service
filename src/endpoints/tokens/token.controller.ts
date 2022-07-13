@@ -53,7 +53,8 @@ export class TokenController {
   ): Promise<TokenDetailed[]> {
     return await this.tokenService.getTokens(
       new QueryPagination({ from, size }),
-      new TokenFilter({ search, name, identifier, identifiers, sort, order }));
+      new TokenFilter({ search, name, identifier, identifiers, sort, order })
+    );
   }
 
   @Get("/tokens/count")

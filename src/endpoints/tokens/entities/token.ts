@@ -67,6 +67,6 @@ export class Token {
   @ApiProperty({ type: Number, nullable: true })
   price: number | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
-  marketCap: number | undefined = undefined;
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
+  marketCap: string | undefined = undefined;
 }
