@@ -54,10 +54,13 @@ export class NftCronService {
 
     await Locker.lock('Process NFTs whitelisted', async () => {
       const nfts = await this.nftService.getNfts(new QueryPagination({ from: 0, size: 2500 }), new NftFilter({ isWhitelistedStorage: true, hasUris: true, before: lastProcessedTimestamp }));
+      if (nfts.length === 0) {
+        return;
+      }
 
       const needProccessNfts: Nft[] = [];
       for (const nft of nfts) {
-        if (!nft.media) {
+        if (!nft.media || nft.media.length === 0) {
           continue;
         }
 
