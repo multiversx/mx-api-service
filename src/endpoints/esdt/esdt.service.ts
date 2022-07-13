@@ -96,9 +96,9 @@ export class EsdtService {
 
           if (price.isToken) {
             token.price = price.price;
+            token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
           }
 
-          token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
           token.supply = supply.totalSupply;
           token.circulatingSupply = supply.circulatingSupply;
         }
