@@ -1,6 +1,7 @@
 import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
+import { AccountDetailed } from "src/endpoints/accounts/entities/account.detailed";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import { TransactionAction } from "../transaction-action/entities/transaction.action";
 
@@ -34,7 +35,7 @@ export class Transaction {
   @ApiProperty({ type: Number, nullable: true })
   nonce: number | undefined = undefined;
 
-  @Field(() => String, { description: "Receiver address for the given transaction." })
+  @Field(() => AccountDetailed, { description: "Receiver address for the given transaction." })
   @ApiProperty({ type: String })
   receiver: string = '';
 
@@ -46,7 +47,7 @@ export class Transaction {
   @ApiProperty({ type: Number, nullable: true })
   round: number | undefined = undefined;
 
-  @Field(() => String, { description: "Sender address for the given transaction." })
+  @Field(() => AccountDetailed, { description: "Sender address for the given transaction." })
   @ApiProperty({ type: String })
   sender: string = '';
 

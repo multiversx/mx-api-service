@@ -20,6 +20,7 @@ import { AssetsService } from 'src/common/assets/assets.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
 import { AddressUtils, ApiUtils, BinaryUtils, Constants, CachingService, ElasticService, ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType, AbstractQuery, QueryOperator } from '@elrondnetwork/erdnest';
 import { GatewayService } from 'src/common/gateway/gateway.service';
+import { AccountOptionalFieldOption } from 'src/endpoints/accounts/entities/account.optional.field.options';
 
 @Injectable()
 export class AccountService {
@@ -71,23 +72,30 @@ export class AccountService {
     return account.username;
   }
 
-  async getAccount(address: string): Promise<AccountDetailed | null> {
+  async getAccount(address: string, fields?: string[]): Promise<AccountDetailed | null> {
     if (!AddressUtils.isAddressValid(address)) {
       return null;
     }
 
     const assets = await this.assetsService.getAllAccountAssets();
+    
+    let txCount: number = 0;
+    let scrCount: number = 0;
+
+    if (!fields || fields.length === 0 || fields.includes(AccountOptionalFieldOption.txCount)) {
+      txCount = await this.getAccountTxCount(address);
+    }
+
+    if (!fields || fields.length === 0 || fields.includes(AccountOptionalFieldOption.scrCount)) {
+      scrCount = await this.getAccountScResults(address);
+    }
 
     try {
       const [
-        txCount,
-        scrCount,
         {
           account: { nonce, balance, code, codeHash, rootHash, username, developerReward, ownerAddress, codeMetadata },
         },
       ] = await Promise.all([
-        this.getAccountTxCount(address),
-        this.getAccountScResults(address),
         this.gatewayService.get(`address/${address}`, GatewayComponentRequest.addressDetails),
       ]);
 

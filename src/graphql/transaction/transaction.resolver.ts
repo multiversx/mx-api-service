@@ -1,16 +1,19 @@
-import { Args, Float, Resolver, Query } from "@nestjs/graphql";
+import { Args, Float, Resolver, Query, ResolveField, Parent } from "@nestjs/graphql";
 
-import { GetTransactionInput, GetTransactionsInput, GetTransactionsCountInput } from "src/graphql/transaction/transaction.query.input.type";
+import { AccountService } from "src/endpoints/accounts/account.service";
+import { GetTransactionsInput, GetTransactionsCountInput } from "src/graphql/transaction/transaction.input.type";
 import { Transaction } from "src/endpoints/transactions/entities/transaction";
-import { TransactionDetailed } from "src/endpoints/transactions/entities/transaction.detailed";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { TransactionQueryOptions } from "src/endpoints/transactions/entities/transactions.query.options";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { AccountDetailed } from "src/endpoints/accounts/entities/account.detailed";
 
 @Resolver(() => Transaction)
-export class TransactionQueryResolver {
-  constructor(private readonly transactionService: TransactionService) {}
+export class TransactionResolver {
+  constructor(
+    private readonly accountService: AccountService,
+    private readonly transactionService: TransactionService) {}
 
   @Query(() => [Transaction], { name: "transactions", description: "Retrieve all transactions available." })
   public async getTransactions(@Args("input", { description: "Get transactions input." }) input: GetTransactionsInput): Promise<Transaction[]> {
@@ -45,8 +48,13 @@ export class TransactionQueryResolver {
     return await this.transactionService.getTransactionCount(GetTransactionsCountInput.resolve(input));
   }
 
-  @Query(() => TransactionDetailed, { name: "transaction", description: "Retrieve the transaction for the given address." })
-  public async getTransaction(@Args("input", { description: "Get transaction input." }) input: GetTransactionInput): Promise<TransactionDetailed | null> {
-    return await this.transactionService.getTransaction(input.hash, input.fields);
+  @ResolveField("receiver", () => AccountDetailed, { name: "receiver", description: "" })
+  public async getReceiver(@Parent() transaction: Transaction) {
+    return await this.accountService.getAccount(transaction.receiver);
+  }
+
+  @ResolveField("sender", () => AccountDetailed, { name: "sender", description: "" })
+  public async getSender(@Parent() transaction: Transaction) {
+    return await this.accountService.getAccount(transaction.sender);
   }
 }

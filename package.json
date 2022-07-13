@@ -98,6 +98,7 @@
     "dd-trace": "^1.6.0",
     "fluent-ffmpeg": "^2.1.2",
     "graphql": "^16.4.0",
+    "graphql-fields-list": "^2.2.4",
     "graphql-request": "^4.2.0",
     "graphql-type-json": "^0.3.2",
     "js-yaml": "^4.1.0",

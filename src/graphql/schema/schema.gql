@@ -121,9 +121,6 @@ input GetAccountsInput {
 
 """Get transaction input."""
 input GetTransactionInput {
-  """Fields to retrieve the corresponding transaction."""
-  fields: [String!]
-
   """Hash to retrieve the corresponding transaction."""
   hash: String = ""
 }
@@ -260,7 +257,7 @@ type Query {
   transaction(
     """Get transaction input."""
     input: GetTransactionInput!
-  ): TransactionDetailed!
+  ): TransactionDetailed
 
   """Retrieve all transactions available."""
   transactions(
@@ -409,8 +406,8 @@ type Transaction {
   """Pending results for the given transaction."""
   pendingResults: Boolean
 
-  """Receiver address for the given transaction."""
-  receiver: String!
+  """"""
+  receiver: AccountDetailed!
 
   """Receiver shard for the given transaction."""
   receiverShard: Float!
@@ -421,8 +418,8 @@ type Transaction {
   """Scam information for the given transaction."""
   scamInfo: ScamInformation
 
-  """Sender address for the given transaction."""
-  sender: String!
+  """"""
+  sender: AccountDetailed!
 
   """Sender shard identifier for the given transaction."""
   senderShard: Float!
@@ -508,8 +505,8 @@ type TransactionDetailed {
   """Transaction receipt for the given detailed transaction."""
   receipt: TransactionReceipt
 
-  """Receiver address for the given transaction."""
-  receiver: String!
+  """"""
+  receiver: AccountDetailed!
 
   """Receiver shard for the given transaction."""
   receiverShard: Float!
@@ -523,8 +520,8 @@ type TransactionDetailed {
   """Scam information for the given transaction."""
   scamInfo: ScamInformation
 
-  """Sender address for the given transaction."""
-  sender: String!
+  """"""
+  sender: AccountDetailed!
 
   """Sender shard identifier for the given transaction."""
   senderShard: Float!

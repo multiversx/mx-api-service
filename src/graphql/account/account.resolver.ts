@@ -3,7 +3,8 @@ import { Args, Float, Resolver, Query } from "@nestjs/graphql";
 import { Account } from "src/endpoints/accounts/entities/account";
 import { AccountDetailed } from "src/endpoints/accounts/entities/account.detailed";
 import { AccountService } from "src/endpoints/accounts/account.service";
-import { GetAccountInput, GetAccountsInput } from "src/graphql/account/account.query.input.type";
+import { Fields } from "src/graphql/common/decorator/fields.decorator";
+import { GetAccountInput, GetAccountsInput } from "src/graphql/account/account.input.type";
 
 @Resolver(() => Account)
 export class AccountQueryResolver {
@@ -20,7 +21,7 @@ export class AccountQueryResolver {
   }
 
   @Query(() => AccountDetailed, { name: "account", description: "Retrieve the account for the given address.", nullable: true })
-  public async getAccount(@Args("input", { description: "Get account input." }) input: GetAccountInput): Promise<AccountDetailed | null> {
-    return await this.accountService.getAccount(GetAccountInput.resolve(input));
+  public async getAccount(@Args("input", { description: "Get account input." }) input: GetAccountInput, @Fields() fields: string[]): Promise<AccountDetailed | null> {
+    return await this.accountService.getAccount(GetAccountInput.resolve(input), fields);
   }
 }

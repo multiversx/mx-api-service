@@ -91,6 +91,7 @@ export class GetTransactionInput {
   @Field(() => String, { name: "hash", description: "Hash to retrieve the corresponding transaction." })
   hash: string = "";
 
-  @Field(() => [String], { name: "fields", description: "Fields to retrieve the corresponding transaction.", nullable: true })
-  fields?: string[] | undefined = undefined;
+  public static resolve(input: GetTransactionInput): string {
+    return input.hash;
+  }
 }
