@@ -31,4 +31,7 @@ export class Economics {
 
   @ApiProperty({ type: String, nullable: true })
   minimumAuctionTopUp: string | undefined = undefined;
+
+  @ApiProperty({ type: Number, nullable: true })
+  tokenMarketCap: number | undefined = undefined;
 }
