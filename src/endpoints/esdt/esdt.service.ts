@@ -77,7 +77,7 @@ export class EsdtService {
 
     await this.applyMexPrices(tokens);
 
-    tokens = tokens.sortedDescending(token => Number(token.marketCap) ?? token.transactions ?? 0);
+    tokens = tokens.sortedDescending(token => token.marketCap ?? token.transactions ?? 0);
 
     return tokens;
   }
