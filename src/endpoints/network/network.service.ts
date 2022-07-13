@@ -177,7 +177,7 @@ export class NetworkService {
       apr: aprInfo.apr ? aprInfo.apr.toRounded(6) : 0,
       topUpApr: aprInfo.topUpApr ? aprInfo.topUpApr.toRounded(6) : 0,
       baseApr: aprInfo.baseApr ? aprInfo.baseApr.toRounded(6) : 0,
-      tokenMarketCap,
+      tokenMarketCap: tokenMarketCap ? Math.round(tokenMarketCap) : undefined,
     });
 
     if (this.apiConfigService.isStakingV4Enabled()) {
