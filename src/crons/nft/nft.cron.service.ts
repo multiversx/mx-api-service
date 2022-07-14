@@ -66,13 +66,10 @@ export class NftCronService {
 
         for (const media of nft.media) {
           const isAssetUploaded = await this.nftAssetService.isAssetUploaded(media);
-          if (!isAssetUploaded) {
+          if (!isAssetUploaded && !needProccessNfts.includes(nft)) {
             needProccessNfts.push(nft);
           }
         }
-
-        // wait 0.05 seconds before another call
-        await new Promise(resolve => setTimeout(resolve, 50));
       }
 
       this.logger.log(`${needProccessNfts.length} that does not have asset uploaded in this batch`);
