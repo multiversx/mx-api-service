@@ -509,8 +509,8 @@ export class NftService {
 
       const price = prices[nft.collection];
       if (price) {
-        nft.price = price;
-        nft.valueUsd = price * NumberUtils.denominateString(nft.balance, nft.decimals);
+        nft.price = price.price;
+        nft.valueUsd = price.price * NumberUtils.denominateString(nft.balance, nft.decimals);
       }
     } catch (error) {
       this.logger.error(`Unable to apply price on MetaESDT with identifier '${nft.identifier}'`);

@@ -202,6 +202,22 @@ describe('Array Extensions', () => {
 
       expect(actual).toEqual(expected);
     });
+
+    it('multiple criteria', () => {
+      const actual = [
+        { a: 2, b: 1 },
+        { a: 1, b: 2 },
+        { a: 1, b: 1 },
+      ].sorted(x => x.a, x => x.b);
+
+      const expected = [
+        { a: 1, b: 1 },
+        { a: 1, b: 2 },
+        { a: 2, b: 1 },
+      ];
+
+      expect(actual).toEqual(expected);
+    });
   });
 
   describe('Sorted descending', () => {
