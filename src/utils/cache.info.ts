@@ -9,6 +9,11 @@ export class CacheInfo {
     ttl: Constants.oneMinute() * 10,
   };
 
+  static TokenMarketCap: CacheInfo = {
+    key: 'tokenMarketCap',
+    ttl: Constants.oneMinute() * 10,
+  };
+
   static Nodes: CacheInfo = {
     key: 'nodes',
     ttl: Constants.oneHour(),
