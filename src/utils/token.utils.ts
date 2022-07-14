@@ -90,4 +90,9 @@ export class TokenUtils {
         break;
     }
   }
+
+  static tokenNonce(tokenID: string): number {
+    const tokenNonceHex = tokenID.split('-')[2];
+    return parseInt(tokenNonceHex, 16);
+  }
 }

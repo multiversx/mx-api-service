@@ -5,6 +5,7 @@ import { NftMedia } from "./nft.media";
 import { NftMetadata } from "./nft.metadata";
 import { NftType } from "./nft.type";
 import { SwaggerUtils } from "@elrondnetwork/erdnest";
+import { UnlockMileStoneModel } from "../../../common/entities/unlock-schedule";
 
 export class Nft {
   constructor(init?: Partial<Nft>) {
@@ -88,4 +89,7 @@ export class Nft {
 
   @ApiProperty({ type: Boolean, nullable: true })
   isNsfw: boolean | undefined = undefined;
+
+  @ApiProperty({ type: [UnlockMileStoneModel], nullable: true })
+  unlockSchedule: UnlockMileStoneModel[] | undefined = undefined;
 }

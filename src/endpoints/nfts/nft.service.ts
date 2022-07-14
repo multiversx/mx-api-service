@@ -21,6 +21,7 @@ import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
 import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, ElasticSortOrder, RangeGreaterThanOrEqual, RangeLowerThan, BatchUtils } from "@elrondnetwork/erdnest";
+import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
 
 @Injectable()
 export class NftService {
@@ -42,6 +43,7 @@ export class NftService {
     @Inject(forwardRef(() => EsdtAddressService))
     private readonly esdtAddressService: EsdtAddressService,
     private readonly mexTokenService: MexTokenService,
+    private readonly lockedAssetService: LockedAssetService,
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -481,6 +483,12 @@ export class NftService {
           nft.rank = indexedNft.rank;
           nft.isNsfw = indexedNft.isNsfw;
         }
+
+        nft.unlockSchedule = await this.lockedAssetService.getUnlockSchedule(
+          nft.collection,
+          nft.identifier,
+          nft.attributes,
+        );
       }
     }
 

@@ -1,5 +1,6 @@
 network: 'devnet'
 metaChainShardId: 4294967295
+precisionExIncrease: 1000
 api:
   public: true
   private: true
@@ -42,6 +43,7 @@ urls:
     - 'https://devnet-api.elrond.com'
     - 'https://testnet-api.elrond.com'
     - 'https://api.elrond.com'
+    - 'http://localhost:3001'
   elastic:
     - 'https://devnet-index.elrond.com'
   gateway:
@@ -77,6 +79,7 @@ contracts:
   delegationManager: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6'
   delegation: 'erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx'
   metabonding: 'erd1qqqqqqqqqqqqqpgqkg7we73j769ew5we4yyx7uyvnn0nefqgd8ssm6vjc2'
+  lockedAssetAddress: 'erd1qqqqqqqqqqqqqpgqnqf6qpnd7y3m6wpkur9u8hg37rvhn5ae0n4se7lw39'
   delegationShardId: 2
 inflation:
   - 1952123

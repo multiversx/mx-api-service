@@ -1,5 +1,6 @@
 network: 'testnet'
 metaChainShardId: 4294967295
+precisionExIncrease: 1000
 api:
   public: true
   private: true
@@ -77,6 +78,7 @@ contracts:
   delegationManager: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6'
   delegation: 'erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx'
   metabonding: 'erd1qqqqqqqqqqqqqpgq2l9w0qv98htrhdwuz6ppsw47tn3hhff3d8ssqqjpvu'
+  lockedAssetAddress: 'erd1qqqqqqqqqqqqqpgqup60nzrkww5ukj7rxxud9txq9fakd36l0n4sthknw2'
   delegationShardId: 2
 inflation:
   - 1952123

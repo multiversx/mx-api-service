@@ -289,4 +289,19 @@ export class CacheInfo {
     key: "delegationLegacy",
     ttl: Constants.oneMinute() * 10,
   };
+
+  static ExtendedAttributesActivationNonce: CacheInfo = {
+    key: "extendedAttributesActivationNonce",
+    ttl: Constants.oneDay(),
+  };
+
+  static InitEpoch: CacheInfo = {
+    key: "initEpoch",
+    ttl: Constants.oneDay(),
+  };
+
+  static LockedTokenID: CacheInfo = {
+    key: "lockedTokenID",
+    ttl: Constants.oneHour(),
+  };
 }
