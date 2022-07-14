@@ -304,4 +304,9 @@ export class CacheInfo {
     key: "lockedTokenID",
     ttl: Constants.oneHour(),
   };
+
+  static CurrentEpoch: CacheInfo = {
+    key: "currentEpoch",
+    ttl: Constants.oneMinute(),
+  };
 }

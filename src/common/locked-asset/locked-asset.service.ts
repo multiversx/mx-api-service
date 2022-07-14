@@ -147,7 +147,7 @@ export class LockedAssetService {
 
   private async getRemainingEpochs(unlockEpoch: number): Promise<number> {
     const [currentEpoch, unlockStartEpoch] = await Promise.all([
-      this.getCurrentEpoch(),
+      this.getCurrentEpochCached(),
       this.getMonthStartEpoch(unlockEpoch),
     ]);
     if (unlockEpoch <= unlockStartEpoch && unlockEpoch <= currentEpoch) {
@@ -160,6 +160,15 @@ export class LockedAssetService {
   private async getMonthStartEpoch(unlockEpoch: number): Promise<number> {
     const initEpoch = await this.getInitEpochCached();
     return unlockEpoch - ((unlockEpoch - initEpoch) % 30);
+  }
+
+  private async getCurrentEpochCached(): Promise<number> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.CurrentEpoch.key,
+      async () => await this.getCurrentEpoch(),
+      Constants.oneMinute(),
+      CacheInfo.CurrentEpoch.ttl
+    );
   }
 
   private async getCurrentEpoch(): Promise<number> {
