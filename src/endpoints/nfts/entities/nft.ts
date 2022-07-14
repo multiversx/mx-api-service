@@ -91,5 +91,5 @@ export class Nft {
   isNsfw: boolean | undefined = undefined;
 
   @ApiProperty({ type: [UnlockMileStoneModel], nullable: true })
-  unlockSchedule: UnlockMileStoneModel[] | undefined = undefined;
+  unlockSchedule?: UnlockMileStoneModel[] | undefined = undefined;
 }
