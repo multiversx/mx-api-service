@@ -66,8 +66,9 @@ export class NftCronService {
 
         for (const media of nft.media) {
           const isAssetUploaded = await this.nftAssetService.isAssetUploaded(media);
-          if (!isAssetUploaded && !needProccessNfts.includes(nft)) {
+          if (!isAssetUploaded) {
             needProccessNfts.push(nft);
+            break;
           }
         }
       }
