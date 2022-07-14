@@ -7,4 +7,5 @@ export class About {
   pluginsVersion: string | undefined = undefined;
   network: string = '';
   cluster: string = '';
+  version: string = '';
 }
