@@ -7,6 +7,7 @@ import { NftMediaService } from "./queue/job-services/media/nft.media.service";
 import { ClientProxy } from "@nestjs/microservices";
 import { NftMessage } from "./queue/entities/nft.message";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
+import { NftAssetService } from "./queue/job-services/assets/nft.asset.service";
 
 @Injectable()
 export class NftWorkerService {
@@ -16,6 +17,7 @@ export class NftWorkerService {
     private readonly nftThumbnailService: NftThumbnailService,
     private readonly nftMetadataService: NftMetadataService,
     private readonly nftMediaService: NftMediaService,
+    private readonly nftAssetService: NftAssetService,
     @Inject('QUEUE_SERVICE') private readonly client: ClientProxy,
   ) {
     this.logger = new Logger(NftWorkerService.name);
@@ -45,7 +47,7 @@ export class NftWorkerService {
       return false;
     }
 
-    if (settings.forceRefreshMedia || settings.forceRefreshMetadata || settings.forceRefreshThumbnail || settings.uploadAsset) {
+    if (settings.forceRefreshMedia || settings.forceRefreshMetadata || settings.forceRefreshThumbnail) {
       return true;
     }
 
@@ -64,6 +66,15 @@ export class NftWorkerService {
           if (!hasThumbnailGenerated) {
             return true;
           }
+        }
+      }
+    }
+
+    if (settings.uploadAsset) {
+      for (const media of nft.media) {
+        const isAssetUploaded = await this.nftAssetService.isAssetUploaded(media);
+        if (!isAssetUploaded) {
+          return true;
         }
       }
     }

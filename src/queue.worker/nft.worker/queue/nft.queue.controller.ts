@@ -91,8 +91,7 @@ export class NftQueueController {
 
       if (nft.media && settings.uploadAsset) {
         for (const media of nft.media) {
-          const isAssetUploaded = await this.nftAssetService.isAssetUploaded(nft.identifier, media);
-
+          const isAssetUploaded = await this.nftAssetService.isAssetUploaded(media);
           if (!isAssetUploaded) {
             await this.nftAssetService.uploadAsset(nft.identifier, media.originalUrl, media.fileType);
           } else {

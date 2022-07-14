@@ -64,9 +64,11 @@ export class NftCronService {
           continue;
         }
 
-        const isAssetUploaded = await this.nftAssetService.isAssetUploaded(nft.identifier, nft.media[0]);
-        if (!isAssetUploaded) {
-          needProccessNfts.push(nft);
+        for (const media of nft.media) {
+          const isAssetUploaded = await this.nftAssetService.isAssetUploaded(media);
+          if (!isAssetUploaded) {
+            needProccessNfts.push(nft);
+          }
         }
 
         // wait 0.05 seconds before another call

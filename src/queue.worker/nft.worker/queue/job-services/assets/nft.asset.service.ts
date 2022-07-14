@@ -1,6 +1,8 @@
 import { ApiService, Constants } from "@elrondnetwork/erdnest";
-import { Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
+import { TokenUtils } from "src/utils/token.utils";
 import { AWSService } from "../thumbnails/aws.service";
 
 @Injectable()
@@ -11,36 +13,52 @@ export class NftAssetService {
 
   constructor(
     private readonly apiService: ApiService,
-    private readonly awsService: AWSService
+    private readonly awsService: AWSService,
+    private readonly apiConfigService: ApiConfigService,
   ) {
     this.logger = new Logger(NftAssetService.name);
   }
 
   async uploadAsset(identifier: string, fileUrl: string, fileType: string) {
-    this.logger.log(`Started uploading assets to S3 for NFT '${identifier}'`);
+    this.logger.log(`Started uploading assets to S3 for NFT with identifier '${identifier}', file url '${fileUrl}'`);
 
-    const fileResult: any = await this.apiService.get(fileUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS });
-    const file = fileResult.data;
+    try {
+      const mediaUrl = TokenUtils.computeNftUri(fileUrl, this.apiConfigService.getMediaUrl() + '/nfts/asset');
 
-    //TO DO: use a better euristic to extract file name
-    const fileName = fileUrl.split('/').slice(-2).join('/');
-    this.logger.log(`Extracted filename '${fileName}' for NFT '${identifier}'`);
+      const fileResult: any = await this.apiService.get(mediaUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS });
+      const file = fileResult.data;
 
-    const filePath = `${this.STANDARD_PATH}/${fileName}`;
+      const fileName = TokenUtils.computeNftUri(fileUrl, '');
 
-    await this.awsService.uploadToS3(filePath, file, fileType);
+      const filePath = `${this.STANDARD_PATH}${fileName}`;
 
-    this.logger.log(`Asset uploaded to S3 for NFT '${identifier}'`);
+      await this.awsService.uploadToS3(filePath, file, fileType);
+
+      this.logger.log(`Asset uploaded to S3 for NFT '${identifier}', file url '${fileUrl}'`);
+    } catch (error) {
+      this.logger.error(error);
+      this.logger.error(`An unhandled error occurred while uploading assets for NFT with identifier '${identifier}', file url '${fileUrl}'`);
+    }
   }
 
-  async isAssetUploaded(identifier: string, media: NftMedia): Promise<boolean> {
+  async isAssetUploaded(media: NftMedia): Promise<boolean> {
     try {
-      await this.apiService.head(media.url);
+      const prefix = (this.apiConfigService.getMediaInternalUrl() ?? this.apiConfigService.getMediaUrl()) + '/nfts/asset';
 
-      return true;
+      const url = TokenUtils.computeNftUri(media.originalUrl, prefix);
+
+      // eslint-disable-next-line require-await
+      const response = await this.apiService.head(url, undefined, async (error) => {
+        const status = error.response?.status;
+        if ([HttpStatus.FOUND, HttpStatus.NOT_FOUND, HttpStatus.FORBIDDEN].includes(status)) {
+          return true;
+        }
+
+        return false;
+      });
+
+      return response !== undefined;
     } catch (error: any) {
-      this.logger.log(`Asset not uploaded for NFT with identifier '${identifier}' and media url '${media.url}'`);
-
       return false;
     }
   }
