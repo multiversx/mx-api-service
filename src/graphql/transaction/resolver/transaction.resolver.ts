@@ -13,10 +13,11 @@ import { AccountDetailed } from "src/endpoints/accounts/entities/account.detaile
 export class TransactionResolver {
   constructor(
     private readonly accountService: AccountService,
-    private readonly transactionService: TransactionService) {}
+    private readonly transactionService: TransactionService
+  ) {}
 
   @Query(() => [Transaction], { name: "transactions", description: "Retrieve all transactions available." })
-  public async getTransactions(@Args("input", { description: "Get transactions input." }) input: GetTransactionsInput): Promise<Transaction[]> {
+  public async getTransactions(@Args("input", { description: "Input to retrieve the given transactions for." }) input: GetTransactionsInput): Promise<Transaction[]> {
       return await this.transactionService.getTransactions(
         new TransactionFilter({
           sender: input.sender,
@@ -43,17 +44,17 @@ export class TransactionResolver {
       );
   }
 
-  @Query(() => Float, { name: "transactionsCount", description: "Retrieve all available transactions total count." })
-  public async getTransactionsCount(@Args("input", { description: "Get transactions count input." }) input: GetTransactionsCountInput): Promise<number> {
+  @Query(() => Float, { name: "transactionsCount", description: "Retrieve all transactions count." })
+  public async getTransactionsCount(@Args("input", { description: "Input to retrieve the given transactions count for." }) input: GetTransactionsCountInput): Promise<number> {
     return await this.transactionService.getTransactionCount(GetTransactionsCountInput.resolve(input));
   }
 
-  @ResolveField("receiver", () => AccountDetailed, { name: "receiver", description: "" })
+  @ResolveField("receiver", () => AccountDetailed, { name: "receiver", description: "Receiver account for the given transaction." })
   public async getReceiver(@Parent() transaction: Transaction) {
     return await this.accountService.getAccount(transaction.receiver);
   }
 
-  @ResolveField("sender", () => AccountDetailed, { name: "sender", description: "" })
+  @ResolveField("sender", () => AccountDetailed, { name: "sender", description: "Sender account for the given transaction." })
   public async getSender(@Parent() transaction: Transaction) {
     return await this.accountService.getAccount(transaction.sender);
   }

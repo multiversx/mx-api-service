@@ -77,8 +77,6 @@ export class AccountService {
       return null;
     }
 
-    const assets = await this.assetsService.getAllAccountAssets();
-    
     let txCount: number = 0;
     let scrCount: number = 0;
 
@@ -90,6 +88,20 @@ export class AccountService {
       scrCount = await this.getAccountScResults(address);
     }
 
+    return this.getAccountRaw(address, txCount, scrCount);
+  }
+
+  async getAccountOnly(address: string): Promise<AccountDetailed | null> {
+    if (!AddressUtils.isAddressValid(address)) {
+      return null;
+    }
+
+    return this.getAccountRaw(address, 0, 0);
+  }
+
+  private async getAccountRaw(address: string, txCount: number, scrCount: number): Promise<AccountDetailed | null> {
+    const assets = await this.assetsService.getAllAccountAssets();
+
     try {
       const [
         {
@@ -100,7 +112,7 @@ export class AccountService {
       ]);
 
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
-      let account: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, username, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address] };
+      let account: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount: txCount, scrCount: scrCount, username, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address] };
 
       const codeAttributes = AddressUtils.decodeCodeMetadata(codeMetadata);
       if (codeAttributes) {
@@ -123,7 +135,7 @@ export class AccountService {
     }
   }
 
-  private async getAccountTxCount(address: string): Promise<number> {
+  async getAccountTxCount(address: string): Promise<number> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       return this.transactionService.getTransactionCountForAddress(address);
     }
@@ -131,7 +143,7 @@ export class AccountService {
     return await this.transferService.getTransfersCount(new TransactionFilter({ address, type: TransactionType.Transaction }));
   }
 
-  private async getAccountScResults(address: string): Promise<number> {
+  async getAccountScResults(address: string): Promise<number> {
     if (this.apiConfigService.getUseLegacyElastic()) {
       return 0;
     }

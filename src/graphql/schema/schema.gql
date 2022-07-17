@@ -91,26 +91,26 @@ type AccountDetailed {
   """Scam information for the given detailed account."""
   scamInfo: ScamInformation
 
-  """Number of smart contract results for the given detailed account."""
+  """Smart contract count for the given account."""
   scrCount: Float!
 
   """Shard identifier for the given account."""
   shard: Float!
 
-  """Number of transactions performed for the given detailed account."""
+  """Transaction count for the given account."""
   txCount: Float!
 
   """Username for the given detailed account."""
   username: String!
 }
 
-"""Get account input."""
+"""Input to retrieve the given account for."""
 input GetAccountInput {
   """Address to retrieve the corresponding account."""
   address: String = ""
 }
 
-"""Get accounts input."""
+"""Input to retrieve the given accounts for."""
 input GetAccountsInput {
   """Number of accounts to skip for the given result set."""
   from: Float = 0
@@ -240,34 +240,34 @@ scalar JSON
 type Query {
   """Retrieve the account for the given address."""
   account(
-    """Get account input."""
+    """Input to retrieve the given account for."""
     input: GetAccountInput!
   ): AccountDetailed
 
-  """Retrieve all accounts available."""
+  """Retrieve all accounts."""
   accounts(
-    """Get accounts input."""
+    """Input to retrieve the given accounts for."""
     input: GetAccountsInput!
   ): [Account!]!
 
-  """Retrieve all available accounts total count."""
+  """Retrieve all accounts count."""
   accountsCount: Float!
 
   """Retrieve the transaction for the given address."""
   transaction(
-    """Get transaction input."""
+    """Input to retrieve the given transaction for."""
     input: GetTransactionInput!
   ): TransactionDetailed
 
   """Retrieve all transactions available."""
   transactions(
-    """Get transactions input."""
+    """Input to retrieve the given transactions for."""
     input: GetTransactionsInput!
   ): [Transaction!]!
 
-  """Retrieve all available transactions total count."""
+  """Retrieve all transactions count."""
   transactionsCount(
-    """Get transactions count input."""
+    """Input to retrieve the given transactions count for."""
     input: GetTransactionsCountInput!
   ): Float!
 }
@@ -406,7 +406,7 @@ type Transaction {
   """Pending results for the given transaction."""
   pendingResults: Boolean
 
-  """"""
+  """Receiver account for the given transaction."""
   receiver: AccountDetailed!
 
   """Receiver shard for the given transaction."""
@@ -418,7 +418,7 @@ type Transaction {
   """Scam information for the given transaction."""
   scamInfo: ScamInformation
 
-  """"""
+  """Sender account for the given transaction."""
   sender: AccountDetailed!
 
   """Sender shard identifier for the given transaction."""
@@ -505,7 +505,7 @@ type TransactionDetailed {
   """Transaction receipt for the given detailed transaction."""
   receipt: TransactionReceipt
 
-  """"""
+  """Receiver account for the given transaction."""
   receiver: AccountDetailed!
 
   """Receiver shard for the given transaction."""
@@ -520,7 +520,7 @@ type TransactionDetailed {
   """Scam information for the given transaction."""
   scamInfo: ScamInformation
 
-  """"""
+  """Sender account for the given transaction."""
   sender: AccountDetailed!
 
   """Sender shard identifier for the given transaction."""
