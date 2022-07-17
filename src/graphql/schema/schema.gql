@@ -91,22 +91,22 @@ type AccountDetailed {
   """Scam information for the given detailed account."""
   scamInfo: ScamInformation
 
-  """Smart contract count for the given account."""
+  """Smart contracts count for the given detailed account."""
   scrCount: Float!
 
   """Shard identifier for the given account."""
   shard: Float!
 
-  """Transaction count for the given account."""
+  """Transactions count for the given detailed account."""
   txCount: Float!
 
   """Username for the given detailed account."""
   username: String!
 }
 
-"""Input to retrieve the given account for."""
-input GetAccountInput {
-  """Address to retrieve the corresponding account."""
+"""Input to retrieve the given detailed account for."""
+input GetAccountDetailedInput {
+  """Address to retrieve the corresponding detailed account for."""
   address: String = ""
 }
 
@@ -119,13 +119,13 @@ input GetAccountsInput {
   size: Float = 25
 }
 
-"""Get transaction input."""
-input GetTransactionInput {
-  """Hash to retrieve the corresponding transaction."""
+"""Input to retrieve the given detailed transaction for."""
+input GetTransactionDetailedInput {
+  """Hash to retrieve the corresponding detailed transaction for."""
   hash: String = ""
 }
 
-"""Get transactions count input."""
+"""Input to retrieve the given transactions count for."""
 input GetTransactionsCountInput {
   """After timestamp for the given result set."""
   after: Float
@@ -171,7 +171,7 @@ input GetTransactionsCountInput {
   token: String
 }
 
-"""Get transactions input."""
+"""Input to retrieve the given transactions for."""
 input GetTransactionsInput {
   """After timestamp for the given result set."""
   after: Float
@@ -238,13 +238,13 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 scalar JSON
 
 type Query {
-  """Retrieve the account for the given address."""
+  """Retrieve the detailed account for the given address."""
   account(
-    """Input to retrieve the given account for."""
-    input: GetAccountInput!
+    """Input to retrieve the given detailed account for."""
+    input: GetAccountDetailedInput!
   ): AccountDetailed
 
-  """Retrieve all accounts."""
+  """Retrieve all accounts for the given input."""
   accounts(
     """Input to retrieve the given accounts for."""
     input: GetAccountsInput!
@@ -253,19 +253,19 @@ type Query {
   """Retrieve all accounts count."""
   accountsCount: Float!
 
-  """Retrieve the transaction for the given address."""
+  """Retrieve the detailed transaction for the given input."""
   transaction(
-    """Input to retrieve the given transaction for."""
-    input: GetTransactionInput!
+    """Input to retrieve the given detailed transaction for."""
+    input: GetTransactionDetailedInput!
   ): TransactionDetailed
 
-  """Retrieve all transactions available."""
+  """Retrieve all transactions available for the given input."""
   transactions(
     """Input to retrieve the given transactions for."""
     input: GetTransactionsInput!
   ): [Transaction!]!
 
-  """Retrieve all transactions count."""
+  """Retrieve all transactions count for the given input."""
   transactionsCount(
     """Input to retrieve the given transactions count for."""
     input: GetTransactionsCountInput!
@@ -406,7 +406,7 @@ type Transaction {
   """Pending results for the given transaction."""
   pendingResults: Boolean
 
-  """Receiver account for the given transaction."""
+  """Receiver detailed account for the given transaction."""
   receiver: AccountDetailed!
 
   """Receiver shard for the given transaction."""
@@ -418,7 +418,7 @@ type Transaction {
   """Scam information for the given transaction."""
   scamInfo: ScamInformation
 
-  """Sender account for the given transaction."""
+  """Sender detailed account for the given transaction."""
   sender: AccountDetailed!
 
   """Sender shard identifier for the given transaction."""
@@ -505,7 +505,7 @@ type TransactionDetailed {
   """Transaction receipt for the given detailed transaction."""
   receipt: TransactionReceipt
 
-  """Receiver account for the given transaction."""
+  """Receiver detailed account for the given detailed transaction."""
   receiver: AccountDetailed!
 
   """Receiver shard for the given transaction."""
@@ -520,7 +520,7 @@ type TransactionDetailed {
   """Scam information for the given transaction."""
   scamInfo: ScamInformation
 
-  """Sender account for the given transaction."""
+  """Sender detailed account for the given detailed transaction."""
   sender: AccountDetailed!
 
   """Sender shard identifier for the given transaction."""

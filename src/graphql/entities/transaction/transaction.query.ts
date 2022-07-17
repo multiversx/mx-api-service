@@ -1,22 +1,17 @@
-import { Args, Float, Resolver, Query, ResolveField, Parent } from "@nestjs/graphql";
+import { Args, Float, Resolver, Query } from "@nestjs/graphql";
 
-import { AccountService } from "src/endpoints/accounts/account.service";
-import { GetTransactionsInput, GetTransactionsCountInput } from "src/graphql/transaction/transaction.input.type";
+import { GetTransactionsInput, GetTransactionsCountInput } from "src/graphql/entities/transaction/transaction.input";
 import { Transaction } from "src/endpoints/transactions/entities/transaction";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { TransactionQueryOptions } from "src/endpoints/transactions/entities/transactions.query.options";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { AccountDetailed } from "src/endpoints/accounts/entities/account.detailed";
 
-@Resolver(() => Transaction)
-export class TransactionResolver {
-  constructor(
-    private readonly accountService: AccountService,
-    private readonly transactionService: TransactionService
-  ) {}
+@Resolver()
+export class TransactionQuery {
+  constructor(private readonly transactionService: TransactionService) {}
 
-  @Query(() => [Transaction], { name: "transactions", description: "Retrieve all transactions available." })
+  @Query(() => [Transaction], { name: "transactions", description: "Retrieve all transactions available for the given input." })
   public async getTransactions(@Args("input", { description: "Input to retrieve the given transactions for." }) input: GetTransactionsInput): Promise<Transaction[]> {
       return await this.transactionService.getTransactions(
         new TransactionFilter({
@@ -44,18 +39,8 @@ export class TransactionResolver {
       );
   }
 
-  @Query(() => Float, { name: "transactionsCount", description: "Retrieve all transactions count." })
+  @Query(() => Float, { name: "transactionsCount", description: "Retrieve all transactions count for the given input." })
   public async getTransactionsCount(@Args("input", { description: "Input to retrieve the given transactions count for." }) input: GetTransactionsCountInput): Promise<number> {
     return await this.transactionService.getTransactionCount(GetTransactionsCountInput.resolve(input));
-  }
-
-  @ResolveField("receiver", () => AccountDetailed, { name: "receiver", description: "Receiver account for the given transaction." })
-  public async getReceiver(@Parent() transaction: Transaction) {
-    return await this.accountService.getAccount(transaction.receiver);
-  }
-
-  @ResolveField("sender", () => AccountDetailed, { name: "sender", description: "Sender account for the given transaction." })
-  public async getSender(@Parent() transaction: Transaction) {
-    return await this.accountService.getAccount(transaction.sender);
   }
 }

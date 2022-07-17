@@ -1,11 +1,12 @@
 import { QueryConditionOptions } from "@elrondnetwork/erdnest";
 import { Field, Float, InputType } from "@nestjs/graphql";
+
 import { SortOrder } from "src/common/entities/sort.order";
 
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionStatus } from "src/endpoints/transactions/entities/transaction.status";
 
-@InputType({ description: "Get transactions count input." })
+@InputType({ description: "Input to retrieve the given transactions count for." })
 export class GetTransactionsCountInput {
   @Field(() => String, { name: "sender", description: "Address of the transaction sender for the given result set.", nullable: true })
   sender: string | undefined = undefined;
@@ -65,7 +66,7 @@ export class GetTransactionsCountInput {
   }
 }
 
-@InputType({ description: "Get transactions input." })
+@InputType({ description: "Input to retrieve the given transactions for." })
 export class GetTransactionsInput extends GetTransactionsCountInput {
   @Field(() => Float, { name: "from", description: "Number of transactions to skip for the given result set.", nullable: true, defaultValue: 0 })
   from: number = 0;
@@ -84,14 +85,4 @@ export class GetTransactionsInput extends GetTransactionsCountInput {
 
   @Field(() => Boolean, { name: "withLogs", description: "If to return logs for the given result set.", nullable: true })
   withLogs: boolean | undefined = undefined;
-}
-
-@InputType({ description: "Get transaction input." })
-export class GetTransactionInput {
-  @Field(() => String, { name: "hash", description: "Hash to retrieve the corresponding transaction." })
-  hash: string = "";
-
-  public static resolve(input: GetTransactionInput): string {
-    return input.hash;
-  }
 }

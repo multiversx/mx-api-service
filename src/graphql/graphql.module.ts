@@ -4,8 +4,10 @@ import { GraphQLModule } from "@nestjs/graphql";
 
 import { join } from "path";
 
-import { AccountModule } from "src/graphql/account/account.module";
-import { TransactionModule } from "src/graphql/transaction/transaction.module";
+import { AccountDetailedModule } from "src/graphql/entities/account.detailed/account.detailed.module";
+import { AccountModule } from "src/graphql/entities/account/account.module";
+import { TransactionDetailedModule } from "src/graphql/entities/transaction.detailed/transaction.detailed.module";
+import { TransactionModule } from "src/graphql/entities/transaction/transaction.module";
 
 @Module({
   imports: [
@@ -14,7 +16,9 @@ import { TransactionModule } from "src/graphql/transaction/transaction.module";
       driver: ApolloDriver,
       sortSchema: true,
     }),
+    AccountDetailedModule,
     AccountModule,
+    TransactionDetailedModule,
     TransactionModule,
   ],
 })

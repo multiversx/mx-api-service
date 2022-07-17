@@ -1,4 +1,5 @@
 import { Field, InputType, Float } from "@nestjs/graphql";
+
 import { QueryPagination } from "src/common/entities/query.pagination";
 
 @InputType({ description: "Input to retrieve the given accounts for." })
@@ -11,15 +12,5 @@ export class GetAccountsInput {
 
   public static resolve(input: GetAccountsInput): QueryPagination {
     return { from: input.from, size: input.size };
-  }
-}
-
-@InputType({ description: "Input to retrieve the given account for." })
-export class GetAccountInput {
-  @Field(() => String, { name: "address", description: "Address to retrieve the corresponding account." })
-  address: string = "";
-
-  public static resolve(input: GetAccountInput): string {
-    return input.address;
   }
 }
