@@ -19,7 +19,7 @@ export class TransactionLogEvent {
   @ApiProperty()
   topics: string[] = [];
 
-  @Field(() => String, { description: 'Data for the given transaction log event.' })
+  @Field(() => String, { description: 'Data for the given transaction log event.', nullable: true })
   @ApiProperty()
   data: string = '';
 }

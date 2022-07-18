@@ -96,20 +96,16 @@ export class AccountService {
       return null;
     }
 
-    return this.getAccountRaw(address, 0, 0);
+    return await this.getAccountRaw(address, 0, 0);
   }
 
   private async getAccountRaw(address: string, txCount: number, scrCount: number): Promise<AccountDetailed | null> {
     const assets = await this.assetsService.getAllAccountAssets();
 
     try {
-      const [
-        {
-          account: { nonce, balance, code, codeHash, rootHash, username, developerReward, ownerAddress, codeMetadata },
-        },
-      ] = await Promise.all([
-        this.gatewayService.get(`address/${address}`, GatewayComponentRequest.addressDetails),
-      ]);
+      const {
+        account: { nonce, balance, code, codeHash, rootHash, username, developerReward, ownerAddress, codeMetadata },
+      } = await this.gatewayService.get(`address/${address}`, GatewayComponentRequest.addressDetails);
 
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
       let account: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount: txCount, scrCount: scrCount, username, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address] };

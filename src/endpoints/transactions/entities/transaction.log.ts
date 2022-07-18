@@ -8,6 +8,7 @@ export class TransactionLog {
     Object.assign(this, init);
   }
 
+  @Field(() => String, { description: 'Identifier for the given transaction log.' })
   id: string | undefined = undefined;
 
   @Field(() => String, { description: 'Address for the given transaction log.' })
