@@ -162,7 +162,10 @@ export class TransactionService {
       }
     }
 
-    if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations) && elasticTransactions.some(x => x.hasScResults === true)) {
+    if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations || queryOptions.withLogs) && elasticTransactions.some(x => x.hasScResults === true)) {
+      // TODO: refactor this
+      queryOptions.withScResultLogs = queryOptions.withLogs;
+
       transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
     }
 
@@ -326,11 +329,19 @@ export class TransactionService {
 
         transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, transactionLogs);
         transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
+      }
 
+      if (queryOptions.withLogs) {
         for (const log of logs) {
           if (log.id === transactionDetailed.txHash) {
             transactionDetailed.logs = log;
-          } else {
+          }
+        }
+      }
+
+      if (queryOptions.withScResultLogs) {
+        for (const log of logs) {
+          if (log.id !== transactionDetailed.txHash) {
             const foundScResult = transactionDetailed.results.find(({ hash }) => log.id === hash);
             if (foundScResult) {
               foundScResult.logs = log;
