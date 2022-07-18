@@ -13,16 +13,15 @@ import { TransactionFilter } from "src/endpoints/transactions/entities/transacti
 import { Repository } from "typeorm";
 import { MiniBlock, Tag } from "../entities";
 import { IndexerInterface } from "../indexer.interface";
-import { MiniBlockDb } from "./entities/miniblock.db";
-import { TagsDb } from "./entities/tags.db";
+import { MiniBlockDb, TagDb } from "./entities";
 
 @Injectable()
 export class PostgresIndexerService implements IndexerInterface {
   constructor(
     @InjectRepository(MiniBlockDb)
     private readonly miniBlocksRepository: Repository<MiniBlockDb>,
-    @InjectRepository(TagsDb)
-    private readonly tagsRepository: Repository<TagsDb>,
+    @InjectRepository(TagDb)
+    private readonly tagsRepository: Repository<TagDb>,
   ) { }
 
   getAccountsCount(): Promise<number> {

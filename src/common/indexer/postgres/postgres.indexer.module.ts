@@ -2,11 +2,8 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { MiniBlockDb } from "./entities/miniblock.db";
-import { TagsDb } from "./entities/tags.db";
 import { PostgresIndexerService } from "./postgres.indexer.service";
-
-const entities = [MiniBlockDb, TagsDb];
+import { entities } from "./entities";
 
 @Module({
   imports: [
