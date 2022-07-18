@@ -92,7 +92,6 @@ inflation:
 security:
   admins:
   jwtSecret:
-  accessAddress:
 nftProcess:
   parallelism: 1
   maxRetries: 3

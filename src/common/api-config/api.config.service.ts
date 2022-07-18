@@ -574,10 +574,6 @@ export class ApiConfigService {
     return jwtSecret;
   }
 
-  getAccessAddress(): string {
-    return this.configService.get<string>('security.accessAddress') ?? '';
-  }
-
   getMockKeybases(): boolean | undefined {
     return this.configService.get<boolean>('test.mockKeybases');
   }
