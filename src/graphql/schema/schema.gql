@@ -238,7 +238,7 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 scalar JSON
 
 type Query {
-  """Retrieve the detailed account for the given address."""
+  """Retrieve the detailed account for the given input."""
   account(
     """Input to retrieve the given detailed account for."""
     input: GetAccountDetailedInput!
@@ -406,8 +406,8 @@ type Transaction {
   """Pending results for the given transaction."""
   pendingResults: Boolean
 
-  """Receiver detailed account for the given transaction."""
-  receiver: AccountDetailed!
+  """Receiver address for the given transaction."""
+  receiver: String!
 
   """Receiver shard for the given transaction."""
   receiverShard: Float!
@@ -418,8 +418,8 @@ type Transaction {
   """Scam information for the given transaction."""
   scamInfo: ScamInformation
 
-  """Sender detailed account for the given transaction."""
-  sender: AccountDetailed!
+  """Sender address for the given transaction."""
+  sender: String!
 
   """Sender shard identifier for the given transaction."""
   senderShard: Float!
@@ -505,8 +505,8 @@ type TransactionDetailed {
   """Transaction receipt for the given detailed transaction."""
   receipt: TransactionReceipt
 
-  """Receiver detailed account for the given detailed transaction."""
-  receiver: AccountDetailed!
+  """Receiver address for the given transaction."""
+  receiver: String!
 
   """Receiver shard for the given transaction."""
   receiverShard: Float!
@@ -520,8 +520,8 @@ type TransactionDetailed {
   """Scam information for the given transaction."""
   scamInfo: ScamInformation
 
-  """Sender detailed account for the given detailed transaction."""
-  sender: AccountDetailed!
+  """Sender address for the given transaction."""
+  sender: String!
 
   """Sender shard identifier for the given transaction."""
   senderShard: Float!
@@ -552,6 +552,9 @@ type TransactionLog {
 
   """Transaction log events list for the given transaction log."""
   events: [TransactionLogEvent!]!
+
+  """Identifier for the given transaction log."""
+  id: String!
 }
 
 """Transaction log event object type."""
@@ -560,7 +563,7 @@ type TransactionLogEvent {
   address: String!
 
   """Data for the given transaction log event."""
-  data: String!
+  data: String
 
   """Identifier for the given transaction log event."""
   identifier: String!
@@ -584,7 +587,7 @@ type TransactionOperation {
   decimals: Float
 
   """ESDT type for the transaction operation."""
-  esdtType: TokenType!
+  esdtType: TokenType
 
   """Identifier for the transaction operation."""
   id: String!
@@ -596,7 +599,7 @@ type TransactionOperation {
   message: String
 
   """Name for the transaction operation."""
-  name: String!
+  name: String
 
   """Receiver address for the transaction operation."""
   receiver: String!
@@ -611,7 +614,7 @@ type TransactionOperation {
   type: TransactionOperationType!
 
   """Value for the transaction operation."""
-  value: String!
+  value: String
 }
 
 """Transaction operation action object type."""
