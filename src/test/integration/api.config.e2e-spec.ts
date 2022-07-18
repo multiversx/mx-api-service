@@ -1642,4 +1642,43 @@ describe('API Config', () => {
       expect(results).toStrictEqual(false);
     });
   });
+
+  describe("getLockedAssetAddress", () => {
+    it("should return locked asset address", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'erd1qqqqqqqqqqqqqpgqup60nzrkww5ukj7rxxud9txq9fakd36l0n4sthknw2'));
+
+      const results = apiConfigService.getLockedAssetAddress();
+      expect(results).toEqual('erd1qqqqqqqqqqqqqpgqup60nzrkww5ukj7rxxud9txq9fakd36l0n4sthknw2');
+    });
+
+    it("should throw new error because test simulates that locked asset address is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      expect(() => apiConfigService.getLockedAssetAddress()).toThrowError('No Locked asset contract present');
+    });
+  });
+
+  describe("getPrecisionExIncrease", () => {
+    it("should return precision number", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 1999));
+
+      const results = apiConfigService.getPrecisionExIncrease();
+      expect(results).toStrictEqual(1999);
+    });
+
+    it("should return default value of precision (1000)", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      const results = apiConfigService.getPrecisionExIncrease();
+      expect(results).toStrictEqual(1000);
+    });
+  });
 });
