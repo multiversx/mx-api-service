@@ -5,7 +5,6 @@ import { Transaction } from "src/endpoints/transactions/entities/transaction";
 import { TransactionDetailed } from "src/endpoints/transactions/entities/transaction.detailed";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
-import { TransactionQueryOptions } from "src/endpoints/transactions/entities/transactions.query.options";
 import { QueryPagination } from "src/common/entities/query.pagination";
 
 @Resolver()
@@ -31,12 +30,7 @@ export class TransactionDetailedQuery {
           condition: input.condition,
           order: input.order,
         }), 
-        new QueryPagination({ from: input.from, size: input.size }), 
-        new TransactionQueryOptions({ 
-          withScResults: input.withSmartContractResults, 
-          withOperations: input.withOperations, 
-          withLogs: input.withLogs, 
-        })
+        new QueryPagination({ from: input.from, size: input.size })
       );
   }
   

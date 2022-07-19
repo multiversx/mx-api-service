@@ -221,15 +221,6 @@ input GetTransactionsInput {
 
   """Token identfier for the given result set."""
   token: String
-
-  """If to return logs for the given result set."""
-  withLogs: Boolean
-
-  """If to return operations for the given result set."""
-  withOperations: Boolean
-
-  """If to return smart contract results for the given result set."""
-  withScResults: Boolean
 }
 
 """
