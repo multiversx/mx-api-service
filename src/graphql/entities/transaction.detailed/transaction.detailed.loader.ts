@@ -12,19 +12,21 @@ import { TransactionService } from "src/endpoints/transactions/transaction.servi
   scope: Scope.REQUEST,
 })
 export class TransactionDetailedLoader {
-  private readonly smartContractResultsLoader: any = new DataLoader(async transactionHashes => {
-    return await this.transactionService.getSmartContractResults(transactionHashes);
-  });
+  private readonly smartContractResultsLoader: any = new DataLoader(async hashes =>
+    // @ts-ignore
+    await this.transactionService.getSmartContractResults(hashes)
+  );
 
-  private readonly operationsLoader: any = new DataLoader(async transactions => {
-    return await this.transactionService.getOperations(transactions);
-  });
+  private readonly operationsLoader: any = new DataLoader(async transactions =>
+    // @ts-ignore
+    await this.transactionService.getOperations(transactions)
+  );
 
-  private readonly logLoader: any = new DataLoader(async hashes => {
-    return await this.transactionService.getLogs(hashes);
-  });
+  private readonly logLoader: any = new DataLoader(async hashes =>
+    await this.transactionService.getLogs(hashes)
+  );
 
-  constructor(private readonly transactionService: TransactionService) {}
+  constructor(private readonly transactionService: TransactionService) { }
 
   public async getSmartContractResults(transactionHash: string): Promise<Array<SmartContractResult[] | null>> {
     return await this.smartContractResultsLoader.load(transactionHash);

@@ -133,7 +133,7 @@ export class TransactionGetService {
           for (const log of logs) {
             if (log.id === txHash) {
               transactionDetailed.logs = log;
-            } else {
+            } else if (transactionDetailed.results) {
               const foundScResult = transactionDetailed.results.find(({ hash }) => log.id === hash);
               if (foundScResult) {
                 foundScResult.logs = log;

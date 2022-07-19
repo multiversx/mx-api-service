@@ -324,13 +324,7 @@ export class ApiConfigService {
   }
 
   isGraphQlActive(): boolean {
-    const isActive = this.configService.get<boolean>('api.graphql');
-
-    if (isActive === undefined) {
-      throw new Error('No api.graphql flag present.');
-    }
-
-    return isActive;
+    return this.configService.get<boolean>('api.graphql') ?? false;
   }
 
   getIsPublicApiActive(): boolean {

@@ -45,13 +45,13 @@ registerEnumType(TransactionOperationAction, {
     },
     wipe: {
       description: 'Wipe operation action.',
-    },    
+    },
     freeze: {
       description: 'Freeze operation action.',
-    },    
+    },
     writeLog: {
       description: 'Write log operation action.',
-    },    
+    },
     signalError: {
       description: 'Signal error operation action.',
     },

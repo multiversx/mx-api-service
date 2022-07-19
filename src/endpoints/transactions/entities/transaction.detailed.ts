@@ -15,7 +15,7 @@ export class TransactionDetailed extends Transaction {
 
   @Field(() => [SmartContractResult], { description: 'Smart contract results for the given detailed transaction.', nullable: true })
   @ApiProperty({ type: SmartContractResult, isArray: true })
-  results: SmartContractResult[] = [];
+  results: SmartContractResult[] | undefined = undefined;
 
   @Field(() => TransactionReceipt, { description: 'Transaction receipt for the given detailed transaction.', nullable: true })
   @ApiProperty({ type: TransactionReceipt, nullable: true })

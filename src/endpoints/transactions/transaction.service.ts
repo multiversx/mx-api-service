@@ -20,7 +20,7 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
-import { AddressUtils, ApiUtils, Constants, CachingService, ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiUtils, Constants, CachingService, ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, PendingExecutor } from '@elrondnetwork/erdnest';
 import { TransactionUtils } from './transaction.utils';
 import { TransactionOperation } from './entities/transaction.operation';
 
@@ -342,7 +342,7 @@ export class TransactionService {
 
       if (queryOptions.withScResultLogs) {
         for (const log of logs) {
-          if (log.id !== transactionDetailed.txHash) {
+          if (log.id !== transactionDetailed.txHash && transactionDetailed.results) {
             const foundScResult = transactionDetailed.results.find(({ hash }) => log.id === hash);
             if (foundScResult) {
               foundScResult.logs = log;
@@ -357,7 +357,15 @@ export class TransactionService {
     return detailedTransactions;
   }
 
-  public async getSmartContractResults(transactionHashes: any): Promise<Array<SmartContractResult[] | null>> {
+  private smartContractResultsExecutor = new PendingExecutor(
+    async (txHashes: string[]) => await this.getSmartContractResultsRaw(txHashes)
+  );
+
+  public async getSmartContractResults(transactionHashes: string[]): Promise<Array<SmartContractResult[] | null>> {
+    return await this.smartContractResultsExecutor.execute(transactionHashes);
+  }
+
+  private async getSmartContractResultsRaw(transactionHashes: any): Promise<Array<SmartContractResult[] | null>> {
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from: 0, size: 10000 })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
@@ -385,18 +393,18 @@ export class TransactionService {
     return Promise.all(results);
   }
 
-  public async getOperations(transactions: any): Promise<Array<TransactionOperation[] | null>> {
+  public async getOperations(transactions: TransactionDetailed[]): Promise<Array<TransactionOperation[] | null>> {
     const smartContractResults = await this.getSmartContractResults(transactions.map((transaction: TransactionDetailed) => transaction.txHash));
 
     const logs = await this.transactionGetService.getTransactionLogsFromElastic([
-      ...transactions.map((transaction: TransactionDetailed) => transaction.txHash), 
-      ...smartContractResults.filter((item) => item != null).flat().map((result) => result?.hash),
+      ...transactions.map((transaction: TransactionDetailed) => transaction.txHash),
+      ...smartContractResults.filter((item) => item != null).flat().map((result) => result?.hash ?? ''),
     ]);
 
     const operations: Array<TransactionOperation[] | null> = [];
 
     for (const transaction of transactions) {
-      transaction.results = smartContractResults.at(transactions.indexOf(transaction));
+      transaction.results = smartContractResults.at(transactions.indexOf(transaction)) ?? undefined;
 
       if (!transaction.results) {
         operations.push(null);
