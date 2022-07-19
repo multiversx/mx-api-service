@@ -4,7 +4,7 @@ import { Column, Entity, PrimaryColumn } from 'typeorm';
 @Entity('round_infos')
 export class RoundInfoDb {
   @PrimaryColumn()
-  index: string = '';
+  index: number = 0;
 
   @Column('text', { nullable: true, name: 'signers_indexes', transformer: TypeormUtils.textToNumberArrayTransformer })
   signersIndexes: number[] = [];

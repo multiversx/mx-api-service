@@ -1,4 +1,5 @@
 import { AccountDb } from './account.db';
+import { AccountHistoryDb } from './account.history.db';
 import { AccountsEsdtDb } from './account.esdt.db';
 import { AccountsEsdtHistoryDb } from './account.esdt.history.db';
 import { BlockDb } from './block.db';
@@ -24,6 +25,7 @@ import { ValidatorPublicKeysDb } from './validator.public.keys.db';
 import { ValidatorRatingInfoDb } from './validator.rating.info.db';
 
 export { AccountDb } from './account.db';
+export { AccountHistoryDb } from './account.history.db';
 export { AccountsEsdtDb } from './account.esdt.db';
 export { AccountsEsdtHistoryDb } from './account.esdt.history.db';
 export { BlockDb } from './block.db';
@@ -49,9 +51,9 @@ export { ValidatorPublicKeysDb } from './validator.public.keys.db';
 export { ValidatorRatingInfoDb } from './validator.rating.info.db';
 
 export const entities = [
-  AccountDb, AccountsEsdtDb, AccountsEsdtHistoryDb, BlockDb, DelegatorDb,
-  EpochInfoDb, EpochStartInfosDb, EventDb, LogDb, MiniBlockDb, OwnerDataDb,
-  ReceiptDb, RoundInfoDb, ScDeployInfoDb, ScResultDb, ScResultOperationDb,
-  TagDb, TokenInfoDb, TokenMetaDataDb, TransactionDb, TransactionOperationDb,
-  UpgradeDb, ValidatorPublicKeysDb, ValidatorRatingInfoDb,
+  AccountDb, AccountHistoryDb, AccountsEsdtDb, AccountsEsdtHistoryDb, BlockDb,
+  DelegatorDb, EpochInfoDb, EpochStartInfosDb, EventDb, LogDb, MiniBlockDb,
+  OwnerDataDb, ReceiptDb, RoundInfoDb, ScDeployInfoDb, ScResultDb, ScResultOperationDb,
+  TagDb, TokenInfoDb, TokenMetaDataDb, TransactionDb, TransactionOperationDb, UpgradeDb,
+  ValidatorPublicKeysDb, ValidatorRatingInfoDb,
 ];

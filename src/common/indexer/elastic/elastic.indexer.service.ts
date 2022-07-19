@@ -120,7 +120,6 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList("accountsesdt", identifier, elasticQuery);
   }
 
-
   async getTokensWithRolesForAddressCount(address: string, filter: TokenWithRolesFilter): Promise<number> {
     const elasticQuery = this.indexerHelper.buildTokensWithRolesForAddressQuery(address, filter);
     return await this.elasticService.getCount('tokens', elasticQuery);
@@ -245,7 +244,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from: 0, size: addresses.length })
-      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match("address", "pending-")])
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match("address", "pending")])
       .withCondition(QueryConditionOptions.must, [QueryType.Match('token', identifier, QueryOperator.AND)])
       .withRangeFilter("balanceNum", new RangeGreaterThanOrEqual(0))
       .withCondition(QueryConditionOptions.should, queries);

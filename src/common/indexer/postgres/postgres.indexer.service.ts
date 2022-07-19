@@ -2,6 +2,7 @@ import { BinaryUtils } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { SortOrder } from "src/common/entities/sort.order";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
@@ -11,99 +12,199 @@ import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.roles.filter";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { Repository } from "typeorm";
-import { MiniBlock, Tag } from "../entities";
+import { MiniBlock, Tag, TokenType } from "../entities";
 import { IndexerInterface } from "../indexer.interface";
-import { MiniBlockDb, TagDb } from "./entities";
+import { AccountDb, AccountsEsdtDb, BlockDb, LogDb, MiniBlockDb, ReceiptDb, RoundInfoDb, ScDeployInfoDb, ScResultDb, TagDb, TokenInfoDb, TransactionDb, ValidatorPublicKeysDb } from "./entities";
+import { PostgresIndexerHelper } from "./postgres.indexer.helper";
 
 @Injectable()
 export class PostgresIndexerService implements IndexerInterface {
   constructor(
+    @InjectRepository(AccountDb)
+    private readonly accountsRepository: Repository<AccountDb>,
+    @InjectRepository(AccountsEsdtDb)
+    private readonly accountsEsdtRepository: Repository<AccountsEsdtDb>,
+    @InjectRepository(ScResultDb)
+    private readonly scResultsRepository: Repository<ScResultDb>,
+    @InjectRepository(RoundInfoDb)
+    private readonly roundsRepository: Repository<RoundInfoDb>,
+    @InjectRepository(TokenInfoDb)
+    private readonly tokensRepository: Repository<TokenInfoDb>,
+    @InjectRepository(BlockDb)
+    private readonly blocksRepository: Repository<BlockDb>,
+    @InjectRepository(TransactionDb)
+    private readonly transactionsRepository: Repository<TransactionDb>,
+    @InjectRepository(ScDeployInfoDb)
+    private readonly scDeploysRepository: Repository<ScDeployInfoDb>,
     @InjectRepository(MiniBlockDb)
     private readonly miniBlocksRepository: Repository<MiniBlockDb>,
     @InjectRepository(TagDb)
     private readonly tagsRepository: Repository<TagDb>,
+    @InjectRepository(ReceiptDb)
+    private readonly receiptsRepository: Repository<ReceiptDb>,
+    @InjectRepository(LogDb)
+    private readonly logsRepository: Repository<LogDb>,
+    @InjectRepository(ValidatorPublicKeysDb)
+    private readonly validatorPublicKeysRepository: Repository<ValidatorPublicKeysDb>,
+    private readonly indexerHelper: PostgresIndexerHelper,
   ) { }
 
-  getAccountsCount(): Promise<number> {
-    throw new Error("Method not implemented.");
+  async getAccountsCount(): Promise<number> {
+    return await this.accountsRepository.count();
   }
-  getScResultsCount(): Promise<number> {
-    throw new Error("Method not implemented.");
+
+  async getScResultsCount(): Promise<number> {
+    return await this.scResultsRepository.count();
   }
-  getAccountContractsCount(_address: string): Promise<number> {
-    throw new Error("Method not implemented.");
+
+  async getAccountContractsCount(address: string): Promise<number> {
+    const query = this.scDeploysRepository
+      .createQueryBuilder()
+      .where('creator = :address', { address });
+
+    return await query.getCount();
   }
-  getBlocksCount(_filter: BlockFilter): Promise<number> {
-    throw new Error("Method not implemented.");
+
+  async getBlocksCount(filter: BlockFilter): Promise<number> {
+    const query = await this.indexerHelper.buildElasticBlocksFilter(filter);
+    return await query.getCount();
   }
-  getBlocks(_filter: BlockFilter, _queryPagination: QueryPagination): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getBlocks(filter: BlockFilter, { from, size }: QueryPagination): Promise<any[]> {
+    let query = await this.indexerHelper.buildElasticBlocksFilter(filter);
+    query = query
+      .skip(from).take(size)
+      .orderBy('timestamp', 'DESC')
+      .addOrderBy('shard_id', 'ASC');
+
+    const result = await query.getMany();
+    return result;
   }
-  getNftCollectionCount(_filter: CollectionFilter): Promise<number> {
-    throw new Error("Method not implemented.");
+
+  async getNftCollectionCount(filter: CollectionFilter): Promise<number> {
+    const query = this.indexerHelper.buildCollectionRolesFilter(filter);
+    return await query.getCount();
   }
-  getNftCountForAddress(_address: string, _filter: NftFilter): Promise<number> {
-    throw new Error("Method not implemented.");
+
+  async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {
+    const query = this.indexerHelper.buildElasticNftFilter(this.accountsEsdtRepository, filter, undefined, address);
+    return await query.getCount();
   }
-  getCollectionCountForAddress(_address: string, _filter: CollectionFilter): Promise<number> {
-    throw new Error("Method not implemented.");
+
+  async getCollectionCountForAddress(address: string, filter: CollectionFilter): Promise<number> {
+    const query = this.indexerHelper.buildCollectionRolesFilter(filter, address);
+    return await query.getCount();
   }
-  getNftCount(_filter: NftFilter): Promise<number> {
-    throw new Error("Method not implemented.");
+
+  async getNftCount(filter: NftFilter): Promise<number> {
+    const query = this.indexerHelper.buildElasticNftFilter(this.tokensRepository, filter);
+    return await query.getCount();
   }
-  getNftOwnersCount(_identifier: string): Promise<number> {
-    throw new Error("Method not implemented.");
+
+  async getNftOwnersCount(identifier: string): Promise<number> {
+    const query = this.accountsEsdtRepository
+      .createQueryBuilder()
+      .where('address != :address', { address: 'pending' })
+      .andWhere('token_name = :identifier', { identifier });
+    return await query.getCount();
   }
-  getTransfersCount(_filter: TransactionFilter): Promise<number> {
-    throw new Error("Method not implemented.");
+
+  async getTransfersCount(filter: TransactionFilter): Promise<number> {
+    const query = this.indexerHelper.buildTransferFilterQuery(filter);
+    return await query.getCount();
   }
-  getTokenCountForAddress(_address: string): Promise<number> {
-    throw new Error("Method not implemented.");
+
+  async getTokenCountForAddress(address: string): Promise<number> {
+    const query = this.accountsEsdtRepository
+      .createQueryBuilder()
+      .where('address = :address', { address })
+      .andWhere(`(token_identifier IS NULL OR token_identifier = '')`);
+
+    return await query.getCount();
   }
-  getTokenAccountsCount(_identifier: string): Promise<number | undefined> {
-    throw new Error("Method not implemented.");
+
+  async getTokenAccountsCount(identifier: string): Promise<number | undefined> {
+    const query = this.accountsEsdtRepository
+      .createQueryBuilder()
+      .where('token_name = :identifier', { identifier });
+
+    return await query.getCount();
   }
-  getTokenAccounts(_pagination: QueryPagination, _identifier: string): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getTokenAccounts(pagination: QueryPagination, identifier: string): Promise<any[]> {
+    const query = this.accountsEsdtRepository
+      .createQueryBuilder()
+      .skip(pagination.from).take(pagination.size)
+      .where(`token_name = :identifier AND address != 'pending'`, { identifier })
+      .orderBy('balance_num', 'DESC');
+
+    return await query.getMany();
   }
-  getTokensWithRolesForAddressCount(_address: string, _filter: TokenWithRolesFilter): Promise<number> {
-    throw new Error("Method not implemented.");
+
+  async getTokensWithRolesForAddressCount(address: string, filter: TokenWithRolesFilter): Promise<number> {
+    const query = this.indexerHelper.buildTokensWithRolesForAddressQuery(address, filter);
+    return await query.getCount();
   }
-  getNftTagCount(_search?: string | undefined): Promise<number> {
-    throw new Error("Method not implemented.");
+
+  async getNftTagCount(search?: string | undefined): Promise<number> {
+    let query = this.tagsRepository.createQueryBuilder();
+    if (search) {
+      query = query.where(`tag like :search`, { search: `%${search}%` });
+    }
+
+    return await query.getCount();
   }
-  getRoundCount(_filter: RoundFilter): Promise<number> {
-    throw new Error("Method not implemented.");
+
+  async getRoundCount(filter: RoundFilter): Promise<number> {
+    const query = await this.indexerHelper.buildElasticRoundsFilter(filter);
+    return await query.getCount();
   }
-  getAccountScResultsCount(_address: string): Promise<number> {
-    throw new Error("Method not implemented.");
+
+  async getAccountScResultsCount(address: string): Promise<number> {
+    const query = this.indexerHelper.buildSmartContractResultFilterQuery(address);
+    return await query.getCount();
   }
-  getTransactionCountForAddress(_address: string): Promise<number> {
-    throw new Error("Method not implemented.");
+
+  async getTransactionCountForAddress(address: string): Promise<number> {
+    const query = this.transactionsRepository
+      .createQueryBuilder()
+      .where('sender = :address OR receiver = :address', { address });
+
+    return await query.getCount();
   }
-  getTransactionCount(_filter: TransactionFilter, _address?: string | undefined): Promise<number> {
-    throw new Error("Method not implemented.");
+
+  async getTransactionCount(filter: TransactionFilter, address?: string): Promise<number> {
+    const query = this.indexerHelper.buildTransactionFilterQuery(filter, address);
+    return await query.getCount();
   }
-  getRound(_shard: number, _round: number): Promise<any> {
-    throw new Error("Method not implemented.");
+
+  async getRound(shard: number, round: number): Promise<any> {
+    return await this.roundsRepository.findOneByOrFail({ shardId: shard, index: round });
   }
-  getToken(_identifier: string): Promise<any> {
-    throw new Error("Method not implemented.");
+
+  async getToken(identifier: string): Promise<any> {
+    return await this.tokensRepository.findOneByOrFail({ identifier });
   }
-  getCollection(_identifier: string): Promise<any> {
-    throw new Error("Method not implemented.");
+
+  async getCollection(identifier: string): Promise<any> {
+    return await this.tokensRepository.findOneByOrFail({ token: identifier });
   }
-  getTransaction(_txHash: string): Promise<any> {
-    throw new Error("Method not implemented.");
+
+  async getTransaction(txHash: string): Promise<any> {
+    return await this.transactionsRepository.findOneByOrFail({ hash: txHash });
   }
-  getScDeploy(_address: string): Promise<any> {
-    throw new Error("Method not implemented.");
+
+  async getScDeploy(_address: string): Promise<any> {
+    // TODO address does not exist
+    return await this.scDeploysRepository.findOneByOrFail({});
   }
-  getScResult(_scHash: string): Promise<any> {
-    throw new Error("Method not implemented.");
+
+  async getScResult(scHash: string): Promise<any> {
+    return await this.scResultsRepository.findOneByOrFail({ hash: scHash });
   }
-  getBlock(_hash: string): Promise<any> {
-    throw new Error("Method not implemented.");
+
+  async getBlock(hash: string): Promise<any> {
+    return await this.blocksRepository.findOneByOrFail({ hash });
   }
 
   async getMiniBlock(miniBlockHash: string): Promise<MiniBlock> {
@@ -115,6 +216,15 @@ export class PostgresIndexerService implements IndexerInterface {
   }
 
   async getTag(tag: string): Promise<Tag> {
+    try {
+      const res = await Promise.all([
+        this.getTransfers({}, { from: 0, size: 100 }),
+      ]);
+      console.log(res);
+    } catch (err) {
+      console.log(err);
+    }
+
     const query = this.tagsRepository
       .createQueryBuilder()
       .where('tag = :tag', { tag: BinaryUtils.base64Encode(tag) });
@@ -122,20 +232,58 @@ export class PostgresIndexerService implements IndexerInterface {
     return await query.getOneOrFail();
   }
 
-  getTransfers(_filter: TransactionFilter, _pagination: QueryPagination): Promise<any[]> {
-    throw new Error("Method not implemented.");
+  async getTransfers(filter: TransactionFilter, pagination: QueryPagination): Promise<any[]> {
+    const sortOrder = !filter.order || filter.order === SortOrder.desc ? 'DESC' : 'ASC';
+
+    const query = this.indexerHelper.buildTransferFilterQuery(filter)
+      .skip(pagination.from).take(pagination.size)
+      .orderBy('timestamp', sortOrder)
+      .addOrderBy('nonce', sortOrder);
+
+    const operations = await query.getMany();
+    return operations;
   }
-  getTokensWithRolesForAddress(_address: string, _filter: TokenWithRolesFilter, _pagination: QueryPagination): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getTokensWithRolesForAddress(address: string, filter: TokenWithRolesFilter, pagination: QueryPagination): Promise<any[]> {
+    const query = this.indexerHelper.buildTokensWithRolesForAddressQuery(address, filter, pagination);
+    const tokenList = await query.getMany();
+    return tokenList;
   }
-  getRounds(_filter: RoundFilter): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getRounds(filter: RoundFilter): Promise<any[]> {
+    let query = this.roundsRepository.createQueryBuilder();
+
+    if (filter.condition !== undefined) {
+      query = await this.indexerHelper.buildElasticRoundsFilter(filter);
+    }
+
+    query = query
+      .skip(filter.from).take(filter.size)
+      .orderBy('timestamp', 'DESC');
+
+    return await query.getMany();
   }
-  getNftCollections(_pagination: QueryPagination, _filter: CollectionFilter, _address?: string | undefined): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getNftCollections({ from, size }: QueryPagination, filter: CollectionFilter, address?: string): Promise<any[]> {
+    const query = this.indexerHelper
+      .buildCollectionRolesFilter(filter, address)
+      .skip(from).take(size)
+      .orderBy('timestamp', 'DESC');
+
+    return await query.getMany();
   }
-  getAccountEsdtByAddressesAndIdentifier(_identifier: string, _addresses: string[]): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]): Promise<any[]> {
+    const query = this.accountsEsdtRepository
+      .createQueryBuilder()
+      .skip(0)
+      .take(addresses.length)
+      .where(`address != 'pending'`)
+      .andWhere('token_name = :identifier', { identifier })
+      .andWhere('address IN (:...addresses)', { addresses })
+      .andWhere('balance_num >= 0');
+
+    return await query.getMany();
   }
 
   async getNftTags(pagination: QueryPagination, search?: string | undefined): Promise<Tag[]> {
@@ -150,82 +298,292 @@ export class PostgresIndexerService implements IndexerInterface {
     return await query.getMany();
   }
 
-  getScResults(_pagination: QueryPagination, _filter: SmartContractResultFilter): Promise<any[]> {
-    throw new Error("Method not implemented.");
+  async getScResults({ from, size }: QueryPagination, filter: SmartContractResultFilter): Promise<any[]> {
+    let query = this.scResultsRepository
+      .createQueryBuilder()
+      .skip(from).take(size);
+
+    if (filter.miniBlockHash) {
+      query = query.andWhere('mb_hash = :hash', { hash: filter.miniBlockHash });
+    }
+
+    if (filter.originalTxHashes) {
+      query = query.andWhere('original_tx_hash IN (:...hashes)', { hashes: filter.originalTxHashes });
+    }
+
+    return await query.getMany();
   }
-  getAccountScResults(_address: string, _pagination: QueryPagination): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getAccountScResults(address: string, { from, size }: QueryPagination): Promise<any[]> {
+    const query = this.indexerHelper.buildSmartContractResultFilterQuery(address)
+      .skip(from).take(size)
+      .orderBy('timestamp', 'DESC');
+
+    return await query.getMany();
   }
-  getAccounts(_queryPagination: QueryPagination): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getAccounts({ from, size }: QueryPagination): Promise<any[]> {
+    const query = this.accountsRepository
+      .createQueryBuilder()
+      .skip(from).take(size)
+      .orderBy('balance_num', 'DESC');
+
+    return await query.getMany();
   }
-  getAccountContracts(_pagination: QueryPagination, _address: string): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getAccountContracts({ from, size }: QueryPagination, address: string): Promise<any[]> {
+    const query = this.scDeploysRepository
+      .createQueryBuilder()
+      .skip(from).take(size)
+      .where('creator = :address', { address })
+      .orderBy('timestamp', 'DESC');
+
+    return await query.getMany();
   }
-  getAccountHistory(_address: string, _pagination: QueryPagination): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getAccountHistory(address: string, { from, size }: QueryPagination): Promise<any[]> {
+    const query = this.indexerHelper.buildAccountHistoryFilterQuery(address)
+      .skip(from).take(size)
+      .orderBy('timestamp', 'DESC');
+
+    return await query.getMany();
   }
-  getAccountTokenHistory(_address: string, _tokenIdentifier: string, _pagination: QueryPagination): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getAccountTokenHistory(address: string, tokenIdentifier: string, { from, size }: QueryPagination): Promise<any[]> {
+    const query = this.indexerHelper.buildAccountHistoryFilterQuery(address, tokenIdentifier)
+      .skip(from).take(size)
+      .orderBy('timestamp', 'DESC');
+
+    return await query.getMany();
   }
-  getTransactions(_filter: TransactionFilter, _pagination: QueryPagination, _address?: string | undefined): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getTransactions(filter: TransactionFilter, { from, size }: QueryPagination, address?: string): Promise<any[]> {
+    const sortOrder = !filter.order || filter.order === SortOrder.desc ? 'DESC' : 'ASC';
+
+    const query = this.indexerHelper
+      .buildTransactionFilterQuery(filter, address)
+      .skip(from).take(size)
+      .orderBy('timestamp', sortOrder)
+      .addOrderBy('nonce', sortOrder);
+
+    return await query.getMany();
   }
-  getTokensForAddress(_address: string, _queryPagination: QueryPagination, _filter: TokenFilter): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getTokensForAddress(address: string, { from, size }: QueryPagination, filter: TokenFilter): Promise<any[]> {
+    let query = this.accountsEsdtRepository.createQueryBuilder()
+      .skip(from).take(size)
+      .where(`(token_identifier IS NULL OR token_identifier = '')`)
+      .andWhere('address = :address', { address });
+
+    if (filter.identifier) {
+      query = query.andWhere('token_name = :token', { token: filter.identifier });
+    }
+
+    if (filter.identifiers) {
+      query = query.andWhere('token_name IN (:...tokens)', { tokens: filter.identifiers });
+    }
+
+    // if (filter.name) {
+    //   query = query.withMustCondition(QueryType.Nested('data.name', filter.name));
+    // }
+
+    // if (filter.search) {
+    //   query = query.withMustCondition(QueryType.Nested('data.name', filter.search));
+    // }
+
+    return await query.getMany();
   }
-  getTransactionLogs(_hashes: string[]): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getTransactionLogs(hashes: string[]): Promise<any[]> {
+    const query = this.logsRepository
+      .createQueryBuilder()
+      .skip(0).take(10000)
+      .where('id IN (:...hashes)', { hashes });
+
+    return await query.getMany();
   }
-  getTransactionScResults(_txHash: string): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getTransactionScResults(txHash: string): Promise<any[]> {
+    const query = this.scResultsRepository
+      .createQueryBuilder()
+      .skip(0).take(100)
+      .where('original_tx_hash = :hash', { hash: txHash })
+      .orderBy('timestamp', 'ASC');
+
+    return await query.getMany();
   }
-  getScResultsForTransactions(_elasticTransactions: any[]): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getScResultsForTransactions(elasticTransactions: any[]): Promise<any[]> {
+    const query = this.scResultsRepository
+      .createQueryBuilder()
+      .skip(0).take(10000)
+      .where('original_tx_hash IN (:...hashes)', { hashes: elasticTransactions.filter(x => x.hasScResults === true).map(x => x.txHash) })
+      .orderBy('timestamp', 'ASC');
+
+    return await query.getMany();
   }
-  getAccountEsdtByIdentifiers(_identifiers: string[], _pagination?: QueryPagination | undefined): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination): Promise<any[]> {
+    if (identifiers.length === 0) {
+      return [];
+    }
+
+    let query = this.accountsEsdtRepository
+      .createQueryBuilder()
+      .where(`address != 'pending'`)
+      .andWhere('token_identifier IN (:...identifiers)', { identifiers })
+      .orderBy('balance_num', 'DESC')
+      .addOrderBy('timestamp', 'DESC');
+
+
+    if (pagination) {
+      query = query.skip(pagination.from).take(pagination.size);
+    }
+
+    return await query.getMany();
   }
-  getNftsForAddress(_address: string, _filter: NftFilter, _pagination: QueryPagination): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getNftsForAddress(address: string, filter: NftFilter, { from, size }: QueryPagination): Promise<any[]> {
+    const query = this.indexerHelper
+      .buildElasticNftFilter(this.accountsEsdtRepository, filter, undefined, address)
+      .skip(from).take(size)
+      .orderBy('timestamp', 'DESC')
+      .addOrderBy('token_nonce', 'DESC');
+
+    return await query.getMany();
   }
-  getNfts(_pagination: QueryPagination, _filter: NftFilter, _identifier?: string | undefined): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getNfts({ from, size }: QueryPagination, filter: NftFilter, identifier?: string): Promise<any[]> {
+    const tokensQuery = this.indexerHelper
+      .buildElasticNftFilter(this.tokensRepository, filter, identifier)
+      .skip(from).take(size)
+      .orderBy('timestamp', 'DESC')
+      .addOrderBy('nonce', 'DESC');
+
+    let elasticNfts = await tokensQuery.getMany();
+    if (elasticNfts.length === 0 && identifier !== undefined) {
+      const accountsesdtQuery = this.indexerHelper
+        .buildElasticNftFilter(this.accountsEsdtRepository, filter, identifier)
+        .skip(from).take(size)
+        .where('identifier = :identifier', { identifier })
+        .orderBy('timestamp', 'DESC')
+        .addOrderBy('nonce', 'DESC');
+
+      elasticNfts = await accountsesdtQuery.getMany();
+    }
+    return elasticNfts;
   }
-  getTransactionBySenderAndNonce(_sender: string, _nonce: number): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getTransactionBySenderAndNonce(sender: string, nonce: number): Promise<any[]> {
+    const query = this.transactionsRepository
+      .createQueryBuilder()
+      .skip(0).take(1)
+      .where('sender = :sender AND nonce = :nonce', { sender, nonce });
+
+    return await query.getMany();
   }
-  getTransactionReceipts(_txHash: string): Promise<any[]> {
-    throw new Error("Method not implemented.");
+
+  async getTransactionReceipts(txHash: string): Promise<any[]> {
+    const query = this.receiptsRepository
+      .createQueryBuilder()
+      .skip(0).take(1)
+      .where('tx_hash = :txHash', { txHash });
+
+    return await query.getMany();
   }
-  getAllTokensMetadata(_action: (items: any[]) => Promise<void>): Promise<void> {
-    throw new Error("Method not implemented.");
+
+  async getAllTokensMetadata(action: (items: any[]) => Promise<void>): Promise<void> {
+    // TODO add fields + join
+
+    let from = 0;
+    const size = 10000;
+
+    let query = this.tokensRepository
+      .createQueryBuilder()
+      .where('type IN (:...types)', { types: [TokenType.NonFungibleESDT, TokenType.SemiFungibleESDT] })
+      .andWhere(`identifier IS NOT NULL AND identifier != ''`);
+
+    let count = 0;
+    do {
+      query = query.skip(from).take(size);
+      const items = await query.getMany();
+
+      if (items.length > 0) {
+        await action(items);
+      }
+
+      count = items.length;
+      from = from + size;
+    } while (count >= size);
   }
-  getEsdtAccountsCount(_identifier: string): Promise<number> {
-    throw new Error("Method not implemented.");
+
+  async getEsdtAccountsCount(identifier: string): Promise<number> {
+    const query = this.accountsEsdtRepository
+      .createQueryBuilder()
+      .andWhere('token_name = :identifier', { identifier });
+
+    return await query.getCount();
   }
-  getAllAccountsWithToken(_identifier: string, _action: (items: any[]) => Promise<void>): Promise<void> {
-    throw new Error("Method not implemented.");
+
+  async getAllAccountsWithToken(identifier: string, action: (items: any[]) => Promise<void>): Promise<void> {
+    let from = 0;
+    const size = 10000;
+
+    let query = this.accountsEsdtRepository
+      .createQueryBuilder()
+      .where('token_name = :identifier', { identifier });
+
+    let count = 0;
+    do {
+      query = query.skip(from).take(size);
+      const items = await query.getMany();
+
+      if (items.length > 0) {
+        await action(items);
+      }
+
+      count = items.length;
+      from = from + size;
+    } while (count >= size);
   }
-  getPublicKeys(_shard: number, _epoch: number): Promise<string[] | undefined> {
-    throw new Error("Method not implemented.");
+
+  async getPublicKeys(shard: number, epoch: number): Promise<string[] | undefined> {
+    const query = this.validatorPublicKeysRepository.createQueryBuilder()
+      .where('id = :id', { id: `${shard}_${epoch}` });
+
+    const result = await query.getOne();
+    if (result !== null && result?.pubKeys.length > 0) {
+      return result.pubKeys;
+    }
+
+    return undefined;
   }
-  getCollectionsForAddress(_address: string, _filter: CollectionFilter, _pagination: QueryPagination): Promise<{ collection: string; count: number; balance: number; }[]> {
-    throw new Error("Method not implemented.");
+
+  // eslint-disable-next-line require-await
+  async getCollectionsForAddress(_address: string, _filter: CollectionFilter, _pagination: QueryPagination): Promise<{ collection: string; count: number; balance: number; }[]> {
+    // TODO
+    return [];
   }
-  getAssetsForToken(_identifier: string): Promise<any> {
-    throw new Error("Method not implemented.");
+
+  // eslint-disable-next-line require-await
+  async getAssetsForToken(_identifier: string): Promise<any> {
+    // TODO
+    return {};
   }
-  setAssetsForToken(_identifier: string, _value: any): Promise<void> {
-    throw new Error("Method not implemented.");
+
+  async setAssetsForToken(_identifier: string, _value: any): Promise<void> {
+    // TODO
   }
-  setIsWhitelistedStorageForToken(_identifier: string, _value: boolean): Promise<void> {
-    throw new Error("Method not implemented.");
+
+  async setIsWhitelistedStorageForToken(_identifier: string, _value: boolean): Promise<void> {
+    // TODO
   }
-  setMediaForToken(_identifier: string, _value: any[]): Promise<void> {
-    throw new Error("Method not implemented.");
+
+  async setMediaForToken(_identifier: string, _value: any[]): Promise<void> {
+    // TODO
   }
-  setMetadataForToken(_identifier: string, _value: any): Promise<void> {
-    throw new Error("Method not implemented.");
+
+  async setMetadataForToken(_identifier: string, _value: any): Promise<void> {
+    // TODO
   }
 }

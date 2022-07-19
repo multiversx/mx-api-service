@@ -4,6 +4,7 @@ import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { PostgresIndexerService } from "./postgres.indexer.service";
 import { entities } from "./entities";
+import { PostgresIndexerHelper } from "./postgres.indexer.helper";
 
 @Module({
   imports: [
@@ -44,7 +45,7 @@ import { entities } from "./entities";
     }),
     TypeOrmModule.forFeature(entities),
   ],
-  providers: [PostgresIndexerService],
-  exports: [PostgresIndexerService, TypeOrmModule.forFeature(entities)],
+  providers: [PostgresIndexerService, PostgresIndexerHelper],
+  exports: [PostgresIndexerService, TypeOrmModule.forFeature(entities), PostgresIndexerHelper],
 })
 export class PostgresIndexerModule { }
