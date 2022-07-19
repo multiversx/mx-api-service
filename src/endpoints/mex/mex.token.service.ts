@@ -44,7 +44,7 @@ export class MexTokenService {
     return allMexTokens.slice(from, from + size);
   }
 
-  async getMexPrices(): Promise<Record<string, number>> {
+  async getMexPrices(): Promise<Record<string, { price: number, isToken: boolean }>> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.MexPrices.key,
       async () => await this.getMexPricesRaw(),
@@ -53,23 +53,32 @@ export class MexTokenService {
     );
   }
 
-  async getMexPricesRaw(): Promise<Record<string, number>> {
+  async getMexPricesRaw(): Promise<Record<string, { price: number, isToken: boolean }>> {
     try {
-      const result: Record<string, number> = {};
+      const result: Record<string, { price: number, isToken: boolean }> = {};
 
       const tokens = await this.getAllMexTokens();
       for (const token of tokens) {
-        result[token.id] = token.price;
+        result[token.id] = {
+          price: token.price,
+          isToken: true,
+        };
       }
 
       const pairs = await this.mexPairService.getAllMexPairs();
       for (const pair of pairs) {
-        result[pair.id] = pair.price;
+        result[pair.id] = {
+          price: pair.price,
+          isToken: false,
+        };
       }
 
       const farms = await this.mexFarmService.getAllMexFarms();
       for (const farm of farms) {
-        result[farm.id] = farm.price;
+        result[farm.id] = {
+          price: farm.price,
+          isToken: false,
+        };
       }
 
       const settings = await this.mexSettingsService.getSettings();
@@ -78,7 +87,10 @@ export class MexTokenService {
         if (lkmexIdentifier) {
           const mexToken = tokens.find(x => x.symbol === 'MEX');
           if (mexToken) {
-            result[lkmexIdentifier] = mexToken.price;
+            result[lkmexIdentifier] = {
+              price: mexToken.price,
+              isToken: false,
+            };
           }
         }
       }

@@ -509,8 +509,8 @@ export class NftService {
 
       const price = prices[nft.collection];
       if (price) {
-        nft.price = price;
-        nft.valueUsd = price * NumberUtils.denominateString(nft.balance, nft.decimals);
+        nft.price = price.price;
+        nft.valueUsd = price.price * NumberUtils.denominateString(nft.balance, nft.decimals);
       }
     } catch (error) {
       this.logger.error(`Unable to apply price on MetaESDT with identifier '${nft.identifier}'`);
@@ -582,8 +582,8 @@ export class NftService {
   }
 
   applyExtendedAttributes(nft: Nft, elasticNft: any) {
-    nft.score = elasticNft.nft_score;
-    nft.rank = elasticNft.nft_rank;
+    nft.score = elasticNft.nft_rarity_score;
+    nft.rank = elasticNft.nft_rarity_rank;
 
     if (elasticNft.nft_nsfw_mark !== undefined) {
       nft.isNsfw = elasticNft.nft_nsfw_mark >= this.apiConfigService.getNftExtendedAttributesNsfwThreshold();

@@ -18,6 +18,7 @@ import { CacheInfo } from 'src/utils/cache.info';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { Constants, NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest';
 import { About } from './entities/about';
+import { EsdtService } from '../esdt/esdt.service';
 
 @Injectable()
 export class NetworkService {
@@ -35,6 +36,8 @@ export class NetworkService {
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
+    @Inject(forwardRef(() => EsdtService))
+    private readonly esdtService: EsdtService,
   ) { }
 
   async getConstants(): Promise<NetworkConstants> {
@@ -132,6 +135,7 @@ export class NetworkService {
       },
       [, totalWaitingStakeBase64],
       priceValue,
+      tokenMarketCap,
     ] = await Promise.all([
       this.gatewayService.get(
         `address/${this.apiConfigService.getAuctionContractAddress()}`,
@@ -143,6 +147,7 @@ export class NetworkService {
         'getTotalStakeByType',
       ),
       this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price),
+      this.esdtService.getTokenMarketCapRaw(),
     ]);
 
 
@@ -172,6 +177,7 @@ export class NetworkService {
       apr: aprInfo.apr ? aprInfo.apr.toRounded(6) : 0,
       topUpApr: aprInfo.topUpApr ? aprInfo.topUpApr.toRounded(6) : 0,
       baseApr: aprInfo.baseApr ? aprInfo.baseApr.toRounded(6) : 0,
+      tokenMarketCap: tokenMarketCap ? Math.round(tokenMarketCap) : undefined,
     });
 
     if (this.apiConfigService.isStakingV4Enabled()) {
