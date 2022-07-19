@@ -1,3 +1,4 @@
+import { TypeormUtils } from 'src/utils/typeorm.utils';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('token_infos')
@@ -38,20 +39,10 @@ export class TokenInfoDb {
   @Column({ nullable: true })
   hash: string = '';
 
-  @Column('text', {
-    nullable: true, transformer: {
-      to: (value: string[]): string => JSON.stringify(value),
-      from: (value: string): string[] => JSON.parse(value),
-    },
-  })
+  @Column('text', { nullable: true, transformer: TypeormUtils.textToStringArrayTransformer })
   uris: string[] = [];
 
-  @Column('text', {
-    nullable: true, transformer: {
-      to: (value: string[]): string => JSON.stringify(value),
-      from: (value: string): string[] => JSON.parse(value),
-    },
-  })
+  @Column('text', { nullable: true, transformer: TypeormUtils.textToStringArrayTransformer })
   tags: string[] = [];
 
   @Column({ nullable: true })

@@ -1,3 +1,4 @@
+import { TypeormUtils } from "src/utils/typeorm.utils";
 import { Column, Entity, PrimaryColumn } from "typeorm";
 
 @Entity('blocks')
@@ -14,31 +15,16 @@ export class BlockDb {
   @Column({ nullable: true })
   epoch: number = 0;
 
-  @Column('text', {
-    nullable: true, name: 'mini_blocks_hashes', transformer: {
-      to: (value: string[]): string => JSON.stringify(value),
-      from: (value: string): string[] => JSON.parse(value),
-    },
-  })
+  @Column('text', { nullable: true, name: 'mini_blocks_hashes', transformer: TypeormUtils.textToStringArrayTransformer })
   miniBlocksHashes: string[] = [];
 
-  @Column('text', {
-    nullable: true, name: 'notarized_blocks_hashes', transformer: {
-      to: (value: string[]): string => JSON.stringify(value),
-      from: (value: string): string[] => JSON.parse(value),
-    },
-  })
+  @Column('text', { nullable: true, name: 'notarized_blocks_hashes', transformer: TypeormUtils.textToStringArrayTransformer })
   notarizedBlocksHashes?: string;
 
   @Column({ nullable: true })
   proposer: number = 0;
 
-  @Column('text', {
-    nullable: true, transformer: {
-      to: (value: number[]): string => JSON.stringify(value),
-      from: (value: string): number[] => JSON.parse(value),
-    },
-  })
+  @Column('text', { nullable: true, transformer: TypeormUtils.textToNumberArrayTransformer })
   validators: number[] = [];
 
   @Column({ nullable: true, name: 'pub_key_bitmap' })

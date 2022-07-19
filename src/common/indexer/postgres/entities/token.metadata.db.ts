@@ -1,3 +1,4 @@
+import { TypeormUtils } from 'src/utils/typeorm.utils';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('token_meta_data')
@@ -14,12 +15,7 @@ export class TokenMetaDataDb {
   @Column({ nullable: true })
   hash: string = '';
 
-  @Column('text', {
-    nullable: true, transformer: {
-      to: (value: string[]): string => JSON.stringify(value),
-      from: (value: string): string[] => JSON.parse(value),
-    },
-  })
+  @Column('text', { nullable: true, transformer: TypeormUtils.textToStringArrayTransformer })
   uris?: string[] = [];
 
   @Column('text', { nullable: true, array: true })

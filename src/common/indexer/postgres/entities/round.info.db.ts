@@ -1,3 +1,4 @@
+import { TypeormUtils } from 'src/utils/typeorm.utils';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('round_infos')
@@ -5,12 +6,7 @@ export class RoundInfoDb {
   @PrimaryColumn()
   index: string = '';
 
-  @Column('text', {
-    nullable: true, name: 'signers_indexes', transformer: {
-      to: (value: number[]): string => JSON.stringify(value),
-      from: (value: string): number[] => JSON.parse(value),
-    },
-  })
+  @Column('text', { nullable: true, name: 'signers_indexes', transformer: TypeormUtils.textToNumberArrayTransformer })
   signersIndexes: number[] = [];
 
   @Column({ nullable: true, name: 'block_was_proposed' })

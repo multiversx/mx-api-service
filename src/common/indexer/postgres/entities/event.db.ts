@@ -1,3 +1,4 @@
+import { TypeormUtils } from "src/utils/typeorm.utils";
 import { Column, Entity, PrimaryColumn } from "typeorm";
 
 @Entity('events')
@@ -8,12 +9,7 @@ export class EventDb {
   @Column({ nullable: true })
   identifier: string = '';
 
-  @Column('text', {
-    nullable: true, transformer: {
-      to: (value: string[]): string => JSON.stringify(value),
-      from: (value: string): string[] => JSON.parse(value),
-    },
-  })
+  @Column('text', { nullable: true, transformer: TypeormUtils.textToStringArrayTransformer })
   topics: string[] = [];
 
   @Column({ nullable: true })
