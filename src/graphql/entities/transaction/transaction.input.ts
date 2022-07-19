@@ -1,8 +1,6 @@
 import { QueryConditionOptions } from "@elrondnetwork/erdnest";
 import { Field, Float, InputType } from "@nestjs/graphql";
 
-import { SortOrder } from "src/common/entities/sort.order";
-
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionStatus } from "src/endpoints/transactions/entities/transaction.status";
 
@@ -64,25 +62,4 @@ export class GetTransactionsCountInput {
       condition: input.condition,
     });
   }
-}
-
-@InputType({ description: "Input to retrieve the given transactions for." })
-export class GetTransactionsInput extends GetTransactionsCountInput {
-  @Field(() => Float, { name: "from", description: "Number of transactions to skip for the given result set.", nullable: true, defaultValue: 0 })
-  from: number = 0;
-
-  @Field(() => Float, { name: "size", description: "Number of transactions to retrieve for the given result set.", nullable: true, defaultValue: 25 })
-  size: number = 25;
-
-  @Field(() => SortOrder, { name: "condition", description: "Sort order (ascending / descending) for the given result set.", nullable: true })
-  order: SortOrder | undefined = undefined;
-
-  @Field(() => Boolean, { name: "withScResults", description: "If to return smart contract results for the given result set.", nullable: true })
-  withSmartContractResults: boolean | undefined = undefined;
-
-  @Field(() => Boolean, { name: "withOperations", description: "If to return operations for the given result set.", nullable: true })
-  withOperations: boolean | undefined = undefined;
-
-  @Field(() => Boolean, { name: "withLogs", description: "If to return logs for the given result set.", nullable: true })
-  withLogs: boolean | undefined = undefined;
 }

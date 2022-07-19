@@ -90,11 +90,9 @@ export class Transaction {
   @ApiProperty({ type: ScamInfo, nullable: true })
   scamInfo: ScamInfo | undefined = undefined;
 
-  @Field(() => TransactionType, { description: "Transaction type for the given transaction.", nullable: true })
   @ApiProperty({ enum: TransactionType, nullable: true })
   type: TransactionType | undefined = undefined;
 
-  @Field(() => String, { description: "Original hash for the given transaction.", nullable: true })
   @ApiProperty({ type: String, nullable: true })
   originalTxHash: string | undefined = undefined;
 

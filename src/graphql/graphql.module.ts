@@ -6,6 +6,7 @@ import { join } from "path";
 
 import { AccountDetailedModule } from "src/graphql/entities/account.detailed/account.detailed.module";
 import { AccountModule } from "src/graphql/entities/account/account.module";
+import { SmartContractResultModule } from "src/graphql/entities/smart.contract.result/smart.contract.result.module";
 import { TransactionDetailedModule } from "src/graphql/entities/transaction.detailed/transaction.detailed.module";
 import { TransactionModule } from "src/graphql/entities/transaction/transaction.module";
 
@@ -18,6 +19,7 @@ import { TransactionModule } from "src/graphql/entities/transaction/transaction.
     }),
     AccountDetailedModule,
     AccountModule,
+    SmartContractResultModule,
     TransactionDetailedModule,
     TransactionModule,
   ],

@@ -263,7 +263,7 @@ type Query {
   transactions(
     """Input to retrieve the given transactions for."""
     input: GetTransactionsInput!
-  ): [Transaction!]!
+  ): [TransactionDetailed!]!
 
   """Retrieve all transactions count for the given input."""
   transactionsCount(
@@ -311,7 +311,7 @@ type SmartContractResult {
   gasPrice: Float!
 
   """Hash for the given smart contract result."""
-  hash: String!
+  hash: String
 
   """Transaction logs for the given smart contract result."""
   logs: TransactionLog
@@ -371,78 +371,6 @@ enum TokenType {
   SemiFungibleESDT
 }
 
-"""Transaction object type."""
-type Transaction {
-  """Transaction action for the given transaction."""
-  action: TransactionAction
-
-  """Data for the given transaction."""
-  data: String
-
-  """Fee for the given transaction."""
-  fee: String
-
-  """Function for the given transaction."""
-  function: String
-
-  """Gas limit for the given transaction."""
-  gasLimit: Float
-
-  """Gas price for the given transaction."""
-  gasPrice: Float
-
-  """Gas used for the given transaction."""
-  gasUsed: Float
-
-  """Mini block hash for the given transaction."""
-  miniBlockHash: String
-
-  """Nonce for the given transaction."""
-  nonce: Float
-
-  """Original hash for the given transaction."""
-  originalTxHash: String
-
-  """Pending results for the given transaction."""
-  pendingResults: Boolean
-
-  """Receiver address for the given transaction."""
-  receiver: String!
-
-  """Receiver shard for the given transaction."""
-  receiverShard: Float!
-
-  """Round for the given transaction."""
-  round: Float
-
-  """Scam information for the given transaction."""
-  scamInfo: ScamInformation
-
-  """Sender address for the given transaction."""
-  sender: String!
-
-  """Sender shard identifier for the given transaction."""
-  senderShard: Float!
-
-  """Signature for the given transaction."""
-  signature: String
-
-  """Status for the given transaction."""
-  status: String!
-
-  """Timestamp for the given transaction."""
-  timestamp: Float!
-
-  """Hash for the given transaction."""
-  txHash: String!
-
-  """Transaction type for the given transaction."""
-  type: TransactionType
-
-  """Value for the given transaction."""
-  value: String!
-}
-
 """Transaction action object type."""
 type TransactionAction {
   """Description for the given transaction action."""
@@ -490,11 +418,8 @@ type TransactionDetailed {
   """Nonce for the given transaction."""
   nonce: Float
 
-  """Transaction operation for the given detailed transaction."""
-  operations: [TransactionOperation!]!
-
-  """Original hash for the given transaction."""
-  originalTxHash: String
+  """Transaction operations for the given detailed transaction."""
+  operations: [TransactionOperation!]
 
   """Pending results for the given transaction."""
   pendingResults: Boolean
@@ -511,8 +436,8 @@ type TransactionDetailed {
   """Receiver shard for the given transaction."""
   receiverShard: Float!
 
-  """Smart contract result for the given detailed transaction."""
-  results: [SmartContractResult!]!
+  """Smart contract results for the given detailed transaction."""
+  results: [SmartContractResult!]
 
   """Round for the given transaction."""
   round: Float
@@ -537,9 +462,6 @@ type TransactionDetailed {
 
   """Hash for the given transaction."""
   txHash: String!
-
-  """Transaction type for the given transaction."""
-  type: TransactionType
 
   """Value for the given transaction."""
   value: String!
@@ -702,13 +624,4 @@ enum TransactionStatus {
 
   """Success status."""
   success
-}
-
-"""Transaction type object type."""
-enum TransactionType {
-  """Smart contract type."""
-  SmartContractResult
-
-  """Transaction type."""
-  Transaction
 }

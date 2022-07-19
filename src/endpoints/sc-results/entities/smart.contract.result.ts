@@ -10,7 +10,7 @@ export class SmartContractResult {
     Object.assign(this, init);
   }
 
-  @Field(() => String, { description: 'Hash for the given smart contract result.' })
+  @Field(() => String, { description: 'Hash for the given smart contract result.', nullable: true })
   @ApiProperty({ type: String })
   hash: string = '';
 

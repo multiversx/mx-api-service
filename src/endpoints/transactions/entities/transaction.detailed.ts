@@ -13,7 +13,7 @@ export class TransactionDetailed extends Transaction {
     Object.assign(this, init);
   }
 
-  @Field(() => [SmartContractResult], { description: 'Smart contract result for the given detailed transaction.' })
+  @Field(() => [SmartContractResult], { description: 'Smart contract results for the given detailed transaction.', nullable: true })
   @ApiProperty({ type: SmartContractResult, isArray: true })
   results: SmartContractResult[] = [];
 
@@ -29,7 +29,7 @@ export class TransactionDetailed extends Transaction {
   @ApiProperty({ type: TransactionLog, nullable: true })
   logs: TransactionLog | undefined = undefined;
 
-  @Field(() => [TransactionOperation], { description: 'Transaction operation for the given detailed transaction.' })
+  @Field(() => [TransactionOperation], { description: 'Transaction operations for the given detailed transaction.', nullable: true })
   @ApiProperty({ type: TransactionOperation, isArray: true })
   operations: TransactionOperation[] = [];
 }
