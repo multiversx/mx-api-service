@@ -390,7 +390,7 @@ export class TransactionService {
       }
     }
 
-    return Promise.all(results);
+    return results;
   }
 
   public async getOperations(transactions: TransactionDetailed[]): Promise<Array<TransactionOperation[] | null>> {
@@ -432,7 +432,7 @@ export class TransactionService {
       }
     }
 
-    return Promise.all(operations);
+    return operations;
   }
 
   public async getLogs(hashes: any): Promise<Array<TransactionLog | null>> {
@@ -449,6 +449,6 @@ export class TransactionService {
       }
     }
 
-    return Promise.all(logs);
+    return logs;
   }
 }
