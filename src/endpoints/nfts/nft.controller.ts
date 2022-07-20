@@ -9,7 +9,7 @@ import { NftType } from "./entities/nft.type";
 import { NftService } from "./nft.service";
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { NftQueryOptions } from './entities/nft.query.options';
-import { ParseAddressPipe, ParseOptionalBoolPipe, ParseArrayPipe } from '@elrondnetwork/erdnest';
+import { ParseAddressPipe, ParseOptionalBoolPipe, ParseArrayPipe, ParseOptionalIntPipe } from '@elrondnetwork/erdnest';
 
 @Controller()
 @ApiTags('nfts')
@@ -51,8 +51,8 @@ export class NftController {
     @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage?: boolean,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
     @Query('isNsfw', new ParseOptionalBoolPipe) isNsfw?: boolean,
-    @Query('before', new ParseIntPipe) before?: number,
-    @Query('after', new ParseIntPipe) after?: number,
+    @Query('before', new ParseOptionalIntPipe) before?: number,
+    @Query('after', new ParseOptionalIntPipe) after?: number,
     @Query('withOwner', new ParseOptionalBoolPipe) withOwner?: boolean,
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean,
   ): Promise<Nft[]> {
@@ -93,8 +93,8 @@ export class NftController {
     @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage?: boolean,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
     @Query('isNsfw', new ParseOptionalBoolPipe) isNsfw?: boolean,
-    @Query('before', new ParseIntPipe) before?: number,
-    @Query('after', new ParseIntPipe) after?: number,
+    @Query('before', new ParseOptionalIntPipe) before?: number,
+    @Query('after', new ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
     return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, before, after }));
   }
@@ -112,8 +112,8 @@ export class NftController {
     @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage?: boolean,
     @Query('isNsfw', new ParseOptionalBoolPipe) isNsfw?: boolean,
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
-    @Query('before', new ParseIntPipe) before?: number,
-    @Query('after', new ParseIntPipe) after?: number,
+    @Query('before', new ParseOptionalIntPipe) before?: number,
+    @Query('after', new ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
     return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, before, after }));
   }
