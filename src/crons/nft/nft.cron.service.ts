@@ -33,56 +33,15 @@ export class NftCronService {
 
     await Locker.lock('Process NFTs minted in the last 24 hours', async () => {
       await this.processNftsFromLast24Hours(async nft => {
-        const needsProcessing = await this.nftWorkerService.needsProcessing(nft, new ProcessNftSettings());
+        const needsProcessing = await this.nftWorkerService.needsProcessing(nft, new ProcessNftSettings({ uploadAsset: true }));
         if (needsProcessing) {
-          await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
+          await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ uploadAsset: true }));
         }
 
         return needsProcessing;
       });
     }, true);
   }
-
-  @Cron(CronExpression.EVERY_10_MINUTES)
-  async triggerProcessWhitelistedNfts() {
-    if (!this.apiConfigService.getIsProcessNftsFlagActive()) {
-      return;
-    }
-
-    let lastProcessedTimestamp = await this.cachingService.getCache<number>(CacheInfo.LastProcessedTimestamp.key) ?? Math.floor(Date.now() / 1000);
-    this.logger.log(`Last processed timestamp until now: ${lastProcessedTimestamp} (${new Date(lastProcessedTimestamp * 1000)})`);
-
-    await Locker.lock('Process NFTs whitelisted', async () => {
-      const nfts = await this.nftService.getNfts(new QueryPagination({ from: 0, size: 2500 }), new NftFilter({ isWhitelistedStorage: true, hasUris: true, before: lastProcessedTimestamp }));
-      if (nfts.length === 0) {
-        return;
-      }
-
-      const needProccessNfts: Nft[] = [];
-      for (const nft of nfts) {
-        if (!nft.media || nft.media.length === 0) {
-          continue;
-        }
-
-        for (const media of nft.media) {
-          const isAssetUploaded = await this.nftAssetService.isAssetUploaded(media);
-          if (!isAssetUploaded) {
-            needProccessNfts.push(nft);
-            break;
-          }
-        }
-      }
-
-      this.logger.log(`${needProccessNfts.length} that does not have asset uploaded in this batch`);
-
-      await Promise.all(needProccessNfts.map((nft: Nft) => this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ uploadAsset: true }))));
-
-      lastProcessedTimestamp = nfts[nfts.length - 1].timestamp ?? Math.floor(Date.now() / 1000);
-    }, true);
-
-    await this.cachingService.setCache(CacheInfo.LastProcessedTimestamp.key, lastProcessedTimestamp, CacheInfo.LastProcessedTimestamp.ttl);
-  }
-
 
   private async processNftsFromLast24Hours(handler: (nft: Nft) => Promise<boolean>): Promise<void> {
     let before = Math.floor(Date.now() / 1000) - (Constants.oneMinute() * 10);
