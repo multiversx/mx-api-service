@@ -99,15 +99,6 @@ export class ApiConfigService {
     return this.configService.get<string>('contracts.metabonding');
   }
 
-  getLockedAssetAddress(): string {
-    const address = this.configService.get<string>('contracts.lockedAssetAddress');
-    if (!address) {
-      throw new Error('No Locked asset contract present');
-    }
-
-    return address;
-  }
-
   getDelegationContractShardId(): number {
     const shardId = this.configService.get<number>(
       'contracts.delegationShardId',

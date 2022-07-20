@@ -1,11 +1,12 @@
-import { Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { LockedAssetService } from './locked-asset.service';
 import { VmQueryModule } from '../../endpoints/vm.query/vm.query.module';
+import { MexModule } from 'src/endpoints/mex/mex.module';
 
-@Global()
 @Module({
   imports: [
     VmQueryModule,
+    MexModule,
   ],
   providers: [
     LockedAssetService,
@@ -14,4 +15,4 @@ import { VmQueryModule } from '../../endpoints/vm.query/vm.query.module';
     LockedAssetService,
   ],
 })
-export class lockedAssetModule { }
+export class LockedAssetModule { }

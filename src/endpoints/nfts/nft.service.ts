@@ -483,13 +483,15 @@ export class NftService {
           nft.rank = indexedNft.rank;
           nft.isNsfw = indexedNft.isNsfw;
         }
-
-        nft.unlockSchedule = await this.lockedAssetService.getUnlockSchedule(
-          nft.collection,
-          nft.identifier,
-          nft.attributes,
-        );
       }
+    }
+
+    for (const nft of nfts) {
+      nft.unlockSchedule = await this.lockedAssetService.getUnlockSchedule(
+        nft.collection,
+        nft.identifier,
+        nft.attributes,
+      );
     }
 
     return nfts;

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { LockedAssetAttributes } from '@elrondnetwork/erdjs-dex';
+import { LockedAssetAttributes, UnlockMilestone } from '@elrondnetwork/erdjs-dex';
 import { ApiConfigService } from '../api-config/api.config.service';
 import { VmQueryService } from '../../endpoints/vm.query/vm.query.service';
 import { CacheInfo } from '../../utils/cache.info';
@@ -9,6 +9,7 @@ import { UnlockMileStoneModel } from '../entities/unlock-schedule';
 import { TokenUtils } from '../../utils/token.utils';
 import { GatewayComponentRequest } from '../gateway/entities/gateway.component.request';
 import { GatewayService } from '../gateway/gateway.service';
+import { MexSettingsService } from 'src/endpoints/mex/mex.settings.service';
 
 @Injectable()
 export class LockedAssetService {
@@ -17,47 +18,48 @@ export class LockedAssetService {
     private readonly vmQueryService: VmQueryService,
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
-  ) {}
+    private readonly mexSettingsService: MexSettingsService,
+  ) { }
 
-  async getUnlockSchedule(
-    collection: string,
-    identifier: string,
-    attributes: string,
-  ): Promise<UnlockMileStoneModel[]> {
-    if (!await this.hasUnlockSchedule(collection)) {
-      return [];
+  async getUnlockSchedule(collection: string, identifier: string, attributes: string): Promise<UnlockMileStoneModel[] | undefined> {
+    const hasUnlockSchedule = await this.hasUnlockSchedule(collection);
+    if (!hasUnlockSchedule) {
+      return undefined;
     }
-    const extendedAttributesActivationNonce = await this.getExtendedAttributesActivationNonceCached();
-    const withActivationNonce =
-      TokenUtils.tokenNonce(identifier) >=
-      extendedAttributesActivationNonce;
-    const lockedAssetAttributes = LockedAssetAttributes.fromAttributes(
-      withActivationNonce,
-      attributes,
-    );
-    return await this.getUnlockMilestones(
-      lockedAssetAttributes.unlockSchedule,
-      withActivationNonce,
-    );
+
+    const extendedAttributesActivationNonce = await this.getExtendedAttributesActivationNonce();
+    const withActivationNonce = TokenUtils.tokenNonce(identifier) >= extendedAttributesActivationNonce;
+    const lockedAssetAttributes = LockedAssetAttributes.fromAttributes(withActivationNonce, attributes);
+
+    if (!lockedAssetAttributes.unlockSchedule) {
+      return undefined;
+    }
+
+    return await this.getUnlockMilestones(lockedAssetAttributes.unlockSchedule, withActivationNonce);
   }
 
   private async hasUnlockSchedule(collection: string): Promise<boolean> {
-    const lockedMEXTokenID = await this.getLockedTokenIDCached();
-    return collection === lockedMEXTokenID;
+    const lockedTokenId = await this.getLockedTokenId();
+    return collection === lockedTokenId;
   }
 
-  private async getExtendedAttributesActivationNonceCached(): Promise<number> {
+  private async getExtendedAttributesActivationNonce(): Promise<number> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.ExtendedAttributesActivationNonce.key,
-      async () => await this.getExtendedAttributesActivationNonce(),
+      async () => await this.getExtendedAttributesActivationNonceRaw(),
       Constants.oneWeek(),
       CacheInfo.ExtendedAttributesActivationNonce.ttl
     );
   }
 
-  private async getExtendedAttributesActivationNonce(): Promise<number> {
+  private async getExtendedAttributesActivationNonceRaw(): Promise<number> {
+    const settings = await this.mexSettingsService.getSettings();
+    if (!settings) {
+      return 0;
+    }
+
     const [encoded] = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getLockedAssetAddress(),
+      settings.lockedAssetContract,
       'getExtendedAttributesActivationNonce',
       undefined,
       []
@@ -68,21 +70,26 @@ export class LockedAssetService {
     }
 
     const nonce = Buffer.from(encoded, 'base64').toString('hex');
-    return parseInt(nonce,  16);
+    return parseInt(nonce, 16);
   }
 
-  private async getInitEpochCached(): Promise<number> {
+  private async getInitEpoch(): Promise<number> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.InitEpoch.key,
-      async () => await this.getInitEpoch(),
+      async () => await this.getInitEpochRaw(),
       Constants.oneWeek(),
       CacheInfo.InitEpoch.ttl
     );
   }
 
-  private async getInitEpoch(): Promise<number> {
+  private async getInitEpochRaw(): Promise<number> {
+    const settings = await this.mexSettingsService.getSettings();
+    if (!settings) {
+      return 0;
+    }
+
     const [encoded] = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getLockedAssetAddress(),
+      settings.lockedAssetContract,
       'getInitEpoch',
       undefined,
       []
@@ -96,50 +103,39 @@ export class LockedAssetService {
     return parseInt(epoch, 16);
   }
 
-  private async getLockedTokenIDCached(): Promise<string> {
+  private async getLockedTokenId(): Promise<string> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.LockedTokenID.key,
-      async () => await this.getLockedTokenID(),
+      async () => await this.getLockedTokenIdRaw(),
       Constants.oneDay(),
       CacheInfo.LockedTokenID.ttl
     );
   }
 
-  private async getLockedTokenID(): Promise<string> {
-    const [encoded] = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getLockedAssetAddress(),
-      'getLockedAssetTokenId',
-      undefined,
-      []
-    );
-
-    if (!encoded) {
+  private async getLockedTokenIdRaw(): Promise<string> {
+    const settings = await this.mexSettingsService.getSettings();
+    if (!settings) {
       return '';
     }
 
-    return Buffer.from(encoded, 'base64').toString();
+    return settings.lockedAssetIdentifier;
   }
 
-  private async getUnlockMilestones(
-    unlockSchedule: any,
-    withActivationNonce: boolean,
-  ): Promise<UnlockMileStoneModel[]> {
+  private async getUnlockMilestones(unlockSchedule: UnlockMilestone[], withActivationNonce: boolean): Promise<UnlockMileStoneModel[]> {
     const unlockMilestones: UnlockMileStoneModel[] = [];
     for (const unlockMilestone of unlockSchedule) {
-      const unlockEpoch = unlockMilestone.epoch.toNumber();
-      const unlockPercent: BigNumber = withActivationNonce
-        ? unlockMilestone.percent.div(
-          this.apiConfigService.getPrecisionExIncrease(),
-        )
-        : unlockMilestone.percent;
+      const milestoneJson = unlockMilestone.toJSON();
+
+      const unlockEpoch = milestoneJson.epoch ?? 0;
+      const unlockPercent: BigNumber = withActivationNonce ? new BigNumber(milestoneJson.percent ?? 0).div(this.apiConfigService.getPrecisionExIncrease()) : new BigNumber(milestoneJson.percent ?? 0);
       const remainingEpochs = await this.getRemainingEpochs(unlockEpoch);
 
-      unlockMilestones.push(
-        new UnlockMileStoneModel({
-          percent: unlockPercent.toNumber(),
-          epochs: remainingEpochs > 0 ? remainingEpochs : 0,
-        }),
-      );
+      const milestone = new UnlockMileStoneModel({
+        percent: unlockPercent.toNumber(),
+        epoch: remainingEpochs > 0 ? remainingEpochs : 0,
+      });
+
+      unlockMilestones.push(milestone);
     }
 
     return unlockMilestones;
@@ -158,7 +154,7 @@ export class LockedAssetService {
   }
 
   private async getMonthStartEpoch(unlockEpoch: number): Promise<number> {
-    const initEpoch = await this.getInitEpochCached();
+    const initEpoch = await this.getInitEpoch();
     return unlockEpoch - ((unlockEpoch - initEpoch) % 30);
   }
 
