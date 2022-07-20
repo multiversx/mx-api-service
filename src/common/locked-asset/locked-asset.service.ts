@@ -21,7 +21,9 @@ export class LockedAssetService {
     private readonly mexSettingsService: MexSettingsService,
   ) { }
 
-  async getUnlockSchedule(collection: string, identifier: string, attributes: string): Promise<UnlockMileStoneModel[] | undefined> {
+  async getUnlockSchedule(identifier: string, attributes: string): Promise<UnlockMileStoneModel[] | undefined> {
+    const collection = TokenUtils.getCollectionIdentifier(identifier);
+
     const hasUnlockSchedule = await this.hasUnlockSchedule(collection);
     if (!hasUnlockSchedule) {
       return undefined;
@@ -124,12 +126,14 @@ export class LockedAssetService {
   private async getUnlockMilestones(unlockSchedule: UnlockMilestone[], withActivationNonce: boolean): Promise<UnlockMileStoneModel[]> {
     const unlockMilestones: UnlockMileStoneModel[] = [];
     for (const unlockMilestone of unlockSchedule) {
-      const milestoneJson = unlockMilestone.toJSON();
+      // @ts-ignore
+      const epoch: BigNumber = unlockMilestone.epoch;
+      // @ts-ignore
+      const percent: BigNumber = unlockMilestone.percent;
 
-      const unlockEpoch = milestoneJson.epoch ?? 0;
       const PRECISION_EX_INCREASE = 1000;
-      const unlockPercent: BigNumber = withActivationNonce ? new BigNumber(milestoneJson.percent ?? 0).div(PRECISION_EX_INCREASE) : new BigNumber(milestoneJson.percent ?? 0);
-      const remainingEpochs = await this.getRemainingEpochs(unlockEpoch);
+      const unlockPercent = withActivationNonce ? percent.div(PRECISION_EX_INCREASE) : percent;
+      const remainingEpochs = await this.getRemainingEpochs(epoch.toNumber());
 
       const milestone = new UnlockMileStoneModel({
         percent: unlockPercent.toNumber(),

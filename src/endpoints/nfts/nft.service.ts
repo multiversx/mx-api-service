@@ -487,11 +487,7 @@ export class NftService {
     }
 
     for (const nft of nfts) {
-      nft.unlockSchedule = await this.lockedAssetService.getUnlockSchedule(
-        nft.collection,
-        nft.identifier,
-        nft.attributes,
-      );
+      nft.unlockSchedule = await this.lockedAssetService.getUnlockSchedule(nft.identifier, nft.attributes);
     }
 
     return nfts;
