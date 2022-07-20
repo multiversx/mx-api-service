@@ -5,7 +5,7 @@
 """Account object type."""
 type Account {
   """Bech32 address for the given account."""
-  address: String!
+  address: ID!
 
   """Account assets list for the given account."""
   assets: AccountAssets
@@ -47,7 +47,7 @@ type AccountAssets {
 """Detailed Account object type that extends Account."""
 type AccountDetailed {
   """Bech32 address for the given account."""
-  address: String!
+  address: ID!
 
   """Account assets list for the given account."""
   assets: AccountAssets
@@ -302,7 +302,7 @@ type SmartContractResult {
   gasPrice: Float!
 
   """Hash for the given smart contract result."""
-  hash: String
+  hash: ID
 
   """Transaction logs for the given smart contract result."""
   logs: TransactionLog
@@ -421,11 +421,8 @@ type TransactionDetailed {
   """Transaction receipt for the given detailed transaction."""
   receipt: TransactionReceipt
 
-  """Receiver address for the given transaction."""
-  receiver: String!
-
-  """Receiver shard for the given transaction."""
-  receiverShard: Float!
+  """Receiver account for the given detailed transaction."""
+  receiver: Account!
 
   """Smart contract results for the given detailed transaction."""
   results: [SmartContractResult!]
@@ -436,11 +433,8 @@ type TransactionDetailed {
   """Scam information for the given transaction."""
   scamInfo: ScamInformation
 
-  """Sender address for the given transaction."""
-  sender: String!
-
-  """Sender shard identifier for the given transaction."""
-  senderShard: Float!
+  """Sender account for the given detailed transaction."""
+  sender: Account!
 
   """Signature for the given transaction."""
   signature: String
@@ -452,7 +446,7 @@ type TransactionDetailed {
   timestamp: Float!
 
   """Hash for the given transaction."""
-  txHash: String!
+  txHash: ID!
 
   """Value for the given transaction."""
   value: String!
@@ -467,7 +461,7 @@ type TransactionLog {
   events: [TransactionLogEvent!]!
 
   """Identifier for the given transaction log."""
-  id: String!
+  id: ID!
 }
 
 """Transaction log event object type."""
@@ -479,7 +473,7 @@ type TransactionLogEvent {
   data: String
 
   """Identifier for the given transaction log event."""
-  identifier: String!
+  identifier: ID!
 
   """Topics list for the given transaction log event."""
   topics: [String!]!
@@ -503,7 +497,7 @@ type TransactionOperation {
   esdtType: TokenType
 
   """Identifier for the transaction operation."""
-  id: String!
+  id: ID!
 
   """Identifier for the transaction operation."""
   identifier: String!

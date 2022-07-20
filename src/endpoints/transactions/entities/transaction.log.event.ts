@@ -1,4 +1,4 @@
-import { Field, ObjectType } from "@nestjs/graphql";
+import { Field, ID, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 
 @ObjectType("TransactionLogEvent", { description: "Transaction log event object type." })
@@ -11,7 +11,7 @@ export class TransactionLogEvent {
   @ApiProperty()
   address: string = '';
 
-  @Field(() => String, { description: 'Identifier for the given transaction log event.' })
+  @Field(() => ID, { description: 'Identifier for the given transaction log event.' })
   @ApiProperty()
   identifier: string = '';
 

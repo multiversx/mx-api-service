@@ -1,6 +1,7 @@
-import { Field, Float, ObjectType } from "@nestjs/graphql";
+import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
+import { Account } from "src/endpoints/accounts/entities/account";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import { TransactionAction } from "../transaction-action/entities/transaction.action";
 
@@ -10,7 +11,7 @@ export class Transaction {
     Object.assign(this, init);
   }
 
-  @Field(() => String, { description: "Hash for the given transaction." })
+  @Field(() => ID, { description: "Hash for the given transaction." })
   @ApiProperty({ type: String })
   txHash: string = '';
 
@@ -34,11 +35,10 @@ export class Transaction {
   @ApiProperty({ type: Number, nullable: true })
   nonce: number | undefined = undefined;
 
-  @Field(() => String, { description: "Receiver address for the given transaction." })
+  @Field(() => Account, { description: "Receiver account for the given transaction." })
   @ApiProperty({ type: String })
   receiver: string = '';
 
-  @Field(() => Float, { description: "Receiver shard for the given transaction." })
   @ApiProperty({ type: Number })
   receiverShard: number = 0;
 
@@ -46,11 +46,10 @@ export class Transaction {
   @ApiProperty({ type: Number, nullable: true })
   round: number | undefined = undefined;
 
-  @Field(() => String, { description: "Sender address for the given transaction." })
+  @Field(() => Account, { description: "Sender account for the given transaction." })
   @ApiProperty({ type: String })
   sender: string = '';
 
-  @Field(() => Float, { description: "Sender shard identifier for the given transaction." })
   @ApiProperty({ type: Number })
   senderShard: number = 0;
 

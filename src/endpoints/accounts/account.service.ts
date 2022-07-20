@@ -18,9 +18,10 @@ import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
-import { AddressUtils, ApiUtils, BinaryUtils, Constants, CachingService, ElasticService, ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType, AbstractQuery, QueryOperator } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiUtils, BinaryUtils, Constants, CachingService, ElasticService, ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType, AbstractQuery, QueryOperator, TermsQuery } from '@elrondnetwork/erdnest';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { AccountOptionalFieldOption } from 'src/endpoints/accounts/entities/account.optional.field.options';
+import { AccountAssets } from 'src/common/assets/entities/account.assets';
 
 @Injectable()
 export class AccountService {
@@ -184,6 +185,24 @@ export class AccountService {
       async () => await this.getAccountsRaw(queryPagination),
       Constants.oneMinute(),
     );
+  }
+
+  public async getAccountsForAddresses(addresses: Array<string>): Promise<Array<Account>> {
+    const assets: { [key: string]: AccountAssets } = await this.assetsService.getAllAccountAssets();
+
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: addresses.length + 1 })
+      .withTerms(new TermsQuery('address', addresses));
+
+    const accountsRaw: Array<any> = await this.elasticService.getList('accounts', 'address', elasticQuery);
+    const accounts: Array<Account> = accountsRaw.map(account => ApiUtils.mergeObjects(new Account(), account));
+
+    for (const account of accounts) {
+      account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address));
+      account.assets = assets[account.address];
+    }
+
+    return accounts;
   }
 
   async getAccountsRaw(queryPagination: QueryPagination): Promise<Account[]> {

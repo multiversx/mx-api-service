@@ -1,4 +1,4 @@
-import { Field, Float, ObjectType } from "@nestjs/graphql";
+import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { TokenType } from "src/endpoints/tokens/entities/token.type";
 import { TransactionOperationAction } from "./transaction.operation.action";
@@ -10,7 +10,7 @@ export class TransactionOperation {
     Object.assign(this, init);
   }
 
-  @Field(() => String, { description: 'Identifier for the transaction operation.' })
+  @Field(() => ID, { description: 'Identifier for the transaction operation.' })
   @ApiProperty({ type: String })
   id: string = '';
 

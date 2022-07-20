@@ -1,6 +1,8 @@
 import { Parent, ResolveField, Resolver } from "@nestjs/graphql";
-import { SmartContractResult } from "src/endpoints/sc-results/entities/smart.contract.result";
 
+import { Account } from "src/endpoints/accounts/entities/account";
+import { Fields } from "src/graphql/decorators/fields";
+import { SmartContractResult } from "src/endpoints/sc-results/entities/smart.contract.result";
 import { TransactionDetailed } from "src/endpoints/transactions/entities/transaction.detailed";
 import { TransactionDetailedQuery } from "src/graphql/entities/transaction.detailed/transaction.detailed.query";
 import { TransactionDetailedLoader } from "src/graphql/entities/transaction.detailed/transaction.detailed.loader";
@@ -17,6 +19,8 @@ export class TransactionDetailedResolver extends TransactionDetailedQuery {
     super(transactionService);
   }
 
+  // from TransactionDetailed
+
   @ResolveField("results", () => [SmartContractResult], { name: "results", description: "Smart contract results for the given detailed transaction.", nullable: true })
   public async getTransactionSmartContractResults(@Parent() transaction: TransactionDetailed) {
     return await this.transactionDetailedLoader.getSmartContractResults(transaction.txHash);
@@ -30,5 +34,35 @@ export class TransactionDetailedResolver extends TransactionDetailedQuery {
   @ResolveField("logs", () => TransactionLog, { name: "logs", description: "Transaction log for the given detailed transaction.", nullable: true })
   public async getTransactionLog(@Parent() transaction: TransactionDetailed) {
     return await this.transactionDetailedLoader.getLog(transaction.txHash);
+  }
+
+  // from Transaction
+
+  @ResolveField("receiver", () => Account, { name: "receiver", description: "Receiver account for the given detailed transaction." })
+  public async getTransactionReceiver(@Parent() transaction: TransactionDetailed, @Fields() fields: string[]) {
+    if (!fields.filter((field) => field !== "address" && field !== "shard").length) {
+      // ask only for address and/or shard
+
+      return new Account({
+        address: transaction.receiver,
+        shard: transaction.receiverShard,
+      });
+    }
+
+    return await this.transactionDetailedLoader.getAccount(transaction.receiver);
+  }
+
+  @ResolveField("sender", () => Account, { name: "sender", description: "Sender account for the given detailed transaction." })
+  public async getTransactionSender(@Parent() transaction: TransactionDetailed, @Fields() fields: string[]) {
+    if (!fields.filter((field) => field !== "address" && field !== "shard").length) {
+      // ask only for address and/or shard
+
+      return new Account({
+        address: transaction.sender,
+        shard: transaction.senderShard,
+      });
+    }
+
+    return await this.transactionDetailedLoader.getAccount(transaction.sender);
   }
 }

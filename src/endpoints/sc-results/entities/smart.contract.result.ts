@@ -1,5 +1,5 @@
 import { SwaggerUtils } from "@elrondnetwork/erdnest";
-import { Field, Float, ObjectType } from "@nestjs/graphql";
+import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { TransactionAction } from "src/endpoints/transactions/transaction-action/entities/transaction.action";
 import { TransactionLog } from "../../transactions/entities/transaction.log";
@@ -10,7 +10,7 @@ export class SmartContractResult {
     Object.assign(this, init);
   }
 
-  @Field(() => String, { description: 'Hash for the given smart contract result.', nullable: true })
+  @Field(() => ID, { description: 'Hash for the given smart contract result.', nullable: true })
   @ApiProperty({ type: String })
   hash: string = '';
 

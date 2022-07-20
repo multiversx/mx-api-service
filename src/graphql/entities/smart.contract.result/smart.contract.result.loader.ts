@@ -9,13 +9,14 @@ import { TransactionService } from "src/endpoints/transactions/transaction.servi
   scope: Scope.REQUEST,
 })
 export class SmartContractResultLoader {
-  private readonly logLoader: any = new DataLoader(async hashes => {
-    return await this.transactionService.getLogs(hashes);
-  });
-
   constructor(private readonly transactionService: TransactionService) {}
 
-  public async getLog(hashes: string): Promise<Array<TransactionLog | null>> {
-    return await this.logLoader.load(hashes);
+  public async getLog(hash: string): Promise<Array<TransactionLog | null>> {
+    return await this.logDataLoader.load(hash);
   }
+
+  private readonly logDataLoader: any = new DataLoader(async hashes => {
+    // @ts-ignore
+    return await this.transactionService.getLogs(hashes);
+  });
 }

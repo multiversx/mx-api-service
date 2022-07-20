@@ -361,11 +361,11 @@ export class TransactionService {
     async (txHashes: string[]) => await this.getSmartContractResultsRaw(txHashes)
   );
 
-  public async getSmartContractResults(transactionHashes: string[]): Promise<Array<SmartContractResult[] | null>> {
-    return await this.smartContractResultsExecutor.execute(transactionHashes);
+  public async getSmartContractResults(hashes: Array<string>): Promise<Array<SmartContractResult[] | null>> {
+    return await this.smartContractResultsExecutor.execute(hashes);
   }
 
-  private async getSmartContractResultsRaw(transactionHashes: any): Promise<Array<SmartContractResult[] | null>> {
+  private async getSmartContractResultsRaw(transactionHashes: Array<string>): Promise<Array<SmartContractResult[] | null>> {
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from: 0, size: 10000 })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
@@ -393,7 +393,7 @@ export class TransactionService {
     return results;
   }
 
-  public async getOperations(transactions: TransactionDetailed[]): Promise<Array<TransactionOperation[] | null>> {
+  public async getOperations(transactions: Array<TransactionDetailed>): Promise<Array<TransactionOperation[] | null>> {
     const smartContractResults = await this.getSmartContractResults(transactions.map((transaction: TransactionDetailed) => transaction.txHash));
 
     const logs = await this.transactionGetService.getTransactionLogsFromElastic([
@@ -412,7 +412,7 @@ export class TransactionService {
         continue;
       }
 
-      const transactionHashes: string[] = [transaction.txHash];
+      const transactionHashes: Array<string> = [transaction.txHash];
       const previousTransactionHashes: Record<string, string> = {};
 
       for (const result of transaction.results) {
@@ -420,9 +420,9 @@ export class TransactionService {
         previousTransactionHashes[result.hash] = result.prevTxHash;
       }
 
-      const transactionLogs: TransactionLog[] = logs.filter((log) => transactionHashes.includes(log.id ?? ''));
+      const transactionLogs: Array<TransactionLog> = logs.filter((log) => transactionHashes.includes(log.id ?? ''));
 
-      let operationsRaw: TransactionOperation[] = await this.tokenTransferService.getOperationsForTransaction(transaction, transactionLogs);
+      let operationsRaw: Array<TransactionOperation> = await this.tokenTransferService.getOperationsForTransaction(transaction, transactionLogs);
       operationsRaw = TransactionUtils.trimOperations(transaction.sender, operationsRaw, previousTransactionHashes);
 
       if (operationsRaw.length > 0) {
@@ -435,13 +435,13 @@ export class TransactionService {
     return operations;
   }
 
-  public async getLogs(hashes: any): Promise<Array<TransactionLog | null>> {
+  public async getLogs(hashes: Array<string>): Promise<Array<TransactionLog | null>> {
     const logsRaw = await this.transactionGetService.getTransactionLogsFromElastic(hashes);
-
     const logs: Array<TransactionLog | null> = [];
 
     for (const hash of hashes) {
       const log: TransactionLog = logsRaw.filter((log: TransactionLog) => hash === log.id)[0];
+
       if (log !== undefined) {
         logs.push(log);
       } else {

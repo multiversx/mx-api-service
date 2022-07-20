@@ -25,7 +25,7 @@ export class GetTransactionsCountInput {
   miniBlockHash: string | undefined = undefined;
 
   @Field(() => [String], { name: "hashes", description: "Filter by a comma-separated list of transaction hashes for the given result set.", nullable: true })
-  hashes: string[] | undefined = undefined;
+  hashes: Array<string> | undefined = undefined;
 
   @Field(() => TransactionStatus, { name: "status", description: "Status of the transaction (success / pending / invalid / fail) for the given result set.", nullable: true })
   status: TransactionStatus | undefined = undefined;

@@ -10,6 +10,8 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
     super(accountService);
   }
 
+  // from AccountDetailed
+
   @ResolveField("txCount", () => Float, { name: "txCount", description: "Transactions count for the given detailed account." })
   public async getTransactionCount(@Parent() account: AccountDetailed) {
     return await this.accountService.getAccountTxCount(account.address);
