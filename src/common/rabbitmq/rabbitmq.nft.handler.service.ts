@@ -103,7 +103,7 @@ export class RabbitMqNftHandlerService {
     try {
       const needsProcessing = await this.nftWorkerService.needsProcessing(nft, new ProcessNftSettings());
       if (needsProcessing) {
-        await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
+        await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ uploadAsset: true }));
       }
 
       return true;
