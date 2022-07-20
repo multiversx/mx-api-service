@@ -27,9 +27,9 @@ export class NftCronService {
 
     await Locker.lock('Process NFTs minted in the last 24 hours', async () => {
       await this.processNftsFromLast24Hours(async nft => {
-        const needsProcessing = await this.nftWorkerService.needsProcessing(nft, new ProcessNftSettings());
+        const needsProcessing = await this.nftWorkerService.needsProcessing(nft, new ProcessNftSettings({ uploadAsset: true }));
         if (needsProcessing) {
-          await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
+          await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ uploadAsset: true }));
         }
 
         return needsProcessing;

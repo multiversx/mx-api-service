@@ -10,6 +10,7 @@ import { NftMediaService } from "./job-services/media/nft.media.service";
 import { NftMetadataService } from "./job-services/metadata/nft.metadata.service";
 import { GenerateThumbnailResult } from "./job-services/thumbnails/entities/generate.thumbnail.result";
 import { NftThumbnailService } from "./job-services/thumbnails/nft.thumbnail.service";
+import { NftAssetService } from "./job-services/assets/nft.asset.service";
 
 @Controller()
 export class NftQueueController {
@@ -21,6 +22,7 @@ export class NftQueueController {
     private readonly nftMediaService: NftMediaService,
     private readonly nftThumbnailService: NftThumbnailService,
     private readonly nftService: NftService,
+    private readonly nftAssetService: NftAssetService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     apiConfigService: ApiConfigService,
   ) {
@@ -85,6 +87,17 @@ export class NftQueueController {
 
       if (settings.forceRefreshMedia || !nft.media) {
         nft.media = await this.nftMediaService.refreshMedia(nft);
+      }
+
+      if (nft.media && settings.uploadAsset) {
+        for (const media of nft.media) {
+          const isAssetUploaded = await this.nftAssetService.isAssetUploaded(media);
+          if (!isAssetUploaded) {
+            await this.nftAssetService.uploadAsset(nft.identifier, media.originalUrl, media.fileType);
+          } else {
+            this.logger.log(`Asset already uploaded for NFT with identifier '${nft.identifier}' and media url '${media.url}'`);
+          }
+        }
       }
 
       if (nft.media && !settings.skipRefreshThumbnail) {

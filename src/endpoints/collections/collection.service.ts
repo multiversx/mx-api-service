@@ -53,6 +53,10 @@ export class CollectionService {
       }
     }
 
+    if (filter.before || filter.after) {
+      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
+    }
+
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       if (filter.canCreate !== undefined) {
         elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTCreate', address, filter.canCreate);
