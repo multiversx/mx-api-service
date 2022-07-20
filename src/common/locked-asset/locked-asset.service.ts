@@ -40,6 +40,10 @@ export class LockedAssetService {
 
   private async hasUnlockSchedule(collection: string): Promise<boolean> {
     const lockedTokenId = await this.getLockedTokenId();
+    if (!lockedTokenId) {
+      return false;
+    }
+
     return collection.startsWith(lockedTokenId);
   }
 
@@ -105,7 +109,7 @@ export class LockedAssetService {
 
   private lockedTokenId: string | undefined;
 
-  private async getLockedTokenId(): Promise<string> {
+  private async getLockedTokenId(): Promise<string | undefined> {
     if (this.lockedTokenId) {
       return this.lockedTokenId;
     }
