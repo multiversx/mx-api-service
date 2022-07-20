@@ -22,9 +22,7 @@ export class LockedAssetService {
   ) { }
 
   async getUnlockSchedule(identifier: string, attributes: string): Promise<UnlockMileStoneModel[] | undefined> {
-    const collection = TokenUtils.getCollectionIdentifier(identifier);
-
-    const hasUnlockSchedule = await this.hasUnlockSchedule(collection);
+    const hasUnlockSchedule = await this.hasUnlockSchedule(identifier);
     if (!hasUnlockSchedule) {
       return undefined;
     }
@@ -42,7 +40,7 @@ export class LockedAssetService {
 
   private async hasUnlockSchedule(collection: string): Promise<boolean> {
     const lockedTokenId = await this.getLockedTokenId();
-    return collection === lockedTokenId;
+    return collection.startsWith(lockedTokenId);
   }
 
   private async getExtendedAttributesActivationNonce(): Promise<number> {
@@ -105,12 +103,22 @@ export class LockedAssetService {
     return parseInt(epoch, 16);
   }
 
+  private lockedTokenId: string | undefined;
+
   private async getLockedTokenId(): Promise<string> {
-    return await this.cachingService.getOrSetCache(
+    if (this.lockedTokenId) {
+      return this.lockedTokenId;
+    }
+
+    const lockedTokenId = await this.cachingService.getOrSetCache(
       CacheInfo.LockedTokenID.key,
       async () => await this.getLockedTokenIdRaw(),
       CacheInfo.LockedTokenID.ttl,
     );
+
+    this.lockedTokenId = lockedTokenId;
+
+    return lockedTokenId;
   }
 
   private async getLockedTokenIdRaw(): Promise<string> {
