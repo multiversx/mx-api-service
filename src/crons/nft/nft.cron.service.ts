@@ -1,15 +1,11 @@
-import { CachingService, Constants, Locker } from "@elrondnetwork/erdnest";
+import { Constants, Locker } from "@elrondnetwork/erdnest";
 import { Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { QueryPagination } from "src/common/entities/query.pagination";
 import { Nft } from "src/endpoints/nfts/entities/nft";
-import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
-import { NftAssetService } from "src/queue.worker/nft.worker/queue/job-services/assets/nft.asset.service";
-import { CacheInfo } from "src/utils/cache.info";
 
 @Injectable()
 export class NftCronService {
@@ -19,8 +15,6 @@ export class NftCronService {
     private readonly nftWorkerService: NftWorkerService,
     private readonly nftService: NftService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: CachingService,
-    private readonly nftAssetService: NftAssetService
   ) {
     this.logger = new Logger(NftCronService.name);
   }
