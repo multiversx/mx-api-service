@@ -157,6 +157,10 @@ export class NftService {
 
     await this.batchProcessNfts(nfts);
 
+    for (const nft of nfts) {
+      await this.applyUnlockSchedule(nft);
+    }
+
     return nfts;
   }
 
@@ -273,9 +277,15 @@ export class NftService {
 
     await this.applyAssetsAndTicker(nft);
 
+    await this.applyUnlockSchedule(nft);
+
     await this.processNft(nft);
 
     return nft;
+  }
+
+  private async applyUnlockSchedule(nft: Nft): Promise<void> {
+    nft.unlockSchedule = await this.lockedAssetService.getUnlockSchedule(nft.identifier, nft.attributes);
   }
 
   private async applyNftAttributes(nft: Nft): Promise<void> {
@@ -487,7 +497,7 @@ export class NftService {
     }
 
     for (const nft of nfts) {
-      nft.unlockSchedule = await this.lockedAssetService.getUnlockSchedule(nft.identifier, nft.attributes);
+      await this.applyUnlockSchedule(nft);
     }
 
     return nfts;
@@ -537,7 +547,11 @@ export class NftService {
       return undefined;
     }
 
-    return nfts[0];
+    const nft = nfts[0];
+
+    await this.applyUnlockSchedule(nft);
+
+    return nft;
   }
 
   async applySupply(nft: Nft): Promise<void> {

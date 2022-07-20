@@ -109,8 +109,7 @@ export class LockedAssetService {
     return await this.cachingService.getOrSetCache(
       CacheInfo.LockedTokenID.key,
       async () => await this.getLockedTokenIdRaw(),
-      Constants.oneDay(),
-      CacheInfo.LockedTokenID.ttl
+      CacheInfo.LockedTokenID.ttl,
     );
   }
 
