@@ -1,6 +1,5 @@
 network: 'testnet'
 metaChainShardId: 4294967295
-precisionExIncrease: 1000
 api:
   public: true
   private: true

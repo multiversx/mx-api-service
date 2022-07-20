@@ -1642,24 +1642,4 @@ describe('API Config', () => {
       expect(results).toStrictEqual(false);
     });
   });
-
-  describe("getPrecisionExIncrease", () => {
-    it("should return precision number", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 1999));
-
-      const results = apiConfigService.getPrecisionExIncrease();
-      expect(results).toStrictEqual(1999);
-    });
-
-    it("should return default value of precision (1000)", () => {
-      jest
-        .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => undefined));
-
-      const results = apiConfigService.getPrecisionExIncrease();
-      expect(results).toStrictEqual(1000);
-    });
-  });
 });

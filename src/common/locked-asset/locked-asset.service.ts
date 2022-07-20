@@ -127,7 +127,8 @@ export class LockedAssetService {
       const milestoneJson = unlockMilestone.toJSON();
 
       const unlockEpoch = milestoneJson.epoch ?? 0;
-      const unlockPercent: BigNumber = withActivationNonce ? new BigNumber(milestoneJson.percent ?? 0).div(this.apiConfigService.getPrecisionExIncrease()) : new BigNumber(milestoneJson.percent ?? 0);
+      const PRECISION_EX_INCREASE = 1000;
+      const unlockPercent: BigNumber = withActivationNonce ? new BigNumber(milestoneJson.percent ?? 0).div(PRECISION_EX_INCREASE) : new BigNumber(milestoneJson.percent ?? 0);
       const remainingEpochs = await this.getRemainingEpochs(unlockEpoch);
 
       const milestone = new UnlockMileStoneModel({

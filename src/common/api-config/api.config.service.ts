@@ -631,8 +631,4 @@ export class ApiConfigService {
   getNftExtendedAttributesNsfwThreshold(): number {
     return this.configService.get<number>('features.nftExtendedAttributes.nsfwThreshold') ?? 0.85;
   }
-
-  getPrecisionExIncrease(): number {
-    return this.configService.get<number>('precisionExIncrease') ?? 1000;
-  }
 }
