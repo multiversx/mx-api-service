@@ -18,6 +18,7 @@ export class NodeFilter {
   provider: string | undefined;
   owner: string | undefined;
   auctioned: boolean | undefined;
+  fullHistory: boolean | undefined;
   sort: NodeSort | undefined;
   order: SortOrder | undefined;
 } 
