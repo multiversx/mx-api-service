@@ -4,7 +4,7 @@
     "json",
     "ts"
   ],
-  "rootDir": ".",
+  "rootDir": "../../",
   "testEnvironment": "node",
   "testRegex": "api-spec.ts$",
   "transform": {
