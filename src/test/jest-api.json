@@ -4,14 +4,14 @@
     "json",
     "ts"
   ],
-  "rootDir": "../../",
+  "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": "api-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
   "modulePaths": [
-    "<rootDir>"
+    "../.."
   ],
   "globals": {
     "__WARM__": true
