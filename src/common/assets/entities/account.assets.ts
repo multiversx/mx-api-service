@@ -1,4 +1,8 @@
 export class AccountAssets {
+  constructor(init?: Partial<AccountAssets>) {
+    Object.assign(this, init);
+  }
+
   name: string = '';
   description: string = '';
   tags: string[] = [];
