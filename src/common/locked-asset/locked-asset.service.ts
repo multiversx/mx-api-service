@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import BigNumber from 'bignumber.js';
 import { LockedAssetAttributes, UnlockMilestone } from '@elrondnetwork/erdjs-dex';
 import { ApiConfigService } from '../api-config/api.config.service';
 import { VmQueryService } from '../../endpoints/vm.query/vm.query.service';
@@ -136,19 +135,27 @@ export class LockedAssetService {
 
   private async getUnlockMilestones(unlockSchedule: UnlockMilestone[], withActivationNonce: boolean): Promise<UnlockMileStoneModel[]> {
     const unlockMilestones: UnlockMileStoneModel[] = [];
+    const aggregatedMilestones: Record<number, number> = {};
+    const PRECISION_EX_INCREASE = 1000;
+
     for (const unlockMilestone of unlockSchedule) {
-      // @ts-ignore
-      const epoch: BigNumber = unlockMilestone.epoch;
-      // @ts-ignore
-      const percent: BigNumber = unlockMilestone.percent;
+      const epoch = unlockMilestone.epoch.toNumber();
+      const percent = withActivationNonce ? unlockMilestone.percent.div(PRECISION_EX_INCREASE) : unlockMilestone.percent;
 
-      const PRECISION_EX_INCREASE = 1000;
-      const unlockPercent = withActivationNonce ? percent.div(PRECISION_EX_INCREASE) : percent;
-      const remainingEpochs = await this.getRemainingEpochs(epoch.toNumber());
+      let remainingEpochs = await this.getRemainingEpochs(epoch);
+      remainingEpochs = remainingEpochs > 0 ? remainingEpochs : 0;
 
+      if (!aggregatedMilestones[remainingEpochs]) {
+        aggregatedMilestones[remainingEpochs] = 0;
+      }
+
+      aggregatedMilestones[remainingEpochs] += percent.toNumber();
+    }
+
+    for (const epoch of Object.keys(aggregatedMilestones)) {
       const milestone = new UnlockMileStoneModel({
-        percent: unlockPercent.toNumber(),
-        epoch: remainingEpochs > 0 ? remainingEpochs : 0,
+        remainingEpochs: Number(epoch),
+        percent: aggregatedMilestones[Number(epoch)],
       });
 
       unlockMilestones.push(milestone);
