@@ -169,8 +169,6 @@ export class AssetsService {
       }
     }
 
-    console.log({ providers, identities, pairs });
-
     if (providers && identities) {
       for (const provider of providers) {
         const identity = identities.find(x => x.identity === provider.identity);
