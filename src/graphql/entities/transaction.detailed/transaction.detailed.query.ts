@@ -13,25 +13,25 @@ export class TransactionDetailedQuery {
 
   @Query(() => [TransactionDetailed], { name: "transactions", description: "Retrieve all transactions available for the given input." })
   public async getTransactions(@Args("input", { description: "Input to retrieve the given transactions for." }) input: GetTransactionsInput): Promise<Transaction[]> {
-      return await this.transactionService.getTransactions(
-        new TransactionFilter({
-          sender: input.sender,
-          receiver: input.receiver,
-          token: input.token,
-          senderShard: input.senderShard,
-          receiverShard: input.receiverShard,
-          miniBlockHash: input.miniBlockHash,
-          hashes: input.hashes,
-          status: input.status,
-          search: input.search,
-          function: input.function,
-          before: input.before,
-          after: input.after,
-          condition: input.condition,
-          order: input.order,
-        }), 
-        new QueryPagination({ from: input.from, size: input.size })
-      );
+    return await this.transactionService.getTransactions(
+      new TransactionFilter({
+        sender: input.sender,
+        receiver: input.receiver,
+        token: input.token,
+        senderShard: input.senderShard,
+        receiverShard: input.receiverShard,
+        miniBlockHash: input.miniBlockHash,
+        hashes: input.hashes,
+        status: input.status,
+        search: input.search,
+        function: input.function,
+        before: input.before,
+        after: input.after,
+        condition: input.condition,
+        order: input.order,
+      }), 
+      new QueryPagination({ from: input.from, size: input.size })
+    );
   }
   
   @Query(() => TransactionDetailed, { name: "transaction", description: "Retrieve the detailed transaction for the given input.", nullable: true })

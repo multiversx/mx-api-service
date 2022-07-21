@@ -104,6 +104,33 @@ type AccountDetailed {
   username: String!
 }
 
+"""Collection roles object type."""
+type CollectionRoles {
+  """Address for the given collection roles."""
+  address: String
+
+  """Can add quantity for the given collection roles."""
+  canAddQuantity: Boolean!
+
+  """Can add URI for the given collection roles."""
+  canAddUri: Boolean!
+
+  """Can burn for the given collection roles."""
+  canBurn: Boolean!
+
+  """Can create for the given collection roles."""
+  canCreate: Boolean!
+
+  """Can transfer role for the given collection roles."""
+  canTransferRole: Boolean!
+
+  """Can update attributes for the given collection roles."""
+  canUpdateAttributes: Boolean!
+
+  """Roles for the given collection roles."""
+  roles: [String!]!
+}
+
 """Input to retrieve the given detailed account for."""
 input GetAccountDetailedInput {
   """Address to retrieve the corresponding detailed account for."""
@@ -117,6 +144,83 @@ input GetAccountsInput {
 
   """Number of accounts to retrieve for the given result set."""
   size: Float = 25
+}
+
+"""Input to retrieve the given collection for."""
+input GetCollectionInput {
+  """Collection identifier to retrieve the corresponding collection."""
+  collection: String = ""
+}
+
+"""Input to retrieve the given collections count for."""
+input GetCollectionsCountInput {
+  """Can add quantity to retrieve for the given result set."""
+  canAddQuantity: String
+
+  """Can add URI to retrieve for the given result set."""
+  canAddUri: String
+
+  """Can burn to retrieve for the given result set."""
+  canBurn: String
+
+  """Can create to retrieve for the given result set."""
+  canCreate: String
+
+  """Can transfer role to retrieve for the given result set."""
+  canTransferRole: String
+
+  """Can update attributes to retrieve for the given result set."""
+  canUpdateAttributes: String
+
+  """Creator to retrieve for the given result set."""
+  creator: String
+
+  """Collection identifier to retrieve for the given result set."""
+  search: String
+
+  """Type to retrieve for the given result set."""
+  type: [NftType!]
+}
+
+"""Input to retrieve the given collections for."""
+input GetCollectionsInput {
+  """Can add quantity to retrieve for the given result set."""
+  canAddQuantity: String
+
+  """Can add URI to retrieve for the given result set."""
+  canAddUri: String
+
+  """Can burn to retrieve for the given result set."""
+  canBurn: String
+
+  """Can create to retrieve for the given result set."""
+  canCreate: String
+
+  """Can transfer role to retrieve for the given result set."""
+  canTransferRole: String
+
+  """Can update attributes to retrieve for the given result set."""
+  canUpdateAttributes: String
+
+  """Creator to retrieve for the given result set."""
+  creator: String
+
+  """Number of collections to skip for the given result set."""
+  from: Float = 0
+
+  """
+  Collection comma-separated identifiers to retrieve for the given result set.
+  """
+  identifiers: [String!]
+
+  """Collection identifier to retrieve for the given result set."""
+  search: String
+
+  """Number of collections to retrieve for the given result set."""
+  size: Float = 25
+
+  """Type to retrieve for the given result set."""
+  type: [NftType!]
 }
 
 """Input to retrieve the given detailed transaction for."""
@@ -228,6 +332,60 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 """
 scalar JSON
 
+"""NFT collection object type."""
+type NftCollection {
+  """Assets for the given NFT collection."""
+  assets: TokenAssets
+
+  """Can freeze for the given NFT collection."""
+  canFreeze: Boolean
+
+  """Can pause for the given NFT collection."""
+  canPause: Boolean
+
+  """Can transfer NFT create role for the given NFT collection."""
+  canTransferNftCreateRole: Boolean
+
+  """Can wipe for the given NFT collection."""
+  canWipe: Boolean
+
+  """Collection identifier for the given NFT collection."""
+  collection: ID!
+
+  """Decimals for the given NFT collection."""
+  decimals: Float
+
+  """Name for the given NFT collection."""
+  name: String!
+
+  """Owner for the given NFT collection."""
+  owner: String
+
+  """Roles for the given NFT collection."""
+  roles: [CollectionRoles!]
+
+  """Ticker for the given NFT collection."""
+  ticker: ID!
+
+  """Timestamp for the given NFT collection."""
+  timestamp: Float!
+
+  """NFT type for the given NFT collection."""
+  type: NftType!
+}
+
+"""NFT type."""
+enum NftType {
+  """Meta ESDT NFT type."""
+  MetaESDT
+
+  """Non-fungible NFT type."""
+  NonFungibleESDT
+
+  """Semi-fungible NFT type."""
+  SemiFungibleESDT
+}
+
 type Query {
   """Retrieve the detailed account for the given input."""
   account(
@@ -243,6 +401,24 @@ type Query {
 
   """Retrieve all accounts count."""
   accountsCount: Float!
+
+  """Retrieve the collection for the given input."""
+  collection(
+    """Input to retrieve the given collection for."""
+    input: GetCollectionInput!
+  ): NftCollection
+
+  """Retrieve all collections for the given input."""
+  collections(
+    """Input to retrieve the given collections for."""
+    input: GetCollectionsInput!
+  ): [NftCollection!]!
+
+  """Retrieve all collections count for the given input."""
+  collectionsCount(
+    """Input to retrieve the given collections count for."""
+    input: GetCollectionsCountInput!
+  ): Float!
 
   """Retrieve the detailed transaction for the given input."""
   transaction(
@@ -345,6 +521,27 @@ enum SortOrder {
 
   """Descending order."""
   desc
+}
+
+"""Token assets object type."""
+type TokenAssets {
+  """Description for the given token assets."""
+  description: String!
+
+  """Extra tokens for the given token assets."""
+  extraTokens: [String!]
+
+  """PNG URL for the given token assets."""
+  pngUrl: String!
+
+  """Website for the given token assets."""
+  status: String!
+
+  """SVG URL for the given token assets."""
+  svgUrl: String!
+
+  """Website for the given token assets."""
+  website: String!
 }
 
 """Token type object type."""

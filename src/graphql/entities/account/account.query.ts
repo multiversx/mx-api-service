@@ -10,7 +10,7 @@ export class AccountQuery {
 
   @Query(() => [Account], { name: "accounts", description: "Retrieve all accounts for the given input." })
   public async getAccounts(@Args("input", { description: "Input to retrieve the given accounts for." }) input: GetAccountsInput): Promise<Account[]> {
-      return await this.accountService.getAccounts(GetAccountsInput.resolve(input));
+    return await this.accountService.getAccounts(GetAccountsInput.resolve(input));
   }
 
   @Query(() => Float, { name: "accountsCount", description: "Retrieve all accounts count." })
