@@ -178,7 +178,8 @@ export class MexTokenService {
   }
 
   private getMexToken(pair: MexPair): MexToken | null {
-    if (pair.quoteSymbol === 'WEGLD' || (pair.type === MexPairType.jungle && pair.quoteSymbol === 'USDC')) {
+    if ((pair.type !== MexPairType.jungle && pair.quoteSymbol === 'WEGLD') ||
+      (pair.type === MexPairType.jungle && pair.quoteSymbol === 'USDC')) {
       return {
         id: pair.baseId,
         symbol: pair.baseSymbol,
@@ -187,7 +188,8 @@ export class MexTokenService {
       };
     }
 
-    if (pair.baseSymbol === 'WEGLD' || (pair.type === MexPairType.jungle && pair.baseSymbol === 'USDC')) {
+    if ((pair.type !== MexPairType.jungle && pair.baseSymbol === 'WEGLD') ||
+      (pair.type === MexPairType.jungle && pair.baseSymbol === 'USDC')) {
       return {
         id: pair.quoteId,
         symbol: pair.quoteSymbol,
