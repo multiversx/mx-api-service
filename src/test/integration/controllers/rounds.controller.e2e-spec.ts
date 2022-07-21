@@ -4,7 +4,7 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
-describe("Rounds Controller", () => {
+describe.skip("Rounds Controller", () => {
   let app: INestApplication;
   let roundController: RoundController;
 
