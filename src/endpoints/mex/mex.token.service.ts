@@ -8,6 +8,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { MexFarmService } from "./mex.farm.service";
 import { MexSettingsService } from "./mex.settings.service";
 import { Constants, CachingService } from "@elrondnetwork/erdnest";
+import { MexPairType } from "./entities/mex.pair.type";
 
 @Injectable()
 export class MexTokenService {
@@ -177,7 +178,7 @@ export class MexTokenService {
   }
 
   private getMexToken(pair: MexPair): MexToken | null {
-    if (pair.quoteSymbol === 'WEGLD') {
+    if (pair.quoteSymbol === 'WEGLD' || (pair.type === MexPairType.jungle && pair.quoteSymbol === 'USDC')) {
       return {
         id: pair.baseId,
         symbol: pair.baseSymbol,
@@ -186,7 +187,7 @@ export class MexTokenService {
       };
     }
 
-    if (pair.baseSymbol === 'WEGLD') {
+    if (pair.baseSymbol === 'WEGLD' || (pair.type === MexPairType.jungle && pair.baseSymbol === 'USDC')) {
       return {
         id: pair.quoteId,
         symbol: pair.quoteSymbol,
