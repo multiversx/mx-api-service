@@ -71,7 +71,4 @@ jobs:
         shell: bash
       - name: Run api-spec files
         run: npm run test:api
-      - uses: codecov/codecov-action@v2
-        with:
-          fail_ci_if_error: true
-          verbose: true
+     
