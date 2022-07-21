@@ -6,7 +6,8 @@ import { join } from "path";
 
 import { AccountDetailedModule } from "src/graphql/entities/account.detailed/account.detailed.module";
 import { AccountModule } from "src/graphql/entities/account/account.module";
-import { CollectionModule } from "src/graphql/entities/collection/collection.module";
+import { NftModule } from "src/graphql/entities/nft/nft.module";
+import { NftCollectionModule } from "src/graphql/entities/nft.collection/nft.collection.module";
 import { SmartContractResultModule } from "src/graphql/entities/smart.contract.result/smart.contract.result.module";
 import { TransactionDetailedModule } from "src/graphql/entities/transaction.detailed/transaction.detailed.module";
 import { TransactionModule } from "src/graphql/entities/transaction/transaction.module";
@@ -20,7 +21,8 @@ import { TransactionModule } from "src/graphql/entities/transaction/transaction.
     }),
     AccountDetailedModule,
     AccountModule,
-    CollectionModule,
+    NftModule,
+    NftCollectionModule,
     SmartContractResultModule,
     TransactionDetailedModule,
     TransactionModule,
