@@ -28,5 +28,4 @@ jobs:
       - run: npm ci
       - name: Initialize
         run: npm run init
-      - name: Run API tests
       - run: npm run test:api
