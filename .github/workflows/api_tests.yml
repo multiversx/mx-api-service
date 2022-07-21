@@ -61,6 +61,14 @@ jobs:
       - run: npm ci
       - name: Initialize
         run: npm run init
+      - name: Warm
+        run: |
+          if ${{ github.ref == 'refs/heads/main' }}; then
+            npm run test:e2e:warm
+          else
+            npm run test:e2e:warm:mocked
+          fi
+        shell: bash
       - name: Run api-spec files
         run: npm run test:api
       - uses: codecov/codecov-action@v2
