@@ -25,6 +25,7 @@ import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingI
 import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.service.impl';
 import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
 import { GraphQlModule } from 'src/graphql/graphql.module';
+import { TransactionLoggingInterceptor } from './interceptors/transaction.logging.interceptor';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
@@ -180,6 +181,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   globalInterceptors.push(new PaginationInterceptor());
   // @ts-ignore
   globalInterceptors.push(new QueryCheckInterceptor(httpAdapterHostService));
+  globalInterceptors.push(new TransactionLoggingInterceptor());
 
   await pluginService.bootstrapPublicApp(publicApp);
 

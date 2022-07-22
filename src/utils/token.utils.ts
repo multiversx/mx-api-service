@@ -90,4 +90,13 @@ export class TokenUtils {
         break;
     }
   }
+
+  static tokenNonce(tokenID: string): number {
+    const tokenNonceHex = tokenID.split('-')[2];
+    return parseInt(tokenNonceHex, 16);
+  }
+
+  static getCollectionIdentifier(nftIdentifier: string): string {
+    return nftIdentifier.split('-').slice(0, 2).join('-');
+  }
 }

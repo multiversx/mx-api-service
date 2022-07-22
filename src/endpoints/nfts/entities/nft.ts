@@ -7,6 +7,7 @@ import { NftType } from "./nft.type";
 import { SwaggerUtils } from "@elrondnetwork/erdnest";
 import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
+import { UnlockMileStoneModel } from "../../../common/entities/unlock-schedule";
 
 @ObjectType("Nft", { description: "NFT object type." })
 export class Nft {
@@ -117,4 +118,8 @@ export class Nft {
   @Field(() => Boolean, { description: "Is NSFW for the given NFT.", nullable: true })
   @ApiProperty({ type: Boolean, nullable: true })
   isNsfw: boolean | undefined = undefined;
+
+  @Field(() => [UnlockMileStoneModel], { description: "Unlock mile stone model for the given NFT.", nullable: true })
+  @ApiProperty({ type: [UnlockMileStoneModel], nullable: true })
+  unlockSchedule?: UnlockMileStoneModel[] | undefined = undefined;
 }

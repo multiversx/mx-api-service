@@ -7,7 +7,7 @@ import { Nft } from "../nfts/entities/nft";
 import { NftService } from "../nfts/nft.service";
 import { NftFilter } from "../nfts/entities/nft.filter";
 import { NftQueryOptions } from "../nfts/entities/nft.query.options";
-import { ParseAddressPipe, ParseArrayPipe, ParseOptionalBoolPipe, ParseOptionalEnumArrayPipe } from '@elrondnetwork/erdnest';
+import { ParseAddressPipe, ParseArrayPipe, ParseOptionalBoolPipe, ParseOptionalEnumArrayPipe, ParseOptionalIntPipe } from '@elrondnetwork/erdnest';
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { CollectionFilter } from "./entities/collection.filter";
 
@@ -27,7 +27,9 @@ export class CollectionController {
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by collection identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
-  @ApiQuery({ name: 'creator', description: 'Filter NFTs where the given address has a creator role', required: false, deprecated: true })
+  @ApiQuery({ name: 'creator', description: 'Filter collections where the given address has a creator role', required: false, deprecated: true })
+  @ApiQuery({ name: 'before', description: 'Return all collections before given timestamp', required: false, type: Number })
+  @ApiQuery({ name: 'after', description: 'Return all collections after given timestamp', required: false, type: Number })
   @ApiQuery({ name: 'canCreate', description: 'Filter by address with canCreate role', required: false })
   @ApiQuery({ name: 'canBurn', description: 'Filter by address with canBurn role', required: false })
   @ApiQuery({ name: 'canAddQuantity', description: 'Filter by address with canAddQuantity role', required: false })
@@ -41,6 +43,8 @@ export class CollectionController {
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type?: NftType[],
     @Query('creator', ParseAddressPipe) creator?: string,
+    @Query('before', new ParseOptionalIntPipe) before?: number,
+    @Query('after', new ParseOptionalIntPipe) after?: number,
     @Query('canCreate', new ParseAddressPipe) canCreate?: string,
     @Query('canBurn', new ParseAddressPipe) canBurn?: string,
     @Query('canAddQuantity', new ParseAddressPipe) canAddQuantity?: string,
@@ -53,6 +57,8 @@ export class CollectionController {
       type,
       identifiers,
       canCreate: canCreate ?? creator,
+      before,
+      after,
       canBurn,
       canAddQuantity,
       canUpdateAttributes,
@@ -65,7 +71,9 @@ export class CollectionController {
   @ApiOperation({ summary: 'Collection count', description: 'Returns non-fungible/semi-fungible/meta-esdt collection count' })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
-  @ApiQuery({ name: 'creator', description: 'Filter NFTs where the given address has a creator role', required: false, deprecated: true })
+  @ApiQuery({ name: 'creator', description: 'Filter collections where the given address has a creator role', required: false, deprecated: true })
+  @ApiQuery({ name: 'before', description: 'Return all collections before given timestamp', required: false, type: Number })
+  @ApiQuery({ name: 'after', description: 'Return all collections after given timestamp', required: false, type: Number })
   @ApiQuery({ name: 'canCreate', description: 'Filter by address with canCreate role', required: false })
   @ApiQuery({ name: 'canBurn', description: 'Filter by address with canBurn role', required: false })
   @ApiQuery({ name: 'canAddQuantity', description: 'Filter by address with canAddQuantity role', required: false })
@@ -77,6 +85,8 @@ export class CollectionController {
     @Query('search') search?: string,
     @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type?: NftType[],
     @Query('creator', ParseAddressPipe) creator?: string,
+    @Query('before', new ParseOptionalIntPipe) before?: number,
+    @Query('after', new ParseOptionalIntPipe) after?: number,
     @Query('canCreate', new ParseAddressPipe) canCreate?: string,
     @Query('canBurn', new ParseAddressPipe) canBurn?: string,
     @Query('canAddQuantity', new ParseAddressPipe) canAddQuantity?: string,
@@ -88,6 +98,8 @@ export class CollectionController {
       search,
       type,
       canCreate: canCreate ?? creator,
+      before,
+      after,
       canBurn,
       canAddQuantity,
       canUpdateAttributes,
@@ -102,6 +114,8 @@ export class CollectionController {
     @Query('search') search?: string,
     @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type?: NftType[],
     @Query('creator', ParseAddressPipe) creator?: string,
+    @Query('before', new ParseOptionalIntPipe) before?: number,
+    @Query('after', new ParseOptionalIntPipe) after?: number,
     @Query('canCreate', new ParseAddressPipe) canCreate?: string,
     @Query('canBurn', new ParseAddressPipe) canBurn?: string,
     @Query('canAddQuantity', new ParseAddressPipe) canAddQuantity?: string,
@@ -113,6 +127,8 @@ export class CollectionController {
       search,
       type,
       canCreate: canCreate ?? creator,
+      before,
+      after,
       canBurn,
       canAddQuantity,
       canUpdateAttributes,
