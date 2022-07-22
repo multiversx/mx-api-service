@@ -542,6 +542,10 @@ export class NftService {
     const filter = new NftFilter();
     filter.identifiers = [identifier];
 
+    if (!TokenUtils.isNft(identifier)) {
+      return undefined;
+    }
+
     const nfts = await this.getNftsForAddress(address, new QueryPagination({ from: 0, size: 1 }), filter);
     if (nfts.length === 0) {
       return undefined;
