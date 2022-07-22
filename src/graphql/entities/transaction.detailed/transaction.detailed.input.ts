@@ -11,7 +11,7 @@ export class GetTransactionsInput extends GetTransactionsCountInput {
   @Field(() => Float, { name: "size", description: "Number of transactions to retrieve for the given result set.", nullable: true, defaultValue: 25 })
   size: number = 25;
 
-  @Field(() => SortOrder, { name: "condition", description: "Sort order (ascending / descending) for the given result set.", nullable: true })
+  @Field(() => SortOrder, { name: "condition", description: "Sort order for the given result set.", nullable: true })
   order: SortOrder | undefined = undefined;
 }
 

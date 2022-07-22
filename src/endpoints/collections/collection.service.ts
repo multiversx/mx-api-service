@@ -15,7 +15,7 @@ import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { TokenUtils } from "src/utils/token.utils";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
-import { ApiUtils, BinaryUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryType, QueryOperator, QueryConditionOptions, ElasticSortOrder } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryType, QueryOperator, QueryConditionOptions, ElasticSortOrder, TermsQuery } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class CollectionService {
@@ -103,6 +103,18 @@ export class CollectionService {
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
+    return await this.processNftCollections(elasticQuery);
+  }
+
+  async getNftCollectionsForAddresses(addresses: Array<string>): Promise<NftCollection[]> {
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: addresses.length + 1 })
+      .withTerms(new TermsQuery('_id', addresses));
+
+    return await this.processNftCollections(elasticQuery);
+  }
+
+  private async processNftCollections(elasticQuery: ElasticQuery): Promise<NftCollection[]> {
     const tokenCollections = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
     const collectionsIdentifiers = tokenCollections.map((collection) => collection.token);
 

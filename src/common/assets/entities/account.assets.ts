@@ -17,9 +17,9 @@ export class AccountAssets {
   @Field(() => String, { description: "Icon for the given account asset.", nullable: true })
   icon: string | undefined = undefined;
 
-  @Field(() => String, { description: "Icon PNG link for the given account asset.", nullable: true })
+  @Field(() => String, { description: "Icon PNG for the given account asset.", nullable: true })
   iconPng: string | undefined = undefined;
 
-  @Field(() => String, { description: "Icon SVG link for the given account asset.", nullable: true })
+  @Field(() => String, { description: "Icon SVG for the given account asset.", nullable: true })
   iconSvg: string | undefined = undefined;
 }

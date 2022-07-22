@@ -4,19 +4,19 @@
 
 """Account object type."""
 type Account {
-  """Bech32 address for the given account."""
+  """Address for the given account."""
   address: ID!
 
-  """Account assets list for the given account."""
+  """Account assets for the given account."""
   assets: AccountAssets
 
-  """Current balance for the given account."""
+  """Balance for the given account."""
   balance: String!
 
-  """Current nonce for the given account."""
+  """Nonce for the given account."""
   nonce: Float!
 
-  """Shard identifier for the given account."""
+  """Shard for the given account."""
   shard: Float!
 }
 
@@ -28,10 +28,10 @@ type AccountAssets {
   """Icon for the given account asset."""
   icon: String
 
-  """Icon PNG link for the given account asset."""
+  """Icon PNG for the given account asset."""
   iconPng: String
 
-  """Icon SVG link for the given account asset."""
+  """Icon SVG for the given account asset."""
   iconSvg: String
 
   """Name for the given account asset."""
@@ -46,19 +46,19 @@ type AccountAssets {
 
 """Detailed Account object type that extends Account."""
 type AccountDetailed {
-  """Bech32 address for the given account."""
+  """Address for the given account."""
   address: ID!
 
-  """Account assets list for the given account."""
+  """Account assets for the given account."""
   assets: AccountAssets
 
-  """Current balance for the given account."""
+  """Balance for the given account."""
   balance: String!
 
-  """Source code in HEX format for the given detailed account."""
+  """Code for the given detailed account."""
   code: String!
 
-  """Hash of the source code for the given detailed account."""
+  """Code hash for the given detailed account."""
   codeHash: String
 
   """Deployment timestamp for the given detailed account."""
@@ -79,13 +79,13 @@ type AccountDetailed {
   """If the given detailed account is upgradeable."""
   isUpgradeable: Boolean
 
-  """Current nonce for the given account."""
+  """Nonce for the given account."""
   nonce: Float!
 
-  """Bech32 address of the owner account for the given detailed account."""
+  """Owner address for the given detailed account."""
   ownerAddress: String!
 
-  """Hash of the root node for the given detailed account."""
+  """Root hash for the given detailed account."""
   rootHash: String
 
   """Scam information for the given detailed account."""
@@ -94,7 +94,7 @@ type AccountDetailed {
   """Smart contracts count for the given detailed account."""
   scrCount: Float!
 
-  """Shard identifier for the given account."""
+  """Shard for the given account."""
   shard: Float!
 
   """Transactions count for the given detailed account."""
@@ -109,25 +109,25 @@ type CollectionRoles {
   """Address for the given collection roles."""
   address: String
 
-  """Can add quantity for the given collection roles."""
+  """If the given collection role can add quantity."""
   canAddQuantity: Boolean!
 
-  """Can add URI for the given collection roles."""
+  """If the given collection role can add URI."""
   canAddUri: Boolean!
 
-  """Can burn for the given collection roles."""
+  """If the given collection role can burn."""
   canBurn: Boolean!
 
-  """Can create for the given collection roles."""
+  """If the given collection role can create."""
   canCreate: Boolean!
 
-  """Can transfer role for the given collection roles."""
+  """If the given collection role can transfer role."""
   canTransferRole: Boolean!
 
-  """Can update attributes for the given collection roles."""
+  """If the given collection role can update attributes."""
   canUpdateAttributes: Boolean!
 
-  """Roles for the given collection roles."""
+  """Roles list for the given collection roles."""
   roles: [String!]!
 }
 
@@ -180,7 +180,7 @@ input GetNftCollectionsCountInput {
   """Collection identifier to retrieve for the given result set."""
   search: ID
 
-  """Types to retrieve for the given result set."""
+  """NFT types list to retrieve for the given result set."""
   type: [NftType!]
 }
 
@@ -221,7 +221,7 @@ input GetNftCollectionsInput {
   """Number of NFT collections to retrieve for the given result set."""
   size: Float = 25
 
-  """Types to retrieve for the given result set."""
+  """NFT types list to retrieve for the given result set."""
   type: [NftType!]
 }
 
@@ -242,7 +242,9 @@ input GetNftsCountInput {
   """Has URIs to retrieve for the given result set."""
   hasUris: Boolean
 
-  """NFT comma-separated identifiers to retrieve for the given result set."""
+  """
+  NFT comma-separated identifiers list to retrieve for the given result set.
+  """
   identifiers: [ID!]
 
   """Is NSFW to retrieve for the given result set."""
@@ -257,10 +259,10 @@ input GetNftsCountInput {
   """NFT identifier to retrieve for the given result set."""
   search: String
 
-  """Tags to retrieve for the given result set."""
+  """Tags list to retrieve for the given result set."""
   tags: [String!]
 
-  """Type to retrieve for the given result set."""
+  """NFT type to retrieve for the given result set."""
   type: NftType
 }
 
@@ -278,7 +280,9 @@ input GetNftsInput {
   """Has URIs to retrieve for the given result set."""
   hasUris: Boolean
 
-  """NFT comma-separated identifiers to retrieve for the given result set."""
+  """
+  NFT comma-separated identifiers list to retrieve for the given result set.
+  """
   identifiers: [ID!]
 
   """Is NSFW to retrieve for the given result set."""
@@ -296,10 +300,10 @@ input GetNftsInput {
   """Number of collections to retrieve for the given result set."""
   size: Float = 25
 
-  """Tags to retrieve for the given result set."""
+  """Tags list to retrieve for the given result set."""
   tags: [String!]
 
-  """Type to retrieve for the given result set."""
+  """NFT type to retrieve for the given result set."""
   type: NftType
 
   """With owner to retrieve for the given result set."""
@@ -337,24 +341,22 @@ input GetTransactionsCountInput {
   """Mini block hash for the given result set."""
   miniBlockHash: String
 
-  """Address of the transaction receiver for the given result set."""
+  """Receiver for the given result set."""
   receiver: String
 
-  """Receiver shard identfier for the given result set."""
+  """Receiver shard for the given result set."""
   receiverShard: Float
 
   """Search in data object for the given result set."""
   search: String
 
-  """Address of the transaction sender for the given result set."""
+  """Sender for the given result set."""
   sender: String
 
-  """Sender shard identfier for the given result set."""
+  """Sender shard for the given result set."""
   senderShard: Float
 
-  """
-  Status of the transaction (success / pending / invalid / fail) for the given result set.
-  """
+  """Status of the transaction for the given result set."""
   status: TransactionStatus
 
   """Token identfier for the given result set."""
@@ -369,7 +371,7 @@ input GetTransactionsInput {
   """Before timestamp for the given result set."""
   before: Float
 
-  """Sort order (ascending / descending) for the given result set."""
+  """Sort order for the given result set."""
   condition: SortOrder
 
   """Number of transactions to skip for the given result set."""
@@ -386,27 +388,25 @@ input GetTransactionsInput {
   """Mini block hash for the given result set."""
   miniBlockHash: String
 
-  """Address of the transaction receiver for the given result set."""
+  """Receiver for the given result set."""
   receiver: String
 
-  """Receiver shard identfier for the given result set."""
+  """Receiver shard for the given result set."""
   receiverShard: Float
 
   """Search in data object for the given result set."""
   search: String
 
-  """Address of the transaction sender for the given result set."""
+  """Sender for the given result set."""
   sender: String
 
-  """Sender shard identfier for the given result set."""
+  """Sender shard for the given result set."""
   senderShard: Float
 
   """Number of transactions to retrieve for the given result set."""
   size: Float = 25
 
-  """
-  Status of the transaction (success / pending / invalid / fail) for the given result set.
-  """
+  """Status of the transaction for the given result set."""
   status: TransactionStatus
 
   """Token identfier for the given result set."""
@@ -420,17 +420,17 @@ scalar JSON
 
 """NFT object type."""
 type Nft {
-  """Supply for the given NFT."""
+  """Assets for the given NFT."""
   assets: TokenAssets
 
   """Attributes for the given NFT."""
-  attributes: String!
+  attributes: String
 
   """Balance for the given NFT."""
   balance: String
 
-  """Collection identifier for the given NFT."""
-  collection: String!
+  """NFT collection identifier for the given NFT."""
+  collection: NftCollection!
 
   """Creator for the given NFT."""
   creator: String!
@@ -475,7 +475,7 @@ type Nft {
   score: Float
 
   """Supply for the given NFT."""
-  supply: String!
+  supply: String
 
   """Tags for the given NFT."""
   tags: [String!]!
@@ -483,7 +483,7 @@ type Nft {
   """Thumbnail URL for the given NFT."""
   thumbnailUrl: String!
 
-  """Ticket for the given NFT."""
+  """Ticker for the given NFT."""
   ticker: String!
 
   """Timestamp for the given NFT."""
@@ -504,16 +504,16 @@ type NftCollection {
   """Assets for the given NFT collection."""
   assets: TokenAssets
 
-  """Can freeze for the given NFT collection."""
+  """If the given NFT collection can freeze."""
   canFreeze: Boolean
 
-  """Can pause for the given NFT collection."""
+  """If the given NFT collection can pause."""
   canPause: Boolean
 
-  """Can transfer NFT create role for the given NFT collection."""
+  """If the given NFT collection can transfer NFT create role."""
   canTransferNftCreateRole: Boolean
 
-  """Can wipe for the given NFT collection."""
+  """If the given NFT collection can wipe."""
   canWipe: Boolean
 
   """Collection identifier for the given NFT collection."""
@@ -528,7 +528,7 @@ type NftCollection {
   """Owner for the given NFT collection."""
   owner: String
 
-  """Roles for the given NFT collection."""
+  """Roles list for the given NFT collection."""
   roles: [CollectionRoles!]
 
   """Ticker for the given NFT collection."""
@@ -749,10 +749,13 @@ type TokenAssets {
   """Extra tokens for the given token assets."""
   extraTokens: [String!]
 
+  """Locked accounts for the given token assets."""
+  lockedAccounts: JSON
+
   """PNG URL for the given token assets."""
   pngUrl: String!
 
-  """Website for the given token assets."""
+  """Status for the given token assets."""
   status: String!
 
   """SVG URL for the given token assets."""

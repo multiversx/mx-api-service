@@ -8,10 +8,10 @@ export class GetNftsCountInput {
   @Field(() => String, { name: "search", description: "NFT identifier to retrieve for the given result set.", nullable: true })
   search: string | undefined = undefined;
 
-  @Field(() => [ID], { name: "identifiers", description: "NFT comma-separated identifiers to retrieve for the given result set.", nullable: true })
+  @Field(() => [ID], { name: "identifiers", description: "NFT comma-separated identifiers list to retrieve for the given result set.", nullable: true })
   identifiers: Array<string> | undefined = undefined;
 
-  @Field(() => NftType, { name: "type", description: "Type to retrieve for the given result set.", nullable: true })
+  @Field(() => NftType, { name: "type", description: "NFT type to retrieve for the given result set.", nullable: true })
   type: NftType | undefined = undefined;
   
   @Field(() => ID, { name: "collection", description: "Collection identifier for the given result set.", nullable: true })
@@ -20,7 +20,7 @@ export class GetNftsCountInput {
   @Field(() => String, { name: "name", description: "Name to retrieve for the given result set.", nullable: true })
   name: string | undefined = undefined;
 
-  @Field(() => [String], { name: "tags", description: "Tags to retrieve for the given result set.", nullable: true })
+  @Field(() => [String], { name: "tags", description: "Tags list to retrieve for the given result set.", nullable: true })
   tags: Array<string> | undefined = undefined;
 
   @Field(() => String, { name: "creator", description: "Creator to retrieve for the given result set.", nullable: true })

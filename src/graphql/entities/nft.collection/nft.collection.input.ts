@@ -8,7 +8,7 @@ export class GetNftCollectionsCountInput {
   @Field(() => ID, { name: "search", description: "Collection identifier to retrieve for the given result set.", nullable: true })
   search: string | undefined = undefined;
 
-  @Field(() => [NftType], { name: "type", description: "Types to retrieve for the given result set.", nullable: true })
+  @Field(() => [NftType], { name: "type", description: "NFT types list to retrieve for the given result set.", nullable: true })
   type: Array<NftType> | undefined = undefined;
 
   @Field(() => String, { name: "creator", description: "Creator to retrieve for the given result set.", nullable: true })

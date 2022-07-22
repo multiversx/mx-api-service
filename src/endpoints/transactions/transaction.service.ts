@@ -367,7 +367,7 @@ export class TransactionService {
 
   private async getSmartContractResultsRaw(transactionHashes: Array<string>): Promise<Array<SmartContractResult[] | null>> {
     const elasticQuery = ElasticQuery.create()
-      .withPagination({ from: 0, size: 10000 })
+      .withPagination({ from: 0, size: transactionHashes.length + 1 })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
       .withTerms(new TermsQuery('originalTxHash', transactionHashes));
 

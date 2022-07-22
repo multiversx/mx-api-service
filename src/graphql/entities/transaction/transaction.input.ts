@@ -6,19 +6,19 @@ import { TransactionStatus } from "src/endpoints/transactions/entities/transacti
 
 @InputType({ description: "Input to retrieve the given transactions count for." })
 export class GetTransactionsCountInput {
-  @Field(() => String, { name: "sender", description: "Address of the transaction sender for the given result set.", nullable: true })
+  @Field(() => String, { name: "sender", description: "Sender for the given result set.", nullable: true })
   sender: string | undefined = undefined;
 
-  @Field(() => String, { name: "receiver", description: "Address of the transaction receiver for the given result set.", nullable: true })
+  @Field(() => String, { name: "receiver", description: "Receiver for the given result set.", nullable: true })
   receiver: string | undefined = undefined;
 
   @Field(() => String, { name: "token", description: "Token identfier for the given result set.", nullable: true })
   token: string | undefined = undefined;
 
-  @Field(() => Float, { name: "senderShard", description: "Sender shard identfier for the given result set.", nullable: true })
+  @Field(() => Float, { name: "senderShard", description: "Sender shard for the given result set.", nullable: true })
   senderShard: number | undefined = undefined;
 
-  @Field(() => Float, { name: "receiverShard", description: "Receiver shard identfier for the given result set.", nullable: true })
+  @Field(() => Float, { name: "receiverShard", description: "Receiver shard for the given result set.", nullable: true })
   receiverShard: number | undefined = undefined;
 
   @Field(() => String, { name: "miniBlockHash", description: "Mini block hash for the given result set.", nullable: true })
@@ -27,7 +27,7 @@ export class GetTransactionsCountInput {
   @Field(() => [String], { name: "hashes", description: "Filter by a comma-separated list of transaction hashes for the given result set.", nullable: true })
   hashes: Array<string> | undefined = undefined;
 
-  @Field(() => TransactionStatus, { name: "status", description: "Status of the transaction (success / pending / invalid / fail) for the given result set.", nullable: true })
+  @Field(() => TransactionStatus, { name: "status", description: "Status of the transaction for the given result set.", nullable: true })
   status: TransactionStatus | undefined = undefined;
 
   @Field(() => String, { name: "search", description: "Search in data object for the given result set.", nullable: true })

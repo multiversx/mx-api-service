@@ -1,5 +1,8 @@
 import { Field, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
+
+import GraphQLJSON from "graphql-type-json";
+
 import { TokenAssetStatus } from "../../../endpoints/tokens/entities/token.asset.status";
 
 @ObjectType("TokenAssets", { description: "Token assets object type." })
@@ -12,7 +15,7 @@ export class TokenAssets {
   @ApiProperty({ type: String })
   description: string = '';
 
-  @Field(() => String, { description: 'Website for the given token assets.' })
+  @Field(() => String, { description: 'Status for the given token assets.' })
   @ApiProperty({ enum: TokenAssetStatus, default: 'inactive' })
   status: TokenAssetStatus = TokenAssetStatus.inactive;
 
@@ -24,8 +27,9 @@ export class TokenAssets {
   @ApiProperty({ type: String })
   svgUrl: string = '';
 
-  @ApiProperty({ type: String, isArray: true })
-  lockedAccounts: string[] | Record<string, string> | undefined = undefined;
+  @Field(() => GraphQLJSON, { description: 'Locked accounts for the given token assets.', nullable: true })
+  @ApiProperty({ type: String })
+  lockedAccounts: Record<string, string> | undefined = undefined;
 
   @Field(() => [String], { description: 'Extra tokens for the given token assets.', nullable: true })
   @ApiProperty({ type: String, isArray: true })

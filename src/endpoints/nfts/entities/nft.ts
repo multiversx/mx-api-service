@@ -6,6 +6,7 @@ import { NftMetadata } from "./nft.metadata";
 import { NftType } from "./nft.type";
 import { SwaggerUtils } from "@elrondnetwork/erdnest";
 import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
+import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
 
 @ObjectType("Nft", { description: "NFT object type." })
 export class Nft {
@@ -17,7 +18,7 @@ export class Nft {
   @ApiProperty({ type: String })
   identifier: string = '';
 
-  @Field(() => String, { description: "Collection identifier for the given NFT." })
+  @Field(() => NftCollection, { description: "NFT collection for the given NFT." })
   @ApiProperty({ type: String })
   collection: string = '';
 
@@ -25,7 +26,7 @@ export class Nft {
   @ApiProperty({ type: Number, nullable: true })
   timestamp?: number = undefined;
 
-  @Field(() => String, { description: "Attributes for the given NFT." })
+  @Field(() => String, { description: "Attributes for the given NFT.", nullable: true })
   @ApiProperty({ type: String })
   attributes: string = '';
 
@@ -85,7 +86,7 @@ export class Nft {
   @ApiProperty({ type: String, nullable: true })
   balance: string | undefined = undefined;
 
-  @Field(() => String, { description: "Supply for the given NFT." })
+  @Field(() => String, { description: "Supply for the given NFT.", nullable: true })
   @ApiProperty(SwaggerUtils.amountPropertyOptions())
   supply: string | undefined = undefined;
 
@@ -93,11 +94,11 @@ export class Nft {
   @ApiProperty({ type: Number, nullable: true })
   decimals: number | undefined = undefined;
 
-  @Field(() => TokenAssets, { description: "Supply for the given NFT.", nullable: true })
+  @Field(() => TokenAssets, { description: "Assets for the given NFT.", nullable: true })
   @ApiProperty()
   assets?: TokenAssets;
 
-  @Field(() => String, { description: "Ticket for the given NFT." })
+  @Field(() => String, { description: "Ticker for the given NFT." })
   @ApiProperty({ type: String })
   ticker?: string = '';
 

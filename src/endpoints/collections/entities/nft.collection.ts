@@ -34,19 +34,19 @@ export class NftCollection {
   @ApiProperty({ type: Number })
   timestamp: number = 0;
 
-  @Field(() => Boolean, { description: 'Can freeze for the given NFT collection.', nullable: true })
+  @Field(() => Boolean, { description: 'If the given NFT collection can freeze.', nullable: true })
   @ApiProperty({ type: Boolean, default: false })
   canFreeze: boolean = false;
 
-  @Field(() => Boolean, { description: 'Can wipe for the given NFT collection.', nullable: true })
+  @Field(() => Boolean, { description: 'If the given NFT collection can wipe.', nullable: true })
   @ApiProperty({ type: Boolean, default: false })
   canWipe: boolean = false;
 
-  @Field(() => Boolean, { description: 'Can pause for the given NFT collection.', nullable: true })
+  @Field(() => Boolean, { description: 'If the given NFT collection can pause.', nullable: true })
   @ApiProperty({ type: Boolean, default: false })
   canPause: boolean = false;
 
-  @Field(() => Boolean, { description: 'Can transfer NFT create role for the given NFT collection.', nullable: true })
+  @Field(() => Boolean, { description: 'If the given NFT collection can transfer NFT create role.', nullable: true })
   @ApiProperty({ type: Boolean, default: false })
   canTransferNftCreateRole: boolean = false;
 
@@ -58,7 +58,7 @@ export class NftCollection {
   @ApiProperty({ type: TokenAssets, nullable: true })
   assets: TokenAssets | undefined = undefined;
 
-  @Field(() => [CollectionRoles], { description: 'Roles for the given NFT collection.', nullable: true })
+  @Field(() => [CollectionRoles], { description: 'Roles list for the given NFT collection.', nullable: true })
   @ApiProperty({ type: CollectionRoles })
   roles: CollectionRoles[] = [];
 }
