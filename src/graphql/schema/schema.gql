@@ -165,17 +165,11 @@ input GetNftCollectionsCountInput {
   """Can burn to retrieve for the given result set."""
   canBurn: String
 
-  """Can create to retrieve for the given result set."""
-  canCreate: String
-
   """Can transfer role to retrieve for the given result set."""
   canTransferRole: String
 
   """Can update attributes to retrieve for the given result set."""
   canUpdateAttributes: String
-
-  """Creator to retrieve for the given result set."""
-  creator: String
 
   """Collection identifier to retrieve for the given result set."""
   search: ID
@@ -186,6 +180,12 @@ input GetNftCollectionsCountInput {
 
 """Input to retrieve the given NFT collections for."""
 input GetNftCollectionsInput {
+  """After timestamp to retrieve for the given result set."""
+  after: Float
+
+  """Before timestamp to retrieve for the given result set."""
+  before: Float
+
   """Can add quantity to retrieve for the given result set."""
   canAddQuantity: String
 
@@ -195,17 +195,11 @@ input GetNftCollectionsInput {
   """Can burn to retrieve for the given result set."""
   canBurn: String
 
-  """Can create to retrieve for the given result set."""
-  canCreate: String
-
   """Can transfer role to retrieve for the given result set."""
   canTransferRole: String
 
   """Can update attributes to retrieve for the given result set."""
   canUpdateAttributes: String
-
-  """Creator to retrieve for the given result set."""
-  creator: String
 
   """Number of NFT collections to skip for the given result set."""
   from: Float = 0
@@ -491,6 +485,9 @@ type Nft {
 
   """NFT type for the given NFT."""
   type: NftType!
+
+  """Unlock mile stone model for the given NFT."""
+  unlockSchedule: [UnlockMileStoneModel!]
 
   """URIs for the given NFT."""
   uris: [String!]!
@@ -1027,4 +1024,13 @@ enum TransactionStatus {
 
   """Success status."""
   success
+}
+
+"""Unlock mile stone model object type."""
+type UnlockMileStoneModel {
+  """Percent for the given unlock mile stone model."""
+  percent: Float!
+
+  """Remaining epochs for the given unlock mile stone model."""
+  remainingEpochs: Float!
 }
