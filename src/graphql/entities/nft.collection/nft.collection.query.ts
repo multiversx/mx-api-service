@@ -23,7 +23,6 @@ export class NftCollectionQuery {
         search: input.search,
         type: input.type,
         identifiers: input.identifiers,
-        canCreate: input.canCreate ?? input.creator,
         canBurn: input.canBurn,
         canAddQuantity: input.canAddQuantity,
         canUpdateAttributes: input.canUpdateAttributes,
