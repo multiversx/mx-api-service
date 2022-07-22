@@ -11,12 +11,6 @@ export class GetNftCollectionsCountInput {
   @Field(() => [NftType], { name: "type", description: "NFT types list to retrieve for the given result set.", nullable: true })
   type: Array<NftType> | undefined = undefined;
 
-  @Field(() => String, { name: "creator", description: "Creator to retrieve for the given result set.", nullable: true })
-  creator: string | undefined = undefined;
-
-  @Field(() => String, { name: "canCreate", description: "Can create to retrieve for the given result set.", nullable: true })
-  canCreate: string | undefined = undefined;
-
   @Field(() => String, { name: "canBurn", description: "Can burn to retrieve for the given result set.", nullable: true })
   canBurn: string | undefined = undefined;
 
@@ -36,7 +30,6 @@ export class GetNftCollectionsCountInput {
     return new CollectionFilter({
       search: input.search,
       type: input.type,
-      canCreate: input.canCreate ?? input.creator,
       canBurn: input.canBurn,
       canAddQuantity: input.canAddQuantity,
       canUpdateAttributes: input.canUpdateAttributes,
