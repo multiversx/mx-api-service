@@ -177,7 +177,7 @@ export class AssetsService {
         }
 
         allAssets[provider.provider] = new AccountAssets({
-          name: identity.name ?? '',
+          name: `Staking: ${identity.name ?? ''}`,
           description: identity.description ?? '',
           iconPng: identity.avatar,
           tags: ['staking', 'provider'],
