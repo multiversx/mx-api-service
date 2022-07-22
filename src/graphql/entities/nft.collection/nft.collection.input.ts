@@ -54,6 +54,12 @@ export class GetNftCollectionsInput extends GetNftCollectionsCountInput {
   @Field(() => Float, { name: "size", description: "Number of NFT collections to retrieve for the given result set.", nullable: true, defaultValue: 25 })
   size: number = 25;
 
+  @Field(() => Float, { name: "before", description: "Before timestamp to retrieve for the given result set.", nullable: true })
+  before: number | undefined = undefined;
+
+  @Field(() => Float, { name: "after", description: "After timestamp to retrieve for the given result set.", nullable: true })
+  after: number | undefined = undefined;
+
   @Field(() => [ID], { name: "identifiers", description: "Collection comma-separated identifiers to retrieve for the given result set.", nullable: true })
   identifiers: Array<string> | undefined = undefined;
 }
