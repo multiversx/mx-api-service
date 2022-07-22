@@ -429,7 +429,7 @@ type Nft {
   """Balance for the given NFT."""
   balance: String
 
-  """NFT collection identifier for the given NFT."""
+  """NFT collection for the given NFT."""
   collection: NftCollection!
 
   """Creator for the given NFT."""
