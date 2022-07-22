@@ -15,6 +15,10 @@ export class TokenUtils {
     return string.split('-').pop() === 'true';
   }
 
+  static isNft(nftIdentifier: string) {
+    return nftIdentifier.split('-').length === 3;
+  }
+
   static computeNftUri(uri: string, prefix: string) {
     uri = ApiUtils.replaceUri(uri, 'https://ipfs.io/ipfs', prefix);
     uri = ApiUtils.replaceUri(uri, 'https://gateway.ipfs.io/ipfs', prefix);
