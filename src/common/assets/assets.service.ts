@@ -206,7 +206,7 @@ export class AssetsService {
     if (mexSettings) {
       for (const [index, wrapContract] of mexSettings.wrapContracts.entries()) {
         allAssets[wrapContract] = new AccountAssets({
-          name: `WrappedEGLD Contract Shard ${index}`,
+          name: `ESDT: WrappedEGLD Contract Shard ${index}`,
           tags: ['mex', 'wegld'],
         });
       }
