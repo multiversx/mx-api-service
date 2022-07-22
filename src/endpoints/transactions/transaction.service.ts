@@ -171,9 +171,7 @@ export class TransactionService {
 
     const assets = await this.assetsService.getAllAccountAssets();
     for (const transaction of transactions) {
-      await this.processTransaction(transaction);
-
-      await this.applyAssets(transaction, assets);
+      await this.processTransaction(transaction, assets);
     }
 
     return transactions;
@@ -305,7 +303,7 @@ export class TransactionService {
     }
   }
 
-  async processTransaction(transaction: Transaction): Promise<void> {
+  async processTransaction(transaction: Transaction, assets?: Record<string, AccountAssets>): Promise<void> {
     try {
       await this.pluginsService.processTransaction(transaction);
 
@@ -315,6 +313,8 @@ export class TransactionService {
       if (transaction.pendingResults === true) {
         transaction.status = TransactionStatus.pending;
       }
+
+      await this.applyAssets(transaction, assets);
     } catch (error) {
       this.logger.error(`Unhandled error when processing plugin transaction for transaction with hash '${transaction.txHash}'`);
       this.logger.error(error);
