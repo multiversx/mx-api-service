@@ -245,6 +245,10 @@ export class TransactionService {
 
     if (transaction.logs) {
       transaction.logs.addressAssets = accountAssets[transaction.logs.address];
+
+      for (const event of transaction.logs.events) {
+        event.addressAssets = accountAssets[event.address];
+      }
     }
   }
 
