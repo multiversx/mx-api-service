@@ -20,6 +20,8 @@ export class NftCollectionQuery {
     return await this.collectionService.getNftCollections(
       new QueryPagination({ from: input.from, size: input.size }),
       new CollectionFilter({
+        before: input.before,
+        after: input.after,
         search: input.search,
         type: input.type,
         identifiers: input.identifiers,
