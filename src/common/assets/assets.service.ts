@@ -188,7 +188,7 @@ export class AssetsService {
     if (pairs) {
       for (const pair of pairs) {
         allAssets[pair.address] = new AccountAssets({
-          name: `MEX ${pair.baseSymbol}/${pair.quoteSymbol} Liquidity Pool`,
+          name: `Maiar Exchange: ${pair.baseSymbol}/${pair.quoteSymbol} Liquidity Pool`,
           tags: ['mex', 'liquiditypool'],
         });
       }
@@ -197,7 +197,7 @@ export class AssetsService {
     if (farms) {
       for (const farm of farms) {
         allAssets[farm.address] = new AccountAssets({
-          name: `MEX ${farm.name} Farm`,
+          name: `Maiar Exchange: ${farm.name} Farm`,
           tags: ['mex', 'farm'],
         });
       }
@@ -212,12 +212,12 @@ export class AssetsService {
       }
 
       allAssets[mexSettings.lockedAssetContract] = new AccountAssets({
-        name: `MEX Locked asset Contract`,
+        name: `Maiar Exchange: Locked asset Contract`,
         tags: ['mex', 'lockedasset'],
       });
 
       allAssets[mexSettings.distributionContract] = new AccountAssets({
-        name: `MEX Distribution Contract`,
+        name: `Maiar Exchange: Distribution Contract`,
         tags: ['mex', 'lockedasset'],
       });
     }
