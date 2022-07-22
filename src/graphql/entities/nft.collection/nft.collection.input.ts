@@ -66,10 +66,10 @@ export class GetNftCollectionsInput extends GetNftCollectionsCountInput {
 
 @InputType({ description: "Input to retrieve the given NFT collection for." })
 export class GetNftCollectionInput {
-  @Field(() => ID, { name: "identifier", description: "Collection identifier to retrieve the corresponding NFT collection for." })
-  identifier: string = "";
+  @Field(() => ID, { name: "collection", description: "Collection identifier to retrieve the corresponding NFT collection for." })
+  collection: string = "";
 
   public static resolve(input: GetNftCollectionInput): string {
-    return input.identifier;
+    return input.collection;
   }
 }
