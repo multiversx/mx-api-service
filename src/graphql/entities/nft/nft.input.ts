@@ -35,8 +35,16 @@ export class GetNftsCountInput {
   @Field(() => Boolean, { name: "hasUris", description: "Has URIs to retrieve for the given result set.", nullable: true })
   hasUris: boolean | undefined = undefined;
 
+  @Field(() => Float, { name: "before", description: "Before timestamp to retrieve for the given result set.", nullable: true })
+  before: number | undefined = undefined;
+
+  @Field(() => Float, { name: "after", description: "After timestamp to retrieve for the given result set.", nullable: true })
+  after: number | undefined = undefined;
+
   public static resolve(input: GetNftsCountInput): NftFilter {
-    return new NftFilter({ 
+    return new NftFilter({
+      after: input.after,
+      before: input.before,
       search: input.search, 
       identifiers: input.identifiers, 
       type: input.type, 

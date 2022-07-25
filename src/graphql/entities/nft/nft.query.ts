@@ -19,11 +19,13 @@ export class NftQuery {
   @Query(() => [Nft], { name: "nfts", description: "Retrieve all NFTs for the given input." })
   public async getNfts(@Args("input", { description: "Input to retrieve the given NFTs for." }) input: GetNftsInput): Promise<Nft[]> {
     return await this.nftService.getNfts(
-      new QueryPagination({ 
+      new QueryPagination({
         from: input.from, 
         size: input.size,
       }),
-      new NftFilter({ 
+      new NftFilter({
+        after: input.after,
+        before: input.before,
         search: input.search, 
         identifiers: input.identifiers, 
         type: input.type, 
@@ -35,7 +37,7 @@ export class NftQuery {
         isWhitelistedStorage: input.isWhitelistedStorage, 
         isNsfw: input.isNsfw,
       }),
-      new NftQueryOptions({ 
+      new NftQueryOptions({
         withOwner: input.withOwner, 
         withSupply: input.withSupply,
       }),

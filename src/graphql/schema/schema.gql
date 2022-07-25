@@ -227,6 +227,12 @@ input GetNftInput {
 
 """Input to retrieve the given NFTs count for."""
 input GetNftsCountInput {
+  """After timestamp to retrieve for the given result set."""
+  after: Float
+
+  """Before timestamp to retrieve for the given result set."""
+  before: Float
+
   """Collection identifier for the given result set."""
   collection: ID = ""
 
@@ -262,6 +268,12 @@ input GetNftsCountInput {
 
 """Input to retrieve the given NFTs for."""
 input GetNftsInput {
+  """After timestamp to retrieve for the given result set."""
+  after: Float
+
+  """Before timestamp to retrieve for the given result set."""
+  before: Float
+
   """Collection identifier for the given result set."""
   collection: ID = ""
 
