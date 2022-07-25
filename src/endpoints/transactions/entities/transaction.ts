@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import { TransactionAction } from "../transaction-action/entities/transaction.action";
@@ -29,6 +30,9 @@ export class Transaction {
   @ApiProperty({ type: String })
   receiver: string = '';
 
+  @ApiProperty({ type: AccountAssets, nullable: true })
+  receiverAssets: AccountAssets | undefined = undefined;
+
   @ApiProperty({ type: Number })
   receiverShard: number = 0;
 
@@ -37,6 +41,9 @@ export class Transaction {
 
   @ApiProperty({ type: String })
   sender: string = '';
+
+  @ApiProperty({ type: AccountAssets, nullable: true })
+  senderAssets: AccountAssets | undefined = undefined;
 
   @ApiProperty({ type: Number })
   senderShard: number = 0;

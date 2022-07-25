@@ -1,5 +1,6 @@
 import { SwaggerUtils } from "@elrondnetwork/erdnest";
 import { ApiProperty } from "@nestjs/swagger";
+import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { TransactionAction } from "src/endpoints/transactions/transaction-action/entities/transaction.action";
 import { TransactionLog } from "../../transactions/entities/transaction.log";
 
@@ -29,8 +30,14 @@ export class SmartContractResult {
   @ApiProperty({ type: String })
   sender: string = '';
 
+  @ApiProperty({ type: AccountAssets, nullable: true })
+  senderAssets: AccountAssets | undefined = undefined;
+
   @ApiProperty({ type: String })
   receiver: string = '';
+
+  @ApiProperty({ type: AccountAssets, nullable: true })
+  receiverAssets: AccountAssets | undefined = undefined;
 
   @ApiProperty({ type: String })
   relayedValue: string = '';
