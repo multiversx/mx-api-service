@@ -195,7 +195,7 @@ export class PostgresIndexerService implements IndexerInterface {
   }
 
   async getScDeploy(_address: string): Promise<any> {
-    // TODO address does not exist
+    // TODO the "address" column does not exist in "sc_deploy_infos" table
     return await this.scDeploysRepository.findOneByOrFail({});
   }
 
@@ -484,7 +484,7 @@ export class PostgresIndexerService implements IndexerInterface {
   }
 
   async getAllTokensMetadata(action: (items: any[]) => Promise<void>): Promise<void> {
-    // TODO add fields + join
+    // TODO could not find a relationship between the "token_infos" and "token_meta_data" tables
 
     let from = 0;
     const size = 10000;
@@ -552,29 +552,29 @@ export class PostgresIndexerService implements IndexerInterface {
 
   // eslint-disable-next-line require-await
   async getCollectionsForAddress(_address: string, _filter: CollectionFilter, _pagination: QueryPagination): Promise<{ collection: string; count: number; balance: number; }[]> {
-    // TODO
+    // TODO not implemented
     return [];
   }
 
   // eslint-disable-next-line require-await
   async getAssetsForToken(_identifier: string): Promise<any> {
-    // TODO
+    // TODO custom columns cannot be added
     return {};
   }
 
   async setAssetsForToken(_identifier: string, _value: any): Promise<void> {
-    // TODO
+    // TODO custom columns cannot be added
   }
 
   async setIsWhitelistedStorageForToken(_identifier: string, _value: boolean): Promise<void> {
-    // TODO
+    // TODO custom columns cannot be added
   }
 
   async setMediaForToken(_identifier: string, _value: any[]): Promise<void> {
-    // TODO
+    // TODO custom columns cannot be added
   }
 
   async setMetadataForToken(_identifier: string, _value: any): Promise<void> {
-    // TODO
+    // TODO custom columns cannot be added
   }
 }

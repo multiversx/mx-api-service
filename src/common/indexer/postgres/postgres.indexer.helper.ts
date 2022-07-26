@@ -36,7 +36,6 @@ export class PostgresIndexerHelper {
   ) { }
 
   public async buildElasticBlocksFilter(filter: BlockFilter): Promise<SelectQueryBuilder<BlockDb>> {
-    // TODO test
     let query = this.blocksRepository.createQueryBuilder();
 
     if (filter.nonce !== undefined) {
@@ -65,13 +64,12 @@ export class PostgresIndexerHelper {
   }
 
   buildCollectionRolesFilter(filter: CollectionFilter, address?: string): SelectQueryBuilder<TokenInfoDb> {
-    // TODO test
     let query = this.tokensRepository.createQueryBuilder()
       .where(`(identifier IS NULL OR identifier = '')`)
       .andWhere('type IN (:...types)', { types: [NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT] });
 
     if (address) {
-      // TODO
+      // TODO the "roles" column does not exist in "token_infos" table
       query = query.andWhere('current_owner = :address', { address });
       // elasticQuery = elasticQuery.withMustCondition(QueryType.Should(
       //   [
@@ -134,7 +132,7 @@ export class PostgresIndexerHelper {
   }
 
   // private getRoleCondition(query: ElasticQuery, name: string, address: string | undefined, value: string | boolean) {
-  //   // TODO
+  //   // TODO the "roles" column does not exist in "token_infos" table
   //   const condition = value === false ? QueryConditionOptions.mustNot : QueryConditionOptions.must;
   //   const targetAddress = typeof value === 'string' ? value : address;
 
@@ -142,7 +140,6 @@ export class PostgresIndexerHelper {
   // }
 
   buildElasticNftFilter(repository: Repository<AccountsEsdtDb | TokenInfoDb>, filter: NftFilter, identifier?: string, address?: string): SelectQueryBuilder<AccountsEsdtDb | TokenInfoDb> {
-    // TODO test
     let query = repository.createQueryBuilder()
       .where(`identifier IS NOT NULL AND identifier != ''`);
 
@@ -170,7 +167,7 @@ export class PostgresIndexerHelper {
       query = query.andWhere('token IN (:...collections)', { collections: filter.collections });
     }
 
-    // TODO
+    // TODO could not find a relationship between the "token_infos" and "token_meta_data" tables
     // if (filter.name !== undefined && filter.name !== '') {
     //   query = query.withMustCondition(QueryType.Nested('data', { "data.name": filter.name }));
     // }
@@ -212,7 +209,6 @@ export class PostgresIndexerHelper {
   }
 
   buildTransferFilterQuery(filter: TransactionFilter): SelectQueryBuilder<TransactionOperationDb | ScResultOperationDb> {
-    // TODO test
     let query = this.operationsRepository.createQueryBuilder();
 
     if (filter.address) {
@@ -284,12 +280,11 @@ export class PostgresIndexerHelper {
   }
 
   buildTokensWithRolesForAddressQuery(_address: string, filter: TokenWithRolesFilter, pagination?: QueryPagination): SelectQueryBuilder<TokenInfoDb> {
-    // TODO test
     let query = this.tokensRepository.createQueryBuilder()
       .where(`identifier IS NOT NULL AND identifier != ''`)
       .andWhere('type = :type', { type: TokenType.FungibleESDT });
 
-    // TODO
+    // TODO the "roles" column does not exist in "token_infos" table
     // .withMustCondition(QueryType.Should(
     //   [
     //     QueryType.Match('currentOwner', address),
@@ -309,13 +304,13 @@ export class PostgresIndexerHelper {
     }
 
     if (filter.canMint !== undefined) {
-      // TODO
+      // TODO the "roles" column does not exist in "token_infos" table
       // const condition = filter.canMint === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
       // elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleLocalMint': address }));
     }
 
     if (filter.canBurn !== undefined) {
-      // TODO
+      // TODO the "roles" column does not exist in "token_infos" table
       // const condition = filter.canBurn === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
       // elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }));
     }
