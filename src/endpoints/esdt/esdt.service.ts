@@ -78,7 +78,7 @@ export class EsdtService {
 
     await this.applyMexPrices(tokens);
 
-    tokens = tokens.sortedDescending(token => token.transactions ?? 0);
+    tokens = tokens.sortedDescending(token => token.assets ? 1 : 0, token => token.marketCap ?? 0, token => token.transactions ?? 0);
 
     return tokens;
   }
@@ -87,16 +87,21 @@ export class EsdtService {
     try {
       const indexedTokens = await this.mexTokenService.getMexPricesRaw();
       for (const token of tokens) {
-        let price = indexedTokens[token.identifier];
+        const price = indexedTokens[token.identifier];
         if (price) {
           const supply = await this.getTokenSupply(token.identifier);
 
           if (token.assets && token.identifier.split('-')[0] === 'EGLDUSDC') {
-            price = price / (10 ** 12) * 2;
+            price.price = price.price / (10 ** 12) * 2;
           }
 
-          token.price = price;
-          token.marketCap = price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+          if (price.isToken) {
+            token.price = price.price;
+            token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+          }
+
+          token.supply = supply.totalSupply;
+          token.circulatingSupply = supply.circulatingSupply;
         }
       }
     } catch (error) {
@@ -414,5 +419,26 @@ export class EsdtService {
 
   async getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]): Promise<any[]> {
     return await this.indexerService.getAccountEsdtByAddressesAndIdentifier(identifier, addresses);
+  }
+
+  async getTokenMarketCap(): Promise<number> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.TokenMarketCap.key,
+      async () => await this.getTokenMarketCapRaw(),
+      CacheInfo.TokenMarketCap.ttl,
+    );
+  }
+
+  async getTokenMarketCapRaw(): Promise<number> {
+    let totalMarketCap = 0;
+
+    const tokens = await this.getAllEsdtTokens();
+    for (const token of tokens) {
+      if (token.price && token.marketCap) {
+        totalMarketCap += token.marketCap;
+      }
+    }
+
+    return totalMarketCap;
   }
 }

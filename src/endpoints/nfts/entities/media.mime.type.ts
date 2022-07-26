@@ -1,6 +1,7 @@
 export enum MediaMimeTypeEnum {
   png = 'image/png',
   jpeg = 'image/jpeg',
+  webp = 'image/webp',
   jpg = 'image/jpg',
   gif = 'image/gif',
 

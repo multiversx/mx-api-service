@@ -21,6 +21,8 @@ import { TransactionStatus } from './entities/transaction.status';
 import { AddressUtils, ApiUtils, Constants, CachingService } from '@elrondnetwork/erdnest';
 import { TransactionUtils } from './transaction.utils';
 import { IndexerService } from "src/common/indexer/indexer.service";
+import { AssetsService } from 'src/common/assets/assets.service';
+import { AccountAssets } from 'src/common/assets/entities/account.assets';
 
 @Injectable()
 export class TransactionService {
@@ -37,7 +39,8 @@ export class TransactionService {
     private readonly pluginsService: PluginService,
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => TransactionActionService))
-    private readonly transactionActionService: TransactionActionService
+    private readonly transactionActionService: TransactionActionService,
+    private readonly assetsService: AssetsService,
   ) {
     this.logger = new Logger(TransactionService.name);
   }
@@ -95,8 +98,9 @@ export class TransactionService {
       transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
     }
 
+    const assets = await this.assetsService.getAllAccountAssets();
     for (const transaction of transactions) {
-      await this.processTransaction(transaction);
+      await this.processTransaction(transaction, assets);
     }
 
     return transactions;
@@ -129,9 +133,50 @@ export class TransactionService {
           }
         }
       }
+
+      await this.applyAssets(transaction);
+      await this.applyAssetsDetailed(transaction);
     }
 
     return transaction;
+  }
+
+  async applyAssets(transaction: Transaction, assets?: Record<string, AccountAssets>): Promise<void> {
+    const accountAssets = assets ?? await this.assetsService.getAllAccountAssets();
+
+    transaction.senderAssets = accountAssets[transaction.sender];
+    transaction.receiverAssets = accountAssets[transaction.receiver];
+  }
+
+  async applyAssetsDetailed(transaction: TransactionDetailed): Promise<void> {
+    const accountAssets = await this.assetsService.getAllAccountAssets();
+
+    if (transaction.results) {
+      for (const result of transaction.results) {
+        result.senderAssets = accountAssets[result.sender];
+        result.receiverAssets = accountAssets[result.receiver];
+      }
+    }
+
+    if (transaction.operations) {
+      for (const operation of transaction.operations) {
+        if (operation.sender) {
+          operation.senderAssets = accountAssets[operation.sender];
+        }
+
+        if (operation.receiver) {
+          operation.receiverAssets = accountAssets[operation.receiver];
+        }
+      }
+    }
+
+    if (transaction.logs) {
+      transaction.logs.addressAssets = accountAssets[transaction.logs.address];
+
+      for (const event of transaction.logs.events) {
+        event.addressAssets = accountAssets[event.address];
+      }
+    }
   }
 
   async createTransaction(transaction: TransactionCreate): Promise<TransactionSendResult | string> {
@@ -187,7 +232,7 @@ export class TransactionService {
     }
   }
 
-  async processTransaction(transaction: Transaction): Promise<void> {
+  async processTransaction(transaction: Transaction, assets?: Record<string, AccountAssets>): Promise<void> {
     try {
       await this.pluginsService.processTransaction(transaction);
 
@@ -197,6 +242,8 @@ export class TransactionService {
       if (transaction.pendingResults === true) {
         transaction.status = TransactionStatus.pending;
       }
+
+      await this.applyAssets(transaction, assets);
     } catch (error) {
       this.logger.error(`Unhandled error when processing plugin transaction for transaction with hash '${transaction.txHash}'`);
       this.logger.error(error);

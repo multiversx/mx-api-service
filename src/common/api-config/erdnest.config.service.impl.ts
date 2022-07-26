@@ -15,9 +15,4 @@ export class ErdnestConfigServiceImpl implements ErdnestConfigService {
   getJwtSecret(): string {
     return this.apiConfigService.getJwtSecret();
   }
-
-  getAccessAddress(): string {
-    return this.apiConfigService.getAccessAddress();
-  }
-
 }

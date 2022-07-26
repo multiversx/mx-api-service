@@ -34,7 +34,7 @@ export class NftThumbnailService {
             fit: fit.cover,
           }
         )
-        .png({ progressive: true })
+        .jpeg({ progressive: true })
         .toBuffer();
     } catch (error: any) {
       this.logger.error(error);
@@ -77,7 +77,7 @@ export class NftThumbnailService {
     const audioPath = path.join(this.apiConfigService.getTempUrl(), nftIdentifier);
     await FileUtils.writeFile(buffer, audioPath);
 
-    const outputPath = path.join(this.apiConfigService.getTempUrl(), `${nftIdentifier}.screenshot.png`);
+    const outputPath = path.join(this.apiConfigService.getTempUrl(), `${nftIdentifier}.screenshot.jpg`);
 
     try {
       await new Promise(resolve => {
@@ -106,7 +106,7 @@ export class NftThumbnailService {
     // we try to extract frames at 0, 10, 30 seconds, and we take the frame that has the biggest size
     // (i.e. the bigger the size, the more "crisp" an image should be, since it contains more details)
     const frames = [0, 10, 30];
-    const filePaths = frames.map(x => path.join(this.apiConfigService.getTempUrl(), `${nftIdentifier}.screenshot.${x}.png`));
+    const filePaths = frames.map(x => path.join(this.apiConfigService.getTempUrl(), `${nftIdentifier}.screenshot.${x}.jpg`));
 
     const videoPath = path.join(this.apiConfigService.getTempUrl(), nftIdentifier);
     await FileUtils.writeFile(buffer, videoPath);
@@ -195,7 +195,7 @@ export class NftThumbnailService {
     if (ThumbnailType.isAudio(fileType)) {
       const thumbnail = await this.extractThumbnailFromAudio(file, nftIdentifier);
       if (thumbnail) {
-        await this.uploadThumbnail(urlIdentifier, thumbnail, 'image/png');
+        await this.uploadThumbnail(urlIdentifier, thumbnail, 'image/jpeg');
         this.logger.log(`Successfully generated audio thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
         return GenerateThumbnailResult.success;
       } else {
@@ -205,7 +205,7 @@ export class NftThumbnailService {
     } else if (ThumbnailType.isImage(fileType)) {
       const thumbnail = await this.extractThumbnailFromImage(file);
       if (thumbnail) {
-        await this.uploadThumbnail(urlIdentifier, thumbnail, fileType);
+        await this.uploadThumbnail(urlIdentifier, thumbnail, 'image/jpeg');
         this.logger.log(`Successfully generated image thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
         return GenerateThumbnailResult.success;
       } else {
@@ -215,7 +215,7 @@ export class NftThumbnailService {
     } else if (ThumbnailType.isVideo(fileType)) {
       const thumbnail = await this.extractThumbnailFromVideo(file, nftIdentifier);
       if (thumbnail) {
-        await this.uploadThumbnail(urlIdentifier, thumbnail, 'image/png');
+        await this.uploadThumbnail(urlIdentifier, thumbnail, 'image/jpeg');
         this.logger.log(`Successfully generated video thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
         return GenerateThumbnailResult.success;
       } else {

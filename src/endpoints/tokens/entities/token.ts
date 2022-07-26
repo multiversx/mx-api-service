@@ -69,4 +69,10 @@ export class Token {
 
   @ApiProperty({ type: Number, nullable: true })
   marketCap: number | undefined = undefined;
+
+  @ApiProperty(SwaggerUtils.amountPropertyOptions({ description: 'Supply amount' }))
+  supply: string | undefined = undefined;
+
+  @ApiProperty(SwaggerUtils.amountPropertyOptions({ description: 'Circulating supply amount' }))
+  circulatingSupply: string | undefined = undefined;
 }

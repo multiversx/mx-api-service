@@ -20,8 +20,9 @@ import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, BatchUtils } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
+import { LockedAssetService } from "src/common/locked-asset/locked-asset.service";
 
 @Injectable()
 export class NftService {
@@ -43,6 +44,7 @@ export class NftService {
     @Inject(forwardRef(() => EsdtAddressService))
     private readonly esdtAddressService: EsdtAddressService,
     private readonly mexTokenService: MexTokenService,
+    private readonly lockedAssetService: LockedAssetService,
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -86,6 +88,10 @@ export class NftService {
     }
 
     await this.batchProcessNfts(nfts);
+
+    for (const nft of nfts) {
+      await this.applyUnlockSchedule(nft);
+    }
 
     return nfts;
   }
@@ -203,9 +209,15 @@ export class NftService {
 
     await this.applyAssetsAndTicker(nft);
 
+    await this.applyUnlockSchedule(nft);
+
     await this.processNft(nft);
 
     return nft;
+  }
+
+  private async applyUnlockSchedule(nft: Nft): Promise<void> {
+    nft.unlockSchedule = await this.lockedAssetService.getUnlockSchedule(nft.identifier, nft.attributes);
   }
 
   private async applyNftAttributes(nft: Nft): Promise<void> {
@@ -386,7 +398,7 @@ export class NftService {
     await this.batchProcessNfts(nfts);
 
     if (this.apiConfigService.isNftExtendedAttributesEnabled()) {
-      const internalNfts = await this.getNftsInternal(new QueryPagination({ from: 0, size: nfts.length }), new NftFilter({ identifiers: nfts.map(x => x.identifier) }));
+      const internalNfts = await this.getNftsInternalByIdentifiers(nfts.map(x => x.identifier));
 
       const indexedInternalNfts = internalNfts.toRecord<Nft>(x => x.identifier);
       for (const nft of nfts) {
@@ -399,7 +411,23 @@ export class NftService {
       }
     }
 
+    for (const nft of nfts) {
+      await this.applyUnlockSchedule(nft);
+    }
+
     return nfts;
+  }
+
+  private async getNftsInternalByIdentifiers(identifiers: string[]): Promise<Nft[]> {
+    const chunks = BatchUtils.splitArrayIntoChunks(identifiers, 1024);
+    const result: Nft[] = [];
+    for (const identifiers of chunks) {
+      const internalNfts = await this.getNftsInternal(new QueryPagination({ from: 0, size: identifiers.length }), new NftFilter({ identifiers }));
+
+      result.push(...internalNfts);
+    }
+
+    return result;
   }
 
   private async applyPriceUsd(nft: NftAccount) {
@@ -412,8 +440,8 @@ export class NftService {
 
       const price = prices[nft.collection];
       if (price) {
-        nft.price = price;
-        nft.valueUsd = price * NumberUtils.denominateString(nft.balance, nft.decimals);
+        nft.price = price.price;
+        nft.valueUsd = price.price * NumberUtils.denominateString(nft.balance, nft.decimals);
       }
     } catch (error) {
       this.logger.error(`Unable to apply price on MetaESDT with identifier '${nft.identifier}'`);
@@ -434,7 +462,11 @@ export class NftService {
       return undefined;
     }
 
-    return nfts[0];
+    const nft = nfts[0];
+
+    await this.applyUnlockSchedule(nft);
+
+    return nft;
   }
 
   async applySupply(nft: Nft): Promise<void> {
@@ -467,11 +499,11 @@ export class NftService {
   }
 
   applyExtendedAttributes(nft: Nft, elasticNft: any) {
-    nft.score = elasticNft.nft_score;
-    nft.rank = elasticNft.nft_rank;
+    nft.score = elasticNft.nft_rarity_score;
+    nft.rank = elasticNft.nft_rarity_rank;
 
-    if (elasticNft.nft_nsfw !== undefined) {
-      nft.isNsfw = elasticNft.nft_nsfw >= this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
+    if (elasticNft.nft_nsfw_mark !== undefined) {
+      nft.isNsfw = elasticNft.nft_nsfw_mark >= this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
     }
   }
 }

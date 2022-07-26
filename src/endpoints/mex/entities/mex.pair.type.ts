@@ -4,4 +4,5 @@ export enum MexPairType {
   ecosystem = 'ecosystem',
   experimental = 'experimental',
   jungle = 'jungle',
+  unlisted = 'unlisted',
 }

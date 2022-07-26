@@ -42,6 +42,7 @@ urls:
     - 'https://devnet-api.elrond.com'
     - 'https://testnet-api.elrond.com'
     - 'https://api.elrond.com'
+    - 'http://localhost:3001'
   elastic:
     - 'https://devnet-index.elrond.com'
   gateway:
@@ -97,7 +98,6 @@ inflation:
 security:
   admins:
   jwtSecret:
-  accessAddress:
 nftProcess:
   parallelism: 1
   maxRetries: 3

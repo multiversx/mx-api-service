@@ -94,4 +94,7 @@ export class Node {
 
   @ApiProperty({ type: Boolean, nullable: true })
   auctionSelected: boolean | undefined = undefined;
+
+  @ApiProperty({ type: Boolean, nullable: true })
+  fullHistory: boolean | undefined = undefined;
 }
