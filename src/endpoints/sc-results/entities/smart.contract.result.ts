@@ -1,6 +1,7 @@
 import { SwaggerUtils } from "@elrondnetwork/erdnest";
 import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
+import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { TransactionAction } from "src/endpoints/transactions/transaction-action/entities/transaction.action";
 import { TransactionLog } from "../../transactions/entities/transaction.log";
 
@@ -41,6 +42,14 @@ export class SmartContractResult {
   @Field(() => String, { description: 'Receiver address for the given smart contract result.' })
   @ApiProperty({ type: String })
   receiver: string = '';
+
+  @Field(() => AccountAssets, { description: 'Sender assets for the given smart contract result.' })
+  @ApiProperty({ type: AccountAssets, nullable: true })
+  senderAssets: AccountAssets | undefined = undefined;
+
+  @Field(() => AccountAssets, { description: 'Receiver assets for the given smart contract result.' })
+  @ApiProperty({ type: AccountAssets, nullable: true })
+  receiverAssets: AccountAssets | undefined = undefined;
 
   @Field(() => String, { description: 'Relayed value for the given smart contract result.' })
   @ApiProperty({ type: String })

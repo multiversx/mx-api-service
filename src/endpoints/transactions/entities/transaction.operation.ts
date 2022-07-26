@@ -1,5 +1,6 @@
 import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
+import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { TokenType } from "src/endpoints/tokens/entities/token.type";
 import { TransactionOperationAction } from "./transaction.operation.action";
 import { TransactionOperationType } from "./transaction.operation.type";
@@ -49,6 +50,14 @@ export class TransactionOperation {
   @Field(() => String, { description: 'Receiver address for the transaction operation.' })
   @ApiProperty({ type: String })
   receiver: string = '';
+
+  @Field(() => AccountAssets, { description: 'Sender account assets for the transaction operation.', nullable: true })
+  @ApiProperty({ type: AccountAssets, nullable: true })
+  senderAssets: AccountAssets | undefined = undefined;
+
+  @Field(() => AccountAssets, { description: 'Receiver account assets for the transaction operation.', nullable: true })
+  @ApiProperty({ type: AccountAssets, nullable: true })
+  receiverAssets: AccountAssets | undefined = undefined;
 
   @Field(() => Float, { description: 'Decimals for the transaction operation.', nullable: true })
   @ApiProperty({ type: Number, nullable: true })
