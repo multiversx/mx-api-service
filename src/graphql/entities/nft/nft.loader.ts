@@ -17,6 +17,8 @@ export class NftLoader {
 
   private readonly nftDataLoader: any = new DataLoader(async identifiers => {
     // @ts-ignore
-    return await this.collectionService.getNftCollectionsForAddresses(identifiers);
+    const collections = await this.collectionService.getNftCollectionsByIds(identifiers);
+
+    return collections.sorted((element) => identifiers.indexOf(element.collection));
   });
 }

@@ -110,7 +110,7 @@ export class CollectionService {
     return await this.processNftCollections(elasticQuery);
   }
 
-  async getNftCollectionsForAddresses(addresses: Array<string>): Promise<NftCollection[]> {
+  async getNftCollectionsByIds(addresses: Array<string>): Promise<NftCollection[]> {
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from: 0, size: addresses.length + 1 })
       .withTerms(new TermsQuery('_id', addresses));

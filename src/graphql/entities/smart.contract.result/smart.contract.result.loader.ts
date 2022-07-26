@@ -15,8 +15,8 @@ export class SmartContractResultLoader {
     return await this.logDataLoader.load(hash);
   }
 
-  private readonly logDataLoader: any = new DataLoader(async hashes => {
+  private readonly logDataLoader: any = new DataLoader(async hashes =>
     // @ts-ignore
-    return await this.transactionService.getLogs(hashes);
-  });
+    await this.transactionService.getLogs(hashes)
+  );
 }
