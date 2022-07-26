@@ -17,7 +17,7 @@ export class NftQuery {
   }
 
   @Query(() => [Nft], { name: "nfts", description: "Retrieve all NFTs for the given input." })
-  public async getNfts(@Args("input", { description: "Input to retrieve the given NFTs for." }) input: GetNftsInput): Promise<Nft[]> {
+  public async getNfts(@Args("input", { description: "Input to retrieve the given NFTs for." }) input: GetNftsInput): Promise<Array<Nft>> {
     return await this.nftService.getNfts(
       new QueryPagination({
         from: input.from, 

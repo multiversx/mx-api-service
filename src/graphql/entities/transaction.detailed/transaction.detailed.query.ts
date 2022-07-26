@@ -12,7 +12,7 @@ export class TransactionDetailedQuery {
   constructor(private readonly transactionService: TransactionService) {}
 
   @Query(() => [TransactionDetailed], { name: "transactions", description: "Retrieve all transactions available for the given input." })
-  public async getTransactions(@Args("input", { description: "Input to retrieve the given transactions for." }) input: GetTransactionsInput): Promise<Transaction[]> {
+  public async getTransactions(@Args("input", { description: "Input to retrieve the given transactions for." }) input: GetTransactionsInput): Promise<Array<Transaction>> {
     return await this.transactionService.getTransactions(
       new TransactionFilter({
         sender: input.sender,
