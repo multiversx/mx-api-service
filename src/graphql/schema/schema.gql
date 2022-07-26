@@ -85,7 +85,7 @@ type AccountDetailed {
     input: GetNftCollectionsAccountInput!
   ): [NftCollectionAccount!]
 
-  """NFTs for the given detailed account."""
+  """NFTs account for the given detailed account."""
   nfts(
     """Input to retrieve the given NFTs account for."""
     input: GetNftsAccountInput!

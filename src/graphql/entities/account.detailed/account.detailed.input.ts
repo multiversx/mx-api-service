@@ -1,6 +1,6 @@
 import { Field, Float, ID, InputType } from "@nestjs/graphql";
-import { EsdtDataSource } from "src/endpoints/esdt/entities/esdt.data.source";
 
+import { EsdtDataSource } from "src/endpoints/esdt/entities/esdt.data.source";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 
 @InputType({ description: "Input to retrieve the given detailed account for." })

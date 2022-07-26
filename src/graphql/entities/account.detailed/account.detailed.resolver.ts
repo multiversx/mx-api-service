@@ -50,7 +50,7 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
     );
   }
 
-  @ResolveField("nfts", () => [NftAccount], { name: "nfts", description: "NFTs for the given detailed account.", nullable: true })
+  @ResolveField("nfts", () => [NftAccount], { name: "nfts", description: "NFTs account for the given detailed account.", nullable: true })
   public async getAccountDetailedNfts(@Args("input", { description: "Input to retrieve the given NFTs account for." }) input: GetNftsAccountInput, @Parent() account: AccountDetailed) {
     return await this.nftService.getNftsForAddress(
       account.address,
