@@ -76,6 +76,10 @@ export class ElasticIndexerHelper {
       }
     }
 
+    if (filter.before || filter.after) {
+      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
+    }
+
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       if (filter.canCreate !== undefined) {
         elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTCreate', address, filter.canCreate);
@@ -172,9 +176,9 @@ export class ElasticIndexerHelper {
       const nsfwThreshold = this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
 
       if (filter.isNsfw === true) {
-        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw', new RangeGreaterThanOrEqual(nsfwThreshold));
+        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw_mark', new RangeGreaterThanOrEqual(nsfwThreshold));
       } else {
-        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw', new RangeLowerThan(nsfwThreshold));
+        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw_mark', new RangeLowerThan(nsfwThreshold));
       }
     }
 

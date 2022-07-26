@@ -216,15 +216,6 @@ export class PostgresIndexerService implements IndexerInterface {
   }
 
   async getTag(tag: string): Promise<Tag> {
-    try {
-      const res = await Promise.all([
-        this.getTransfers({}, { from: 0, size: 100 }),
-      ]);
-      console.log(res);
-    } catch (err) {
-      console.log(err);
-    }
-
     const query = this.tagsRepository
       .createQueryBuilder()
       .where('tag = :tag', { tag: BinaryUtils.base64Encode(tag) });

@@ -86,6 +86,10 @@ export class PostgresIndexerHelper {
       // ));
     }
 
+    if (filter.before || filter.after) {
+      query = query.andWhere('timestamp BETWEEN :before AND :after', { before: filter.before ?? 0, after: filter.after ?? Date.now() });
+    }
+
     // if (filter.canCreate !== undefined) {
     //   elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTCreate', address, filter.canCreate);
     // }
@@ -194,11 +198,10 @@ export class PostgresIndexerHelper {
     // if (filter.isNsfw !== undefined) {
     //   const nsfwThreshold = this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
 
-    //   if (filter.isNsfw === true) {
-    //     elasticQuery = elasticQuery.withRangeFilter('nft_nsfw', new RangeGreaterThanOrEqual(nsfwThreshold));
-    //   } else {
-    //     elasticQuery = elasticQuery.withRangeFilter('nft_nsfw', new RangeLowerThan(nsfwThreshold));
-    //   }
+    // if (filter.isNsfw === true) {
+    //   elasticQuery = elasticQuery.withRangeFilter('nft_nsfw_mark', new RangeGreaterThanOrEqual(nsfwThreshold));
+    // } else {
+    //   elasticQuery = elasticQuery.withRangeFilter('nft_nsfw_mark', new RangeLowerThan(nsfwThreshold));
     // }
 
     if (filter.before || filter.after) {
