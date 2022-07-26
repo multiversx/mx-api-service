@@ -1,6 +1,7 @@
 import { AbstractQuery, ApiUtils, ElasticQuery, ElasticService, ElasticSortOrder, QueryConditionOptions, QueryType } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { AssetsService } from "src/common/assets/assets.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { Transaction } from "../transactions/entities/transaction";
 import { TransactionType } from "../transactions/entities/transaction.type";
@@ -15,6 +16,7 @@ export class SmartContractResultService {
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => TransactionActionService))
     private readonly transactionActionService: TransactionActionService,
+    private readonly assetsService: AssetsService,
   ) { }
 
   private buildSmartContractResultFilterQuery(address?: string): ElasticQuery {
@@ -52,11 +54,15 @@ export class SmartContractResultService {
 
     const smartContractResults = elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
 
+    const accountAssets = await this.assetsService.getAllAccountAssets();
     for (const smartContractResult of smartContractResults) {
       const transaction = ApiUtils.mergeObjects(new Transaction(), smartContractResult);
       transaction.type = TransactionType.SmartContractResult;
 
       smartContractResult.action = await this.transactionActionService.getTransactionAction(transaction);
+
+      smartContractResult.senderAssets = accountAssets[smartContractResult.sender];
+      smartContractResult.receiverAssets = accountAssets[smartContractResult.receiver];
     }
 
     return smartContractResults;

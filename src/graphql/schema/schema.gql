@@ -725,6 +725,9 @@ type SmartContractResult {
   """Receiver address for the given smart contract result."""
   receiver: String!
 
+  """Receiver assets for the given smart contract result."""
+  receiverAssets: AccountAssets!
+
   """Relayed value for the given smart contract result."""
   relayedValue: String!
 
@@ -733,6 +736,9 @@ type SmartContractResult {
 
   """Sender address for the given smart contract result."""
   sender: String!
+
+  """Sender assets for the given smart contract result."""
+  senderAssets: AccountAssets!
 
   """Timestamp for the given smart contract result."""
   timestamp: Float!
@@ -884,6 +890,9 @@ type TransactionLog {
   """Address for the given transaction log."""
   address: String!
 
+  """Account assets for the given transaction log."""
+  addressAssets: AccountAssets
+
   """Transaction log events list for the given transaction log."""
   events: [TransactionLogEvent!]!
 
@@ -895,6 +904,9 @@ type TransactionLog {
 type TransactionLogEvent {
   """Address for the given transaction log event."""
   address: String!
+
+  """Address assets for the given transaction log event."""
+  addressAssets: AccountAssets!
 
   """Data for the given transaction log event."""
   data: String
@@ -938,8 +950,14 @@ type TransactionOperation {
   """Receiver address for the transaction operation."""
   receiver: String!
 
+  """Receiver account assets for the transaction operation."""
+  receiverAssets: AccountAssets
+
   """Sender address for the transaction operation."""
   sender: String!
+
+  """Sender account assets for the transaction operation."""
+  senderAssets: AccountAssets
 
   """SVG URL for the transaction operation."""
   svgUrl: String

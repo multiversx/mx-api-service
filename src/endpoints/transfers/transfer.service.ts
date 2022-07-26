@@ -7,6 +7,7 @@ import { TransactionType } from "../transactions/entities/transaction.type";
 import { Transaction } from "../transactions/entities/transaction";
 import { TransactionService } from "../transactions/transaction.service";
 import { AddressUtils, ApiUtils, ElasticQuery, ElasticService, ElasticSortOrder, ElasticSortProperty, QueryConditionOptions, QueryOperator, QueryType } from "@elrondnetwork/erdnest";
+import { AssetsService } from "src/common/assets/assets.service";
 
 @Injectable()
 export class TransferService {
@@ -15,6 +16,7 @@ export class TransferService {
     private readonly elasticService: ElasticService,
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
+    private readonly assetsService: AssetsService,
   ) { }
 
   private buildTransferFilterQuery(filter: TransactionFilter): ElasticQuery {
@@ -140,6 +142,7 @@ export class TransferService {
 
     const transactions: Transaction[] = [];
 
+    const assets = await this.assetsService.getAllAccountAssets();
     for (const elasticOperation of elasticOperations) {
       const transaction = ApiUtils.mergeObjects(new Transaction(), elasticOperation);
       transaction.type = elasticOperation.type === 'unsigned' ? TransactionType.SmartContractResult : TransactionType.Transaction;
@@ -152,7 +155,7 @@ export class TransferService {
         delete transaction.round;
       }
 
-      await this.transactionService.processTransaction(transaction);
+      await this.transactionService.processTransaction(transaction, assets);
 
       transactions.push(transaction);
     }
