@@ -11,6 +11,10 @@ export class TokenUtils {
     return tokenIdentifier.split('-').length === 2;
   }
 
+  static isCollection(collectionIdentifier: string) {
+    return collectionIdentifier.split('-').length === 2;
+  }
+
   static canBool(string: string) {
     return string.split('-').pop() === 'true';
   }

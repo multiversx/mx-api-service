@@ -259,6 +259,11 @@ export class NftService {
 
   async getSingleNft(identifier: string): Promise<Nft | undefined> {
     const nfts = await this.getNftsInternal(new QueryPagination({ from: 0, size: 1 }), new NftFilter(), identifier);
+
+    if (!TokenUtils.isNft(identifier)) {
+      return undefined;
+    }
+
     if (nfts.length === 0) {
       return undefined;
     }

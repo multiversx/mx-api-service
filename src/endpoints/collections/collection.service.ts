@@ -223,6 +223,10 @@ export class CollectionService {
       return undefined;
     }
 
+    if (!TokenUtils.isCollection(identifier)) {
+      return undefined;
+    }
+
     if (![NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT].includes(elasticCollection.type)) {
       return undefined;
     }
@@ -329,6 +333,10 @@ export class CollectionService {
 
   async getCollectionForAddress(address: string, identifier: string): Promise<NftCollectionAccount | undefined> {
     const collections = await this.getCollectionsForAddress(address, new CollectionFilter({ collection: identifier }), new QueryPagination({ from: 0, size: 1 }));
+
+    if (!TokenUtils.isCollection(identifier)) {
+      return undefined;
+    }
 
     return collections.find(x => x.collection === identifier);
   }
