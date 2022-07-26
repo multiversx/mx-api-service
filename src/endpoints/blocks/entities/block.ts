@@ -1,5 +1,6 @@
 import { ApiUtils } from "@elrondnetwork/erdnest";
 import { ApiProperty } from "@nestjs/swagger";
+import { Identity } from "src/endpoints/identities/entities/identity";
 
 export class Block {
   constructor(init?: Partial<Block>) {
@@ -20,6 +21,9 @@ export class Block {
 
   @ApiProperty({ type: String })
   proposer: string = '';
+
+  @ApiProperty({ type: Identity, nullable: true })
+  proposerIdentity: Identity | undefined = undefined;
 
   @ApiProperty({ type: String })
   pubKeyBitmap: string = '';
