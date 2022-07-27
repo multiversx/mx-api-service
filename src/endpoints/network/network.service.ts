@@ -27,6 +27,7 @@ export class NetworkService {
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
+    @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
     @Inject(forwardRef(() => AccountService))
     private readonly accountService: AccountService,
