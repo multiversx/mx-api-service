@@ -4,7 +4,7 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
-describe("Miniblocks Controller", () => {
+describe.skip("Miniblocks Controller", () => {
   let app: INestApplication;
   let miniBlockController: MiniBlockController;
   const route: string = "/miniblocks";
