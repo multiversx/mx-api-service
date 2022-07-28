@@ -9,7 +9,7 @@ import { NftType } from "./entities/nft.type";
 import { NftService } from "./nft.service";
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { NftQueryOptions } from './entities/nft.query.options';
-import { ParseAddressPipe, ParseOptionalBoolPipe, ParseArrayPipe, ParseOptionalIntPipe } from '@elrondnetwork/erdnest';
+import { ParseAddressPipe, ParseOptionalBoolPipe, ParseArrayPipe, ParseOptionalIntPipe, ParseNftPipe } from '@elrondnetwork/erdnest';
 
 @Controller()
 @ApiTags('nfts')
@@ -122,7 +122,9 @@ export class NftController {
   @ApiOperation({ summary: 'NFT details', description: 'Returns the details of an Non-Fungible / Semi-Fungible / MetaESDT token for a given identifier' })
   @ApiOkResponse({ type: Nft })
   @ApiNotFoundResponse({ description: 'Token not found' })
-  async getNft(@Param('identifier') identifier: string): Promise<Nft> {
+  async getNft(
+    @Param('identifier', ParseNftPipe) identifier: string
+  ): Promise<Nft> {
     const token = await this.nftService.getSingleNft(identifier);
     if (token === undefined) {
       throw new HttpException('NFT not found', HttpStatus.NOT_FOUND);
@@ -135,7 +137,10 @@ export class NftController {
   @ApiOperation({ summary: 'NFT thumbnail', description: 'Returns nft thumbnail' })
   @ApiOkResponse({ type: Nft })
   @ApiNotFoundResponse({ description: 'NFT thumbnail not found' })
-  async resolveNftThumbnail(@Param('identifier') identifier: string, @Res() response: Response) {
+  async resolveNftThumbnail(
+    @Param('identifier', ParseNftPipe) identifier: string,
+    @Res() response: Response
+  ) {
     const nfts = await this.nftService.getNftsInternal(new QueryPagination({ from: 0, size: 1 }), new NftFilter(), identifier);
     if (nfts.length === 0) {
       throw new NotFoundException('NFT not found');
@@ -155,7 +160,9 @@ export class NftController {
   @ApiOperation({ summary: 'NFT supply', description: 'Returns Non-Fungible / Semi-Fungible / MetaESDT token supply details' })
   @ApiOkResponse({ type: NftSupply })
   @ApiNotFoundResponse({ description: 'Token not found' })
-  async getNftSupply(@Param('identifier') identifier: string): Promise<{ supply: string }> {
+  async getNftSupply(
+    @Param('identifier', ParseNftPipe) identifier: string
+  ): Promise<{ supply: string }> {
     const totalSupply = await this.nftService.getNftSupply(identifier);
     if (!totalSupply) {
       throw new NotFoundException();
@@ -171,7 +178,7 @@ export class NftController {
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   async getNftOwners(
-    @Param('identifier') identifier: string,
+    @Param('identifier', ParseNftPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<NftOwner[]> {
@@ -190,7 +197,9 @@ export class NftController {
     description: 'Non-fungible / semi-fungible token owners count',
     type: Number,
   })
-  async getNftOwnersCount(@Param('identifier') identifier: string): Promise<number> {
+  async getNftOwnersCount(
+    @Param('identifier', ParseNftPipe) identifier: string
+  ): Promise<number> {
     const ownersCount = await this.nftService.getNftOwnersCount(identifier);
     if (ownersCount === undefined) {
       throw new HttpException('NFT not found', HttpStatus.NOT_FOUND);
@@ -206,7 +215,7 @@ export class NftController {
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   async getNftAccounts(
-    @Param('identifier') identifier: string,
+    @Param('identifier', ParseNftPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<NftOwner[]> {
@@ -221,7 +230,9 @@ export class NftController {
   @Get('/nfts/:identifier/accounts/count')
   @ApiOperation({ summary: 'NFT accounts count', description: 'Returns number of addresses that hold balances for a specific Non-Fungible / Semi-Fungible / MetaESDT token' })
   @ApiOkResponse({ type: Number })
-  async getNftAccountsCount(@Param('identifier') identifier: string): Promise<number> {
+  async getNftAccountsCount(
+    @Param('identifier', ParseNftPipe) identifier: string
+  ): Promise<number> {
     const ownersCount = await this.nftService.getNftOwnersCount(identifier);
     if (ownersCount === undefined) {
       throw new HttpException('NFT not found', HttpStatus.NOT_FOUND);

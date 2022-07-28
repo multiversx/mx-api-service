@@ -13,9 +13,9 @@ import { CacheInfo } from "src/utils/cache.info";
 import { TokenAssets } from "../../common/assets/entities/token.assets";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
-import { TokenUtils } from "src/utils/token.utils";
+import { TokenHelpers } from "src/utils/token.helpers";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
-import { ApiUtils, BinaryUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryType, QueryOperator, QueryConditionOptions, ElasticSortOrder } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryType, QueryOperator, QueryConditionOptions, ElasticSortOrder, TokenUtils } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class CollectionService {
@@ -264,13 +264,13 @@ export class CollectionService {
       for (const address of addresses) {
         const foundAddressRoles = allRoles.find((addressRole) => addressRole.address === address);
         if (foundAddressRoles) {
-          TokenUtils.setCollectionRole(foundAddressRoles, role);
+          TokenHelpers.setCollectionRole(foundAddressRoles, role);
           continue;
         }
 
         const addressRole = new CollectionRoles();
         addressRole.address = address;
-        TokenUtils.setCollectionRole(addressRole, role);
+        TokenHelpers.setCollectionRole(addressRole, role);
 
         allRoles.push(addressRole);
       }
@@ -301,7 +301,7 @@ export class CollectionService {
       roleForAddress.address = components[0];
       const roles = components[1].split(',');
       for (const role of roles) {
-        TokenUtils.setCollectionRole(roleForAddress, role);
+        TokenHelpers.setCollectionRole(roleForAddress, role);
       }
 
       allRoles.push(roleForAddress);

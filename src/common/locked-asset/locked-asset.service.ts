@@ -5,7 +5,7 @@ import { VmQueryService } from '../../endpoints/vm.query/vm.query.service';
 import { CacheInfo } from '../../utils/cache.info';
 import { CachingService, Constants } from '@elrondnetwork/erdnest';
 import { UnlockMileStoneModel } from '../entities/unlock-schedule';
-import { TokenUtils } from '../../utils/token.utils';
+import { TokenHelpers } from '../../utils/token.helpers';
 import { GatewayComponentRequest } from '../gateway/entities/gateway.component.request';
 import { GatewayService } from '../gateway/gateway.service';
 import { MexSettingsService } from 'src/endpoints/mex/mex.settings.service';
@@ -27,7 +27,7 @@ export class LockedAssetService {
     }
 
     const extendedAttributesActivationNonce = await this.getExtendedAttributesActivationNonce();
-    const withActivationNonce = TokenUtils.tokenNonce(identifier) >= extendedAttributesActivationNonce;
+    const withActivationNonce = TokenHelpers.tokenNonce(identifier) >= extendedAttributesActivationNonce;
     const lockedAssetAttributes = LockedAssetAttributes.fromAttributes(withActivationNonce, attributes);
 
     if (!lockedAssetAttributes.unlockSchedule) {
