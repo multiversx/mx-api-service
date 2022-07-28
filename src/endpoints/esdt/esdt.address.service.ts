@@ -1,24 +1,32 @@
-import { BadRequestException, forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { QueryPagination } from "src/common/entities/query.pagination";
-import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
-import { GatewayService } from "src/common/gateway/gateway.service";
-import { ProtocolService } from "src/common/protocol/protocol.service";
-import { TokenUtils } from "src/utils/token.utils";
-import { EsdtDataSource } from "./entities/esdt.data.source";
-import { EsdtService } from "./esdt.service";
-import { GatewayNft } from "../nfts/entities/gateway.nft";
-import { NftAccount } from "../nfts/entities/nft.account";
-import { NftFilter } from "../nfts/entities/nft.filter";
-import { NftType } from "../nfts/entities/nft.type";
-import { NftExtendedAttributesService } from "../nfts/nft.extendedattributes.service";
-import { NftService } from "../nfts/nft.service";
-import { NftCollectionRole } from "../collections/entities/nft.collection.role";
-import { CollectionService } from "../collections/collection.service";
-import { NftCollection } from "../collections/entities/nft.collection";
-import { CollectionFilter } from "../collections/entities/collection.filter";
-import { CollectionRoles } from "../tokens/entities/collection.roles";
-import { AddressUtils, ApiUtils, BinaryUtils, CachingService, ElasticService, ElasticSortOrder, MetricsService } from "@elrondnetwork/erdnest";
+import { BadRequestException, forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { QueryPagination } from 'src/common/entities/query.pagination';
+import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
+import { GatewayService } from 'src/common/gateway/gateway.service';
+import { ProtocolService } from 'src/common/protocol/protocol.service';
+import { TokenUtils } from 'src/utils/token.utils';
+import { EsdtDataSource } from './entities/esdt.data.source';
+import { EsdtService } from './esdt.service';
+import { GatewayNft } from '../nfts/entities/gateway.nft';
+import { NftAccount } from '../nfts/entities/nft.account';
+import { NftFilter } from '../nfts/entities/nft.filter';
+import { NftType } from '../nfts/entities/nft.type';
+import { NftExtendedAttributesService } from '../nfts/nft.extendedattributes.service';
+import { NftService } from '../nfts/nft.service';
+import { NftCollectionRole } from '../collections/entities/nft.collection.role';
+import { CollectionService } from '../collections/collection.service';
+import { NftCollection } from '../collections/entities/nft.collection';
+import { CollectionFilter } from '../collections/entities/collection.filter';
+import { CollectionRoles } from '../tokens/entities/collection.roles';
+import {
+  AddressUtils,
+  ApiUtils,
+  BinaryUtils,
+  CachingService,
+  ElasticService,
+  ElasticSortOrder,
+  MetricsService,
+} from '@elrondnetwork/erdnest';
 
 @Injectable()
 export class EsdtAddressService {
@@ -238,8 +246,8 @@ export class EsdtAddressService {
     const collator = new Intl.Collator('en', { sensitivity: 'base' });
     nfts.sort((a: GatewayNft, b: GatewayNft) => collator.compare(a.tokenIdentifier, b.tokenIdentifier));
 
-    const nftAccounts: NftAccount[] = await this.mapToNftAccount(nfts);
-
+    let nftAccounts: NftAccount[] = await this.mapToNftAccount(nfts);
+    nftAccounts = nftAccounts.filter(x => [NftType.NonFungibleESDT, NftType.SemiFungibleESDT].includes(x.type));
     return this.filterEsdtsForAddressFromGateway(filter, pagination, nftAccounts);
   }
 

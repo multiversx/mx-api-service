@@ -15,7 +15,18 @@ import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { TokenUtils } from "src/utils/token.utils";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
-import { ApiUtils, BinaryUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryType, QueryOperator, QueryConditionOptions, ElasticSortOrder } from "@elrondnetwork/erdnest";
+import {
+  ApiUtils,
+  BinaryUtils,
+  RecordUtils,
+  CachingService,
+  ElasticService,
+  ElasticQuery,
+  QueryType,
+  QueryOperator,
+  QueryConditionOptions,
+  ElasticSortOrder,
+} from '@elrondnetwork/erdnest';
 
 @Injectable()
 export class CollectionService {
@@ -33,7 +44,7 @@ export class CollectionService {
   buildCollectionRolesFilter(filter: CollectionFilter, address?: string) {
     let elasticQuery = ElasticQuery.create();
     elasticQuery = elasticQuery.withMustNotExistCondition('identifier')
-      .withMustMultiShouldCondition([NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT], type => QueryType.Match('type', type));
+      .withMustMultiShouldCondition([NftType.NonFungibleESDT, NftType.SemiFungibleESDT], type => QueryType.Match('type', type));
 
     if (address) {
       if (this.apiConfigService.getIsIndexerV3FlagActive()) {
@@ -87,7 +98,7 @@ export class CollectionService {
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
       .withSearchWildcardCondition(filter.search, ['token', 'name'])
       .withMustMultiShouldCondition(filter.type, type => QueryType.Match('type', type))
-      .withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT, NftType.MetaESDT], type => QueryType.Match('type', type));
+      .withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT], type => QueryType.Match('type', type));
   }
 
   private getRoleCondition(query: ElasticQuery, name: string, address: string | undefined, value: string | boolean) {
@@ -223,7 +234,7 @@ export class CollectionService {
       return undefined;
     }
 
-    if (![NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT].includes(elasticCollection.type)) {
+    if (![NftType.NonFungibleESDT, NftType.SemiFungibleESDT].includes(elasticCollection.type)) {
       return undefined;
     }
 
