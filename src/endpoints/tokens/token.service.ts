@@ -436,10 +436,14 @@ export class TokenService {
     }
 
     const tokenAddressesRoles = await this.esdtService.getEsdtAddressesRoles(identifier);
-    const addressRoles = tokenAddressesRoles?.find((role: TokenRoles) => role.address === address);
+    let addressRoles = tokenAddressesRoles?.find((role: TokenRoles) => role.address === address);
+    if (addressRoles) {
+      // clone
+      addressRoles = new TokenRoles(JSON.parse(JSON.stringify(addressRoles)));
 
-    //@ts-ignore
-    delete addressRoles?.address;
+      //@ts-ignore
+      delete addressRoles?.address;
+    }
 
     return addressRoles;
   }
