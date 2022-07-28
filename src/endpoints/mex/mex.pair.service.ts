@@ -188,6 +188,7 @@ export class MexPairService {
       case 'Experimental':
         return MexPairType.experimental;
       case 'Jungle':
+      case 'Jungle-Experimental':
         return MexPairType.jungle;
       case 'Unlisted':
         return MexPairType.unlisted;
