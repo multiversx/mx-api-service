@@ -54,7 +54,7 @@ export class TransactionLoggingInterceptor implements NestInterceptor {
         apiFunction,
         body: request.body,
         userAgent: request.headers['user-agent'],
-        clientIp: request.headers['x-forwarded-for'] || request.clientIp,
+        clientIp: request.headers['x-forwarded-for'] || request.headers['x-real-ip'] || request.clientIp,
       };
 
       this.transactionLogger.info(logBody);
