@@ -11,7 +11,7 @@ import { NodeService } from "./node.service";
     forwardRef(() => KeybaseModule),
     forwardRef(() => ProviderModule),
     VmQueryModule,
-    BlockModule,
+    forwardRef(() => BlockModule),
     forwardRef(() => StakeModule),
   ],
   providers: [

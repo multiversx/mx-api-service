@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
-describe("Dapp-Config Controller", () => {
+describe.skip("Dapp-Config Controller", () => {
   let app: INestApplication;
 
   const route: string = "/dapp/config";

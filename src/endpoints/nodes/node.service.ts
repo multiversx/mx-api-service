@@ -33,6 +33,7 @@ export class NodeService {
     private readonly stakeService: StakeService,
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
+    @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
   ) { }
 

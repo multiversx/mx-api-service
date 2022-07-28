@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
-describe("Sc-Results Controller", () => {
+describe.skip("Sc-Results Controller", () => {
   let app: INestApplication;
   const route: string = "/sc-results";
 

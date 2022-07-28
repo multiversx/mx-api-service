@@ -11,8 +11,16 @@ export class TokenUtils {
     return tokenIdentifier.split('-').length === 2;
   }
 
+  static isCollection(collectionIdentifier: string) {
+    return collectionIdentifier.split('-').length === 2;
+  }
+
   static canBool(string: string) {
     return string.split('-').pop() === 'true';
+  }
+
+  static isNft(nftIdentifier: string) {
+    return nftIdentifier.split('-').length === 3;
   }
 
   static computeNftUri(uri: string, prefix: string) {

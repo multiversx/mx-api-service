@@ -59,6 +59,11 @@ export class TokenService {
   async getToken(identifier: string): Promise<TokenDetailed | undefined> {
     const tokens = await this.esdtService.getAllEsdtAndMetaEsdtTokens();
     let token = tokens.find(x => x.identifier === identifier);
+
+    if (!TokenUtils.isEsdt(identifier)) {
+      return undefined;
+    }
+
     if (!token) {
       return undefined;
     }
@@ -268,6 +273,11 @@ export class TokenService {
 
   async getTokenForAddress(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {
     const tokens = await this.getFilteredTokens({ identifier });
+
+    if (!TokenUtils.isEsdt(identifier)) {
+      return undefined;
+    }
+
     if (!tokens.length) {
       this.logger.log(`Error when fetching token ${identifier} details for address ${address}`);
       return undefined;

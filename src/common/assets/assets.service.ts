@@ -5,6 +5,11 @@ import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { AccountAssets } from "./entities/account.assets";
 import { ApiUtils, CachingService, FileUtils } from "@elrondnetwork/erdnest";
+import { Provider } from "src/endpoints/providers/entities/provider";
+import { MexPair } from "src/endpoints/mex/entities/mex.pair";
+import { Identity } from "src/endpoints/identities/entities/identity";
+import { MexFarm } from "src/endpoints/mex/entities/mex.farm";
+import { MexSettings } from "src/endpoints/mex/entities/mex.settings";
 const rimraf = require("rimraf");
 const path = require('path');
 const fs = require('fs');
@@ -135,7 +140,7 @@ export class AssetsService {
     );
   }
 
-  getAllAccountAssetsRaw(): { [key: string]: AccountAssets } {
+  getAllAccountAssetsRaw(providers?: Provider[], identities?: Identity[], pairs?: MexPair[], farms?: MexFarm[], mexSettings?: MexSettings): { [key: string]: AccountAssets } {
     const accountAssetsPath = this.getAccountAssetsPath();
     if (!fs.existsSync(accountAssetsPath)) {
       return {};
@@ -162,6 +167,59 @@ export class AssetsService {
         this.logger.error(`An error occurred while reading assets for account with address '${address}'`);
         this.logger.error(error);
       }
+    }
+
+    if (providers && identities) {
+      for (const provider of providers) {
+        const identity = identities.find(x => x.identity === provider.identity);
+        if (!identity) {
+          continue;
+        }
+
+        allAssets[provider.provider] = new AccountAssets({
+          name: `Staking: ${identity.name ?? ''}`,
+          description: identity.description ?? '',
+          iconPng: identity.avatar,
+          tags: ['staking', 'provider'],
+        });
+      }
+    }
+
+    if (pairs) {
+      for (const pair of pairs) {
+        allAssets[pair.address] = new AccountAssets({
+          name: `Maiar Exchange: ${pair.baseSymbol}/${pair.quoteSymbol} Liquidity Pool`,
+          tags: ['mex', 'liquiditypool'],
+        });
+      }
+    }
+
+    if (farms) {
+      for (const farm of farms) {
+        allAssets[farm.address] = new AccountAssets({
+          name: `Maiar Exchange: ${farm.name} Farm`,
+          tags: ['mex', 'farm'],
+        });
+      }
+    }
+
+    if (mexSettings) {
+      for (const [index, wrapContract] of mexSettings.wrapContracts.entries()) {
+        allAssets[wrapContract] = new AccountAssets({
+          name: `ESDT: WrappedEGLD Contract Shard ${index}`,
+          tags: ['mex', 'wegld'],
+        });
+      }
+
+      allAssets[mexSettings.lockedAssetContract] = new AccountAssets({
+        name: `Maiar Exchange: Locked asset Contract`,
+        tags: ['mex', 'lockedasset'],
+      });
+
+      allAssets[mexSettings.distributionContract] = new AccountAssets({
+        name: `Maiar Exchange: Distribution Contract`,
+        tags: ['mex', 'lockedasset'],
+      });
     }
 
     return allAssets;

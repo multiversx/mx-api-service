@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
-describe("Delegations Controller", () => {
+describe.skip("Delegations Controller", () => {
   let app: INestApplication;
   const delegation: string = "/delegation";
   const delegationLegacy: string = "/delegation-legacy";
