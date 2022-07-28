@@ -1,12 +1,6 @@
 import { TokenHelpers } from "src/utils/token.helpers";
 
 describe('Token Utils', () => {
-    describe('isEsdt', () => {
-        it('Check if is Esdt', () => {
-            expect(TokenHelpers.isEsdt('EWLD-e23800')).toBeTruthy();
-            expect(TokenHelpers.isEsdt('MARS-96823d-01')).toBeFalsy();
-        });
-    });
     describe('canBool', () => {
         it('Check function canBool', () => {
             expect(TokenHelpers.canBool('EWLD-e23800')).toBeFalsy();
