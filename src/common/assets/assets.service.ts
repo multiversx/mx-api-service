@@ -225,7 +225,7 @@ export class AssetsService {
 
     for (const [index, address] of DnsContracts.addresses.entries()) {
       allAssets[address] = new AccountAssets({
-        name: `Elrond DNS: Contract Shard ${index}`,
+        name: `Elrond DNS: Contract ${index}`,
         tags: ['dns'],
         icon: 'elrond',
       });
