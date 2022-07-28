@@ -6,8 +6,7 @@ import { AccountService } from "src/endpoints/accounts/account.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { CollectionService } from "src/endpoints/collections/collection.service";
 import { GetNftCollectionsAccountInput, GetNftsAccountInput } from "src/graphql/entities/account.detailed/account.detailed.input";
-import { NftAccount } from "src/endpoints/nfts/entities/nft.account";
-import { NftCollectionAccount } from "src/endpoints/collections/entities/nft.collection.account";
+import { NftAccountFlat, NftCollectionAccountFlat } from "src/graphql/entities/account.detailed/account.detailed.object";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { NftQueryOptions } from "src/endpoints/nfts/entities/nft.query.options";
@@ -35,7 +34,7 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
     return await this.accountService.getAccountScResults(account.address);
   }
 
-  @ResolveField("nftCollections", () => [NftCollectionAccount], { name: "nftCollections", description: "NFT collections account for the given detailed account.", nullable: true })
+  @ResolveField("nftCollections", () => [NftCollectionAccountFlat], { name: "nftCollections", description: "NFT collections account for the given detailed account.", nullable: true })
   public async getAccountDetailedNftCollections(@Args("input", { description: "Input to retrieve the given NFT collections account for." }) input: GetNftCollectionsAccountInput, @Parent() account: AccountDetailed) {
     return await this.collectionService.getCollectionsForAddress(
       account.address, 
@@ -50,7 +49,7 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
     );
   }
 
-  @ResolveField("nfts", () => [NftAccount], { name: "nfts", description: "NFTs account for the given detailed account.", nullable: true })
+  @ResolveField("nfts", () => [NftAccountFlat], { name: "nfts", description: "NFTs account for the given detailed account.", nullable: true })
   public async getAccountDetailedNfts(@Args("input", { description: "Input to retrieve the given NFTs account for." }) input: GetNftsAccountInput, @Parent() account: AccountDetailed) {
     return await this.nftService.getNftsForAddress(
       account.address,
