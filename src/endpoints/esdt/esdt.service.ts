@@ -27,7 +27,7 @@ import {
   QueryConditionOptions,
   QueryType,
   QueryOperator,
-  RangeGreaterThanOrEqual
+  RangeGreaterThanOrEqual,
 } from "@elrondnetwork/erdnest";
 import { NftType } from '../nfts/entities/nft.type';
 import { QueryPagination } from '../../common/entities/query.pagination';
