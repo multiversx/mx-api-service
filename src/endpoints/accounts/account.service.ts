@@ -97,10 +97,10 @@ export class AccountService {
       return null;
     }
 
-    return await this.getAccountRaw(address, 0, 0);
+    return await this.getAccountRaw(address);
   }
 
-  private async getAccountRaw(address: string, txCount: number, scrCount: number): Promise<AccountDetailed | null> {
+  private async getAccountRaw(address: string, txCount: number = 0, scrCount: number = 0): Promise<AccountDetailed | null> {
     const assets = await this.assetsService.getAllAccountAssets();
 
     try {
