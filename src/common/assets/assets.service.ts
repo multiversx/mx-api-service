@@ -10,6 +10,7 @@ import { MexPair } from "src/endpoints/mex/entities/mex.pair";
 import { Identity } from "src/endpoints/identities/entities/identity";
 import { MexFarm } from "src/endpoints/mex/entities/mex.farm";
 import { MexSettings } from "src/endpoints/mex/entities/mex.settings";
+import { DnsContracts } from "src/utils/dns.contracts";
 const rimraf = require("rimraf");
 const path = require('path');
 const fs = require('fs');
@@ -219,6 +220,14 @@ export class AssetsService {
       allAssets[mexSettings.distributionContract] = new AccountAssets({
         name: `Maiar Exchange: Distribution Contract`,
         tags: ['mex', 'lockedasset'],
+      });
+    }
+
+    for (const [index, address] of DnsContracts.addresses.entries()) {
+      allAssets[address] = new AccountAssets({
+        name: `Elrond DNS: Contract ${index}`,
+        tags: ['dns'],
+        icon: 'elrond',
       });
     }
 

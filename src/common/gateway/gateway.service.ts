@@ -38,12 +38,27 @@ export class GatewayService {
     const profiler = new PerformanceProfiler();
 
     try {
-      return await this.apiService.get(`${this.apiConfigService.getGatewayUrl()}/${url}`, new ApiSettings(), errorHandler);
+      return await this.apiService.get(`${this.getUrl(component)}/${url}`, new ApiSettings(), errorHandler);
     } finally {
       profiler.stop();
 
       this.metricsService.setGatewayDuration(component, profiler.duration);
     }
+  }
+
+  private getUrl(component: GatewayComponentRequest): string {
+    const lightGatewayComponents = [
+      GatewayComponentRequest.addressBalance,
+      GatewayComponentRequest.addressDetails,
+      GatewayComponentRequest.addressEsdt,
+      GatewayComponentRequest.vmQuery,
+    ];
+
+    if (lightGatewayComponents.includes(component)) {
+      return this.apiConfigService.getLightGatewayUrl() ?? this.apiConfigService.getGatewayUrl();
+    }
+
+    return this.apiConfigService.getGatewayUrl();
   }
 
   async create(url: string, component: GatewayComponentRequest, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {

@@ -33,7 +33,7 @@ import { ProviderStake } from '../stake/entities/provider.stake';
 import { TokenDetailedWithBalance } from '../tokens/entities/token.detailed.with.balance';
 import { NftCollectionAccount } from '../collections/entities/nft.collection.account';
 import { TokenWithRoles } from '../tokens/entities/token.with.roles';
-import { ParseAddressPipe, ParseArrayPipe, ParseBlockHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumArrayPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseTransactionHashPipe } from '@elrondnetwork/erdnest';
+import { ParseAddressPipe, ParseArrayPipe, ParseBlockHashPipe, ParseCollectionPipe, ParseNftPipe, ParseOptionalBoolPipe, ParseOptionalEnumArrayPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseTokenOrNftPipe, ParseTransactionHashPipe } from '@elrondnetwork/erdnest';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { TransactionQueryOptions } from '../transactions/entities/transactions.query.options';
 import { TokenWithRolesFilter } from '../tokens/entities/token.with.roles.filter';
@@ -42,6 +42,7 @@ import { TokenFilter } from '../tokens/entities/token.filter';
 import { NftFilter } from '../nfts/entities/nft.filter';
 import { NftQueryOptions } from '../nfts/entities/nft.query.options';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
+import { ParseTokenPipe } from '@elrondnetwork/erdnest';
 
 @Controller()
 @ApiTags('accounts')
@@ -174,7 +175,7 @@ export class AccountController {
   @ApiOperation({ summary: 'Account token details', description: 'Returns details about a specific fungible token from a given address' })
   async getAccountToken(
     @Param('address', ParseAddressPipe) address: string,
-    @Param('token') token: string,
+    @Param('token', ParseTokenPipe) token: string,
   ): Promise<TokenDetailedWithBalance> {
     const result = await this.tokenService.getTokenForAddress(address, token);
     if (!result) {
@@ -255,7 +256,7 @@ export class AccountController {
   @ApiOkResponse({ type: NftCollectionRole })
   async getAccountCollection(
     @Param('address', ParseAddressPipe) address: string,
-    @Param('collection') collection: string,
+    @Param('collection', ParseCollectionPipe) collection: string,
   ): Promise<NftCollectionRole> {
     const result = await this.collectionService.getCollectionForAddressWithRole(address, collection);
     if (!result) {
@@ -321,7 +322,7 @@ export class AccountController {
   @ApiOkResponse({ type: TokenWithRoles })
   async getTokenWithRoles(
     @Param('address', ParseAddressPipe) address: string,
-    @Param('identifier') identifier: string,
+    @Param('identifier', ParseTokenPipe) identifier: string,
   ): Promise<TokenWithRoles> {
     const result = await this.tokenService.getTokenWithRolesForAddress(address, identifier);
     if (!result) {
@@ -376,7 +377,7 @@ export class AccountController {
   @ApiOkResponse({ type: NftCollectionAccount })
   async getAccountNftCollection(
     @Param('address', ParseAddressPipe) address: string,
-    @Param('collection') collection: string,
+    @Param('collection', ParseCollectionPipe) collection: string,
   ): Promise<NftCollectionAccount> {
     const result = await this.collectionService.getCollectionForAddress(address, collection);
     if (!result) {
@@ -481,7 +482,7 @@ export class AccountController {
   @ApiOkResponse({ type: NftAccount })
   async getAccountNft(
     @Param('address', ParseAddressPipe) address: string,
-    @Param('nft') nft: string,
+    @Param('nft', ParseNftPipe) nft: string,
   ): Promise<NftAccount> {
     const result = await this.nftService.getNftForAddress(address, nft);
     if (!result) {
@@ -545,7 +546,7 @@ export class AccountController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressPipe) receiver?: string,
-    @Query('token') token?: string,
+    @Query('token', ParseTokenPipe) token?: string,
     @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
@@ -889,7 +890,7 @@ export class AccountController {
   @ApiOkResponse({ type: [AccountEsdtHistory] })
   async getAccountTokenHistory(
     @Param('address', ParseAddressPipe) address: string,
-    @Param('tokenIdentifier') tokenIdentifier: string,
+    @Param('tokenIdentifier', ParseTokenOrNftPipe) tokenIdentifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<AccountEsdtHistory[]> {

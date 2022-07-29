@@ -1,41 +1,27 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Token } from './entities/token';
-import { TokenWithBalance } from './entities/token.with.balance';
-import { TokenDetailed } from './entities/token.detailed';
-import { QueryPagination } from 'src/common/entities/query.pagination';
-import { TokenFilter } from './entities/token.filter';
-import { TokenUtils } from 'src/utils/token.utils';
-import { EsdtService } from '../esdt/esdt.service';
-import { TokenAccount } from './entities/token.account';
-import { TokenType } from './entities/token.type';
-import { EsdtAddressService } from '../esdt/esdt.address.service';
-import { GatewayService } from 'src/common/gateway/gateway.service';
-import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
-import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { TokenProperties } from './entities/token.properties';
-import { TokenRoles } from './entities/token.roles';
-import { TokenSupplyResult } from './entities/token.supply.result';
-import { TokenDetailedWithBalance } from './entities/token.detailed.with.balance';
-import { SortOrder } from 'src/common/entities/sort.order';
-import { TokenSort } from './entities/token.sort';
-import { TokenWithRoles } from './entities/token.with.roles';
-import { TokenWithRolesFilter } from './entities/token.with.roles.filter';
-import {
-  AddressUtils,
-  ApiUtils,
-  ElasticQuery,
-  ElasticService,
-  ElasticSortOrder,
-  NumberUtils,
-  QueryConditionOptions,
-  QueryOperator,
-  QueryType,
-} from '@elrondnetwork/erdnest';
-//import { CollectionService } from '../collections/collection.service';
-import { NftService } from '../nfts/nft.service';
-import { NftFilter } from '../nfts/entities/nft.filter';
-import { NftType } from '../nfts/entities/nft.type';
-import { NftAccount } from '../nfts/entities/nft.account';
+import { Injectable, Logger } from "@nestjs/common";
+import { Token } from "./entities/token";
+import { TokenWithBalance } from "./entities/token.with.balance";
+import { TokenDetailed } from "./entities/token.detailed";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { TokenFilter } from "./entities/token.filter";
+import { TokenHelpers } from "src/utils/token.helpers";
+import { EsdtService } from "../esdt/esdt.service";
+import { TokenAccount } from "./entities/token.account";
+import { TokenType } from "./entities/token.type";
+import { EsdtAddressService } from "../esdt/esdt.address.service";
+import { GatewayService } from "src/common/gateway/gateway.service";
+import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { TokenProperties } from "./entities/token.properties";
+import { TokenRoles } from "./entities/token.roles";
+import { TokenSupplyResult } from "./entities/token.supply.result";
+import { TokenDetailedWithBalance } from "./entities/token.detailed.with.balance";
+import { SortOrder } from "src/common/entities/sort.order";
+import { TokenSort } from "./entities/token.sort";
+import { TokenWithRoles } from "./entities/token.with.roles";
+import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
+import { AddressUtils, ApiUtils, ElasticQuery, ElasticService, ElasticSortOrder, NumberUtils, QueryConditionOptions, QueryOperator, QueryType, TokenUtils } from "@elrondnetwork/erdnest";
+import { NftService } from "../nfts/nft.service";
 
 @Injectable()
 export class TokenService {
@@ -60,7 +46,7 @@ export class TokenService {
     const tokens = await this.esdtService.getAllEsdtAndMetaEsdtTokens();
     let token = tokens.find(x => x.identifier === identifier);
 
-    if (!TokenUtils.isEsdt(identifier)) {
+    if (!TokenUtils.isToken(identifier)) {
       return undefined;
     }
 
@@ -274,7 +260,7 @@ export class TokenService {
   async getTokenForAddress(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {
     const tokens = await this.getFilteredTokens({ identifier });
 
-    if (!TokenUtils.isEsdt(identifier)) {
+    if (!TokenUtils.isToken(identifier)) {
       return undefined;
     }
 
@@ -448,7 +434,7 @@ export class TokenService {
           roles.push(addressRole);
         }
 
-        TokenUtils.setTokenRole(addressRole, role);
+        TokenHelpers.setTokenRole(addressRole, role);
       }
     }
 
@@ -480,7 +466,7 @@ export class TokenService {
       for (const role of Object.keys(token.roles)) {
         const addresses = token.roles[role].distinct();
         if (addresses.includes(address)) {
-          TokenUtils.setTokenRole(addressRoles, role);
+          TokenHelpers.setTokenRole(addressRoles, role);
         }
       }
 
@@ -491,10 +477,14 @@ export class TokenService {
     }
 
     const tokenAddressesRoles = await this.esdtService.getEsdtAddressesRoles(identifier);
-    const addressRoles = tokenAddressesRoles?.find((role: TokenRoles) => role.address === address);
+    let addressRoles = tokenAddressesRoles?.find((role: TokenRoles) => role.address === address);
+    if (addressRoles) {
+      // clone
+      addressRoles = new TokenRoles(JSON.parse(JSON.stringify(addressRoles)));
 
-    //@ts-ignore
-    delete addressRoles?.address;
+      //@ts-ignore
+      delete addressRoles?.address;
+    }
 
     return addressRoles;
   }

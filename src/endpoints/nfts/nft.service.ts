@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { TokenUtils } from "src/utils/token.utils";
+import { TokenHelpers } from "src/utils/token.helpers";
 import { Nft } from "./entities/nft";
 import { NftAccount } from "./entities/nft.account";
 import { NftFilter } from "./entities/nft.filter";
@@ -20,7 +20,7 @@ import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, ElasticSortOrder, RangeGreaterThanOrEqual, RangeLowerThan, BatchUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, ElasticSortOrder, RangeGreaterThanOrEqual, RangeLowerThan, BatchUtils, TokenUtils } from "@elrondnetwork/erdnest";
 import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
 
 @Injectable()
@@ -215,7 +215,7 @@ export class NftService {
     );
 
     for (const nft of nfts) {
-      if (TokenUtils.needsDefaultMedia(nft)) {
+      if (TokenHelpers.needsDefaultMedia(nft)) {
         nft.media = this.DEFAULT_MEDIA;
       }
     }
@@ -242,7 +242,7 @@ export class NftService {
       this.pluginService.processNft(nft),
     ]);
 
-    if (TokenUtils.needsDefaultMedia(nft)) {
+    if (TokenHelpers.needsDefaultMedia(nft)) {
       nft.media = this.DEFAULT_MEDIA;
     }
   }
@@ -384,7 +384,7 @@ export class NftService {
 
         if (nft.uris && nft.uris.length > 0) {
           try {
-            nft.url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(nft.uris[0]), this.NFT_THUMBNAIL_PREFIX);
+            nft.url = TokenHelpers.computeNftUri(BinaryUtils.base64Decode(nft.uris[0]), this.NFT_THUMBNAIL_PREFIX);
           } catch (error) {
             this.logger.error(error);
           }
@@ -431,7 +431,7 @@ export class NftService {
 
     let url = '';
     try {
-      url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(uris[0]), this.NFT_THUMBNAIL_PREFIX);
+      url = TokenHelpers.computeNftUri(BinaryUtils.base64Decode(uris[0]), this.NFT_THUMBNAIL_PREFIX);
     } catch (error) {
       this.logger.error(`Error when computing uri from '${uris[0]}'`);
       this.logger.error(error);
