@@ -6,21 +6,9 @@ import { TokenRoles } from "src/endpoints/tokens/entities/token.roles";
 import { ApiUtils } from '@elrondnetwork/erdnest';
 import '@elrondnetwork/erdnest/lib/utils/extensions/string.extensions';
 
-export class TokenUtils {
-  static isEsdt(tokenIdentifier: string) {
-    return tokenIdentifier.split('-').length === 2;
-  }
-
-  static isCollection(collectionIdentifier: string) {
-    return collectionIdentifier.split('-').length === 2;
-  }
-
+export class TokenHelpers {
   static canBool(string: string) {
     return string.split('-').pop() === 'true';
-  }
-
-  static isNft(nftIdentifier: string) {
-    return nftIdentifier.split('-').length === 3;
   }
 
   static computeNftUri(uri: string, prefix: string) {
@@ -44,7 +32,7 @@ export class TokenUtils {
 
   static getThumbnailUrlIdentifier(nftIdentifier: string, fileUrl: string) {
     const collectionIdentifier = nftIdentifier.split('-').slice(0, 2).join('-');
-    const urlHash = TokenUtils.getUrlHash(fileUrl);
+    const urlHash = TokenHelpers.getUrlHash(fileUrl);
 
     return `${collectionIdentifier}-${urlHash}`;
   }
