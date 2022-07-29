@@ -28,6 +28,15 @@ export class ApiConfigService {
     return gatewayUrls[Math.floor(Math.random() * gatewayUrls.length)];
   }
 
+  getLightGatewayUrl(): string | undefined {
+    const gatewayUrls = this.configService.get<string[]>('urls.lightGateway');
+    if (!gatewayUrls) {
+      return undefined;
+    }
+
+    return gatewayUrls[Math.floor(Math.random() * gatewayUrls.length)];
+  }
+
   getElasticUrl(): string {
     const elasticUrls = this.configService.get<string[]>('urls.elastic');
     if (!elasticUrls) {
