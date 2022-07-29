@@ -22,6 +22,9 @@ import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
 import { AddressUtils, ApiUtils, ElasticQuery, ElasticService, ElasticSortOrder, NumberUtils, QueryConditionOptions, QueryOperator, QueryType, TokenUtils } from "@elrondnetwork/erdnest";
 import { NftService } from "../nfts/nft.service";
+import { NftFilter } from "../nfts/entities/nft.filter";
+import { NftAccount } from "../nfts/entities/nft.account";
+import { NftType } from "../nfts/entities/nft.type";
 
 @Injectable()
 export class TokenService {
@@ -333,7 +336,7 @@ export class TokenService {
 
     for (const tokenIdentifier of Object.keys(esdts)) {
       if (
-        !TokenUtils.isEsdt(tokenIdentifier) &&
+        !(TokenUtils.isNft(tokenIdentifier) || TokenUtils.isToken(tokenIdentifier)) &&
         !Object.keys(metaESDTNftsIndexed).includes(tokenIdentifier)
       ) {
         continue;
