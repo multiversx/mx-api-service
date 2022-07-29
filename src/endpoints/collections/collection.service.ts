@@ -116,8 +116,6 @@ export class CollectionService {
       .withMustNotExistCondition('identifier')
       .withMustMultiShouldCondition(identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND));
 
-    console.log(JSON.stringify(elasticQuery.toJson()));
-
     return await this.processNftCollections(elasticQuery);
   }
 

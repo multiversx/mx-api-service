@@ -9,7 +9,7 @@ import { NftCollection } from "src/endpoints/collections/entities/nft.collection
   scope: Scope.REQUEST,
 })
 export class NftLoader {
-  constructor(protected readonly collectionService: CollectionService) {}
+  constructor(protected readonly collectionService: CollectionService) { }
 
   public async getCollection(identifier: string): Promise<Array<NftCollection | null>> {
     return await this.nftDataLoader.load(identifier);

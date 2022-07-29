@@ -19,8 +19,6 @@ export class TransactionDetailedLoader {
     private readonly transactionService: TransactionService
   ) { }
 
-  // from TransactionDetailed
-
   public async getSmartContractResults(hash: string): Promise<Array<SmartContractResult[] | null>> {
     return await this.smartContractResultsDataLoader.load(hash);
   }
