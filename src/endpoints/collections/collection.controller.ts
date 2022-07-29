@@ -7,7 +7,7 @@ import { Nft } from "../nfts/entities/nft";
 import { NftService } from "../nfts/nft.service";
 import { NftFilter } from "../nfts/entities/nft.filter";
 import { NftQueryOptions } from "../nfts/entities/nft.query.options";
-import { ParseAddressPipe, ParseArrayPipe, ParseOptionalBoolPipe, ParseOptionalEnumArrayPipe, ParseOptionalIntPipe } from '@elrondnetwork/erdnest';
+import { ParseAddressPipe, ParseArrayPipe, ParseCollectionPipe, ParseOptionalBoolPipe, ParseOptionalEnumArrayPipe, ParseOptionalIntPipe } from '@elrondnetwork/erdnest';
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { CollectionFilter } from "./entities/collection.filter";
 
@@ -141,7 +141,9 @@ export class CollectionController {
   @ApiOperation({ summary: 'Collection details', description: 'Returns non-fungible/semi-fungible/meta-esdt collection details' })
   @ApiOkResponse({ type: NftCollection })
   @ApiNotFoundResponse({ description: 'Token collection not found' })
-  async getNftCollection(@Param('collection') collection: string): Promise<NftCollection> {
+  async getNftCollection(
+    @Param('collection', ParseCollectionPipe) collection: string
+  ): Promise<NftCollection> {
     const token = await this.collectionService.getNftCollection(collection);
     if (token === undefined) {
       throw new HttpException('NFT collection not found', HttpStatus.NOT_FOUND);
@@ -166,7 +168,7 @@ export class CollectionController {
   @ApiQuery({ name: 'withOwner', description: 'Return owner where type = NonFungibleESDT', required: false, type: Boolean })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false, type: Boolean })
   async getNfts(
-    @Param('collection') collection: string,
+    @Param('collection', ParseCollectionPipe) collection: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
@@ -206,7 +208,7 @@ export class CollectionController {
   @ApiQuery({ name: 'isWhitelistedStorage', description: 'Return all NFTs that are whitelisted in storage', required: false, type: Boolean })
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false, type: Boolean })
   async getNftCount(
-    @Param('collection') collection: string,
+    @Param('collection', ParseCollectionPipe) collection: string,
     @Query('search') search?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('name') name?: string,

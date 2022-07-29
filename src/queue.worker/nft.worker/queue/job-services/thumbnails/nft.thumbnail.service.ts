@@ -8,7 +8,7 @@ import { GenerateThumbnailResult } from "./entities/generate.thumbnail.result";
 import { ThumbnailType } from "./entities/thumbnail.type";
 import { AWSService } from "./aws.service";
 import { ApiService, Constants, FileUtils } from "@elrondnetwork/erdnest";
-import { TokenUtils } from "src/utils/token.utils";
+import { TokenHelpers } from "src/utils/token.helpers";
 
 @Injectable()
 export class NftThumbnailService {
@@ -151,7 +151,7 @@ export class NftThumbnailService {
   }
 
   async hasThumbnailGenerated(identifier: string, fileUrl: string): Promise<boolean> {
-    const urlIdentifier = TokenUtils.getThumbnailUrlIdentifier(identifier, fileUrl);
+    const urlIdentifier = TokenHelpers.getThumbnailUrlIdentifier(identifier, fileUrl);
     const url = this.getFullThumbnailUrl(urlIdentifier);
 
     let hasThumbnail = true;
@@ -171,7 +171,7 @@ export class NftThumbnailService {
 
   async generateThumbnail(nft: Nft, fileUrl: string, fileType: string, forceRefresh: boolean = false): Promise<GenerateThumbnailResult> {
     const nftIdentifier = nft.identifier;
-    const urlHash = TokenUtils.getUrlHash(fileUrl);
+    const urlHash = TokenHelpers.getUrlHash(fileUrl);
 
     this.logger.log(`Generating thumbnail for NFT with identifier '${nftIdentifier}', url '${fileUrl}' and url hash '${urlHash}'`);
 
@@ -183,7 +183,7 @@ export class NftThumbnailService {
     const fileResult: any = await this.apiService.get(fileUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS });
     const file = fileResult.data;
 
-    const urlIdentifier = TokenUtils.getThumbnailUrlIdentifier(nftIdentifier, fileUrl);
+    const urlIdentifier = TokenHelpers.getThumbnailUrlIdentifier(nftIdentifier, fileUrl);
     if (!forceRefresh) {
       const hasThumbnailGenerated = await this.hasThumbnailGenerated(nftIdentifier, fileUrl);
       if (hasThumbnailGenerated) {
