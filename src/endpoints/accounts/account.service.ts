@@ -92,7 +92,7 @@ export class AccountService {
     return this.getAccountRaw(address, txCount, scrCount);
   }
 
-  async getAccountOnly(address: string): Promise<AccountDetailed | null> {
+  async getAccountSimple(address: string): Promise<AccountDetailed | null> {
     if (!AddressUtils.isAddressValid(address)) {
       return null;
     }
@@ -109,7 +109,7 @@ export class AccountService {
       } = await this.gatewayService.get(`address/${address}`, GatewayComponentRequest.addressDetails);
 
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
-      let account: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount: txCount, scrCount: scrCount, username, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address] };
+      let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, username, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address] });
 
       const codeAttributes = AddressUtils.decodeCodeMetadata(codeMetadata);
       if (codeAttributes) {
