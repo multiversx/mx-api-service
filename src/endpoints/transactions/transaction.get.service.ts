@@ -125,13 +125,15 @@ export class TransactionGetService {
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs)) {
           const logs = await this.getTransactionLogsFromElastic(hashes);
 
-          transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, logs);
-          transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
+          if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.operations)) {
+            transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, logs);
+            transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
+          }
 
           for (const log of logs) {
             if (log.id === txHash) {
               transactionDetailed.logs = log;
-            } else {
+            } else if (transactionDetailed.results) {
               const foundScResult = transactionDetailed.results.find(({ hash }) => log.id === hash);
               if (foundScResult) {
                 foundScResult.logs = log;

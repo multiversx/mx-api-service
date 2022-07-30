@@ -20,8 +20,9 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
-import { AddressUtils, ApiUtils, Constants, CachingService, ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiUtils, Constants, CachingService, ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, PendingExecutor } from '@elrondnetwork/erdnest';
 import { TransactionUtils } from './transaction.utils';
+import { TransactionOperation } from './entities/transaction.operation';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
 
@@ -165,7 +166,9 @@ export class TransactionService {
       }
     }
 
-    if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations) && elasticTransactions.some(x => x.hasScResults === true)) {
+    if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations || queryOptions.withLogs) && elasticTransactions.some(x => x.hasScResults === true)) {
+      queryOptions.withScResultLogs = queryOptions.withLogs;
+
       transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
     }
 
@@ -373,11 +376,19 @@ export class TransactionService {
 
         transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, transactionLogs);
         transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
+      }
 
+      if (queryOptions.withLogs) {
         for (const log of logs) {
           if (log.id === transactionDetailed.txHash) {
             transactionDetailed.logs = log;
-          } else {
+          }
+        }
+      }
+
+      if (queryOptions.withScResultLogs) {
+        for (const log of logs) {
+          if (log.id !== transactionDetailed.txHash && transactionDetailed.results) {
             const foundScResult = transactionDetailed.results.find(({ hash }) => log.id === hash);
             if (foundScResult) {
               foundScResult.logs = log;
@@ -390,5 +401,100 @@ export class TransactionService {
     }
 
     return detailedTransactions;
+  }
+
+  private smartContractResultsExecutor = new PendingExecutor(
+    async (txHashes: string[]) => await this.getSmartContractResultsRaw(txHashes)
+  );
+
+  public async getSmartContractResults(hashes: Array<string>): Promise<Array<SmartContractResult[] | null>> {
+    return await this.smartContractResultsExecutor.execute(hashes);
+  }
+
+  private async getSmartContractResultsRaw(transactionHashes: Array<string>): Promise<Array<SmartContractResult[] | null>> {
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: transactionHashes.length + 1 })
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
+      .withTerms(new TermsQuery('originalTxHash', transactionHashes));
+
+    const resultsRaw = await this.elasticService.getList('scresults', 'scHash', elasticQuery);
+    for (const result of resultsRaw) {
+      result.hash = result.scHash;
+
+      delete result.scHash;
+    }
+
+    const results: Array<SmartContractResult[] | null> = [];
+
+    for (const transactionHash of transactionHashes) {
+      const resultRaw = resultsRaw.filter(({ originalTxHash }) => originalTxHash == transactionHash);
+
+      if (resultRaw.length > 0) {
+        results.push(resultRaw.map((result: any) => ApiUtils.mergeObjects(new SmartContractResult(), result)));
+      } else {
+        results.push(null);
+      }
+    }
+
+    return results;
+  }
+
+  public async getOperations(transactions: Array<TransactionDetailed>): Promise<Array<TransactionOperation[] | null>> {
+    const smartContractResults = await this.getSmartContractResults(transactions.map((transaction: TransactionDetailed) => transaction.txHash));
+
+    const logs = await this.transactionGetService.getTransactionLogsFromElastic([
+      ...transactions.map((transaction: TransactionDetailed) => transaction.txHash),
+      ...smartContractResults.filter((item) => item != null).flat().map((result) => result?.hash ?? ''),
+    ]);
+
+    const operations: Array<TransactionOperation[] | null> = [];
+
+    for (const transaction of transactions) {
+      transaction.results = smartContractResults.at(transactions.indexOf(transaction)) ?? undefined;
+
+      if (!transaction.results) {
+        operations.push(null);
+
+        continue;
+      }
+
+      const transactionHashes: Array<string> = [transaction.txHash];
+      const previousTransactionHashes: Record<string, string> = {};
+
+      for (const result of transaction.results) {
+        transactionHashes.push(result.hash);
+        previousTransactionHashes[result.hash] = result.prevTxHash;
+      }
+
+      const transactionLogs: Array<TransactionLog> = logs.filter((log) => transactionHashes.includes(log.id ?? ''));
+
+      let operationsRaw: Array<TransactionOperation> = await this.tokenTransferService.getOperationsForTransaction(transaction, transactionLogs);
+      operationsRaw = TransactionUtils.trimOperations(transaction.sender, operationsRaw, previousTransactionHashes);
+
+      if (operationsRaw.length > 0) {
+        operations.push(operationsRaw.map((operation: any) => ApiUtils.mergeObjects(new TransactionOperation(), operation)));
+      } else {
+        operations.push(null);
+      }
+    }
+
+    return operations;
+  }
+
+  public async getLogs(hashes: Array<string>): Promise<Array<TransactionLog | null>> {
+    const logsRaw = await this.transactionGetService.getTransactionLogsFromElastic(hashes);
+    const logs: Array<TransactionLog | null> = [];
+
+    for (const hash of hashes) {
+      const log: TransactionLog = logsRaw.filter((log: TransactionLog) => hash === log.id)[0];
+
+      if (log !== undefined) {
+        logs.push(log);
+      } else {
+        logs.push(null);
+      }
+    }
+
+    return logs;
   }
 }

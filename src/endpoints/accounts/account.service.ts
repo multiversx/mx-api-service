@@ -18,8 +18,10 @@ import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
-import { AddressUtils, ApiUtils, BinaryUtils, Constants, CachingService, ElasticService, ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType, AbstractQuery, QueryOperator } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiUtils, BinaryUtils, Constants, CachingService, ElasticService, ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryType, AbstractQuery, QueryOperator, TermsQuery } from '@elrondnetwork/erdnest';
 import { GatewayService } from 'src/common/gateway/gateway.service';
+import { AccountOptionalFieldOption } from 'src/endpoints/accounts/entities/account.optional.field.options';
+import { AccountAssets } from 'src/common/assets/entities/account.assets';
 
 @Injectable()
 export class AccountService {
@@ -71,28 +73,43 @@ export class AccountService {
     return account.username;
   }
 
-  async getAccount(address: string): Promise<AccountDetailed | null> {
+  async getAccount(address: string, fields?: string[]): Promise<AccountDetailed | null> {
     if (!AddressUtils.isAddressValid(address)) {
       return null;
     }
 
+    let txCount: number = 0;
+    let scrCount: number = 0;
+
+    if (!fields || fields.length === 0 || fields.includes(AccountOptionalFieldOption.txCount)) {
+      txCount = await this.getAccountTxCount(address);
+    }
+
+    if (!fields || fields.length === 0 || fields.includes(AccountOptionalFieldOption.scrCount)) {
+      scrCount = await this.getAccountScResults(address);
+    }
+
+    return this.getAccountRaw(address, txCount, scrCount);
+  }
+
+  async getAccountSimple(address: string): Promise<AccountDetailed | null> {
+    if (!AddressUtils.isAddressValid(address)) {
+      return null;
+    }
+
+    return await this.getAccountRaw(address);
+  }
+
+  private async getAccountRaw(address: string, txCount: number = 0, scrCount: number = 0): Promise<AccountDetailed | null> {
     const assets = await this.assetsService.getAllAccountAssets();
 
     try {
-      const [
-        txCount,
-        scrCount,
-        {
-          account: { nonce, balance, code, codeHash, rootHash, username, developerReward, ownerAddress, codeMetadata },
-        },
-      ] = await Promise.all([
-        this.getAccountTxCount(address),
-        this.getAccountScResults(address),
-        this.gatewayService.get(`address/${address}`, GatewayComponentRequest.addressDetails),
-      ]);
+      const {
+        account: { nonce, balance, code, codeHash, rootHash, username, developerReward, ownerAddress, codeMetadata },
+      } = await this.gatewayService.get(`address/${address}`, GatewayComponentRequest.addressDetails);
 
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
-      let account: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, username, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address] };
+      let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, username, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address] });
 
       const codeAttributes = AddressUtils.decodeCodeMetadata(codeMetadata);
       if (codeAttributes) {
@@ -115,7 +132,7 @@ export class AccountService {
     }
   }
 
-  private async getAccountTxCount(address: string): Promise<number> {
+  async getAccountTxCount(address: string): Promise<number> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       return this.transactionService.getTransactionCountForAddress(address);
     }
@@ -123,7 +140,7 @@ export class AccountService {
     return await this.transferService.getTransfersCount(new TransactionFilter({ address, type: TransactionType.Transaction }));
   }
 
-  private async getAccountScResults(address: string): Promise<number> {
+  async getAccountScResults(address: string): Promise<number> {
     if (this.apiConfigService.getUseLegacyElastic()) {
       return 0;
     }
@@ -168,6 +185,24 @@ export class AccountService {
       async () => await this.getAccountsRaw(queryPagination),
       Constants.oneMinute(),
     );
+  }
+
+  public async getAccountsForAddresses(addresses: Array<string>): Promise<Array<Account>> {
+    const assets: { [key: string]: AccountAssets } = await this.assetsService.getAllAccountAssets();
+
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: addresses.length + 1 })
+      .withTerms(new TermsQuery('address', addresses));
+
+    const accountsRaw: Array<any> = await this.elasticService.getList('accounts', 'address', elasticQuery);
+    const accounts: Array<Account> = accountsRaw.map(account => ApiUtils.mergeObjects(new Account(), account));
+
+    for (const account of accounts) {
+      account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address));
+      account.assets = assets[account.address];
+    }
+
+    return accounts;
   }
 
   async getAccountsRaw(queryPagination: QueryPagination): Promise<Account[]> {

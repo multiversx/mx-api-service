@@ -107,6 +107,19 @@ export class CollectionService {
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
+    return await this.processNftCollections(elasticQuery);
+  }
+
+  async getNftCollectionsByIds(identifiers: Array<string>): Promise<NftCollection[]> {
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: identifiers.length + 1 })
+      .withMustNotExistCondition('identifier')
+      .withMustMultiShouldCondition(identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND));
+
+    return await this.processNftCollections(elasticQuery);
+  }
+
+  private async processNftCollections(elasticQuery: ElasticQuery): Promise<NftCollection[]> {
     const tokenCollections = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
     const collectionsIdentifiers = tokenCollections.map((collection) => collection.token);
 

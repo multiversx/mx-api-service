@@ -370,7 +370,7 @@ export class NftService {
       if (elasticNftData) {
         nft.name = elasticNftData.name;
         nft.creator = elasticNftData.creator;
-        nft.royalties = elasticNftData.royalties / 100; // 10.000 => 100%
+        nft.royalties = elasticNftData.royalties ? elasticNftData.royalties / 100 : undefined; // 10.000 => 100%
         nft.attributes = elasticNftData.attributes;
 
         if (elasticNftData.uris) {
