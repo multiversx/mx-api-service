@@ -57,6 +57,8 @@ urls:
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'socket-fra.elrond.com'
+indexer:
+  type: 'elastic'
 database:
   enabled: false
   url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
