@@ -205,7 +205,7 @@ export class AccountController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
     @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type?: NftType[],
-    @Query('owner') owner?: string,
+    @Query('owner', ParseAddressPipe) owner?: string,
     @Query('canCreate', new ParseOptionalBoolPipe) canCreate?: boolean,
     @Query('canBurn', new ParseOptionalBoolPipe) canBurn?: boolean,
     @Query('canAddQuantity', new ParseOptionalBoolPipe) canAddQuantity?: boolean,
