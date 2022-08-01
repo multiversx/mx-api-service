@@ -24,7 +24,6 @@ import { ApiConfigModule } from './common/api-config/api.config.module';
 import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor } from '@elrondnetwork/erdnest';
 import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.service.impl';
 import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
-import { GraphQlModule } from 'src/graphql/graphql.module';
 import { TransactionLoggingInterceptor } from './interceptors/transaction.logging.interceptor';
 
 async function bootstrap() {
@@ -33,12 +32,6 @@ async function bootstrap() {
 
   if (apiConfigService.getUseTracingFlag() === true) {
     require('dd-trace').init();
-  }
-
-  if (apiConfigService.isGraphQlActive()) {
-    const graphQlApplication = await NestFactory.create<NestExpressApplication>(GraphQlModule);
-
-    await graphQlApplication.listen(3000);
   }
 
   if (apiConfigService.getIsPublicApiActive()) {

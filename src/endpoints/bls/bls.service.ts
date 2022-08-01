@@ -1,41 +1,29 @@
-import { ElasticService } from "@elrondnetwork/erdnest";
+import { CachingService } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { ApiConfigService } from "../../common/api-config/api.config.service";
+import { IndexerService } from "src/common/indexer/indexer.service";
+import { CacheInfo } from "src/utils/cache.info";
 
 @Injectable()
 export class BlsService {
-  private readonly url: string;
-  private publicKeysCache: any = {};
-
   constructor(
-    private apiConfigService: ApiConfigService,
-    @Inject(forwardRef(() => ElasticService))
-    private readonly elasticService: ElasticService,
-  ) {
-    this.url = this.apiConfigService.getElasticUrl();
-  }
-
+    @Inject(forwardRef(() => IndexerService))
+    private readonly indexerService: IndexerService,
+    private readonly cachingService: CachingService,
+  ) { }
 
   public async getPublicKeys(shard: number, epoch: number): Promise<string[]> {
-    const key = `${shard}_${epoch}`;
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.ShardAndEpochBlses(shard, epoch).key,
+      async () => await this.getPublicKeysRaw(shard, epoch),
+      CacheInfo.ShardAndEpochBlses(shard, epoch).ttl
+    );
+  }
 
-    if (this.publicKeysCache[key]) {
-      return this.publicKeysCache[key];
-    }
-
-    const url = `${this.url}/validators/_search?q=_id:${key}`;
-
-    const result = await this.elasticService.get(url);
-
-    const hits = result.data?.hits?.hits;
-    if (hits && hits.length > 0) {
-      const publicKeys = hits[0]._source.publicKeys;
-
-      this.publicKeysCache[key] = publicKeys;
-
+  private async getPublicKeysRaw(shard: number, epoch: number): Promise<string[]> {
+    const publicKeys = await this.indexerService.getPublicKeys(shard, epoch);
+    if (publicKeys) {
       return publicKeys;
     }
-
     return [];
   }
 

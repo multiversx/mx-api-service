@@ -20,7 +20,8 @@ import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, ElasticSortOrder, RangeGreaterThanOrEqual, RangeLowerThan, BatchUtils, TokenUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, BatchUtils, TokenUtils } from "@elrondnetwork/erdnest";
+import { IndexerService } from "src/common/indexer/indexer.service";
 import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
 
 @Injectable()
@@ -31,7 +32,7 @@ export class NftService {
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: IndexerService,
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
     private readonly cachingService: CachingService,
@@ -56,75 +57,6 @@ export class NftService {
         fileSize: 29512,
       },
     ];
-  }
-
-  buildElasticNftFilter(filter: NftFilter, identifier?: string, address?: string) {
-    let elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, QueryType.Exists('identifier'));
-
-    if (address) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('address', address));
-    }
-
-    if (filter.search !== undefined) {
-      elasticQuery = elasticQuery.withSearchWildcardCondition(filter.search, ['token', 'name']);
-    }
-
-    if (filter.type !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('type', filter.type));
-    }
-
-    if (identifier !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('identifier', identifier, QueryOperator.AND));
-    }
-
-    if (filter.collection !== undefined && filter.collection !== '') {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('token', filter.collection, QueryOperator.AND));
-    }
-
-    if (filter.collections !== undefined && filter.collections.length !== 0) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.collections.map(collection => QueryType.Match('token', collection, QueryOperator.AND))));
-    }
-
-    if (filter.name !== undefined && filter.name !== '') {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('data', { "data.name": filter.name }));
-    }
-
-    if (filter.hasUris !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('data', { "data.nonEmptyURIs": filter.hasUris }));
-    }
-
-    if (filter.tags) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.tags.map(tag => QueryType.Nested("data", { "data.tags": tag }))));
-    }
-
-    if (filter.creator !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", { "data.creator": filter.creator }));
-    }
-
-    if (filter.identifiers) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
-    }
-
-    if (filter.isWhitelistedStorage !== undefined && this.apiConfigService.getIsIndexerV3FlagActive()) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
-    }
-
-    if (filter.isNsfw !== undefined) {
-      const nsfwThreshold = this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
-
-      if (filter.isNsfw === true) {
-        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw_mark', new RangeGreaterThanOrEqual(nsfwThreshold));
-      } else {
-        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw_mark', new RangeLowerThan(nsfwThreshold));
-      }
-    }
-
-    if (filter.before || filter.after) {
-      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
-    }
-
-    return elasticQuery;
   }
 
   async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[]> {
@@ -342,18 +274,7 @@ export class NftService {
   }
 
   async getNftsInternal(pagination: QueryPagination, filter: NftFilter, identifier?: string): Promise<Nft[]> {
-    const elasticQuery = this.buildElasticNftFilter(filter, identifier);
-    elasticQuery
-      .withPagination(pagination)
-      .withSort([
-        { name: 'timestamp', order: ElasticSortOrder.descending },
-        { name: 'nonce', order: ElasticSortOrder.descending },
-      ]);
-
-    let elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
-    if (elasticNfts.length === 0 && identifier !== undefined) {
-      elasticNfts = await this.elasticService.getList('accountsesdt', 'identifier', ElasticQuery.create().withMustMatchCondition('identifier', identifier, QueryOperator.AND));
-    }
+    const elasticNfts = await this.indexerService.getNfts(pagination, filter, identifier);
 
     const nfts: Nft[] = [];
 
@@ -460,17 +381,11 @@ export class NftService {
       return null;
     }
 
-    const elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
-      .withCondition(QueryConditionOptions.must, [QueryType.Match('identifier', identifier, QueryOperator.AND)]);
-
-    return await this.elasticService.getCount('accountsesdt', elasticQuery);
+    return await this.indexerService.getNftOwnersCount(identifier);
   }
 
   async getNftCount(filter: NftFilter): Promise<number> {
-    const elasticQuery = this.buildElasticNftFilter(filter);
-
-    return await this.elasticService.getCount('tokens', elasticQuery);
+    return await this.indexerService.getNftCount(filter);
   }
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
@@ -589,25 +504,7 @@ export class NftService {
   }
 
   async getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination) {
-    if (identifiers.length === 0) {
-      return [];
-    }
-
-    const queries = identifiers.map((identifier) => QueryType.Match('identifier', identifier, QueryOperator.AND));
-
-    let elasticQuery = ElasticQuery.create();
-
-    if (pagination) {
-      elasticQuery = elasticQuery.withPagination(pagination);
-    }
-
-    elasticQuery = elasticQuery
-      .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
-      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
-      .withCondition(QueryConditionOptions.should, queries)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
-
-    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
+    return await this.indexerService.getAccountEsdtByIdentifiers(identifiers, pagination);
   }
 
   applyExtendedAttributes(nft: Nft, elasticNft: any) {

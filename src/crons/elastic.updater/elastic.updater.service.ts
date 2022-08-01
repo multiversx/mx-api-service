@@ -2,19 +2,20 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import * as JsonDiff from "json-diff";
 import { AssetsService } from "src/common/assets/assets.service";
-import { TokenType } from "src/endpoints/tokens/entities/token.type";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import asyncPool from "tiny-async-pool";
 import { PersistenceInterface } from "src/common/persistence/persistence.interface";
-import { BatchUtils, ElasticQuery, ElasticService, Locker, QueryType } from "@elrondnetwork/erdnest";
+import { BatchUtils, Locker } from "@elrondnetwork/erdnest";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
+import { IndexerService } from "src/common/indexer/indexer.service";
+
 @Injectable()
 export class ElasticUpdaterService {
   private readonly logger: Logger;
 
   constructor(
     private readonly assetsService: AssetsService,
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: IndexerService,
     private readonly nftService: NftService,
     @Inject('PersistenceService')
     private readonly persistenceService: PersistenceInterface,
@@ -28,7 +29,7 @@ export class ElasticUpdaterService {
       const allAssets = await this.assetsService.getAllTokenAssets();
 
       for (const key of Object.keys(allAssets)) {
-        const elasticAssets = await this.elasticService.getCustomValue('tokens', key, 'assets');
+        const elasticAssets = await this.indexerService.getAssetsForToken(key);
         if (elasticAssets === null) {
           this.logger.log(`Could not find token with identifier '${key}' when updating assets in elastic`);
           continue;
@@ -38,7 +39,7 @@ export class ElasticUpdaterService {
 
         if (!elasticAssets || JsonDiff.diff(githubAssets, elasticAssets)) {
           this.logger.log(`Updating assets for token with identifier '${key}'`);
-          await this.elasticService.setCustomValue('tokens', key, 'assets', githubAssets);
+          await this.indexerService.setAssetsForToken(key, githubAssets);
         }
       }
     }, true);
@@ -47,19 +48,8 @@ export class ElasticUpdaterService {
   @Cron(CronExpression.EVERY_HOUR)
   async handleUpdateTokenExtraDetails() {
     await Locker.lock('Elastic updater: Update tokens isWhitelisted, media, metadata', async () => {
-      const query = ElasticQuery.create()
-        .withFields([
-          'api_isWhitelistedStorage',
-          'api_media',
-          'api_metadata',
-          'data.uris',
-        ])
-        .withMustExistCondition('identifier')
-        .withMustMultiShouldCondition([TokenType.NonFungibleESDT, TokenType.SemiFungibleESDT], type => QueryType.Match('type', type))
-        .withPagination({ from: 0, size: 10000 });
-
-      await this.elasticService.getScrollableList('tokens', 'identifier', query, async items => {
-        const whitelistStorageItems = items.map(item => ({
+      await this.indexerService.getAllTokensMetadata(async items => {
+        const whitelistStorageItems = items.map((item: any) => ({
           identifier: item.identifier,
           uris: item.data?.uris,
           isWhitelistedStorage: item.api_isWhitelistedStorage,
@@ -67,14 +57,14 @@ export class ElasticUpdaterService {
 
         await this.updateIsWhitelistedStorageForTokens(whitelistStorageItems);
 
-        const mediaItems = items.map(item => ({
+        const mediaItems = items.map((item: any) => ({
           identifier: item.identifier,
           media: item.api_media,
         }));
 
         await this.updateMediaForTokens(mediaItems);
 
-        const metadataItems = items.map(item => ({
+        const metadataItems = items.map((item: any) => ({
           identifier: item.identifier,
           metadata: item.api_metadata,
         }));
@@ -183,7 +173,7 @@ export class ElasticUpdaterService {
   private async updateIsWhitelistedStorageForToken(identifier: string, isWhitelistedStorage: boolean): Promise<void> {
     try {
       this.logger.log(`Setting api_isWhitelistedStorage for token with identifier '${identifier}'`);
-      await this.elasticService.setCustomValue('tokens', identifier, 'isWhitelistedStorage', isWhitelistedStorage);
+      await this.indexerService.setIsWhitelistedStorageForToken(identifier, isWhitelistedStorage);
     } catch (error) {
       this.logger.error(`Unexpected error when updating isWhitelistedStorage for token with identifier '${identifier}'`);
     }
@@ -192,7 +182,7 @@ export class ElasticUpdaterService {
   private async updateMediaForToken(identifier: string, media: NftMedia[]): Promise<void> {
     try {
       this.logger.log(`Setting api_media for token with identifier '${identifier}'`);
-      await this.elasticService.setCustomValue('tokens', identifier, 'media', media);
+      await this.indexerService.setMediaForToken(identifier, media);
     } catch (error) {
       this.logger.error(`Unexpected error when updating media for token with identifier '${identifier}'`);
     }
@@ -201,7 +191,7 @@ export class ElasticUpdaterService {
   private async updateMetadataForToken(identifier: string, metadata: any): Promise<void> {
     try {
       this.logger.log(`Setting api_metadata for token with identifier '${identifier}'`);
-      await this.elasticService.setCustomValue('tokens', identifier, 'metadata', metadata);
+      await this.indexerService.setMetadataForToken(identifier, metadata);
     } catch (error) {
       this.logger.error(`Unexpected error when updating metadata for token with identifier '${identifier}'`);
     }
