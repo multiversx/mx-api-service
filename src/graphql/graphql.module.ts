@@ -17,9 +17,14 @@ import { TransactionModule } from "src/graphql/entities/transaction/transaction.
 @Module({})
 export class GraphQlModule {
   static register(): DynamicModule {
-    return {
+    const module: DynamicModule = {
       module: GraphQlModule,
-      imports: !configuration().api?.graphql ? [] : [
+      imports: [],
+    };
+
+    const isGraphqlActive = configuration().api?.graphql ?? false;
+    if (isGraphqlActive) {
+      module.imports = [
         GraphQLModule.forRoot<ApolloDriverConfig>({
           autoSchemaFile: join(process.cwd(), "src/graphql/schema/schema.gql"),
           driver: ApolloDriver,
@@ -32,7 +37,9 @@ export class GraphQlModule {
         SmartContractResultModule,
         TransactionDetailedModule,
         TransactionModule,
-      ],
-    };
+      ];
+    }
+
+    return module;
   }
 }
