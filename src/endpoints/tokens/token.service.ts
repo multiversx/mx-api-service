@@ -4,7 +4,7 @@ import { TokenWithBalance } from "./entities/token.with.balance";
 import { TokenDetailed } from "./entities/token.detailed";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenFilter } from "./entities/token.filter";
-import { TokenUtils } from "src/utils/token.utils";
+import { TokenHelpers } from "src/utils/token.helpers";
 import { EsdtService } from "../esdt/esdt.service";
 import { TokenAccount } from "./entities/token.account";
 import { TokenType } from "./entities/token.type";
@@ -20,7 +20,7 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
-import { AddressUtils, ApiUtils, NumberUtils } from "@elrondnetwork/erdnest";
+import { AddressUtils, ApiUtils, NumberUtils, TokenUtils } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
 
 @Injectable()
@@ -44,6 +44,11 @@ export class TokenService {
   async getToken(identifier: string): Promise<TokenDetailed | undefined> {
     const tokens = await this.esdtService.getAllEsdtTokens();
     let token = tokens.find(x => x.identifier === identifier);
+
+    if (!TokenUtils.isToken(identifier)) {
+      return undefined;
+    }
+
     if (!token) {
       return undefined;
     }
@@ -226,6 +231,11 @@ export class TokenService {
 
   async getTokenForAddress(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {
     const tokens = await this.getFilteredTokens({ identifier });
+
+    if (!TokenUtils.isToken(identifier)) {
+      return undefined;
+    }
+
     if (!tokens.length) {
       this.logger.log(`Error when fetching token ${identifier} details for address ${address}`);
       return undefined;
@@ -278,7 +288,7 @@ export class TokenService {
     const tokensWithBalance: TokenWithBalance[] = [];
 
     for (const tokenIdentifier of Object.keys(esdts)) {
-      if (!TokenUtils.isEsdt(tokenIdentifier)) {
+      if (!TokenUtils.isToken(tokenIdentifier)) {
         continue;
       }
 
@@ -348,7 +358,7 @@ export class TokenService {
           roles.push(addressRole);
         }
 
-        TokenUtils.setTokenRole(addressRole, role);
+        TokenHelpers.setTokenRole(addressRole, role);
       }
     }
 
@@ -380,7 +390,7 @@ export class TokenService {
       for (const role of Object.keys(token.roles)) {
         const addresses = token.roles[role].distinct();
         if (addresses.includes(address)) {
-          TokenUtils.setTokenRole(addressRoles, role);
+          TokenHelpers.setTokenRole(addressRoles, role);
         }
       }
 
@@ -391,10 +401,14 @@ export class TokenService {
     }
 
     const tokenAddressesRoles = await this.esdtService.getEsdtAddressesRoles(identifier);
-    const addressRoles = tokenAddressesRoles?.find((role: TokenRoles) => role.address === address);
+    let addressRoles = tokenAddressesRoles?.find((role: TokenRoles) => role.address === address);
+    if (addressRoles) {
+      // clone
+      addressRoles = new TokenRoles(JSON.parse(JSON.stringify(addressRoles)));
 
-    //@ts-ignore
-    delete addressRoles?.address;
+      //@ts-ignore
+      delete addressRoles?.address;
+    }
 
     return addressRoles;
   }

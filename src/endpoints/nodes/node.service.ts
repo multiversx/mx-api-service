@@ -33,6 +33,7 @@ export class NodeService {
     private readonly stakeService: StakeService,
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
+    @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
   ) { }
 
@@ -159,6 +160,16 @@ export class NodeService {
 
       if (query.auctioned !== undefined && node.auctioned !== query.auctioned) {
         return false;
+      }
+
+      if (query.fullHistory !== undefined) {
+        if (query.fullHistory === true && !node.fullHistory) {
+          return false;
+        }
+
+        if (query.fullHistory === false && node.fullHistory === true) {
+          return false;
+        }
       }
 
       if (query.sort && !(query.sort in node)) {
@@ -520,7 +531,7 @@ export class NodeService {
         nodeStatus = peerType ? peerType : validatorStatus;
       }
 
-      const node: Node = {
+      const node: Node = new Node({
         bls,
         name,
         version: version ? (version.includes('-rc') ? version.split('-').slice(0, 2).join('-').split('/')[0] : version.split('-')[0].split('/')[0]) : '',
@@ -528,6 +539,7 @@ export class NodeService {
         rating: parseFloat(parseFloat(rating).toFixed(2)),
         tempRating: parseFloat(parseFloat(tempRating).toFixed(2)),
         ratingModifier: ratingModifier ? ratingModifier : 0,
+        fullHistory: item.peerSubType === 1 ? true : undefined,
         shard,
         type: nodeType,
         status: nodeStatus,
@@ -550,7 +562,7 @@ export class NodeService {
         auctionPosition: undefined,
         auctionTopUp: undefined,
         auctionSelected: undefined,
-      };
+      });
 
       if (['queued', 'jailed'].includes(peerType)) {
         node.shard = undefined;

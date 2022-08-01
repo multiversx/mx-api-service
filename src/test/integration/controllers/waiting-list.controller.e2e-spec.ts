@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
-describe("Waiting-List Controller", () => {
+describe.skip("Waiting-List Controller", () => {
   let app: INestApplication;
   const route: string = "/waiting-list";
 

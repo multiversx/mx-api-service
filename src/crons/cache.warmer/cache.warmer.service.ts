@@ -131,7 +131,7 @@ export class CacheWarmerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleEsdtTokenInvalidations() {
-    await Locker.lock('Esdt tokens invalidations', async () => {
+    await Locker.lock('All Tokens invalidations', async () => {
       const tokens = await this.esdtService.getAllEsdtTokensRaw();
       await this.invalidateKey(CacheInfo.AllEsdtTokens.key, tokens, CacheInfo.AllEsdtTokens.ttl);
     }, true);
@@ -221,14 +221,20 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleTokenAssetsInvalidations() {
     await Locker.lock('Token assets invalidations', async () => {
       await this.assetsService.checkout();
       const assets = this.assetsService.getAllTokenAssetsRaw();
       await this.invalidateKey(CacheInfo.TokenAssets.key, assets, CacheInfo.TokenAssets.ttl);
 
-      const accountLabels = await this.assetsService.getAllAccountAssetsRaw();
+      const providers = await this.providerService.getAllProviders();
+      const identities = await this.identitiesService.getAllIdentities();
+      const pairs = await this.mexPairsService.getAllMexPairs();
+      const farms = await this.mexFarmsService.getAllMexFarms();
+      const settings = await this.mexSettingsService.getSettings();
+
+      const accountLabels = await this.assetsService.getAllAccountAssetsRaw(providers, identities, pairs, farms, settings ?? undefined);
       await this.invalidateKey(CacheInfo.AccountAssets.key, accountLabels, CacheInfo.AccountAssets.ttl);
     }, true);
   }

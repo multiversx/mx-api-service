@@ -6,11 +6,7 @@ import { TokenRoles } from "src/endpoints/tokens/entities/token.roles";
 import { ApiUtils } from '@elrondnetwork/erdnest';
 import '@elrondnetwork/erdnest/lib/utils/extensions/string.extensions';
 
-export class TokenUtils {
-  static isEsdt(tokenIdentifier: string) {
-    return tokenIdentifier.split('-').length === 2;
-  }
-
+export class TokenHelpers {
   static canBool(string: string) {
     return string.split('-').pop() === 'true';
   }
@@ -36,7 +32,7 @@ export class TokenUtils {
 
   static getThumbnailUrlIdentifier(nftIdentifier: string, fileUrl: string) {
     const collectionIdentifier = nftIdentifier.split('-').slice(0, 2).join('-');
-    const urlHash = TokenUtils.getUrlHash(fileUrl);
+    const urlHash = TokenHelpers.getUrlHash(fileUrl);
 
     return `${collectionIdentifier}-${urlHash}`;
   }
@@ -89,5 +85,14 @@ export class TokenUtils {
         tokenRoles.canAddQuantity = true;
         break;
     }
+  }
+
+  static tokenNonce(tokenID: string): number {
+    const tokenNonceHex = tokenID.split('-')[2];
+    return parseInt(tokenNonceHex, 16);
+  }
+
+  static getCollectionIdentifier(nftIdentifier: string): string {
+    return nftIdentifier.split('-').slice(0, 2).join('-');
   }
 }

@@ -3,7 +3,7 @@ import { CacheInfo } from "src/utils/cache.info";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
-import { TokenUtils } from "src/utils/token.utils";
+import { TokenHelpers } from "src/utils/token.helpers";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { GatewayService } from "../../common/gateway/gateway.service";
 import { MexTokenService } from "../mex/mex.token.service";
@@ -78,7 +78,7 @@ export class EsdtService {
 
     await this.applyMexPrices(tokens);
 
-    tokens = tokens.sortedDescending(token => token.transactions ?? 0);
+    tokens = tokens.sortedDescending(token => token.assets ? 1 : 0, token => token.marketCap ?? 0, token => token.transactions ?? 0);
 
     return tokens;
   }
@@ -87,16 +87,21 @@ export class EsdtService {
     try {
       const indexedTokens = await this.mexTokenService.getMexPricesRaw();
       for (const token of tokens) {
-        let price = indexedTokens[token.identifier];
+        const price = indexedTokens[token.identifier];
         if (price) {
           const supply = await this.getTokenSupply(token.identifier);
 
           if (token.assets && token.identifier.split('-')[0] === 'EGLDUSDC') {
-            price = price / (10 ** 12) * 2;
+            price.price = price.price / (10 ** 12) * 2;
           }
 
-          token.price = price;
-          token.marketCap = price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+          if (price.isToken) {
+            token.price = price.price;
+            token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+          }
+
+          token.supply = supply.totalSupply;
+          token.circulatingSupply = supply.circulatingSupply;
         }
       }
     } catch (error) {
@@ -218,17 +223,17 @@ export class EsdtService {
       type,
       owner: AddressUtils.bech32Encode(owner),
       decimals: parseInt(decimals.split('-').pop() ?? '0'),
-      isPaused: TokenUtils.canBool(isPaused),
-      canUpgrade: TokenUtils.canBool(canUpgrade),
-      canMint: TokenUtils.canBool(canMint),
-      canBurn: TokenUtils.canBool(canBurn),
-      canChangeOwner: TokenUtils.canBool(canChangeOwner),
-      canPause: TokenUtils.canBool(canPause),
-      canFreeze: TokenUtils.canBool(canFreeze),
-      canWipe: TokenUtils.canBool(canWipe),
-      canAddSpecialRoles: TokenUtils.canBool(canAddSpecialRoles),
-      canTransferNFTCreateRole: TokenUtils.canBool(canTransferNFTCreateRole),
-      NFTCreateStopped: TokenUtils.canBool(NFTCreateStopped),
+      isPaused: TokenHelpers.canBool(isPaused),
+      canUpgrade: TokenHelpers.canBool(canUpgrade),
+      canMint: TokenHelpers.canBool(canMint),
+      canBurn: TokenHelpers.canBool(canBurn),
+      canChangeOwner: TokenHelpers.canBool(canChangeOwner),
+      canPause: TokenHelpers.canBool(canPause),
+      canFreeze: TokenHelpers.canBool(canFreeze),
+      canWipe: TokenHelpers.canBool(canWipe),
+      canAddSpecialRoles: TokenHelpers.canBool(canAddSpecialRoles),
+      canTransferNFTCreateRole: TokenHelpers.canBool(canTransferNFTCreateRole),
+      NFTCreateStopped: TokenHelpers.canBool(NFTCreateStopped),
       wiped: wiped.split('-').pop() ?? '',
     };
 
@@ -293,7 +298,7 @@ export class EsdtService {
       }
 
       const role = BinaryUtils.base64Decode(valueEncoded);
-      TokenUtils.setTokenRole(currentAddressRoles, role);
+      TokenHelpers.setTokenRole(currentAddressRoles, role);
     }
 
     if (currentAddressRoles.address) {
@@ -414,5 +419,26 @@ export class EsdtService {
 
   async getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]): Promise<any[]> {
     return await this.indexerService.getAccountEsdtByAddressesAndIdentifier(identifier, addresses);
+  }
+
+  async getTokenMarketCap(): Promise<number> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.TokenMarketCap.key,
+      async () => await this.getTokenMarketCapRaw(),
+      CacheInfo.TokenMarketCap.ttl,
+    );
+  }
+
+  async getTokenMarketCapRaw(): Promise<number> {
+    let totalMarketCap = 0;
+
+    const tokens = await this.getAllEsdtTokens();
+    for (const token of tokens) {
+      if (token.price && token.marketCap) {
+        totalMarketCap += token.marketCap;
+      }
+    }
+
+    return totalMarketCap;
   }
 }

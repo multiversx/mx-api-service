@@ -8,7 +8,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { SmartContractResultFilter } from "./entities/smart.contract.result.filter";
 
 @Controller()
-@ApiTags('sc-results')
+@ApiTags('results')
 export class SmartContractResultController {
   constructor(private readonly scResultService: SmartContractResultService) { }
 

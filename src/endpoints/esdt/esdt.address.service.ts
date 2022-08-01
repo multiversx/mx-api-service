@@ -4,7 +4,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
-import { TokenUtils } from "src/utils/token.utils";
+import { TokenHelpers } from "src/utils/token.helpers";
 import { EsdtDataSource } from "./entities/esdt.data.source";
 import { EsdtService } from "./esdt.service";
 import { GatewayNft } from "../nfts/entities/gateway.nft";
@@ -121,7 +121,7 @@ export class EsdtAddressService {
           for (const role of Object.keys(indexedCollection.roles)) {
             const addresses = indexedCollection.roles[role].distinct();
             if (addresses.includes(address)) {
-              TokenUtils.setCollectionRole(addressRoles, role);
+              TokenHelpers.setCollectionRole(addressRoles, role);
             }
           }
 
@@ -238,7 +238,7 @@ export class EsdtAddressService {
 
       if (nft.uris && nft.uris.length > 0) {
         try {
-          nft.url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(nft.uris[0]), this.NFT_THUMBNAIL_PREFIX);
+          nft.url = TokenHelpers.computeNftUri(BinaryUtils.base64Decode(nft.uris[0]), this.NFT_THUMBNAIL_PREFIX);
         } catch (error) {
           this.logger.error(error);
         }
