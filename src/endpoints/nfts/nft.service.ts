@@ -22,6 +22,7 @@ import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
 import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, ElasticSortOrder, RangeGreaterThanOrEqual, RangeLowerThan, BatchUtils, TokenUtils } from "@elrondnetwork/erdnest";
 import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
+import { CollectionOwners } from "../collections/entities/collection.owners";
 
 @Injectable()
 export class NftService {
@@ -341,6 +342,18 @@ export class NftService {
     });
   }
 
+  async getCollectionOwners(identifier: string, pagination: QueryPagination): Promise<CollectionOwners[] | undefined> {
+    const accountsEsdt = await this.getAccountEsdtByIdentifier(identifier, pagination);
+
+    return accountsEsdt.map((esdt: any) => {
+      const owner = new CollectionOwners();
+      owner.address = esdt.address;
+      owner.balance = esdt.balance;
+
+      return owner;
+    });
+  }
+
   async getNftsInternal(pagination: QueryPagination, filter: NftFilter, identifier?: string): Promise<Nft[]> {
     const elasticQuery = this.buildElasticNftFilter(filter, identifier);
     elasticQuery
@@ -594,6 +607,32 @@ export class NftService {
     }
 
     const queries = identifiers.map((identifier) => QueryType.Match('identifier', identifier, QueryOperator.AND));
+
+    let elasticQuery = ElasticQuery.create();
+
+    if (pagination) {
+      elasticQuery = elasticQuery.withPagination(pagination);
+    }
+
+    elasticQuery = elasticQuery
+      .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
+      .withCondition(QueryConditionOptions.should, queries)
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+
+    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
+  }
+
+  async getAccountEsdtByCollection(identifier: string, pagination?: QueryPagination) {
+    return await this.getAccountsEsdtByCollection([identifier], pagination);
+  }
+
+  async getAccountsEsdtByCollection(identifiers: string[], pagination?: QueryPagination) {
+    if (identifiers.length === 0) {
+      return [];
+    }
+
+    const queries = identifiers.map((identifier) => QueryType.Match('collection', identifier, QueryOperator.AND));
 
     let elasticQuery = ElasticQuery.create();
 
