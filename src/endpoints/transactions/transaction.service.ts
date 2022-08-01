@@ -336,7 +336,7 @@ export class TransactionService {
   }
 
   private async getSmartContractResultsRaw(transactionHashes: Array<string>): Promise<Array<SmartContractResult[] | null>> {
-    const resultsRaw = await this.indexerService.getSmartContractResults(transactionHashes);
+    const resultsRaw = await this.indexerService.getSmartContractResults(transactionHashes) as any[];
     for (const result of resultsRaw) {
       result.hash = result.scHash;
 

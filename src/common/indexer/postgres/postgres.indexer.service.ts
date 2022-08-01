@@ -8,12 +8,22 @@ import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/sma
 import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.roles.filter";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
+import { Collection, ScResult, Account } from "../entities";
 import { IndexerInterface } from "../indexer.interface";
 
 @Injectable()
 export class PostgresIndexerService implements IndexerInterface {
   constructor() { }
 
+  getNftCollectionsByIds(_identifiers: string[]): Promise<Collection[]> {
+    throw new Error("Method not implemented.");
+  }
+  getSmartContractResults(_transactionHashes: string[]): Promise<ScResult[]> {
+    throw new Error("Method not implemented.");
+  }
+  getAccountsForAddresses(_addresses: string[]): Promise<Account[]> {
+    throw new Error("Method not implemented.");
+  }
   getAccountsCount(): Promise<number> {
     throw new Error("Method not implemented.");
   }

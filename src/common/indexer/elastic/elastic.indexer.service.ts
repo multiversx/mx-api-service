@@ -236,6 +236,32 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList('tokens', 'identifier', elasticQuery);
   }
 
+  async getNftCollectionsByIds(identifiers: string[]): Promise<any[]> {
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: identifiers.length + 1 })
+      .withMustNotExistCondition('identifier')
+      .withMustMultiShouldCondition(identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND));
+
+    return await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+  }
+
+  async getSmartContractResults(transactionHashes: string[]): Promise<any[]> {
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: transactionHashes.length + 1 })
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
+      .withTerms(new TermsQuery('originalTxHash', transactionHashes));
+
+    return await this.elasticService.getList('scresults', 'scHash', elasticQuery);
+  }
+
+  async getAccountsForAddresses(addresses: string[]): Promise<any[]> {
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: addresses.length + 1 })
+      .withTerms(new TermsQuery('address', addresses));
+
+    return await this.elasticService.getList('accounts', 'address', elasticQuery);
+  }
+
   async getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]): Promise<any[]> {
     const queries = [];
 

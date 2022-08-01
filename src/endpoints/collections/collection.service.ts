@@ -164,7 +164,7 @@ export class CollectionService {
       return undefined;
     }
 
-    if (![NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT].includes(elasticCollection.type)) {
+    if (![NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT].includes(elasticCollection.type as NftType)) {
       return undefined;
     }
 
