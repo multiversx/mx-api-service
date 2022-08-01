@@ -67,7 +67,7 @@ export class TokenController {
   async getTokenCount(
     @Query('search') search?: string,
     @Query('name') name?: string,
-    @Query('identifier') identifier?: string,
+    @Query('identifier', ParseTokenPipe) identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
   ): Promise<number> {
     return await this.tokenService.getTokenCount(new TokenFilter({ search, name, identifier, identifiers }));

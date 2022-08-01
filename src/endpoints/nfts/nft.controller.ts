@@ -9,7 +9,7 @@ import { NftType } from "./entities/nft.type";
 import { NftService } from "./nft.service";
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { NftQueryOptions } from './entities/nft.query.options';
-import { ParseAddressPipe, ParseOptionalBoolPipe, ParseArrayPipe, ParseOptionalIntPipe, ParseNftPipe } from '@elrondnetwork/erdnest';
+import { ParseAddressPipe, ParseOptionalBoolPipe, ParseArrayPipe, ParseOptionalIntPipe, ParseNftPipe, ParseCollectionPipe } from '@elrondnetwork/erdnest';
 
 @Controller()
 @ApiTags('nfts')
@@ -44,7 +44,7 @@ export class NftController {
     @Query('search') search?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('type') type?: NftType,
-    @Query('collection') collection?: string,
+    @Query('collection', ParseCollectionPipe) collection?: string,
     @Query('name') name?: string,
     @Query('tags', ParseArrayPipe) tags?: string[],
     @Query('creator', ParseAddressPipe) creator?: string,
@@ -86,7 +86,7 @@ export class NftController {
     @Query('search') search?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('type') type?: NftType,
-    @Query('collection') collection?: string,
+    @Query('collection', ParseCollectionPipe) collection?: string,
     @Query('name') name?: string,
     @Query('tags', ParseArrayPipe) tags?: string[],
     @Query('creator', ParseAddressPipe) creator?: string,
@@ -105,7 +105,7 @@ export class NftController {
     @Query('search') search?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('type') type?: NftType,
-    @Query('collection') collection?: string,
+    @Query('collection', ParseCollectionPipe) collection?: string,
     @Query('name') name?: string,
     @Query('tags', ParseArrayPipe) tags?: string[],
     @Query('creator', ParseAddressPipe) creator?: string,
@@ -192,11 +192,7 @@ export class NftController {
 
   @Get('/nfts/:identifier/owners/count')
   @ApiOperation({ deprecated: true })
-  @ApiResponse({
-    status: 200,
-    description: 'Non-fungible / semi-fungible token owners count',
-    type: Number,
-  })
+  @ApiResponse({ status: 200, description: 'Non-fungible / semi-fungible token owners count', type: Number })
   async getNftOwnersCount(
     @Param('identifier', ParseNftPipe) identifier: string
   ): Promise<number> {
