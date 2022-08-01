@@ -20,14 +20,15 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
-import { AddressUtils, ApiUtils, ElasticQuery, ElasticService, ElasticSortOrder, NumberUtils, QueryConditionOptions, QueryOperator, QueryType, TokenUtils } from "@elrondnetwork/erdnest";
+import { AddressUtils, ApiUtils, NumberUtils, TokenUtils } from "@elrondnetwork/erdnest";
+import { IndexerService } from "src/common/indexer/indexer.service";
 
 @Injectable()
 export class TokenService {
   private readonly logger: Logger;
   constructor(
     private readonly esdtService: EsdtService,
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: IndexerService,
     private readonly esdtAddressService: EsdtAddressService,
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService
@@ -166,11 +167,7 @@ export class TokenService {
   }
 
   async getTokenCountForAddressFromElastic(address: string): Promise<number> {
-    const query = ElasticQuery.create()
-      .withMustNotCondition(QueryType.Exists('identifier'))
-      .withMustCondition(QueryType.Match('address', address));
-
-    return await this.elasticService.getCount('accountsesdt', query);
+    return await this.indexerService.getTokenCountForAddress(address);
   }
 
   async getTokenCountForAddressFromGateway(address: string): Promise<number> {
@@ -187,28 +184,7 @@ export class TokenService {
   }
 
   async getTokensForAddressFromElastic(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
-    let query = ElasticQuery.create()
-      .withMustNotCondition(QueryType.Exists('identifier'))
-      .withMustCondition(QueryType.Match('address', address))
-      .withPagination({ from: queryPagination.from, size: queryPagination.size });
-
-    if (filter.identifier) {
-      query = query.withMustCondition(QueryType.Match('token', filter.identifier));
-    }
-
-    if (filter.identifiers) {
-      query = query.withShouldCondition(filter.identifiers.map(identifier => QueryType.Match('token', identifier)));
-    }
-
-    if (filter.name) {
-      query = query.withMustCondition(QueryType.Nested('data.name', filter.name));
-    }
-
-    if (filter.search) {
-      query = query.withMustCondition(QueryType.Nested('data.name', filter.search));
-    }
-
-    const elasticTokens = await this.elasticService.getList('accountsesdt', 'token', query);
+    const elasticTokens = await this.indexerService.getTokensForAddress(address, queryPagination, filter);
 
     const elasticTokensWithBalance = elasticTokens.toRecord(token => token.token, token => token.balance);
 
@@ -346,14 +322,7 @@ export class TokenService {
       return undefined;
     }
 
-    const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withPagination(pagination)
-      .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
-      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)])
-      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')]);
-
-    const tokenAccounts = await this.elasticService.getList("accountsesdt", identifier, elasticQuery);
-
+    const tokenAccounts = await this.indexerService.getTokenAccounts(pagination, identifier);
     return tokenAccounts.map((tokenAccount) => ApiUtils.mergeObjects(new TokenAccount(), tokenAccount));
   }
 
@@ -363,16 +332,12 @@ export class TokenService {
       return undefined;
     }
 
-    const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
-
-    const count = await this.elasticService.getCount("accountsesdt", elasticQuery);
-
+    const count = await this.indexerService.getTokenAccountsCount(identifier);
     return count;
   }
 
   private async getTokenRolesFromElastic(identifier: string): Promise<TokenRoles[] | undefined> {
-    const token = await this.elasticService.getItem('tokens', 'identifier', identifier);
+    const token = await this.indexerService.getToken(identifier);
     if (!token) {
       return undefined;
     }
@@ -410,7 +375,7 @@ export class TokenService {
 
   async getTokenRolesForIdentifierAndAddress(identifier: string, address: string): Promise<TokenRoles | undefined> {
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      const token = await this.elasticService.getItem('tokens', 'identifier', identifier);
+      const token = await this.indexerService.getToken(identifier);
 
       if (!token) {
         return undefined;
@@ -517,9 +482,7 @@ export class TokenService {
   }
 
   async getTokensWithRolesForAddressCount(address: string, filter: TokenWithRolesFilter): Promise<number> {
-    const elasticQuery = this.buildTokensWithRolesForAddressQuery(address, filter);
-
-    return await this.elasticService.getCount('tokens', elasticQuery);
+    return await this.indexerService.getTokensWithRolesForAddressCount(address, filter);
   }
 
   async getTokenWithRolesForAddress(address: string, identifier: string): Promise<TokenWithRoles | undefined> {
@@ -532,9 +495,7 @@ export class TokenService {
   }
 
   async getTokensWithRolesForAddress(address: string, filter: TokenWithRolesFilter, pagination: QueryPagination): Promise<TokenWithRoles[]> {
-    const elasticQuery = this.buildTokensWithRolesForAddressQuery(address, filter, pagination);
-
-    const tokenList = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+    const tokenList = await this.indexerService.getTokensWithRolesForAddress(address, filter, pagination);
 
     const allTokens = await this.esdtService.getAllEsdtTokens();
 
@@ -559,44 +520,5 @@ export class TokenService {
     }
 
     return result;
-  }
-
-  private buildTokensWithRolesForAddressQuery(address: string, filter: TokenWithRolesFilter, pagination?: QueryPagination): ElasticQuery {
-    let elasticQuery = ElasticQuery.create()
-      .withMustNotExistCondition('identifier')
-      .withMustCondition(QueryType.Should(
-        [
-          QueryType.Match('currentOwner', address),
-          QueryType.Nested('roles', { 'roles.ESDTRoleLocalMint': address }),
-          QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }),
-        ]
-      ))
-      .withMustMatchCondition('type', TokenType.FungibleESDT)
-      .withMustMatchCondition('token', filter.identifier)
-      .withMustMatchCondition('currentOwner', filter.owner);
-
-    if (filter.search) {
-      elasticQuery = elasticQuery
-        .withShouldCondition([
-          QueryType.Wildcard('token', filter.search),
-          QueryType.Wildcard('name', filter.search),
-        ]);
-    }
-
-    if (filter.canMint !== undefined) {
-      const condition = filter.canMint === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
-      elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleLocalMint': address }));
-    }
-
-    if (filter.canBurn !== undefined) {
-      const condition = filter.canBurn === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
-      elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }));
-    }
-
-    if (pagination) {
-      elasticQuery = elasticQuery.withPagination(pagination);
-    }
-
-    return elasticQuery;
   }
 }
