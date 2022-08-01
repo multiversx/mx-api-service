@@ -227,7 +227,7 @@ export class CollectionController {
   }
 
   @Get('/collections/:identifier/accounts')
-  @ApiOperation({ summary: 'NFT accounts', description: 'Returns a list of addresses and balances for a specifc collection' })
+  @ApiOperation({ summary: 'Collection accounts', description: 'Returns a list of addresses and balances for a specifc collection' })
   @ApiOkResponse({ type: [CollectionOwners] })
   @ApiNotFoundResponse({ description: 'Collection not found' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
