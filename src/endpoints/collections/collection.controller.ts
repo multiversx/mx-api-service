@@ -10,7 +10,7 @@ import { NftQueryOptions } from "../nfts/entities/nft.query.options";
 import { ParseAddressPipe, ParseArrayPipe, ParseCollectionPipe, ParseOptionalBoolPipe, ParseOptionalEnumArrayPipe, ParseOptionalIntPipe } from '@elrondnetwork/erdnest';
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { CollectionFilter } from "./entities/collection.filter";
-import { CollectionOwners } from "./entities/collection.owners";
+import { CollectionAccount } from "./entities/collection.account";
 
 @Controller()
 @ApiTags('collections')
@@ -227,8 +227,8 @@ export class CollectionController {
   }
 
   @Get('/collections/:identifier/accounts')
-  @ApiOperation({ summary: 'Collection accounts', description: 'Returns a list of addresses and balances for a specifc collection' })
-  @ApiOkResponse({ type: [CollectionOwners] })
+  @ApiOperation({ summary: 'Collection accounts', description: 'Returns a list of addresses and balances for a specific collection' })
+  @ApiOkResponse({ type: [CollectionAccount] })
   @ApiNotFoundResponse({ description: 'Collection not found' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -236,7 +236,7 @@ export class CollectionController {
     @Param('identifier', ParseCollectionPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-  ): Promise<CollectionOwners[]> {
+  ): Promise<CollectionAccount[]> {
     const owners = await this.nftService.getCollectionOwners(identifier, new QueryPagination({ from, size }));
     if (!owners) {
       throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);

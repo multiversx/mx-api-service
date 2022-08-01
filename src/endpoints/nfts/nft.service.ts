@@ -23,7 +23,7 @@ import { MexTokenService } from "../mex/mex.token.service";
 import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, BatchUtils, TokenUtils } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
-import { CollectionOwners } from "../collections/entities/collection.owners";
+import { CollectionAccount } from "../collections/entities/collection.account";
 
 @Injectable()
 export class NftService {
@@ -274,16 +274,13 @@ export class NftService {
     });
   }
 
-  async getCollectionOwners(identifier: string, pagination: QueryPagination): Promise<CollectionOwners[] | undefined> {
+  async getCollectionOwners(identifier: string, pagination: QueryPagination): Promise<CollectionAccount[] | undefined> {
     const accountsEsdt = await this.getAccountEsdtByIdentifier(identifier, pagination);
 
-    return accountsEsdt.map((esdt: any) => {
-      const owner = new CollectionOwners();
-      owner.address = esdt.address;
-      owner.balance = esdt.balance;
-
-      return owner;
-    });
+    return accountsEsdt.map((esdt: any) => new CollectionAccount({
+      address: esdt.address,
+      balance: esdt.balance,
+    }));
   }
 
   async getNftsInternal(pagination: QueryPagination, filter: NftFilter, identifier?: string): Promise<Nft[]> {

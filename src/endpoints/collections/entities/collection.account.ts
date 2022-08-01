@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 
-export class CollectionOwners {
-  constructor(init?: Partial<CollectionOwners>) {
+export class CollectionAccount {
+  constructor(init?: Partial<CollectionAccount>) {
     Object.assign(this, init);
   }
 
