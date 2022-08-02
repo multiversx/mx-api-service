@@ -3,7 +3,7 @@ import { CacheInfo } from "src/utils/cache.info";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
-import { TokenUtils } from "src/utils/token.utils";
+import { TokenHelpers } from "src/utils/token.helpers";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { GatewayService } from "../../common/gateway/gateway.service";
 import { MexTokenService } from "../mex/mex.token.service";
@@ -14,23 +14,8 @@ import { AssetsService } from "../../common/assets/assets.service";
 import { TransactionService } from "../transactions/transaction.service";
 import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
-import {
-  AddressUtils,
-  ApiUtils,
-  BinaryUtils,
-  Constants,
-  NumberUtils,
-  RecordUtils,
-  CachingService,
-  ElasticService,
-  ElasticQuery,
-  QueryConditionOptions,
-  QueryType,
-  QueryOperator,
-  RangeGreaterThanOrEqual,
-} from "@elrondnetwork/erdnest";
-import { NftType } from '../nfts/entities/nft.type';
-import { QueryPagination } from '../../common/entities/query.pagination';
+import { AddressUtils, ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService } from "@elrondnetwork/erdnest";
+import { IndexerService } from "src/common/indexer/indexer.service";
 
 @Injectable()
 export class EsdtService {
@@ -41,7 +26,7 @@ export class EsdtService {
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: IndexerService,
     @Inject(forwardRef(() => AssetsService))
     private readonly assetsService: AssetsService,
     @Inject(forwardRef(() => TransactionService))
@@ -179,12 +164,7 @@ export class EsdtService {
   }
 
   async getEsdtAccountsCount(identifier: string): Promise<number> {
-    const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
-
-    const count = await this.elasticService.getCount("accountsesdt", elasticQuery);
-
-    return count;
+    return await this.indexerService.getEsdtAccountsCount(identifier);
   }
 
   async getEsdtTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
@@ -255,17 +235,17 @@ export class EsdtService {
       type,
       owner: AddressUtils.bech32Encode(owner),
       decimals: parseInt(decimals.split('-').pop() ?? '0'),
-      isPaused: TokenUtils.canBool(isPaused),
-      canUpgrade: TokenUtils.canBool(canUpgrade),
-      canMint: TokenUtils.canBool(canMint),
-      canBurn: TokenUtils.canBool(canBurn),
-      canChangeOwner: TokenUtils.canBool(canChangeOwner),
-      canPause: TokenUtils.canBool(canPause),
-      canFreeze: TokenUtils.canBool(canFreeze),
-      canWipe: TokenUtils.canBool(canWipe),
-      canAddSpecialRoles: TokenUtils.canBool(canAddSpecialRoles),
-      canTransferNFTCreateRole: TokenUtils.canBool(canTransferNFTCreateRole),
-      NFTCreateStopped: TokenUtils.canBool(NFTCreateStopped),
+      isPaused: TokenHelpers.canBool(isPaused),
+      canUpgrade: TokenHelpers.canBool(canUpgrade),
+      canMint: TokenHelpers.canBool(canMint),
+      canBurn: TokenHelpers.canBool(canBurn),
+      canChangeOwner: TokenHelpers.canBool(canChangeOwner),
+      canPause: TokenHelpers.canBool(canPause),
+      canFreeze: TokenHelpers.canBool(canFreeze),
+      canWipe: TokenHelpers.canBool(canWipe),
+      canAddSpecialRoles: TokenHelpers.canBool(canAddSpecialRoles),
+      canTransferNFTCreateRole: TokenHelpers.canBool(canTransferNFTCreateRole),
+      NFTCreateStopped: TokenHelpers.canBool(NFTCreateStopped),
       wiped: wiped.split('-').pop() ?? '',
     };
 
@@ -330,7 +310,7 @@ export class EsdtService {
       }
 
       const role = BinaryUtils.base64Decode(valueEncoded);
-      TokenUtils.setTokenRole(currentAddressRoles, role);
+      TokenHelpers.setTokenRole(currentAddressRoles, role);
     }
 
     if (currentAddressRoles.address) {
@@ -434,11 +414,7 @@ export class EsdtService {
     const key = `tokens:${identifiers[0]}:distinctAccounts`;
 
     for (const identifier of identifiers) {
-      const query = ElasticQuery.create()
-        .withPagination({ from: 0, size: 10000 })
-        .withMustMatchCondition('token', identifier, QueryOperator.AND);
-
-      await this.elasticService.getScrollableList('accountsesdt', 'id', query, async items => {
+      await this.indexerService.getAllAccountsWithToken(identifier, async items => {
         const distinctAccounts: string[] = items.map(x => x.address).distinct();
         if (distinctAccounts.length > 0) {
           await this.cachingService.setAdd(key, ...distinctAccounts);
@@ -454,20 +430,7 @@ export class EsdtService {
   }
 
   async getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]): Promise<any[]> {
-    const queries = [];
-
-    for (const address of addresses) {
-      queries.push(QueryType.Match('address', address));
-    }
-
-    const elasticQuery = ElasticQuery.create()
-      .withPagination({ from: 0, size: addresses.length })
-      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match("address", "pending-")])
-      .withCondition(QueryConditionOptions.must, [QueryType.Match('token', identifier, QueryOperator.AND)])
-      .withRangeFilter("balanceNum", new RangeGreaterThanOrEqual(0))
-      .withCondition(QueryConditionOptions.should, queries);
-
-    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
+    return await this.indexerService.getAccountEsdtByAddressesAndIdentifier(identifier, addresses);
   }
 
   async getTokenMarketCap(): Promise<number> {
@@ -490,7 +453,6 @@ export class EsdtService {
 
     return totalMarketCap;
   }
-
 
   async getAllMetaESDTTokens(): Promise<TokenDetailed[]> {
     return await this.cachingService.getOrSetCache(

@@ -1,11 +1,11 @@
-import { Global, Module } from "@nestjs/common";
-import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
+import { forwardRef, Global, Module } from "@nestjs/common";
+import { IndexerModule } from "src/common/indexer/indexer.module";
 import { BlsService } from "./bls.service";
 
 @Global()
 @Module({
   imports: [
-    DynamicModuleUtils.getElasticModule(),
+    forwardRef(() => IndexerModule.register()),
   ],
   providers: [
     BlsService,

@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { TokenUtils } from "src/utils/token.utils";
+import { TokenHelpers } from "src/utils/token.helpers";
 import { Nft } from "./entities/nft";
 import { NftAccount } from "./entities/nft.account";
 import { NftFilter } from "./entities/nft.filter";
@@ -20,8 +20,10 @@ import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryConditionOptions, QueryType, QueryOperator, ElasticSortOrder, RangeGreaterThanOrEqual, RangeLowerThan, BatchUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, BatchUtils, TokenUtils, QueryType, QueryOperator, ElasticQuery, ElasticSortOrder, QueryConditionOptions, ElasticService } from "@elrondnetwork/erdnest";
+import { IndexerService } from "src/common/indexer/indexer.service";
 import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
+import { CollectionAccount } from "../collections/entities/collection.account";
 
 @Injectable()
 export class NftService {
@@ -31,7 +33,7 @@ export class NftService {
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: IndexerService,
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
     private readonly cachingService: CachingService,
@@ -44,6 +46,8 @@ export class NftService {
     private readonly esdtAddressService: EsdtAddressService,
     private readonly mexTokenService: MexTokenService,
     private readonly lockedAssetService: LockedAssetService,
+    private readonly elasticService: ElasticService,
+
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -56,76 +60,6 @@ export class NftService {
         fileSize: 29512,
       },
     ];
-  }
-
-  buildElasticNftFilter(filter: NftFilter, identifier?: string, address?: string) {
-    let elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, QueryType.Exists('identifier'))
-      .withMustNotCondition(QueryType.Match('type', NftType.MetaESDT));
-
-    if (address) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('address', address));
-    }
-
-    if (filter.search !== undefined) {
-      elasticQuery = elasticQuery.withSearchWildcardCondition(filter.search, ['token', 'name']);
-    }
-
-    if (filter.type !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('type', filter.type));
-    }
-
-    if (identifier !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('identifier', identifier, QueryOperator.AND));
-    }
-
-    if (filter.collection !== undefined && filter.collection !== '') {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('token', filter.collection, QueryOperator.AND));
-    }
-
-    if (filter.collections !== undefined && filter.collections.length !== 0) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.collections.map(collection => QueryType.Match('token', collection, QueryOperator.AND))));
-    }
-
-    if (filter.name !== undefined && filter.name !== '') {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('data', { "data.name": filter.name }));
-    }
-
-    if (filter.hasUris !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('data', { "data.nonEmptyURIs": filter.hasUris }));
-    }
-
-    if (filter.tags) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.tags.map(tag => QueryType.Nested("data", { "data.tags": tag }))));
-    }
-
-    if (filter.creator !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", { "data.creator": filter.creator }));
-    }
-
-    if (filter.identifiers) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
-    }
-
-    if (filter.isWhitelistedStorage !== undefined && this.apiConfigService.getIsIndexerV3FlagActive()) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
-    }
-
-    if (filter.isNsfw !== undefined) {
-      const nsfwThreshold = this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
-
-      if (filter.isNsfw === true) {
-        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw_mark', new RangeGreaterThanOrEqual(nsfwThreshold));
-      } else {
-        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw_mark', new RangeLowerThan(nsfwThreshold));
-      }
-    }
-
-    if (filter.before || filter.after) {
-      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
-    }
-
-    return elasticQuery;
   }
 
   async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[]> {
@@ -215,7 +149,7 @@ export class NftService {
     );
 
     for (const nft of nfts) {
-      if (TokenUtils.needsDefaultMedia(nft)) {
+      if (TokenHelpers.needsDefaultMedia(nft)) {
         nft.media = this.DEFAULT_MEDIA;
       }
     }
@@ -242,7 +176,7 @@ export class NftService {
       this.pluginService.processNft(nft),
     ]);
 
-    if (TokenUtils.needsDefaultMedia(nft)) {
+    if (TokenHelpers.needsDefaultMedia(nft)) {
       nft.media = this.DEFAULT_MEDIA;
     }
   }
@@ -342,19 +276,17 @@ export class NftService {
     });
   }
 
-  async getNftsInternal(pagination: QueryPagination, filter: NftFilter, identifier?: string): Promise<Nft[]> {
-    const elasticQuery = this.buildElasticNftFilter(filter, identifier);
-    elasticQuery
-      .withPagination(pagination)
-      .withSort([
-        { name: 'timestamp', order: ElasticSortOrder.descending },
-        { name: 'nonce', order: ElasticSortOrder.descending },
-      ]);
+  async getCollectionOwners(identifier: string, pagination: QueryPagination): Promise<CollectionAccount[] | undefined> {
+    const accountsEsdt = await this.getAccountEsdtByIdentifier(identifier, pagination);
 
-    let elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
-    if (elasticNfts.length === 0 && identifier !== undefined) {
-      elasticNfts = await this.elasticService.getList('accountsesdt', 'identifier', ElasticQuery.create().withMustMatchCondition('identifier', identifier, QueryOperator.AND));
-    }
+    return accountsEsdt.map((esdt: any) => new CollectionAccount({
+      address: esdt.address,
+      balance: esdt.balance,
+    }));
+  }
+
+  async getNftsInternal(pagination: QueryPagination, filter: NftFilter, identifier?: string): Promise<Nft[]> {
+    const elasticNfts = await this.indexerService.getNfts(pagination, filter, identifier);
 
     const nfts: Nft[] = [];
 
@@ -371,7 +303,7 @@ export class NftService {
       if (elasticNftData) {
         nft.name = elasticNftData.name;
         nft.creator = elasticNftData.creator;
-        nft.royalties = elasticNftData.royalties / 100; // 10.000 => 100%
+        nft.royalties = elasticNftData.royalties ? elasticNftData.royalties / 100 : undefined; // 10.000 => 100%
         nft.attributes = elasticNftData.attributes;
 
         if (elasticNftData.uris) {
@@ -384,7 +316,7 @@ export class NftService {
 
         if (nft.uris && nft.uris.length > 0) {
           try {
-            nft.url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(nft.uris[0]), this.NFT_THUMBNAIL_PREFIX);
+            nft.url = TokenHelpers.computeNftUri(BinaryUtils.base64Decode(nft.uris[0]), this.NFT_THUMBNAIL_PREFIX);
           } catch (error) {
             this.logger.error(error);
           }
@@ -431,7 +363,7 @@ export class NftService {
 
     let url = '';
     try {
-      url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(uris[0]), this.NFT_THUMBNAIL_PREFIX);
+      url = TokenHelpers.computeNftUri(BinaryUtils.base64Decode(uris[0]), this.NFT_THUMBNAIL_PREFIX);
     } catch (error) {
       this.logger.error(`Error when computing uri from '${uris[0]}'`);
       this.logger.error(error);
@@ -461,17 +393,11 @@ export class NftService {
       return null;
     }
 
-    const elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
-      .withCondition(QueryConditionOptions.must, [QueryType.Match('identifier', identifier, QueryOperator.AND)]);
-
-    return await this.elasticService.getCount('accountsesdt', elasticQuery);
+    return await this.indexerService.getNftOwnersCount(identifier);
   }
 
   async getNftCount(filter: NftFilter): Promise<number> {
-    const elasticQuery = this.buildElasticNftFilter(filter);
-
-    return await this.elasticService.getCount('tokens', elasticQuery);
+    return await this.indexerService.getNftCount(filter);
   }
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
@@ -590,11 +516,19 @@ export class NftService {
   }
 
   async getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination) {
+    return await this.indexerService.getAccountEsdtByIdentifiers(identifiers, pagination);
+  }
+
+  async getAccountEsdtByCollection(identifier: string, pagination?: QueryPagination) {
+    return await this.getAccountsEsdtByCollection([identifier], pagination);
+  }
+
+  async getAccountsEsdtByCollection(identifiers: string[], pagination?: QueryPagination) {
     if (identifiers.length === 0) {
       return [];
     }
 
-    const queries = identifiers.map((identifier) => QueryType.Match('identifier', identifier, QueryOperator.AND));
+    const queries = identifiers.map((identifier) => QueryType.Match('collection', identifier, QueryOperator.AND));
 
     let elasticQuery = ElasticQuery.create();
 

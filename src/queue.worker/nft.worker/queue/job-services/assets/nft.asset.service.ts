@@ -2,7 +2,7 @@ import { ApiService, Constants } from "@elrondnetwork/erdnest";
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
-import { TokenUtils } from "src/utils/token.utils";
+import { TokenHelpers } from "src/utils/token.helpers";
 import { AWSService } from "../thumbnails/aws.service";
 
 @Injectable()
@@ -23,12 +23,12 @@ export class NftAssetService {
     this.logger.log(`Started uploading assets to S3 for NFT with identifier '${identifier}', file url '${fileUrl}'`);
 
     try {
-      const mediaUrl = TokenUtils.computeNftUri(fileUrl, this.apiConfigService.getMediaUrl() + '/nfts/asset');
+      const mediaUrl = TokenHelpers.computeNftUri(fileUrl, this.apiConfigService.getMediaUrl() + '/nfts/asset');
 
       const fileResult: any = await this.apiService.get(mediaUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS });
       const file = fileResult.data;
 
-      const fileName = TokenUtils.computeNftUri(fileUrl, '');
+      const fileName = TokenHelpers.computeNftUri(fileUrl, '');
 
       const filePath = `${this.STANDARD_PATH}${fileName}`;
 
@@ -45,7 +45,7 @@ export class NftAssetService {
     try {
       const prefix = (this.apiConfigService.getMediaInternalUrl() ?? this.apiConfigService.getMediaUrl()) + '/nfts/asset';
 
-      const url = TokenUtils.computeNftUri(media.originalUrl, prefix);
+      const url = TokenHelpers.computeNftUri(media.originalUrl, prefix);
 
       // eslint-disable-next-line require-await
       const response = await this.apiService.head(url, undefined, async (error) => {

@@ -18,7 +18,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenFilter } from "./entities/token.filter";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
-import { ParseAddressPipe, ParseBlockHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseArrayPipe } from "@elrondnetwork/erdnest";
+import { ParseAddressPipe, ParseBlockHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseArrayPipe, ParseTokenPipe } from "@elrondnetwork/erdnest";
 
 @Controller()
 @ApiTags('tokens')
@@ -46,7 +46,7 @@ export class TokenController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
     @Query('name') name?: string,
-    @Query('identifier') identifier?: string,
+    @Query('identifier', ParseTokenPipe) identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('sort', new ParseOptionalEnumPipe(TokenSort)) sort?: TokenSort,
     @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
@@ -67,7 +67,7 @@ export class TokenController {
   async getTokenCount(
     @Query('search') search?: string,
     @Query('name') name?: string,
-    @Query('identifier') identifier?: string,
+    @Query('identifier', ParseTokenPipe) identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
   ): Promise<number> {
     return await this.tokenService.getTokenCount(new TokenFilter({ search, name, identifier, identifiers }));
@@ -78,7 +78,7 @@ export class TokenController {
   async getTokenCountAlternative(
     @Query('search') search?: string,
     @Query('name') name?: string,
-    @Query('identifier') identifier?: string,
+    @Query('identifier', ParseTokenPipe) identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
   ): Promise<number> {
     return await this.tokenService.getTokenCount(new TokenFilter({ search, name, identifier, identifiers }));
@@ -88,7 +88,9 @@ export class TokenController {
   @ApiOperation({ summary: 'Token', description: 'Returns token details based on a specific token identifier' })
   @ApiOkResponse({ type: TokenDetailed })
   @ApiNotFoundResponse({ description: 'Token not found' })
-  async getToken(@Param('identifier') identifier: string): Promise<TokenDetailed> {
+  async getToken(
+    @Param('identifier', ParseTokenPipe) identifier: string
+  ): Promise<TokenDetailed> {
     const token = await this.tokenService.getToken(identifier);
     if (token === undefined) {
       throw new NotFoundException('Token not found');
@@ -103,7 +105,7 @@ export class TokenController {
   @ApiOkResponse({ type: EsdtSupply })
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getTokenSupply(
-    @Param('identifier') identifier: string,
+    @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('denominated', new ParseOptionalBoolPipe) denominated?: boolean,
   ): Promise<TokenSupplyResult> {
     const isToken = await this.tokenService.isToken(identifier);
@@ -126,7 +128,7 @@ export class TokenController {
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   async getTokenAccounts(
-    @Param('identifier') identifier: string,
+    @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<TokenAccount[]> {
@@ -148,7 +150,7 @@ export class TokenController {
   @ApiOkResponse({ type: Number })
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getTokenAccountsCount(
-    @Param('identifier') identifier: string,
+    @Param('identifier', ParseTokenPipe) identifier: string,
   ): Promise<number> {
     const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
@@ -185,7 +187,7 @@ export class TokenController {
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
   async getTokenTransactions(
-    @Param('identifier') identifier: string,
+    @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressPipe) sender?: string,
@@ -245,7 +247,7 @@ export class TokenController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getTokenTransactionsCount(
-    @Param('identifier') identifier: string,
+    @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressPipe) receiver?: string,
     @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
@@ -282,7 +284,7 @@ export class TokenController {
   @ApiOkResponse({ type: [TokenRoles] })
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getTokenRoles(
-    @Param('identifier') identifier: string,
+    @Param('identifier', ParseTokenPipe) identifier: string,
   ): Promise<TokenRoles[]> {
     const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
@@ -302,8 +304,8 @@ export class TokenController {
   @ApiOkResponse({ type: TokenRoles })
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getTokenRolesForAddress(
-    @Param('identifier') identifier: string,
-    @Param('address') address: string,
+    @Param('identifier', ParseTokenPipe) identifier: string,
+    @Param('address', ParseAddressPipe) address: string,
   ): Promise<TokenRoles> {
     const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
@@ -335,7 +337,7 @@ export class TokenController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getTokenTransfers(
-    @Param('identifier') identifier: string,
+    @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressPipe) sender?: string,
@@ -390,7 +392,7 @@ export class TokenController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getTokenTransfersCount(
-    @Param('identifier') identifier: string,
+    @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressPipe) receiver?: string,
     @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
@@ -431,7 +433,7 @@ export class TokenController {
   @Get("/tokens/:identifier/transfers/c")
   @ApiExcludeEndpoint()
   async getAccountTransfersCountAlternative(
-    @Param('identifier') identifier: string,
+    @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressPipe) receiver?: string,
     @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
