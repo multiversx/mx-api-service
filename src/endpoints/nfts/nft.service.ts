@@ -20,9 +20,10 @@ import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, BatchUtils, TokenUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, BatchUtils, TokenUtils, QueryType, QueryOperator, ElasticQuery, ElasticSortOrder, QueryConditionOptions, ElasticService } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
+import { CollectionAccount } from "../collections/entities/collection.account";
 
 @Injectable()
 export class NftService {
@@ -45,6 +46,8 @@ export class NftService {
     private readonly esdtAddressService: EsdtAddressService,
     private readonly mexTokenService: MexTokenService,
     private readonly lockedAssetService: LockedAssetService,
+    private readonly elasticService: ElasticService,
+
   ) {
     this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -271,6 +274,15 @@ export class NftService {
 
       return owner;
     });
+  }
+
+  async getCollectionOwners(identifier: string, pagination: QueryPagination): Promise<CollectionAccount[] | undefined> {
+    const accountsEsdt = await this.getAccountEsdtByIdentifier(identifier, pagination);
+
+    return accountsEsdt.map((esdt: any) => new CollectionAccount({
+      address: esdt.address,
+      balance: esdt.balance,
+    }));
   }
 
   async getNftsInternal(pagination: QueryPagination, filter: NftFilter, identifier?: string): Promise<Nft[]> {
@@ -505,6 +517,32 @@ export class NftService {
 
   async getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination) {
     return await this.indexerService.getAccountEsdtByIdentifiers(identifiers, pagination);
+  }
+
+  async getAccountEsdtByCollection(identifier: string, pagination?: QueryPagination) {
+    return await this.getAccountsEsdtByCollection([identifier], pagination);
+  }
+
+  async getAccountsEsdtByCollection(identifiers: string[], pagination?: QueryPagination) {
+    if (identifiers.length === 0) {
+      return [];
+    }
+
+    const queries = identifiers.map((identifier) => QueryType.Match('collection', identifier, QueryOperator.AND));
+
+    let elasticQuery = ElasticQuery.create();
+
+    if (pagination) {
+      elasticQuery = elasticQuery.withPagination(pagination);
+    }
+
+    elasticQuery = elasticQuery
+      .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
+      .withCondition(QueryConditionOptions.should, queries)
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+
+    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
   }
 
   applyExtendedAttributes(nft: Nft, elasticNft: any) {
