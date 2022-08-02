@@ -149,6 +149,10 @@ export class TransactionService {
 
     transaction.senderAssets = accountAssets[transaction.sender];
     transaction.receiverAssets = accountAssets[transaction.receiver];
+
+    if (transaction.action?.arguments?.receiver) {
+      transaction.action.arguments.receiverAssets = accountAssets[transaction.action.arguments.receiver];
+    }
   }
 
   async applyAssetsDetailed(transaction: TransactionDetailed): Promise<void> {
@@ -240,8 +244,8 @@ export class TransactionService {
       await this.pluginsService.processTransaction(transaction);
 
       transaction.action = await this.transactionActionService.getTransactionAction(transaction);
-      transaction.pendingResults = await this.getPendingResults(transaction);
 
+      transaction.pendingResults = await this.getPendingResults(transaction);
       if (transaction.pendingResults === true) {
         transaction.status = TransactionStatus.pending;
       }
