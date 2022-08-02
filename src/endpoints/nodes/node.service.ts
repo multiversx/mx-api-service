@@ -112,7 +112,7 @@ export class NodeService {
   private async getFilteredNodes(query: NodeFilter): Promise<Node[]> {
     const allNodes = await this.getAllNodes();
 
-    let filteredNodes = allNodes.filter(node => {
+    const filteredNodes = allNodes.filter(node => {
       if (query.search !== undefined) {
         const nodeMatches = node.bls && node.bls.toLowerCase().includes(query.search.toLowerCase());
         const nameMatches = node.name && node.name.toLowerCase().includes(query.search.toLowerCase());
@@ -182,24 +182,25 @@ export class NodeService {
 
     const sort = query.sort;
     if (sort) {
-      if (sort === NodeSort.locked) {
-        filteredNodes = filteredNodes.sorted(x => Number(x[sort]));
-      } else {
-        filteredNodes.sort((a: any, b: any) => {
-          let asort = a[query.sort ?? ''];
-          let bsort = b[query.sort ?? ''];
+      filteredNodes.sort((a: any, b: any) => {
+        let asort = a[query.sort ?? ''];
+        let bsort = b[query.sort ?? ''];
 
-          if (asort && typeof asort === 'string') {
-            asort = asort.toLowerCase();
-          }
+        if (sort === NodeSort.locked) {
+          asort = Number(asort);
+          bsort = Number(bsort);
+        }
 
-          if (bsort && typeof bsort === 'string') {
-            bsort = bsort.toLowerCase();
-          }
+        if (asort && typeof asort === 'string') {
+          asort = asort.toLowerCase();
+        }
 
-          return asort > bsort ? 1 : bsort > asort ? -1 : 0;
-        });
-      }
+        if (bsort && typeof bsort === 'string') {
+          bsort = bsort.toLowerCase();
+        }
+
+        return asort > bsort ? 1 : bsort > asort ? -1 : 0;
+      });
 
       if (query.order === SortOrder.desc) {
         filteredNodes.reverse();
