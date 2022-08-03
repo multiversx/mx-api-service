@@ -14,7 +14,8 @@ import { NftThumbnailModule } from './queue/job-services/thumbnails/nft.thumbnai
     NftThumbnailModule,
     NftAssetModule,
   ],
-  providers: [NftWorkerService,
+  providers: [
+    NftWorkerService,
     {
       provide: 'QUEUE_SERVICE',
       useFactory: (configService: ApiConfigService) => {
