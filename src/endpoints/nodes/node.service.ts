@@ -173,7 +173,7 @@ export class NodeService {
         }
       }
 
-      if (query.sort && !(query.sort in node)) {
+      if (query.sort && (node[query.sort] === undefined || node[query.sort] === '')) {
         return false;
       }
 
