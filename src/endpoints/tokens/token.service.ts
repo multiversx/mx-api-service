@@ -22,6 +22,10 @@ import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
 import { AddressUtils, ApiUtils, NumberUtils, TokenUtils } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
+import { NftFilter } from '../nfts/entities/nft.filter';
+import { NftType } from '../nfts/entities/nft.type';
+import { NftAccount } from '../nfts/entities/nft.account';
+import { NftService } from '../nfts/nft.service';
 
 @Injectable()
 export class TokenService {
@@ -293,11 +297,11 @@ export class TokenService {
         { from: 0, size: 10000 }
       ),
       new NftFilter({
-        identifiers: filter.identifiers ?? (filter.identifier ? [filter.identifier] : []),
+        identifiers: filter.identifiers ?? (filter.identifier ? [filter.identifier] : undefined),
         search: filter.search,
         name: filter.name,
         type: NftType.MetaESDT,
-      })
+      }),
     );
     const metaESDTNftsIndexed: { [index: string]: NftAccount } = {};
     for (const metaESDTNft of metaESDTNfts) {
@@ -307,9 +311,8 @@ export class TokenService {
     const tokensWithBalance: TokenWithBalance[] = [];
 
     for (const tokenIdentifier of Object.keys(esdts)) {
-      if (!TokenUtils.isToken(tokenIdentifier)) {
       if (
-        !TokenUtils.isEsdt(tokenIdentifier) &&
+        !TokenUtils.isToken(tokenIdentifier) &&
         !Object.keys(metaESDTNftsIndexed).includes(tokenIdentifier)
       ) {
         continue;

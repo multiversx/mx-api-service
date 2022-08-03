@@ -7,7 +7,7 @@ export class NftFilter {
 
   search?: string;
   identifiers?: string[];
-  type?: NftType;
+  type?: NftType | string;
   collection?: string;
   collections?: string[];
   tags?: string[];

@@ -14,8 +14,20 @@ import { AssetsService } from "../../common/assets/assets.service";
 import { TransactionService } from "../transactions/transaction.service";
 import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
-import { AddressUtils, ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService } from "@elrondnetwork/erdnest";
+import {
+  AddressUtils,
+  ApiUtils,
+  BinaryUtils,
+  Constants,
+  NumberUtils,
+  RecordUtils,
+  CachingService,
+  QueryType, ElasticQuery,
+} from '@elrondnetwork/erdnest';
 import { IndexerService } from "src/common/indexer/indexer.service";
+import { QueryPagination } from '../../common/entities/query.pagination';
+import { NftType } from '../nfts/entities/nft.type';
+import { CollectionFilter } from '../collections/entities/collection.filter';
 
 @Injectable()
 export class EsdtService {
@@ -468,7 +480,14 @@ export class EsdtService {
       .withMustMultiShouldCondition([NftType.MetaESDT], type => QueryType.Match('type', type))
       .withPagination(new QueryPagination({ from: 0, size: 10000 }));
 
-    const tokenCollections = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+    const tokenCollections = await this.indexerService.getNftCollections(
+      new QueryPagination({ from: 0, size: 10000 }),
+      new CollectionFilter({
+        type: [
+          NftType.MetaESDT,
+        ],
+      })
+    );
     const collectionsIdentifiers = tokenCollections.map((collection) => collection.token);
 
     const tokensProperties = await this.cachingService.batchProcess(

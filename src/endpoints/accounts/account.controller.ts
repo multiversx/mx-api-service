@@ -424,7 +424,7 @@ export class AccountController {
     return await this.nftService.getNftsForAddress(
       address,
       new QueryPagination({ from, size }),
-      new NftFilter({ search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }),
+      new NftFilter({ search, identifiers, type: type ?? 'NonFungibleESDT, SemiFungibleESDT', collection, name, collections, tags, creator, hasUris, includeFlagged }),
       new NftQueryOptions({ withSupply }),
       source
     );
