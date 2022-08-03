@@ -19,6 +19,7 @@ import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { Auction } from "src/common/gateway/entities/auction";
 import { AddressUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
+import { NodeSort } from "./entities/node.sort";
 
 @Injectable()
 export class NodeService {
@@ -179,10 +180,16 @@ export class NodeService {
       return true;
     });
 
-    if (query.sort) {
+    const sort = query.sort;
+    if (sort) {
       filteredNodes.sort((a: any, b: any) => {
         let asort = a[query.sort ?? ''];
         let bsort = b[query.sort ?? ''];
+
+        if (sort === NodeSort.locked) {
+          asort = Number(asort);
+          bsort = Number(bsort);
+        }
 
         if (asort && typeof asort === 'string') {
           asort = asort.toLowerCase();
