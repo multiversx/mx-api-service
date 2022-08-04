@@ -1,8 +1,8 @@
 import { NftQueryOptions } from '../../endpoints/nfts/entities/nft.query.options';
 import { Test } from "@nestjs/testing";
 import { NftService } from "src/endpoints/nfts/nft.service";
-import '@elrondnetwork/erdnest/lib/utils/extensions/jest.extensions';
-import '@elrondnetwork/erdnest/lib/utils/extensions/array.extensions';
+import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
 import { PublicAppModule } from "src/public.app.module";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";

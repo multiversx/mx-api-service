@@ -1,5 +1,5 @@
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
-import '@elrondnetwork/erdnest/lib/utils/extensions/array.extensions';
+import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
 
 describe('Array Extensions', () => {
   describe('Distinct', () => {

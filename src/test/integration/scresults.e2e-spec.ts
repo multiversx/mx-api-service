@@ -2,7 +2,7 @@ import { SmartContractResultService } from "../../endpoints/sc-results/scresult.
 import { Test } from "@nestjs/testing";
 import { SmartContractResultFilter } from "../../endpoints/sc-results/entities/smart.contract.result.filter";
 import { SmartContractResult } from "../../endpoints/sc-results/entities/smart.contract.result";
-import '@elrondnetwork/erdnest/lib/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
 import { PublicAppModule } from "src/public.app.module";
 
 describe('Scresults Service', () => {

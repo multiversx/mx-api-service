@@ -15,9 +15,9 @@ import { NodeType } from 'src/endpoints/nodes/entities/node.type';
 import { NodeStatus } from 'src/endpoints/nodes/entities/node.status';
 import { NodeSort } from 'src/endpoints/nodes/entities/node.sort';
 import { Auction } from 'src/common/gateway/entities/auction';
-import '@elrondnetwork/erdnest/lib/utils/extensions/array.extensions';
-import '@elrondnetwork/erdnest/lib/utils/extensions/jest.extensions';
-import '@elrondnetwork/erdnest/lib/utils/extensions/number.extensions';
+import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
+import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest/lib/src/utils/extensions/number.extensions';
 import { AuctionNode } from 'src/common/gateway/entities/auction.node';
 import { CachingService, FileUtils } from '@elrondnetwork/erdnest';
 

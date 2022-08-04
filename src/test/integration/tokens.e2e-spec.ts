@@ -6,7 +6,7 @@ import { PublicAppModule } from 'src/public.app.module';
 import { TokenDetailed } from 'src/endpoints/tokens/entities/token.detailed';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { Test } from '@nestjs/testing';
-import '@elrondnetwork/erdnest/lib/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
 import { TokenDetailedWithBalance } from 'src/endpoints/tokens/entities/token.detailed.with.balance';
 import { TokenSort } from 'src/endpoints/tokens/entities/token.sort';
 import { SortOrder } from 'src/common/entities/sort.order';

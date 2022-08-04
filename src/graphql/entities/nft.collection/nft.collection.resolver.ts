@@ -22,7 +22,7 @@ export class NftCollectionResolver extends NftCollectionQuery {
       return null;
     }
 
-    if (!fields.filter((field) => field !== "address").length) {
+    if (fields.length === 1 && fields[0] === 'address') {
       return new Account({
         address: nftCollection.owner,
       });

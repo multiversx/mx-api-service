@@ -9,7 +9,7 @@ import { EsdtService } from "src/endpoints/esdt/esdt.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { PublicAppModule } from "src/public.app.module";
-import '@elrondnetwork/erdnest/lib/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
 
 export default class Initializer {
   private static cachingService: CachingService;
