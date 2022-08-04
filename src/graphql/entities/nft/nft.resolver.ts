@@ -25,8 +25,6 @@ export class NftResolver extends NftQuery {
   @ResolveField("creator", () => Account, { name: "creator", description: "Creator account for the given NFT." })
   public async getNftCreator(@Parent() nft: Nft, @Fields() fields: Array<string>) {
     if (!fields.filter((field) => field !== "address").length) {
-      // ask only for address
-
       return new Account({
         address: nft.creator,
       });
@@ -42,8 +40,6 @@ export class NftResolver extends NftQuery {
     }
 
     if (!fields.filter((field) => field !== "address").length) {
-      // ask only for address
-
       return new Account({
         address: nft.owner,
       });
