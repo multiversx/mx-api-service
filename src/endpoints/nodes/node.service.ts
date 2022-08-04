@@ -19,6 +19,7 @@ import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { Auction } from "src/common/gateway/entities/auction";
 import { AddressUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
+import { NodeSort } from "./entities/node.sort";
 
 @Injectable()
 export class NodeService {
@@ -33,6 +34,7 @@ export class NodeService {
     private readonly stakeService: StakeService,
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
+    @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
   ) { }
 
@@ -161,17 +163,33 @@ export class NodeService {
         return false;
       }
 
-      if (query.sort && !(query.sort in node)) {
+      if (query.fullHistory !== undefined) {
+        if (query.fullHistory === true && !node.fullHistory) {
+          return false;
+        }
+
+        if (query.fullHistory === false && node.fullHistory === true) {
+          return false;
+        }
+      }
+
+      if (query.sort && (node[query.sort] === undefined || node[query.sort] === '')) {
         return false;
       }
 
       return true;
     });
 
-    if (query.sort) {
+    const sort = query.sort;
+    if (sort) {
       filteredNodes.sort((a: any, b: any) => {
         let asort = a[query.sort ?? ''];
         let bsort = b[query.sort ?? ''];
+
+        if (sort === NodeSort.locked) {
+          asort = Number(asort);
+          bsort = Number(bsort);
+        }
 
         if (asort && typeof asort === 'string') {
           asort = asort.toLowerCase();
@@ -520,7 +538,7 @@ export class NodeService {
         nodeStatus = peerType ? peerType : validatorStatus;
       }
 
-      const node: Node = {
+      const node: Node = new Node({
         bls,
         name,
         version: version ? (version.includes('-rc') ? version.split('-').slice(0, 2).join('-').split('/')[0] : version.split('-')[0].split('/')[0]) : '',
@@ -528,6 +546,7 @@ export class NodeService {
         rating: parseFloat(parseFloat(rating).toFixed(2)),
         tempRating: parseFloat(parseFloat(tempRating).toFixed(2)),
         ratingModifier: ratingModifier ? ratingModifier : 0,
+        fullHistory: item.peerSubType === 1 ? true : undefined,
         shard,
         type: nodeType,
         status: nodeStatus,
@@ -550,7 +569,7 @@ export class NodeService {
         auctionPosition: undefined,
         auctionTopUp: undefined,
         auctionSelected: undefined,
-      };
+      });
 
       if (['queued', 'jailed'].includes(peerType)) {
         node.shard = undefined;

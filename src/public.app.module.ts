@@ -7,12 +7,18 @@ import { EndpointsServicesModule } from './endpoints/endpoints.services.module';
 import { EndpointsControllersModule } from './endpoints/endpoints.controllers.module';
 import { LoggingModule } from '@elrondnetwork/erdnest';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
+import { LocalCacheController } from './endpoints/caching/local.cache.controller';
+import { GraphQlModule } from 'src/graphql/graphql.module';
 
 @Module({
   imports: [
     LoggingModule,
     EndpointsServicesModule,
     EndpointsControllersModule,
+    GraphQlModule.register(),
+  ],
+  controllers: [
+    LocalCacheController,
   ],
   providers: [
     DynamicModuleUtils.getNestJsApiConfigService(),

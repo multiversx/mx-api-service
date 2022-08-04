@@ -9,4 +9,5 @@ export enum NodeSort {
   validatorIgnoredSignatures = 'validatorIgnoredSignatures',
   position = 'position',
   auctionPosition = 'auctionPosition',
+  locked = 'locked',
 }

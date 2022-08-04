@@ -1,6 +1,6 @@
 import { ApiService, CachingService } from "@elrondnetwork/erdnest";
 import { BinaryUtils, Constants } from "@elrondnetwork/erdnest";
-import { HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { PersistenceService } from "src/common/persistence/persistence.service";
@@ -8,7 +8,8 @@ import { MediaMimeTypeEnum } from "src/endpoints/nfts/entities/media.mime.type";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
-import { TokenUtils } from "src/utils/token.utils";
+import { TokenHelpers } from "src/utils/token.helpers";
+import { ClientProxy } from "@nestjs/microservices";
 
 @Injectable()
 export class NftMediaService {
@@ -21,6 +22,7 @@ export class NftMediaService {
     private readonly apiService: ApiService,
     private readonly apiConfigService: ApiConfigService,
     private readonly persistenceService: PersistenceService,
+    @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) {
     this.logger = new Logger(NftMediaService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -47,6 +49,11 @@ export class NftMediaService {
       mediaRaw,
       CacheInfo.NftMedia(nft.identifier).ttl
     );
+
+    await this.clientProxy.emit('refreshCacheKey', {
+      key: CacheInfo.NftMedia(nft.identifier).key,
+      ttl: CacheInfo.NftMedia(nft.identifier).ttl,
+    });
 
     return mediaRaw;
   }
@@ -82,9 +89,9 @@ export class NftMediaService {
       }
 
       const nftMedia = new NftMedia();
-      nftMedia.url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(uri), this.NFT_THUMBNAIL_PREFIX);
+      nftMedia.url = TokenHelpers.computeNftUri(BinaryUtils.base64Decode(uri), this.NFT_THUMBNAIL_PREFIX);
       nftMedia.originalUrl = BinaryUtils.base64Decode(uri);
-      nftMedia.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${nft.collection}-${TokenUtils.getUrlHash(nftMedia.url)}`;
+      nftMedia.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${nft.collection}-${TokenHelpers.getUrlHash(nftMedia.url)}`;
       nftMedia.fileType = fileProperties.contentType;
       nftMedia.fileSize = fileProperties.contentLength;
 
@@ -96,7 +103,7 @@ export class NftMediaService {
 
   private getUrl(nftUri: string, prefix: string): string {
     const url = BinaryUtils.base64Decode(nftUri);
-    return TokenUtils.computeNftUri(url, prefix);
+    return TokenHelpers.computeNftUri(url, prefix);
   }
 
   private async getFileProperties(uri: string): Promise<{ contentType: string, contentLength: number } | null> {

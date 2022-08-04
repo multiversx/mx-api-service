@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { CacheController } from './endpoints/caching/cache.controller';
+import { RemoteCacheController } from './endpoints/caching/remote.cache.controller';
 import { ApiMetricsController } from './common/metrics/api.metrics.controller';
 import { HealthCheckController } from './endpoints/health-check/health.check.controller';
 import { ProcessNftsPrivateController } from './endpoints/process-nfts/process.nfts.private.controller';
@@ -18,7 +18,7 @@ import { DynamicModuleUtils } from './utils/dynamic.module.utils';
   ],
   controllers: [
     ApiMetricsController,
-    CacheController,
+    RemoteCacheController,
     HealthCheckController,
     ProcessNftsPrivateController,
   ],

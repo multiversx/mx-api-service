@@ -117,7 +117,7 @@ export class MexPairService {
     const secondTokenSymbol = pair.secondToken.identifier.split('-')[0];
     const state = this.getPairState(pair.state);
     const type = this.getPairType(pair.type);
-    if (!type || [MexPairType.jungle, MexPairType.unlisted].includes(type)) {
+    if (!type || [MexPairType.unlisted].includes(type)) {
       return undefined;
     }
 
@@ -188,6 +188,7 @@ export class MexPairService {
       case 'Experimental':
         return MexPairType.experimental;
       case 'Jungle':
+      case 'Jungle-Experimental':
         return MexPairType.jungle;
       case 'Unlisted':
         return MexPairType.unlisted;

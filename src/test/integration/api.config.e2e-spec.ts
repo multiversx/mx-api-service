@@ -1290,26 +1290,6 @@ describe('API Config', () => {
     });
   });
 
-  describe("getAccessAddress", () => {
-    it("should return access address", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => ['address1, aaddress2']));
-
-      const results = apiConfigService.getAccessAddress();
-      expect(results).toEqual(['address1, aaddress2']);
-    });
-
-    it("should return default access address", () => {
-      jest
-        .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => undefined));
-
-      const results = apiConfigService.getAccessAddress();
-      expect(results).toEqual('');
-    });
-  });
-
   describe("getMockKeybases", () => {
     it("should return mock keybases flag", () => {
       jest

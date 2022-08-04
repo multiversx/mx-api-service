@@ -28,6 +28,15 @@ export class ApiConfigService {
     return gatewayUrls[Math.floor(Math.random() * gatewayUrls.length)];
   }
 
+  getLightGatewayUrl(): string | undefined {
+    const gatewayUrls = this.configService.get<string[]>('urls.lightGateway');
+    if (!gatewayUrls) {
+      return undefined;
+    }
+
+    return gatewayUrls[Math.floor(Math.random() * gatewayUrls.length)];
+  }
+
   getElasticUrl(): string {
     const elasticUrls = this.configService.get<string[]>('urls.elastic');
     if (!elasticUrls) {
@@ -323,6 +332,10 @@ export class ApiConfigService {
     return this.configService.get<boolean>('flags.indexer-v3') ?? false;
   }
 
+  isGraphQlActive(): boolean {
+    return this.configService.get<boolean>('api.graphql') ?? false;
+  }
+
   getIsPublicApiActive(): boolean {
     const isApiActive = this.configService.get<boolean>('api.public');
     if (isApiActive === undefined) {
@@ -563,10 +576,6 @@ export class ApiConfigService {
     }
 
     return jwtSecret;
-  }
-
-  getAccessAddress(): string {
-    return this.configService.get<string>('security.accessAddress') ?? '';
   }
 
   getMockKeybases(): boolean | undefined {

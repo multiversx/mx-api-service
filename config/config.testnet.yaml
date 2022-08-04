@@ -63,6 +63,8 @@ database:
   username: 'root'
   password: 'root'
   database: 'api'
+indexer:
+  type: 'elastic'
 caching:
   cacheTtl: 6
   processTtl: 600
@@ -89,7 +91,6 @@ inflation:
 security:
   admins:
   jwtSecret:
-  accessAddress:
 nftProcess:
   parallelism: 1
   maxRetries: 3
