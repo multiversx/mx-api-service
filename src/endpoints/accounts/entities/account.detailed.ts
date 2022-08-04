@@ -20,7 +20,7 @@ export class AccountDetailed extends Account {
   @ApiProperty({ description: 'The hash of the source code' })
   codeHash: string = '';
 
-  @Field(() => String, { description: 'Root hash for the given detailed account.' , nullable: true })
+  @Field(() => String, { description: 'Root hash for the given detailed account.', nullable: true })
   @ApiProperty({ description: 'The hash of the root node' })
   rootHash: string = '';
 
@@ -68,9 +68,9 @@ export class AccountDetailed extends Account {
   @ApiProperty({ type: ScamInfo, nullable: true })
   scamInfo: ScamInfo | undefined = undefined;
 
-  @Field(() => [NftCollectionAccount], { description: 'NFT collections account for the given detailed account.', nullable: true })
+  @Field(() => [NftCollectionAccount], { description: 'NFT collections for the given detailed account.', nullable: true })
   nftCollections: NftCollectionAccount[] | undefined = undefined;
 
-  @Field(() => [NftAccount], { description: 'NFTs account for the given detailed account.', nullable: true })
+  @Field(() => [NftAccount], { description: 'NFTs for the given detailed account.', nullable: true })
   nfts: NftAccount[] | undefined = undefined;
 }

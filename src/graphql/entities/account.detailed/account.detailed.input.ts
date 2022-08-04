@@ -13,7 +13,7 @@ export class GetAccountDetailedInput {
   }
 }
 
-@InputType({ description: "Input to retrieve the given NFT collections account for." })
+@InputType({ description: "Input to retrieve the given NFT collections for." })
 export class GetNftCollectionsAccountInput {
   @Field(() => Float, { name: "from", description: "Number of NFT collections to skip for the given result set.", nullable: true, defaultValue: 0 })
   from: number = 0;

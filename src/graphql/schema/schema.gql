@@ -79,15 +79,15 @@ type AccountDetailed {
   """If the given detailed account is upgradeable."""
   isUpgradeable: Boolean
 
-  """NFT collections account for the given detailed account."""
+  """NFT collections for the given detailed account."""
   nftCollections(
-    """Input to retrieve the given NFT collections account for."""
+    """Input to retrieve the given NFT collections for."""
     input: GetNftCollectionsAccountInput!
   ): [NftCollectionAccountFlat!]
 
-  """NFTs account for the given detailed account."""
+  """NFTs for the given detailed account."""
   nfts(
-    """Input to retrieve the given NFTs account for."""
+    """Input to retrieve the given NFTs for."""
     input: GetNftsAccountInput!
   ): [NftAccountFlat!]
 
@@ -175,7 +175,7 @@ input GetNftCollectionInput {
   collection: ID = ""
 }
 
-"""Input to retrieve the given NFT collections account for."""
+"""Input to retrieve the given NFT collections for."""
 input GetNftCollectionsAccountInput {
   """Number of NFT collections to skip for the given result set."""
   from: Float = 0
