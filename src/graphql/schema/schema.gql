@@ -261,7 +261,7 @@ input GetNftInput {
   identifier: ID = ""
 }
 
-"""Input to retrieve the given NFTs account for."""
+"""Input to retrieve the given NFTs for."""
 input GetNftsAccountInput {
   """Collections to retrieve for the given result set."""
   collections: [String!]
