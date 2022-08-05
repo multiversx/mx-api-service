@@ -47,7 +47,7 @@ export class NftWorkerService {
       return false;
     }
 
-    if (settings.forceRefreshMedia || settings.forceRefreshMetadata || settings.forceRefreshThumbnail) {
+    if (settings.forceRefreshMedia || settings.forceRefreshMetadata || settings.forceRefreshThumbnail || settings.uploadAsset) {
       return true;
     }
 
