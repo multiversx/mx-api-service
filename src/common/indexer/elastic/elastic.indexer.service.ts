@@ -967,31 +967,46 @@ export class ElasticIndexerService implements IndexerInterface {
       }
 
       if (filter.receiver) {
-        elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receiver', filter.receiver));
+        if (!filter.receivers) {
+          filter.receivers = [];
+        }
 
-        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-          elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receivers', filter.receiver));
+        filter.receivers.push(filter.receiver);
+
+        filter.receiver = undefined;
+      }
+
+      if (filter.receivers) {
+        for (const receiver of filter.receivers) {
+          elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receiver', receiver));
+
+          elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receivers', receiver));
         }
       }
     } else {
       elasticQuery = elasticQuery.withMustMatchCondition('sender', filter.sender);
 
       if (filter.receiver) {
-        const keys = ['receiver'];
-        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-          keys.push('receivers');
+        if (!filter.receivers) {
+          filter.receivers = [];
         }
 
-        elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, filter.receiver));
+        filter.receivers.push(filter.receiver);
+
+        filter.receiver = undefined;
+      }
+
+      if (filter.receivers) {
+        for (const receiver of filter.receivers) {
+          elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receiver', receiver));
+
+          elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receivers', receiver));
+        }
       }
     }
 
     if (address) {
-      const keys: string[] = ['sender', 'receiver'];
-
-      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-        keys.push('receivers');
-      }
+      const keys: string[] = ['sender', 'receiver', 'receivers'];
 
       elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, address));
     }
