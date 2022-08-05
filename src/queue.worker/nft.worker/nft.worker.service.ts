@@ -8,6 +8,7 @@ import { ClientProxy } from "@nestjs/microservices";
 import { NftMessage } from "./queue/entities/nft.message";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftAssetService } from "./queue/job-services/assets/nft.asset.service";
+import { TokenHelpers } from "src/utils/token.helpers";
 
 @Injectable()
 export class NftWorkerService {
@@ -47,11 +48,11 @@ export class NftWorkerService {
       return false;
     }
 
-    if (settings.forceRefreshMedia || settings.forceRefreshMetadata || settings.forceRefreshThumbnail || settings.uploadAsset) {
+    if (settings.forceRefreshMedia || settings.forceRefreshMetadata || settings.forceRefreshThumbnail) {
       return true;
     }
 
-    if (!nft.media || nft.media.length === 0) {
+    if (!nft.media || nft.media.length === 0 || TokenHelpers.hasDefaultMedia(nft)) {
       return true;
     }
 

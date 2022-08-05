@@ -49,6 +49,10 @@ export class TokenHelpers {
     return true;
   }
 
+  static hasDefaultMedia(nft: Nft): boolean {
+    return nft.media?.length == 1 && nft.media[0].url.includes('default');
+  }
+
   static setTokenRole(tokenRoles: TokenRoles, role: string) {
     tokenRoles.roles.push(role);
 
