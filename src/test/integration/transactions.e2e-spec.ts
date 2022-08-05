@@ -10,7 +10,7 @@ import '@elrondnetwork/erdnest/lib/utils/extensions/jest.extensions';
 import '@elrondnetwork/erdnest/lib/utils/extensions/array.extensions';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { PublicAppModule } from 'src/public.app.module';
-import { BinaryUtils } from '@elrondnetwork/erdnest';
+import { BinaryUtils, QueryConditionOptions } from '@elrondnetwork/erdnest';
 
 describe('Transaction Service', () => {
   let transactionService: TransactionService;
@@ -63,7 +63,7 @@ describe('Transaction Service', () => {
     });
 
     describe('Transactions filters', () => {
-      it(`should return a list of transactions between two accounts`, async () => {
+      it(`should return a list of transactions between two accounts, where sender must be one address`, async () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.sender = transactionSender;
         transactionFilter.receiver = transactionReceiver;
@@ -74,8 +74,31 @@ describe('Transaction Service', () => {
         for (const transaction of transactions) {
           expect(transaction).toHaveStructure(Object.keys(new Transaction()));
           expect(transaction.sender).toBe(transactionSender);
-          expect(transaction.receiver).toBe(transactionReceiver);
+          expect([transactionSender, transactionReceiver]).toContain(transaction.receiver);
         }
+      });
+
+      it(`should return same transactions for different type of receiver filters`, async () => {
+        const receiverAddr = "erd1ts8zswasu0k227xfptglr7hhz47lgr7autcmp6v9s9n0p5af6tfqddkg5z";
+        const onlyReceiver = new TransactionFilter();
+        onlyReceiver.receiver = receiverAddr;
+
+        const txsOnlyReceiver = await transactionService.getTransactions(onlyReceiver, { from: 0, size: 25 });
+
+        const receiverAndReceivers = new TransactionFilter();
+        receiverAndReceivers.receiver = receiverAddr;
+        receiverAndReceivers.receivers = [receiverAddr];
+
+        const txsReceiverAndReceivers = await transactionService.getTransactions(receiverAndReceivers, { from: 0, size: 25 });
+
+        expect(txsOnlyReceiver).toStrictEqual(txsReceiverAndReceivers);
+
+        const onlyReceivers = new TransactionFilter();
+        onlyReceivers.receivers = [receiverAddr];
+
+        const txsOnlyReceivers = await transactionService.getTransactions(onlyReceivers, { from: 0, size: 25 });
+
+        expect(txsOnlyReceiver).toStrictEqual(txsOnlyReceivers);
       });
 
       it('should return a list with transfers that call ESDTNFTTransfer function', async () => {
@@ -207,6 +230,17 @@ describe('Transaction Service', () => {
           expect(transaction).toBeDefined();
           expect(transaction.txHash).toEqual(transactionDetails.txHash);
           expect(transaction.sender).toEqual(transactionDetails.sender);
+        }
+      });
+
+      it(`should return transaction details based on receivers filter`, async () => {
+        const transactionFilter = new TransactionFilter();
+        transactionFilter.receivers = ["erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry", "erd1hzccjg25yqaqnr732x2ka7pj5glx72pfqzf05jj9hxqn3lxkramq5zu8h4"];
+
+        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 10 });
+        for (const transaction of transactions) {
+          expect(transaction).toBeDefined();
+          expect(transactionFilter.receivers).toContain(transaction.receiver);
         }
       });
 
