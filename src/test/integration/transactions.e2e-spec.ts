@@ -78,6 +78,47 @@ describe('Transaction Service', () => {
         }
       });
 
+      it(`should return a list of transactions for one address`, async () => {
+        const address = 'erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry';
+        const transactions = await transactionService.getTransactions(new TransactionFilter(), { from: 0, size: 25 }, undefined, address);
+
+        for (const transaction of transactions) {
+          expect([transaction.sender, transaction.receiver]).toContain(address);
+        }
+      });
+
+      it(`should return a list of transactions for one address to a specific receiver`, async () => {
+        const address = 'erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry';
+        const receiver = 'erd19lurqh6alll7znp659ne2v7r4w7khepfwlluvkr0l9y896se97mqak0j5e';
+        const transactions = await transactionService.getTransactions(new TransactionFilter({ receiver }), { from: 0, size: 25 }, undefined, address);
+
+        for (const transaction of transactions) {
+          expect(transaction.sender).toStrictEqual(address);
+          expect(transaction.receiver).toStrictEqual(receiver);
+        }
+      });
+
+      it(`should return a list of transactions for one address to a list of receivers`, async () => {
+        const address = 'erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry';
+        const receivers = ['erd19lurqh6alll7znp659ne2v7r4w7khepfwlluvkr0l9y896se97mqak0j5e', 'erd1gsw3q3cp8axfy08um6xpd8rxsn0j27ec2slc6v0z05kqslgknzksl68gg5'];
+        const transactions = await transactionService.getTransactions(new TransactionFilter({ receivers }), { from: 0, size: 25 }, undefined, address);
+
+        for (const transaction of transactions) {
+          expect(transaction.sender).toStrictEqual(address);
+          expect(receivers).toContain(transaction.receiver);
+        }
+      });
+
+      it(`should return a list of transactions for one address where the address is receiver`, async () => {
+        const address = 'erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry';
+        const receiver = 'erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry';
+        const transactions = await transactionService.getTransactions(new TransactionFilter({ receiver }), { from: 0, size: 25 }, undefined, address);
+
+        for (const transaction of transactions) {
+          expect(transaction.receiver).toStrictEqual(address);
+        }
+      });
+
       it(`should return same transactions for different type of receiver filters`, async () => {
         const receiverAddr = "erd1ts8zswasu0k227xfptglr7hhz47lgr7autcmp6v9s9n0p5af6tfqddkg5z";
         const onlyReceiver = new TransactionFilter();
