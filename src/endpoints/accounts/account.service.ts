@@ -117,7 +117,7 @@ export class AccountService {
         account = { ...account, ...codeAttributes };
       }
 
-      if (account.code && !this.apiConfigService.getUseLegacyElastic()) {
+      if (account.code) {
         const deployedAt = await this.getAccountDeployedAt(address);
         if (deployedAt) {
           account.deployedAt = deployedAt;
@@ -142,10 +142,6 @@ export class AccountService {
   }
 
   async getAccountScResults(address: string): Promise<number> {
-    if (this.apiConfigService.getUseLegacyElastic()) {
-      return 0;
-    }
-
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       return await this.smartContractResultService.getAccountScResultsCount(address);
     }
