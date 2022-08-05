@@ -10,7 +10,7 @@ import '@elrondnetwork/erdnest/lib/utils/extensions/jest.extensions';
 import '@elrondnetwork/erdnest/lib/utils/extensions/array.extensions';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { PublicAppModule } from 'src/public.app.module';
-import { BinaryUtils, QueryConditionOptions } from '@elrondnetwork/erdnest';
+import { BinaryUtils } from '@elrondnetwork/erdnest';
 
 describe('Transaction Service', () => {
   let transactionService: TransactionService;
