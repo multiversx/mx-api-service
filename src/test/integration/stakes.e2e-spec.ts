@@ -3,7 +3,7 @@ import { StakeService } from "src/endpoints/stake/stake.service";
 import { PublicAppModule } from "src/public.app.module";
 import { Stake } from "../../endpoints/stake/entities/stake";
 import { StakeTopup } from "../../endpoints/stake/entities/stake.topup";
-import '@elrondnetwork/erdnest/lib/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
 
 describe('Stake Service', () => {
   let stakeService: StakeService;

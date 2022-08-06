@@ -85,7 +85,7 @@ export class TransactionService {
     if (filter.hashes) {
       const txHashes: string[] = filter.hashes;
       const elasticHashes = elasticTransactions.map(({ txHash }: any) => txHash);
-      const missingHashes: string[] = txHashes.findMissingElements(elasticHashes);
+      const missingHashes: string[] = txHashes.except(elasticHashes);
 
       const gatewayTransactions = await Promise.all(missingHashes.map((txHash) => this.transactionGetService.tryGetTransactionFromGatewayForList(txHash)));
       for (const gatewayTransaction of gatewayTransactions) {

@@ -46,8 +46,6 @@ export class TransactionDetailedLoader {
     await this.transactionService.getLogs(hashes)
   );
 
-  // from Transaction
-
   public async getAccount(address: string): Promise<Array<Account>> {
     return await this.accountDataLoader.load(address);
   }
