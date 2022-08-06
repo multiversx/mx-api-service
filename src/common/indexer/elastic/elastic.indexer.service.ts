@@ -913,7 +913,7 @@ export class ElasticIndexerService implements IndexerInterface {
       queries.push(shardIdQuery);
     }
 
-    if (filter.epoch !== undefined && !this.apiConfigService.getUseLegacyElastic()) {
+    if (filter.epoch !== undefined) {
       const epochQuery = QueryType.Match('epoch', filter.epoch);
       queries.push(epochQuery);
     }

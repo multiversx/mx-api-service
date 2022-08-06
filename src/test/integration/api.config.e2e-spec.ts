@@ -1134,26 +1134,6 @@ describe('API Config', () => {
     });
   });
 
-  describe("getUseLegacyElastic", () => {
-    it("should return database slave connections", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
-
-      const results = apiConfigService.getUseLegacyElastic();
-      expect(results).toEqual(true);
-    });
-
-    it("should return false value because test simulates that use legacy elastic is not defined", () => {
-      jest
-        .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => undefined));
-
-      const results = apiConfigService.getUseLegacyElastic();
-      expect(results).toEqual(false);
-    });
-  });
-
   describe("getRateLimiterSecret", () => {
     it("should return undefined if rate limeter secret is not defined", () => {
       jest
