@@ -1,5 +1,4 @@
 import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
@@ -20,7 +19,6 @@ export class TransactionGetService {
   constructor(
     private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
-    private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
   ) {
@@ -72,40 +70,38 @@ export class TransactionGetService {
       hashes.push(txHash);
       const previousHashes: Record<string, string> = {};
 
-      if (!this.apiConfigService.getUseLegacyElastic()) {
-        if (result.hasScResults === true && (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.results))) {
-          transactionDetailed.results = await this.getTransactionScResultsFromElastic(transactionDetailed.txHash);
+      if (result.hasScResults === true && (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.results))) {
+        transactionDetailed.results = await this.getTransactionScResultsFromElastic(transactionDetailed.txHash);
 
-          for (const scResult of transactionDetailed.results) {
-            hashes.push(scResult.hash);
-            previousHashes[scResult.hash] = scResult.prevTxHash;
-          }
+        for (const scResult of transactionDetailed.results) {
+          hashes.push(scResult.hash);
+          previousHashes[scResult.hash] = scResult.prevTxHash;
+        }
+      }
+
+      if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.receipt)) {
+        const receipts = await this.indexerService.getTransactionReceipts(txHash);
+        if (receipts.length > 0) {
+          const receipt = receipts[0];
+          transactionDetailed.receipt = ApiUtils.mergeObjects(new TransactionReceipt(), receipt);
+        }
+      }
+
+      if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs)) {
+        const logs = await this.getTransactionLogsFromElastic(hashes);
+
+        if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.operations)) {
+          transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, logs);
+          transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
         }
 
-        if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.receipt)) {
-          const receipts = await this.indexerService.getTransactionReceipts(txHash);
-          if (receipts.length > 0) {
-            const receipt = receipts[0];
-            transactionDetailed.receipt = ApiUtils.mergeObjects(new TransactionReceipt(), receipt);
-          }
-        }
-
-        if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs)) {
-          const logs = await this.getTransactionLogsFromElastic(hashes);
-
-          if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.operations)) {
-            transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, logs);
-            transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
-          }
-
-          for (const log of logs) {
-            if (log.id === txHash) {
-              transactionDetailed.logs = log;
-            } else if (transactionDetailed.results) {
-              const foundScResult = transactionDetailed.results.find(({ hash }) => log.id === hash);
-              if (foundScResult) {
-                foundScResult.logs = log;
-              }
+        for (const log of logs) {
+          if (log.id === txHash) {
+            transactionDetailed.logs = log;
+          } else if (transactionDetailed.results) {
+            const foundScResult = transactionDetailed.results.find(({ hash }) => log.id === hash);
+            if (foundScResult) {
+              foundScResult.logs = log;
             }
           }
         }
