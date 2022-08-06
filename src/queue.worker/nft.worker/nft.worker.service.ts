@@ -54,11 +54,9 @@ export class NftWorkerService {
     }
 
     const media = await this.persistenceService.getMedia(nft.identifier);
-    if (media == null) {
+    if (media === null) {
       return true;
     }
-
-    nft.media = media;
 
     if (!nft.metadata) {
       return true;
@@ -76,8 +74,8 @@ export class NftWorkerService {
     }
 
     if (settings.uploadAsset) {
-      for (const media of nft.media) {
-        const isAssetUploaded = await this.nftAssetService.isAssetUploaded(media);
+      for (const mediaItem of media) {
+        const isAssetUploaded = await this.nftAssetService.isAssetUploaded(mediaItem);
         if (!isAssetUploaded) {
           return true;
         }
