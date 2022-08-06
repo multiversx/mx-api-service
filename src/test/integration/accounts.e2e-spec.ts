@@ -117,24 +117,6 @@ describe('Account Service', () => {
           'username', 'shard', 'developerReward', 'ownerAddress', 'scamInfo',
         ]);
     });
-
-    it("should return account details if getUseLegacyElastic is active", async () => {
-      const mock_isAddressValid = jest.spyOn(AddressUtils, 'isAddressValid');
-      mock_isAddressValid.mockImplementation(() => true);
-
-      jest.spyOn(ApiConfigService.prototype, 'getUseLegacyElastic')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(() => true));
-
-      const address: string = "erd1cnyng48s8lrjn95rpdfgykxl5993c5qhn5jqt0ar960f7v3umnrsy9yx0s";
-      const results = await accountService.getAccount(address);
-
-      expect(results).toHaveProperties(
-        ['address', 'balance', 'nonce', 'shard', 'code',
-          'codeHash', 'rootHash', 'txCount', 'scrCount',
-          'username', 'shard', 'developerReward', 'ownerAddress', 'scamInfo',
-        ]);
-    });
   });
 
   describe("getAccountDeployedAt", () => {
