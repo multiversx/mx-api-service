@@ -55,8 +55,9 @@ export class NftController {
     @Query('after', new ParseOptionalIntPipe) after?: number,
     @Query('withOwner', new ParseOptionalBoolPipe) withOwner?: boolean,
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean,
+    @Query('withScamInfo', new ParseOptionalBoolPipe) withScamInfo?: boolean,
   ): Promise<Nft[]> {
-    if (withOwner === true && size > 100) {
+    if ((withOwner === true || withSupply === true || withScamInfo === true) && size > 100) {
       throw new BadRequestException(`Maximum size of 100 is allowed when activating flags 'withOwner' or 'withSupply'`);
     }
 
