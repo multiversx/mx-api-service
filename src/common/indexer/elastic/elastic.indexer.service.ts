@@ -820,11 +820,10 @@ export class ElasticIndexerService implements IndexerInterface {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('sender', filter.sender));
     }
 
-    if (filter.receiver) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Should([
-        QueryType.Match('receiver', filter.receiver),
-        QueryType.Match('receivers', filter.receiver),
-      ]));
+    if (filter.receivers) {
+      for (const receiver of filter.receivers) {
+        elasticQuery = elasticQuery.withMustMultiShouldCondition(['receiver', 'receivers'], key => QueryType.Match(key, receiver));
+      }
     }
 
     if (filter.token) {
@@ -966,41 +965,17 @@ export class ElasticIndexerService implements IndexerInterface {
         elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('sender', filter.sender));
       }
 
-      if (filter.receiver) {
-        if (!filter.receivers) {
-          filter.receivers = [];
-        }
-
-        filter.receivers.push(filter.receiver);
-
-        filter.receiver = undefined;
-      }
-
       if (filter.receivers) {
         for (const receiver of filter.receivers) {
-          elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receiver', receiver));
-
-          elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receivers', receiver));
+          elasticQuery = elasticQuery.withMustMultiShouldCondition(['receiver', 'receivers'], key => QueryType.Match(key, receiver));
         }
       }
     } else {
       elasticQuery = elasticQuery.withMustMatchCondition('sender', filter.sender);
 
-      if (filter.receiver) {
-        if (!filter.receivers) {
-          filter.receivers = [];
-        }
-
-        filter.receivers.push(filter.receiver);
-
-        filter.receiver = undefined;
-      }
-
       if (filter.receivers) {
         for (const receiver of filter.receivers) {
-          elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receiver', receiver));
-
-          elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receivers', receiver));
+          elasticQuery = elasticQuery.withMustMultiShouldCondition(['receiver', 'receivers'], key => QueryType.Match(key, receiver));
         }
       }
     }

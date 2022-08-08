@@ -66,7 +66,7 @@ describe('Transaction Service', () => {
       it(`should return a list of transactions between two accounts, where sender must be one address`, async () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.sender = transactionSender;
-        transactionFilter.receiver = transactionReceiver;
+        transactionFilter.receivers = [transactionReceiver];
 
         const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
         expect(transactions.length).toBeGreaterThan(0);
@@ -90,7 +90,7 @@ describe('Transaction Service', () => {
       it(`should return a list of transactions for one address to a specific receiver`, async () => {
         const address = 'erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry';
         const receiver = 'erd19lurqh6alll7znp659ne2v7r4w7khepfwlluvkr0l9y896se97mqak0j5e';
-        const transactions = await transactionService.getTransactions(new TransactionFilter({ receiver }), { from: 0, size: 25 }, undefined, address);
+        const transactions = await transactionService.getTransactions(new TransactionFilter({ receivers: [receiver] }), { from: 0, size: 25 }, undefined, address);
 
         for (const transaction of transactions) {
           expect(transaction.sender).toStrictEqual(address);
@@ -112,7 +112,7 @@ describe('Transaction Service', () => {
       it(`should return a list of transactions for one address where the address is receiver`, async () => {
         const address = 'erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry';
         const receiver = 'erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry';
-        const transactions = await transactionService.getTransactions(new TransactionFilter({ receiver }), { from: 0, size: 25 }, undefined, address);
+        const transactions = await transactionService.getTransactions(new TransactionFilter({ receivers: [receiver] }), { from: 0, size: 25 }, undefined, address);
 
         for (const transaction of transactions) {
           expect(transaction.receiver).toStrictEqual(address);
@@ -122,12 +122,11 @@ describe('Transaction Service', () => {
       it(`should return same transactions for different type of receiver filters`, async () => {
         const receiverAddr = "erd1ts8zswasu0k227xfptglr7hhz47lgr7autcmp6v9s9n0p5af6tfqddkg5z";
         const onlyReceiver = new TransactionFilter();
-        onlyReceiver.receiver = receiverAddr;
+        onlyReceiver.receivers = [receiverAddr];
 
         const txsOnlyReceiver = await transactionService.getTransactions(onlyReceiver, { from: 0, size: 25 });
 
         const receiverAndReceivers = new TransactionFilter();
-        receiverAndReceivers.receiver = receiverAddr;
         receiverAndReceivers.receivers = [receiverAddr];
 
         const txsReceiverAndReceivers = await transactionService.getTransactions(receiverAndReceivers, { from: 0, size: 25 });
@@ -146,6 +145,7 @@ describe('Transaction Service', () => {
         if (apiConfigService.getIsIndexerV3FlagActive()) {
           const transactionFilter = new TransactionFilter();
           transactionFilter.function = 'ESDTNFTTransfer';
+          transactionFilter.status = TransactionStatus.success;
 
           const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
 
@@ -214,7 +214,7 @@ describe('Transaction Service', () => {
         const address = transactionSender;
         const transactionFilter = new TransactionFilter();
         transactionFilter.sender = address;
-        transactionFilter.receiver = address;
+        transactionFilter.receivers = [address];
 
         const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 }, undefined, address);
         expect(transactions).toBeInstanceOf(Array);
@@ -264,7 +264,7 @@ describe('Transaction Service', () => {
       it(`should return transaction details based on receiver filter`, async () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.token = transactionDetails.tokenIdentifier;
-        transactionFilter.receiver = transactionDetails.receiver;
+        transactionFilter.receivers = [transactionDetails.receiver];
 
         const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 1 });
         for (const transaction of transactions) {
@@ -288,7 +288,7 @@ describe('Transaction Service', () => {
       it("should return transaction details based on sender, receiver and miniblock", async () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.sender = transactionDetails.sender;
-        transactionFilter.receiver = transactionDetails.receiver;
+        transactionFilter.receivers = [transactionDetails.receiver];
         transactionFilter.senderShard = transactionDetails.senderShard;
         transactionFilter.miniBlockHash = transactionDetails.miniBlockHash;
 

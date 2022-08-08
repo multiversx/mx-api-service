@@ -68,9 +68,16 @@ export class TransactionController {
       throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
     }
 
+    if (receiver) {
+      if (!receivers) {
+        receivers = [];
+      }
+
+      receivers.push(receiver);
+    }
+
     return this.transactionService.getTransactions(new TransactionFilter({
       sender,
-      receiver,
       receivers,
       token,
       function: scFunction,
@@ -120,9 +127,16 @@ export class TransactionController {
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
+    if (receiver) {
+      if (!receivers) {
+        receivers = [];
+      }
+
+      receivers.push(receiver);
+    }
+
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
-      receiver,
       receivers,
       token,
       senderShard,
@@ -143,6 +157,7 @@ export class TransactionController {
   getTransactionCountAlternative(
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('receivers', ParseArrayPipe) receivers?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
@@ -155,9 +170,17 @@ export class TransactionController {
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
+    if (receiver) {
+      if (!receivers) {
+        receivers = [];
+      }
+
+      receivers.push(receiver);
+    }
+
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
-      receiver,
+      receivers,
       token,
       senderShard,
       receiverShard,

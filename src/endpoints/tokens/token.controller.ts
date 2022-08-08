@@ -217,9 +217,16 @@ export class TokenController {
       throw new NotFoundException('Token not found');
     }
 
+    if (receiver) {
+      if (!receivers) {
+        receivers = [];
+      }
+
+      receivers.push(receiver);
+    }
+
     return await this.transactionService.getTransactions(new TransactionFilter({
       sender,
-      receiver,
       receivers,
       token: identifier,
       function: scFunction,
@@ -269,9 +276,16 @@ export class TokenController {
       throw new NotFoundException('Token not found');
     }
 
+    if (receiver) {
+      if (!receivers) {
+        receivers = [];
+      }
+
+      receivers.push(receiver);
+    }
+
     return await this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
-      receiver,
       receivers,
       token: identifier,
       senderShard,
@@ -333,6 +347,7 @@ export class TokenController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transfer receiver', required: false })
+  @ApiQuery({ name: 'receivers', description: 'Search by multiple receiver addresses, comma-separated', required: false })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
@@ -348,6 +363,7 @@ export class TokenController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('receivers', ParseArrayPipe) receivers?: string[],
     @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
@@ -367,9 +383,17 @@ export class TokenController {
       throw new NotFoundException('Token not found');
     }
 
+    if (receiver) {
+      if (!receivers) {
+        receivers = [];
+      }
+
+      receivers.push(receiver);
+    }
+
     return await this.transferService.getTransfers(new TransactionFilter({
       sender,
-      receiver,
+      receivers,
       token: identifier,
       senderShard,
       receiverShard,
@@ -388,6 +412,7 @@ export class TokenController {
   @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transfer receiver', required: false })
+  @ApiQuery({ name: 'receivers', description: 'Search by multiple receiver addresses, comma-separated', required: false })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
@@ -401,6 +426,7 @@ export class TokenController {
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('receivers', ParseArrayPipe) receivers?: string[],
     @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
@@ -420,9 +446,17 @@ export class TokenController {
       throw new NotFoundException('Token not found');
     }
 
+    if (receiver) {
+      if (!receivers) {
+        receivers = [];
+      }
+
+      receivers.push(receiver);
+    }
+
     return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
-      receiver,
+      receivers,
       token: identifier,
       function: scFunction,
       senderShard,
@@ -442,6 +476,7 @@ export class TokenController {
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('receivers', ParseArrayPipe) receivers?: string[],
     @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
@@ -461,9 +496,17 @@ export class TokenController {
       throw new NotFoundException('Token not found');
     }
 
+    if (receiver) {
+      if (!receivers) {
+        receivers = [];
+      }
+
+      receivers.push(receiver);
+    }
+
     return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
-      receiver,
+      receivers,
       token: identifier,
       function: scFunction,
       senderShard,

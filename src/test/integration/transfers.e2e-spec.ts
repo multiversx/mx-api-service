@@ -61,7 +61,7 @@ describe.skip('Transfer Service', () => {
       it(`should return a list of transfers between two accounts`, async () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.sender = transactionSender;
-        transactionFilter.receiver = transactionReceiver;
+        transactionFilter.receivers = [transactionReceiver];
 
         const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
         expect(transfers.length).toBeGreaterThan(0);
@@ -148,7 +148,7 @@ describe.skip('Transfer Service', () => {
         const address = transactionSender;
         const transactionFilter = new TransactionFilter();
         transactionFilter.sender = address;
-        transactionFilter.receiver = address;
+        transactionFilter.receivers = [address];
 
         const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
         expect(transfers).toBeInstanceOf(Array);

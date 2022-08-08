@@ -24,6 +24,7 @@ export class TransferController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transfer receiver', required: false })
+  @ApiQuery({ name: 'receivers', description: 'Search by multiple receiver addresses, comma-separated', required: false })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
@@ -39,6 +40,7 @@ export class TransferController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('receivers', ParseArrayPipe) receivers?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
@@ -54,9 +56,17 @@ export class TransferController {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
+    if (receiver) {
+      if (!receivers) {
+        receivers = [];
+      }
+
+      receivers.push(receiver);
+    }
+
     return await this.transferService.getTransfers(new TransactionFilter({
       sender,
-      receiver,
+      receivers,
       token,
       senderShard,
       receiverShard,
@@ -75,6 +85,7 @@ export class TransferController {
   @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Address of the transfer receiver', required: false })
+  @ApiQuery({ name: 'receivers', description: 'Search by multiple receiver addresses, comma-separated', required: false })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
@@ -88,6 +99,7 @@ export class TransferController {
   async getAccountTransfersCount(
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('receivers', ParseArrayPipe) receivers?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
@@ -103,9 +115,17 @@ export class TransferController {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
+    if (receiver) {
+      if (!receivers) {
+        receivers = [];
+      }
+
+      receivers.push(receiver);
+    }
+
     return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
-      receiver,
+      receivers,
       token,
       function: scFunction,
       senderShard,
@@ -124,6 +144,7 @@ export class TransferController {
   async getAccountTransfersCountAlternative(
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('receivers', ParseArrayPipe) receivers?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
@@ -139,9 +160,17 @@ export class TransferController {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
+    if (receiver) {
+      if (!receivers) {
+        receivers = [];
+      }
+
+      receivers.push(receiver);
+    }
+
     return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
-      receiver,
+      receivers,
       token,
       function: scFunction,
       senderShard,
