@@ -1330,7 +1330,7 @@ describe('API Config', () => {
     });
   });
 
-  describe.only("getMockPath", () => {
+  describe("getMockPath", () => {
     it("should return mock path", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
