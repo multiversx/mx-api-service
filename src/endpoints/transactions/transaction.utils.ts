@@ -61,4 +61,14 @@ export class TransactionUtils {
 
     return result;
   }
+
+  static addToReceivers(receiver: string | undefined, receivers: string[] | undefined) {
+    if (receiver) {
+      if (!receivers) {
+        receivers = [];
+      }
+
+      receivers.push(receiver);
+    }
+  }
 }

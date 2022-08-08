@@ -43,6 +43,7 @@ import { NftFilter } from '../nfts/entities/nft.filter';
 import { NftQueryOptions } from '../nfts/entities/nft.query.options';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
 import { ParseTokenPipe } from '@elrondnetwork/erdnest';
+import { TransactionUtils } from '../transactions/transaction.utils';
 
 @Controller()
 @ApiTags('accounts')
@@ -566,13 +567,7 @@ export class AccountController {
       throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
     }
 
-    if (receiver) {
-      if (!receivers) {
-        receivers = [];
-      }
-
-      receivers.push(receiver);
-    }
+    TransactionUtils.addToReceivers(receiver, receivers);
 
     return await this.transactionService.getTransactions(new TransactionFilter({
       sender,
@@ -622,13 +617,7 @@ export class AccountController {
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
-    if (receiver) {
-      if (!receivers) {
-        receivers = [];
-      }
-
-      receivers.push(receiver);
-    }
+    TransactionUtils.addToReceivers(receiver, receivers);
 
     return await this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
@@ -686,13 +675,7 @@ export class AccountController {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
-    if (receiver) {
-      if (!receivers) {
-        receivers = [];
-      }
-
-      receivers.push(receiver);
-    }
+    TransactionUtils.addToReceivers(receiver, receivers);
 
     return await this.transferService.getTransfers(new TransactionFilter({
       address,
@@ -746,14 +729,7 @@ export class AccountController {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
-
-    if (receiver) {
-      if (!receivers) {
-        receivers = [];
-      }
-
-      receivers.push(receiver);
-    }
+    TransactionUtils.addToReceivers(receiver, receivers);
 
     return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
@@ -794,13 +770,7 @@ export class AccountController {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
-    if (receiver) {
-      if (!receivers) {
-        receivers = [];
-      }
-
-      receivers.push(receiver);
-    }
+    TransactionUtils.addToReceivers(receiver, receivers);
 
     return await this.transferService.getTransfersCount(new TransactionFilter({
       address,

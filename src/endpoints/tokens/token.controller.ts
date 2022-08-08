@@ -19,6 +19,7 @@ import { TokenFilter } from "./entities/token.filter";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
 import { ParseAddressPipe, ParseBlockHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseArrayPipe, ParseTokenPipe } from "@elrondnetwork/erdnest";
+import { TransactionUtils } from "../transactions/transaction.utils";
 
 @Controller()
 @ApiTags('tokens')
@@ -217,13 +218,7 @@ export class TokenController {
       throw new NotFoundException('Token not found');
     }
 
-    if (receiver) {
-      if (!receivers) {
-        receivers = [];
-      }
-
-      receivers.push(receiver);
-    }
+    TransactionUtils.addToReceivers(receiver, receivers);
 
     return await this.transactionService.getTransactions(new TransactionFilter({
       sender,
@@ -276,13 +271,7 @@ export class TokenController {
       throw new NotFoundException('Token not found');
     }
 
-    if (receiver) {
-      if (!receivers) {
-        receivers = [];
-      }
-
-      receivers.push(receiver);
-    }
+    TransactionUtils.addToReceivers(receiver, receivers);
 
     return await this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
@@ -383,13 +372,7 @@ export class TokenController {
       throw new NotFoundException('Token not found');
     }
 
-    if (receiver) {
-      if (!receivers) {
-        receivers = [];
-      }
-
-      receivers.push(receiver);
-    }
+    TransactionUtils.addToReceivers(receiver, receivers);
 
     return await this.transferService.getTransfers(new TransactionFilter({
       sender,
@@ -446,13 +429,7 @@ export class TokenController {
       throw new NotFoundException('Token not found');
     }
 
-    if (receiver) {
-      if (!receivers) {
-        receivers = [];
-      }
-
-      receivers.push(receiver);
-    }
+    TransactionUtils.addToReceivers(receiver, receivers);
 
     return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
@@ -496,13 +473,7 @@ export class TokenController {
       throw new NotFoundException('Token not found');
     }
 
-    if (receiver) {
-      if (!receivers) {
-        receivers = [];
-      }
-
-      receivers.push(receiver);
-    }
+    TransactionUtils.addToReceivers(receiver, receivers);
 
     return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,

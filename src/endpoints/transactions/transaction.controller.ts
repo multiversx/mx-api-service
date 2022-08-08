@@ -13,6 +13,7 @@ import { TransactionSendResult } from './entities/transaction.send.result';
 import { TransactionStatus } from './entities/transaction.status';
 import { TransactionQueryOptions } from './entities/transactions.query.options';
 import { TransactionService } from './transaction.service';
+import { TransactionUtils } from './transaction.utils';
 
 @Controller()
 @ApiTags('transactions')
@@ -68,13 +69,7 @@ export class TransactionController {
       throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
     }
 
-    if (receiver) {
-      if (!receivers) {
-        receivers = [];
-      }
-
-      receivers.push(receiver);
-    }
+    TransactionUtils.addToReceivers(receiver, receivers);
 
     return this.transactionService.getTransactions(new TransactionFilter({
       sender,
@@ -127,13 +122,7 @@ export class TransactionController {
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
-    if (receiver) {
-      if (!receivers) {
-        receivers = [];
-      }
-
-      receivers.push(receiver);
-    }
+    TransactionUtils.addToReceivers(receiver, receivers);
 
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
@@ -170,13 +159,7 @@ export class TransactionController {
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
-    if (receiver) {
-      if (!receivers) {
-        receivers = [];
-      }
-
-      receivers.push(receiver);
-    }
+    TransactionUtils.addToReceivers(receiver, receivers);
 
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
