@@ -58,7 +58,7 @@ export class NftController {
     @Query('withScamInfo', new ParseOptionalBoolPipe) withScamInfo?: boolean,
   ): Promise<Nft[]> {
     if ((withOwner === true || withSupply === true || withScamInfo === true) && size > 100) {
-      throw new BadRequestException(`Maximum size of 100 is allowed when activating flags 'withOwner' or 'withSupply'`);
+      throw new BadRequestException(`Maximum size of 100 is allowed when activating flags 'withOwner' or 'withSupply' or 'withScamInfo'`);
     }
 
     return await this.nftService.getNfts(
