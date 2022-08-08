@@ -1,6 +1,4 @@
-import { GatewayModule } from '../../common/gateway/gateway.module';
 import { EsdtService } from 'src/endpoints/esdt/esdt.service';
-import { TokenFilter } from '../../endpoints/tokens/entities/token.filter';
 import { TokenService } from 'src/endpoints/tokens/token.service';
 import { PublicAppModule } from 'src/public.app.module';
 import { TokenDetailed } from 'src/endpoints/tokens/entities/token.detailed';
@@ -13,6 +11,8 @@ import { SortOrder } from 'src/common/entities/sort.order';
 import { TokenWithRolesFilter } from 'src/endpoints/tokens/entities/token.with.roles.filter';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { CachingService, ElasticQuery, ElasticService, FileUtils } from '@elrondnetwork/erdnest';
+import { GatewayModule } from 'src/common/gateway/gateway.module';
+import { TokenFilter } from 'src/endpoints/tokens/entities/token.filter';
 
 describe('Token Service', () => {
   let tokenService: TokenService;
