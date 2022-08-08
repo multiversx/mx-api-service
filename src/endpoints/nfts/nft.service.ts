@@ -90,24 +90,22 @@ export class NftService {
       await this.batchApplySupply(nfts);
     }
 
-    if (queryOptions) {
-      await this.batchProcessNfts(nfts, queryOptions.withScamInfo);
-    }
+    await this.batchProcessNfts(nfts);
 
     for (const nft of nfts) {
       await this.applyUnlockSchedule(nft);
     }
 
+    await this.pluginService.batchProcessNfts(nfts, (queryOptions && queryOptions.withScamInfo) ?? false);
+
     return nfts;
   }
 
-  private async batchProcessNfts(nfts: Nft[], withScamInfo: boolean = false) {
+  private async batchProcessNfts(nfts: Nft[]) {
     await Promise.all([
       this.batchApplyMedia(nfts),
       this.batchApplyMetadata(nfts),
     ]);
-
-    await this.pluginService.batchProcessNfts(nfts, withScamInfo);
   }
 
   private async applyNftOwner(nft: Nft): Promise<void> {
