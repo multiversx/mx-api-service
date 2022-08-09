@@ -162,4 +162,8 @@ describe("collections Controller", () => {
           });
       }
     );
+
+  afterEach(async () => {
+    await app.close();
+  });
 });
