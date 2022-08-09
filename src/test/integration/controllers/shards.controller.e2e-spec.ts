@@ -22,8 +22,6 @@ describe("Shards Controller", () => {
       .expect(200)
       .then(res => {
         expect(res.body).toHaveLength(4);
-        expect(res.body[0].shard).toBeDefined();
-        expect(res.body[0].shard).toStrictEqual(2);
       });
   });
 
@@ -35,7 +33,7 @@ describe("Shards Controller", () => {
       .get(`${path}?${params}`)
       .expect(200)
       .then(res => {
-        expect(res.body[0].shard).toStrictEqual(2);
+        expect(res.body[0].shard).toBeDefined();
         expect(res.body[0].validators).toBeDefined();
         expect(res.body[0].activeValidators).toBeDefined();
       });
