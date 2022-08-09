@@ -44,7 +44,6 @@ describe("Results Controller", () => {
           expect(res.body[0].value).toBeDefined();
           expect(res.body[0].sender).toBeDefined();
           expect(res.body[0].receiver).toBeDefined();
-          expect(res.body[0].senderAssets).toBeDefined();
           expect(res.body[0].data).toBeDefined();
           expect(res.body[0].prevTxHash).toBeDefined();
           expect(res.body[0].originalTxHash).toBeDefined();
