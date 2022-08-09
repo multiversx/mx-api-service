@@ -480,7 +480,7 @@ export class NftService {
       return undefined;
     }
 
-    const nfts = await this.getNftsForAddress(address, new QueryPagination({ from: 0, size: 1 }), filter);
+    const nfts = await this.getNftsForAddress(address, new QueryPagination({ from: 0, size: 1 }), filter, new NftQueryOptions({ withScamInfo: true }));
     if (nfts.length === 0) {
       return undefined;
     }
@@ -488,8 +488,6 @@ export class NftService {
     const nft = nfts[0];
 
     await this.applyUnlockSchedule(nft);
-
-    await this.processNft(nft);
 
     return nft;
   }
