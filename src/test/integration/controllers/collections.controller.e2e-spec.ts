@@ -278,6 +278,71 @@ describe("collections Controller", () => {
     });
   });
 
+  describe('/collections/{identifier}/nfts', () => {
+    it('should return 25 NFTs from a given collection', async () => {
+      const identifier: string = 'MEDAL-ae074f';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}/nfts`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toHaveLength(25);
+        });
+    });
+
+    it('should return 5 NFTs from a given collection', async () => {
+      const identifier: string = 'MEDAL-ae074f';
+      const params = new URLSearchParams({
+        'size': '5',
+      });
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}/nfts?${params}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toHaveLength(5);
+        });
+    });
+  });
+
+  describe('/collections/{identifier}/nfts/count', () => {
+    it('should return total number of NFTs from a given collection', async () => {
+      const identifier: string = 'MEDAL-ae074f';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}/nfts/count`)
+        .expect(200)
+        .then(res => {
+          expect(+res.text).toStrictEqual(120);
+        });
+    });
+  });
+
+  describe('Validations', () => {
+    it('should return 400 Bad Request if collection identifier does not contain the right format', async () => {
+      const identifier: string = 'MEDALae074f';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toEqual("Validation failed for argument 'collection': Invalid collection identifier.");
+        });
+    });
+
+    it('should return 400 Bad Request if collection type is not correct', async () => {
+      const params = new URLSearchParams({
+        'type': 'NONFungibleESDT',
+      });
+      await request(app.getHttpServer())
+        .get(`${path}?${params}`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toEqual("Validation failed for argument 'type' (one of the following values is expected: NonFungibleESDT, SemiFungibleESDT, MetaESDT)");
+        });
+    });
+  });
+
   afterEach(async () => {
     await app.close();
   });
