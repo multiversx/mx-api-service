@@ -324,6 +324,7 @@ export class NetworkService {
       network: this.apiConfigService.getNetwork(),
       cluster: this.apiConfigService.getCluster(),
       version: apiVersion,
+      scamEngineVersion: '1.0.0',
     });
   }
 

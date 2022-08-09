@@ -8,4 +8,5 @@ export class About {
   network: string = '';
   cluster: string = '';
   version: string = '';
+  scamEngineVersion: string = '';
 }
