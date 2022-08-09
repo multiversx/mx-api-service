@@ -64,7 +64,7 @@ export class NftController {
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
       new NftFilter({ search, identifiers, type, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, before, after }),
-      new NftQueryOptions({ withOwner, withSupply })
+      new NftQueryOptions({ withOwner, withSupply, withScamInfo })
     );
   }
 
