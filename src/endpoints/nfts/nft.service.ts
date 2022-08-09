@@ -96,7 +96,7 @@ export class NftService {
       await this.applyUnlockSchedule(nft);
     }
 
-    await this.pluginService.batchProcessNfts(nfts, (queryOptions && queryOptions.withScamInfo) ?? false);
+    await this.pluginService.batchProcessNfts(nfts, queryOptions?.withScamInfo);
 
     return nfts;
   }
