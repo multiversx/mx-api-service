@@ -432,6 +432,8 @@ export class NftService {
       await this.applyUnlockSchedule(nft);
     }
 
+    await this.pluginService.batchProcessNfts(nfts, queryOptions?.withScamInfo);
+
     return nfts;
   }
 
@@ -486,6 +488,8 @@ export class NftService {
     const nft = nfts[0];
 
     await this.applyUnlockSchedule(nft);
+
+    await this.processNft(nft);
 
     return nft;
   }

@@ -642,7 +642,7 @@ describe('Nft Service', () => {
       jest
         .spyOn(PluginService.prototype, 'batchProcessNfts')
         // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (nfts: Nft[], withScamInfo: boolean) => {
+        .mockImplementation(jest.fn(async (nfts: Nft[], withScamInfo: boolean | undefined) => {
           for (const nft of nfts) {
             if (withScamInfo == true) {
               nft.scamInfo = { type: ScamType.potentialScam };
