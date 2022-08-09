@@ -38,4 +38,8 @@ describe("Username Controller", () => {
         });
     });
   });
+
+  afterEach(async () => {
+    await app.close();
+  });
 });
