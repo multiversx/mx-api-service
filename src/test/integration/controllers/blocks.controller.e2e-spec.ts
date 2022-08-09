@@ -140,6 +140,19 @@ describe("Block Controller", () => {
     });
   });
 
+  describe('Validations', () => {
+    it('should return 400 Bad Request for a invalid block hash', async () => {
+      const hash: string = 'c3cd456e15a59bb1f143eefd4986ef010965047f89e303b80822b05177351c';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${hash}`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'hash' (a valid block hash is expected)");
+        });
+    });
+  });
+
   afterEach(async () => {
     await app.close();
   });
