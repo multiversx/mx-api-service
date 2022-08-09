@@ -11,6 +11,7 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { ElasticQuery, ElasticService } from '@elrondnetwork/erdnest';
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
+import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 
 describe('Collection Service', () => {
   let collectionService: CollectionService;
@@ -164,21 +165,11 @@ describe('Collection Service', () => {
   });
 
   describe('getNftCollection', () => {
-    it('should return all details of collections', async () => {
+    it('should return collection details', async () => {
       const collection: string = 'EROBOT-527a29';
       const result = await collectionService.getNftCollection(collection);
 
       expect(result).toHaveStructure(Object.keys(new NftCollection()));
-    });
-
-    it('should return undefined if collection is not returned from elastic', async () => {
-      jest.spyOn(ElasticService.prototype, 'getItem')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_collection: string, _key: string, _identifier: string) => undefined));
-
-      const result = await collectionService.getNftCollection('');
-
-      expect(result).toBeUndefined();
     });
 
     it('should return undefined if collection is not returned from elastic', async () => {
@@ -337,7 +328,6 @@ describe('Collection Service', () => {
     });
   });
 
-  //TBD
   describe('getNftCollectionRoles', () => {
     it('should return collections roles', async () => {
       jest.spyOn(ApiConfigService.prototype, 'getIsIndexerV3FlagActive')
@@ -346,6 +336,53 @@ describe('Collection Service', () => {
 
       const results = await collectionService.getNftCollectionRoles('canUpdateAttributes');
       expect(results).toStrictEqual([]);
+    });
+  });
+
+  describe('isCollection', () => {
+    const collection =
+    {
+      _id: 'MEDAL-ae074f',
+      name: 'GLUMedals',
+      ticker: 'MEDAL',
+      token: 'MEDAL-ae074f',
+      issuer: 'erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj',
+      currentOwner: 'erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj',
+      type: 'NonFungibleESDT',
+      timestamp: 1654019676,
+      ownersHistory: [
+        {
+          address: 'erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj',
+          timestamp: 1654019676,
+        },
+      ],
+      roles: {
+        ESDTRoleNFTCreate: [
+          'erd1qqqqqqqqqqqqqpgq8ne37ed06034qxfhm09f03ykjfqwx8s7hvrqackmzt',
+        ],
+      },
+    };
+
+    it('should verify if given collection identifier is collection and return true', async () => {
+      const getCollectionSpy = jest
+        .spyOn(ElasticIndexerService.prototype, 'getCollection')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_identifier: string) => collection));
+
+      const result = await collectionService.isCollection(collection._id);
+
+      expect(getCollectionSpy).toHaveBeenCalled();
+      expect(result).toStrictEqual(true);
+    });
+  });
+
+  describe('getNftCollectionsByIds', () => {
+    it('should return two NFT Collections details for a given list of two collections identifiers', async () => {
+      const results = await collectionService.getNftCollectionsByIds(['MEDAL-ae074f', 'EBULB-36c762']);
+      const collectionResults = results.map((result) => result.collection);
+
+      expect(collectionResults.includes('EBULB-36c762')).toBeTruthy();
+      expect(collectionResults.includes('MEDAL-ae074f')).toBeTruthy();
     });
   });
 });
