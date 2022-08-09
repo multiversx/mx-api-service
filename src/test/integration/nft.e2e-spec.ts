@@ -638,9 +638,7 @@ describe('Nft Service', () => {
   });
 
   describe('NFT scam info', () => {
-    beforeAll(() => {
-      jest.resetAllMocks();
-
+    beforeEach(() => {
       jest
         .spyOn(PluginService.prototype, 'batchProcessNfts')
         // eslint-disable-next-line require-await
