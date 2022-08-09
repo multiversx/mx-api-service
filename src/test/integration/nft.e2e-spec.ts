@@ -674,12 +674,37 @@ describe('Nft Service', () => {
       }
     });
 
+    it("should return a list of address NFTs with scam info property present", async () => {
+      const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
+
+      const options = new NftQueryOptions({ withScamInfo: true });
+
+      const nfts = await nftService.getNftsForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', { from: 0, size: 10 }, filter, options);
+
+      for (const nft of nfts) {
+        expect(nft.scamInfo).toBeDefined();
+        expect(nft.scamInfo?.type).toStrictEqual(ScamType.potentialScam);
+      }
+    });
+
     it("should return a list of NFTs without scam info property", async () => {
       const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
 
       const options = new NftQueryOptions({ withScamInfo: false });
 
       const nfts = await nftService.getNfts({ from: 0, size: 10 }, filter, options);
+
+      for (const nft of nfts) {
+        expect(nft.scamInfo).toBeUndefined();
+      }
+    });
+
+    it("should return a list of address NFTs without scam info property", async () => {
+      const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
+
+      const options = new NftQueryOptions({ withScamInfo: false });
+
+      const nfts = await nftService.getNftsForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', { from: 0, size: 10 }, filter, options);
 
       for (const nft of nfts) {
         expect(nft.scamInfo).toBeUndefined();
@@ -699,6 +724,23 @@ describe('Nft Service', () => {
       const identifier = 'TSTMNT-700bfc-01';
 
       const nft = await nftService.getSingleNft(identifier);
+
+      expect(nft?.scamInfo).toBeUndefined();
+    });
+
+    it("should return scam info for address NFT", async () => {
+      const identifier = 'LOTTERY-7cae2f-01';
+
+      const nft = await nftService.getNftForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', identifier);
+
+      expect(nft?.scamInfo).toBeDefined();
+      expect(nft?.scamInfo?.type).toStrictEqual(ScamType.potentialScam);
+    });
+
+    it("should not return scam info for address NFT", async () => {
+      const identifier = 'TSTMNT-700bfc-01';
+
+      const nft = await nftService.getNftForAddress('erd1dv9sw8a2hy3lv98p3sdqazy420j48wtn3vs9q74ezuamv64tcxrqqxquxv', identifier);
 
       expect(nft?.scamInfo).toBeUndefined();
     });
