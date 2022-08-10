@@ -175,12 +175,16 @@ export class TransactionController {
     @Param('txHash', ParseTransactionHashPipe) txHash: string,
     @Query('fields', ParseArrayPipe) fields?: string[],
   ): Promise<TransactionDetailed> {
-    const transaction = await this.transactionService.getTransaction(txHash, fields);
-    if (transaction === null) {
-      throw new HttpException('Transaction not found', HttpStatus.NOT_FOUND);
-    }
+    try {
+      const transaction = await this.transactionService.getTransaction(txHash, fields);
+      if (transaction === null) {
+        throw new HttpException('Transaction not found', HttpStatus.NOT_FOUND);
+      }
 
-    return transaction;
+      return transaction;
+    } catch (error: any) {
+      throw new HttpException(error.message, error.status);
+    }
   }
 
   @Post('/transactions')
