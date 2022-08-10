@@ -13,7 +13,6 @@ import { TransactionSendResult } from './entities/transaction.send.result';
 import { TransactionStatus } from './entities/transaction.status';
 import { TransactionQueryOptions } from './entities/transactions.query.options';
 import { TransactionService } from './transaction.service';
-import { TransactionUtils } from './transaction.utils';
 
 @Controller()
 @ApiTags('transactions')
@@ -69,10 +68,9 @@ export class TransactionController {
       throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
     }
 
-    TransactionUtils.addToReceivers(receiver, receivers);
-
     return this.transactionService.getTransactions(new TransactionFilter({
       sender,
+      receiver,
       receivers,
       token,
       function: scFunction,
@@ -122,10 +120,10 @@ export class TransactionController {
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
-    TransactionUtils.addToReceivers(receiver, receivers);
 
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
+      receiver,
       receivers,
       token,
       senderShard,
@@ -159,10 +157,9 @@ export class TransactionController {
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
-    TransactionUtils.addToReceivers(receiver, receivers);
-
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
+      receiver,
       receivers,
       token,
       senderShard,

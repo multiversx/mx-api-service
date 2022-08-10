@@ -7,7 +7,6 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { Transaction } from "../transactions/entities/transaction";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionStatus } from "../transactions/entities/transaction.status";
-import { TransactionUtils } from "../transactions/transaction.utils";
 import { TransferService } from "./transfer.service";
 
 @Controller()
@@ -56,10 +55,10 @@ export class TransferController {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
-    TransactionUtils.addToReceivers(receiver, receivers);
 
     return await this.transferService.getTransfers(new TransactionFilter({
       sender,
+      receiver,
       receivers,
       token,
       senderShard,
@@ -109,10 +108,9 @@ export class TransferController {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
-    TransactionUtils.addToReceivers(receiver, receivers);
-
     return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
+      receiver,
       receivers,
       token,
       function: scFunction,
@@ -148,10 +146,9 @@ export class TransferController {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
-    TransactionUtils.addToReceivers(receiver, receivers);
-
     return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
+      receiver,
       receivers,
       token,
       function: scFunction,

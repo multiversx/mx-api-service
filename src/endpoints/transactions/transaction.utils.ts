@@ -10,7 +10,7 @@ export class TransactionUtils {
       return false;
     }
 
-    const filterToCompareWith: TransactionFilter = {};
+    const filterToCompareWith = {};
 
     return JSON.stringify(filter) === JSON.stringify(filterToCompareWith);
   }
@@ -26,6 +26,7 @@ export class TransactionUtils {
 
     const filterToCompareWith: TransactionFilter = {
       sender: filter.sender,
+      receiver: filter.receiver,
       receivers: filter.receivers,
       condition: QueryConditionOptions.should,
     };
@@ -60,15 +61,5 @@ export class TransactionUtils {
     result = result.sorted(x => x.sender === sender ? 0 : 1);
 
     return result;
-  }
-
-  static addToReceivers(receiver: string | undefined, receivers: string[] | undefined) {
-    if (receiver) {
-      if (!receivers) {
-        receivers = [];
-      }
-
-      receivers.push(receiver);
-    }
   }
 }

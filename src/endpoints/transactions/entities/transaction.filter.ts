@@ -10,7 +10,7 @@ export class TransactionFilter {
 
   address?: string;
   sender?: string;
-  receivers?: string[] = [];
+  private _receivers?: string[] = [];
   token?: string;
   function?: string;
   senderShard?: number;
@@ -25,4 +25,29 @@ export class TransactionFilter {
   order?: SortOrder;
   type?: TransactionType;
   tokens?: string[];
+
+  get receivers(): string[] | undefined {
+    return this._receivers;
+  }
+
+  set receivers(value: string[] | undefined) {
+    if (value) {
+      if (!this._receivers) {
+        this._receivers = value;
+      }
+      else {
+        this._receivers = [...this._receivers, ...value];
+      }
+    }
+  }
+
+  set receiver(value: string | undefined) {
+    if (value) {
+      if (!this._receivers) {
+        this._receivers = [];
+      }
+
+      this._receivers.push(value);
+    }
+  }
 }
