@@ -96,7 +96,7 @@ export class AccountController {
   async getAccountDetails(@Param('address', ParseAddressPipe) address: string): Promise<AccountDetailed> {
     const account = await this.accountService.getAccount(address);
     if (!account) {
-      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Account not found');
     }
 
     return account;

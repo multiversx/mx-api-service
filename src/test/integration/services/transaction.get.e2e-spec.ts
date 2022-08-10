@@ -65,7 +65,7 @@ describe('Transaction Get Service', () => {
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (txHash: string) => {
           if (txHash == hash) {
-            throw new HttpException({ status: HttpStatus.NOT_FOUND, message: "NOT FOUND" }, HttpStatus.NOT_FOUND);
+            return null;
           }
 
           throw new HttpException({ status: HttpStatus.BAD_GATEWAY, message: "BAD GATEWAY" }, HttpStatus.BAD_GATEWAY);

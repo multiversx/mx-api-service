@@ -128,7 +128,7 @@ export class IndexerService implements IndexerInterface {
     return await this.execute('getCollection', this.indexerInterface.getCollection(identifier));
   }
 
-  async getTransaction(txHash: string): Promise<Transaction> {
+  async getTransaction(txHash: string): Promise<Transaction | null> {
     return await this.execute('getTransaction', this.indexerInterface.getTransaction(txHash));
   }
 

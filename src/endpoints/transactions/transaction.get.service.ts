@@ -1,4 +1,4 @@
-import { forwardRef, HttpException, HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
@@ -57,7 +57,6 @@ export class TransactionGetService {
     let transaction: any;
     try {
       transaction = await this.indexerService.getTransaction(txHash);
-
       if (!transaction) {
         return null;
       }
@@ -65,11 +64,7 @@ export class TransactionGetService {
       this.logger.error(`Unexpected error when getting transaction from elastic, hash '${txHash}'`);
       this.logger.error(error);
 
-      if (error.response.status !== HttpStatus.NOT_FOUND) {
-        throw new HttpException('Could not get transaction', HttpStatus.BAD_GATEWAY);
-      }
-
-      return null;
+      throw error;
     }
 
     try {
