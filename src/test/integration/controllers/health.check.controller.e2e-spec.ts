@@ -7,7 +7,7 @@ describe("Hello Controller", () => {
   let app: INestApplication;
   const path: string = "/hello";
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -25,5 +25,9 @@ describe("Hello Controller", () => {
           expect(res.text).toStrictEqual('hello');
         });
     });
+  });
+
+  afterEach(async () => {
+    await app.close();
   });
 });
