@@ -65,7 +65,7 @@ export class TransactionGetService {
       this.logger.error(`Unexpected error when getting transaction from elastic, hash '${txHash}'`);
       this.logger.error(error);
 
-      if (error.status !== HttpStatus.NOT_FOUND) {
+      if (error.response.status !== HttpStatus.NOT_FOUND) {
         throw new HttpException('Could not get transaction', HttpStatus.BAD_GATEWAY);
       }
 
