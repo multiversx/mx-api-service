@@ -58,7 +58,7 @@ export interface IndexerInterface {
 
   getCollection(identifier: string): Promise<Collection>
 
-  getTransaction(txHash: string): Promise<Transaction>
+  getTransaction(txHash: string): Promise<Transaction | null>
 
   getScDeploy(address: string): Promise<ScDeploy>
 
