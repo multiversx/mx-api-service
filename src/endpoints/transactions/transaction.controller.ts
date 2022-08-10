@@ -1,6 +1,6 @@
 import { ParseArrayPipe, QueryConditionOptions } from '@elrondnetwork/erdnest';
 import { ParseAddressPipe, ParseBlockHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseTransactionHashPipe } from '@elrondnetwork/erdnest';
-import { BadRequestException, Body, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { SortOrder } from 'src/common/entities/sort.order';
@@ -177,7 +177,7 @@ export class TransactionController {
   ): Promise<TransactionDetailed> {
     const transaction = await this.transactionService.getTransaction(txHash, fields);
     if (transaction === null) {
-      throw new HttpException('Transaction not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Transaction not found');
     }
 
     return transaction;
@@ -202,7 +202,7 @@ export class TransactionController {
     const result = await this.transactionService.createTransaction(transaction);
 
     if (typeof result === 'string' || result instanceof String) {
-      throw new HttpException(result, HttpStatus.BAD_REQUEST);
+      throw new BadRequestException(result);
     }
 
     return result;
