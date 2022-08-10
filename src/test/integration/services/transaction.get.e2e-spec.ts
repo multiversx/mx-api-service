@@ -1,5 +1,8 @@
 import { PublicAppModule } from "src/public.app.module";
 import { Test } from "@nestjs/testing";
+import { TransactionGetService } from "src/endpoints/transactions/transaction.get.service";
+import { IndexerService } from "src/common/indexer/indexer.service";
+import { HttpException, HttpStatus } from "@nestjs/common";
 
 describe('Transaction Get Service', () => {
   let transactionGetService: TransactionGetService;
