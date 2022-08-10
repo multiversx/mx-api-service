@@ -197,19 +197,11 @@ export class TransactionService {
 
     let txHash: string;
     try {
-      // eslint-disable-next-line require-await
-      const result = await this.gatewayService.create('transaction/send', GatewayComponentRequest.sendTransaction, transaction, async (error) => {
-        const message = error.response?.data?.error;
-        if (message && message.includes('transaction generation failed')) {
-          throw error;
-        }
-
-        return false;
-      });
+      const result = await this.gatewayService.create('transaction/send', GatewayComponentRequest.sendTransaction, transaction);
 
       txHash = result?.txHash;
     } catch (error: any) {
-      return error.response?.error ?? '';
+      return error.response?.error ?? error.response?.data?.error ?? '';
     }
 
     return {
