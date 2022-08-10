@@ -8,15 +8,17 @@ import { TransactionLog } from "./entities/transaction.log";
 import { TransactionOptionalFieldOption } from "./entities/transaction.optional.field.options";
 import { TransactionReceipt } from "./entities/transaction.receipt";
 import { TokenTransferService } from "../tokens/token.transfer.service";
-import { ApiUtils, BinaryUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, CachingService } from "@elrondnetwork/erdnest";
 import { TransactionUtils } from "./transaction.utils";
 import { IndexerService } from "src/common/indexer/indexer.service";
+import { CacheInfo } from "src/utils/cache.info";
 
 @Injectable()
 export class TransactionGetService {
   private readonly logger: Logger;
 
   constructor(
+    private readonly cachingService: CachingService,
     private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
     @Inject(forwardRef(() => TokenTransferService))
@@ -210,5 +212,60 @@ export class TransactionGetService {
       this.logger.error(error);
       return null;
     }
+  }
+
+  async tryGetTransaction(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
+    const txFromRedis = await this.tryGetTransactionFromRedis(txHash);
+    if (txFromRedis) {
+      return txFromRedis;
+    }
+
+    const txFromMongo = await this.tryGetTransactionFromMongo(txHash);
+    if (txFromMongo) {
+      await this.storeTransactionInRedis(txFromMongo);
+      return txFromMongo;
+    }
+
+    const txFromElastic = await this.tryGetTransactionFromElastic(txHash, fields);
+    if (txFromElastic !== null) {
+      await this.storeTransactionInRedis(txFromElastic);
+      await this.storeTransactionInMongo(txFromElastic);
+      return txFromElastic;
+    }
+
+    const txFromGateway = await this.tryGetTransactionFromGateway(txHash);
+    if (txFromGateway !== null) {
+      await this.storeTransactionInRedis(txFromGateway);
+      await this.storeTransactionInMongo(txFromGateway);
+      return txFromGateway;
+    }
+
+    return null;
+  }
+
+  async tryGetTransactionFromRedis(txHash: string): Promise<TransactionDetailed | null> {
+    const transaction = await this.cachingService.getCache<TransactionDetailed>(CacheInfo.Transaction(txHash).key);
+    if (!transaction) {
+      return null;
+    }
+    return transaction;
+  }
+
+  // eslint-disable-next-line require-await
+  async tryGetTransactionFromMongo(_txHash: string): Promise<TransactionDetailed | null> {
+    // TODO
+    return null;
+  }
+
+  async storeTransactionInRedis(transaction: TransactionDetailed): Promise<void> {
+    await this.cachingService.setCache(
+      CacheInfo.Transaction(transaction.txHash).key,
+      transaction,
+      CacheInfo.Transaction(transaction.txHash).ttl,
+    );
+  }
+
+  async storeTransactionInMongo(_transaction: TransactionDetailed): Promise<void> {
+    // TODO
   }
 }

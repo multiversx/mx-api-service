@@ -237,6 +237,13 @@ export class CacheInfo {
     };
   }
 
+  static Transaction(hash: string): CacheInfo {
+    return {
+      key: `transaction:${hash}`,
+      ttl: Constants.oneMinute() * 10,
+    };
+  }
+
   static StakeTopup(address: string): CacheInfo {
     return {
       key: `stakeTopup:${address}`,
