@@ -65,10 +65,10 @@ describe('Transaction Get Service', () => {
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (txHash: string) => {
           if (txHash == hash) {
-            throw new HttpException("NOT FOUND", HttpStatus.NOT_FOUND);
+            throw new HttpException({ status: HttpStatus.NOT_FOUND, message: "NOT FOUND" }, HttpStatus.NOT_FOUND);
           }
 
-          throw new HttpException("BAD GATEWAY", HttpStatus.BAD_GATEWAY);
+          throw new HttpException({ status: HttpStatus.BAD_GATEWAY, message: "BAD GATEWAY" }, HttpStatus.BAD_GATEWAY);
         }));
 
       const transaction = await transactionGetService.tryGetTransactionFromElastic(hash);
@@ -82,7 +82,7 @@ describe('Transaction Get Service', () => {
         .spyOn(IndexerService.prototype, "getTransaction")
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_: string) => {
-          throw new HttpException("BAD GATEWAY", HttpStatus.GATEWAY_TIMEOUT);
+          throw new HttpException({ status: HttpStatus.BAD_GATEWAY, message: "BAD GATEWAY" }, HttpStatus.BAD_GATEWAY);
         }));
 
       await expect(transactionGetService.tryGetTransactionFromElastic(hash)).rejects.toThrow(Error);
