@@ -1,6 +1,8 @@
 import { TransactionGetService } from '../../endpoints/transactions/transaction.get.service';
 import { PublicAppModule } from "src/public.app.module";
 import { Test } from "@nestjs/testing";
+import { IndexerService } from 'src/common/indexer/indexer.service';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 describe('Transaction Get Service', () => {
   let transactionGetService: TransactionGetService;
@@ -12,6 +14,10 @@ describe('Transaction Get Service', () => {
 
     transactionGetService = moduleRef.get<TransactionGetService>(TransactionGetService);
 
+  });
+
+  beforeEach(() => {
+    jest.restoreAllMocks();
   });
 
   describe("Get Transactions", () => {
@@ -50,6 +56,36 @@ describe('Transaction Get Service', () => {
         expect(result.hasOwnProperty("logs")).toBeTruthy();
         expect(result.hasOwnProperty("returnMessage")).toBeTruthy();
       }
+    });
+
+    it("should return null because transaction is not found in elastic", async () => {
+      const hash: string = "51ffbf3d27e06fd509c510ef0ff1ea7329359dba89c05aeec333de52a405664d";
+      jest
+        .spyOn(IndexerService.prototype, "getTransaction")
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (txHash: string) => {
+          if (txHash == hash) {
+            throw new HttpException("NOT FOUND", HttpStatus.NOT_FOUND);
+          }
+
+          throw new HttpException("BAD GATEWAY", HttpStatus.BAD_GATEWAY);
+        }));
+
+      const transaction = await transactionGetService.tryGetTransactionFromElastic(hash);
+
+      expect(transaction).toBeNull();
+    });
+
+    it("should throw error because indexer timed out", async () => {
+      const hash: string = "51ffbf3d27e06fd509c510ef0ff1ea7329359dba89c05aeec333de52a405664d";
+      jest
+        .spyOn(IndexerService.prototype, "getTransaction")
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(async (_: string) => {
+          throw new HttpException("BAD GATEWAY", HttpStatus.GATEWAY_TIMEOUT);
+        }));
+
+      await expect(transactionGetService.tryGetTransactionFromElastic(hash)).rejects.toThrow(Error);
     });
 
     it("should return transaction from gateway with queryInElastic = true", async () => {
