@@ -263,8 +263,84 @@ describe("NFT Controller", () => {
               expect(+res.text).toBeGreaterThanOrEqual(count);
             });
         });
-
       });
+    });
+  });
+
+  describe('/nfts/{identifier}', () => {
+    it('should returns the details of an Non-Fungible / Semi-Fungible / MetaESDT token for a given identifier', async () => {
+      const identifier: string = 'EROBOT-527a29-c8';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body.identifier).toStrictEqual(identifier);
+        });
+    });
+  });
+
+  describe('/nfts/{identifier}/supply', () => {
+    it('should returns Non-Fungible / Semi-Fungible / MetaESDT token supply details for a given identifier', async () => {
+      const identifier: string = 'EROBOT-527a29-c8';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}/supply`)
+        .expect(200)
+        .then(res => {
+          expect(res.body.supply).toStrictEqual('1');
+        });
+    });
+  });
+
+  describe('/nfts/{identifier}/accounts', () => {
+    it('should returns Non-Fungible / Semi-Fungible / MetaESDT token accounts details for a given identifier', async () => {
+      const identifier: string = 'EROBOT-527a29-c8';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}/accounts`)
+        .expect(200)
+        .then(res => {
+          expect(res.body[0].address).toBeDefined();
+          expect(res.body[0].balance).toBeDefined();
+        });
+    });
+  });
+
+  describe('/nfts/{identifier}/accounts/count', () => {
+    it('should returns Non-Fungible / Semi-Fungible / MetaESDT token accounts details for a given identifier', async () => {
+      const identifier: string = 'EROBOT-527a29-c8';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}/accounts/count`)
+        .expect(200)
+        .then(res => {
+          expect(+res.text).toStrictEqual(1);
+        });
+    });
+  });
+
+  describe('Validations', () => {
+    it('should return 400 Bad Request if given collection identifier is invalid (format incorect)', async () => {
+      const identifier: string = 'abc123';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'identifier': Invalid NFT identifier.");
+        });
+    });
+
+    it('should return 404 Not Found if given collection identifier is not found', async () => {
+      const identifier: string = 'EROBOTT-527a29-c8';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}`)
+        .expect(404)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("NFT not found");
+        });
     });
   });
 
