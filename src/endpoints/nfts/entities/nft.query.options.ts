@@ -11,7 +11,7 @@ export class NftQueryOptions {
 
   //TODO: Remove this function when enforce is no longer needed
   static enforceScamInfoFlag(size: number, options: NftQueryOptions): NftQueryOptions {
-    if (size < SIZE_LIMIT) {
+    if (size <= SIZE_LIMIT) {
       options.withScamInfo = true;
     }
 
