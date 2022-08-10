@@ -186,6 +186,47 @@ describe("NFT Controller", () => {
     });
   });
 
+  describe('/nfts/count', () => {
+    it('should returns the total number of Non-Fungible / Semi-Fungible / MetaESDT tokens', async () => {
+      await request(app.getHttpServer())
+        .get(`${path}/count`)
+        .expect(200)
+        .then(res => {
+          expect(+res.text).toBeGreaterThanOrEqual(6788352);
+        });
+    });
+
+    [
+      {
+        type: 'NonFungibleESDT',
+        count: 991113,
+      },
+      {
+        type: 'SemiFungibleESDT',
+        count: 23101,
+      },
+      {
+        type: 'MetaESDT',
+        count: 5748786,
+      },
+    ].forEach(({ type, count }) => {
+      describe(`type = ${type}`, () => {
+        it(`should return count of all esdts of type ${type}`, async () => {
+          const params = new URLSearchParams({
+            'type': `${type}`,
+          });
+
+          await request(app.getHttpServer())
+            .get(`${path}/count?${params}`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
+      });
+    });
+  });
+
   afterEach(async () => {
     await app.close();
   });
