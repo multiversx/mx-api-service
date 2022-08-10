@@ -198,31 +198,72 @@ describe("NFT Controller", () => {
 
     [
       {
-        type: 'NonFungibleESDT',
+        filter: 'type',
+        value: 'NonFungibleESDT',
         count: 991113,
       },
       {
-        type: 'SemiFungibleESDT',
+        filter: 'type',
+        value: 'SemiFungibleESDT',
         count: 23101,
       },
       {
-        type: 'MetaESDT',
+        filter: 'type',
+        value: 'MetaESDT',
         count: 5748786,
       },
-    ].forEach(({ type, count }) => {
-      describe(`type = ${type}`, () => {
-        it(`should return count of all esdts of type ${type}`, async () => {
-          const params = new URLSearchParams({
-            'type': `${type}`,
-          });
+      {
+        filter: 'collection',
+        value: 'EROBOT-527a29',
+        count: 200,
+      },
+      {
+        filter: 'name',
+        value: 'Elrond Robots #200',
+        count: 49893,
+      },
+      {
+        filter: 'tags',
+        value: 'elrond',
+        count: 298265,
+      },
+      {
+        filter: 'isWhitelistedStorage',
+        value: 'true',
+        count: 733653,
+      },
+      {
+        filter: 'hasUris',
+        value: 'true',
+        count: 928696,
+      },
+      {
+        filter: 'isNsfw',
+        value: 'true',
+        count: 287,
+      },
+      {
+        filter: 'before',
+        value: '1660114204',
+        count: 6781315,
+      },
+      {
+        filter: 'after',
+        value: '1660134204',
+        count: 2,
+      },
 
+    ].forEach(({ filter, value, count }) => {
+      describe(`filter = ${filter}`, () => {
+        it(`should return total count based on ${filter} filter with value ${value}`, async () => {
           await request(app.getHttpServer())
-            .get(`${path}/count?${params}`)
+            .get(`${path}/count?${filter}=${value}`)
             .expect(200)
             .then(res => {
               expect(+res.text).toBeGreaterThanOrEqual(count);
             });
         });
+
       });
     });
   });
