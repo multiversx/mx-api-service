@@ -54,23 +54,31 @@ export class TransactionGetService {
   }
 
   async tryGetTransactionFromElastic(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
+    let transaction: any;
     try {
-      const result = await this.indexerService.getTransaction(txHash) as any;
-      if (!result) {
+      transaction = await this.indexerService.getTransaction(txHash);
+      if (!transaction) {
         return null;
       }
+    } catch (error: any) {
+      this.logger.error(`Unexpected error when getting transaction from elastic, hash '${txHash}'`);
+      this.logger.error(error);
 
-      if (result.scResults) {
-        result.results = result.scResults;
+      throw error;
+    }
+
+    try {
+      if (transaction.scResults) {
+        transaction.results = transaction.scResults;
       }
 
-      const transactionDetailed: TransactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), result);
+      const transactionDetailed: TransactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), transaction);
 
       const hashes: string[] = [];
       hashes.push(txHash);
       const previousHashes: Record<string, string> = {};
 
-      if (result.hasScResults === true && (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.results))) {
+      if (transaction.hasScResults === true && (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.results))) {
         transactionDetailed.results = await this.getTransactionScResultsFromElastic(transactionDetailed.txHash);
 
         for (const scResult of transactionDetailed.results) {
