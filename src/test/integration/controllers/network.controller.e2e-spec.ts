@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
-describe("Network Controller", () => {
+describe.skip("Network Controller", () => {
   let app: INestApplication;
   const constantPath: string = "/constants";
   const economicsPath: string = "/economics";
