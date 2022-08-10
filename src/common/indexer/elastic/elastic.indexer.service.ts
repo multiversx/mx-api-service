@@ -966,22 +966,36 @@ export class ElasticIndexerService implements IndexerInterface {
       }
 
       if (filter.receivers) {
+        const keys = ['receiver'];
+        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+          keys.push('receivers');
+        }
+
         for (const receiver of filter.receivers) {
-          elasticQuery = elasticQuery.withMustMultiShouldCondition(['receiver', 'receivers'], key => QueryType.Match(key, receiver));
+          elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, receiver));
         }
       }
     } else {
       elasticQuery = elasticQuery.withMustMatchCondition('sender', filter.sender);
 
       if (filter.receivers) {
+        const keys = ['receiver'];
+
+        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+          keys.push('receivers');
+        }
         for (const receiver of filter.receivers) {
-          elasticQuery = elasticQuery.withMustMultiShouldCondition(['receiver', 'receivers'], key => QueryType.Match(key, receiver));
+          elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, receiver));
         }
       }
     }
 
     if (address) {
-      const keys: string[] = ['sender', 'receiver', 'receivers'];
+      const keys: string[] = ['sender', 'receiver'];
+
+      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+        keys.push('receivers');
+      }
 
       elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, address));
     }
