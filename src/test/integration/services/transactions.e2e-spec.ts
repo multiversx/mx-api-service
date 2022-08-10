@@ -90,7 +90,7 @@ describe('Transaction Service', () => {
       it(`should return a list of transactions for one address to a specific receiver`, async () => {
         const address = 'erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry';
         const receiver = 'erd19lurqh6alll7znp659ne2v7r4w7khepfwlluvkr0l9y896se97mqak0j5e';
-        const transactions = await transactionService.getTransactions(new TransactionFilter({ receivers: [receiver] }), { from: 0, size: 25 }, undefined, address);
+        const transactions = await transactionService.getTransactions(new TransactionFilter({ receiver }), { from: 0, size: 25 }, undefined, address);
 
         for (const transaction of transactions) {
           expect(transaction.sender).toStrictEqual(address);

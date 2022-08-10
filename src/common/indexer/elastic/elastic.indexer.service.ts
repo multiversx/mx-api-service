@@ -973,9 +973,7 @@ export class ElasticIndexerService implements IndexerInterface {
         }
 
         for (const receiver of filter.receivers) {
-          for (const key of keys) {
-            elasticQuery = elasticQuery.withShouldCondition(QueryType.Match(key, receiver));
-          }
+          elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, receiver));
         }
       }
     } else {
@@ -988,9 +986,7 @@ export class ElasticIndexerService implements IndexerInterface {
           keys.push('receivers');
         }
         for (const receiver of filter.receivers) {
-          for (const key of keys) {
-            elasticQuery = elasticQuery.withShouldCondition(QueryType.Match(key, receiver));
-          }
+          elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, receiver));
         }
       }
     }
@@ -1002,9 +998,7 @@ export class ElasticIndexerService implements IndexerInterface {
         keys.push('receivers');
       }
 
-      for (const key of keys) {
-        elasticQuery = elasticQuery.withShouldCondition(QueryType.Match(key, address));
-      }
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, address));
     }
 
     return elasticQuery;
