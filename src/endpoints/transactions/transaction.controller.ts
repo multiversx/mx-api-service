@@ -120,7 +120,6 @@ export class TransactionController {
     @Query('before', ParseOptionalIntPipe) before?: number,
     @Query('after', ParseOptionalIntPipe) after?: number,
   ): Promise<number> {
-
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
       receiver,

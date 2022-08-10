@@ -985,9 +985,16 @@ export class ElasticIndexerService implements IndexerInterface {
         if (this.apiConfigService.getIsIndexerV3FlagActive()) {
           keys.push('receivers');
         }
+
+        const queries: AbstractQuery[] = [];
+
         for (const receiver of filter.receivers) {
-          elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, receiver));
+          for (const key of keys) {
+            queries.push(QueryType.Match(key, receiver));
+          }
         }
+
+        elasticQuery = elasticQuery.withMustCondition(QueryType.Should(queries));
       }
     }
 
