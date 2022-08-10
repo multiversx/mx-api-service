@@ -4,7 +4,7 @@ import { Test } from '@nestjs/testing';
 import { AccountService } from 'src/endpoints/accounts/account.service';
 import { PublicAppModule } from 'src/public.app.module';
 import { DeployedContract } from 'src/endpoints/accounts/entities/deployed.contract';
-import '@elrondnetwork/erdnest/lib/utils/extensions/jest.extensions';
+import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { AddressUtils, CachingService, ElasticService } from '@elrondnetwork/erdnest';
 
@@ -107,24 +107,6 @@ describe('Account Service', () => {
 
       const mock_isAddressValid = jest.spyOn(AddressUtils, 'isAddressValid');
       mock_isAddressValid.mockImplementation(() => true);
-
-      const address: string = "erd1cnyng48s8lrjn95rpdfgykxl5993c5qhn5jqt0ar960f7v3umnrsy9yx0s";
-      const results = await accountService.getAccount(address);
-
-      expect(results).toHaveProperties(
-        ['address', 'balance', 'nonce', 'shard', 'code',
-          'codeHash', 'rootHash', 'txCount', 'scrCount',
-          'username', 'shard', 'developerReward', 'ownerAddress', 'scamInfo',
-        ]);
-    });
-
-    it("should return account details if getUseLegacyElastic is active", async () => {
-      const mock_isAddressValid = jest.spyOn(AddressUtils, 'isAddressValid');
-      mock_isAddressValid.mockImplementation(() => true);
-
-      jest.spyOn(ApiConfigService.prototype, 'getUseLegacyElastic')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(() => true));
 
       const address: string = "erd1cnyng48s8lrjn95rpdfgykxl5993c5qhn5jqt0ar960f7v3umnrsy9yx0s";
       const results = await accountService.getAccount(address);

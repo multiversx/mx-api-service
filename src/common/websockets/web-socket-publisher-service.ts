@@ -1,3 +1,4 @@
+import { AddressUtils } from "@elrondnetwork/erdnest";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Injectable } from "@nestjs/common";
 import { WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
@@ -8,6 +9,8 @@ import { TransactionActionService } from "src/endpoints/transactions/transaction
 @Injectable()
 @WebSocketGateway(3099)
 export class WebSocketPublisherService {
+  private readonly maxAddressesSize = 16;
+
   @WebSocketServer()
   server: Server | undefined;
 
@@ -16,22 +19,25 @@ export class WebSocketPublisherService {
   ) { }
 
   async handleDisconnect(socket: Socket) {
-    // @ts-ignore
-    const address: string | undefined = socket.handshake.query.address;
-    if (!address) {
+    const { addresses, error } = this.getAddressesFromSocketQuery(socket);
+    if (error) {
+      socket.emit('error', error);
       return;
     }
 
-    await socket.leave(address);
+    for (const address of addresses) {
+      await socket.leave(address);
+    }
   }
 
   async handleConnection(socket: Socket) {
-    const address = socket.handshake.query.address;
-    if (!address) {
+    const { addresses, error } = this.getAddressesFromSocketQuery(socket);
+    if (error) {
+      socket.emit('error', error);
       return;
     }
 
-    await socket.join(address);
+    await socket.join(addresses);
   }
 
   async onTransactionCompleted(transaction: ShardTransaction) {
@@ -59,5 +65,26 @@ export class WebSocketPublisherService {
     } else {
       this.server?.to(transaction.receiver).emit(eventName, transaction.hash);
     }
+  }
+
+  private getAddressesFromSocketQuery(socket: Socket): { addresses: string[], error?: string } {
+    const rawAddresses = socket.handshake.query.address as string | undefined;
+    if (!rawAddresses) {
+      return { addresses: [], error: 'Validation failed (an address is expected)' };
+    }
+
+    const addresses = rawAddresses.split(',');
+    if (addresses.length > this.maxAddressesSize) {
+      return { addresses: [], error: `Validation failed for 'address' (less than ${this.maxAddressesSize} comma separated values expected)` };
+    }
+
+    const distinctAddresses = addresses.distinct();
+    for (const address of distinctAddresses) {
+      if (!AddressUtils.isAddressValid(address)) {
+        return { addresses: [], error: `Validation failed for 'address' (a bech32 address is expected)` };
+      }
+    }
+
+    return { addresses: distinctAddresses };
   }
 }
