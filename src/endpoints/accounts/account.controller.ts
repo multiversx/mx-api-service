@@ -422,11 +422,18 @@ export class AccountController {
     @Query('withScamInfo', new ParseOptionalBoolPipe) withScamInfo?: boolean,
     @Query('source', new ParseOptionalEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
   ): Promise<NftAccount[]> {
+
+    //TODO: Do not enforce withScamInfo flag
+    const options = new NftQueryOptions({ withSupply, withScamInfo });
+    if (size < 100) {
+      options.withScamInfo = true;
+    }
+
     return await this.nftService.getNftsForAddress(
       address,
       new QueryPagination({ from, size }),
       new NftFilter({ search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }),
-      new NftQueryOptions({ withSupply, withScamInfo }),
+      options,
       source
     );
   }

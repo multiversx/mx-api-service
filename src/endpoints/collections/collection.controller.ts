@@ -192,10 +192,16 @@ export class CollectionController {
       throw new HttpException('NFT Collection not found', HttpStatus.NOT_FOUND);
     }
 
+    //TODO: Do not enforce withScamInfo flag
+    const options = new NftQueryOptions({ withOwner, withSupply, withScamInfo });
+    if (size < 100) {
+      options.withScamInfo = true;
+    }
+
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
       new NftFilter({ search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage }),
-      new NftQueryOptions({ withOwner, withSupply, withScamInfo }));
+      options);
   }
 
   @Get("/collections/:collection/nfts/count")
