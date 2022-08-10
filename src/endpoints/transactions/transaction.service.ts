@@ -18,12 +18,13 @@ import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.com
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
-import { AddressUtils, ApiUtils, Constants, CachingService, PendingExecutor } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiUtils, Constants, CachingService, PendingExecuter } from '@elrondnetwork/erdnest';
 import { TransactionUtils } from './transaction.utils';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TransactionOperation } from './entities/transaction.operation';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
+import crypto from 'crypto-js';
 
 @Injectable()
 export class TransactionService {
@@ -323,12 +324,10 @@ export class TransactionService {
     return detailedTransactions;
   }
 
-  private smartContractResultsExecutor = new PendingExecutor(
-    async (txHashes: string[]) => await this.getSmartContractResultsRaw(txHashes)
-  );
+  private smartContractResultsExecutor = new PendingExecuter();
 
   public async getSmartContractResults(hashes: Array<string>): Promise<Array<SmartContractResult[] | null>> {
-    return await this.smartContractResultsExecutor.execute(hashes);
+    return await this.smartContractResultsExecutor.execute(crypto.MD5(hashes.join(',')).toString(), async () => await this.getSmartContractResultsRaw(hashes));
   }
 
   private async getSmartContractResultsRaw(transactionHashes: Array<string>): Promise<Array<SmartContractResult[] | null>> {

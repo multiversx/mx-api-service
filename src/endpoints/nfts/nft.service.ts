@@ -96,6 +96,8 @@ export class NftService {
       await this.applyUnlockSchedule(nft);
     }
 
+    await this.pluginService.batchProcessNfts(nfts, queryOptions?.withScamInfo);
+
     return nfts;
   }
 
@@ -104,8 +106,6 @@ export class NftService {
       this.batchApplyMedia(nfts),
       this.batchApplyMetadata(nfts),
     ]);
-
-    await this.pluginService.batchProcessNfts(nfts);
   }
 
   private async applyNftOwner(nft: Nft): Promise<void> {
@@ -432,6 +432,8 @@ export class NftService {
       await this.applyUnlockSchedule(nft);
     }
 
+    await this.pluginService.batchProcessNfts(nfts, queryOptions?.withScamInfo);
+
     return nfts;
   }
 
@@ -478,7 +480,7 @@ export class NftService {
       return undefined;
     }
 
-    const nfts = await this.getNftsForAddress(address, new QueryPagination({ from: 0, size: 1 }), filter);
+    const nfts = await this.getNftsForAddress(address, new QueryPagination({ from: 0, size: 1 }), filter, new NftQueryOptions({ withScamInfo: true }));
     if (nfts.length === 0) {
       return undefined;
     }
