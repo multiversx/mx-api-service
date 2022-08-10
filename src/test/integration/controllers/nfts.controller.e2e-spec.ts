@@ -20,6 +20,7 @@ describe("NFT Controller", () => {
     it('should return a list of 25 Non-Fungible / Semi-Fungible / MetaESDT tokens available on blockchain', async () => {
       await request(app.getHttpServer())
         .get(`${path}`)
+        .expect(200)
         .then(res => {
           expect(res.body).toHaveLength(25);
         });
@@ -32,6 +33,7 @@ describe("NFT Controller", () => {
 
       await request(app.getHttpServer())
         .get(`${path}?${params}`)
+        .expect(200)
         .then(res => {
           expect(res.body).toHaveLength(5);
         });
@@ -44,6 +46,7 @@ describe("NFT Controller", () => {
 
       await request(app.getHttpServer())
         .get(`${path}?${params}`)
+        .expect(200)
         .then(res => {
           expect(res.body).toHaveLength(25);
           expect(res.body[0].collection).toStrictEqual('MEDAL-ae074f');
@@ -57,6 +60,7 @@ describe("NFT Controller", () => {
 
       await request(app.getHttpServer())
         .get(`${path}?${params}`)
+        .expect(200)
         .then(res => {
           expect(res.body).toHaveLength(1);
           expect(res.body[0].collection).toStrictEqual('MEDAL-ae074f');
@@ -97,6 +101,7 @@ describe("NFT Controller", () => {
 
       await request(app.getHttpServer())
         .get(`${path}?${params}`)
+        .expect(200)
         .then(res => {
           expect(res.body).toHaveLength(25);
 
@@ -113,6 +118,7 @@ describe("NFT Controller", () => {
 
       await request(app.getHttpServer())
         .get(`${path}?${params}`)
+        .expect(200)
         .then(res => {
           expect(res.body).toHaveLength(25);
 
@@ -130,6 +136,7 @@ describe("NFT Controller", () => {
 
       await request(app.getHttpServer())
         .get(`${path}?${params}`)
+        .expect(200)
         .then(res => {
           expect(res.body).toHaveLength(25);
 
@@ -148,6 +155,7 @@ describe("NFT Controller", () => {
 
       await request(app.getHttpServer())
         .get(`${path}?${params}`)
+        .expect(200)
         .then(res => {
           expect(res.body).toHaveLength(25);
 
@@ -166,6 +174,7 @@ describe("NFT Controller", () => {
 
       await request(app.getHttpServer())
         .get(`${path}?${params}`)
+        .expect(200)
         .then(res => {
           expect(res.body).toHaveLength(25);
 
