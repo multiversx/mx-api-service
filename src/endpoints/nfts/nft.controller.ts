@@ -61,11 +61,7 @@ export class NftController {
       throw new BadRequestException(`Maximum size of 100 is allowed when activating flags 'withOwner' or 'withSupply' or 'withScamInfo'`);
     }
 
-    //TODO: Do not enforce withScamInfo flag
-    const options = new NftQueryOptions({ withOwner, withSupply, withScamInfo });
-    if (size < 100) {
-      options.withScamInfo = true;
-    }
+    const options = NftQueryOptions.enforceScamInfoFlag(size, new NftQueryOptions({ withOwner, withSupply, withScamInfo }));
 
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),

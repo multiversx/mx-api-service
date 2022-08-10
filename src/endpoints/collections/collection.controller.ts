@@ -192,11 +192,7 @@ export class CollectionController {
       throw new HttpException('NFT Collection not found', HttpStatus.NOT_FOUND);
     }
 
-    //TODO: Do not enforce withScamInfo flag
-    const options = new NftQueryOptions({ withOwner, withSupply, withScamInfo });
-    if (size < 100) {
-      options.withScamInfo = true;
-    }
+    const options = NftQueryOptions.enforceScamInfoFlag(size, new NftQueryOptions({ withOwner, withSupply, withScamInfo }));
 
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),

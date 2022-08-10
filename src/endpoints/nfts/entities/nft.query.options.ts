@@ -1,3 +1,5 @@
+const SIZE_LIMIT: number = 100;
+
 export class NftQueryOptions {
   constructor(init?: Partial<NftQueryOptions>) {
     Object.assign(this, init);
@@ -5,13 +7,14 @@ export class NftQueryOptions {
 
   withOwner?: boolean = false;
   withSupply?: boolean = false;
-  private _withScamInfo?: boolean = false;
+  withScamInfo?: boolean = false;
 
-  get withScamInfo(): boolean | undefined {
-    return this._withScamInfo;
-  }
+  //TODO: Remove this function
+  static enforceScamInfoFlag(size: number, options: NftQueryOptions): NftQueryOptions {
+    if (size < SIZE_LIMIT) {
+      options.withScamInfo = true;
+    }
 
-  set withScamInfo(value: boolean | undefined) {
-    this._withScamInfo = value;
+    return options;
   }
 }
