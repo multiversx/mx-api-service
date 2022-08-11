@@ -10,8 +10,7 @@ export class TransactionFilter {
 
   address?: string;
   sender?: string;
-  receiver?: string;
-  private _receivers?: string[] = [];
+  private _receiver?: string[] = [];
   token?: string;
   function?: string;
   senderShard?: number;
@@ -27,15 +26,11 @@ export class TransactionFilter {
   type?: TransactionType;
   tokens?: string[];
 
-  get receivers(): string[] | undefined {
-    if (this.receiver) {
-      return [this.receiver];
-    }
-
-    return this._receivers;
+  get receiver(): string[] | undefined {
+    return this._receiver;
   }
 
-  set receivers(value: string[] | undefined) {
-    this._receivers = value;
+  set receiver(value: string[] | undefined) {
+    this._receiver = value;
   }
 }

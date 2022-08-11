@@ -16,7 +16,7 @@ export class TransactionDetailedQuery {
     return await this.transactionService.getTransactions(
       new TransactionFilter({
         sender: input.sender,
-        receivers: input.receiver ? [input.receiver] : [],
+        receiver: input.receiver ? [input.receiver] : [],
         token: input.token,
         senderShard: input.senderShard,
         receiverShard: input.receiverShard,

@@ -820,11 +820,14 @@ export class ElasticIndexerService implements IndexerInterface {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('sender', filter.sender));
     }
 
-    if (filter.receivers) {
-      for (const receiver of filter.receivers) {
-        elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receiver', receiver));
-        elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receivers', receiver));
+    if (filter.receiver) {
+      const queries: AbstractQuery[] = [];
+      for (const receiver of filter.receiver) {
+        queries.push(QueryType.Match('receiver', receiver));
+        queries.push(QueryType.Match('receivers', receiver));
       }
+
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(queries));
     }
 
     if (filter.token) {
@@ -966,20 +969,20 @@ export class ElasticIndexerService implements IndexerInterface {
         elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('sender', filter.sender));
       }
 
-      if (filter.receivers) {
+      if (filter.receiver) {
         const keys = ['receiver'];
         if (this.apiConfigService.getIsIndexerV3FlagActive()) {
           keys.push('receivers');
         }
 
-        for (const receiver of filter.receivers) {
+        for (const receiver of filter.receiver) {
           elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, receiver));
         }
       }
     } else {
       elasticQuery = elasticQuery.withMustMatchCondition('sender', filter.sender);
 
-      if (filter.receivers) {
+      if (filter.receiver) {
         const keys = ['receiver'];
 
         if (this.apiConfigService.getIsIndexerV3FlagActive()) {
@@ -988,7 +991,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
         const queries: AbstractQuery[] = [];
 
-        for (const receiver of filter.receivers) {
+        for (const receiver of filter.receiver) {
           for (const key of keys) {
             queries.push(QueryType.Match(key, receiver));
           }

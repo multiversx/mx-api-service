@@ -23,8 +23,7 @@ export class TransactionController {
   @ApiOperation({ summary: 'Transaction list', description: 'Returns a list of transactions available on the blockchain. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs' })
   @ApiOkResponse({ type: [Transaction] })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
-  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
-  @ApiQuery({ name: 'receivers', description: 'Search by multiple receiver addresses, comma-separated', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
@@ -46,8 +45,7 @@ export class TransactionController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressPipe) sender?: string,
-    @Query('receiver', ParseAddressPipe) receiver?: string,
-    @Query('receivers', ParseArrayPipe) receivers?: string[],
+    @Query('receiver', ParseArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
@@ -71,7 +69,6 @@ export class TransactionController {
     return this.transactionService.getTransactions(new TransactionFilter({
       sender,
       receiver,
-      receivers,
       token,
       function: scFunction,
       senderShard,
@@ -91,8 +88,7 @@ export class TransactionController {
   @ApiOperation({ summary: "Transactions count", description: 'Returns the total number of transactions' })
   @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
-  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
-  @ApiQuery({ name: 'receivers', description: 'Search by multiple receiver addresses, comma-separated', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
@@ -106,8 +102,7 @@ export class TransactionController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   getTransactionCount(
     @Query('sender', ParseAddressPipe) sender?: string,
-    @Query('receiver', ParseAddressPipe) receiver?: string,
-    @Query('receivers', ParseArrayPipe) receivers?: string[],
+    @Query('receiver', ParseArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
@@ -123,7 +118,6 @@ export class TransactionController {
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
       receiver,
-      receivers,
       token,
       senderShard,
       receiverShard,
@@ -142,8 +136,7 @@ export class TransactionController {
   @ApiExcludeEndpoint()
   getTransactionCountAlternative(
     @Query('sender', ParseAddressPipe) sender?: string,
-    @Query('receiver', ParseAddressPipe) receiver?: string,
-    @Query('receivers', ParseArrayPipe) receivers?: string[],
+    @Query('receiver', ParseArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
     @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
@@ -159,7 +152,6 @@ export class TransactionController {
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
       receiver,
-      receivers,
       token,
       senderShard,
       receiverShard,

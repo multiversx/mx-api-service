@@ -66,7 +66,7 @@ describe('Transaction Service', () => {
       it(`should return a list of transactions between two accounts, where sender must be one address`, async () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.sender = transactionSender;
-        transactionFilter.receivers = [transactionReceiver];
+        transactionFilter.receiver = [transactionReceiver];
 
         const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
         expect(transactions.length).toBeGreaterThan(0);
@@ -89,56 +89,34 @@ describe('Transaction Service', () => {
 
       it(`should return a list of transactions for one address to a specific receiver`, async () => {
         const address = 'erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry';
-        const receiver = 'erd19lurqh6alll7znp659ne2v7r4w7khepfwlluvkr0l9y896se97mqak0j5e';
+        const receiver = ['erd19lurqh6alll7znp659ne2v7r4w7khepfwlluvkr0l9y896se97mqak0j5e'];
         const transactions = await transactionService.getTransactions(new TransactionFilter({ receiver }), { from: 0, size: 25 }, undefined, address);
 
         for (const transaction of transactions) {
           expect(transaction.sender).toStrictEqual(address);
-          expect(transaction.receiver).toStrictEqual(receiver);
+          expect(receiver).toContain(transaction.receiver);
         }
       });
 
       it(`should return a list of transactions for one address to a list of receivers`, async () => {
         const address = 'erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry';
-        const receivers = ['erd19lurqh6alll7znp659ne2v7r4w7khepfwlluvkr0l9y896se97mqak0j5e', 'erd1gsw3q3cp8axfy08um6xpd8rxsn0j27ec2slc6v0z05kqslgknzksl68gg5'];
-        const transactions = await transactionService.getTransactions(new TransactionFilter({ receivers }), { from: 0, size: 25 }, undefined, address);
+        const receiver = ['erd19lurqh6alll7znp659ne2v7r4w7khepfwlluvkr0l9y896se97mqak0j5e', 'erd1gsw3q3cp8axfy08um6xpd8rxsn0j27ec2slc6v0z05kqslgknzksl68gg5'];
+        const transactions = await transactionService.getTransactions(new TransactionFilter({ receiver }), { from: 0, size: 25 }, undefined, address);
 
         for (const transaction of transactions) {
           expect(transaction.sender).toStrictEqual(address);
-          expect(receivers).toContain(transaction.receiver);
+          expect(receiver).toContain(transaction.receiver);
         }
       });
 
       it(`should return a list of transactions for one address where the address is receiver`, async () => {
         const address = 'erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry';
-        const receiver = 'erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry';
-        const transactions = await transactionService.getTransactions(new TransactionFilter({ receivers: [receiver] }), { from: 0, size: 25 }, undefined, address);
+        const receiver = ['erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry'];
+        const transactions = await transactionService.getTransactions(new TransactionFilter({ receiver }), { from: 0, size: 25 }, undefined, address);
 
         for (const transaction of transactions) {
           expect(transaction.receiver).toStrictEqual(address);
         }
-      });
-
-      it(`should return same transactions for different type of receiver filters`, async () => {
-        const receiverAddr = "erd1ts8zswasu0k227xfptglr7hhz47lgr7autcmp6v9s9n0p5af6tfqddkg5z";
-        const onlyReceiver = new TransactionFilter();
-        onlyReceiver.receivers = [receiverAddr];
-
-        const txsOnlyReceiver = await transactionService.getTransactions(onlyReceiver, { from: 0, size: 25 });
-
-        const receiverAndReceivers = new TransactionFilter();
-        receiverAndReceivers.receivers = [receiverAddr];
-
-        const txsReceiverAndReceivers = await transactionService.getTransactions(receiverAndReceivers, { from: 0, size: 25 });
-
-        expect(txsOnlyReceiver).toStrictEqual(txsReceiverAndReceivers);
-
-        const onlyReceivers = new TransactionFilter();
-        onlyReceivers.receivers = [receiverAddr];
-
-        const txsOnlyReceivers = await transactionService.getTransactions(onlyReceivers, { from: 0, size: 25 });
-
-        expect(txsOnlyReceiver).toStrictEqual(txsOnlyReceivers);
       });
 
       it('should return a list with transfers that call ESDTNFTTransfer function', async () => {
@@ -214,7 +192,7 @@ describe('Transaction Service', () => {
         const address = transactionSender;
         const transactionFilter = new TransactionFilter();
         transactionFilter.sender = address;
-        transactionFilter.receivers = [address];
+        transactionFilter.receiver = [address];
 
         const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 }, undefined, address);
         expect(transactions).toBeInstanceOf(Array);
@@ -264,7 +242,7 @@ describe('Transaction Service', () => {
       it(`should return transaction details based on receiver filter`, async () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.token = transactionDetails.tokenIdentifier;
-        transactionFilter.receivers = [transactionDetails.receiver];
+        transactionFilter.receiver = [transactionDetails.receiver];
 
         const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 1 });
         for (const transaction of transactions) {
@@ -276,19 +254,19 @@ describe('Transaction Service', () => {
 
       it(`should return transaction details based on receivers filter`, async () => {
         const transactionFilter = new TransactionFilter();
-        transactionFilter.receivers = ["erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry", "erd1hzccjg25yqaqnr732x2ka7pj5glx72pfqzf05jj9hxqn3lxkramq5zu8h4"];
+        transactionFilter.receiver = ["erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry", "erd1hzccjg25yqaqnr732x2ka7pj5glx72pfqzf05jj9hxqn3lxkramq5zu8h4"];
 
         const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 10 });
         for (const transaction of transactions) {
           expect(transaction).toBeDefined();
-          expect(transactionFilter.receivers).toContain(transaction.receiver);
+          expect(transactionFilter.receiver).toContain(transaction.receiver);
         }
       });
 
       it("should return transaction details based on sender, receiver and miniblock", async () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.sender = transactionDetails.sender;
-        transactionFilter.receivers = [transactionDetails.receiver];
+        transactionFilter.receiver = [transactionDetails.receiver];
         transactionFilter.senderShard = transactionDetails.senderShard;
         transactionFilter.miniBlockHash = transactionDetails.miniBlockHash;
 

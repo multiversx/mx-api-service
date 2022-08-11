@@ -16,18 +16,17 @@ export class TransactionUtils {
   }
 
   static isTransactionCountQueryWithSenderAndReceiver(filter: TransactionFilter) {
-    if (!filter.sender || !filter.receivers) {
+    if (!filter.sender || !filter.receiver) {
       return false;
     }
 
-    if (!filter.receivers.includes(filter.sender)) {
+    if (!filter.receiver.includes(filter.sender)) {
       return false;
     }
 
     const filterToCompareWith: TransactionFilter = {
       sender: filter.sender,
       receiver: filter.receiver,
-      receivers: filter.receivers,
       condition: QueryConditionOptions.should,
     };
 

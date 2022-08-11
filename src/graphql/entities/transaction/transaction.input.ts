@@ -48,7 +48,7 @@ export class GetTransactionsCountInput {
   public static resolve(input: GetTransactionsCountInput): TransactionFilter {
     return new TransactionFilter({
       sender: input.sender,
-      receivers: input.receiver ? [input.receiver] : [],
+      receiver: input.receiver ? [input.receiver] : [],
       token: input.token,
       senderShard: input.senderShard,
       receiverShard: input.receiverShard,
