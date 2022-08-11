@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { Node } from "src/endpoints/nodes/entities/node";
@@ -9,7 +9,7 @@ import { NodeSort } from "./entities/node.sort";
 import { SortNodes } from "src/common/entities/sort.nodes";
 import { NodeFilter } from "./entities/node.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { ParseAddressPipe, ParseBlsHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe } from "@elrondnetwork/erdnest";
+import { ParseAddressPipe, ParseBlsHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe } from "@elrondnetwork/erdnest";
 
 @Controller()
 @ApiTags('nodes')
@@ -38,18 +38,18 @@ export class NodeController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
-    @Query('online', ParseOptionalBoolPipe) online?: boolean,
-    @Query('type', new ParseOptionalEnumPipe(NodeType)) type?: NodeType,
-    @Query('status', new ParseOptionalEnumPipe(NodeStatus)) status?: NodeStatus,
-    @Query('shard', ParseOptionalIntPipe) shard?: number,
-    @Query('issues', ParseOptionalBoolPipe) issues?: boolean,
+    @Query('online', ParseBoolPipe) online?: boolean,
+    @Query('type', new ParseEnumPipe(NodeType)) type?: NodeType,
+    @Query('status', new ParseEnumPipe(NodeStatus)) status?: NodeStatus,
+    @Query('shard', ParseIntPipe) shard?: number,
+    @Query('issues', ParseBoolPipe) issues?: boolean,
     @Query('identity') identity?: string,
     @Query('provider', ParseAddressPipe) provider?: string,
     @Query('owner', ParseAddressPipe) owner?: string,
-    @Query('auctioned', ParseOptionalBoolPipe) auctioned?: boolean,
-    @Query('fullHistory', ParseOptionalBoolPipe) fullHistory?: boolean,
-    @Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort?: NodeSort,
-    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('auctioned', ParseBoolPipe) auctioned?: boolean,
+    @Query('fullHistory', ParseBoolPipe) fullHistory?: boolean,
+    @Query('sort', new ParseEnumPipe(NodeSort)) sort?: NodeSort,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<Node[]> {
     return await this.nodeService.getNodes(new QueryPagination({ from, size }), new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order }));
   }
@@ -79,18 +79,18 @@ export class NodeController {
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   getNodeCount(
     @Query('search') search?: string,
-    @Query('online', ParseOptionalBoolPipe) online?: boolean,
-    @Query('type', new ParseOptionalEnumPipe(NodeType)) type?: NodeType,
-    @Query('status', new ParseOptionalEnumPipe(NodeStatus)) status?: NodeStatus,
-    @Query('shard', ParseOptionalIntPipe) shard?: number,
-    @Query('issues', ParseOptionalBoolPipe) issues?: boolean,
+    @Query('online', ParseBoolPipe) online?: boolean,
+    @Query('type', new ParseEnumPipe(NodeType)) type?: NodeType,
+    @Query('status', new ParseEnumPipe(NodeStatus)) status?: NodeStatus,
+    @Query('shard', ParseIntPipe) shard?: number,
+    @Query('issues', ParseBoolPipe) issues?: boolean,
     @Query('identity') identity?: string,
     @Query('provider', ParseAddressPipe) provider?: string,
     @Query('owner', ParseAddressPipe) owner?: string,
-    @Query('auctioned', ParseOptionalBoolPipe) auctioned?: boolean,
-    @Query('fullHistory', ParseOptionalBoolPipe) fullHistory?: boolean,
-    @Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort?: NodeSort,
-    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('auctioned', ParseBoolPipe) auctioned?: boolean,
+    @Query('fullHistory', ParseBoolPipe) fullHistory?: boolean,
+    @Query('sort', new ParseEnumPipe(NodeSort)) sort?: NodeSort,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<number> {
     return this.nodeService.getNodeCount(new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order }));
   }
@@ -99,18 +99,18 @@ export class NodeController {
   @ApiExcludeEndpoint()
   getNodeCountAlternative(
     @Query('search') search?: string,
-    @Query('online', ParseOptionalBoolPipe) online?: boolean,
-    @Query('type', new ParseOptionalEnumPipe(NodeType)) type?: NodeType,
-    @Query('status', new ParseOptionalEnumPipe(NodeStatus)) status?: NodeStatus,
-    @Query('shard', ParseOptionalIntPipe) shard?: number,
-    @Query('issues', ParseOptionalBoolPipe) issues?: boolean,
+    @Query('online', ParseBoolPipe) online?: boolean,
+    @Query('type', new ParseEnumPipe(NodeType)) type?: NodeType,
+    @Query('status', new ParseEnumPipe(NodeStatus)) status?: NodeStatus,
+    @Query('shard', ParseIntPipe) shard?: number,
+    @Query('issues', ParseBoolPipe) issues?: boolean,
     @Query('identity') identity?: string,
     @Query('provider', ParseAddressPipe) provider?: string,
-    @Query('auctioned', ParseOptionalBoolPipe) auctioned?: boolean,
-    @Query('fullHistory', ParseOptionalBoolPipe) fullHistory?: boolean,
+    @Query('auctioned', ParseBoolPipe) auctioned?: boolean,
+    @Query('fullHistory', ParseBoolPipe) fullHistory?: boolean,
     @Query('owner', ParseAddressPipe) owner?: string,
-    @Query('sort', new ParseOptionalEnumPipe(NodeSort)) sort?: NodeSort,
-    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('sort', new ParseEnumPipe(NodeSort)) sort?: NodeSort,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<number> {
     return this.nodeService.getNodeCount(new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order }));
   }

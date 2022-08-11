@@ -1,5 +1,5 @@
-import { ParseAddressPipe, ParseBlockHashPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseArrayPipe } from "@elrondnetwork/erdnest";
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, ParseIntPipe, Query } from "@nestjs/common";
+import { ParseAddressPipe, ParseBlockHashPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe } from "@elrondnetwork/erdnest";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -40,15 +40,15 @@ export class TransferController {
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseArrayPipe) receiver?: string[],
     @Query('token') token?: string,
-    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
-    @Query('before', ParseOptionalIntPipe) before?: number,
-    @Query('after', ParseOptionalIntPipe) after?: number,
-    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<Transaction[]> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
@@ -89,15 +89,15 @@ export class TransferController {
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseArrayPipe) receiver?: string[],
     @Query('token') token?: string,
-    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
     @Query('function') scFunction?: string,
-    @Query('before', ParseOptionalIntPipe) before?: number,
-    @Query('after', ParseOptionalIntPipe) after?: number,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
@@ -125,15 +125,15 @@ export class TransferController {
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseArrayPipe) receiver?: string[],
     @Query('token') token?: string,
-    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
     @Query('function') scFunction?: string,
-    @Query('before', ParseOptionalIntPipe) before?: number,
-    @Query('after', ParseOptionalIntPipe) after?: number,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);

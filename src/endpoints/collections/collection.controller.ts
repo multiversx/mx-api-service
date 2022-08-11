@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
@@ -7,7 +7,7 @@ import { Nft } from "../nfts/entities/nft";
 import { NftService } from "../nfts/nft.service";
 import { NftFilter } from "../nfts/entities/nft.filter";
 import { NftQueryOptions } from "../nfts/entities/nft.query.options";
-import { ParseAddressPipe, ParseArrayPipe, ParseCollectionPipe, ParseOptionalBoolPipe, ParseOptionalEnumArrayPipe, ParseOptionalIntPipe } from '@elrondnetwork/erdnest';
+import { ParseAddressPipe, ParseArrayPipe, ParseCollectionPipe, ParseBoolPipe, ParseEnumArrayPipe, ParseIntPipe } from '@elrondnetwork/erdnest';
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { CollectionFilter } from "./entities/collection.filter";
 import { CollectionAccount } from "./entities/collection.account";
@@ -42,10 +42,10 @@ export class CollectionController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
-    @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type?: NftType[],
+    @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
     @Query('creator', ParseAddressPipe) creator?: string,
-    @Query('before', new ParseOptionalIntPipe) before?: number,
-    @Query('after', new ParseOptionalIntPipe) after?: number,
+    @Query('before', new ParseIntPipe) before?: number,
+    @Query('after', new ParseIntPipe) after?: number,
     @Query('canCreate', new ParseAddressPipe) canCreate?: string,
     @Query('canBurn', new ParseAddressPipe) canBurn?: string,
     @Query('canAddQuantity', new ParseAddressPipe) canAddQuantity?: string,
@@ -84,10 +84,10 @@ export class CollectionController {
   @ApiOkResponse({ type: Number })
   async getCollectionCount(
     @Query('search') search?: string,
-    @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type?: NftType[],
+    @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
     @Query('creator', ParseAddressPipe) creator?: string,
-    @Query('before', new ParseOptionalIntPipe) before?: number,
-    @Query('after', new ParseOptionalIntPipe) after?: number,
+    @Query('before', new ParseIntPipe) before?: number,
+    @Query('after', new ParseIntPipe) after?: number,
     @Query('canCreate', new ParseAddressPipe) canCreate?: string,
     @Query('canBurn', new ParseAddressPipe) canBurn?: string,
     @Query('canAddQuantity', new ParseAddressPipe) canAddQuantity?: string,
@@ -113,10 +113,10 @@ export class CollectionController {
   @ApiExcludeEndpoint()
   async getCollectionCountAlternative(
     @Query('search') search?: string,
-    @Query('type', new ParseOptionalEnumArrayPipe(NftType)) type?: NftType[],
+    @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
     @Query('creator', ParseAddressPipe) creator?: string,
-    @Query('before', new ParseOptionalIntPipe) before?: number,
-    @Query('after', new ParseOptionalIntPipe) after?: number,
+    @Query('before', new ParseIntPipe) before?: number,
+    @Query('after', new ParseIntPipe) after?: number,
     @Query('canCreate', new ParseAddressPipe) canCreate?: string,
     @Query('canBurn', new ParseAddressPipe) canBurn?: string,
     @Query('canAddQuantity', new ParseAddressPipe) canAddQuantity?: string,
@@ -177,11 +177,11 @@ export class CollectionController {
     @Query('name') name?: string,
     @Query('tags', ParseArrayPipe) tags?: string[],
     @Query('creator', ParseAddressPipe) creator?: string,
-    @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage?: boolean,
-    @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
-    @Query('withOwner', new ParseOptionalBoolPipe) withOwner?: boolean,
-    @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean,
-    @Query('withScamInfo', new ParseOptionalBoolPipe) withScamInfo?: boolean,
+    @Query('isWhitelistedStorage', new ParseBoolPipe) isWhitelistedStorage?: boolean,
+    @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
+    @Query('withOwner', new ParseBoolPipe) withOwner?: boolean,
+    @Query('withSupply', new ParseBoolPipe) withSupply?: boolean,
+    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
   ): Promise<Nft[]> {
     if ((withOwner === true || withSupply === true || withScamInfo === true) && size > 100) {
       throw new BadRequestException(`Maximum size of 100 is allowed when activating flags 'withOwner' or 'withSupply' or 'withScamInfo'`);
@@ -218,8 +218,8 @@ export class CollectionController {
     @Query('name') name?: string,
     @Query('tags', ParseArrayPipe) tags?: string[],
     @Query('creator', ParseAddressPipe) creator?: string,
-    @Query('isWhitelistedStorage', new ParseOptionalBoolPipe) isWhitelistedStorage?: boolean,
-    @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
+    @Query('isWhitelistedStorage', new ParseBoolPipe) isWhitelistedStorage?: boolean,
+    @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
   ): Promise<number> {
     const isCollection = await this.collectionService.isCollection(collection);
     if (!isCollection) {

@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { SortOrder } from "src/common/entities/sort.order";
 import { TransactionStatus } from "../transactions/entities/transaction.status";
@@ -18,7 +18,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenFilter } from "./entities/token.filter";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
-import { ParseAddressPipe, ParseBlockHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseArrayPipe, ParseTokenPipe } from "@elrondnetwork/erdnest";
+import { ParseAddressPipe, ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseTokenPipe } from "@elrondnetwork/erdnest";
 
 @Controller()
 @ApiTags('tokens')
@@ -48,8 +48,8 @@ export class TokenController {
     @Query('name') name?: string,
     @Query('identifier', ParseTokenPipe) identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
-    @Query('sort', new ParseOptionalEnumPipe(TokenSort)) sort?: TokenSort,
-    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('sort', new ParseEnumPipe(TokenSort)) sort?: TokenSort,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<TokenDetailed[]> {
     return await this.tokenService.getTokens(
       new QueryPagination({ from, size }),
@@ -106,7 +106,7 @@ export class TokenController {
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getTokenSupply(
     @Param('identifier', ParseTokenPipe) identifier: string,
-    @Query('denominated', new ParseOptionalBoolPipe) denominated?: boolean,
+    @Query('denominated', new ParseBoolPipe) denominated?: boolean,
   ): Promise<TokenSupplyResult> {
     const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
@@ -192,19 +192,19 @@ export class TokenController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseArrayPipe) receiver?: string[],
-    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
     @Query('function') scFunction?: string,
-    @Query('before', ParseOptionalIntPipe) before?: number,
-    @Query('after', ParseOptionalIntPipe) after?: number,
-    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
-    @Query('withScResults', new ParseOptionalBoolPipe) withScResults?: boolean,
-    @Query('withOperations', new ParseOptionalBoolPipe) withOperations?: boolean,
-    @Query('withLogs', new ParseOptionalBoolPipe) withLogs?: boolean,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
+    @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
+    @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
   ) {
     if ((withScResults === true || withOperations === true || withLogs) && size > 50) {
       throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
@@ -250,14 +250,14 @@ export class TokenController {
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseArrayPipe) receiver?: string[],
-    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
-    @Query('before', ParseOptionalIntPipe) before?: number,
-    @Query('after', ParseOptionalIntPipe) after?: number,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
   ) {
     const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
@@ -342,15 +342,15 @@ export class TokenController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseArrayPipe) receiver?: string[],
-    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
-    @Query('before', ParseOptionalIntPipe) before?: number,
-    @Query('after', ParseOptionalIntPipe) after?: number,
-    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<Transaction[]> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
@@ -395,15 +395,15 @@ export class TokenController {
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseArrayPipe) receiver?: string[],
-    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
     @Query('function') scFunction?: string,
-    @Query('before', ParseOptionalIntPipe) before?: number,
-    @Query('after', ParseOptionalIntPipe) after?: number,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
@@ -436,15 +436,15 @@ export class TokenController {
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseArrayPipe) receiver?: string[],
-    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
     @Query('function') scFunction?: string,
-    @Query('before', ParseOptionalIntPipe) before?: number,
-    @Query('after', ParseOptionalIntPipe) after?: number,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);

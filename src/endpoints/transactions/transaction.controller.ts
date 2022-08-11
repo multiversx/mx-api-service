@@ -1,6 +1,6 @@
 import { ParseArrayPipe, QueryConditionOptions } from '@elrondnetwork/erdnest';
-import { ParseAddressPipe, ParseBlockHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseTransactionHashPipe } from '@elrondnetwork/erdnest';
-import { BadRequestException, Body, Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import { ParseAddressPipe, ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseTransactionHashPipe } from '@elrondnetwork/erdnest';
+import { BadRequestException, Body, Controller, DefaultValuePipe, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { SortOrder } from 'src/common/entities/sort.order';
@@ -47,20 +47,20 @@ export class TransactionController {
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseArrayPipe) receiver?: string[],
     @Query('token') token?: string,
-    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
     @Query('function') scFunction?: string,
     @Query('condition') condition?: QueryConditionOptions,
-    @Query('before', ParseOptionalIntPipe) before?: number,
-    @Query('after', ParseOptionalIntPipe) after?: number,
-    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
-    @Query('withScResults', new ParseOptionalBoolPipe) withScResults?: boolean,
-    @Query('withOperations', new ParseOptionalBoolPipe) withOperations?: boolean,
-    @Query('withLogs', new ParseOptionalBoolPipe) withLogs?: boolean,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
+    @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
+    @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
   ): Promise<Transaction[]> {
     if ((withScResults === true || withOperations === true || withLogs) && size > 50) {
       throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
@@ -104,16 +104,16 @@ export class TransactionController {
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseArrayPipe) receiver?: string[],
     @Query('token') token?: string,
-    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
     @Query('function') scFunction?: string,
     @Query('condition') condition?: QueryConditionOptions,
-    @Query('before', ParseOptionalIntPipe) before?: number,
-    @Query('after', ParseOptionalIntPipe) after?: number,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
@@ -138,16 +138,16 @@ export class TransactionController {
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseArrayPipe) receiver?: string[],
     @Query('token') token?: string,
-    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
     @Query('function') scFunction?: string,
     @Query('condition') condition?: QueryConditionOptions,
-    @Query('before', ParseOptionalIntPipe) before?: number,
-    @Query('after', ParseOptionalIntPipe) after?: number,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
