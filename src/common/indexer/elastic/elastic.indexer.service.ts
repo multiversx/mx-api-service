@@ -976,7 +976,9 @@ export class ElasticIndexerService implements IndexerInterface {
         }
 
         for (const receiver of filter.receiver) {
-          elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, receiver));
+          for (const key of keys) {
+            elasticQuery = elasticQuery.withShouldCondition(QueryType.Match(key, receiver));
+          }
         }
       }
     } else {
