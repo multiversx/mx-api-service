@@ -5,6 +5,7 @@ import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
+import { TransactionGetService } from "src/endpoints/transactions/transaction.get.service";
 
 @Injectable()
 export class TransactionCompletedService {
@@ -15,6 +16,7 @@ export class TransactionCompletedService {
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
+    private readonly transactionGetService: TransactionGetService,
   ) { }
 
   @Cron('*/1 * * * * *')
@@ -41,6 +43,8 @@ export class TransactionCompletedService {
           }
 
           this.clientProxy.emit('transactionsCompleted', transactionsExcludingSmartContractResults);
+
+          await Promise.all(transactions.map(transaction => this.transactionGetService.tryGetTransaction(transaction.hash)));
         },
         onTransactionsPending: async (_, __, transactions) => {
           await this.cachingService.batchSetCache(

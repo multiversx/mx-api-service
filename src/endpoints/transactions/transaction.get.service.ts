@@ -214,13 +214,19 @@ export class TransactionGetService {
 
     const txFromDatabase = await this.persistenceService.getTransaction(txHash);
     if (txFromDatabase) {
-      await this.cacheTransaction(txFromDatabase, { redis: true, database: false });
+      if (txFromDatabase.status !== TransactionStatus.pending) {
+        await this.cacheTransaction(txFromDatabase, { redis: true, database: false });
+      }
+
       return txFromDatabase;
     }
 
     const txFromElastic = await this.tryGetTransactionFromElastic(txHash);
     if (txFromElastic) {
-      await this.cacheTransaction(txFromElastic);
+      if (txFromDatabase.status !== TransactionStatus.pending) {
+        await this.cacheTransaction(txFromElastic);
+      }
+
       return txFromElastic;
     }
 
