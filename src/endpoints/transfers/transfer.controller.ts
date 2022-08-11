@@ -1,4 +1,4 @@
-import { ParseAddressPipe, ParseBlockHashPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe } from "@elrondnetwork/erdnest";
+import { ParseAddressPipe, ParseBlockHashPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseAddressArrayPipe } from "@elrondnetwork/erdnest";
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
@@ -38,7 +38,7 @@ export class TransferController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressPipe) sender?: string,
-    @Query('receiver', ParseArrayPipe) receiver?: string[],
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
@@ -87,7 +87,7 @@ export class TransferController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getAccountTransfersCount(
     @Query('sender', ParseAddressPipe) sender?: string,
-    @Query('receiver', ParseArrayPipe) receiver?: string[],
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
@@ -123,7 +123,7 @@ export class TransferController {
   @ApiExcludeEndpoint()
   async getAccountTransfersCountAlternative(
     @Query('sender', ParseAddressPipe) sender?: string,
-    @Query('receiver', ParseArrayPipe) receiver?: string[],
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
