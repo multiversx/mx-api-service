@@ -13,6 +13,7 @@ import { TransactionUtils } from "./transaction.utils";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { PersistenceService } from "src/common/persistence/persistence.service";
+import { TransactionStatus } from "./entities/transaction.status";
 
 @Injectable()
 export class TransactionGetService {
@@ -217,51 +218,47 @@ export class TransactionGetService {
   }
 
   async tryGetTransaction(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
-    const txFromRedis = await this.tryGetTransactionFromRedis(txHash);
+    const txFromRedis = await this.cachingService.getCache<TransactionDetailed>(CacheInfo.Transaction(txHash).key);
     if (txFromRedis) {
       return txFromRedis;
     }
 
-    const txFromDatabase = await this.tryGetTransactionFromDatabase(txHash);
+    const txFromDatabase = await this.persistenceService.getTransaction(txHash);
     if (txFromDatabase) {
-      await this.storeTransactionInRedis(txFromDatabase);
+      await this.cacheTransaction(txFromDatabase, { redis: true, database: false });
       return txFromDatabase;
     }
 
     const txFromElastic = await this.tryGetTransactionFromElastic(txHash, fields);
-    if (txFromElastic !== null) {
-      await this.storeTransactionInRedis(txFromElastic);
-      await this.storeTransactionInDatabase(txFromElastic);
+    if (txFromElastic) {
+      await this.cacheTransaction(txFromElastic);
       return txFromElastic;
     }
 
     const txFromGateway = await this.tryGetTransactionFromGateway(txHash);
-    if (txFromGateway !== null) {
-      await this.storeTransactionInRedis(txFromGateway);
-      await this.storeTransactionInDatabase(txFromGateway);
+    if (txFromGateway) {
+      await this.cacheTransaction(txFromGateway);
       return txFromGateway;
     }
 
     return null;
   }
 
-  async tryGetTransactionFromRedis(txHash: string): Promise<TransactionDetailed | undefined> {
-    return await this.cachingService.getCache<TransactionDetailed>(CacheInfo.Transaction(txHash).key);
-  }
+  private async cacheTransaction(transaction: any, options: { redis: boolean, database: boolean } = { redis: true, database: true }): Promise<void> {
+    if (transaction.status === TransactionStatus.pending) {
+      return;
+    }
 
-  private async storeTransactionInRedis(transaction: TransactionDetailed): Promise<void> {
-    await this.cachingService.setCache(
-      CacheInfo.Transaction(transaction.txHash).key,
-      transaction,
-      CacheInfo.Transaction(transaction.txHash).ttl,
-    );
-  }
+    if (options.redis) {
+      await this.cachingService.setCache(
+        CacheInfo.Transaction(transaction.txHash).key,
+        transaction,
+        CacheInfo.Transaction(transaction.txHash).ttl
+      );
+    }
 
-  async tryGetTransactionFromDatabase(txHash: string): Promise<TransactionDetailed | null> {
-    return await this.persistenceService.getTransaction(txHash);
-  }
-
-  private async storeTransactionInDatabase(transaction: TransactionDetailed): Promise<void> {
-    await this.persistenceService.setTransaction(transaction.txHash, transaction);
+    if (options.database) {
+      await this.persistenceService.setTransaction(transaction.txHash, transaction);
+    }
   }
 }
