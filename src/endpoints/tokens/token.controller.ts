@@ -18,7 +18,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenFilter } from "./entities/token.filter";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
-import { ParseAddressPipe, ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseTokenPipe } from "@elrondnetwork/erdnest";
+import { ParseAddressPipe, ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseTokenPipe, ParseAddressArrayPipe } from "@elrondnetwork/erdnest";
 
 @Controller()
 @ApiTags('tokens')
@@ -191,7 +191,7 @@ export class TokenController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressPipe) sender?: string,
-    @Query('receiver', ParseArrayPipe) receiver?: string[],
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
@@ -249,7 +249,7 @@ export class TokenController {
   async getTokenTransactionsCount(
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
-    @Query('receiver', ParseArrayPipe) receiver?: string[],
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
@@ -341,7 +341,7 @@ export class TokenController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressPipe) sender?: string,
-    @Query('receiver', ParseArrayPipe) receiver?: string[],
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
@@ -394,7 +394,7 @@ export class TokenController {
   async getTokenTransfersCount(
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
-    @Query('receiver', ParseArrayPipe) receiver?: string[],
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
@@ -435,7 +435,7 @@ export class TokenController {
   async getAccountTransfersCountAlternative(
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
-    @Query('receiver', ParseArrayPipe) receiver?: string[],
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,

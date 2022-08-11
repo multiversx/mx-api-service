@@ -1,4 +1,4 @@
-import { ParseArrayPipe, QueryConditionOptions } from '@elrondnetwork/erdnest';
+import { ParseAddressArrayPipe, ParseArrayPipe, QueryConditionOptions } from '@elrondnetwork/erdnest';
 import { ParseAddressPipe, ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseTransactionHashPipe } from '@elrondnetwork/erdnest';
 import { BadRequestException, Body, Controller, DefaultValuePipe, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
@@ -45,7 +45,7 @@ export class TransactionController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressPipe) sender?: string,
-    @Query('receiver', ParseArrayPipe) receiver?: string[],
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
@@ -102,7 +102,7 @@ export class TransactionController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   getTransactionCount(
     @Query('sender', ParseAddressPipe) sender?: string,
-    @Query('receiver', ParseArrayPipe) receiver?: string[],
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
@@ -136,7 +136,7 @@ export class TransactionController {
   @ApiExcludeEndpoint()
   getTransactionCountAlternative(
     @Query('sender', ParseAddressPipe) sender?: string,
-    @Query('receiver', ParseArrayPipe) receiver?: string[],
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
@@ -223,3 +223,4 @@ export class TransactionController {
     return await this.transactionService.decodeTransaction(transaction);
   }
 }
+
