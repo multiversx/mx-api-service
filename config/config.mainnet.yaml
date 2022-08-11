@@ -20,7 +20,7 @@ flags:
   useRequestLogging: false
   useVmQueryTracing: false
   processNfts: true
-  indexer-v3: true
+  indexer-v3: false
 features:
   eventsNotifier:
     enabled: false
