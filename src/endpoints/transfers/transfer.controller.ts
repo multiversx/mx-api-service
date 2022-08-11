@@ -56,7 +56,7 @@ export class TransferController {
 
     return await this.transferService.getTransfers(new TransactionFilter({
       sender,
-      receiver,
+      receivers: receiver,
       token,
       senderShard,
       receiverShard,
@@ -105,7 +105,7 @@ export class TransferController {
 
     return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
-      receiver,
+      receivers: receiver,
       token,
       function: scFunction,
       senderShard,
@@ -141,7 +141,7 @@ export class TransferController {
 
     return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
-      receiver,
+      receivers: receiver,
       token,
       function: scFunction,
       senderShard,

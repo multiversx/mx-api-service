@@ -820,9 +820,9 @@ export class ElasticIndexerService implements IndexerInterface {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('sender', filter.sender));
     }
 
-    if (filter.receiver) {
+    if (filter.receivers) {
       const queries: AbstractQuery[] = [];
-      for (const receiver of filter.receiver) {
+      for (const receiver of filter.receivers) {
         queries.push(QueryType.Match('receiver', receiver));
         queries.push(QueryType.Match('receivers', receiver));
       }
@@ -969,13 +969,13 @@ export class ElasticIndexerService implements IndexerInterface {
         elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('sender', filter.sender));
       }
 
-      if (filter.receiver) {
+      if (filter.receivers) {
         const keys = ['receiver'];
         if (this.apiConfigService.getIsIndexerV3FlagActive()) {
           keys.push('receivers');
         }
 
-        for (const receiver of filter.receiver) {
+        for (const receiver of filter.receivers) {
           for (const key of keys) {
             elasticQuery = elasticQuery.withShouldCondition(QueryType.Match(key, receiver));
           }
@@ -984,7 +984,7 @@ export class ElasticIndexerService implements IndexerInterface {
     } else {
       elasticQuery = elasticQuery.withMustMatchCondition('sender', filter.sender);
 
-      if (filter.receiver) {
+      if (filter.receivers) {
         const keys = ['receiver'];
 
         if (this.apiConfigService.getIsIndexerV3FlagActive()) {
@@ -993,7 +993,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
         const queries: AbstractQuery[] = [];
 
-        for (const receiver of filter.receiver) {
+        for (const receiver of filter.receivers) {
           for (const key of keys) {
             queries.push(QueryType.Match(key, receiver));
           }

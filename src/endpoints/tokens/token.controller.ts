@@ -217,7 +217,7 @@ export class TokenController {
 
     return await this.transactionService.getTransactions(new TransactionFilter({
       sender,
-      receiver,
+      receivers: receiver,
       token: identifier,
       function: scFunction,
       senderShard,
@@ -266,7 +266,7 @@ export class TokenController {
 
     return await this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
-      receiver,
+      receivers: receiver,
       token: identifier,
       senderShard,
       receiverShard,
@@ -363,7 +363,7 @@ export class TokenController {
 
     return await this.transferService.getTransfers(new TransactionFilter({
       sender,
-      receiver,
+      receivers: receiver,
       token: identifier,
       senderShard,
       receiverShard,
@@ -416,7 +416,7 @@ export class TokenController {
 
     return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
-      receiver,
+      receivers: receiver,
       token: identifier,
       function: scFunction,
       senderShard,
@@ -457,7 +457,7 @@ export class TokenController {
 
     return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
-      receiver,
+      receivers: receiver,
       token: identifier,
       function: scFunction,
       senderShard,

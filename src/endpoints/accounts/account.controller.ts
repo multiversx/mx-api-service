@@ -570,7 +570,7 @@ export class AccountController {
 
     return await this.transactionService.getTransactions(new TransactionFilter({
       sender,
-      receiver,
+      receivers: receiver,
       token,
       senderShard,
       receiverShard,
@@ -617,7 +617,7 @@ export class AccountController {
 
     return await this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
-      receiver,
+      receivers: receiver,
       token,
       function: scFunction,
       senderShard,
@@ -672,7 +672,7 @@ export class AccountController {
     return await this.transferService.getTransfers(new TransactionFilter({
       address,
       sender,
-      receiver,
+      receivers: receiver,
       token,
       senderShard,
       receiverShard,
@@ -723,7 +723,7 @@ export class AccountController {
     return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
       sender,
-      receiver,
+      receivers: receiver,
       token,
       function: scFunction,
       senderShard,
@@ -761,7 +761,7 @@ export class AccountController {
     return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
       sender,
-      receiver,
+      receivers: receiver,
       token,
       function: scFunction,
       senderShard,

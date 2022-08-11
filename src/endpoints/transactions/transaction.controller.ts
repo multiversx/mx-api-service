@@ -68,7 +68,7 @@ export class TransactionController {
 
     return this.transactionService.getTransactions(new TransactionFilter({
       sender,
-      receiver,
+      receivers: receiver,
       token,
       function: scFunction,
       senderShard,
@@ -117,7 +117,7 @@ export class TransactionController {
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
-      receiver,
+      receivers: receiver,
       token,
       senderShard,
       receiverShard,
@@ -151,7 +151,7 @@ export class TransactionController {
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
-      receiver,
+      receivers: receiver,
       token,
       senderShard,
       receiverShard,
