@@ -5,6 +5,7 @@ import { WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from 'socket.io';
 import { Transaction } from "src/endpoints/transactions/entities/transaction";
 import { TransactionActionService } from "src/endpoints/transactions/transaction-action/transaction.action.service";
+import { TransactionGetService } from "src/endpoints/transactions/transaction.get.service";
 
 @Injectable()
 @WebSocketGateway(3099)
@@ -15,7 +16,8 @@ export class WebSocketPublisherService {
   server: Server | undefined;
 
   constructor(
-    private readonly transactionActionService: TransactionActionService
+    private readonly transactionActionService: TransactionActionService,
+    private readonly transactionGetService: TransactionGetService
   ) { }
 
   async handleDisconnect(socket: Socket) {
@@ -42,6 +44,8 @@ export class WebSocketPublisherService {
 
   async onTransactionCompleted(transaction: ShardTransaction) {
     await this.emitTransactionEvent(transaction, 'transactionCompleted');
+
+    await this.transactionGetService.tryGetTransaction(transaction.hash);
   }
 
   async onTransactionPendingResults(transaction: ShardTransaction) {
