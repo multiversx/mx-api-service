@@ -820,11 +820,14 @@ export class ElasticIndexerService implements IndexerInterface {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('sender', filter.sender));
     }
 
-    if (filter.receiver) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Should([
-        QueryType.Match('receiver', filter.receiver),
-        QueryType.Match('receivers', filter.receiver),
-      ]));
+    if (filter.receivers) {
+      const queries: AbstractQuery[] = [];
+      for (const receiver of filter.receivers) {
+        queries.push(QueryType.Match('receiver', receiver));
+        queries.push(QueryType.Match('receivers', receiver));
+      }
+
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(queries));
     }
 
     if (filter.token) {
@@ -966,23 +969,37 @@ export class ElasticIndexerService implements IndexerInterface {
         elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('sender', filter.sender));
       }
 
-      if (filter.receiver) {
-        elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receiver', filter.receiver));
-
-        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-          elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receivers', filter.receiver));
-        }
-      }
-    } else {
-      elasticQuery = elasticQuery.withMustMatchCondition('sender', filter.sender);
-
-      if (filter.receiver) {
+      if (filter.receivers) {
         const keys = ['receiver'];
         if (this.apiConfigService.getIsIndexerV3FlagActive()) {
           keys.push('receivers');
         }
 
-        elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, filter.receiver));
+        for (const receiver of filter.receivers) {
+          for (const key of keys) {
+            elasticQuery = elasticQuery.withShouldCondition(QueryType.Match(key, receiver));
+          }
+        }
+      }
+    } else {
+      elasticQuery = elasticQuery.withMustMatchCondition('sender', filter.sender);
+
+      if (filter.receivers) {
+        const keys = ['receiver'];
+
+        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+          keys.push('receivers');
+        }
+
+        const queries: AbstractQuery[] = [];
+
+        for (const receiver of filter.receivers) {
+          for (const key of keys) {
+            queries.push(QueryType.Match(key, receiver));
+          }
+        }
+
+        elasticQuery = elasticQuery.withMustCondition(QueryType.Should(queries));
       }
     }
 

@@ -16,6 +16,7 @@ import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
 import { AddressUtils, ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
+import { TransactionFilter } from "../transactions/entities/transaction.filter";
 
 @Injectable()
 export class EsdtService {
@@ -118,7 +119,7 @@ export class EsdtService {
           const result: { [key: string]: number } = {};
 
           for (const token of tokens) {
-            const transactions = await this.transactionService.getTransactionCount({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] });
+            const transactions = await this.transactionService.getTransactionCount(new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }));
 
             result[token.identifier] = transactions;
           }

@@ -1,6 +1,6 @@
 import { MexEconomics } from './entities/mex.economics';
 import { MexToken } from './entities/mex.token';
-import { Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, NotFoundException, Param, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { MexPair } from "./entities/mex.pair";
 import { MexSettings } from "./entities/mex.settings";
@@ -11,6 +11,7 @@ import { MexTokenService } from "./mex.token.service";
 import { MexFarmService } from './mex.farm.service';
 import { MexFarm } from './entities/mex.farm';
 import { QueryPagination } from 'src/common/entities/query.pagination';
+import { ParseIntPipe } from '@elrondnetwork/erdnest';
 
 @Controller()
 @ApiTags('maiar.exchange')
