@@ -245,12 +245,8 @@ export class TransactionGetService {
     return null;
   }
 
-  async tryGetTransactionFromRedis(txHash: string): Promise<TransactionDetailed | null> {
-    const transaction = await this.cachingService.getCache<TransactionDetailed>(CacheInfo.Transaction(txHash).key);
-    if (!transaction) {
-      return null;
-    }
-    return transaction;
+  async tryGetTransactionFromRedis(txHash: string): Promise<TransactionDetailed | undefined> {
+    return await this.cachingService.getCache<TransactionDetailed>(CacheInfo.Transaction(txHash).key);
   }
 
   private async storeTransactionInRedis(transaction: TransactionDetailed): Promise<void> {

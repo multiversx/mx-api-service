@@ -5,6 +5,7 @@ import { NftMediaDb } from "src/common/persistence/database/entities/nft.media.d
 import { NftMetadataDb } from "src/common/persistence/database/entities/nft.metadata.db";
 import { Repository } from "typeorm";
 import { PersistenceInterface } from "../persistence.interface";
+import { TransactionDb } from "./entities/transaction.db";
 
 @Injectable()
 export class DatabaseService implements PersistenceInterface {
@@ -15,6 +16,8 @@ export class DatabaseService implements PersistenceInterface {
     private readonly nftMetadataRepository: Repository<NftMetadataDb>,
     @InjectRepository(NftMediaDb)
     private readonly nftMediaRepository: Repository<NftMediaDb>,
+    @InjectRepository(TransactionDb)
+    private readonly transactionsRepository: Repository<TransactionDb>,
   ) {
     this.logger = new Logger(DatabaseService.name);
   }
@@ -100,16 +103,26 @@ export class DatabaseService implements PersistenceInterface {
     await this.nftMediaRepository.save(value);
   }
 
-  // eslint-disable-next-line require-await
-  async getTransaction(txHash: string): Promise<any | undefined> {
-    // TODO
-    console.log(txHash);
-    return undefined;
+  async getTransaction(txHash: string): Promise<any | null> {
+    try {
+      const transaction = await this.transactionsRepository.findOne({ where: { txHash } });
+      if (!transaction) {
+        return null;
+      }
+
+      return transaction.body;
+    } catch (error) {
+      this.logger.error(`An unexpected error occurred when fetching transaction from DB for txHash '${txHash}'`);
+      this.logger.error(error);
+      return null;
+    }
   }
 
-  // eslint-disable-next-line require-await
-  async setTransaction(txHash: string, value: any): Promise<void> {
-    // TODO
-    console.log(txHash, value);
+  async setTransaction(txHash: string, body: any): Promise<void> {
+    const transaction = new TransactionDb();
+    transaction.txHash = txHash;
+    transaction.body = body;
+
+    await this.transactionsRepository.save(transaction);
   }
 }
