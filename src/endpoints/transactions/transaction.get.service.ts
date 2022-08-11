@@ -226,7 +226,6 @@ export class TransactionGetService {
 
     const txFromGateway = await this.tryGetTransactionFromGateway(txHash);
     if (txFromGateway) {
-      await this.cacheTransaction(txFromGateway);
       return txFromGateway;
     }
 
