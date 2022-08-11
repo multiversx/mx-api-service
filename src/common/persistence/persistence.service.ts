@@ -51,4 +51,12 @@ export class PersistenceService implements PersistenceInterface {
   async setMetadata(identifier: string, value: any): Promise<void> {
     await this.execute('setMetadata', this.persistenceInterface.setMetadata(identifier, value));
   }
+
+  async getTransaction(txHash: string): Promise<any | undefined> {
+    return await this.execute('getTransaction', this.persistenceInterface.getTransaction(txHash));
+  }
+
+  async setTransaction(txHash: string, value: any): Promise<void> {
+    await this.execute('setTransaction', this.persistenceInterface.setTransaction(txHash, value));
+  }
 }

@@ -133,4 +133,17 @@ export class MongoDbService implements PersistenceInterface {
 
     await this.save(this.nftMediaRepository, value);
   }
+
+  // eslint-disable-next-line require-await
+  async getTransaction(txHash: string): Promise<any | undefined> {
+    // TODO
+    console.log(txHash);
+    return undefined;
+  }
+
+  // eslint-disable-next-line require-await
+  async setTransaction(txHash: string, value: any): Promise<void> {
+    // TODO
+    console.log(txHash, value);
+  }
 }

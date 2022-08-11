@@ -12,6 +12,7 @@ import { ApiUtils, BinaryUtils, CachingService } from "@elrondnetwork/erdnest";
 import { TransactionUtils } from "./transaction.utils";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { CacheInfo } from "src/utils/cache.info";
+import { PersistenceService } from "src/common/persistence/persistence.service";
 
 @Injectable()
 export class TransactionGetService {
@@ -21,6 +22,7 @@ export class TransactionGetService {
     private readonly cachingService: CachingService,
     private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
+    private readonly persistenceService: PersistenceService,
     @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
   ) {
@@ -220,23 +222,23 @@ export class TransactionGetService {
       return txFromRedis;
     }
 
-    const txFromMongo = await this.tryGetTransactionFromMongo(txHash);
-    if (txFromMongo) {
-      await this.storeTransactionInRedis(txFromMongo);
-      return txFromMongo;
+    const txFromDatabase = await this.tryGetTransactionFromDatabase(txHash);
+    if (txFromDatabase) {
+      await this.storeTransactionInRedis(txFromDatabase);
+      return txFromDatabase;
     }
 
     const txFromElastic = await this.tryGetTransactionFromElastic(txHash, fields);
     if (txFromElastic !== null) {
       await this.storeTransactionInRedis(txFromElastic);
-      await this.storeTransactionInMongo(txFromElastic);
+      await this.storeTransactionInDatabase(txFromElastic);
       return txFromElastic;
     }
 
     const txFromGateway = await this.tryGetTransactionFromGateway(txHash);
     if (txFromGateway !== null) {
       await this.storeTransactionInRedis(txFromGateway);
-      await this.storeTransactionInMongo(txFromGateway);
+      await this.storeTransactionInDatabase(txFromGateway);
       return txFromGateway;
     }
 
@@ -251,13 +253,7 @@ export class TransactionGetService {
     return transaction;
   }
 
-  // eslint-disable-next-line require-await
-  async tryGetTransactionFromMongo(_txHash: string): Promise<TransactionDetailed | null> {
-    // TODO
-    return null;
-  }
-
-  async storeTransactionInRedis(transaction: TransactionDetailed): Promise<void> {
+  private async storeTransactionInRedis(transaction: TransactionDetailed): Promise<void> {
     await this.cachingService.setCache(
       CacheInfo.Transaction(transaction.txHash).key,
       transaction,
@@ -265,7 +261,11 @@ export class TransactionGetService {
     );
   }
 
-  async storeTransactionInMongo(_transaction: TransactionDetailed): Promise<void> {
-    // TODO
+  async tryGetTransactionFromDatabase(txHash: string): Promise<TransactionDetailed | null> {
+    return await this.persistenceService.getTransaction(txHash);
+  }
+
+  private async storeTransactionInDatabase(transaction: TransactionDetailed): Promise<void> {
+    await this.persistenceService.setTransaction(transaction.txHash, transaction);
   }
 }

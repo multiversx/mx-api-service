@@ -14,4 +14,8 @@ export interface PersistenceInterface {
   batchGetMetadata(identifiers: string[]): Promise<{ [key: string]: any }>
 
   setMetadata(identifier: string, value: any): Promise<void>
+
+  getTransaction(txHash: string): Promise<any | undefined>
+
+  setTransaction(txHash: string, value: any): Promise<void>
 }

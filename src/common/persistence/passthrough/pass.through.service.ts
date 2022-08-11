@@ -34,4 +34,12 @@ export class PassThroughService implements PersistenceInterface {
   async setMedia(_: string, __: NftMedia[]): Promise<void> {
 
   }
+
+  async getTransaction(_: string): Promise<any | undefined> {
+    return undefined;
+  }
+
+  async setTransaction(_: string, __: any): Promise<void> {
+
+  }
 }
