@@ -182,9 +182,10 @@ export class CollectionController {
     @Query('withOwner', new ParseBoolPipe) withOwner?: boolean,
     @Query('withSupply', new ParseBoolPipe) withSupply?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
+    @Query('computeScamInfo', new ParseBoolPipe) computeScamInfo?: boolean,
   ): Promise<Nft[]> {
-    if ((withOwner === true || withSupply === true || withScamInfo === true) && size > 100) {
-      throw new BadRequestException(`Maximum size of 100 is allowed when activating flags 'withOwner' or 'withSupply' or 'withScamInfo'`);
+    if ((withOwner === true || withSupply === true || withScamInfo === true || computeScamInfo === true) && size > 100) {
+      throw new BadRequestException(`Maximum size of 100 is allowed when activating flags 'withOwner', 'withSupply', 'withScamInfo', or 'computeScamInfo'`);
     }
 
     const isCollection = await this.collectionService.isCollection(collection);
@@ -192,7 +193,7 @@ export class CollectionController {
       throw new HttpException('NFT Collection not found', HttpStatus.NOT_FOUND);
     }
 
-    const options = NftQueryOptions.enforceScamInfoFlag(size, new NftQueryOptions({ withOwner, withSupply, withScamInfo }));
+    const options = NftQueryOptions.enforceScamInfoFlag(size, new NftQueryOptions({ withOwner, withSupply, withScamInfo, computeScamInfo }));
 
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),

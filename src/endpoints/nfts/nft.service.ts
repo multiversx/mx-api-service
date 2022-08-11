@@ -96,7 +96,7 @@ export class NftService {
       await this.applyUnlockSchedule(nft);
     }
 
-    await this.pluginService.batchProcessNfts(nfts, queryOptions?.withScamInfo);
+    await this.pluginService.batchProcessNfts(nfts, queryOptions?.withScamInfo || queryOptions?.computeScamInfo);
 
     return nfts;
   }
@@ -432,7 +432,7 @@ export class NftService {
       await this.applyUnlockSchedule(nft);
     }
 
-    await this.pluginService.batchProcessNfts(nfts, queryOptions?.withScamInfo);
+    await this.pluginService.batchProcessNfts(nfts, queryOptions?.withScamInfo || queryOptions?.computeScamInfo);
 
     return nfts;
   }
@@ -480,7 +480,7 @@ export class NftService {
       return undefined;
     }
 
-    const nfts = await this.getNftsForAddress(address, new QueryPagination({ from: 0, size: 1 }), filter, new NftQueryOptions({ withScamInfo: true }));
+    const nfts = await this.getNftsForAddress(address, new QueryPagination({ from: 0, size: 1 }), filter, new NftQueryOptions({ withScamInfo: true, computeScamInfo: true }));
     if (nfts.length === 0) {
       return undefined;
     }
