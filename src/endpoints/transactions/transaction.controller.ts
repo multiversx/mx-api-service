@@ -173,10 +173,9 @@ export class TransactionController {
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
   async getTransaction(
     @Param('txHash', ParseTransactionHashPipe) txHash: string,
-    @Query('fields', ParseArrayPipe) fields?: string[],
   ): Promise<TransactionDetailed> {
     try {
-      const transaction = await this.transactionService.getTransaction(txHash, fields);
+      const transaction = await this.transactionService.getTransaction(txHash);
       if (transaction === null) {
         throw new HttpException('Transaction not found', HttpStatus.NOT_FOUND);
       }

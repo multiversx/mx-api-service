@@ -5,7 +5,6 @@ import { SmartContractResult } from "../sc-results/entities/smart.contract.resul
 import { Transaction } from "./entities/transaction";
 import { TransactionDetailed } from "./entities/transaction.detailed";
 import { TransactionLog } from "./entities/transaction.log";
-import { TransactionOptionalFieldOption } from "./entities/transaction.optional.field.options";
 import { TransactionReceipt } from "./entities/transaction.receipt";
 import { TokenTransferService } from "../tokens/token.transfer.service";
 import { ApiUtils, BinaryUtils, CachingService } from "@elrondnetwork/erdnest";
@@ -58,7 +57,7 @@ export class TransactionGetService {
     return scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
   }
 
-  async tryGetTransactionFromElastic(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
+  async tryGetTransactionFromElastic(txHash: string): Promise<TransactionDetailed | null> {
     let transaction: any;
     try {
       transaction = await this.indexerService.getTransaction(txHash);
@@ -88,7 +87,7 @@ export class TransactionGetService {
       hashes.push(txHash);
       const previousHashes: Record<string, string> = {};
 
-      if (transaction.hasScResults === true && (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.results))) {
+      if (transaction.hasScResults === true) {
         transactionDetailed.results = await this.getTransactionScResultsFromElastic(transactionDetailed.txHash);
 
         for (const scResult of transactionDetailed.results) {
@@ -97,33 +96,28 @@ export class TransactionGetService {
         }
       }
 
-      if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.receipt)) {
-        const receipts = await this.indexerService.getTransactionReceipts(txHash);
-        if (receipts.length > 0) {
-          const receipt = receipts[0];
-          transactionDetailed.receipt = ApiUtils.mergeObjects(new TransactionReceipt(), receipt);
-        }
+      const receipts = await this.indexerService.getTransactionReceipts(txHash);
+      if (receipts.length > 0) {
+        const receipt = receipts[0];
+        transactionDetailed.receipt = ApiUtils.mergeObjects(new TransactionReceipt(), receipt);
       }
 
-      if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs)) {
-        const logs = await this.getTransactionLogsFromElastic(hashes);
+      const logs = await this.getTransactionLogsFromElastic(hashes);
 
-        if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.operations)) {
-          transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, logs);
-          transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
-        }
+      transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, logs);
+      transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
 
-        for (const log of logs) {
-          if (log.id === txHash) {
-            transactionDetailed.logs = log;
-          } else if (transactionDetailed.results) {
-            const foundScResult = transactionDetailed.results.find(({ hash }) => log.id === hash);
-            if (foundScResult) {
-              foundScResult.logs = log;
-            }
+      for (const log of logs) {
+        if (log.id === txHash) {
+          transactionDetailed.logs = log;
+        } else if (transactionDetailed.results) {
+          const foundScResult = transactionDetailed.results.find(({ hash }) => log.id === hash);
+          if (foundScResult) {
+            foundScResult.logs = log;
           }
         }
       }
+
 
       return ApiUtils.mergeObjects(new TransactionDetailed(), transactionDetailed);
     } catch (error) {
@@ -217,7 +211,7 @@ export class TransactionGetService {
     }
   }
 
-  async tryGetTransaction(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
+  async tryGetTransaction(txHash: string): Promise<TransactionDetailed | null> {
     const txFromRedis = await this.cachingService.getCache<TransactionDetailed>(CacheInfo.Transaction(txHash).key);
     if (txFromRedis) {
       return txFromRedis;
@@ -229,7 +223,7 @@ export class TransactionGetService {
       return txFromDatabase;
     }
 
-    const txFromElastic = await this.tryGetTransactionFromElastic(txHash, fields);
+    const txFromElastic = await this.tryGetTransactionFromElastic(txHash);
     if (txFromElastic) {
       await this.cacheTransaction(txFromElastic);
       return txFromElastic;

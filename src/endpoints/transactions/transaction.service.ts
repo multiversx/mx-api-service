@@ -109,8 +109,8 @@ export class TransactionService {
     return transactions;
   }
 
-  async getTransaction(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
-    const transaction = await this.transactionGetService.tryGetTransaction(txHash, fields);
+  async getTransaction(txHash: string): Promise<TransactionDetailed | null> {
+    const transaction = await this.transactionGetService.tryGetTransaction(txHash);
 
     if (transaction !== null) {
       const [price] = await Promise.all([
