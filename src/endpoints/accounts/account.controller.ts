@@ -96,7 +96,7 @@ export class AccountController {
   async getAccountDetails(@Param('address', ParseAddressPipe) address: string): Promise<AccountDetailed> {
     const account = await this.accountService.getAccount(address);
     if (!account) {
-      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Account not found');
     }
 
     return account;
@@ -419,13 +419,17 @@ export class AccountController {
     @Query('hasUris', new ParseOptionalBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseOptionalBoolPipe) includeFlagged?: boolean,
     @Query('withSupply', new ParseOptionalBoolPipe) withSupply?: boolean,
+    @Query('withScamInfo', new ParseOptionalBoolPipe) withScamInfo?: boolean,
     @Query('source', new ParseOptionalEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
   ): Promise<NftAccount[]> {
+
+    const options = NftQueryOptions.enforceScamInfoFlag(size, new NftQueryOptions({ withSupply, withScamInfo }));
+
     return await this.nftService.getNftsForAddress(
       address,
       new QueryPagination({ from, size }),
       new NftFilter({ search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }),
-      new NftQueryOptions({ withSupply }),
+      options,
       source
     );
   }
