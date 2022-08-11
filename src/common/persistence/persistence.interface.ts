@@ -17,5 +17,5 @@ export interface PersistenceInterface {
 
   getTransaction(txHash: string): Promise<any | undefined>
 
-  setTransaction(txHash: string, value: any): Promise<void>
+  setTransaction(txHash: string, body: any): Promise<void>
 }

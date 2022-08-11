@@ -47,3 +47,10 @@ services:
     ports:
       - 5673:5672
       - 15673:15672
+
+  mongodb:
+    image: mongo:latest
+    environment:
+      - MONGODB_DATABASE="api"
+    ports:
+      - 27017:27017

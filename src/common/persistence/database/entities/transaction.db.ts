@@ -3,8 +3,8 @@ import { Column, Entity, PrimaryColumn } from 'typeorm';
 @Entity('transactions')
 export class TransactionDb {
   @PrimaryColumn()
-  txHash?: string;
+  txHash: string = '';
 
   @Column('json')
-  body?: any;
+  body: any;
 }

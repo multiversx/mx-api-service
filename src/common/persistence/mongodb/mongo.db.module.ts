@@ -4,6 +4,7 @@ import { ApiConfigModule } from "../../api-config/api.config.module";
 import { ApiConfigService } from "../../api-config/api.config.service";
 import { NftMediaDb } from "./entities/nft.media.db";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
+import { TransactionDb } from "./entities/transaction.db";
 import { MongoDbService } from "./mongo.db.service";
 
 @Module({
@@ -13,7 +14,7 @@ import { MongoDbService } from "./mongo.db.service";
       useFactory: (apiConfigService: ApiConfigService) => {
         const options: TypeOrmModuleOptions = {
           type: 'mongodb',
-          entities: [NftMetadataDb, NftMediaDb],
+          entities: [NftMetadataDb, NftMediaDb, TransactionDb],
           url: apiConfigService.getDatabaseUrl(),
           keepAlive: 120000,
           sslValidate: false,
@@ -26,9 +27,9 @@ import { MongoDbService } from "./mongo.db.service";
       },
       inject: [ApiConfigService],
     }),
-    TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb]),
+    TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, TransactionDb]),
   ],
   providers: [MongoDbService],
-  exports: [MongoDbService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb])],
+  exports: [MongoDbService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, TransactionDb])],
 })
 export class MongoDbModule { }

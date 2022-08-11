@@ -56,7 +56,7 @@ export class PersistenceService implements PersistenceInterface {
     return await this.execute('getTransaction', this.persistenceInterface.getTransaction(txHash));
   }
 
-  async setTransaction(txHash: string, value: any): Promise<void> {
-    await this.execute('setTransaction', this.persistenceInterface.setTransaction(txHash, value));
+  async setTransaction(txHash: string, body: any): Promise<void> {
+    await this.execute('setTransaction', this.persistenceInterface.setTransaction(txHash, body));
   }
 }

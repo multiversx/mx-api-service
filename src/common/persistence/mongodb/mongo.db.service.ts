@@ -5,6 +5,7 @@ import { Repository } from "typeorm";
 import { PersistenceInterface } from "../persistence.interface";
 import { NftMediaDb } from "./entities/nft.media.db";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
+import { TransactionDb } from "./entities/transaction.db";
 
 @Injectable()
 export class MongoDbService implements PersistenceInterface {
@@ -15,6 +16,8 @@ export class MongoDbService implements PersistenceInterface {
     private readonly nftMetadataRepository: Repository<NftMetadataDb>,
     @InjectRepository(NftMediaDb)
     private readonly nftMediaRepository: Repository<NftMediaDb>,
+    @InjectRepository(TransactionDb)
+    private readonly transactionsRepository: Repository<TransactionDb>,
   ) {
     this.logger = new Logger(MongoDbService.name);
   }
@@ -134,16 +137,30 @@ export class MongoDbService implements PersistenceInterface {
     await this.save(this.nftMediaRepository, value);
   }
 
-  // eslint-disable-next-line require-await
   async getTransaction(txHash: string): Promise<any | undefined> {
-    // TODO
-    console.log(txHash);
-    return undefined;
+    try {
+      const transactionDb = await this.transactionsRepository.findOne({ where: { txHash } });
+      if (!transactionDb) {
+        return null;
+      }
+
+      return transactionDb.body;
+    } catch (error) {
+      this.logger.error(`An unexpected error occurred when fetching transaction from DB for txHash '${txHash}'`);
+      this.logger.error(error);
+      return null;
+    }
   }
 
-  // eslint-disable-next-line require-await
-  async setTransaction(txHash: string, value: any): Promise<void> {
-    // TODO
-    console.log(txHash, value);
+  async setTransaction(txHash: string, body: any): Promise<void> {
+    let transaction = await this.transactionsRepository.findOne({ where: { txHash } });
+    if (!transaction) {
+      transaction = new TransactionDb();
+    }
+
+    transaction.txHash = txHash;
+    transaction.body = body;
+
+    await this.save(this.transactionsRepository, transaction);
   }
 }
