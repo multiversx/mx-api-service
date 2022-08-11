@@ -11,6 +11,7 @@ flags:
   useRequestCaching: true
   useKeepAliveAgent: true
   useTracing: false
+  indexer-v3: true
 urls:
   api:
     - 'https://api.elrond.com'
