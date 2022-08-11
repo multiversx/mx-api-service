@@ -923,6 +923,10 @@ describe('Token Service', () => {
     });
 
     it("should return undefined because test simulates that roles are not defined for token", async () => {
+      jest.spyOn(ApiConfigService.prototype, 'getIsIndexerV3FlagActive')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(() => false));
+
       const results = await tokenService.getTokenRoles('UNKNOWN');
       expect(results).toStrictEqual([]);
     });

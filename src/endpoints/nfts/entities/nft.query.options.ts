@@ -8,11 +8,13 @@ export class NftQueryOptions {
   withOwner?: boolean = false;
   withSupply?: boolean = false;
   withScamInfo?: boolean = false;
+  computeScamInfo?: boolean = false;
 
   //TODO: Remove this function when enforce is no longer needed
   static enforceScamInfoFlag(size: number, options: NftQueryOptions): NftQueryOptions {
     if (size <= SIZE_LIMIT) {
       options.withScamInfo = true;
+      options.computeScamInfo = true;
     }
 
     return options;
