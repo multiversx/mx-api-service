@@ -1,5 +1,5 @@
-import { ParseBlockHashPipe, ParseBlsHashPipe, ParseBoolPipe } from "@elrondnetwork/erdnest";
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { ParseBlockHashPipe, ParseBlsHashPipe, ParseBoolPipe, ParseIntPipe } from "@elrondnetwork/erdnest";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockService } from "./block.service";
