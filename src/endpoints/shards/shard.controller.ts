@@ -1,8 +1,9 @@
-import { Controller, DefaultValuePipe, Get, ParseIntPipe, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, Query } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ShardService } from "./shard.service";
 import { Shard } from "./entities/shard";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { ParseIntPipe } from "@elrondnetwork/erdnest";
 
 @Controller()
 @ApiTags('shards')
