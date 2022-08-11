@@ -223,7 +223,7 @@ export class TransactionGetService {
 
     const txFromElastic = await this.tryGetTransactionFromElastic(txHash);
     if (txFromElastic) {
-      if (txFromDatabase.status !== TransactionStatus.pending) {
+      if (txFromElastic.status !== TransactionStatus.pending) {
         await this.cacheTransaction(txFromElastic);
       }
 
