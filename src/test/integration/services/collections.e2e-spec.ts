@@ -218,6 +218,10 @@ describe('Collection Service', () => {
 
   describe('getCollectionsWithRolesForAddress', () => {
     it('should returns all collections with roles for a specific address', async () => {
+      jest.spyOn(ApiConfigService.prototype, 'getIsIndexerV3FlagActive')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(() => false));
+
       const address: string = 'erd1qqqqqqqqqqqqqpgq09vq93grfqy7x5fhgmh44ncqfp3xaw57ys5s7j9fed';
       const filter = new CollectionFilter();
       filter.collection = 'EBULB-36c762';
