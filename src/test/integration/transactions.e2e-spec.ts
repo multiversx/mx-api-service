@@ -3,7 +3,6 @@ import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import { TransactionStatus } from 'src/endpoints/transactions/entities/transaction.status';
 import { TransactionService } from 'src/endpoints/transactions/transaction.service';
 import { TransactionFilter } from 'src/endpoints/transactions/entities/transaction.filter';
-import { TransactionOptionalFieldOption } from 'src/endpoints/transactions/entities/transaction.optional.field.options';
 import transactionDetails from "../data/transactions/transaction.details";
 import { TransactionDetailed } from "../../endpoints/transactions/entities/transaction.detailed";
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
@@ -240,21 +239,7 @@ describe('Transaction Service', () => {
 
   describe('Specific transaction', () => {
     it(`should return a transaction for a specific hash`, async () => {
-      const transaction = await transactionService.getTransaction(transactionDetails.txHash);
-      expect(transaction).toHaveStructure(Object.keys(new TransactionDetailed()));
-    });
-
-    it(`should return a transaction for a specific hash with results optional field`, async () => {
-      const transaction = await transactionService.getTransaction(transactionDetails.txHash, [TransactionOptionalFieldOption.results]);
-      if (!transaction) {
-        throw new Error('Transaction must be defined');
-      }
-
-      expect(transaction).toHaveStructure(Object.keys(new TransactionDetailed()));
-    });
-
-    it(`should return a transaction for a specific hash with results and logs optional fields`, async () => {
-      const transaction = await transactionService.getTransaction(detailedTransactionHash, [TransactionOptionalFieldOption.results, TransactionOptionalFieldOption.logs]);
+      const transaction = await transactionService.getTransaction(detailedTransactionHash);
       if (!transaction) {
         throw new Error('Transaction must be defined');
       }
