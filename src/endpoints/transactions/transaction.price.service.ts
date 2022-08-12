@@ -22,7 +22,12 @@ export class TransactionPriceService {
       return undefined;
     }
 
-    const transactionDate = transaction.getDate();
+    const timestamp = transaction.timestamp;
+    if (!timestamp) {
+      return undefined;
+    }
+
+    const transactionDate = new Date(timestamp * 1000);
     if (!transactionDate) {
       return undefined;
     }
