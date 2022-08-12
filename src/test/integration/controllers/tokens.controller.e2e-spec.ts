@@ -111,12 +111,12 @@ describe("Tokens Controller", () => {
       {
         filter: 'search',
         value: 'RIDE',
-        count: 9,
+        count: 2,
       },
       {
         filter: 'name',
         value: 'MEX',
-        count: 3,
+        count: 1,
       },
       {
         filter: 'identifier',
@@ -152,7 +152,7 @@ describe("Tokens Controller", () => {
           expect(res.body.decimals).toStrictEqual(18);
           expect(res.body.isPaused).toStrictEqual(false);
           expect(res.body.transactions).toBeGreaterThanOrEqual(1504696);
-          expect(res.body.accounts).toBeGreaterThanOrEqual(50021);
+          expect(res.body.accounts).toBeGreaterThanOrEqual(11021);
           expect(res.body.assets).toBeDefined();
 
           expect(res.body.canUpgrade).toStrictEqual(true);
