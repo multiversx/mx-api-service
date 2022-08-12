@@ -162,12 +162,6 @@ describe("Tokens Controller", () => {
           expect(res.body.canPause).toStrictEqual(true);
           expect(res.body.canFreeze).toStrictEqual(true);
           expect(res.body.canWipe).toStrictEqual(true);
-
-          expect(res.body.price).toBeDefined();
-          expect(res.body.marketCap).toBeDefined();
-          expect(res.body.supply).toBeDefined();
-          expect(res.body.circulatingSupply).toBeDefined();
-          expect(res.body.roles).toBeDefined();
         });
     });
 
