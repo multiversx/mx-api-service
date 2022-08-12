@@ -11,7 +11,6 @@ import { ApiUtils, BinaryUtils, CachingService } from "@elrondnetwork/erdnest";
 import { TransactionUtils } from "./transaction.utils";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { PersistenceService } from "src/common/persistence/persistence.service";
 import { TransactionStatus } from "./entities/transaction.status";
 
 @Injectable()
@@ -22,7 +21,6 @@ export class TransactionGetService {
     private readonly cachingService: CachingService,
     private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
-    private readonly persistenceService: PersistenceService,
     @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
   ) {
@@ -212,19 +210,14 @@ export class TransactionGetService {
       return txFromRedis;
     }
 
-    const txFromDatabase = await this.persistenceService.getTransaction(txHash);
-    if (txFromDatabase) {
-      if (txFromDatabase.status !== TransactionStatus.pending) {
-        await this.cacheTransaction(txFromDatabase, { redis: true, database: false });
-      }
-
-      return txFromDatabase;
-    }
-
     const txFromElastic = await this.tryGetTransactionFromElastic(txHash);
     if (txFromElastic) {
       if (txFromElastic.status !== TransactionStatus.pending) {
-        await this.cacheTransaction(txFromElastic);
+        await this.cachingService.setCache(
+          CacheInfo.Transaction(txFromElastic.txHash).key,
+          txFromElastic,
+          CacheInfo.Transaction(txFromElastic.txHash).ttl
+        );
       }
 
       return txFromElastic;
@@ -236,23 +229,5 @@ export class TransactionGetService {
     }
 
     return null;
-  }
-
-  private async cacheTransaction(transaction: any, options: { redis: boolean, database: boolean } = { redis: true, database: true }): Promise<void> {
-    if (transaction.status === TransactionStatus.pending) {
-      return;
-    }
-
-    if (options.redis) {
-      await this.cachingService.setCache(
-        CacheInfo.Transaction(transaction.txHash).key,
-        transaction,
-        CacheInfo.Transaction(transaction.txHash).ttl
-      );
-    }
-
-    if (options.database) {
-      await this.persistenceService.setTransaction(transaction.txHash, transaction);
-    }
   }
 }
