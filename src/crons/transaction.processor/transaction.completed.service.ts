@@ -44,7 +44,7 @@ export class TransactionCompletedService {
 
           this.clientProxy.emit('transactionsCompleted', transactionsExcludingSmartContractResults);
 
-          await Promise.all(transactions.map(transaction => this.transactionGetService.tryGetTransaction(transaction.hash)));
+          this.clientProxy.emit('deleteCacheKeys', cacheKeys);
         },
         onTransactionsPending: async (_, __, transactions) => {
           await this.cachingService.batchSetCache(
