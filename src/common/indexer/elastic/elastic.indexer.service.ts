@@ -68,7 +68,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {
-    const elasticQuery = this.buildElasticNftFilter(filter, undefined, address);
+    const elasticQuery = filter.buildElasticQuery(this.apiConfigService.getNftExtendedAttributesNsfwThreshold(), undefined, address, this.apiConfigService.getIsIndexerV3FlagActive());
     return await this.elasticService.getCount('accountsesdt', elasticQuery);
   }
 
@@ -78,7 +78,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getNftCount(filter: NftFilter): Promise<number> {
-    const elasticQuery = this.buildElasticNftFilter(filter);
+    const elasticQuery = filter.buildElasticQuery(this.apiConfigService.getNftExtendedAttributesNsfwThreshold(), undefined, undefined, this.apiConfigService.getIsIndexerV3FlagActive());
     return await this.elasticService.getCount('tokens', elasticQuery);
   }
 
@@ -447,7 +447,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getNftsForAddress(address: string, filter: NftFilter, pagination: QueryPagination): Promise<any[]> {
-    let elasticQuery = this.buildElasticNftFilter(filter, undefined, address)
+    let elasticQuery = filter.buildElasticQuery(this.apiConfigService.getNftExtendedAttributesNsfwThreshold(), undefined, address, this.apiConfigService.getIsIndexerV3FlagActive())
       .withPagination(pagination);
 
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
@@ -463,7 +463,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getNfts(pagination: QueryPagination, filter: NftFilter, identifier?: string): Promise<any[]> {
-    const elasticQuery = this.buildElasticNftFilter(filter, identifier);
+    const elasticQuery = filter.buildElasticQuery(this.apiConfigService.getNftExtendedAttributesNsfwThreshold(), identifier, undefined, this.apiConfigService.getIsIndexerV3FlagActive());
     elasticQuery
       .withPagination(pagination)
       .withSort([
@@ -719,75 +719,6 @@ export class ElasticIndexerService implements IndexerInterface {
     }
 
     return queries;
-  }
-
-  private buildElasticNftFilter(filter: NftFilter, identifier?: string, address?: string): ElasticQuery {
-    let elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, QueryType.Exists('identifier'));
-
-    if (address) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('address', address));
-    }
-
-    if (filter.search !== undefined) {
-      elasticQuery = elasticQuery.withSearchWildcardCondition(filter.search, ['token', 'name']);
-    }
-
-    if (filter.type !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('type', filter.type));
-    }
-
-    if (identifier !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('identifier', identifier, QueryOperator.AND));
-    }
-
-    if (filter.collection !== undefined && filter.collection !== '') {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('token', filter.collection, QueryOperator.AND));
-    }
-
-    if (filter.collections !== undefined && filter.collections.length !== 0) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.collections.map(collection => QueryType.Match('token', collection, QueryOperator.AND))));
-    }
-
-    if (filter.name !== undefined && filter.name !== '') {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('data', { "data.name": filter.name }));
-    }
-
-    if (filter.hasUris !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('data', { "data.nonEmptyURIs": filter.hasUris }));
-    }
-
-    if (filter.tags) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.tags.map(tag => QueryType.Nested("data", { "data.tags": tag }))));
-    }
-
-    if (filter.creator !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", { "data.creator": filter.creator }));
-    }
-
-    if (filter.identifiers) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
-    }
-
-    if (filter.isWhitelistedStorage !== undefined && this.apiConfigService.getIsIndexerV3FlagActive()) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
-    }
-
-    if (filter.isNsfw !== undefined) {
-      const nsfwThreshold = this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
-
-      if (filter.isNsfw === true) {
-        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw_mark', new RangeGreaterThanOrEqual(nsfwThreshold));
-      } else {
-        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw_mark', new RangeLowerThan(nsfwThreshold));
-      }
-    }
-
-    if (filter.before || filter.after) {
-      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
-    }
-
-    return elasticQuery;
   }
 
   buildTokensWithRolesForAddressQuery(address: string, filter: TokenWithRolesFilter, pagination?: QueryPagination): ElasticQuery {
