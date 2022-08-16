@@ -123,7 +123,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
 
   async getTokensWithRolesForAddressCount(address: string, filter: TokenWithRolesFilter): Promise<number> {
-    const elasticQuery = this.buildTokensWithRolesForAddressQuery(address, filter);
+    const elasticQuery = filter.buildElasticQuery(address);
     return await this.elasticService.getCount('tokens', elasticQuery);
   }
 
@@ -216,7 +216,11 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getTokensWithRolesForAddress(address: string, filter: TokenWithRolesFilter, pagination: QueryPagination): Promise<any[]> {
-    const elasticQuery = this.buildTokensWithRolesForAddressQuery(address, filter, pagination);
+    let elasticQuery = filter.buildElasticQuery(address);
+    if (pagination) {
+      elasticQuery = elasticQuery.withPagination(pagination);
+    }
+
     const tokenList = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
     return tokenList;
   }
