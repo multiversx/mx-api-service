@@ -725,45 +725,6 @@ export class ElasticIndexerService implements IndexerInterface {
     return queries;
   }
 
-  buildTokensWithRolesForAddressQuery(address: string, filter: TokenWithRolesFilter, pagination?: QueryPagination): ElasticQuery {
-    let elasticQuery = ElasticQuery.create()
-      .withMustNotExistCondition('identifier')
-      .withMustCondition(QueryType.Should(
-        [
-          QueryType.Match('currentOwner', address),
-          QueryType.Nested('roles', { 'roles.ESDTRoleLocalMint': address }),
-          QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }),
-        ]
-      ))
-      .withMustMatchCondition('type', TokenType.FungibleESDT)
-      .withMustMatchCondition('token', filter.identifier)
-      .withMustMatchCondition('currentOwner', filter.owner);
-
-    if (filter.search) {
-      elasticQuery = elasticQuery
-        .withShouldCondition([
-          QueryType.Wildcard('token', filter.search),
-          QueryType.Wildcard('name', filter.search),
-        ]);
-    }
-
-    if (filter.canMint !== undefined) {
-      const condition = filter.canMint === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
-      elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleLocalMint': address }));
-    }
-
-    if (filter.canBurn !== undefined) {
-      const condition = filter.canBurn === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
-      elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }));
-    }
-
-    if (pagination) {
-      elasticQuery = elasticQuery.withPagination(pagination);
-    }
-
-    return elasticQuery;
-  }
-
   buildSmartContractResultFilterQuery(address?: string): ElasticQuery {
     const shouldQueries: AbstractQuery[] = [];
     const mustQueries: AbstractQuery[] = [];
