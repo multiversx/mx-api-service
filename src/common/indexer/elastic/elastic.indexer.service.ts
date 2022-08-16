@@ -91,7 +91,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getTransfersCount(filter: TransactionFilter): Promise<number> {
-    const elasticQuery = this.buildTransferFilterQuery(filter);
+    const elasticQuery = filter.buildElasticTransfersQuery(this.apiConfigService.getIsIndexerV3FlagActive());
     return await this.elasticService.getCount('operations', elasticQuery);
   }
 
@@ -207,7 +207,7 @@ export class ElasticIndexerService implements IndexerInterface {
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: sortOrder };
     const nonce: ElasticSortProperty = { name: 'nonce', order: sortOrder };
 
-    const elasticQuery = this.buildTransferFilterQuery(filter)
+    const elasticQuery = filter.buildElasticTransfersQuery(this.apiConfigService.getIsIndexerV3FlagActive())
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
@@ -790,92 +790,6 @@ export class ElasticIndexerService implements IndexerInterface {
     return elasticQuery;
   }
 
-  private buildTransferFilterQuery(filter: TransactionFilter): ElasticQuery {
-    let elasticQuery = ElasticQuery.create();
-
-    if (filter.address) {
-      const smartContractResultConditions = [
-        QueryType.Match('receiver', filter.address),
-        QueryType.Match('receivers', filter.address),
-      ];
-
-      if (AddressUtils.isSmartContractAddress(filter.address)) {
-        smartContractResultConditions.push(QueryType.Match('sender', filter.address));
-      }
-
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.should, QueryType.Must([
-        QueryType.Match('type', 'unsigned'),
-        QueryType.Should(smartContractResultConditions),
-      ], [
-        QueryType.Exists('canBeIgnored'),
-      ]))
-        .withCondition(QueryConditionOptions.should, QueryType.Must([
-          QueryType.Match('type', 'normal'),
-          QueryType.Should([
-            QueryType.Match('sender', filter.address),
-            QueryType.Match('receiver', filter.address),
-            QueryType.Match('receivers', filter.address),
-          ]),
-        ]));
-    }
-
-    if (filter.type) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('type', filter.type === TransactionType.Transaction ? 'normal' : 'unsigned'));
-    }
-
-    if (filter.sender) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('sender', filter.sender));
-    }
-
-    if (filter.receivers) {
-      const queries: AbstractQuery[] = [];
-      for (const receiver of filter.receivers) {
-        queries.push(QueryType.Match('receiver', receiver));
-        queries.push(QueryType.Match('receivers', receiver));
-      }
-
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(queries));
-    }
-
-    if (filter.token) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('tokens', filter.token, QueryOperator.AND));
-    }
-
-    if (filter.function && this.apiConfigService.getIsIndexerV3FlagActive()) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('function', filter.function));
-    }
-
-    if (filter.senderShard !== undefined) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('senderShard', filter.senderShard));
-    }
-
-    if (filter.receiverShard !== undefined) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('receiverShard', filter.receiverShard));
-    }
-
-    if (filter.miniBlockHash) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('miniBlockHash', filter.miniBlockHash));
-    }
-
-    if (filter.hashes) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Should(filter.hashes.map(hash => QueryType.Match('_id', hash))));
-    }
-
-    if (filter.status) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('status', filter.status));
-    }
-
-    if (filter.search) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Wildcard('data', `*${filter.search}*`));
-    }
-
-    if (filter.before || filter.after) {
-      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
-    }
-
-    return elasticQuery;
-  }
-
   buildTokensWithRolesForAddressQuery(address: string, filter: TokenWithRolesFilter, pagination?: QueryPagination): ElasticQuery {
     let elasticQuery = ElasticQuery.create()
       .withMustNotExistCondition('identifier')
@@ -913,29 +827,6 @@ export class ElasticIndexerService implements IndexerInterface {
     }
 
     return elasticQuery;
-  }
-
-  async buildElasticRoundsFilter(filter: RoundFilter): Promise<AbstractQuery[]> {
-    const queries: AbstractQuery[] = [];
-
-    if (filter.shard !== undefined) {
-      const shardIdQuery = QueryType.Match('shardId', filter.shard);
-      queries.push(shardIdQuery);
-    }
-
-    if (filter.epoch !== undefined) {
-      const epochQuery = QueryType.Match('epoch', filter.epoch);
-      queries.push(epochQuery);
-    }
-
-    if (filter.validator !== undefined && filter.shard !== undefined && filter.epoch !== undefined) {
-      const index = await this.blsService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
-
-      const signersIndexesQuery = QueryType.Match('signersIndexes', index);
-      queries.push(signersIndexesQuery);
-    }
-
-    return queries;
   }
 
   buildSmartContractResultFilterQuery(address?: string): ElasticQuery {

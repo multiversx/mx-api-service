@@ -1,4 +1,4 @@
-import { AbstractQuery, ElasticQuery, QueryConditionOptions, QueryOperator, QueryType } from "@elrondnetwork/erdnest";
+import { AbstractQuery, AddressUtils, ElasticQuery, QueryConditionOptions, QueryOperator, QueryType } from "@elrondnetwork/erdnest";
 import { SortOrder } from "src/common/entities/sort.order";
 import { TransactionStatus } from "./transaction.status";
 import { TransactionType } from "./transaction.type";
@@ -86,6 +86,92 @@ export class TransactionFilter {
       }
 
       elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, address));
+    }
+
+    return elasticQuery;
+  }
+
+  buildElasticTransfersQuery(indexerV3Active: boolean = false): ElasticQuery {
+    let elasticQuery = ElasticQuery.create();
+
+    if (this.address) {
+      const smartContractResultConditions = [
+        QueryType.Match('receiver', this.address),
+        QueryType.Match('receivers', this.address),
+      ];
+
+      if (AddressUtils.isSmartContractAddress(this.address)) {
+        smartContractResultConditions.push(QueryType.Match('sender', this.address));
+      }
+
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.should, QueryType.Must([
+        QueryType.Match('type', 'unsigned'),
+        QueryType.Should(smartContractResultConditions),
+      ], [
+        QueryType.Exists('canBeIgnored'),
+      ]))
+        .withCondition(QueryConditionOptions.should, QueryType.Must([
+          QueryType.Match('type', 'normal'),
+          QueryType.Should([
+            QueryType.Match('sender', this.address),
+            QueryType.Match('receiver', this.address),
+            QueryType.Match('receivers', this.address),
+          ]),
+        ]));
+    }
+
+    if (this.type) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('type', this.type === TransactionType.Transaction ? 'normal' : 'unsigned'));
+    }
+
+    if (this.sender) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('sender', this.sender));
+    }
+
+    if (this.receivers) {
+      const queries: AbstractQuery[] = [];
+      for (const receiver of this.receivers) {
+        queries.push(QueryType.Match('receiver', receiver));
+        queries.push(QueryType.Match('receivers', receiver));
+      }
+
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(queries));
+    }
+
+    if (this.token) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('tokens', this.token, QueryOperator.AND));
+    }
+
+    if (this.function && indexerV3Active) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('function', this.function));
+    }
+
+    if (this.senderShard !== undefined) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('senderShard', this.senderShard));
+    }
+
+    if (this.receiverShard !== undefined) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('receiverShard', this.receiverShard));
+    }
+
+    if (this.miniBlockHash) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('miniBlockHash', this.miniBlockHash));
+    }
+
+    if (this.hashes) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Should(this.hashes.map(hash => QueryType.Match('_id', hash))));
+    }
+
+    if (this.status) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('status', this.status));
+    }
+
+    if (this.search) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Wildcard('data', `*${this.search}*`));
+    }
+
+    if (this.before || this.after) {
+      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', this.before, this.after);
     }
 
     return elasticQuery;
