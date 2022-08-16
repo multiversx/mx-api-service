@@ -42,20 +42,38 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getBlocksCount(filter: BlockFilter): Promise<number> {
-    const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, await this.buildElasticBlocksFilter(filter));
+    let proposerIndex;
+    if (filter.proposer && filter.shard !== undefined && filter.epoch !== undefined) {
+      proposerIndex = await this.blsService.getBlsIndex(filter.proposer, filter.shard, filter.epoch);
+    }
+
+    let validatorIndex;
+    if (filter.validator && filter.shard !== undefined && filter.epoch !== undefined) {
+      validatorIndex = await this.blsService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
+    }
+
+    const elasticQuery: ElasticQuery = filter.buildElasticQuery(proposerIndex, validatorIndex);
 
     return await this.elasticService.getCount('blocks', elasticQuery);
   }
 
   async getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<Block[]> {
-    const elasticQuery = ElasticQuery.create()
+    let proposerIndex;
+    if (filter.proposer && filter.shard !== undefined && filter.epoch !== undefined) {
+      proposerIndex = await this.blsService.getBlsIndex(filter.proposer, filter.shard, filter.epoch);
+    }
+
+    let validatorIndex;
+    if (filter.validator && filter.shard !== undefined && filter.epoch !== undefined) {
+      validatorIndex = await this.blsService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
+    }
+
+    const elasticQuery = filter.buildElasticQuery(proposerIndex, validatorIndex)
       .withPagination(queryPagination)
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'shardId', order: ElasticSortOrder.ascending },
-      ])
-      .withCondition(QueryConditionOptions.must, await this.buildElasticBlocksFilter(filter));
+      ]);
 
     const result = await this.elasticService.getList('blocks', 'hash', elasticQuery);
     return result;
@@ -622,39 +640,6 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async setMetadataForToken(identifier: string, value: any): Promise<void> {
     return await this.elasticService.setCustomValue('tokens', identifier, 'metadata', value);
-  }
-
-  private async buildElasticBlocksFilter(filter: BlockFilter): Promise<AbstractQuery[]> {
-    const { shard, proposer, validator, epoch, nonce } = filter;
-
-    const queries: AbstractQuery[] = [];
-    if (nonce !== undefined) {
-      const nonceQuery = QueryType.Match("nonce", nonce);
-      queries.push(nonceQuery);
-    }
-    if (shard !== undefined) {
-      const shardIdQuery = QueryType.Match('shardId', shard);
-      queries.push(shardIdQuery);
-    }
-
-    if (epoch !== undefined) {
-      const epochQuery = QueryType.Match('epoch', epoch);
-      queries.push(epochQuery);
-    }
-
-    if (proposer && shard !== undefined && epoch !== undefined) {
-      const index = await this.blsService.getBlsIndex(proposer, shard, epoch);
-      const proposerQuery = QueryType.Match('proposer', index);
-      queries.push(proposerQuery);
-    }
-
-    if (validator && shard !== undefined && epoch !== undefined) {
-      const index = await this.blsService.getBlsIndex(validator, shard, epoch);
-      const validatorsQuery = QueryType.Match('validators', index);
-      queries.push(validatorsQuery);
-    }
-
-    return queries;
   }
 
   buildSmartContractResultFilterQuery(address?: string): ElasticQuery {
