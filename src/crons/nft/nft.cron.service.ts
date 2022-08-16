@@ -3,6 +3,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { Nft } from "src/endpoints/nfts/entities/nft";
+import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
@@ -45,7 +46,7 @@ export class NftCronService {
     let totalProcessedNfts = 0;
 
     while (true) {
-      let nfts = await this.nftService.getNfts({ from: 0, size: 10000 }, { before, after });
+      let nfts = await this.nftService.getNfts({ from: 0, size: 10000 }, new NftFilter({ before, after }));
 
       nfts = nfts.sortedDescending(x => x.timestamp ?? 0);
 

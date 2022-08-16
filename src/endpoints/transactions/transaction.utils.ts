@@ -24,11 +24,11 @@ export class TransactionUtils {
       return false;
     }
 
-    const filterToCompareWith: TransactionFilter = {
+    const filterToCompareWith: TransactionFilter = new TransactionFilter({
       sender: filter.sender,
       receivers: filter.receivers,
       condition: QueryConditionOptions.should,
-    };
+    });
 
     return JSON.stringify(filter) === JSON.stringify(filterToCompareWith);
   }

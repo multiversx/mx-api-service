@@ -486,7 +486,7 @@ export class TokenService {
   }
 
   async getTokenWithRolesForAddress(address: string, identifier: string): Promise<TokenWithRoles | undefined> {
-    const tokens = await this.getTokensWithRolesForAddress(address, { identifier }, { from: 0, size: 1 });
+    const tokens = await this.getTokensWithRolesForAddress(address, new TokenWithRolesFilter({ identifier }), { from: 0, size: 1 });
     if (tokens.length === 0) {
       return undefined;
     }

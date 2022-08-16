@@ -248,7 +248,7 @@ export class CollectionService {
   }
 
   async getCollectionForAddressWithRole(address: string, collection: string): Promise<NftCollectionRole | undefined> {
-    const filter: CollectionFilter = { collection };
+    const filter: CollectionFilter = new CollectionFilter({ collection });
 
     const collections = await this.esdtAddressService.getCollectionsForAddress(address, filter, new QueryPagination({ from: 0, size: 1 }));
     if (collections.length === 0) {

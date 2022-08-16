@@ -10,6 +10,7 @@ import { Nft } from "../nfts/entities/nft";
 import { NftService } from "../nfts/nft.service";
 import { ProcessNftRequest } from "./entities/process.nft.request";
 import { ProcessNftSettings } from "./entities/process.nft.settings";
+import { NftFilter } from "../nfts/entities/nft.filter";
 
 @Injectable()
 export class ProcessNftsService {
@@ -70,7 +71,7 @@ export class ProcessNftsService {
   }
 
   public async processCollection(collection: string, settings: ProcessNftSettings): Promise<{ [key: string]: boolean }> {
-    const nfts = await this.nftService.getNfts({ from: 0, size: 10000 }, { collection });
+    const nfts = await this.nftService.getNfts({ from: 0, size: 10000 }, new NftFilter({ collection }));
 
     const results = await asyncPool(
       this.apiConfigService.getPoolLimit(),
