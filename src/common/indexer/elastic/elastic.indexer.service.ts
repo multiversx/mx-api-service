@@ -158,7 +158,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getTransactionCount(filter: TransactionFilter, address?: string): Promise<number> {
-    const elasticQuery = this.buildTransactionFilterQuery(filter, address);
+    const elasticQuery = filter.buildElasticQuery(address, this.apiConfigService.getIsIndexerV3FlagActive());
     return await this.elasticService.getCount('transactions', elasticQuery);
   }
 
@@ -351,7 +351,7 @@ export class ElasticIndexerService implements IndexerInterface {
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: sortOrder };
     const nonce: ElasticSortProperty = { name: 'nonce', order: sortOrder };
 
-    const elasticQuery = this.buildTransactionFilterQuery(filter, address)
+    const elasticQuery = filter.buildElasticQuery(address, this.apiConfigService.getIsIndexerV3FlagActive())
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
@@ -947,71 +947,6 @@ export class ElasticIndexerService implements IndexerInterface {
     const elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.should, shouldQueries)
       .withCondition(QueryConditionOptions.must, mustQueries);
-
-    return elasticQuery;
-  }
-
-  private buildTransactionFilterQuery(filter: TransactionFilter, address?: string): ElasticQuery {
-    let elasticQuery = ElasticQuery.create()
-      .withMustMatchCondition('tokens', filter.token, QueryOperator.AND)
-      .withMustMatchCondition('function', this.apiConfigService.getIsIndexerV3FlagActive() ? filter.function : undefined)
-      .withMustMatchCondition('senderShard', filter.senderShard)
-      .withMustMatchCondition('receiverShard', filter.receiverShard)
-      .withMustMatchCondition('miniBlockHash', filter.miniBlockHash)
-      .withMustMultiShouldCondition(filter.hashes, hash => QueryType.Match('_id', hash))
-      .withMustMatchCondition('status', filter.status)
-      .withMustWildcardCondition('data', filter.search)
-      .withMustMultiShouldCondition(filter.tokens, token => QueryType.Match('tokens', token, QueryOperator.AND))
-      .withDateRangeFilter('timestamp', filter.before, filter.after);
-
-    if (filter.condition === QueryConditionOptions.should) {
-      if (filter.sender) {
-        elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('sender', filter.sender));
-      }
-
-      if (filter.receivers) {
-        const keys = ['receiver'];
-        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-          keys.push('receivers');
-        }
-
-        for (const receiver of filter.receivers) {
-          for (const key of keys) {
-            elasticQuery = elasticQuery.withShouldCondition(QueryType.Match(key, receiver));
-          }
-        }
-      }
-    } else {
-      elasticQuery = elasticQuery.withMustMatchCondition('sender', filter.sender);
-
-      if (filter.receivers) {
-        const keys = ['receiver'];
-
-        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-          keys.push('receivers');
-        }
-
-        const queries: AbstractQuery[] = [];
-
-        for (const receiver of filter.receivers) {
-          for (const key of keys) {
-            queries.push(QueryType.Match(key, receiver));
-          }
-        }
-
-        elasticQuery = elasticQuery.withMustCondition(QueryType.Should(queries));
-      }
-    }
-
-    if (address) {
-      const keys: string[] = ['sender', 'receiver'];
-
-      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-        keys.push('receivers');
-      }
-
-      elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, address));
-    }
 
     return elasticQuery;
   }
