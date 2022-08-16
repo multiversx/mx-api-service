@@ -135,8 +135,11 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getRoundCount(filter: RoundFilter): Promise<number> {
-    const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, await this.buildElasticRoundsFilter(filter));
+    let blsIndex;
+    if (filter.validator !== undefined && filter.shard !== undefined && filter.epoch !== undefined) {
+      blsIndex = await this.blsService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
+    }
+    const elasticQuery: ElasticQuery = filter.buildElasticQuery(blsIndex);
 
     return await this.elasticService.getCount('rounds', elasticQuery);
   }
@@ -221,10 +224,14 @@ export class ElasticIndexerService implements IndexerInterface {
   async getRounds(filter: RoundFilter): Promise<any[]> {
     const { from, size } = filter;
 
-    const elasticQuery = ElasticQuery.create()
+    let blsIndex;
+    if (filter.validator !== undefined && filter.shard !== undefined && filter.epoch !== undefined) {
+      blsIndex = await this.blsService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
+    }
+
+    const elasticQuery = filter.buildElasticQuery(blsIndex)
       .withPagination({ from, size })
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
-      .withCondition(filter.condition ?? QueryConditionOptions.must, await this.buildElasticRoundsFilter(filter));
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
     return await this.elasticService.getList('rounds', 'round', elasticQuery);
   }

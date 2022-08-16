@@ -27,7 +27,7 @@ export class BlsService {
     return [];
   }
 
-  async getBlsIndex(bls: string, shardId: number, epoch: number): Promise<number | boolean> {
+  async getBlsIndex(bls: string, shardId: number, epoch: number): Promise<number> {
     const publicKeys = await this.getPublicKeys(shardId, epoch);
 
     return publicKeys.indexOf(bls);
