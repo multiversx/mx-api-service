@@ -364,7 +364,7 @@ describe("NFT Controller", () => {
         .get(path + "?" + params)
         .expect(400)
         .then(res => {
-          expect(res.body.message).toEqual("Maximum size of 100 is allowed when activating flags 'withOwner' or 'withSupply' or 'computeScamInfo'");
+          expect(res.body.message).toEqual("Maximum size of 100 is allowed when activating flags 'withOwner' or 'withSupply', 'withScamInfo' or 'computeScamInfo'");
         });
     });
   });
