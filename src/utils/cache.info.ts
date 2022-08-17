@@ -133,6 +133,13 @@ export class CacheInfo {
     };
   }
 
+  static TransactionBatchShardNonce(shard: number): CacheInfo {
+    return {
+      key: `batchShardNonce:${shard}`,
+      ttl: Number.MAX_SAFE_INTEGER,
+    };
+  }
+
   static TokenAssets: CacheInfo = {
     key: 'tokenAssets',
     ttl: Constants.oneDay(),

@@ -26,6 +26,7 @@ import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.ser
 import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
 import { GraphQlModule } from 'src/graphql/graphql.module';
 import { TransactionLoggingInterceptor } from './interceptors/transaction.logging.interceptor';
+import { BatchTransactionProcessorModule } from './crons/transaction.processor/batch.transaction.processor.module';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
@@ -67,6 +68,11 @@ async function bootstrap() {
   if (apiConfigService.getIsTransactionCompletedCronActive()) {
     const processorApp = await NestFactory.create(TransactionCompletedModule);
     await processorApp.listen(7001);
+  }
+
+  if (apiConfigService.getIsTransactionBatchCronActive()) {
+    const processorApp = await NestFactory.create(BatchTransactionProcessorModule);
+    await processorApp.listen(7002);
   }
 
   if (apiConfigService.getIsElasticUpdaterCronActive()) {
@@ -127,6 +133,7 @@ async function bootstrap() {
   logger.log(`Private API active: ${apiConfigService.getIsPrivateApiActive()}`);
   logger.log(`Transaction processor cron active: ${apiConfigService.getIsTransactionProcessorCronActive()}`);
   logger.log(`Transaction completed cron active: ${apiConfigService.getIsTransactionCompletedCronActive()}`);
+  logger.log(`Transaction batch cron active: ${apiConfigService.getIsTransactionBatchCronActive()}`);
   logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
   logger.log(`Queue worker active: ${apiConfigService.getIsQueueWorkerCronActive()}`);
   logger.log(`Elastic updater active: ${apiConfigService.getIsElasticUpdaterCronActive()}`);
