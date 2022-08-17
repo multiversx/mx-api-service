@@ -61,10 +61,13 @@ export class TransactionController {
     @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
     @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
-  ): Promise<Transaction[]> {
-    if ((withScResults === true || withOperations === true || withLogs) && size > 50) {
-      throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
+    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
+  ) {
+    if ((withScResults === true || withOperations === true || withLogs || withScamInfo) && size > 50) {
+      throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs' or 'withScamInfo'`);
     }
+
+    const options = TransactionQueryOptions.enforceScamInfoFlag(size, { withScResults, withOperations, withLogs, withScamInfo });
 
     return this.transactionService.getTransactions(new TransactionFilter({
       sender,
@@ -81,7 +84,10 @@ export class TransactionController {
       after,
       condition,
       order,
-    }), new QueryPagination({ from, size }), new TransactionQueryOptions({ withScResults, withOperations, withLogs }));
+    }),
+      new QueryPagination({ from, size }),
+      options,
+    );
   }
 
   @Get("/transactions/count")
