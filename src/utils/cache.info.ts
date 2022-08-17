@@ -319,4 +319,18 @@ export class CacheInfo {
     key: "currentEpoch",
     ttl: Constants.oneMinute(),
   };
+
+  static TransactionBatch(sender: string, batchId: string): CacheInfo {
+    return {
+      key: `transactionbatch:${sender}:${batchId}`,
+      ttl: Constants.oneMinute() * 20,
+    };
+  }
+
+  static PendingTransaction(hash: string): CacheInfo {
+    return {
+      key: `pendingtransaction:${hash}`,
+      ttl: Constants.oneMinute() * 15,
+    };
+  }
 }
