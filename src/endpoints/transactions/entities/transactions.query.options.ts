@@ -1,5 +1,5 @@
 export class TransactionQueryOptions {
-  private static readonly SIZE_LIMIT: number = 100;
+  private static readonly SIZE_LIMIT: number = 50;
 
   constructor(init?: Partial<TransactionQueryOptions>) {
     Object.assign(this, init);
