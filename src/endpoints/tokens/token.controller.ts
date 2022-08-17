@@ -215,6 +215,8 @@ export class TokenController {
       throw new NotFoundException('Token not found');
     }
 
+    const options = TransactionQueryOptions.enforceScamInfoFlag(size, { withScResults, withOperations, withLogs });
+
     return await this.transactionService.getTransactions(new TransactionFilter({
       sender,
       receivers: receiver,
@@ -229,7 +231,7 @@ export class TokenController {
       before,
       after,
       order,
-    }), new QueryPagination({ from, size }), new TransactionQueryOptions({ withScResults, withOperations, withLogs }));
+    }), new QueryPagination({ from, size }), options);
   }
 
   @Get("/tokens/:identifier/transactions/count")

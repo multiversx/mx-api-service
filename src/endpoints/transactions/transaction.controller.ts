@@ -66,6 +66,8 @@ export class TransactionController {
       throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
     }
 
+    const options = TransactionQueryOptions.enforceScamInfoFlag(size, { withScResults, withOperations, withLogs });
+
     return this.transactionService.getTransactions(new TransactionFilter({
       sender,
       receivers: receiver,
@@ -81,7 +83,10 @@ export class TransactionController {
       after,
       condition,
       order,
-    }), new QueryPagination({ from, size }), new TransactionQueryOptions({ withScResults, withOperations, withLogs }));
+    }),
+      new QueryPagination({ from, size }),
+      options,
+    );
   }
 
   @Get("/transactions/count")

@@ -104,7 +104,7 @@ export class TransactionService {
 
     const assets = await this.assetsService.getAllAccountAssets();
     for (const transaction of transactions) {
-      await this.processTransaction(transaction, assets);
+      await this.processTransaction(transaction, queryOptions?.withScamInfo ?? false, assets);
     }
 
     return transactions;
@@ -120,7 +120,7 @@ export class TransactionService {
     if (transaction !== null) {
       const [price] = await Promise.all([
         this.getTransactionPrice(transaction),
-        this.processTransaction(transaction),
+        this.processTransaction(transaction, true),
       ]);
       transaction.price = price;
 
@@ -232,9 +232,9 @@ export class TransactionService {
     }
   }
 
-  async processTransaction(transaction: Transaction, assets?: Record<string, AccountAssets>): Promise<void> {
+  async processTransaction(transaction: Transaction, withScamInfo: boolean, assets?: Record<string, AccountAssets>): Promise<void> {
     try {
-      await this.pluginsService.processTransaction(transaction);
+      await this.pluginsService.processTransaction(transaction, withScamInfo);
 
       transaction.action = await this.transactionActionService.getTransactionAction(transaction);
 
