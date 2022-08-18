@@ -85,6 +85,12 @@ export class NftMediaService {
       }
 
       if (!fileProperties) {
+        this.logger.log(`Empty file properties for NFT with identifier '${nft.identifier}'`);
+        continue;
+      }
+
+      if (!this.isContentAccepted(nft.identifier, fileProperties)) {
+        this.logger.log(`Content not accepted for NFT with identifier '${nft.identifier}'`);
         continue;
       }
 
@@ -136,14 +142,23 @@ export class NftMediaService {
     const contentType = headers['content-type'];
     const contentLength = Number(headers['content-length']);
 
-    if (!this.isContentAccepted(contentType)) {
-      return null;
-    }
-
     return { contentType, contentLength };
   }
 
-  private isContentAccepted(contentType: MediaMimeTypeEnum) {
-    return Object.values(MediaMimeTypeEnum).includes(contentType);
+  private isContentAccepted(identifier: string, fileProperties: { contentType: string, contentLength: number }): boolean {
+    if (!Object.values(MediaMimeTypeEnum).includes(fileProperties.contentType as MediaMimeTypeEnum)) {
+      this.logger.log(`Media mime type '${fileProperties.contentType}' is not supported'`);
+
+      return false;
+    }
+
+    const FILE_SIZE_LIMIT = 64 * 1024 * 1024; // ~64MB
+    if (fileProperties.contentLength > FILE_SIZE_LIMIT) {
+      this.logger.log(`Media for NFT '${identifier}' excedded file size limit`);
+
+      return false;
+    }
+
+    return true;
   }
 }
