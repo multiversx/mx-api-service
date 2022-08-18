@@ -354,14 +354,14 @@ describe("NFT Controller", () => {
         });
     });
 
-    it(`/nfts - should return 400 status code because "withScamInfo" flag is active and size is greater than 100 (limit)`, async () => {
+    it(`should return 400 status code because "withScamInfo" flag is active and size is greater than 100 (limit)`, async () => {
       const params = new URLSearchParams({
         'from': '0',
         'size': '101',
         'withScamInfo': 'true',
       });
       await request(app.getHttpServer())
-        .get(path + "?" + params)
+        .get(`${path}?${params}`)
         .expect(400)
         .then(res => {
           expect(res.body.message).toEqual("Maximum size of 100 is allowed when activating flags 'withOwner', 'withSupply', 'withScamInfo' or 'computeScamInfo'");

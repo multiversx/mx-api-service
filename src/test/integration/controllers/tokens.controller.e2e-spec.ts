@@ -3,11 +3,11 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
-describe.skip("Tokens Controller", () => {
+describe("Tokens Controller", () => {
   let app: INestApplication;
-  const route: string = "/tokens";
+  const path: string = "/tokens";
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -17,364 +17,257 @@ describe.skip("Tokens Controller", () => {
     await app.init();
   });
 
-  it("/tokens - should return 200 status code and one list of tokens", async () => {
-    await request(app.getHttpServer())
-      .get(route)
-      .expect(200);
-  });
 
-  it("/tokens?from&size - should return 200 status code and one list of 100 tokens", async () => {
-    const params = new URLSearchParams({
-      'from': '0',
-      'size': '100',
-    });
-    await request(app.getHttpServer())
-      .get(route + "?" + params)
-      .expect(200);
-  });
-
-  it("/tokens?identifiers - should return 200 status code and one list of two tokens based on identifiers query", async () => {
-    const params = new URLSearchParams({
-      'identifiers': 'WEGLD-bd4d79,RIDE-7d18e9',
-    });
-
-    await request(app.getHttpServer())
-      .get(route + "?" + params)
-      .expect(200);
-  });
-
-  it("/tokens?identifier - should return 200 status code and one list of one token based on identifier query", async () => {
-    const params = new URLSearchParams({
-      'identifier': 'WEGLD-bd4d79',
-    });
-
-    await request(app.getHttpServer())
-      .get(route + "?" + params)
-      .expect(200);
-  });
-
-  it("/tokens?name - should return 200 status code and one list of one token based on name query", async () => {
-    const params = new URLSearchParams({
-      'name': 'WrappedEGLD',
-    });
-
-    await request(app.getHttpServer())
-      .get(route + "?" + params)
-      .expect(200);
-  });
-
-  it("/tokens/count - should return 200 status code and total tokens count", async () => {
-    await request(app.getHttpServer())
-      .get(route + "/count")
-      .expect(200);
-  });
-
-  it("/tokens/count?identifiers - should return 200 status code and total tokens count based on multiple tokens identifiers query", async () => {
-    const params = new URLSearchParams({
-      'identifiers': 'WEGLD-bd4d79,RIDE-7d18e9',
-    });
-    await request(app.getHttpServer())
-      .get(route + "/count" + "?" + params)
-      .expect(200);
-  });
-
-  it("/tokens/count?identifiers - should return 200 status code and total tokens count based on token identifier query", async () => {
-    const params = new URLSearchParams({
-      'identifiers': 'WEGLD-bd4d79',
-    });
-    await request(app.getHttpServer())
-      .get(route + "/count" + "?" + params)
-      .expect(200);
-  });
-
-  it("/tokens/count?identifiers - should return 200 status code and total tokens count based on token name query", async () => {
-    const params = new URLSearchParams({
-      'name': 'WrappedEGLD',
-    });
-    await request(app.getHttpServer())
-      .get(route + "/count" + "?" + params)
-      .expect(200);
-  });
-
-  it("/tokens/count/:identifier - should return 200 status code and token details based on token identifier query", async () => {
-    const identifier: string = "WEGLD-bd4d79";
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier)
-      .expect(200);
-  });
-
-  it("/tokens/count/:identifier - should return 404 status code Error: Token not found", async () => {
-    const identifier: string = "WEGLD-bd4d79Test";
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier)
-      .expect(404)
-      .then(res => {
-        expect(res.body.message).toEqual("Token not found");
+  describe('/tokens', () => {
+    [
+      {
+        filter: undefined,
+        value: undefined,
+        lenght: 25,
+      },
+      {
+        filter: 'size',
+        value: '5',
+        lenght: 5,
+      },
+    ].forEach(({ filter, value, lenght }) => {
+      describe(`when filter ${filter} is applied`, () => {
+        it(`should return ${lenght} tokens based on value ${value}`, async () => {
+          await request(app.getHttpServer())
+            .get(`${path}?${filter}=${value}`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toHaveLength(parseInt(`${lenght}`));
+            });
+        });
       });
-  });
+    });
 
-  it("/tokens/count/:identifiers/supply - should return 200 status code and token supply details based on token identifier query", async () => {
-    const identifier: string = "WEGLD-bd4d79";
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/supply")
-      .expect(200);
-  });
-
-  it("/tokens/count/:identifiers/supply - should return 404 status code Error: Not Found", async () => {
-    const identifier: string = "WEGLD-bd4d79Test";
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/supply")
-      .expect(404)
-      .then(res => {
-        expect(res.body.message).toEqual("Token not found");
+    [
+      {
+        filter: 'search',
+        value: 'MEX-455c57',
+      },
+      {
+        filter: 'name',
+        value: 'MEX',
+      },
+      {
+        filter: 'identifier',
+        value: 'MEX-455c57',
+      },
+      {
+        filter: 'identifiers',
+        value: 'MEX-455c57',
+      },
+    ].forEach(({ filter, value }) => {
+      describe(`when filter ${filter} is applied`, () => {
+        it(`should return token details based on value ${value}`, async () => {
+          await request(app.getHttpServer())
+            .get(`${path}?${filter}=${value}`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeDefined();
+              expect(res.body[0].identifier).toStrictEqual('MEX-455c57');
+              expect(res.body[0].owner).toStrictEqual('erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97');
+              expect(res.body[0].assets).toBeDefined();
+            });
+        });
       });
-  });
-
-  it("/tokens/count/:identifiers/accounts - should return 200 status code and token accounts details based on token identifier query", async () => {
-    const identifier: string = "WEGLD-bd4d79";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/accounts")
-      .expect(200);
-  });
-
-  it("/tokens/count/:identifiers/accounts/count - should return 200 status code and total token accounts count details based on token identifier query", async () => {
-    const identifier: string = "WEGLD-bd4d79";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/accounts" + "/count")
-      .expect(200);
-  });
-
-
-  it("/tokens/count/:identifiers/accounts?from&size - should return 200 status code and 100 tokens accounts details based on token identifier query", async () => {
-    const params = new URLSearchParams({
-      'from': '0',
-      'size': '100',
     });
-    const identifier: string = "WEGLD-bd4d79";
 
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/accounts" + "?" + params)
-      .expect(200);
-  });
+    [
+      {
+        filter: 'sort',
+        value: 'accounts',
+      },
+      {
+        filter: 'sort',
+        value: 'transactions',
+      },
+      {
+        filter: 'sort',
+        value: 'price',
+      },
+    ].forEach(({ filter, value }) => {
+      describe(`when filter ${filter} is applied`, () => {
+        it(`should return tokens details based on ${filter} with value ${value} and ordered descendent `, async () => {
+          const order = 'desc';
 
-  it("/tokens/:identifiers/transactions - should return 200 status code and transactions details for a specific token", async () => {
-    const identifier: string = "WEGLD-bd4d79";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/transactions")
-      .expect(200);
-  });
-
-  it("/tokens/:identifiers/transactions?from&size - should return 200 status code and 100 transactions details for a specific token", async () => {
-    const params = new URLSearchParams({
-      'from': '0',
-      'size': '100',
-    });
-    const identifier: string = "WEGLD-bd4d79";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/transactions" + "?" + params)
-      .expect(200);
-  });
-
-  it("/tokens/:identifiers/transactions?from&size&withLogs&withOperations&order - should return 200 status code and 50 transactions details with logs, withoperations and ordered asc for a specific token", async () => {
-    const params = new URLSearchParams({
-      'from': '0',
-      'size': '50',
-      'withLogs': 'true',
-      'withOperations': 'true',
-      'order': 'asc',
-    });
-    const identifier: string = "WEGLD-bd4d79";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/transactions" + "?" + params)
-      .expect(200);
-  });
-
-  it("/tokens/:identifiers/transactions?from&size&status - should return 200 status code and 50 transactions details with status success for a specific token", async () => {
-    const params = new URLSearchParams({
-      'from': '0',
-      'size': '50',
-      'status': 'success',
-    });
-    const identifier: string = "WEGLD-bd4d79";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/transactions" + "?" + params)
-      .expect(200);
-  });
-
-  it("/tokens/:identifiers/transactions?from&size&status - should return 200 status code and 10 transactions details with status pending for a specific token", async () => {
-    const params = new URLSearchParams({
-      'from': '0',
-      'size': '10',
-      'status': 'pending',
-    });
-    const identifier: string = "WEGLD-bd4d79";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/transactions" + "?" + params)
-      .expect(200);
-  });
-
-  it("/tokens/:identifiers/transactions?from&size&status - should return 200 status code and 10 transactions details with status invalid for a specific token", async () => {
-    const params = new URLSearchParams({
-      'from': '0',
-      'size': '10',
-      'status': 'fail',
-    });
-    const identifier: string = "WEGLD-bd4d79";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/transactions" + "?" + params)
-      .expect(200);
-  });
-
-  it("/tokens/:identifiers/transactions?from&size&withLogs&withOperations&withScResults - should return 400 status code, maximum size of 50 is allowed when flags are active", async () => {
-    const params = new URLSearchParams({
-      'from': '0',
-      'size': '100',
-      'withLogs': 'true',
-      'withOperations': 'true',
-      'withScResults': 'true',
-    });
-    const identifier: string = "WEGLD-bd4d79";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/transactions" + "?" + params)
-      .expect(400)
-      .then(res => {
-        expect(res.body.message).toEqual("Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'");
+          await request(app.getHttpServer())
+            .get(`${path}?${filter}=${value}&${order}`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeDefined();
+              expect(res.body[0].transactions).toBeGreaterThan(res.body[1].transactions);
+            });
+        });
       });
-  });
-
-  it("/tokens/:identifiers/transactions/count - should return 200 status code and total transactions count", async () => {
-    const identifier: string = "WEGLD-bd4d79";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/transactions" + "/count")
-      .expect(200);
-  });
-
-  // it("/tokens/{identifiers}/transactions/count - should return 400 status code Error: Not Found if token is not found", async () => {
-  //   const identifier: string = "WEGLD-bd4d79T"
-
-  //   await request(app.getHttpServer())
-  //     .get(route + "/" + identifier + "/transactions" + "/count")
-  //     .expect(404)
-  //     .then(res => {
-  //       expect(res.body.message).toEqual("Token not found");
-  //     });
-  // });
-
-  it("/tokens/:identifiers/transactions/count?status - should return 200 status code and total success transactions count", async () => {
-    const params = new URLSearchParams({
-      'status': 'success',
     });
-    const identifier: string = "WEGLD-bd4d79";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/transactions" + "/count" + "?" + params)
-      .expect(200);
   });
 
-  it("/tokens/:identifiers/transactions/count?status - should return 200 status code and total pending transactions count", async () => {
-    const params = new URLSearchParams({
-      'status': 'pending',
-    });
-    const identifier: string = "WEGLD-bd4d79";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/transactions" + "/count" + "?" + params)
-      .expect(200);
-  });
-
-  it("/tokens/:identifiers/transactions/count?status - should return 200 status code and total fail transactions count", async () => {
-    const params = new URLSearchParams({
-      'status': 'fail',
-    });
-    const identifier: string = "WEGLD-bd4d79";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/transactions" + "/count" + "?" + params)
-      .expect(200);
-  });
-
-  it("/tokens/:identifiers/transactions/count?senderShard&receiverShard - should return 200 status code and total transactions count for shard 0", async () => {
-    const params = new URLSearchParams({
-      'senderShard': '0',
-      'receiverShard': '0',
-    });
-    const identifier: string = "WEGLD-bd4d79";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/transactions" + "/count" + "?" + params)
-      .expect(200);
-  });
-
-  it("/tokens/:identifiers/transactions/count?senderShard&receiverShard - should return 200 status code and total transactions count for senderShard 0 and receiver shard 1", async () => {
-    const params = new URLSearchParams({
-      'senderShard': '0',
-      'receiverShard': '1',
-    });
-    const identifier: string = "WEGLD-bd4d79";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/transactions" + "/count" + "?" + params)
-      .expect(200);
-  });
-
-  it("/tokens/:identifiers/transactions/count?miniBlockHash - should return 200 status code and total transactions count for a specific miniBlockHash", async () => {
-    const params = new URLSearchParams({
-      'miniBlockHash': '4ab87e21dcf63f3d88f64e8228f001232ff29585ad475e20211ead04f1f700cc',
-    });
-    const identifier: string = "WEGLD-bd4d79";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/transactions" + "/count" + "?" + params)
-      .expect(200);
-  });
-
-  it("/tokens/:identifiers/roles- should return 200 status code and roles for a specific token", async () => {
-    const identifier: string = "WEGLD-bd4d79";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/roles")
-      .expect(200);
-  });
-
-  it("/tokens/:identifiers/roles- should return 400 status code Error: Not Found if token is not found", async () => {
-    const identifier: string = "WEGLD-bd4d79Test";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/roles")
-      .expect(404)
-      .then(res => {
-        expect(res.body.message).toEqual("Token not found");
+  describe('/tokens/count', () => {
+    [
+      {
+        filter: 'search',
+        value: 'RIDE',
+        count: 2,
+      },
+      {
+        filter: 'name',
+        value: 'MEX',
+        count: 1,
+      },
+      {
+        filter: 'identifier',
+        value: 'MEX-455c57',
+        count: 1,
+      },
+    ].forEach(({ filter, value, count }) => {
+      describe(`when filter ${filter} is applied`, () => {
+        it(`should return tokens count based on ${filter} with value ${value}`, async () => {
+          await request(app.getHttpServer())
+            .get(`${path}/count?${filter}=${value}`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
       });
+    });
   });
 
-  it("/tokens/:identifiers/roles{address} - should return 200 status code and roles for a specific token and address", async () => {
-    const identifier: string = "WEGLD-bd4d79";
-    const address: string = "erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3";
+  describe('/tokens/{identifier}', () => {
+    it('should return token details based on a specific token identifier', async () => {
+      const identifier: string = 'MEX-455c57';
 
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/roles/" + address)
-      .expect(200);
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body.identifier).toStrictEqual(identifier);
+          expect(res.body.name).toStrictEqual('MEX');
+          expect(res.body.ticker).toStrictEqual('MEX');
+          expect(res.body.owner).toStrictEqual('erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97');
+          expect(res.body.decimals).toStrictEqual(18);
+          expect(res.body.isPaused).toStrictEqual(false);
+          expect(res.body.transactions).toBeGreaterThanOrEqual(1504696);
+          expect(res.body.accounts).toBeGreaterThanOrEqual(11021);
+          expect(res.body.assets).toBeDefined();
+
+          expect(res.body.canUpgrade).toStrictEqual(true);
+          expect(res.body.canMint).toStrictEqual(true);
+          expect(res.body.canBurn).toStrictEqual(true);
+          expect(res.body.canChangeOwner).toStrictEqual(true);
+          expect(res.body.canPause).toStrictEqual(true);
+          expect(res.body.canFreeze).toStrictEqual(true);
+          expect(res.body.canWipe).toStrictEqual(true);
+        });
+    });
+
+    it('should returns general supply information for a specific token', async () => {
+      const identifier: string = 'MEX-455c57';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}/supply`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toBeDefined();
+          expect(res.body.supply).toBeDefined();
+          expect(res.body.circulatingSupply).toBeDefined();
+          expect(res.body.minted).toBeDefined();
+          expect(res.body.burnt).toBeDefined();
+          expect(res.body.initialMinted).toBeDefined();
+        });
+    });
+
+    it('should returns general supply information for a specific token', async () => {
+      const identifier: string = 'MEX-455c57';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}/supply`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toBeDefined();
+          expect(res.body.supply).toBeDefined();
+          expect(res.body.circulatingSupply).toBeDefined();
+          expect(res.body.minted).toBeDefined();
+          expect(res.body.burnt).toBeDefined();
+          expect(res.body.initialMinted).toBeDefined();
+        });
+    });
+
+    it('should returns a list of accounts that hold a specific token', async () => {
+      const identifier: string = 'MEX-455c57';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}/accounts`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toHaveLength(25);
+          expect(res.body[0].address).toStrictEqual('erd1qqqqqqqqqqqqqpgq7qhsw8kffad85jtt79t9ym0a4ycvan9a2jps0zkpen');
+        });
+    });
+
+    it('should returns the total number of accounts that hold a specific token', async () => {
+      const identifier: string = 'MEX-455c57';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}/accounts/count`)
+        .expect(200)
+        .then(res => {
+          expect(+res.text).toBeGreaterThanOrEqual(50679);
+        });
+    });
+
+    it('should a list of accounts that can perform various actions on a specific token', async () => {
+      const identifier: string = 'MEX-455c57';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}/roles`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toHaveLength(16);
+
+          for (const item of res.body) {
+            expect(item.address).toBeDefined();
+            expect(item.canLocalMint).toBeDefined();
+            expect(item.canLocalBurn).toBeDefined();
+            expect(item.roles).toBeDefined();
+          }
+        });
+    });
+
+    it('should returns roles detalils for a specific address of a given token', async () => {
+      const identifier: string = 'MEX-455c57';
+      const address: string = 'erd1qqqqqqqqqqqqqpgqjpt0qqgsrdhp2xqygpjtfrpwf76f9nvg2jpsg4q7th';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}/roles/${address}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body.canLocalMint).toStrictEqual(true);
+          expect(res.body.canLocalBurn).toStrictEqual(true);
+          expect(res.body.roles[0]).toStrictEqual('ESDTRoleLocalMint');
+          expect(res.body.roles[1]).toStrictEqual('ESDTRoleLocalBurn');
+        });
+    });
   });
 
-  it("/tokens/:identifiers/roles{address} - should return 400 status code Error: Not Found if token is not found", async () => {
-    const identifier: string = "WEGLD-bd4d79T";
-    const address: string = "erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3";
+  describe('Validations', () => {
+    it('should return 400 Status Code if given token identifier is invalid', async () => {
+      const identifier: string = 'abc123';
 
-    await request(app.getHttpServer())
-      .get(route + "/" + identifier + "/roles/" + address)
-      .expect(404)
-      .then(res => {
-        expect(res.body.message).toEqual("Token not found");
-      });
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toEqual("Validation failed for argument 'identifier': Invalid token identifier.");
+        });
+    });
+  });
+
+  afterEach(async () => {
+    await app.close();
   });
 });
