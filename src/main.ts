@@ -158,6 +158,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   httpServer.headersTimeout = apiConfigService.getHeadersTimeout(); //`keepAliveTimeout + server's expected response time`
 
   const globalInterceptors: NestInterceptor[] = [];
+  globalInterceptors.push(new RequestCpuTimeInterceptor(apiMetricsService));
   globalInterceptors.push(new LoggingInterceptor(metricsService));
 
   if (apiConfigService.getUseRequestCachingFlag()) {
@@ -185,7 +186,6 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   // @ts-ignore
   globalInterceptors.push(new QueryCheckInterceptor(httpAdapterHostService));
   globalInterceptors.push(new TransactionLoggingInterceptor());
-  globalInterceptors.push(new RequestCpuTimeInterceptor(apiMetricsService));
 
   await pluginService.bootstrapPublicApp(publicApp);
 
