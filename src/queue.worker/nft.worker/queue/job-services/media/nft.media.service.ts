@@ -152,7 +152,7 @@ export class NftMediaService {
       return false;
     }
 
-    const FILE_SIZE_LIMIT = 64000000; // ~64MB
+    const FILE_SIZE_LIMIT = 64 * 1024 * 1024; // ~64MB
     if (fileProperties.contentLength > FILE_SIZE_LIMIT) {
       this.logger.log(`Media for NFT '${identifier}' excedded file size limit`);
 
