@@ -8,10 +8,6 @@
         "outDir": "./dist/config"
       },
       {
-        "include": "../config/plugins/plugins.config.yaml",
-        "outDir": "./dist/config/plugins"
-      },
-      {
         "include": "../docs/swagger.md",
         "outDir": "./dist/docs"
       },
