@@ -5,8 +5,9 @@ import { Transaction } from './transaction';
 import { TransactionReceipt } from './transaction.receipt';
 import { TransactionLog } from './transaction.log';
 import { TransactionOperation } from './transaction.operation';
+import { ComplexityEstimation } from '@elrondnetwork/erdnest';
 
-@ObjectType('TransactionDetailed', { description: 'Detailed Transaction object type that extends Transaction.' })
+@ObjectType(TransactionDetailed.name, { description: 'Detailed Transaction object type that extends Transaction.' })
 export class TransactionDetailed extends Transaction {
   constructor(init?: Partial<TransactionDetailed>) {
     super();
@@ -15,6 +16,7 @@ export class TransactionDetailed extends Transaction {
 
   @Field(() => [SmartContractResult], { description: 'Smart contract results list for the given detailed transaction.', nullable: true })
   @ApiProperty({ type: SmartContractResult, isArray: true })
+  @ComplexityEstimation({ group: `${TransactionDetailed.name}-details`, value: 200, alternatives: ["withScResults"] })
   results: SmartContractResult[] | undefined = undefined;
 
   @Field(() => TransactionReceipt, { description: 'Transaction receipt for the given detailed transaction.', nullable: true })
@@ -31,6 +33,7 @@ export class TransactionDetailed extends Transaction {
 
   @Field(() => [TransactionOperation], { description: 'Transaction operations list for the given detailed transaction.', nullable: true })
   @ApiProperty({ type: TransactionOperation, isArray: true })
+  @ComplexityEstimation({ group: `${TransactionDetailed.name}-details`, value: 200, alternatives: ["withOperations"] })
   operations: TransactionOperation[] = [];
 }
 

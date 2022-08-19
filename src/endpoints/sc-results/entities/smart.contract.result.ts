@@ -43,11 +43,11 @@ export class SmartContractResult {
   @ApiProperty({ type: String })
   receiver: string = '';
 
-  @Field(() => AccountAssets, { description: 'Sender assets for the given smart contract result.' })
+  @Field(() => AccountAssets, { description: 'Sender assets for the given smart contract result.', nullable: true })
   @ApiProperty({ type: AccountAssets, nullable: true })
   senderAssets: AccountAssets | undefined = undefined;
 
-  @Field(() => AccountAssets, { description: 'Receiver assets for the given smart contract result.' })
+  @Field(() => AccountAssets, { description: 'Receiver assets for the given smart contract result.', nullable: true })
   @ApiProperty({ type: AccountAssets, nullable: true })
   receiverAssets: AccountAssets | undefined = undefined;
 
