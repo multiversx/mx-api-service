@@ -71,6 +71,7 @@
     "@aws-sdk/client-s3": "^3.54.0",
     "@elrondnetwork/erdjs": "^11.0.0",
     "@elrondnetwork/erdjs-dex": "^0.0.8",
+    "@elrondnetwork/erdjs-network-providers": "^1.0.0",
     "@elrondnetwork/erdjs-walletcore": "^1.0.0",
     "@elrondnetwork/erdnest": "^0.1.43",
     "@elrondnetwork/native-auth": "^0.1.19",
