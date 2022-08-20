@@ -527,6 +527,9 @@ export class NodeService {
       if (validatorStatus === 'new') {
         nodeType = NodeType.validator;
         nodeStatus = NodeStatus.new;
+      } else if (validatorStatus === 'jailed') {
+        nodeType = NodeType.validator;
+        nodeStatus = NodeStatus.jailed;
       } else if (validatorStatus && validatorStatus.includes('leaving')) {
         nodeType = NodeType.validator;
         nodeStatus = NodeStatus.leaving;
