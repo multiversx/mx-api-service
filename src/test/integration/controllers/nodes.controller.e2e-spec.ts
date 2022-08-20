@@ -7,7 +7,7 @@ describe("Nodes Controller", () => {
   let app: INestApplication;
   const path: string = "/nodes";
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -26,10 +26,13 @@ describe("Nodes Controller", () => {
         .expect(200)
         .then(res => {
           for (const response of res.body) {
-            console.log(response);
             expect(response.status).toStrictEqual('jailed');
           }
         });
     });
+  });
+
+  afterEach(async () => {
+    await app.close();
   });
 });
