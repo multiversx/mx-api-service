@@ -111,5 +111,8 @@ bridge:
   elrondMultisigAddress: ''
   rpcProviderUrl: ''
   ethereumSafeContract: ''
+plugins:
+  warmer:
+    enabled: true
 doorway:
   enabled: false
