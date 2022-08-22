@@ -40,6 +40,5 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 /src/plugins
-/config/plugins
 
 .env
