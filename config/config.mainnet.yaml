@@ -58,6 +58,8 @@ urls:
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'socket-fra.elrond.com'
+  geocode: ''
+  markers: ''
 indexer:
   type: 'elastic'
 database:
@@ -94,10 +96,20 @@ inflation:
   - 719203
 security:
   admins:
-  jwtSecret:
+  jwtSecret: ''
+  faucetAddress: ''
+  faucetMnemonic: ''
+  accessAddress: ''
+  accessMnemonic: ''
 nftProcess:
   parallelism: 1
   maxRetries: 3
 transaction-action:
   mex:
     microServiceUrl: 'https://graph.maiar.exchange/graphql'
+bridge:
+  elrondMultisigAddress: ''
+  rpcProviderUrl: ''
+  ethereumSafeContract: ''
+doorway:
+  enabled: false
