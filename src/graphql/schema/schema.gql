@@ -192,6 +192,12 @@ input GetNftCollectionsAccountInput {
 
 """Input to retrieve the given NFT collections count for."""
 input GetNftCollectionsCountInput {
+  """After timestamp to retrieve for the given result set."""
+  after: Float
+
+  """Before timestamp to retrieve for the given result set."""
+  before: Float
+
   """Can add quantity to retrieve for the given result set."""
   canAddQuantity: String
 
