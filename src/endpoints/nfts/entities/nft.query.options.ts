@@ -1,6 +1,7 @@
-const SIZE_LIMIT: number = 100;
 
 export class NftQueryOptions {
+  private static readonly SIZE_LIMIT: number = 100;
+
   constructor(init?: Partial<NftQueryOptions>) {
     Object.assign(this, init);
   }
@@ -12,7 +13,7 @@ export class NftQueryOptions {
 
   //TODO: Remove this function when enforce is no longer needed
   static enforceScamInfoFlag(size: number, options: NftQueryOptions): NftQueryOptions {
-    if (size <= SIZE_LIMIT) {
+    if (size <= NftQueryOptions.SIZE_LIMIT) {
       options.withScamInfo = true;
       options.computeScamInfo = true;
     }

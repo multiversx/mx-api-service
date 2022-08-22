@@ -27,6 +27,8 @@ import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
 import { GraphQlModule } from 'src/graphql/graphql.module';
 import { TransactionLoggingInterceptor } from './interceptors/transaction.logging.interceptor';
 import { BatchTransactionProcessorModule } from './crons/transaction.processor/batch.transaction.processor.module';
+import { RequestCpuTimeInterceptor } from './interceptors/request.cpu.time.interceptor';
+import { ApiMetricsService } from './common/metrics/api.metrics.service';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
@@ -150,6 +152,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   publicApp.useStaticAssets(join(__dirname, 'public/assets'));
 
   const metricsService = publicApp.get<MetricsService>(MetricsService);
+  const apiMetricsService = publicApp.get<ApiMetricsService>(ApiMetricsService);
   const pluginService = publicApp.get<PluginService>(PluginService);
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
 
@@ -189,6 +192,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   // @ts-ignore
   globalInterceptors.push(new QueryCheckInterceptor(httpAdapterHostService));
   globalInterceptors.push(new TransactionLoggingInterceptor());
+  globalInterceptors.push(new RequestCpuTimeInterceptor(apiMetricsService));
 
   await pluginService.bootstrapPublicApp(publicApp);
 
