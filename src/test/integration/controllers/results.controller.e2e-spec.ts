@@ -109,12 +109,12 @@ describe("Results Controller", () => {
         .get(`${path}/${scHash}`)
         .expect(400)
         .then(res => {
-          expect(res.body.message).toStrictEqual("Validation failed for argument 'scHash' (a valid transaction hash is expected)");
+          expect(res.body.message).toStrictEqual("Validation failed for transaction hash 'scHash'. Length should be 64.");
         });
     });
 
     it('should return 404 Not Found', async () => {
-      const scHash: string = '15b7adeaec77fd2e9bd2680834ea552028f10caff59e68a332d9c32f9b371590T';
+      const scHash: string = 'bc68da1de1926031f03211dc1610b4513043ccd497fdc09817aa721e2055505T';
 
       await request(app.getHttpServer())
         .get(`${path}/${scHash}`)
