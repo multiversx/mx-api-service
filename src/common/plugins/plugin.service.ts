@@ -6,13 +6,11 @@ import { Transaction } from "src/endpoints/transactions/entities/transaction";
 
 @Injectable()
 export class PluginService {
-  async processTransaction(_transaction: Transaction, _withScamInfo?: boolean): Promise<void> { }
+  async processTransactions(_transactions: Transaction[], _withScamInfo?: boolean): Promise<void> { }
 
   async processTransactionSend(_transaction: any): Promise<any> { }
 
-  async processNft(_nft: Nft): Promise<void> { }
-
-  async batchProcessNfts(_nft: Nft[], _withScamInfo?: boolean): Promise<void> { }
+  async processNfts(_nft: Nft[], _withScamInfo?: boolean): Promise<void> { }
 
   async processAccount(_account: AccountDetailed): Promise<void> { }
 
