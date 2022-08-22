@@ -54,7 +54,7 @@ describe('Nft Media Service', () => {
       jest
         .spyOn(NftMediaService.prototype as any, "getFileProperties")
         // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async () => ({ contentType: MediaMimeTypeEnum.mp4, contentLength: 64000001 })));
+        .mockImplementation(jest.fn(async () => ({ contentType: MediaMimeTypeEnum.mp4, contentLength: 65000001 })));
 
       const nft = new Nft({ type: NftType.NonFungibleESDT, uris: ['some_uris'], identifier: 'LSC-a2b6b5-04' });
 
