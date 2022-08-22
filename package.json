@@ -104,7 +104,6 @@
     "graphql-fields-list": "^2.2.4",
     "graphql-request": "^4.2.0",
     "graphql-type-json": "^0.3.2",
-    "ioredis": "^5.2.2",
     "js-yaml": "^4.1.0",
     "json-diff": "^0.7.1",
     "jsonwebtoken": "^8.5.1",
