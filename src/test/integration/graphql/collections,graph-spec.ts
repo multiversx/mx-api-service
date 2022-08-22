@@ -159,6 +159,38 @@ describe('Collection', () => {
 
         });
     });
+
+    [
+      {
+        type: 'NonFungibleESDT',
+        value: '5126',
+      },
+      {
+        type: 'SemiFungibleESDT',
+        value: '920',
+      },
+      {
+        type: 'MetaESDT',
+        value: '30',
+      },
+    ].forEach(({ type, value }) => {
+      describe(`when filter ${type} is applied`, () => {
+        it(`should return collection count`, async () => {
+          await request(app.getHttpServer())
+            .post(gql)
+            .send({
+              query: `{collectionsCount(input:{
+                type: ${type}
+              })
+            }`,
+            })
+            .expect(200)
+            .then(res => {
+              expect(res.body.data.collectionsCount).toBeGreaterThanOrEqual(parseInt(value));
+            });
+        });
+      });
+    });
   });
 
   afterEach(async () => {
