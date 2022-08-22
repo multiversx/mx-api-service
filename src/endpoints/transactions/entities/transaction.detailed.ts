@@ -16,7 +16,7 @@ export class TransactionDetailed extends Transaction {
 
   @Field(() => [SmartContractResult], { description: 'Smart contract results list for the given detailed transaction.', nullable: true })
   @ApiProperty({ type: SmartContractResult, isArray: true })
-  @ComplexityEstimation({ group: `${TransactionDetailed.name}-details`, value: 200, alternatives: ["withScResults"] })
+  @ComplexityEstimation({ group: "details", value: 200, alternatives: ["withScResults"] })
   results: SmartContractResult[] | undefined = undefined;
 
   @Field(() => TransactionReceipt, { description: 'Transaction receipt for the given detailed transaction.', nullable: true })
@@ -33,7 +33,7 @@ export class TransactionDetailed extends Transaction {
 
   @Field(() => [TransactionOperation], { description: 'Transaction operations list for the given detailed transaction.', nullable: true })
   @ApiProperty({ type: TransactionOperation, isArray: true })
-  @ComplexityEstimation({ group: `${TransactionDetailed.name}-details`, value: 200, alternatives: ["withOperations"] })
+  @ComplexityEstimation({ group: "details", value: 200, alternatives: ["withOperations"] })
   operations: TransactionOperation[] = [];
 }
 

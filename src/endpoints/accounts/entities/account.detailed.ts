@@ -73,6 +73,6 @@ export class AccountDetailed extends Account {
   nftCollections: NftCollectionAccount[] | undefined = undefined;
 
   @Field(() => [NftAccount], { description: 'NFTs for the given detailed account.', nullable: true })
-  @ComplexityEstimation({ group: `${AccountDetailed.name}-nfts`, value: 1000 })
+  @ComplexityEstimation({ group: 'nfts', value: 1000 })
   nfts: NftAccount[] | undefined = undefined;
 }
