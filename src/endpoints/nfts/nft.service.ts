@@ -216,6 +216,10 @@ export class NftService {
   }
 
   private async applyUnlockSchedule(nft: Nft): Promise<void> {
+    if (!nft.attributes) {
+      return;
+    }
+
     try {
       nft.unlockSchedule = await this.lockedAssetService.getUnlockSchedule(nft.identifier, nft.attributes);
     } catch (error) {
