@@ -63,19 +63,12 @@ export class TokenTransferService {
       }
     }
 
-    const tokenProperties: {
-      [key: string]: TokenTransferProperties | null
-    } = {};
-
-    await this.cachingService.batchApplyAll(
+    return await this.cachingService.batchGetAll(
       identifiers,
       identifier => CacheInfo.TokenTransferProperties(identifier).key,
       identifier => this.getTokenTransferPropertiesRaw(identifier),
-      (identifier, value) => tokenProperties[identifier] = value,
       CacheInfo.TokenTransferProperties('').ttl
     );
-
-    return tokenProperties;
   }
 
   async getOperationsForTransaction(transaction: TransactionDetailed, logs: TransactionLog[]): Promise<TransactionOperation[]> {
