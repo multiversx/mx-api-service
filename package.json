@@ -73,7 +73,7 @@
     "@elrondnetwork/erdjs-dex": "^0.0.8",
     "@elrondnetwork/erdjs-network-providers": "^1.0.0",
     "@elrondnetwork/erdjs-walletcore": "^1.0.0",
-    "@elrondnetwork/erdnest": "^0.1.43",
+    "@elrondnetwork/erdnest": "^0.1.53",
     "@elrondnetwork/native-auth": "^0.1.19",
     "@elrondnetwork/transaction-processor": "^0.1.26",
     "@golevelup/nestjs-rabbitmq": "^2.2.0",
