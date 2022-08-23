@@ -148,7 +148,7 @@ describe("Block Controller", () => {
         .get(`${path}/${hash}`)
         .expect(400)
         .then(res => {
-          expect(res.body.message).toStrictEqual("Validation failed for block hash 'hash'. Length should be 64.");
+          expect(res.body.message).toContain("Validation failed");
         });
     });
   });

@@ -109,7 +109,7 @@ describe("Results Controller", () => {
         .get(`${path}/${scHash}`)
         .expect(400)
         .then(res => {
-          expect(res.body.message).toStrictEqual("Validation failed for transaction hash 'scHash'. Length should be 64.");
+          expect(res.body.message).toContain("Validation failed");
         });
     });
 
