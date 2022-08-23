@@ -154,6 +154,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const globalInterceptors: NestInterceptor[] = [];
   globalInterceptors.push(new ComplexityInterceptor());
   globalInterceptors.push(new GraphqlComplexityInterceptor());
+  globalInterceptors.push(new RequestCpuTimeInterceptor(apiMetricsService));
   globalInterceptors.push(new LoggingInterceptor(metricsService));
 
   if (apiConfigService.getUseRequestCachingFlag()) {
@@ -181,7 +182,6 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   // @ts-ignore
   globalInterceptors.push(new QueryCheckInterceptor(httpAdapterHostService));
   globalInterceptors.push(new TransactionLoggingInterceptor());
-  globalInterceptors.push(new RequestCpuTimeInterceptor(apiMetricsService));
 
   await pluginService.bootstrapPublicApp(publicApp);
 

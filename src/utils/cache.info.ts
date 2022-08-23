@@ -209,6 +209,13 @@ export class CacheInfo {
     };
   }
 
+  static TokenSupply(identifier: string): CacheInfo {
+    return {
+      key: `tokenSupply:${identifier}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
   static TokenTransactions(identifier: string): CacheInfo {
     return {
       key: `tokenTransactions:${identifier}`,

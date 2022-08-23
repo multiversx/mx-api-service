@@ -81,7 +81,7 @@ export class ElasticUpdaterService {
       items,
       item => item.identifier,
       async elements => await this.persistenceService.batchGetMetadata(elements.map(x => x.identifier)),
-      100
+      100,
     );
 
     const itemsToUpdate: { identifier: string, metadata: any }[] = [];

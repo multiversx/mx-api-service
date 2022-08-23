@@ -15,7 +15,7 @@ import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
-import { ApiUtils, BinaryUtils, RecordUtils, CachingService, TokenUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, CachingService, TokenUtils } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { Collection } from "src/common/indexer/entities";
 
@@ -107,43 +107,27 @@ export class CollectionService {
     return nftCollections;
   }
 
-  async batchGetCollectionsProperties(collectionsIdentifiers: string[]): Promise<{ [key: string]: TokenProperties | undefined }> {
+  async batchGetCollectionsProperties(identifiers: string[]): Promise<{ [key: string]: TokenProperties | undefined }> {
     const collectionsProperties: { [key: string]: TokenProperties | undefined } = {};
-    await this.cachingService.batchApply(
-      collectionsIdentifiers,
-      collectionIdentifier => CacheInfo.EsdtProperties(collectionIdentifier).key,
-      async collectionsIdentifiers => {
-        const result: { [key: string]: TokenProperties | undefined } = {};
-
-        for (const collectionIdentifier of collectionsIdentifiers) {
-          result[collectionIdentifier] = await this.esdtService.getEsdtTokenProperties(collectionIdentifier);
-        }
-
-        return RecordUtils.mapKeys(result, identifier => CacheInfo.EsdtProperties(identifier).key);
-      },
-      (collectionIdentifier, properties) => collectionsProperties[collectionIdentifier] = properties,
+    await this.cachingService.batchApplyAll(
+      identifiers,
+      identifier => CacheInfo.EsdtProperties(identifier).key,
+      identifier => this.esdtService.getEsdtTokenProperties(identifier),
+      (identifier, properties) => collectionsProperties[identifier] = properties,
       CacheInfo.EsdtProperties('').ttl
     );
 
     return collectionsProperties;
   }
 
-  async batchGetCollectionsAssets(collectionsIdentifiers: string[]): Promise<{ [key: string]: TokenAssets | undefined }> {
+  async batchGetCollectionsAssets(identifiers: string[]): Promise<{ [key: string]: TokenAssets | undefined }> {
     const collectionsAssets: { [key: string]: TokenAssets | undefined } = {};
 
-    await this.cachingService.batchApply(
-      collectionsIdentifiers,
-      collectionIdentifier => CacheInfo.EsdtAssets(collectionIdentifier).key,
-      async collectionsIdentifiers => {
-        const result: { [key: string]: TokenAssets | undefined } = {};
-
-        for (const collectionIdentifier of collectionsIdentifiers) {
-          result[collectionIdentifier] = await this.assetsService.getAssets(collectionIdentifier);
-        }
-
-        return RecordUtils.mapKeys(result, identifier => CacheInfo.EsdtAssets(identifier).key);
-      },
-      (collectionIdentifier, properties) => collectionsAssets[collectionIdentifier] = properties,
+    await this.cachingService.batchApplyAll(
+      identifiers,
+      identifier => CacheInfo.EsdtAssets(identifier).key,
+      identifier => this.assetsService.getAssets(identifier),
+      (identifier, properties) => collectionsAssets[identifier] = properties,
       CacheInfo.EsdtAssets('').ttl
     );
 
