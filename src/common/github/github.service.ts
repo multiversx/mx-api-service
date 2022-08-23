@@ -48,6 +48,7 @@ export class GithubService {
   protected async get(path: string, userToken?: string): Promise<any> {
     const headers = this.getHeaders(userToken);
 
+    // eslint-disable-next-line require-await
     const result = await this.apiService.get(`https://api.github.com/${path}`, { headers }, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
 
     return result?.data;
