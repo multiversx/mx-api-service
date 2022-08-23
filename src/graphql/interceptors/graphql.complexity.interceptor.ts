@@ -27,7 +27,7 @@ export class GraphqlComplexityInterceptor implements NestInterceptor {
 
   private handleGraphQlRequest(target: any, context: ExecutionContext) {
     const fields: string[] = fieldsList(GqlExecutionContext.create(context).getInfo());
-    const size: number = context.getArgByIndex(1).input.size ?? 1;
+    const size: number = context.getArgByIndex(1).input?.size ?? 1;
 
     const previousComplexity = GqlExecutionContext.create(context).getInfo().variableValues?.complexity;
     const processed = previousComplexity?.processed ?? [];
