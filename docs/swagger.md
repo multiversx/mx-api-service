@@ -14,6 +14,16 @@ This API is organized around REST principles, so if you've interacted with RESTf
 * Some endpoints accept optional parameters which can be passed as query string params. 
 * All parameters are documented along each endpoint.
 
+## Complexity
+
+* Requests that return multiple items and contains the following parameters will have complexity estimation applied:
+    * `/transactions?withScResults=true will have complexity estimation 5000`
+    * `/transactions?withScResults=true&withLogs=true&withOperations=true will have complexity estimation 5000`
+    * `/transactions?withScResults=true&withLogs=true&wwithOperations=true&size=50 will have complexity estimation 10000`
+    * `/transactions?withScResults=true&withLogs=true&wwithOperations=true&size=100 will have complexity estimation > 10000 and return 400 Bad Request`
+    
+* The maximum number of elements allowed with the applied parameters is 50.
+
 ## Fields
 
 * In order to fetch only specific fields from the response, the `fields` parameter can be used:
