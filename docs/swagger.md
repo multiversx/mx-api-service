@@ -16,13 +16,15 @@ This API is organized around REST principles, so if you've interacted with RESTf
 
 ## Complexity
 
-* Requests that return multiple items and contains the following parameters will have complexity estimation applied:
-    * `/transactions?withScResults=true will have complexity estimation 5000`
-    * `/transactions?withScResults=true&withLogs=true&withOperations=true will have complexity estimation 5000`
-    * `/transactions?withScResults=true&withLogs=true&wwithOperations=true&size=50 will have complexity estimation 10000`
-    * `/transactions?withScResults=true&withLogs=true&wwithOperations=true&size=100 will have complexity estimation > 10000 and return 400 Bad Request`
-    
-* The maximum number of elements allowed with the applied parameters is 50.
+* In order to better optimize the available resources, a complexity evaluation is performed before the execution of every request.
+
+* The maximum complexity available is currently hardcoded at `10000`
+
+* When listing entries, every element in the list adds `1` to the complexity, thus making it possible to retrieve a maximum of `10000` elements in list endpoints.
+
+* If some extra info is requested, such as `withScResults` in the `/transactions` endpoint, the complexity calculation for the list is overridden with the complexity calculation of the requested field. In this situation, `withScResults` will multiply the number of items with `200`, thus limiting the maximum requested size to `50`
+
+* Some fields use the same amount of resources whether one or more of them are requested. In this situation, the fields will be grouped together, regardless whether one or more of the same group are requested. The endpoints `/transactions?size=50&withOperations=true` will produce the same complexity as `/transactions?size=50&withOperations=true&withLogs=true&withScResults=true` since they all belong to the group `details`
 
 ## Fields
 

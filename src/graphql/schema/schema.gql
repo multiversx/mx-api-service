@@ -560,13 +560,13 @@ type Nft {
   """Royalties for the given NFT."""
   royalties: Float
 
-  """Scam information for the given NFT."""
+  """Scam information for the given NFT. Complexity: 100"""
   scamInfo: ScamInformation
 
   """Score for the given NFT."""
   score: Float
 
-  """Supply for the given NFT."""
+  """Supply for the given NFT. Complexity: 100"""
   supply: String
 
   """Tags for the given NFT."""
@@ -647,13 +647,13 @@ type NftAccount {
   """Royalties for the given NFT."""
   royalties: Float
 
-  """Scam information for the given NFT."""
+  """Scam information for the given NFT. Complexity: 100"""
   scamInfo: ScamInformation
 
   """Score for the given NFT."""
   score: Float
 
-  """Supply for the given NFT."""
+  """Supply for the given NFT. Complexity: 100"""
   supply: String
 
   """Tags for the given NFT."""
@@ -727,13 +727,13 @@ type NftAccountFlat {
   """Royalties for the given NFT."""
   royalties: Float
 
-  """Scam information for the given NFT."""
+  """Scam information for the given NFT. Complexity: 100"""
   scamInfo: ScamInformation
 
   """Score for the given NFT."""
   score: Float
 
-  """Supply for the given NFT."""
+  """Supply for the given NFT. Complexity: 100"""
   supply: String
 
   """Tags for the given NFT."""
