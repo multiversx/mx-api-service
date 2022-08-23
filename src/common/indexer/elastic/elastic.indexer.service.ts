@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, BinaryUtils, RangeGreaterThanOrEqual } from "@elrondnetwork/erdnest";
+import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, BinaryUtils, RangeGreaterThanOrEqual, AbstractQuery, AddressUtils, RangeLowerThan } from "@elrondnetwork/erdnest";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
@@ -7,7 +7,6 @@ import { CollectionFilter } from "src/endpoints/collections/entities/collection.
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenType } from "src/endpoints/tokens/entities/token.type";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
-import { ElasticIndexerHelper } from "./elastic.indexer.helper";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { SortOrder } from "src/common/entities/sort.order";
@@ -17,6 +16,8 @@ import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/sma
 import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { Block } from "../entities/block";
 import { Tag } from "../entities/tag";
+import { BlsService } from "src/endpoints/bls/bls.service";
+import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -24,6 +25,7 @@ export class ElasticIndexerService implements IndexerInterface {
     private readonly apiConfigService: ApiConfigService,
     private readonly elasticService: ElasticService,
     private readonly indexerHelper: ElasticIndexerHelper,
+    private readonly blsService: BlsService,
   ) { }
 
   async getAccountsCount(): Promise<number> {

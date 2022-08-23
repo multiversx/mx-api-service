@@ -4,7 +4,7 @@ import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles";
 import { TokenRoles } from "src/endpoints/tokens/entities/token.roles";
 import { ApiUtils } from '@elrondnetwork/erdnest';
-import '@elrondnetwork/erdnest/lib/utils/extensions/string.extensions';
+import '@elrondnetwork/erdnest/lib/src/utils/extensions/string.extensions';
 
 export class TokenHelpers {
   static canBool(string: string) {

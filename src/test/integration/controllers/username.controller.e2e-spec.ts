@@ -3,36 +3,43 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
-describe.skip("Usernames Controller", () => {
+describe("Username Controller", () => {
   let app: INestApplication;
-  const route: string = "/usernames";
+  const path: string = "/usernames";
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     app = moduleRef.createNestApplication();
-
     await app.init();
   });
 
-  it("/usernames/:username - should return 302 status code and account details based on username", async () => {
-    const username: string = "alice";
+  describe('/usernames/{username}', () => {
+    it('should return return account details for a given herotag', async () => {
+      const herotag: string = 'alice';
 
-    await request(app.getHttpServer())
-      .get(route + "/" + username)
-      .expect(302);
+      await request(app.getHttpServer())
+        .get(`${path}/${herotag}`)
+        .expect(302);
+    });
   });
 
-  it("/usernames/:username - should return 404 status code Error: Not Found", async () => {
-    const username: string = "aliceTest";
+  describe('Validations', () => {
+    it('should return code 404 Not Found and response message', async () => {
+      const herotag: string = 'InvalidHeroTag';
 
-    await request(app.getHttpServer())
-      .get(route + "/" + username)
-      .expect(404)
-      .then(res => {
-        expect(res.body.message).toEqual("Account not found");
-      });
+      await request(app.getHttpServer())
+        .get(`${path}/${herotag}`)
+        .expect(404)
+        .then(res => {
+          expect(res.body.message).toStrictEqual('Account not found');
+        });
+    });
+  });
+
+  afterEach(async () => {
+    await app.close();
   });
 });

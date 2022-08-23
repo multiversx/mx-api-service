@@ -19,6 +19,7 @@ import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { Auction } from "src/common/gateway/entities/auction";
 import { AddressUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
+import { NodeSort } from "./entities/node.sort";
 
 @Injectable()
 export class NodeService {
@@ -172,17 +173,23 @@ export class NodeService {
         }
       }
 
-      if (query.sort && !(query.sort in node)) {
+      if (query.sort && (node[query.sort] === undefined || node[query.sort] === '')) {
         return false;
       }
 
       return true;
     });
 
-    if (query.sort) {
+    const sort = query.sort;
+    if (sort) {
       filteredNodes.sort((a: any, b: any) => {
         let asort = a[query.sort ?? ''];
         let bsort = b[query.sort ?? ''];
+
+        if (sort === NodeSort.locked) {
+          asort = Number(asort);
+          bsort = Number(bsort);
+        }
 
         if (asort && typeof asort === 'string') {
           asort = asort.toLowerCase();
@@ -520,6 +527,9 @@ export class NodeService {
       if (validatorStatus === 'new') {
         nodeType = NodeType.validator;
         nodeStatus = NodeStatus.new;
+      } else if (validatorStatus === 'jailed') {
+        nodeType = NodeType.validator;
+        nodeStatus = NodeStatus.jailed;
       } else if (validatorStatus && validatorStatus.includes('leaving')) {
         nodeType = NodeType.validator;
         nodeStatus = NodeStatus.leaving;

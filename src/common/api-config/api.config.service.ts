@@ -507,15 +507,6 @@ export class ApiConfigService {
     return metaChainShardId;
   }
 
-  getUseLegacyElastic(): boolean {
-    const useLegacyElastic = this.configService.get<boolean>('useLegacyElastic');
-    if (useLegacyElastic === undefined) {
-      return false;
-    }
-
-    return useLegacyElastic;
-  }
-
   getRateLimiterSecret(): string | undefined {
     return this.configService.get<string>('rateLimiterSecret');
   }

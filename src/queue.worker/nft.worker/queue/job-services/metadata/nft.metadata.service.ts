@@ -1,10 +1,11 @@
 import { CachingService } from "@elrondnetwork/erdnest";
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { CacheInfo } from "src/utils/cache.info";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
+import { ClientProxy } from "@nestjs/microservices";
 
 
 @Injectable()
@@ -15,6 +16,7 @@ export class NftMetadataService {
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     private readonly persistenceService: PersistenceService,
     private readonly cachingService: CachingService,
+    @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) {
     this.logger = new Logger(NftMetadataService.name);
   }
@@ -46,15 +48,18 @@ export class NftMetadataService {
       metadataRaw = {};
     }
 
-    await this.persistenceService.deleteMetadata(nft.identifier);
     await this.persistenceService.setMetadata(nft.identifier, metadataRaw);
 
-    await this.cachingService.deleteInCache(CacheInfo.NftMetadata(nft.identifier).key);
     await this.cachingService.setCache(
       CacheInfo.NftMetadata(nft.identifier).key,
       metadataRaw,
       CacheInfo.NftMetadata(nft.identifier).ttl
     );
+
+    await this.clientProxy.emit('refreshCacheKey', {
+      key: CacheInfo.NftMetadata(nft.identifier).key,
+      ttl: CacheInfo.NftMetadata(nft.identifier).ttl,
+    });
 
     return metadataRaw;
   }

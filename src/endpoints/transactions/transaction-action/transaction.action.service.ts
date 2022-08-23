@@ -93,7 +93,7 @@ export class TransactionActionService {
       const dataComponents = decodedData.split('@');
 
       const args = dataComponents.slice(1);
-      if (args.all(x => this.isSmartContractArgument(x))) {
+      if (args.every(x => this.isSmartContractArgument(x))) {
         metadata.functionName = dataComponents[0];
         metadata.functionArgs = args;
       }

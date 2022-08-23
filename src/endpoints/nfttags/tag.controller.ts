@@ -1,4 +1,5 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { ParseIntPipe } from '@elrondnetwork/erdnest';
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Query } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { Tag } from './entities/tag';

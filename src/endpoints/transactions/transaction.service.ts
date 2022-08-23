@@ -18,12 +18,13 @@ import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.com
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
-import { AddressUtils, ApiUtils, Constants, CachingService, PendingExecutor } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiUtils, Constants, CachingService, PendingExecuter } from '@elrondnetwork/erdnest';
 import { TransactionUtils } from './transaction.utils';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TransactionOperation } from './entities/transaction.operation';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
+import crypto from 'crypto-js';
 
 @Injectable()
 export class TransactionService {
@@ -85,7 +86,7 @@ export class TransactionService {
     if (filter.hashes) {
       const txHashes: string[] = filter.hashes;
       const elasticHashes = elasticTransactions.map(({ txHash }: any) => txHash);
-      const missingHashes: string[] = txHashes.findMissingElements(elasticHashes);
+      const missingHashes: string[] = txHashes.except(elasticHashes);
 
       const gatewayTransactions = await Promise.all(missingHashes.map((txHash) => this.transactionGetService.tryGetTransactionFromGatewayForList(txHash)));
       for (const gatewayTransaction of gatewayTransactions) {
@@ -103,7 +104,7 @@ export class TransactionService {
 
     const assets = await this.assetsService.getAllAccountAssets();
     for (const transaction of transactions) {
-      await this.processTransaction(transaction, assets);
+      await this.processTransaction(transaction, queryOptions?.withScamInfo ?? false, assets);
     }
 
     return transactions;
@@ -119,7 +120,7 @@ export class TransactionService {
     if (transaction !== null) {
       const [price] = await Promise.all([
         this.getTransactionPrice(transaction),
-        this.processTransaction(transaction),
+        this.processTransaction(transaction, true),
       ]);
       transaction.price = price;
 
@@ -149,6 +150,10 @@ export class TransactionService {
 
     transaction.senderAssets = accountAssets[transaction.sender];
     transaction.receiverAssets = accountAssets[transaction.receiver];
+
+    if (transaction.action?.arguments?.receiver) {
+      transaction.action.arguments.receiverAssets = accountAssets[transaction.action.arguments.receiver];
+    }
   }
 
   async applyAssetsDetailed(transaction: TransactionDetailed): Promise<void> {
@@ -193,19 +198,11 @@ export class TransactionService {
 
     let txHash: string;
     try {
-      // eslint-disable-next-line require-await
-      const result = await this.gatewayService.create('transaction/send', GatewayComponentRequest.sendTransaction, transaction, async (error) => {
-        const message = error.response?.data?.error;
-        if (message && message.includes('transaction generation failed')) {
-          throw error;
-        }
-
-        return false;
-      });
+      const result = await this.gatewayService.create('transaction/send', GatewayComponentRequest.sendTransaction, transaction);
 
       txHash = result?.txHash;
     } catch (error: any) {
-      return error.response?.error ?? '';
+      return error.response?.error ?? error.response?.data?.error ?? '';
     }
 
     return {
@@ -235,13 +232,13 @@ export class TransactionService {
     }
   }
 
-  async processTransaction(transaction: Transaction, assets?: Record<string, AccountAssets>): Promise<void> {
+  async processTransaction(transaction: Transaction, withScamInfo: boolean, assets?: Record<string, AccountAssets>): Promise<void> {
     try {
-      await this.pluginsService.processTransaction(transaction);
+      await this.pluginsService.processTransaction(transaction, withScamInfo);
 
       transaction.action = await this.transactionActionService.getTransactionAction(transaction);
-      transaction.pendingResults = await this.getPendingResults(transaction);
 
+      transaction.pendingResults = await this.getPendingResults(transaction);
       if (transaction.pendingResults === true) {
         transaction.status = TransactionStatus.pending;
       }
@@ -327,12 +324,10 @@ export class TransactionService {
     return detailedTransactions;
   }
 
-  private smartContractResultsExecutor = new PendingExecutor(
-    async (txHashes: string[]) => await this.getSmartContractResultsRaw(txHashes)
-  );
+  private smartContractResultsExecutor = new PendingExecuter();
 
   public async getSmartContractResults(hashes: Array<string>): Promise<Array<SmartContractResult[] | null>> {
-    return await this.smartContractResultsExecutor.execute(hashes);
+    return await this.smartContractResultsExecutor.execute(crypto.MD5(hashes.join(',')).toString(), async () => await this.getSmartContractResultsRaw(hashes));
   }
 
   private async getSmartContractResultsRaw(transactionHashes: Array<string>): Promise<Array<SmartContractResult[] | null>> {

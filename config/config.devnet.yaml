@@ -56,13 +56,7 @@ urls:
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'devnet-socket-fra.elrond.com'
 indexer:
-  # type: 'elastic'
-  type: 'postgres'
-  host: '159.223.218.66'
-  port: 5432
-  username: 'legolas'
-  password: 'legolas'
-  database: 'elrondv2'
+  type: 'elastic'
 database:
   enabled: false
   url: 'mongodb://127.0.0.1:27017/api?authSource=admin'

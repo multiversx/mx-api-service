@@ -3,11 +3,11 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
-describe.skip("Block Controller", () => {
+describe("Block Controller", () => {
   let app: INestApplication;
-  const route: string = "/blocks";
+  const path: string = "/blocks";
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -16,158 +16,144 @@ describe.skip("Block Controller", () => {
     await app.init();
   });
 
-  it("/blocks - should return 200 status code and block details", async () => {
-    await request(app.getHttpServer())
-      .get(route)
-      .expect(200);
-  });
-
-  it("/blocks?from&size - should return 200 status code and two block details", async () => {
-    const params = new URLSearchParams({
-      'from': '0',
-      'size': '2',
+  describe('/blocks', () => {
+    it('should return 25 blocks details from all shards', async () => {
+      await request(app.getHttpServer())
+        .get(`${path}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toHaveLength(25);
+        });
     });
 
-    await request(app.getHttpServer())
-      .get(route + "?" + params)
-      .expect(200);
-  });
-
-  it("/blocks?nonce - should return 200 status code and blocks details based on nonce filter", async () => {
-    const params = new URLSearchParams({
-      'nonce': '8535172',
-    });
-
-    await request(app.getHttpServer())
-      .get(route + "?" + params)
-      .expect(200);
-  });
-
-  it("/blocks?epoch - should return 200 status code and blocks details based on epoch filter", async () => {
-    const params = new URLSearchParams({
-      'epoch': '592',
-    });
-
-    await request(app.getHttpServer())
-      .get(route + "?" + params)
-      .expect(200);
-  });
-
-  it("/blocks?validator - should return 200 status code and blocks details based on validator filter", async () => {
-    const params = new URLSearchParams({
-      'validator': '00f9b676245ecf7bc74e3b644c106cfbbb366ce01a0149c1e50303d22c09bef7600f21f1925753ab994174b9926e9b078c2d1edaf03c221149ea0239722278aa864a1b26f298c29fe546fdb0ee1385243dfe407074e0dfa134c7e6d4197ce110',
-    });
-
-    await request(app.getHttpServer())
-      .get(route + "?" + params)
-      .expect(200);
-  });
-
-  it("/blocks?validator - should return 400 status code with Error: Bad Request", async () => {
-    const params = new URLSearchParams({
-      'validator': '00f9b676245ecf7bc74e3b644c106cfbbbs366ce01a0149c1e50303d22c09bef7600f21f1925753ab994174b9926e9b078c2d1edaf03c221149ea0239722278aa864a1b26f298c29fe546fdb0ee1385243dfe407074e0dfa134c7e6d4197ce110',
-    });
-
-    await request(app.getHttpServer())
-      .get(route + "?" + params)
-      .expect(400)
-      .then(res => {
-        expect(res.body.message).toEqual("Validation failed (a valid bls hash for parameter validator is expected)");
+    it('should return 1 block details', async () => {
+      const params = new URLSearchParams({
+        'size': '1',
       });
-  });
 
-  it("/blocks?proposer - should return 200 status code and blocks details based on proposer filter", async () => {
-    const params = new URLSearchParams({
-      'proposer': '00f9b676245ecf7bc74e3b644c106cfbbb366ce01a0149c1e50303d22c09bef7600f21f1925753ab994174b9926e9b078c2d1edaf03c221149ea0239722278aa864a1b26f298c29fe546fdb0ee1385243dfe407074e0dfa134c7e6d4197ce110',
+      await request(app.getHttpServer())
+        .get(`${path}?${params}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toHaveLength(1);
+        });
     });
 
-    await request(app.getHttpServer())
-      .get(route + "?" + params)
-      .expect(200);
+    test.each`
+    shard
+    ${1}
+    ${2}
+    ${0}
+    ${4294967295}
+    `
+      (
+        `should return 25 blocks from shard $shard`,
+        async ({ shard }) => {
+          const params = new URLSearchParams({
+            'shard': shard,
+          });
+
+          await request(app.getHttpServer())
+            .get(`${path}?${params}`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toHaveLength(25);
+              expect(res.body[0].shard).toStrictEqual(parseInt(`${shard}`));
+            });
+        }
+      );
   });
 
-  it("/blocks?shard - should return 200 status code and blocks details based on shard filter", async () => {
-    const params = new URLSearchParams({
-      'shard': '0',
+  describe('/blocks/count', () => {
+    it('should return count of all blocks from all shards', async () => {
+      await request(app.getHttpServer())
+        .get(`${path}/count`)
+        .expect(200)
+        .then(res => {
+          expect(+res.text).toBeGreaterThanOrEqual(42605100);
+        });
     });
 
-    await request(app.getHttpServer())
-      .get(route + "?" + params)
-      .expect(200);
-  });
+    [
+      {
+        shard: 1,
+        count: 10652302,
+      },
+      {
+        shard: 0,
+        count: 10656418,
+      },
+      {
+        shard: 4294967295,
+        count: 10640421,
+      },
+      {
+        shard: 2,
+        count: 10656826,
+      },
+    ].forEach(({ shard, count }) => {
+      describe(`shard = ${shard}`, () => {
+        it(`shoudl return count of all blocks from shard ${shard}`, async () => {
+          const params = new URLSearchParams({
+            'shard': `${shard}`,
+          });
 
-  it("/blocks/count - should return 200 status code and blocks count", async () => {
-    await request(app.getHttpServer())
-      .get(route + "/count")
-      .expect(200);
-  });
-
-  it("/blocks/count?nonce - should return 200 status code and blocks count based on nonce filter", async () => {
-    const params = new URLSearchParams({
-      'nonce': '8534500',
-    });
-
-    await request(app.getHttpServer())
-      .get(route + "/count" + "?" + params)
-      .expect(200);
-  });
-
-  it("/blocks/count?epoch - should return 200 status code and blocks count based on epoch filter", async () => {
-    const params = new URLSearchParams({
-      'epoch': '592',
-    });
-
-    await request(app.getHttpServer())
-      .get(route + "/count" + "?" + params)
-      .expect(200);
-  });
-
-  it("/blocks/count?validator - should return 200 status code and blocks count based on validator filter", async () => {
-    const params = new URLSearchParams({
-      'validator': '00f9b676245ecf7bc74e3b644c106cfbbb366ce01a0149c1e50303d22c09bef7600f21f1925753ab994174b9926e9b078c2d1edaf03c221149ea0239722278aa864a1b26f298c29fe546fdb0ee1385243dfe407074e0dfa134c7e6d4197ce110',
-    });
-
-    await request(app.getHttpServer())
-      .get(route + "/count" + "?" + params)
-      .expect(200);
-  });
-
-  it("/blocks/count?proposer - should return 200 status code and blocks count based on proposer filter", async () => {
-    const params = new URLSearchParams({
-      'proposer': '00f9b676245ecf7bc74e3b644c106cfbbb366ce01a0149c1e50303d22c09bef7600f21f1925753ab994174b9926e9b078c2d1edaf03c221149ea0239722278aa864a1b26f298c29fe546fdb0ee1385243dfe407074e0dfa134c7e6d4197ce110',
-    });
-
-    await request(app.getHttpServer())
-      .get(route + "/count" + "?" + params)
-      .expect(200);
-  });
-
-  it("/blocks/count?shard - should return 200 status code and blocks count based on shard filter", async () => {
-    const params = new URLSearchParams({
-      'shard': '0',
-    });
-
-    await request(app.getHttpServer())
-      .get(route + "/count" + "?" + params)
-      .expect(200);
-  });
-
-  it("/blocks/:hash - should return 200 status code and block details based on hash", async () => {
-    const hash: string = "870e0aa4aed8f1007dcbd666aac43e8add03ad07e808030eb6fb45b607971a63";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + hash)
-      .expect(200);
-  });
-
-  it("/blocks/:hash - should return 400 status code Error: Bad Request ", async () => {
-    const hash: string = "870e0aa4aed8f1007dcbd666aac43e8add03ads07e808030eb6fb45b607971a63";
-
-    await request(app.getHttpServer())
-      .get(route + "/" + hash)
-      .expect(400)
-      .then(res => {
-        expect(res.body.message).toEqual("Validation failed (a valid block hash for parameter hash is expected)");
+          await request(app.getHttpServer())
+            .get(`${path}/count?${params}`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
       });
+    });
+  });
+
+  describe('/blocks/{hash}', () => {
+    it('should return block information details for a given hash', async () => {
+      const hash: string = 'c3cd456e15a59bb1f143eefd4986ef010965047f89e303b80822b05177351ccd';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${hash}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body.hash).toStrictEqual(hash);
+          expect(res.body.epoch).toStrictEqual(500);
+          expect(res.body.nonce).toStrictEqual(7212812);
+          expect(res.body.prevHash).toStrictEqual('be95ddc0f2a38f1732c5fba296ea340a92dff62cab74ac710b5395cc3a1d349d');
+          expect(res.body.proposer).toStrictEqual('7e97327bac868aba21777a1fd336e260d1dfb3357d7e117a3ce6d4c2e9869ceed756eb094042dd961f1c0e9c47612f0986fb15b39847688fdf90b02fb13ff700ee3ce0b31738942e447fd0f40c77b7d0ae974c03a364a67dad0cd9ec039f3b09');
+          expect(res.body.pubKeyBitmap).toStrictEqual('ffffffffffffff7f');
+          expect(res.body.round).toStrictEqual(7214879);
+          expect(res.body.shard).toStrictEqual(1);
+          expect(res.body.size).toStrictEqual(2095);
+          expect(res.body.sizeTxs).toStrictEqual(31137);
+          expect(res.body.stateRootHash).toStrictEqual('623b558cb2f057e0a1e90e748373f5739893dadeeab8ae7bdd4fa092bf5635a0');
+          expect(res.body.timestamp).toStrictEqual(1639406874);
+          expect(res.body.txCount).toStrictEqual(39);
+          expect(res.body.gasConsumed).toStrictEqual(492435900);
+          expect(res.body.gasRefunded).toStrictEqual(190541397);
+          expect(res.body.gasPenalized).toStrictEqual(0);
+          expect(res.body.maxGasLimit).toStrictEqual(1500000000);
+          expect(res.body.miniBlocksHashes).toBeDefined();
+          expect(res.body.validators).toBeDefined();
+        });
+    });
+  });
+
+  describe('Validations', () => {
+    it('should return 400 Bad Request for a invalid block hash', async () => {
+      const hash: string = 'c3cd456e15a59bb1f143eefd4986ef010965047f89e303b80822b05177351c';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${hash}`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'hash' (a valid block hash is expected)");
+        });
+    });
+  });
+
+  afterEach(async () => {
+    await app.close();
   });
 });

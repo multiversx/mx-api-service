@@ -95,7 +95,7 @@ export class TransactionActionEsdtNftRecognizerService implements TransactionAct
       transfers: multiTransfers.map(x => this.getNftTransferDetails(x)).filter(x => x !== undefined),
       receiver: metadata.receiver,
       functionName: metadata.functionName && StringUtils.isFunctionName(metadata.functionName) ? metadata.functionName : undefined,
-      functionArgs: metadata.functionArgs && metadata.functionArgs.all(x => StringUtils.isHex(x)) ? metadata.functionArgs : undefined,
+      functionArgs: metadata.functionArgs && metadata.functionArgs.every(x => StringUtils.isHex(x)) ? metadata.functionArgs : undefined,
     };
 
     return result;

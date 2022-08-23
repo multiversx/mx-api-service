@@ -70,7 +70,7 @@ export class NftQueueController {
 
       if (nft.metadata && settings.forceRefreshMetadata) {
         const oldMetadata = nft.metadata;
-        nft.metadata = await this.refreshMetadata(nft);
+        nft.metadata = await this.nftMetadataService.refreshMetadata(nft);
         const newMetadata = nft.metadata;
         if (newMetadata) {
           this.logger.log(`Refreshed NFT metadata. Old: '${JSON.stringify(oldMetadata)}', New: '${JSON.stringify(newMetadata)}'`);
@@ -80,7 +80,7 @@ export class NftQueueController {
 
         this.clientProxy.emit('deleteCacheKeys', [CacheInfo.NftMetadata(nft.identifier).key]);
       } else if (!nft.metadata) {
-        nft.metadata = await this.refreshMetadata(nft);
+        nft.metadata = await this.nftMetadataService.refreshMetadata(nft);
       }
 
       nft.media = await this.nftMediaService.getMedia(nft.identifier) ?? undefined;
@@ -113,10 +113,6 @@ export class NftQueueController {
 
       channel.reject(message, false);
     }
-  }
-
-  private async refreshMetadata(nft: Nft) {
-    return await this.nftMetadataService.refreshMetadata(nft);
   }
 
   private async generateThumbnail(nft: Nft, media: NftMedia, forceRefresh: boolean = false): Promise<void> {

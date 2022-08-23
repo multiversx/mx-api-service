@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { PersistenceModule } from 'src/common/persistence/persistence.module';
 import { NftWorkerService } from './nft.worker.service';
 import { NftAssetModule } from './queue/job-services/assets/nft.asset.module';
 import { NftMediaModule } from './queue/job-services/media/nft.media.module';
@@ -13,8 +14,10 @@ import { NftThumbnailModule } from './queue/job-services/thumbnails/nft.thumbnai
     NftMetadataModule,
     NftThumbnailModule,
     NftAssetModule,
+    PersistenceModule,
   ],
-  providers: [NftWorkerService,
+  providers: [
+    NftWorkerService,
     {
       provide: 'QUEUE_SERVICE',
       useFactory: (configService: ApiConfigService) => {
