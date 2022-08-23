@@ -224,6 +224,10 @@ export class IndexerService implements IndexerInterface {
     return await this.execute('getAccountEsdtByIdentifiers', this.indexerInterface.getAccountEsdtByIdentifiers(identifiers, pagination));
   }
 
+  async getAccountsEsdtByCollection(identifiers: string[], pagination?: QueryPagination): Promise<TokenAccount[]> {
+    return await this.execute('getAccountsEsdtByCollection', this.indexerInterface.getAccountsEsdtByCollection(identifiers, pagination));
+  }
+
   async getNftsForAddress(address: string, filter: NftFilter, pagination: QueryPagination): Promise<TokenAccount[]> {
     return await this.execute('getNftsForAddress', this.indexerInterface.getNftsForAddress(address, filter, pagination));
   }

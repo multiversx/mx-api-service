@@ -112,6 +112,8 @@ export interface IndexerInterface {
 
   getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination): Promise<TokenAccount[]>
 
+  getAccountsEsdtByCollection(identifiers: string[], pagination?: QueryPagination): Promise<TokenAccount[]>
+
   getNftsForAddress(address: string, filter: NftFilter, pagination: QueryPagination): Promise<TokenAccount[]>
 
   getNfts(pagination: QueryPagination, filter: NftFilter, identifier?: string): Promise<TokenAccount[]>

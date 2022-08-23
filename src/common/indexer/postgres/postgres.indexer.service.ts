@@ -52,12 +52,15 @@ export class PostgresIndexerService implements IndexerInterface {
   getNftCollectionsByIds(_identifiers: string[]): Promise<Collection[]> {
     throw new Error("Method not implemented.");
   }
+
   getSmartContractResults(_transactionHashes: string[]): Promise<ScResult[]> {
     throw new Error("Method not implemented.");
   }
+
   getAccountsForAddresses(_addresses: string[]): Promise<Account[]> {
     throw new Error("Method not implemented.");
   }
+
   getAccountsCount(): Promise<number> {
     throw new Error("Method not implemented.");
   }
@@ -432,6 +435,26 @@ export class PostgresIndexerService implements IndexerInterface {
       .createQueryBuilder()
       .where(`address != 'pending'`)
       .andWhere('token_identifier IN (:...identifiers)', { identifiers })
+      .orderBy('balance_num', 'DESC')
+      .addOrderBy('timestamp', 'DESC');
+
+
+    if (pagination) {
+      query = query.skip(pagination.from).take(pagination.size);
+    }
+
+    return await query.getMany();
+  }
+
+  async getAccountsEsdtByCollection(identifiers: string[], pagination?: QueryPagination): Promise<any[]> {
+    if (identifiers.length === 0) {
+      return [];
+    }
+
+    let query = this.accountsEsdtRepository
+      .createQueryBuilder()
+      .where(`address != 'pending'`)
+      .andWhere('collection IN (:...identifiers)', { identifiers })
       .orderBy('balance_num', 'DESC')
       .addOrderBy('timestamp', 'DESC');
 

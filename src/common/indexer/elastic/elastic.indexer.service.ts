@@ -437,6 +437,28 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
   }
 
+  async getAccountsEsdtByCollection(identifiers: string[], pagination?: QueryPagination) {
+    if (identifiers.length === 0) {
+      return [];
+    }
+
+    const queries = identifiers.map((identifier) => QueryType.Match('collection', identifier, QueryOperator.AND));
+
+    let elasticQuery = ElasticQuery.create();
+
+    if (pagination) {
+      elasticQuery = elasticQuery.withPagination(pagination);
+    }
+
+    elasticQuery = elasticQuery
+      .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
+      .withCondition(QueryConditionOptions.should, queries)
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+
+    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
+  }
+
   async getNftsForAddress(address: string, filter: NftFilter, pagination: QueryPagination): Promise<any[]> {
     let elasticQuery = this.indexerHelper.buildElasticNftFilter(filter, undefined, address)
       .withPagination(pagination);
