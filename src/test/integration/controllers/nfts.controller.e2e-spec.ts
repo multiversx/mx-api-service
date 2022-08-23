@@ -1,3 +1,4 @@
+import { ComplexityInterceptor } from '@elrondnetwork/erdnest';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
@@ -13,6 +14,7 @@ describe("NFT Controller", () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
+    app.useGlobalInterceptors(new ComplexityInterceptor());
     await app.init();
   });
 
