@@ -233,10 +233,10 @@ export class PostgresIndexerHelper {
       query = query.andWhere('sender = :sender', { sender: filter.sender });
     }
 
-    if (filter.receiver) {
-      query = query.andWhere('(receiver = :receiver OR receivers like :receivers)', {
-        receiver: filter.receiver,
-        receivers: `%${filter.receiver}%`,
+    if (filter.receivers) {
+      query = query.andWhere('(receiver IN (:...receivers) OR receivers SIMILAR TO :similar)', {
+        receivers: filter.receivers,
+        similar: `%(${filter.receivers.join('|')})%`,
       });
     }
 
@@ -402,17 +402,19 @@ export class PostgresIndexerHelper {
         query = query.orWhere('sender = :sender', { sender: filter.sender });
       }
 
-      if (filter.receiver) {
-        query = query.orWhere('receiver = :receiver', { receiver: filter.receiver });
-        query = query.orWhere('receivers like :receivers', { receivers: `%${filter.receiver}%` });
+      if (filter.receivers) {
+        query = query.andWhere('(receiver IN (:...receivers) OR receivers SIMILAR TO :similar)', {
+          receivers: filter.receivers,
+          similar: `%(${filter.receivers.join('|')})%`,
+        });
       }
     } else {
       query = query.andWhere('sender = :sender', { sender: filter.sender });
 
-      if (filter.receiver) {
-        query = query.andWhere('(receiver = :receiver OR receivers like :receivers)', {
-          receiver: filter.receiver,
-          receivers: `%${filter.receiver}%`,
+      if (filter.receivers) {
+        query = query.andWhere('(receiver IN (:...receivers) OR receivers SIMILAR TO :similar)', {
+          receivers: filter.receivers,
+          similar: `%(${filter.receivers.join('|')})%`,
         });
       }
     }

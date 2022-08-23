@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, BinaryUtils, RangeGreaterThanOrEqual, AbstractQuery, AddressUtils, RangeLowerThan } from "@elrondnetwork/erdnest";
+import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, BinaryUtils, RangeGreaterThanOrEqual } from "@elrondnetwork/erdnest";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
@@ -16,8 +16,7 @@ import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/sma
 import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { Block } from "../entities/block";
 import { Tag } from "../entities/tag";
-import { BlsService } from "src/endpoints/bls/bls.service";
-import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
+import { ElasticIndexerHelper } from "./elastic.indexer.helper";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -25,7 +24,6 @@ export class ElasticIndexerService implements IndexerInterface {
     private readonly apiConfigService: ApiConfigService,
     private readonly elasticService: ElasticService,
     private readonly indexerHelper: ElasticIndexerHelper,
-    private readonly blsService: BlsService,
   ) { }
 
   async getAccountsCount(): Promise<number> {

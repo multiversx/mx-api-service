@@ -53,7 +53,7 @@ export class ElasticIndexerHelper {
     return queries;
   }
 
-  buildCollectionRolesFilter(filter: CollectionFilter, address?: string) {
+  public buildCollectionRolesFilter(filter: CollectionFilter, address?: string): ElasticQuery {
     let elasticQuery = ElasticQuery.create();
     elasticQuery = elasticQuery.withMustNotExistCondition('identifier')
       .withMustMultiShouldCondition([NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT], type => QueryType.Match('type', type));
@@ -120,7 +120,7 @@ export class ElasticIndexerHelper {
     return query.withCondition(condition, QueryType.Nested('roles', { [`roles.${name}`]: targetAddress }));
   }
 
-  buildElasticNftFilter(filter: NftFilter, identifier?: string, address?: string) {
+  public buildElasticNftFilter(filter: NftFilter, identifier?: string, address?: string): ElasticQuery {
     let elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, QueryType.Exists('identifier'));
 
@@ -189,7 +189,7 @@ export class ElasticIndexerHelper {
     return elasticQuery;
   }
 
-  buildTransferFilterQuery(filter: TransactionFilter): ElasticQuery {
+  public buildTransferFilterQuery(filter: TransactionFilter): ElasticQuery {
     let elasticQuery = ElasticQuery.create();
 
     if (filter.address) {
@@ -226,11 +226,14 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('sender', filter.sender));
     }
 
-    if (filter.receiver) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Should([
-        QueryType.Match('receiver', filter.receiver),
-        QueryType.Match('receivers', filter.receiver),
-      ]));
+    if (filter.receivers) {
+      const queries: AbstractQuery[] = [];
+      for (const receiver of filter.receivers) {
+        queries.push(QueryType.Match('receiver', receiver));
+        queries.push(QueryType.Match('receivers', receiver));
+      }
+
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(queries));
     }
 
     if (filter.token) {
@@ -272,7 +275,7 @@ export class ElasticIndexerHelper {
     return elasticQuery;
   }
 
-  buildTokensWithRolesForAddressQuery(address: string, filter: TokenWithRolesFilter, pagination?: QueryPagination): ElasticQuery {
+  public buildTokensWithRolesForAddressQuery(address: string, filter: TokenWithRolesFilter, pagination?: QueryPagination): ElasticQuery {
     let elasticQuery = ElasticQuery.create()
       .withMustNotExistCondition('identifier')
       .withMustCondition(QueryType.Should(
@@ -311,7 +314,7 @@ export class ElasticIndexerHelper {
     return elasticQuery;
   }
 
-  async buildElasticRoundsFilter(filter: RoundFilter): Promise<AbstractQuery[]> {
+  public async buildElasticRoundsFilter(filter: RoundFilter): Promise<AbstractQuery[]> {
     const queries: AbstractQuery[] = [];
 
     if (filter.shard !== undefined) {
@@ -319,7 +322,7 @@ export class ElasticIndexerHelper {
       queries.push(shardIdQuery);
     }
 
-    if (filter.epoch !== undefined && !this.apiConfigService.getUseLegacyElastic()) {
+    if (filter.epoch !== undefined) {
       const epochQuery = QueryType.Match('epoch', filter.epoch);
       queries.push(epochQuery);
     }
@@ -334,7 +337,7 @@ export class ElasticIndexerHelper {
     return queries;
   }
 
-  buildSmartContractResultFilterQuery(address?: string): ElasticQuery {
+  public buildSmartContractResultFilterQuery(address?: string): ElasticQuery {
     const shouldQueries: AbstractQuery[] = [];
     const mustQueries: AbstractQuery[] = [];
 
@@ -354,7 +357,7 @@ export class ElasticIndexerHelper {
     return elasticQuery;
   }
 
-  buildTransactionFilterQuery(filter: TransactionFilter, address?: string): ElasticQuery {
+  public buildTransactionFilterQuery(filter: TransactionFilter, address?: string): ElasticQuery {
     let elasticQuery = ElasticQuery.create()
       .withMustMatchCondition('tokens', filter.token, QueryOperator.AND)
       .withMustMatchCondition('function', this.apiConfigService.getIsIndexerV3FlagActive() ? filter.function : undefined)
@@ -372,23 +375,37 @@ export class ElasticIndexerHelper {
         elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('sender', filter.sender));
       }
 
-      if (filter.receiver) {
-        elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receiver', filter.receiver));
-
-        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-          elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receivers', filter.receiver));
-        }
-      }
-    } else {
-      elasticQuery = elasticQuery.withMustMatchCondition('sender', filter.sender);
-
-      if (filter.receiver) {
+      if (filter.receivers) {
         const keys = ['receiver'];
         if (this.apiConfigService.getIsIndexerV3FlagActive()) {
           keys.push('receivers');
         }
 
-        elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, filter.receiver));
+        for (const receiver of filter.receivers) {
+          for (const key of keys) {
+            elasticQuery = elasticQuery.withShouldCondition(QueryType.Match(key, receiver));
+          }
+        }
+      }
+    } else {
+      elasticQuery = elasticQuery.withMustMatchCondition('sender', filter.sender);
+
+      if (filter.receivers) {
+        const keys = ['receiver'];
+
+        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+          keys.push('receivers');
+        }
+
+        const queries: AbstractQuery[] = [];
+
+        for (const receiver of filter.receivers) {
+          for (const key of keys) {
+            queries.push(QueryType.Match(key, receiver));
+          }
+        }
+
+        elasticQuery = elasticQuery.withMustCondition(QueryType.Should(queries));
       }
     }
 
@@ -405,7 +422,7 @@ export class ElasticIndexerHelper {
     return elasticQuery;
   }
 
-  buildAccountHistoryFilterQuery(address?: string, token?: string): ElasticQuery {
+  public buildAccountHistoryFilterQuery(address?: string, token?: string): ElasticQuery {
     const mustQueries: AbstractQuery[] = [];
 
     if (address) {
