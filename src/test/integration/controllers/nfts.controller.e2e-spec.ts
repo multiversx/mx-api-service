@@ -143,6 +143,7 @@ describe("NFT Controller", () => {
 
     it('should return a list of 25 NFTs that have owner', async () => {
       const params = new URLSearchParams({
+        'after': '1661276190',
         'withOwner': 'true',
         'type': 'NonFungibleESDT',
       });
