@@ -1,5 +1,5 @@
 import { NftSupply } from './entities/nft.supply';
-import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query, Res, Response } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query, Res, Response } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.service";
 import { Nft } from "./entities/nft";
@@ -9,7 +9,7 @@ import { NftType } from "./entities/nft.type";
 import { NftService } from "./nft.service";
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { NftQueryOptions } from './entities/nft.query.options';
-import { ParseAddressPipe, ParseBoolPipe, ParseArrayPipe, ParseIntPipe, ParseNftPipe, ParseCollectionPipe } from '@elrondnetwork/erdnest';
+import { ParseAddressPipe, ParseBoolPipe, ParseArrayPipe, ParseIntPipe, ParseNftPipe, ParseCollectionPipe, ApplyComplexity } from '@elrondnetwork/erdnest';
 
 @Controller()
 @ApiTags('nfts')
@@ -22,6 +22,7 @@ export class NftController {
   @Get("/nfts")
   @ApiOperation({ summary: 'Global NFTs', description: 'Returns a list of Non-Fungible / Semi-Fungible / MetaESDT tokens available on blockchain' })
   @ApiOkResponse({ type: [Nft] })
+  @ApplyComplexity({ target: Nft })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
@@ -58,10 +59,6 @@ export class NftController {
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('computeScamInfo', new ParseBoolPipe) computeScamInfo?: boolean,
   ): Promise<Nft[]> {
-    if ((withOwner === true || withSupply === true || withScamInfo === true || computeScamInfo === true) && size > 100) {
-      throw new BadRequestException(`Maximum size of 100 is allowed when activating flags 'withOwner', 'withSupply', 'withScamInfo' or 'computeScamInfo'`);
-    }
-
     const options = NftQueryOptions.enforceScamInfoFlag(size, new NftQueryOptions({ withOwner, withSupply, withScamInfo, computeScamInfo }));
 
     return await this.nftService.getNfts(
