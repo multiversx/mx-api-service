@@ -80,7 +80,7 @@ export class Nft {
   @ApiProperty({ type: NftMetadata, nullable: true })
   metadata: NftMetadata | undefined = undefined;
 
-  @Field(() => Account, { description: "Owner account for the given NFT.", nullable: true })
+  @Field(() => Account, { description: "Owner account for the given NFT. Complexity: 100", nullable: true })
   @ApiProperty({ type: String, nullable: true })
   @ComplexityEstimation({ value: 100, alternatives: ['withOwner'] })
   owner: string | undefined = undefined;
@@ -89,7 +89,7 @@ export class Nft {
   @ApiProperty({ type: String, nullable: true })
   balance: string | undefined = undefined;
 
-  @Field(() => String, { description: "Supply for the given NFT.", nullable: true })
+  @Field(() => String, { description: "Supply for the given NFT. Complexity: 100", nullable: true })
   @ApiProperty(SwaggerUtils.amountPropertyOptions())
   @ComplexityEstimation({ value: 100, alternatives: ['withSupply'] })
   supply: string | undefined = undefined;
@@ -106,7 +106,7 @@ export class Nft {
   @ApiProperty({ type: String })
   ticker?: string = '';
 
-  @Field(() => ScamInfo, { description: "Scam information for the given NFT.", nullable: true })
+  @Field(() => ScamInfo, { description: "Scam information for the given NFT. Complexity: 100", nullable: true })
   @ApiProperty({ type: ScamInfo, nullable: true })
   @ComplexityEstimation({ value: 100, alternatives: ['withScamInfo', 'computeScamInfo'] })
   scamInfo: ScamInfo | undefined = undefined;
