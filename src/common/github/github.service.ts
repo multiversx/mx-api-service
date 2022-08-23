@@ -7,7 +7,7 @@ import { GithubUserInfo } from "./entities/github.user.info";
 export class GithubService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly apiService: ApiService,
+    protected readonly apiService: ApiService,
   ) { }
 
   async getUserInfo(username: string): Promise<GithubUserInfo | undefined> {
@@ -36,16 +36,30 @@ export class GithubService {
     return BinaryUtils.base64Decode(result.content);
   }
 
-  private async get(path: string): Promise<any> {
-    const headers = this.getHeaders();
 
-    // eslint-disable-next-line require-await
+  protected async post(path: string, body: any, userToken?: string): Promise<any> {
+    const headers = this.getHeaders(userToken);
+
+    const result = await this.apiService.post(`https://api.github.com/${path}`, body, { headers });
+
+    return result?.data;
+  }
+
+  protected async get(path: string, userToken?: string): Promise<any> {
+    const headers = this.getHeaders(userToken);
+
     const result = await this.apiService.get(`https://api.github.com/${path}`, { headers }, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
 
     return result?.data;
   }
 
-  private getHeaders(): Record<string, string> {
+  protected getHeaders(userToken?: string): Record<string, string> {
+    if (userToken) {
+      return {
+        Authorization: `token ${userToken}`,
+      };
+    }
+
     const token = this.apiConfigService.getGithubToken();
     if (!token) {
       return {};
