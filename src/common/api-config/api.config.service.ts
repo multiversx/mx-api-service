@@ -28,6 +28,15 @@ export class ApiConfigService {
     return gatewayUrls[Math.floor(Math.random() * gatewayUrls.length)];
   }
 
+  getLightGatewayUrl(): string | undefined {
+    const gatewayUrls = this.configService.get<string[]>('urls.lightGateway');
+    if (!gatewayUrls) {
+      return undefined;
+    }
+
+    return gatewayUrls[Math.floor(Math.random() * gatewayUrls.length)];
+  }
+
   getElasticUrl(): string {
     const elasticUrls = this.configService.get<string[]>('urls.elastic');
     if (!elasticUrls) {
@@ -321,6 +330,10 @@ export class ApiConfigService {
 
   getIsIndexerV3FlagActive(): boolean {
     return this.configService.get<boolean>('flags.indexer-v3') ?? false;
+  }
+
+  isGraphQlActive(): boolean {
+    return this.configService.get<boolean>('api.graphql') ?? false;
   }
 
   getIsPublicApiActive(): boolean {

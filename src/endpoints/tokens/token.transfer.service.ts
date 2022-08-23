@@ -88,7 +88,7 @@ export class TokenTransferService {
   }
 
   async getOperationsForTransaction(transaction: TransactionDetailed, logs: TransactionLog[]): Promise<TransactionOperation[]> {
-    const scResultsOperations: TransactionOperation[] = this.getOperationsForTransactionScResults(transaction.results);
+    const scResultsOperations: TransactionOperation[] = this.getOperationsForTransactionScResults(transaction.results ?? []);
     const logsOperations: TransactionOperation[] = await this.getOperationsForTransactionLogs(transaction.txHash, logs, transaction.sender);
 
     return [...scResultsOperations, ...logsOperations];

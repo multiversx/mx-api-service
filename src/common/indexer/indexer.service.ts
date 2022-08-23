@@ -279,4 +279,16 @@ export class IndexerService implements IndexerInterface {
   async setMetadataForToken(identifier: string, value: any): Promise<void> {
     return await this.execute('setMetadataForToken', this.indexerInterface.setMetadataForToken(identifier, value));
   }
+
+  async getNftCollectionsByIds(identifiers: string[]): Promise<Collection[]> {
+    return await this.execute('getNftCollectionsByIds', this.indexerInterface.getNftCollectionsByIds(identifiers));
+  }
+
+  async getSmartContractResults(transactionHashes: string[]): Promise<ScResult[]> {
+    return await this.execute('getSmartContractResults', this.indexerInterface.getSmartContractResults(transactionHashes));
+  }
+
+  async getAccountsForAddresses(addresses: string[]): Promise<Account[]> {
+    return await this.execute('getAccountsForAddresses', this.indexerInterface.getAccountsForAddresses(addresses));
+  }
 }

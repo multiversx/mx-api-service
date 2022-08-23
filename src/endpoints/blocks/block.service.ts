@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { Block } from "./entities/block";
 import { BlockDetailed } from "./entities/block.detailed";
 import { BlockFilter } from "./entities/block.filter";
@@ -7,6 +7,8 @@ import { BlsService } from "src/endpoints/bls/bls.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { CachingService, Constants } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
+import { NodeService } from "../nodes/node.service";
+import { IdentitiesService } from "../identities/identities.service";
 
 @Injectable()
 export class BlockService {
@@ -14,6 +16,10 @@ export class BlockService {
     private readonly indexerService: IndexerService,
     private readonly cachingService: CachingService,
     private readonly blsService: BlsService,
+    @Inject(forwardRef(() => NodeService))
+    private readonly nodeService: NodeService,
+    @Inject(forwardRef(() => IdentitiesService))
+    private readonly identitiesService: IdentitiesService,
   ) { }
 
   async getBlocksCount(filter: BlockFilter): Promise<number> {
@@ -24,7 +30,7 @@ export class BlockService {
     );
   }
 
-  async getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<Block[]> {
+  async getBlocks(filter: BlockFilter, queryPagination: QueryPagination, withProposerIdentity?: boolean): Promise<Block[]> {
     const result = await this.indexerService.getBlocks(filter, queryPagination);
 
     const blocks = [];
@@ -35,7 +41,38 @@ export class BlockService {
       blocks.push(block);
     }
 
+    if (withProposerIdentity === true) {
+      await this.applyProposerIdentity(blocks);
+    }
+
     return blocks;
+  }
+
+  private async applyProposerIdentity(blocks: Block[]): Promise<void> {
+    const proposerBlses = blocks.map(x => x.proposer);
+
+    const nodes = await this.nodeService.getAllNodes();
+    for (const node of nodes) {
+      if (!proposerBlses.includes(node.bls)) {
+        continue;
+      }
+
+      const nodeIdentity = node.identity;
+      if (!nodeIdentity) {
+        continue;
+      }
+
+      const identity = await this.identitiesService.getIdentity(nodeIdentity);
+      if (!identity) {
+        continue;
+      }
+
+      for (const block of blocks) {
+        if (block.proposer === node.bls) {
+          block.proposerIdentity = identity;
+        }
+      }
+    }
   }
 
   async computeProposerAndValidators(item: any) {
@@ -69,7 +106,11 @@ export class BlockService {
       result.validators = [];
     }
 
-    return BlockDetailed.mergeWithElasticResponse(new BlockDetailed(), result);
+
+    const block = BlockDetailed.mergeWithElasticResponse(new BlockDetailed(), result);
+    await this.applyProposerIdentity([block]);
+
+    return block;
   }
 
   async getCurrentEpoch(): Promise<number> {

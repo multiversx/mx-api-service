@@ -1,4 +1,4 @@
-import { ParseBlockHashPipe, ParseBlsHashPipe, ParseOptionalIntPipe } from "@elrondnetwork/erdnest";
+import { ParseBlockHashPipe, ParseBlsHashPipe, ParseOptionalBoolPipe, ParseOptionalIntPipe } from "@elrondnetwork/erdnest";
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -22,6 +22,7 @@ export class BlockController {
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'nonce', description: 'Filter by nonce', required: false })
+  @ApiQuery({ name: 'withProposerIdentity', description: 'Provide identity information for proposer node', required: false })
   getBlocks(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -30,8 +31,9 @@ export class BlockController {
     @Query('validator', ParseBlsHashPipe) validator?: string,
     @Query('epoch', ParseOptionalIntPipe) epoch?: number,
     @Query('nonce', ParseOptionalIntPipe) nonce?: number,
+    @Query('withProposerIdentity', ParseOptionalBoolPipe) withProposerIdentity?: boolean,
   ): Promise<Block[]> {
-    return this.blockService.getBlocks(new BlockFilter({ shard, proposer, validator, epoch, nonce }), new QueryPagination({ from, size }));
+    return this.blockService.getBlocks(new BlockFilter({ shard, proposer, validator, epoch, nonce }), new QueryPagination({ from, size }), withProposerIdentity);
   }
 
   @Get("/blocks/count")

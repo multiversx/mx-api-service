@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
-describe("Block Controller", () => {
+describe.skip("Block Controller", () => {
   let app: INestApplication;
   const route: string = "/blocks";
 

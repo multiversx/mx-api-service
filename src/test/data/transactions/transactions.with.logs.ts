@@ -1,21 +1,24 @@
-const transactionsWithLogs =
-  [
-    {
-      id: undefined,
-      address: "erd1hz65lr7ry7sa3p8jjeplwzujm2d7ktj7s6glk9hk8f4zj8znftgqaey5f5",
-      events: [
-        {
-          address: "erd1hz65lr7ry7sa3p8jjeplwzujm2d7ktj7s6glk9hk8f4zj8znftgqaey5f5",
-          identifier: "ESDTNFTTransfer",
-          topics: [
-            "TEtGQVJNLTlkMWVhOA==",
-            "TShC",
-            "N0Mgrmu489bl",
-            "AAAAAAAAAAAFAB4qFCjdHjpRRrOWDZ4PSlA2mQTuVIM=",
-          ],
-          data: 'Y2xhaW0=',
-        },
+import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
+import { TransactionLogEvent } from "src/endpoints/transactions/entities/transaction.log.event";
+
+const transactionsWithLogs: TransactionLog[] =
+  [{
+    id: "f09434ed2c399fd2d0ca76b2674ff88f8e55626c8052a3b6beca92235736e8fb",
+    address: "erd1qqqqqqqqqqqqqpgqg8a36rqxu4ch5v2522jv5avlun94sdv80n4sygxs94",
+    addressAssets: {
+      description: "",
+      icon: "",
+      iconPng: "",
+      iconSvg: "",
+      proof: "",
+      name: "Maiar Exchange: WEGLD/USDC Liquidity Pool",
+      tags: [
+        "mex",
+        "liquiditypool",
       ],
     },
+    events: [] as TransactionLogEvent[],
+  },
   ];
+
 export default transactionsWithLogs;

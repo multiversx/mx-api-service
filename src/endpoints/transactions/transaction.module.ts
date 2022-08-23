@@ -13,7 +13,7 @@ import { TransactionService } from "./transaction.service";
     forwardRef(() => TokenModule),
     DataApiModule,
     forwardRef(() => PluginModule),
-    TransactionActionModule,
+    forwardRef(() => TransactionActionModule),
     AssetsModule,
   ],
   providers: [

@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
-describe("Usernames Controller", () => {
+describe.skip("Usernames Controller", () => {
   let app: INestApplication;
   const route: string = "/hello";
 

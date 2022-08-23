@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
-describe("NFT Controller", () => {
+describe.skip("NFT Controller", () => {
   let app: INestApplication;
   const route: string = "/nfts";
 

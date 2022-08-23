@@ -78,6 +78,12 @@ export interface IndexerInterface {
 
   getNftCollections(pagination: QueryPagination, filter: CollectionFilter, address?: string): Promise<Collection[]>
 
+  getNftCollectionsByIds(identifiers: string[]): Promise<Collection[]>
+
+  getSmartContractResults(transactionHashes: string[]): Promise<ScResult[]>;
+
+  getAccountsForAddresses(addresses: string[]): Promise<Account[]>;
+
   getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]): Promise<TokenAccount[]>
 
   getNftTags(pagination: QueryPagination, search?: string): Promise<Tag[]>

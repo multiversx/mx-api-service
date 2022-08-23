@@ -12,7 +12,7 @@ import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.roles.filter";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { Repository } from "typeorm";
-import { MiniBlock, Tag, TokenType } from "../entities";
+import { Collection, ScResult, Account, MiniBlock, Tag, TokenType } from "../entities";
 import { IndexerInterface } from "../indexer.interface";
 import { AccountDb, AccountsEsdtDb, BlockDb, LogDb, MiniBlockDb, ReceiptDb, RoundInfoDb, ScDeployInfoDb, ScResultDb, TagDb, TokenInfoDb, TransactionDb, ValidatorPublicKeysDb } from "./entities";
 import { PostgresIndexerHelper } from "./postgres.indexer.helper";
@@ -49,8 +49,17 @@ export class PostgresIndexerService implements IndexerInterface {
     private readonly indexerHelper: PostgresIndexerHelper,
   ) { }
 
-  async getAccountsCount(): Promise<number> {
-    return await this.accountsRepository.count();
+  getNftCollectionsByIds(_identifiers: string[]): Promise<Collection[]> {
+    throw new Error("Method not implemented.");
+  }
+  getSmartContractResults(_transactionHashes: string[]): Promise<ScResult[]> {
+    throw new Error("Method not implemented.");
+  }
+  getAccountsForAddresses(_addresses: string[]): Promise<Account[]> {
+    throw new Error("Method not implemented.");
+  }
+  getAccountsCount(): Promise<number> {
+    throw new Error("Method not implemented.");
   }
 
   async getScResultsCount(): Promise<number> {
