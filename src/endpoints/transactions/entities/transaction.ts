@@ -1,4 +1,3 @@
-import { ComplexityEstimation } from "@elrondnetwork/erdnest";
 import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
@@ -39,7 +38,6 @@ export class Transaction {
 
   @Field(() => Account, { description: "Receiver account for the given transaction." })
   @ApiProperty({ type: String })
-  @ComplexityEstimation({ value: 100 })
   receiver: string = '';
 
   @ApiProperty({ type: AccountAssets, nullable: true })
@@ -54,7 +52,6 @@ export class Transaction {
 
   @Field(() => Account, { description: "Sender account for the given transaction." })
   @ApiProperty({ type: String })
-  @ComplexityEstimation({ value: 100 })
   sender: string = '';
 
   @ApiProperty({ type: AccountAssets, nullable: true })

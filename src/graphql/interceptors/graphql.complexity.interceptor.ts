@@ -26,32 +26,27 @@ export class GraphqlComplexityInterceptor implements NestInterceptor {
   }
 
   private handleGraphQlRequest(target: any, context: ExecutionContext) {
-    const graphqlContext = GqlExecutionContext.create(context);
-    const requestInfo = graphqlContext.getInfo();
-    const requestArgs = graphqlContext.getArgs();
+    const fields: string[] = fieldsList(GqlExecutionContext.create(context).getInfo());
+    const size: number = context.getArgByIndex(1).input?.size ?? 1;
 
-    const fields: string[] = fieldsList(requestInfo);
-    const size: number = requestArgs.input?.size ?? 1;
-
-    const previousComplexity = requestInfo.variableValues?.complexity;
+    const previousComplexity = GqlExecutionContext.create(context).getInfo().variableValues?.complexity;
     const processed = previousComplexity?.processed ?? [];
 
-    const requestPath = `${target.name}-${size}-${context.getHandler().name}-${fields.toString()}`;
-    if (processed.find((name: string) => name === requestPath)) {
+    if (processed.find((name: string) => name === `${target.name}-${size}-${fields.toString()}`)) {
       // special case for resolvers since they get called a bunch of times for one given query.
       return;
     }
 
-    const complexityTree = ComplexityUtils.updateComplexityTree(previousComplexity, target, fields, size, context.getArgByIndex(0), requestInfo.path.key);
+    const complexityTree = ComplexityUtils.updateComplexityTree(previousComplexity, target, fields, size);
 
     const complexity = complexityTree.getComplexity();
     if (complexity > this.complexityThreshold) {
       throw new ComplexityExceededException(complexity, this.complexityThreshold);
     }
 
-    processed.push(requestPath);
+    processed.push(`${target.name}-${size}-${fields.toString()}`);
 
-    graphqlContext.getInfo().variableValues.complexity = {
+    GqlExecutionContext.create(context).getInfo().variableValues.complexity = {
       processed: processed,
       tree: complexityTree,
     };
