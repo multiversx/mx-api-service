@@ -13,6 +13,7 @@ import { NftCollectionModule } from "src/graphql/entities/nft.collection/nft.col
 import { SmartContractResultModule } from "src/graphql/entities/smart.contract.result/smart.contract.result.module";
 import { TransactionDetailedModule } from "src/graphql/entities/transaction.detailed/transaction.detailed.module";
 import { TransactionModule } from "src/graphql/entities/transaction/transaction.module";
+import { TagModule } from "src/graphql/entities/tag/tag.module";
 
 @Module({})
 export class GraphQlModule {
@@ -38,6 +39,7 @@ export class GraphQlModule {
         SmartContractResultModule,
         TransactionDetailedModule,
         TransactionModule,
+        TagModule,
       ];
     }
 

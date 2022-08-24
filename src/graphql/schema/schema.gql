@@ -405,6 +405,15 @@ input GetNftsInput {
   withSupply: Boolean
 }
 
+"""Input to retrieve the given tags for."""
+input GetTagsInput {
+  """Number of tags to skip for the given result set."""
+  from: Float = 0
+
+  """Number of tags to retrieve for the given result set."""
+  size: Float = 25
+}
+
 """Input to retrieve the given detailed transaction for."""
 input GetTransactionDetailedInput {
   """Hash to retrieve the corresponding detailed transaction for."""
@@ -989,6 +998,15 @@ type Query {
     input: GetNftsCountInput!
   ): Float!
 
+  """Retrieve all tags for the given input."""
+  tags(
+    """Input to retrieve the given tags for."""
+    input: GetTagsInput!
+  ): [Tag!]!
+
+  """Retrieve all tags count."""
+  tagsCount: Float!
+
   """Retrieve the detailed transaction for the given input."""
   transaction(
     """Input to retrieve the given detailed transaction for."""
@@ -1096,6 +1114,15 @@ enum SortOrder {
 
   """Descending order."""
   desc
+}
+
+"""Tag object type."""
+type Tag {
+  """Count for the given tag."""
+  count: Float
+
+  """Tag details."""
+  tag: String!
 }
 
 """Token assets object type."""
