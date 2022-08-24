@@ -995,7 +995,7 @@ type Query {
     input: GetNftCollectionsCountInput!
   ): Float!
 
-  """Retrieve all tags for the given input."""
+  """Retrieve all delegation staking information."""
   delegation: Delegation!
 
   """Retrieve the NFT for the given input."""
@@ -1241,11 +1241,11 @@ type TransactionDetailed {
   """Transaction receipt for the given detailed transaction."""
   receipt: TransactionReceipt
 
-  """Receiver account for the given transaction."""
-  receiver: Account!
-
   """Receiver account for the given detailed transaction."""
   receiverAccount: Account!
+
+  """Receiver account for the given transaction."""
+  receiverAddress: Account!
 
   """Smart contract results for the given detailed transaction."""
   results: [SmartContractResult!]
