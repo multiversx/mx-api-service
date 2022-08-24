@@ -36,13 +36,11 @@ describe('Transactions', () => {
                 sender
                 value
               }
-              receiver{
+              receiverAccount{
                 address
-                shard
               }
-              sender{
+              senderAccount{
                 address
-                shard
               }
               signature
               status
@@ -167,26 +165,12 @@ describe('Transactions', () => {
             transactions(input:{
               hashes: ["2d4875377f4ce54d8f8ba51cfeaa50b85a9ce20520a66fdaabb3ebdf9e3195a1", "5a873cbc1ead69bc474a93f2dbffa689c1bb84c413ab7b634682f0c4c4e430af"]
             }){
-              
             txHash
             gasLimit
             gasPrice
             gasUsed
             miniBlockHash
             nonce
-            receipt{
-              data
-              sender
-              value
-            }
-            receiver{
-              address
-              shard
-            }
-            sender{
-              address
-              shard
-            }
             signature
             status
             value

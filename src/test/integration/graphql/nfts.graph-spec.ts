@@ -26,9 +26,6 @@ describe('Nfts', () => {
               identifier:"MEDAL-ae074f-78"
             }){
              identifier
-             collection{
-              collection
-            }
               attributes
               nonce
               type
@@ -78,9 +75,6 @@ describe('Nfts', () => {
                   type: ${types}, size:10
                 }){
                   identifier
-                  collection{
-                    collection
-                  }
                   timestamp
                   attributes
                   nonce
@@ -123,9 +117,6 @@ describe('Nfts', () => {
               identifiers: ["MOS-b9b4b2-2710", "MEDAL-ae074f-78"]
             }){
               identifier
-              collection{
-                collection
-              }
               timestamp
               attributes
               nonce
