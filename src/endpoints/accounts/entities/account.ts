@@ -1,5 +1,5 @@
 import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
-import { SwaggerUtils } from "@elrondnetwork/erdnest";
+import { ComplexityEstimation, SwaggerUtils } from "@elrondnetwork/erdnest";
 import { ApiProperty } from "@nestjs/swagger";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 
@@ -11,6 +11,7 @@ export class Account {
 
   @Field(() => ID, { description: 'Address for the given account.' })
   @ApiProperty({ type: String, description: 'Account bech32 address', example: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz' })
+  @ComplexityEstimation({ ignoreParentComplexity: true })
   address: string = '';
 
   @Field(() => String, { description: 'Balance for the given account.' })
@@ -23,6 +24,7 @@ export class Account {
 
   @Field(() => Float, { description: 'Shard for the given account.' })
   @ApiProperty({ type: Number, description: 'The shard ID allocated to the account', example: 0 })
+  @ComplexityEstimation({ ignoreParentComplexity: true })
   shard: number = 0;
 
   @Field(() => AccountAssets, { description: 'Account assets for the given account.', nullable: true })

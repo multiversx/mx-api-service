@@ -9,6 +9,8 @@ import { TransactionDetailedLoader } from "src/graphql/entities/transaction.deta
 import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
 import { TransactionOperation } from "src/endpoints/transactions/entities/transaction.operation";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
+import { ApplyComplexity } from "@elrondnetwork/erdnest";
+import { AccountDetailed } from "src/endpoints/accounts/entities/account.detailed";
 
 @Resolver(() => TransactionDetailed)
 export class TransactionDetailedResolver extends TransactionDetailedQuery {
@@ -35,6 +37,7 @@ export class TransactionDetailedResolver extends TransactionDetailedQuery {
   }
 
   @ResolveField("receiver", () => Account, { name: "receiver", description: "Receiver account for the given detailed transaction." })
+  @ApplyComplexity({ target: AccountDetailed })
   public async getTransactionReceiver(@Parent() transaction: TransactionDetailed, @Fields() fields: string[]) {
     if (!fields.filter((field) => field !== "address" && field !== "shard").length) {
 
@@ -48,6 +51,7 @@ export class TransactionDetailedResolver extends TransactionDetailedQuery {
   }
 
   @ResolveField("sender", () => Account, { name: "sender", description: "Sender account for the given detailed transaction." })
+  @ApplyComplexity({ target: AccountDetailed })
   public async getTransactionSender(@Parent() transaction: TransactionDetailed, @Fields() fields: string[]) {
     if (!fields.filter((field) => field !== "address" && field !== "shard").length) {
       return new Account({
