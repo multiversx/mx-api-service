@@ -50,8 +50,10 @@ export class TransactionDetailedLoader {
     return await this.accountDataLoader.load(address);
   }
 
-  private readonly accountDataLoader: any = new DataLoader(async addresses =>
+  private readonly accountDataLoader: any = new DataLoader(async addresses => {
     // @ts-ignore
-    await this.accountService.getAccountsForAddresses(addresses)
-  );
+    const accounts = await this.accountService.getAccountsForAddresses(addresses);
+
+    return accounts.sorted((element) => addresses.indexOf(element.address));
+  });
 }

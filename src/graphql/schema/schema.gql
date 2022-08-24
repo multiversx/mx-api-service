@@ -1241,8 +1241,11 @@ type TransactionDetailed {
   """Transaction receipt for the given detailed transaction."""
   receipt: TransactionReceipt
 
-  """Receiver account for the given detailed transaction."""
+  """Receiver account for the given transaction."""
   receiver: Account!
+
+  """Receiver account for the given detailed transaction."""
+  receiverAccount: Account!
 
   """Smart contract results for the given detailed transaction."""
   results: [SmartContractResult!]
@@ -1254,7 +1257,10 @@ type TransactionDetailed {
   scamInfo: ScamInformation
 
   """Sender account for the given detailed transaction."""
-  sender: Account!
+  senderAccount: Account!
+
+  """Sender account for the given transaction."""
+  senderAddress: String!
 
   """Signature for the given transaction."""
   signature: String
