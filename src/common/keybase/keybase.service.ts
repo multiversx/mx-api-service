@@ -127,7 +127,7 @@ export class KeybaseService {
       this.logger.log(`github.com validation: for identity '${identity}', found ${keys.length} keys`);
 
       await this.cachingService.batchProcess(
-        [keys],
+        keys,
         key => `keybase:${key}`,
         async () => await true,
         Constants.oneMonth() * 6,
