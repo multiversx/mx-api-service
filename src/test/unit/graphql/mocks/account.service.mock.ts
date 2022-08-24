@@ -5,20 +5,15 @@ import { AccountDetailed } from "src/endpoints/accounts/entities/account.detaile
 import { QueryPagination } from "src/common/entities/query.pagination";
 
 export class AccountServiceMock {
+  private static readonly count = randomInt(25, 100);
+
   private static readonly generateAccount = (): AccountDetailed => {
     return new AccountDetailed({
       address: randomUUID(),
-      balance: randomInt(3).toString(),
-      nonce: randomInt(3),
-      shard: randomInt(3),
     });
   };
 
-  static readonly accounts: Array<AccountDetailed> = [
-    AccountServiceMock.generateAccount(),
-    AccountServiceMock.generateAccount(),
-    AccountServiceMock.generateAccount(),
-  ];
+  static readonly accounts: Array<AccountDetailed> = Array.from({ length: AccountServiceMock.count }, () => AccountServiceMock.generateAccount());
 
   public getAccounts(queryPagination: QueryPagination): Array<Account> {
     return AccountServiceMock.accounts.slice(queryPagination.from, queryPagination.size);

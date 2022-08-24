@@ -36,7 +36,7 @@ describe(AccountQuery, () => {
   it("get accounts with default input should return accounts", async () => {
     const input: GetAccountsInput = new GetAccountsInput();
 
-    const expectedAccounts: Account[] = AccountServiceMock.accounts;
+    const expectedAccounts: Account[] = AccountServiceMock.accounts.slice(input.from, input.size);
 
     await assertGetAccounts(input, expectedAccounts);
   });
