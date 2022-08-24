@@ -88,7 +88,7 @@ describe("NFT Controller", () => {
         .then(res => {
           expect(res.body.identifier).toStrictEqual('LKMEX-aab910-395582');
           expect(res.body.unlockSchedule).toBeDefined();
-          expect(res.body.assets).toBeDefined();
+          expect(res.body).toBeDefined();
         });
     });
 
