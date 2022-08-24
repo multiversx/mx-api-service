@@ -55,13 +55,7 @@ export class GithubService {
   }
 
   protected getHeaders(userToken?: string): Record<string, string> {
-    if (userToken) {
-      return {
-        Authorization: `token ${userToken}`,
-      };
-    }
-
-    const token = this.apiConfigService.getGithubToken();
+    const token = userToken ?? this.apiConfigService.getGithubToken();
     if (!token) {
       return {};
     }
