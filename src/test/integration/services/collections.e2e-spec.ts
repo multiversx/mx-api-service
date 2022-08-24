@@ -13,7 +13,7 @@ import { CollectionFilter } from "src/endpoints/collections/entities/collection.
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 
-describe('Collection Service', () => {
+describe.skip('Collection Service', () => {
   let collectionService: CollectionService;
 
   beforeAll(async () => {
