@@ -5,6 +5,10 @@ import { NftType } from "src/endpoints/nfts/entities/nft.type";
 
 @InputType({ description: "Input to retrieve the given NFT collections count for." })
 export class GetNftCollectionsCountInput {
+  constructor(partial?: Partial<GetNftCollectionsCountInput>) {
+    Object.assign(this, partial);
+  }
+
   @Field(() => ID, { name: "search", description: "Collection identifier to retrieve for the given result set.", nullable: true })
   search: string | undefined = undefined;
 
@@ -49,6 +53,12 @@ export class GetNftCollectionsCountInput {
 
 @InputType({ description: "Input to retrieve the given NFT collections for." })
 export class GetNftCollectionsInput extends GetNftCollectionsCountInput {
+  constructor(partial?: Partial<GetNftCollectionsInput>) {
+    super();
+
+    Object.assign(this, partial);
+  }
+
   @Field(() => Float, { name: "from", description: "Number of NFT collections to skip for the given result set.", nullable: true, defaultValue: 0 })
   from: number = 0;
 
@@ -61,6 +71,10 @@ export class GetNftCollectionsInput extends GetNftCollectionsCountInput {
 
 @InputType({ description: "Input to retrieve the given NFT collection for." })
 export class GetNftCollectionInput {
+  constructor(partial?: Partial<GetNftCollectionInput>) {
+    Object.assign(this, partial);
+  }
+
   @Field(() => ID, { name: "collection", description: "Collection identifier to retrieve the corresponding NFT collection for." })
   collection: string = "";
 

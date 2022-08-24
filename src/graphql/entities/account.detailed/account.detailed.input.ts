@@ -5,6 +5,10 @@ import { NftType } from "src/endpoints/nfts/entities/nft.type";
 
 @InputType({ description: "Input to retrieve the given detailed account for." })
 export class GetAccountDetailedInput {
+  constructor(partial?: Partial<GetAccountDetailedInput>) {
+    Object.assign(this, partial);
+  }
+
   @Field(() => ID, { name: "address", description: "Address to retrieve the corresponding detailed account for." })
   address: string = "";
 
@@ -15,6 +19,10 @@ export class GetAccountDetailedInput {
 
 @InputType({ description: "Input to retrieve the given NFT collections for." })
 export class GetNftCollectionsAccountInput {
+  constructor(partial?: Partial<GetNftCollectionsAccountInput>) {
+    Object.assign(this, partial);
+  }
+
   @Field(() => Float, { name: "from", description: "Number of NFT collections to skip for the given result set.", nullable: true, defaultValue: 0 })
   from: number = 0;
 
@@ -30,6 +38,10 @@ export class GetNftCollectionsAccountInput {
 
 @InputType({ description: "Input to retrieve the given NFTs for." })
 export class GetNftsAccountInput {
+  constructor(partial?: Partial<GetNftsAccountInput>) {
+    Object.assign(this, partial);
+  }
+  
   @Field(() => Float, { name: "from", description: "Number of collections to skip for the given result set.", nullable: true, defaultValue: 0 })
   from: number = 0;
 

@@ -5,6 +5,12 @@ import { SortOrder } from "src/common/entities/sort.order";
 
 @InputType({ description: "Input to retrieve the given transactions for." })
 export class GetTransactionsInput extends GetTransactionsCountInput {
+  constructor(partial?: Partial<GetTransactionsInput>) {
+    super();
+
+    Object.assign(this, partial);
+  }
+
   @Field(() => Float, { name: "from", description: "Number of transactions to skip for the given result set.", nullable: true, defaultValue: 0 })
   from: number = 0;
 
@@ -17,6 +23,10 @@ export class GetTransactionsInput extends GetTransactionsCountInput {
 
 @InputType({ description: "Input to retrieve the given detailed transaction for." })
 export class GetTransactionDetailedInput {
+  constructor(partial?: Partial<GetTransactionDetailedInput>) {
+    Object.assign(this, partial);
+  }
+
   @Field(() => String, { name: "hash", description: "Hash to retrieve the corresponding detailed transaction for." })
   hash: string = "";
 
