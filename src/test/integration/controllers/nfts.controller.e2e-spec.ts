@@ -79,6 +79,19 @@ describe("NFT Controller", () => {
         });
     });
 
+    it('should return LKMEX MetaESDT details based on a given identifier', async () => {
+      const identifier: string = 'LKMEX-aab910-395582';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body.identifier).toStrictEqual('LKMEX-aab910-395582');
+          expect(res.body.unlockSchedule).toBeDefined();
+          expect(res.body.assets).toBeDefined();
+        });
+    });
+
     test.each`
     types
     ${'NonFungibleESDT'}
