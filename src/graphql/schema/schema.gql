@@ -143,6 +143,21 @@ type CollectionRoles {
   roles: [String!]!
 }
 
+"""Delegation object type."""
+type Delegation {
+  """Locked details."""
+  locked: String!
+
+  """MinDelegation details."""
+  minDelegation: String!
+
+  """Stake details."""
+  stake: String!
+
+  """TopUp details."""
+  topUp: String!
+}
+
 """ESDT data source."""
 enum EsdtDataSource {
   """Elastic data source."""
@@ -979,6 +994,9 @@ type Query {
     """Input to retrieve the given NFT collections count for."""
     input: GetNftCollectionsCountInput!
   ): Float!
+
+  """Retrieve all tags for the given input."""
+  delegation: Delegation!
 
   """Retrieve the NFT for the given input."""
   nft(

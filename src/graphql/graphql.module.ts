@@ -14,6 +14,7 @@ import { SmartContractResultModule } from "src/graphql/entities/smart.contract.r
 import { TransactionDetailedModule } from "src/graphql/entities/transaction.detailed/transaction.detailed.module";
 import { TransactionModule } from "src/graphql/entities/transaction/transaction.module";
 import { TagModule } from "src/graphql/entities/tag/tag.module";
+import { DelegationModule } from "src/graphql/entities/delegation/delegation.module";
 
 @Module({})
 export class GraphQlModule {
@@ -40,6 +41,7 @@ export class GraphQlModule {
         TransactionDetailedModule,
         TransactionModule,
         TagModule,
+        DelegationModule,
       ];
     }
 
