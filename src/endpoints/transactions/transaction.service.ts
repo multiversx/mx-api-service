@@ -384,11 +384,9 @@ export class TransactionService {
 
       if (operationsRaw.length > 0) {
         operations.push(operationsRaw.map((operation: any) => ApiUtils.mergeObjects(new TransactionOperation(), operation)));
-
-        continue;
+      } else {
+        operations.push(null);
       }
-
-      operations.push(null);
     }
 
     return operations;
