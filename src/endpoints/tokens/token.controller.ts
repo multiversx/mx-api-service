@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { SortOrder } from "src/common/entities/sort.order";
 import { TransactionStatus } from "../transactions/entities/transaction.status";
@@ -18,7 +18,8 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenFilter } from "./entities/token.filter";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
-import { ParseAddressPipe, ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseTokenPipe, ParseAddressArrayPipe } from "@elrondnetwork/erdnest";
+import { ParseAddressPipe, ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseTokenPipe, ParseAddressArrayPipe, ApplyComplexity } from "@elrondnetwork/erdnest";
+import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
 
 @Controller()
 @ApiTags('tokens')
@@ -166,7 +167,8 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/transactions")
-  @ApiOperation({ summary: 'Token transactions', description: `Returns a list of transactions for a specific token. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs` })
+  @ApiOperation({ summary: 'Token transactions', description: `Returns a list of transactions for a specific token.` })
+  @ApplyComplexity({ target: TransactionDetailed })
   @ApiOkResponse({ type: [Transaction] })
   @ApiNotFoundResponse({ description: 'Token not found' })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
@@ -207,10 +209,6 @@ export class TokenController {
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
   ) {
-    if ((withScResults === true || withOperations === true || withLogs || withScamInfo) && size > 50) {
-      throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs' or 'withScamInfo'`);
-    }
-
     const options = TransactionQueryOptions.enforceScamInfoFlag(size, { withScResults, withOperations, withLogs, withScamInfo });
 
     const isToken = await this.tokenService.isToken(identifier);

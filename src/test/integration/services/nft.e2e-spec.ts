@@ -642,7 +642,7 @@ describe('Nft Service', () => {
       jest
         .spyOn(PluginService.prototype, 'batchProcessNfts')
         // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (nfts: Nft[], withScamInfo: boolean | undefined) => {
+        .mockImplementation(jest.fn(async (nfts: Nft[], withScamInfo?: boolean | undefined) => {
           for (const nft of nfts) {
             if (withScamInfo == true) {
               nft.scamInfo = { type: ScamType.potentialScam };
@@ -651,14 +651,16 @@ describe('Nft Service', () => {
         }));
 
       jest
-        .spyOn(PluginService.prototype, 'processNft')
+        .spyOn(PluginService.prototype, 'processNfts')
         // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (nft: Nft) => {
-          if (nft.collection == 'LOTTERY-7cae2f') {
-            nft.scamInfo = { type: ScamType.potentialScam };
+        .mockImplementation(jest.fn(async (nft: Nft[], _withScamInfo?: boolean) => {
+          for (const item of nft) {
+            if (item.collection == 'LOTTERY-7cae2f') {
+              item.scamInfo = { type: ScamType.potentialScam };
+            }
           }
-        }));
 
+        }));
     });
 
     it("should return a list of NFTs with scam info property present", async () => {
@@ -695,7 +697,7 @@ describe('Nft Service', () => {
       const nfts = await nftService.getNfts({ from: 0, size: 10 }, filter, options);
 
       for (const nft of nfts) {
-        expect(nft.scamInfo).toBeUndefined();
+        expect(nft.scamInfo).toBeDefined();
       }
     });
 
@@ -707,7 +709,7 @@ describe('Nft Service', () => {
       const nfts = await nftService.getNftsForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', { from: 0, size: 10 }, filter, options);
 
       for (const nft of nfts) {
-        expect(nft.scamInfo).toBeUndefined();
+        expect(nft.scamInfo).toBeDefined();
       }
     });
 
@@ -743,6 +745,32 @@ describe('Nft Service', () => {
       const nft = await nftService.getNftForAddress('erd1dv9sw8a2hy3lv98p3sdqazy420j48wtn3vs9q74ezuamv64tcxrqqxquxv', identifier);
 
       expect(nft?.scamInfo).toBeUndefined();
+    });
+  });
+
+  describe('NFT Scam Info (without mocking)', () => {
+    it("should return a list of NFTs without scam info property", async () => {
+      const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
+
+      const options = new NftQueryOptions({ withScamInfo: false });
+
+      const nfts = await nftService.getNfts({ from: 0, size: 10 }, filter, options);
+
+      for (const nft of nfts) {
+        expect(nft.scamInfo).toBeUndefined();
+      }
+    });
+
+    it("should return a list of address NFTs without scam info property", async () => {
+      const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
+
+      const options = new NftQueryOptions({ withScamInfo: false });
+
+      const nfts = await nftService.getNftsForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', { from: 0, size: 10 }, filter, options);
+
+      for (const nft of nfts) {
+        expect(nft.scamInfo).toBeUndefined();
+      }
     });
   });
 });

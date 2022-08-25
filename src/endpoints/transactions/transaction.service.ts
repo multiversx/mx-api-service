@@ -103,9 +103,7 @@ export class TransactionService {
     }
 
     const assets = await this.assetsService.getAllAccountAssets();
-    for (const transaction of transactions) {
-      await this.processTransaction(transaction, queryOptions?.withScamInfo ?? false, assets);
-    }
+    await this.processTransactions(transactions, queryOptions?.withScamInfo ?? false, assets);
 
     return transactions;
   }
@@ -118,11 +116,9 @@ export class TransactionService {
     }
 
     if (transaction !== null) {
-      const [price] = await Promise.all([
-        this.getTransactionPrice(transaction),
-        this.processTransaction(transaction, true),
-      ]);
-      transaction.price = price;
+      transaction.price = await this.getTransactionPrice(transaction);
+
+      await this.processTransactions([transaction], true);
 
       if (transaction.pendingResults === true && transaction.results) {
         for (const result of transaction.results) {
@@ -232,21 +228,28 @@ export class TransactionService {
     }
   }
 
-  async processTransaction(transaction: Transaction, withScamInfo: boolean, assets?: Record<string, AccountAssets>): Promise<void> {
+  async processTransactions(transactions: Transaction[], withScamInfo: boolean, assets?: Record<string, AccountAssets>): Promise<void> {
     try {
-      await this.pluginsService.processTransaction(transaction, withScamInfo);
-
-      transaction.action = await this.transactionActionService.getTransactionAction(transaction);
-
-      transaction.pendingResults = await this.getPendingResults(transaction);
-      if (transaction.pendingResults === true) {
-        transaction.status = TransactionStatus.pending;
-      }
-
-      await this.applyAssets(transaction, assets);
+      await this.pluginsService.processTransactions(transactions, withScamInfo);
     } catch (error) {
-      this.logger.error(`Unhandled error when processing plugin transaction for transaction with hash '${transaction.txHash}'`);
+      this.logger.error(`Unhandled error when processing plugin transaction for transactions with hashes '${transactions.map(x => x.txHash).join(',')}'`);
       this.logger.error(error);
+    }
+
+    for (const transaction of transactions) {
+      try {
+        transaction.action = await this.transactionActionService.getTransactionAction(transaction);
+
+        transaction.pendingResults = await this.getPendingResults(transaction);
+        if (transaction.pendingResults === true) {
+          transaction.status = TransactionStatus.pending;
+        }
+
+        await this.applyAssets(transaction, assets);
+      } catch (error) {
+        this.logger.error(`Unhandled error when processing transaction for transaction with hash '${transaction.txHash}'`);
+        this.logger.error(error);
+      }
     }
   }
 
@@ -366,16 +369,10 @@ export class TransactionService {
     for (const transaction of transactions) {
       transaction.results = smartContractResults.at(transactions.indexOf(transaction)) ?? undefined;
 
-      if (!transaction.results) {
-        operations.push(null);
-
-        continue;
-      }
-
       const transactionHashes: Array<string> = [transaction.txHash];
       const previousTransactionHashes: Record<string, string> = {};
 
-      for (const result of transaction.results) {
+      for (const result of transaction.results ?? []) {
         transactionHashes.push(result.hash);
         previousTransactionHashes[result.hash] = result.prevTxHash;
       }

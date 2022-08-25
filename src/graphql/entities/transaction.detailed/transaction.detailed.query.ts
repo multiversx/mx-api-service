@@ -1,5 +1,7 @@
 import { Args, Resolver, Query } from "@nestjs/graphql";
 
+import { ApplyComplexity } from "@elrondnetwork/erdnest";
+
 import { GetTransactionDetailedInput, GetTransactionsInput } from "src/graphql/entities/transaction.detailed/transaction.detailed.input";
 import { Transaction } from "src/endpoints/transactions/entities/transaction";
 import { TransactionDetailed } from "src/endpoints/transactions/entities/transaction.detailed";
@@ -12,6 +14,7 @@ export class TransactionDetailedQuery {
   constructor(private readonly transactionService: TransactionService) { }
 
   @Query(() => [TransactionDetailed], { name: "transactions", description: "Retrieve all transactions available for the given input." })
+  @ApplyComplexity({ target: TransactionDetailed })
   public async getTransactions(@Args("input", { description: "Input to retrieve the given transactions for." }) input: GetTransactionsInput): Promise<Transaction[]> {
     return await this.transactionService.getTransactions(
       new TransactionFilter({

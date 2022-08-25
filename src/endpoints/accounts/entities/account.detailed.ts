@@ -1,3 +1,4 @@
+import { ComplexityEstimation } from "@elrondnetwork/erdnest";
 import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
@@ -71,6 +72,7 @@ export class AccountDetailed extends Account {
   @Field(() => [NftCollectionAccount], { description: 'NFT collections for the given detailed account.', nullable: true })
   nftCollections: NftCollectionAccount[] | undefined = undefined;
 
-  @Field(() => [NftAccount], { description: 'NFTs for the given detailed account.', nullable: true })
+  @Field(() => [NftAccount], { description: 'NFTs for the given detailed account. Complexity: 1000', nullable: true })
+  @ComplexityEstimation({ group: 'nfts', value: 1000 })
   nfts: NftAccount[] | undefined = undefined;
 }

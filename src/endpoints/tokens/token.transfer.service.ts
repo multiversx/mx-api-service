@@ -11,7 +11,7 @@ import { TransactionLogEvent } from "../transactions/entities/transaction.log.ev
 import { TransactionOperationType } from "../transactions/entities/transaction.operation.type";
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
-import { BinaryUtils, RecordUtils, CachingService } from "@elrondnetwork/erdnest";
+import { BinaryUtils, CachingService } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class TokenTransferService {
@@ -67,19 +67,10 @@ export class TokenTransferService {
       [key: string]: TokenTransferProperties | null
     } = {};
 
-    await this.cachingService.batchApply(
+    await this.cachingService.batchApplyAll(
       identifiers,
       identifier => CacheInfo.TokenTransferProperties(identifier).key,
-      async identifiers => {
-
-        const result: { [key: string]: TokenTransferProperties | null } = {};
-        for (const identifier of identifiers) {
-          const value = await this.getTokenTransferPropertiesRaw(identifier);
-          result[identifier] = value;
-        }
-
-        return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenTransferProperties(identifier).key);
-      },
+      identifier => this.getTokenTransferPropertiesRaw(identifier),
       (identifier, value) => tokenProperties[identifier] = value,
       CacheInfo.TokenTransferProperties('').ttl
     );

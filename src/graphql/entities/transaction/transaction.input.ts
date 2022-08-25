@@ -6,6 +6,10 @@ import { TransactionStatus } from "src/endpoints/transactions/entities/transacti
 
 @InputType({ description: "Input to retrieve the given transactions count for." })
 export class GetTransactionsCountInput {
+  constructor(partial?: Partial<GetTransactionsCountInput>) {
+    Object.assign(this, partial);
+  }
+
   @Field(() => String, { name: "sender", description: "Sender for the given result set.", nullable: true })
   sender: string | undefined = undefined;
 

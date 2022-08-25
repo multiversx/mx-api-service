@@ -63,7 +63,14 @@ export class RequestCpuTimeInterceptor implements NestInterceptor {
   }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    const contextType: string = context.getType();
+
+    if (!["http", "https"].includes(contextType)) {
+      return next.handle();
+    }
+
     const apiFunction = context.getClass().name + '.' + context.getHandler().name;
+    const request = context.switchToHttp().getRequest();
 
     const requestId = this.requestIndex++;
     const asyncId = async_hooks.executionAsyncId();
@@ -86,12 +93,20 @@ export class RequestCpuTimeInterceptor implements NestInterceptor {
           this.apiMetricsService.setApiCpuTime(apiFunction, duration);
 
           delete this.requestDict[requestId];
+
+          if (!request.res.headersSent) {
+            request.res.set('X-Request-Cpu-Time', duration);
+          }
         }),
         catchError(err => {
           const duration = this.requestDict[requestId].duration;
           this.apiMetricsService.setApiCpuTime(apiFunction, duration);
 
           delete this.requestDict[requestId];
+
+          if (!request.res.headersSent) {
+            request.res.set('X-Request-Cpu-Time', duration);
+          }
 
           return throwError(() => err);
         })

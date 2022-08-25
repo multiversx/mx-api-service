@@ -643,4 +643,56 @@ export class ApiConfigService {
   getNftExtendedAttributesNsfwThreshold(): number {
     return this.configService.get<number>('features.nftExtendedAttributes.nsfwThreshold') ?? 0.85;
   }
+
+  getIndexerSlaveConnections(): DatabaseConnectionOptions[] {
+    const slaves = this.configService.get<DatabaseConnectionOptions[]>('indexer.slaves');
+    if (!slaves) {
+      return [];
+    }
+    return slaves;
+  }
+
+  private getIndexerHost(): string {
+    const indexerHost = this.configService.get<string>('indexer.host');
+    if (!indexerHost) {
+      throw new Error('No indexer.host present');
+    }
+    return indexerHost;
+  }
+
+  private getIndexerPort(): number {
+    const indexerPort = this.configService.get<number>('indexer.port');
+    if (!indexerPort) {
+      throw new Error('No indexer.port present');
+    }
+    return indexerPort;
+  }
+
+  private getIndexerUsername(): string | undefined {
+    const indexerUsername = this.configService.get<string>('indexer.username');
+    return indexerUsername;
+  }
+
+  private getIndexerPassword(): string | undefined {
+    const indexerPassword = this.configService.get<string>('indexer.password');
+    return indexerPassword;
+  }
+
+  private getIndexerName(): string {
+    const indexerName = this.configService.get<string>('indexer.database');
+    if (!indexerName) {
+      throw new Error('No indexer.database present');
+    }
+    return indexerName;
+  }
+
+  getIndexerConnection(): any {
+    return {
+      host: this.getIndexerHost(),
+      port: this.getIndexerPort(),
+      username: this.getIndexerUsername(),
+      password: this.getIndexerPassword(),
+      database: this.getIndexerName(),
+    };
+  }
 }

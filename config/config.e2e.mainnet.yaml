@@ -3,6 +3,8 @@ metaChainShardId: 4294967295
 api:
   public: true
   private: true
+  graphql: true
+
 cron:
   transactionProcessor: false
   transactionProcessorMaxLookBehind: 1000

@@ -14,7 +14,7 @@ import { AssetsService } from "../../common/assets/assets.service";
 import { TransactionService } from "../transactions/transaction.service";
 import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
-import { AddressUtils, ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService } from "@elrondnetwork/erdnest";
+import { AddressUtils, ApiUtils, BinaryUtils, Constants, NumberUtils, CachingService } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 
@@ -112,44 +112,34 @@ export class EsdtService {
   }
 
   async batchProcessTokens(tokens: TokenDetailed[]) {
-    await this.cachingService.batchApply
-      (tokens,
-        token => CacheInfo.TokenTransactions(token.identifier).key,
-        async tokens => {
-          const result: { [key: string]: number } = {};
+    await this.cachingService.batchApplyAll(
+      tokens,
+      token => CacheInfo.TokenTransactions(token.identifier).key,
+      token => this.getTransactionCount(token),
+      (token, transactions) => token.transactions = transactions,
+      CacheInfo.TokenTransactions('').ttl,
+    );
 
-          for (const token of tokens) {
-            const transactions = await this.transactionService.getTransactionCount(new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }));
+    await this.cachingService.batchApplyAll(
+      tokens,
+      token => CacheInfo.TokenAccounts(token.identifier).key,
+      token => this.getAccountsCount(token),
+      (token, accounts) => token.accounts = accounts,
+      CacheInfo.TokenAccounts('').ttl,
+    );
+  }
 
-            result[token.identifier] = transactions;
-          }
+  private async getTransactionCount(token: TokenDetailed): Promise<number> {
+    return await this.transactionService.getTransactionCount(new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }));
+  }
 
-          return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenTransactions(identifier).key);
-        },
-        (token, transactions) => token.transactions = transactions,
-        CacheInfo.TokenTransactions('').ttl,
-      );
+  private async getAccountsCount(token: TokenDetailed): Promise<number> {
+    let accounts = await this.cachingService.getCacheRemote<number>(CacheInfo.TokenAccountsExtra(token.identifier).key);
+    if (!accounts) {
+      accounts = await this.getEsdtAccountsCount(token.identifier);
+    }
 
-    await this.cachingService.batchApply
-      (tokens,
-        token => CacheInfo.TokenAccounts(token.identifier).key,
-        async tokens => {
-          const result: { [key: string]: number } = {};
-
-          for (const token of tokens) {
-            let accounts = await this.cachingService.getCacheRemote<number>(CacheInfo.TokenAccountsExtra(token.identifier).key);
-            if (!accounts) {
-              accounts = await this.getEsdtAccountsCount(token.identifier);
-            }
-
-            result[token.identifier] = accounts;
-          }
-
-          return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenAccounts(identifier).key);
-        },
-        (token, accounts) => token.accounts = accounts,
-        CacheInfo.TokenAccounts('').ttl,
-      );
+    return accounts;
   }
 
   async getEsdtAccountsCount(identifier: string): Promise<number> {

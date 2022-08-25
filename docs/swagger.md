@@ -14,6 +14,18 @@ This API is organized around REST principles, so if you've interacted with RESTf
 * Some endpoints accept optional parameters which can be passed as query string params. 
 * All parameters are documented along each endpoint.
 
+## Complexity
+
+* In order to better optimize the available resources, a complexity evaluation is performed before the execution of every request.
+
+* The maximum complexity available is currently hardcoded at `10000`
+
+* When listing entries, every element in the list adds `1` to the complexity, thus making it possible to retrieve a maximum of `10000` elements in list endpoints.
+
+* If some extra info is requested, such as `withScResults` in the `/transactions` endpoint, the complexity calculation for the list is overridden with the complexity calculation of the requested field. In this situation, `withScResults` will multiply the number of items with `200`, thus limiting the maximum requested size to `50`
+
+* Some fields use the same amount of resources whether one or more of them are requested. In this situation, the fields will be grouped together, regardless whether one or more of the same group are requested. The endpoints `/transactions?size=50&withOperations=true` will produce the same complexity as `/transactions?size=50&withOperations=true&withLogs=true&withScResults=true` since they all belong to the group `details`
+
 ## Fields
 
 * In order to fetch only specific fields from the response, the `fields` parameter can be used:

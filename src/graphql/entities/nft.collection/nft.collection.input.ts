@@ -5,6 +5,10 @@ import { NftType } from "src/endpoints/nfts/entities/nft.type";
 
 @InputType({ description: "Input to retrieve the given NFT collections count for." })
 export class GetNftCollectionsCountInput {
+  constructor(partial?: Partial<GetNftCollectionsCountInput>) {
+    Object.assign(this, partial);
+  }
+
   @Field(() => ID, { name: "search", description: "Collection identifier to retrieve for the given result set.", nullable: true })
   search: string | undefined = undefined;
 
@@ -26,10 +30,18 @@ export class GetNftCollectionsCountInput {
   @Field(() => String, { name: "canTransferRole", description: "Can transfer role to retrieve for the given result set.", nullable: true })
   canTransferRole: string | undefined = undefined;
 
+  @Field(() => Float, { name: "before", description: "Before timestamp to retrieve for the given result set.", nullable: true })
+  before: number | undefined = undefined;
+
+  @Field(() => Float, { name: "after", description: "After timestamp to retrieve for the given result set.", nullable: true })
+  after: number | undefined = undefined;
+
   public static resolve(input: GetNftCollectionsCountInput): CollectionFilter {
     return new CollectionFilter({
       search: input.search,
       type: input.type,
+      before: input.before,
+      after: input.after,
       canBurn: input.canBurn,
       canAddQuantity: input.canAddQuantity,
       canUpdateAttributes: input.canUpdateAttributes,
@@ -41,17 +53,17 @@ export class GetNftCollectionsCountInput {
 
 @InputType({ description: "Input to retrieve the given NFT collections for." })
 export class GetNftCollectionsInput extends GetNftCollectionsCountInput {
+  constructor(partial?: Partial<GetNftCollectionsInput>) {
+    super();
+
+    Object.assign(this, partial);
+  }
+
   @Field(() => Float, { name: "from", description: "Number of NFT collections to skip for the given result set.", nullable: true, defaultValue: 0 })
   from: number = 0;
 
   @Field(() => Float, { name: "size", description: "Number of NFT collections to retrieve for the given result set.", nullable: true, defaultValue: 25 })
   size: number = 25;
-
-  @Field(() => Float, { name: "before", description: "Before timestamp to retrieve for the given result set.", nullable: true })
-  before: number | undefined = undefined;
-
-  @Field(() => Float, { name: "after", description: "After timestamp to retrieve for the given result set.", nullable: true })
-  after: number | undefined = undefined;
 
   @Field(() => [ID], { name: "identifiers", description: "Collection comma-separated identifiers to retrieve for the given result set.", nullable: true })
   identifiers: Array<string> | undefined = undefined;
@@ -59,6 +71,10 @@ export class GetNftCollectionsInput extends GetNftCollectionsCountInput {
 
 @InputType({ description: "Input to retrieve the given NFT collection for." })
 export class GetNftCollectionInput {
+  constructor(partial?: Partial<GetNftCollectionInput>) {
+    Object.assign(this, partial);
+  }
+
   @Field(() => ID, { name: "collection", description: "Collection identifier to retrieve the corresponding NFT collection for." })
   collection: string = "";
 

@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
@@ -7,7 +7,7 @@ import { Nft } from "../nfts/entities/nft";
 import { NftService } from "../nfts/nft.service";
 import { NftFilter } from "../nfts/entities/nft.filter";
 import { NftQueryOptions } from "../nfts/entities/nft.query.options";
-import { ParseAddressPipe, ParseArrayPipe, ParseCollectionPipe, ParseBoolPipe, ParseEnumArrayPipe, ParseIntPipe } from '@elrondnetwork/erdnest';
+import { ParseAddressPipe, ParseArrayPipe, ParseCollectionPipe, ParseBoolPipe, ParseEnumArrayPipe, ParseIntPipe, ApplyComplexity } from '@elrondnetwork/erdnest';
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { CollectionFilter } from "./entities/collection.filter";
 import { CollectionAccount } from "./entities/collection.account";
@@ -156,6 +156,7 @@ export class CollectionController {
   @Get("/collections/:collection/nfts")
   @ApiOperation({ summary: 'Collection NFTs', description: 'Returns non-fungible/semi-fungible/meta-esdt tokens that belong to a collection' })
   @ApiOkResponse({ type: [Nft] })
+  @ApplyComplexity({ target: Nft })
   @ApiNotFoundResponse({ description: 'Token collection not found' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -184,10 +185,6 @@ export class CollectionController {
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('computeScamInfo', new ParseBoolPipe) computeScamInfo?: boolean,
   ): Promise<Nft[]> {
-    if ((withOwner === true || withSupply === true || withScamInfo === true || computeScamInfo === true) && size > 100) {
-      throw new BadRequestException(`Maximum size of 100 is allowed when activating flags 'withOwner', 'withSupply', 'withScamInfo', or 'computeScamInfo'`);
-    }
-
     const isCollection = await this.collectionService.isCollection(collection);
     if (!isCollection) {
       throw new HttpException('NFT Collection not found', HttpStatus.NOT_FOUND);
