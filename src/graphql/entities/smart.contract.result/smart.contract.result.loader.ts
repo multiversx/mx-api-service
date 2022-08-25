@@ -11,6 +11,8 @@ export class SmartContractResultLoader {
     return await this.logDataLoader.load(hash);
   }
 
-  // @ts-ignore
-  private readonly logDataLoader: any = new DataLoader(async hashes => await this.transactionService.getLogs(hashes), { cache: false });
+  private readonly logDataLoader: any = new DataLoader<string, (TransactionLog | undefined)>(
+    async hashes => await this.transactionService.getLogs(hashes.concat()),
+    { cache: false }
+  );
 }

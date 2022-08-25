@@ -329,11 +329,11 @@ export class TransactionService {
 
   private smartContractResultsExecutor = new PendingExecuter();
 
-  public async getSmartContractResults(hashes: Array<string>): Promise<Array<SmartContractResult[] | null>> {
+  public async getSmartContractResults(hashes: Array<string>): Promise<Array<SmartContractResult[] | undefined>> {
     return await this.smartContractResultsExecutor.execute(crypto.MD5(hashes.join(',')).toString(), async () => await this.getSmartContractResultsRaw(hashes));
   }
 
-  private async getSmartContractResultsRaw(transactionHashes: Array<string>): Promise<Array<SmartContractResult[] | null>> {
+  private async getSmartContractResultsRaw(transactionHashes: Array<string>): Promise<Array<SmartContractResult[] | undefined>> {
     const resultsRaw = await this.indexerService.getSmartContractResults(transactionHashes) as any[];
     for (const result of resultsRaw) {
       result.hash = result.scHash;
@@ -341,7 +341,7 @@ export class TransactionService {
       delete result.scHash;
     }
 
-    const results: Array<SmartContractResult[] | null> = [];
+    const results: Array<SmartContractResult[] | undefined> = [];
 
     for (const transactionHash of transactionHashes) {
       const resultRaw = resultsRaw.filter(({ originalTxHash }) => originalTxHash == transactionHash);
@@ -349,14 +349,14 @@ export class TransactionService {
       if (resultRaw.length > 0) {
         results.push(resultRaw.map((result: any) => ApiUtils.mergeObjects(new SmartContractResult(), result)));
       } else {
-        results.push(null);
+        results.push(undefined);
       }
     }
 
     return results;
   }
 
-  public async getOperations(transactions: Array<TransactionDetailed>): Promise<Array<TransactionOperation[] | null>> {
+  public async getOperations(transactions: Array<TransactionDetailed>): Promise<Array<TransactionOperation[] | undefined>> {
     const smartContractResults = await this.getSmartContractResults(transactions.map((transaction: TransactionDetailed) => transaction.txHash));
 
     const logs = await this.transactionGetService.getTransactionLogsFromElastic([
@@ -364,7 +364,7 @@ export class TransactionService {
       ...smartContractResults.filter((item) => item != null).flat().map((result) => result?.hash ?? ''),
     ]);
 
-    const operations: Array<TransactionOperation[] | null> = [];
+    const operations: Array<TransactionOperation[] | undefined> = [];
 
     for (const transaction of transactions) {
       transaction.results = smartContractResults.at(transactions.indexOf(transaction)) ?? undefined;
@@ -385,16 +385,16 @@ export class TransactionService {
       if (operationsRaw.length > 0) {
         operations.push(operationsRaw.map((operation: any) => ApiUtils.mergeObjects(new TransactionOperation(), operation)));
       } else {
-        operations.push(null);
+        operations.push(undefined);
       }
     }
 
     return operations;
   }
 
-  public async getLogs(hashes: Array<string>): Promise<Array<TransactionLog | null>> {
+  public async getLogs(hashes: Array<string>): Promise<Array<TransactionLog | undefined>> {
     const logsRaw = await this.transactionGetService.getTransactionLogsFromElastic(hashes);
-    const logs: Array<TransactionLog | null> = [];
+    const logs: Array<TransactionLog | undefined> = [];
 
     for (const hash of hashes) {
       const log: TransactionLog = logsRaw.filter((log: TransactionLog) => hash === log.id)[0];
@@ -402,7 +402,7 @@ export class TransactionService {
       if (log !== undefined) {
         logs.push(log);
       } else {
-        logs.push(null);
+        logs.push(undefined);
       }
     }
 

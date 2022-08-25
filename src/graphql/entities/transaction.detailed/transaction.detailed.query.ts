@@ -38,7 +38,7 @@ export class TransactionDetailedQuery {
   }
 
   @Query(() => TransactionDetailed, { name: "transaction", description: "Retrieve the detailed transaction for the given input.", nullable: true })
-  public async getTransaction(@Args("input", { description: "Input to retrieve the given detailed transaction for." }) input: GetTransactionDetailedInput): Promise<TransactionDetailed | null> {
+  public async getTransactionDetailed(@Args("input", { description: "Input to retrieve the given detailed transaction for." }) input: GetTransactionDetailedInput): Promise<TransactionDetailed | null> {
     return await this.transactionService.getTransaction(GetTransactionDetailedInput.resolve(input));
   }
 }
