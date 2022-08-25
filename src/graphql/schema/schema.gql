@@ -571,6 +571,12 @@ input GetTransactionsInput {
   token: String
 }
 
+"""Input to retrieve the given account details for."""
+input GetUsernameInput {
+  """Herotag"""
+  username: String = ""
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -1088,6 +1094,12 @@ type Query {
     input: GetTransactionsCountInput!
   ): Float!
 
+  """Retrive account detailed for a given herotag"""
+  username(
+    """Input to retrieve the given detailed account for."""
+    input: GetUsernameInput!
+  ): Username!
+
   """Retrieve all address that are in waiting."""
   waitingList: [WaitingList!]!
 
@@ -1507,6 +1519,36 @@ type UnlockMileStoneModel {
 
   """Remaining epochs for the given unlock mile stone model."""
   remainingEpochs: Float!
+}
+
+"""Username object type."""
+type Username {
+  """Address details."""
+  address: String!
+
+  """Balance details."""
+  balance: String!
+
+  """Developer Reward details."""
+  developerReward: String!
+
+  """Nonce details."""
+  nonce: String
+
+  """RootHash details."""
+  rootHash: String!
+
+  """ScrCount details."""
+  scrCount: String
+
+  """Shard details."""
+  shard: String
+
+  """txCount details."""
+  txCount: Float
+
+  """Username details."""
+  username: String!
 }
 
 """Waiting object type."""
