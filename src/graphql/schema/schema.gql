@@ -1087,6 +1087,12 @@ type Query {
     """Input to retrieve the given transactions count for."""
     input: GetTransactionsCountInput!
   ): Float!
+
+  """Retrieve all address that are in waiting."""
+  waitingList: [WaitingList!]!
+
+  """Retrieve all addresses count that are in waiting."""
+  waitingListCount: Float!
 }
 
 """Scam information object type."""
@@ -1501,4 +1507,19 @@ type UnlockMileStoneModel {
 
   """Remaining epochs for the given unlock mile stone model."""
   remainingEpochs: Float!
+}
+
+"""Waiting object type."""
+type WaitingList {
+  """Address details."""
+  address: ID!
+
+  """Nonce details."""
+  nonce: Float!
+
+  """Rank details."""
+  rank: Float!
+
+  """Value details."""
+  value: Float!
 }
