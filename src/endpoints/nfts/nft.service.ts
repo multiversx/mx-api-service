@@ -15,7 +15,6 @@ import { NftMetadataService } from "src/queue.worker/nft.worker/queue/job-servic
 import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.service";
 import { NftMedia } from "./entities/nft.media";
 import { CacheInfo } from "src/utils/cache.info";
-import { EsdtSupply } from "../esdt/entities/esdt.supply";
 import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
@@ -95,7 +94,7 @@ export class NftService {
       await this.applyUnlockSchedule(nft);
     }
 
-    await this.pluginService.batchProcessNfts(nfts, queryOptions?.withScamInfo || queryOptions?.computeScamInfo);
+    await this.pluginService.processNfts(nfts, queryOptions?.withScamInfo || queryOptions?.computeScamInfo);
 
     return nfts;
   }
@@ -117,20 +116,12 @@ export class NftService {
   }
 
   private async batchApplySupply(nfts: Nft[]) {
-    await this.cachingService.batchApply(
+    await this.cachingService.batchApplyAll(
       nfts,
-      nft => CacheInfo.TokenLockedAccounts(nft.identifier).key,
-      async nfts => {
-        const result: Record<string, EsdtSupply> = {};
-
-        for (const nft of nfts) {
-          result[nft.identifier] = await this.esdtService.getTokenSupply(nft.identifier);
-        }
-
-        return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenLockedAccounts(identifier).key);
-      },
+      nft => CacheInfo.TokenSupply(nft.identifier).key,
+      nft => this.esdtService.getTokenSupply(nft.identifier),
       (nft, value) => nft.supply = value.totalSupply,
-      CacheInfo.TokenLockedAccounts('').ttl,
+      CacheInfo.TokenSupply('').ttl,
     );
   }
 
@@ -172,7 +163,7 @@ export class NftService {
     await Promise.all([
       this.applyMedia(nft),
       this.applyMetadata(nft),
-      this.pluginService.processNft(nft),
+      this.pluginService.processNfts([nft], true),
     ]);
 
     if (TokenHelpers.needsDefaultMedia(nft)) {
@@ -224,7 +215,16 @@ export class NftService {
   }
 
   private async applyUnlockSchedule(nft: Nft): Promise<void> {
-    nft.unlockSchedule = await this.lockedAssetService.getUnlockSchedule(nft.identifier, nft.attributes);
+    if (!nft.attributes) {
+      return;
+    }
+
+    try {
+      nft.unlockSchedule = await this.lockedAssetService.getUnlockSchedule(nft.identifier, nft.attributes);
+    } catch (error) {
+      this.logger.error(`An error occurred while applying unlock schedule for NFT with identifier '${nft.identifier}' and attributes '${nft.attributes}'`);
+      this.logger.error(error);
+    }
   }
 
   private async applyNftAttributes(nft: Nft): Promise<void> {
@@ -431,7 +431,7 @@ export class NftService {
       await this.applyUnlockSchedule(nft);
     }
 
-    await this.pluginService.batchProcessNfts(nfts, queryOptions?.withScamInfo || queryOptions?.computeScamInfo);
+    await this.pluginService.processNfts(nfts, queryOptions?.withScamInfo || queryOptions?.computeScamInfo);
 
     return nfts;
   }

@@ -61,10 +61,11 @@ export class TransferService {
         delete transaction.round;
       }
 
-      await this.transactionService.processTransaction(transaction, pagination.size <= 100, assets);
 
       transactions.push(transaction);
     }
+
+    await this.transactionService.processTransactions(transactions, pagination.size <= 100, assets);
 
     return transactions;
   }

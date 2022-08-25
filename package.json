@@ -71,7 +71,7 @@
     "@aws-sdk/client-s3": "^3.54.0",
     "@elrondnetwork/erdjs": "^11.0.0",
     "@elrondnetwork/erdjs-dex": "^0.0.8",
-    "@elrondnetwork/erdnest": "^0.1.43",
+    "@elrondnetwork/erdnest": "^0.1.54",
     "@elrondnetwork/native-auth": "^0.1.19",
     "@elrondnetwork/transaction-processor": "^0.1.26",
     "@golevelup/nestjs-rabbitmq": "^2.2.0",
@@ -123,7 +123,8 @@
     "tiny-async-pool": "^1.2.0",
     "typeorm": "^0.3.6",
     "winston": "^3.6.0",
-    "winston-daily-rotate-file": "^4.6.1"
+    "winston-daily-rotate-file": "^4.6.1",
+    "yup": "^0.32.11"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.1.6",

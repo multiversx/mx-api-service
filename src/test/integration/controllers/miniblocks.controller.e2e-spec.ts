@@ -46,7 +46,7 @@ describe("Miniblocks Controller", () => {
         .get(`${path}/${miniBlockHash}`)
         .expect(400)
         .then(res => {
-          expect(res.body.message).toStrictEqual("Validation failed for argument 'miniBlockHash' (a valid block hash is expected)");
+          expect(res.body.message).toContain("Validation failed");
         });
     });
   });
