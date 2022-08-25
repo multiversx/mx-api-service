@@ -143,6 +143,48 @@ type CollectionRoles {
   roles: [String!]!
 }
 
+"""DappConfig object type."""
+type DappConfig {
+  """Api url details"""
+  apiAddress: String!
+
+  """Api Timeout details"""
+  apiTimeout: String!
+
+  """ChainID details"""
+  chainId: String!
+
+  """Token details"""
+  decimals: String!
+
+  """Token denomination details"""
+  egldDenomination: String!
+
+  """Token label details"""
+  egldLabel: String!
+
+  """Explorer address details"""
+  explorerAddress: String!
+
+  """Gas data byte details"""
+  gasPerDataByte: String!
+
+  """Network Details."""
+  id: ID!
+
+  """Network name."""
+  name: String!
+
+  """Wallet url details"""
+  walletAddress: String!
+
+  """Bridge wallet url details"""
+  walletConnectBridgeAddresses: [String!]!
+
+  """Wallet connect url details"""
+  walletConnectDeepLink: String!
+}
+
 """Delegation object type."""
 type Delegation {
   """Locked details."""
@@ -994,6 +1036,9 @@ type Query {
     """Input to retrieve the given NFT collections count for."""
     input: GetNftCollectionsCountInput!
   ): Float!
+
+  """Retrieve configuration used in dapp."""
+  dappConfig: DappConfig!
 
   """Retrieve all delegation staking information."""
   delegation: Delegation!
