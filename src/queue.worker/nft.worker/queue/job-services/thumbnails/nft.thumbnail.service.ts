@@ -9,6 +9,7 @@ import { ThumbnailType } from "./entities/thumbnail.type";
 import { AWSService } from "./aws.service";
 import { ApiService, Constants, FileUtils } from "@elrondnetwork/erdnest";
 import { TokenHelpers } from "src/utils/token.helpers";
+import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 
 @Injectable()
 export class NftThumbnailService {
@@ -175,11 +176,6 @@ export class NftThumbnailService {
 
     this.logger.log(`Generating thumbnail for NFT with identifier '${nftIdentifier}', url '${fileUrl}' and url hash '${urlHash}'`);
 
-    if (!fileUrl || !fileUrl.startsWith('https://')) {
-      this.logger.log(`NFT with identifier '${nftIdentifier}' and url hash '${urlHash}' has no urls`);
-      return GenerateThumbnailResult.noUrl;
-    }
-
     const fileResult: any = await this.apiService.get(fileUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS });
     const file = fileResult.data;
 
@@ -242,5 +238,21 @@ export class NftThumbnailService {
 
   private getThumbnailUrlSuffix(urlIdentifier: string): string {
     return `${this.STANDARD_PATH}/${urlIdentifier}`;
+  }
+
+  canGenerateThumbnail(identifier: string, media: NftMedia): boolean {
+    const CONTENT_LENGTH_LIMIT: number = 2000;
+    if (media.fileSize > CONTENT_LENGTH_LIMIT) {
+      this.logger.log(`Content length excedded for NFT with identifier '${identifier}'`);
+      return false;
+    }
+
+    const urlHash = TokenHelpers.getUrlHash(media.url);
+    if (!media.url || !media.url.startsWith('https://')) {
+      this.logger.log(`NFT with identifier '${identifier}' and url hash '${urlHash}' has no urls`);
+      return false;
+    }
+
+    return true;
   }
 }

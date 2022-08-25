@@ -117,6 +117,12 @@ export class NftQueueController {
 
   private async generateThumbnail(nft: Nft, media: NftMedia, forceRefresh: boolean = false): Promise<void> {
     let result: GenerateThumbnailResult;
+
+    if (!this.nftThumbnailService.canGenerateThumbnail(nft.identifier, media)) {
+      this.logger.log(`Can't generate thumbnail for NFT with identifier '${nft.identifier}'`);
+      return;
+    }
+
     try {
       result = await this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType, forceRefresh);
     } catch (error) {
