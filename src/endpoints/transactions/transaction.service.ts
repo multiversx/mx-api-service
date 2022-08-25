@@ -369,16 +369,10 @@ export class TransactionService {
     for (const transaction of transactions) {
       transaction.results = smartContractResults.at(transactions.indexOf(transaction)) ?? undefined;
 
-      if (!transaction.results) {
-        operations.push(null);
-
-        continue;
-      }
-
       const transactionHashes: Array<string> = [transaction.txHash];
       const previousTransactionHashes: Record<string, string> = {};
 
-      for (const result of transaction.results) {
+      for (const result of transaction.results ?? []) {
         transactionHashes.push(result.hash);
         previousTransactionHashes[result.hash] = result.prevTxHash;
       }

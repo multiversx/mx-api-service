@@ -21,11 +21,11 @@ import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './common/websockets/socket-adapter';
 import { ApiConfigModule } from './common/api-config/api.config.module';
-import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor } from '@elrondnetwork/erdnest';
+import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor } from '@elrondnetwork/erdnest';
 import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.service.impl';
 import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
-import { GraphQlModule } from 'src/graphql/graphql.module';
 import { TransactionLoggingInterceptor } from './interceptors/transaction.logging.interceptor';
+import { GraphqlComplexityInterceptor } from './graphql/interceptors/graphql.complexity.interceptor';
 import { RequestCpuTimeInterceptor } from './interceptors/request.cpu.time.interceptor';
 import { ApiMetricsService } from './common/metrics/api.metrics.service';
 
@@ -35,12 +35,6 @@ async function bootstrap() {
 
   if (apiConfigService.getUseTracingFlag() === true) {
     require('dd-trace').init();
-  }
-
-  if (apiConfigService.isGraphQlActive()) {
-    const graphQlApplication = await NestFactory.create<NestExpressApplication>(GraphQlModule);
-
-    await graphQlApplication.listen(3000);
   }
 
   if (apiConfigService.getIsPublicApiActive()) {
@@ -158,6 +152,8 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   httpServer.headersTimeout = apiConfigService.getHeadersTimeout(); //`keepAliveTimeout + server's expected response time`
 
   const globalInterceptors: NestInterceptor[] = [];
+  globalInterceptors.push(new ComplexityInterceptor());
+  globalInterceptors.push(new GraphqlComplexityInterceptor());
   globalInterceptors.push(new RequestCpuTimeInterceptor(apiMetricsService));
   globalInterceptors.push(new LoggingInterceptor(metricsService));
 

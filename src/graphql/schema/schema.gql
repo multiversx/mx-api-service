@@ -143,6 +143,21 @@ type CollectionRoles {
   roles: [String!]!
 }
 
+"""Delegation object type."""
+type Delegation {
+  """Locked details."""
+  locked: String!
+
+  """MinDelegation details."""
+  minDelegation: String!
+
+  """Stake details."""
+  stake: String!
+
+  """TopUp details."""
+  topUp: String!
+}
+
 """ESDT data source."""
 enum EsdtDataSource {
   """Elastic data source."""
@@ -192,6 +207,12 @@ input GetNftCollectionsAccountInput {
 
 """Input to retrieve the given NFT collections count for."""
 input GetNftCollectionsCountInput {
+  """After timestamp to retrieve for the given result set."""
+  after: Float
+
+  """Before timestamp to retrieve for the given result set."""
+  before: Float
+
   """Can add quantity to retrieve for the given result set."""
   canAddQuantity: String
 
@@ -399,6 +420,15 @@ input GetNftsInput {
   withSupply: Boolean
 }
 
+"""Input to retrieve the given tags for."""
+input GetTagsInput {
+  """Number of tags to skip for the given result set."""
+  from: Float = 0
+
+  """Number of tags to retrieve for the given result set."""
+  size: Float = 25
+}
+
 """Input to retrieve the given detailed transaction for."""
 input GetTransactionDetailedInput {
   """Hash to retrieve the corresponding detailed transaction for."""
@@ -554,13 +584,13 @@ type Nft {
   """Royalties for the given NFT."""
   royalties: Float
 
-  """Scam information for the given NFT."""
+  """Scam information for the given NFT. Complexity: 100"""
   scamInfo: ScamInformation
 
   """Score for the given NFT."""
   score: Float
 
-  """Supply for the given NFT."""
+  """Supply for the given NFT. Complexity: 100"""
   supply: String
 
   """Tags for the given NFT."""
@@ -641,13 +671,13 @@ type NftAccount {
   """Royalties for the given NFT."""
   royalties: Float
 
-  """Scam information for the given NFT."""
+  """Scam information for the given NFT. Complexity: 100"""
   scamInfo: ScamInformation
 
   """Score for the given NFT."""
   score: Float
 
-  """Supply for the given NFT."""
+  """Supply for the given NFT. Complexity: 100"""
   supply: String
 
   """Tags for the given NFT."""
@@ -721,13 +751,13 @@ type NftAccountFlat {
   """Royalties for the given NFT."""
   royalties: Float
 
-  """Scam information for the given NFT."""
+  """Scam information for the given NFT. Complexity: 100"""
   scamInfo: ScamInformation
 
   """Score for the given NFT."""
   score: Float
 
-  """Supply for the given NFT."""
+  """Supply for the given NFT. Complexity: 100"""
   supply: String
 
   """Tags for the given NFT."""
@@ -965,6 +995,9 @@ type Query {
     input: GetNftCollectionsCountInput!
   ): Float!
 
+  """Retrieve all delegation staking information."""
+  delegation: Delegation!
+
   """Retrieve the NFT for the given input."""
   nft(
     """Input to retrieve the given NFT for."""
@@ -982,6 +1015,15 @@ type Query {
     """Input to retrieve the given NFTs count for."""
     input: GetNftsCountInput!
   ): Float!
+
+  """Retrieve all tags for the given input."""
+  tags(
+    """Input to retrieve the given tags for."""
+    input: GetTagsInput!
+  ): [Tag!]!
+
+  """Retrieve all tags count."""
+  tagsCount: Float!
 
   """Retrieve the detailed transaction for the given input."""
   transaction(
@@ -1062,7 +1104,7 @@ type SmartContractResult {
   receiver: String!
 
   """Receiver assets for the given smart contract result."""
-  receiverAssets: AccountAssets!
+  receiverAssets: AccountAssets
 
   """Relayed value for the given smart contract result."""
   relayedValue: String!
@@ -1074,7 +1116,7 @@ type SmartContractResult {
   sender: String!
 
   """Sender assets for the given smart contract result."""
-  senderAssets: AccountAssets!
+  senderAssets: AccountAssets
 
   """Timestamp for the given smart contract result."""
   timestamp: Float!
@@ -1090,6 +1132,15 @@ enum SortOrder {
 
   """Descending order."""
   desc
+}
+
+"""Tag object type."""
+type Tag {
+  """Count for the given tag."""
+  count: Float
+
+  """Tag details."""
+  tag: String!
 }
 
 """Token assets object type."""
@@ -1191,7 +1242,10 @@ type TransactionDetailed {
   receipt: TransactionReceipt
 
   """Receiver account for the given detailed transaction."""
-  receiver: Account!
+  receiverAccount: Account!
+
+  """Receiver account for the given transaction."""
+  receiverAddress: Account!
 
   """Smart contract results for the given detailed transaction."""
   results: [SmartContractResult!]
@@ -1203,7 +1257,10 @@ type TransactionDetailed {
   scamInfo: ScamInformation
 
   """Sender account for the given detailed transaction."""
-  sender: Account!
+  senderAccount: Account!
+
+  """Sender account for the given transaction."""
+  senderAddress: String!
 
   """Signature for the given transaction."""
   signature: String
@@ -1260,7 +1317,7 @@ type TransactionOperation {
   action: TransactionOperationAction!
 
   """Collection for the transaction operation."""
-  collection: String!
+  collection: String
 
   """Data for the transaction operation."""
   data: String

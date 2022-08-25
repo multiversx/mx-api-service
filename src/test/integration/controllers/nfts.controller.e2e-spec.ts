@@ -1,3 +1,4 @@
+import { ComplexityInterceptor } from '@elrondnetwork/erdnest';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
@@ -13,6 +14,7 @@ describe("NFT Controller", () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
+    app.useGlobalInterceptors(new ComplexityInterceptor());
     await app.init();
   });
 
@@ -154,6 +156,7 @@ describe("NFT Controller", () => {
 
     it('should return a list of 25 NFTs that have owner', async () => {
       const params = new URLSearchParams({
+        'after': '1661276190',
         'withOwner': 'true',
         'type': 'NonFungibleESDT',
       });
@@ -375,10 +378,7 @@ describe("NFT Controller", () => {
       });
       await request(app.getHttpServer())
         .get(`${path}?${params}`)
-        .expect(400)
-        .then(res => {
-          expect(res.body.message).toEqual("Maximum size of 100 is allowed when activating flags 'withOwner', 'withSupply', 'withScamInfo' or 'computeScamInfo'");
-        });
+        .expect(400);
     });
   });
 

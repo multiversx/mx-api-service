@@ -148,7 +148,7 @@ describe("Block Controller", () => {
         .get(`${path}/${hash}`)
         .expect(400)
         .then(res => {
-          expect(res.body.message).toContain("Validation failed ");
+          expect(res.body.message).toContain("Validation failed");
         });
     });
   });

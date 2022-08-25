@@ -747,4 +747,30 @@ describe('Nft Service', () => {
       expect(nft?.scamInfo).toBeUndefined();
     });
   });
+
+  describe('NFT Scam Info (without mocking)', () => {
+    it("should return a list of NFTs without scam info property", async () => {
+      const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
+
+      const options = new NftQueryOptions({ withScamInfo: false });
+
+      const nfts = await nftService.getNfts({ from: 0, size: 10 }, filter, options);
+
+      for (const nft of nfts) {
+        expect(nft.scamInfo).toBeUndefined();
+      }
+    });
+
+    it("should return a list of address NFTs without scam info property", async () => {
+      const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
+
+      const options = new NftQueryOptions({ withScamInfo: false });
+
+      const nfts = await nftService.getNftsForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', { from: 0, size: 10 }, filter, options);
+
+      for (const nft of nfts) {
+        expect(nft.scamInfo).toBeUndefined();
+      }
+    });
+  });
 });

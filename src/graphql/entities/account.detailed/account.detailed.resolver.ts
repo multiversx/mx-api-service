@@ -1,12 +1,15 @@
 import { Resolver, ResolveField, Parent, Float, Args } from "@nestjs/graphql";
 
+import { ApplyComplexity } from "@elrondnetwork/erdnest";
+
 import { AccountDetailed } from "src/endpoints/accounts/entities/account.detailed";
 import { AccountDetailedQuery } from "src/graphql/entities/account.detailed/account.detailed.query";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { CollectionService } from "src/endpoints/collections/collection.service";
 import { GetNftCollectionsAccountInput, GetNftsAccountInput } from "src/graphql/entities/account.detailed/account.detailed.input";
-import { NftAccountFlat, NftCollectionAccountFlat } from "src/graphql/entities/account.detailed/account.detailed.object"; import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
+import { NftAccountFlat, NftCollectionAccountFlat } from "src/graphql/entities/account.detailed/account.detailed.object"; 
+import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { NftQueryOptions } from "src/endpoints/nfts/entities/nft.query.options";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -47,6 +50,7 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
   }
 
   @ResolveField("nfts", () => [NftAccountFlat], { name: "nfts", description: "NFTs for the given detailed account.", nullable: true })
+  @ApplyComplexity({ target: NftAccountFlat })
   public async getAccountDetailedNfts(@Args("input", { description: "Input to retrieve the given NFTs for." }) input: GetNftsAccountInput, @Parent() account: AccountDetailed) {
     return await this.nftService.getNftsForAddress(
       account.address,

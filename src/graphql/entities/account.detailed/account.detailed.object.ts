@@ -8,9 +8,9 @@ export class NftAccountFlat extends OmitType(NftAccount, [
   "collection",
   "creator",
   "owner",
-] as const) {}
+] as const) { }
 
 @ObjectType()
 export class NftCollectionAccountFlat extends OmitType(NftCollectionAccount, [
   "owner",
-] as const) {}
+] as const) { }

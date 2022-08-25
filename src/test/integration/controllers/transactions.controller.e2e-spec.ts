@@ -45,10 +45,7 @@ describe.skip("Transactions Controller", () => {
 
     await request(app.getHttpServer())
       .get(route + "?" + params)
-      .expect(400)
-      .then(res => {
-        expect(res.body.message).toEqual("Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'");
-      });
+      .expect(400);
   });
 
   it("/transactions?from&size&withScResults - should return 200 status code and transactions with smart contract results active", async () => {

@@ -1,7 +1,5 @@
-import { Injectable, Scope } from "@nestjs/common";
-
+import { Injectable } from "@nestjs/common";
 import DataLoader from "dataloader";
-
 import { Account } from "src/endpoints/accounts/entities/account";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { SmartContractResult } from "src/endpoints/sc-results/entities/smart.contract.result";
@@ -10,9 +8,7 @@ import { TransactionLog } from "src/endpoints/transactions/entities/transaction.
 import { TransactionOperation } from "src/endpoints/transactions/entities/transaction.operation";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 
-@Injectable({
-  scope: Scope.REQUEST,
-})
+@Injectable()
 export class TransactionDetailedLoader {
   constructor(
     private readonly accountService: AccountService,
@@ -38,20 +34,24 @@ export class TransactionDetailedLoader {
 
   private readonly operationsDataLoader: any = new DataLoader(async transactions =>
     // @ts-ignore
-    await this.transactionService.getOperations(transactions)
+    await this.transactionService.getOperations(transactions),
+    { cache: false }
   );
 
   private readonly logDataLoader: any = new DataLoader(async hashes =>
     // @ts-ignore
-    await this.transactionService.getLogs(hashes)
+    await this.transactionService.getLogs(hashes),
+    { cache: false }
   );
 
   public async getAccount(address: string): Promise<Array<Account>> {
     return await this.accountDataLoader.load(address);
   }
 
-  private readonly accountDataLoader: any = new DataLoader(async addresses =>
+  private readonly accountDataLoader: any = new DataLoader(async addresses => {
     // @ts-ignore
-    await this.accountService.getAccountsForAddresses(addresses)
-  );
+    const accounts = await this.accountService.getAccountsForAddresses(addresses);
+
+    return accounts.sorted((element) => addresses.indexOf(element.address));
+  }, { cache: false });
 }

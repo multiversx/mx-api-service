@@ -1,20 +1,16 @@
-import { Injectable, Scope } from "@nestjs/common";
-
+import { Injectable } from "@nestjs/common";
 import DataLoader from "dataloader";
-
 import { Account } from "src/endpoints/accounts/entities/account";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { CollectionService } from "src/endpoints/collections/collection.service";
 import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
 
-@Injectable({
-  scope: Scope.REQUEST,
-})
+@Injectable()
 export class NftLoader {
   constructor(
     private readonly accountService: AccountService,
     protected readonly collectionService: CollectionService
-  ) {}
+  ) { }
 
   public async getAccount(address: string): Promise<Array<Account>> {
     return await this.accountDataLoader.load(address);
@@ -25,7 +21,7 @@ export class NftLoader {
     const accounts = await this.accountService.getAccountsForAddresses(addresses);
 
     return accounts.sorted((element) => addresses.indexOf(element.address));
-  });
+  }, { cache: false });
 
   public async getCollection(identifier: string): Promise<Array<NftCollection | null>> {
     return await this.nftDataLoader.load(identifier);
@@ -35,6 +31,6 @@ export class NftLoader {
     // @ts-ignore
     const collections = await this.collectionService.getNftCollectionsByIds(identifiers);
 
-    return collections.sorted((element) => identifiers.indexOf(element.collection));
-  });
+    return identifiers.map((identifier) => collections.find((collection) => collection.collection === identifier));
+  }, { cache: false });
 }
