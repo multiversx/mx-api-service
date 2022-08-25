@@ -20,7 +20,8 @@ export class NftLoader {
     // @ts-ignore
     const accounts = await this.accountService.getAccountsForAddresses(addresses);
 
-    return accounts.sorted((element) => addresses.indexOf(element.address));
+    // @ts-ignore
+    return addresses.mapIndexed<Account>(accounts, account => account.address);
   }, { cache: false });
 
   public async getCollection(identifier: string): Promise<Array<NftCollection | null>> {
@@ -31,6 +32,7 @@ export class NftLoader {
     // @ts-ignore
     const collections = await this.collectionService.getNftCollectionsByIds(identifiers);
 
-    return identifiers.map((identifier) => collections.find((collection) => collection.collection === identifier));
+    // @ts-ignore
+    return identifiers.mapIndexed<NftCollection>(collections, collection => collection.collection);
   }, { cache: false });
 }

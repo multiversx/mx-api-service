@@ -52,6 +52,7 @@ export class TransactionDetailedLoader {
     // @ts-ignore
     const accounts = await this.accountService.getAccountsForAddresses(addresses);
 
-    return accounts.sorted((element) => addresses.indexOf(element.address));
+    // @ts-ignore
+    return addresses.mapIndexed<Account>(accounts, account => account.address);
   }, { cache: false });
 }

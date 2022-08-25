@@ -15,6 +15,7 @@ export class NftCollectionLoader {
     // @ts-ignore
     const accounts = await this.accountService.getAccountsForAddresses(addresses);
 
-    return accounts.sorted((element) => addresses.indexOf(element.address));
+    // @ts-ignore
+    return addresses.mapIndexed<Account>(addresses, address => address);
   }, { cache: false });
 }
