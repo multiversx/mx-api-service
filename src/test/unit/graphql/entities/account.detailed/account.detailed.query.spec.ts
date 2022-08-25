@@ -31,6 +31,10 @@ describe(AccountDetailedQuery, () => {
     accountServiceMock = module.get<AccountService>(AccountService);
   });
 
+  it("should be defined", () => {
+    expect(accountDetailedQuery).toBeDefined();
+  });
+
   it("get account with non-existing address should return null", async () => {
     const expectedAccount = null;
 

@@ -31,6 +31,6 @@ export class NftLoader {
     // @ts-ignore
     const collections = await this.collectionService.getNftCollectionsByIds(identifiers);
 
-    return collections.sorted((element) => identifiers.indexOf(element.collection));
+    return identifiers.map((identifier) => collections.find((collection) => collection.collection === identifier));
   }, { cache: false });
 }

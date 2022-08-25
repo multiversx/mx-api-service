@@ -62,6 +62,10 @@ describe(AccountDetailedResolver, () => {
     accountServiceMock = module.get<AccountService>(AccountService);
   });
 
+  it("should be defined", () => {
+    expect(accountDetailedResolver).toBeDefined();
+  });
+
   it("get account detailed transaction count should return count", async () => {
     const expectedCount: number = randomInt(3);
 

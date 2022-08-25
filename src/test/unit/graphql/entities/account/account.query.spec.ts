@@ -33,6 +33,10 @@ describe(AccountQuery, () => {
     accountServiceMock = module.get<AccountService>(AccountService);
   });
 
+  it("should be defined", () => {
+    expect(accountQuery).toBeDefined();
+  });
+
   it("get accounts with default input should return accounts", async () => {
     const input: GetAccountsInput = new GetAccountsInput();
 
