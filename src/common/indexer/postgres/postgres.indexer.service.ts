@@ -203,7 +203,7 @@ export class PostgresIndexerService implements IndexerInterface {
   }
 
   async getTransaction(txHash: string): Promise<any> {
-    return await this.transactionsRepository.findOneByOrFail({ hash: txHash });
+    return await this.transactionsRepository.findOneBy({ hash: txHash });
   }
 
   async getScDeploy(_address: string): Promise<any> {
