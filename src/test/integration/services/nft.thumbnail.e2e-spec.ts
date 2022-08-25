@@ -1,6 +1,7 @@
 import { Test } from "@nestjs/testing";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
+import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { PublicAppModule } from "src/public.app.module";
 import { GenerateThumbnailResult } from "src/queue.worker/nft.worker/queue/job-services/thumbnails/entities/generate.thumbnail.result";
@@ -57,6 +58,23 @@ describe('Nft Queue Service', () => {
         false);
 
       expect(thumbnail).toBe(GenerateThumbnailResult.success);
+    });
+  });
+
+  describe(`canGenerateThumbnail`, () => {
+    it('should return false, content length limit excedded', () => {
+      const media = new NftMedia({ fileSize: 10000 });
+      expect(nftQueueService.canGenerateThumbnail('some_identifier', media)).toStrictEqual(false);
+    });
+
+    it('should return false, media is not a valid url', () => {
+      const media = new NftMedia({ fileSize: 1000, url: 'invalid_url' });
+      expect(nftQueueService.canGenerateThumbnail('some_identifier', media)).toStrictEqual(false);
+    });
+
+    it('should return true, thumbnail can be generated', () => {
+      const media = new NftMedia({ fileSize: 1000, url: 'https://media.elrond.com/nfts/asset/bafybeiddv4a5op5hraf2ljyg5gacbaqkjbyxgfme3jxh6vzy7vtg7au5gm/2.mp4' });
+      expect(nftQueueService.canGenerateThumbnail('some_identifier', media)).toStrictEqual(true);
     });
   });
 });
