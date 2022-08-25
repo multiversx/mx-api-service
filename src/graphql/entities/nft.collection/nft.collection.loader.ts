@@ -11,11 +11,9 @@ export class NftCollectionLoader {
     return await this.accountDataLoader.load(address);
   }
 
-  private readonly accountDataLoader: any = new DataLoader(async addresses => {
-    // @ts-ignore
-    const accounts = await this.accountService.getAccountsForAddresses(addresses);
+  private readonly accountDataLoader: any = new DataLoader<string, (Account | undefined)>(async addresses => {
+    const accounts = await this.accountService.getAccountsForAddresses(addresses.concat());
 
-    // @ts-ignore
-    return addresses.mapIndexed<Account>(addresses, address => address);
+    return addresses.concat().mapIndexed<Account>(accounts, account => account.address);
   }, { cache: false });
 }

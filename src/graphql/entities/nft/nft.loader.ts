@@ -12,27 +12,23 @@ export class NftLoader {
     protected readonly collectionService: CollectionService
   ) { }
 
-  public async getAccount(address: string): Promise<Array<Account>> {
+  public async getAccount(address: string): Promise<Account> {
     return await this.accountDataLoader.load(address);
   }
 
-  private readonly accountDataLoader: any = new DataLoader(async addresses => {
-    // @ts-ignore
-    const accounts = await this.accountService.getAccountsForAddresses(addresses);
+  private readonly accountDataLoader: any = new DataLoader<string, (Account | undefined)>(async addresses => {
+    const accounts = await this.accountService.getAccountsForAddresses(addresses.concat());
 
-    // @ts-ignore
-    return addresses.mapIndexed<Account>(accounts, account => account.address);
+    return addresses.concat().mapIndexed<Account>(accounts, account => account.address);
   }, { cache: false });
 
   public async getCollection(identifier: string): Promise<Array<NftCollection | null>> {
     return await this.nftDataLoader.load(identifier);
   }
 
-  private readonly nftDataLoader: any = new DataLoader(async identifiers => {
-    // @ts-ignore
-    const collections = await this.collectionService.getNftCollectionsByIds(identifiers);
+  private readonly nftDataLoader: any = new DataLoader<string, (NftCollection | undefined)>(async identifiers => {
+    const collections = await this.collectionService.getNftCollectionsByIds(identifiers.concat());
 
-    // @ts-ignore
-    return identifiers.mapIndexed<NftCollection>(collections, collection => collection.collection);
+    return identifiers.concat().mapIndexed<NftCollection>(collections, collection => collection.collection);
   }, { cache: false });
 }

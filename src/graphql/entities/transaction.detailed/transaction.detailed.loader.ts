@@ -27,20 +27,18 @@ export class TransactionDetailedLoader {
     return await this.logDataLoader.load(hash);
   }
 
-  private readonly smartContractResultsDataLoader: any = new DataLoader(async hashes =>
-    // @ts-ignore
-    await this.transactionService.getSmartContractResults(hashes)
+  private readonly smartContractResultsDataLoader: any = new DataLoader<string, (SmartContractResult[] | undefined)>(
+    async hashes => await this.transactionService.getSmartContractResults(hashes.concat()),
+    { cache: false },
   );
 
-  private readonly operationsDataLoader: any = new DataLoader(async transactions =>
-    // @ts-ignore
-    await this.transactionService.getOperations(transactions),
-    { cache: false }
+  private readonly operationsDataLoader: any = new DataLoader<TransactionDetailed, (TransactionOperation[] | undefined)>(
+    async txHashes => await this.transactionService.getOperations(txHashes.concat()),
+    { cache: false },
   );
 
-  private readonly logDataLoader: any = new DataLoader(async hashes =>
-    // @ts-ignore
-    await this.transactionService.getLogs(hashes),
+  private readonly logDataLoader: any = new DataLoader<string, (TransactionLog | undefined)>(
+    async hashes => await this.transactionService.getLogs(hashes.concat()),
     { cache: false }
   );
 
@@ -48,11 +46,9 @@ export class TransactionDetailedLoader {
     return await this.accountDataLoader.load(address);
   }
 
-  private readonly accountDataLoader: any = new DataLoader(async addresses => {
-    // @ts-ignore
-    const accounts = await this.accountService.getAccountsForAddresses(addresses);
+  private readonly accountDataLoader: any = new DataLoader<string, (Account | undefined)>(async addresses => {
+    const accounts = await this.accountService.getAccountsForAddresses(addresses.concat());
 
-    // @ts-ignore
-    return addresses.mapIndexed<Account>(accounts, account => account.address);
+    return addresses.concat().mapIndexed<Account>(accounts, account => account.address);
   }, { cache: false });
 }
