@@ -3,6 +3,7 @@ import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import { ApiMetricsModule } from "src/common/metrics/api.metrics.module";
 import { BlsModule } from "src/endpoints/bls/bls.module";
 import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
+import { ElasticIndexerHelper } from "./elastic.indexer.helper";
 import { ElasticIndexerService } from "./elastic.indexer.service";
 
 @Global()
@@ -13,11 +14,7 @@ import { ElasticIndexerService } from "./elastic.indexer.service";
     forwardRef(() => BlsModule),
     DynamicModuleUtils.getElasticModule(),
   ],
-  providers: [
-    ElasticIndexerService,
-  ],
-  exports: [
-    ElasticIndexerService,
-  ],
+  providers: [ElasticIndexerService, ElasticIndexerHelper],
+  exports: [ElasticIndexerService, ElasticIndexerHelper],
 })
 export class ElasticIndexerModule { }

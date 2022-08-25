@@ -111,6 +111,7 @@
     "mysql2": "^2.3.3",
     "nest-winston": "^1.6.2",
     "node-object-hash": "^2.3.10",
+    "pg": "^8.7.3",
     "prom-client": "^14.0.1",
     "redis": "^3.1.2",
     "reflect-metadata": "^0.1.13",
@@ -123,7 +124,8 @@
     "tiny-async-pool": "^1.2.0",
     "typeorm": "^0.3.6",
     "winston": "^3.6.0",
-    "winston-daily-rotate-file": "^4.6.1"
+    "winston-daily-rotate-file": "^4.6.1",
+    "yup": "^0.32.11"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.1.6",

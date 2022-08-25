@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, BinaryUtils, RangeGreaterThanOrEqual, AbstractQuery, AddressUtils, RangeLowerThan } from "@elrondnetwork/erdnest";
+import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, BinaryUtils, RangeGreaterThanOrEqual } from "@elrondnetwork/erdnest";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
@@ -16,15 +16,14 @@ import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/sma
 import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { Block } from "../entities/block";
 import { Tag } from "../entities/tag";
-import { BlsService } from "src/endpoints/bls/bls.service";
-import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
+import { ElasticIndexerHelper } from "./elastic.indexer.helper";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly elasticService: ElasticService,
-    private readonly blsService: BlsService,
+    private readonly indexerHelper: ElasticIndexerHelper,
   ) { }
 
   async getAccountsCount(): Promise<number> {
@@ -44,7 +43,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getBlocksCount(filter: BlockFilter): Promise<number> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, await this.buildElasticBlocksFilter(filter));
+      .withCondition(QueryConditionOptions.must, await this.indexerHelper.buildElasticBlocksFilter(filter));
 
     return await this.elasticService.getCount('blocks', elasticQuery);
   }
@@ -56,29 +55,29 @@ export class ElasticIndexerService implements IndexerInterface {
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'shardId', order: ElasticSortOrder.ascending },
       ])
-      .withCondition(QueryConditionOptions.must, await this.buildElasticBlocksFilter(filter));
+      .withCondition(QueryConditionOptions.must, await this.indexerHelper.buildElasticBlocksFilter(filter));
 
     const result = await this.elasticService.getList('blocks', 'hash', elasticQuery);
     return result;
   }
 
   async getNftCollectionCount(filter: CollectionFilter): Promise<number> {
-    const elasticQuery = this.buildCollectionRolesFilter(filter);
+    const elasticQuery = this.indexerHelper.buildCollectionRolesFilter(filter);
     return await this.elasticService.getCount('tokens', elasticQuery);
   }
 
   async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {
-    const elasticQuery = this.buildElasticNftFilter(filter, undefined, address);
+    const elasticQuery = this.indexerHelper.buildElasticNftFilter(filter, undefined, address);
     return await this.elasticService.getCount('accountsesdt', elasticQuery);
   }
 
   async getCollectionCountForAddress(address: string, filter: CollectionFilter): Promise<number> {
-    const elasticQuery = this.buildCollectionRolesFilter(filter, address);
+    const elasticQuery = this.indexerHelper.buildCollectionRolesFilter(filter, address);
     return await this.elasticService.getCount('tokens', elasticQuery);
   }
 
   async getNftCount(filter: NftFilter): Promise<number> {
-    const elasticQuery = this.buildElasticNftFilter(filter);
+    const elasticQuery = this.indexerHelper.buildElasticNftFilter(filter);
     return await this.elasticService.getCount('tokens', elasticQuery);
   }
 
@@ -91,7 +90,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getTransfersCount(filter: TransactionFilter): Promise<number> {
-    const elasticQuery = this.buildTransferFilterQuery(filter);
+    const elasticQuery = this.indexerHelper.buildTransferFilterQuery(filter);
     return await this.elasticService.getCount('operations', elasticQuery);
   }
 
@@ -121,9 +120,8 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList("accountsesdt", identifier, elasticQuery);
   }
 
-
   async getTokensWithRolesForAddressCount(address: string, filter: TokenWithRolesFilter): Promise<number> {
-    const elasticQuery = this.buildTokensWithRolesForAddressQuery(address, filter);
+    const elasticQuery = this.indexerHelper.buildTokensWithRolesForAddressQuery(address, filter);
     return await this.elasticService.getCount('tokens', elasticQuery);
   }
 
@@ -136,13 +134,13 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getRoundCount(filter: RoundFilter): Promise<number> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, await this.buildElasticRoundsFilter(filter));
+      .withCondition(QueryConditionOptions.must, await this.indexerHelper.buildElasticRoundsFilter(filter));
 
     return await this.elasticService.getCount('rounds', elasticQuery);
   }
 
   async getAccountScResultsCount(address: string): Promise<number> {
-    const elasticQuery: ElasticQuery = this.buildSmartContractResultFilterQuery(address);
+    const elasticQuery: ElasticQuery = this.indexerHelper.buildSmartContractResultFilterQuery(address);
     return await this.elasticService.getCount('scresults', elasticQuery);
   }
 
@@ -158,7 +156,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getTransactionCount(filter: TransactionFilter, address?: string): Promise<number> {
-    const elasticQuery = this.buildTransactionFilterQuery(filter, address);
+    const elasticQuery = this.indexerHelper.buildTransactionFilterQuery(filter, address);
     return await this.elasticService.getCount('transactions', elasticQuery);
   }
 
@@ -204,7 +202,7 @@ export class ElasticIndexerService implements IndexerInterface {
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: sortOrder };
     const nonce: ElasticSortProperty = { name: 'nonce', order: sortOrder };
 
-    const elasticQuery = this.buildTransferFilterQuery(filter)
+    const elasticQuery = this.indexerHelper.buildTransferFilterQuery(filter)
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
@@ -213,7 +211,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getTokensWithRolesForAddress(address: string, filter: TokenWithRolesFilter, pagination: QueryPagination): Promise<any[]> {
-    const elasticQuery = this.buildTokensWithRolesForAddressQuery(address, filter, pagination);
+    const elasticQuery = this.indexerHelper.buildTokensWithRolesForAddressQuery(address, filter, pagination);
     const tokenList = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
     return tokenList;
   }
@@ -224,13 +222,13 @@ export class ElasticIndexerService implements IndexerInterface {
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from, size })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
-      .withCondition(filter.condition ?? QueryConditionOptions.must, await this.buildElasticRoundsFilter(filter));
+      .withCondition(filter.condition ?? QueryConditionOptions.must, await this.indexerHelper.buildElasticRoundsFilter(filter));
 
     return await this.elasticService.getList('rounds', 'round', elasticQuery);
   }
 
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter, address?: string): Promise<any[]> {
-    const elasticQuery = this.buildCollectionRolesFilter(filter, address)
+    const elasticQuery = this.indexerHelper.buildCollectionRolesFilter(filter, address)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
@@ -272,7 +270,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from: 0, size: addresses.length })
-      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match("address", "pending-")])
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match("address", "pending")])
       .withCondition(QueryConditionOptions.must, [QueryType.Match('token', identifier, QueryOperator.AND)])
       .withRangeFilter("balanceNum", new RangeGreaterThanOrEqual(0))
       .withCondition(QueryConditionOptions.should, queries);
@@ -304,7 +302,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getAccountScResults(address: string, pagination: QueryPagination): Promise<any[]> {
-    const elasticQuery: ElasticQuery = this.buildSmartContractResultFilterQuery(address);
+    const elasticQuery: ElasticQuery = this.indexerHelper.buildSmartContractResultFilterQuery(address);
     elasticQuery
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
@@ -330,7 +328,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getAccountHistory(address: string, pagination: QueryPagination): Promise<any[]> {
-    const elasticQuery: ElasticQuery = this.buildAccountHistoryFilterQuery(address)
+    const elasticQuery: ElasticQuery = this.indexerHelper.buildAccountHistoryFilterQuery(address)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
@@ -338,7 +336,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<any[]> {
-    const elasticQuery: ElasticQuery = this.buildAccountHistoryFilterQuery(address, tokenIdentifier)
+    const elasticQuery: ElasticQuery = this.indexerHelper.buildAccountHistoryFilterQuery(address, tokenIdentifier)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
@@ -351,7 +349,7 @@ export class ElasticIndexerService implements IndexerInterface {
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: sortOrder };
     const nonce: ElasticSortProperty = { name: 'nonce', order: sortOrder };
 
-    const elasticQuery = this.buildTransactionFilterQuery(filter, address)
+    const elasticQuery = this.indexerHelper.buildTransactionFilterQuery(filter, address)
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
@@ -439,8 +437,30 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
   }
 
+  async getAccountsEsdtByCollection(identifiers: string[], pagination?: QueryPagination) {
+    if (identifiers.length === 0) {
+      return [];
+    }
+
+    const queries = identifiers.map((identifier) => QueryType.Match('collection', identifier, QueryOperator.AND));
+
+    let elasticQuery = ElasticQuery.create();
+
+    if (pagination) {
+      elasticQuery = elasticQuery.withPagination(pagination);
+    }
+
+    elasticQuery = elasticQuery
+      .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
+      .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
+      .withCondition(QueryConditionOptions.should, queries)
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+
+    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
+  }
+
   async getNftsForAddress(address: string, filter: NftFilter, pagination: QueryPagination): Promise<any[]> {
-    let elasticQuery = this.buildElasticNftFilter(filter, undefined, address)
+    let elasticQuery = this.indexerHelper.buildElasticNftFilter(filter, undefined, address)
       .withPagination(pagination);
 
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
@@ -456,7 +476,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getNfts(pagination: QueryPagination, filter: NftFilter, identifier?: string): Promise<any[]> {
-    const elasticQuery = this.buildElasticNftFilter(filter, identifier);
+    const elasticQuery = this.indexerHelper.buildElasticNftFilter(filter, identifier);
     elasticQuery
       .withPagination(pagination)
       .withSort([
@@ -612,422 +632,5 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async setMetadataForToken(identifier: string, value: any): Promise<void> {
     return await this.elasticService.setCustomValue('tokens', identifier, 'metadata', value);
-  }
-
-  private buildCollectionRolesFilter(filter: CollectionFilter, address?: string): ElasticQuery {
-    let elasticQuery = ElasticQuery.create();
-    elasticQuery = elasticQuery.withMustNotExistCondition('identifier')
-      .withMustMultiShouldCondition([NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT], type => QueryType.Match('type', type));
-
-    if (address) {
-      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-        elasticQuery = elasticQuery.withMustCondition(QueryType.Should(
-          [
-            QueryType.Match('currentOwner', address),
-            QueryType.Nested('roles', { 'roles.ESDTRoleNFTCreate': address }),
-            QueryType.Nested('roles', { 'roles.ESDTRoleNFTBurn': address }),
-            QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddQuantity': address }),
-            QueryType.Nested('roles', { 'roles.ESDTRoleNFTUpdateAttributes': address }),
-            QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddURI': address }),
-            QueryType.Nested('roles', { 'roles.ESDTTransferRole': address }),
-          ]
-        ));
-      } else {
-        elasticQuery = elasticQuery.withMustCondition(QueryType.Match('currentOwner', address));
-      }
-    }
-
-    if (filter.before || filter.after) {
-      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
-    }
-
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      if (filter.canCreate !== undefined) {
-        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTCreate', address, filter.canCreate);
-      }
-
-      if (filter.canBurn !== undefined) {
-        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTBurn', address, filter.canBurn);
-      }
-
-      if (filter.canAddQuantity !== undefined) {
-        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTAddQuantity', address, filter.canAddQuantity);
-      }
-
-      if (filter.canUpdateAttributes !== undefined) {
-        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTUpdateAttributes', address, filter.canUpdateAttributes);
-      }
-
-      if (filter.canAddUri !== undefined) {
-        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTAddURI', address, filter.canAddUri);
-      }
-
-      if (filter.canTransferRole !== undefined) {
-        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTTransferRole', address, filter.canTransferRole);
-      }
-    }
-
-    return elasticQuery.withMustMatchCondition('token', filter.collection, QueryOperator.AND)
-      .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
-      .withSearchWildcardCondition(filter.search, ['token', 'name'])
-      .withMustMultiShouldCondition(filter.type, type => QueryType.Match('type', type))
-      .withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT, NftType.MetaESDT], type => QueryType.Match('type', type));
-  }
-
-  private getRoleCondition(query: ElasticQuery, name: string, address: string | undefined, value: string | boolean) {
-    const condition = value === false ? QueryConditionOptions.mustNot : QueryConditionOptions.must;
-    const targetAddress = typeof value === 'string' ? value : address;
-
-    return query.withCondition(condition, QueryType.Nested('roles', { [`roles.${name}`]: targetAddress }));
-  }
-
-  private async buildElasticBlocksFilter(filter: BlockFilter): Promise<AbstractQuery[]> {
-    const { shard, proposer, validator, epoch, nonce } = filter;
-
-    const queries: AbstractQuery[] = [];
-    if (nonce !== undefined) {
-      const nonceQuery = QueryType.Match("nonce", nonce);
-      queries.push(nonceQuery);
-    }
-    if (shard !== undefined) {
-      const shardIdQuery = QueryType.Match('shardId', shard);
-      queries.push(shardIdQuery);
-    }
-
-    if (epoch !== undefined) {
-      const epochQuery = QueryType.Match('epoch', epoch);
-      queries.push(epochQuery);
-    }
-
-    if (proposer && shard !== undefined && epoch !== undefined) {
-      const index = await this.blsService.getBlsIndex(proposer, shard, epoch);
-      const proposerQuery = QueryType.Match('proposer', index);
-      queries.push(proposerQuery);
-    }
-
-    if (validator && shard !== undefined && epoch !== undefined) {
-      const index = await this.blsService.getBlsIndex(validator, shard, epoch);
-      const validatorsQuery = QueryType.Match('validators', index);
-      queries.push(validatorsQuery);
-    }
-
-    return queries;
-  }
-
-  private buildElasticNftFilter(filter: NftFilter, identifier?: string, address?: string): ElasticQuery {
-    let elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, QueryType.Exists('identifier'));
-
-    if (address) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('address', address));
-    }
-
-    if (filter.search !== undefined) {
-      elasticQuery = elasticQuery.withSearchWildcardCondition(filter.search, ['token', 'name']);
-    }
-
-    if (filter.type !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('type', filter.type));
-    }
-
-    if (identifier !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('identifier', identifier, QueryOperator.AND));
-    }
-
-    if (filter.collection !== undefined && filter.collection !== '') {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('token', filter.collection, QueryOperator.AND));
-    }
-
-    if (filter.collections !== undefined && filter.collections.length !== 0) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.collections.map(collection => QueryType.Match('token', collection, QueryOperator.AND))));
-    }
-
-    if (filter.name !== undefined && filter.name !== '') {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('data', { "data.name": filter.name }));
-    }
-
-    if (filter.hasUris !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('data', { "data.nonEmptyURIs": filter.hasUris }));
-    }
-
-    if (filter.tags) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.tags.map(tag => QueryType.Nested("data", { "data.tags": tag }))));
-    }
-
-    if (filter.creator !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", { "data.creator": filter.creator }));
-    }
-
-    if (filter.identifiers) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
-    }
-
-    if (filter.isWhitelistedStorage !== undefined && this.apiConfigService.getIsIndexerV3FlagActive()) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
-    }
-
-    if (filter.isNsfw !== undefined) {
-      const nsfwThreshold = this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
-
-      if (filter.isNsfw === true) {
-        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw_mark', new RangeGreaterThanOrEqual(nsfwThreshold));
-      } else {
-        elasticQuery = elasticQuery.withRangeFilter('nft_nsfw_mark', new RangeLowerThan(nsfwThreshold));
-      }
-    }
-
-    if (filter.before || filter.after) {
-      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
-    }
-
-    return elasticQuery;
-  }
-
-  private buildTransferFilterQuery(filter: TransactionFilter): ElasticQuery {
-    let elasticQuery = ElasticQuery.create();
-
-    if (filter.address) {
-      const smartContractResultConditions = [
-        QueryType.Match('receiver', filter.address),
-        QueryType.Match('receivers', filter.address),
-      ];
-
-      if (AddressUtils.isSmartContractAddress(filter.address)) {
-        smartContractResultConditions.push(QueryType.Match('sender', filter.address));
-      }
-
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.should, QueryType.Must([
-        QueryType.Match('type', 'unsigned'),
-        QueryType.Should(smartContractResultConditions),
-      ], [
-        QueryType.Exists('canBeIgnored'),
-      ]))
-        .withCondition(QueryConditionOptions.should, QueryType.Must([
-          QueryType.Match('type', 'normal'),
-          QueryType.Should([
-            QueryType.Match('sender', filter.address),
-            QueryType.Match('receiver', filter.address),
-            QueryType.Match('receivers', filter.address),
-          ]),
-        ]));
-    }
-
-    if (filter.type) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('type', filter.type === TransactionType.Transaction ? 'normal' : 'unsigned'));
-    }
-
-    if (filter.sender) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('sender', filter.sender));
-    }
-
-    if (filter.receivers) {
-      const queries: AbstractQuery[] = [];
-      for (const receiver of filter.receivers) {
-        queries.push(QueryType.Match('receiver', receiver));
-        queries.push(QueryType.Match('receivers', receiver));
-      }
-
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(queries));
-    }
-
-    if (filter.token) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('tokens', filter.token, QueryOperator.AND));
-    }
-
-    if (filter.function && this.apiConfigService.getIsIndexerV3FlagActive()) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('function', filter.function));
-    }
-
-    if (filter.senderShard !== undefined) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('senderShard', filter.senderShard));
-    }
-
-    if (filter.receiverShard !== undefined) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('receiverShard', filter.receiverShard));
-    }
-
-    if (filter.miniBlockHash) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('miniBlockHash', filter.miniBlockHash));
-    }
-
-    if (filter.hashes) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Should(filter.hashes.map(hash => QueryType.Match('_id', hash))));
-    }
-
-    if (filter.status) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('status', filter.status));
-    }
-
-    if (filter.search) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Wildcard('data', `*${filter.search}*`));
-    }
-
-    if (filter.before || filter.after) {
-      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
-    }
-
-    return elasticQuery;
-  }
-
-  buildTokensWithRolesForAddressQuery(address: string, filter: TokenWithRolesFilter, pagination?: QueryPagination): ElasticQuery {
-    let elasticQuery = ElasticQuery.create()
-      .withMustNotExistCondition('identifier')
-      .withMustCondition(QueryType.Should(
-        [
-          QueryType.Match('currentOwner', address),
-          QueryType.Nested('roles', { 'roles.ESDTRoleLocalMint': address }),
-          QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }),
-        ]
-      ))
-      .withMustMatchCondition('type', TokenType.FungibleESDT)
-      .withMustMatchCondition('token', filter.identifier)
-      .withMustMatchCondition('currentOwner', filter.owner);
-
-    if (filter.search) {
-      elasticQuery = elasticQuery
-        .withShouldCondition([
-          QueryType.Wildcard('token', filter.search),
-          QueryType.Wildcard('name', filter.search),
-        ]);
-    }
-
-    if (filter.canMint !== undefined) {
-      const condition = filter.canMint === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
-      elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleLocalMint': address }));
-    }
-
-    if (filter.canBurn !== undefined) {
-      const condition = filter.canBurn === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
-      elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }));
-    }
-
-    if (pagination) {
-      elasticQuery = elasticQuery.withPagination(pagination);
-    }
-
-    return elasticQuery;
-  }
-
-  async buildElasticRoundsFilter(filter: RoundFilter): Promise<AbstractQuery[]> {
-    const queries: AbstractQuery[] = [];
-
-    if (filter.shard !== undefined) {
-      const shardIdQuery = QueryType.Match('shardId', filter.shard);
-      queries.push(shardIdQuery);
-    }
-
-    if (filter.epoch !== undefined) {
-      const epochQuery = QueryType.Match('epoch', filter.epoch);
-      queries.push(epochQuery);
-    }
-
-    if (filter.validator !== undefined && filter.shard !== undefined && filter.epoch !== undefined) {
-      const index = await this.blsService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
-
-      const signersIndexesQuery = QueryType.Match('signersIndexes', index);
-      queries.push(signersIndexesQuery);
-    }
-
-    return queries;
-  }
-
-  buildSmartContractResultFilterQuery(address?: string): ElasticQuery {
-    const shouldQueries: AbstractQuery[] = [];
-    const mustQueries: AbstractQuery[] = [];
-
-    if (address) {
-      shouldQueries.push(QueryType.Match('sender', address));
-      shouldQueries.push(QueryType.Match('receiver', address));
-
-      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-        shouldQueries.push(QueryType.Match('receivers', address));
-      }
-    }
-
-    const elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.should, shouldQueries)
-      .withCondition(QueryConditionOptions.must, mustQueries);
-
-    return elasticQuery;
-  }
-
-  private buildTransactionFilterQuery(filter: TransactionFilter, address?: string): ElasticQuery {
-    let elasticQuery = ElasticQuery.create()
-      .withMustMatchCondition('tokens', filter.token, QueryOperator.AND)
-      .withMustMatchCondition('function', this.apiConfigService.getIsIndexerV3FlagActive() ? filter.function : undefined)
-      .withMustMatchCondition('senderShard', filter.senderShard)
-      .withMustMatchCondition('receiverShard', filter.receiverShard)
-      .withMustMatchCondition('miniBlockHash', filter.miniBlockHash)
-      .withMustMultiShouldCondition(filter.hashes, hash => QueryType.Match('_id', hash))
-      .withMustMatchCondition('status', filter.status)
-      .withMustWildcardCondition('data', filter.search)
-      .withMustMultiShouldCondition(filter.tokens, token => QueryType.Match('tokens', token, QueryOperator.AND))
-      .withDateRangeFilter('timestamp', filter.before, filter.after);
-
-    if (filter.condition === QueryConditionOptions.should) {
-      if (filter.sender) {
-        elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('sender', filter.sender));
-      }
-
-      if (filter.receivers) {
-        const keys = ['receiver'];
-        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-          keys.push('receivers');
-        }
-
-        for (const receiver of filter.receivers) {
-          for (const key of keys) {
-            elasticQuery = elasticQuery.withShouldCondition(QueryType.Match(key, receiver));
-          }
-        }
-      }
-    } else {
-      elasticQuery = elasticQuery.withMustMatchCondition('sender', filter.sender);
-
-      if (filter.receivers) {
-        const keys = ['receiver'];
-
-        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-          keys.push('receivers');
-        }
-
-        const queries: AbstractQuery[] = [];
-
-        for (const receiver of filter.receivers) {
-          for (const key of keys) {
-            queries.push(QueryType.Match(key, receiver));
-          }
-        }
-
-        elasticQuery = elasticQuery.withMustCondition(QueryType.Should(queries));
-      }
-    }
-
-    if (address) {
-      const keys: string[] = ['sender', 'receiver'];
-
-      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-        keys.push('receivers');
-      }
-
-      elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, address));
-    }
-
-    return elasticQuery;
-  }
-
-  private buildAccountHistoryFilterQuery(address?: string, token?: string): ElasticQuery {
-    const mustQueries: AbstractQuery[] = [];
-
-    if (address) {
-      mustQueries.push(QueryType.Match('address', address));
-    }
-
-    if (token) {
-      mustQueries.push(QueryType.Match('token', token, QueryOperator.AND));
-    }
-
-    return ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, mustQueries);
   }
 }
