@@ -29,6 +29,7 @@ export class TransactionDetailed extends Transaction {
 
   @Field(() => TransactionLog, { description: 'Transaction log for the given detailed transaction.', nullable: true })
   @ApiProperty({ type: TransactionLog, nullable: true })
+  @ComplexityEstimation({ group: "details", value: 200, alternatives: ["withLogs"] })
   logs: TransactionLog | undefined = undefined;
 
   @Field(() => [TransactionOperation], { description: 'Transaction operations list for the given detailed transaction. Complexity: 200', nullable: true })
