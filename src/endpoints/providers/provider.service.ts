@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Provider } from "src/endpoints/providers/entities/provider";
@@ -10,10 +10,11 @@ import { DelegationData } from "./entities/delegation.data";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { AddressUtils, Constants, CachingService, ApiService } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class ProviderService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(ProviderService.name);
 
   constructor(
     private readonly cachingService: CachingService,
@@ -24,9 +25,7 @@ export class ProviderService {
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => KeybaseService))
     private readonly keybaseService: KeybaseService,
-  ) {
-    this.logger = new Logger(ProviderService.name);
-  }
+  ) { }
 
   async getProvider(address: string): Promise<Provider | undefined> {
     const query = new ProviderFilter();

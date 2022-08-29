@@ -1,4 +1,4 @@
-import { BadRequestException, forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { BadRequestException, forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
@@ -19,10 +19,11 @@ import { CollectionFilter } from "../collections/entities/collection.filter";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { AddressUtils, ApiUtils, BinaryUtils, CachingService, MetricsService } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class EsdtAddressService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(EsdtAddressService.name);
   private readonly NFT_THUMBNAIL_PREFIX: string;
 
   constructor(
@@ -37,7 +38,6 @@ export class EsdtAddressService {
     @Inject(forwardRef(() => CollectionService))
     private readonly collectionService: CollectionService,
   ) {
-    this.logger = new Logger(EsdtAddressService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
   }
 

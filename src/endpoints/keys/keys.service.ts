@@ -1,18 +1,17 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { OriginLogger } from "@elrondnetwork/erdnest";
+import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { KeyUnbondPeriod } from "./entities/key.unbond.period";
 
 @Injectable()
 export class KeysService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(KeysService.name);
 
   constructor(
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService
-  ) {
-    this.logger = new Logger(KeysService.name);
-  }
+  ) { }
 
   async getKeyUnbondPeriod(key: string): Promise<KeyUnbondPeriod | undefined> {
     try {

@@ -8,7 +8,6 @@ import { ProtocolService } from "../protocol/protocol.service";
 
 @Injectable()
 export class ApiMetricsService {
-  private static apiCpuTimeHistogram: Histogram<string>;
   private static vmQueriesHistogram: Histogram<string>;
   private static gatewayDurationHistogram: Histogram<string>;
   private static persistenceDurationHistogram: Histogram<string>;
@@ -24,15 +23,6 @@ export class ApiMetricsService {
     private readonly protocolService: ProtocolService,
     private readonly metricsService: MetricsService,
   ) {
-    if (!ApiMetricsService.apiCpuTimeHistogram) {
-      ApiMetricsService.apiCpuTimeHistogram = new Histogram({
-        name: 'api_cpu_time',
-        help: 'API CPU time',
-        labelNames: ['endpoint'],
-        buckets: [],
-      });
-    }
-
     if (!ApiMetricsService.vmQueriesHistogram) {
       ApiMetricsService.vmQueriesHistogram = new Histogram({
         name: 'vm_query',
@@ -84,10 +74,6 @@ export class ApiMetricsService {
         labelNames: ['shardId'],
       });
     }
-  }
-
-  setApiCpuTime(endpoint: string, duration: number) {
-    ApiMetricsService.apiCpuTimeHistogram.labels(endpoint).observe(duration);
   }
 
   setVmQuery(address: string, func: string, duration: number) {

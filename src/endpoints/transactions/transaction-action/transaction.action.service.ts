@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { Transaction } from "src/endpoints/transactions/entities/transaction";
 import { TransactionMetadata } from "./entities/transaction.metadata";
 import { TransactionAction } from "./entities/transaction.action";
@@ -11,11 +11,12 @@ import { TokenTransferService } from "src/endpoints/tokens/token.transfer.servic
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import { MetabondingActionRecognizerService } from "./recognizers/mex/mex.metabonding.action.recognizer.service";
 import { AddressUtils, BinaryUtils, StringUtils } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class TransactionActionService {
   private recognizers: TransactionActionRecognizerInterface[] = [];
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(TransactionActionService.name);
 
   constructor(
     private readonly mexRecognizer: TransactionActionMexRecognizerService,
@@ -25,9 +26,7 @@ export class TransactionActionService {
     @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
     private readonly metabondingRecognizer: MetabondingActionRecognizerService,
-  ) {
-    this.logger = new Logger(TransactionActionService.name);
-  }
+  ) { }
 
   private async getRecognizers() {
     if (this.recognizers.length === 0) {

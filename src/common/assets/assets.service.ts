@@ -1,10 +1,10 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import simpleGit, { SimpleGit, SimpleGitOptions } from 'simple-git';
 import { CacheInfo } from "src/utils/cache.info";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { AccountAssets } from "./entities/account.assets";
-import { ApiUtils, CachingService, FileUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils, CachingService, FileUtils, OriginLogger } from "@elrondnetwork/erdnest";
 import { Provider } from "src/endpoints/providers/entities/provider";
 import { MexPair } from "src/endpoints/mex/entities/mex.pair";
 import { Identity } from "src/endpoints/identities/entities/identity";
@@ -17,14 +17,12 @@ const fs = require('fs');
 
 @Injectable()
 export class AssetsService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(AssetsService.name);
 
   constructor(
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService
-  ) {
-    this.logger = new Logger(AssetsService.name);
-  }
+  ) { }
 
   checkout(): Promise<void> {
     const localGitPath = 'dist/repos/assets';

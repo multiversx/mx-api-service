@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
 import { TokenDetailed } from "./entities/token.detailed";
@@ -22,19 +22,18 @@ import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
 import { AddressUtils, ApiUtils, NumberUtils, TokenUtils } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class TokenService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(TokenService.name);
   constructor(
     private readonly esdtService: EsdtService,
     private readonly indexerService: IndexerService,
     private readonly esdtAddressService: EsdtAddressService,
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService
-  ) {
-    this.logger = new Logger(TokenService.name);
-  }
+  ) { }
 
   async isToken(identifier: string): Promise<boolean> {
     const tokens = await this.esdtService.getAllEsdtTokens();

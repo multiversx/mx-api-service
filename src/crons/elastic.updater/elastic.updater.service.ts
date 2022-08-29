@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import * as JsonDiff from "json-diff";
 import { AssetsService } from "src/common/assets/assets.service";
@@ -8,10 +8,11 @@ import { PersistenceInterface } from "src/common/persistence/persistence.interfa
 import { BatchUtils, Locker } from "@elrondnetwork/erdnest";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { IndexerService } from "src/common/indexer/indexer.service";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class ElasticUpdaterService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(ElasticUpdaterService.name);
 
   constructor(
     private readonly assetsService: AssetsService,
@@ -19,9 +20,7 @@ export class ElasticUpdaterService {
     private readonly nftService: NftService,
     @Inject('PersistenceService')
     private readonly persistenceService: PersistenceInterface,
-  ) {
-    this.logger = new Logger(ElasticUpdaterService.name);
-  }
+  ) { }
 
   @Cron(CronExpression.EVERY_DAY_AT_1AM)
   async handleUpdateAssets() {

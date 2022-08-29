@@ -1,18 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CompetingRabbitConsumer } from './rabbitmq.consumers';
 import { RabbitMqNftHandlerService } from './rabbitmq.nft.handler.service';
 import configuration from 'config/configuration';
 import { NotifierEvent as NotifierEvent } from './entities/notifier.event';
+import { OriginLogger } from '@elrondnetwork/erdnest';
 
 @Injectable()
 export class RabbitMqNftConsumer {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(RabbitMqNftConsumer.name);
 
   constructor(
     private readonly nftHandlerService: RabbitMqNftHandlerService,
-  ) {
-    this.logger = new Logger(RabbitMqNftConsumer.name);
-  }
+  ) { }
 
   @CompetingRabbitConsumer({
     exchange: 'all_events',

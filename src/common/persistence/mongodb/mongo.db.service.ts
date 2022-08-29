@@ -1,4 +1,5 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { OriginLogger } from "@elrondnetwork/erdnest";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { Repository } from "typeorm";
@@ -8,16 +9,14 @@ import { NftMetadataDb } from "./entities/nft.metadata.db";
 
 @Injectable()
 export class MongoDbService implements PersistenceInterface {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(MongoDbService.name);
 
   constructor(
     @InjectRepository(NftMetadataDb)
     private readonly nftMetadataRepository: Repository<NftMetadataDb>,
     @InjectRepository(NftMediaDb)
     private readonly nftMediaRepository: Repository<NftMediaDb>,
-  ) {
-    this.logger = new Logger(MongoDbService.name);
-  }
+  ) { }
 
   async getMetadata(identifier: string): Promise<any | null> {
     try {

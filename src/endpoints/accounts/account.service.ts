@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
@@ -23,10 +23,11 @@ import { GatewayService } from 'src/common/gateway/gateway.service';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { AccountOptionalFieldOption } from './entities/account.optional.field.options';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
+import { OriginLogger } from '@elrondnetwork/erdnest';
 
 @Injectable()
 export class AccountService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(AccountService.name);
 
   constructor(
     private readonly indexerService: IndexerService,
@@ -45,9 +46,7 @@ export class AccountService {
     @Inject(forwardRef(() => SmartContractResultService))
     private readonly smartContractResultService: SmartContractResultService,
     private readonly assetsService: AssetsService,
-  ) {
-    this.logger = new Logger(AccountService.name);
-  }
+  ) { }
 
   async getAccountsCount(): Promise<number> {
     return await this.cachingService.getOrSetCache(

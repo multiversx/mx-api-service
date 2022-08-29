@@ -1,6 +1,6 @@
 import { ApiService, CachingService } from "@elrondnetwork/erdnest";
 import { BinaryUtils, Constants } from "@elrondnetwork/erdnest";
-import { HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { PersistenceService } from "src/common/persistence/persistence.service";
@@ -10,10 +10,11 @@ import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { ClientProxy } from "@nestjs/microservices";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class NftMediaService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(NftMediaService.name);
   private readonly IPFS_REQUEST_TIMEOUT = Constants.oneSecond() * 30 * 1000;
   private readonly NFT_THUMBNAIL_PREFIX;
 
@@ -24,7 +25,6 @@ export class NftMediaService {
     private readonly persistenceService: PersistenceService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) {
-    this.logger = new Logger(NftMediaService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
   }
 

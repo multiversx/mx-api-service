@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
@@ -25,10 +25,11 @@ import { TransactionOperation } from './entities/transaction.operation';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
 import crypto from 'crypto-js';
+import { OriginLogger } from '@elrondnetwork/erdnest';
 
 @Injectable()
 export class TransactionService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(TransactionService.name);
 
   constructor(
     private readonly indexerService: IndexerService,
@@ -43,9 +44,7 @@ export class TransactionService {
     @Inject(forwardRef(() => TransactionActionService))
     private readonly transactionActionService: TransactionActionService,
     private readonly assetsService: AssetsService,
-  ) {
-    this.logger = new Logger(TransactionService.name);
-  }
+  ) { }
 
   async getTransactionCountForAddress(address: string): Promise<number> {
     return await this.cachingService.getOrSetCache(

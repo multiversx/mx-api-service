@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenHelpers } from "src/utils/token.helpers";
@@ -23,10 +23,11 @@ import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingServ
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
 import { CollectionAccount } from "../collections/entities/collection.account";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class NftService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(NftService.name);
   private readonly NFT_THUMBNAIL_PREFIX: string;
   readonly DEFAULT_MEDIA: NftMedia[];
 
@@ -47,7 +48,6 @@ export class NftService {
     private readonly lockedAssetService: LockedAssetService,
 
   ) {
-    this.logger = new Logger(NftService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
     this.DEFAULT_MEDIA = [
       {

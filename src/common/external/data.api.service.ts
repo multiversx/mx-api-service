@@ -1,19 +1,18 @@
-import { ApiService } from "@elrondnetwork/erdnest";
-import { Injectable, Logger } from "@nestjs/common";
+import { ApiService, OriginLogger } from "@elrondnetwork/erdnest";
+import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { DataQuoteType } from "./entities/data.quote.type";
 
 @Injectable()
 export class DataApiService {
   private readonly dataUrl: string | undefined;
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(DataApiService.name);
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly apiService: ApiService,
   ) {
     this.dataUrl = this.apiConfigService.getDataUrl();
-    this.logger = new Logger(DataApiService.name);
   }
 
   async getQuotesHistoricalTimestamp(type: DataQuoteType, timestamp: number): Promise<number | undefined> {

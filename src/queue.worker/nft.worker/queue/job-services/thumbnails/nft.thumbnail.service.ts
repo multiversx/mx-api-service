@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable } from "@nestjs/common";
 import sharp, { fit } from 'sharp';
 import ffmpeg from 'fluent-ffmpeg';
 import path from "path";
@@ -9,10 +9,11 @@ import { ThumbnailType } from "./entities/thumbnail.type";
 import { AWSService } from "./aws.service";
 import { ApiService, Constants, FileUtils } from "@elrondnetwork/erdnest";
 import { TokenHelpers } from "src/utils/token.helpers";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class NftThumbnailService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(NftThumbnailService.name);
   private readonly STANDARD_PATH: string = 'nfts/thumbnail';
   private readonly API_TIMEOUT_MILLISECONDS = Constants.oneSecond() * 30 * 1000;
 
@@ -20,9 +21,7 @@ export class NftThumbnailService {
     private readonly apiConfigService: ApiConfigService,
     private readonly awsService: AWSService,
     private readonly apiService: ApiService,
-  ) {
-    this.logger = new Logger(NftThumbnailService.name);
-  }
+  ) { }
 
   private async extractThumbnailFromImage(buffer: Buffer): Promise<Buffer | undefined> {
     try {

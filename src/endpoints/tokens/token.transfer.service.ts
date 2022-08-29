@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "src/utils/cache.info";
 import { EsdtService } from "../esdt/esdt.service";
 import { AssetsService } from "../../common/assets/assets.service";
@@ -12,19 +12,18 @@ import { TransactionOperationType } from "../transactions/entities/transaction.o
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
 import { BinaryUtils, CachingService } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class TokenTransferService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(TokenTransferService.name);
 
   constructor(
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => EsdtService))
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService
-  ) {
-    this.logger = new Logger(TokenTransferService.name);
-  }
+  ) { }
 
   getTokenTransfer(elasticTransaction: any): { tokenIdentifier: string, tokenAmount: string } | undefined {
     if (!elasticTransaction.data) {

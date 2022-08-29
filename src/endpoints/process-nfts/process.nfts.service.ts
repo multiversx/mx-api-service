@@ -1,5 +1,5 @@
 import { AddressUtils, CachingService } from "@elrondnetwork/erdnest";
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
@@ -10,13 +10,14 @@ import { Nft } from "../nfts/entities/nft";
 import { NftService } from "../nfts/nft.service";
 import { ProcessNftRequest } from "./entities/process.nft.request";
 import { ProcessNftSettings } from "./entities/process.nft.settings";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class ProcessNftsService {
   private static readonly MAX_DEPTH = 10;
   private static readonly MAXIMUM_PROCESS_RETRIES = 2;
 
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(ProcessNftsService.name);
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
@@ -25,9 +26,7 @@ export class ProcessNftsService {
     private readonly collectionService: CollectionService,
     private readonly accountService: AccountService,
     private readonly cachingService: CachingService,
-  ) {
-    this.logger = new Logger(ProcessNftsService.name);
-  }
+  ) { }
 
   public async process(processNftRequest: ProcessNftRequest) {
     const settings = ProcessNftSettings.fromRequest(processNftRequest);

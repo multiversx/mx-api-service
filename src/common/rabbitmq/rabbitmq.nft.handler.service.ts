@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { NftType } from 'src/endpoints/nfts/entities/nft.type';
 import { NftService } from 'src/endpoints/nfts/nft.service';
 import { ProcessNftSettings } from 'src/endpoints/process-nfts/entities/process.nft.settings';
@@ -8,19 +8,18 @@ import { NotifierEventIdentifier } from './entities/notifier.event.identifier';
 import { NotifierEvent } from './entities/notifier.event';
 import { BinaryUtils, CachingService } from '@elrondnetwork/erdnest';
 import { IndexerService } from '../indexer/indexer.service';
+import { OriginLogger } from '@elrondnetwork/erdnest';
 
 @Injectable()
 export class RabbitMqNftHandlerService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(RabbitMqNftHandlerService.name);
 
   constructor(
     private readonly nftWorkerService: NftWorkerService,
     private readonly nftService: NftService,
     private readonly indexerService: IndexerService,
     private readonly cachingService: CachingService,
-  ) {
-    this.logger = new Logger(RabbitMqNftHandlerService.name);
-  }
+  ) { }
 
   private async getCollectionType(collectionIdentifier: string): Promise<NftType | null> {
     const type = await this.cachingService.getCacheLocal<NftType>(CacheInfo.CollectionType(collectionIdentifier).key) ??

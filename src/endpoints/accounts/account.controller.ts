@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, NotFoundException, Param, Query } from '@nestjs/common';
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AccountService } from './account.service';
 import { AccountDetailed } from './entities/account.detailed';
@@ -44,11 +44,12 @@ import { NftQueryOptions } from '../nfts/entities/nft.query.options';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
 import { ParseTokenPipe } from '@elrondnetwork/erdnest';
 import { TransactionDetailed } from '../transactions/entities/transaction.detailed';
+import { OriginLogger } from '@elrondnetwork/erdnest';
 
 @Controller()
 @ApiTags('accounts')
 export class AccountController {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(AccountController.name);
 
   constructor(
     private readonly accountService: AccountService,
@@ -62,9 +63,7 @@ export class AccountController {
     private readonly collectionService: CollectionService,
     private readonly transferService: TransferService,
     private readonly apiConfigService: ApiConfigService
-  ) {
-    this.logger = new Logger(AccountController.name);
-  }
+  ) { }
 
   @Get("/accounts")
   @ApiOperation({ summary: 'Accounts details', description: 'Returns all accounts available on blockchain. By default it returns 25 accounts' })
