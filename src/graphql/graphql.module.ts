@@ -15,6 +15,9 @@ import { TransactionDetailedModule } from "src/graphql/entities/transaction.deta
 import { TransactionModule } from "src/graphql/entities/transaction/transaction.module";
 import { TagModule } from "src/graphql/entities/tag/tag.module";
 import { DelegationModule } from "src/graphql/entities/delegation/delegation.module";
+import { DappConfigModule } from "src/graphql/entities/dapp.config/dapp.config.module";
+import { WaitingListModule } from "src/graphql/entities/waiting.list/waiting.list.module";
+import { UsernameModule } from "src/graphql/entities/username/username.module";
 
 @Module({})
 export class GraphQlModule {
@@ -42,6 +45,9 @@ export class GraphQlModule {
         TransactionModule,
         TagModule,
         DelegationModule,
+        DappConfigModule,
+        WaitingListModule,
+        UsernameModule,
       ];
     }
 

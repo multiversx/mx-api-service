@@ -143,6 +143,48 @@ type CollectionRoles {
   roles: [String!]!
 }
 
+"""DappConfig object type."""
+type DappConfig {
+  """Api url details"""
+  apiAddress: String!
+
+  """Api Timeout details"""
+  apiTimeout: String!
+
+  """ChainID details"""
+  chainId: String!
+
+  """Token details"""
+  decimals: String!
+
+  """Token denomination details"""
+  egldDenomination: String!
+
+  """Token label details"""
+  egldLabel: String!
+
+  """Explorer address details"""
+  explorerAddress: String!
+
+  """Gas data byte details"""
+  gasPerDataByte: String!
+
+  """Network Details."""
+  id: ID!
+
+  """Network name."""
+  name: String!
+
+  """Wallet url details"""
+  walletAddress: String!
+
+  """Bridge wallet url details"""
+  walletConnectBridgeAddresses: [String!]!
+
+  """Wallet connect url details"""
+  walletConnectDeepLink: String!
+}
+
 """Delegation object type."""
 type Delegation {
   """Locked details."""
@@ -527,6 +569,12 @@ input GetTransactionsInput {
 
   """Token identfier for the given result set."""
   token: String
+}
+
+"""Input to retrieve the given account details for."""
+input GetUsernameInput {
+  """Herotag"""
+  username: String = ""
 }
 
 """
@@ -995,6 +1043,9 @@ type Query {
     input: GetNftCollectionsCountInput!
   ): Float!
 
+  """Retrieve configuration used in dapp."""
+  dappConfig: DappConfig!
+
   """Retrieve all delegation staking information."""
   delegation: Delegation!
 
@@ -1042,6 +1093,18 @@ type Query {
     """Input to retrieve the given transactions count for."""
     input: GetTransactionsCountInput!
   ): Float!
+
+  """Retrive account detailed for a given herotag"""
+  username(
+    """Input to retrieve the given detailed account for."""
+    input: GetUsernameInput!
+  ): Username!
+
+  """Retrieve all address that are in waiting."""
+  waitingList: [WaitingList!]!
+
+  """Retrieve all addresses count that are in waiting."""
+  waitingListCount: Float!
 }
 
 """Scam information object type."""
@@ -1456,4 +1519,49 @@ type UnlockMileStoneModel {
 
   """Remaining epochs for the given unlock mile stone model."""
   remainingEpochs: Float!
+}
+
+"""Username object type."""
+type Username {
+  """Address details."""
+  address: String!
+
+  """Balance details."""
+  balance: String!
+
+  """Developer Reward details."""
+  developerReward: String!
+
+  """Nonce details."""
+  nonce: String
+
+  """RootHash details."""
+  rootHash: String!
+
+  """ScrCount details."""
+  scrCount: String
+
+  """Shard details."""
+  shard: String
+
+  """txCount details."""
+  txCount: Float
+
+  """Username details."""
+  username: String!
+}
+
+"""Waiting object type."""
+type WaitingList {
+  """Address details."""
+  address: ID!
+
+  """Nonce details."""
+  nonce: Float!
+
+  """Rank details."""
+  rank: Float!
+
+  """Value details."""
+  value: Float!
 }
