@@ -1,4 +1,4 @@
-import { Controller, Inject, Logger } from "@nestjs/common";
+import { Controller, Inject } from "@nestjs/common";
 import { ClientProxy, Ctx, MessagePattern, Payload, RmqContext } from "@nestjs/microservices";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -11,10 +11,11 @@ import { NftMetadataService } from "./job-services/metadata/nft.metadata.service
 import { GenerateThumbnailResult } from "./job-services/thumbnails/entities/generate.thumbnail.result";
 import { NftThumbnailService } from "./job-services/thumbnails/nft.thumbnail.service";
 import { NftAssetService } from "./job-services/assets/nft.asset.service";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Controller()
 export class NftQueueController {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(NftQueueController.name);
   private readonly RETRY_LIMIT: Number;
 
   constructor(
@@ -26,7 +27,6 @@ export class NftQueueController {
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     apiConfigService: ApiConfigService,
   ) {
-    this.logger = new Logger(NftQueueController.name);
     this.RETRY_LIMIT = apiConfigService.getNftProcessMaxRetries();
   }
 

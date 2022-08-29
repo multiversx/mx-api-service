@@ -1,20 +1,19 @@
+import { OriginLogger } from "@elrondnetwork/erdnest";
 import { Constants, MatchUtils, CachingService, ApiService } from "@elrondnetwork/erdnest";
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { NftMetadata } from "src/endpoints/nfts/entities/nft.metadata";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 
 @Injectable()
 export class NftExtendedAttributesService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(NftExtendedAttributesService.name);
 
   constructor(
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
     private readonly apiService: ApiService,
-  ) {
-    this.logger = new Logger(NftExtendedAttributesService.name);
-  }
+  ) { }
 
   async tryGetExtendedAttributesFromBase64EncodedAttributes(attributes: string): Promise<any> {
     try {

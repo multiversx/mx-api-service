@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "src/utils/cache.info";
 import { MexToken } from "./entities/mex.token";
 import { MexPairService } from "./mex.pair.service";
@@ -9,10 +9,11 @@ import { MexFarmService } from "./mex.farm.service";
 import { MexSettingsService } from "./mex.settings.service";
 import { Constants, CachingService } from "@elrondnetwork/erdnest";
 import { MexPairType } from "./entities/mex.pair.type";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class MexTokenService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(MexTokenService.name);
 
   constructor(
     private readonly cachingService: CachingService,
@@ -21,9 +22,7 @@ export class MexTokenService {
     @Inject(forwardRef(() => MexFarmService))
     private readonly mexFarmService: MexFarmService,
     private readonly mexSettingsService: MexSettingsService,
-  ) {
-    this.logger = new Logger(MexTokenService.name);
-  }
+  ) { }
 
   async refreshMexTokens(): Promise<void> {
     const tokens = await this.getAllMexTokensRaw();

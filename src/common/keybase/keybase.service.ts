@@ -1,4 +1,4 @@
-import { forwardRef, HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { Keybase } from "./entities/keybase";
@@ -7,12 +7,12 @@ import { KeybaseState } from "./entities/keybase.state";
 import { CacheInfo } from "../../utils/cache.info";
 import asyncPool from "tiny-async-pool";
 import { GithubService } from "../github/github.service";
-import { ApiService, ApiUtils, CachingService, Constants } from "@elrondnetwork/erdnest";
+import { ApiService, ApiUtils, CachingService, Constants, OriginLogger } from "@elrondnetwork/erdnest";
 import { ApiConfigService } from "../api-config/api.config.service";
 
 @Injectable()
 export class KeybaseService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(KeybaseService.name);
 
   constructor(
     private readonly cachingService: CachingService,
@@ -23,9 +23,7 @@ export class KeybaseService {
     private readonly providerService: ProviderService,
     private readonly githubService: GithubService,
     private readonly apiConfigService: ApiConfigService
-  ) {
-    this.logger = new Logger(KeybaseService.name);
-  }
+  ) { }
 
   private async getProvidersKeybasesRaw(): Promise<Keybase[]> {
     const providers = await this.providerService.getProviderAddresses();

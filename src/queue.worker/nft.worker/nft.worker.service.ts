@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 import { NftThumbnailService } from "./queue/job-services/thumbnails/nft.thumbnail.service";
@@ -9,10 +9,11 @@ import { NftMessage } from "./queue/entities/nft.message";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftAssetService } from "./queue/job-services/assets/nft.asset.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class NftWorkerService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(NftWorkerService.name);
 
   constructor(
     private readonly nftThumbnailService: NftThumbnailService,
@@ -21,9 +22,7 @@ export class NftWorkerService {
     private readonly nftAssetService: NftAssetService,
     @Inject('QUEUE_SERVICE') private readonly client: ClientProxy,
     private readonly persistenceService: PersistenceService,
-  ) {
-    this.logger = new Logger(NftWorkerService.name);
-  }
+  ) { }
 
   async addProcessNftQueueJob(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
     nft.metadata = await this.nftMetadataService.getMetadata(nft) ?? undefined;

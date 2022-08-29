@@ -1,5 +1,6 @@
+import { OriginLogger } from "@elrondnetwork/erdnest";
 import { ApiService, Constants } from "@elrondnetwork/erdnest";
-import { HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { TokenHelpers } from "src/utils/token.helpers";
@@ -7,7 +8,7 @@ import { AWSService } from "../thumbnails/aws.service";
 
 @Injectable()
 export class NftAssetService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(NftAssetService.name);
   private readonly API_TIMEOUT_MILLISECONDS = Constants.oneSecond() * 30 * 1000;
   private readonly STANDARD_PATH: string = 'nfts/asset';
 
@@ -15,9 +16,7 @@ export class NftAssetService {
     private readonly apiService: ApiService,
     private readonly awsService: AWSService,
     private readonly apiConfigService: ApiConfigService,
-  ) {
-    this.logger = new Logger(NftAssetService.name);
-  }
+  ) { }
 
   async uploadAsset(identifier: string, fileUrl: string, fileType: string) {
     this.logger.log(`Started uploading assets to S3 for NFT with identifier '${identifier}', file url '${fileUrl}'`);

@@ -1,5 +1,5 @@
 import { Constants, CachingService } from "@elrondnetwork/erdnest";
-import { BadRequestException, Injectable, Logger } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { CacheInfo } from "src/utils/cache.info";
 import { GraphQlService } from "src/common/graphql/graphql.service";
@@ -7,18 +7,17 @@ import { MexPair } from "./entities/mex.pair";
 import { MexPairState } from "./entities/mex.pair.state";
 import { MexPairType } from "./entities/mex.pair.type";
 import { MexSettingsService } from "./mex.settings.service";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class MexPairService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(MexPairService.name);
 
   constructor(
     private readonly cachingService: CachingService,
     private readonly mexSettingService: MexSettingsService,
     private readonly graphQlService: GraphQlService,
-  ) {
-    this.logger = new Logger(MexPairService.name);
-  }
+  ) { }
 
   async refreshMexPairs(): Promise<void> {
     const pairs = await this.getAllMexPairsRaw();

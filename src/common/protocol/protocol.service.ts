@@ -1,5 +1,6 @@
+import { OriginLogger } from "@elrondnetwork/erdnest";
 import { CachingService } from "@elrondnetwork/erdnest";
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "../../utils/cache.info";
 import { GatewayComponentRequest } from "../gateway/entities/gateway.component.request";
 import { GatewayService } from "../gateway/gateway.service";
@@ -7,7 +8,8 @@ import { IndexerService } from "../indexer/indexer.service";
 
 @Injectable()
 export class ProtocolService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(ProtocolService.name);
+
   constructor(
     @Inject(forwardRef(() => GatewayService))
     private readonly gatewayService: GatewayService,
@@ -15,9 +17,7 @@ export class ProtocolService {
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => IndexerService))
     private readonly indexerService: IndexerService
-  ) {
-    this.logger = new Logger(ProtocolService.name);
-  }
+  ) { }
 
   async getShardIds(): Promise<number[]> {
     return await this.cachingService.getOrSetCache(

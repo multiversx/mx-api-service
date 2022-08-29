@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "src/utils/cache.info";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
@@ -17,10 +17,11 @@ import { EsdtSupply } from "./entities/esdt.supply";
 import { AddressUtils, ApiUtils, BinaryUtils, Constants, NumberUtils, CachingService } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class EsdtService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(EsdtService.name);
 
   constructor(
     private readonly gatewayService: GatewayService,
@@ -33,9 +34,7 @@ export class EsdtService {
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
     private readonly mexTokenService: MexTokenService,
-  ) {
-    this.logger = new Logger(EsdtService.name);
-  }
+  ) { }
 
   async getAllEsdtTokens(): Promise<TokenDetailed[]> {
     return await this.cachingService.getOrSetCache(

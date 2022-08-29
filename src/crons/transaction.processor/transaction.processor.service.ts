@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
 import { ApiMetricsService } from "src/common/metrics/api.metrics.service";
@@ -10,10 +10,11 @@ import { SftChangeTransactionExtractor } from "./extractor/sft.change.transactio
 import { TransactionExtractorInterface } from "./extractor/transaction.extractor.interface";
 import { TransferOwnershipExtractor } from "./extractor/transfer.ownership.extractor";
 import { PerformanceProfiler, CachingService, BinaryUtils } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class TransactionProcessorService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(TransactionProcessorService.name);
   private transactionProcessor: TransactionProcessor = new TransactionProcessor();
 
   constructor(
@@ -22,9 +23,7 @@ export class TransactionProcessorService {
     private readonly metricsService: ApiMetricsService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly nodeService: NodeService,
-  ) {
-    this.logger = new Logger(TransactionProcessorService.name);
-  }
+  ) { }
 
   @Cron('*/1 * * * * *')
   async handleNewTransactions() {

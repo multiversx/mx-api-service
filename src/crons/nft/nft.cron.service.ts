@@ -1,5 +1,6 @@
+import { OriginLogger } from "@elrondnetwork/erdnest";
 import { Constants, Locker } from "@elrondnetwork/erdnest";
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { Nft } from "src/endpoints/nfts/entities/nft";
@@ -9,15 +10,13 @@ import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service
 
 @Injectable()
 export class NftCronService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(NftCronService.name);
 
   constructor(
     private readonly nftWorkerService: NftWorkerService,
     private readonly nftService: NftService,
     private readonly apiConfigService: ApiConfigService,
-  ) {
-    this.logger = new Logger(NftCronService.name);
-  }
+  ) { }
 
   @Cron(CronExpression.EVERY_HOUR)
   async triggerProcessNftsForLast24Hours() {

@@ -1,5 +1,6 @@
+import { OriginLogger } from "@elrondnetwork/erdnest";
 import { PerformanceProfiler, CachingService } from "@elrondnetwork/erdnest";
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
@@ -8,7 +9,7 @@ import { ProtocolService } from "src/common/protocol/protocol.service";
 
 @Injectable()
 export class VmQueryService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(VmQueryService.name);
 
   constructor(
     @Inject(forwardRef(() => CachingService))
@@ -17,9 +18,7 @@ export class VmQueryService {
     private readonly protocolService: ProtocolService,
     private readonly apiConfigService: ApiConfigService,
     private readonly metricsService: ApiMetricsService,
-  ) {
-    this.logger = new Logger(VmQueryService.name);
-  }
+  ) { }
 
   private async computeTtls(): Promise<{ localTtl: number, remoteTtl: number }> {
     const secondsRemainingUntilNextRound = await this.protocolService.getSecondsRemainingUntilNextRound();

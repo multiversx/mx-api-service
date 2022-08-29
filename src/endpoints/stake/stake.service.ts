@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { NodeStatus } from "../nodes/entities/node.status";
@@ -11,10 +11,11 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { CacheInfo } from "src/utils/cache.info";
 import { AddressUtils, ApiUtils, Constants, RoundUtils, CachingService } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class StakeService {
-  private logger: Logger;
+  private logger = new OriginLogger(StakeService.name);
 
   constructor(
     private readonly cachingService: CachingService,
@@ -25,9 +26,7 @@ export class StakeService {
     private readonly gatewayService: GatewayService,
     @Inject(forwardRef(() => NetworkService))
     private readonly networkService: NetworkService,
-  ) {
-    this.logger = new Logger(StakeService.name);
-  }
+  ) { }
 
   async getGlobalStake() {
     return await this.cachingService.getOrSetCache(
