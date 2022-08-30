@@ -122,55 +122,121 @@ type Block {
   epoch: Float!
 
   """Gas Consumed for the given NFT."""
-  gasConsumed: ID!
+  gasConsumed: Float!
 
   """Gas Penalized for the given NFT."""
-  gasPenalized: ID!
+  gasPenalized: Float!
 
   """Gas Refunded for the given NFT."""
-  gasRefunded: ID!
+  gasRefunded: Float!
 
   """Hash for the given Block."""
-  hash: ID!
+  hash: String!
 
   """Max Gas Limit for the given NFT."""
-  maxGasLimit: ID!
+  maxGasLimit: Float!
 
   """Nonce for the given Block."""
   nonce: ID!
 
   """Previous Hash for the given Block."""
-  prevHash: ID!
+  prevHash: String!
 
   """Proposer for the given Block."""
-  proposer: ID!
+  proposer: String!
 
   """Proposer Identity for the given Block."""
-  proposerIdentity: ID!
+  proposerIdentity: Identity!
 
   """Public Key Bitmap for the given Block."""
-  pubKeyBitmap: ID!
+  pubKeyBitmap: String!
 
   """Round for the given Block."""
-  round: ID!
+  round: Float!
 
   """Shard for the given Block."""
-  shard: ID!
+  shard: Float!
 
   """Size for the given Block."""
-  size: ID!
+  size: Float!
 
   """Size Txs for the given Block."""
-  sizeTxs: ID!
+  sizeTxs: Float!
 
   """State Root Hash for the given Block."""
-  stateRootHash: ID!
+  stateRootHash: String!
 
   """Timestamp for the given Block."""
-  timestamp: ID!
+  timestamp: Float!
 
   """TxCount for the given NFT."""
-  txCount: ID!
+  txCount: Float!
+}
+
+"""BlockDetailed object type."""
+type BlockDetailed {
+  """Epoch for the given Block."""
+  epoch: Float!
+
+  """Gas Consumed for the given NFT."""
+  gasConsumed: Float!
+
+  """Gas Penalized for the given NFT."""
+  gasPenalized: Float!
+
+  """Gas Refunded for the given NFT."""
+  gasRefunded: Float!
+
+  """Hash for the given Block."""
+  hash: String!
+
+  """Max Gas Limit for the given NFT."""
+  maxGasLimit: Float!
+
+  """MiniBlockHashes for the given block hash."""
+  miniBlocksHashes: [String!]!
+
+  """Nonce for the given Block."""
+  nonce: ID!
+
+  """NotarizedBlocksHashes for the given block hash."""
+  notarizedBlocksHashes: [String!]!
+
+  """Previous Hash for the given Block."""
+  prevHash: String!
+
+  """Proposer for the given Block."""
+  proposer: String!
+
+  """Proposer Identity for the given Block."""
+  proposerIdentity: Identity!
+
+  """Public Key Bitmap for the given Block."""
+  pubKeyBitmap: String!
+
+  """Round for the given Block."""
+  round: Float!
+
+  """Shard for the given Block."""
+  shard: Float!
+
+  """Size for the given Block."""
+  size: Float!
+
+  """Size Txs for the given Block."""
+  sizeTxs: Float!
+
+  """State Root Hash for the given Block."""
+  stateRootHash: String!
+
+  """Timestamp for the given Block."""
+  timestamp: Float!
+
+  """TxCount for the given NFT."""
+  txCount: Float!
+
+  """Validators for the given block hash."""
+  validators: [String!]!
 }
 
 """Collection roles object type."""
@@ -279,6 +345,12 @@ input GetAccountsInput {
 
   """Number of accounts to retrieve for the given result set."""
   size: Float = 25
+}
+
+"""Input to retrieve the given hash block for."""
+input GetBlockHashInput {
+  """Specific block hash to retrieve the corresponding blocks for."""
+  hash: ID = ""
 }
 
 """Input to retrieve the given tags for."""
@@ -674,6 +746,60 @@ input GetTransactionsInput {
 input GetUsernameInput {
   """Herotag"""
   username: String = ""
+}
+
+"""Identity object type."""
+type Identity {
+  """Provider apr details."""
+  apr: Float!
+
+  """Provider avatar."""
+  avatar: String!
+
+  """Provider description details."""
+  description: String!
+
+  """Provider distribution details."""
+  distribution: Float!
+
+  """Identity provider."""
+  identity: String!
+
+  """Provider location details."""
+  location: String!
+
+  """Provider locked ESDT details."""
+  locked: String!
+
+  """Provider name details."""
+  name: String!
+
+  """Providers details."""
+  providers: [String!]!
+
+  """Provider rank details."""
+  rank: Float!
+
+  """Provider score details."""
+  score: Float!
+
+  """Provider stake details."""
+  stake: String!
+
+  """Provider stake percent details"""
+  stakePercent: Float!
+
+  """Provider topUp amount details."""
+  topUp: String!
+
+  """Provider twitter account."""
+  twitter: String!
+
+  """Provider validators details."""
+  validators: Float!
+
+  """Provider website details."""
+  website: String!
 }
 
 """
@@ -1123,6 +1249,12 @@ type Query {
 
   """Retrieve all accounts count."""
   accountsCount: Float!
+
+  """Retrieve the block for the given input."""
+  blockHash(
+    """Input to retrieve the given block hash details for."""
+    input: GetBlockHashInput!
+  ): BlockDetailed!
 
   """Retrieve all blocks for the given input."""
   blocks(

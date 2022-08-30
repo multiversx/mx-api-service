@@ -1,4 +1,4 @@
-import { Field, Float, InputType } from "@nestjs/graphql";
+import { Field, Float, ID, InputType } from "@nestjs/graphql";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 
 @InputType({ description: "Input to retrieve the given tags for." })
@@ -46,4 +46,18 @@ export class GetBlocksInput extends GetBlocksCountInput {
 
   @Field(() => Float, { name: "size", description: "Number of blocks to retrieve for the given result set.", nullable: true, defaultValue: 25 })
   size: number = 25;
+}
+
+@InputType({ description: "Input to retrieve the given hash block for." })
+export class GetBlockHashInput {
+  constructor(partial?: Partial<GetBlockHashInput>) {
+    Object.assign(this, partial);
+  }
+
+  @Field(() => ID, { name: "hash", description: "Specific block hash to retrieve the corresponding blocks for." })
+  hash: string = "";
+
+  public static resolve(input: GetBlockHashInput): string {
+    return input.hash;
+  }
 }
