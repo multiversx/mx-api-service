@@ -688,6 +688,15 @@ input GetNftsInput {
 }
 
 """Input to retrieve the given tags for."""
+input GetShardInput {
+  """Number of shards to skip for the given result set."""
+  from: Float = 0
+
+  """Number of shards to retrieve for the given result set."""
+  size: Float = 25
+}
+
+"""Input to retrieve the given tags for."""
 input GetTagsInput {
   """Number of tags to skip for the given result set."""
   from: Float = 0
@@ -1423,6 +1432,12 @@ type Query {
     input: GetNftsCountInput!
   ): Float!
 
+  """Retrieve all shards for the given input."""
+  shards(
+    """Input to retrieve the given shards for."""
+    input: GetShardInput!
+  ): [Shard!]!
+
   """Retrieve general network statistics."""
   stats: Stats!
 
@@ -1485,6 +1500,18 @@ enum ScamType {
 
   """Scam type."""
   scam
+}
+
+"""Shard object type."""
+type Shard {
+  """Total number of active validators."""
+  activeValidators: Float!
+
+  """Shard details."""
+  shard: Float!
+
+  """Total number of validators."""
+  validators: Float!
 }
 
 """Smart contract result object type."""

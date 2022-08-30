@@ -21,6 +21,7 @@ import { UsernameModule } from "src/graphql/entities/username/username.module";
 import { BlockModule } from "src/graphql/entities/block/block.module";
 import { MiniBlockModule } from "src/graphql/entities/miniblock/mini.block.module";
 import { NetworkModule } from "src/graphql/entities/network/network.module";
+import { ShardModule } from "src/graphql/entities/shard/shard.module";
 
 @Module({})
 export class GraphQlModule {
@@ -54,6 +55,7 @@ export class GraphQlModule {
         BlockModule,
         MiniBlockModule,
         NetworkModule,
+        ShardModule,
       ];
     }
 

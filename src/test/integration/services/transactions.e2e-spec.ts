@@ -109,7 +109,7 @@ describe('Transaction Service', () => {
         }
       });
 
-      it(`should return a list of transactions for one address where the address is receiver`, async () => {
+      it.skip(`should return a list of transactions for one address where the address is receiver`, async () => {
         const address = 'erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry';
         const receiver = ['erd16x7le8dpkjsafgwjx0e5kw94evsqw039rwp42m2j9eesd88x8zzs75tzry'];
         const transactions = await transactionService.getTransactions(new TransactionFilter({ receivers: receiver }), { from: 0, size: 25 }, undefined, address);
