@@ -81,25 +81,10 @@ describe("NFT Controller", () => {
         });
     });
 
-    it('should return LKMEX MetaESDT details based on a given identifier', async () => {
-      const identifier: string = 'LKMEX-aab910-395582';
-
-      await request(app.getHttpServer())
-        .get(`${path}/${identifier}`)
-        .expect(200)
-        .then(res => {
-          expect(res.body.identifier).toStrictEqual('LKMEX-aab910-395582');
-          expect(res.body.unlockSchedule).toBeDefined();
-          expect(res.body).toBeDefined();
-        });
-    });
-
     test.each`
     types
     ${'NonFungibleESDT'}
-    ${'SemiFungibleESDT'}
-    ${'MetaESDT'}
-    `
+    ${'SemiFungibleESDT'}`
       (
         `for the given type $types, should return 25 tokens`,
         async ({ types }) => {
@@ -120,7 +105,7 @@ describe("NFT Controller", () => {
             });
         });
 
-    it('should return all NFTs that are whitelisted in storage', async () => {
+    it.skip('should return all NFTs that are whitelisted in storage', async () => {
       const params = new URLSearchParams({
         'isWhitelistedStorage': 'true',
       });
@@ -219,7 +204,7 @@ describe("NFT Controller", () => {
         .get(`${path}/count`)
         .expect(200)
         .then(res => {
-          expect(+res.text).toBeGreaterThanOrEqual(6788352);
+          expect(+res.text).toBeGreaterThanOrEqual(1001167);
         });
     });
 
@@ -233,11 +218,6 @@ describe("NFT Controller", () => {
         filter: 'type',
         value: 'SemiFungibleESDT',
         count: 23101,
-      },
-      {
-        filter: 'type',
-        value: 'MetaESDT',
-        count: 5748786,
       },
       {
         filter: 'collection',
@@ -272,7 +252,7 @@ describe("NFT Controller", () => {
       {
         filter: 'before',
         value: '1660114204',
-        count: 6781315,
+        count: 1010002,
       },
       {
         filter: 'after',
