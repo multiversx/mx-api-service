@@ -409,22 +409,6 @@ describe('Node Service', () => {
     });
   });
 
-  describe("getAllNodesRaw", () => {
-    it("should return all raw nodes", async () => {
-      const MOCK_PATH = apiConfigService.getMockPath();
-
-      jest
-        .spyOn(NodeService.prototype, 'getHeartbeat')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async () =>
-          FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
-
-      const results = await nodeService.getAllNodesRaw();
-
-      expect(results.length).toBeGreaterThanOrEqual(99);
-    });
-  });
-
   describe("getHeartbeat", () => {
     it("should return heartbeat details", async () => {
       const MOCK_PATH = apiConfigService.getMockPath();
