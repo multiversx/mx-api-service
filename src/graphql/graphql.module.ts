@@ -19,6 +19,7 @@ import { DappConfigModule } from "src/graphql/entities/dapp.config/dapp.config.m
 import { WaitingListModule } from "src/graphql/entities/waiting.list/waiting.list.module";
 import { UsernameModule } from "src/graphql/entities/username/username.module";
 import { BlockModule } from "src/graphql/entities/block/block.module";
+import { MiniBlockModule } from "src/graphql/entities/miniblock/mini.block.module";
 
 @Module({})
 export class GraphQlModule {
@@ -50,6 +51,7 @@ export class GraphQlModule {
         WaitingListModule,
         UsernameModule,
         BlockModule,
+        MiniBlockModule,
       ];
     }
 
