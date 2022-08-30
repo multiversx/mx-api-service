@@ -214,16 +214,6 @@ describe('Nft Service', () => {
       }
     });
 
-    it(`should return a list with MetaESDT tokens`, async () => {
-      const nfts = await nftService.getNfts({ from: 0, size: 25 }, { type: NftType.MetaESDT });
-
-      expect(nfts.length).toStrictEqual(25);
-
-      for (const nft of nfts) {
-        expect(nft.type).toStrictEqual(NftType.MetaESDT);
-      }
-    });
-
     it(`should verify if all returned nfts from a specific collection contain the owner property`, async () => {
       const filters = new NftFilter();
       filters.collection = "MOS-b9b4b2";
@@ -244,16 +234,6 @@ describe('Nft Service', () => {
       options.withOwner = true;
 
       const nfts = await nftService.getNfts({ from: 50, size: 25 }, { type: NftType.NonFungibleESDT }, options);
-      const nftOwners = nfts.map((nft) => nft.owner);
-
-      expect(nftOwners).toHaveLength(25);
-    });
-
-    it("should verify if all esdt of type MetaEsdt contains owner property and need to be defined ", async () => {
-      const options = new NftQueryOptions();
-      options.withOwner = true;
-
-      const nfts = await nftService.getNfts({ from: 50, size: 25 }, { type: NftType.MetaESDT }, options);
       const nftOwners = nfts.map((nft) => nft.owner);
 
       expect(nftOwners).toHaveLength(25);

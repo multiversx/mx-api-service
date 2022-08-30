@@ -62,9 +62,7 @@ describe('Nfts', () => {
     test.each`
     types
     ${'NonFungibleESDT'}
-    ${'SemiFungibleESDT'}
-    ${'MetaESDT'}
-    `
+    ${'SemiFungibleESDT'}`
       (
         `for the given type $types, should return 10 esdt tokens`, async ({ types }) => {
           await request(app.getHttpServer())
@@ -162,11 +160,6 @@ describe('Nfts', () => {
         count: 23101,
       },
       {
-        filter: 'type',
-        value: 'MetaESDT',
-        count: 5748786,
-      },
-      {
         filter: 'isWhitelistedStorage',
         value: 'true',
         count: 733653,
@@ -184,7 +177,7 @@ describe('Nfts', () => {
       {
         filter: 'before',
         value: '1660114204',
-        count: 6781315,
+        count: 1011221,
       },
       {
         filter: 'after',
