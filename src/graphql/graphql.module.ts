@@ -20,6 +20,7 @@ import { WaitingListModule } from "src/graphql/entities/waiting.list/waiting.lis
 import { UsernameModule } from "src/graphql/entities/username/username.module";
 import { BlockModule } from "src/graphql/entities/block/block.module";
 import { MiniBlockModule } from "src/graphql/entities/miniblock/mini.block.module";
+import { NetworkModule } from "src/graphql/entities/network/network.module";
 
 @Module({})
 export class GraphQlModule {
@@ -52,6 +53,7 @@ export class GraphQlModule {
         UsernameModule,
         BlockModule,
         MiniBlockModule,
+        NetworkModule,
       ];
     }
 

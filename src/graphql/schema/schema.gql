@@ -2,6 +2,21 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+"""About object type."""
+type About {
+  """Application Version details."""
+  appVersion: String!
+
+  """Current network details."""
+  network: String!
+
+  """Plugins Version details."""
+  pluginsVersion: String!
+
+  """API deployment version."""
+  version: String!
+}
+
 """Account object type."""
 type Account {
   """Address for the given account."""
@@ -321,6 +336,39 @@ type Delegation {
 
   """TopUp details."""
   topUp: String!
+}
+
+"""Economics object type."""
+type Economics {
+  """Total Supply general information."""
+  apr: Float!
+
+  """Total Supply general information."""
+  baseApr: Float!
+
+  """Total Supply general information."""
+  circulatingSupply: Float!
+
+  """Total Supply general information."""
+  marketCap: Float
+
+  """Total Supply general information."""
+  minimumAuctionTopUp: String
+
+  """Total Supply general information."""
+  price: Float
+
+  """Total Supply general information."""
+  staked: Float!
+
+  """Total Supply general information."""
+  tokenMarketCap: Float
+
+  """Total Supply general information."""
+  topUpApr: Float!
+
+  """Total Supply general information."""
+  totalSupply: Float!
 }
 
 """ESDT data source."""
@@ -837,6 +885,24 @@ type MiniBlocks {
   type: String!
 }
 
+"""NetworkConstants object type."""
+type NetworkConstants {
+  """ChainId details."""
+  chainId: String!
+
+  """GasPerDataByte details."""
+  gasPerDataByte: Float!
+
+  """MinGasLimit details."""
+  minGasLimit: Float!
+
+  """MinGasPrice details."""
+  minGasPrice: Float!
+
+  """MinTransactionVersion details."""
+  minTransactionVersion: Float!
+}
+
 """NFT object type."""
 type Nft {
   """Assets for the given NFT."""
@@ -1265,6 +1331,9 @@ enum NftType {
 }
 
 type Query {
+  """Retrieve general information about API deployment."""
+  about: About!
+
   """Retrieve the detailed account for the given input."""
   account(
     """Input to retrieve the given detailed account for."""
@@ -1316,11 +1385,19 @@ type Query {
     input: GetNftCollectionsCountInput!
   ): Float!
 
+  """
+  Retrieve network-specific constants that can be used to automatically configure dapps.
+  """
+  constants: NetworkConstants!
+
   """Retrieve configuration used in dapp."""
   dappConfig: DappConfig!
 
   """Retrieve all delegation staking information."""
   delegation: Delegation!
+
+  """Retrieve general economics information."""
+  economics: Economics!
 
   """Retrieve the mini block hash for the given input."""
   miniBlockHash(
@@ -1345,6 +1422,9 @@ type Query {
     """Input to retrieve the given NFTs count for."""
     input: GetNftsCountInput!
   ): Float!
+
+  """Retrieve general network statistics."""
+  stats: Stats!
 
   """Retrieve all tags for the given input."""
   tags(
@@ -1474,6 +1554,33 @@ enum SortOrder {
 
   """Descending order."""
   desc
+}
+
+"""Stats object type."""
+type Stats {
+  """Total number of accounts available on blockchain."""
+  accounts: Float!
+
+  """Total blocks available on blockchain."""
+  blocks: Float!
+
+  """Current epoch details."""
+  epoch: Float!
+
+  """RefreshRate details."""
+  refreshRate: Float!
+
+  """RoundPassed details."""
+  roundsPassed: Float!
+
+  """Rounds per epoch details."""
+  roundsPerEpoch: Float!
+
+  """Shards available on blockchain."""
+  shards: Float!
+
+  """Total number of transactions."""
+  transactions: Float!
 }
 
 """Tag object type."""
