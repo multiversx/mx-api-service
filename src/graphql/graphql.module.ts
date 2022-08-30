@@ -18,6 +18,7 @@ import { DelegationModule } from "src/graphql/entities/delegation/delegation.mod
 import { DappConfigModule } from "src/graphql/entities/dapp.config/dapp.config.module";
 import { WaitingListModule } from "src/graphql/entities/waiting.list/waiting.list.module";
 import { UsernameModule } from "src/graphql/entities/username/username.module";
+import { BlockModule } from "src/graphql/entities/block/block.module";
 
 @Module({})
 export class GraphQlModule {
@@ -48,6 +49,7 @@ export class GraphQlModule {
         DappConfigModule,
         WaitingListModule,
         UsernameModule,
+        BlockModule,
       ];
     }
 

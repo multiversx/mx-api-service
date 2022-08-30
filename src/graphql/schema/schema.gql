@@ -116,6 +116,63 @@ type AccountDetailed {
   username: String!
 }
 
+"""Block object type."""
+type Block {
+  """Epoch for the given Block."""
+  epoch: Float!
+
+  """Gas Consumed for the given NFT."""
+  gasConsumed: ID!
+
+  """Gas Penalized for the given NFT."""
+  gasPenalized: ID!
+
+  """Gas Refunded for the given NFT."""
+  gasRefunded: ID!
+
+  """Hash for the given Block."""
+  hash: ID!
+
+  """Max Gas Limit for the given NFT."""
+  maxGasLimit: ID!
+
+  """Nonce for the given Block."""
+  nonce: ID!
+
+  """Previous Hash for the given Block."""
+  prevHash: ID!
+
+  """Proposer for the given Block."""
+  proposer: ID!
+
+  """Proposer Identity for the given Block."""
+  proposerIdentity: ID!
+
+  """Public Key Bitmap for the given Block."""
+  pubKeyBitmap: ID!
+
+  """Round for the given Block."""
+  round: ID!
+
+  """Shard for the given Block."""
+  shard: ID!
+
+  """Size for the given Block."""
+  size: ID!
+
+  """Size Txs for the given Block."""
+  sizeTxs: ID!
+
+  """State Root Hash for the given Block."""
+  stateRootHash: ID!
+
+  """Timestamp for the given Block."""
+  timestamp: ID!
+
+  """TxCount for the given NFT."""
+  txCount: ID!
+}
+
 """Collection roles object type."""
 type CollectionRoles {
   """Address for the given collection roles."""
@@ -222,6 +279,48 @@ input GetAccountsInput {
 
   """Number of accounts to retrieve for the given result set."""
   size: Float = 25
+}
+
+"""Input to retrieve the given tags for."""
+input GetBlocksCountInput {
+  """Epoch for the given result set."""
+  epoch: Float
+
+  """Nonce for the given result set."""
+  nonce: Float
+
+  """Proposer for the given result set."""
+  proposer: String
+
+  """Shard ID for the given result set."""
+  shard: Float
+
+  """Validator for the given result set."""
+  validator: String
+}
+
+"""Input to retrieve the given blocks for."""
+input GetBlocksInput {
+  """Epoch for the given result set."""
+  epoch: Float
+
+  """Number of blocks to skip for the given result set."""
+  from: Float = 0
+
+  """Nonce for the given result set."""
+  nonce: Float
+
+  """Proposer for the given result set."""
+  proposer: String
+
+  """Shard ID for the given result set."""
+  shard: Float
+
+  """Number of blocks to retrieve for the given result set."""
+  size: Float = 25
+
+  """Validator for the given result set."""
+  validator: String
 }
 
 """Input to retrieve the given NFT collection for."""
@@ -1024,6 +1123,18 @@ type Query {
 
   """Retrieve all accounts count."""
   accountsCount: Float!
+
+  """Retrieve all blocks for the given input."""
+  blocks(
+    """Input to retrieve the given blocks for."""
+    input: GetBlocksInput!
+  ): [Block!]!
+
+  """Retrieve the all blocks count for the given input."""
+  blocksCount(
+    """Input to retrieve the given blocks count for."""
+    input: GetBlocksCountInput!
+  ): Float
 
   """Retrieve the NFT collection for the given input."""
   collection(
