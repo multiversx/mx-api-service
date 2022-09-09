@@ -75,6 +75,16 @@ describe.skip('Collection Service', () => {
       expect(collectionTypes.includes(NftType.MetaESDT)).toBeTruthy();
       expect(collectionTypes.includes(NftType.SemiFungibleESDT)).toBeTruthy();
     });
+
+    it('should return a list of collections with a specific name', async () => {
+      const filter = new CollectionFilter();
+      filter.name = "Sense";
+      const results = await collectionService.getNftCollections({ from: 0, size: 50 }, filter);
+
+      for (const collection of results) {
+        expect(collection.name).toStrictEqual("Sense");
+      }
+    });
   });
 
   describe('applyPropertiesToCollections', () => {
