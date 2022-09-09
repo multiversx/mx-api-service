@@ -6,6 +6,7 @@ export class CollectionFilter {
   }
 
   collection?: string;
+  name?: string;
   identifiers?: string[];
   search?: string;
   type?: NftType[];
