@@ -26,7 +26,6 @@ export class CollectionController {
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
-  @ApiQuery({ name: 'name', description: 'Search by collection name', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by collection identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
   @ApiQuery({ name: 'creator', description: 'Filter collections where the given address has a creator role', required: false, deprecated: true })
@@ -42,7 +41,6 @@ export class CollectionController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
-    @Query('name') name?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
     @Query('creator', ParseAddressPipe) creator?: string,
@@ -57,7 +55,6 @@ export class CollectionController {
   ): Promise<NftCollection[]> {
     return await this.collectionService.getNftCollections(new QueryPagination({ from, size }), new CollectionFilter({
       search,
-      name,
       type,
       identifiers,
       canCreate: canCreate ?? creator,
@@ -74,7 +71,6 @@ export class CollectionController {
   @Get("/collections/count")
   @ApiOperation({ summary: 'Collection count', description: 'Returns non-fungible/semi-fungible/meta-esdt collection count' })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
-  @ApiQuery({ name: 'name', description: 'Search by collection name', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
   @ApiQuery({ name: 'creator', description: 'Filter collections where the given address has a creator role', required: false, deprecated: true })
   @ApiQuery({ name: 'before', description: 'Return all collections before given timestamp', required: false, type: Number })
@@ -88,7 +84,6 @@ export class CollectionController {
   @ApiOkResponse({ type: Number })
   async getCollectionCount(
     @Query('search') search?: string,
-    @Query('name') name?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('before', new ParseIntPipe) before?: number,
@@ -102,7 +97,6 @@ export class CollectionController {
   ): Promise<number> {
     return await this.collectionService.getNftCollectionCount(new CollectionFilter({
       search,
-      name,
       type,
       canCreate: canCreate ?? creator,
       before,
@@ -119,7 +113,6 @@ export class CollectionController {
   @ApiExcludeEndpoint()
   async getCollectionCountAlternative(
     @Query('search') search?: string,
-    @Query('name') name?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('before', new ParseIntPipe) before?: number,
@@ -133,7 +126,6 @@ export class CollectionController {
   ): Promise<number> {
     return await this.collectionService.getNftCollectionCount(new CollectionFilter({
       search,
-      name,
       type,
       canCreate: canCreate ?? creator,
       before,
