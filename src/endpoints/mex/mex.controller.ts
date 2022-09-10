@@ -11,7 +11,8 @@ import { MexTokenService } from "./mex.token.service";
 import { MexFarmService } from './mex.farm.service';
 import { MexFarm } from './entities/mex.farm';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { ParseIntPipe } from '@elrondnetwork/erdnest';
+import { ParseIntPipe, ParseTokenPipe } from '@elrondnetwork/erdnest';
+import { MexTokenFilter } from './entities/mex.token.filter';
 
 @Controller()
 @ApiTags('maiar.exchange')
@@ -62,11 +63,13 @@ export class MexController {
   @ApiOkResponse({ type: [MexToken] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'id', description: 'Search by token id', required: false })
   async getMexTokens(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query("id", ParseTokenPipe) id: string
   ): Promise<any> {
-    return await this.mexTokensService.getMexTokens(from, size);
+    return await this.mexTokensService.getMexTokens(new QueryPagination({ from, size }), new MexTokenFilter({ id }));
   }
 
   @Get("/mex/farms")
@@ -152,11 +155,13 @@ export class MexController {
   })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'id', description: 'Search by token id', required: false })
   async getMexTokensLegacy(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query("id", ParseTokenPipe) id: string
   ): Promise<any> {
-    return await this.mexTokensService.getMexTokens(from, size);
+    return await this.mexTokensService.getMexTokens(new QueryPagination({ from, size }), new MexTokenFilter({ id }));
   }
 
   @Get("/mex-pairs/:baseId/:quoteId")

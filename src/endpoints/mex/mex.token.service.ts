@@ -10,6 +10,8 @@ import { MexSettingsService } from "./mex.settings.service";
 import { Constants, CachingService } from "@elrondnetwork/erdnest";
 import { MexPairType } from "./entities/mex.pair.type";
 import { OriginLogger } from "@elrondnetwork/erdnest";
+import { MexTokenFilter } from "./entities/mex.token.filter";
+import { QueryPagination } from "src/common/entities/query.pagination";
 
 @Injectable()
 export class MexTokenService {
@@ -38,8 +40,9 @@ export class MexTokenService {
     await this.cachingService.setCacheLocal(CacheInfo.MexPrices.key, indexedPrices, Constants.oneSecond() * 30);
   }
 
-  async getMexTokens(from: number, size: number): Promise<MexToken[]> {
-    const allMexTokens = await this.getAllMexTokens();
+  async getMexTokens(queryPagination: QueryPagination, filter: MexTokenFilter): Promise<MexToken[]> {
+    const { from, size } = queryPagination;
+    const allMexTokens = await this.mexFilteredToken(filter);
 
     return allMexTokens.slice(from, from + size);
   }
@@ -125,6 +128,18 @@ export class MexTokenService {
     }
 
     return result;
+  }
+
+  async mexFilteredToken(filter: MexTokenFilter): Promise<MexToken[]> {
+    let allMexTokens = await this.getAllMexTokens();
+
+    if (filter.id) {
+      const idLower = filter.id.toLowerCase();
+
+      allMexTokens = allMexTokens.filter(token => token.id.toLowerCase().includes(idLower));
+    }
+
+    return allMexTokens;
   }
 
   private async getAllMexTokens(): Promise<MexToken[]> {
