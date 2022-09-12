@@ -44,7 +44,7 @@ export class MexTokenService {
     return allMexTokens.slice(from, from + size);
   }
 
-  async getMexTokenIdentifier(identifier: string): Promise<MexToken | undefined> {
+  async getMexTokenByIdentifier(identifier: string): Promise<MexToken | undefined> {
     const mexTokens = await this.getAllMexTokens();
     const mexToken = mexTokens.find(x => x.id === identifier);
 

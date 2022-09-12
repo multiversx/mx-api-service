@@ -76,7 +76,7 @@ export class MexController {
   async getMexTokenIdentifier(
     @Param('identifier', ParseTokenPipe) identifier: string
   ): Promise<any> {
-    const mexToken = await this.mexTokensService.getMexTokenIdentifier(identifier);
+    const mexToken = await this.mexTokensService.getMexTokenByIdentifier(identifier);
 
     if (mexToken === undefined) {
       throw new NotFoundException('Token not found');
