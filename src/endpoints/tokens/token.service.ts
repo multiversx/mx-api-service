@@ -459,7 +459,7 @@ export class TokenService {
       minted: denominated === true && result.minted ? NumberUtils.denominateString(result.minted, properties.decimals) : result.minted,
       burnt: denominated === true && result.burned ? NumberUtils.denominateString(result.burned, properties.decimals) : result.burned,
       initialMinted: denominated === true && result.initialMinted ? NumberUtils.denominateString(result.initialMinted, properties.decimals) : result.initialMinted,
-      lockedAccounts,
+      lockedAccounts: lockedAccounts?.sortedDescending(lockedAccounts => lockedAccounts.balance as number),
     };
   }
 
