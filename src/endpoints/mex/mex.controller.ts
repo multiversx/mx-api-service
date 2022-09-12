@@ -66,7 +66,7 @@ export class MexController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<any> {
-    return await this.mexTokensService.getMexTokens(from, size);
+    return await this.mexTokensService.getMexTokens(new QueryPagination({ from, size }));
   }
 
   @Get("/mex/tokens/:identifier")
@@ -173,7 +173,7 @@ export class MexController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<any> {
-    return await this.mexTokensService.getMexTokens(from, size);
+    return await this.mexTokensService.getMexTokens(new QueryPagination({ from, size }));
   }
 
   @Get("/mex-pairs/:baseId/:quoteId")
