@@ -4,13 +4,14 @@ api:
   public: true
   private: true
   auth: false
+  graphql: true
 cron:
   transactionProcessor: true
   transactionProcessorMaxLookBehind: 1000
   transactionCompleted: false
   transactionCompletedMaxLookBehind: 100
   cacheWarmer: true
-  fastWarm: false
+  fastWarm: true
   queueWorker: true
   elasticUpdater: false
 flags:

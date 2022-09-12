@@ -65,7 +65,7 @@ export class MexController {
   async getMexTokens(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
-  ): Promise<any> {
+  ): Promise<MexToken[]> {
     return await this.mexTokensService.getMexTokens(new QueryPagination({ from, size }));
   }
 
@@ -75,7 +75,7 @@ export class MexController {
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getMexTokenIdentifier(
     @Param('identifier', ParseTokenPipe) identifier: string
-  ): Promise<any> {
+  ): Promise<MexToken> {
     const mexToken = await this.mexTokensService.getMexTokenByIdentifier(identifier);
 
     if (mexToken === undefined) {
