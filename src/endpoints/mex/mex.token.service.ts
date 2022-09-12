@@ -48,9 +48,7 @@ export class MexTokenService {
 
   async getMexTokenByIdentifier(identifier: string): Promise<MexToken | undefined> {
     const mexTokens = await this.getAllMexTokens();
-    const mexToken = mexTokens.find(x => x.id === identifier);
-
-    return mexToken ? mexToken : undefined;
+    return mexTokens.find(x => x.id === identifier);
   }
 
   async getMexPrices(): Promise<Record<string, { price: number, isToken: boolean }>> {

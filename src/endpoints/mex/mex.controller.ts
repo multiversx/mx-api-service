@@ -77,8 +77,7 @@ export class MexController {
     @Param('identifier', ParseTokenPipe) identifier: string
   ): Promise<MexToken> {
     const mexToken = await this.mexTokensService.getMexTokenByIdentifier(identifier);
-
-    if (mexToken === undefined) {
+    if (!mexToken) {
       throw new NotFoundException('Token not found');
     }
 
@@ -168,7 +167,6 @@ export class MexController {
   })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  @ApiQuery({ name: 'id', description: 'Search by token id', required: false })
   async getMexTokensLegacy(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
