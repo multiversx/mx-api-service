@@ -10,6 +10,7 @@ import { MexSettingsService } from "./mex.settings.service";
 import { Constants, CachingService } from "@elrondnetwork/erdnest";
 import { MexPairType } from "./entities/mex.pair.type";
 import { OriginLogger } from "@elrondnetwork/erdnest";
+import { QueryPagination } from "src/common/entities/query.pagination";
 
 @Injectable()
 export class MexTokenService {
@@ -38,10 +39,16 @@ export class MexTokenService {
     await this.cachingService.setCacheLocal(CacheInfo.MexPrices.key, indexedPrices, Constants.oneSecond() * 30);
   }
 
-  async getMexTokens(from: number, size: number): Promise<MexToken[]> {
+  async getMexTokens(queryPagination: QueryPagination): Promise<MexToken[]> {
+    const { from, size } = queryPagination;
     const allMexTokens = await this.getAllMexTokens();
 
     return allMexTokens.slice(from, from + size);
+  }
+
+  async getMexTokenByIdentifier(identifier: string): Promise<MexToken | undefined> {
+    const mexTokens = await this.getAllMexTokens();
+    return mexTokens.find(x => x.id === identifier);
   }
 
   async getMexPrices(): Promise<Record<string, { price: number, isToken: boolean }>> {
