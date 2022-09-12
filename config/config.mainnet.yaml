@@ -11,7 +11,7 @@ cron:
   transactionCompleted: false
   transactionCompletedMaxLookBehind: 100
   cacheWarmer: true
-  fastWarm: true
+  fastWarm: false
   queueWorker: true
   elasticUpdater: false
 flags:
