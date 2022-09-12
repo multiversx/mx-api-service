@@ -4,7 +4,6 @@ api:
   public: true
   private: true
   auth: false
-  graphql: true
 cron:
   transactionProcessor: true
   transactionProcessorMaxLookBehind: 1000
