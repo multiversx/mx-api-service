@@ -23,7 +23,7 @@ import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
 import { AddressUtils, ApiUtils, NumberUtils, TokenUtils } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@elrondnetwork/erdnest";
-import { ToenLogo as TokenLogo } from "./entities/token.logo";
+import { TokenLogo } from "./entities/token.logo";
 import { AssetsService } from "src/common/assets/assets.service";
 
 @Injectable()
