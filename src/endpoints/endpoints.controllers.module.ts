@@ -11,7 +11,6 @@ import { EndpointsServicesModule } from "./endpoints.services.module";
 import { HealthCheckController } from "./health-check/health.check.controller";
 import { IdentitiesController } from "./identities/identities.controller";
 import { KeysController } from "./keys/keys.controller";
-import { LogoController } from "./logo/logo.controller";
 import { MexController } from "./mex/mex.controller";
 import { MiniBlockController } from "./miniblocks/mini.block.controller";
 import { NetworkController } from "./network/network.controller";
@@ -49,7 +48,7 @@ import { WebsocketController } from "./websocket/websocket.controller";
     ProviderController, ProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
     TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
     HealthCheckController, DappConfigController, WebsocketController, MexController, TransferController,
-    ProcessNftsPublicController, LogoController,
+    ProcessNftsPublicController,
   ],
 })
 export class EndpointsControllersModule { }

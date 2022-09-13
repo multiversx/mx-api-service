@@ -1,5 +1,5 @@
-export class Logo {
-  constructor(init?: Partial<Logo>) {
+export class ToenLogo {
+  constructor(init?: Partial<ToenLogo>) {
     Object.assign(this, init);
   }
 
