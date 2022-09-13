@@ -9,7 +9,7 @@ export class LogoService {
   ) { }
 
   private async getLogo(identifier: string): Promise<Logo | undefined> {
-    const assets = await this.assetsService.getAssets(identifier);
+    const assets = await this.assetsService.getTokenAssets(identifier);
     if (!assets) {
       return;
     }

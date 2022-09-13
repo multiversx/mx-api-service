@@ -146,7 +146,7 @@ export class EsdtService {
   }
 
   private async getEsdtTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
-    return await this.assetsService.getAssets(identifier);
+    return await this.assetsService.getTokenAssets(identifier);
   }
 
   async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
@@ -307,7 +307,7 @@ export class EsdtService {
   }
 
   async getLockedAccountsRaw(identifier: string): Promise<EsdtLockedAccount[]> {
-    const tokenAssets = await this.assetsService.getAssets(identifier);
+    const tokenAssets = await this.assetsService.getTokenAssets(identifier);
     if (!tokenAssets) {
       return [];
     }

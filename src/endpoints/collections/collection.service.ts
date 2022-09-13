@@ -126,7 +126,7 @@ export class CollectionService {
     await this.cachingService.batchApplyAll(
       identifiers,
       identifier => CacheInfo.EsdtAssets(identifier).key,
-      identifier => this.assetsService.getAssets(identifier),
+      identifier => this.assetsService.getTokenAssets(identifier),
       (identifier, properties) => collectionsAssets[identifier] = properties,
       CacheInfo.EsdtAssets('').ttl
     );
