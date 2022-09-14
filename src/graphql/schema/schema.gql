@@ -338,6 +338,27 @@ type Delegation {
   topUp: String!
 }
 
+"""DelegationLegacy object type."""
+type DelegationLegacy {
+  """Total number of users."""
+  numUsers: Float!
+
+  """Total Active Stake details."""
+  totalActiveStake: String!
+
+  """Total Deferred Payment Stake details."""
+  totalDeferredPaymentStake: String!
+
+  """Total Unstake Stake details"""
+  totalUnstakedStake: String!
+
+  """Total Waiting Stake details."""
+  totalWaitingStake: String!
+
+  """Total Withdraw Only Stake details."""
+  totalWithdrawOnlyStake: String!
+}
+
 """Economics object type."""
 type Economics {
   """Total Supply general information."""
@@ -1404,6 +1425,9 @@ type Query {
 
   """Retrieve all delegation staking information."""
   delegation: Delegation!
+
+  """Retrieve legacy delegation contract global information."""
+  delegationLegacy: DelegationLegacy!
 
   """Retrieve general economics information."""
   economics: Economics!
