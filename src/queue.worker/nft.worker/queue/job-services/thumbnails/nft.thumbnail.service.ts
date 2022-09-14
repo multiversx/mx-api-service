@@ -33,6 +33,7 @@ export class NftThumbnailService {
             fit: fit.cover,
           }
         )
+        .withMetadata()
         .jpeg({ progressive: true })
         .toBuffer();
     } catch (error: any) {

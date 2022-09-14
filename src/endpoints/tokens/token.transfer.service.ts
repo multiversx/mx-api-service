@@ -271,7 +271,7 @@ export class TokenTransferService {
       return null;
     }
 
-    const assets = await this.assetsService.getAssets(identifier);
+    const assets = await this.assetsService.getTokenAssets(identifier);
 
     const result: TokenTransferProperties = {
       type: properties.type,

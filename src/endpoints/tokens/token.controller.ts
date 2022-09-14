@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query, Res } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { SortOrder } from "src/common/entities/sort.order";
 import { TransactionStatus } from "../transactions/entities/transaction.status";
@@ -20,6 +20,7 @@ import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
 import { ParseAddressPipe, ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseTokenPipe, ParseAddressArrayPipe, ApplyComplexity } from "@elrondnetwork/erdnest";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
+import { Response } from "express";
 
 @Controller()
 @ApiTags('tokens')
@@ -188,6 +189,7 @@ export class TokenController {
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withScamInfo', required: false, type: Boolean })
   async getTokenTransactions(
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -470,5 +472,41 @@ export class TokenController {
       before,
       after,
     }));
+  }
+
+  @Get('/tokens/:identifier/logo/png')
+  async getTokenLogoPng(
+    @Param('identifier', ParseTokenPipe) identifier: string,
+    @Res() response: Response
+  ): Promise<void> {
+    const isToken = await this.tokenService.isToken(identifier);
+    if (!isToken) {
+      throw new NotFoundException('Token not found');
+    }
+
+    const url = await this.tokenService.getLogoPng(identifier);
+    if (url === undefined) {
+      throw new NotFoundException('Assets not found');
+    }
+
+    response.redirect(url);
+  }
+
+  @Get('/tokens/:identifier/logo/svg')
+  async getTokenLogoSvg(
+    @Param('identifier', ParseTokenPipe) identifier: string,
+    @Res() response: Response
+  ): Promise<void> {
+    const isToken = await this.tokenService.isToken(identifier);
+    if (!isToken) {
+      throw new NotFoundException('Token not found');
+    }
+
+    const url = await this.tokenService.getLogoSvg(identifier);
+    if (url === undefined) {
+      throw new NotFoundException('Assets not found');
+    }
+
+    response.redirect(url);
   }
 }

@@ -17,6 +17,7 @@ export class TokenHelpers {
     uri = ApiUtils.replaceUri(uri, 'https://gateway.pinata.cloud/ipfs', prefix);
     uri = ApiUtils.replaceUri(uri, 'https://dweb.link/ipfs', prefix);
     uri = ApiUtils.replaceUri(uri, 'ipfs:/', prefix);
+    uri = uri.replace(/https\:\/\/\w*\.mypinata\.cloud\/ipfs/, prefix);
 
     if (uri.endsWith('.ipfs.dweb.link')) {
       const id = uri.removeSuffix('.ipfs.dweb.link').removePrefix('https://');
