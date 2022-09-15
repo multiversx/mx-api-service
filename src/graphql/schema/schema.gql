@@ -810,6 +810,18 @@ input GetNodesInput {
   type: NodeType
 }
 
+"""Input to retrieve the given provider for."""
+input GetProviderByAddressInput {
+  """Identity provider for the given result set."""
+  address: String = ""
+}
+
+"""Input to retrieve the given provider for."""
+input GetProviderInput {
+  """Identity provider for the given result set."""
+  identity: String = ""
+}
+
 """Input to retrieve the given rounds for."""
 input GetRoundInput {
   """Round for the given result set."""
@@ -1666,6 +1678,48 @@ enum NodeType {
   validator
 }
 
+"""Provider object type."""
+type Provider {
+  """APR details percentage."""
+  apr: Float!
+
+  """Provider cumulated rewards."""
+  cumulatedRewards: String
+
+  """Delegation cap details."""
+  delegationCap: String!
+
+  """Featured details."""
+  featured: Boolean!
+
+  """Provider identity."""
+  identity: String
+
+  """Locked amound details."""
+  locked: String!
+
+  """Total numbers of nodes."""
+  numNodes: Float!
+
+  """Total number of users."""
+  numUsers: Float!
+
+  """Owner address details."""
+  owner: String
+
+  """Provider address details."""
+  provider: String!
+
+  """Service fee details."""
+  serviceFee: Float!
+
+  """Total stake amount."""
+  stake: Float!
+
+  """Top up details."""
+  topUp: String!
+}
+
 type Query {
   """Retrieve general information about API deployment."""
   about: About!
@@ -1797,6 +1851,18 @@ type Query {
 
   """Retrieve the nodes version."""
   nodesVersion: JSON!
+
+  """Retrieve a specific provider for the given input."""
+  provider(
+    """Input to retrieve the given identity provider for."""
+    input: GetProviderByAddressInput!
+  ): Provider!
+
+  """Retrieve all providers for the given input."""
+  providers(
+    """Input to retrieve the given identity provider for."""
+    input: GetProviderInput!
+  ): [Provider!]!
 
   """Retrieve the round details for the given input."""
   round(

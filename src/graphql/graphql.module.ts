@@ -26,6 +26,7 @@ import { DelegationLegacyModule } from "src/graphql/entities/delegation-legacy/d
 import { IdentitiesModule } from "src/graphql/entities/identities/identities.module";
 import { NodeModule } from "src/graphql/entities/nodes/nodes.module";
 import { RoundModule } from "src/graphql/entities/rounds/rounds.module";
+import { ProviderModule } from "src/graphql/entities/providers/providers.module";
 
 @Module({})
 export class GraphQlModule {
@@ -64,6 +65,7 @@ export class GraphQlModule {
         IdentitiesModule,
         NodeModule,
         RoundModule,
+        ProviderModule,
       ];
     }
 
