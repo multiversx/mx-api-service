@@ -942,6 +942,54 @@ input GetTagsInput {
   size: Float = 25
 }
 
+"""Input to retrieve the given token for."""
+input GetTokenInput {
+  """Identifier to retrieve the corresponding token for."""
+  identifier: ID = ""
+}
+
+"""Input to retreive the given tokens count for."""
+input GetTokensCountInput {
+  """Identifier filter for the given tokens set."""
+  identifier: String
+
+  """Identifiers filter for the given tokens set."""
+  identifiers: [String!]
+
+  """Name filter for the given tokens set."""
+  name: String
+
+  """Search filter for the given tokens set."""
+  search: String
+}
+
+"""Input to retreive the given tokens count for."""
+input GetTokensInput {
+  """Number of tokens to skip for the given result set."""
+  from: Float = 0
+
+  """Identifier filter for the given tokens set."""
+  identifier: String
+
+  """Identifiers filter for the given tokens set."""
+  identifiers: [String!]
+
+  """Name filter for the given tokens set."""
+  name: String
+
+  """Order filter for the given tokens set."""
+  order: SortOrder
+
+  """Search filter for the given tokens set."""
+  search: String
+
+  """Number of tokens to retrieve for the given result set."""
+  size: Float = 25
+
+  """Sort filter for the given tokens set."""
+  sort: TokenSort
+}
+
 """Input to retrieve the given detailed transaction for."""
 input GetTransactionDetailedInput {
   """Hash to retrieve the corresponding detailed transaction for."""
@@ -2208,6 +2256,24 @@ type Query {
   """Retrieve all tags count."""
   tagsCount: Float!
 
+  """Retrieve token for the given input."""
+  token(
+    """Input to retrieve the given token for."""
+    input: GetTokenInput!
+  ): TokenDetailed
+
+  """Retrieve all tokens for the given input."""
+  tokens(
+    """Input to retrieve the given tokens for."""
+    input: GetTokensInput!
+  ): [TokenDetailed!]!
+
+  """Retrieve all tokens count for the given input."""
+  tokensCount(
+    """Input to retrieve the given count for."""
+    input: GetTokensCountInput!
+  ): Float!
+
   """Retrieve the detailed transaction for the given input."""
   transaction(
     """Input to retrieve the given detailed transaction for."""
@@ -2422,6 +2488,9 @@ type TokenAssets {
   """Extra tokens for the given token assets."""
   extraTokens: [String!]
 
+  """Ledger signature for the given token assets."""
+  ledgerSignature: String
+
   """Locked accounts for the given token assets."""
   lockedAccounts: JSON
 
@@ -2436,6 +2505,111 @@ type TokenAssets {
 
   """Website for the given token assets."""
   website: String!
+}
+
+"""TokenDetailed object type."""
+type TokenDetailed {
+  """Token accounts list."""
+  accounts: Float!
+
+  """Token assests details."""
+  assets: TokenAssets
+
+  """Token burn amount details."""
+  burnt: String!
+
+  """Token canBurn property."""
+  canBurn: Boolean!
+
+  """Token canChangeOwner property."""
+  canChangeOwner: Boolean!
+
+  """Token canFreeze property."""
+  canFreeze: Boolean!
+
+  """Token canMint property."""
+  canMint: Boolean!
+
+  """Token canPause property."""
+  canPause: Boolean!
+
+  """Token canUpgrade property."""
+  canUpgrade: Boolean!
+
+  """Token canUpgrade property."""
+  canWipe: Boolean!
+
+  """Token circulating supply amount details."""
+  circulatingSupply: String
+
+  """Token decimals."""
+  decimals: Float!
+
+  """Token Identifier."""
+  identifier: String!
+
+  """Token initial minted amount details."""
+  initialMinted: String!
+
+  """Token isPause property."""
+  isPaused: Boolean!
+
+  """Current market cap details."""
+  marketCap: Float
+
+  """Token minted amount details."""
+  minted: String!
+
+  """Token name."""
+  name: String!
+
+  """Token owner address."""
+  owner: String!
+
+  """Current token price."""
+  price: Float
+
+  """Token roles details."""
+  roles: [TokenRoles!]
+
+  """Token supply amount details."""
+  supply: String
+
+  """Token ticker."""
+  ticker: String!
+
+  """Tokens transactions."""
+  transactions: Float
+}
+
+"""TokenRoles object type."""
+type TokenRoles {
+  """Token address with role."""
+  address: String!
+
+  """Token canLocalBurn property."""
+  canLocalBurn: Boolean!
+
+  """Token canLocalMint property."""
+  canLocalMint: Boolean!
+
+  """Token roles details."""
+  roles: [String!]!
+}
+
+"""Token Sort object type."""
+enum TokenSort {
+  """Accounts sort."""
+  accounts
+
+  """MarketCap sort."""
+  marketCap
+
+  """Price sort."""
+  price
+
+  """Transactions sort."""
+  transactions
 }
 
 """Token type object type."""

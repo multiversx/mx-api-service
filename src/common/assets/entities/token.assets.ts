@@ -27,6 +27,10 @@ export class TokenAssets {
   @ApiProperty({ type: String })
   svgUrl: string = '';
 
+  @Field(() => String, { description: 'Ledger signature for the given token assets.', nullable: true })
+  @ApiProperty({ type: String })
+  ledgerSignature: string | undefined;
+
   @Field(() => GraphQLJSON, { description: 'Locked accounts for the given token assets.', nullable: true })
   @ApiProperty({ type: String })
   lockedAccounts: Record<string, string> | undefined = undefined;

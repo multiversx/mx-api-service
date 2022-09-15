@@ -29,6 +29,7 @@ import { RoundModule } from "src/graphql/entities/rounds/rounds.module";
 import { ProviderModule } from "src/graphql/entities/providers/providers.module";
 import { StakeModule } from "src/graphql/entities/stake/stake.module";
 import { MexModule } from "src/graphql/entities/maiar.exchange/mex.token.module";
+import { TokenModule } from "src/graphql/entities/tokens/tokens.module";
 
 @Module({})
 export class GraphQlModule {
@@ -70,6 +71,7 @@ export class GraphQlModule {
         ProviderModule,
         StakeModule,
         MexModule,
+        TokenModule,
       ];
     }
 

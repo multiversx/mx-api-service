@@ -34,7 +34,7 @@ export class NodeQuery {
   }
 
   @Query(() => Float, { name: "nodesCount", description: "Returns number of all observer/validator nodes available on blockchain.", nullable: true })
-  public async getBlocksCount(@Args("input", { description: "Input to retrieve the given nodes count for." }) input: GetNodesCountInput): Promise<number> {
+  public async getNodesCount(@Args("input", { description: "Input to retrieve the given nodes count for." }) input: GetNodesCountInput): Promise<number> {
     return await this.nodeService.getNodeCount(GetNodesCountInput.resolve(input));
   }
 
