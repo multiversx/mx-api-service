@@ -810,6 +810,45 @@ input GetNodesInput {
   type: NodeType
 }
 
+"""Input to retrieve the given rounds for."""
+input GetRoundInput {
+  """Round for the given result set."""
+  round: Float!
+
+  """Epoch for the given result set."""
+  shard: Float!
+}
+
+"""Input to retreive the given rounds count for."""
+input GetRoundsCountInput {
+  """Epoch for the given result set."""
+  epoch: Float
+
+  """Shard ID for the given result set."""
+  shard: Float
+
+  """Validator for the given result set."""
+  validator: String
+}
+
+"""Input to retrieve the given rounds for."""
+input GetRoundsInput {
+  """Epoch for the given result set."""
+  epoch: Float
+
+  """Number of blocks to skip for the given result set."""
+  from: Float = 0
+
+  """Shard ID for the given result set."""
+  shard: Float
+
+  """Number of blocks to retrieve for the given result set."""
+  size: Float = 25
+
+  """Validator for the given result set."""
+  validator: String
+}
+
 """Input to retrieve the given tags for."""
 input GetShardInput {
   """Number of shards to skip for the given result set."""
@@ -1759,6 +1798,24 @@ type Query {
   """Retrieve the nodes version."""
   nodesVersion: JSON!
 
+  """Retrieve the round details for the given input."""
+  round(
+    """Input to retrieve the given node for."""
+    input: GetRoundInput!
+  ): RoundDetailed
+
+  """Retrieve all rounds for the given input."""
+  rounds(
+    """Input to retrieve the given rounds for."""
+    input: GetRoundsInput!
+  ): [Round!]!
+
+  """Returns total number of rounds."""
+  roundsCount(
+    """Input to retrieve the given rounds count for."""
+    input: GetRoundsCountInput!
+  ): Float
+
   """Retrieve all shards for the given input."""
   shards(
     """Input to retrieve the given shards for."""
@@ -1806,6 +1863,43 @@ type Query {
 
   """Retrieve all addresses count that are in waiting."""
   waitingListCount: Float!
+}
+
+"""Round object type."""
+type Round {
+  """Block proposer for the given round."""
+  blockWasProposed: Boolean!
+
+  """Epoch for the given round."""
+  epoch: Float!
+
+  """Round number details."""
+  round: Float!
+
+  """Shard ID for the given round."""
+  shard: Float!
+
+  """Timestamp for the given round."""
+  timestamp: Float!
+}
+
+"""RoundDetailed object type."""
+type RoundDetailed {
+  """Block proposer for the given round."""
+  blockWasProposed: Boolean!
+
+  """Epoch for the given round."""
+  epoch: Float!
+
+  """Round number details."""
+  round: Float!
+
+  """Shard ID for the given round."""
+  shard: Float!
+  signers: [String!]!
+
+  """Timestamp for the given round."""
+  timestamp: Float!
 }
 
 """Scam information object type."""

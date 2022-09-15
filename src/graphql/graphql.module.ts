@@ -25,6 +25,7 @@ import { ShardModule } from "src/graphql/entities/shard/shard.module";
 import { DelegationLegacyModule } from "src/graphql/entities/delegation-legacy/delegation-legacy.module";
 import { IdentitiesModule } from "src/graphql/entities/identities/identities.module";
 import { NodeModule } from "src/graphql/entities/nodes/nodes.module";
+import { RoundModule } from "src/graphql/entities/rounds/rounds.module";
 
 @Module({})
 export class GraphQlModule {
@@ -62,6 +63,7 @@ export class GraphQlModule {
         DelegationLegacyModule,
         IdentitiesModule,
         NodeModule,
+        RoundModule,
       ];
     }
 
