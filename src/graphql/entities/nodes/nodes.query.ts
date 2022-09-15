@@ -1,10 +1,11 @@
+import { NotFoundException } from "@nestjs/common";
 import { Args, Float, Query, Resolver } from "@nestjs/graphql";
 import GraphQLJSON from "graphql-type-json";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { Node } from "src/endpoints/nodes/entities/node";
 import { NodeFilter } from "src/endpoints/nodes/entities/node.filter";
 import { NodeService } from "src/endpoints/nodes/node.service";
-import { GetNodesCountInput, GetNodesInput } from "./nodes.input";
+import { GetNodeBlsInput, GetNodesCountInput, GetNodesInput } from "./nodes.input";
 
 @Resolver()
 export class NodeQuery {
@@ -40,6 +41,17 @@ export class NodeQuery {
   @Query(() => GraphQLJSON, { name: "nodesVersion", description: "Retrieve the nodes version." })
   public async getNodeVersions(): Promise<any> {
     return await this.nodeService.getNodeVersions();
+  }
+
+  @Query(() => Node, { name: "node", description: "Retrieve the node details for the given input.", nullable: true })
+  public async getNode(@Args("input", { description: "Input to retrieve the given node for." }) input: GetNodeBlsInput): Promise<Node | undefined> {
+    const node = await this.nodeService.getNode(GetNodeBlsInput.resolve(input));
+
+    if (!node) {
+      throw new NotFoundException('Node not found');
+    }
+
+    return node;
   }
 }
 

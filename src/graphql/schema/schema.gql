@@ -714,6 +714,12 @@ input GetNftsInput {
   withSupply: Boolean
 }
 
+"""Input to retrieve the given bls node for."""
+input GetNodeBlsInput {
+  """Bls to retrieve the corresponding node for."""
+  bls: String = ""
+}
+
 """Input to retreive the given nodes count for."""
 input GetNodesCountInput {
   """Auctioned filter for the given result set."""
@@ -1729,6 +1735,12 @@ type Query {
     """Input to retrieve the given NFTs count for."""
     input: GetNftsCountInput!
   ): Float!
+
+  """Retrieve the node details for the given input."""
+  node(
+    """Input to retrieve the given node for."""
+    input: GetNodeBlsInput!
+  ): Node
 
   """Retrieve all nodes for the given input."""
   nodes(

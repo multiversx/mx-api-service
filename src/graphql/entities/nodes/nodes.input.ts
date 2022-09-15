@@ -83,3 +83,17 @@ export class GetNodesInput extends GetNodesCountInput {
   @Field(() => Float, { name: "size", description: "Number of blocks to retrieve for the given result set.", nullable: true, defaultValue: 25 })
   size: number = 25;
 }
+
+@InputType({ description: "Input to retrieve the given bls node for." })
+export class GetNodeBlsInput {
+  constructor(partial?: Partial<GetNodeBlsInput>) {
+    Object.assign(this, partial);
+  }
+
+  @Field(() => String, { name: "bls", description: "Bls to retrieve the corresponding node for.", nullable: true })
+  bls: string = "";
+
+  public static resolve(input: GetNodeBlsInput): string {
+    return input.bls;
+  }
+}
