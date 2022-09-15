@@ -422,7 +422,7 @@ input GetBlockHashInput {
   hash: ID = ""
 }
 
-"""Input to retrieve the given tags for."""
+"""Input to retrieve the given blocks for."""
 input GetBlocksCountInput {
   """Epoch for the given result set."""
   epoch: Float
@@ -712,6 +712,96 @@ input GetNftsInput {
 
   """With supply to retrieve for the given result set."""
   withSupply: Boolean
+}
+
+"""Input to retreive the given nodes count for."""
+input GetNodesCountInput {
+  """Auctioned filter for the given result set."""
+  auctioned: Boolean
+
+  """FullHistory filter for the given result set."""
+  fullHistory: Boolean
+
+  """Identity filter for the given result set."""
+  identity: String
+
+  """Issues filter for the given result set."""
+  issues: Boolean
+
+  """Online filter for the given result set."""
+  online: Boolean
+
+  """Order filter for the given result set."""
+  order: SortOrder
+
+  """Owner filter for the given result set."""
+  owner: String
+
+  """Provider filter for the given result set."""
+  provider: String
+
+  """Search for the given result set."""
+  search: String
+
+  """Shard ID for the given result set."""
+  shard: Float
+
+  """Sort filter for the given result set."""
+  sort: NodeSort
+
+  """Status filter for the given result set."""
+  status: NodeStatus
+
+  """Type filter for the given result set."""
+  type: NodeType
+}
+
+"""Input to retrieve the given nodes for."""
+input GetNodesInput {
+  """Auctioned filter for the given result set."""
+  auctioned: Boolean
+
+  """Number of blocks to skip for the given result set."""
+  from: Float = 0
+
+  """FullHistory filter for the given result set."""
+  fullHistory: Boolean
+
+  """Identity filter for the given result set."""
+  identity: String
+
+  """Issues filter for the given result set."""
+  issues: Boolean
+
+  """Online filter for the given result set."""
+  online: Boolean
+
+  """Order filter for the given result set."""
+  order: SortOrder
+
+  """Owner filter for the given result set."""
+  owner: String
+
+  """Provider filter for the given result set."""
+  provider: String
+
+  """Search for the given result set."""
+  search: String
+
+  """Shard ID for the given result set."""
+  shard: Float
+
+  """Number of blocks to retrieve for the given result set."""
+  size: Float = 25
+
+  """Sort filter for the given result set."""
+  sort: NodeSort
+
+  """Status filter for the given result set."""
+  status: NodeStatus
+
+  """Type filter for the given result set."""
+  type: NodeType
 }
 
 """Input to retrieve the given tags for."""
@@ -1366,6 +1456,171 @@ enum NftType {
   SemiFungibleESDT
 }
 
+"""Node object type."""
+type Node {
+  """Auction position for the given node."""
+  auctionPosition: Float
+
+  """Auction selected for the given node."""
+  auctionSelected: Boolean
+
+  """Auction top up for the given node."""
+  auctionTopUp: String
+
+  """Auctioned detailes for the given node."""
+  auctioned: Boolean
+
+  """Bls address for the given node."""
+  bls: String!
+
+  """Full history details for the given node."""
+  fullHistory: Boolean
+
+  """Identity for the given node."""
+  identity: String
+
+  """Instances for the given node."""
+  instances: Float!
+
+  """Issues for the given node."""
+  issues: [String!]!
+
+  """Leader failure for the given node."""
+  leaderFailure: Float!
+
+  """Leader success for the given node."""
+  leaderSuccess: Float!
+
+  """Locked details for the given node."""
+  locked: String!
+
+  """Name for the given node."""
+  name: String!
+
+  """Nonce for the given node."""
+  nonce: Float!
+
+  """Online for the given node."""
+  online: Boolean!
+
+  """Owner for the given node."""
+  owner: String!
+
+  """Bls address for the given node."""
+  position: Float!
+
+  """Provider for the given node."""
+  provider: String!
+
+  """Rating for the given node."""
+  rating: Float!
+
+  """Rating modifier for the given node."""
+  ratingModifier: Float!
+
+  """Shard for the given node."""
+  shard: Float
+
+  """Stake for the given node."""
+  stake: String!
+
+  """Status for the given node."""
+  status: NodeStatus
+
+  """Temp rating for the given node."""
+  tempRating: Float!
+
+  """Top up for the given node."""
+  topUp: String!
+
+  """Type for the given node."""
+  type: NodeType
+
+  """Validator failure for the given node."""
+  validatorFailure: Float!
+
+  """Validator ignored signatures details for the given node."""
+  validatorIgnoredSignatures: Float!
+
+  """Bls address for the given node."""
+  validatorSuccess: Float!
+
+  """Version for the given node."""
+  version: String!
+}
+
+"""Node Sort object."""
+enum NodeSort {
+  """Node auction position."""
+  auctionPosition
+
+  """Node leader failure."""
+  leaderFailure
+
+  """Node learder success."""
+  leaderSuccess
+
+  """Node locked."""
+  locked
+
+  """Node name."""
+  name
+
+  """Node position."""
+  position
+
+  """Node temp rating."""
+  tempRating
+
+  """Node validator failure."""
+  validatorFailure
+
+  """Node validator ignored signatures."""
+  validatorIgnoredSignatures
+
+  """Node validator success."""
+  validatorSuccess
+
+  """Node version."""
+  version
+}
+
+"""Node status object type."""
+enum NodeStatus {
+  """Eligible status."""
+  eligible
+
+  """Inactive status."""
+  inactive
+
+  """Jailed status."""
+  jailed
+
+  """Leaving status."""
+  leaving
+
+  """New status."""
+  new
+
+  """Queued status."""
+  queued
+
+  """Unknown status."""
+  unknown
+
+  """Waiting status."""
+  waiting
+}
+
+"""Node Type object."""
+enum NodeType {
+  """Observer type."""
+  observer
+
+  """Validator type."""
+  validator
+}
+
 type Query {
   """Retrieve general information about API deployment."""
   about: About!
@@ -1474,6 +1729,23 @@ type Query {
     """Input to retrieve the given NFTs count for."""
     input: GetNftsCountInput!
   ): Float!
+
+  """Retrieve all nodes for the given input."""
+  nodes(
+    """Input to retrieve the given nodes for."""
+    input: GetNodesInput!
+  ): [Node!]!
+
+  """
+  Returns number of all observer/validator nodes available on blockchain.
+  """
+  nodesCount(
+    """Input to retrieve the given nodes count for."""
+    input: GetNodesCountInput!
+  ): Float
+
+  """Retrieve the nodes version."""
+  nodesVersion: JSON!
 
   """Retrieve all shards for the given input."""
   shards(

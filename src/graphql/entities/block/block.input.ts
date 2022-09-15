@@ -1,7 +1,7 @@
 import { Field, Float, ID, InputType } from "@nestjs/graphql";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 
-@InputType({ description: "Input to retrieve the given tags for." })
+@InputType({ description: "Input to retrieve the given blocks for." })
 export class GetBlocksCountInput {
   constructor(partial?: Partial<GetBlocksCountInput>) {
     Object.assign(this, partial);
