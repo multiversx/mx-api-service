@@ -1006,6 +1006,21 @@ input GetUsernameInput {
   username: String = ""
 }
 
+"""GlobalStake object type."""
+type GlobalStake {
+  """Active validators."""
+  activeValidators: Float!
+
+  """Validators queue size."""
+  queueSize: Float!
+
+  """Total stake amount."""
+  totalStaked: Float!
+
+  """Total validators."""
+  totalValidators: Float!
+}
+
 """Identity object type."""
 type Identity {
   """Provider apr details."""
@@ -1923,6 +1938,9 @@ type Query {
     """Input to retrieve the given shards for."""
     input: GetShardInput!
   ): [Shard!]!
+
+  """Retrieve general stake informations."""
+  stake: GlobalStake!
 
   """Retrieve general network statistics."""
   stats: Stats!

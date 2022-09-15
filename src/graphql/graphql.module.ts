@@ -27,6 +27,7 @@ import { IdentitiesModule } from "src/graphql/entities/identities/identities.mod
 import { NodeModule } from "src/graphql/entities/nodes/nodes.module";
 import { RoundModule } from "src/graphql/entities/rounds/rounds.module";
 import { ProviderModule } from "src/graphql/entities/providers/providers.module";
+import { StakeModule } from "src/graphql/entities/stake/stake.module";
 
 @Module({})
 export class GraphQlModule {
@@ -66,6 +67,7 @@ export class GraphQlModule {
         NodeModule,
         RoundModule,
         ProviderModule,
+        StakeModule,
       ];
     }
 
