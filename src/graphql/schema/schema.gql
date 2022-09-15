@@ -464,6 +464,12 @@ input GetBlocksInput {
   validator: String
 }
 
+"""Input to retrieve the given identity for."""
+input GetIndentityInput {
+  """list of identities."""
+  identities: [String!]
+}
+
 """Input to retrieve the given  block for."""
 input GetMiniBlockHashInput {
   """Specific mini block hash to retrieve the corresponding block for."""
@@ -835,55 +841,55 @@ input GetUsernameInput {
 """Identity object type."""
 type Identity {
   """Provider apr details."""
-  apr: Float!
+  apr: Float
 
   """Provider avatar."""
-  avatar: String!
+  avatar: String
 
   """Provider description details."""
-  description: String!
+  description: String
 
   """Provider distribution details."""
-  distribution: Float!
+  distribution: String
 
   """Identity provider."""
-  identity: String!
+  identity: String
 
   """Provider location details."""
-  location: String!
+  location: String
 
   """Provider locked ESDT details."""
-  locked: String!
+  locked: String
 
   """Provider name details."""
-  name: String!
+  name: String
 
   """Providers details."""
-  providers: [String!]!
+  providers: [String!]
 
   """Provider rank details."""
-  rank: Float!
+  rank: Float
 
   """Provider score details."""
-  score: Float!
+  score: Float
 
   """Provider stake details."""
-  stake: String!
+  stake: String
 
   """Provider stake percent details"""
-  stakePercent: Float!
+  stakePercent: Float
 
   """Provider topUp amount details."""
-  topUp: String!
+  topUp: String
 
   """Provider twitter account."""
-  twitter: String!
+  twitter: String
 
   """Provider validators details."""
-  validators: Float!
+  validators: Float
 
   """Provider website details."""
-  website: String!
+  website: String
 }
 
 """
@@ -1431,6 +1437,19 @@ type Query {
 
   """Retrieve general economics information."""
   economics: Economics!
+
+  """
+  Retrieve list of all node identities, used to group nodes by the same entity. "Free-floating" nodes that do not belong to any identity will also be returned
+  """
+  identities: [Identity!]
+
+  """
+  Retrieve list of all node identities, used to group nodes by the same entity. "Free-floating" nodes that do not belong to any identity will also be returned
+  """
+  identity(
+    """."""
+    input: GetIndentityInput!
+  ): [Identity!]!
 
   """Retrieve the mini block hash for the given input."""
   miniBlockHash(

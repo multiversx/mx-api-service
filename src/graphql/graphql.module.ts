@@ -23,6 +23,7 @@ import { MiniBlockModule } from "src/graphql/entities/miniblock/mini.block.modul
 import { NetworkModule } from "src/graphql/entities/network/network.module";
 import { ShardModule } from "src/graphql/entities/shard/shard.module";
 import { DelegationLegacyModule } from "src/graphql/entities/delegation-legacy/delegation-legacy.module";
+import { IdentitiesModule } from "src/graphql/entities/identities/identities.module";
 
 @Module({})
 export class GraphQlModule {
@@ -58,6 +59,7 @@ export class GraphQlModule {
         NetworkModule,
         ShardModule,
         DelegationLegacyModule,
+        IdentitiesModule,
       ];
     }
 
