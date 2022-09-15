@@ -470,6 +470,48 @@ input GetIndentityInput {
   identities: [String!]
 }
 
+"""Input to retrieve the given mex farms for."""
+input GetMexFarmsInput {
+  """Number of mex farms to skip for the given result set."""
+  from: Float = 0
+
+  """Number of mex farms to retrieve for the given result set."""
+  size: Float = 25
+}
+
+"""Input to retrieve the given mex token for."""
+input GetMexTokenInput {
+  """Identifier to retrieve the corresponding mex token for."""
+  id: ID = ""
+}
+
+"""Input to retrieve the given mex tokens pairs by quote and baseId for."""
+input GetMexTokenPairsByQuotePairIdInput {
+  """Number of mex tokens pair to skip for the given result set."""
+  baseId: String!
+
+  """Number of mex tokens pair to retrieve for the given result set."""
+  quoteId: String!
+}
+
+"""Input to retrieve the given mex tokens pairs for."""
+input GetMexTokenPairsInput {
+  """Number of mex tokens pair to skip for the given result set."""
+  from: Float = 0
+
+  """Number of mex tokens pair to retrieve for the given result set."""
+  size: Float = 25
+}
+
+"""Input to retrieve the given mex tokens for."""
+input GetMexTokensInput {
+  """Number of mex tokens to skip for the given result set."""
+  from: Float = 0
+
+  """Number of mex tokens to retrieve for the given result set."""
+  size: Float = 25
+}
+
 """Input to retrieve the given  block for."""
 input GetMiniBlockHashInput {
   """Specific mini block hash to retrieve the corresponding block for."""
@@ -1079,6 +1121,183 @@ type Identity {
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
 scalar JSON @specifiedBy(url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf")
+
+"""MexEconomics object type."""
+type MexEconomics {
+  """Circulating supply."""
+  circulatingSupply: Float!
+
+  """Mex market cap."""
+  marketCap: Float!
+
+  """Mex tokens pairs."""
+  marketPairs: Float!
+
+  """Mex current price."""
+  price: Float!
+
+  """Total supply details."""
+  totalSupply: Float!
+
+  """Mex volume in 24h."""
+  volume24h: Float!
+}
+
+"""MexFarm object type."""
+type MexFarm {
+  """Address details."""
+  address: String!
+
+  """Farmed identifier details."""
+  farmedId: String!
+
+  """Farmed name details."""
+  farmedName: String!
+
+  """Farmed price details."""
+  farmedPrice: Float!
+
+  """Farmed symbol details."""
+  farmedSymbol: String!
+
+  """Farming identifier details."""
+  farmingId: String!
+
+  """Farming name details."""
+  farmingName: String!
+
+  """Farming price details."""
+  farmingPrice: Float!
+
+  """Farming symbol details."""
+  farmingSymbol: String!
+
+  """Identifier farm details."""
+  id: String!
+
+  """Name details."""
+  name: String!
+
+  """Price details."""
+  price: Float!
+
+  """Symbol details."""
+  symbol: String!
+
+  """Mex farm type."""
+  type: MexFarmType!
+}
+
+"""MexFarmType object type."""
+enum MexFarmType {
+  """Metastaking type."""
+  metastaking
+
+  """Standard type."""
+  standard
+}
+
+"""MexPair object type."""
+type MexPair {
+  """Address details."""
+  address: String!
+
+  """Base id details."""
+  baseId: String!
+
+  """Base name details."""
+  baseName: String!
+
+  """Base price details."""
+  basePrice: String!
+
+  """Base symbol details."""
+  baseSymbol: String!
+
+  """Id details."""
+  id: String!
+
+  """Pair name details."""
+  name: String!
+
+  """Mex token price equivalent"""
+  price: String!
+
+  """Quote id details."""
+  quoteId: String!
+
+  """Quote name details."""
+  quoteName: String!
+
+  """Quote price details."""
+  quotePrice: String!
+
+  """Quote symbol details."""
+  quoteSymbol: String!
+
+  """State details."""
+  state: MexPairState!
+
+  """Pair symbol details."""
+  symbol: String!
+
+  """Tatal value details."""
+  totalValue: String!
+
+  """Mex pair type details."""
+  type: MexPairType!
+
+  """Total volume in 24h details."""
+  volume24h: String!
+}
+
+"""MexPairState object type."""
+enum MexPairState {
+  """Active state."""
+  active
+
+  """Inactive status."""
+  inactive
+
+  """Pause status."""
+  paused
+}
+
+"""MexPairType object type."""
+enum MexPairType {
+  """Community Type."""
+  community
+
+  """Core Type."""
+  core
+
+  """Ecosystem Type."""
+  ecosystem
+
+  """Experimental Type."""
+  experimental
+
+  """Jungle Type."""
+  jungle
+
+  """Unlisted Type."""
+  unlisted
+}
+
+"""MexToken object type."""
+type MexToken {
+  """Identifier for the mex token."""
+  id: String!
+
+  """Mex token name."""
+  name: String!
+
+  """Mex token current price."""
+  price: Float!
+
+  """Symbol for the mex token."""
+  symbol: String!
+}
 
 """MiniBlocks object type."""
 type MiniBlocks {
@@ -1840,6 +2059,41 @@ type Query {
     """."""
     input: GetIndentityInput!
   ): [Identity!]!
+
+  """Retrieve economics details of Maiar Exchange."""
+  mexEconomics: MexEconomics!
+
+  """Retrieve a list of farms listed on Maiar Exchange."""
+  mexFarms(
+    """Input to retrieve the given farms for."""
+    input: GetMexFarmsInput!
+  ): [MexFarm!]!
+
+  """Retrieve one mex pair listed on Maiar Exchange for the given input."""
+  mexPair(
+    """Input to retrieve the given tokens mex pair for."""
+    input: GetMexTokenPairsByQuotePairIdInput!
+  ): MexPair!
+
+  """
+  Retrieve all mex token pairs listed on Maiar Exchange for the given input.
+  """
+  mexPairs(
+    """Input to retrieve the given tokens for."""
+    input: GetMexTokenPairsInput!
+  ): [MexPair!]!
+
+  """Retrieve the mex token for the given input."""
+  mexToken(
+    """Input to retrieve the given NFT for."""
+    input: GetMexTokenInput!
+  ): MexToken
+
+  """Retrieve all tokens listed on Maiar Exchange for the given input."""
+  mexTokens(
+    """Input to retrieve the given tokens for."""
+    input: GetMexTokensInput!
+  ): [MexToken!]!
 
   """Retrieve the mini block hash for the given input."""
   miniBlockHash(
