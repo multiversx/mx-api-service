@@ -163,10 +163,10 @@ export class KeybaseService {
       blses.push(bls);
     }
 
-    const providersRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/" + networkRegex + "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{13}", 'g');
+    const providersRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/" + networkRegex + "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{14}", 'g');
     const addresses: string[] = [];
     for (const keybaseUrl of html.match(providersRegex) || []) {
-      const bls = keybaseUrl.match(/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{13}/)[0];
+      const bls = keybaseUrl.match(/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{14}/)[0];
       addresses.push(bls);
     }
 
