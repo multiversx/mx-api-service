@@ -850,7 +850,7 @@ type Identity {
   description: String
 
   """Provider distribution details."""
-  distribution: String
+  distribution: JSON
 
   """Identity provider."""
   identity: String
