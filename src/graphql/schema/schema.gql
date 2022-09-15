@@ -870,6 +870,27 @@ input GetShardInput {
   size: Float = 25
 }
 
+"""Input to retrieve the given smart contract hash for."""
+input GetSmartContractHashInput {
+  """scHash for the given smart contract set."""
+  scHash: String!
+}
+
+"""Input to retrieve the given smart contract results for."""
+input GetSmartContractResultInput {
+  """Number of blocks to skip for the given result set."""
+  from: Float = 0
+
+  """Miniblockhash txHash for the given result set."""
+  miniBlockHash: String
+
+  """Original TxHashes for the given result set."""
+  originalTxHashes: [String!]
+
+  """Number of blocks to retrieve for the given result set."""
+  size: Float = 25
+}
+
 """Input to retrieve the given tags for."""
 input GetTagsInput {
   """Number of tags to skip for the given result set."""
@@ -1881,6 +1902,21 @@ type Query {
     """Input to retrieve the given rounds count for."""
     input: GetRoundsCountInput!
   ): Float
+
+  """Retrieve the smart contract details for the given input."""
+  scResult(
+    """Input to retrieve the given smart contract for."""
+    input: GetSmartContractHashInput!
+  ): SmartContractResult
+
+  """Retrieve all smart contract results for the given input."""
+  scResults(
+    """Input to retrieve the given smart contract results for."""
+    input: GetSmartContractResultInput!
+  ): [SmartContractResult!]!
+
+  """Returns total number of smart contracts."""
+  scResultsCount: Float!
 
   """Retrieve all shards for the given input."""
   shards(
