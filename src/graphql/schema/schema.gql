@@ -2366,6 +2366,9 @@ type Query {
 
   """Retrieve all addresses count that are in waiting."""
   waitingListCount: Float!
+
+  """Retrieve config used for accessing websocket on the same cluster."""
+  webSocketConfig: WebsocketConfig!
 }
 
 """Round object type."""
@@ -3039,4 +3042,10 @@ type WaitingList {
 
   """Value details."""
   value: Float!
+}
+
+"""WebsocketConfig object type."""
+type WebsocketConfig {
+  """Cluster url."""
+  url: String!
 }
