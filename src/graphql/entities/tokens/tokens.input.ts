@@ -65,6 +65,17 @@ export class GetTokenInput {
   }
 }
 
+@InputType({ description: "Input to retrieve the given token role address for." })
+export class GetTokenRolesForIdentifierAndAddressInput extends GetTokenInput {
+  constructor(partial?: Partial<GetTokenRolesForIdentifierAndAddressInput>) {
+    super();
+    Object.assign(this, partial);
+  }
+
+  @Field(() => ID, { name: "address", description: "Address to retrieve the corresponding token roles for." })
+  address: string = "";
+}
+
 @InputType({ description: "Input to retrieve the given token accounts for." })
 export class GetTokenAccountsInput extends GetTokenInput {
   constructor(partial?: Partial<GetTokenAccountsInput>) {

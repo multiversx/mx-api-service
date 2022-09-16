@@ -7,9 +7,9 @@ export class TokenRoles {
     Object.assign(this, init);
   }
 
-  @Field(() => String, { description: "Token address with role." })
+  @Field(() => String, { description: "Token address with role.", nullable: true })
   @ApiProperty({ type: String })
-  address: string = '';
+  address: string | undefined;
 
   @Field(() => Boolean, { description: "Token canLocalMint property." })
   @ApiProperty({ type: Boolean, default: false })

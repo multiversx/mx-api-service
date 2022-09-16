@@ -972,6 +972,15 @@ input GetTokenInput {
   identifier: ID = ""
 }
 
+"""Input to retrieve the given token role address for."""
+input GetTokenRolesForIdentifierAndAddressInput {
+  """Address to retrieve the corresponding token roles for."""
+  address: ID = ""
+
+  """Identifier to retrieve the corresponding token for."""
+  identifier: ID = ""
+}
+
 """Input to retreive the given tokens count for."""
 input GetTokensCountInput {
   """Identifier filter for the given tokens set."""
@@ -2304,6 +2313,12 @@ type Query {
     input: GetTokenInput!
   ): [TokenRoles!]
 
+  """Retrieve token roles for the given input."""
+  tokenRolesAddress(
+    """Input to retrieve the given token for."""
+    input: GetTokenRolesForIdentifierAndAddressInput!
+  ): TokenRoles
+
   """Retrieve token supply for the given input."""
   tokenSupply(
     """Input to retrieve the given token for."""
@@ -2642,7 +2657,7 @@ type TokenDetailed {
 """TokenRoles object type."""
 type TokenRoles {
   """Token address with role."""
-  address: String!
+  address: String
 
   """Token canLocalBurn property."""
   canLocalBurn: Boolean!

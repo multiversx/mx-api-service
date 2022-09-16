@@ -1,6 +1,6 @@
 import { Args, Float, Query, Resolver } from "@nestjs/graphql";
 import { TokenService } from "src/endpoints/tokens/token.service";
-import { GetTokenAccountsInput, GetTokenInput, GetTokensCountInput, GetTokensInput } from "./tokens.input";
+import { GetTokenAccountsInput, GetTokenInput, GetTokenRolesForIdentifierAndAddressInput, GetTokensCountInput, GetTokensInput } from "./tokens.input";
 import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
@@ -73,6 +73,16 @@ export class TokenQuery {
   @Query(() => [TokenRoles], { name: "tokenRoles", description: "Retrieve token roles for the given input.", nullable: true })
   public async getTokenRoles(@Args("input", { description: "Input to retrieve the given token for." }) input: GetTokenInput): Promise<TokenRoles[] | undefined> {
     const token = await this.tokenService.getTokenRoles(GetTokenInput.resolve(input));
+
+    if (!token) {
+      throw new NotFoundException('Token not found');
+    }
+    return token;
+  }
+
+  @Query(() => TokenRoles, { name: "tokenRolesAddress", description: "Retrieve token roles for the given input.", nullable: true })
+  public async getTokenRolesForIdentifierAndAddress(@Args("input", { description: "Input to retrieve the given token for." }) input: GetTokenRolesForIdentifierAndAddressInput): Promise<TokenRoles | undefined> {
+    const token = await this.tokenService.getTokenRolesForIdentifierAndAddress(input.identifier, input.address);
 
     if (!token) {
       throw new NotFoundException('Token not found');
