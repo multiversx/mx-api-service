@@ -24,6 +24,16 @@ export class TokenQuery {
     );
   }
 
+  @Query(() => Float, { name: "tokenAccountsCount", description: "Retrieve all token accounts count for the given input." })
+  public async getTokenAccountsCount(@Args("input", { description: "Input to retrieve the given count for." }) input: GetTokenInput): Promise<Number | undefined> {
+    const token = await this.tokenService.getTokenAccountsCount(input.identifier);
+
+    if (!token) {
+      throw new NotFoundException('Token not found');
+    }
+    return token;
+  }
+
   @Query(() => [TokenDetailed], { name: "tokens", description: "Retrieve all tokens for the given input." })
   public async getTokens(@Args("input", { description: "Input to retrieve the given tokens for." }) input: GetTokensInput): Promise<TokenDetailed[]> {
     return await this.tokenService.getTokens(

@@ -2292,6 +2292,12 @@ type Query {
     input: GetTokenAccountsInput!
   ): [TokenAccount!]
 
+  """Retrieve all token accounts count for the given input."""
+  tokenAccountsCount(
+    """Input to retrieve the given count for."""
+    input: GetTokenInput!
+  ): Float!
+
   """Retrieve token supply for the given input."""
   tokenSupply(
     """Input to retrieve the given token for."""
@@ -2518,10 +2524,10 @@ type Tag {
 
 """TokenAccount object type."""
 type TokenAccount {
-  """Token address owner."""
+  """Token account address."""
   address: String!
 
-  """Token balance amount."""
+  """Token balance account amount."""
   balance: String!
 }
 
