@@ -10,42 +10,42 @@ export class NodeFilter {
     Object.assign(this, init);
   }
 
-  @Field(() => String, { description: "Identifier for the given NFT.", nullable: true })
+  @Field(() => String, { description: "Search filter for the given nodes.", nullable: true })
   search: string | undefined;
 
-  @Field(() => Boolean, { description: "Identifier for the given NFT.", nullable: true })
+  @Field(() => Boolean, { description: "Online status filter for the given nodes.", nullable: true })
   online: boolean | undefined;
 
-  @Field(() => NodeType, { description: "Identifier for the given NFT.", nullable: true })
+  @Field(() => NodeType, { description: "Node type filter for the given nodes.", nullable: true })
   type: NodeType | undefined;
 
-  @Field(() => NodeStatus, { description: "Identifier for the given NFT.", nullable: true })
+  @Field(() => NodeStatus, { description: "Node status filter for the given nodes.", nullable: true })
   status: NodeStatus | undefined;
 
-  @Field(() => Float, { description: "Identifier for the given NFT.", nullable: true })
+  @Field(() => Float, { description: "Shard filter for the given nodes.", nullable: true })
   shard: number | undefined;
 
-  @Field(() => Boolean, { description: "Identifier for the given NFT.", nullable: true })
+  @Field(() => Boolean, { description: "Node issues filter for the given nodes.", nullable: true })
   issues: boolean | undefined;
 
-  @Field(() => String, { description: "Identifier for the given NFT.", nullable: true })
+  @Field(() => String, { description: "Identity filter for the given nodes.", nullable: true })
   identity: string | undefined;
 
-  @Field(() => String, { description: "Identifier for the given NFT.", nullable: true })
+  @Field(() => String, { description: "Provider filter for the given nodes.", nullable: true })
   provider: string | undefined;
 
-  @Field(() => String, { description: "Identifier for the given NFT.", nullable: true })
+  @Field(() => String, { description: "Owner node filter address.", nullable: true })
   owner: string | undefined;
 
-  @Field(() => Boolean, { description: "Identifier for the given NFT.", nullable: true })
+  @Field(() => Boolean, { description: "Auctioned filter for the given nodes.", nullable: true })
   auctioned: boolean | undefined;
 
-  @Field(() => Boolean, { description: "Identifier for the given NFT.", nullable: true })
+  @Field(() => Boolean, { description: "Full history node filter for the given nodes.", nullable: true })
   fullHistory: boolean | undefined;
 
-  @Field(() => NodeSort, { description: "Identifier for the given NFT.", nullable: true })
+  @Field(() => NodeSort, { description: "Node sort filter.", nullable: true })
   sort: NodeSort | undefined;
 
-  @Field(() => SortOrder, { description: "Identifier for the given NFT.", nullable: true })
+  @Field(() => SortOrder, { description: "Node order filter .", nullable: true })
   order: SortOrder | undefined;
 } 

@@ -61,7 +61,7 @@ export class MexPair {
   @ApiProperty({ type: Number, example: 145.26032 })
   quotePrice: number = 0;
 
-  @Field(() => String, { description: "Tatal value details." })
+  @Field(() => String, { description: "Total value details." })
   @ApiProperty({ type: Number, example: '347667206.84174806' })
   totalValue: number = 0;
 

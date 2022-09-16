@@ -14,10 +14,10 @@ registerEnumType(MexPairState, {
       description: 'Active state.',
     },
     inactive: {
-      description: 'Inactive status.',
+      description: 'Inactive state.',
     },
     paused: {
-      description: 'Pause status.',
+      description: 'Pause state.',
     },
   },
 });

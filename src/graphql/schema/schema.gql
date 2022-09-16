@@ -1322,7 +1322,7 @@ type MexPair {
   """Pair symbol details."""
   symbol: String!
 
-  """Tatal value details."""
+  """Total value details."""
   totalValue: String!
 
   """Mex pair type details."""
@@ -1337,10 +1337,10 @@ enum MexPairState {
   """Active state."""
   active
 
-  """Inactive status."""
+  """Inactive state."""
   inactive
 
-  """Pause status."""
+  """Pause state."""
   paused
 }
 
