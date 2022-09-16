@@ -2298,6 +2298,12 @@ type Query {
     input: GetTokenInput!
   ): Float!
 
+  """Retrieve token roles for the given input."""
+  tokenRoles(
+    """Input to retrieve the given token for."""
+    input: GetTokenInput!
+  ): [TokenRoles!]
+
   """Retrieve token supply for the given input."""
   tokenSupply(
     """Input to retrieve the given token for."""

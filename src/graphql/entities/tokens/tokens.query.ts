@@ -7,6 +7,7 @@ import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { NotFoundException } from "@nestjs/common";
 import { TokenSupplyResult } from "src/endpoints/tokens/entities/token.supply.result";
 import { TokenAccount } from "src/endpoints/tokens/entities/token.account";
+import { TokenRoles } from "src/endpoints/tokens/entities/token.roles";
 
 @Resolver()
 export class TokenQuery {
@@ -62,6 +63,16 @@ export class TokenQuery {
   @Query(() => TokenSupplyResult, { name: "tokenSupply", description: "Retrieve token supply for the given input.", nullable: true })
   public async getTokenSupply(@Args("input", { description: "Input to retrieve the given token for." }) input: GetTokenInput): Promise<TokenSupplyResult | undefined> {
     const token = await this.tokenService.getTokenSupply(GetTokenInput.resolve(input));
+
+    if (!token) {
+      throw new NotFoundException('Token not found');
+    }
+    return token;
+  }
+
+  @Query(() => [TokenRoles], { name: "tokenRoles", description: "Retrieve token roles for the given input.", nullable: true })
+  public async getTokenRoles(@Args("input", { description: "Input to retrieve the given token for." }) input: GetTokenInput): Promise<TokenRoles[] | undefined> {
+    const token = await this.tokenService.getTokenRoles(GetTokenInput.resolve(input));
 
     if (!token) {
       throw new NotFoundException('Token not found');
