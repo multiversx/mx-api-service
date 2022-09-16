@@ -1,11 +1,12 @@
 import { Args, Float, Query, Resolver } from "@nestjs/graphql";
 import { TokenService } from "src/endpoints/tokens/token.service";
-import { GetTokenInput, GetTokensCountInput, GetTokensInput } from "./tokens.input";
+import { GetTokenAccountsInput, GetTokenInput, GetTokensCountInput, GetTokensInput } from "./tokens.input";
 import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { NotFoundException } from "@nestjs/common";
 import { TokenSupplyResult } from "src/endpoints/tokens/entities/token.supply.result";
+import { TokenAccount } from "src/endpoints/tokens/entities/token.account";
 
 @Resolver()
 export class TokenQuery {
@@ -51,6 +52,17 @@ export class TokenQuery {
   @Query(() => TokenSupplyResult, { name: "tokenSupply", description: "Retrieve token supply for the given input.", nullable: true })
   public async getTokenSupply(@Args("input", { description: "Input to retrieve the given token for." }) input: GetTokenInput): Promise<TokenSupplyResult | undefined> {
     const token = await this.tokenService.getTokenSupply(GetTokenInput.resolve(input));
+
+    if (!token) {
+      throw new NotFoundException('Token not found');
+    }
+    return token;
+  }
+
+  @Query(() => [TokenAccount], { name: "tokenAccounts", description: "Retrieve token accounts for the given input.", nullable: true })
+  public async getTokenAccounts(@Args("input", { description: "Input to retrieve the given token for." }) input: GetTokenAccountsInput): Promise<TokenAccount[] | undefined> {
+    const token = await this.tokenService.getTokenAccounts(
+      new QueryPagination({ from: input.from, size: input.size }), input.identifier);
 
     if (!token) {
       throw new NotFoundException('Token not found');

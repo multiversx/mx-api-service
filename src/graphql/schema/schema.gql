@@ -954,6 +954,18 @@ input GetTagsInput {
   size: Float = 25
 }
 
+"""Input to retrieve the given token accounts for."""
+input GetTokenAccountsInput {
+  """Number of tokens to skip for the given result set."""
+  from: Float = 0
+
+  """Identifier to retrieve the corresponding token for."""
+  identifier: ID = ""
+
+  """Number of tokens to retrieve for the given result set."""
+  size: Float = 25
+}
+
 """Input to retrieve the given token for."""
 input GetTokenInput {
   """Identifier to retrieve the corresponding token for."""
@@ -2274,6 +2286,12 @@ type Query {
     input: GetTokenInput!
   ): TokenDetailed
 
+  """Retrieve token accounts for the given input."""
+  tokenAccounts(
+    """Input to retrieve the given token for."""
+    input: GetTokenAccountsInput!
+  ): [TokenAccount!]
+
   """Retrieve token supply for the given input."""
   tokenSupply(
     """Input to retrieve the given token for."""
@@ -2496,6 +2514,15 @@ type Tag {
 
   """Tag details."""
   tag: String!
+}
+
+"""TokenAccount object type."""
+type TokenAccount {
+  """Token address owner."""
+  address: String!
+
+  """Token balance amount."""
+  balance: String!
 }
 
 """Token assets object type."""

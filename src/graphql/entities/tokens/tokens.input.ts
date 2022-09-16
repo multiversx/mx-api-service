@@ -64,3 +64,17 @@ export class GetTokenInput {
     return input.identifier;
   }
 }
+
+@InputType({ description: "Input to retrieve the given token accounts for." })
+export class GetTokenAccountsInput extends GetTokenInput {
+  constructor(partial?: Partial<GetTokenAccountsInput>) {
+    super();
+    Object.assign(this, partial);
+  }
+
+  @Field(() => Float, { name: "from", description: "Number of tokens to skip for the given result set.", nullable: true, defaultValue: 0 })
+  from: number = 0;
+
+  @Field(() => Float, { name: "size", description: "Number of tokens to retrieve for the given result set.", nullable: true, defaultValue: 25 })
+  size: number = 25;
+}
