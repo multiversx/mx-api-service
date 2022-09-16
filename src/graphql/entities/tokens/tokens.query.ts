@@ -5,6 +5,7 @@ import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { NotFoundException } from "@nestjs/common";
+import { TokenSupplyResult } from "src/endpoints/tokens/entities/token.supply.result";
 
 @Resolver()
 export class TokenQuery {
@@ -40,6 +41,16 @@ export class TokenQuery {
   @Query(() => TokenDetailed, { name: "token", description: "Retrieve token for the given input.", nullable: true })
   public async getToken(@Args("input", { description: "Input to retrieve the given token for." }) input: GetTokenInput): Promise<TokenDetailed | undefined> {
     const token = await this.tokenService.getToken(GetTokenInput.resolve(input));
+
+    if (!token) {
+      throw new NotFoundException('Token not found');
+    }
+    return token;
+  }
+
+  @Query(() => TokenSupplyResult, { name: "tokenSupply", description: "Retrieve token supply for the given input.", nullable: true })
+  public async getTokenSupply(@Args("input", { description: "Input to retrieve the given token for." }) input: GetTokenInput): Promise<TokenSupplyResult | undefined> {
+    const token = await this.tokenService.getTokenSupply(GetTokenInput.resolve(input));
 
     if (!token) {
       throw new NotFoundException('Token not found');

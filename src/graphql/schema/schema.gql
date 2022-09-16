@@ -401,6 +401,18 @@ enum EsdtDataSource {
   gateway
 }
 
+"""EsdtLockedAccount object type."""
+type EsdtLockedAccount {
+  """Locked account address."""
+  address: String!
+
+  """Locked account balance."""
+  balance: String!
+
+  """Locked account name."""
+  name: String
+}
+
 """Input to retrieve the given detailed account for."""
 input GetAccountDetailedInput {
   """Address to retrieve the corresponding detailed account for."""
@@ -2262,6 +2274,12 @@ type Query {
     input: GetTokenInput!
   ): TokenDetailed
 
+  """Retrieve token supply for the given input."""
+  tokenSupply(
+    """Input to retrieve the given token for."""
+    input: GetTokenInput!
+  ): TokenSupplyResult
+
   """Retrieve all tokens for the given input."""
   tokens(
     """Input to retrieve the given tokens for."""
@@ -2610,6 +2628,27 @@ enum TokenSort {
 
   """Transactions sort."""
   transactions
+}
+
+"""TokenSupplyResult object type."""
+type TokenSupplyResult {
+  """Token burnt."""
+  burnt: String!
+
+  """Token circulating supply."""
+  circulatingSupply: String!
+
+  """Token initial minted."""
+  initialMinted: String!
+
+  """Token locked accounts."""
+  lockedAccounts: [EsdtLockedAccount!]!
+
+  """Token minted details."""
+  minted: String!
+
+  """Token supply."""
+  supply: String!
 }
 
 """Token type object type."""
