@@ -162,7 +162,7 @@ export class TokenTransferService {
       operation.data = BinaryUtils.base64Decode(event.data);
     }
 
-    if (event.topics.length > 1) {
+    if (event.topics.length > 1 && event.topics[1]) {
       operation.message = BinaryUtils.base64Decode(event.topics[1]);
     }
 
