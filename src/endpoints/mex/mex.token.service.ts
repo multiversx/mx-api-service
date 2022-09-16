@@ -41,7 +41,8 @@ export class MexTokenService {
 
   async getMexTokens(queryPagination: QueryPagination): Promise<MexToken[]> {
     const { from, size } = queryPagination;
-    const allMexTokens = await this.getAllMexTokens();
+    let allMexTokens = await this.getAllMexTokens();
+    allMexTokens = JSON.parse(JSON.stringify(allMexTokens));
 
     return allMexTokens.slice(from, from + size);
   }
