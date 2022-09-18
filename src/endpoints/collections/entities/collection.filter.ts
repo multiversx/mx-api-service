@@ -1,4 +1,6 @@
+import { SortOrder } from "src/common/entities/sort.order";
 import { NftType } from "../../nfts/entities/nft.type";
+import { CollectionSort } from "./collection.sort";
 
 export class CollectionFilter {
   constructor(init?: Partial<CollectionFilter>) {
@@ -6,7 +8,6 @@ export class CollectionFilter {
   }
 
   collection?: string;
-  name?: string;
   identifiers?: string[];
   search?: string;
   type?: NftType[];
@@ -19,4 +20,7 @@ export class CollectionFilter {
   canUpdateAttributes?: boolean | string;
   canAddUri?: boolean | string;
   canTransferRole?: boolean | string;
+
+  sort?: CollectionSort;
+  order?: SortOrder;
 }

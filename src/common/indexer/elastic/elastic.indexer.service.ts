@@ -17,6 +17,7 @@ import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { Block } from "../entities/block";
 import { Tag } from "../entities/tag";
 import { ElasticIndexerHelper } from "./elastic.indexer.helper";
+import { CollectionSortHelper } from "src/endpoints/collections/entities/collection.sort";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -230,7 +231,7 @@ export class ElasticIndexerService implements IndexerInterface {
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter, address?: string): Promise<any[]> {
     const elasticQuery = this.indexerHelper.buildCollectionRolesFilter(filter, address)
       .withPagination(pagination)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withSort([CollectionSortHelper.getElasticSort(filter.sort, filter.order)]);
 
     return await this.elasticService.getList('tokens', 'identifier', elasticQuery);
   }
