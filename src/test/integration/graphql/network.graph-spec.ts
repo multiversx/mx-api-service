@@ -103,7 +103,7 @@ describe('Network', () => {
     });
   });
 
-  describe('Query - Get About', () => {
+  describe.skip('Query - Get About', () => {
     it('should returns general information about API deployment', async () => {
       await request(app.getHttpServer())
         .post(gql)
