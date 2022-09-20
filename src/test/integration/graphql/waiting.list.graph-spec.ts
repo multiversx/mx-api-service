@@ -41,4 +41,8 @@ describe('WaitingList', () => {
         });
     });
   });
+
+  afterEach(async () => {
+    await app.close();
+  });
 });

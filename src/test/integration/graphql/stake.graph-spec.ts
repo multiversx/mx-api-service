@@ -36,4 +36,8 @@ describe('Stake', () => {
         });
     });
   });
+
+  afterEach(async () => {
+    await app.close();
+  });
 });

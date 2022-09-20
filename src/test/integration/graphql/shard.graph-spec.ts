@@ -40,4 +40,8 @@ describe('Shard', () => {
         });
     });
   });
+
+  afterEach(async () => {
+    await app.close();
+  });
 });
