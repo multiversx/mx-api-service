@@ -33,9 +33,6 @@ describe('Stake', () => {
         .expect(200)
         .then(res => {
           expect(res.body.data.stake).toBeDefined();
-          expect(res.body.data.stake.totalValidators).toBeGreaterThanOrEqual(1500);
-          expect(res.body.data.stake.activeValidators).toBeGreaterThanOrEqual(2000);
-          expect(res.body.data.stake.queueSize).toBeGreaterThanOrEqual(10);
         });
     });
   });

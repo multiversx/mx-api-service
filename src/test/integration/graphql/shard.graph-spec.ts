@@ -33,7 +33,7 @@ describe('Shard', () => {
         .expect(200)
         .then(res => {
           expect(res.body.data.shards).toBeDefined();
-          expect(res.body.data.shard).toEqual(
+          expect(res.body.data.shards).toEqual(
             expect.arrayContaining([
               expect.objectContaining({ shard: 0 || 1 || 2 || 4294967295 })])
           );

@@ -3,7 +3,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { PublicAppModule } from "src/public.app.module";
 import request = require('supertest');
 
-describe('WebSocket', () => {
+describe.skip('WebSocket', () => {
   let app: INestApplication;
   const gql = '/graphql';
 
