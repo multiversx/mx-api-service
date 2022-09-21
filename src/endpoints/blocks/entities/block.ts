@@ -1,5 +1,5 @@
 import { ApiUtils } from "@elrondnetwork/erdnest";
-import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
+import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { Identity } from "src/endpoints/identities/entities/identity";
 
@@ -17,7 +17,7 @@ export class Block {
   @ApiProperty({ type: Number })
   epoch: number = 0;
 
-  @Field(() => ID, { description: "Nonce for the given Block." })
+  @Field(() => Number, { description: "Nonce for the given Block." })
   @ApiProperty({ type: Number })
   nonce: number = 0;
 

@@ -46,6 +46,9 @@ export class GetBlocksInput extends GetBlocksCountInput {
 
   @Field(() => Float, { name: "size", description: "Number of blocks to retrieve for the given result set.", nullable: true, defaultValue: 25 })
   size: number = 25;
+
+  @Field(() => Boolean, { name: "withProposerIdentity", description: "Provide identity information for proposer node.", nullable: true })
+  withProposerIdentity: boolean | undefined;
 }
 
 @InputType({ description: "Input to retrieve the given hash block for." })
