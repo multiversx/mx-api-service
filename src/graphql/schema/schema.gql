@@ -152,7 +152,7 @@ type Block {
   maxGasLimit: Float!
 
   """Nonce for the given Block."""
-  nonce: ID!
+  nonce: Float!
 
   """Previous Hash for the given Block."""
   prevHash: String!
@@ -212,7 +212,7 @@ type BlockDetailed {
   miniBlocksHashes: [String!]!
 
   """Nonce for the given Block."""
-  nonce: ID!
+  nonce: Float!
 
   """NotarizedBlocksHashes for the given block hash."""
   notarizedBlocksHashes: [String!]!
@@ -474,6 +474,9 @@ input GetBlocksInput {
 
   """Validator for the given result set."""
   validator: String
+
+  """Provide identity information for proposer node."""
+  withProposerIdentity: Boolean
 }
 
 """Input to retrieve the given identity for."""

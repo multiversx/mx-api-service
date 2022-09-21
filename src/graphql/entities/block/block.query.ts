@@ -21,6 +21,7 @@ export class BlockQuery {
         nonce: input.nonce,
       }),
       new QueryPagination({ from: input.from, size: input.size }),
+      input.withProposerIdentity
     );
   }
 
