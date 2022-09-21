@@ -2,7 +2,7 @@ import { Args, Resolver, Query } from "@nestjs/graphql";
 import { GetMiniBlockHashInput } from "./mini.block.input";
 import { MiniBlockService } from "src/endpoints/miniblocks/mini.block.service";
 import { MiniBlockDetailed } from "src/endpoints/miniblocks/entities/mini.block.detailed";
-import { HttpException, HttpStatus } from "@nestjs/common";
+import { NotFoundException } from "@nestjs/common";
 
 @Resolver()
 export class MiniBlockQuery {
@@ -14,7 +14,7 @@ export class MiniBlockQuery {
     try {
       return await this.miniBlockService.getMiniBlock(GetMiniBlockHashInput.resolve(input));
     } catch {
-      throw new HttpException('Miniblock not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Miniblock not found');
     }
   }
 }
