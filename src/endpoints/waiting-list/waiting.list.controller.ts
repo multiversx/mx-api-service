@@ -1,4 +1,5 @@
-import { Controller, DefaultValuePipe, Get, ParseIntPipe, Query } from '@nestjs/common';
+import { ParseIntPipe } from '@elrondnetwork/erdnest';
+import { Controller, DefaultValuePipe, Get, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { WaitingList } from './entities/waiting.list';
