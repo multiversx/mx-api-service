@@ -1329,7 +1329,7 @@ type MexPair {
   type: MexPairType!
 
   """Total volume in 24h details."""
-  volume24h: String!
+  volume24h: String
 }
 
 """MexPairState object type."""

@@ -65,9 +65,9 @@ export class MexPair {
   @ApiProperty({ type: Number, example: '347667206.84174806' })
   totalValue: number = 0;
 
-  @Field(() => String, { description: "Total volume in 24h details." })
+  @Field(() => String, { description: "Total volume in 24h details.", nullable: true })
   @ApiProperty({ type: Number, example: '2109423.4531209776' })
-  volume24h: number = 0;
+  volume24h: number | undefined;
 
   @Field(() => MexPairState, { description: "State details." })
   @ApiProperty({ enum: MexPairState })
