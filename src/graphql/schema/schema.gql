@@ -1132,6 +1132,15 @@ input GetUsernameInput {
   username: String = ""
 }
 
+"""Input to retrieve the given waiting-list for."""
+input GetWaitingListInput {
+  """Number of waiting-list to skip for the given result set."""
+  from: Float = 0
+
+  """Number of waiting-list to retrieve for the given result set."""
+  size: Float = 25
+}
+
 """GlobalStake object type."""
 type GlobalStake {
   """Active validators."""
@@ -2365,7 +2374,10 @@ type Query {
   ): Username!
 
   """Retrieve all address that are in waiting."""
-  waitingList: [WaitingList!]!
+  waitingList(
+    """Input to retrieve the given waiting accounts for."""
+    input: GetWaitingListInput!
+  ): [WaitingList!]!
 
   """Retrieve all addresses count that are in waiting."""
   waitingListCount: Float!
