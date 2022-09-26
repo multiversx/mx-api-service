@@ -162,7 +162,7 @@ export class TokenTransferService {
       operation.data = BinaryUtils.base64Decode(event.data);
     }
 
-    if (event.topics.length > 1) {
+    if (event.topics.length > 1 && event.topics[1]) {
       operation.message = BinaryUtils.base64Decode(event.topics[1]);
     }
 
@@ -271,7 +271,7 @@ export class TokenTransferService {
       return null;
     }
 
-    const assets = await this.assetsService.getAssets(identifier);
+    const assets = await this.assetsService.getTokenAssets(identifier);
 
     const result: TokenTransferProperties = {
       type: properties.type,

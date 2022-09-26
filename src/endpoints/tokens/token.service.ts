@@ -23,6 +23,8 @@ import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
 import { AddressUtils, ApiUtils, NumberUtils, TokenUtils } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@elrondnetwork/erdnest";
+import { TokenLogo } from "./entities/token.logo";
+import { AssetsService } from "src/common/assets/assets.service";
 
 @Injectable()
 export class TokenService {
@@ -32,7 +34,8 @@ export class TokenService {
     private readonly indexerService: IndexerService,
     private readonly esdtAddressService: EsdtAddressService,
     private readonly gatewayService: GatewayService,
-    private readonly apiConfigService: ApiConfigService
+    private readonly apiConfigService: ApiConfigService,
+    private readonly assetsService: AssetsService,
   ) { }
 
   async isToken(identifier: string): Promise<boolean> {
@@ -459,7 +462,7 @@ export class TokenService {
       minted: denominated === true && result.minted ? NumberUtils.denominateString(result.minted, properties.decimals) : result.minted,
       burnt: denominated === true && result.burned ? NumberUtils.denominateString(result.burned, properties.decimals) : result.burned,
       initialMinted: denominated === true && result.initialMinted ? NumberUtils.denominateString(result.initialMinted, properties.decimals) : result.initialMinted,
-      lockedAccounts,
+      lockedAccounts: lockedAccounts?.sortedDescending(account => Number(account.balance)),
     };
   }
 
@@ -519,5 +522,34 @@ export class TokenService {
     }
 
     return result;
+  }
+
+
+
+  private async getLogo(identifier: string): Promise<TokenLogo | undefined> {
+    const assets = await this.assetsService.getTokenAssets(identifier);
+    if (!assets) {
+      return;
+    }
+
+    return new TokenLogo({ pngUrl: assets.pngUrl, svgUrl: assets.svgUrl });
+  }
+
+  async getLogoPng(identifier: string): Promise<string | undefined> {
+    const logo = await this.getLogo(identifier);
+    if (!logo) {
+      return;
+    }
+
+    return logo.pngUrl;
+  }
+
+  async getLogoSvg(identifier: string): Promise<string | undefined> {
+    const logo = await this.getLogo(identifier);
+    if (!logo) {
+      return;
+    }
+
+    return logo.svgUrl;
   }
 }

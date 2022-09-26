@@ -16,7 +16,7 @@ import { GatewayService } from 'src/common/gateway/gateway.service';
 import { DataQuoteType } from 'src/common/external/entities/data.quote.type';
 import { CacheInfo } from 'src/utils/cache.info';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
-import { Constants, NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest';
+import { NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest';
 import { About } from './entities/about';
 import { EsdtService } from '../esdt/esdt.service';
 
@@ -43,9 +43,9 @@ export class NetworkService {
 
   async getConstants(): Promise<NetworkConstants> {
     return await this.cachingService.getOrSetCache(
-      'constants',
+      CacheInfo.Constants.key,
       async () => await this.getConstantsRaw(),
-      Constants.oneDay()
+      CacheInfo.Constants.ttl
     );
   }
 

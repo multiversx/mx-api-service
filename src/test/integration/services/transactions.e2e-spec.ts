@@ -278,6 +278,16 @@ describe('Transaction Service', () => {
           expect(transaction.miniBlockHash).toStrictEqual(transactionDetails.miniBlockHash);
         }
       });
+
+      it(`should return transactions details with "function" filter applied`, async () => {
+        const transactionFilter = new TransactionFilter();
+        transactionFilter.function = "sendOffer";
+
+        const transactions = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 });
+        for (const transaction of transactions) {
+          expect(transaction.function).toStrictEqual("sendOffer");
+        }
+      });
     });
   });
 

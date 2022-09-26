@@ -1,4 +1,6 @@
 import { Constants } from "@elrondnetwork/erdnest";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 
 export class CacheInfo {
   key: string = "";
@@ -325,5 +327,87 @@ export class CacheInfo {
   static CurrentEpoch: CacheInfo = {
     key: "currentEpoch",
     ttl: Constants.oneMinute(),
+  };
+
+  static AccountsCount: CacheInfo = {
+    key: "account:count",
+    ttl: Constants.oneMinute(),
+  };
+
+  static AccountUsername(address: string): CacheInfo {
+    return {
+      key: `account:${address}:username`,
+      ttl: Constants.oneWeek(),
+    };
+  }
+
+  static AccountDeployedAt(address: string): CacheInfo {
+    return {
+      key: `accountDeployedAt:${address}`,
+      ttl: Constants.oneWeek(),
+    };
+  }
+
+  static Accounts(queryPagination: QueryPagination): CacheInfo {
+    return {
+      key: `accounts:${queryPagination.from}:${queryPagination.size}`,
+      ttl: Constants.oneMinute(),
+    };
+  }
+
+  static BlocksCount(filter: BlockFilter): CacheInfo {
+    return {
+      key: `blocks:count:${JSON.stringify(filter)}`,
+      ttl: Constants.oneMinute(),
+    };
+  }
+
+  static Delegation: CacheInfo = {
+    key: "delegation",
+    ttl: Constants.oneMinute() * 10,
+  };
+
+  static Constants: CacheInfo = {
+    key: 'constants',
+    ttl: Constants.oneDay(),
+  };
+
+  static NftOwnersCount(identifier: string): CacheInfo {
+    return {
+      key: `nftOwnerCount:${identifier}`,
+      ttl: Constants.oneMinute(),
+    };
+  }
+
+  static NftTags(pagination: QueryPagination): CacheInfo {
+    return {
+      key: `nftTags:${pagination.from}:${pagination.size}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
+  static NftTagCount: CacheInfo = {
+    key: 'nftTagsCount',
+    ttl: Constants.oneHour(),
+  };
+
+  static NodeVersions: CacheInfo = {
+    key: 'nodeVersions',
+    ttl: Constants.oneMinute(),
+  };
+
+  static DelegationProviders: CacheInfo = {
+    key: 'delegationProviders',
+    ttl: Constants.oneMinute(),
+  };
+
+  static GlobalStake: CacheInfo = {
+    key: 'stake',
+    ttl: Constants.oneMinute() * 10,
+  };
+
+  static FullWaitingList: CacheInfo = {
+    key: 'waiting-list',
+    ttl: Constants.oneMinute() * 5,
   };
 }

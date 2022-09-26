@@ -45,6 +45,7 @@ import { TransactionFilter } from '../transactions/entities/transaction.filter';
 import { ParseTokenPipe } from '@elrondnetwork/erdnest';
 import { TransactionDetailed } from '../transactions/entities/transaction.detailed';
 import { OriginLogger } from '@elrondnetwork/erdnest';
+import { Delegation } from '../stake/entities/delegation';
 
 @Controller()
 @ApiTags('accounts')
@@ -388,6 +389,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/nfts")
+  @ApiOkResponse({ type: [NftAccount] })
   @ApiOperation({ summary: 'Account NFTs', description: 'Returns a list of all available NFTs/SFTs/MetaESDTs owned by the provided address' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -403,7 +405,8 @@ export class AccountController {
   @ApiQuery({ name: 'includeFlagged', description: 'Include NFTs that are flagged or not', required: false })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false })
   @ApiQuery({ name: 'source', description: 'Data source of request', required: false })
-  @ApiOkResponse({ type: [NftAccount] })
+  @ApiQuery({ name: 'withScamInfo', required: false, type: Boolean })
+  @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
   async getAccountNfts(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -503,6 +506,13 @@ export class AccountController {
     return await this.stakeService.getStakeForAddress(address);
   }
 
+  @Get("/accounts/:address/delegation")
+  @ApiOperation({ summary: 'Account stake details', description: 'Summarizes total staked amount for the given account, as well as when and how much unbond will be performed' })
+  @ApiOkResponse({ type: ProviderStake })
+  async getDelegationForAddress(@Param('address', ParseAddressPipe) address: string): Promise<Delegation[]> {
+    return await this.stakeService.getDelegationForAddress(address);
+  }
+
   @Get("/accounts/:address/delegation-legacy")
   @ApiOperation({ summary: 'Account legacy delegation details', description: 'Returns staking information related to the legacy delegation pool' })
   @ApiOkResponse({ type: AccountDelegationLegacy })
@@ -539,12 +549,15 @@ export class AccountController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
+  @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions. When "withScresults" parameter is applied, complexity estimation is 200', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions. When "withOperations" parameter is applied, complexity estimation is 200', required: false })
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions. When "withLogs" parameter is applied, complexity estimation is 200', required: false })
+  @ApiQuery({ name: 'withScamInfo', required: false, type: Boolean })
+  @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
   async getAccountTransactions(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -558,6 +571,7 @@ export class AccountController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
+    @Query('function') scFunction?: string,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
@@ -572,6 +586,7 @@ export class AccountController {
       sender,
       receivers: receiver,
       token,
+      function: scFunction,
       senderShard,
       receiverShard,
       miniBlockHash,
@@ -645,6 +660,7 @@ export class AccountController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transfer hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
+  @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
@@ -661,6 +677,7 @@ export class AccountController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
+    @Query('function') scFunction?: string,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
@@ -674,6 +691,7 @@ export class AccountController {
       sender,
       receivers: receiver,
       token,
+      function: scFunction,
       senderShard,
       receiverShard,
       miniBlockHash,
