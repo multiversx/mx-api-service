@@ -22,7 +22,8 @@ describe('WaitingList', () => {
         .post(gql)
         .send({
           query: `{
-            waitingList{
+            waitingList(input:{
+            }){
               address
               value
               nonce
