@@ -253,6 +253,15 @@ describe('Provider Service', () => {
       }
     });
 
+    it(`should return providers details with "providers" filter applied`, async () => {
+      const filter = new ProviderFilter();
+      filter.providers = ["erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc0llllsayxegu", "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85"];
+      const results = await providerService.getProviders(filter);
+
+      expect(results[0].provider).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc0llllsayxegu");
+      expect(results[1].provider).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85");
+    });
+
     it("should return providers with stake information", async () => {
       const results = await providerService.getProvidersWithStakeInformation();
 
