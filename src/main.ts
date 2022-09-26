@@ -125,6 +125,15 @@ async function bootstrap() {
   logger.log(`Queue worker active: ${apiConfigService.getIsQueueWorkerCronActive()}`);
   logger.log(`Elastic updater active: ${apiConfigService.getIsElasticUpdaterCronActive()}`);
   logger.log(`Events notifier active: ${apiConfigService.isEventsNotifierFeatureActive()}`);
+
+  logger.log(`Use request caching: ${apiConfigService.getUseRequestCachingFlag()}`);
+  logger.log(`Use request logging: ${apiConfigService.getUseRequestLoggingFlag()}`);
+  logger.log(`Use tracing: ${apiConfigService.getUseTracingFlag()}`);
+  logger.log(`Use vm query tracing: ${apiConfigService.getUseVmQueryTracingFlag()}`);
+  logger.log(`Process NFTs flag: ${apiConfigService.getIsProcessNftsFlagActive()}`);
+  logger.log(`Indexer v3 flag: ${apiConfigService.getIsIndexerV3FlagActive()}`);
+  logger.log(`Staking v4 enabled: ${apiConfigService.isStakingV4Enabled()}`);
+  logger.log(`Events notifier enabled: ${apiConfigService.isEventsNotifierFeatureActive()}`);
 }
 
 async function configurePublicApp(publicApp: NestExpressApplication, apiConfigService: ApiConfigService) {
