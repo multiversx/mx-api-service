@@ -122,18 +122,8 @@ export class ProviderService {
     return /^[\w]*$/g.test(identity ?? '');
   }
 
-  async getProviders(query: ProviderFilter): Promise<Provider[]> {
-    let providers = await this.getProvidersWithStakeInformation();
-
-    if (query.identity) {
-      providers = providers.filter((provider) => provider.identity === query.identity);
-    }
-
-    if (query.providers) {
-      providers = providers.filter(x => x.provider && query.providers?.includes(x.provider));
-    }
-
-    return providers;
+  async getProviders(filter: ProviderFilter): Promise<Provider[]> {
+    return await this.getFilteredProviders(filter);
   }
 
   async getDelegationProviders(): Promise<DelegationData[]> {
@@ -346,5 +336,19 @@ export class ProviderService {
     }
 
     return null;
+  }
+
+  async getFilteredProviders(filter: ProviderFilter): Promise<Provider[]> {
+    let providers = await this.getProvidersWithStakeInformation();
+
+    if (filter.identity) {
+      providers = providers.filter((provider) => provider.identity === filter.identity);
+    }
+
+    if (filter.providers) {
+      providers = providers.filter(x => x.provider && filter.providers?.includes(x.provider));
+    }
+
+    return providers;
   }
 }
