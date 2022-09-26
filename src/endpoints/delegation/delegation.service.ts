@@ -3,7 +3,8 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Delegation } from "./entities/delegation";
 import { NodeService } from "../nodes/node.service";
-import { Constants, CachingService } from "@elrondnetwork/erdnest";
+import { CachingService } from "@elrondnetwork/erdnest";
+import { CacheInfo } from "src/utils/cache.info";
 
 @Injectable()
 export class DelegationService {
@@ -16,9 +17,9 @@ export class DelegationService {
 
   async getDelegation(): Promise<Delegation> {
     return await this.cachingService.getOrSetCache(
-      'delegation',
+      CacheInfo.Delegation.key,
       async () => await this.getDelegationRaw(),
-      Constants.oneMinute() * 10
+      CacheInfo.Delegation.ttl
     );
   }
 
