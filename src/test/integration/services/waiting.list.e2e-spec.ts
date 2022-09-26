@@ -4,6 +4,7 @@ import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
 import { CachingService } from "@elrondnetwork/erdnest";
 import { WaitingListService } from "src/endpoints/waiting-list/waiting.list.service";
 import { WaitingList } from "src/endpoints/waiting-list/entities/waiting.list";
+import { QueryPagination } from "src/common/entities/query.pagination";
 
 describe('WaitingListService', () => {
   let waitingListService: WaitingListService;
@@ -34,7 +35,7 @@ describe('WaitingListService', () => {
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
-      const results = await waitingListService.getWaitingList();
+      const results = await waitingListService.getWaitingList(new QueryPagination());
 
       for (const result of results) {
         expect(result).toHaveProperties(['address', 'value', 'nonce', 'rank']);

@@ -211,11 +211,25 @@ export class ApiConfigService {
 
   getProvidersUrl(): string {
     const providerUrl = this.configService.get<string>('urls.providers');
-    if (!providerUrl) {
-      throw new Error('No providers url present');
+    if (providerUrl) {
+      return providerUrl;
     }
 
-    return providerUrl;
+    const delegationUrl = this.configService.get<string>('urls.delegation');
+    if (delegationUrl) {
+      return delegationUrl + '/providers';
+    }
+
+    throw new Error('No providers url present');
+  }
+
+  getDelegationUrl(): string {
+    const delegationUrl = this.configService.get<string>('urls.delegation');
+    if (!delegationUrl) {
+      throw new Error('No delegation url present');
+    }
+
+    return delegationUrl;
   }
 
   getDataUrl(): string | undefined {

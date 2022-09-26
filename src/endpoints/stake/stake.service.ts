@@ -10,8 +10,9 @@ import { NetworkService } from "../network/network.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { CacheInfo } from "src/utils/cache.info";
-import { AddressUtils, ApiUtils, Constants, RoundUtils, CachingService } from "@elrondnetwork/erdnest";
+import { AddressUtils, ApiUtils, Constants, RoundUtils, CachingService, ApiService } from "@elrondnetwork/erdnest";
 import { OriginLogger } from "@elrondnetwork/erdnest";
+import { Delegation } from "./entities/delegation";
 
 @Injectable()
 export class StakeService {
@@ -26,6 +27,7 @@ export class StakeService {
     private readonly gatewayService: GatewayService,
     @Inject(forwardRef(() => NetworkService))
     private readonly networkService: NetworkService,
+    private readonly apiService: ApiService,
   ) { }
 
   async getGlobalStake() {
@@ -175,6 +177,17 @@ export class StakeService {
         address,
         blses,
       };
+    }
+  }
+
+  async getDelegationForAddress(address: string): Promise<Delegation[]> {
+    try {
+      const { data } = await this.apiService.get(`${this.apiConfigService.getDelegationUrl()}/accounts/${address}/delegations`);
+      return data;
+    } catch (error) {
+      this.logger.error(`Error when getting account delegation details for address ${address}`);
+      this.logger.error(error);
+      throw error;
     }
   }
 
