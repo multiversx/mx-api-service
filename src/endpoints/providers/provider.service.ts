@@ -129,6 +129,10 @@ export class ProviderService {
       providers = providers.filter((provider) => provider.identity === query.identity);
     }
 
+    if (query.providers) {
+      providers = providers.filter(x => x.provider && query.providers?.includes(x.provider));
+    }
+
     return providers;
   }
 
