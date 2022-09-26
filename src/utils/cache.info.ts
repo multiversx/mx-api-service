@@ -1,4 +1,5 @@
 import { Constants } from "@elrondnetwork/erdnest";
+import { QueryPagination } from "src/common/entities/query.pagination";
 
 export class CacheInfo {
   key: string = "";
@@ -326,4 +327,30 @@ export class CacheInfo {
     key: "currentEpoch",
     ttl: Constants.oneMinute(),
   };
+
+  static AccountsCount: CacheInfo = {
+    key: "account:count",
+    ttl: Constants.oneMinute(),
+  };
+
+  static AccountUsername(address: string): CacheInfo {
+    return {
+      key: `account:${address}:username`,
+      ttl: Constants.oneWeek(),
+    };
+  }
+
+  static AccountDeployedAt(address: string): CacheInfo {
+    return {
+      key: `accountDeployedAt:${address}`,
+      ttl: Constants.oneWeek(),
+    };
+  }
+
+  static Accounts(queryPagination: QueryPagination): CacheInfo {
+    return {
+      key: `accounts:${queryPagination.from}:${queryPagination.size}`,
+      ttl: Constants.oneMinute(),
+    };
+  }
 }
