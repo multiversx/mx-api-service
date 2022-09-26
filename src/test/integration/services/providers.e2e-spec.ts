@@ -253,6 +253,17 @@ describe('Provider Service', () => {
       }
     });
 
+    it(`should return providers details with "providers" filter applied`, async () => {
+      const filter = new ProviderFilter();
+      filter.providers = ["erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc0llllsayxegu", "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85"];
+      const results = await providerService.getProviders(filter);
+
+      const providerResults = results.map((providers) => providers.provider);
+
+      expect(providerResults.includes("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc0llllsayxegu")).toBeTruthy();
+      expect(providerResults.includes("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85")).toBeTruthy();
+    });
+
     it("should return providers with stake information", async () => {
       const results = await providerService.getProvidersWithStakeInformation();
 
