@@ -26,6 +26,8 @@ import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.ser
 import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
 import { TransactionLoggingInterceptor } from './interceptors/transaction.logging.interceptor';
 import { GraphqlComplexityInterceptor } from './graphql/interceptors/graphql.complexity.interceptor';
+import { GraphQLMetricsInterceptor } from './graphql/interceptors/graphql.metrics.interceptor';
+import { ApiMetricsService } from './common/metrics/api.metrics.service';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
@@ -137,6 +139,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   publicApp.useStaticAssets(join(__dirname, 'public/assets'));
 
   const metricsService = publicApp.get<MetricsService>(MetricsService);
+  const apiMetricsService = publicApp.get<ApiMetricsService>(ApiMetricsService);
   const pluginService = publicApp.get<PluginService>(PluginService);
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
 
@@ -152,6 +155,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   globalInterceptors.push(new OriginInterceptor());
   globalInterceptors.push(new ComplexityInterceptor());
   globalInterceptors.push(new GraphqlComplexityInterceptor());
+  globalInterceptors.push(new GraphQLMetricsInterceptor(apiMetricsService));
   globalInterceptors.push(new RequestCpuTimeInterceptor(metricsService));
   globalInterceptors.push(new LoggingInterceptor(metricsService));
 
