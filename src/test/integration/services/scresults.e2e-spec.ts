@@ -89,6 +89,21 @@ describe('Scresults Service', () => {
       const scResult = await scResultsService.getScResult(scHash + 'a');
       expect(scResult).toBeUndefined();
     });
+
+    it(`should return scResult details with value property equal with "1" in case of MultiESDTNFTTransfer`, async () => {
+      const scResultHash: string = "8143640ae425a3e8785bf807b1de193bbafa3f45fb29ccff582d542e8586fb8b";
+      const results = await scResultsService.getScResult(scResultHash);
+
+      expect(results?.action?.arguments).toEqual(
+        expect.objectContaining({
+          transfers: expect.arrayContaining([
+            expect.objectContaining({
+              value: "1",
+            }),
+          ]),
+        })
+      );
+    });
   });
 
   describe('Get Results of a smart contract count', () => {
