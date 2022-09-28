@@ -58,6 +58,7 @@ urls:
   socket: 'devnet-socket-fra.elrond.com'
 indexer:
   type: 'elastic'
+  maxPagination: 10000
 database:
   enabled: false
   url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
