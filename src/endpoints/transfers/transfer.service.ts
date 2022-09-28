@@ -51,7 +51,7 @@ export class TransferService {
     const assets = await this.assetsService.getAllAccountAssets();
     for (const elasticOperation of elasticOperations) {
       const transaction = ApiUtils.mergeObjects(new Transaction(), elasticOperation);
-      transaction.type = elasticOperation.type === 'unsigned' ? TransactionType.SmartContractResult : TransactionType.Transaction;
+      transaction.type = elasticOperation.type === 'normal' ? TransactionType.Transaction : TransactionType.SmartContractResult;
 
       if (transaction.type === TransactionType.SmartContractResult) {
         delete transaction.gasLimit;
