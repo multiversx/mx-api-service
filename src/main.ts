@@ -185,7 +185,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   globalInterceptors.push(new FieldsInterceptor());
   globalInterceptors.push(new ExtractInterceptor());
   globalInterceptors.push(new CleanupInterceptor());
-  globalInterceptors.push(new PaginationInterceptor());
+  globalInterceptors.push(new PaginationInterceptor(apiConfigService.getIndexerMaxPagination()));
   // @ts-ignore
   globalInterceptors.push(new QueryCheckInterceptor(httpAdapterHostService));
   globalInterceptors.push(new TransactionLoggingInterceptor());
