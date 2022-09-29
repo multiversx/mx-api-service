@@ -436,7 +436,10 @@ export class AccountController {
         options,
         source
       );
-    } catch (error) {
+    } catch (error: any) {
+      if (error.response.error.includes('account was not found at block')) {
+        throw new NotFoundException('Account not found');
+      }
       return [];
     }
   }
