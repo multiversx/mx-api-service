@@ -139,26 +139,6 @@ describe("NFT Controller", () => {
         });
     });
 
-    it('should return a list of 25 NFTs that have owner', async () => {
-      const params = new URLSearchParams({
-        'after': '1661276190',
-        'withOwner': 'true',
-        'type': 'NonFungibleESDT',
-      });
-
-      await request(app.getHttpServer())
-        .get(`${path}?${params}`)
-        .expect(200)
-        .then(res => {
-          expect(res.body).toHaveLength(25);
-
-          for (const response of res.body) {
-            expect(response.owner).toBeDefined();
-            expect(response.type).toStrictEqual('NonFungibleESDT');
-          }
-        });
-    });
-
     it('should return a list of 25 NFTs that have supply = 1', async () => {
       const params = new URLSearchParams({
         'withSupply': 'true',

@@ -97,7 +97,7 @@ export class KeybaseService {
 
     const allKeybases: Keybase[] = [...providerKeybases, ...nodeKeybases];
 
-    const distinctIdentities = allKeybases.map(x => x.identity ?? '').filter(x => x !== '').distinct();
+    const distinctIdentities = allKeybases.map(x => x.identity ?? '').filter(x => x !== '').distinct().shuffle();
 
     await asyncPool(
       1,
@@ -109,7 +109,7 @@ export class KeybaseService {
   async confirmKeybasesForIdentity(identity: string): Promise<void> {
     const githubSuccess = await this.confirmKeybasesAgainstGithubForIdentity(identity);
     if (!githubSuccess) {
-      await this.confirmKeybasesAgainstKeybasePubForIdentity(identity);
+      await this.confirmKeybasesAgainstKeybasePubForIdentityResilient(identity);
     }
   }
 
@@ -137,6 +137,24 @@ export class KeybaseService {
       this.logger.log(`Error when confirming keybase against github for identity '${identity}'`);
       this.logger.error(error);
       return false;
+    }
+  }
+
+  async confirmKeybasesAgainstKeybasePubForIdentityResilient(identity: string): Promise<void> {
+    let retries = 0;
+
+    while (retries < 3) {
+      try {
+        await this.confirmKeybasesAgainstKeybasePubForIdentity(identity);
+        return;
+      } catch (error) {
+        retries++;
+
+        // wait with backoff
+        await new Promise(resolve => setTimeout(resolve, 5000 * retries));
+
+        this.logger.log(`Retry #${retries} for confirming keybases against keybase.pub for identity '${identity}'`);
+      }
     }
   }
 

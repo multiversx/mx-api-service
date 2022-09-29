@@ -1,8 +1,9 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { Tag } from "./entities/tag";
-import { ApiUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
+import { ApiUtils, CachingService } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
+import { CacheInfo } from "src/utils/cache.info";
 
 @Injectable()
 export class TagService {
@@ -19,9 +20,9 @@ export class TagService {
     }
 
     return await this.cachingService.getOrSetCache(
-      `nftTags:${pagination.from}:${pagination.size}`,
+      CacheInfo.NftTags(pagination).key,
       async () => await this.getNftTagsRaw(pagination),
-      Constants.oneHour(),
+      CacheInfo.NftTags(pagination).ttl
     );
   }
 
@@ -31,9 +32,9 @@ export class TagService {
     }
 
     return await this.cachingService.getOrSetCache(
-      'nftTagsCount',
+      CacheInfo.NftTagCount.key,
       async () => await this.getNftTagCountRaw(),
-      Constants.oneHour()
+      CacheInfo.NftTagCount.ttl
     );
   }
 

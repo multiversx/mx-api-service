@@ -19,7 +19,7 @@ import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { ApiUtils, BinaryUtils, Constants, NumberUtils, RecordUtils, CachingService, BatchUtils, TokenUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, NumberUtils, RecordUtils, CachingService, BatchUtils, TokenUtils } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
 import { CollectionAccount } from "../collections/entities/collection.account";
@@ -374,9 +374,9 @@ export class NftService {
 
   async getNftOwnersCount(identifier: string): Promise<number | undefined> {
     const owners = await this.cachingService.getOrSetCache(
-      `nftOwnerCount:${identifier}`,
+      CacheInfo.NftOwnersCount(identifier).key,
       async () => await this.getNftOwnersCountRaw(identifier),
-      Constants.oneMinute()
+      CacheInfo.NftOwnersCount(identifier).ttl
     );
 
     if (owners === null) {

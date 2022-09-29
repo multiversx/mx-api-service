@@ -127,6 +127,15 @@ async function bootstrap() {
   logger.log(`Queue worker active: ${apiConfigService.getIsQueueWorkerCronActive()}`);
   logger.log(`Elastic updater active: ${apiConfigService.getIsElasticUpdaterCronActive()}`);
   logger.log(`Events notifier active: ${apiConfigService.isEventsNotifierFeatureActive()}`);
+
+  logger.log(`Use request caching: ${apiConfigService.getUseRequestCachingFlag()}`);
+  logger.log(`Use request logging: ${apiConfigService.getUseRequestLoggingFlag()}`);
+  logger.log(`Use tracing: ${apiConfigService.getUseTracingFlag()}`);
+  logger.log(`Use vm query tracing: ${apiConfigService.getUseVmQueryTracingFlag()}`);
+  logger.log(`Process NFTs flag: ${apiConfigService.getIsProcessNftsFlagActive()}`);
+  logger.log(`Indexer v3 flag: ${apiConfigService.getIsIndexerV3FlagActive()}`);
+  logger.log(`Staking v4 enabled: ${apiConfigService.isStakingV4Enabled()}`);
+  logger.log(`Events notifier enabled: ${apiConfigService.isEventsNotifierFeatureActive()}`);
 }
 
 async function configurePublicApp(publicApp: NestExpressApplication, apiConfigService: ApiConfigService) {
@@ -180,7 +189,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   globalInterceptors.push(new FieldsInterceptor());
   globalInterceptors.push(new ExtractInterceptor());
   globalInterceptors.push(new CleanupInterceptor());
-  globalInterceptors.push(new PaginationInterceptor());
+  globalInterceptors.push(new PaginationInterceptor(apiConfigService.getIndexerMaxPagination()));
   // @ts-ignore
   globalInterceptors.push(new QueryCheckInterceptor(httpAdapterHostService));
   globalInterceptors.push(new TransactionLoggingInterceptor());

@@ -18,12 +18,13 @@ import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
-import { AddressUtils, ApiUtils, BinaryUtils, Constants, CachingService } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiUtils, BinaryUtils, CachingService } from '@elrondnetwork/erdnest';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { AccountOptionalFieldOption } from './entities/account.optional.field.options';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
 import { OriginLogger } from '@elrondnetwork/erdnest';
+import { CacheInfo } from 'src/utils/cache.info';
 
 @Injectable()
 export class AccountService {
@@ -50,17 +51,17 @@ export class AccountService {
 
   async getAccountsCount(): Promise<number> {
     return await this.cachingService.getOrSetCache(
-      'account:count',
+      CacheInfo.AccountsCount.key,
       async () => await this.indexerService.getAccountsCount(),
-      Constants.oneMinute()
+      CacheInfo.AccountsCount.ttl
     );
   }
 
   async getAccountUsername(address: string): Promise<string | null> {
     return await this.cachingService.getOrSetCache(
-      `account:${address}:username`,
+      CacheInfo.AccountUsername(address).key,
       async () => await this.getAccountUsernameRaw(address),
-      Constants.oneWeek()
+      CacheInfo.AccountUsername(address).ttl,
     );
   }
 
@@ -150,9 +151,9 @@ export class AccountService {
 
   async getAccountDeployedAt(address: string): Promise<number | null> {
     return await this.cachingService.getOrSetCache(
-      `accountDeployedAt:${address}`,
+      CacheInfo.AccountDeployedAt(address).key,
       async () => await this.getAccountDeployedAtRaw(address),
-      Constants.oneWeek()
+      CacheInfo.AccountDeployedAt(address).ttl
     );
   }
 
@@ -177,9 +178,9 @@ export class AccountService {
 
   async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
     return await this.cachingService.getOrSetCache(
-      `accounts:${queryPagination.from}:${queryPagination.size}`,
+      CacheInfo.Accounts(queryPagination).key,
       async () => await this.getAccountsRaw(queryPagination),
-      Constants.oneMinute(),
+      CacheInfo.Accounts(queryPagination).ttl
     );
   }
 

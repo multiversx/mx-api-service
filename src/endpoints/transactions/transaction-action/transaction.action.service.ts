@@ -198,7 +198,7 @@ export class TransactionActionService {
     for (let i = 0; i < transferCount; i++) {
       const identifier = BinaryUtils.hexToString(args[index++]);
       const nonce = args[index++];
-      const value = BinaryUtils.hexToBigInt(args[index++]);
+      const value = this.parseValueFromMultiTransferValueArg(args[index++]);
 
       if (nonce) {
         const properties = await this.tokenTransferService.getTokenTransferProperties(identifier, nonce);
@@ -228,6 +228,21 @@ export class TransactionActionService {
     }
 
     return result;
+  }
+
+  private parseValueFromMultiTransferValueArg(rawData: string): BigInt {
+    // if the data contains a lot of bytes, then it most likely doesn't express a BigInt value, but
+    // a protobuf-marshalized string, out of which we only extract the value
+    if (rawData.length > 64) {
+      const valueLength = BinaryUtils.hexToNumber(rawData.slice(6, 8));
+
+      const valueStartPosition = 8;
+      const valueEndPosition = 8 + (valueLength * 2);
+
+      return BinaryUtils.hexToBigInt(rawData.slice(valueStartPosition, valueEndPosition));
+    }
+
+    return BinaryUtils.hexToBigInt(rawData);
   }
 
   private async getNftTransferMetadata(metadata: TransactionMetadata): Promise<TransactionMetadata | undefined> {

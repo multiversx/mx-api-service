@@ -701,4 +701,8 @@ export class ApiConfigService {
       database: this.getIndexerName(),
     };
   }
+
+  getIndexerMaxPagination(): number {
+    return this.configService.get<number>('indexer.maxPagination') ?? 10000;
+  }
 }
