@@ -428,13 +428,17 @@ export class AccountController {
   ): Promise<NftAccount[]> {
     const options = NftQueryOptions.enforceScamInfoFlag(size, new NftQueryOptions({ withSupply, withScamInfo, computeScamInfo }));
 
-    return await this.nftService.getNftsForAddress(
-      address,
-      new QueryPagination({ from, size }),
-      new NftFilter({ search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }),
-      options,
-      source
-    );
+    try {
+      return await this.nftService.getNftsForAddress(
+        address,
+        new QueryPagination({ from, size }),
+        new NftFilter({ search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }),
+        options,
+        source
+      );
+    } catch (error) {
+      return [];
+    }
   }
 
   @Get("/accounts/:address/nfts/count")
