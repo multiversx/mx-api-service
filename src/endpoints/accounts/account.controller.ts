@@ -45,7 +45,8 @@ import { TransactionFilter } from '../transactions/entities/transaction.filter';
 import { ParseTokenPipe } from '@elrondnetwork/erdnest';
 import { TransactionDetailed } from '../transactions/entities/transaction.detailed';
 import { OriginLogger } from '@elrondnetwork/erdnest';
-import { Delegation } from '../stake/entities/delegation';
+import { AccountDelegation } from '../stake/entities/account.delegation';
+import { DelegationService } from '../delegation/delegation.service';
 
 @Controller()
 @ApiTags('accounts')
@@ -63,7 +64,8 @@ export class AccountController {
     private readonly scResultService: SmartContractResultService,
     private readonly collectionService: CollectionService,
     private readonly transferService: TransferService,
-    private readonly apiConfigService: ApiConfigService
+    private readonly apiConfigService: ApiConfigService,
+    private readonly delegationService: DelegationService,
   ) { }
 
   @Get("/accounts")
@@ -507,10 +509,10 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/delegation")
-  @ApiOperation({ summary: 'Account stake details', description: 'Summarizes total staked amount for the given account, as well as when and how much unbond will be performed' })
-  @ApiOkResponse({ type: ProviderStake })
-  async getDelegationForAddress(@Param('address', ParseAddressPipe) address: string): Promise<Delegation[]> {
-    return await this.stakeService.getDelegationForAddress(address);
+  @ApiOperation({ summary: 'Account delegations with staking providers', description: 'Summarizes all delegation positions with staking providers, together with unDelegation positions' })
+  @ApiOkResponse({ type: AccountDelegation, isArray: true })
+  async getDelegationForAddress(@Param('address', ParseAddressPipe) address: string): Promise<AccountDelegation[]> {
+    return await this.delegationService.getDelegationForAddress(address);
   }
 
   @Get("/accounts/:address/delegation-legacy")
