@@ -36,13 +36,13 @@ export class Transaction {
   @ApiProperty({ type: Number, nullable: true })
   nonce: number | undefined = undefined;
 
-  @Field(() => Account, { name: "receiverAddress", description: "Receiver account for the given transaction." })
+  @Field(() => String, { name: "receiverAddress", description: "Receiver account for the given transaction." })
   @ApiProperty({ type: String })
   receiver: string = '';
 
   @Field(() => Account, { description: "Receiver account for the given transaction." })
   receiverAccount: Account | undefined = undefined;
-  
+
   @ApiProperty({ type: AccountAssets, nullable: true })
   receiverAssets: AccountAssets | undefined = undefined;
 
@@ -59,7 +59,7 @@ export class Transaction {
 
   @Field(() => Account, { description: "Sender account for the given transaction." })
   senderAccount: Account | undefined = undefined;
-  
+
   @ApiProperty({ type: AccountAssets, nullable: true })
   senderAssets: AccountAssets | undefined = undefined;
 

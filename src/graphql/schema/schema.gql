@@ -2801,7 +2801,7 @@ type TransactionDetailed {
   receiverAccount: Account!
 
   """Receiver account for the given transaction."""
-  receiverAddress: Account!
+  receiverAddress: String!
 
   """Smart contract results for the given detailed transaction."""
   results: [SmartContractResult!]
