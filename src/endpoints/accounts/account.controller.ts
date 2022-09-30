@@ -428,21 +428,13 @@ export class AccountController {
   ): Promise<NftAccount[]> {
     const options = NftQueryOptions.enforceScamInfoFlag(size, new NftQueryOptions({ withSupply, withScamInfo, computeScamInfo }));
 
-    try {
-      return await this.nftService.getNftsForAddress(
-        address,
-        new QueryPagination({ from, size }),
-        new NftFilter({ search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }),
-        options,
-        source
-      );
-    } catch (error: any) {
-      if (error.response.error.includes('account was not found at block')) {
-        return [];
-      }
-
-      throw error;
-    }
+    return await this.nftService.getNftsForAddress(
+      address,
+      new QueryPagination({ from, size }),
+      new NftFilter({ search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }),
+      options,
+      source
+    );
   }
 
   @Get("/accounts/:address/nfts/count")
