@@ -200,7 +200,17 @@ export class EsdtAddressService {
       const nonceHex = identifier.split('-')[2];
       const nonceNumeric = BinaryUtils.hexToNumber(nonceHex);
 
-      const result = await this.gatewayService.get(`address/${address}/nft/${collection}/nonce/${nonceNumeric}`, GatewayComponentRequest.addressNftByNonce);
+      let result: any;
+      try {
+        result = await this.gatewayService.get(`address/${address}/nft/${collection}/nonce/${nonceNumeric}`, GatewayComponentRequest.addressNftByNonce);
+      } catch (error: any) {
+        if (error.response.error.includes('account was not found')) {
+          return [];
+        }
+
+        throw error;
+      }
+
       if (!result || !result.tokenData || result.tokenData.balance === '0') {
         return [];
       }
