@@ -11,12 +11,12 @@ import { QueryPagination } from 'src/common/entities/query.pagination';
 import { NftQueryOptions } from './entities/nft.query.options';
 import { ParseAddressPipe, ParseBoolPipe, ParseArrayPipe, ParseIntPipe, ParseNftPipe, ParseCollectionPipe, ApplyComplexity, ParseAddressArrayPipe, ParseBlockHashPipe, ParseEnumPipe } from '@elrondnetwork/erdnest';
 import { TransactionDetailed } from '../transactions/entities/transaction.detailed';
-import { Transaction } from '@elrondnetwork/erdjs/out';
 import { TransactionStatus } from '../transactions/entities/transaction.status';
 import { SortOrder } from 'src/common/entities/sort.order';
 import { TransactionQueryOptions } from '../transactions/entities/transactions.query.options';
 import { TransactionService } from '../transactions/transaction.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
+import { Transaction } from '../transactions/entities/transaction';
 
 @Controller()
 @ApiTags('nfts')
