@@ -166,7 +166,7 @@ export class NetworkService {
     if (this.apiConfigService.getNetwork() === 'mainnet') {
       const account = await this.accountService.getAccountRaw('erd195fe57d7fm5h33585sc7wl8trqhrmy85z3dg6f6mqd0724ymljxq3zjemc');
       if (account) {
-        locked = NumberUtils.denominate(BigInt(account.balance), 18);
+        locked = Math.round(NumberUtils.denominate(BigInt(account.balance), 18));
       }
     }
 
