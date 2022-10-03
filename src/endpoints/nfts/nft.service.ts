@@ -24,6 +24,8 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
 import { CollectionAccount } from "../collections/entities/collection.account";
 import { OriginLogger } from "@elrondnetwork/erdnest";
+import { GatewayService } from "src/common/gateway/gateway.service";
+import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 
 @Injectable()
 export class NftService {
@@ -46,7 +48,7 @@ export class NftService {
     private readonly esdtAddressService: EsdtAddressService,
     private readonly mexTokenService: MexTokenService,
     private readonly lockedAssetService: LockedAssetService,
-
+    private readonly gatewayService: GatewayService,
   ) {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
     this.DEFAULT_MEDIA = [
@@ -209,9 +211,23 @@ export class NftService {
 
     await this.applyUnlockSchedule(nft);
 
+    await this.applyTransferAffected(nft);
+
     await this.processNft(nft);
 
     return nft;
+  }
+
+  private async applyTransferAffected(nft: Nft): Promise<void> {
+    try {
+      const result = await this.gatewayService.get(`node/old-storage-token/${nft.collection}/nonce/${nft.nonce}`, GatewayComponentRequest.oldStorageToken);
+      if (result?.isOldStorage) {
+        nft.isTransferAffected = true;
+      }
+    } catch (error) {
+      this.logger.error(`Unexpected error when fetching old storage token information for NFT with identifier '${nft.identifier}'`);
+      this.logger.error(error);
+    }
   }
 
   private async applyUnlockSchedule(nft: Nft): Promise<void> {
