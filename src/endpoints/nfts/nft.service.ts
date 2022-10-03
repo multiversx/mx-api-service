@@ -444,8 +444,6 @@ export class NftService {
 
     for (const nft of nfts) {
       await this.applyUnlockSchedule(nft);
-
-      await this.applyTransferAffected(nft);
     }
 
     await this.pluginService.processNfts(nfts, queryOptions?.withScamInfo || queryOptions?.computeScamInfo);
