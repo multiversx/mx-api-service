@@ -574,6 +574,10 @@ export class NodeService {
         node.shard = undefined;
       }
 
+      if (node.online === undefined) {
+        node.online = false;
+      }
+
       node.issues = this.getIssues(node, config.erd_latest_tag_software_version);
 
       nodes.push(node);
