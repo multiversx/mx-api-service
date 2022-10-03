@@ -126,7 +126,6 @@ export class NetworkService {
   }
 
   async getEconomicsRaw(): Promise<Economics> {
-    const locked = 1330000;
     const [
       {
         account: { balance },
@@ -162,6 +161,14 @@ export class NetworkService {
 
     const staked = parseInt((BigInt(balance) + totalWaitingStake).toString().slice(0, -18));
     const totalSupply = parseInt(erd_total_supply.slice(0, -18));
+
+    let locked: number = 0;
+    if (this.apiConfigService.getNetwork() === 'mainnet') {
+      const account = await this.accountService.getAccountRaw('erd195fe57d7fm5h33585sc7wl8trqhrmy85z3dg6f6mqd0724ymljxq3zjemc');
+      if (account) {
+        locked = Math.round(NumberUtils.denominate(BigInt(account.balance), 18));
+      }
+    }
 
     const circulatingSupply = totalSupply - locked;
     const price = priceValue ? parseFloat(priceValue.toFixed(2)) : undefined;
