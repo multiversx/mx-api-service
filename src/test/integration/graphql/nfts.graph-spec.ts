@@ -23,7 +23,7 @@ describe('Nfts', () => {
         .send({
           query: `{
             nft(input:{
-              identifier:"MEDAL-ae074f-78"
+              identifier:"CATSFAM-46c28f-0211"
             }){
              identifier
               attributes
@@ -49,13 +49,14 @@ describe('Nfts', () => {
               }
               supply
               ticker
+              isTransferAffected
           }
           }`,
         })
         .expect(200)
         .then(res => {
           expect(res.body.data.nft).toBeDefined();
-          expect(res.body.data.nft.identifier).toStrictEqual('MEDAL-ae074f-78');
+          expect(res.body.data.nft.identifier).toStrictEqual('CATSFAM-46c28f-0211');
         });
     });
 

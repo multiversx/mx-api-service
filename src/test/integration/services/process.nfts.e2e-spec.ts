@@ -55,6 +55,7 @@ describe('Process Nft Service', () => {
     score: undefined,
     isNsfw: undefined,
     rank: undefined,
+    isTransferAffected: true,
   };
 
   beforeAll(async () => {
