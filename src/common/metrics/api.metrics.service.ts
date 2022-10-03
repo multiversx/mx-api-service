@@ -12,6 +12,7 @@ export class ApiMetricsService {
   private static gatewayDurationHistogram: Histogram<string>;
   private static persistenceDurationHistogram: Histogram<string>;
   private static indexerDurationHistogram: Histogram<string>;
+  private static graphqlDurationHistogram: Histogram<string>;
   private static currentNonceGauge: Gauge<string>;
   private static lastProcessedNonceGauge: Gauge<string>;
 
@@ -59,6 +60,15 @@ export class ApiMetricsService {
       });
     }
 
+    if (!ApiMetricsService.graphqlDurationHistogram) {
+      ApiMetricsService.graphqlDurationHistogram = new Histogram({
+        name: 'query_duration',
+        help: 'The time it takes to resolve a query',
+        labelNames: ['query'],
+        buckets: [],
+      });
+    }
+
     if (!ApiMetricsService.currentNonceGauge) {
       ApiMetricsService.currentNonceGauge = new Gauge({
         name: 'current_nonce',
@@ -92,6 +102,11 @@ export class ApiMetricsService {
   setIndexerDuration(action: string, duration: number) {
     this.metricsService.setExternalCall('indexer', duration);
     ApiMetricsService.indexerDurationHistogram.labels(action).observe(duration);
+  }
+
+  setGraphqlDuration(action: string, duration: number) {
+    this.metricsService.setExternalCall('graphql', duration);
+    ApiMetricsService.graphqlDurationHistogram.labels(action).observe(duration);
   }
 
   setLastProcessedNonce(shardId: number, nonce: number) {

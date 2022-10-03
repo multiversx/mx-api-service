@@ -6,7 +6,6 @@ import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { EsdtDataSource } from 'src/endpoints/esdt/entities/esdt.data.source';
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
-import { TokenRoles } from 'src/endpoints/tokens/entities/token.roles';
 import { CachingService } from '@elrondnetwork/erdnest';
 import { EsdtService } from 'src/endpoints/esdt/esdt.service';
 
@@ -147,11 +146,13 @@ describe('ESDT Service', () => {
       const results = await esdtService.getEsdtAddressesRoles(tokenIdentifier);
 
       if (!results) {
-        throw new Error('Roles properties must be defined');
+        throw new Error('Roles properties are not defined');
       }
 
       for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new TokenRoles()));
+        expect(result.canLocalBurn).toBeDefined();
+        expect(result.canLocalMint).toBeDefined();
+        expect(result.roles).toBeDefined();
       }
     });
   });
@@ -166,7 +167,9 @@ describe('ESDT Service', () => {
       }
 
       for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new TokenRoles()));
+        expect(result.canLocalBurn).toBeDefined();
+        expect(result.canLocalMint).toBeDefined();
+        expect(result.roles).toBeDefined();
       }
     });
   });

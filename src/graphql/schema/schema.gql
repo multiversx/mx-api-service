@@ -2,6 +2,21 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+"""About object type."""
+type About {
+  """Application Version details."""
+  appVersion: String!
+
+  """Current network details."""
+  network: String!
+
+  """Plugins Version details."""
+  pluginsVersion: String!
+
+  """API deployment version."""
+  version: String!
+}
+
 """Account object type."""
 type Account {
   """Address for the given account."""
@@ -116,6 +131,129 @@ type AccountDetailed {
   username: String!
 }
 
+"""Block object type."""
+type Block {
+  """Epoch for the given Block."""
+  epoch: Float!
+
+  """Gas Consumed for the given NFT."""
+  gasConsumed: Float!
+
+  """Gas Penalized for the given NFT."""
+  gasPenalized: Float!
+
+  """Gas Refunded for the given NFT."""
+  gasRefunded: Float!
+
+  """Hash for the given Block."""
+  hash: String!
+
+  """Max Gas Limit for the given NFT."""
+  maxGasLimit: Float!
+
+  """Nonce for the given Block."""
+  nonce: Float!
+
+  """Previous Hash for the given Block."""
+  prevHash: String!
+
+  """Proposer for the given Block."""
+  proposer: String!
+
+  """Proposer Identity for the given Block."""
+  proposerIdentity: Identity!
+
+  """Public Key Bitmap for the given Block."""
+  pubKeyBitmap: String!
+
+  """Round for the given Block."""
+  round: Float!
+
+  """Shard for the given Block."""
+  shard: Float!
+
+  """Size for the given Block."""
+  size: Float!
+
+  """Size Txs for the given Block."""
+  sizeTxs: Float!
+
+  """State Root Hash for the given Block."""
+  stateRootHash: String!
+
+  """Timestamp for the given Block."""
+  timestamp: Float!
+
+  """TxCount for the given NFT."""
+  txCount: Float!
+}
+
+"""BlockDetailed object type."""
+type BlockDetailed {
+  """Epoch for the given Block."""
+  epoch: Float!
+
+  """Gas Consumed for the given NFT."""
+  gasConsumed: Float!
+
+  """Gas Penalized for the given NFT."""
+  gasPenalized: Float!
+
+  """Gas Refunded for the given NFT."""
+  gasRefunded: Float!
+
+  """Hash for the given Block."""
+  hash: String!
+
+  """Max Gas Limit for the given NFT."""
+  maxGasLimit: Float!
+
+  """MiniBlockHashes for the given block hash."""
+  miniBlocksHashes: [String!]!
+
+  """Nonce for the given Block."""
+  nonce: Float!
+
+  """NotarizedBlocksHashes for the given block hash."""
+  notarizedBlocksHashes: [String!]!
+
+  """Previous Hash for the given Block."""
+  prevHash: String!
+
+  """Proposer for the given Block."""
+  proposer: String!
+
+  """Proposer Identity for the given Block."""
+  proposerIdentity: Identity!
+
+  """Public Key Bitmap for the given Block."""
+  pubKeyBitmap: String!
+
+  """Round for the given Block."""
+  round: Float!
+
+  """Shard for the given Block."""
+  shard: Float!
+
+  """Size for the given Block."""
+  size: Float!
+
+  """Size Txs for the given Block."""
+  sizeTxs: Float!
+
+  """State Root Hash for the given Block."""
+  stateRootHash: String!
+
+  """Timestamp for the given Block."""
+  timestamp: Float!
+
+  """TxCount for the given NFT."""
+  txCount: Float!
+
+  """Validators for the given block hash."""
+  validators: [String!]!
+}
+
 """Collection roles object type."""
 type CollectionRoles {
   """Address for the given collection roles."""
@@ -200,6 +338,60 @@ type Delegation {
   topUp: String!
 }
 
+"""DelegationLegacy object type."""
+type DelegationLegacy {
+  """Total number of users."""
+  numUsers: Float!
+
+  """Total Active Stake details."""
+  totalActiveStake: String!
+
+  """Total Deferred Payment Stake details."""
+  totalDeferredPaymentStake: String!
+
+  """Total Unstake Stake details"""
+  totalUnstakedStake: String!
+
+  """Total Waiting Stake details."""
+  totalWaitingStake: String!
+
+  """Total Withdraw Only Stake details."""
+  totalWithdrawOnlyStake: String!
+}
+
+"""Economics object type."""
+type Economics {
+  """Total Supply general information."""
+  apr: Float!
+
+  """Total Supply general information."""
+  baseApr: Float!
+
+  """Total Supply general information."""
+  circulatingSupply: Float!
+
+  """Total Supply general information."""
+  marketCap: Float
+
+  """Total Supply general information."""
+  minimumAuctionTopUp: String
+
+  """Total Supply general information."""
+  price: Float
+
+  """Total Supply general information."""
+  staked: Float!
+
+  """Total Supply general information."""
+  tokenMarketCap: Float
+
+  """Total Supply general information."""
+  topUpApr: Float!
+
+  """Total Supply general information."""
+  totalSupply: Float!
+}
+
 """ESDT data source."""
 enum EsdtDataSource {
   """Elastic data source."""
@@ -207,6 +399,18 @@ enum EsdtDataSource {
 
   """Gateway data source."""
   gateway
+}
+
+"""EsdtLockedAccount object type."""
+type EsdtLockedAccount {
+  """Locked account address."""
+  address: String!
+
+  """Locked account balance."""
+  balance: String!
+
+  """Locked account name."""
+  name: String
 }
 
 """Input to retrieve the given detailed account for."""
@@ -222,6 +426,111 @@ input GetAccountsInput {
 
   """Number of accounts to retrieve for the given result set."""
   size: Float = 25
+}
+
+"""Input to retrieve the given hash block for."""
+input GetBlockHashInput {
+  """Specific block hash to retrieve the corresponding blocks for."""
+  hash: ID = ""
+}
+
+"""Input to retrieve the given blocks for."""
+input GetBlocksCountInput {
+  """Epoch for the given result set."""
+  epoch: Float
+
+  """Nonce for the given result set."""
+  nonce: Float
+
+  """Proposer for the given result set."""
+  proposer: String
+
+  """Shard ID for the given result set."""
+  shard: Float
+
+  """Validator for the given result set."""
+  validator: String
+}
+
+"""Input to retrieve the given blocks for."""
+input GetBlocksInput {
+  """Epoch for the given result set."""
+  epoch: Float
+
+  """Number of blocks to skip for the given result set."""
+  from: Float = 0
+
+  """Nonce for the given result set."""
+  nonce: Float
+
+  """Proposer for the given result set."""
+  proposer: String
+
+  """Shard ID for the given result set."""
+  shard: Float
+
+  """Number of blocks to retrieve for the given result set."""
+  size: Float = 25
+
+  """Validator for the given result set."""
+  validator: String
+
+  """Provide identity information for proposer node."""
+  withProposerIdentity: Boolean
+}
+
+"""Input to retrieve the given identity for."""
+input GetIndentityInput {
+  """list of identities."""
+  identities: [String!]
+}
+
+"""Input to retrieve the given mex farms for."""
+input GetMexFarmsInput {
+  """Number of mex farms to skip for the given result set."""
+  from: Float = 0
+
+  """Number of mex farms to retrieve for the given result set."""
+  size: Float = 25
+}
+
+"""Input to retrieve the given mex token for."""
+input GetMexTokenInput {
+  """Identifier to retrieve the corresponding mex token for."""
+  id: ID = ""
+}
+
+"""Input to retrieve the given mex tokens pairs by quote and baseId for."""
+input GetMexTokenPairsByQuotePairIdInput {
+  """Number of mex tokens pair to skip for the given result set."""
+  baseId: String!
+
+  """Number of mex tokens pair to retrieve for the given result set."""
+  quoteId: String!
+}
+
+"""Input to retrieve the given mex tokens pairs for."""
+input GetMexTokenPairsInput {
+  """Number of mex tokens pair to skip for the given result set."""
+  from: Float = 0
+
+  """Number of mex tokens pair to retrieve for the given result set."""
+  size: Float = 25
+}
+
+"""Input to retrieve the given mex tokens for."""
+input GetMexTokensInput {
+  """Number of mex tokens to skip for the given result set."""
+  from: Float = 0
+
+  """Number of mex tokens to retrieve for the given result set."""
+  size: Float = 25
+}
+
+"""Input to retrieve the given  block for."""
+input GetMiniBlockHashInput {
+  """Specific mini block hash to retrieve the corresponding block for."""
+  miniBlockHash: ID = ""
 }
 
 """Input to retrieve the given NFT collection for."""
@@ -462,6 +771,183 @@ input GetNftsInput {
   withSupply: Boolean
 }
 
+"""Input to retrieve the given bls node for."""
+input GetNodeBlsInput {
+  """Bls to retrieve the corresponding node for."""
+  bls: String = ""
+}
+
+"""Input to retreive the given nodes count for."""
+input GetNodesCountInput {
+  """Auctioned filter for the given result set."""
+  auctioned: Boolean
+
+  """FullHistory filter for the given result set."""
+  fullHistory: Boolean
+
+  """Identity filter for the given result set."""
+  identity: String
+
+  """Issues filter for the given result set."""
+  issues: Boolean
+
+  """Online filter for the given result set."""
+  online: Boolean
+
+  """Order filter for the given result set."""
+  order: SortOrder
+
+  """Owner filter for the given result set."""
+  owner: String
+
+  """Provider filter for the given result set."""
+  provider: String
+
+  """Search for the given result set."""
+  search: String
+
+  """Shard ID for the given result set."""
+  shard: Float
+
+  """Sort filter for the given result set."""
+  sort: NodeSort
+
+  """Status filter for the given result set."""
+  status: NodeStatus
+
+  """Type filter for the given result set."""
+  type: NodeType
+}
+
+"""Input to retrieve the given nodes for."""
+input GetNodesInput {
+  """Auctioned filter for the given result set."""
+  auctioned: Boolean
+
+  """Number of blocks to skip for the given result set."""
+  from: Float = 0
+
+  """FullHistory filter for the given result set."""
+  fullHistory: Boolean
+
+  """Identity filter for the given result set."""
+  identity: String
+
+  """Issues filter for the given result set."""
+  issues: Boolean
+
+  """Online filter for the given result set."""
+  online: Boolean
+
+  """Order filter for the given result set."""
+  order: SortOrder
+
+  """Owner filter for the given result set."""
+  owner: String
+
+  """Provider filter for the given result set."""
+  provider: String
+
+  """Search for the given result set."""
+  search: String
+
+  """Shard ID for the given result set."""
+  shard: Float
+
+  """Number of blocks to retrieve for the given result set."""
+  size: Float = 25
+
+  """Sort filter for the given result set."""
+  sort: NodeSort
+
+  """Status filter for the given result set."""
+  status: NodeStatus
+
+  """Type filter for the given result set."""
+  type: NodeType
+}
+
+"""Input to retrieve the given provider for."""
+input GetProviderByAddressInput {
+  """Identity provider for the given result set."""
+  address: String = ""
+}
+
+"""Input to retrieve the given provider for."""
+input GetProviderInput {
+  """Identity provider for the given result set."""
+  identity: String = ""
+}
+
+"""Input to retrieve the given rounds for."""
+input GetRoundInput {
+  """Round for the given result set."""
+  round: Float!
+
+  """Epoch for the given result set."""
+  shard: Float!
+}
+
+"""Input to retreive the given rounds count for."""
+input GetRoundsCountInput {
+  """Epoch for the given result set."""
+  epoch: Float
+
+  """Shard ID for the given result set."""
+  shard: Float
+
+  """Validator for the given result set."""
+  validator: String
+}
+
+"""Input to retrieve the given rounds for."""
+input GetRoundsInput {
+  """Epoch for the given result set."""
+  epoch: Float
+
+  """Number of blocks to skip for the given result set."""
+  from: Float = 0
+
+  """Shard ID for the given result set."""
+  shard: Float
+
+  """Number of blocks to retrieve for the given result set."""
+  size: Float = 25
+
+  """Validator for the given result set."""
+  validator: String
+}
+
+"""Input to retrieve the given tags for."""
+input GetShardInput {
+  """Number of shards to skip for the given result set."""
+  from: Float = 0
+
+  """Number of shards to retrieve for the given result set."""
+  size: Float = 25
+}
+
+"""Input to retrieve the given smart contract hash for."""
+input GetSmartContractHashInput {
+  """scHash for the given smart contract set."""
+  scHash: String!
+}
+
+"""Input to retrieve the given smart contract results for."""
+input GetSmartContractResultInput {
+  """Number of blocks to skip for the given result set."""
+  from: Float = 0
+
+  """Miniblockhash txHash for the given result set."""
+  miniBlockHash: String
+
+  """Original TxHashes for the given result set."""
+  originalTxHashes: [String!]
+
+  """Number of blocks to retrieve for the given result set."""
+  size: Float = 25
+}
+
 """Input to retrieve the given tags for."""
 input GetTagsInput {
   """Number of tags to skip for the given result set."""
@@ -469,6 +955,75 @@ input GetTagsInput {
 
   """Number of tags to retrieve for the given result set."""
   size: Float = 25
+}
+
+"""Input to retrieve the given token accounts for."""
+input GetTokenAccountsInput {
+  """Number of tokens to skip for the given result set."""
+  from: Float = 0
+
+  """Identifier to retrieve the corresponding token for."""
+  identifier: ID = ""
+
+  """Number of tokens to retrieve for the given result set."""
+  size: Float = 25
+}
+
+"""Input to retrieve the given token for."""
+input GetTokenInput {
+  """Identifier to retrieve the corresponding token for."""
+  identifier: ID = ""
+}
+
+"""Input to retrieve the given token role address for."""
+input GetTokenRolesForIdentifierAndAddressInput {
+  """Address to retrieve the corresponding token roles for."""
+  address: ID = ""
+
+  """Identifier to retrieve the corresponding token for."""
+  identifier: ID = ""
+}
+
+"""Input to retreive the given tokens count for."""
+input GetTokensCountInput {
+  """Identifier filter for the given tokens set."""
+  identifier: String
+
+  """Identifiers filter for the given tokens set."""
+  identifiers: [String!]
+
+  """Name filter for the given tokens set."""
+  name: String
+
+  """Search filter for the given tokens set."""
+  search: String
+}
+
+"""Input to retreive the given tokens count for."""
+input GetTokensInput {
+  """Number of tokens to skip for the given result set."""
+  from: Float = 0
+
+  """Identifier filter for the given tokens set."""
+  identifier: String
+
+  """Identifiers filter for the given tokens set."""
+  identifiers: [String!]
+
+  """Name filter for the given tokens set."""
+  name: String
+
+  """Order filter for the given tokens set."""
+  order: SortOrder
+
+  """Search filter for the given tokens set."""
+  search: String
+
+  """Number of tokens to retrieve for the given result set."""
+  size: Float = 25
+
+  """Sort filter for the given tokens set."""
+  sort: TokenSort
 }
 
 """Input to retrieve the given detailed transaction for."""
@@ -586,10 +1141,298 @@ input GetWaitingListInput {
   size: Float = 25
 }
 
+"""GlobalStake object type."""
+type GlobalStake {
+  """Active validators."""
+  activeValidators: Float!
+
+  """Validators queue size."""
+  queueSize: Float!
+
+  """Total stake amount."""
+  totalStaked: Float!
+
+  """Total validators."""
+  totalValidators: Float!
+}
+
+"""Identity object type."""
+type Identity {
+  """Provider apr details."""
+  apr: Float
+
+  """Provider avatar."""
+  avatar: String
+
+  """Provider description details."""
+  description: String
+
+  """Provider distribution details."""
+  distribution: JSON
+
+  """Identity provider."""
+  identity: String
+
+  """Provider location details."""
+  location: String
+
+  """Provider locked ESDT details."""
+  locked: String
+
+  """Provider name details."""
+  name: String
+
+  """Providers details."""
+  providers: [String!]
+
+  """Provider rank details."""
+  rank: Float
+
+  """Provider score details."""
+  score: Float
+
+  """Provider stake details."""
+  stake: String
+
+  """Provider stake percent details"""
+  stakePercent: Float
+
+  """Provider topUp amount details."""
+  topUp: String
+
+  """Provider twitter account."""
+  twitter: String
+
+  """Provider validators details."""
+  validators: Float
+
+  """Provider website details."""
+  website: String
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
 scalar JSON @specifiedBy(url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf")
+
+"""MexEconomics object type."""
+type MexEconomics {
+  """Circulating supply."""
+  circulatingSupply: Float!
+
+  """Mex market cap."""
+  marketCap: Float!
+
+  """Mex tokens pairs."""
+  marketPairs: Float!
+
+  """Mex current price."""
+  price: Float!
+
+  """Total supply details."""
+  totalSupply: Float!
+
+  """Mex volume in 24h."""
+  volume24h: Float!
+}
+
+"""MexFarm object type."""
+type MexFarm {
+  """Address details."""
+  address: String!
+
+  """Farmed identifier details."""
+  farmedId: String!
+
+  """Farmed name details."""
+  farmedName: String!
+
+  """Farmed price details."""
+  farmedPrice: Float!
+
+  """Farmed symbol details."""
+  farmedSymbol: String!
+
+  """Farming identifier details."""
+  farmingId: String!
+
+  """Farming name details."""
+  farmingName: String!
+
+  """Farming price details."""
+  farmingPrice: Float!
+
+  """Farming symbol details."""
+  farmingSymbol: String!
+
+  """Identifier farm details."""
+  id: String!
+
+  """Name details."""
+  name: String!
+
+  """Price details."""
+  price: Float!
+
+  """Symbol details."""
+  symbol: String!
+
+  """Mex farm type."""
+  type: MexFarmType!
+}
+
+"""MexFarmType object type."""
+enum MexFarmType {
+  """Metastaking type."""
+  metastaking
+
+  """Standard type."""
+  standard
+}
+
+"""MexPair object type."""
+type MexPair {
+  """Address details."""
+  address: String!
+
+  """Base id details."""
+  baseId: String!
+
+  """Base name details."""
+  baseName: String!
+
+  """Base price details."""
+  basePrice: String!
+
+  """Base symbol details."""
+  baseSymbol: String!
+
+  """Id details."""
+  id: String!
+
+  """Pair name details."""
+  name: String!
+
+  """Mex token price equivalent"""
+  price: String!
+
+  """Quote id details."""
+  quoteId: String!
+
+  """Quote name details."""
+  quoteName: String!
+
+  """Quote price details."""
+  quotePrice: String!
+
+  """Quote symbol details."""
+  quoteSymbol: String!
+
+  """State details."""
+  state: MexPairState!
+
+  """Pair symbol details."""
+  symbol: String!
+
+  """Total value details."""
+  totalValue: String!
+
+  """Mex pair type details."""
+  type: MexPairType!
+
+  """Total volume in 24h details."""
+  volume24h: String
+}
+
+"""MexPairState object type."""
+enum MexPairState {
+  """Active state."""
+  active
+
+  """Inactive state."""
+  inactive
+
+  """Pause state."""
+  paused
+}
+
+"""MexPairType object type."""
+enum MexPairType {
+  """Community Type."""
+  community
+
+  """Core Type."""
+  core
+
+  """Ecosystem Type."""
+  ecosystem
+
+  """Experimental Type."""
+  experimental
+
+  """Jungle Type."""
+  jungle
+
+  """Unlisted Type."""
+  unlisted
+}
+
+"""MexToken object type."""
+type MexToken {
+  """Identifier for the mex token."""
+  id: String!
+
+  """Mex token name."""
+  name: String!
+
+  """Mex token current price."""
+  price: Float!
+
+  """Symbol for the mex token."""
+  symbol: String!
+}
+
+"""MiniBlocks object type."""
+type MiniBlocks {
+  """MiniBlock Hash details."""
+  miniBlockHash: String!
+
+  """Receiver Block Hash details."""
+  receiverBlockHash: String!
+
+  """Receiver Shard details."""
+  receiverShard: Float!
+
+  """Sender Block Hash details."""
+  senderBlockHash: String!
+
+  """Sender shard details."""
+  senderShard: Float!
+
+  """Timestamp details."""
+  timestamp: Float!
+
+  """Transaction type details."""
+  type: String!
+}
+
+"""NetworkConstants object type."""
+type NetworkConstants {
+  """ChainId details."""
+  chainId: String!
+
+  """GasPerDataByte details."""
+  gasPerDataByte: Float!
+
+  """MinGasLimit details."""
+  minGasLimit: Float!
+
+  """MinGasPrice details."""
+  minGasPrice: Float!
+
+  """MinTransactionVersion details."""
+  minTransactionVersion: Float!
+}
 
 """NFT object type."""
 type Nft {
@@ -1018,7 +1861,217 @@ enum NftType {
   SemiFungibleESDT
 }
 
+"""Node object type."""
+type Node {
+  """Auction position for the given node."""
+  auctionPosition: Float
+
+  """Auction selected for the given node."""
+  auctionSelected: Boolean
+
+  """Auction top up for the given node."""
+  auctionTopUp: String
+
+  """Auctioned detailes for the given node."""
+  auctioned: Boolean
+
+  """Bls address for the given node."""
+  bls: String!
+
+  """Full history details for the given node."""
+  fullHistory: Boolean
+
+  """Identity for the given node."""
+  identity: String
+
+  """Instances for the given node."""
+  instances: Float!
+
+  """Issues for the given node."""
+  issues: [String!]!
+
+  """Leader failure for the given node."""
+  leaderFailure: Float!
+
+  """Leader success for the given node."""
+  leaderSuccess: Float!
+
+  """Locked details for the given node."""
+  locked: String!
+
+  """Name for the given node."""
+  name: String!
+
+  """Nonce for the given node."""
+  nonce: Float!
+
+  """Online for the given node."""
+  online: Boolean!
+
+  """Owner for the given node."""
+  owner: String!
+
+  """Bls address for the given node."""
+  position: Float!
+
+  """Provider for the given node."""
+  provider: String!
+
+  """Rating for the given node."""
+  rating: Float!
+
+  """Rating modifier for the given node."""
+  ratingModifier: Float!
+
+  """Shard for the given node."""
+  shard: Float
+
+  """Stake for the given node."""
+  stake: String!
+
+  """Status for the given node."""
+  status: NodeStatus
+
+  """Temp rating for the given node."""
+  tempRating: Float!
+
+  """Top up for the given node."""
+  topUp: String!
+
+  """Type for the given node."""
+  type: NodeType
+
+  """Validator failure for the given node."""
+  validatorFailure: Float!
+
+  """Validator ignored signatures details for the given node."""
+  validatorIgnoredSignatures: Float!
+
+  """Bls address for the given node."""
+  validatorSuccess: Float!
+
+  """Version for the given node."""
+  version: String!
+}
+
+"""Node Sort object."""
+enum NodeSort {
+  """Node auction position."""
+  auctionPosition
+
+  """Node leader failure."""
+  leaderFailure
+
+  """Node learder success."""
+  leaderSuccess
+
+  """Node locked."""
+  locked
+
+  """Node name."""
+  name
+
+  """Node position."""
+  position
+
+  """Node temp rating."""
+  tempRating
+
+  """Node validator failure."""
+  validatorFailure
+
+  """Node validator ignored signatures."""
+  validatorIgnoredSignatures
+
+  """Node validator success."""
+  validatorSuccess
+
+  """Node version."""
+  version
+}
+
+"""Node status object type."""
+enum NodeStatus {
+  """Eligible status."""
+  eligible
+
+  """Inactive status."""
+  inactive
+
+  """Jailed status."""
+  jailed
+
+  """Leaving status."""
+  leaving
+
+  """New status."""
+  new
+
+  """Queued status."""
+  queued
+
+  """Unknown status."""
+  unknown
+
+  """Waiting status."""
+  waiting
+}
+
+"""Node Type object."""
+enum NodeType {
+  """Observer type."""
+  observer
+
+  """Validator type."""
+  validator
+}
+
+"""Provider object type."""
+type Provider {
+  """APR details percentage."""
+  apr: Float!
+
+  """Provider cumulated rewards."""
+  cumulatedRewards: String
+
+  """Delegation cap details."""
+  delegationCap: String!
+
+  """Featured details."""
+  featured: Boolean!
+
+  """Provider identity."""
+  identity: String
+
+  """Locked amound details."""
+  locked: String!
+
+  """Total numbers of nodes."""
+  numNodes: Float!
+
+  """Total number of users."""
+  numUsers: Float!
+
+  """Owner address details."""
+  owner: String
+
+  """Provider address details."""
+  provider: String!
+
+  """Service fee details."""
+  serviceFee: Float!
+
+  """Total stake amount."""
+  stake: Float!
+
+  """Top up details."""
+  topUp: String!
+}
+
 type Query {
+  """Retrieve general information about API deployment."""
+  about: About!
+
   """Retrieve the detailed account for the given input."""
   account(
     """Input to retrieve the given detailed account for."""
@@ -1033,6 +2086,24 @@ type Query {
 
   """Retrieve all accounts count."""
   accountsCount: Float!
+
+  """Retrieve the block for the given input."""
+  blockHash(
+    """Input to retrieve the given block hash details for."""
+    input: GetBlockHashInput!
+  ): BlockDetailed!
+
+  """Retrieve all blocks for the given input."""
+  blocks(
+    """Input to retrieve the given blocks for."""
+    input: GetBlocksInput!
+  ): [Block!]!
+
+  """Retrieve the all blocks count for the given input."""
+  blocksCount(
+    """Input to retrieve the given blocks count for."""
+    input: GetBlocksCountInput!
+  ): Float
 
   """Retrieve the NFT collection for the given input."""
   collection(
@@ -1052,11 +2123,76 @@ type Query {
     input: GetNftCollectionsCountInput!
   ): Float!
 
+  """
+  Retrieve network-specific constants that can be used to automatically configure dapps.
+  """
+  constants: NetworkConstants!
+
   """Retrieve configuration used in dapp."""
   dappConfig: DappConfig!
 
   """Retrieve all delegation staking information."""
   delegation: Delegation!
+
+  """Retrieve legacy delegation contract global information."""
+  delegationLegacy: DelegationLegacy!
+
+  """Retrieve general economics information."""
+  economics: Economics!
+
+  """
+  Retrieve list of all node identities, used to group nodes by the same entity. "Free-floating" nodes that do not belong to any identity will also be returned
+  """
+  identities: [Identity!]
+
+  """
+  Retrieve list of all node identities, used to group nodes by the same entity. "Free-floating" nodes that do not belong to any identity will also be returned
+  """
+  identity(
+    """."""
+    input: GetIndentityInput!
+  ): [Identity!]!
+
+  """Retrieve economics details of Maiar Exchange."""
+  mexEconomics: MexEconomics!
+
+  """Retrieve a list of farms listed on Maiar Exchange."""
+  mexFarms(
+    """Input to retrieve the given farms for."""
+    input: GetMexFarmsInput!
+  ): [MexFarm!]!
+
+  """Retrieve one mex pair listed on Maiar Exchange for the given input."""
+  mexPair(
+    """Input to retrieve the given tokens mex pair for."""
+    input: GetMexTokenPairsByQuotePairIdInput!
+  ): MexPair!
+
+  """
+  Retrieve all mex token pairs listed on Maiar Exchange for the given input.
+  """
+  mexPairs(
+    """Input to retrieve the given tokens for."""
+    input: GetMexTokenPairsInput!
+  ): [MexPair!]!
+
+  """Retrieve the mex token for the given input."""
+  mexToken(
+    """Input to retrieve the given NFT for."""
+    input: GetMexTokenInput!
+  ): MexToken
+
+  """Retrieve all tokens listed on Maiar Exchange for the given input."""
+  mexTokens(
+    """Input to retrieve the given tokens for."""
+    input: GetMexTokensInput!
+  ): [MexToken!]!
+
+  """Retrieve the mini block hash for the given input."""
+  miniBlockHash(
+    """Input to retrieve the given mini block hash details for."""
+    input: GetMiniBlockHashInput!
+  ): MiniBlocks!
 
   """Retrieve the NFT for the given input."""
   nft(
@@ -1076,6 +2212,86 @@ type Query {
     input: GetNftsCountInput!
   ): Float!
 
+  """Retrieve the node details for the given input."""
+  node(
+    """Input to retrieve the given node for."""
+    input: GetNodeBlsInput!
+  ): Node
+
+  """Retrieve all nodes for the given input."""
+  nodes(
+    """Input to retrieve the given nodes for."""
+    input: GetNodesInput!
+  ): [Node!]!
+
+  """
+  Returns number of all observer/validator nodes available on blockchain.
+  """
+  nodesCount(
+    """Input to retrieve the given nodes count for."""
+    input: GetNodesCountInput!
+  ): Float
+
+  """Retrieve the nodes version."""
+  nodesVersion: JSON!
+
+  """Retrieve a specific provider for the given input."""
+  provider(
+    """Input to retrieve the given identity provider for."""
+    input: GetProviderByAddressInput!
+  ): Provider!
+
+  """Retrieve all providers for the given input."""
+  providers(
+    """Input to retrieve the given identity provider for."""
+    input: GetProviderInput!
+  ): [Provider!]!
+
+  """Retrieve the round details for the given input."""
+  round(
+    """Input to retrieve the given node for."""
+    input: GetRoundInput!
+  ): RoundDetailed
+
+  """Retrieve all rounds for the given input."""
+  rounds(
+    """Input to retrieve the given rounds for."""
+    input: GetRoundsInput!
+  ): [Round!]!
+
+  """Returns total number of rounds."""
+  roundsCount(
+    """Input to retrieve the given rounds count for."""
+    input: GetRoundsCountInput!
+  ): Float
+
+  """Retrieve the smart contract details for the given input."""
+  scResult(
+    """Input to retrieve the given smart contract for."""
+    input: GetSmartContractHashInput!
+  ): SmartContractResult
+
+  """Retrieve all smart contract results for the given input."""
+  scResults(
+    """Input to retrieve the given smart contract results for."""
+    input: GetSmartContractResultInput!
+  ): [SmartContractResult!]!
+
+  """Returns total number of smart contracts."""
+  scResultsCount: Float!
+
+  """Retrieve all shards for the given input."""
+  shards(
+    """Input to retrieve the given shards for."""
+    input: GetShardInput!
+  ): [Shard!]!
+
+  """Retrieve general stake informations."""
+  stake: GlobalStake!
+
+  """Retrieve general network statistics."""
+  stats: Stats!
+
   """Retrieve all tags for the given input."""
   tags(
     """Input to retrieve the given tags for."""
@@ -1084,6 +2300,54 @@ type Query {
 
   """Retrieve all tags count."""
   tagsCount: Float!
+
+  """Retrieve token for the given input."""
+  token(
+    """Input to retrieve the given token for."""
+    input: GetTokenInput!
+  ): TokenDetailed
+
+  """Retrieve token accounts for the given input."""
+  tokenAccounts(
+    """Input to retrieve the given token for."""
+    input: GetTokenAccountsInput!
+  ): [TokenAccount!]
+
+  """Retrieve all token accounts count for the given input."""
+  tokenAccountsCount(
+    """Input to retrieve the given count for."""
+    input: GetTokenInput!
+  ): Float!
+
+  """Retrieve token roles for the given input."""
+  tokenRoles(
+    """Input to retrieve the given token for."""
+    input: GetTokenInput!
+  ): [TokenRoles!]
+
+  """Retrieve token roles for the given input."""
+  tokenRolesAddress(
+    """Input to retrieve the given token for."""
+    input: GetTokenRolesForIdentifierAndAddressInput!
+  ): TokenRoles
+
+  """Retrieve token supply for the given input."""
+  tokenSupply(
+    """Input to retrieve the given token for."""
+    input: GetTokenInput!
+  ): TokenSupplyResult
+
+  """Retrieve all tokens for the given input."""
+  tokens(
+    """Input to retrieve the given tokens for."""
+    input: GetTokensInput!
+  ): [TokenDetailed!]!
+
+  """Retrieve all tokens count for the given input."""
+  tokensCount(
+    """Input to retrieve the given count for."""
+    input: GetTokensCountInput!
+  ): Float!
 
   """Retrieve the detailed transaction for the given input."""
   transaction(
@@ -1117,6 +2381,46 @@ type Query {
 
   """Retrieve all addresses count that are in waiting."""
   waitingListCount: Float!
+
+  """Retrieve config used for accessing websocket on the same cluster."""
+  webSocketConfig: WebsocketConfig!
+}
+
+"""Round object type."""
+type Round {
+  """Block proposer for the given round."""
+  blockWasProposed: Boolean!
+
+  """Epoch for the given round."""
+  epoch: Float!
+
+  """Round number details."""
+  round: Float!
+
+  """Shard ID for the given round."""
+  shard: Float!
+
+  """Timestamp for the given round."""
+  timestamp: Float!
+}
+
+"""RoundDetailed object type."""
+type RoundDetailed {
+  """Block proposer for the given round."""
+  blockWasProposed: Boolean!
+
+  """Epoch for the given round."""
+  epoch: Float!
+
+  """Round number details."""
+  round: Float!
+
+  """Shard ID for the given round."""
+  shard: Float!
+  signers: [String!]!
+
+  """Timestamp for the given round."""
+  timestamp: Float!
 }
 
 """Scam information object type."""
@@ -1138,6 +2442,18 @@ enum ScamType {
 
   """Scam type."""
   scam
+}
+
+"""Shard object type."""
+type Shard {
+  """Total number of active validators."""
+  activeValidators: Float!
+
+  """Shard details."""
+  shard: Float!
+
+  """Total number of validators."""
+  validators: Float!
 }
 
 """Smart contract result object type."""
@@ -1209,6 +2525,33 @@ enum SortOrder {
   desc
 }
 
+"""Stats object type."""
+type Stats {
+  """Total number of accounts available on blockchain."""
+  accounts: Float!
+
+  """Total blocks available on blockchain."""
+  blocks: Float!
+
+  """Current epoch details."""
+  epoch: Float!
+
+  """RefreshRate details."""
+  refreshRate: Float!
+
+  """RoundPassed details."""
+  roundsPassed: Float!
+
+  """Rounds per epoch details."""
+  roundsPerEpoch: Float!
+
+  """Shards available on blockchain."""
+  shards: Float!
+
+  """Total number of transactions."""
+  transactions: Float!
+}
+
 """Tag object type."""
 type Tag {
   """Count for the given tag."""
@@ -1218,6 +2561,15 @@ type Tag {
   tag: String!
 }
 
+"""TokenAccount object type."""
+type TokenAccount {
+  """Token account address."""
+  address: String!
+
+  """Token balance account amount."""
+  balance: String!
+}
+
 """Token assets object type."""
 type TokenAssets {
   """Description for the given token assets."""
@@ -1225,6 +2577,9 @@ type TokenAssets {
 
   """Extra tokens for the given token assets."""
   extraTokens: [String!]
+
+  """Ledger signature for the given token assets."""
+  ledgerSignature: String
 
   """Locked accounts for the given token assets."""
   lockedAccounts: JSON
@@ -1240,6 +2595,132 @@ type TokenAssets {
 
   """Website for the given token assets."""
   website: String!
+}
+
+"""TokenDetailed object type."""
+type TokenDetailed {
+  """Token accounts list."""
+  accounts: Float!
+
+  """Token assests details."""
+  assets: TokenAssets
+
+  """Token burn amount details."""
+  burnt: String!
+
+  """Token canBurn property."""
+  canBurn: Boolean!
+
+  """Token canChangeOwner property."""
+  canChangeOwner: Boolean!
+
+  """Token canFreeze property."""
+  canFreeze: Boolean!
+
+  """Token canMint property."""
+  canMint: Boolean!
+
+  """Token canPause property."""
+  canPause: Boolean!
+
+  """Token canUpgrade property."""
+  canUpgrade: Boolean!
+
+  """Token canUpgrade property."""
+  canWipe: Boolean!
+
+  """Token circulating supply amount details."""
+  circulatingSupply: String
+
+  """Token decimals."""
+  decimals: Float!
+
+  """Token Identifier."""
+  identifier: String!
+
+  """Token initial minted amount details."""
+  initialMinted: String!
+
+  """Token isPause property."""
+  isPaused: Boolean!
+
+  """Current market cap details."""
+  marketCap: Float
+
+  """Token minted amount details."""
+  minted: String!
+
+  """Token name."""
+  name: String!
+
+  """Token owner address."""
+  owner: String!
+
+  """Current token price."""
+  price: Float
+
+  """Token roles details."""
+  roles: [TokenRoles!]
+
+  """Token supply amount details."""
+  supply: String
+
+  """Token ticker."""
+  ticker: String!
+
+  """Tokens transactions."""
+  transactions: Float
+}
+
+"""TokenRoles object type."""
+type TokenRoles {
+  """Token address with role."""
+  address: String
+
+  """Token canLocalBurn property."""
+  canLocalBurn: Boolean!
+
+  """Token canLocalMint property."""
+  canLocalMint: Boolean!
+
+  """Token roles details."""
+  roles: [String!]!
+}
+
+"""Token Sort object type."""
+enum TokenSort {
+  """Accounts sort."""
+  accounts
+
+  """MarketCap sort."""
+  marketCap
+
+  """Price sort."""
+  price
+
+  """Transactions sort."""
+  transactions
+}
+
+"""TokenSupplyResult object type."""
+type TokenSupplyResult {
+  """Token burnt."""
+  burnt: String!
+
+  """Token circulating supply."""
+  circulatingSupply: String!
+
+  """Token initial minted."""
+  initialMinted: String!
+
+  """Token locked accounts."""
+  lockedAccounts: [EsdtLockedAccount!]!
+
+  """Token minted details."""
+  minted: String!
+
+  """Token supply."""
+  supply: String!
 }
 
 """Token type object type."""
@@ -1320,7 +2801,7 @@ type TransactionDetailed {
   receiverAccount: Account!
 
   """Receiver account for the given transaction."""
-  receiverAddress: Account!
+  receiverAddress: String!
 
   """Smart contract results for the given detailed transaction."""
   results: [SmartContractResult!]
@@ -1576,4 +3057,10 @@ type WaitingList {
 
   """Value details."""
   value: Float!
+}
+
+"""WebsocketConfig object type."""
+type WebsocketConfig {
+  """Cluster url."""
+  url: String!
 }

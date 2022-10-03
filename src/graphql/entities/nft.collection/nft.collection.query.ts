@@ -5,10 +5,11 @@ import { CollectionFilter } from "src/endpoints/collections/entities/collection.
 import { GetNftCollectionInput, GetNftCollectionsCountInput, GetNftCollectionsInput } from "src/graphql/entities/nft.collection/nft.collection.input";
 import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { NotFoundException } from "@nestjs/common";
 
 @Resolver()
 export class NftCollectionQuery {
-  constructor(protected readonly collectionService: CollectionService) {}
+  constructor(protected readonly collectionService: CollectionService) { }
 
   @Query(() => Float, { name: "collectionsCount", description: "Retrieve all NFT collections count for the given input." })
   public async getNftCollectionsCount(@Args("input", { description: "Input to retrieve the given NFT collections count for." }) input: GetNftCollectionsCountInput): Promise<number> {
@@ -30,12 +31,18 @@ export class NftCollectionQuery {
         canUpdateAttributes: input.canUpdateAttributes,
         canAddUri: input.canAddUri,
         canTransferRole: input.canTransferRole,
-      }), 
+      }),
     );
   }
 
   @Query(() => NftCollection, { name: "collection", description: "Retrieve the NFT collection for the given input.", nullable: true })
   public async getNftCollection(@Args("input", { description: "Input to retrieve the given NFT collection for." }) input: GetNftCollectionInput): Promise<NftCollection | undefined> {
-    return await this.collectionService.getNftCollection(GetNftCollectionInput.resolve(input));
+    const collection = await this.collectionService.getNftCollection(GetNftCollectionInput.resolve(input));
+
+    if (!collection) {
+      throw new NotFoundException('Collection not found');
+    }
+
+    return collection;
   }
 }
