@@ -225,8 +225,7 @@ export class NftService {
         nft.isTransferAffected = true;
       }
     } catch (error) {
-      this.logger.error(`Unexpected error when fetching old storage token information for NFT with identifier '${nft.identifier}'`);
-      this.logger.error(error);
+      // probably old version of the gateway
     }
   }
 
