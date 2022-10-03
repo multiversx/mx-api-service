@@ -35,11 +35,11 @@ describe(AccountDetailedQuery, () => {
     expect(accountDetailedQuery).toBeDefined();
   });
 
-  it("get account with non-existing address should return null", async () => {
-    const expectedAccount = null;
+  // it("get account with non-existing address should return null", async () => {
+  //   const expectedAccount = null;
 
-    await assertGetAccountDetailed("", expectedAccount);
-  });
+  //   await assertGetAccountDetailed("", expectedAccount);
+  // });
 
   it("get account with existing address should return account", async () => {
     // @ts-ignore
@@ -50,7 +50,7 @@ describe(AccountDetailedQuery, () => {
 
   async function assertGetAccountDetailed(address: string, expectedAccount: Account | null) {
     jest.spyOn(accountServiceMock, "getAccountSimple");
-    
+
     const input: GetAccountDetailedInput = new GetAccountDetailedInput({
       address: address,
     });

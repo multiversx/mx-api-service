@@ -3,7 +3,7 @@ import { AccountUsername } from "src/endpoints/usernames/entities/account.userna
 import { GetUsernameInput } from "./username.input";
 import { UsernameService } from "src/endpoints/usernames/username.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
-import { HttpException, HttpStatus } from "@nestjs/common";
+import { NotFoundException } from "@nestjs/common";
 
 @Resolver()
 export class UsernameQuery {
@@ -17,7 +17,7 @@ export class UsernameQuery {
     const address = await this.usernameAccount.getUsernameAddressRaw(GetUsernameInput.resolve(input));
 
     if (!address) {
-      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Address not found');
     }
 
     return this.accountService.getAccountSimple(address);
