@@ -155,7 +155,7 @@ export class CollectionController {
   ): Promise<NftCollection> {
     const token = await this.collectionService.getNftCollection(collection);
     if (token === undefined) {
-      throw new HttpException('NFT collection not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
     }
 
     return token;
@@ -197,7 +197,7 @@ export class CollectionController {
   ): Promise<Nft[]> {
     const isCollection = await this.collectionService.isCollection(collection);
     if (!isCollection) {
-      throw new HttpException('NFT Collection not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
     }
 
     const options = NftQueryOptions.enforceScamInfoFlag(size, new NftQueryOptions({ withOwner, withSupply, withScamInfo, computeScamInfo }));
@@ -211,6 +211,7 @@ export class CollectionController {
   @Get("/collections/:collection/nfts/count")
   @ApiOperation({ summary: 'Collection NFT count', description: 'Returns non-fungible/semi-fungible/meta-esdt token count that belong to a collection' })
   @ApiOkResponse({ type: Number })
+  @ApiNotFoundResponse({ description: 'Token collection not found' })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
@@ -230,7 +231,7 @@ export class CollectionController {
   ): Promise<number> {
     const isCollection = await this.collectionService.isCollection(collection);
     if (!isCollection) {
-      throw new HttpException('NFT Collection not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
     }
 
     return await this.nftService.getNftCount(new NftFilter({ search, identifiers, collection, name, tags, creator, isWhitelistedStorage, hasUris }));
@@ -259,6 +260,7 @@ export class CollectionController {
   @ApiOperation({ summary: 'Collection transactions', description: `Returns a list of transactions for a specific collection.` })
   @ApplyComplexity({ target: TransactionDetailed })
   @ApiOkResponse({ type: [Transaction] })
+  @ApiNotFoundResponse({ description: 'Collection not found' })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
@@ -299,6 +301,10 @@ export class CollectionController {
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
   ) {
     const options = TransactionQueryOptions.enforceScamInfoFlag(size, { withScResults, withOperations, withLogs, withScamInfo });
+    const isCollection = await this.collectionService.isCollection(identifier);
+    if (!isCollection) {
+      throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
+    }
 
     return await this.transactionService.getTransactions(new TransactionFilter({
       sender,
@@ -320,6 +326,7 @@ export class CollectionController {
   @Get("/collections/:collection/transactions/count")
   @ApiOperation({ summary: 'NFT transactions count', description: 'Returns the total number of transactions for a specific collection' })
   @ApiOkResponse({ type: Number })
+  @ApiNotFoundResponse({ description: 'Collection not found' })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
@@ -343,6 +350,10 @@ export class CollectionController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ) {
+    const isCollection = await this.collectionService.isCollection(identifier);
+    if (!isCollection) {
+      throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
+    }
 
     return await this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
