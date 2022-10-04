@@ -19,4 +19,5 @@ export class NftFilter {
   after?: number;
   isWhitelistedStorage?: boolean;
   isNsfw?: boolean;
+  traits?: Record<string, string>;
 }
