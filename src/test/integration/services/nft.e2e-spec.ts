@@ -705,6 +705,17 @@ describe('Nft Service', () => {
       }
     });
 
+    it("should return a list of NonFungibleESDT based on a specific identifier for a specific address and isTransferAffected should not be defined", async () => {
+      const address: string = "erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k";
+      const filter = new NftFilter({ identifiers: ['CATSFAM-46c28f-0944'] });
+
+      const nfts = await nftService.getNftsForAddress(address, { from: 0, size: 1 }, filter);
+
+      for (const nft of nfts) {
+        expect(nft.isTransferAffected).not.toBeDefined();
+      }
+    });
+
     it("should return scam info for NFT", async () => {
       const identifier = 'LOTTERY-7cae2f-01';
 

@@ -172,6 +172,12 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
     }
 
+    if (filter.traits !== undefined) {
+      for (const [key, value] of Object.entries(filter.traits)) {
+        elasticQuery = elasticQuery.withMustMatchCondition('nft_traitValues', `${key}_${value}`);
+      }
+    }
+
     if (filter.isNsfw !== undefined) {
       const nsfwThreshold = this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
 
