@@ -52,6 +52,7 @@ describe('Nft Service', () => {
     score: undefined,
     isNsfw: undefined,
     rank: undefined,
+    isTransferAffected: true,
   };
 
   beforeAll(async () => {
@@ -524,6 +525,17 @@ describe('Nft Service', () => {
       expect(result.type).toStrictEqual(NftType.NonFungibleESDT);
       expect(result.identifier).toStrictEqual("EROBOT-527a29-c4");
       expect(result.creator).toBeDefined();
+    });
+
+    it("should returns NFT details for a specific NonFungibleESDT identifier and isTransferAffected property should be defined", async () => {
+      const identifier: string = "CATSFAM-46c28f-0211";
+      const result = await nftService.getSingleNft(identifier);
+
+      if (!result) {
+        throw new Error("Properties are not defined");
+      }
+
+      expect(result.isTransferAffected).toBeDefined();
     });
 
     it('should return undefined', async () => {
