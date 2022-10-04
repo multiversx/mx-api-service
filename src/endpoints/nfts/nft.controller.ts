@@ -125,12 +125,13 @@ export class NftController {
     @Query('tags', ParseArrayPipe) tags?: string[],
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('isWhitelistedStorage', new ParseBoolPipe) isWhitelistedStorage?: boolean,
-    @Query('isNsfw', new ParseBoolPipe) isNsfw?: boolean,
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
+    @Query('isNsfw', new ParseBoolPipe) isNsfw?: boolean,
+    @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
   ): Promise<number> {
-    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, before, after }));
+    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after }));
   }
 
   @Get('/nfts/:identifier')
