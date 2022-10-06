@@ -311,6 +311,17 @@ describe('Nft Service', () => {
         expect(result.timestamp).toBeGreaterThanOrEqual(1654630698);
       }
     });
+
+    it('should return 10 NFTS that contains nonce equal with 200', async () => {
+      const filter = new NftFilter();
+      filter.nonce = 200;
+
+      const results = await nftService.getNfts({ from: 0, size: 10 }, filter);
+
+      for (const result of results) {
+        expect(result.nonce).toStrictEqual(200);
+      }
+    });
   });
 
   describe("NFT Count", () => {
@@ -379,6 +390,14 @@ describe('Nft Service', () => {
 
       const count = await nftService.getNftCount(filters);
       expect(count).toStrictEqual(10000);
+    });
+
+    it("should return total number of NFTs that contains nonce equal with 200 ", async () => {
+      const filters = new NftFilter();
+      filters.nonce = 200;
+
+      const count = await nftService.getNftCount(filters);
+      expect(count).toBeGreaterThanOrEqual(450);
     });
 
     it(`should return total number of nfts from address with type MetaESDT`, async () => {
