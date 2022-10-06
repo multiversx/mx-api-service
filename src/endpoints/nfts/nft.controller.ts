@@ -98,6 +98,8 @@ export class NftController {
   @ApiQuery({ name: 'traits', description: 'Filter NFTs by traits. Key-value format (<key1>:<value1>;<key2>:<value2>)', required: false, type: Boolean })
   @ApiQuery({ name: 'before', description: 'Return all NFTs before given timestamp', required: false, type: Number })
   @ApiQuery({ name: 'after', description: 'Return all NFTs after given timestamp', required: false, type: Number })
+  @ApiQuery({ name: 'nonce', description: 'Return all NFTs with given nonce', required: false, type: Number })
+
   async getNftCount(
     @Query('search') search?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
@@ -112,8 +114,10 @@ export class NftController {
     @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
+    @Query('nonce', new ParseIntPipe) nonce?: number,
+
   ): Promise<number> {
-    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after }));
+    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after, nonce }));
   }
 
   @Get("/nfts/c")
@@ -132,8 +136,10 @@ export class NftController {
     @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
+    @Query('nonce', new ParseIntPipe) nonce?: number,
+
   ): Promise<number> {
-    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after }));
+    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after, nonce }));
   }
 
   @Get('/nfts/:identifier')
