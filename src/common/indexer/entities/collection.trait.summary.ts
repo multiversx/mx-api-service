@@ -3,6 +3,6 @@ import { CollectionTraitSummaryAttribute } from "./collection.trait.summary.attr
 export class CollectionTraitSummary {
   name: string = '';
   occurrenceCount: number = 0;
-  occurrencePercenta: number = 0;
+  occurrencePercentage: number = 0;
   attributes: CollectionTraitSummaryAttribute[] = [];
 }
