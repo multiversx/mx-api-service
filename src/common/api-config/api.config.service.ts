@@ -19,6 +19,15 @@ export class ApiConfigService {
     return apiUrls;
   }
 
+  getApiUrl(): string {
+    const apiUrl = this.configService.get<string>('urls.apiUrl');
+    if (!apiUrl) {
+      throw new Error('No API url present');
+    }
+
+    return apiUrl;
+  }
+
   getGatewayUrl(): string {
     const gatewayUrls = this.configService.get<string[]>('urls.gateway');
     if (!gatewayUrls) {
@@ -233,7 +242,11 @@ export class ApiConfigService {
   }
 
   getDataUrl(): string | undefined {
-    return this.configService.get<string>('urls.dataUrl');
+    return this.configService.get<string>('urls.data');
+  }
+
+  getDataApiUrl(): string | undefined {
+    return this.configService.get<string>('urls.dataApi');
   }
 
   getTempUrl(): string {
@@ -336,6 +349,15 @@ export class ApiConfigService {
     }
 
     return exchange;
+  }
+
+  getSignerPrivateKeyPath(): string {
+    const signerPrivateKeyPath = this.configService.get<string>('signerPrivateKeyPath');
+    if (!signerPrivateKeyPath) {
+      throw new Error('No signerPrivateKeyPath present');
+    }
+
+    return signerPrivateKeyPath;
   }
 
   getIsProcessNftsFlagActive(): boolean {

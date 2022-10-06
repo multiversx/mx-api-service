@@ -48,6 +48,7 @@ urls:
     - 'https://mex-indexer.elrond.com'
   gateway:
     - 'https://gateway.elrond.com'
+  apiUrl: 'https://api.elrond.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
   providers: 'https://delegation-api.elrond.com/providers'
@@ -57,6 +58,7 @@ urls:
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'socket-fra.elrond.com'
+  dataApi: 'https://tools.elrond.com/data-api/graphql'
 indexer:
   type: 'elastic'
   maxPagination: 10000
@@ -101,3 +103,4 @@ nftProcess:
 transaction-action:
   mex:
     microServiceUrl: 'https://graph.maiar.exchange/graphql'
+signerPrivateKeyPath: ''

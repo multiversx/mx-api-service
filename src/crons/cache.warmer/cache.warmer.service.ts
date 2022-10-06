@@ -184,7 +184,7 @@ export class CacheWarmerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleCurrentPriceInvalidations() {
-    if (this.apiConfigService.getDataUrl()) {
+    if (this.apiConfigService.getDataApiUrl()) {
       await Locker.lock('Current price invalidations', async () => {
         const currentPrice = await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price);
         await this.invalidateKey(CacheInfo.CurrentPrice.key, currentPrice, CacheInfo.CurrentPrice.ttl);
