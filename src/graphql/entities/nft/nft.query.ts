@@ -37,6 +37,7 @@ export class NftQuery {
         hasUris: input.hasUris,
         isWhitelistedStorage: input.isWhitelistedStorage,
         isNsfw: input.isNsfw,
+        nonce: input.nonce,
       }),
       new NftQueryOptions({
         withOwner: input.withOwner,

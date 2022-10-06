@@ -708,6 +708,9 @@ input GetNftsCountInput {
   """Name to retrieve for the given result set."""
   name: String
 
+  """Nonce to retrieve for the given result set."""
+  nonce: Float
+
   """NFT identifier to retrieve for the given result set."""
   search: String
 
@@ -751,6 +754,9 @@ input GetNftsInput {
 
   """Name to retrieve for the given result set."""
   name: String
+
+  """Nonce to retrieve for the given result set."""
+  nonce: Float
 
   """NFT identifier to retrieve for the given result set."""
   search: String
