@@ -68,6 +68,14 @@ export class ApiConfigService {
     return url;
   }
 
+  getMaiarIdUrl(): string {
+    const maiarIdUrl = this.configService.get<string>('urls.maiarId');
+    if (!maiarIdUrl) {
+      throw new Error('No maiarId url present');
+    }
+    return maiarIdUrl;
+  }
+
   getEsdtContractAddress(): string {
     const address = this.configService.get<string>('contracts.esdt');
     if (!address) {

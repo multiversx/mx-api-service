@@ -43,6 +43,10 @@ export class Transaction {
   @Field(() => Account, { description: "Receiver account for the given transaction." })
   receiverAccount: Account | undefined = undefined;
 
+  @Field(() => String, { name: "receiverHerotag", description: "Sender herotag for the given transaction." })
+  @ApiProperty({ type: String })
+  receiverHerotag: string = '';
+
   @ApiProperty({ type: AccountAssets, nullable: true })
   receiverAssets: AccountAssets | undefined = undefined;
 
@@ -59,6 +63,10 @@ export class Transaction {
 
   @Field(() => Account, { description: "Sender account for the given transaction." })
   senderAccount: Account | undefined = undefined;
+
+  @Field(() => String, { name: "senderHerotag", description: "Sender herotag for the given transaction." })
+  @ApiProperty({ type: String })
+  senderHerotag: string = '';
 
   @ApiProperty({ type: AccountAssets, nullable: true })
   senderAssets: AccountAssets | undefined = undefined;

@@ -16,6 +16,10 @@ export class TransactionLog {
   @ApiProperty()
   address: string = '';
 
+  @Field(() => String, { description: 'Account herotag for the given transaction log.' })
+  @ApiProperty()
+  addressHerotag: string = '';
+
   @Field(() => AccountAssets, { description: 'Account assets for the given transaction log.', nullable: true })
   @ApiProperty({ type: AccountAssets, nullable: true })
   addressAssets: AccountAssets | undefined = undefined;

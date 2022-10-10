@@ -18,7 +18,7 @@ import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.com
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
-import { AddressUtils, ApiUtils, Constants, CachingService, PendingExecuter } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiUtils, Constants, CachingService, PendingExecuter, ApiService } from '@elrondnetwork/erdnest';
 import { TransactionUtils } from './transaction.utils';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TransactionOperation } from './entities/transaction.operation';
@@ -26,6 +26,7 @@ import { AssetsService } from 'src/common/assets/assets.service';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
 import crypto from 'crypto-js';
 import { OriginLogger } from '@elrondnetwork/erdnest';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
 
 @Injectable()
 export class TransactionService {
@@ -44,6 +45,8 @@ export class TransactionService {
     @Inject(forwardRef(() => TransactionActionService))
     private readonly transactionActionService: TransactionActionService,
     private readonly assetsService: AssetsService,
+    private readonly apiConfigService: ApiConfigService,
+    private readonly apiService: ApiService,
   ) { }
 
   async getTransactionCountForAddress(address: string): Promise<number> {
@@ -78,6 +81,8 @@ export class TransactionService {
 
     for (const elasticTransaction of elasticTransactions) {
       const transaction = ApiUtils.mergeObjects(new Transaction(), elasticTransaction);
+      transaction.senderHerotag = await this.applyAddressHerotag(transaction.sender);
+      transaction.receiverHerotag = await this.applyAddressHerotag(transaction.receiver);
 
       transactions.push(transaction);
     }
@@ -116,6 +121,9 @@ export class TransactionService {
 
     if (transaction !== null) {
       transaction.price = await this.getTransactionPrice(transaction);
+
+      transaction.senderHerotag = await this.applyAddressHerotag(transaction.sender);
+      transaction.receiverHerotag = await this.applyAddressHerotag(transaction.receiver);
 
       await this.processTransactions([transaction], true);
 
@@ -158,6 +166,9 @@ export class TransactionService {
       for (const result of transaction.results) {
         result.senderAssets = accountAssets[result.sender];
         result.receiverAssets = accountAssets[result.receiver];
+
+        result.senderHerotag = await this.applyAddressHerotag(result.sender);
+        result.receiverHerotag = await this.applyAddressHerotag(result.receiver);
       }
     }
 
@@ -165,20 +176,34 @@ export class TransactionService {
       for (const operation of transaction.operations) {
         if (operation.sender) {
           operation.senderAssets = accountAssets[operation.sender];
+          operation.senderHerotag = await this.applyAddressHerotag(operation.sender);
         }
 
         if (operation.receiver) {
           operation.receiverAssets = accountAssets[operation.receiver];
+          operation.receiverHerotag = await this.applyAddressHerotag(operation.receiver);
         }
       }
     }
 
     if (transaction.logs) {
       transaction.logs.addressAssets = accountAssets[transaction.logs.address];
+      transaction.logs.addressHerotag = await this.applyAddressHerotag(transaction.logs.address);
 
       for (const event of transaction.logs.events) {
         event.addressAssets = accountAssets[event.address];
       }
+    }
+  }
+
+  private async applyAddressHerotag(address: string): Promise<any> {
+    try {
+      const { data: { herotag } } = await this.apiService.get(`${this.apiConfigService.getMaiarIdUrl()}/${address}`);
+
+      return herotag;
+    } catch (error) {
+      this.logger.error(error);
+      this.logger.error(`Error when getting account details for address '${address}'`);
     }
   }
 
@@ -271,6 +296,7 @@ export class TransactionService {
     const scResults = await this.indexerService.getScResultsForTransactions(elasticTransactions) as any;
     for (const scResult of scResults) {
       scResult.hash = scResult.scHash;
+      scResult.receiverHerotag = await this.applyAddressHerotag(scResult.receiver);
 
       delete scResult.scHash;
     }
@@ -296,9 +322,13 @@ export class TransactionService {
         }
 
         const transactionLogs: TransactionLog[] = logs.filter((log) => transactionHashes.includes(log.id ?? ''));
-
         transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, transactionLogs);
         transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
+
+        for (const item of transactionDetailed.operations) {
+          item.senderHerotag = await this.applyAddressHerotag(item.sender);
+          item.receiverHerotag = await this.applyAddressHerotag(item.receiver);
+        }
       }
 
       if (queryOptions.withLogs) {
