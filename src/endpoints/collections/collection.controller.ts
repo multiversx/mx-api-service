@@ -196,6 +196,8 @@ export class CollectionController {
     @Query('isNsfw', new ParseBoolPipe) isNsfw?: boolean,
     @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
     @Query('nonce', new ParseIntPipe) nonce?: number,
+    @Query('nonceBefore', new ParseIntPipe) nonceBefore?: number,
+    @Query('nonceAfter', new ParseIntPipe) nonceAfter?: number,
     @Query('withOwner', new ParseBoolPipe) withOwner?: boolean,
     @Query('withSupply', new ParseBoolPipe) withSupply?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
@@ -210,7 +212,7 @@ export class CollectionController {
 
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
-      new NftFilter({ search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, nonce }),
+      new NftFilter({ search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, nonce, nonceAfter, nonceBefore }),
       options);
   }
 
