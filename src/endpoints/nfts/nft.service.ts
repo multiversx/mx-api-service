@@ -53,9 +53,9 @@ export class NftService {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
     this.DEFAULT_MEDIA = [
       {
-        url: 'https://media.elrond.com/nfts/thumbnail/default.png',
-        originalUrl: 'https://media.elrond.com/nfts/thumbnail/default.png',
-        thumbnailUrl: 'https://media.elrond.com/nfts/thumbnail/default.png',
+        url: NftMediaService.NFT_THUMBNAIL_DEFAULT,
+        originalUrl: NftMediaService.NFT_THUMBNAIL_DEFAULT,
+        thumbnailUrl: NftMediaService.NFT_THUMBNAIL_DEFAULT,
         fileType: 'image/png',
         fileSize: 29512,
       },

@@ -101,7 +101,9 @@ export class NftQueueController {
       }
 
       if (nft.media && !settings.skipRefreshThumbnail) {
-        await Promise.all(nft.media.map((media: any) => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
+        const mediaItems = nft.media.filter(x => x.thumbnailUrl !== NftMediaService.NFT_THUMBNAIL_DEFAULT);
+
+        await Promise.all(mediaItems.map(media => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
       }
 
       this.logger.log({ type: 'consumer end', identifier: data.identifier });
