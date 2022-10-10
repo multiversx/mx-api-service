@@ -221,6 +221,10 @@ describe('Transaction Utils', () => {
       receiver: "erd1f04mhj7mjedkd4snav6zpyjtlgqpnp8hv5ex4sw38wck9ep09s8qhh5k5v",
       value: "25000000",
       decimals: 6,
+      receiverAssets: undefined,
+      receiverHerotag: "",
+      senderAssets: undefined,
+      senderHerotag: "",
     });
   });
 });
