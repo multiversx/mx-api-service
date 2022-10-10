@@ -395,9 +395,10 @@ describe('Nft Service', () => {
     it("should return total number of NFTs that contains nonce equal with 200 ", async () => {
       const filters = new NftFilter();
       filters.nonce = 200;
+      filters.before = 1665180888;
 
       const count = await nftService.getNftCount(filters);
-      expect(count).toBeGreaterThanOrEqual(450);
+      expect(count).toStrictEqual(755);
     });
 
     it(`should return total number of nfts from address with type MetaESDT`, async () => {
