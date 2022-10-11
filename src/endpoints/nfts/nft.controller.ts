@@ -46,8 +46,6 @@ export class NftController {
   @ApiQuery({ name: 'traits', description: 'Filter NFTs by traits. Key-value format (<key1>:<value1>;<key2>:<value2>)', required: false, type: Boolean })
   @ApiQuery({ name: 'before', description: 'Return all NFTs before given timestamp', required: false, type: Number })
   @ApiQuery({ name: 'after', description: 'Return all NFTs after given timestamp', required: false, type: Number })
-  @ApiQuery({ name: 'nonceBefore', description: 'Return all NFTs with given nonce before the given number', required: false, type: Number })
-  @ApiQuery({ name: 'nonceAfter', description: 'Return all NFTs with given nonce after the given number', required: false, type: Number })
   @ApiQuery({ name: 'withOwner', description: 'Return owner where type = NonFungibleESDT', required: false, type: Boolean })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false, type: Boolean })
   @ApiQuery({ name: 'withScamInfo', required: false, type: Boolean })
@@ -68,8 +66,6 @@ export class NftController {
     @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
-    @Query('nonceBefore', new ParseIntPipe) nonceBefore?: number,
-    @Query('nonceAfter', new ParseIntPipe) nonceAfter?: number,
     @Query('withOwner', new ParseBoolPipe) withOwner?: boolean,
     @Query('withSupply', new ParseBoolPipe) withSupply?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
@@ -79,7 +75,7 @@ export class NftController {
 
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
-      new NftFilter({ search, identifiers, type, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, before, after, nonceBefore, nonceAfter }),
+      new NftFilter({ search, identifiers, type, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, before, after }),
       options
     );
   }
@@ -100,8 +96,6 @@ export class NftController {
   @ApiQuery({ name: 'traits', description: 'Filter NFTs by traits. Key-value format (<key1>:<value1>;<key2>:<value2>)', required: false, type: Boolean })
   @ApiQuery({ name: 'before', description: 'Return all NFTs before given timestamp', required: false, type: Number })
   @ApiQuery({ name: 'after', description: 'Return all NFTs after given timestamp', required: false, type: Number })
-  @ApiQuery({ name: 'nonceBefore', description: 'Return all NFTs with given nonce before the given number', required: false, type: Number })
-  @ApiQuery({ name: 'nonceAfter', description: 'Return all NFTs with given nonce after the given number', required: false, type: Number })
   async getNftCount(
     @Query('search') search?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
@@ -116,10 +110,8 @@ export class NftController {
     @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
-    @Query('nonceBefore', new ParseIntPipe) nonceBefore?: number,
-    @Query('nonceAfter', new ParseIntPipe) nonceAfter?: number,
   ): Promise<number> {
-    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after, nonceBefore, nonceAfter }));
+    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after }));
   }
 
   @Get("/nfts/c")
@@ -138,10 +130,8 @@ export class NftController {
     @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
-    @Query('nonceBefore', new ParseIntPipe) nonceBefore?: number,
-    @Query('nonceAfter', new ParseIntPipe) nonceAfter?: number,
   ): Promise<number> {
-    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after, nonceBefore, nonceAfter }));
+    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after }));
   }
 
   @Get('/nfts/:identifier')
