@@ -1,19 +1,15 @@
-import { Test } from "@nestjs/testing";
-import { CollectionService } from "src/endpoints/collections/collection.service";
-import { PublicAppModule } from "src/public.app.module";
-import { NftCollection } from 'src/endpoints/collections/entities/nft.collection';
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
-import { NftCollectionAccount } from 'src/endpoints/collections/entities/nft.collection.account';
-import { NftCollectionRole } from 'src/endpoints/collections/entities/nft.collection.role';
-import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
+import { Test } from "@nestjs/testing";
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { ElasticQuery, ElasticService } from '@elrondnetwork/erdnest';
-import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
-import { NftType } from "src/endpoints/nfts/entities/nft.type";
-import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
+import { CollectionService } from "src/endpoints/collections/collection.service";
+import { CollectionFilter } from 'src/endpoints/collections/entities/collection.filter';
+import { PublicAppModule } from "src/public.app.module";
+import { IndexerService } from "src/common/indexer/indexer.service";
+import { NftCollection } from 'src/endpoints/collections/entities/nft.collection';
+import { ElasticService, TokenUtils } from '@elrondnetwork/erdnest';
+import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 
-describe.skip('Collection Service', () => {
+describe('Collection Service', () => {
   let collectionService: CollectionService;
 
   beforeAll(async () => {
@@ -26,367 +22,186 @@ describe.skip('Collection Service', () => {
 
   beforeEach(() => { jest.restoreAllMocks(); });
 
-  describe('getNftCollections', () => {
-    it('should return 10 NonFungibleESDTs collections', async () => {
-      const filter = new CollectionFilter();
-      filter.type = [NftType.NonFungibleESDT];
-      const results = await collectionService.getNftCollections({ from: 0, size: 10 }, filter);
+  describe('isCollection', () => {
+    it('should return true if collection identifier contain collection format', async () => {
+      const collectionIdentifier: string = "EBULB-36c762";
 
-      expect(results.length).toStrictEqual(10);
-
-      for (const result of results) {
-        expect(result.type).toStrictEqual('NonFungibleESDT');
-        expect(result).toHaveStructure(Object.keys(new NftCollection()));
-      }
+      const result = await collectionService.isCollection(collectionIdentifier);
+      expect(result).toStrictEqual(true);
     });
 
-    it('should return 10 SemiFungibleESDTs collections', async () => {
-      const filter = new CollectionFilter();
-      filter.type = [NftType.SemiFungibleESDT];
-      const results = await collectionService.getNftCollections({ from: 0, size: 10 }, filter);
+    it('should return false if collection identifier is not in correct format', async () => {
+      const collectionIdentifier: string = "EBULB-36c762-e2";
 
-      expect(results.length).toStrictEqual(10);
-
-      for (const result of results) {
-        expect(result.type).toStrictEqual('SemiFungibleESDT');
-        expect(result).toHaveStructure(Object.keys(new NftCollection()));
-      }
-    });
-
-    it('should return 10 MetaESDTs collections', async () => {
-      const filter = new CollectionFilter();
-      filter.type = [NftType.MetaESDT];
-      const results = await collectionService.getNftCollections({ from: 0, size: 10 }, filter);
-
-      expect(results.length).toStrictEqual(10);
-
-      for (const result of results) {
-        expect(result.type).toStrictEqual('MetaESDT');
-        expect(result).toHaveStructure(Object.keys(new NftCollection()));
-      }
-    });
-
-    it('should returns a list of collections of type MetaESDT and SemiFungibleESDTs', async () => {
-      const filter = new CollectionFilter();
-      filter.type = [NftType.MetaESDT, NftType.SemiFungibleESDT];
-      const results = await collectionService.getNftCollections({ from: 0, size: 50 }, filter);
-      const collectionTypes = results.map((result) => result.type);
-
-      expect(collectionTypes.includes(NftType.MetaESDT)).toBeTruthy();
-      expect(collectionTypes.includes(NftType.SemiFungibleESDT)).toBeTruthy();
+      const result = await collectionService.isCollection(collectionIdentifier);
+      expect(result).toStrictEqual(false);
     });
   });
 
-  describe('applyPropertiesToCollections', () => {
-    it('should apply proprieties to a specific collection', async () => {
-      const results = await collectionService.applyPropertiesToCollections(["EROBOT-527a29", "COLLARV2-467a53"]);
-
-      expect(results.length).toStrictEqual(2);
-
-      for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new NftCollection()));
-      }
+  describe('getNftCollections', () => {
+    it('should return a list of 1 collection with details filtered by timestamp', async () => {
+      const filter = new CollectionFilter();
+      filter.after = 1665508932;
+      filter.before = 1665508932;
+      const results = await collectionService.getNftCollections(new QueryPagination({ size: 1 }), filter);
+      const collection = results.map((result) => result.collection);
+      expect(collection.includes("SURACING-8f6ed4")).toBeTruthy();
     });
+  });
 
-    it('should apply properties to a specific collection of type MetaESDT', async () => {
-      const results = await collectionService.applyPropertiesToCollections(["UTKWEGLDF-5b9d50"]);
+  describe('getNftCollectionsByIds', () => {
+    it('should return collection details based on collection identifiers', async () => {
+      const identifiers: string[] = ["EBULB-36c762", "SURACING-8f6ed4"];
+      const results = await collectionService.getNftCollectionsByIds(identifiers);
+      const collectionIds = results.map((result) => result.collection);
 
-      for (const result of results) {
-        expect(result.type).toStrictEqual('MetaESDT');
-        expect(result).toHaveStructure(Object.keys(new NftCollection()));
-      }
-    });
-
-    it('should return undefined because test simulates that collection properties are not defined', async () => {
-      const onResolver = { undefined };
-
-      jest.spyOn(CollectionService.prototype, 'batchGetCollectionsProperties')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_collectionsIdentifiers: string[]) => Promise.resolve(onResolver)));
-
-      const results = await collectionService.applyPropertiesToCollections(['']);
-
-      expect(results).toStrictEqual([]);
+      expect(collectionIds.includes("EBULB-36c762")).toBeTruthy();
+      expect(collectionIds.includes("SURACING-8f6ed4")).toBeTruthy();
     });
   });
 
   describe('getNftCollectionCount', () => {
-    it('should return total number of collections of type NonFungibleESDT', async () => {
-      const filter = new CollectionFilter();
-      filter.type = [NftType.NonFungibleESDT];
-
-      jest.spyOn(ElasticService.prototype, 'getCount')
+    it('should return total collections count (default)', async () => {
+      jest
+        .spyOn(IndexerService.prototype, 'getNftCollectionCount')
         // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_collection: string, _elasticQuery: ElasticQuery | undefined) => 4821));
+        .mockImplementation(jest.fn(async (_filter: CollectionFilter) => 5100));
 
-      const result = await collectionService.getNftCollectionCount(filter);
-
-      expect(result).toStrictEqual(4821);
-    });
-
-    it('should return total number of collections of type SemiFungibleESDT', async () => {
-      const filter = new CollectionFilter();
-      filter.type = [NftType.SemiFungibleESDT];
-
-      jest.spyOn(ElasticService.prototype, 'getCount')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_collection: string, _elasticQuery: ElasticQuery | undefined) => 860));
-
-      const result = await collectionService.getNftCollectionCount(filter);
-
-      expect(result).toStrictEqual(860);
-    });
-
-    it('should return total number of collections of type MetaESDT', async () => {
-      const filter = new CollectionFilter();
-      filter.type = [NftType.MetaESDT];
-
-      jest.spyOn(ElasticService.prototype, 'getCount')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_collection: string, _elasticQuery: ElasticQuery | undefined) => 30));
-
-      const result = await collectionService.getNftCollectionCount(filter);
-
-      expect(result).toStrictEqual(30);
-    });
-
-    it('should returns total number of collections of type MetaESDT and NonFungibleESDT', async () => {
-      const filter = new CollectionFilter();
-      filter.type = [NftType.NonFungibleESDT, NftType.MetaESDT];
-
-      jest.spyOn(ElasticService.prototype, 'getCount')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_collection: string, _elasticQuery: ElasticQuery | undefined) => 4851));
-
-      const result = await collectionService.getNftCollectionCount(filter);
-
-      expect(result).toStrictEqual(4851);
+      const results = await collectionService.getNftCollectionCount(new CollectionFilter());
+      expect(results).toStrictEqual(5100);
     });
   });
 
   describe('getNftCollection', () => {
     it('should return collection details', async () => {
-      const collection: string = 'EROBOT-527a29';
-      const result = await collectionService.getNftCollection(collection);
+      const collectionIdentifier: string = "EBULB-36c762";
+      const result = await collectionService.getNftCollection(collectionIdentifier);
 
       expect(result).toHaveStructure(Object.keys(new NftCollection()));
     });
 
-    it('should return undefined if collection is not returned from elastic', async () => {
+    it('should return undefined if collection does not exist', async () => {
       jest.spyOn(ElasticService.prototype, 'getItem')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_collection: string, _key: string, _identifier: string) => undefined));
 
-      const result = await collectionService.getNftCollection('');
+      const result = await collectionService.getNftCollection("");
+      expect(result).toStrictEqual(undefined);
+    });
 
-      expect(result).toBeUndefined();
+    it('should return undefined if collection does not have the correct format', async () => {
+      const mock_isCollection = jest.spyOn(TokenUtils, 'isCollection');
+      mock_isCollection.mockImplementation(() => false);
+
+      const result = await collectionService.getNftCollection("EBULB-36c762-02");
+      expect(result).toStrictEqual(undefined);
     });
   });
 
+  //ToDo
+  // describe('getNftCollectionRoles', () => {
+  //   it('should return collections roles', async () => {
+  //     jest.spyOn(ApiConfigService.prototype, 'getIsIndexerV3FlagActive')
+  //       // eslint-disable-next-line require-await
+  //       .mockImplementation(jest.fn(() => false));
+
+  //     const results = await collectionService.getNftCollectionRoles('SURACING-8f6ed4');
+  //   });
+  // });
+
   describe('getCollectionForAddressWithRole', () => {
-    it('should return collection details with roles for a specific address', async () => {
-      const address: string = 'erd1qqqqqqqqqqqqqpgq09vq93grfqy7x5fhgmh44ncqfp3xaw57ys5s7j9fed';
-      const collection: string = 'EBULB-36c762';
-      const results = await collectionService.getCollectionForAddressWithRole(address, collection);
+    it('should return collection address roles', async () => {
+      const address: string = "erd1qqqqqqqqqqqqqpgq09vq93grfqy7x5fhgmh44ncqfp3xaw57ys5s7j9fed";
+      const collection: string = "EBULB-36c762";
+      const result = await collectionService.getCollectionForAddressWithRole(address, collection);
 
-      if (!results) {
-        throw new Error('Properties are not defined');
-      }
-
-      expect(results.canWipe).toStrictEqual(false);
-      expect(results.canBurn).toStrictEqual(false);
-      expect(results.canPause).toStrictEqual(false);
-      expect(results.canCreate).toStrictEqual(true);
-      expect(results.canFreeze).toStrictEqual(false);
-      expect(results.canAddUri).toStrictEqual(false);
-      expect(results.canTransferRole).toStrictEqual(false);
-      expect(results.canUpdateAttributes).toStrictEqual(false);
-      expect(results.canTransferNftCreateRole).toStrictEqual(false);
+      expect(result).toEqual(expect.objectContaining({
+        collection: collection,
+        owner: address,
+        canCreate: true,
+        canBurn: false,
+        canAddQuantity: undefined,
+        canUpdateAttributes: false,
+        canAddUri: false,
+        canTransferRole: false,
+      }));
     });
 
-    it('should return undefined because test simulate that address does not contains any collection', async () => {
+    it('should return undefined because test simulate that collection received from method getCollectionsForAddress is empty array', async () => {
       jest.spyOn(EsdtAddressService.prototype, 'getCollectionsForAddress')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_address: string, _filter: CollectionFilter, _pagination: QueryPagination) => []));
 
-      const address: string = 'erd1qqqqqqqqqqqqqpgq09vq93grfqy7x5fhgmh44ncqfp3xaw57ys5s7j9fed';
-      const results = await collectionService.getCollectionForAddressWithRole(address, '');
+      const address: string = "erd1qqqqqqqqqqqqqpgq09vq93grfqy7x5fhgmh44ncqfp3xaw57ys5s7j9fed";
+      const collection: string = "";
+      const result = await collectionService.getCollectionForAddressWithRole(address, collection);
 
-      expect(results).toBeUndefined();
+      expect(result).toStrictEqual(undefined);
     });
   });
 
   describe('getCollectionsWithRolesForAddress', () => {
-    it('should returns all collections with roles for a specific address', async () => {
-      jest.spyOn(ApiConfigService.prototype, 'getIsIndexerV3FlagActive')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(() => false));
+    it('should return one collection where address has roles', async () => {
+      const address: string = "erd1qqqqqqqqqqqqqpgq09vq93grfqy7x5fhgmh44ncqfp3xaw57ys5s7j9fed";
+      const result = await collectionService.getCollectionsWithRolesForAddress(address, new CollectionFilter(), new QueryPagination({ size: 1 }));
 
-      const address: string = 'erd1qqqqqqqqqqqqqpgq09vq93grfqy7x5fhgmh44ncqfp3xaw57ys5s7j9fed';
-      const filter = new CollectionFilter();
-      filter.collection = 'EBULB-36c762';
-      const results = await collectionService.getCollectionsWithRolesForAddress(address, filter, { from: 0, size: 1 });
-
-      expect(results.length).toStrictEqual(1);
-
-      for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new NftCollectionRole()));
-      }
+      expect(result).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          owner: address,
+          canCreate: true,
+          canBurn: false,
+          canAddQuantity: undefined,
+          canUpdateAttributes: false,
+          canAddUri: false,
+          canTransferRole: false,
+        }),
+      ]));
     });
   });
 
   describe('getCollectionCountForAddress', () => {
-    it('should return collection count for a specific address', async () => {
+    it('should return total collection count where address has roles', async () => {
       const address: string = 'erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj';
-      const filter = new CollectionFilter();
-      filter.type = [NftType.NonFungibleESDT];
-      const results = await collectionService.getCollectionCountForAddress(address, filter);
+      const result = await collectionService.getCollectionCountForAddress(address, new CollectionFilter());
 
-      expect(typeof results).toStrictEqual('number');
+      expect(result).toStrictEqual(3);
     });
   });
 
   describe('getCollectionForAddress', () => {
-    it('should return collection details for a specific address', async () => {
+    it('should return address collection details', async () => {
       const address: string = 'erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj';
-      const collection: string = 'MEDAL-ae074f';
-      const results = await collectionService.getCollectionForAddress(address, collection);
+      const collectionIdentifier: string = "MEDAL-ae074f";
 
-      expect(results).toHaveStructure(Object.keys(new NftCollectionAccount()));
+      const result = await collectionService.getCollectionForAddress(address, collectionIdentifier);
+
+      expect(result).toEqual(expect.objectContaining({
+        collection: collectionIdentifier,
+        owner: address,
+      }));
     });
 
-    it('should return undefined because test simulates that address does not contains any collections', async () => {
-      jest.spyOn(CollectionService.prototype, 'getCollectionsForAddress')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_address: string, _filter: CollectionFilter, _pagination: QueryPagination) => []));
+    it('should return undefined because test simulates that given collection identifier does not have the correct format', async () => {
+      const mock_isCollection = jest.spyOn(TokenUtils, 'isCollection');
+      mock_isCollection.mockImplementation(() => false);
 
       const address: string = 'erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj';
-      const results = await collectionService.getCollectionForAddress(address, '');
+      const collectionIdentifier: string = "MEDAL-xe074f";
 
-      expect(results).toBeUndefined();
-    });
-  });
-
-  describe('getCollectionsForAddress', () => {
-    it('should return all collections details of type NonFungibleESDT for a specific address', async () => {
-      const address: string = 'erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj';
-      const filter = new CollectionFilter();
-      filter.type = [NftType.NonFungibleESDT];
-      const results = await collectionService.getCollectionsForAddress(address, filter, { from: 0, size: 2 });
-
-      expect(results.length).toStrictEqual(2);
-
-      for (const result of results) {
-        expect(result.type).toStrictEqual(NftType.NonFungibleESDT);
-        expect(result).toHaveStructure(Object.keys(new NftCollectionAccount()));
-      }
-    });
-    it('should return a specific collection details if search filter is applied', async () => {
-      const address: string = 'erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj';
-      const filter = new CollectionFilter();
-      filter.search = 'MEDAL-ae074f';
-      const results = await collectionService.getCollectionsForAddress(address, filter, { from: 0, size: 1 });
-
-      for (const result of results) {
-        expect(result.collection).toStrictEqual('MEDAL-ae074f');
-        expect(result).toHaveStructure(Object.keys(new NftCollectionAccount()));
-      }
-    });
-    it('should return an empty array if search filter is applied with wrong collection identifier details', async () => {
-      const address: string = 'erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj';
-      const filter = new CollectionFilter();
-      filter.search = 'MEDAL-ae074fTest';
-      const results = await collectionService.getCollectionsForAddress(address, filter, { from: 0, size: 1 });
-
-      for (const result of results) {
-        expect(result).toStrictEqual([]);
-      }
+      const result = await collectionService.getCollectionForAddress(address, collectionIdentifier);
+      expect(result).toStrictEqual(undefined);
     });
   });
 
   describe('getCollectionCountForAddressWithRoles', () => {
-    it('should return collections count for address with roles with collection type NonFungibleESDT', async () => {
+    it('should return total count of collections where a specific address holds roles', async () => {
       jest.spyOn(EsdtAddressService.prototype, 'getCollectionCountForAddressFromElastic')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_address: string, _filter: CollectionFilter) => 4));
 
       const address: string = 'erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj';
-      const filter = new CollectionFilter();
-      filter.type = [NftType.NonFungibleESDT];
-      const results = await collectionService.getCollectionCountForAddressWithRoles(address, filter);
-
-      expect(results).toStrictEqual(4);
-    });
-
-    it('should return collections count for address with roles of canCreate', async () => {
-      jest.spyOn(EsdtAddressService.prototype, 'getCollectionCountForAddressFromElastic')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_address: string, _filter: CollectionFilter) => 1));
-
-      const address: string = 'erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj';
-      const filter = new CollectionFilter();
-      filter.canCreate = true;
-      const results = await collectionService.getCollectionCountForAddressWithRoles(address, filter);
-
-      expect(results).toStrictEqual(1);
-    });
-  });
-
-  describe('getNftCollectionRoles', () => {
-    it('should return collections roles', async () => {
-      jest.spyOn(ApiConfigService.prototype, 'getIsIndexerV3FlagActive')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(() => true));
-
-      const results = await collectionService.getNftCollectionRoles('canUpdateAttributes');
-      expect(results).toStrictEqual([]);
-    });
-  });
-
-  describe('isCollection', () => {
-    const collection =
-    {
-      _id: 'MEDAL-ae074f',
-      name: 'GLUMedals',
-      ticker: 'MEDAL',
-      token: 'MEDAL-ae074f',
-      issuer: 'erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj',
-      currentOwner: 'erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj',
-      type: 'NonFungibleESDT',
-      timestamp: 1654019676,
-      ownersHistory: [
-        {
-          address: 'erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj',
-          timestamp: 1654019676,
-        },
-      ],
-      roles: {
-        ESDTRoleNFTCreate: [
-          'erd1qqqqqqqqqqqqqpgq8ne37ed06034qxfhm09f03ykjfqwx8s7hvrqackmzt',
-        ],
-      },
-    };
-
-    it('should verify if given collection identifier is collection and return true', async () => {
-      const getCollectionSpy = jest
-        .spyOn(ElasticIndexerService.prototype, 'getCollection')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_identifier: string) => collection));
-
-      const result = await collectionService.isCollection(collection._id);
-
-      expect(getCollectionSpy).toHaveBeenCalled();
-      expect(result).toStrictEqual(true);
-    });
-  });
-
-  describe('getNftCollectionsByIds', () => {
-    it('should return two NFT Collections details for a given list of two collections identifiers', async () => {
-      const results = await collectionService.getNftCollectionsByIds(['MEDAL-ae074f', 'EBULB-36c762']);
-      const collectionResults = results.map((result) => result.collection);
-
-      expect(collectionResults.includes('EBULB-36c762')).toBeTruthy();
-      expect(collectionResults.includes('MEDAL-ae074f')).toBeTruthy();
+      const result = await collectionService.getCollectionCountForAddressWithRoles(address, new CollectionFilter());
+      expect(result).toStrictEqual(4);
     });
   });
 });
