@@ -196,10 +196,6 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withDateRangeFilter('nonce', filter.nonceBefore, filter.nonceAfter);
     }
 
-    if (filter.nonce) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('nonce', filter.nonce));
-    }
-
     return elasticQuery;
   }
 

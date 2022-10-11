@@ -17,7 +17,6 @@ export class NftFilter {
   includeFlagged?: boolean;
   before?: number;
   after?: number;
-  nonce?: number;
   nonceBefore?: number;
   nonceAfter?: number;
   isWhitelistedStorage?: boolean;

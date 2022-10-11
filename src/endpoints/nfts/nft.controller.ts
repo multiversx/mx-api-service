@@ -68,7 +68,6 @@ export class NftController {
     @Query('isNsfw', new ParseBoolPipe) isNsfw?: boolean,
     @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
     @Query('before', new ParseIntPipe) before?: number,
-    @Query('nonce', new ParseIntPipe) nonce?: number,
     @Query('nonceBefore', new ParseIntPipe) nonceBefore?: number,
     @Query('nonceAfter', new ParseIntPipe) nonceAfter?: number,
     @Query('after', new ParseIntPipe) after?: number,
@@ -81,7 +80,7 @@ export class NftController {
 
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
-      new NftFilter({ search, identifiers, type, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, before, after, nonce, nonceBefore, nonceAfter }),
+      new NftFilter({ search, identifiers, type, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, before, after, nonceBefore, nonceAfter }),
       options
     );
   }
@@ -122,10 +121,8 @@ export class NftController {
     @Query('after', new ParseIntPipe) after?: number,
     @Query('nonceBefore', new ParseIntPipe) nonceBefore?: number,
     @Query('nonceAfter', new ParseIntPipe) nonceAfter?: number,
-    @Query('nonce', new ParseIntPipe) nonce?: number,
-
   ): Promise<number> {
-    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after, nonce, nonceBefore, nonceAfter }));
+    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after, nonceBefore, nonceAfter }));
   }
 
   @Get("/nfts/c")
@@ -146,10 +143,9 @@ export class NftController {
     @Query('after', new ParseIntPipe) after?: number,
     @Query('nonceBefore', new ParseIntPipe) nonceBefore?: number,
     @Query('nonceAfter', new ParseIntPipe) nonceAfter?: number,
-    @Query('nonce', new ParseIntPipe) nonce?: number,
 
   ): Promise<number> {
-    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after, nonce, nonceBefore, nonceAfter }));
+    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after, nonceBefore, nonceAfter }));
   }
 
   @Get('/nfts/:identifier')

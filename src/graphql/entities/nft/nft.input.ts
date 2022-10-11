@@ -62,7 +62,6 @@ export class GetNftsCountInput {
       isWhitelistedStorage: input.isWhitelistedStorage,
       hasUris: input.hasUris,
       isNsfw: input.isNsfw,
-      nonce: input.nonce,
     });
   }
 }

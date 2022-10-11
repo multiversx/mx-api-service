@@ -195,7 +195,6 @@ export class CollectionController {
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
     @Query('isNsfw', new ParseBoolPipe) isNsfw?: boolean,
     @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
-    @Query('nonce', new ParseIntPipe) nonce?: number,
     @Query('nonceBefore', new ParseIntPipe) nonceBefore?: number,
     @Query('nonceAfter', new ParseIntPipe) nonceAfter?: number,
     @Query('withOwner', new ParseBoolPipe) withOwner?: boolean,
@@ -212,7 +211,7 @@ export class CollectionController {
 
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
-      new NftFilter({ search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, nonce, nonceAfter, nonceBefore }),
+      new NftFilter({ search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, nonceAfter, nonceBefore }),
       options);
   }
 
@@ -235,7 +234,6 @@ export class CollectionController {
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('name') name?: string,
     @Query('tags', ParseArrayPipe) tags?: string[],
-    @Query('nonce', new ParseIntPipe) nonce?: number,
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('isWhitelistedStorage', new ParseBoolPipe) isWhitelistedStorage?: boolean,
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
@@ -246,7 +244,7 @@ export class CollectionController {
       throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
     }
 
-    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, collection, name, tags, creator, isWhitelistedStorage, hasUris, traits, nonce }));
+    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, collection, name, tags, creator, isWhitelistedStorage, hasUris, traits }));
   }
 
   @Get('/collections/:identifier/accounts')
