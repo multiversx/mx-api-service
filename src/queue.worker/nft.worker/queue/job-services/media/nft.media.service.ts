@@ -17,6 +17,7 @@ export class NftMediaService {
   private readonly logger = new OriginLogger(NftMediaService.name);
   private readonly IPFS_REQUEST_TIMEOUT = Constants.oneSecond() * 30 * 1000;
   private readonly NFT_THUMBNAIL_PREFIX;
+  public static readonly NFT_THUMBNAIL_DEFAULT = 'https://media.elrond.com/nfts/thumbnail/default.png';
 
   constructor(
     private readonly cachingService: CachingService,
@@ -89,15 +90,23 @@ export class NftMediaService {
         continue;
       }
 
-      if (!this.isContentAccepted(nft.identifier, fileProperties)) {
-        this.logger.log(`Content not accepted for NFT with identifier '${nft.identifier}'`);
+      if (!this.isContentTypeAccepted(fileProperties.contentType)) {
+        this.logger.log(`Content type '${fileProperties.contentType}' not accepted for NFT with identifier '${nft.identifier}'`);
         continue;
       }
 
       const nftMedia = new NftMedia();
       nftMedia.url = TokenHelpers.computeNftUri(BinaryUtils.base64Decode(uri), this.NFT_THUMBNAIL_PREFIX);
       nftMedia.originalUrl = BinaryUtils.base64Decode(uri);
-      nftMedia.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${nft.collection}-${TokenHelpers.getUrlHash(nftMedia.url)}`;
+
+      // we generate thumbnail url only if file size is also accepted
+      if (this.isFileSizeAccepted(fileProperties.contentLength)) {
+        nftMedia.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${nft.collection}-${TokenHelpers.getUrlHash(nftMedia.url)}`;
+      } else {
+        this.logger.log(`File size '${fileProperties.contentLength}' not accepted for NFT with identifier '${nft.identifier}'`);
+        nftMedia.thumbnailUrl = NftMediaService.NFT_THUMBNAIL_DEFAULT;
+      }
+
       nftMedia.fileType = fileProperties.contentType;
       nftMedia.fileSize = fileProperties.contentLength;
 
@@ -145,20 +154,11 @@ export class NftMediaService {
     return { contentType, contentLength };
   }
 
-  private isContentAccepted(identifier: string, fileProperties: { contentType: string, contentLength: number }): boolean {
-    if (!Object.values(MediaMimeTypeEnum).includes(fileProperties.contentType as MediaMimeTypeEnum)) {
-      this.logger.log(`Media mime type '${fileProperties.contentType}' is not supported'`);
+  private isContentTypeAccepted(contentType: string): boolean {
+    return Object.values(MediaMimeTypeEnum).includes(contentType as MediaMimeTypeEnum);
+  }
 
-      return false;
-    }
-
-    const FILE_SIZE_LIMIT = 64 * 1024 * 1024; // ~64MB
-    if (fileProperties.contentLength > FILE_SIZE_LIMIT) {
-      this.logger.log(`Media for NFT '${identifier}' excedded file size limit`);
-
-      return false;
-    }
-
-    return true;
+  private isFileSizeAccepted(fileSize: number): boolean {
+    return fileSize <= 64 * 1024 * 1024; // ~64MB
   }
 }
