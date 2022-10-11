@@ -161,6 +161,7 @@ export class CollectionService {
     collection.type = elasticCollection.type as NftType;
     collection.timestamp = elasticCollection.timestamp;
     collection.roles = await this.getNftCollectionRoles(elasticCollection);
+    collection.traits = elasticCollection.nft_traitSummary ?? [];
 
     return collection;
   }
