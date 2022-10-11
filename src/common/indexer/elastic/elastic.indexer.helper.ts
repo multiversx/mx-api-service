@@ -1,4 +1,4 @@
-import { AbstractQuery, AddressUtils, BinaryUtils, ElasticQuery, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThanOrEqual, RangeLowerThan } from "@elrondnetwork/erdnest";
+import { AbstractQuery, AddressUtils, BinaryUtils, ElasticQuery, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThanOrEqual, RangeLowerThan, RangeLowerThanOrEqual } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -192,8 +192,12 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
     }
 
-    if (filter.nonceBefore || filter.after) {
-      elasticQuery = elasticQuery.withDateRangeFilter('nonce', filter.nonceBefore, filter.nonceAfter);
+    if (filter.nonceBefore) {
+      elasticQuery = elasticQuery.withRangeFilter('nonce', new RangeLowerThanOrEqual(filter.nonceBefore));
+    }
+
+    if (filter.nonceAfter) {
+      elasticQuery = elasticQuery.withRangeFilter('nonce', new RangeGreaterThanOrEqual(filter.nonceAfter));
     }
 
     return elasticQuery;
