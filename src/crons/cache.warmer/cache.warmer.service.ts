@@ -22,8 +22,8 @@ import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import AsyncLock from "async-lock";
 import { CachingService, Constants, Locker, OriginLogger } from "@elrondnetwork/erdnest";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
-import { DataApiService } from "src/plugins/data-api-service/data.api.service";
-import { DataQuoteType } from "src/plugins/data-api-service/entities/data.quote.type";
+import { DataApiService } from "src/common/external/data.api.service";
+import { DataQuoteType } from "src/common/external/entities/data.quote.type";
 
 @Injectable()
 export class CacheWarmerService {

@@ -1,7 +1,7 @@
 import { forwardRef, Module } from "@nestjs/common";
 import { AssetsModule } from "src/common/assets/assets.module";
-import { DataApiModule } from "src/plugins/data-api-service/data.api.module";
 import { PluginModule } from "src/plugins/plugin.module";
+import { DataApiModule } from "src/common/external/data.api.module";
 import { TokenModule } from "../tokens/token.module";
 import { TransactionActionModule } from "./transaction-action/transaction.action.module";
 import { TransactionGetService } from "./transaction.get.service";
