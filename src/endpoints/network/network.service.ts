@@ -11,14 +11,14 @@ import { NetworkConstants } from './entities/constants';
 import { Economics } from './entities/economics';
 import { NetworkConfig } from './entities/network.config';
 import { StakeService } from '../stake/stake.service';
-import { DataApiService } from 'src/common/external/data.api.service';
 import { GatewayService } from 'src/common/gateway/gateway.service';
-import { DataQuoteType } from 'src/common/external/entities/data.quote.type';
 import { CacheInfo } from 'src/utils/cache.info';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest';
 import { About } from './entities/about';
 import { EsdtService } from '../esdt/esdt.service';
+import { DataApiService } from 'src/plugins/data-api-service/data.api.service';
+import { DataQuoteType } from 'src/plugins/data-api-service/entities/data.quote.type';
 
 @Injectable()
 export class NetworkService {

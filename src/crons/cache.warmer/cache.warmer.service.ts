@@ -9,9 +9,7 @@ import { NetworkService } from "src/endpoints/network/network.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { CronJob } from "cron";
 import { KeybaseService } from "src/common/keybase/keybase.service";
-import { DataApiService } from "src/common/external/data.api.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { DataQuoteType } from "src/common/external/entities/data.quote.type";
 import { EsdtService } from "src/endpoints/esdt/esdt.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { AssetsService } from "src/common/assets/assets.service";
@@ -24,6 +22,8 @@ import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import AsyncLock from "async-lock";
 import { CachingService, Constants, Locker, OriginLogger } from "@elrondnetwork/erdnest";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
+import { DataApiService } from "src/plugins/data-api-service/data.api.service";
+import { DataQuoteType } from "src/plugins/data-api-service/entities/data.quote.type";
 
 @Injectable()
 export class CacheWarmerService {
