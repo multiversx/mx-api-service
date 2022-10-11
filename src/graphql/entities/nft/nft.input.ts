@@ -17,10 +17,10 @@ export class GetNftsCountInput {
 
   @Field(() => NftType, { name: "type", description: "NFT type to retrieve for the given result set.", nullable: true })
   type: NftType | undefined = undefined;
-  
+
   @Field(() => ID, { name: "collection", description: "Collection identifier for the given result set.", nullable: true })
   collection: string | undefined = "";
-  
+
   @Field(() => String, { name: "name", description: "Name to retrieve for the given result set.", nullable: true })
   name: string | undefined = undefined;
 
@@ -45,19 +45,22 @@ export class GetNftsCountInput {
   @Field(() => Float, { name: "after", description: "After timestamp to retrieve for the given result set.", nullable: true })
   after: number | undefined = undefined;
 
+  @Field(() => Float, { name: "nonce", description: "Nonce to retrieve for the given result set.", nullable: true })
+  nonce: number | undefined = undefined;
+
   public static resolve(input: GetNftsCountInput): NftFilter {
     return new NftFilter({
       after: input.after,
       before: input.before,
-      search: input.search, 
-      identifiers: input.identifiers, 
-      type: input.type, 
-      collection: input.collection, 
-      name: input.name, 
-      tags: input.tags, 
-      creator: input.creator, 
-      isWhitelistedStorage: input.isWhitelistedStorage, 
-      hasUris: input.hasUris, 
+      search: input.search,
+      identifiers: input.identifiers,
+      type: input.type,
+      collection: input.collection,
+      name: input.name,
+      tags: input.tags,
+      creator: input.creator,
+      isWhitelistedStorage: input.isWhitelistedStorage,
+      hasUris: input.hasUris,
       isNsfw: input.isNsfw,
     });
   }
