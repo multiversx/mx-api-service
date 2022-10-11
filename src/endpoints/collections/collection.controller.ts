@@ -228,6 +228,7 @@ export class CollectionController {
   @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
   @ApiQuery({ name: 'isWhitelistedStorage', description: 'Return all NFTs that are whitelisted in storage', required: false, type: Boolean })
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false, type: Boolean })
+  @ApiQuery({ name: 'traits', description: 'Filter NFTs by traits. Key-value format (<key1>:<value1>;<key2>:<value2>)', required: false, type: Boolean })
   async getNftCount(
     @Param('collection', ParseCollectionPipe) collection: string,
     @Query('search') search?: string,
@@ -238,13 +239,14 @@ export class CollectionController {
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('isWhitelistedStorage', new ParseBoolPipe) isWhitelistedStorage?: boolean,
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
+    @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
   ): Promise<number> {
     const isCollection = await this.collectionService.isCollection(collection);
     if (!isCollection) {
       throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
     }
 
-    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, collection, name, tags, creator, isWhitelistedStorage, hasUris, nonce }));
+    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, collection, name, tags, creator, isWhitelistedStorage, hasUris, traits, nonce }));
   }
 
   @Get('/collections/:identifier/accounts')

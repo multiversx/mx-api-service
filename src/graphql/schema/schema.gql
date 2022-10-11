@@ -281,6 +281,33 @@ type CollectionRoles {
   roles: [String!]!
 }
 
+"""NFT collection trait type."""
+type CollectionTrait {
+  """Distinct attributes for the given trait."""
+  attributes: [CollectionTraitAttribute!]!
+
+  """Name of the trait."""
+  name: String!
+
+  """Number of times the trait appears in the nft list."""
+  occurrenceCount: Float!
+
+  """Percentage for the occurrence of the trait in the nft list."""
+  occurrencePercentage: Float!
+}
+
+"""NFT collection trait attribute type."""
+type CollectionTraitAttribute {
+  """Name of the attribute."""
+  name: String
+
+  """Number of times the attribute appears in the nft list."""
+  occurrenceCount: Float!
+
+  """Percentage for the occurrence of the attribute in the nft list."""
+  occurrencePercentage: Float!
+}
+
 """DappConfig object type."""
 type DappConfig {
   """Api url details"""
@@ -1741,6 +1768,9 @@ type NftCollection {
   """Timestamp for the given NFT collection."""
   timestamp: Float!
 
+  """Trait list for the given NFT collection."""
+  traits: [CollectionTrait!]
+
   """NFT type for the given NFT collection."""
   type: NftType!
 }
@@ -1786,6 +1816,9 @@ type NftCollectionAccount {
   """Timestamp for the given NFT collection."""
   timestamp: Float!
 
+  """Trait list for the given NFT collection."""
+  traits: [CollectionTrait!]
+
   """NFT type for the given NFT collection."""
   type: NftType!
 }
@@ -1826,6 +1859,9 @@ type NftCollectionAccountFlat {
 
   """Timestamp for the given NFT collection."""
   timestamp: Float!
+
+  """Trait list for the given NFT collection."""
+  traits: [CollectionTrait!]
 
   """NFT type for the given NFT collection."""
   type: NftType!

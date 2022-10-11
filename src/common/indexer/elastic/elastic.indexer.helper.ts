@@ -1,4 +1,4 @@
-import { AbstractQuery, AddressUtils, ElasticQuery, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThanOrEqual, RangeLowerThan } from "@elrondnetwork/erdnest";
+import { AbstractQuery, AddressUtils, BinaryUtils, ElasticQuery, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThanOrEqual, RangeLowerThan } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -174,7 +174,7 @@ export class ElasticIndexerHelper {
 
     if (filter.traits !== undefined) {
       for (const [key, value] of Object.entries(filter.traits)) {
-        elasticQuery = elasticQuery.withMustMatchCondition('nft_traitValues', `${key}_${value}`);
+        elasticQuery = elasticQuery.withMustMatchCondition('nft_traitValues', BinaryUtils.base64Encode(`${key}_${value}`));
       }
     }
 
