@@ -1,25 +1,24 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { OriginLogger } from "@elrondnetwork/erdnest";
+import { PerformanceProfiler, CachingService } from "@elrondnetwork/erdnest";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CachingService } from "src/common/caching/caching.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { MetricsService } from "src/common/metrics/metrics.service";
+import { ApiMetricsService } from "src/common/metrics/api.metrics.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
-import { PerformanceProfiler } from "src/utils/performance.profiler";
 
 @Injectable()
 export class VmQueryService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(VmQueryService.name);
 
   constructor(
+    @Inject(forwardRef(() => CachingService))
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
     private readonly protocolService: ProtocolService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly metricsService: MetricsService,
-  ) {
-    this.logger = new Logger(VmQueryService.name);
-  }
+    private readonly metricsService: ApiMetricsService,
+  ) { }
 
   private async computeTtls(): Promise<{ localTtl: number, remoteTtl: number }> {
     const secondsRemainingUntilNextRound = await this.protocolService.getSecondsRemainingUntilNextRound();
@@ -33,7 +32,7 @@ export class VmQueryService {
     };
   }
 
-  async vmQueryFullResult(contract: string, func: string, caller: string | undefined = undefined, args: string[] = []): Promise<any> {
+  async vmQueryFullResult(contract: string, func: string, caller: string | undefined = undefined, args: string[] = [], value: string | undefined = undefined): Promise<any> {
     let key = `vm-query:${contract}:${func}`;
     if (caller) {
       key += `:${caller}`;
@@ -47,13 +46,13 @@ export class VmQueryService {
 
     return await this.cachingService.getOrSetCache(
       key,
-      async () => await this.vmQueryRaw(contract, func, caller, args),
+      async () => await this.vmQueryRaw(contract, func, caller, args, value),
       remoteTtl,
       localTtl
     );
   }
 
-  async vmQuery(contract: string, func: string, caller: string | undefined = undefined, args: string[] = [], skipCache: boolean = false): Promise<string[]> {
+  async vmQuery(contract: string, func: string, caller: string | undefined = undefined, args: string[] = [], value: string | undefined = undefined, skipCache: boolean = false): Promise<string[]> {
     let key = `vm-query:${contract}:${func}`;
     if (caller) {
       key += `:${caller}`;
@@ -66,14 +65,14 @@ export class VmQueryService {
     try {
       let result: any;
       if (skipCache) {
-        result = await this.vmQueryRaw(contract, func, caller, args);
+        result = await this.vmQueryRaw(contract, func, caller, args, value);
       } else {
 
         const { localTtl, remoteTtl } = await this.computeTtls();
 
         result = await this.cachingService.getOrSetCache(
           key,
-          async () => await this.vmQueryRaw(contract, func, caller, args),
+          async () => await this.vmQueryRaw(contract, func, caller, args, value),
           remoteTtl,
           localTtl
         );
@@ -83,17 +82,18 @@ export class VmQueryService {
 
       return 'ReturnData' in data ? data.ReturnData : data.returnData;
     } catch (error: any) {
-      this.logger.error(`Error in vm query for address '${contract}', function '${func}', caller '${caller}', args '${JSON.stringify(args)}'. Error message: ${error.response?.data?.error}`);
+      this.logger.error(`Error in vm query for address '${contract}', function '${func}', caller '${caller}', value '${value}', args '${JSON.stringify(args)}'. Error message: ${error.response?.data?.error}`);
       throw error;
     }
   }
 
-  async vmQueryRaw(contract: string, func: string, caller: string | undefined, args: string[] = []): Promise<any> {
+  async vmQueryRaw(contract: string, func: string, caller: string | undefined, args: string[] = [], value: string | undefined = undefined): Promise<any> {
     const payload = {
       scAddress: contract,
-      FuncName: func,
+      funcName: func,
       caller: caller,
       args: args,
+      value: value,
     };
 
     const profiler = new PerformanceProfiler();

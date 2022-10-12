@@ -3,9 +3,6 @@ import { Cron, CronExpression, SchedulerRegistry } from "@nestjs/schedule";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
-import { Constants } from "src/utils/constants";
-import { Locker } from "src/utils/locker";
-import { CachingService } from "src/common/caching/caching.service";
 import { ClientProxy } from "@nestjs/microservices";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NetworkService } from "src/endpoints/network/network.service";
@@ -16,14 +13,23 @@ import { DataApiService } from "src/common/external/data.api.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { DataQuoteType } from "src/common/external/entities/data.quote.type";
 import { EsdtService } from "src/endpoints/esdt/esdt.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { TokenAssetService } from "src/endpoints/tokens/token.asset.service";
-import { PluginService } from "src/common/plugins/plugin.service";
+import { CacheInfo } from "src/utils/cache.info";
+import { AssetsService } from "src/common/assets/assets.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
-import { TokenService } from "src/endpoints/tokens/token.service";
+import { MexSettingsService } from "src/endpoints/mex/mex.settings.service";
+import { MexEconomicsService } from "src/endpoints/mex/mex.economics.service";
+import { MexPairService } from "src/endpoints/mex/mex.pair.service";
+import { MexTokenService } from "src/endpoints/mex/mex.token.service";
+import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
+import AsyncLock from "async-lock";
+import { CachingService, Constants, Locker, OriginLogger } from "@elrondnetwork/erdnest";
+import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 
 @Injectable()
 export class CacheWarmerService {
+  private readonly lock: AsyncLock;
+  private readonly logger = new OriginLogger(CacheWarmerService.name);
+
   constructor(
     private readonly nodeService: NodeService,
     private readonly esdtService: EsdtService,
@@ -38,10 +44,16 @@ export class CacheWarmerService {
     private readonly accountService: AccountService,
     private readonly gatewayService: GatewayService,
     private readonly schedulerRegistry: SchedulerRegistry,
-    private readonly tokenAssetService: TokenAssetService,
-    private readonly pluginService: PluginService,
-    private readonly tokenService: TokenService
+    private readonly assetsService: AssetsService,
+    private readonly mexEconomicsService: MexEconomicsService,
+    private readonly mexPairsService: MexPairService,
+    private readonly mexTokensService: MexTokenService,
+    private readonly mexSettingsService: MexSettingsService,
+    private readonly mexFarmsService: MexFarmService,
+    private readonly delegationLegacyService: DelegationLegacyService,
   ) {
+    this.lock = new AsyncLock();
+
     this.configCronJob(
       'handleKeybaseAgainstKeybasePubInvalidations',
       CronExpression.EVERY_MINUTE,
@@ -62,6 +74,12 @@ export class CacheWarmerService {
       CronExpression.EVERY_5_MINUTES,
       async () => await this.handleIdentityInvalidations()
     );
+
+    if (this.apiConfigService.isStakingV4Enabled()) {
+      const handleNodeAuctionInvalidationsCronJob = new CronJob(this.apiConfigService.getStakingV4CronExpression(), async () => await this.handleNodeAuctionInvalidations());
+      this.schedulerRegistry.addCronJob(this.handleNodeAuctionInvalidations.name, handleNodeAuctionInvalidationsCronJob);
+      handleNodeAuctionInvalidationsCronJob.start();
+    }
   }
 
   private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {
@@ -72,40 +90,53 @@ export class CacheWarmerService {
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
+  async handleAboutInvalidation() {
+    await Locker.lock('About invalidation', async () => {
+      await this.lock.acquire('about', async () => {
+        const about = await this.networkService.getAboutRaw();
+        await this.invalidateKey(CacheInfo.About.key, about, CacheInfo.About.ttl);
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleNodeInvalidations() {
-    await Locker.lock('Nodes invalidations', async () => {
-      const nodes = await this.nodeService.getAllNodesRaw();
-      await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
+    await Locker.lock('Node invalidations', async () => {
+      this.logger.log('Invalidating nodes');
+
+      await this.lock.acquire('nodes', async () => {
+        const nodes = await this.nodeService.getAllNodesRaw();
+        await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleDelegationLegacyInvalidations() {
+    await Locker.lock('Delegation legacy invalidations', async () => {
+      const delegation = await this.delegationLegacyService.getDelegationRaw();
+      await this.invalidateKey(CacheInfo.DelegationLegacy.key, delegation, CacheInfo.DelegationLegacy.ttl);
+    }, true);
+  }
+
+  async handleNodeAuctionInvalidations() {
+    await Locker.lock('Node auction invalidations', async () => {
+      await this.lock.acquire('nodes', async () => {
+        const nodes = await this.nodeService.getAllNodes();
+        const auctions = await this.gatewayService.getAuctions();
+
+        this.nodeService.processAuctions(nodes, auctions);
+
+        await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
+      });
     }, true);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleEsdtTokenInvalidations() {
-    await Locker.lock('Esdt tokens invalidations', async () => {
+    await Locker.lock('All Tokens invalidations', async () => {
       const tokens = await this.esdtService.getAllEsdtTokensRaw();
       await this.invalidateKey(CacheInfo.AllEsdtTokens.key, tokens, CacheInfo.AllEsdtTokens.ttl);
-    }, true);
-  }
-
-  @Cron(CronExpression.EVERY_10_MINUTES)
-  async handleTokenSupplyInvalidations() {
-    await Locker.lock('Token supply invalidations', async () => {
-      const assets = await this.tokenAssetService.getAllAssets();
-      for (const identifier of Object.keys(assets)) {
-        const asset = assets[identifier];
-        if (asset.lockedAccounts) {
-          const lockedSupply = await this.esdtService.getLockedSupplyRaw(identifier);
-          await this.invalidateKey(CacheInfo.TokenLockedSupply(identifier).key, lockedSupply, CacheInfo.TokenLockedSupply(identifier).ttl);
-        }
-      }
-    }, true);
-  }
-
-  @Cron(CronExpression.EVERY_10_MINUTES)
-  async handleEsdtTokenTransactionsAndAccountsInvalidations() {
-    await Locker.lock('Esdt tokens transactions and accounts invalidations', async () => {
-      const tokens = await this.esdtService.getAllEsdtTokensRaw();
-      await this.tokenService.batchProcessTokens(tokens);
     }, true);
   }
 
@@ -193,18 +224,79 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleTokenAssetsInvalidations() {
     await Locker.lock('Token assets invalidations', async () => {
-      await this.tokenAssetService.checkout();
-      const assets = await this.tokenAssetService.getAllAssetsRaw();
+      await this.assetsService.checkout();
+      const assets = this.assetsService.getAllTokenAssetsRaw();
       await this.invalidateKey(CacheInfo.TokenAssets.key, assets, CacheInfo.TokenAssets.ttl);
+
+      const providers = await this.providerService.getAllProviders();
+      const identities = await this.identitiesService.getAllIdentities();
+      const pairs = await this.mexPairsService.getAllMexPairs();
+      const farms = await this.mexFarmsService.getAllMexFarms();
+      const settings = await this.mexSettingsService.getSettings();
+
+      const accountLabels = await this.assetsService.getAllAccountAssetsRaw(providers, identities, pairs, farms, settings ?? undefined);
+      await this.invalidateKey(CacheInfo.AccountAssets.key, accountLabels, CacheInfo.AccountAssets.ttl);
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleTokenAssetsExtraInfoInvalidations() {
+    await Locker.lock('Token assets extra info invalidations', async () => {
+      const assets = await this.assetsService.getAllTokenAssets();
+      for (const identifier of Object.keys(assets)) {
+        const asset = assets[identifier];
+
+        if (asset.lockedAccounts) {
+          const lockedAccounts = await this.esdtService.getLockedAccountsRaw(identifier);
+          await this.invalidateKey(CacheInfo.TokenLockedAccounts(identifier).key, lockedAccounts, CacheInfo.TokenLockedAccounts(identifier).ttl);
+        }
+
+        if (asset.extraTokens) {
+          const accounts = await this.esdtService.countAllAccounts([identifier, ...asset.extraTokens]);
+          await this.cachingService.setCacheRemote(
+            CacheInfo.TokenAccountsExtra(identifier).key,
+            accounts,
+            CacheInfo.TokenAccountsExtra(identifier).ttl
+          );
+        }
+      }
     }, true);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
-  async handleCronPlugins() {
-    await this.pluginService.handleEveryMinuteCron();
+  async handleMexInvalidations() {
+    await Locker.lock('Refreshing mex pairs', async () => {
+      await this.mexPairsService.refreshMexPairs();
+    }, true);
+
+    await Locker.lock('Refreshing mex economics', async () => {
+      await this.mexEconomicsService.refreshMexEconomics();
+    }, true);
+
+    await Locker.lock('Refreshing mex tokens', async () => {
+      await this.mexTokensService.refreshMexTokens();
+    }, true);
+
+    await Locker.lock('Refreshing mex farms', async () => {
+      await this.mexFarmsService.refreshMexFarms();
+    }, true);
+
+    await Locker.lock('Refreshing mex settings', async () => {
+      await this.mexSettingsService.refreshSettings();
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleMexSettings() {
+    await Locker.lock('Mex settings invalidations', async () => {
+      const settings = await this.mexSettingsService.getSettingsRaw();
+      if (settings) {
+        await this.invalidateKey(CacheInfo.MexSettings.key, settings, CacheInfo.MexSettings.ttl);
+      }
+    });
   }
 
   private async invalidateKey(key: string, data: any, ttl: number) {

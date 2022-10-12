@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 import { NftThumbnailService } from "./queue/job-services/thumbnails/nft.thumbnail.service";
@@ -7,23 +7,26 @@ import { NftMediaService } from "./queue/job-services/media/nft.media.service";
 import { ClientProxy } from "@nestjs/microservices";
 import { NftMessage } from "./queue/entities/nft.message";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
+import { NftAssetService } from "./queue/job-services/assets/nft.asset.service";
+import { PersistenceService } from "src/common/persistence/persistence.service";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class NftWorkerService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(NftWorkerService.name);
 
   constructor(
     private readonly nftThumbnailService: NftThumbnailService,
     private readonly nftMetadataService: NftMetadataService,
     private readonly nftMediaService: NftMediaService,
+    private readonly nftAssetService: NftAssetService,
     @Inject('QUEUE_SERVICE') private readonly client: ClientProxy,
-  ) {
-    this.logger = new Logger(NftWorkerService.name);
-  }
+    private readonly persistenceService: PersistenceService,
+  ) { }
 
   async addProcessNftQueueJob(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
     nft.metadata = await this.nftMetadataService.getMetadata(nft) ?? undefined;
-    nft.media = await this.nftMediaService.getMedia(nft) ?? undefined;
+    nft.media = await this.nftMediaService.getMedia(nft.identifier) ?? undefined;
 
     const needsProcessing = await this.needsProcessing(nft, settings);
     if (!needsProcessing) {
@@ -33,7 +36,6 @@ export class NftWorkerService {
 
     const message = new NftMessage();
     message.identifier = nft.identifier;
-    message.nft = nft;
     message.settings = settings;
 
     this.client.send({ cmd: 'api-process-nfts' }, message).subscribe();
@@ -50,7 +52,8 @@ export class NftWorkerService {
       return true;
     }
 
-    if (!nft.media || nft.media.length === 0) {
+    const media = await this.persistenceService.getMedia(nft.identifier);
+    if (media === null) {
       return true;
     }
 
@@ -65,6 +68,15 @@ export class NftWorkerService {
           if (!hasThumbnailGenerated) {
             return true;
           }
+        }
+      }
+    }
+
+    if (settings.uploadAsset) {
+      for (const mediaItem of media) {
+        const isAssetUploaded = await this.nftAssetService.isAssetUploaded(mediaItem);
+        if (!isAssetUploaded) {
+          return true;
         }
       }
     }

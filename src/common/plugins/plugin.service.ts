@@ -1,19 +1,20 @@
 import { Injectable } from "@nestjs/common";
-import { Account } from "src/endpoints/accounts/entities/account";
+import { NestExpressApplication } from "@nestjs/platform-express";
+import { AccountDetailed } from "src/endpoints/accounts/entities/account.detailed";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { Transaction } from "src/endpoints/transactions/entities/transaction";
 
 @Injectable()
 export class PluginService {
-  async processTransaction(_: Transaction): Promise<void> { }
+  async processTransactions(_transactions: Transaction[], _withScamInfo?: boolean): Promise<void> { }
 
-  async handleEveryMinuteCron(): Promise<void> { }
+  async processTransactionSend(_transaction: any): Promise<any> { }
 
-  async processTransactionSend(_: any): Promise<any> { }
+  async processNfts(_nft: Nft[], _withScamInfo?: boolean): Promise<void> { }
 
-  async processNft(_: Nft): Promise<void> { }
+  async processAccount(_account: AccountDetailed): Promise<void> { }
 
-  async batchProcessNfts(_: Nft[]): Promise<void> { }
+  async bootstrapPublicApp(_application: NestExpressApplication): Promise<void> { }
 
-  async processAccount(_: Account): Promise<void> { }
+  async batchProcessNfts(_nfts: Nft[], _withScamInfo?: boolean): Promise<void> { }
 }

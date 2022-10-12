@@ -1,17 +1,19 @@
 network: 'mainnet'
 metaChainShardId: 4294967295
-useLegacyElastic: false
 api:
   public: true
   private: true
+  graphql: true
+
 cron:
-  transactionProcessor: true
+  transactionProcessor: false
   transactionProcessorMaxLookBehind: 1000
-  cacheWarmer: true
+  cacheWarmer: false
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true
   useTracing: false
+  indexer-v3: true
 urls:
   api:
     - 'https://api.elrond.com'
@@ -26,9 +28,12 @@ urls:
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
   providers: 'https://internal-delegation-api.elrond.com/providers'
+  delegation: 'https://delegation-api.elrond.com'
   media: 'https://media.elrond.com'
   nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
 database:
+  enabled: false
+  url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
   host: 'localhost'
   port: 3306
   username: 'root'
@@ -47,6 +52,7 @@ contracts:
   staking: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7'
   delegationManager: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6'
   delegation: 'erd1qqqqqqqqqqqqqpgqxwakt2g7u9atsnr03gqcgmhcv38pt7mkd94q6shuwt'
+  metabonding: 'erd1qqqqqqqqqqqqqpgq50dge6rrpcra4tp9hl57jl0893a4r2r72jpsk39rjj'
   delegationShardId: 2
 inflation:
   - 1952123
@@ -62,4 +68,8 @@ security:
 test:
   mockKeybases: false
   mockNodes: false
+  mockTokens: false
   mockPath: './src/test/mocks/'
+transaction-action:
+  mex:
+    microServiceUrl: 'https://graph.maiar.exchange/graphql'

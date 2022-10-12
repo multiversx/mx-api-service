@@ -1,24 +1,24 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
-import { CachingService } from "src/common/caching/caching.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { PersistenceInterface } from "src/common/persistence/persistence.interface";
+import { CachingService } from "@elrondnetwork/erdnest";
+import { Inject, Injectable } from "@nestjs/common";
+import { CacheInfo } from "src/utils/cache.info";
+import { PersistenceService } from "src/common/persistence/persistence.service";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
+import { ClientProxy } from "@nestjs/microservices";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 
 @Injectable()
 export class NftMetadataService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(NftMetadataService.name);
 
   constructor(
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
-    @Inject('PersistenceService')
-    private readonly persistenceService: PersistenceInterface,
+    private readonly persistenceService: PersistenceService,
     private readonly cachingService: CachingService,
-  ) {
-    this.logger = new Logger(NftMetadataService.name);
-  }
+    @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
+  ) { }
 
   async getOrRefreshMetadata(nft: Nft): Promise<any> {
     if (!nft.attributes || nft.type === NftType.MetaESDT) {
@@ -47,15 +47,18 @@ export class NftMetadataService {
       metadataRaw = {};
     }
 
-    await this.persistenceService.deleteMetadata(nft.identifier);
     await this.persistenceService.setMetadata(nft.identifier, metadataRaw);
 
-    await this.cachingService.deleteInCache(CacheInfo.NftMetadata(nft.identifier).key);
     await this.cachingService.setCache(
       CacheInfo.NftMetadata(nft.identifier).key,
       metadataRaw,
       CacheInfo.NftMetadata(nft.identifier).ttl
     );
+
+    await this.clientProxy.emit('refreshCacheKey', {
+      key: CacheInfo.NftMetadata(nft.identifier).key,
+      ttl: CacheInfo.NftMetadata(nft.identifier).ttl,
+    });
 
     return metadataRaw;
   }
@@ -66,7 +69,7 @@ export class NftMetadataService {
     }
 
     try {
-      this.logger.log(`Started fetching metadata for nft with identifier '${nft.identifier}'`);
+      this.logger.log(`Started fetching metadata for nft with identifier '${nft.identifier}' and attributes '${nft.attributes}'`);
       const nftMetadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(nft.attributes);
       this.logger.log(`Completed fetching metadata for nft with identifier '${nft.identifier}'`);
       return nftMetadata ?? null;

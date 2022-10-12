@@ -1,5 +1,5 @@
 import { forwardRef, Module } from "@nestjs/common";
-import { CommonModule } from "src/common/common.module";
+import { AssetsModule } from "src/common/assets/assets.module";
 import { PluginModule } from "src/plugins/plugin.module";
 import { CollectionModule } from "../collections/collection.module";
 import { DelegationLegacyModule } from "../delegation.legacy/delegation.legacy.module";
@@ -8,23 +8,26 @@ import { SmartContractResultModule } from "../sc-results/scresult.module";
 import { StakeModule } from "../stake/stake.module";
 import { TokenModule } from "../tokens/token.module";
 import { TransactionModule } from "../transactions/transaction.module";
+import { TransferModule } from "../transfers/transfer.module";
 import { VmQueryModule } from "../vm.query/vm.query.module";
 import { WaitingListModule } from "../waiting-list/waiting.list.module";
 import { AccountService } from "./account.service";
 
 @Module({
   imports: [
-    forwardRef(() => CommonModule),
-    forwardRef(() => VmQueryModule),
-    TokenModule,
+    VmQueryModule,
+    forwardRef(() => TokenModule),
     forwardRef(() => NftModule),
-    forwardRef(() => DelegationLegacyModule),
-    forwardRef(() => WaitingListModule),
+    DelegationLegacyModule,
+    WaitingListModule,
     forwardRef(() => StakeModule),
     forwardRef(() => TransactionModule),
     forwardRef(() => SmartContractResultModule),
     forwardRef(() => CollectionModule),
     forwardRef(() => PluginModule),
+    forwardRef(() => TransferModule),
+    forwardRef(() => TokenModule),
+    forwardRef(() => AssetsModule),
   ],
   providers: [
     AccountService,

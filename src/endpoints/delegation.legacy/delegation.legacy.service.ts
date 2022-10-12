@@ -3,16 +3,26 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { DelegationLegacy } from "./entities/delegation.legacy";
 import { AccountDelegationLegacy } from "./entities/account.delegation.legacy";
-import { AddressUtils } from "src/utils/address.utils";
+import { AddressUtils, CachingService } from "@elrondnetwork/erdnest";
+import { CacheInfo } from "src/utils/cache.info";
 
 @Injectable()
 export class DelegationLegacyService {
   constructor(
     private readonly vmQueryService: VmQueryService,
-    private readonly apiConfigService: ApiConfigService
+    private readonly apiConfigService: ApiConfigService,
+    private readonly cachingService: CachingService,
   ) { }
 
   async getDelegation(): Promise<DelegationLegacy> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.DelegationLegacy.key,
+      async () => await this.getDelegationRaw(),
+      CacheInfo.DelegationLegacy.ttl,
+    );
+  }
+
+  async getDelegationRaw(): Promise<DelegationLegacy> {
     const [totalStakeByTypeEncoded, numUsersEncoded] = await Promise.all([
       this.vmQueryService.vmQuery(
         this.apiConfigService.getDelegationContractAddress(),
@@ -32,7 +42,7 @@ export class DelegationLegacyService {
       totalDeferredPaymentStake,
     ] = totalStakeByTypeEncoded.map((encoded) => this.numberDecode(encoded));
 
-    const numUsers = this.numberDecode(numUsersEncoded[0]);
+    const numUsers = Number(this.numberDecode(numUsersEncoded[0]));
 
     return {
       totalWithdrawOnlyStake,

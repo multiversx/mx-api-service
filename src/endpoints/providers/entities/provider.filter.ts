@@ -1,5 +1,9 @@
-import { QueryPagination } from "src/common/entities/query.pagination";
+export class ProviderFilter {
+  constructor(init?: Partial<ProviderFilter>) {
+    Object.assign(this, init);
+  }
 
-export class ProviderFilter extends QueryPagination {
   identity: string | undefined = undefined;
+
+  providers: string[] | undefined = undefined;
 } 

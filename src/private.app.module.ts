@@ -1,27 +1,26 @@
 import { Module } from '@nestjs/common';
-import { CachingModule } from './common/caching/caching.module';
-import { CacheController } from './common/caching/cache.controller';
-import { MetricsController } from './common/metrics/metrics.controller';
-import { MetricsModule } from './common/metrics/metrics.module';
-import { ApiConfigModule } from './common/api-config/api.config.module';
-import { MicroserviceModule } from './common/microservice/microservice.module';
+import { RemoteCacheController } from './endpoints/caching/remote.cache.controller';
+import { ApiMetricsController } from './common/metrics/api.metrics.controller';
 import { HealthCheckController } from './endpoints/health-check/health.check.controller';
-import { ProcessNftsController } from './endpoints/process-nfts/process.nfts.controller';
+import { ProcessNftsPrivateController } from './endpoints/process-nfts/process.nfts.private.controller';
 import { ProcessNftsModule } from './endpoints/process-nfts/process.nfts.module';
+import { LoggingModule } from '@elrondnetwork/erdnest';
+import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 
 @Module({
   imports: [
-    ApiConfigModule,
-    CachingModule,
-    MetricsModule,
-    MicroserviceModule,
+    LoggingModule,
     ProcessNftsModule,
   ],
+  providers: [
+    DynamicModuleUtils.getNestJsApiConfigService(),
+    DynamicModuleUtils.getPubSubService(),
+  ],
   controllers: [
-    MetricsController,
-    CacheController,
+    ApiMetricsController,
+    RemoteCacheController,
     HealthCheckController,
-    ProcessNftsController,
+    ProcessNftsPrivateController,
   ],
 })
 export class PrivateAppModule { }

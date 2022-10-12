@@ -1,18 +1,12 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { AccountHistory } from "./account.history";
 
-export class AccountEsdtHistory {
-    @ApiProperty({ description: 'The address of the account' })
-    address: string = '';
+export class AccountEsdtHistory extends AccountHistory {
+  constructor(init?: Partial<AccountEsdtHistory>) {
+    super();
+    Object.assign(this, init);
+  }
 
-    @ApiProperty({ description: 'The current balance of the account (must be denominated to obtain the real value)' })
-    balance: string = '';
-
-    @ApiProperty({ description: 'The current balance of the token (must be denominated to obtain the real value)' })
-    token: string = '';
-
-    @ApiProperty({ description: 'The timestamp of snapshot for account balance' })
-    timestamp: number = 0;
-
-    @ApiProperty({ description: 'Is the account sender of transaction' })
-    isSender?: boolean | undefined = undefined;
+  @ApiProperty({ type: String, example: 'WEGLD-bd4d79' })
+  token: string = '';
 }

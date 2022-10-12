@@ -6,6 +6,7 @@ export enum GatewayComponentRequest {
   networkTotalStaked = 'networkTotalStaked',
   addressDetails = 'addressDetails',
   addressEsdt = 'addressEsdt',
+  addressEsdtBalance = 'addressEsdtBalance',
   addressNfts = 'addressNfts',
   nodeHeartbeat = 'nodeHeartbeat',
   validatorStatistics = 'validatorStatistics',
@@ -30,5 +31,7 @@ export enum GatewayComponentRequest {
   addressEsdtWithRole = 'addressEsdtWithRole',
   esdtSupply = 'esdtSupply',
   allFungibleTokens = 'allFungibleTokens',
-  addressNftByNonce = 'addressNftByNonce'
+  addressNftByNonce = 'addressNftByNonce',
+  validatorAuction = 'validatorAuction',
+  oldStorageToken = 'oldStorageToken',
 }

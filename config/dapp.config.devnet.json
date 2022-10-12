@@ -12,5 +12,6 @@
   ],
   "walletAddress": "https://devnet-wallet.elrond.com",
   "apiAddress": "https://devnet-api.elrond.com",
-  "explorerAddress": "http://devnet-explorer.elrond.com"
+  "explorerAddress": "http://devnet-explorer.elrond.com",
+  "chainId": "D"
 }

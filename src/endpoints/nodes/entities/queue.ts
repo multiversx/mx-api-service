@@ -1,15 +1,19 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class Queue {
-    @ApiProperty()
-    bls: string = '';
+  constructor(init?: Partial<Queue>) {
+    Object.assign(this, init);
+  }
 
-    @ApiProperty()
-    nonce: number = 0;
+  @ApiProperty()
+  bls: string = '';
 
-    @ApiProperty()
-    rewardsAddress: string = '';
+  @ApiProperty()
+  nonce: number = 0;
 
-    @ApiProperty()
-    position: number = 0;
+  @ApiProperty()
+  rewardsAddress: string = '';
+
+  @ApiProperty()
+  position: number = 0;
 }

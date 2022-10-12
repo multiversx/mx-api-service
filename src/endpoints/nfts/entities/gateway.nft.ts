@@ -1,4 +1,8 @@
 export class GatewayNft {
+  constructor(init?: Partial<GatewayNft>) {
+    Object.assign(this, init);
+  }
+
   attributes: string = '';
   balance: string = '0';
   creator: string = '';
@@ -8,4 +12,5 @@ export class GatewayNft {
   royalties: string = '0';
   tokenIdentifier: string = '';
   uris: string[] = [];
+  timestamp?: number;
 }

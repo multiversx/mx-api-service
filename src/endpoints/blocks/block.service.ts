@@ -1,110 +1,89 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { Block } from "./entities/block";
 import { BlockDetailed } from "./entities/block.detailed";
-import { CachingService } from "src/common/caching/caching.service";
 import { BlockFilter } from "./entities/block.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlsService } from "src/endpoints/bls/bls.service";
-import { Constants } from "src/utils/constants";
-import { ApiUtils } from "src/utils/api.utils";
-import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
-import { ElasticService } from "src/common/elastic/elastic.service";
-import { AbstractQuery } from "src/common/elastic/entities/abstract.query";
-import { QueryType } from "src/common/elastic/entities/query.type";
-import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
-import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
+import { CachingService } from "@elrondnetwork/erdnest";
+import { IndexerService } from "src/common/indexer/indexer.service";
+import { NodeService } from "../nodes/node.service";
+import { IdentitiesService } from "../identities/identities.service";
 
 @Injectable()
 export class BlockService {
   constructor(
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: IndexerService,
     private readonly cachingService: CachingService,
     private readonly blsService: BlsService,
+    @Inject(forwardRef(() => NodeService))
+    private readonly nodeService: NodeService,
+    @Inject(forwardRef(() => IdentitiesService))
+    private readonly identitiesService: IdentitiesService,
   ) { }
 
-  private async buildElasticBlocksFilter(filter: BlockFilter): Promise<AbstractQuery[]> {
-    const { shard, proposer, validator, epoch, nonce } = filter;
-
-    const queries: AbstractQuery[] = [];
-    if (nonce !== undefined) {
-      const nonceQuery = QueryType.Match("nonce", nonce);
-      queries.push(nonceQuery);
-    }
-    if (shard !== undefined) {
-      const shardIdQuery = QueryType.Match('shardId', shard);
-      queries.push(shardIdQuery);
-    }
-
-    if (epoch !== undefined) {
-      const epochQuery = QueryType.Match('epoch', epoch);
-      queries.push(epochQuery);
-    }
-
-    if (proposer && shard !== undefined && epoch !== undefined) {
-      const index = await this.blsService.getBlsIndex(proposer, shard, epoch);
-      const proposerQuery = QueryType.Match('proposer', index);
-      queries.push(proposerQuery);
-    }
-
-    if (validator && shard !== undefined && epoch !== undefined) {
-      const index = await this.blsService.getBlsIndex(validator, shard, epoch);
-      const validatorsQuery = QueryType.Match('validators', index);
-      queries.push(validatorsQuery);
-    }
-
-    return queries;
-  }
-
   async getBlocksCount(filter: BlockFilter): Promise<number> {
-    const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, await this.buildElasticBlocksFilter(filter));
-
     return await this.cachingService.getOrSetCache(
-      `blocks:count:${JSON.stringify(elasticQuery)}`,
-      async () => await this.elasticService.getCount('blocks', elasticQuery),
-      Constants.oneMinute()
+      CacheInfo.BlocksCount(filter).key,
+      async () => await this.indexerService.getBlocksCount(filter),
+      CacheInfo.BlocksCount(filter).ttl
     );
   }
 
-  async getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<Block[]> {
-    const { from, size } = queryPagination;
-
-    const elasticQuery = ElasticQuery.create()
-      .withPagination({ from, size })
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
-      .withCondition(QueryConditionOptions.must, await this.buildElasticBlocksFilter(filter));
-
-    const result = await this.elasticService.getList('blocks', 'hash', elasticQuery);
-
-    for (const item of result) {
-      item.shard = item.shardId;
-
-      if (item.gasProvided) {
-        item.gasConsumed = item.gasProvided;
-      }
-    }
+  async getBlocks(filter: BlockFilter, queryPagination: QueryPagination, withProposerIdentity?: boolean): Promise<Block[]> {
+    const result = await this.indexerService.getBlocks(filter, queryPagination);
 
     const blocks = [];
-
     for (const item of result) {
-      const block = await this.computeProposerAndValidators(item);
+      const blockRaw = await this.computeProposerAndValidators(item);
 
-      blocks.push(ApiUtils.mergeObjects(new Block(), block));
+      const block = Block.mergeWithElasticResponse(new Block(), blockRaw);
+      blocks.push(block);
+    }
+
+    if (withProposerIdentity === true) {
+      await this.applyProposerIdentity(blocks);
     }
 
     return blocks;
   }
 
+  private async applyProposerIdentity(blocks: Block[]): Promise<void> {
+    const proposerBlses = blocks.map(x => x.proposer);
+
+    const nodes = await this.nodeService.getAllNodes();
+    for (const node of nodes) {
+      if (!proposerBlses.includes(node.bls)) {
+        continue;
+      }
+
+      const nodeIdentity = node.identity;
+      if (!nodeIdentity) {
+        continue;
+      }
+
+      const identity = await this.identitiesService.getIdentity(nodeIdentity);
+      if (!identity) {
+        continue;
+      }
+
+      for (const block of blocks) {
+        if (block.proposer === node.bls) {
+          block.proposerIdentity = identity;
+        }
+      }
+    }
+  }
+
   async computeProposerAndValidators(item: any) {
-    const { shardId: shard, epoch, searchOrder, ...rest } = item;
+    const { shardId, epoch, searchOrder, ...rest } = item;
     let { proposer, validators } = item;
 
-    let blses: any = await this.cachingService.getCacheLocal(CacheInfo.ShardAndEpochBlses(shard, epoch).key);
+    let blses: any = await this.cachingService.getCacheLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key);
     if (!blses) {
-      blses = await this.blsService.getPublicKeys(shard, epoch);
+      blses = await this.blsService.getPublicKeys(shardId, epoch);
 
-      await this.cachingService.setCacheLocal(CacheInfo.ShardAndEpochBlses(shard, epoch).key, blses, CacheInfo.ShardAndEpochBlses(shard, epoch).ttl);
+      await this.cachingService.setCacheLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key, blses, CacheInfo.ShardAndEpochBlses(shardId, epoch).ttl);
     }
 
     proposer = blses[proposer];
@@ -113,12 +92,11 @@ export class BlockService {
       validators = validators.map((index: number) => blses[index]);
     }
 
-    return { shard, epoch, proposer, validators, ...rest };
+    return { shardId, epoch, validators, ...rest, proposer };
   }
 
   async getBlock(hash: string): Promise<BlockDetailed> {
-    const result = await this.elasticService.getItem('blocks', 'hash', hash);
-    result.shard = result.shardId;
+    const result = await this.indexerService.getBlock(hash) as any;
 
     if (result.round > 0) {
       const publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);
@@ -128,15 +106,15 @@ export class BlockService {
       result.validators = [];
     }
 
-    if (result.gasProvided) {
-      result.gasConsumed = result.gasProvided;
-    }
 
-    return ApiUtils.mergeObjects(new BlockDetailed(), result);
+    const block = BlockDetailed.mergeWithElasticResponse(new BlockDetailed(), result);
+    await this.applyProposerIdentity([block]);
+
+    return block;
   }
 
   async getCurrentEpoch(): Promise<number> {
-    const blocks = await this.getBlocks(new BlockFilter(), { from: 0, size: 1 });
+    const blocks = await this.getBlocks(new BlockFilter(), new QueryPagination({ from: 0, size: 1 }));
     if (blocks.length === 0) {
       return -1;
     }

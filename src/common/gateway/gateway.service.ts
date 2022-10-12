@@ -1,9 +1,8 @@
+import { ApiService, ApiSettings, PerformanceProfiler } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { ApiConfigService } from "../api-config/api.config.service";
-import { MetricsService } from "../metrics/metrics.service";
-import { ApiService } from "../network/api.service";
-import { ApiSettings } from "../network/entities/api.settings";
+import { ApiMetricsService } from "../metrics/api.metrics.service";
+import { Auction } from "./entities/auction";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
 
 @Injectable()
@@ -12,9 +11,15 @@ export class GatewayService {
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => ApiService))
     private readonly apiService: ApiService,
-    @Inject(forwardRef(() => MetricsService))
-    private readonly metricsService: MetricsService,
+    @Inject(forwardRef(() => ApiMetricsService))
+    private readonly metricsService: ApiMetricsService,
   ) { }
+
+  async getAuctions(): Promise<Auction[]> {
+    const result = await this.get('validator/auction', GatewayComponentRequest.validatorAuction);
+
+    return result.auction;
+  }
 
   async get(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     const profiler = new PerformanceProfiler();
@@ -33,12 +38,27 @@ export class GatewayService {
     const profiler = new PerformanceProfiler();
 
     try {
-      return await this.apiService.get(`${this.apiConfigService.getGatewayUrl()}/${url}`, new ApiSettings(), errorHandler);
+      return await this.apiService.get(`${this.getUrl(component)}/${url}`, new ApiSettings(), errorHandler);
     } finally {
       profiler.stop();
 
       this.metricsService.setGatewayDuration(component, profiler.duration);
     }
+  }
+
+  private getUrl(component: GatewayComponentRequest): string {
+    const lightGatewayComponents = [
+      GatewayComponentRequest.addressBalance,
+      GatewayComponentRequest.addressDetails,
+      GatewayComponentRequest.addressEsdt,
+      GatewayComponentRequest.vmQuery,
+    ];
+
+    if (lightGatewayComponents.includes(component)) {
+      return this.apiConfigService.getLightGatewayUrl() ?? this.apiConfigService.getGatewayUrl();
+    }
+
+    return this.apiConfigService.getGatewayUrl();
   }
 
   async create(url: string, component: GatewayComponentRequest, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {

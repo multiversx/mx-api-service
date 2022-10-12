@@ -1,23 +1,19 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { ApiService } from "src/common/network/api.service";
+import { OriginLogger } from "@elrondnetwork/erdnest";
+import { Constants, MatchUtils, CachingService, ApiService } from "@elrondnetwork/erdnest";
+import { Injectable } from "@nestjs/common";
 import { NftMetadata } from "src/endpoints/nfts/entities/nft.metadata";
-import { Constants } from "src/utils/constants";
-import { MatchUtils } from "src/utils/match.utils";
-import { TokenUtils } from "src/utils/token.utils";
+import { TokenHelpers } from "src/utils/token.helpers";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
-import { CachingService } from "../../common/caching/caching.service";
 
 @Injectable()
 export class NftExtendedAttributesService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(NftExtendedAttributesService.name);
 
   constructor(
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
     private readonly apiService: ApiService,
-  ) {
-    this.logger = new Logger(NftExtendedAttributesService.name);
-  }
+  ) { }
 
   async tryGetExtendedAttributesFromBase64EncodedAttributes(attributes: string): Promise<any> {
     try {
@@ -65,7 +61,7 @@ export class NftExtendedAttributesService {
     }
 
     if (result.fileUri) {
-      result.fileUri = TokenUtils.computeNftUri(result.fileUri, this.apiConfigService.getExternalMediaUrl() + '/nfts/asset');
+      result.fileUri = TokenHelpers.computeNftUri(result.fileUri, this.apiConfigService.getExternalMediaUrl() + '/nfts/asset');
     }
 
     return result;
@@ -73,7 +69,7 @@ export class NftExtendedAttributesService {
 
   private async getExtendedAttributesFromIpfs(metadata: string): Promise<any> {
     const ipfsUri = `https://ipfs.io/ipfs/${metadata}`;
-    const processedIpfsUri = TokenUtils.computeNftUri(ipfsUri, this.apiConfigService.getMediaUrl() + '/nfts/asset');
+    const processedIpfsUri = TokenHelpers.computeNftUri(ipfsUri, this.apiConfigService.getMediaUrl() + '/nfts/asset');
 
     const result = await this.apiService.get(processedIpfsUri, { timeout: 5000 });
 

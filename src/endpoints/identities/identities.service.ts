@@ -1,7 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { CachingService } from "@elrondnetwork/erdnest";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import BigNumber from "bignumber.js";
-import { CachingService } from "src/common/caching/caching.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { NetworkService } from "../network/network.service";
@@ -15,9 +15,12 @@ import { StakeInfo } from "./entities/stake.info";
 @Injectable()
 export class IdentitiesService {
   constructor(
+    @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
+    @Inject(forwardRef(() => KeybaseService))
     private readonly keybaseService: KeybaseService,
     private readonly cachingService: CachingService,
+    @Inject(forwardRef(() => NetworkService))
     private readonly networkService: NetworkService
   ) { }
 

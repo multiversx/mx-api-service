@@ -1,4 +1,4 @@
-import { UsernameUtils } from "src/utils/username.utils";
+import { UsernameUtils } from "src/endpoints/usernames/username.utils";
 
 describe('Username Utils', () => {
   describe('normalizeUsername', () => {

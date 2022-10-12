@@ -5,21 +5,21 @@ import { NodeStatus } from "./entities/node.status";
 import { Queue } from "./entities/queue";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CachingService } from "src/common/caching/caching.service";
 import { NodeFilter } from "./entities/node.filter";
 import { ProviderService } from "../providers/provider.service";
 import { StakeService } from "../stake/stake.service";
 import { SortOrder } from "src/common/entities/sort.order";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockService } from "../blocks/block.service";
-import { Constants } from "src/utils/constants";
-import { AddressUtils } from "src/utils/address.utils";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { Auction } from "src/common/gateway/entities/auction";
+import { AddressUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
+import { NodeSort } from "./entities/node.sort";
 
 @Injectable()
 export class NodeService {
@@ -34,6 +34,7 @@ export class NodeService {
     private readonly stakeService: StakeService,
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
+    @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
   ) { }
 
@@ -63,9 +64,9 @@ export class NodeService {
 
   async getNodeVersions(): Promise<NodeVersions> {
     return await this.cachingService.getOrSetCache(
-      'nodeVersions',
+      CacheInfo.NodeVersions.key,
       async () => await this.getNodeVersionsRaw(),
-      Constants.oneMinute()
+      CacheInfo.NodeVersions.ttl
     );
   }
 
@@ -158,13 +159,33 @@ export class NodeService {
         return false;
       }
 
+      if (query.auctioned !== undefined && node.auctioned !== query.auctioned) {
+        return false;
+      }
+
+      if (query.fullHistory !== undefined) {
+        if (query.fullHistory === true && !node.fullHistory) {
+          return false;
+        }
+
+        if (query.fullHistory === false && node.fullHistory === true) {
+          return false;
+        }
+      }
+
       return true;
     });
 
-    if (query.sort) {
+    const sort = query.sort;
+    if (sort) {
       filteredNodes.sort((a: any, b: any) => {
         let asort = a[query.sort ?? ''];
         let bsort = b[query.sort ?? ''];
+
+        if (sort === NodeSort.locked) {
+          asort = Number(asort);
+          bsort = Number(bsort);
+        }
 
         if (asort && typeof asort === 'string') {
           asort = asort.toLowerCase();
@@ -276,7 +297,11 @@ export class NodeService {
 
     for (const node of nodes) {
       if (node.type === 'validator') {
-        const stake = stakes.find(({ bls }) => bls === node.bls) || new Stake();
+        let stake = stakes.find(({ bls }) => bls === node.bls) ?? new Stake();
+
+        if (node.status === "jailed") {
+          stake = stakes.find(({ address }) => node.provider ? address === node.provider : address === node.owner) ?? new Stake();
+        }
 
         node.stake = stake.stake;
         node.topUp = stake.topUp;
@@ -297,13 +322,36 @@ export class NodeService {
 
     await this.getNodesStakeDetails(nodes);
 
+    if (this.apiConfigService.isStakingV4Enabled()) {
+      const auctions = await this.gatewayService.getAuctions();
+      this.processAuctions(nodes, auctions);
+    }
+
     return nodes;
+  }
+
+  processAuctions(nodes: Node[], auctions: Auction[]) {
+    for (const node of nodes) {
+      let position = 1;
+      for (const auction of auctions) {
+        for (const auctionNode of auction.auctionList) {
+          if (node.bls === auctionNode.blsKey) {
+            node.auctioned = true;
+            node.auctionPosition = position;
+            node.auctionTopUp = auction.qualifiedTopUp;
+            node.auctionSelected = auctionNode.selected;
+          }
+
+          position++;
+        }
+      }
+    }
   }
 
   async getOwners(blses: string[], epoch: number) {
     const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(bls, epoch).key);
 
-    const cached = await this.cachingService.batchGetCache(keys);
+    const cached = await this.cachingService.batchGetCacheRemote(keys);
 
     const missing = cached
       .map((element, index) => (element === null ? index : false))
@@ -472,27 +520,32 @@ export class NodeService {
       let nodeType: NodeType | undefined = undefined;
       let nodeStatus: NodeStatus | undefined = undefined;
 
-      const status = validatorStatus ? validatorStatus : peerType;
-      nodeStatus = status;
-
-      if (status === 'observer') {
+      if (validatorStatus === 'new') {
+        nodeType = NodeType.validator;
+        nodeStatus = NodeStatus.new;
+      } else if (validatorStatus === 'jailed') {
+        nodeType = NodeType.validator;
+        nodeStatus = NodeStatus.jailed;
+      } else if (validatorStatus && validatorStatus.includes('leaving')) {
+        nodeType = NodeType.validator;
+        nodeStatus = NodeStatus.leaving;
+      } else if (peerType === 'observer') {
         nodeType = NodeType.observer;
         nodeStatus = undefined;
       } else {
         nodeType = NodeType.validator;
-        if (status && status.includes('leaving')) {
-          nodeStatus = NodeStatus.leaving;
-        }
+        nodeStatus = peerType ? peerType : validatorStatus;
       }
 
-      const node: Node = {
+      const node: Node = new Node({
         bls,
         name,
-        version: version ? version.split('-')[0].split('/')[0] : '',
+        version: version ? (version.includes('-rc') ? version.split('-').slice(0, 2).join('-').split('/')[0] : version.split('-')[0].split('/')[0]) : '',
         identity: identity && identity !== '' ? identity.toLowerCase() : identity,
         rating: parseFloat(parseFloat(rating).toFixed(2)),
         tempRating: parseFloat(parseFloat(tempRating).toFixed(2)),
         ratingModifier: ratingModifier ? ratingModifier : 0,
+        fullHistory: item.peerSubType === 1 ? true : undefined,
         shard,
         type: nodeType,
         status: nodeStatus,
@@ -511,10 +564,18 @@ export class NodeService {
         validatorSuccess,
         issues: [],
         position: 0,
-      };
+        auctioned: undefined,
+        auctionPosition: undefined,
+        auctionTopUp: undefined,
+        auctionSelected: undefined,
+      });
 
       if (['queued', 'jailed'].includes(peerType)) {
         node.shard = undefined;
+      }
+
+      if (node.online === undefined) {
+        node.online = false;
       }
 
       node.issues = this.getIssues(node, config.erd_latest_tag_software_version);

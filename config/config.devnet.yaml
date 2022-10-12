@@ -7,9 +7,12 @@ api:
 cron:
   transactionProcessor: true
   transactionProcessorMaxLookBehind: 100
+  transactionCompleted: false
+  transactionCompletedMaxLookBehind: 100
   cacheWarmer: true
   fastWarm: true
   queueWorker: true
+  elasticUpdater: false
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true
@@ -17,7 +20,14 @@ flags:
   useRequestLogging: false
   useVmQueryTracing: false
   processNfts: true
-  indexer-v3: false
+  indexer-v3: true
+features:
+  eventsNotifier:
+    enabled: false
+    port: 5674
+    url: 'amqp://guest:guest@127.0.0.1:5672'
+    exchange: 'all_events'
+    queue: 'api-process-logs-and-events'
 image:
   width: 600
   height: 600
@@ -32,18 +42,27 @@ urls:
     - 'https://devnet-api.elrond.com'
     - 'https://testnet-api.elrond.com'
     - 'https://api.elrond.com'
+    - 'http://localhost:3001'
   elastic:
     - 'https://devnet-index.elrond.com'
   gateway:
     - 'https://devnet-gateway.elrond.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
-  providers: 'https://devnet-delegation.maiarbrowser.com/providers'
+  providers: 'https://devnet-delegation-api.elrond.com/providers'
+  delegation: 'https://devnet-delegation-api.elrond.com'
   media: 'https://devnet-media.elrond.com'
   nftThumbnails: 'https://devnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
+  socket: 'devnet-socket-fra.elrond.com'
+indexer:
+  type: 'elastic'
+  maxPagination: 10000
 database:
+  enabled: false
+  url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
+  type: 'mysql'
   host: 'localhost'
   port: 3306
   username: 'root'
@@ -62,6 +81,7 @@ contracts:
   staking: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7'
   delegationManager: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6'
   delegation: 'erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx'
+  metabonding: 'erd1qqqqqqqqqqqqqpgqkg7we73j769ew5we4yyx7uyvnn0nefqgd8ssm6vjc2'
   delegationShardId: 2
 inflation:
   - 1952123
@@ -74,7 +94,9 @@ inflation:
 security:
   admins:
   jwtSecret:
-  accessAddress:
 nftProcess:
   parallelism: 1
   maxRetries: 3
+transaction-action:
+  mex:
+    microServiceUrl: ''

@@ -1,61 +1,67 @@
-import {forwardRef, HttpException, HttpStatus, Inject, Injectable, Logger} from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
-import { CachingService } from 'src/common/caching/caching.service';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { AccountDeferred } from './entities/account.deferred';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { Constants } from 'src/utils/constants';
-import { AddressUtils } from 'src/utils/address.utils';
-import { ApiUtils } from 'src/utils/api.utils';
-import { BinaryUtils } from 'src/utils/binary.utils';
 import { AccountKey } from './entities/account.key';
-import { QueryConditionOptions } from 'src/common/elastic/entities/query.condition.options';
-import { GatewayService } from 'src/common/gateway/gateway.service';
-import { ElasticService } from 'src/common/elastic/elastic.service';
-import { QueryType } from 'src/common/elastic/entities/query.type';
-import { ElasticQuery } from 'src/common/elastic/entities/elastic.query';
-import { ElasticSortOrder } from 'src/common/elastic/entities/elastic.sort.order';
 import { DeployedContract } from './entities/deployed.contract';
 import { TransactionService } from '../transactions/transaction.service';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { PluginService } from 'src/common/plugins/plugin.service';
-import {AccountEsdtHistory} from "./entities/account.esdt.history";
-import {AbstractQuery} from "../../common/elastic/entities/abstract.query";
-import {AccountHistory} from "./entities/account.history";
+import { AccountEsdtHistory } from "./entities/account.esdt.history";
+import { AccountHistory } from "./entities/account.history";
+import { StakeService } from '../stake/stake.service';
+import { TransferService } from '../transfers/transfer.service';
+import { SmartContractResultService } from '../sc-results/scresult.service';
+import { TransactionType } from '../transactions/entities/transaction.type';
+import { AssetsService } from 'src/common/assets/assets.service';
+import { TransactionFilter } from '../transactions/entities/transaction.filter';
+import { AddressUtils, ApiUtils, BinaryUtils, CachingService } from '@elrondnetwork/erdnest';
+import { GatewayService } from 'src/common/gateway/gateway.service';
+import { IndexerService } from "src/common/indexer/indexer.service";
+import { AccountOptionalFieldOption } from './entities/account.optional.field.options';
+import { AccountAssets } from 'src/common/assets/entities/account.assets';
+import { OriginLogger } from '@elrondnetwork/erdnest';
+import { CacheInfo } from 'src/utils/cache.info';
 
 @Injectable()
 export class AccountService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(AccountService.name);
 
   constructor(
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
-    @Inject(forwardRef(() => CachingService))
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
+    @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
     @Inject(forwardRef(() => PluginService))
     private readonly pluginService: PluginService,
-  ) {
-    this.logger = new Logger(AccountService.name);
-  }
+    @Inject(forwardRef(() => StakeService))
+    private readonly stakeService: StakeService,
+    @Inject(forwardRef(() => TransferService))
+    private readonly transferService: TransferService,
+    @Inject(forwardRef(() => SmartContractResultService))
+    private readonly smartContractResultService: SmartContractResultService,
+    private readonly assetsService: AssetsService,
+  ) { }
 
   async getAccountsCount(): Promise<number> {
     return await this.cachingService.getOrSetCache(
-      'account:count',
-      async () => await this.elasticService.getCount('accounts'),
-      Constants.oneMinute()
+      CacheInfo.AccountsCount.key,
+      async () => await this.indexerService.getAccountsCount(),
+      CacheInfo.AccountsCount.ttl
     );
   }
 
   async getAccountUsername(address: string): Promise<string | null> {
     return await this.cachingService.getOrSetCache(
-      `account:${address}:username`,
+      CacheInfo.AccountUsername(address).key,
       async () => await this.getAccountUsernameRaw(address),
-      Constants.oneWeek()
+      CacheInfo.AccountUsername(address).ttl,
     );
   }
 
@@ -68,41 +74,50 @@ export class AccountService {
     return account.username;
   }
 
-  async getAccount(address: string): Promise<AccountDetailed | null> {
+  async getAccount(address: string, fields?: string[]): Promise<AccountDetailed | null> {
     if (!AddressUtils.isAddressValid(address)) {
       return null;
     }
 
-    const queries = [
-      QueryType.Match('sender', address),
-      QueryType.Match('receiver', address),
-    ];
+    let txCount: number = 0;
+    let scrCount: number = 0;
 
-    const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.should, queries);
+    if (!fields || fields.length === 0 || fields.includes(AccountOptionalFieldOption.txCount)) {
+      txCount = await this.getAccountTxCount(address);
+    }
+
+    if (!fields || fields.length === 0 || fields.includes(AccountOptionalFieldOption.scrCount)) {
+      scrCount = await this.getAccountScResults(address);
+    }
+
+    return this.getAccountRaw(address, txCount, scrCount);
+  }
+
+  async getAccountSimple(address: string): Promise<AccountDetailed | null> {
+    if (!AddressUtils.isAddressValid(address)) {
+      return null;
+    }
+
+    return await this.getAccountRaw(address);
+  }
+
+  async getAccountRaw(address: string, txCount: number = 0, scrCount: number = 0): Promise<AccountDetailed | null> {
+    const assets = await this.assetsService.getAllAccountAssets();
 
     try {
-      const [
-        txCount,
-        scrCount,
-        {
-          account: { nonce, balance, code, codeHash, rootHash, username, developerReward, ownerAddress, codeMetadata },
-        },
-      ] = await Promise.all([
-        this.transactionService.getTransactionCountForAddress(address),
-        this.getAccountScResults(elasticQuery),
-        this.gatewayService.get(`address/${address}`, GatewayComponentRequest.addressDetails),
-      ]);
+      const {
+        account: { nonce, balance, code, codeHash, rootHash, username, developerReward, ownerAddress, codeMetadata },
+      } = await this.gatewayService.get(`address/${address}`, GatewayComponentRequest.addressDetails);
 
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
-      let account: AccountDetailed = { address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, username, shard, developerReward, ownerAddress, scamInfo: undefined };
+      let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, username, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], nftCollections: undefined, nfts: undefined });
 
       const codeAttributes = AddressUtils.decodeCodeMetadata(codeMetadata);
       if (codeAttributes) {
         account = { ...account, ...codeAttributes };
       }
 
-      if (account.code && !this.apiConfigService.getUseLegacyElastic()) {
+      if (account.code) {
         const deployedAt = await this.getAccountDeployedAt(address);
         if (deployedAt) {
           account.deployedAt = deployedAt;
@@ -118,33 +133,32 @@ export class AccountService {
     }
   }
 
-  private async getAccountScResults(query: ElasticQuery): Promise<number> {
-    if (this.apiConfigService.getUseLegacyElastic()) {
-      return 0;
+  async getAccountTxCount(address: string): Promise<number> {
+    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
+      return this.transactionService.getTransactionCountForAddress(address);
     }
 
-    try {
-      return await this.elasticService.getCount('scresults', query);
-    } catch (error) {
-      // @ts-ignore
-      if (error.response.status === HttpStatus.NOT_FOUND) {
-        return 0;
-      }
+    return await this.transferService.getTransfersCount(new TransactionFilter({ address, type: TransactionType.Transaction }));
+  }
 
-      throw error;
+  async getAccountScResults(address: string): Promise<number> {
+    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
+      return await this.smartContractResultService.getAccountScResultsCount(address);
     }
+
+    return await this.transferService.getTransfersCount(new TransactionFilter({ address, type: TransactionType.SmartContractResult }));
   }
 
   async getAccountDeployedAt(address: string): Promise<number | null> {
     return await this.cachingService.getOrSetCache(
-      `accountDeployedAt:${address}`,
+      CacheInfo.AccountDeployedAt(address).key,
       async () => await this.getAccountDeployedAtRaw(address),
-      Constants.oneWeek()
+      CacheInfo.AccountDeployedAt(address).ttl
     );
   }
 
   async getAccountDeployedAtRaw(address: string): Promise<number | null> {
-    const scDeploy = await this.elasticService.getItem('scdeploys', '_id', address);
+    const scDeploy = await this.indexerService.getScDeploy(address);
     if (!scDeploy) {
       return null;
     }
@@ -154,7 +168,7 @@ export class AccountService {
       return null;
     }
 
-    const transaction = await this.elasticService.getItem('transactions', '_id', txHash);
+    const transaction = await this.indexerService.getTransaction(txHash);
     if (!transaction) {
       return null;
     }
@@ -164,24 +178,35 @@ export class AccountService {
 
   async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
     return await this.cachingService.getOrSetCache(
-      `accounts:${queryPagination.from}:${queryPagination.size}`,
+      CacheInfo.Accounts(queryPagination).key,
       async () => await this.getAccountsRaw(queryPagination),
-      Constants.oneMinute(),
+      CacheInfo.Accounts(queryPagination).ttl
     );
   }
 
+  public async getAccountsForAddresses(addresses: Array<string>): Promise<Array<Account>> {
+    const assets: { [key: string]: AccountAssets } = await this.assetsService.getAllAccountAssets();
+
+    const accountsRaw = await this.indexerService.getAccountsForAddresses(addresses);
+    const accounts: Array<Account> = accountsRaw.map(account => ApiUtils.mergeObjects(new Account(), account));
+
+    for (const account of accounts) {
+      account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address));
+      account.assets = assets[account.address];
+    }
+
+    return accounts;
+  }
+
   async getAccountsRaw(queryPagination: QueryPagination): Promise<Account[]> {
-    const { from, size } = queryPagination;
+    const result = await this.indexerService.getAccounts(queryPagination);
 
-    const elasticQuery = ElasticQuery.create()
-      .withPagination({ from, size })
-      .withSort([{ name: 'balanceNum', order: ElasticSortOrder.descending }]);
-
-    const result = await this.elasticService.getList('accounts', 'address', elasticQuery);
+    const assets = await this.assetsService.getAllAccountAssets();
 
     const accounts: Account[] = result.map(item => ApiUtils.mergeObjects(new Account(), item));
     for (const account of accounts) {
       account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address));
+      account.assets = assets[account.address];
     }
 
     return accounts;
@@ -206,8 +231,6 @@ export class AccountService {
       this.vmQueryService.vmQuery(
         this.apiConfigService.getDelegationContractAddress(),
         'getNumBlocksBeforeUnBond',
-        undefined,
-        []
       ),
       this.gatewayService.get(`network/status/${this.apiConfigService.getDelegationContractShardId()}`, GatewayComponentRequest.networkStatus),
     ]);
@@ -251,9 +274,7 @@ export class AccountService {
     );
 
     const rewardsPublicKey = Buffer.from(encodedRewardsPublicKey, 'base64').toString();
-    const rewardAddress = AddressUtils.bech32Encode(rewardsPublicKey);
-
-    return rewardAddress;
+    return AddressUtils.bech32Encode(rewardsPublicKey);
   }
 
   async getKeys(address: string): Promise<AccountKey[]> {
@@ -278,9 +299,11 @@ export class AccountService {
 
     if (nodes.length) {
       const rewardAddress = await this.getRewardAddressForNode(nodes[0].blsKey);
+      const { topUp } = await this.stakeService.getAllStakesForNode(address);
 
       for (const node of nodes) {
         node.rewardAddress = rewardAddress;
+        node.topUp = topUp;
       }
     }
 
@@ -326,12 +349,7 @@ export class AccountService {
   }
 
   async getAccountContracts(pagination: QueryPagination, address: string): Promise<DeployedContract[]> {
-    const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withPagination(pagination)
-      .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)])
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
-
-    const accountDeployedContracts = await this.elasticService.getList('scdeploys', "contract", elasticQuery);
+    const accountDeployedContracts = await this.indexerService.getAccountContracts(pagination, address);
 
     const accounts: DeployedContract[] = accountDeployedContracts.map(contract => ({
       address: contract.contract,
@@ -343,51 +361,16 @@ export class AccountService {
   }
 
   async getAccountContractsCount(address: string): Promise<number> {
-    const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)]);
-
-    return await this.elasticService.getCount('scdeploys', elasticQuery);
+    return await this.indexerService.getAccountContractsCount(address);
   }
 
-
   async getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]> {
-    const elasticQuery: ElasticQuery = AccountService.buildAccountHistoryFilterQuery(address);
-    elasticQuery
-        .withPagination(pagination)
-        .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
-
-    const elasticResult = await this.elasticService.getList('accountshistory', 'address', elasticQuery);
+    const elasticResult = await this.indexerService.getAccountHistory(address, pagination);
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountHistory(), item));
   }
 
-  private static buildAccountHistoryFilterQuery(address?: string, token?: string): ElasticQuery {
-    const shouldQueries: AbstractQuery[] = [];
-    const mustQueries: AbstractQuery[] = [];
-
-    if (address) {
-      mustQueries.push(QueryType.Match('address', address));
-    }
-
-    if (token) {
-      mustQueries.push(QueryType.Match('token', token));
-    }
-
-    return ElasticQuery.create()
-      .withCondition(QueryConditionOptions.should, shouldQueries)
-      .withCondition(QueryConditionOptions.must, mustQueries);
-  }
-
   async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<AccountEsdtHistory[]> {
-    if(!tokenIdentifier){
-      throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
-    }
-
-    const elasticQuery: ElasticQuery = AccountService.buildAccountHistoryFilterQuery(address, tokenIdentifier);
-    elasticQuery
-        .withPagination(pagination)
-        .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
-
-    const elasticResult = await this.elasticService.getList('accountsesdthistory', 'address', elasticQuery);
+    const elasticResult = await this.indexerService.getAccountTokenHistory(address, tokenIdentifier, pagination);
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
   }
 }

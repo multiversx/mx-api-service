@@ -1,14 +1,14 @@
+import { ApiUtils } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
-import { ElasticService } from "src/common/elastic/elastic.service";
-import { ApiUtils } from "src/utils/api.utils";
+import { IndexerService } from "src/common/indexer/indexer.service";
 import { MiniBlockDetailed } from "./entities/mini.block.detailed";
 
 @Injectable()
 export class MiniBlockService {
-  constructor(private readonly elasticService: ElasticService) { }
+  constructor(private readonly indexerService: IndexerService) { }
 
   async getMiniBlock(miniBlockHash: string): Promise<MiniBlockDetailed> {
-    const result = await this.elasticService.getItem('miniblocks', 'miniBlockHash', miniBlockHash);
+    const result = await this.indexerService.getMiniBlock(miniBlockHash);
 
     return ApiUtils.mergeObjects(new MiniBlockDetailed(), result);
   }

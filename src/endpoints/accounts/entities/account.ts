@@ -1,18 +1,31 @@
+import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
+import { SwaggerUtils } from "@elrondnetwork/erdnest";
 import { ApiProperty } from "@nestjs/swagger";
+import { AccountAssets } from "src/common/assets/entities/account.assets";
 
+@ObjectType("Account", { description: "Account object type." })
 export class Account {
-  @ApiProperty({ description: 'The address of the account' })
+  constructor(init?: Partial<Account>) {
+    Object.assign(this, init);
+  }
+
+  @Field(() => ID, { description: 'Address for the given account.' })
+  @ApiProperty({ type: String, description: 'Account bech32 address', example: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz' })
   address: string = '';
 
-  @ApiProperty({ description: 'The current balance of the account (must be denominated to obtain the real value)' })
+  @Field(() => String, { description: 'Balance for the given account.' })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions({ description: 'Account current balance' }))
   balance: string = '';
 
-  @ApiProperty({ description: 'The current nonce of the account' })
-  nonce: string = '';
+  @Field(() => Float, { description: 'Nonce for the given account.' })
+  @ApiProperty({ type: Number, description: 'Account current nonce', example: 42 })
+  nonce: number = 0;
 
-  @ApiProperty({ description: 'The shard identifier of the account' })
+  @Field(() => Float, { description: 'Shard for the given account.' })
+  @ApiProperty({ type: Number, description: 'The shard ID allocated to the account', example: 0 })
   shard: number = 0;
 
-  @ApiProperty()
-  scamInfo: any | undefined = undefined;
+  @Field(() => AccountAssets, { description: 'Account assets for the given account.', nullable: true })
+  @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })
+  assets: AccountAssets | undefined = undefined;
 }

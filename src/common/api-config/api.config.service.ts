@@ -28,6 +28,15 @@ export class ApiConfigService {
     return gatewayUrls[Math.floor(Math.random() * gatewayUrls.length)];
   }
 
+  getLightGatewayUrl(): string | undefined {
+    const gatewayUrls = this.configService.get<string[]>('urls.lightGateway');
+    if (!gatewayUrls) {
+      return undefined;
+    }
+
+    return gatewayUrls[Math.floor(Math.random() * gatewayUrls.length)];
+  }
+
   getElasticUrl(): string {
     const elasticUrls = this.configService.get<string[]>('urls.elastic');
     if (!elasticUrls) {
@@ -48,6 +57,15 @@ export class ApiConfigService {
 
   getIpfsUrl(): string {
     return this.configService.get<string>('urls.ipfs') ?? 'https://ipfs.io/ipfs';
+  }
+
+  getSocketUrl(): string {
+    const url = this.configService.get<string>('urls.socket');
+    if (!url) {
+      throw new Error('No socket url present');
+    }
+
+    return url;
   }
 
   getEsdtContractAddress(): string {
@@ -84,6 +102,10 @@ export class ApiConfigService {
     }
 
     return address;
+  }
+
+  getMetabondingContractAddress(): string | undefined {
+    return this.configService.get<string>('contracts.metabonding');
   }
 
   getDelegationContractShardId(): number {
@@ -143,6 +165,10 @@ export class ApiConfigService {
     return network;
   }
 
+  getCluster(): string | undefined {
+    return this.configService.get<string>('cluster');
+  }
+
   getPoolLimit(): number {
     return this.configService.get<number>('caching.poolLimit') ?? 100;
   }
@@ -152,9 +178,7 @@ export class ApiConfigService {
   }
 
   getAxiosTimeout(): number {
-    return (
-      this.configService.get<number>('keepAliveTimeout.downstream') ?? 61000
-    );
+    return this.configService.get<number>('keepAliveTimeout.downstream') ?? 61000;
   }
 
   getServerTimeout(): number {
@@ -187,11 +211,25 @@ export class ApiConfigService {
 
   getProvidersUrl(): string {
     const providerUrl = this.configService.get<string>('urls.providers');
-    if (!providerUrl) {
-      throw new Error('No providers url present');
+    if (providerUrl) {
+      return providerUrl;
     }
 
-    return providerUrl;
+    const delegationUrl = this.configService.get<string>('urls.delegation');
+    if (delegationUrl) {
+      return delegationUrl + '/providers';
+    }
+
+    throw new Error('No providers url present');
+  }
+
+  getDelegationUrl(): string {
+    const delegationUrl = this.configService.get<string>('urls.delegation');
+    if (!delegationUrl) {
+      throw new Error('No delegation url present');
+    }
+
+    return delegationUrl;
   }
 
   getDataUrl(): string | undefined {
@@ -208,9 +246,7 @@ export class ApiConfigService {
   }
 
   getIsTransactionProcessorCronActive(): boolean {
-    const isCronActive = this.configService.get<boolean>(
-      'cron.transactionProcessor',
-    );
+    const isCronActive = this.configService.get<boolean>('cron.transactionProcessor');
     if (isCronActive === undefined) {
       throw new Error('No cron.transactionProcessor flag present');
     }
@@ -219,14 +255,20 @@ export class ApiConfigService {
   }
 
   getTransactionProcessorMaxLookBehind(): number {
-    const transactionProcessorMaxLookBehind = this.configService.get<number>(
-      'cron.transactionProcessorMaxLookBehind',
-    );
+    const transactionProcessorMaxLookBehind = this.configService.get<number>('cron.transactionProcessorMaxLookBehind');
     if (transactionProcessorMaxLookBehind === undefined) {
       throw new Error('No cron.transactionProcessorMaxLookBehind flag present');
     }
 
     return transactionProcessorMaxLookBehind;
+  }
+
+  getIsTransactionCompletedCronActive(): boolean {
+    return this.configService.get<boolean>('cron.transactionCompleted') ?? false;
+  }
+
+  getTransactionCompletedMaxLookBehind(): number {
+    return this.configService.get<number>('cron.transactionCompletedMaxLookBehind') ?? 100;
   }
 
   getIsCacheWarmerCronActive(): boolean {
@@ -236,6 +278,10 @@ export class ApiConfigService {
     }
 
     return isCronActive;
+  }
+
+  getIsElasticUpdaterCronActive(): boolean {
+    return this.configService.get<boolean>('cron.elasticUpdater') ?? false;
   }
 
   getIsQueueWorkerCronActive(): boolean {
@@ -256,12 +302,52 @@ export class ApiConfigService {
     return isCronActive;
   }
 
+  isEventsNotifierFeatureActive(): boolean {
+    const isEventsNotifierActive = this.configService.get<boolean>('features.eventsNotifier.enabled');
+    if (isEventsNotifierActive === undefined) {
+      return false;
+    }
+
+    return isEventsNotifierActive;
+  }
+
+  getEventsNotifierFeaturePort(): number {
+    const eventsNotifierPort = this.configService.get<number>('features.eventsNotifier.port');
+    if (eventsNotifierPort === undefined) {
+      throw new Error('No events notifier port present');
+    }
+
+    return eventsNotifierPort;
+  }
+
+  getEventsNotifierUrl(): string {
+    const url = this.configService.get<string>('features.eventsNotifier.url');
+    if (!url) {
+      throw new Error('No events notifier url present');
+    }
+
+    return url;
+  }
+
+  getEventsNotifierExchange(): string {
+    const exchange = this.configService.get<string>('features.eventsNotifier.exchange');
+    if (!exchange) {
+      throw new Error('No events notifier exchange present');
+    }
+
+    return exchange;
+  }
+
   getIsProcessNftsFlagActive(): boolean {
     return this.configService.get<boolean>('flags.processNfts') ?? false;
   }
 
   getIsIndexerV3FlagActive(): boolean {
     return this.configService.get<boolean>('flags.indexer-v3') ?? false;
+  }
+
+  isGraphQlActive(): boolean {
+    return this.configService.get<boolean>('api.graphql') ?? false;
   }
 
   getIsPublicApiActive(): boolean {
@@ -284,6 +370,15 @@ export class ApiConfigService {
 
   getIsAuthActive(): boolean {
     return this.configService.get<boolean>('api.auth') ?? false;
+  }
+
+  getDatabaseType(): string {
+    const databaseType = this.configService.get<string>('database.type');
+    if (!databaseType) {
+      throw new Error('No database.type present');
+    }
+
+    return databaseType;
   }
 
   getDatabaseHost(): string {
@@ -324,6 +419,15 @@ export class ApiConfigService {
     }
 
     return databaseName;
+  }
+
+  getDatabaseUrl(): string {
+    const databaseUrl = this.configService.get<string>('database.url');
+    if (!databaseUrl) {
+      throw new Error('No database.url present');
+    }
+
+    return databaseUrl;
   }
 
   getDatabaseConnection(): any {
@@ -417,15 +521,6 @@ export class ApiConfigService {
     return metaChainShardId;
   }
 
-  getUseLegacyElastic(): boolean {
-    const useLegacyElastic = this.configService.get<boolean>('useLegacyElastic');
-    if (useLegacyElastic === undefined) {
-      return false;
-    }
-
-    return useLegacyElastic;
-  }
-
   getRateLimiterSecret(): string | undefined {
     return this.configService.get<string>('rateLimiterSecret');
   }
@@ -488,16 +583,16 @@ export class ApiConfigService {
     return jwtSecret;
   }
 
-  getAccessAddress(): string {
-    return this.configService.get<string>('security.accessAddress') ?? '';
-  }
-
   getMockKeybases(): boolean | undefined {
     return this.configService.get<boolean>('test.mockKeybases');
   }
 
   getMockNodes(): boolean | undefined {
     return this.configService.get<boolean>('test.mockNodes');
+  }
+
+  getMockTokens(): boolean | undefined {
+    return this.configService.get<boolean>('test.mockTokens');
   }
 
   getMockPath(): string | undefined {
@@ -515,5 +610,99 @@ export class ApiConfigService {
 
   getNftProcessMaxRetries(): number {
     return this.configService.get<number>('nftProcess.maxRetries') ?? 3;
+  }
+
+  getMaiarExchangeUrl(): string | undefined {
+    return this.configService.get<string>('transaction-action.mex.microServiceUrl') ?? this.configService.get<string>('plugins.transaction-action.mex.microServiceUrl');
+  }
+
+  getMaiarExchangeUrlMandatory(): string {
+    const microServiceUrl = this.getMaiarExchangeUrl();
+    if (!microServiceUrl) {
+      throw new Error('No transaction-action.mex.microServiceUrl present');
+    }
+
+    return microServiceUrl;
+  }
+
+  getGithubToken(): string | undefined {
+    return this.configService.get<string>('github.token');
+  }
+
+  isStakingV4Enabled(): boolean {
+    return this.configService.get<boolean>('features.stakingV4.enabled') ?? false;
+  }
+
+  getStakingV4CronExpression(): string {
+    const cronExpression = this.configService.get<string>('features.stakingV4.cronExpression');
+    if (!cronExpression) {
+      throw new Error('No staking V4 cron expression present');
+    }
+
+    return cronExpression;
+  }
+
+  isNftExtendedAttributesEnabled(): boolean {
+    return this.configService.get<boolean>('features.nftExtendedAttributes.enabled') ?? false;
+  }
+
+  getNftExtendedAttributesNsfwThreshold(): number {
+    return this.configService.get<number>('features.nftExtendedAttributes.nsfwThreshold') ?? 0.85;
+  }
+
+  getIndexerSlaveConnections(): DatabaseConnectionOptions[] {
+    const slaves = this.configService.get<DatabaseConnectionOptions[]>('indexer.slaves');
+    if (!slaves) {
+      return [];
+    }
+    return slaves;
+  }
+
+  private getIndexerHost(): string {
+    const indexerHost = this.configService.get<string>('indexer.host');
+    if (!indexerHost) {
+      throw new Error('No indexer.host present');
+    }
+    return indexerHost;
+  }
+
+  private getIndexerPort(): number {
+    const indexerPort = this.configService.get<number>('indexer.port');
+    if (!indexerPort) {
+      throw new Error('No indexer.port present');
+    }
+    return indexerPort;
+  }
+
+  private getIndexerUsername(): string | undefined {
+    const indexerUsername = this.configService.get<string>('indexer.username');
+    return indexerUsername;
+  }
+
+  private getIndexerPassword(): string | undefined {
+    const indexerPassword = this.configService.get<string>('indexer.password');
+    return indexerPassword;
+  }
+
+  private getIndexerName(): string {
+    const indexerName = this.configService.get<string>('indexer.database');
+    if (!indexerName) {
+      throw new Error('No indexer.database present');
+    }
+    return indexerName;
+  }
+
+  getIndexerConnection(): any {
+    return {
+      host: this.getIndexerHost(),
+      port: this.getIndexerPort(),
+      username: this.getIndexerUsername(),
+      password: this.getIndexerPassword(),
+      database: this.getIndexerName(),
+    };
+  }
+
+  getIndexerMaxPagination(): number {
+    return this.configService.get<number>('indexer.maxPagination') ?? 10000;
   }
 }

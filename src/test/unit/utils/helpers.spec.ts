@@ -1,4 +1,4 @@
-import { ApiUtils } from 'src/utils/api.utils';
+import { ApiUtils } from "@elrondnetwork/erdnest";
 
 describe('API helpers', () => {
   describe('Cleanup API response helper', () => {

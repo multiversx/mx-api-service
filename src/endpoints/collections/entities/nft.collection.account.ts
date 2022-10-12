@@ -1,20 +1,15 @@
+import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
-import { NftAccount } from "src/endpoints/nfts/entities/nft.account";
 import { NftCollection } from "./nft.collection";
 
+@ObjectType("NftCollectionAccount", { description: "NFT collection account object type." })
 export class NftCollectionAccount extends NftCollection {
-  @ApiProperty()
-  canCreate: boolean = false;
+  constructor(init?: Partial<NftCollectionAccount>) {
+    super();
+    Object.assign(this, init);
+  }
 
+  @Field(() => Float, { description: 'Count for the given NFT collection account.' })
   @ApiProperty()
-  canBurn: boolean = false;
-
-  @ApiProperty()
-  canAddQuantity?: boolean;
-
-  @ApiProperty()
-  nfts?: NftAccount[];
-
-  @ApiProperty()
-  nftCount?: number;
+  count: number = 0;
 }

@@ -1,76 +1,133 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { TokenAssets } from "src/endpoints/tokens/entities/token.assets";
+import { ScamInfo } from "src/common/entities/scam-info.dto";
+import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { NftMedia } from "./nft.media";
 import { NftMetadata } from "./nft.metadata";
 import { NftType } from "./nft.type";
+import { ComplexityEstimation, SwaggerUtils } from "@elrondnetwork/erdnest";
+import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
+import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
+import { UnlockMileStoneModel } from "../../../common/entities/unlock-schedule";
+import { Account } from "src/endpoints/accounts/entities/account";
 
+@ObjectType("Nft", { description: "NFT object type." })
 export class Nft {
-  @ApiProperty()
+  constructor(init?: Partial<Nft>) {
+    Object.assign(this, init);
+  }
+
+  @Field(() => ID, { description: "Identifier for the given NFT." })
+  @ApiProperty({ type: String })
   identifier: string = '';
 
-  @ApiProperty()
+  @Field(() => NftCollection, { description: "NFT collection for the given NFT." })
+  @ApiProperty({ type: String })
   collection: string = '';
 
-  @ApiProperty()
-  timestamp: number = 0;
+  @Field(() => Float, { description: "Timestamp for the given NFT.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  timestamp?: number = undefined;
 
-  @ApiProperty()
+  @Field(() => String, { description: "Attributes for the given NFT.", nullable: true })
+  @ApiProperty({ type: String })
   attributes: string = '';
 
-  @ApiProperty()
+  @Field(() => Float, { description: "Nonce for the given NFT." })
+  @ApiProperty({ type: Number })
   nonce: number = 0;
 
-  @ApiProperty()
+  @Field(() => NftType, { description: "NFT type for the given NFT." })
+  @ApiProperty({ enum: NftType })
   type: NftType = NftType.NonFungibleESDT;
 
-  @ApiProperty()
+  @Field(() => String, { description: "Name for the given NFT." })
+  @ApiProperty({ type: String })
   name: string = '';
 
-  @ApiProperty()
+  @Field(() => Account, { description: "Creator account for the given NFT." })
+  @ApiProperty({ type: String })
   creator: string = '';
 
-  @ApiProperty()
+  @Field(() => Float, { description: "Royalties for the given NFT.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
   royalties: number | undefined = undefined;
 
-  @ApiProperty()
+  @Field(() => [String], { description: "URIs for the given NFT." })
+  @ApiProperty({ isArray: true })
   uris: string[] = [];
 
-  @ApiProperty()
+  @Field(() => String, { description: "URL for the given NFT." })
+  @ApiProperty({ type: String })
   url: string = '';
 
-  @ApiProperty()
+  @Field(() => [NftMedia], { description: "NFT media for the given NFT.", nullable: true })
+  @ApiProperty({ type: NftMedia, nullable: true })
   media: NftMedia[] | undefined = undefined;
 
-  @ApiProperty()
+  @Field(() => Boolean, { description: "Is whitelisted storage for the given NFT." })
+  @ApiProperty({ type: Boolean, default: false })
   isWhitelistedStorage: boolean = false;
 
-  @ApiProperty()
+  @Field(() => String, { description: "Thumbnail URL for the given NFT." })
+  @ApiProperty({ type: String })
   thumbnailUrl: string = '';
 
-  @ApiProperty()
+  @Field(() => [String], { description: "Tags for the given NFT." })
+  @ApiProperty({ isArray: true })
   tags: string[] = [];
 
-  @ApiProperty()
+  @Field(() => NftMetadata, { description: "Metadata for the given NFT.", nullable: true })
+  @ApiProperty({ type: NftMetadata, nullable: true })
   metadata: NftMetadata | undefined = undefined;
 
-  @ApiProperty()
+  @Field(() => Account, { description: "Owner account for the given NFT. Complexity: 100", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  @ComplexityEstimation({ value: 100, alternatives: ['withOwner'], group: 'extras' })
   owner: string | undefined = undefined;
 
-  @ApiProperty()
+  @Field(() => String, { description: "Balance for the given NFT.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
   balance: string | undefined = undefined;
 
-  @ApiProperty()
+  @Field(() => String, { description: "Supply for the given NFT. Complexity: 100", nullable: true })
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
+  @ComplexityEstimation({ value: 100, alternatives: ['withSupply'], group: 'extras' })
   supply: string | undefined = undefined;
 
-  @ApiProperty()
+  @Field(() => Float, { description: "Decimals for the given NFT.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
   decimals: number | undefined = undefined;
 
+  @Field(() => TokenAssets, { description: "Assets for the given NFT.", nullable: true })
   @ApiProperty()
   assets?: TokenAssets;
 
-  @ApiProperty()
-  ticker?: string;
+  @Field(() => String, { description: "Ticker for the given NFT." })
+  @ApiProperty({ type: String })
+  ticker?: string = '';
 
-  @ApiProperty()
-  scamInfo: any | undefined = undefined;
+  @Field(() => ScamInfo, { description: "Scam information for the given NFT. Complexity: 100", nullable: true })
+  @ApiProperty({ type: ScamInfo, nullable: true })
+  @ComplexityEstimation({ value: 100, alternatives: ['withScamInfo', 'computeScamInfo'], group: 'extras' })
+  scamInfo: ScamInfo | undefined = undefined;
+
+  @Field(() => Float, { description: "Score for the given NFT.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  score: number | undefined = undefined;
+
+  @Field(() => Float, { description: "Rank for the given NFT.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  rank: number | undefined = undefined;
+
+  @Field(() => Boolean, { description: "Is NSFW for the given NFT.", nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true })
+  isNsfw: boolean | undefined = undefined;
+
+  @Field(() => [UnlockMileStoneModel], { description: "Unlock mile stone model for the given NFT.", nullable: true })
+  @ApiProperty({ type: [UnlockMileStoneModel], nullable: true })
+  unlockSchedule?: UnlockMileStoneModel[] | undefined = undefined;
+
+  @Field(() => Boolean, { description: "Returns true if the transfer is affected.", nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true })
+  isTransferAffected: boolean | undefined = undefined;
 }

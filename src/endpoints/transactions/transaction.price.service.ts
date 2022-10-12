@@ -1,10 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { Constants, CachingService } from "@elrondnetwork/erdnest";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CachingService } from "src/common/caching/caching.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
+import { CacheInfo } from "src/utils/cache.info";
 import { DataApiService } from "src/common/external/data.api.service";
 import { DataQuoteType } from "src/common/external/entities/data.quote.type";
-import { Constants } from "src/utils/constants";
 import { TransactionDetailed } from "./entities/transaction.detailed";
 
 @Injectable()
@@ -13,6 +12,7 @@ export class TransactionPriceService {
   constructor(
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
+    @Inject(forwardRef(() => DataApiService))
     private readonly dataApiService: DataApiService,
   ) { }
 
@@ -24,6 +24,10 @@ export class TransactionPriceService {
 
     const transactionDate = transaction.getDate();
     if (!transactionDate) {
+      return undefined;
+    }
+
+    if (transactionDate.isLessThan(new Date(2020, 9, 10))) {
       return undefined;
     }
 

@@ -1,6 +1,10 @@
 import { NftType } from "./nft.type";
 
 export class NftFilter {
+  constructor(init?: Partial<NftFilter>) {
+    Object.assign(this, init);
+  }
+
   search?: string;
   identifiers?: string[];
   type?: NftType;
@@ -13,5 +17,9 @@ export class NftFilter {
   includeFlagged?: boolean;
   before?: number;
   after?: number;
+  nonceBefore?: number;
+  nonceAfter?: number;
   isWhitelistedStorage?: boolean;
+  isNsfw?: boolean;
+  traits?: Record<string, string>;
 }

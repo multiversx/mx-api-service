@@ -1,24 +1,23 @@
 import { forwardRef, Module } from "@nestjs/common";
-import { CommonModule } from "src/common/common.module";
 import { EsdtModule } from "../esdt/esdt.module";
 import { NftModule } from "../nfts/nft.module";
 import { TransactionModule } from "../transactions/transaction.module";
-import { TokenAssetService } from "./token.asset.service";
 import { TokenService } from "./token.service";
 import { TokenTransferService } from "./token.transfer.service";
+import { AssetsModule } from "src/common/assets/assets.module";
 
 @Module({
   imports: [
-    forwardRef(() => CommonModule),
     forwardRef(() => EsdtModule),
     forwardRef(() => NftModule),
     forwardRef(() => TransactionModule),
+    forwardRef(() => AssetsModule),
   ],
   providers: [
-    TokenAssetService, TokenService, TokenTransferService,
+    TokenService, TokenTransferService,
   ],
   exports: [
-    TokenAssetService, TokenService, TokenTransferService,
+    TokenService, TokenTransferService,
   ],
 })
 export class TokenModule { }

@@ -1,20 +1,16 @@
 import { Module } from '@nestjs/common';
-import { ApiConfigModule } from 'src/common/api-config/api.config.module';
-import { CachingModule } from 'src/common/caching/caching.module';
-import { ApiModule } from 'src/common/network/api.module';
-import { NftMediaService } from './nft.media.service';
 import { PersistenceModule } from 'src/common/persistence/persistence.module';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
+import { NftMediaService } from './nft.media.service';
 
 @Module({
   imports: [
-    ApiConfigModule,
-    CachingModule,
-    ApiModule,
-    PersistenceModule,
+    PersistenceModule.register(),
   ],
   controllers: [],
   providers: [
     NftMediaService,
+    DynamicModuleUtils.getPubSubService(),
   ],
   exports: [
     NftMediaService,

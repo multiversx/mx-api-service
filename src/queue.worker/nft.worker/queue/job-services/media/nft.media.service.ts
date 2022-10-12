@@ -1,39 +1,39 @@
-import { HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
+import { ApiService, CachingService } from "@elrondnetwork/erdnest";
+import { BinaryUtils, Constants } from "@elrondnetwork/erdnest";
+import { HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CachingService } from "src/common/caching/caching.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { ApiService } from "src/common/network/api.service";
-import { PersistenceInterface } from "src/common/persistence/persistence.interface";
+import { CacheInfo } from "src/utils/cache.info";
+import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MediaMimeTypeEnum } from "src/endpoints/nfts/entities/media.mime.type";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
-import { BinaryUtils } from "src/utils/binary.utils";
-import { Constants } from "src/utils/constants";
-import { TokenUtils } from "src/utils/token.utils";
+import { TokenHelpers } from "src/utils/token.helpers";
+import { ClientProxy } from "@nestjs/microservices";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class NftMediaService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(NftMediaService.name);
   private readonly IPFS_REQUEST_TIMEOUT = Constants.oneSecond() * 30 * 1000;
   private readonly NFT_THUMBNAIL_PREFIX;
+  public static readonly NFT_THUMBNAIL_DEFAULT = 'https://media.elrond.com/nfts/thumbnail/default.png';
 
   constructor(
     private readonly cachingService: CachingService,
     private readonly apiService: ApiService,
     private readonly apiConfigService: ApiConfigService,
-    @Inject('PersistenceService')
-    private readonly persistenceService: PersistenceInterface,
+    private readonly persistenceService: PersistenceService,
+    @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) {
-    this.logger = new Logger(NftMediaService.name);
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
   }
 
-  async getMedia(nft: Nft): Promise<NftMedia[] | null> {
+  async getMedia(identifier: string): Promise<NftMedia[] | null> {
     return await this.cachingService.getOrSetCache(
-      CacheInfo.NftMedia(nft.identifier).key,
-      async () => await this.persistenceService.getMedia(nft.identifier),
-      CacheInfo.NftMedia(nft.identifier).ttl,
+      CacheInfo.NftMedia(identifier).key,
+      async () => await this.persistenceService.getMedia(identifier),
+      CacheInfo.NftMedia(identifier).ttl,
     );
   }
 
@@ -50,6 +50,11 @@ export class NftMediaService {
       mediaRaw,
       CacheInfo.NftMedia(nft.identifier).ttl
     );
+
+    await this.clientProxy.emit('refreshCacheKey', {
+      key: CacheInfo.NftMedia(nft.identifier).key,
+      ttl: CacheInfo.NftMedia(nft.identifier).ttl,
+    });
 
     return mediaRaw;
   }
@@ -81,13 +86,27 @@ export class NftMediaService {
       }
 
       if (!fileProperties) {
+        this.logger.log(`Empty file properties for NFT with identifier '${nft.identifier}'`);
+        continue;
+      }
+
+      if (!this.isContentTypeAccepted(fileProperties.contentType)) {
+        this.logger.log(`Content type '${fileProperties.contentType}' not accepted for NFT with identifier '${nft.identifier}'`);
         continue;
       }
 
       const nftMedia = new NftMedia();
-      nftMedia.url = TokenUtils.computeNftUri(BinaryUtils.base64Decode(uri), this.NFT_THUMBNAIL_PREFIX);
+      nftMedia.url = TokenHelpers.computeNftUri(BinaryUtils.base64Decode(uri), this.NFT_THUMBNAIL_PREFIX);
       nftMedia.originalUrl = BinaryUtils.base64Decode(uri);
-      nftMedia.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${nft.collection}-${TokenUtils.getUrlHash(nftMedia.url)}`;
+
+      // we generate thumbnail url only if file size is also accepted
+      if (this.isFileSizeAccepted(fileProperties.contentLength)) {
+        nftMedia.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${nft.collection}-${TokenHelpers.getUrlHash(nftMedia.url)}`;
+      } else {
+        this.logger.log(`File size '${fileProperties.contentLength}' not accepted for NFT with identifier '${nft.identifier}'`);
+        nftMedia.thumbnailUrl = NftMediaService.NFT_THUMBNAIL_DEFAULT;
+      }
+
       nftMedia.fileType = fileProperties.contentType;
       nftMedia.fileSize = fileProperties.contentLength;
 
@@ -99,7 +118,7 @@ export class NftMediaService {
 
   private getUrl(nftUri: string, prefix: string): string {
     const url = BinaryUtils.base64Decode(nftUri);
-    return TokenUtils.computeNftUri(url, prefix);
+    return TokenHelpers.computeNftUri(url, prefix);
   }
 
   private async getFileProperties(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
@@ -132,14 +151,14 @@ export class NftMediaService {
     const contentType = headers['content-type'];
     const contentLength = Number(headers['content-length']);
 
-    if (!this.isContentAccepted(contentType)) {
-      return null;
-    }
-
     return { contentType, contentLength };
   }
 
-  private isContentAccepted(contentType: MediaMimeTypeEnum) {
-    return Object.values(MediaMimeTypeEnum).includes(contentType);
+  private isContentTypeAccepted(contentType: string): boolean {
+    return Object.values(MediaMimeTypeEnum).includes(contentType as MediaMimeTypeEnum);
+  }
+
+  private isFileSizeAccepted(fileSize: number): boolean {
+    return fileSize <= 64 * 1024 * 1024; // ~64MB
   }
 }

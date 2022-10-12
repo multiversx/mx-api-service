@@ -1,27 +1,27 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { NftMediaDb } from "src/common/persistence/database/entities/nft.media.db";
 import { NftMetadataDb } from "src/common/persistence/database/entities/nft.metadata.db";
 import { Repository } from "typeorm";
 import { PersistenceInterface } from "../persistence.interface";
+import { OriginLogger } from "@elrondnetwork/erdnest";
+import { CollectionTraitSummary } from "src/common/indexer/entities/collection.trait.summary";
 
 @Injectable()
 export class DatabaseService implements PersistenceInterface {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(DatabaseService.name);
 
   constructor(
     @InjectRepository(NftMetadataDb)
     private readonly nftMetadataRepository: Repository<NftMetadataDb>,
     @InjectRepository(NftMediaDb)
     private readonly nftMediaRepository: Repository<NftMediaDb>,
-  ) {
-    this.logger = new Logger(DatabaseService.name);
-  }
+  ) { }
 
   async getMetadata(identifier: string): Promise<any | null> {
     try {
-      const metadataDb: NftMetadataDb | undefined = await this.nftMetadataRepository.findOne({ id: identifier });
+      const metadataDb: NftMetadataDb | null = await this.nftMetadataRepository.findOne({ where: { id: identifier } });
       if (!metadataDb) {
         return null;
       }
@@ -35,9 +35,16 @@ export class DatabaseService implements PersistenceInterface {
   }
 
   async batchGetMetadata(identifiers: string[]): Promise<Record<string, any>> {
-    const metadatasDb = await this.nftMetadataRepository.findByIds(identifiers);
+    try {
+      const metadatasDb = await this.nftMetadataRepository.findByIds(identifiers);
 
-    return metadatasDb.toRecord(metadata => metadata.id, metadata => metadata.content);
+      return metadatasDb.toRecord(metadata => metadata.id, metadata => metadata.content);
+    } catch (error) {
+      this.logger.log(`Error when getting metadata from DB for batch '${identifiers}'`);
+      this.logger.error(error);
+
+      return {};
+    }
   }
 
   async setMetadata(identifier: string, content: any): Promise<void> {
@@ -59,7 +66,7 @@ export class DatabaseService implements PersistenceInterface {
 
   async getMedia(identifier: string): Promise<NftMedia[] | null> {
     try {
-      const media: NftMediaDb | undefined = await this.nftMediaRepository.findOne({ id: identifier });
+      const media: NftMediaDb | null = await this.nftMediaRepository.findOne({ where: { id: identifier } });
       if (!media) {
         return null;
       }
@@ -73,9 +80,16 @@ export class DatabaseService implements PersistenceInterface {
   }
 
   async batchGetMedia(identifiers: string[]): Promise<Record<string, NftMedia[]>> {
-    const mediasDb = await this.nftMediaRepository.findByIds(identifiers);
+    try {
+      const mediasDb = await this.nftMediaRepository.findByIds(identifiers);
 
-    return mediasDb.toRecord(media => media.id ?? '', media => media.content);
+      return mediasDb.toRecord(media => media.id ?? '', media => media.content);
+    } catch (error) {
+      this.logger.log(`Error when getting media from DB for batch '${identifiers}'`);
+      this.logger.error(error);
+
+      return {};
+    }
   }
 
   async setMedia(identifier: string, media: NftMedia[]): Promise<void> {
@@ -84,5 +98,10 @@ export class DatabaseService implements PersistenceInterface {
     value.content = media;
 
     await this.nftMediaRepository.save(value);
+  }
+
+  // eslint-disable-next-line require-await
+  async getCollectionTraits(_collection: string): Promise<CollectionTraitSummary[] | null> {
+    return null;
   }
 }

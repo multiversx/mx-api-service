@@ -1,12 +1,18 @@
-import { forwardRef, Module } from "@nestjs/common";
-import { CommonModule } from "src/common/common.module";
-import { BlsModule } from "../bls/bls.module";
+import { Module } from "@nestjs/common";
+import { ApiConfigModule } from "src/common/api-config/api.config.module";
+import { GatewayModule } from "src/common/gateway/gateway.module";
+import { ApiMetricsModule } from "src/common/metrics/api.metrics.module";
+import { ProtocolModule } from "src/common/protocol/protocol.module";
+import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import { VmQueryService } from "./vm.query.service";
 
 @Module({
   imports: [
-    forwardRef(() => CommonModule),
-    BlsModule,
+    DynamicModuleUtils.getCachingModule(),
+    GatewayModule,
+    ProtocolModule,
+    ApiConfigModule,
+    ApiMetricsModule,
   ],
   providers: [
     VmQueryService,

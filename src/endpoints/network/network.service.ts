@@ -1,9 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Stats } from 'src/endpoints/network/entities/stats';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { CachingService } from 'src/common/caching/caching.service';
-import { Constants } from 'src/utils/constants';
-import { NumberUtils } from 'src/utils/number.utils';
 import { AccountService } from '../accounts/account.service';
 import { BlockService } from '../blocks/block.service';
 import { BlockFilter } from '../blocks/entities/block.filter';
@@ -16,10 +13,12 @@ import { NetworkConfig } from './entities/network.config';
 import { StakeService } from '../stake/stake.service';
 import { DataApiService } from 'src/common/external/data.api.service';
 import { GatewayService } from 'src/common/gateway/gateway.service';
-import { ApiService } from 'src/common/network/api.service';
 import { DataQuoteType } from 'src/common/external/entities/data.quote.type';
-import { CacheInfo } from 'src/common/caching/entities/cache.info';
+import { CacheInfo } from 'src/utils/cache.info';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
+import { NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest';
+import { About } from './entities/about';
+import { EsdtService } from '../esdt/esdt.service';
 
 @Injectable()
 export class NetworkService {
@@ -28,20 +27,25 @@ export class NetworkService {
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
+    @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
+    @Inject(forwardRef(() => AccountService))
     private readonly accountService: AccountService,
+    @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
     private readonly dataApiService: DataApiService,
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => StakeService))
-    private readonly stakeService: StakeService
+    private readonly stakeService: StakeService,
+    @Inject(forwardRef(() => EsdtService))
+    private readonly esdtService: EsdtService,
   ) { }
 
   async getConstants(): Promise<NetworkConstants> {
     return await this.cachingService.getOrSetCache(
-      'constants',
+      CacheInfo.Constants.key,
       async () => await this.getConstantsRaw(),
-      Constants.oneDay()
+      CacheInfo.Constants.ttl
     );
   }
 
@@ -101,8 +105,27 @@ export class NetworkService {
     );
   }
 
+  async getMinimumAuctionTopUp(): Promise<string | undefined> {
+    const auctions = await this.gatewayService.getAuctions();
+
+    if (auctions.length === 0) {
+      return undefined;
+    }
+
+    let minimumAuctionTopUp: string | undefined = undefined;
+
+    for (const auction of auctions) {
+      for (const auctionNode of auction.auctionList) {
+        if (auctionNode.selected === true && (!minimumAuctionTopUp || BigInt(minimumAuctionTopUp) > BigInt(auction.qualifiedTopUp))) {
+          minimumAuctionTopUp = auction.qualifiedTopUp;
+        }
+      }
+    }
+
+    return minimumAuctionTopUp;
+  }
+
   async getEconomicsRaw(): Promise<Economics> {
-    const locked = 1330000;
     const [
       {
         account: { balance },
@@ -112,6 +135,7 @@ export class NetworkService {
       },
       [, totalWaitingStakeBase64],
       priceValue,
+      tokenMarketCap,
     ] = await Promise.all([
       this.gatewayService.get(
         `address/${this.apiConfigService.getAuctionContractAddress()}`,
@@ -123,7 +147,9 @@ export class NetworkService {
         'getTotalStakeByType',
       ),
       this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price),
+      this.esdtService.getTokenMarketCapRaw(),
     ]);
+
 
     const totalWaitingStakeHex = Buffer.from(
       totalWaitingStakeBase64,
@@ -136,13 +162,21 @@ export class NetworkService {
     const staked = parseInt((BigInt(balance) + totalWaitingStake).toString().slice(0, -18));
     const totalSupply = parseInt(erd_total_supply.slice(0, -18));
 
+    let locked: number = 0;
+    if (this.apiConfigService.getNetwork() === 'mainnet') {
+      const account = await this.accountService.getAccountRaw('erd195fe57d7fm5h33585sc7wl8trqhrmy85z3dg6f6mqd0724ymljxq3zjemc');
+      if (account) {
+        locked = Math.round(NumberUtils.denominate(BigInt(account.balance), 18));
+      }
+    }
+
     const circulatingSupply = totalSupply - locked;
     const price = priceValue ? parseFloat(priceValue.toFixed(2)) : undefined;
     const marketCap = price ? Math.round(price * circulatingSupply) : undefined;
 
     const aprInfo = await this.getApr();
 
-    return {
+    const economics = new Economics({
       totalSupply,
       circulatingSupply,
       staked,
@@ -151,7 +185,14 @@ export class NetworkService {
       apr: aprInfo.apr ? aprInfo.apr.toRounded(6) : 0,
       topUpApr: aprInfo.topUpApr ? aprInfo.topUpApr.toRounded(6) : 0,
       baseApr: aprInfo.baseApr ? aprInfo.baseApr.toRounded(6) : 0,
-    };
+      tokenMarketCap: tokenMarketCap ? Math.round(tokenMarketCap) : undefined,
+    });
+
+    if (this.apiConfigService.isStakingV4Enabled()) {
+      economics.minimumAuctionTopUp = await this.getMinimumAuctionTopUp();
+    }
+
+    return economics;
   }
 
   async getStats(): Promise<Stats> {
@@ -213,46 +254,33 @@ export class NetworkService {
     const elrondConfig = {
       feesInEpoch: 0,
       stakePerNode: 2500,
-      protocolSustainabilityRewards: 0.1,
     };
 
     const feesInEpoch = elrondConfig.feesInEpoch;
     const stakePerNode = elrondConfig.stakePerNode;
-    const protocolSustainabilityRewards =
-      elrondConfig.protocolSustainabilityRewards;
-    const epochDuration = (config.roundDuration / 1000) * config.roundsPerEpoch;
+    const epochDuration = config.roundDuration * config.roundsPerEpoch;
     const secondsInYear = 365 * 24 * 3600;
     const epochsInYear = secondsInYear / epochDuration;
 
     const yearIndex = Math.floor(stats.epoch / epochsInYear);
+
     const inflationAmounts = this.apiConfigService.getInflationAmounts();
 
     if (yearIndex >= inflationAmounts.length) {
-      throw new Error(
-        `There is no inflation information for year with index ${yearIndex}`,
-      );
+      throw new Error(`There is no inflation information for year with index ${yearIndex}`,);
     }
 
     const inflation = inflationAmounts[yearIndex];
     const rewardsPerEpoch = Math.max(inflation / epochsInYear, feesInEpoch);
 
-    const rewardsPerEpochWithoutProtocolSustainability =
-      (1 - protocolSustainabilityRewards) * rewardsPerEpoch;
-    const topUpRewardsLimit =
-      0.5 * rewardsPerEpochWithoutProtocolSustainability;
+    const topUpRewardsLimit = 0.5 * rewardsPerEpoch;
     const networkBaseStake = stake.activeValidators * stakePerNode;
-    const networkTotalStake = NumberUtils.denominateString(stakedBalance);
+    const networkTotalStake = NumberUtils.denominateString(stakedBalance) - (stake.queueSize * stakePerNode);
 
-    const networkTopUpStake =
-      networkTotalStake -
-      stake.totalValidators * stakePerNode -
-      stake.queueSize * stakePerNode;
+    const networkTopUpStake = networkTotalStake - networkBaseStake;
 
-    const topUpReward =
-      ((2 * topUpRewardsLimit) / Math.PI) *
-      Math.atan(networkTopUpStake / (2 * 2000000));
-    const baseReward =
-      rewardsPerEpochWithoutProtocolSustainability - topUpReward;
+    const topUpReward = ((2 * topUpRewardsLimit) / Math.PI) * Math.atan(networkTopUpStake / (2 * 2000000));
+    const baseReward = rewardsPerEpoch - topUpReward;
 
     const apr = (epochsInYear * (topUpReward + baseReward)) / networkTotalStake;
 
@@ -260,6 +288,50 @@ export class NetworkService {
     const baseApr = (epochsInYear * baseReward) / networkBaseStake;
 
     return { apr, topUpApr, baseApr };
+  }
+
+  async getAbout(): Promise<About> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.About.key,
+      async () => await this.getAboutRaw(),
+      CacheInfo.About.ttl,
+    );
+  }
+
+  getAboutRaw(): About {
+    const appVersion = require('child_process')
+      .execSync('git rev-parse HEAD')
+      .toString().trim();
+
+    let pluginsVersion = require('child_process')
+      .execSync('git rev-parse HEAD', { cwd: 'src/plugins' })
+      .toString().trim();
+
+    let apiVersion = require('child_process')
+      .execSync('git tag --points-at HEAD')
+      .toString().trim();
+
+    if (pluginsVersion === appVersion) {
+      pluginsVersion = undefined;
+    }
+
+    if (!apiVersion) {
+      apiVersion = require('child_process')
+        .execSync('git describe --tags --abbrev=0')
+        .toString().trim();
+
+      if (apiVersion) {
+        apiVersion = apiVersion + '-next';
+      }
+    }
+
+    return new About({
+      appVersion,
+      pluginsVersion,
+      network: this.apiConfigService.getNetwork(),
+      cluster: this.apiConfigService.getCluster(),
+      version: apiVersion,
+    });
   }
 
   numberDecode(encoded: string): string {

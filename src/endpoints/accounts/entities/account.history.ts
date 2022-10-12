@@ -1,15 +1,20 @@
+import { SwaggerUtils } from "@elrondnetwork/erdnest";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class AccountHistory {
-    @ApiProperty({ description: 'The address of the account' })
-    address: string = '';
+  constructor(init?: Partial<AccountHistory>) {
+    Object.assign(this, init);
+  }
 
-    @ApiProperty({ description: 'The current balance of the account (must be denominated to obtain the real value)' })
-    balance: string = '';
+  @ApiProperty({ type: String, example: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz' })
+  address: string = '';
 
-    @ApiProperty({ description: 'The timestamp of snapshot for account balance' })
-    timestamp: number = 0;
+  @ApiProperty(SwaggerUtils.amountPropertyOptions())
+  balance: string = '';
 
-    @ApiProperty({ description: 'Is the account sender of transaction' })
-    isSender?: boolean | undefined = undefined;
+  @ApiProperty({ type: Number, example: 10000 })
+  timestamp: number = 0;
+
+  @ApiProperty({ type: Boolean, nullable: true, example: true })
+  isSender?: boolean | undefined = undefined;
 }

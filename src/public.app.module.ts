@@ -1,21 +1,29 @@
 import { Module } from '@nestjs/common';
-import "./utils/extensions/array.extensions";
-import "./utils/extensions/date.extensions";
-import "./utils/extensions/number.extensions";
-import { CommonModule } from './common/common.module';
+import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
+import '@elrondnetwork/erdnest/lib/src/utils/extensions/date.extensions';
+import '@elrondnetwork/erdnest/lib/src/utils/extensions/number.extensions';
+import '@elrondnetwork/erdnest/lib/src/utils/extensions/string.extensions';
 import { EndpointsServicesModule } from './endpoints/endpoints.services.module';
 import { EndpointsControllersModule } from './endpoints/endpoints.controllers.module';
-import { LoggingModule } from './common/logging/logging.module';
+import { LoggingModule } from '@elrondnetwork/erdnest';
+import { DynamicModuleUtils } from './utils/dynamic.module.utils';
+import { LocalCacheController } from './endpoints/caching/local.cache.controller';
+import { GraphQlModule } from './graphql/graphql.module';
 
 @Module({
   imports: [
     LoggingModule,
-    CommonModule,
     EndpointsServicesModule,
     EndpointsControllersModule,
+    GraphQlModule.register(),
+  ],
+  controllers: [
+    LocalCacheController,
+  ],
+  providers: [
+    DynamicModuleUtils.getNestJsApiConfigService(),
   ],
   exports: [
-    CommonModule,
     EndpointsServicesModule,
   ],
 })

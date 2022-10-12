@@ -1,22 +1,21 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CachingService } from "src/common/caching/caching.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { NodeStatus } from "../nodes/entities/node.status";
 import { NodeType } from "../nodes/entities/node.type";
 import { NodeService } from "../nodes/node.service";
 import { Stake } from "./entities/stake";
 import { StakeTopup } from "./entities/stake.topup";
-import { Constants } from "src/utils/constants";
-import { AddressUtils } from "src/utils/address.utils";
 import { NetworkService } from "../network/network.service";
-import { RoundUtils } from "src/utils/round.utils";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { CacheInfo } from "src/utils/cache.info";
+import { AddressUtils, ApiUtils, RoundUtils, CachingService } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class StakeService {
-  private logger: Logger;
+  private logger = new OriginLogger(StakeService.name);
 
   constructor(
     private readonly cachingService: CachingService,
@@ -25,16 +24,15 @@ export class StakeService {
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
     private readonly gatewayService: GatewayService,
+    @Inject(forwardRef(() => NetworkService))
     private readonly networkService: NetworkService,
-  ) {
-    this.logger = new Logger(StakeService.name);
-  }
+  ) { }
 
   async getGlobalStake() {
     return await this.cachingService.getOrSetCache(
-      'stake',
+      CacheInfo.GlobalStake.key,
       async () => await this.getGlobalStakeRaw(),
-      Constants.oneMinute() * 10
+      CacheInfo.GlobalStake.ttl
     );
   }
 
@@ -77,25 +75,40 @@ export class StakeService {
   }
 
   async getStakes(addresses: string[]): Promise<Stake[]> {
-    const stakes = await this.getAllStakesForNodes(addresses);
+    const stakesForAddressesNodes = await this.getAllStakesForNodes(addresses);
 
-    const value: Stake[] = [];
+    const allStakesForAddresses: Stake[] = [];
+    for (const stake of stakesForAddressesNodes) {
+      const blses = stake.blses;
+      if (!blses) {
+        this.logger.error(`Cannot find blses for address stake '${stake.address}'`);
+      }
 
-    stakes.forEach(({ stake, topUp, locked, blses }) => {
-      blses.forEach((bls) => {
-        value.push({ bls, stake, topUp, locked });
-      });
-    });
+      for (const bls of blses) {
+        const nodeStake = ApiUtils.mergeObjects(new Stake(), stake);
+        nodeStake.bls = bls;
 
-    return value;
+        allStakesForAddresses.push(nodeStake);
+      }
+    }
+
+    return allStakesForAddresses;
+  }
+
+  async getAllStakesForNode(address: string) {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.StakeTopup(address).key,
+      async () => await this.getAllStakesForAddressNodesRaw(address),
+      CacheInfo.StakeTopup(address).ttl
+    );
   }
 
   async getAllStakesForNodes(addresses: string[]) {
     return await this.cachingService.batchProcess(
       addresses,
-      address => `stakeTopup:${address}`,
+      address => CacheInfo.StakeTopup(address).key,
       async address => await this.getAllStakesForAddressNodesRaw(address),
-      Constants.oneMinute() * 15
+      CacheInfo.StakeTopup('').ttl
     );
   }
 
@@ -109,6 +122,7 @@ export class StakeService {
         [AddressUtils.bech32Decode(address)],
       );
     } catch (error) {
+      this.logger.log(`Unexpected error when trying to get stake informations from contract for address '${address}'`);
       this.logger.log(error);
       response = undefined;
     }

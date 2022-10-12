@@ -1,6 +1,5 @@
 network: 'mainnet'
 metaChainShardId: 4294967295
-useLegacyElastic: false
 api:
   public: true
   private: true
@@ -8,9 +7,12 @@ api:
 cron:
   transactionProcessor: true
   transactionProcessorMaxLookBehind: 1000
+  transactionCompleted: false
+  transactionCompletedMaxLookBehind: 100
   cacheWarmer: true
   fastWarm: false
   queueWorker: true
+  elasticUpdater: false
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true
@@ -19,6 +21,13 @@ flags:
   useVmQueryTracing: false
   processNfts: true
   indexer-v3: false
+features:
+  eventsNotifier:
+    enabled: false
+    port: 5674
+    url: 'amqp://guest:guest@127.0.0.1:5672'
+    exchange: 'all_events'
+    queue: 'api-process-logs-and-events'
 image:
   width: 600
   height: 600
@@ -41,12 +50,20 @@ urls:
     - 'https://gateway.elrond.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
-  providers: 'https://internal-delegation-api.elrond.com/providers'
+  providers: 'https://delegation-api.elrond.com/providers'
+  delegation: 'https://delegation-api.elrond.com'
   media: 'https://media.elrond.com'
   nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
+  socket: 'socket-fra.elrond.com'
+indexer:
+  type: 'elastic'
+  maxPagination: 10000
 database:
+  enabled: false
+  url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
+  type: 'mysql'
   host: 'localhost'
   port: 3306
   username: 'root'
@@ -65,6 +82,7 @@ contracts:
   staking: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7'
   delegationManager: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6'
   delegation: 'erd1qqqqqqqqqqqqqpgqxwakt2g7u9atsnr03gqcgmhcv38pt7mkd94q6shuwt'
+  metabonding: 'erd1qqqqqqqqqqqqqpgq50dge6rrpcra4tp9hl57jl0893a4r2r72jpsk39rjj'
   delegationShardId: 2
 inflation:
   - 1952123
@@ -77,8 +95,9 @@ inflation:
 security:
   admins:
   jwtSecret:
-  accessAddress:
 nftProcess:
   parallelism: 1
   maxRetries: 3
-  
+transaction-action:
+  mex:
+    microServiceUrl: 'https://graph.maiar.exchange/graphql'

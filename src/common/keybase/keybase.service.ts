@@ -1,33 +1,29 @@
-import { forwardRef, HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
-import { ApiUtils } from "src/utils/api.utils";
-import { Constants } from "src/utils/constants";
-import { ApiConfigService } from "../api-config/api.config.service";
-import { CachingService } from "../caching/caching.service";
 import { Keybase } from "./entities/keybase";
 import { KeybaseIdentity } from "./entities/keybase.identity";
 import { KeybaseState } from "./entities/keybase.state";
-import { ApiService } from "../network/api.service";
-import { CacheInfo } from "../caching/entities/cache.info";
-import { ApiSettings } from "../network/entities/api.settings";
+import { CacheInfo } from "../../utils/cache.info";
 import asyncPool from "tiny-async-pool";
+import { GithubService } from "../github/github.service";
+import { ApiService, ApiUtils, CachingService, Constants, OriginLogger } from "@elrondnetwork/erdnest";
+import { ApiConfigService } from "../api-config/api.config.service";
 
 @Injectable()
 export class KeybaseService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(KeybaseService.name);
 
   constructor(
-    private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
     @Inject(forwardRef(() => ProviderService))
-    private readonly providerService: ProviderService
-  ) {
-    this.logger = new Logger(KeybaseService.name);
-  }
+    private readonly providerService: ProviderService,
+    private readonly githubService: GithubService,
+    private readonly apiConfigService: ApiConfigService
+  ) { }
 
   private async getProvidersKeybasesRaw(): Promise<Keybase[]> {
     const providers = await this.providerService.getProviderAddresses();
@@ -96,28 +92,78 @@ export class KeybaseService {
   }
 
   async confirmKeybasesAgainstKeybasePub(): Promise<void> {
-    const isKeybaseUp = await this.isKeybasePubUp();
-    if (!isKeybaseUp) {
-      return;
-    }
-
     const providerKeybases: Keybase[] = await this.getProvidersKeybasesRaw();
     const nodeKeybases: Keybase[] = await this.getNodesKeybasesRaw();
 
     const allKeybases: Keybase[] = [...providerKeybases, ...nodeKeybases];
 
-    const distinctIdentities = allKeybases.map(x => x.identity ?? '').filter(x => x !== '').distinct();
+    const distinctIdentities = allKeybases.map(x => x.identity ?? '').filter(x => x !== '').distinct().shuffle();
 
     await asyncPool(
       1,
       distinctIdentities,
-      identity => this.confirmKeybasesAgainstKeybasePubForIdentity(identity)
+      identity => this.confirmKeybasesForIdentity(identity)
     );
   }
 
+  async confirmKeybasesForIdentity(identity: string): Promise<void> {
+    const githubSuccess = await this.confirmKeybasesAgainstGithubForIdentity(identity);
+    if (!githubSuccess) {
+      await this.confirmKeybasesAgainstKeybasePubForIdentityResilient(identity);
+    }
+  }
+
+  async confirmKeybasesAgainstGithubForIdentity(identity: string): Promise<boolean> {
+    try {
+      const result = await this.githubService.getRepoFileContents(identity, 'elrond', 'keys.json');
+      if (!result) {
+        return false;
+      }
+
+      const keys = JSON.parse(result);
+
+      this.logger.log(`github.com validation: for identity '${identity}', found ${keys.length} keys`);
+
+      await this.cachingService.batchProcess(
+        keys,
+        key => `keybase:${key}`,
+        async () => await true,
+        Constants.oneMonth() * 6,
+        true
+      );
+
+      return true;
+    } catch (error) {
+      this.logger.log(`Error when confirming keybase against github for identity '${identity}'`);
+      this.logger.error(error);
+      return false;
+    }
+  }
+
+  async confirmKeybasesAgainstKeybasePubForIdentityResilient(identity: string): Promise<void> {
+    let retries = 0;
+
+    while (retries < 3) {
+      try {
+        await this.confirmKeybasesAgainstKeybasePubForIdentity(identity);
+        return;
+      } catch (error) {
+        retries++;
+
+        // wait with backoff
+        await new Promise(resolve => setTimeout(resolve, 5000 * retries));
+
+        this.logger.log(`Retry #${retries} for confirming keybases against keybase.pub for identity '${identity}'`);
+      }
+    }
+  }
+
   async confirmKeybasesAgainstKeybasePubForIdentity(identity: string): Promise<void> {
+    const network = this.apiConfigService.getNetwork();
+    const networkSuffix = network !== "mainnet" ? `/${network}` : '';
+
     // eslint-disable-next-line require-await
-    const result = await this.apiService.get(`https://keybase.pub/${identity}/elrond`, { timeout: 100000 }, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
+    const result = await this.apiService.get(`https://keybase.pub/${identity}/elrond${networkSuffix}`, { timeout: 100000 }, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
 
     if (!result) {
       this.logger.log(`For identity '${identity}', no keybase.pub entry was found`);
@@ -126,21 +172,23 @@ export class KeybaseService {
 
     const html = result.data;
 
-    const nodesRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/[0-9a-f]{192}", 'g');
+    const networkRegex = network !== "mainnet" ? `${network}\/` : '';
+
+    const nodesRegex = new RegExp(`https:\/\/keybase.pub\/${identity}\/elrond\/${networkRegex}[0-9a-f]{192}`, 'g');
     const blses: string[] = [];
     for (const keybaseUrl of html.match(nodesRegex) || []) {
       const bls = keybaseUrl.match(/[0-9a-f]{192}/)[0];
       blses.push(bls);
     }
 
-    const providersRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{13}", 'g');
+    const providersRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/" + networkRegex + "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{14}", 'g');
     const addresses: string[] = [];
     for (const keybaseUrl of html.match(providersRegex) || []) {
-      const bls = keybaseUrl.match(/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{13}/)[0];
+      const bls = keybaseUrl.match(/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{14}/)[0];
       addresses.push(bls);
     }
 
-    this.logger.log(`For identity '${identity}', found ${blses.length} blses and addresses ${addresses}`);
+    this.logger.log(`keybase.pub validation: for identity '${identity}', found ${blses.length} blses and addresses ${addresses}`);
 
     await this.cachingService.batchProcess(
       [...blses, ...addresses],
@@ -153,11 +201,6 @@ export class KeybaseService {
 
 
   async confirmIdentityProfilesAgainstKeybaseIo(): Promise<void> {
-    const isKeybaseUp = await this.isKeybaseIoUp();
-    if (!isKeybaseUp) {
-      return;
-    }
-
     const nodes = await this.nodeService.getAllNodes();
 
     const keys = nodes.map((node) => node.identity).distinct().map(x => x ?? '');
@@ -187,57 +230,40 @@ export class KeybaseService {
     );
   }
 
-  async isKeybasePubUp(): Promise<boolean> {
-    try {
-      const { status } = await this.apiService.head('https://keybase.pub');
-      return status === HttpStatus.OK;
-    } catch (error) {
-      this.logger.error('It seems that keybase.pub is down');
-      return false;
-    }
-  }
-
-  async isKeybaseIoUp(): Promise<boolean> {
-    try {
-      const { status } = await this.apiService.head('https://keybase.io');
-      return status === HttpStatus.OK;
-    } catch (error) {
-      this.logger.error('It seems that keybase.io is down');
-      return false;
-    }
-  }
-
-  async confirmKeybase(keybase: Keybase): Promise<boolean> {
-    if (!keybase.identity) {
-      return false;
-    }
-
-    try {
-      const url = this.apiConfigService.getNetwork() === 'mainnet'
-        ? `https://keybase.pub/${keybase.identity}/elrond/${keybase.key}`
-        : `https://keybase.pub/${keybase.identity}/elrond/${this.apiConfigService.getNetwork()}/${keybase.key}`;
-
-      // eslint-disable-next-line require-await
-      const { status } = await this.apiService.head(url, new ApiSettings(), async (error) => {
-        if (error.response?.status === HttpStatus.NOT_FOUND) {
-          throw error;
-        }
-
-        return false;
-      });
-      return status === HttpStatus.OK;
-    } catch (error: any) {
-      if (error.response?.status === HttpStatus.NOT_FOUND) {
-        this.logger.log(`Keybase not found for identity ${keybase.identity} and key ${keybase.key}`);
-        return false;
-      }
-
-      const cachedConfirmation = await this.cachingService.getCache<boolean>(CacheInfo.KeybaseConfirmation(keybase.key).key);
-      return cachedConfirmation !== undefined && cachedConfirmation !== null ? cachedConfirmation : false;
-    }
-  }
-
   async getProfile(identity: string): Promise<KeybaseIdentity | null> {
+    const keybaseProfile = await this.getProfileFromKeybase(identity);
+    if (keybaseProfile) {
+      this.logger.log(`Got profile details from keybase.io for identity '${identity}'`);
+      return keybaseProfile;
+    }
+
+    const githubProfile = await this.getProfileFromGithub(identity);
+    if (githubProfile) {
+      this.logger.log(`Got profile details from github.com for identity '${identity}'`);
+      return githubProfile;
+    }
+
+    return null;
+  }
+
+  async getProfileFromGithub(identity: string): Promise<KeybaseIdentity | null> {
+    const profile = await this.githubService.getUserInfo(identity);
+    if (!profile || !profile.name || !profile.avatar_url || !profile.bio) {
+      return null;
+    }
+
+    return {
+      identity,
+      name: profile.name,
+      avatar: profile.avatar_url ?? undefined,
+      description: profile.bio ?? undefined,
+      location: profile.location ?? undefined,
+      twitter: profile.twitter_username ?? undefined,
+      website: profile.blog ?? undefined,
+    };
+  }
+
+  async getProfileFromKeybase(identity: string): Promise<KeybaseIdentity | null> {
     try {
       const { status, data } = await this.apiService.get(`https://keybase.io/_/api/1.0/user/lookup.json?username=${identity}`);
 

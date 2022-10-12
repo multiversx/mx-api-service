@@ -1,29 +1,29 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { CachingService } from "src/common/caching/caching.service";
-import { CacheInfo } from "src/common/caching/entities/cache.info";
-import { BinaryUtils } from "src/utils/binary.utils";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { CacheInfo } from "src/utils/cache.info";
 import { EsdtService } from "../esdt/esdt.service";
-import { TokenAssetService } from "./token.asset.service";
+import { AssetsService } from "../../common/assets/assets.service";
 import { TokenTransferProperties } from "./entities/token.transfer.properties";
 import { TransactionLog } from "../transactions/entities/transaction.log";
 import { TransactionLogEventIdentifier } from "../transactions/entities/transaction.log.event.identifier";
 import { TransactionOperation } from "../transactions/entities/transaction.operation";
 import { TransactionOperationAction } from "../transactions/entities/transaction.operation.action";
-import { RecordUtils } from "src/utils/record.utils";
 import { TransactionLogEvent } from "../transactions/entities/transaction.log.event";
 import { TransactionOperationType } from "../transactions/entities/transaction.operation.type";
+import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
+import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
+import { BinaryUtils, CachingService } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class TokenTransferService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(TokenTransferService.name);
 
   constructor(
     private readonly cachingService: CachingService,
+    @Inject(forwardRef(() => EsdtService))
     private readonly esdtService: EsdtService,
-    private readonly tokenAssetService: TokenAssetService
-  ) {
-    this.logger = new Logger(TokenTransferService.name);
-  }
+    private readonly assetsService: AssetsService
+  ) { }
 
   getTokenTransfer(elasticTransaction: any): { tokenIdentifier: string, tokenAmount: string } | undefined {
     if (!elasticTransaction.data) {
@@ -55,7 +55,7 @@ export class TokenTransferService {
     const identifiers: string[] = [];
     for (const log of logs) {
       for (const event of log.events) {
-        const action = this.getOperationAction(event.identifier);
+        const action = this.getOperationEsdtActionByEventIdentifier(event.identifier);
         if (action) {
           identifiers.push(BinaryUtils.base64Decode(event.topics[0]));
         }
@@ -66,19 +66,10 @@ export class TokenTransferService {
       [key: string]: TokenTransferProperties | null
     } = {};
 
-    await this.cachingService.batchApply(
+    await this.cachingService.batchApplyAll(
       identifiers,
       identifier => CacheInfo.TokenTransferProperties(identifier).key,
-      async identifiers => {
-
-        const result: { [key: string]: TokenTransferProperties | null } = {};
-        for (const identifier of identifiers) {
-          const value = await this.getTokenTransferPropertiesRaw(identifier);
-          result[identifier] = value;
-        }
-
-        return RecordUtils.mapKeys(result, identifier => CacheInfo.TokenTransferProperties(identifier).key);
-      },
+      identifier => this.getTokenTransferPropertiesRaw(identifier),
       (identifier, value) => tokenProperties[identifier] = value,
       CacheInfo.TokenTransferProperties('').ttl
     );
@@ -86,26 +77,99 @@ export class TokenTransferService {
     return tokenProperties;
   }
 
+  async getOperationsForTransaction(transaction: TransactionDetailed, logs: TransactionLog[]): Promise<TransactionOperation[]> {
+    const scResultsOperations: TransactionOperation[] = this.getOperationsForTransactionScResults(transaction.results ?? []);
+    const logsOperations: TransactionOperation[] = await this.getOperationsForTransactionLogs(transaction.txHash, logs, transaction.sender);
 
-  async getOperationsForTransactionLogs(txHash: string, logs: TransactionLog[]): Promise<TransactionOperation[]> {
+    return [...scResultsOperations, ...logsOperations];
+  }
+
+
+  private getOperationsForTransactionScResults(scResults: SmartContractResult[]): TransactionOperation[] {
+    if (!scResults.length) {
+      return [];
+    }
+
+    const operations: TransactionOperation[] = [];
+    for (const scResult of scResults) {
+      if (scResult.nonce !== 0 || scResult.value === undefined || scResult.value === '0') {
+        continue;
+      }
+
+      const operation = new TransactionOperation();
+      operation.action = TransactionOperationAction.transfer;
+      operation.type = TransactionOperationType.egld;
+      operation.id = scResult.hash;
+      operation.sender = scResult.sender;
+      operation.receiver = scResult.receiver;
+      operation.value = scResult.value;
+
+      operations.push(operation);
+    }
+
+    return operations;
+  }
+
+  async getOperationsForTransactionLogs(txHash: string, logs: TransactionLog[], sender: string): Promise<TransactionOperation[]> {
+    if (!logs.length) {
+      return [];
+    }
+
     const tokensProperties = await this.getTokenTransferPropertiesFromLogs(logs);
 
-    const operations: (TransactionOperation | undefined)[] = [];
+    const operations: TransactionOperation[] = [];
     for (const log of logs) {
       for (const event of log.events) {
-        const action = this.getOperationAction(event.identifier);
-        if (action) {
-          const operation = this.getTransactionNftOperation(txHash, log, event, action, tokensProperties);
+        let operation;
+        if (event.identifier === TransactionOperationAction.writeLog || event.identifier === TransactionOperationAction.signalError) {
+          operation = this.getTransactionLogOperation(log, event, event.identifier, sender);
+        } else if (event.identifier === TransactionOperationAction.transferValueOnly) {
+          operation = this.getTransactionTransferValueOperation(txHash, log, event, event.identifier);
+        }
 
+        if (!operation) {
+          const action = this.getOperationEsdtActionByEventIdentifier(event.identifier);
+          if (action) {
+            operation = this.getTransactionNftOperation(txHash, log, event, action, tokensProperties);
+          }
+        }
+
+        if (operation) {
           operations.push(operation);
         }
       }
     }
 
-    return operations.filter(operation => operation !== undefined).map(operation => operation ?? new TransactionOperation());
+    return operations;
   }
 
-  private getOperationAction(identifier: string): TransactionOperationAction | null {
+  private getTransactionLogOperation(log: TransactionLog, event: TransactionLogEvent, action: TransactionOperationAction, receiver: string): TransactionOperation {
+    const operation = new TransactionOperation();
+    operation.id = log.id ?? '';
+    operation.action = action;
+
+    if (action === TransactionOperationAction.writeLog) {
+      operation.type = TransactionOperationType.log;
+    }
+    if (action === TransactionOperationAction.signalError) {
+      operation.type = TransactionOperationType.error;
+    }
+
+    operation.sender = event.address;
+    operation.receiver = receiver;
+
+    if (event.data) {
+      operation.data = BinaryUtils.base64Decode(event.data);
+    }
+
+    if (event.topics.length > 1 && event.topics[1]) {
+      operation.message = BinaryUtils.base64Decode(event.topics[1]);
+    }
+
+    return operation;
+  }
+
+  private getOperationEsdtActionByEventIdentifier(identifier: string): TransactionOperationAction | null {
     switch (identifier) {
       case TransactionLogEventIdentifier.ESDTNFTTransfer:
         return TransactionOperationAction.transfer;
@@ -116,7 +180,7 @@ export class TokenTransferService {
       case TransactionLogEventIdentifier.ESDTNFTCreate:
         return TransactionOperationAction.create;
       case TransactionLogEventIdentifier.MultiESDTNFTTransfer:
-        return TransactionOperationAction.multiTransfer;
+        return TransactionOperationAction.transfer;
       case TransactionLogEventIdentifier.ESDTTransfer:
         return TransactionOperationAction.transfer;
       case TransactionLogEventIdentifier.ESDTBurn:
@@ -127,6 +191,8 @@ export class TokenTransferService {
         return TransactionOperationAction.localBurn;
       case TransactionLogEventIdentifier.ESDTWipe:
         return TransactionOperationAction.wipe;
+      case TransactionLogEventIdentifier.ESDTFreeze:
+        return TransactionOperationAction.freeze;
       default:
         return null;
     }
@@ -136,12 +202,13 @@ export class TokenTransferService {
     try {
       let identifier = BinaryUtils.base64Decode(event.topics[0]);
       const nonce = BinaryUtils.tryBase64ToHex(event.topics[1]);
-      const value = BinaryUtils.tryBase64ToBigInt(event.topics[2])?.toString() ?? '0';
+      const value = BinaryUtils.tryBase64ToBigInt(event.topics[2])?.toString();
       const receiver = BinaryUtils.tryBase64ToAddress(event.topics[3]) ?? log.address;
       const properties = tokensProperties[identifier];
       const decimals = properties ? properties.decimals : undefined;
       const name = properties ? properties.name : undefined;
       const esdtType = properties ? properties.type : undefined;
+      const svgUrl = properties ? properties.svgUrl : undefined;
 
       let collection: string | undefined = undefined;
       if (nonce) {
@@ -151,9 +218,31 @@ export class TokenTransferService {
 
       const type = nonce ? TransactionOperationType.nft : TransactionOperationType.esdt;
 
-      return { action, type, esdtType, collection, identifier, name, sender: event.address, receiver, value, decimals };
+      return { id: log.id ?? '', action, type, esdtType, collection, identifier, name, sender: event.address, receiver, value, decimals, svgUrl, senderAssets: undefined, receiverAssets: undefined };
     } catch (error) {
       this.logger.error(`Error when parsing NFT transaction log for tx hash '${txHash}' with action '${action}' and topics: ${event.topics}`);
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
+  private getTransactionTransferValueOperation(txHash: string, log: TransactionLog, event: TransactionLogEvent, action: TransactionOperationAction): TransactionOperation | undefined {
+    try {
+      const sender = BinaryUtils.base64ToAddress(event.topics[0]);
+      const receiver = BinaryUtils.base64ToAddress(event.topics[1]);
+      const value = BinaryUtils.base64ToBigInt(event.topics[2]).toString();
+
+      const operation = new TransactionOperation();
+      operation.id = log.id ?? '';
+      operation.action = TransactionOperationAction.transfer;
+      operation.type = TransactionOperationType.egld;
+      operation.sender = sender;
+      operation.receiver = receiver;
+      operation.value = value;
+
+      return operation;
+    } catch (error) {
+      this.logger.error(`Error when parsing valueTransferOnly transaction log for tx hash '${txHash}' with action '${action}' and topics: ${event.topics}`);
       this.logger.error(error);
       return undefined;
     }
@@ -182,7 +271,7 @@ export class TokenTransferService {
       return null;
     }
 
-    const assets = await this.tokenAssetService.getAssets(identifier);
+    const assets = await this.assetsService.getTokenAssets(identifier);
 
     const result: TokenTransferProperties = {
       type: properties.type,

@@ -7,9 +7,12 @@ api:
 cron:
   transactionProcessor: true
   transactionProcessorMaxLookBehind: 100
+  transactionCompleted: false
+  transactionCompletedMaxLookBehind: 100
   cacheWarmer: true
   fastWarm: true
   queueWorker: true
+  elasticUpdater: false
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true
@@ -18,6 +21,13 @@ flags:
   useVmQueryTracing: false
   processNfts: true
   indexer-v3: true
+features:
+  eventsNotifier:
+    enabled: false
+    port: 5674
+    url: 'amqp://guest:guest@127.0.0.1:5672'
+    exchange: 'all_events'
+    queue: 'api-process-logs-and-events'
 image:
   width: 600
   height: 600
@@ -38,18 +48,25 @@ urls:
     - 'https://testnet-gateway.elrond.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
-  providers: 'https://delegation.maiarbrowser.com/providers'
+  providers: 'https://testnet-delegation-api.elrond.com/providers'
+  delegation: 'https://testnet-delegation-api.elrond.com'
   media: 'https://testnet-media.elrond.com'
   nftThumbnails: 'https://testnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
+  socket: 'testnet-socket-fra.elrond.com'
 database:
+  enabled: false
+  url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
+  type: 'mysql'
   host: 'localhost'
   port: 3306
   username: 'root'
   password: 'root'
   database: 'api'
-
+indexer:
+  type: 'elastic'
+  maxPagination: 10000
 caching:
   cacheTtl: 6
   processTtl: 600
@@ -63,6 +80,7 @@ contracts:
   staking: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7'
   delegationManager: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6'
   delegation: 'erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx'
+  metabonding: 'erd1qqqqqqqqqqqqqpgq2l9w0qv98htrhdwuz6ppsw47tn3hhff3d8ssqqjpvu'
   delegationShardId: 2
 inflation:
   - 1952123
@@ -75,7 +93,9 @@ inflation:
 security:
   admins:
   jwtSecret:
-  accessAddress:
 nftProcess:
   parallelism: 1
   maxRetries: 3
+transaction-action:
+  mex:
+    microServiceUrl: 'https://testnet-exchange-graph.elrond.com/graphql'

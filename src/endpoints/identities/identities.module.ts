@@ -1,14 +1,14 @@
 import { forwardRef, Module } from "@nestjs/common";
-import { CommonModule } from "src/common/common.module";
+import { KeybaseModule } from "src/common/keybase/keybase.module";
 import { NetworkModule } from "../network/network.module";
 import { NodeModule } from "../nodes/node.module";
 import { IdentitiesService } from "./identities.service";
 
 @Module({
   imports: [
-    forwardRef(() => CommonModule),
     forwardRef(() => NodeModule),
     forwardRef(() => NetworkModule),
+    forwardRef(() => KeybaseModule),
   ],
   providers: [
     IdentitiesService,

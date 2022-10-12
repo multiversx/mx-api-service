@@ -1,31 +1,25 @@
-import { BadRequestException, Body, Controller, Get, Logger, Param, Post, Query, Res } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Param, Post, Query, Res } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { VmQueryRequest } from "../vm.query/entities/vm.query.request";
 import { VmQueryService } from "../vm.query/vm.query.service";
-import { CachingService } from "src/common/caching/caching.service";
-import { Constants } from "src/utils/constants";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { ParseAddressPipe } from "src/utils/pipes/parse.address.pipe";
-import { ParseTransactionHashPipe } from "src/utils/pipes/parse.transaction.hash.pipe";
-import { ParseBlockHashPipe } from "src/utils/pipes/parse.block.hash.pipe";
 import { Response } from "express";
-import { NoCache } from "src/decorators/no.cache";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { PluginService } from "src/common/plugins/plugin.service";
+import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseTransactionHashPipe, CachingService, NoCache } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Controller()
 @ApiTags('proxy')
 export class ProxyController {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(ProxyController.name);
 
   constructor(
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
     private readonly cachingService: CachingService,
     private readonly pluginService: PluginService,
-  ) {
-    this.logger = new Logger(ProxyController.name);
-  }
+  ) { }
 
   @Get('/address/:address')
   @ApiExcludeEndpoint()
@@ -93,7 +87,15 @@ export class ProxyController {
       return pluginTransaction;
     }
 
-    return await this.gatewayPost('transaction/send', GatewayComponentRequest.sendTransaction, body);
+    // eslint-disable-next-line require-await
+    return await this.gatewayPost('transaction/send', GatewayComponentRequest.sendTransaction, body, async (error) => {
+      const message = error.response?.data?.error;
+      if (message && message.includes('transaction generation failed')) {
+        throw error;
+      }
+
+      return false;
+    });
   }
 
   @Post('/transaction/simulate')
@@ -126,8 +128,8 @@ export class ProxyController {
   @ApiQuery({ name: 'withResults', description: 'Include results which correspond to the hash', required: false })
   async getTransaction(
     @Param('hash', ParseTransactionHashPipe) hash: string,
-    @Query('sender', ParseAddressPipe) sender: string | undefined,
-    @Query('withResults') withResults: string | undefined,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('withResults') withResults?: string,
   ) {
     return await this.gatewayGet(`transaction/${hash}`, GatewayComponentRequest.transactionDetails, { sender, withResults });
   }
@@ -139,7 +141,15 @@ export class ProxyController {
     @Param('hash', ParseTransactionHashPipe) hash: string,
     @Query('sender', ParseAddressPipe) sender: string,
   ) {
-    return await this.gatewayGet(`transaction/${hash}/status`, GatewayComponentRequest.transactionDetails, { sender });
+    // eslint-disable-next-line require-await
+    return await this.gatewayGet(`transaction/${hash}/status`, GatewayComponentRequest.transactionDetails, { sender }, async error => {
+      const message = error.response?.data?.error;
+      if (message === 'transaction not found') {
+        throw error;
+      }
+
+      return false;
+    });
   }
 
   @Post('/vm-values/hex')
@@ -168,7 +178,7 @@ export class ProxyController {
   })
   async queryLegacy(@Body() query: VmQueryRequest) {
     try {
-      return await this.vmQueryService.vmQueryFullResult(query.scAddress, query.funcName, query.caller, query.args);
+      return await this.vmQueryService.vmQueryFullResult(query.scAddress, query.funcName, query.caller, query.args, query.value);
     } catch (error: any) {
       throw new BadRequestException(error.response.data);
     }
@@ -244,7 +254,7 @@ export class ProxyController {
   async getBlockByShardAndNonce(
     @Param('shard') shard: string,
     @Param('nonce') nonce: number,
-    @Query('withTxs') withTxs: string | undefined,
+    @Query('withTxs') withTxs?: string,
   ) {
     return await this.gatewayGet(`block/${shard}/by-nonce/${nonce}`, GatewayComponentRequest.blockByNonce, { withTxs });
   }
@@ -255,7 +265,7 @@ export class ProxyController {
   async getBlockByShardAndHash(
     @Param('shard') shard: string,
     @Param('hash') hash: number,
-    @Query('withTxs') withTxs: string | undefined,
+    @Query('withTxs') withTxs?: string,
   ) {
     return await this.gatewayGet(`block/${shard}/by-hash/${hash}`, GatewayComponentRequest.blockByHash, { withTxs });
   }
@@ -275,11 +285,19 @@ export class ProxyController {
     try {
       return await this.cachingService.getOrSetCache(
         `hyperblock/by-nonce/${nonce}`,
-        async () => await this.gatewayGet(`hyperblock/by-nonce/${nonce}`, GatewayComponentRequest.hyperblockByNonce),
-        Constants.oneDay(),
+        // eslint-disable-next-line require-await
+        async () => await this.gatewayGet(`hyperblock/by-nonce/${nonce}`, GatewayComponentRequest.hyperblockByNonce, undefined, async error => {
+          const message = error.response?.data?.error;
+          if (message === 'sending request error') {
+            throw error;
+          }
+
+          return false;
+        }),
+        Constants.oneHour(),
       );
     } catch (error: any) {
-      throw new BadRequestException(error.response.data);
+      throw new BadRequestException(error.response);
     }
   }
 
@@ -299,7 +317,11 @@ export class ProxyController {
       return result.data;
     } catch (error: any) {
       if (error.response) {
-        throw new BadRequestException(error.response.data);
+        if (error.response.data) {
+          throw new BadRequestException(error.response.data);
+        }
+
+        throw new BadRequestException(error.response);
       }
 
       this.logger.error(`Unhandled exception when calling gateway url '${url}'`);
@@ -307,13 +329,17 @@ export class ProxyController {
     }
   }
 
-  private async gatewayPost(url: string, component: GatewayComponentRequest, data: any) {
+  private async gatewayPost(url: string, component: GatewayComponentRequest, data: any, errorHandler?: (error: any) => Promise<boolean>) {
     try {
-      const result = await this.gatewayService.createRaw(url, component, data);
+      const result = await this.gatewayService.createRaw(url, component, data, errorHandler);
       return result.data;
     } catch (error: any) {
       if (error.response) {
-        throw new BadRequestException(error.response.data);
+        if (error.response.data) {
+          throw new BadRequestException(error.response.data);
+        }
+
+        throw new BadRequestException(error.response);
       }
 
       this.logger.error(`Unhandled exception when calling gateway url '${url}'`);

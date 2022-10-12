@@ -1,20 +1,22 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
-import { CommonModule } from '../../common/common.module';
 import { CacheWarmerService } from './cache.warmer.service';
 import { EndpointsServicesModule } from '../../endpoints/endpoints.services.module';
-import { MicroserviceModule } from 'src/common/microservice/microservice.module';
-import { PluginModule } from 'src/plugins/plugin.module';
+import { KeybaseModule } from 'src/common/keybase/keybase.module';
+import { MexModule } from 'src/endpoints/mex/mex.module';
+import { AssetsModule } from 'src/common/assets/assets.module';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    forwardRef(() => CommonModule),
-    forwardRef(() => EndpointsServicesModule),
-    MicroserviceModule,
-    PluginModule,
+    EndpointsServicesModule,
+    KeybaseModule,
+    MexModule,
+    AssetsModule,
   ],
   providers: [
+    DynamicModuleUtils.getPubSubService(),
     CacheWarmerService,
   ],
 })

@@ -1,82 +1,77 @@
-import { Injectable } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { ElasticService } from "src/common/elastic/elastic.service";
-import { AbstractQuery } from "src/common/elastic/entities/abstract.query";
-import { ElasticQuery } from "src/common/elastic/entities/elastic.query";
-import { ElasticSortOrder } from "src/common/elastic/entities/elastic.sort.order";
-import { QueryConditionOptions } from "src/common/elastic/entities/query.condition.options";
-import { QueryType } from "src/common/elastic/entities/query.type";
+import { ApiUtils } from "@elrondnetwork/erdnest";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { AssetsService } from "src/common/assets/assets.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { ApiUtils } from "src/utils/api.utils";
+import { IndexerService } from "src/common/indexer/indexer.service";
+import { Transaction } from "../transactions/entities/transaction";
+import { TransactionType } from "../transactions/entities/transaction.type";
+import { TransactionActionService } from "../transactions/transaction-action/transaction.action.service";
 import { SmartContractResult } from "./entities/smart.contract.result";
 import { SmartContractResultFilter } from "./entities/smart.contract.result.filter";
 
 @Injectable()
 export class SmartContractResultService {
   constructor(
-    private readonly elasticService: ElasticService,
-    private readonly apiConfigService: ApiConfigService,
+    private readonly indexerService: IndexerService,
+    @Inject(forwardRef(() => TransactionActionService))
+    private readonly transactionActionService: TransactionActionService,
+    private readonly assetsService: AssetsService,
   ) { }
 
-  private buildSmartContractResultFilterQuery(address?: string): ElasticQuery {
-    const shouldQueries: AbstractQuery[] = [];
-    const mustQueries: AbstractQuery[] = [];
-
-    if (address) {
-      shouldQueries.push(QueryType.Match('sender', address));
-      shouldQueries.push(QueryType.Match('receiver', address));
-
-      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-        shouldQueries.push(QueryType.Match('receivers', address));
-      }
-    }
-
-    const elasticQuery = ElasticQuery.create()
-      .withCondition(QueryConditionOptions.should, shouldQueries)
-      .withCondition(QueryConditionOptions.must, mustQueries);
-
-    return elasticQuery;
-  }
-
   async getScResults(pagination: QueryPagination, filter: SmartContractResultFilter): Promise<SmartContractResult[]> {
-    let query = ElasticQuery.create().withPagination(pagination);
+    const elasticResult = await this.indexerService.getScResults(pagination, filter);
 
-    if (filter.miniBlockHash) {
-      query = query.withCondition(QueryConditionOptions.must, [QueryType.Match('miniBlockHash', filter.miniBlockHash)]);
+    const smartContractResults = elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+
+    const accountAssets = await this.assetsService.getAllAccountAssets();
+    for (const smartContractResult of smartContractResults) {
+      const transaction = ApiUtils.mergeObjects(new Transaction(), smartContractResult);
+      transaction.type = TransactionType.SmartContractResult;
+
+      smartContractResult.action = await this.transactionActionService.getTransactionAction(transaction);
+
+      smartContractResult.senderAssets = accountAssets[smartContractResult.sender];
+      smartContractResult.receiverAssets = accountAssets[smartContractResult.receiver];
     }
 
-    const elasticResult = await this.elasticService.getList('scresults', 'hash', query);
-
-    return elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+    return smartContractResults;
   }
 
   async getScResult(scHash: string): Promise<SmartContractResult | undefined> {
-    const scResult = await this.elasticService.getItem('scresults', 'hash', scHash);
+    const scResult = await this.indexerService.getScResult(scHash);
     if (!scResult) {
       return undefined;
     }
 
-    return ApiUtils.mergeObjects(new SmartContractResult(), scResult);
+    const smartContractResult = ApiUtils.mergeObjects(new SmartContractResult(), scResult);
+    const transaction = ApiUtils.mergeObjects(new Transaction(), smartContractResult);
+    transaction.type = TransactionType.SmartContractResult;
+
+    smartContractResult.action = await this.transactionActionService.getTransactionAction(transaction);
+
+    return smartContractResult;
   }
 
   async getScResultsCount(): Promise<number> {
-    return await this.elasticService.getCount('scresults', ElasticQuery.create());
+    return await this.indexerService.getScResultsCount();
   }
 
   async getAccountScResults(address: string, pagination: QueryPagination): Promise<SmartContractResult[]> {
-    const elasticQuery: ElasticQuery = this.buildSmartContractResultFilterQuery(address);
-    elasticQuery
-      .withPagination(pagination)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+    const elasticResult = await this.indexerService.getAccountScResults(address, pagination);
 
-    const elasticResult = await this.elasticService.getList('scresults', 'hash', elasticQuery);
+    const smartContractResults = elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
 
-    return elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+    for (const smartContractResult of smartContractResults) {
+      const transaction = ApiUtils.mergeObjects(new Transaction(), smartContractResult);
+      transaction.type = TransactionType.SmartContractResult;
+
+      smartContractResult.action = await this.transactionActionService.getTransactionAction(transaction);
+    }
+
+    return smartContractResults;
   }
 
-  async getAccountScResultsCount(address: string): Promise<SmartContractResult[]> {
-    const elasticQuery: ElasticQuery = this.buildSmartContractResultFilterQuery(address);
-
-    return await this.elasticService.getCount('scresults', elasticQuery);
+  async getAccountScResultsCount(address: string): Promise<number> {
+    return await this.indexerService.getAccountScResultsCount(address);
   }
 }

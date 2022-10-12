@@ -1,9 +1,4 @@
-## Type
-- [ ] Bug
-- [ ] Feature  
-- [ ] Performance improvement
-
-## Problem setting
+## Reasoning
 - 
 - 
 - 
