@@ -300,11 +300,11 @@ export class NetworkService {
 
   getAboutRaw(): About {
     const appVersion = require('child_process')
-      .execSync('git rev-parse --short HEAD')
+      .execSync('git rev-parse HEAD')
       .toString().trim();
 
     let pluginsVersion = require('child_process')
-      .execSync('git rev-parse --short HEAD', { cwd: 'src/plugins' })
+      .execSync('git rev-parse HEAD', { cwd: 'src/plugins' })
       .toString().trim();
 
     let apiVersion = require('child_process')
