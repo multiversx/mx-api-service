@@ -18,6 +18,7 @@ import { NftCollectionAccount } from "./entities/nft.collection.account";
 import { ApiUtils, BinaryUtils, CachingService, TokenUtils } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { Collection } from "src/common/indexer/entities";
+import { PersistenceService } from "src/common/persistence/persistence.service";
 
 @Injectable()
 export class CollectionService {
@@ -30,6 +31,7 @@ export class CollectionService {
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => EsdtAddressService))
     private readonly esdtAddressService: EsdtAddressService,
+    private readonly persistenceService: PersistenceService,
   ) { }
 
   async isCollection(identifier: string): Promise<boolean> {
@@ -161,7 +163,7 @@ export class CollectionService {
     collection.type = elasticCollection.type as NftType;
     collection.timestamp = elasticCollection.timestamp;
     collection.roles = await this.getNftCollectionRoles(elasticCollection);
-    collection.traits = elasticCollection.nft_traitSummary ?? [];
+    collection.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
 
     return collection;
   }

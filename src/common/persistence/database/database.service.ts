@@ -6,6 +6,7 @@ import { NftMetadataDb } from "src/common/persistence/database/entities/nft.meta
 import { Repository } from "typeorm";
 import { PersistenceInterface } from "../persistence.interface";
 import { OriginLogger } from "@elrondnetwork/erdnest";
+import { CollectionTraitSummary } from "src/common/indexer/entities/collection.trait.summary";
 
 @Injectable()
 export class DatabaseService implements PersistenceInterface {
@@ -97,5 +98,10 @@ export class DatabaseService implements PersistenceInterface {
     value.content = media;
 
     await this.nftMediaRepository.save(value);
+  }
+
+  // eslint-disable-next-line require-await
+  async getCollectionTraits(_identifier: string): Promise<CollectionTraitSummary[] | null> {
+    return null;
   }
 }

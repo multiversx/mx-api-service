@@ -1,11 +1,13 @@
 import { OriginLogger } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { CollectionTrait } from "src/endpoints/collections/entities/collection.trait";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
-import { Repository } from "typeorm";
+import { ObjectLiteral, Repository } from "typeorm";
 import { PersistenceInterface } from "../persistence.interface";
 import { NftMediaDb } from "./entities/nft.media.db";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
+import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
 
 @Injectable()
 export class MongoDbService implements PersistenceInterface {
@@ -16,6 +18,8 @@ export class MongoDbService implements PersistenceInterface {
     private readonly nftMetadataRepository: Repository<NftMetadataDb>,
     @InjectRepository(NftMediaDb)
     private readonly nftMediaRepository: Repository<NftMediaDb>,
+    @InjectRepository(NftTraitSummaryDb)
+    private readonly nftTraitSummaryRepository: Repository<NftTraitSummaryDb>,
   ) { }
 
   async getMetadata(identifier: string): Promise<any | null> {
@@ -65,7 +69,7 @@ export class MongoDbService implements PersistenceInterface {
     await this.save(this.nftMetadataRepository, metadata);
   }
 
-  private async save<T>(repository: Repository<T>, entity: T) {
+  private async save<T extends ObjectLiteral>(repository: Repository<T>, entity: T) {
     try {
       // @ts-ignore
       await repository.save(entity);
@@ -131,5 +135,20 @@ export class MongoDbService implements PersistenceInterface {
     value.content = media;
 
     await this.save(this.nftMediaRepository, value);
+  }
+
+  async getCollectionTraits(identifier: string): Promise<CollectionTrait[] | null> {
+    try {
+      const summary: NftTraitSummaryDb | null = await this.nftTraitSummaryRepository.findOne({ where: { identifier } });
+      if (!summary) {
+        return null;
+      }
+
+      return summary.traitTypes;
+    } catch (error) {
+      this.logger.error(`An unexpected error occurred when fetching NFT trait summary from DB for identifier '${identifier}'`);
+      this.logger.error(error);
+      return null;
+    }
   }
 }
