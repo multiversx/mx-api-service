@@ -137,16 +137,16 @@ export class MongoDbService implements PersistenceInterface {
     await this.save(this.nftMediaRepository, value);
   }
 
-  async getCollectionTraits(identifier: string): Promise<CollectionTrait[] | null> {
+  async getCollectionTraits(collection: string): Promise<CollectionTrait[] | null> {
     try {
-      const summary: NftTraitSummaryDb | null = await this.nftTraitSummaryRepository.findOne({ where: { identifier } });
+      const summary: NftTraitSummaryDb | null = await this.nftTraitSummaryRepository.findOne({ where: { identifier: collection } });
       if (!summary) {
         return null;
       }
 
       return summary.traitTypes;
     } catch (error) {
-      this.logger.error(`An unexpected error occurred when fetching NFT trait summary from DB for identifier '${identifier}'`);
+      this.logger.error(`An unexpected error occurred when fetching NFT trait summary from DB for collection identifier '${collection}'`);
       this.logger.error(error);
       return null;
     }

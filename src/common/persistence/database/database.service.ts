@@ -101,7 +101,7 @@ export class DatabaseService implements PersistenceInterface {
   }
 
   // eslint-disable-next-line require-await
-  async getCollectionTraits(_identifier: string): Promise<CollectionTraitSummary[] | null> {
+  async getCollectionTraits(_collection: string): Promise<CollectionTraitSummary[] | null> {
     return null;
   }
 }
