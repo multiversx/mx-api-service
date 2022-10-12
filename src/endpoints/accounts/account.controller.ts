@@ -47,6 +47,7 @@ import { TransactionDetailed } from '../transactions/entities/transaction.detail
 import { OriginLogger } from '@elrondnetwork/erdnest';
 import { AccountDelegation } from '../stake/entities/account.delegation';
 import { DelegationService } from '../delegation/delegation.service';
+import {TransfersQueryOptions} from "../transfers/entities/transfers.query.options";
 
 @Controller()
 @ApiTags('accounts')
@@ -666,6 +667,7 @@ export class AccountController {
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'withScResults', description: 'Return results for transactions. When "withScResults" parameter is applied, complexity estimation is 200', required: false, type: Boolean })
   async getAccountTransfers(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -683,6 +685,7 @@ export class AccountController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
   ): Promise<Transaction[]> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
@@ -703,7 +706,7 @@ export class AccountController {
       before,
       after,
       order,
-    }), new QueryPagination({ from, size }));
+    }), new QueryPagination({ from, size }), new TransfersQueryOptions({ withScResults }));
   }
 
   @Get("/accounts/:address/transfers/count")

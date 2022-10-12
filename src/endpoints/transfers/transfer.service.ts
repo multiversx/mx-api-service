@@ -7,6 +7,7 @@ import { TransactionService } from "../transactions/transaction.service";
 import { ApiUtils } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { AssetsService } from "src/common/assets/assets.service";
+import {TransfersQueryOptions} from "./entities/transfers.query.options";
 
 @Injectable()
 export class TransferService {
@@ -42,11 +43,11 @@ export class TransferService {
     return elasticTransfers;
   }
 
-  async getTransfers(filter: TransactionFilter, pagination: QueryPagination): Promise<Transaction[]> {
+  async getTransfers(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransfersQueryOptions): Promise<Transaction[]> {
     let elasticOperations = await this.indexerService.getTransfers(filter, pagination);
     elasticOperations = this.sortElasticTransfers(elasticOperations);
 
-    const transactions: Transaction[] = [];
+    let transactions: Transaction[] = [];
 
     const assets = await this.assetsService.getAllAccountAssets();
     for (const elasticOperation of elasticOperations) {
@@ -61,12 +62,14 @@ export class TransferService {
         delete transaction.round;
       }
 
-
       transactions.push(transaction);
     }
 
-    await this.transactionService.processTransactions(transactions, pagination.size <= 100, assets);
+    if(queryOptions?.withScResults && elasticOperations.some(x => x.hasScResults === true)){
+      transactions = await this.transactionService.getExtraDetailsForTransactions(elasticOperations, transactions,{withScResults: true });
+    }
 
+    await this.transactionService.processTransactions(transactions, pagination.size <= 100, assets);
     return transactions;
   }
 

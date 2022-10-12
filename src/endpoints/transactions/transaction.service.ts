@@ -267,7 +267,7 @@ export class TransactionService {
     return true;
   }
 
-  private async getExtraDetailsForTransactions(elasticTransactions: any[], transactions: Transaction[], queryOptions: TransactionQueryOptions): Promise<TransactionDetailed[]> {
+  public async getExtraDetailsForTransactions(elasticTransactions: any[], transactions: Transaction[], queryOptions: TransactionQueryOptions): Promise<TransactionDetailed[]> {
     const scResults = await this.indexerService.getScResultsForTransactions(elasticTransactions) as any;
     for (const scResult of scResults) {
       scResult.hash = scResult.scHash;
