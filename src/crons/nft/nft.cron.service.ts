@@ -53,9 +53,18 @@ export class NftCronService {
           await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ uploadAsset: true }));
         }
 
-        const metadataLink = this.nftExtendedAttributesService.getMetadataFromBase64EncodedAttributes(nft.attributes);
-        if (metadataLink && (!nft.metadata || Object.keys(nft.metadata).length === 0)) {
-          await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ forceRefreshMetadata: true }));
+        if (nft.attributes) {
+          let metadataLink: string | undefined = undefined;
+          try {
+            metadataLink = this.nftExtendedAttributesService.getMetadataFromBase64EncodedAttributes(nft.attributes);
+          } catch (error) {
+            this.logger.error(`An unhandled exception occurred when parsing metadata from attributes for NFT with identifier '${nft.identifier}'`);
+            this.logger.error(error);
+          }
+
+          if (metadataLink && (!nft.metadata || Object.keys(nft.metadata).length === 0)) {
+            await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ forceRefreshMetadata: true }));
+          }
         }
 
         return needsAssetProcessing;
