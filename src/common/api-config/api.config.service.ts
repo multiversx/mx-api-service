@@ -280,6 +280,15 @@ export class ApiConfigService {
     return isCronActive;
   }
 
+  getIsApiStatusCheckerActive(): boolean {
+    const isApiCheckerActive = this.configService.get<boolean>('cron.statusChecker');
+    if (isApiCheckerActive === undefined) {
+      throw new Error('No cron.statusChecker flag present');
+    }
+
+    return isApiCheckerActive;
+  }
+
   getIsElasticUpdaterCronActive(): boolean {
     return this.configService.get<boolean>('cron.elasticUpdater') ?? false;
   }

@@ -28,6 +28,7 @@ import { TransactionLoggingInterceptor } from './interceptors/transaction.loggin
 import { GraphqlComplexityInterceptor } from './graphql/interceptors/graphql.complexity.interceptor';
 import { GraphQLMetricsInterceptor } from './graphql/interceptors/graphql.metrics.interceptor';
 import { ApiMetricsService } from './common/metrics/api.metrics.service';
+import { CronsApiStatusCheckerModule } from './crons/api.status.checker/api.status.checker.module';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
@@ -68,6 +69,11 @@ async function bootstrap() {
   if (apiConfigService.getIsElasticUpdaterCronActive()) {
     const elasticUpdaterApp = await NestFactory.create(ElasticUpdaterModule);
     await elasticUpdaterApp.listen(8001);
+  }
+
+  if (apiConfigService.getIsApiStatusCheckerActive()) {
+    const cacheApiStatusChecker = await NestFactory.create(CronsApiStatusCheckerModule);
+    await cacheApiStatusChecker.listen(9001);
   }
 
   if (apiConfigService.getIsQueueWorkerCronActive()) {
