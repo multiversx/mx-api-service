@@ -83,7 +83,12 @@ export class NftCronService {
 
       nfts = nfts.sortedDescending(x => x.timestamp ?? 0);
 
-      for (const nft of nfts) {
+      for (const [index, nft] of nfts.entries()) {
+        if (index % 100 === 0) {
+          // yield for 100ms every 100 records, to solve potential issues with synchronous execution
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
         if (nft.identifier && !nftIdentifiers.has(nft.identifier)) {
           try {
             const neededProcessing = await handler(nft);
