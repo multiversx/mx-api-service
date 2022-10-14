@@ -48,10 +48,7 @@ export class NftCronService {
     await Locker.lock('Process NFTs minted in the last year', async () => {
       const yearBefore = Math.floor(Date.now() / 1000) - (Constants.oneDay() * 365);
       await this.processNfts(yearBefore, async nft => {
-        const needsAssetProcessing = await this.nftWorkerService.needsProcessing(nft, new ProcessNftSettings({ uploadAsset: true }));
-        if (needsAssetProcessing) {
-          await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ uploadAsset: true }));
-        }
+        let needsRefreshMetadataProcessing: boolean = false;
 
         if (nft.attributes) {
           let metadataLink: string | undefined = undefined;
@@ -64,10 +61,11 @@ export class NftCronService {
 
           if (metadataLink && (!nft.metadata || Object.keys(nft.metadata).length === 0)) {
             await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ forceRefreshMetadata: true }));
+            needsRefreshMetadataProcessing = true;
           }
         }
 
-        return needsAssetProcessing;
+        return needsRefreshMetadataProcessing;
       });
     }, true);
   }
@@ -77,8 +75,9 @@ export class NftCronService {
 
     const nftIdentifiers = new Set<string>();
     let totalProcessedNfts = 0;
+    let totalNfts = 0;
 
-    const total = await this.nftService.getNftCount({ before, after });
+    const allNftCount = await this.nftService.getNftCount({ before, after });
 
     while (true) {
       let nfts = await this.nftService.getNfts({ from: 0, size: 10000 }, { before, after });
@@ -93,6 +92,8 @@ export class NftCronService {
               totalProcessedNfts++;
             }
 
+            totalNfts++;
+
             nftIdentifiers.add(nft.identifier);
           } catch (error) {
             this.logger.error(`Failure when determining whether the NFT with the identifier '${nft.identifier}' needs processing`);
@@ -101,7 +102,7 @@ export class NftCronService {
         }
       }
 
-      this.logger.log(`Completed processing ${totalProcessedNfts} / ${total} NFTs`);
+      this.logger.log(`Completed processing ${totalNfts} / ${allNftCount} NFTs`);
 
       if (nfts.length < 10000) {
         break;
