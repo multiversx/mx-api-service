@@ -4,6 +4,7 @@ import { Injectable } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { Nft } from "src/endpoints/nfts/entities/nft";
+import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 import { NftWorkerService } from "src/queue.worker/nft.worker/nft.worker.service";
@@ -16,6 +17,7 @@ export class NftCronService {
     private readonly nftWorkerService: NftWorkerService,
     private readonly nftService: NftService,
     private readonly apiConfigService: ApiConfigService,
+    private readonly nftExtendedAttributesService: NftExtendedAttributesService,
   ) { }
 
   @Cron(CronExpression.EVERY_HOUR)
@@ -25,7 +27,8 @@ export class NftCronService {
     }
 
     await Locker.lock('Process NFTs minted in the last 24 hours', async () => {
-      await this.processNftsFromLast24Hours(async nft => {
+      const dayBefore = Math.floor(Date.now() / 1000) - Constants.oneDay();
+      await this.processNfts(dayBefore, async nft => {
         const needsProcessing = await this.nftWorkerService.needsProcessing(nft, new ProcessNftSettings({ uploadAsset: true }));
         if (needsProcessing) {
           await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ uploadAsset: true }));
@@ -36,9 +39,32 @@ export class NftCronService {
     }, true);
   }
 
-  private async processNftsFromLast24Hours(handler: (nft: Nft) => Promise<boolean>): Promise<void> {
+  @Cron(CronExpression.EVERY_MINUTE)
+  async triggerProcessNftsForLastYear() {
+    if (!this.apiConfigService.getIsProcessNftsFlagActive()) {
+      return;
+    }
+
+    await Locker.lock('Process NFTs minted in the last year', async () => {
+      const yearBefore = Math.floor(Date.now() / 1000) - (Constants.oneDay() * 365);
+      await this.processNfts(yearBefore, async nft => {
+        const needsAssetProcessing = await this.nftWorkerService.needsProcessing(nft, new ProcessNftSettings({ uploadAsset: true }));
+        if (needsAssetProcessing) {
+          await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ uploadAsset: true }));
+        }
+
+        const metadataLink = this.nftExtendedAttributesService.getMetadataFromBase64EncodedAttributes(nft.attributes);
+        if (metadataLink && (!nft.metadata || Object.keys(nft.metadata).length === 0)) {
+          await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ forceRefreshMetadata: true }));
+        }
+
+        return needsAssetProcessing;
+      });
+    }, true);
+  }
+
+  private async processNfts(after: number, handler: (nft: Nft) => Promise<boolean>): Promise<void> {
     let before = Math.floor(Date.now() / 1000) - (Constants.oneMinute() * 10);
-    const after = before - Constants.oneDay();
 
     const nftIdentifiers = new Set<string>();
     let totalProcessedNfts = 0;

@@ -91,7 +91,7 @@ export class NftExtendedAttributesService {
     return match.groups['tags'].split(',');
   }
 
-  private getMetadataFromBase64EncodedAttributes(attributes: string): string | undefined {
+  getMetadataFromBase64EncodedAttributes(attributes: string): string | undefined {
     const match = MatchUtils.getMetadataFromBase64Attributes(attributes);
     if (!match || !match.groups) {
       return undefined;
