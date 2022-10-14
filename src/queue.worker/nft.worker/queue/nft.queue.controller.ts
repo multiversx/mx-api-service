@@ -83,7 +83,7 @@ export class NftQueueController {
       return;
     }
 
-    this.logger.log(`Processing NFT with identifier '${data.identifier}' and flags ${this.getProcessNftActivatedSettings(data.settings).join(', ')}`);
+    this.logger.log(`Started Processing NFT with identifier '${data.identifier}' and flags ${this.getProcessNftActivatedSettings(data.settings).join(', ')}`);
 
     try {
       const nft = await this.nftService.getSingleNft(data.identifier);
