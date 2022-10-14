@@ -69,6 +69,8 @@ export class NftCronService {
     const nftIdentifiers = new Set<string>();
     let totalProcessedNfts = 0;
 
+    const total = await this.nftService.getNftCount({ before, after });
+
     while (true) {
       let nfts = await this.nftService.getNfts({ from: 0, size: 10000 }, { before, after });
 
@@ -89,6 +91,8 @@ export class NftCronService {
           }
         }
       }
+
+      this.logger.log(`Completed processing ${totalProcessedNfts} / ${total} NFTs`);
 
       if (nfts.length < 10000) {
         break;
