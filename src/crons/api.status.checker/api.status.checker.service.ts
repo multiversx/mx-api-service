@@ -24,7 +24,6 @@ export class CronsApiStatusCheckerService {
     await Locker.lock('Accounts Count', async () => {
       await this.lock.acquire('accounts', async () => {
         const count = await this.elasticIndexerService.getAccountsCount();
-        console.log(`Accounts Count = ${count}`);
         this.apiStatusMetricsService.setAccountsCount(count);
       });
     }, true);
@@ -35,7 +34,6 @@ export class CronsApiStatusCheckerService {
     await Locker.lock('Blocks Count', async () => {
       await this.lock.acquire('blocks', async () => {
         const count = await this.elasticIndexerService.getBlocksCount({});
-        console.log(`Blocks Count = ${count}`);
         this.apiStatusMetricsService.blocksCountHistogram(count);
       });
     }, true);
@@ -46,7 +44,6 @@ export class CronsApiStatusCheckerService {
     await Locker.lock('Collections Count', async () => {
       await this.lock.acquire('collections', async () => {
         const count = await this.elasticIndexerService.getNftCollectionCount({});
-        console.log(`Collection Count = ${count}`);
         this.apiStatusMetricsService.collectionsCountHistogram(count);
       });
     }, true);
@@ -57,7 +54,6 @@ export class CronsApiStatusCheckerService {
     await Locker.lock('Nfts Count', async () => {
       await this.lock.acquire('nfts', async () => {
         const count = await this.elasticIndexerService.getNftCount({});
-        console.log(`Nfts Count = ${count}`);
         this.apiStatusMetricsService.nftsCountHistogram(count);
       });
     }, true);
@@ -68,7 +64,6 @@ export class CronsApiStatusCheckerService {
     await Locker.lock('Tags Count', async () => {
       await this.lock.acquire('tags', async () => {
         const count = await this.elasticIndexerService.getNftTagCount();
-        console.log(`Tags Count = ${count}`);
         this.apiStatusMetricsService.tagsCountHistogram(count);
       });
     }, true);
@@ -79,7 +74,6 @@ export class CronsApiStatusCheckerService {
     await Locker.lock('Rounds Count', async () => {
       await this.lock.acquire('rounds', async () => {
         const count = await this.elasticIndexerService.getRoundCount(new RoundFilter());
-        console.log(`Rounds Count = ${count}`);
         this.apiStatusMetricsService.roundsCountHistogram(count);
       });
     }, true);
@@ -90,7 +84,6 @@ export class CronsApiStatusCheckerService {
     await Locker.lock('Results Count', async () => {
       await this.lock.acquire('results', async () => {
         const count = await this.elasticIndexerService.getScResultsCount();
-        console.log(`Results Count = ${count}`);
         this.apiStatusMetricsService.resultsCountHistogram(count);
       });
     }, true);
@@ -101,7 +94,6 @@ export class CronsApiStatusCheckerService {
     await Locker.lock('Tokens Count', async () => {
       await this.lock.acquire('tokens', async () => {
         const count = await this.tokenService.getTokenCount({});
-        console.log(`Tokens Count = ${count}`);
         this.apiStatusMetricsService.tokensCountHistogram(count);
       });
     }, true);
@@ -112,7 +104,6 @@ export class CronsApiStatusCheckerService {
     await Locker.lock('Transactions Count', async () => {
       await this.lock.acquire('transactions', async () => {
         const count = await this.elasticIndexerService.getTransactionCount({});
-        console.log(`Transactions Count = ${count}`);
         this.apiStatusMetricsService.transactionsCountHistogram(count);
       });
     }, true);
@@ -123,7 +114,6 @@ export class CronsApiStatusCheckerService {
     await Locker.lock('Transfers Count', async () => {
       await this.lock.acquire('transfers', async () => {
         const count = await this.elasticIndexerService.getTransfersCount({});
-        console.log(`Transfers Count = ${count}`);
         this.apiStatusMetricsService.transfersCountHistogram(count);
       });
     }, true);
