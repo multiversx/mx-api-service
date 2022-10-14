@@ -46,8 +46,7 @@ export class NftCronService {
     }
 
     await Locker.lock('Process NFTs minted in the last year', async () => {
-      const yearBefore = Math.floor(Date.now() / 1000) - (Constants.oneDay() * 365);
-      await this.processNfts(yearBefore, async nft => {
+      await this.processNfts(undefined, async nft => {
         let needsRefreshMetadataProcessing: boolean = false;
 
         if (nft.attributes) {
@@ -70,7 +69,7 @@ export class NftCronService {
     }, true);
   }
 
-  private async processNfts(after: number, handler: (nft: Nft) => Promise<boolean>): Promise<void> {
+  private async processNfts(after: number | undefined, handler: (nft: Nft) => Promise<boolean>): Promise<void> {
     let before = Math.floor(Date.now() / 1000) - (Constants.oneMinute() * 10);
 
     const nftIdentifiers = new Set<string>();
