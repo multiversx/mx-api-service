@@ -80,8 +80,8 @@ export class ApiStatusCheckerService {
 
     if (!ApiStatusCheckerService.tokensCountHistogram) {
       ApiStatusCheckerService.tokensCountHistogram = new Histogram({
-        name: 'total_count',
-        help: 'total_count',
+        name: 'total_tokens',
+        help: 'total_tokens',
         labelNames: [],
         buckets: [],
       });
