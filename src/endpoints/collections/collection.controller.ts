@@ -18,6 +18,7 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
 import { TransactionService } from "../transactions/transaction.service";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
+import { NftRank } from "src/common/assets/entities/nft.rank";
 
 @Controller()
 @ApiTags('collections')
@@ -161,6 +162,21 @@ export class CollectionController {
     return token;
   }
 
+  @Get('/collections/:collection/ranks')
+  @ApiOperation({ summary: 'Collection ranks', description: 'Returns NFT ranks in case the custom ranking preferred algorithm was set' })
+  @ApiOkResponse({ type: NftRank, isArray: true })
+  @ApiNotFoundResponse({ description: 'Token collection not found' })
+  async getNftCollectionRanks(
+    @Param('collection', ParseCollectionPipe) collection: string
+  ): Promise<NftRank[]> {
+    const ranks = await this.collectionService.getNftCollectionRanks(collection);
+    if (ranks === undefined) {
+      throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
+    }
+
+    return ranks;
+  }
+
   @Get("/collections/:collection/nfts")
   @ApiOperation({ summary: 'Collection NFTs', description: 'Returns non-fungible/semi-fungible/meta-esdt tokens that belong to a collection' })
   @ApiOkResponse({ type: [Nft] })
@@ -213,7 +229,8 @@ export class CollectionController {
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
       new NftFilter({ search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, nonceBefore, nonceAfter }),
-      options);
+      options
+    );
   }
 
   @Get("/collections/:collection/nfts/count")

@@ -19,6 +19,8 @@ import { ApiUtils, BinaryUtils, CachingService, TokenUtils } from "@elrondnetwor
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { Collection } from "src/common/indexer/entities";
 import { PersistenceService } from "src/common/persistence/persistence.service";
+import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
+import { NftRank } from "src/common/assets/entities/nft.rank";
 
 @Injectable()
 export class CollectionService {
@@ -138,6 +140,24 @@ export class CollectionService {
 
   async getNftCollectionCount(filter: CollectionFilter): Promise<number> {
     return await this.indexerService.getNftCollectionCount(filter);
+  }
+
+  async getNftCollectionRanks(identifier: string): Promise<NftRank[] | undefined> {
+    const elasticCollection = await this.indexerService.getCollection(identifier);
+    if (!elasticCollection) {
+      return undefined;
+    }
+
+    const assets = await this.assetsService.getTokenAssets(identifier);
+    if (!assets) {
+      return undefined;
+    }
+
+    if (assets.preferredRankAlgorithm !== NftRankAlgorithm.custom) {
+      return undefined;
+    }
+
+    return await this.assetsService.getCollectionRanks(identifier);
   }
 
   async getNftCollection(identifier: string): Promise<NftCollection | undefined> {
