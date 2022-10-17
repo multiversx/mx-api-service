@@ -49,7 +49,7 @@ export class NftCronService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async triggerProcessNftsForLastYear() {
     if (!this.apiConfigService.getIsProcessNftsFlagActive()) {
       return;
