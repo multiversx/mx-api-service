@@ -29,12 +29,22 @@ export class NftCronService {
     await Locker.lock('Process NFTs minted in the last 24 hours', async () => {
       const dayBefore = Math.floor(Date.now() / 1000) - Constants.oneDay();
       await this.processNfts(dayBefore, async nft => {
-        const needsProcessing = await this.nftWorkerService.needsProcessing(nft, new ProcessNftSettings({ uploadAsset: true }));
-        if (needsProcessing) {
+        const needsUploadAsset = await this.nftWorkerService.needsProcessing(nft, new ProcessNftSettings({ uploadAsset: true }));
+        if (needsUploadAsset) {
           await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ uploadAsset: true }));
         }
 
-        return needsProcessing;
+        const needsRefreshMetadata = this.needsMetadataRefresh(nft);
+        if (needsRefreshMetadata) {
+          await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ forceRefreshMetadata: true }));
+        }
+
+        const needsRefreshMedia = this.needsMediaRefresh(nft);
+        if (needsRefreshMedia) {
+          await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ forceRefreshMedia: true }));
+        }
+
+        return needsUploadAsset;
       });
     }, true);
   }
@@ -45,28 +55,70 @@ export class NftCronService {
       return;
     }
 
-    await Locker.lock('Process NFTs minted in the last year', async () => {
+    await Locker.lock('Process NFTs without media / metadata', async () => {
       await this.processNfts(undefined, async nft => {
-        let needsRefreshMetadataProcessing: boolean = false;
-
-        if (nft.attributes) {
-          let metadataLink: string | undefined = undefined;
-          try {
-            metadataLink = this.nftExtendedAttributesService.getMetadataFromBase64EncodedAttributes(nft.attributes);
-          } catch (error) {
-            this.logger.error(`An unhandled exception occurred when parsing metadata from attributes for NFT with identifier '${nft.identifier}'`);
-            this.logger.error(error);
-          }
-
-          if (metadataLink && (!nft.metadata || Object.keys(nft.metadata).length === 0)) {
-            await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ forceRefreshMetadata: true }));
-            needsRefreshMetadataProcessing = true;
-          }
+        const needsProcessing = this.needsMediaFetch(nft) || this.needsMetadataFetch(nft);
+        if (needsProcessing) {
+          await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
         }
 
-        return needsRefreshMetadataProcessing;
+        return needsProcessing;
       });
     }, true);
+  }
+
+  private needsMediaRefresh(nft: Nft): boolean {
+    // we have uris but we don't have any media items
+    return nft.uris && nft.uris.length > 0 && (!nft.media || nft.media.length === 0);
+  }
+
+  private needsMetadataRefresh(nft: Nft): boolean {
+    // no attributes => we don't have metadata
+    if (!nft.attributes) {
+      return false;
+    }
+
+    // metadata has keys => should be all good
+    if (nft.metadata && Object.keys(nft.metadata).length > 0) {
+      return false;
+    }
+
+    try {
+      const metadataLink = this.nftExtendedAttributesService.getMetadataFromBase64EncodedAttributes(nft.attributes);
+      if (!metadataLink) {
+        return false;
+      }
+    } catch (error) {
+      this.logger.error(`An unhandled exception occurred when parsing metadata from attributes for NFT with identifier '${nft.identifier}'`);
+      this.logger.error(error);
+      return false;
+    }
+
+    return true;
+  }
+
+  private needsMetadataFetch(nft: Nft): boolean {
+    if (nft.metadata || !nft.attributes) {
+      return false;
+    }
+
+    try {
+      const metadataLink = this.nftExtendedAttributesService.getMetadataFromBase64EncodedAttributes(nft.attributes);
+      if (!metadataLink) {
+        return false;
+      }
+    } catch (error) {
+      this.logger.error(`An unhandled exception occurred when parsing metadata from attributes for NFT with identifier '${nft.identifier}'`);
+      this.logger.error(error);
+      return false;
+    }
+
+    return true;
+  }
+
+  private needsMediaFetch(nft: Nft): boolean {
+    // we have uris but we don't have any media record at all
+    return nft.uris && nft.uris.length > 0 && !nft.media;
   }
 
   private async processNfts(after: number | undefined, handler: (nft: Nft) => Promise<boolean>): Promise<void> {
