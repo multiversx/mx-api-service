@@ -287,4 +287,44 @@ export class CollectionService {
   async getCollectionCountForAddressWithRoles(address: string, filter: CollectionFilter): Promise<number> {
     return await this.esdtAddressService.getCollectionCountForAddressFromElastic(address, filter);
   }
+
+  async getCollectionRoles(identifier: string): Promise<CollectionRoles[]> {
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
+      return this.getCollectionRolesFromElasticResponse(identifier);
+    }
+
+    return await this.getNftCollectionRolesFromEsdtContract(identifier);
+  }
+
+  private async getCollectionRolesFromElasticResponse(identifier: string): Promise<CollectionRoles[]> {
+    const collection = await this.indexerService.getCollection(identifier);
+
+    if (!collection) {
+      return [];
+    }
+
+    if (!collection.roles) {
+      return [];
+    }
+
+    const roles: CollectionRoles[] = [];
+    for (const role of Object.keys(collection.roles)) {
+      const addresses = collection.roles[role].distinct();
+
+      for (const address of addresses) {
+        const foundAddressRoles = roles.find((addressRole) => addressRole.address === address);
+        if (foundAddressRoles) {
+          TokenHelpers.setCollectionRole(foundAddressRoles, role);
+          continue;
+        }
+
+        const addressRole = new CollectionRoles();
+        addressRole.address = address;
+        TokenHelpers.setCollectionRole(addressRole, role);
+
+        roles.push(addressRole);
+      }
+    }
+    return roles;
+  }
 }

@@ -8,6 +8,7 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { NftCollection } from 'src/endpoints/collections/entities/nft.collection';
 import { ElasticService, TokenUtils } from '@elrondnetwork/erdnest';
 import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
 
 describe('Collection Service', () => {
   let collectionService: CollectionService;
@@ -202,6 +203,31 @@ describe('Collection Service', () => {
       const address: string = 'erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj';
       const result = await collectionService.getCollectionCountForAddressWithRoles(address, new CollectionFilter());
       expect(result).toStrictEqual(4);
+    });
+  });
+
+  describe('getCollectionRoles', () => {
+    it('should return collection roles details for a specific collection', async () => {
+      jest.spyOn(ApiConfigService.prototype, 'getIsIndexerV3FlagActive')
+        // eslint-disable-next-line require-await
+        .mockImplementation(jest.fn(() => true));
+
+      const collectionIdentifier: string = "MEDAL-ae074f";
+      const results = await collectionService.getCollectionRoles(collectionIdentifier);
+
+      expect(results).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          address: "erd1qqqqqqqqqqqqqpgq8ne37ed06034qxfhm09f03ykjfqwx8s7hvrqackmzt",
+          canCreate: true,
+          canBurn: false,
+          canAddQuantity: false,
+          canUpdateAttributes: false,
+          canAddUri: false,
+          canTransferRole: false,
+          roles: ['ESDTRoleNFTCreate'],
+        }),
+      ]));
+
     });
   });
 });

@@ -7,4 +7,5 @@ export interface Collection {
   type: string;
   timestamp: number;
   ownersHistory: { address: string, timestamp: number }[];
+  roles: any
 }

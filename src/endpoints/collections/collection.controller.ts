@@ -18,6 +18,7 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
 import { TransactionService } from "../transactions/transaction.service";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
+import { CollectionRoles } from "../tokens/entities/collection.roles";
 
 @Controller()
 @ApiTags('collections')
@@ -382,5 +383,26 @@ export class CollectionController {
       before,
       after,
     }));
+  }
+
+  @Get("/collections/:identifier/roles")
+  @ApiOperation({ summary: 'Collection roles', description: 'Returns a list of accounts that can perform various actions on a specific collection' })
+  @ApiOkResponse({ type: [CollectionRoles] })
+  @ApiNotFoundResponse({ description: 'Collection not found' })
+  async getCollectionRoles(
+    @Param('identifier', ParseCollectionPipe) identifier: string,
+  ): Promise<CollectionRoles[]> {
+    const isCollection = await this.collectionService.isCollection(identifier);
+    const roles = await this.collectionService.getCollectionRoles(identifier);
+
+    if (!isCollection) {
+      throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (!roles) {
+      throw new HttpException('Collection roles not found', HttpStatus.NOT_FOUND);
+    }
+
+    return roles;
   }
 }
