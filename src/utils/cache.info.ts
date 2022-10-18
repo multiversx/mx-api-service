@@ -140,6 +140,11 @@ export class CacheInfo {
     ttl: Constants.oneDay(),
   };
 
+  static CollectionRanks: CacheInfo = {
+    key: 'collectionRanks',
+    ttl: Constants.oneDay(),
+  };
+
   static AccountAssets: CacheInfo = {
     key: 'accountLabels',
     ttl: Constants.oneDay(),
