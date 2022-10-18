@@ -418,6 +418,20 @@ export class CacheInfo {
     };
   }
 
+  static PendingMediaGet(identifier: string): CacheInfo {
+    return {
+      key: `pendingMediaGet:${identifier}`,
+      ttl: Constants.oneHour() * 12,
+    };
+  }
+
+  static PendingMetadataGet(identifier: string): CacheInfo {
+    return {
+      key: `pendingMetadataGet:${identifier}`,
+      ttl: Constants.oneHour() * 12,
+    };
+  }
+
   static PendingGenerateThumbnail(identifier: string): CacheInfo {
     return {
       key: `pendingGenerateThumbnail:${identifier}`,
