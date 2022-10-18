@@ -110,7 +110,7 @@ export class Transaction {
   @ApiProperty({ enum: TransactionType, nullable: true })
   type: TransactionType | undefined = undefined;
 
-  @Field(() => String, { description: "Original tx hasg for the given transaction.", nullable: true })
+  @Field(() => String, { description: "Original tx hash for the given transaction.", nullable: true })
   @ApiProperty({ type: String, nullable: true })
   originalTxHash: string | undefined = undefined;
 

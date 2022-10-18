@@ -3,7 +3,7 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionStatus } from "src/endpoints/transactions/entities/transaction.status";
 
-@InputType({ description: "Input to retreive the given transfers count for." })
+@InputType({ description: "Input to retrieve the given transfers count for." })
 export class GetTransfersCountInput {
   constructor(partial?: Partial<GetTransfersCountInput>) {
     Object.assign(this, partial);
