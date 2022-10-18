@@ -118,4 +118,44 @@ export class CronsApiStatusCheckerService {
       });
     }, true);
   }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async handleShard_0_Rounds() {
+    await Locker.lock('Shard_0 rounds', async () => {
+      await this.lock.acquire('shard_0 rounds ', async () => {
+        const round = await this.apiStatusMetricsService.getCurrentRound(0);
+        this.apiStatusMetricsService.shard_0_RoundsHistogram(round);
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async handleShard_1_Rounds() {
+    await Locker.lock('Shard_1 rounds', async () => {
+      await this.lock.acquire('shard_1 rounds ', async () => {
+        const round = await this.apiStatusMetricsService.getCurrentRound(1);
+        this.apiStatusMetricsService.shard_1_RoundsHistogram(round);
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async handleShard_2_Rounds() {
+    await Locker.lock('Shard_2 rounds', async () => {
+      await this.lock.acquire('shard_2 rounds ', async () => {
+        const round = await this.apiStatusMetricsService.getCurrentRound(2);
+        this.apiStatusMetricsService.shard_2_RoundsHistogram(round);
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async handleShard_metachain_Rounds() {
+    await Locker.lock('Shard_metachain rounds', async () => {
+      await this.lock.acquire('shard_metachain rounds ', async () => {
+        const round = await this.apiStatusMetricsService.getCurrentRound(4294967295);
+        this.apiStatusMetricsService.shard_metachain_RoundsHistogram(round);
+      });
+    }, true);
+  }
 }
