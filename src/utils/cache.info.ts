@@ -410,4 +410,18 @@ export class CacheInfo {
     key: 'waiting-list',
     ttl: Constants.oneMinute() * 5,
   };
+
+  static PendingUploadAsset(identifier: string): CacheInfo {
+    return {
+      key: `pendingUploadAsset:${identifier}`,
+      ttl: Constants.oneHour() * 12,
+    };
+  }
+
+  static PendingGenerateThumbnail(identifier: string): CacheInfo {
+    return {
+      key: `pendingGenerateThumbnail:${identifier}`,
+      ttl: Constants.oneHour() * 12,
+    };
+  }
 }

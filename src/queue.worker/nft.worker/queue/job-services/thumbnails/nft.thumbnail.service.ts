@@ -7,9 +7,10 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GenerateThumbnailResult } from "./entities/generate.thumbnail.result";
 import { ThumbnailType } from "./entities/thumbnail.type";
 import { AWSService } from "./aws.service";
-import { ApiService, Constants, FileUtils } from "@elrondnetwork/erdnest";
+import { ApiService, CachingService, Constants, FileUtils } from "@elrondnetwork/erdnest";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { OriginLogger } from "@elrondnetwork/erdnest";
+import { CacheInfo } from "src/utils/cache.info";
 
 @Injectable()
 export class NftThumbnailService {
@@ -21,6 +22,7 @@ export class NftThumbnailService {
     private readonly apiConfigService: ApiConfigService,
     private readonly awsService: AWSService,
     private readonly apiService: ApiService,
+    private readonly cachingService: CachingService,
   ) { }
 
   private async extractThumbnailFromImage(buffer: Buffer): Promise<Buffer | undefined> {
@@ -173,6 +175,17 @@ export class NftThumbnailService {
     const nftIdentifier = nft.identifier;
     const urlHash = TokenHelpers.getUrlHash(fileUrl);
 
+    const cacheIdentifier = `${nft.identifier}-${urlHash}`;
+    const cacheKey = CacheInfo.PendingGenerateThumbnail(cacheIdentifier).key;
+    const cacheTtl = CacheInfo.PendingGenerateThumbnail(cacheIdentifier).ttl;
+
+    const cacheValue = await this.cachingService.getCacheRemote(cacheKey);
+    if (cacheValue) {
+      this.logger.log(`Skipped Generating thumbnail for NFT with identifier '${nftIdentifier}', url '${fileUrl}' and url hash '${urlHash}'`);
+      return GenerateThumbnailResult.pendingUploadAsset;
+    }
+
+    await this.cachingService.setCacheRemote(cacheKey, nft.identifier, cacheTtl);
     this.logger.log(`Generating thumbnail for NFT with identifier '${nftIdentifier}', url '${fileUrl}' and url hash '${urlHash}'`);
 
     if (!fileUrl || !fileUrl.startsWith('https://')) {
@@ -183,48 +196,52 @@ export class NftThumbnailService {
     const fileResult: any = await this.apiService.get(fileUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS });
     const file = fileResult.data;
 
-    const urlIdentifier = TokenHelpers.getThumbnailUrlIdentifier(nftIdentifier, fileUrl);
-    if (!forceRefresh) {
-      const hasThumbnailGenerated = await this.hasThumbnailGenerated(nftIdentifier, fileUrl);
-      if (hasThumbnailGenerated) {
-        this.logger.log(`Thumbnail already generated for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
-        return GenerateThumbnailResult.success;
+    try {
+      const urlIdentifier = TokenHelpers.getThumbnailUrlIdentifier(nftIdentifier, fileUrl);
+      if (!forceRefresh) {
+        const hasThumbnailGenerated = await this.hasThumbnailGenerated(nftIdentifier, fileUrl);
+        if (hasThumbnailGenerated) {
+          this.logger.log(`Thumbnail already generated for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+          return GenerateThumbnailResult.success;
+        }
       }
-    }
 
-    if (ThumbnailType.isAudio(fileType)) {
-      const thumbnail = await this.extractThumbnailFromAudio(file, nftIdentifier);
-      if (thumbnail) {
-        await this.uploadThumbnail(urlIdentifier, thumbnail, 'image/jpeg');
-        this.logger.log(`Successfully generated audio thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
-        return GenerateThumbnailResult.success;
+      if (ThumbnailType.isAudio(fileType)) {
+        const thumbnail = await this.extractThumbnailFromAudio(file, nftIdentifier);
+        if (thumbnail) {
+          await this.uploadThumbnail(urlIdentifier, thumbnail, 'image/jpeg');
+          this.logger.log(`Successfully generated audio thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+          return GenerateThumbnailResult.success;
+        } else {
+          this.logger.error(`Thumbnail could not be generated from audio for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+          return GenerateThumbnailResult.couldNotExtractThumbnail;
+        }
+      } else if (ThumbnailType.isImage(fileType)) {
+        const thumbnail = await this.extractThumbnailFromImage(file);
+        if (thumbnail) {
+          await this.uploadThumbnail(urlIdentifier, thumbnail, 'image/jpeg');
+          this.logger.log(`Successfully generated image thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+          return GenerateThumbnailResult.success;
+        } else {
+          this.logger.error(`Thumbnail could not be generated from image for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+          return GenerateThumbnailResult.couldNotExtractThumbnail;
+        }
+      } else if (ThumbnailType.isVideo(fileType)) {
+        const thumbnail = await this.extractThumbnailFromVideo(file, nftIdentifier);
+        if (thumbnail) {
+          await this.uploadThumbnail(urlIdentifier, thumbnail, 'image/jpeg');
+          this.logger.log(`Successfully generated video thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+          return GenerateThumbnailResult.success;
+        } else {
+          this.logger.error(`Thumbnail could not be generated from video for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
+          return GenerateThumbnailResult.couldNotExtractThumbnail;
+        }
       } else {
-        this.logger.error(`Thumbnail could not be generated from audio for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
-        return GenerateThumbnailResult.couldNotExtractThumbnail;
+        this.logger.log(`Could not determine file type for NFT with identifier '${nftIdentifier}' and file type '${fileType}' and url hash '${urlHash}'`);
+        return GenerateThumbnailResult.unrecognizedFileType;
       }
-    } else if (ThumbnailType.isImage(fileType)) {
-      const thumbnail = await this.extractThumbnailFromImage(file);
-      if (thumbnail) {
-        await this.uploadThumbnail(urlIdentifier, thumbnail, 'image/jpeg');
-        this.logger.log(`Successfully generated image thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
-        return GenerateThumbnailResult.success;
-      } else {
-        this.logger.error(`Thumbnail could not be generated from image for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
-        return GenerateThumbnailResult.couldNotExtractThumbnail;
-      }
-    } else if (ThumbnailType.isVideo(fileType)) {
-      const thumbnail = await this.extractThumbnailFromVideo(file, nftIdentifier);
-      if (thumbnail) {
-        await this.uploadThumbnail(urlIdentifier, thumbnail, 'image/jpeg');
-        this.logger.log(`Successfully generated video thumbnail for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
-        return GenerateThumbnailResult.success;
-      } else {
-        this.logger.error(`Thumbnail could not be generated from video for NFT with identifier '${nftIdentifier}' and url hash '${urlHash}'`);
-        return GenerateThumbnailResult.couldNotExtractThumbnail;
-      }
-    } else {
-      this.logger.log(`Could not determine file type for NFT with identifier '${nftIdentifier}' and file type '${fileType}' and url hash '${urlHash}'`);
-      return GenerateThumbnailResult.unrecognizedFileType;
+    } finally {
+      await this.cachingService.deleteInCache(cacheKey);
     }
   }
 

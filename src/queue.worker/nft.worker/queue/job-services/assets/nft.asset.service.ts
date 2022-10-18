@@ -1,8 +1,9 @@
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { CachingService, OriginLogger } from "@elrondnetwork/erdnest";
 import { ApiService, Constants } from "@elrondnetwork/erdnest";
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
+import { CacheInfo } from "src/utils/cache.info";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { AWSService } from "../thumbnails/aws.service";
 
@@ -16,9 +17,21 @@ export class NftAssetService {
     private readonly apiService: ApiService,
     private readonly awsService: AWSService,
     private readonly apiConfigService: ApiConfigService,
+    private readonly cachingService: CachingService,
   ) { }
 
   async uploadAsset(identifier: string, fileUrl: string, fileType: string) {
+    const cacheIdentifier = `${identifier}-${TokenHelpers.getUrlHash(fileUrl)}`;
+    const cacheKey = CacheInfo.PendingUploadAsset(cacheIdentifier).key;
+    const cacheTtl = CacheInfo.PendingUploadAsset(cacheIdentifier).ttl;
+
+    const cacheValue = await this.cachingService.getCacheRemote(cacheKey);
+    if (cacheValue) {
+      this.logger.log(`Skipped uploading assets to S3 for NFT with identifier '${identifier}', file url '${fileUrl}'`);
+      return;
+    }
+
+    await this.cachingService.setCacheRemote(cacheKey, identifier, cacheTtl);
     this.logger.log(`Started uploading assets to S3 for NFT with identifier '${identifier}', file url '${fileUrl}'`);
 
     try {
@@ -34,6 +47,8 @@ export class NftAssetService {
       await this.awsService.uploadToS3(filePath, file, fileType);
 
       this.logger.log(`Asset uploaded to S3 for NFT '${identifier}', file url '${fileUrl}'`);
+
+      await this.cachingService.deleteInCache(cacheKey);
     } catch (error) {
       this.logger.error(error);
       this.logger.error(`An unhandled error occurred while uploading assets for NFT with identifier '${identifier}', file url '${fileUrl}'`);
