@@ -29,6 +29,8 @@ import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.com
 import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
 import { NftRarity } from "./entities/nft.rarity";
 import { NftRarities } from "./entities/nft.rarities";
+import { SortCollectionNfts } from "../collections/entities/sort.collection.nfts";
+import { TokenAssets } from "src/common/assets/entities/token.assets";
 
 @Injectable()
 export class NftService {
@@ -303,6 +305,12 @@ export class NftService {
   }
 
   async getNftsInternal(pagination: QueryPagination, filter: NftFilter, identifier?: string): Promise<Nft[]> {
+    if (filter.sort && filter.sort === SortCollectionNfts.rank && filter.collection) {
+      const assets = await this.assetsService.getTokenAssets(filter.collection);
+
+      filter.sort = this.getNftRankElasticKey(this.getNftRankAlgorithmFromAssets(assets));
+    }
+
     const elasticNfts = await this.indexerService.getNfts(pagination, filter, identifier);
 
     const nfts: Nft[] = [];
@@ -545,8 +553,8 @@ export class NftService {
   }
 
   private getNftRarity(elasticNft: any, algorithm: NftRankAlgorithm): NftRarity | undefined {
-    const score = elasticNft[`nft_score_${algorithm}`];
-    const rank = elasticNft[`nft_rank_${algorithm}`];
+    const score = elasticNft[this.getNftScoreElasticKey(algorithm)];
+    const rank = elasticNft[this.getNftRankElasticKey(algorithm)];
 
     if (!score && !rank) {
       return undefined;
@@ -556,10 +564,10 @@ export class NftService {
   }
 
   applyExtendedAttributes(nft: Nft, elasticNft: any) {
-    const algorithm = nft.assets?.preferredRankAlgorithm ?? NftRankAlgorithm.jaccardDistances;
+    const algorithm = this.getNftRankAlgorithmFromAssets(nft.assets);
 
-    nft.score = elasticNft[`nft_score_${algorithm}`];
-    nft.rank = elasticNft[`nft_rank_${algorithm}`];
+    nft.score = elasticNft[this.getNftScoreElasticKey(algorithm)];
+    nft.rank = elasticNft[this.getNftRankElasticKey(algorithm)];
 
     nft.rarities = new NftRarities({
       trait: this.getNftRarity(elasticNft, NftRankAlgorithm.trait),
@@ -573,5 +581,17 @@ export class NftService {
     if (elasticNft.nft_nsfw_mark !== undefined) {
       nft.isNsfw = elasticNft.nft_nsfw_mark >= this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
     }
+  }
+
+  private getNftRankAlgorithmFromAssets(assets?: TokenAssets): NftRankAlgorithm {
+    return assets?.preferredRankAlgorithm ?? NftRankAlgorithm.jaccardDistances;
+  }
+
+  private getNftRankElasticKey(algorithm: NftRankAlgorithm) {
+    return `nft_rank_${algorithm}`;
+  }
+
+  private getNftScoreElasticKey(algorithm: NftRankAlgorithm) {
+    return `nft_score_${algorithm}`;
   }
 }
