@@ -19,7 +19,7 @@ export class CronsApiStatusCheckerService {
     this.lock = new AsyncLock();
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleAccountsCount() {
     await Locker.lock('Accounts Count', async () => {
       await this.lock.acquire('accounts', async () => {
@@ -29,7 +29,7 @@ export class CronsApiStatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleBlocksCount() {
     await Locker.lock('Blocks Count', async () => {
       await this.lock.acquire('blocks', async () => {
@@ -39,7 +39,7 @@ export class CronsApiStatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleCollectionsCount() {
     await Locker.lock('Collections Count', async () => {
       await this.lock.acquire('collections', async () => {
@@ -49,7 +49,7 @@ export class CronsApiStatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleNftsCount() {
     await Locker.lock('Nfts Count', async () => {
       await this.lock.acquire('nfts', async () => {
@@ -59,7 +59,7 @@ export class CronsApiStatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleTagsCount() {
     await Locker.lock('Tags Count', async () => {
       await this.lock.acquire('tags', async () => {
@@ -69,7 +69,7 @@ export class CronsApiStatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleRoundsCount() {
     await Locker.lock('Rounds Count', async () => {
       await this.lock.acquire('rounds', async () => {
@@ -79,7 +79,7 @@ export class CronsApiStatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleResultsCount() {
     await Locker.lock('Results Count', async () => {
       await this.lock.acquire('results', async () => {
@@ -89,7 +89,7 @@ export class CronsApiStatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleTokensCount() {
     await Locker.lock('Tokens Count', async () => {
       await this.lock.acquire('tokens', async () => {
@@ -99,7 +99,7 @@ export class CronsApiStatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleTransactionsCount() {
     await Locker.lock('Transactions Count', async () => {
       await this.lock.acquire('transactions', async () => {
@@ -109,7 +109,7 @@ export class CronsApiStatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleTransfersCount() {
     await Locker.lock('Transfers Count', async () => {
       await this.lock.acquire('transfers', async () => {
@@ -119,7 +119,7 @@ export class CronsApiStatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron('*/6 * * * * *')
   async handleShard_0_Rounds() {
     await Locker.lock('Shard_0 rounds', async () => {
       await this.lock.acquire('shard_0 rounds ', async () => {
@@ -129,7 +129,7 @@ export class CronsApiStatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron('*/6 * * * * *')
   async handleShard_1_Rounds() {
     await Locker.lock('Shard_1 rounds', async () => {
       await this.lock.acquire('shard_1 rounds ', async () => {
@@ -139,7 +139,7 @@ export class CronsApiStatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron('*/6 * * * * *')
   async handleShard_2_Rounds() {
     await Locker.lock('Shard_2 rounds', async () => {
       await this.lock.acquire('shard_2 rounds ', async () => {
@@ -149,7 +149,7 @@ export class CronsApiStatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron('*/6 * * * * *')
   async handleShard_metachain_Rounds() {
     await Locker.lock('Shard_metachain rounds', async () => {
       await this.lock.acquire('shard_metachain rounds ', async () => {
