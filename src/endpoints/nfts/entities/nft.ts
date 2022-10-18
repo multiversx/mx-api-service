@@ -9,6 +9,7 @@ import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
 import { UnlockMileStoneModel } from "../../../common/entities/unlock-schedule";
 import { Account } from "src/endpoints/accounts/entities/account";
+import { NftRarities } from "./nft.rarities";
 
 @ObjectType("Nft", { description: "NFT object type." })
 export class Nft {
@@ -118,6 +119,10 @@ export class Nft {
   @Field(() => Float, { description: "Rank for the given NFT.", nullable: true })
   @ApiProperty({ type: Number, nullable: true })
   rank: number | undefined = undefined;
+
+  @Field(() => Float, { description: "Rarities according to all possible algorithms for the given NFT.", nullable: true })
+  @ApiProperty({ type: NftRarities, nullable: true })
+  rarities: NftRarities | undefined = undefined;
 
   @Field(() => Boolean, { description: "Is NSFW for the given NFT.", nullable: true })
   @ApiProperty({ type: Boolean, nullable: true })

@@ -26,6 +26,9 @@ import { CollectionAccount } from "../collections/entities/collection.account";
 import { OriginLogger } from "@elrondnetwork/erdnest";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
+import { NftRarity } from "./entities/nft.rarity";
+import { NftRarities } from "./entities/nft.rarities";
 
 @Injectable()
 export class NftService {
@@ -541,10 +544,32 @@ export class NftService {
     return await this.indexerService.getAccountsEsdtByCollection([identifier], pagination);
   }
 
-  applyExtendedAttributes(nft: Nft, elasticNft: any) {
-    nft.score = elasticNft.nft_rarity_score;
-    nft.rank = elasticNft.nft_rarity_rank;
+  private getNftRarity(elasticNft: any, algorithm: NftRankAlgorithm): NftRarity | undefined {
+    const score = elasticNft[`nft_score_${algorithm}`];
+    const rank = elasticNft[`nft_rank_${algorithm}`];
 
+    if (!score && !rank) {
+      return undefined;
+    }
+
+    return new NftRarity({ score, rank });
+  }
+
+  applyExtendedAttributes(nft: Nft, elasticNft: any) {
+    const algorithm = nft.assets?.preferredRankAlgorithm ?? NftRankAlgorithm.jaccardDistances;
+
+    nft.score = elasticNft[`nft_score_${algorithm}`];
+    nft.rank = elasticNft[`nft_rank_${algorithm}`];
+
+    nft.rarities = new NftRarities({
+      trait: this.getNftRarity(elasticNft, NftRankAlgorithm.trait),
+      statistical: this.getNftRarity(elasticNft, NftRankAlgorithm.statistical),
+      jaccardDistances: this.getNftRarity(elasticNft, NftRankAlgorithm.jaccardDistances),
+      openRarity: this.getNftRarity(elasticNft, NftRankAlgorithm.openRarity),
+      custom: this.getNftRarity(elasticNft, NftRankAlgorithm.custom),
+    });
+
+    nft.assets?.preferredRankAlgorithm;
     if (elasticNft.nft_nsfw_mark !== undefined) {
       nft.isNsfw = elasticNft.nft_nsfw_mark >= this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
     }
