@@ -322,7 +322,7 @@ export class NftService {
       nft.nonce = parseInt('0x' + nft.identifier.split('-')[2]);
       nft.timestamp = elasticNft.timestamp;
 
-      this.applyExtendedAttributes(nft, elasticNft);
+      await this.applyExtendedAttributes(nft, elasticNft);
 
       const elasticNftData = elasticNft.data;
       if (elasticNftData) {
@@ -563,8 +563,9 @@ export class NftService {
     return new NftRarity({ score, rank });
   }
 
-  applyExtendedAttributes(nft: Nft, elasticNft: any) {
-    const algorithm = this.getNftRankAlgorithmFromAssets(nft.assets);
+  private async applyExtendedAttributes(nft: Nft, elasticNft: any) {
+    const collectionAssets = await this.assetsService.getTokenAssets(nft.collection);
+    const algorithm = this.getNftRankAlgorithmFromAssets(collectionAssets);
 
     nft.score = elasticNft[this.getNftScoreElasticKey(algorithm)];
     nft.rank = elasticNft[this.getNftRankElasticKey(algorithm)];
@@ -577,7 +578,6 @@ export class NftService {
       custom: this.getNftRarity(elasticNft, NftRankAlgorithm.custom),
     });
 
-    nft.assets?.preferredRankAlgorithm;
     if (elasticNft.nft_nsfw_mark !== undefined) {
       nft.isNsfw = elasticNft.nft_nsfw_mark >= this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
     }
