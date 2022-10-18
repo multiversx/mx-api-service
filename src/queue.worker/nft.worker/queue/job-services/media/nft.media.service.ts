@@ -11,6 +11,7 @@ import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { ClientProxy } from "@nestjs/microservices";
 import { OriginLogger } from "@elrondnetwork/erdnest";
+import { CachingUtils } from "src/utils/caching.utils";
 
 @Injectable()
 export class NftMediaService {
@@ -74,12 +75,18 @@ export class NftMediaService {
         continue;
       }
 
-      let fileProperties: { contentType: string, contentLength: number } | null = null;
+      let fileProperties: { contentType: string, contentLength: number } | null | undefined = null;
 
       try {
-        this.logger.log(`Started fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
-        fileProperties = await this.getFileProperties(uri);
-        this.logger.log(`Completed fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
+        const cacheIdentifier = `${nft.identifier}-${TokenHelpers.getUrlHash(uri)}`;
+
+        fileProperties = await CachingUtils.executeOptimistic({
+          cachingService: this.cachingService,
+          description: `Fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`,
+          key: CacheInfo.PendingMediaGet(cacheIdentifier).key,
+          ttl: CacheInfo.PendingMediaGet(cacheIdentifier).ttl,
+          action: async () => await this.getFileProperties(uri),
+        });
       } catch (error) {
         this.logger.error(`Unexpected error when fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
         this.logger.error(error);
