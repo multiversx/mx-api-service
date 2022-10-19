@@ -140,6 +140,11 @@ export class CacheInfo {
     ttl: Constants.oneDay(),
   };
 
+  static CollectionRanks: CacheInfo = {
+    key: 'collectionRanks',
+    ttl: Constants.oneDay(),
+  };
+
   static AccountAssets: CacheInfo = {
     key: 'accountLabels',
     ttl: Constants.oneDay(),
@@ -410,4 +415,32 @@ export class CacheInfo {
     key: 'waiting-list',
     ttl: Constants.oneMinute() * 5,
   };
+
+  static PendingUploadAsset(identifier: string): CacheInfo {
+    return {
+      key: `pendingUploadAsset:${identifier}`,
+      ttl: Constants.oneHour() * 12,
+    };
+  }
+
+  static PendingMediaGet(identifier: string): CacheInfo {
+    return {
+      key: `pendingMediaGet:${identifier}`,
+      ttl: Constants.oneHour() * 12,
+    };
+  }
+
+  static PendingMetadataGet(identifier: string): CacheInfo {
+    return {
+      key: `pendingMetadataGet:${identifier}`,
+      ttl: Constants.oneHour() * 12,
+    };
+  }
+
+  static PendingGenerateThumbnail(identifier: string): CacheInfo {
+    return {
+      key: `pendingGenerateThumbnail:${identifier}`,
+      ttl: Constants.oneHour() * 12,
+    };
+  }
 }

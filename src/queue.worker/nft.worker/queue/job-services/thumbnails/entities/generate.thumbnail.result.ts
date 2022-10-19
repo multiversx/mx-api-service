@@ -5,4 +5,5 @@ export enum GenerateThumbnailResult {
   unhandledException = 'unhandledException',
   unrecognizedFileType = 'unrecognizedFileType',
   couldNotExtractThumbnail = 'couldNotExtractThumbnail',
+  pendingUploadAsset = 'pendingUploadAsset',
 }
