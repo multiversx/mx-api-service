@@ -16,6 +16,8 @@ import { ProviderService } from "src/endpoints/providers/provider.service";
 import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
 import { ShardService } from "src/endpoints/shards/shard.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
+import { MexEconomicsService } from "src/endpoints/mex/mex.economics.service";
+import { NetworkService } from "src/endpoints/network/network.service";
 
 @Injectable()
 export class StatusCheckerService {
@@ -33,7 +35,9 @@ export class StatusCheckerService {
     private readonly shardService: ShardService,
     private readonly mexPairService: MexPairService,
     private readonly mexFarmService: MexFarmService,
-    private readonly mexTokenService: MexTokenService
+    private readonly mexTokenService: MexTokenService,
+    private readonly mexEconomicService: MexEconomicsService,
+    private readonly economicService: NetworkService
   ) {
     this.lock = new AsyncLock();
   }
@@ -214,7 +218,6 @@ export class StatusCheckerService {
       await this.lock.acquire('shard rounds and nonces', async () => {
         const shardIds = await this.protocolService.getShardIds();
         const roundsAndNonces = await Promise.all(shardIds.map(shardId => this.getCurrentRoundAndNonce(shardId)));
-
         for (const [shardId, round, nonce] of shardIds.zip(roundsAndNonces, (shardId, roundAndNonce) => [shardId, roundAndNonce.round, roundAndNonce.nonce])) {
           this.apiStatusMetricsService.setTotalShardRounds(shardId, round);
           this.apiStatusMetricsService.setTotalShardNonces(shardId, nonce);
@@ -222,6 +225,31 @@ export class StatusCheckerService {
       });
     }, true);
   }
+
+  @Cron('*/6 * * * * *')
+  async handleMexEconomicValues() {
+    await Locker.lock('MexEconomics values', async () => {
+      await this.lock.acquire('MexEconomics values', async () => {
+        const economics = await this.mexEconomicService.getMexEconomics();
+        for (const [key, value] of Object.entries(economics)) {
+          this.apiStatusMetricsService.setMexEconomicsValue(key, value);
+        }
+      });
+    }, true);
+  }
+
+  @Cron('*/6 * * * * *')
+  async handleEconomicValues() {
+    await Locker.lock('Economics values', async () => {
+      await this.lock.acquire('economics values', async () => {
+        const economics = await this.economicService.getEconomics();
+        for (const [key, value] of Object.entries(economics)) {
+          this.apiStatusMetricsService.setEconomicsValue(key, value);
+        }
+      });
+    }, true);
+  }
+
 
   async getCurrentRoundAndNonce(shardId: number): Promise<{ round: number, nonce: number }> {
     const result = await this.gatewayService.get(`network/status/${shardId}`, GatewayComponentRequest.networkStatus);

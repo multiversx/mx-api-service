@@ -22,6 +22,8 @@ export class StatusMetricsService {
   private static totalMexPairsHistogram: Histogram<string>;
   private static totalMexFarmsHistogram: Histogram<string>;
   private static totalMexTokensHistogram: Histogram<string>;
+  private static mexEconomicsHistogram: Histogram<string>;
+  private static economicsHistogram: Histogram<string>;
 
   constructor() {
     if (!StatusMetricsService.totalAccountsHistogram) {
@@ -186,6 +188,24 @@ export class StatusMetricsService {
         buckets: [],
       });
     }
+
+    if (!StatusMetricsService.mexEconomicsHistogram) {
+      StatusMetricsService.mexEconomicsHistogram = new Histogram({
+        name: 'mexEconomics_value',
+        help: 'mexEconomics_value',
+        labelNames: ["mexEconomics"],
+        buckets: [],
+      });
+    }
+
+    if (!StatusMetricsService.economicsHistogram) {
+      StatusMetricsService.economicsHistogram = new Histogram({
+        name: 'economics_value',
+        help: 'economics_value',
+        labelNames: ["economics"],
+        buckets: [],
+      });
+    }
   }
 
   setTotalAccounts(total: number) {
@@ -262,5 +282,13 @@ export class StatusMetricsService {
 
   setTotalMexTokensResults(total: number) {
     StatusMetricsService.totalMexTokensHistogram.labels().observe(total);
+  }
+
+  setMexEconomicsValue(name: string, value: number) {
+    StatusMetricsService.mexEconomicsHistogram.labels(name.toString()).observe(value);
+  }
+
+  setEconomicsValue(name: string, value: number) {
+    StatusMetricsService.economicsHistogram.labels(name.toString()).observe(value);
   }
 }
