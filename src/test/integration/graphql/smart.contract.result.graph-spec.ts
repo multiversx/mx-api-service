@@ -22,7 +22,7 @@ describe('Smart Contract Results', () => {
         .post(gql)
         .send({
           query: `{
-            scResults(input:{
+            results(input:{
               size: 5
             }){
               hash
@@ -77,7 +77,7 @@ describe('Smart Contract Results', () => {
             .post(gql)
             .send({
               query: `{
-                scResults(input:{
+                results(input:{
                  ${filter}: ${value}
                 }){
                   hash
@@ -120,7 +120,7 @@ describe('Smart Contract Results', () => {
         .post(gql)
         .send({
           query: `{
-            scResultsCount
+            resultsCount
           }`,
         })
         .expect(200)
@@ -137,7 +137,7 @@ describe('Smart Contract Results', () => {
         .post(gql)
         .send({
           query: `{
-            scResult(input:{
+            result(input:{
               scHash: "a5c935b7639a40e7d0e169f2053dcff3ebcbf04c8ee38799bb2075f1fa3f1688"
             }){
               hash
