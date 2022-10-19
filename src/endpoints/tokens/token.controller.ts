@@ -283,7 +283,7 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/roles")
-  @ApiOperation({ summary: 'Token roles', description: 'Returns a list of accounts that can perform various actions on a specific token' })
+  @ApiOperation({ summary: 'Token roles', description: 'Returns a list of accounts that can perform various actions on a specific token', deprecated: true })
   @ApiOkResponse({ type: [TokenRoles] })
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getTokenRoles(
@@ -303,7 +303,7 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/roles/:address")
-  @ApiOperation({ summary: 'Token address roles', description: 'Returns roles detalils for a specific address of a given token' })
+  @ApiOperation({ summary: 'Token address roles', description: 'Returns roles detalils for a specific address of a given token', deprecated: true })
   @ApiOkResponse({ type: TokenRoles })
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getTokenRolesForAddress(
