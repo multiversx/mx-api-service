@@ -4,7 +4,7 @@ import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexe
 import { StatusMetricsModule } from "src/common/metrics/status.metrics.module";
 import { EndpointsServicesModule } from "src/endpoints/endpoints.services.module";
 import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
-import { CronsApiStatusCheckerService } from "./api.status.checker.service";
+import { StatusCheckerService } from "./status.checker.service";
 
 @Module({
   imports: [
@@ -14,7 +14,7 @@ import { CronsApiStatusCheckerService } from "./api.status.checker.service";
   ],
   providers: [
     DynamicModuleUtils.getPubSubService(),
-    CronsApiStatusCheckerService, ElasticIndexerService,
+    StatusCheckerService, ElasticIndexerService,
   ],
 })
-export class CronsApiStatusCheckerModule { }
+export class StatusCheckerModule { }

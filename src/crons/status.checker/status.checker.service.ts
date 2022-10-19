@@ -8,7 +8,7 @@ import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
 import { TokenService } from "src/endpoints/tokens/token.service";
 
 @Injectable()
-export class CronsApiStatusCheckerService {
+export class StatusCheckerService {
   private readonly lock: AsyncLock;
 
   constructor(
