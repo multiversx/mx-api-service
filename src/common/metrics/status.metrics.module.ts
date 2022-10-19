@@ -1,6 +1,6 @@
 import { MetricsModule } from "@elrondnetwork/erdnest";
 import { Global, Module } from "@nestjs/common";
-import { ApiStatusCheckerService } from "./api.status.checker.service";
+import { StatusMetricsService } from "./status.metrics.service";
 
 @Global()
 @Module({
@@ -8,10 +8,10 @@ import { ApiStatusCheckerService } from "./api.status.checker.service";
     MetricsModule,
   ],
   providers: [
-    ApiStatusCheckerService,
+    StatusMetricsService,
   ],
   exports: [
-    ApiStatusCheckerService,
+    StatusMetricsService,
   ],
 })
-export class ApiStatusCheckerModule { }
+export class StatusMetricsModule { }

@@ -2,8 +2,8 @@ import { Locker } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import AsyncLock from "async-lock";
-import { ApiStatusCheckerService } from "src/common/api-status-checker/api.status.checker.service";
 import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
+import { StatusMetricsService } from "src/common/metrics/status.metrics.service";
 import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
 import { TokenService } from "src/endpoints/tokens/token.service";
 
@@ -12,7 +12,7 @@ export class CronsApiStatusCheckerService {
   private readonly lock: AsyncLock;
 
   constructor(
-    private readonly apiStatusMetricsService: ApiStatusCheckerService,
+    private readonly apiStatusMetricsService: StatusMetricsService,
     private readonly elasticIndexerService: ElasticIndexerService,
     private readonly tokenService: TokenService,
   ) {
