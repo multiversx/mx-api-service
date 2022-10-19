@@ -2663,6 +2663,9 @@ type SmartContractResult {
   """Receiver assets for the given smart contract result."""
   receiverAssets: AccountAssets
 
+  """Sender herotag for the given transaction."""
+  receiverHerotag: String!
+
   """Relayed value for the given smart contract result."""
   relayedValue: String!
 
@@ -2674,6 +2677,9 @@ type SmartContractResult {
 
   """Sender assets for the given smart contract result."""
   senderAssets: AccountAssets
+
+  """Sender herotag for the given transaction."""
+  senderHerotag: String!
 
   """Timestamp for the given smart contract result."""
   timestamp: Float!
@@ -2953,6 +2959,9 @@ type Transaction {
   """Receiver assets for the given transaction."""
   receiverAssets: AccountAssets!
 
+  """Sender herotag for the given transaction."""
+  receiverHerotag: String!
+
   """Receiver account shard for the given transaction."""
   receiverShard: String!
 
@@ -2970,6 +2979,9 @@ type Transaction {
 
   """Sender assets for the given transaction."""
   senderAssets: AccountAssets!
+
+  """Sender herotag for the given transaction."""
+  senderHerotag: String!
 
   """Sender account shard for the given transaction."""
   senderShard: Float!
@@ -3064,6 +3076,9 @@ type TransactionDetailed {
   """Receiver assets for the given transaction."""
   receiverAssets: AccountAssets!
 
+  """Sender herotag for the given transaction."""
+  receiverHerotag: String!
+
   """Receiver account shard for the given transaction."""
   receiverShard: String!
 
@@ -3084,6 +3099,9 @@ type TransactionDetailed {
 
   """Sender assets for the given transaction."""
   senderAssets: AccountAssets!
+
+  """Sender herotag for the given transaction."""
+  senderHerotag: String!
 
   """Sender account shard for the given transaction."""
   senderShard: Float!
@@ -3115,6 +3133,9 @@ type TransactionLog {
   """Account assets for the given transaction log."""
   addressAssets: AccountAssets
 
+  """Account herotag for the given transaction log."""
+  addressHerotag: String!
+
   """Transaction log events list for the given transaction log."""
   events: [TransactionLogEvent!]!
 
@@ -3129,6 +3150,9 @@ type TransactionLogEvent {
 
   """Address assets for the given transaction log event."""
   addressAssets: AccountAssets!
+
+  """Account herotag for the given transaction log."""
+  addressHerotag: String!
 
   """Data for the given transaction log event."""
   data: String
@@ -3175,11 +3199,17 @@ type TransactionOperation {
   """Receiver account assets for the transaction operation."""
   receiverAssets: AccountAssets
 
+  """Receiver herotag for the transaction operation."""
+  receiverHerotag: String!
+
   """Sender address for the transaction operation."""
   sender: String!
 
   """Sender account assets for the transaction operation."""
   senderAssets: AccountAssets
+
+  """Sender herotag for the transaction operation."""
+  senderHerotag: String!
 
   """SVG URL for the transaction operation."""
   svgUrl: String

@@ -198,7 +198,7 @@ export class TransactionService {
 
   private async applyAddressHerotag(address: string): Promise<any> {
     try {
-      const { data: { herotag } } = await this.apiService.get(`${this.apiConfigService.getMaiarIdUrl()}/${address}`);
+      const { data: { herotag } } = await this.apiService.get(`${this.apiConfigService.getMaiarIdUrl()}/users/api/v1/users/${address}`);
 
       return herotag;
     } catch (error) {
