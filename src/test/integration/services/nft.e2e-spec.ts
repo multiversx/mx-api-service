@@ -381,6 +381,16 @@ describe('Nft Service', () => {
       expect(count).toStrictEqual(10000);
     });
 
+    it("should return total nfts count from a specific nonce range ", async () => {
+      const filters = new NftFilter();
+      filters.collection = "EBULB-36c762";
+      filters.nonceAfter = 30;
+      filters.nonceBefore = 40;
+
+      const count = await nftService.getNftCount(filters);
+      expect(count).toStrictEqual(11);
+    });
+
     it(`should return total number of nfts from address with type MetaESDT`, async () => {
       const address: string = "erd1qqqqqqqqqqqqqpgqr8z5hkwek0pmytcvla86qjusn4hkufjlrp8s7hhkjk";
       const count = await nftService.getNftCountForAddress(address, { type: NftType.MetaESDT });
@@ -774,6 +784,52 @@ describe('Nft Service', () => {
       for (const nft of nfts) {
         expect(nft.scamInfo).toBeUndefined();
       }
+    });
+  });
+
+  describe('getNfts', () => {
+    it('should return a list of NFTs from a specific collection filtered by nonceAfter', async () => {
+      const collection: string = "EBULB-36c762";
+      const filter = new NftFilter();
+      filter.collection = collection;
+      filter.nonceAfter = 30;
+
+      const results = await nftService.getNfts(new QueryPagination({ size: 3 }), filter);
+
+      for (const result of results) {
+        expect(result.collection).toStrictEqual(collection);
+      }
+      const nftNonce = results.map((nft) => nft.nonce);
+      expect(nftNonce.includes(50)).toBeTruthy();
+      expect(nftNonce.includes(49)).toBeTruthy();
+      expect(nftNonce.includes(48)).toBeTruthy();
+
+      const nftIdentifier = results.map((nft) => nft.identifier);
+      expect(nftIdentifier.includes("EBULB-36c762-32")).toBeTruthy();
+      expect(nftIdentifier.includes("EBULB-36c762-31")).toBeTruthy();
+      expect(nftIdentifier.includes("EBULB-36c762-30")).toBeTruthy();
+    });
+
+    it('should return a list of NFTs from a specific collection filtered by nonceBefore', async () => {
+      const collection: string = "EBULB-36c762";
+      const filter = new NftFilter();
+      filter.collection = collection;
+      filter.nonceBefore = 30;
+
+      const results = await nftService.getNfts(new QueryPagination({ size: 3 }), filter);
+
+      for (const result of results) {
+        expect(result.collection).toStrictEqual(collection);
+      }
+      const nftNonce = results.map((nft) => nft.nonce);
+      expect(nftNonce.includes(30)).toBeTruthy();
+      expect(nftNonce.includes(29)).toBeTruthy();
+      expect(nftNonce.includes(28)).toBeTruthy();
+
+      const nftIdentifier = results.map((nft) => nft.identifier);
+      expect(nftIdentifier.includes("EBULB-36c762-1e")).toBeTruthy();
+      expect(nftIdentifier.includes("EBULB-36c762-1d")).toBeTruthy();
+      expect(nftIdentifier.includes("EBULB-36c762-1c")).toBeTruthy();
     });
   });
 });

@@ -60,7 +60,8 @@ describe('Nft Media Service', () => {
 
       const mediaRaw = await nftMediaService.refreshMedia(nft);
 
-      expect(mediaRaw?.length).toStrictEqual(0);
+      expect(mediaRaw?.length).toStrictEqual(1);
+      expect(mediaRaw?.at(0)?.thumbnailUrl).toStrictEqual(NftMediaService.NFT_THUMBNAIL_DEFAULT);
     });
 
     it('should not accept content (media mime type is not accepted)', async () => {

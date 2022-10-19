@@ -6,6 +6,7 @@ import { GetNftCollectionInput, GetNftCollectionsCountInput, GetNftCollectionsIn
 import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { NotFoundException } from "@nestjs/common";
+import { NftRank } from "src/common/assets/entities/nft.rank";
 
 @Resolver()
 export class NftCollectionQuery {
@@ -45,4 +46,16 @@ export class NftCollectionQuery {
 
     return collection;
   }
+
+  @Query(() => [NftRank], { name: "collectionRank", description: "Retrieve the NFT collection ranks for the given input.", nullable: true })
+  public async getNftCollectionRanks(@Args("input", { description: "Input to retrieve the given NFT collection ranks for." }) input: GetNftCollectionInput): Promise<NftRank[]> {
+    const collection = await this.collectionService.getNftCollectionRanks(GetNftCollectionInput.resolve(input));
+
+    if (!collection) {
+      throw new NotFoundException('Collection not found');
+    }
+
+    return collection;
+  }
+
 }

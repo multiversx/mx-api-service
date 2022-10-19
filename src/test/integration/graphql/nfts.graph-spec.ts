@@ -185,6 +185,11 @@ describe('Nfts', () => {
         value: '1660134204',
         count: 2,
       },
+      {
+        filter: 'nonce',
+        value: '200',
+        count: 200,
+      },
 
     ].forEach(({ filter, value, count }) => {
       describe(`filter = ${filter}`, () => {

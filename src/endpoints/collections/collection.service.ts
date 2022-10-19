@@ -18,6 +18,9 @@ import { NftCollectionAccount } from "./entities/nft.collection.account";
 import { ApiUtils, BinaryUtils, CachingService, TokenUtils } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { Collection } from "src/common/indexer/entities";
+import { PersistenceService } from "src/common/persistence/persistence.service";
+import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
+import { NftRank } from "src/common/assets/entities/nft.rank";
 
 @Injectable()
 export class CollectionService {
@@ -30,6 +33,7 @@ export class CollectionService {
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => EsdtAddressService))
     private readonly esdtAddressService: EsdtAddressService,
+    private readonly persistenceService: PersistenceService,
   ) { }
 
   async isCollection(identifier: string): Promise<boolean> {
@@ -138,6 +142,24 @@ export class CollectionService {
     return await this.indexerService.getNftCollectionCount(filter);
   }
 
+  async getNftCollectionRanks(identifier: string): Promise<NftRank[] | undefined> {
+    const elasticCollection = await this.indexerService.getCollection(identifier);
+    if (!elasticCollection) {
+      return undefined;
+    }
+
+    const assets = await this.assetsService.getTokenAssets(identifier);
+    if (!assets) {
+      return undefined;
+    }
+
+    if (assets.preferredRankAlgorithm !== NftRankAlgorithm.custom) {
+      return undefined;
+    }
+
+    return await this.assetsService.getCollectionRanks(identifier);
+  }
+
   async getNftCollection(identifier: string): Promise<NftCollection | undefined> {
     const elasticCollection = await this.indexerService.getCollection(identifier);
     if (!elasticCollection) {
@@ -161,6 +183,7 @@ export class CollectionService {
     collection.type = elasticCollection.type as NftType;
     collection.timestamp = elasticCollection.timestamp;
     collection.roles = await this.getNftCollectionRoles(elasticCollection);
+    collection.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
 
     return collection;
   }
