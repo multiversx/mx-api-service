@@ -29,7 +29,7 @@ export class StatusCheckerService {
     await Locker.lock('Accounts Count', async () => {
       await this.lock.acquire('accounts', async () => {
         const count = await this.elasticIndexerService.getAccountsCount();
-        this.apiStatusMetricsService.setAccountsCount(count);
+        this.apiStatusMetricsService.setTotalAccounts(count);
       });
     }, true);
   }
@@ -39,7 +39,7 @@ export class StatusCheckerService {
     await Locker.lock('Blocks Count', async () => {
       await this.lock.acquire('blocks', async () => {
         const count = await this.elasticIndexerService.getBlocksCount({});
-        this.apiStatusMetricsService.blocksCountHistogram(count);
+        this.apiStatusMetricsService.setTotalBlocks(count);
       });
     }, true);
   }
@@ -49,7 +49,7 @@ export class StatusCheckerService {
     await Locker.lock('Collections Count', async () => {
       await this.lock.acquire('collections', async () => {
         const count = await this.elasticIndexerService.getNftCollectionCount({});
-        this.apiStatusMetricsService.collectionsCountHistogram(count);
+        this.apiStatusMetricsService.setTotalCollections(count);
       });
     }, true);
   }
@@ -59,7 +59,7 @@ export class StatusCheckerService {
     await Locker.lock('Nfts Count', async () => {
       await this.lock.acquire('nfts', async () => {
         const count = await this.elasticIndexerService.getNftCount({});
-        this.apiStatusMetricsService.nftsCountHistogram(count);
+        this.apiStatusMetricsService.setTotalNfts(count);
       });
     }, true);
   }
@@ -69,7 +69,7 @@ export class StatusCheckerService {
     await Locker.lock('Tags Count', async () => {
       await this.lock.acquire('tags', async () => {
         const count = await this.elasticIndexerService.getNftTagCount();
-        this.apiStatusMetricsService.tagsCountHistogram(count);
+        this.apiStatusMetricsService.setTotalTags(count);
       });
     }, true);
   }
@@ -79,7 +79,7 @@ export class StatusCheckerService {
     await Locker.lock('Rounds Count', async () => {
       await this.lock.acquire('rounds', async () => {
         const count = await this.elasticIndexerService.getRoundCount(new RoundFilter());
-        this.apiStatusMetricsService.roundsCountHistogram(count);
+        this.apiStatusMetricsService.setTotalRounds(count);
       });
     }, true);
   }
@@ -89,7 +89,7 @@ export class StatusCheckerService {
     await Locker.lock('Results Count', async () => {
       await this.lock.acquire('results', async () => {
         const count = await this.elasticIndexerService.getScResultsCount();
-        this.apiStatusMetricsService.resultsCountHistogram(count);
+        this.apiStatusMetricsService.setTotalResults(count);
       });
     }, true);
   }
@@ -99,7 +99,7 @@ export class StatusCheckerService {
     await Locker.lock('Tokens Count', async () => {
       await this.lock.acquire('tokens', async () => {
         const count = await this.tokenService.getTokenCount({});
-        this.apiStatusMetricsService.tokensCountHistogram(count);
+        this.apiStatusMetricsService.setTotalTokens(count);
       });
     }, true);
   }
@@ -109,7 +109,7 @@ export class StatusCheckerService {
     await Locker.lock('Transactions Count', async () => {
       await this.lock.acquire('transactions', async () => {
         const count = await this.elasticIndexerService.getTransactionCount({});
-        this.apiStatusMetricsService.transactionsCountHistogram(count);
+        this.apiStatusMetricsService.setTotalTransactions(count);
       });
     }, true);
   }
@@ -119,7 +119,7 @@ export class StatusCheckerService {
     await Locker.lock('Transfers Count', async () => {
       await this.lock.acquire('transfers', async () => {
         const count = await this.elasticIndexerService.getTransfersCount({});
-        this.apiStatusMetricsService.transfersCountHistogram(count);
+        this.apiStatusMetricsService.setTotalTransfers(count);
       });
     }, true);
   }
@@ -140,8 +140,8 @@ export class StatusCheckerService {
         const roundsAndNonces = await Promise.all(shardIds.map(shardId => this.getCurrentRoundAndNonce(shardId)));
 
         for (const [shardId, round, nonce] of shardIds.zip(roundsAndNonces, (shardId, roundAndNonce) => [shardId, roundAndNonce.round, roundAndNonce.nonce])) {
-          this.apiStatusMetricsService.roundsHistogram(shardId, round);
-          this.apiStatusMetricsService.noncesHistogram(shardId, nonce);
+          this.apiStatusMetricsService.setTotalShardRounds(shardId, round);
+          this.apiStatusMetricsService.setTotalShardNonces(shardId, nonce);
         }
       });
     }, true);

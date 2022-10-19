@@ -3,22 +3,22 @@ import { Histogram } from "prom-client";
 
 @Injectable()
 export class StatusMetricsService {
-  private static accountsCountHistogram: Histogram<string>;
-  private static blocksCountHistogram: Histogram<string>;
-  private static collectionsCountHistogram: Histogram<string>;
-  private static nftsCountHistogram: Histogram<string>;
-  private static tagsCountHistogram: Histogram<string>;
-  private static roundsCountHistogram: Histogram<string>;
-  private static resultsCountHistogram: Histogram<string>;
-  private static tokensCountHistogram: Histogram<string>;
-  private static transactionsCountHistogram: Histogram<string>;
-  private static transferCountHistogram: Histogram<string>;
-  private static shardRoundsHistogram: Histogram<string>;
-  private static shardNoncesHistogram: Histogram<string>;
+  private static totalAccountsHistogram: Histogram<string>;
+  private static totalBlocksHistogram: Histogram<string>;
+  private static totalCollectionsHistogram: Histogram<string>;
+  private static totalNftsHistogram: Histogram<string>;
+  private static totalTagsHistogram: Histogram<string>;
+  private static totalRoundsHistogram: Histogram<string>;
+  private static totalResultsHistogram: Histogram<string>;
+  private static totalTokensHistogram: Histogram<string>;
+  private static totalTransactionsHistogram: Histogram<string>;
+  private static totalTransfersHistogram: Histogram<string>;
+  private static totalShardRoundsHistogram: Histogram<string>;
+  private static totalShardNoncesHistogram: Histogram<string>;
 
   constructor() {
-    if (!StatusMetricsService.accountsCountHistogram) {
-      StatusMetricsService.accountsCountHistogram = new Histogram({
+    if (!StatusMetricsService.totalAccountsHistogram) {
+      StatusMetricsService.totalAccountsHistogram = new Histogram({
         name: 'total_accounts',
         help: 'total_accounts',
         labelNames: [],
@@ -26,8 +26,8 @@ export class StatusMetricsService {
       });
     }
 
-    if (!StatusMetricsService.blocksCountHistogram) {
-      StatusMetricsService.blocksCountHistogram = new Histogram({
+    if (!StatusMetricsService.totalBlocksHistogram) {
+      StatusMetricsService.totalBlocksHistogram = new Histogram({
         name: 'total_blocks',
         help: 'total_blocks',
         labelNames: [],
@@ -35,8 +35,8 @@ export class StatusMetricsService {
       });
     }
 
-    if (!StatusMetricsService.collectionsCountHistogram) {
-      StatusMetricsService.collectionsCountHistogram = new Histogram({
+    if (!StatusMetricsService.totalCollectionsHistogram) {
+      StatusMetricsService.totalCollectionsHistogram = new Histogram({
         name: 'total_collections',
         help: 'total_collections',
         labelNames: [],
@@ -44,8 +44,8 @@ export class StatusMetricsService {
       });
     }
 
-    if (!StatusMetricsService.nftsCountHistogram) {
-      StatusMetricsService.nftsCountHistogram = new Histogram({
+    if (!StatusMetricsService.totalNftsHistogram) {
+      StatusMetricsService.totalNftsHistogram = new Histogram({
         name: 'total_nfts',
         help: 'total_nfts',
         labelNames: [],
@@ -53,8 +53,8 @@ export class StatusMetricsService {
       });
     }
 
-    if (!StatusMetricsService.tagsCountHistogram) {
-      StatusMetricsService.tagsCountHistogram = new Histogram({
+    if (!StatusMetricsService.totalTagsHistogram) {
+      StatusMetricsService.totalTagsHistogram = new Histogram({
         name: 'total_tags',
         help: 'total_tags',
         labelNames: [],
@@ -62,8 +62,8 @@ export class StatusMetricsService {
       });
     }
 
-    if (!StatusMetricsService.roundsCountHistogram) {
-      StatusMetricsService.roundsCountHistogram = new Histogram({
+    if (!StatusMetricsService.totalRoundsHistogram) {
+      StatusMetricsService.totalRoundsHistogram = new Histogram({
         name: 'total_rounds',
         help: 'total_rounds',
         labelNames: [],
@@ -71,8 +71,8 @@ export class StatusMetricsService {
       });
     }
 
-    if (!StatusMetricsService.resultsCountHistogram) {
-      StatusMetricsService.resultsCountHistogram = new Histogram({
+    if (!StatusMetricsService.totalResultsHistogram) {
+      StatusMetricsService.totalResultsHistogram = new Histogram({
         name: 'total_scResults',
         help: 'total_scResults',
         labelNames: [],
@@ -80,8 +80,8 @@ export class StatusMetricsService {
       });
     }
 
-    if (!StatusMetricsService.tokensCountHistogram) {
-      StatusMetricsService.tokensCountHistogram = new Histogram({
+    if (!StatusMetricsService.totalTokensHistogram) {
+      StatusMetricsService.totalTokensHistogram = new Histogram({
         name: 'total_tokens',
         help: 'total_tokens',
         labelNames: [],
@@ -89,8 +89,8 @@ export class StatusMetricsService {
       });
     }
 
-    if (!StatusMetricsService.transferCountHistogram) {
-      StatusMetricsService.transferCountHistogram = new Histogram({
+    if (!StatusMetricsService.totalTransfersHistogram) {
+      StatusMetricsService.totalTransfersHistogram = new Histogram({
         name: 'total_transfers',
         help: 'total_transfers',
         labelNames: [],
@@ -98,8 +98,8 @@ export class StatusMetricsService {
       });
     }
 
-    if (!StatusMetricsService.shardRoundsHistogram) {
-      StatusMetricsService.shardRoundsHistogram = new Histogram({
+    if (!StatusMetricsService.totalShardRoundsHistogram) {
+      StatusMetricsService.totalShardRoundsHistogram = new Histogram({
         name: 'total_shard_rounds',
         help: 'Total shard rounds',
         labelNames: ['shard'],
@@ -107,8 +107,8 @@ export class StatusMetricsService {
       });
     }
 
-    if (!StatusMetricsService.shardNoncesHistogram) {
-      StatusMetricsService.shardNoncesHistogram = new Histogram({
+    if (!StatusMetricsService.totalShardNoncesHistogram) {
+      StatusMetricsService.totalShardNoncesHistogram = new Histogram({
         name: 'total_shard_nonces',
         help: 'Total shard nonces',
         labelNames: ['shard'],
@@ -117,51 +117,51 @@ export class StatusMetricsService {
     }
   }
 
-  setAccountsCount(count: number) {
-    StatusMetricsService.accountsCountHistogram.labels().observe(count);
+  setTotalAccounts(total: number) {
+    StatusMetricsService.totalAccountsHistogram.labels().observe(total);
   }
 
-  blocksCountHistogram(count: number) {
-    StatusMetricsService.blocksCountHistogram.labels().observe(count);
+  setTotalBlocks(total: number) {
+    StatusMetricsService.totalBlocksHistogram.labels().observe(total);
   }
 
-  collectionsCountHistogram(count: number) {
-    StatusMetricsService.collectionsCountHistogram.labels().observe(count);
+  setTotalCollections(total: number) {
+    StatusMetricsService.totalCollectionsHistogram.labels().observe(total);
   }
 
-  nftsCountHistogram(count: number) {
-    StatusMetricsService.nftsCountHistogram.labels().observe(count);
+  setTotalNfts(total: number) {
+    StatusMetricsService.totalNftsHistogram.labels().observe(total);
   }
 
-  tagsCountHistogram(count: number) {
-    StatusMetricsService.tagsCountHistogram.labels().observe(count);
+  setTotalTags(total: number) {
+    StatusMetricsService.totalTagsHistogram.labels().observe(total);
   }
 
-  roundsCountHistogram(count: number) {
-    StatusMetricsService.roundsCountHistogram.labels().observe(count);
+  setTotalRounds(total: number) {
+    StatusMetricsService.totalRoundsHistogram.labels().observe(total);
   }
 
-  resultsCountHistogram(count: number) {
-    StatusMetricsService.resultsCountHistogram.labels().observe(count);
+  setTotalResults(total: number) {
+    StatusMetricsService.totalResultsHistogram.labels().observe(total);
   }
 
-  tokensCountHistogram(count: number) {
-    StatusMetricsService.tokensCountHistogram.labels().observe(count);
+  setTotalTokens(total: number) {
+    StatusMetricsService.totalTokensHistogram.labels().observe(total);
   }
 
-  transactionsCountHistogram(count: number) {
-    StatusMetricsService.transactionsCountHistogram.labels().observe(count);
+  setTotalTransactions(total: number) {
+    StatusMetricsService.totalTransactionsHistogram.labels().observe(total);
   }
 
-  transfersCountHistogram(count: number) {
-    StatusMetricsService.transferCountHistogram.labels().observe(count);
+  setTotalTransfers(total: number) {
+    StatusMetricsService.totalTransfersHistogram.labels().observe(total);
   }
 
-  roundsHistogram(shard: number, round: number) {
-    StatusMetricsService.shardRoundsHistogram.labels(shard.toString()).observe(round);
+  setTotalShardRounds(shard: number, round: number) {
+    StatusMetricsService.totalShardRoundsHistogram.labels(shard.toString()).observe(round);
   }
 
-  noncesHistogram(shard: number, nonce: number) {
-    StatusMetricsService.shardNoncesHistogram.labels(shard.toString()).observe(nonce);
+  setTotalShardNonces(shard: number, nonce: number) {
+    StatusMetricsService.totalShardNoncesHistogram.labels(shard.toString()).observe(nonce);
   }
 }
