@@ -1159,7 +1159,7 @@ input GetTransactionsInput {
   token: String
 }
 
-"""Input to retreive the given transfers count for."""
+"""Input to retrieve the given transfers count for."""
 input GetTransfersCountInput {
   """After timestamp for the given result set."""
   after: Float
@@ -2401,6 +2401,21 @@ type Query {
     input: GetProviderInput!
   ): [Provider!]!
 
+  """Retrieve the smart contract details for the given input."""
+  result(
+    """Input to retrieve the given smart contract for."""
+    input: GetSmartContractHashInput!
+  ): SmartContractResult
+
+  """Retrieve all smart contract results for the given input."""
+  results(
+    """Input to retrieve the given smart contract results for."""
+    input: GetSmartContractResultInput!
+  ): [SmartContractResult!]!
+
+  """Returns total number of smart contracts."""
+  resultsCount: Float!
+
   """Retrieve the round details for the given input."""
   round(
     """Input to retrieve the given node for."""
@@ -2418,21 +2433,6 @@ type Query {
     """Input to retrieve the given rounds count for."""
     input: GetRoundsCountInput!
   ): Float
-
-  """Retrieve the smart contract details for the given input."""
-  scResult(
-    """Input to retrieve the given smart contract for."""
-    input: GetSmartContractHashInput!
-  ): SmartContractResult
-
-  """Retrieve all smart contract results for the given input."""
-  scResults(
-    """Input to retrieve the given smart contract results for."""
-    input: GetSmartContractResultInput!
-  ): [SmartContractResult!]!
-
-  """Returns total number of smart contracts."""
-  scResultsCount: Float!
 
   """Retrieve all shards for the given input."""
   shards(
@@ -2938,7 +2938,7 @@ type Transaction {
   """Nonce for the given transaction."""
   nonce: Float
 
-  """Original tx hasg for the given transaction."""
+  """Original tx hash for the given transaction."""
   originalTxHash: String
 
   """Pending results for the given transaction."""
@@ -3043,7 +3043,7 @@ type TransactionDetailed {
   """Transaction operations for the given detailed transaction."""
   operations: [TransactionOperation!]
 
-  """Original tx hasg for the given transaction."""
+  """Original tx hash for the given transaction."""
   originalTxHash: String
 
   """Pending results for the given transaction."""
