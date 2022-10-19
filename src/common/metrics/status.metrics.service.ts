@@ -14,6 +14,7 @@ export class StatusMetricsService {
   private static transactionsCountHistogram: Histogram<string>;
   private static transferCountHistogram: Histogram<string>;
   private static shardRoundsHistogram: Histogram<string>;
+  private static shardNoncesHistogram: Histogram<string>;
 
   constructor() {
     if (!StatusMetricsService.accountsCountHistogram) {
@@ -105,6 +106,15 @@ export class StatusMetricsService {
         buckets: [],
       });
     }
+
+    if (!StatusMetricsService.shardNoncesHistogram) {
+      StatusMetricsService.shardNoncesHistogram = new Histogram({
+        name: 'total_shard_nonces',
+        help: 'Total shard nonces',
+        labelNames: ['shard'],
+        buckets: [],
+      });
+    }
   }
 
   setAccountsCount(count: number) {
@@ -149,5 +159,9 @@ export class StatusMetricsService {
 
   roundsHistogram(shard: number, round: number) {
     StatusMetricsService.shardRoundsHistogram.labels(shard.toString()).observe(round);
+  }
+
+  noncesHistogram(shard: number, nonce: number) {
+    StatusMetricsService.shardNoncesHistogram.labels(shard.toString()).observe(nonce);
   }
 }

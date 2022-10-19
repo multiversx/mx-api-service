@@ -124,20 +124,24 @@ export class StatusCheckerService {
     }, true);
   }
 
-  async getCurrentRound(shardId: number): Promise<number> {
-    const rounds = await this.gatewayService.get(`network/status/${shardId}`, GatewayComponentRequest.networkStatus);
-    return rounds.status.erd_current_round;
+  async getCurrentRoundAndNonce(shardId: number): Promise<{ round: number, nonce: number }> {
+    const result = await this.gatewayService.get(`network/status/${shardId}`, GatewayComponentRequest.networkStatus);
+    return {
+      round: result.status.erd_current_round,
+      nonce: result.status.erd_nonce,
+    };
   }
 
   @Cron('*/6 * * * * *')
-  async handleShard_Rounds() {
-    await Locker.lock('Shard rounds', async () => {
-      await this.lock.acquire('shard rounds ', async () => {
+  async handleShardRoundsAndNonces() {
+    await Locker.lock('Shard rounds and nonces', async () => {
+      await this.lock.acquire('shard rounds and nonces', async () => {
         const shardIds = await this.protocolService.getShardIds();
-        const roundValues = await Promise.all(shardIds.map(shardId => this.getCurrentRound(shardId)));
+        const roundsAndNonces = await Promise.all(shardIds.map(shardId => this.getCurrentRoundAndNonce(shardId)));
 
-        for (const [shardId, round] of shardIds.zip(roundValues, (shardId, round) => [shardId, round])) {
+        for (const [shardId, round, nonce] of shardIds.zip(roundsAndNonces, (shardId, roundAndNonce) => [shardId, roundAndNonce.round, roundAndNonce.nonce])) {
           this.apiStatusMetricsService.roundsHistogram(shardId, round);
+          this.apiStatusMetricsService.noncesHistogram(shardId, nonce);
         }
       });
     }, true);
