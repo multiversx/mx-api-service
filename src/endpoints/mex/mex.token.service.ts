@@ -135,6 +135,12 @@ export class MexTokenService {
     return result;
   }
 
+  async getMexTokensCount(): Promise<number> {
+    const mexTokens = await this.getAllMexTokens();
+
+    return mexTokens.length;
+  }
+
   private async getAllMexTokens(): Promise<MexToken[]> {
     if (!this.apiConfigService.getMaiarExchangeUrl()) {
       return [];

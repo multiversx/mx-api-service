@@ -57,6 +57,13 @@ export class MexController {
     return await this.mexPairsService.getMexPairs(from, size);
   }
 
+  @Get("/mex/pairs/count")
+  @ApiOperation({ summary: 'Maiar Exchange pairs count', description: 'Returns active liquidity pools count available on Maiar Exchange' })
+  async getMexPairsCount(
+  ): Promise<number> {
+    return await this.mexPairsService.getMexPairsCount();
+  }
+
   @Get("/mex/tokens")
   @ApiOperation({ summary: 'Maiar Exchange tokens details', description: 'Returns a list of tokens listed on Maiar Exchange' })
   @ApiOkResponse({ type: [MexToken] })
@@ -67,6 +74,13 @@ export class MexController {
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<MexToken[]> {
     return await this.mexTokensService.getMexTokens(new QueryPagination({ from, size }));
+  }
+
+  @Get("/mex/tokens/count")
+  @ApiOperation({ summary: 'Maiar Exchange tokens count', description: 'Returns tokens count available on Maiar Exchange' })
+  async getMexTokensCount(
+  ): Promise<number> {
+    return await this.mexTokensService.getMexTokensCount();
   }
 
   @Get("/mex/tokens/:identifier")
@@ -94,6 +108,13 @@ export class MexController {
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
   ): Promise<any> {
     return await this.mexFarmsService.getMexFarms(new QueryPagination({ from, size }));
+  }
+
+  @Get("/mex/farms/count")
+  @ApiOperation({ summary: 'Maiar Exchange farms count', description: 'Returns farms count available on Maiar Exchange' })
+  async getMexFarmsCount(
+  ): Promise<number> {
+    return await this.mexFarmsService.getMexFarmsCount();
   }
 
   @Get("/mex/pairs/:baseId/:quoteId")

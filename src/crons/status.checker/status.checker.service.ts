@@ -7,7 +7,14 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 import { StatusMetricsService } from "src/common/metrics/status.metrics.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
+import { IdentitiesService } from "src/endpoints/identities/identities.service";
+import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
+import { MexPairService } from "src/endpoints/mex/mex.pair.service";
+import { MexTokenService } from "src/endpoints/mex/mex.token.service";
+import { NodeService } from "src/endpoints/nodes/node.service";
+import { ProviderService } from "src/endpoints/providers/provider.service";
 import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
+import { ShardService } from "src/endpoints/shards/shard.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
 
 @Injectable()
@@ -20,6 +27,13 @@ export class StatusCheckerService {
     private readonly tokenService: TokenService,
     private readonly protocolService: ProtocolService,
     private readonly gatewayService: GatewayService,
+    private readonly identitiesService: IdentitiesService,
+    private readonly nodeService: NodeService,
+    private readonly providerService: ProviderService,
+    private readonly shardService: ShardService,
+    private readonly mexPairService: MexPairService,
+    private readonly mexFarmService: MexFarmService,
+    private readonly mexTokenService: MexTokenService
   ) {
     this.lock = new AsyncLock();
   }
@@ -124,12 +138,74 @@ export class StatusCheckerService {
     }, true);
   }
 
-  async getCurrentRoundAndNonce(shardId: number): Promise<{ round: number, nonce: number }> {
-    const result = await this.gatewayService.get(`network/status/${shardId}`, GatewayComponentRequest.networkStatus);
-    return {
-      round: result.status.erd_current_round,
-      nonce: result.status.erd_nonce,
-    };
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleIdentitiesCount() {
+    await Locker.lock('Identities Count', async () => {
+      await this.lock.acquire('identities', async () => {
+        const count = await this.identitiesService.getAllIdentities();
+        this.apiStatusMetricsService.setTotalIdentitiesResults(count.length);
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleNodesCount() {
+    await Locker.lock('Nodes Count', async () => {
+      await this.lock.acquire('nodes', async () => {
+        const count = await this.nodeService.getAllNodes();
+        this.apiStatusMetricsService.setTotalNodesResults(count.length);
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleProvidersCount() {
+    await Locker.lock('Providers Count', async () => {
+      await this.lock.acquire('providers', async () => {
+        const count = await this.providerService.getAllProviders();
+        this.apiStatusMetricsService.setTotalProvidersResults(count.length);
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleShardsCount() {
+    await Locker.lock('Shards Count', async () => {
+      await this.lock.acquire('shards', async () => {
+        const count = await this.shardService.getAllShards();
+        this.apiStatusMetricsService.setTotalShardsResults(count.length);
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleMexPairsCount() {
+    await Locker.lock('Mex Pairs Count', async () => {
+      await this.lock.acquire('mexPairs', async () => {
+        const count = await this.mexPairService.getMexPairsCount();
+        this.apiStatusMetricsService.setTotalMexPairsResults(count);
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleMexFarmsCount() {
+    await Locker.lock('Mex Farms Count', async () => {
+      await this.lock.acquire('mexFarms', async () => {
+        const count = await this.mexFarmService.getMexFarmsCount();
+        this.apiStatusMetricsService.setTotalMexFarmsResults(count);
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleMexTokensCount() {
+    await Locker.lock('Mex Tokens Count', async () => {
+      await this.lock.acquire('mexTokens', async () => {
+        const count = await this.mexTokenService.getMexTokensCount();
+        this.apiStatusMetricsService.setTotalMexTokensResults(count);
+      });
+    }, true);
   }
 
   @Cron('*/6 * * * * *')
@@ -145,5 +221,13 @@ export class StatusCheckerService {
         }
       });
     }, true);
+  }
+
+  async getCurrentRoundAndNonce(shardId: number): Promise<{ round: number, nonce: number }> {
+    const result = await this.gatewayService.get(`network/status/${shardId}`, GatewayComponentRequest.networkStatus);
+    return {
+      round: result.status.erd_current_round,
+      nonce: result.status.erd_nonce,
+    };
   }
 }

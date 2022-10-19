@@ -15,6 +15,13 @@ export class StatusMetricsService {
   private static totalTransfersHistogram: Histogram<string>;
   private static totalShardRoundsHistogram: Histogram<string>;
   private static totalShardNoncesHistogram: Histogram<string>;
+  private static totalIdentitiesHistogram: Histogram<string>;
+  private static totalNodesHistogram: Histogram<string>;
+  private static totalProvidersHistogram: Histogram<string>;
+  private static totalShardsHistogram: Histogram<string>;
+  private static totalMexPairsHistogram: Histogram<string>;
+  private static totalMexFarmsHistogram: Histogram<string>;
+  private static totalMexTokensHistogram: Histogram<string>;
 
   constructor() {
     if (!StatusMetricsService.totalAccountsHistogram) {
@@ -101,7 +108,7 @@ export class StatusMetricsService {
     if (!StatusMetricsService.totalShardRoundsHistogram) {
       StatusMetricsService.totalShardRoundsHistogram = new Histogram({
         name: 'total_shard_rounds',
-        help: 'Total shard rounds',
+        help: 'total shard rounds',
         labelNames: ['shard'],
         buckets: [],
       });
@@ -110,8 +117,72 @@ export class StatusMetricsService {
     if (!StatusMetricsService.totalShardNoncesHistogram) {
       StatusMetricsService.totalShardNoncesHistogram = new Histogram({
         name: 'total_shard_nonces',
-        help: 'Total shard nonces',
+        help: 'total_shard_nonces',
         labelNames: ['shard'],
+        buckets: [],
+      });
+    }
+
+    if (!StatusMetricsService.totalIdentitiesHistogram) {
+      StatusMetricsService.totalIdentitiesHistogram = new Histogram({
+        name: 'total_identities',
+        help: 'total_identities',
+        labelNames: [],
+        buckets: [],
+      });
+    }
+
+    if (!StatusMetricsService.totalNodesHistogram) {
+      StatusMetricsService.totalNodesHistogram = new Histogram({
+        name: 'total_nodes',
+        help: 'total_nodes',
+        labelNames: [],
+        buckets: [],
+      });
+    }
+
+
+    if (!StatusMetricsService.totalProvidersHistogram) {
+      StatusMetricsService.totalProvidersHistogram = new Histogram({
+        name: 'total_providers',
+        help: 'total_providers',
+        labelNames: [],
+        buckets: [],
+      });
+    }
+
+    if (!StatusMetricsService.totalShardsHistogram) {
+      StatusMetricsService.totalShardsHistogram = new Histogram({
+        name: 'total_shards',
+        help: 'total_shards',
+        labelNames: [],
+        buckets: [],
+      });
+    }
+
+    if (!StatusMetricsService.totalMexPairsHistogram) {
+      StatusMetricsService.totalMexPairsHistogram = new Histogram({
+        name: 'total_mexPairs',
+        help: 'total_mexPairs',
+        labelNames: [],
+        buckets: [],
+      });
+    }
+
+    if (!StatusMetricsService.totalMexFarmsHistogram) {
+      StatusMetricsService.totalMexFarmsHistogram = new Histogram({
+        name: 'total_mexFarms',
+        help: 'total_mexFarms',
+        labelNames: [],
+        buckets: [],
+      });
+    }
+
+    if (!StatusMetricsService.totalMexTokensHistogram) {
+      StatusMetricsService.totalMexTokensHistogram = new Histogram({
+        name: 'total_mexTokens',
+        help: 'total_mexTokens',
+        labelNames: [],
         buckets: [],
       });
     }
@@ -163,5 +234,33 @@ export class StatusMetricsService {
 
   setTotalShardNonces(shard: number, nonce: number) {
     StatusMetricsService.totalShardNoncesHistogram.labels(shard.toString()).observe(nonce);
+  }
+
+  setTotalIdentitiesResults(total: number) {
+    StatusMetricsService.totalIdentitiesHistogram.labels().observe(total);
+  }
+
+  setTotalNodesResults(total: number) {
+    StatusMetricsService.totalNodesHistogram.labels().observe(total);
+  }
+
+  setTotalProvidersResults(total: number) {
+    StatusMetricsService.totalProvidersHistogram.labels().observe(total);
+  }
+
+  setTotalShardsResults(total: number) {
+    StatusMetricsService.totalShardsHistogram.labels().observe(total);
+  }
+
+  setTotalMexPairsResults(total: number) {
+    StatusMetricsService.totalMexPairsHistogram.labels().observe(total);
+  }
+
+  setTotalMexFarmsResults(total: number) {
+    StatusMetricsService.totalMexFarmsHistogram.labels().observe(total);
+  }
+
+  setTotalMexTokensResults(total: number) {
+    StatusMetricsService.totalMexTokensHistogram.labels().observe(total);
   }
 }
