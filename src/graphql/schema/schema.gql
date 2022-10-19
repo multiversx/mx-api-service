@@ -1988,6 +1988,15 @@ type NftMetadata {
   fileUri: String!
 }
 
+"""NFT rank object type"""
+type NftRank {
+  """NFT identifier"""
+  identifier: String!
+
+  """NFT rank"""
+  rank: Float!
+}
+
 """NFT type."""
 enum NftType {
   """Meta ESDT NFT type."""
@@ -2249,6 +2258,12 @@ type Query {
     """Input to retrieve the given NFT collection for."""
     input: GetNftCollectionInput!
   ): NftCollection
+
+  """Retrieve the NFT collection ranks for the given input."""
+  collectionRank(
+    """Input to retrieve the given NFT collection ranks for."""
+    input: GetNftCollectionInput!
+  ): [NftRank!]
 
   """Retrieve all NFT collections for the given input."""
   collections(
@@ -2737,6 +2752,11 @@ type TokenAssets {
 
   """PNG URL for the given token assets."""
   pngUrl: String!
+
+  """
+  Preferred ranking algorithm for NFT collections. Supported values are "trait", "statistic", "jaccardDistance", "openRarity" and "custom".
+  """
+  preferredRankAlgorithm: String
 
   """Status for the given token assets."""
   status: String!
