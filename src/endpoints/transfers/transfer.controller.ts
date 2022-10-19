@@ -1,7 +1,6 @@
 import { ParseAddressPipe, ParseBlockHashPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseAddressArrayPipe } from "@elrondnetwork/erdnest";
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { SortOrder } from "src/common/entities/sort.order";
 import { Transaction } from "../transactions/entities/transaction";
@@ -12,10 +11,7 @@ import { TransferService } from "./transfer.service";
 @Controller()
 @ApiTags('transfers')
 export class TransferController {
-  constructor(
-    private readonly apiConfigService: ApiConfigService,
-    private readonly transferService: TransferService,
-  ) { }
+  constructor(private readonly transferService: TransferService) { }
 
   @Get("/transfers")
   @ApiOperation({ summary: 'Value transfers', description: 'Returns both transfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult), thus providing a full picture of all in/out value transfers for a given account' })
@@ -50,10 +46,6 @@ export class TransferController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<Transaction[]> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
-      throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
-    }
-
     return await this.transferService.getTransfers(new TransactionFilter({
       sender,
       receivers: receiver,
@@ -99,10 +91,6 @@ export class TransferController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
-      throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
-    }
-
     return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
       receivers: receiver,
@@ -135,10 +123,6 @@ export class TransferController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
-      throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
-    }
-
     return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
       receivers: receiver,
