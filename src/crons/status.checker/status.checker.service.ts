@@ -2,8 +2,11 @@ import { Locker } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import AsyncLock from "async-lock";
+import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { GatewayService } from "src/common/gateway/gateway.service";
 import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 import { StatusMetricsService } from "src/common/metrics/status.metrics.service";
+import { ProtocolService } from "src/common/protocol/protocol.service";
 import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
 import { TokenService } from "src/endpoints/tokens/token.service";
 
@@ -15,6 +18,8 @@ export class StatusCheckerService {
     private readonly apiStatusMetricsService: StatusMetricsService,
     private readonly elasticIndexerService: ElasticIndexerService,
     private readonly tokenService: TokenService,
+    private readonly protocolService: ProtocolService,
+    private readonly gatewayService: GatewayService,
   ) {
     this.lock = new AsyncLock();
   }
@@ -119,42 +124,21 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron('*/6 * * * * *')
-  async handleShard_0_Rounds() {
-    await Locker.lock('Shard_0 rounds', async () => {
-      await this.lock.acquire('shard_0 rounds ', async () => {
-        const round = await this.apiStatusMetricsService.getCurrentRound(0);
-        this.apiStatusMetricsService.shard_0_RoundsHistogram(round);
-      });
-    }, true);
+  async getCurrentRound(shardId: number): Promise<number> {
+    const rounds = await this.gatewayService.get(`network/status/${shardId}`, GatewayComponentRequest.networkStatus);
+    return rounds.status.erd_current_round;
   }
 
   @Cron('*/6 * * * * *')
-  async handleShard_1_Rounds() {
-    await Locker.lock('Shard_1 rounds', async () => {
-      await this.lock.acquire('shard_1 rounds ', async () => {
-        const round = await this.apiStatusMetricsService.getCurrentRound(1);
-        this.apiStatusMetricsService.shard_1_RoundsHistogram(round);
-      });
-    }, true);
-  }
+  async handleShard_Rounds() {
+    await Locker.lock('Shard rounds', async () => {
+      await this.lock.acquire('shard rounds ', async () => {
+        const shardIds = await this.protocolService.getShardIds();
+        const roundValues = await Promise.all(shardIds.map(shardId => this.getCurrentRound(shardId)));
 
-  @Cron('*/6 * * * * *')
-  async handleShard_2_Rounds() {
-    await Locker.lock('Shard_2 rounds', async () => {
-      await this.lock.acquire('shard_2 rounds ', async () => {
-        const round = await this.apiStatusMetricsService.getCurrentRound(2);
-        this.apiStatusMetricsService.shard_2_RoundsHistogram(round);
-      });
-    }, true);
-  }
-
-  @Cron('*/6 * * * * *')
-  async handleShard_metachain_Rounds() {
-    await Locker.lock('Shard_metachain rounds', async () => {
-      await this.lock.acquire('shard_metachain rounds ', async () => {
-        const round = await this.apiStatusMetricsService.getCurrentRound(4294967295);
-        this.apiStatusMetricsService.shard_metachain_RoundsHistogram(round);
+        for (const [shardId, round] of shardIds.zip(roundValues, (shardId, round) => [shardId, round])) {
+          this.apiStatusMetricsService.roundsHistogram(shardId, round);
+        }
       });
     }, true);
   }

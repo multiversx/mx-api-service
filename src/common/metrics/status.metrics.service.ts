@@ -1,8 +1,5 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { Histogram } from "prom-client";
-import { GatewayComponentRequest } from "../gateway/entities/gateway.component.request";
-import { GatewayService } from "../gateway/gateway.service";
-import { ProtocolService } from "../protocol/protocol.service";
 
 @Injectable()
 export class StatusMetricsService {
@@ -16,16 +13,9 @@ export class StatusMetricsService {
   private static tokensCountHistogram: Histogram<string>;
   private static transactionsCountHistogram: Histogram<string>;
   private static transferCountHistogram: Histogram<string>;
-  private static shard_metachain_RoundsHistogram: Histogram<string>;
-  private static shard_0_RoundsHistogram: Histogram<string>;
-  private static shard_1_RoundsHistogram: Histogram<string>;
-  private static shard_2_RoundsHistogram: Histogram<string>;
+  private static shardRoundsHistogram: Histogram<string>;
 
-  constructor(
-    @Inject(forwardRef(() => GatewayService))
-    private readonly gatewayService: GatewayService,
-    private readonly protocolService: ProtocolService,
-  ) {
+  constructor() {
     if (!StatusMetricsService.accountsCountHistogram) {
       StatusMetricsService.accountsCountHistogram = new Histogram({
         name: 'total_accounts',
@@ -107,38 +97,11 @@ export class StatusMetricsService {
       });
     }
 
-    if (!StatusMetricsService.shard_0_RoundsHistogram) {
-      StatusMetricsService.shard_0_RoundsHistogram = new Histogram({
-        name: 'shard_0_rounds',
-        help: 'shard_0_rounds',
-        labelNames: [],
-        buckets: [],
-      });
-    }
-
-    if (!StatusMetricsService.shard_1_RoundsHistogram) {
-      StatusMetricsService.shard_1_RoundsHistogram = new Histogram({
-        name: 'shard_1_rounds',
-        help: 'shard_1_rounds',
-        labelNames: [],
-        buckets: [],
-      });
-    }
-
-    if (!StatusMetricsService.shard_2_RoundsHistogram) {
-      StatusMetricsService.shard_2_RoundsHistogram = new Histogram({
-        name: 'shard_2_rounds',
-        help: 'shard_2_rounds',
-        labelNames: [],
-        buckets: [],
-      });
-    }
-
-    if (!StatusMetricsService.shard_metachain_RoundsHistogram) {
-      StatusMetricsService.shard_metachain_RoundsHistogram = new Histogram({
-        name: 'shard_4294967295_rounds',
-        help: 'shard_4294967295_rounds',
-        labelNames: [],
+    if (!StatusMetricsService.shardRoundsHistogram) {
+      StatusMetricsService.shardRoundsHistogram = new Histogram({
+        name: 'total_shard_rounds',
+        help: 'Total shard rounds',
+        labelNames: ['shard'],
         buckets: [],
       });
     }
@@ -184,36 +147,7 @@ export class StatusMetricsService {
     StatusMetricsService.transferCountHistogram.labels().observe(count);
   }
 
-  shard_metachain_RoundsHistogram(round: number) {
-    StatusMetricsService.shard_metachain_RoundsHistogram.labels().observe(round);
-  }
-
-  shard_0_RoundsHistogram(round: number) {
-    StatusMetricsService.shard_0_RoundsHistogram.labels().observe(round);
-  }
-
-  shard_1_RoundsHistogram(round: number) {
-    StatusMetricsService.shard_1_RoundsHistogram.labels().observe(round);
-  }
-
-  shard_2_RoundsHistogram(round: number) {
-    StatusMetricsService.shard_2_RoundsHistogram.labels().observe(round);
-  }
-
-  async getCurrentRound(shardId: number): Promise<number> {
-    const rounds = await this.gatewayService.get(`network/status/${shardId}`, GatewayComponentRequest.networkStatus);
-    return rounds.status.erd_current_round;
-  }
-
-  async checkAllShardsRounds(): Promise<boolean> {
-    const rounds = await this.getCurrentRounds();
-    return Math.min(...rounds) === Math.max(...rounds);
-  }
-
-  private async getCurrentRounds(): Promise<number[]> {
-    const shardIds = await this.protocolService.getShardIds();
-    return await Promise.all(
-      shardIds.map(shardId => this.getCurrentRound(shardId))
-    );
+  roundsHistogram(shard: number, round: number) {
+    StatusMetricsService.shardRoundsHistogram.labels(shard.toString()).observe(round);
   }
 }
