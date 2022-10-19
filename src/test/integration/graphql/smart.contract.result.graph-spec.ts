@@ -53,7 +53,7 @@ describe('Smart Contract Results', () => {
         })
         .expect(200)
         .then(res => {
-          expect(res.body.data.scResults).toBeDefined();
+          expect(res.body.data.results).toBeDefined();
         });
     });
   });
@@ -107,7 +107,7 @@ describe('Smart Contract Results', () => {
               }`,
             })
             .then(res => {
-              expect(res.body.data.scResults[0].miniBlockHash).toStrictEqual(miniBlockHash);
+              expect(res.body.data.results[0].miniBlockHash).toStrictEqual(miniBlockHash);
             });
         });
       });
@@ -125,7 +125,7 @@ describe('Smart Contract Results', () => {
         })
         .expect(200)
         .then(res => {
-          expect(res.body.data.scResultsCount).toBeGreaterThanOrEqual(110372303);
+          expect(res.body.data.resultsCount).toBeGreaterThanOrEqual(110372303);
         });
     });
   });
@@ -157,8 +157,8 @@ describe('Smart Contract Results', () => {
         })
         .expect(200)
         .then(res => {
-          expect(res.body.data.scResult).toBeDefined();
-          expect(res.body.data.scResult.hash).toStrictEqual(scHash);
+          expect(res.body.data.result).toBeDefined();
+          expect(res.body.data.result.hash).toStrictEqual(scHash);
         });
     });
   });
