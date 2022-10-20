@@ -1581,9 +1581,6 @@ type Nft {
   """Is NSFW for the given NFT."""
   isNsfw: Boolean
 
-  """Returns true if the transfer is affected."""
-  isTransferAffected: Boolean
-
   """Is whitelisted storage for the given NFT."""
   isWhitelistedStorage: Boolean!
 
@@ -1668,9 +1665,6 @@ type NftAccount {
   """Is NSFW for the given NFT."""
   isNsfw: Boolean
 
-  """Returns true if the transfer is affected."""
-  isTransferAffected: Boolean
-
   """Is whitelisted storage for the given NFT."""
   isWhitelistedStorage: Boolean!
 
@@ -1753,9 +1747,6 @@ type NftAccountFlat {
 
   """Is NSFW for the given NFT."""
   isNsfw: Boolean
-
-  """Returns true if the transfer is affected."""
-  isTransferAffected: Boolean
 
   """Is whitelisted storage for the given NFT."""
   isWhitelistedStorage: Boolean!
