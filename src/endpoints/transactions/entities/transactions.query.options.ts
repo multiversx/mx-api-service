@@ -12,10 +12,10 @@ export class TransactionQueryOptions {
   withScamInfo?: boolean;
   withUsername?: boolean;
 
-  //TODO: Remove this function when enforce is no longer needed
-  static enforceScamInfoFlag(size: number, options: TransactionQueryOptions): TransactionQueryOptions {
+  static applyDefaults(size: number, options: TransactionQueryOptions): TransactionQueryOptions {
     if (size <= TransactionQueryOptions.SIZE_LIMIT) {
       options.withScamInfo = true;
+      options.withUsername = true;
     }
 
     return options;

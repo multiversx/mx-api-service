@@ -211,7 +211,7 @@ export class TokenController {
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
   ) {
-    const options = TransactionQueryOptions.enforceScamInfoFlag(size, { withScResults, withOperations, withLogs, withScamInfo });
+    const options = TransactionQueryOptions.applyDefaults(size, { withScResults, withOperations, withLogs, withScamInfo });
 
     const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
