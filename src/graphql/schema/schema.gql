@@ -1159,6 +1159,94 @@ input GetTransactionsInput {
   token: String
 }
 
+"""Input to retrieve the given transfers count for."""
+input GetTransfersCountInput {
+  """After timestamp for the given result set."""
+  after: Float
+
+  """Before timestamp for the given result set."""
+  before: Float
+
+  """
+  Filter by a comma-separated list of transaction hashes for the given result set.
+  """
+  hashes: [String!]
+
+  """Mini block hash for the given result set."""
+  miniBlockHash: String
+
+  """SortOrder data transfers for the given result set."""
+  order: SortOrder
+
+  """Receiver for the given result set."""
+  receiver: String
+
+  """Receiver shard for the given result set."""
+  receiverShard: Float
+
+  """Search in data object for the given result set."""
+  search: String
+
+  """Sender for the given result set."""
+  sender: String
+
+  """Sender shard for the given result set."""
+  senderShard: Float
+
+  """Status of the transaction for the given result set."""
+  status: TransactionStatus
+
+  """Token identfier for the given result set."""
+  token: String
+}
+
+"""Input to retrieve the given transfers for."""
+input GetTransfersInput {
+  """After timestamp for the given result set."""
+  after: Float
+
+  """Before timestamp for the given result set."""
+  before: Float
+
+  """Number of transfers to skip for the given result set."""
+  from: Float = 0
+
+  """
+  Filter by a comma-separated list of transaction hashes for the given result set.
+  """
+  hashes: [String!]
+
+  """Mini block hash for the given result set."""
+  miniBlockHash: String
+
+  """SortOrder data transfers for the given result set."""
+  order: SortOrder
+
+  """Receiver for the given result set."""
+  receiver: String
+
+  """Receiver shard for the given result set."""
+  receiverShard: Float
+
+  """Search in data object for the given result set."""
+  search: String
+
+  """Sender for the given result set."""
+  sender: String
+
+  """Sender shard for the given result set."""
+  senderShard: Float
+
+  """Number of transfers to retrieve for the given result set."""
+  size: Float = 25
+
+  """Status of the transaction for the given result set."""
+  status: TransactionStatus
+
+  """Token identfier for the given result set."""
+  token: String
+}
+
 """Input to retrieve the given account details for."""
 input GetUsernameInput {
   """Herotag"""
@@ -1493,9 +1581,6 @@ type Nft {
   """Is NSFW for the given NFT."""
   isNsfw: Boolean
 
-  """Returns true if the transfer is affected."""
-  isTransferAffected: Boolean
-
   """Is whitelisted storage for the given NFT."""
   isWhitelistedStorage: Boolean!
 
@@ -1580,9 +1665,6 @@ type NftAccount {
   """Is NSFW for the given NFT."""
   isNsfw: Boolean
 
-  """Returns true if the transfer is affected."""
-  isTransferAffected: Boolean
-
   """Is whitelisted storage for the given NFT."""
   isWhitelistedStorage: Boolean!
 
@@ -1665,9 +1747,6 @@ type NftAccountFlat {
 
   """Is NSFW for the given NFT."""
   isNsfw: Boolean
-
-  """Returns true if the transfer is affected."""
-  isTransferAffected: Boolean
 
   """Is whitelisted storage for the given NFT."""
   isWhitelistedStorage: Boolean!
@@ -2313,6 +2392,21 @@ type Query {
     input: GetProviderInput!
   ): [Provider!]!
 
+  """Retrieve the smart contract details for the given input."""
+  result(
+    """Input to retrieve the given smart contract for."""
+    input: GetSmartContractHashInput!
+  ): SmartContractResult
+
+  """Retrieve all smart contract results for the given input."""
+  results(
+    """Input to retrieve the given smart contract results for."""
+    input: GetSmartContractResultInput!
+  ): [SmartContractResult!]!
+
+  """Returns total number of smart contracts."""
+  resultsCount: Float!
+
   """Retrieve the round details for the given input."""
   round(
     """Input to retrieve the given node for."""
@@ -2330,21 +2424,6 @@ type Query {
     """Input to retrieve the given rounds count for."""
     input: GetRoundsCountInput!
   ): Float
-
-  """Retrieve the smart contract details for the given input."""
-  scResult(
-    """Input to retrieve the given smart contract for."""
-    input: GetSmartContractHashInput!
-  ): SmartContractResult
-
-  """Retrieve all smart contract results for the given input."""
-  scResults(
-    """Input to retrieve the given smart contract results for."""
-    input: GetSmartContractResultInput!
-  ): [SmartContractResult!]!
-
-  """Returns total number of smart contracts."""
-  scResultsCount: Float!
 
   """Retrieve all shards for the given input."""
   shards(
@@ -2431,6 +2510,18 @@ type Query {
   transactionsCount(
     """Input to retrieve the given transactions count for."""
     input: GetTransactionsCountInput!
+  ): Float!
+
+  """Retrieve all transfers for the given input."""
+  transfers(
+    """Input to retreive the given transfers for."""
+    input: GetTransfersInput!
+  ): [Transaction!]!
+
+  """Retrieve all transfers count for the given input."""
+  transfersCount(
+    """Input to retrieve the given transfers count for."""
+    input: GetTransfersCountInput!
   ): Float!
 
   """Retrive account detailed for a given herotag"""
@@ -2809,6 +2900,90 @@ enum TokenType {
   SemiFungibleESDT
 }
 
+"""Transaction object type."""
+type Transaction {
+  """Transaction action for the given transaction."""
+  action: TransactionAction
+
+  """Data for the given transaction."""
+  data: String
+
+  """Fee for the given transaction."""
+  fee: String
+
+  """Function for the given transaction."""
+  function: String
+
+  """Gas limit for the given transaction."""
+  gasLimit: Float
+
+  """Gas price for the given transaction."""
+  gasPrice: Float
+
+  """Gas used for the given transaction."""
+  gasUsed: Float
+
+  """Mini block hash for the given transaction."""
+  miniBlockHash: String
+
+  """Nonce for the given transaction."""
+  nonce: Float
+
+  """Original tx hash for the given transaction."""
+  originalTxHash: String
+
+  """Pending results for the given transaction."""
+  pendingResults: Boolean
+
+  """Receiver account for the given transaction."""
+  receiverAccount: Account!
+
+  """Receiver account for the given transaction."""
+  receiverAddress: String!
+
+  """Receiver assets for the given transaction."""
+  receiverAssets: AccountAssets!
+
+  """Receiver account shard for the given transaction."""
+  receiverShard: String!
+
+  """Round for the given transaction."""
+  round: Float
+
+  """Scam information for the given transaction."""
+  scamInfo: ScamInformation
+
+  """Sender account for the given transaction."""
+  senderAccount: Account!
+
+  """Sender account for the given transaction."""
+  senderAddress: String!
+
+  """Sender assets for the given transaction."""
+  senderAssets: AccountAssets!
+
+  """Sender account shard for the given transaction."""
+  senderShard: Float!
+
+  """Signature for the given transaction."""
+  signature: String
+
+  """Status for the given transaction."""
+  status: String!
+
+  """Timestamp for the given transaction."""
+  timestamp: Float!
+
+  """Hash for the given transaction."""
+  txHash: ID!
+
+  """Transaction type."""
+  type: TransactionType
+
+  """Value for the given transaction."""
+  value: String!
+}
+
 """Transaction action object type."""
 type TransactionAction {
   """Description for the given transaction action."""
@@ -2859,6 +3034,9 @@ type TransactionDetailed {
   """Transaction operations for the given detailed transaction."""
   operations: [TransactionOperation!]
 
+  """Original tx hash for the given transaction."""
+  originalTxHash: String
+
   """Pending results for the given transaction."""
   pendingResults: Boolean
 
@@ -2873,6 +3051,12 @@ type TransactionDetailed {
 
   """Receiver account for the given transaction."""
   receiverAddress: String!
+
+  """Receiver assets for the given transaction."""
+  receiverAssets: AccountAssets!
+
+  """Receiver account shard for the given transaction."""
+  receiverShard: String!
 
   """Smart contract results for the given detailed transaction."""
   results: [SmartContractResult!]
@@ -2889,6 +3073,12 @@ type TransactionDetailed {
   """Sender account for the given transaction."""
   senderAddress: String!
 
+  """Sender assets for the given transaction."""
+  senderAssets: AccountAssets!
+
+  """Sender account shard for the given transaction."""
+  senderShard: Float!
+
   """Signature for the given transaction."""
   signature: String
 
@@ -2900,6 +3090,9 @@ type TransactionDetailed {
 
   """Hash for the given transaction."""
   txHash: ID!
+
+  """Transaction type."""
+  type: TransactionType
 
   """Value for the given transaction."""
   value: String!
@@ -3074,6 +3267,15 @@ enum TransactionStatus {
 
   """Success status."""
   success
+}
+
+"""Transaction type object type."""
+enum TransactionType {
+  """SmartContractResult type."""
+  SmartContractResult
+
+  """Transaction type."""
+  Transaction
 }
 
 """Unlock mile stone model object type."""

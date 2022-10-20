@@ -53,7 +53,6 @@ export class NftService {
     private readonly esdtAddressService: EsdtAddressService,
     private readonly mexTokenService: MexTokenService,
     private readonly lockedAssetService: LockedAssetService,
-    private readonly gatewayService: GatewayService,
   ) {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
     this.DEFAULT_MEDIA = [
@@ -216,22 +215,9 @@ export class NftService {
 
     await this.applyUnlockSchedule(nft);
 
-    await this.applyTransferAffected(nft);
-
     await this.processNft(nft);
 
     return nft;
-  }
-
-  private async applyTransferAffected(nft: Nft): Promise<void> {
-    try {
-      const result = await this.gatewayService.get(`node/old-storage-token/${nft.collection}/nonce/${nft.nonce}`, GatewayComponentRequest.oldStorageToken);
-      if (result?.isOldStorage) {
-        nft.isTransferAffected = true;
-      }
-    } catch (error) {
-      // probably old version of the gateway
-    }
   }
 
   private async applyUnlockSchedule(nft: Nft): Promise<void> {
@@ -513,8 +499,6 @@ export class NftService {
     const nft = nfts[0];
 
     await this.applyUnlockSchedule(nft);
-
-    await this.applyTransferAffected(nft);
 
     return nft;
   }
