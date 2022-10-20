@@ -2,6 +2,6 @@ export enum NftRankAlgorithm {
   trait = 'trait',
   statistical = 'statistical',
   openRarity = 'openRarity',
-  jaccardDistance = 'jaccardDistance',
+  jaccardDistances = 'jaccardDistances',
   custom = 'custom',
 }
