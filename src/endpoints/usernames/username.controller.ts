@@ -16,7 +16,7 @@ export class UsernameController {
 
   @NoCache()
   async getUsernameDetails(@Param('username') username: string, @Res() res: any): Promise<any> {
-    const address = await this.usernameService.getUsernameAddressRaw(username);
+    const address = await this.usernameService.getAddressForUsername(username);
     if (!address) {
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }

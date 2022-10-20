@@ -18,7 +18,7 @@ import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.com
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
-import { AddressUtils, ApiUtils, Constants, CachingService, PendingExecuter, ApiService } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiUtils, Constants, CachingService, PendingExecuter } from '@elrondnetwork/erdnest';
 import { TransactionUtils } from './transaction.utils';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TransactionOperation } from './entities/transaction.operation';
@@ -27,6 +27,7 @@ import { AccountAssets } from 'src/common/assets/entities/account.assets';
 import crypto from 'crypto-js';
 import { OriginLogger } from '@elrondnetwork/erdnest';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { UsernameService } from '../usernames/username.service';
 
 @Injectable()
 export class TransactionService {
@@ -46,7 +47,7 @@ export class TransactionService {
     private readonly transactionActionService: TransactionActionService,
     private readonly assetsService: AssetsService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly apiService: ApiService,
+    private readonly usernameService: UsernameService,
   ) { }
 
   async getTransactionCountForAddress(address: string): Promise<number> {
@@ -122,7 +123,7 @@ export class TransactionService {
     const resultDict = await this.cachingService.batchGetAll(
       addresses,
       address => `username:${address}`,
-      async address => await this.getUsername(address),
+      async address => await this.usernameService.getUsernameForAddressRaw(address),
       Constants.oneHour(),
       100
     );
@@ -263,34 +264,6 @@ export class TransactionService {
           }
         }
       }
-    }
-  }
-
-  // @ts-ignore
-  private async getUsernameAssets(address: string): Promise<AccountAssets | undefined> {
-    const username = await this.getUsername(address);
-    if (!username) {
-      return undefined;
-    }
-
-    return new AccountAssets({
-      name: username,
-      tags: [
-        'dns',
-        'username',
-      ],
-    });
-  }
-
-  private async getUsername(address: string): Promise<string | null> {
-    try {
-      const { data: { herotag: username } } = await this.apiService.get(`${this.apiConfigService.getMaiarIdUrl()}/users/api/v1/users/${address}`);
-
-      return username;
-    } catch (error) {
-      this.logger.error(error);
-      this.logger.error(`Error when getting username for address '${address}'`);
-      return null;
     }
   }
 

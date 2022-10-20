@@ -2533,7 +2533,7 @@ type Query {
     input: GetTransfersCountInput!
   ): Float!
 
-  """Retrive account detailed for a given username"""
+  """Retrieve account detailed for a given username"""
   username(
     """Input to retrieve the given detailed account for."""
     input: GetUsernameInput!
