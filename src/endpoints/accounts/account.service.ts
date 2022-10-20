@@ -350,11 +350,13 @@ export class AccountService {
 
   async getAccountContracts(pagination: QueryPagination, address: string): Promise<DeployedContract[]> {
     const accountDeployedContracts = await this.indexerService.getAccountContracts(pagination, address);
+    const assets = await this.assetsService.getAllAccountAssets();
 
     const accounts: DeployedContract[] = accountDeployedContracts.map(contract => ({
       address: contract.contract,
       deployTxHash: contract.deployTxHash,
       timestamp: contract.timestamp,
+      assets: assets[contract.contract],
     }));
 
     return accounts;
