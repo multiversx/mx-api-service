@@ -126,8 +126,4 @@ export class Nft {
   @Field(() => [UnlockMileStoneModel], { description: "Unlock mile stone model for the given NFT.", nullable: true })
   @ApiProperty({ type: [UnlockMileStoneModel], nullable: true })
   unlockSchedule?: UnlockMileStoneModel[] | undefined = undefined;
-
-  @Field(() => Boolean, { description: "Returns true if the transfer is affected.", nullable: true })
-  @ApiProperty({ type: Boolean, nullable: true })
-  isTransferAffected: boolean | undefined = undefined;
 }
