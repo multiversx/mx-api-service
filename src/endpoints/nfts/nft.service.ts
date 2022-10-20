@@ -24,8 +24,6 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
 import { CollectionAccount } from "../collections/entities/collection.account";
 import { OriginLogger } from "@elrondnetwork/erdnest";
-import { GatewayService } from "src/common/gateway/gateway.service";
-import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
 import { NftRarity } from "./entities/nft.rarity";
 import { NftRarities } from "./entities/nft.rarities";

@@ -1602,6 +1602,9 @@ type Nft {
   """Rank for the given NFT."""
   rank: Float
 
+  """Rarities according to all possible algorithms for the given NFT."""
+  rarities: Float
+
   """Royalties for the given NFT."""
   royalties: Float
 
@@ -1689,6 +1692,9 @@ type NftAccount {
   """Rank for the given NFT."""
   rank: Float
 
+  """Rarities according to all possible algorithms for the given NFT."""
+  rarities: Float
+
   """Royalties for the given NFT."""
   royalties: Float
 
@@ -1768,6 +1774,9 @@ type NftAccountFlat {
 
   """Rank for the given NFT."""
   rank: Float
+
+  """Rarities according to all possible algorithms for the given NFT."""
+  rarities: Float
 
   """Royalties for the given NFT."""
   royalties: Float
@@ -2745,7 +2754,7 @@ type TokenAssets {
   pngUrl: String!
 
   """
-  Preferred ranking algorithm for NFT collections. Supported values are "trait", "statistic", "jaccardDistance", "openRarity" and "custom".
+  Preferred ranking algorithm for NFT collections. Supported values are "trait", "statistical", "jaccardDistances", "openRarity" and "custom".
   """
   preferredRankAlgorithm: String
 
