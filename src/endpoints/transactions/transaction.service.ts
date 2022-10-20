@@ -220,7 +220,7 @@ export class TransactionService {
     const accountAssets = await this.assetsService.getAllAccountAssets();
 
     let usernameAssets: Record<string, AccountAssets> = {};
-    if (withUsernameAssets) {
+    if (withUsernameAssets && this.apiConfigService.getMaiarIdUrl()) {
       const addresses = this.getDistinctUserAddressesFromTransactions(transactions);
 
       usernameAssets = await this.getUsernameAssetsForAddresses(addresses);
