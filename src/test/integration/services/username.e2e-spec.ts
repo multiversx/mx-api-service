@@ -1,8 +1,7 @@
 import { Test } from "@nestjs/testing";
 import { UsernameModule } from "src/endpoints/usernames/username.module";
-import { CachingService } from '@elrondnetwork/erdnest';
+import { ApiService } from '@elrondnetwork/erdnest';
 import { UsernameService } from "src/endpoints/usernames/username.service";
-import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 
 describe('Username Service', () => {
   let usernameService: UsernameService;
@@ -15,55 +14,46 @@ describe('Username Service', () => {
     usernameService = moduleRef.get<UsernameService>(UsernameService);
   });
 
-  describe('Get Username Address Raw', () => {
-    it('should return username address in bech32', async () => {
+  beforeEach(() => { jest.restoreAllMocks(); });
 
-      jest.spyOn(CachingService.prototype, 'getCacheLocal')
-        // eslint-disable-next-line require-await
-        .mockImplementation(async () => undefined);
+  describe('getUsernameForAddressRaw', () => {
+    it('should return address username', async () => {
+      const address: string = "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz";
+      const results = await usernameService.getUsernameForAddressRaw(address);
 
-      jest.spyOn(CachingService.prototype, 'getCacheRemote')
-        // eslint-disable-next-line require-await
-        .mockImplementation(async () => undefined);
-
-      jest
-        .spyOn(VmQueryService.prototype, 'vmQuery')
-        .mockImplementation(jest.fn(async (
-          _contract: string,
-          _func: string,
-          _caller: string | undefined,
-          _args: string[] | undefined,
-          _value: string | undefined,
-          // eslint-disable-next-line require-await
-          _skipCache: boolean | undefined) => ['AjvhZf98cXSgfH9ipxgJUpWpiGaZLiyMv98aC8kE8TA=']));
-
-
-      const results = await usernameService.getUsernameAddressRaw('alice.elrond');
-      expect(results).toStrictEqual('erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz');
+      expect(results).toStrictEqual('alice.elrond');
     });
 
-    it("should return null because because test simulate that it cannot create an address from invalid base64", async () => {
-
-      jest.spyOn(CachingService.prototype, 'getCacheLocal')
+    it('should return null because test simulates that address does not contains an usernmae', async () => {
+      jest.spyOn(ApiService.prototype, 'get')
         // eslint-disable-next-line require-await
-        .mockImplementation(async () => undefined);
+        .mockImplementation(async () => null);
 
-      jest.spyOn(CachingService.prototype, 'getCacheRemote')
+      const address: string = "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz";
+      const results = await usernameService.getUsernameForAddressRaw(address);
+
+      expect(results).toStrictEqual(null);
+    });
+  });
+
+
+  describe('getAddressForUsername', () => {
+    it('should return bech32 address based on a username', async () => {
+      const username: string = 'alice';
+      const address: string = "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz";
+      const results = await usernameService.getAddressForUsername(username);
+
+      expect(results).toStrictEqual(address);
+    });
+
+    it('should return null because test simulates that returned username is not valid', async () => {
+      jest.spyOn(ApiService.prototype, 'get')
         // eslint-disable-next-line require-await
-        .mockImplementation(async () => undefined);
+        .mockImplementation(async () => null);
 
-      jest
-        .spyOn(VmQueryService.prototype, 'vmQuery')
-        .mockImplementation(jest.fn(async (
-          _contract: string,
-          _func: string,
-          _caller: string | undefined,
-          _args: string[] | undefined,
-          _value: string | undefined,
-          // eslint-disable-next-line require-await
-          _skipCache: boolean | undefined) => ['AjvhZf98cXSgfH9ipxgJUpWpiGaZLiyMv98aC8kE8TTEST=']));
+      const username: string = 'alice.elrond';
+      const results = await usernameService.getAddressForUsername(username);
 
-      const results = await usernameService.getUsernameAddressRaw('alice.elrond');
       expect(results).toStrictEqual(null);
     });
   });
