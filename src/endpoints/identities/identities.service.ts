@@ -125,9 +125,9 @@ export class IdentitiesService {
   private getStakeInfoForIdentity(identity: IdentityDetailed, totalLocked: bigint): StakeInfo {
     const nodes = identity.nodes ?? [];
 
-    const stake = nodes.filter(x => x.status !== NodeStatus.queued).sumBigInt(x => BigInt(x.stake ? x.stake : '0'));
-    const topUp = nodes.filter(x => x.status !== NodeStatus.queued).sumBigInt(x => BigInt(x.topUp ? x.topUp : '0'));
-    const locked = nodes.sumBigInt(x => BigInt(x.locked ? x.locked : '0'));
+    const stake = nodes.sumBigInt(x => BigInt(x.stake ? x.stake : '0'));
+    const topUp = nodes.sumBigInt(x => BigInt(x.topUp ? x.topUp : '0'));
+    const locked = stake + topUp;
     const stakePercent = totalLocked > 0 ? (locked * BigInt(10000)) / totalLocked : 0;
 
     const stakeInfo = new StakeInfo({
@@ -139,6 +139,7 @@ export class IdentitiesService {
       providers: nodes.map(x => x.provider).filter(provider => !!provider).distinct(),
       distribution: this.getStakeDistributionForIdentity(locked, identity),
       validators: nodes.filter(x => x.type === NodeType.validator && x.status !== NodeStatus.inactive).length,
+      queued: nodes.filter(x => x.type === NodeType.validator && x.status === NodeStatus.queued).length,
     });
 
     stakeInfo.sort = stakeInfo.locked && stakeInfo.locked !== '0' ? parseInt(stakeInfo.locked.slice(0, -18)) : 0;
@@ -214,7 +215,7 @@ export class IdentitiesService {
         if (identity.stake && identity.topUp) {
           const stakeReturn = new BigNumber(identity.stake.slice(0, -18)).multipliedBy(new BigNumber(baseApr));
           const topUpReturn = new BigNumber(identity.topUp.slice(0, -18)).multipliedBy(new BigNumber(topUpApr));
-          const annualReturn = stakeReturn.plus(topUpReturn);
+          const annualReturn = stakeReturn.plus(topUpReturn).multipliedBy((identity.validators ?? 0) - (stakeInfo.queued ?? 0)).dividedBy(identity.validators ?? 0);
           const aprStr = new BigNumber(annualReturn).multipliedBy(100).div(identity.locked.slice(0, -18)).toString();
           identity.apr = Number(aprStr).toRounded(2);
         }
