@@ -218,7 +218,7 @@ export class TokenTransferService {
 
       const type = nonce ? TransactionOperationType.nft : TransactionOperationType.esdt;
 
-      return { id: log.id ?? '', action, type, esdtType, collection, identifier, name, sender: event.address, receiver, value, decimals, svgUrl, senderAssets: undefined, receiverAssets: undefined, senderHerotag: undefined, receiverHerotag: undefined };
+      return { id: log.id ?? '', action, type, esdtType, collection, identifier, name, sender: event.address, receiver, value, decimals, svgUrl, senderAssets: undefined, receiverAssets: undefined };
     } catch (error) {
       this.logger.error(`Error when parsing NFT transaction log for tx hash '${txHash}' with action '${action}' and topics: ${event.topics}`);
       this.logger.error(error);

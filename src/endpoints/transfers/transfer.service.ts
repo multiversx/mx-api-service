@@ -6,7 +6,6 @@ import { Transaction } from "../transactions/entities/transaction";
 import { TransactionService } from "../transactions/transaction.service";
 import { ApiUtils } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { AssetsService } from "src/common/assets/assets.service";
 
 @Injectable()
 export class TransferService {
@@ -14,7 +13,6 @@ export class TransferService {
     private readonly indexerService: IndexerService,
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
-    private readonly assetsService: AssetsService,
   ) { }
 
   private sortElasticTransfers(elasticTransfers: any[]): any[] {
@@ -48,7 +46,6 @@ export class TransferService {
 
     const transactions: Transaction[] = [];
 
-    const assets = await this.assetsService.getAllAccountAssets();
     for (const elasticOperation of elasticOperations) {
       const transaction = ApiUtils.mergeObjects(new Transaction(), elasticOperation);
       transaction.type = elasticOperation.type === 'normal' ? TransactionType.Transaction : TransactionType.SmartContractResult;
@@ -65,7 +62,7 @@ export class TransferService {
       transactions.push(transaction);
     }
 
-    await this.transactionService.processTransactions(transactions, pagination.size <= 100, assets);
+    await this.transactionService.processTransactions(transactions, pagination.size <= 100, pagination.size <= 50);
 
     return transactions;
   }

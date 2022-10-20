@@ -18,7 +18,6 @@ const transactionsWithLogs: TransactionLog[] =
       ],
     },
     events: [] as TransactionLogEvent[],
-    addressHerotag: "",
   },
   ];
 

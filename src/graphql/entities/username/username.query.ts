@@ -12,7 +12,7 @@ export class UsernameQuery {
     protected readonly accountService: AccountService,
   ) { }
 
-  @Query(() => AccountUsername, { name: "username", description: "Retrive account detailed for a given herotag" })
+  @Query(() => AccountUsername, { name: "username", description: "Retrive account detailed for a given username" })
   public async getAccountDetailed(@Args("input", { description: "Input to retrieve the given detailed account for." }) input: GetUsernameInput): Promise<any> {
     const address = await this.usernameAccount.getUsernameAddressRaw(GetUsernameInput.resolve(input));
 

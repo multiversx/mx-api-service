@@ -10,7 +10,7 @@ export class TransactionQueryOptions {
   withLogs?: boolean = true;
   withScResultLogs?: boolean = true;
   withScamInfo?: boolean;
-  withHerotag?: boolean;
+  withUsername?: boolean;
 
   //TODO: Remove this function when enforce is no longer needed
   static enforceScamInfoFlag(size: number, options: TransactionQueryOptions): TransactionQueryOptions {

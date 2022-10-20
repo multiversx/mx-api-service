@@ -74,18 +74,78 @@ export class TransactionService {
     return await this.indexerService.getTransactionCount(filter, address);
   }
 
+  private getDistinctUserAddressesFromTransactions(transactions: Transaction[]): string[] {
+    const allAddresses = [];
+    for (const transaction of transactions) {
+      allAddresses.push(transaction.sender);
+      allAddresses.push(transaction.receiver);
+
+      const actionReceiver = transaction.action?.arguments?.receiver;
+      if (actionReceiver) {
+        allAddresses.push(actionReceiver);
+      }
+
+      if (transaction instanceof TransactionDetailed) {
+        if (transaction.results) {
+          for (const result of transaction.results) {
+            allAddresses.push(result.sender);
+            allAddresses.push(result.receiver);
+          }
+        }
+
+        if (transaction.operations) {
+          for (const operation of transaction.operations) {
+            if (operation.sender) {
+              allAddresses.push(operation.sender);
+            }
+
+            if (operation.receiver) {
+              allAddresses.push(operation.receiver);
+            }
+          }
+        }
+
+        if (transaction.logs) {
+          allAddresses.push(transaction.logs.address);
+
+          for (const event of transaction.logs.events) {
+            allAddresses.push(event.address);
+          }
+        }
+      }
+    }
+
+    return allAddresses.distinct().filter(x => !AddressUtils.isSmartContractAddress(x));
+  }
+
+  private async getUsernameAssetsForAddresses(addresses: string[]): Promise<Record<string, AccountAssets>> {
+    const resultDict = await this.cachingService.batchGetAll(
+      addresses,
+      address => `username:${address}`,
+      async address => await this.getUsername(address),
+      Constants.oneHour(),
+      100
+    );
+
+    const result: Record<string, AccountAssets> = {};
+
+    for (const address of addresses) {
+      const username = resultDict[`username:${address}`];
+      if (username) {
+        const assets = this.getAssetsFromUsername(username);
+        if (assets) {
+          result[address] = assets;
+        }
+      }
+    }
+
+    return result;
+  }
+
   async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string): Promise<Transaction[]> {
     const elasticTransactions = await this.indexerService.getTransactions(filter, pagination, address);
 
-    let transactions: Transaction[] = [];
-
-    for (const elasticTransaction of elasticTransactions) {
-      const transaction = ApiUtils.mergeObjects(new Transaction(), elasticTransaction);
-      transaction.senderHerotag = await this.applyAddressHerotag(transaction.sender);
-      transaction.receiverHerotag = await this.applyAddressHerotag(transaction.receiver);
-
-      transactions.push(transaction);
-    }
+    let transactions = elasticTransactions.map(x => ApiUtils.mergeObjects(new Transaction(), x));
 
     if (filter.hashes) {
       const txHashes: string[] = filter.hashes;
@@ -106,10 +166,20 @@ export class TransactionService {
       transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
     }
 
-    const assets = await this.assetsService.getAllAccountAssets();
-    await this.processTransactions(transactions, queryOptions?.withScamInfo ?? false, assets);
+    await this.processTransactions(transactions, queryOptions?.withScamInfo ?? false, queryOptions?.withUsername ?? false);
 
     return transactions;
+  }
+
+  private getAssetsFromUsername(username: string | null | undefined): AccountAssets | undefined {
+    if (!username) {
+      return undefined;
+    }
+
+    return new AccountAssets({
+      name: username,
+      tags: ['dns', 'username'],
+    });
   }
 
   async getTransaction(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
@@ -122,10 +192,7 @@ export class TransactionService {
     if (transaction !== null) {
       transaction.price = await this.getTransactionPrice(transaction);
 
-      transaction.senderHerotag = await this.applyAddressHerotag(transaction.sender);
-      transaction.receiverHerotag = await this.applyAddressHerotag(transaction.receiver);
-
-      await this.processTransactions([transaction], true);
+      await this.processTransactions([transaction], true, true);
 
       if (transaction.pendingResults === true && transaction.results) {
         for (const result of transaction.results) {
@@ -140,70 +207,90 @@ export class TransactionService {
           }
         }
       }
-
-      await this.applyAssets(transaction);
-      await this.applyAssetsDetailed(transaction);
     }
 
     return transaction;
   }
 
-  async applyAssets(transaction: Transaction, assets?: Record<string, AccountAssets>): Promise<void> {
-    const accountAssets = assets ?? await this.assetsService.getAllAccountAssets();
-
-    transaction.senderAssets = accountAssets[transaction.sender];
-    transaction.receiverAssets = accountAssets[transaction.receiver];
-
-    if (transaction.action?.arguments?.receiver) {
-      transaction.action.arguments.receiverAssets = accountAssets[transaction.action.arguments.receiver];
+  async applyAssets(transactions: Transaction[], withUsernameAssets: boolean): Promise<void> {
+    function getAssets(address: string) {
+      return accountAssets[address] ?? usernameAssets[address];
     }
-  }
 
-  async applyAssetsDetailed(transaction: TransactionDetailed): Promise<void> {
     const accountAssets = await this.assetsService.getAllAccountAssets();
 
-    if (transaction.results) {
-      for (const result of transaction.results) {
-        result.senderAssets = accountAssets[result.sender];
-        result.receiverAssets = accountAssets[result.receiver];
+    let usernameAssets: Record<string, AccountAssets> = {};
+    if (withUsernameAssets) {
+      const addresses = this.getDistinctUserAddressesFromTransactions(transactions);
 
-        result.senderHerotag = await this.applyAddressHerotag(result.sender);
-        result.receiverHerotag = await this.applyAddressHerotag(result.receiver);
-      }
+      usernameAssets = await this.getUsernameAssetsForAddresses(addresses);
     }
 
-    if (transaction.operations) {
-      for (const operation of transaction.operations) {
-        if (operation.sender) {
-          operation.senderAssets = accountAssets[operation.sender];
-          operation.senderHerotag = await this.applyAddressHerotag(operation.sender);
-        }
+    for (const transaction of transactions) {
 
-        if (operation.receiver) {
-          operation.receiverAssets = accountAssets[operation.receiver];
-          operation.receiverHerotag = await this.applyAddressHerotag(operation.receiver);
-        }
+      transaction.senderAssets = getAssets(transaction.sender);
+      transaction.receiverAssets = getAssets(transaction.receiver);
+
+      if (transaction.action?.arguments?.receiver) {
+        transaction.action.arguments.receiverAssets = getAssets(transaction.action.arguments.receiver);
       }
-    }
 
-    if (transaction.logs) {
-      transaction.logs.addressAssets = accountAssets[transaction.logs.address];
-      transaction.logs.addressHerotag = await this.applyAddressHerotag(transaction.logs.address);
+      if (transaction instanceof TransactionDetailed) {
+        if (transaction.results) {
+          for (const result of transaction.results) {
+            result.senderAssets = getAssets(result.sender);
+            result.receiverAssets = getAssets(result.receiver);
+          }
+        }
 
-      for (const event of transaction.logs.events) {
-        event.addressAssets = accountAssets[event.address];
+        if (transaction.operations) {
+          for (const operation of transaction.operations) {
+            if (operation.sender) {
+              operation.senderAssets = getAssets(operation.sender);
+            }
+
+            if (operation.receiver) {
+              operation.receiverAssets = getAssets(operation.receiver);
+            }
+          }
+        }
+
+        if (transaction.logs) {
+          transaction.logs.addressAssets = getAssets(transaction.logs.address);
+
+          for (const event of transaction.logs.events) {
+            event.addressAssets = getAssets(event.address);
+          }
+        }
       }
     }
   }
 
-  private async applyAddressHerotag(address: string): Promise<any> {
-    try {
-      const { data: { herotag } } = await this.apiService.get(`${this.apiConfigService.getMaiarIdUrl()}/users/api/v1/users/${address}`);
+  // @ts-ignore
+  private async getUsernameAssets(address: string): Promise<AccountAssets | undefined> {
+    const username = await this.getUsername(address);
+    if (!username) {
+      return undefined;
+    }
 
-      return herotag;
+    return new AccountAssets({
+      name: username,
+      tags: [
+        'dns',
+        'username',
+      ],
+    });
+  }
+
+  private async getUsername(address: string): Promise<string | null> {
+    try {
+      const { data: { herotag: username } } = await this.apiService.get(`${this.apiConfigService.getMaiarIdUrl()}/users/api/v1/users/${address}`);
+
+      return username;
     } catch (error) {
       this.logger.error(error);
-      this.logger.error(`Error when getting account details for address '${address}'`);
+      this.logger.error(`Error when getting username for address '${address}'`);
+      return null;
     }
   }
 
@@ -252,7 +339,7 @@ export class TransactionService {
     }
   }
 
-  async processTransactions(transactions: Transaction[], withScamInfo: boolean, assets?: Record<string, AccountAssets>): Promise<void> {
+  async processTransactions(transactions: Transaction[], withScamInfo: boolean, withUsername: boolean): Promise<void> {
     try {
       await this.pluginsService.processTransactions(transactions, withScamInfo);
     } catch (error) {
@@ -268,13 +355,13 @@ export class TransactionService {
         if (transaction.pendingResults === true) {
           transaction.status = TransactionStatus.pending;
         }
-
-        await this.applyAssets(transaction, assets);
       } catch (error) {
         this.logger.error(`Unhandled error when processing transaction for transaction with hash '${transaction.txHash}'`);
         this.logger.error(error);
       }
     }
+
+    await this.applyAssets(transactions, withUsername);
   }
 
   private async getPendingResults(transaction: Transaction): Promise<boolean | undefined> {
@@ -296,7 +383,6 @@ export class TransactionService {
     const scResults = await this.indexerService.getScResultsForTransactions(elasticTransactions) as any;
     for (const scResult of scResults) {
       scResult.hash = scResult.scHash;
-      scResult.receiverHerotag = await this.applyAddressHerotag(scResult.receiver);
 
       delete scResult.scHash;
     }
@@ -324,11 +410,6 @@ export class TransactionService {
         const transactionLogs: TransactionLog[] = logs.filter((log) => transactionHashes.includes(log.id ?? ''));
         transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, transactionLogs);
         transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
-
-        for (const item of transactionDetailed.operations) {
-          item.senderHerotag = await this.applyAddressHerotag(item.sender);
-          item.receiverHerotag = await this.applyAddressHerotag(item.receiver);
-        }
       }
 
       if (queryOptions.withLogs) {

@@ -222,9 +222,7 @@ describe('Transaction Utils', () => {
       value: "25000000",
       decimals: 6,
       receiverAssets: undefined,
-      receiverHerotag: "",
       senderAssets: undefined,
-      senderHerotag: "",
     });
   });
 });

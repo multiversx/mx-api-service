@@ -51,14 +51,6 @@ export class TransactionOperation {
   @ApiProperty({ type: String })
   receiver: string = '';
 
-  @Field(() => String, { description: 'Sender herotag for the transaction operation.' })
-  @ApiProperty({ type: String })
-  senderHerotag?: string = '';
-
-  @Field(() => String, { description: 'Receiver herotag for the transaction operation.' })
-  @ApiProperty({ type: String })
-  receiverHerotag?: string = '';
-
   @Field(() => AccountAssets, { description: 'Sender account assets for the transaction operation.', nullable: true })
   @ApiProperty({ type: AccountAssets, nullable: true })
   senderAssets: AccountAssets | undefined = undefined;

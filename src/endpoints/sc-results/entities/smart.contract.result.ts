@@ -39,17 +39,9 @@ export class SmartContractResult {
   @ApiProperty({ type: String })
   sender: string = '';
 
-  @Field(() => String, { name: "senderHerotag", description: "Sender herotag for the given transaction." })
-  @ApiProperty({ type: String })
-  senderHerotag: string = '';
-
   @Field(() => String, { description: 'Receiver address for the given smart contract result.' })
   @ApiProperty({ type: String })
   receiver: string = '';
-
-  @Field(() => String, { name: "receiverHerotag", description: "Sender herotag for the given transaction." })
-  @ApiProperty({ type: String })
-  receiverHerotag: string = '';
 
   @Field(() => AccountAssets, { description: 'Sender assets for the given smart contract result.', nullable: true })
   @ApiProperty({ type: AccountAssets, nullable: true })
