@@ -167,7 +167,7 @@ export class TransactionService {
       transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
     }
 
-    await this.processTransactions(transactions, queryOptions?.withScamInfo ?? false, queryOptions?.withUsername ?? false);
+    await this.processTransactions(transactions, { withScamInfo: queryOptions?.withScamInfo ?? false, withUsername: queryOptions?.withUsername ?? false });
 
     return transactions;
   }
@@ -193,7 +193,7 @@ export class TransactionService {
     if (transaction !== null) {
       transaction.price = await this.getTransactionPrice(transaction);
 
-      await this.processTransactions([transaction], true, true);
+      await this.processTransactions([transaction], { withScamInfo: true, withUsername: true });
 
       if (transaction.pendingResults === true && transaction.results) {
         for (const result of transaction.results) {
@@ -213,7 +213,7 @@ export class TransactionService {
     return transaction;
   }
 
-  async applyAssets(transactions: Transaction[], withUsernameAssets: boolean): Promise<void> {
+  async applyAssets(transactions: Transaction[], options: { withUsernameAssets: boolean }): Promise<void> {
     function getAssets(address: string) {
       return accountAssets[address] ?? usernameAssets[address];
     }
@@ -221,7 +221,7 @@ export class TransactionService {
     const accountAssets = await this.assetsService.getAllAccountAssets();
 
     let usernameAssets: Record<string, AccountAssets> = {};
-    if (withUsernameAssets && this.apiConfigService.getMaiarIdUrl()) {
+    if (options.withUsernameAssets && this.apiConfigService.getMaiarIdUrl()) {
       const addresses = this.getDistinctUserAddressesFromTransactions(transactions);
 
       usernameAssets = await this.getUsernameAssetsForAddresses(addresses);
@@ -312,9 +312,9 @@ export class TransactionService {
     }
   }
 
-  async processTransactions(transactions: Transaction[], withScamInfo: boolean, withUsername: boolean): Promise<void> {
+  async processTransactions(transactions: Transaction[], options: { withScamInfo: boolean, withUsername: boolean }): Promise<void> {
     try {
-      await this.pluginsService.processTransactions(transactions, withScamInfo);
+      await this.pluginsService.processTransactions(transactions, options.withScamInfo);
     } catch (error) {
       this.logger.error(`Unhandled error when processing plugin transaction for transactions with hashes '${transactions.map(x => x.txHash).join(',')}'`);
       this.logger.error(error);
@@ -334,7 +334,7 @@ export class TransactionService {
       }
     }
 
-    await this.applyAssets(transactions, withUsername);
+    await this.applyAssets(transactions, { withUsernameAssets: options.withUsername });
   }
 
   private async getPendingResults(transaction: Transaction): Promise<boolean | undefined> {

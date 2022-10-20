@@ -62,7 +62,7 @@ export class TransferService {
       transactions.push(transaction);
     }
 
-    await this.transactionService.processTransactions(transactions, pagination.size <= 100, pagination.size <= 50);
+    await this.transactionService.processTransactions(transactions, { withScamInfo: pagination.size <= 100, withUsername: pagination.size <= 50 });
 
     return transactions;
   }
