@@ -12,7 +12,7 @@ export class TransactionQueryOptions {
   withScamInfo?: boolean;
   withUsername?: boolean;
 
-  static applyDefaults(size: number, options: TransactionQueryOptions): TransactionQueryOptions {
+  static applyDefaultOptions(size: number, options: TransactionQueryOptions): TransactionQueryOptions {
     if (size <= TransactionQueryOptions.SIZE_LIMIT) {
       options.withScamInfo = true;
       options.withUsername = true;

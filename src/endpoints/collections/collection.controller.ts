@@ -336,7 +336,7 @@ export class CollectionController {
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
   ) {
-    const options = TransactionQueryOptions.applyDefaults(size, { withScResults, withOperations, withLogs, withScamInfo });
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo });
     const isCollection = await this.collectionService.isCollection(identifier);
     if (!isCollection) {
       throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);

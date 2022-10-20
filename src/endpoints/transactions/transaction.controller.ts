@@ -65,7 +65,7 @@ export class TransactionController {
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
   ) {
-    const options = TransactionQueryOptions.applyDefaults(size, { withScResults, withOperations, withLogs, withScamInfo });
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo });
 
     return this.transactionService.getTransactions(new TransactionFilter({
       sender,
