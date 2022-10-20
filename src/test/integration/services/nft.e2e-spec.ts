@@ -52,6 +52,7 @@ describe('Nft Service', () => {
     score: undefined,
     isNsfw: undefined,
     rank: undefined,
+    rarities: undefined,
   };
 
   beforeAll(async () => {
