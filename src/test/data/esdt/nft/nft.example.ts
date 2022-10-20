@@ -39,7 +39,6 @@ const nftCollection = [{
   score: undefined,
   isNsfw: undefined,
   rank: undefined,
-  isTransferAffected: true,
 },
 ];
 export default nftCollection;
