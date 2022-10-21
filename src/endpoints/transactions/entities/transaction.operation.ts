@@ -23,7 +23,7 @@ export class TransactionOperation {
   @ApiProperty({ enum: TransactionOperationType, default: TransactionOperationType.none })
   type: TransactionOperationType = TransactionOperationType.none;
 
-  @Field(() => TokenType, { description: 'ESDT type for the transaction operation.', nullable: true})
+  @Field(() => TokenType, { description: 'ESDT type for the transaction operation.', nullable: true })
   @ApiProperty({ enum: TokenType })
   esdtType?: TokenType;
 
