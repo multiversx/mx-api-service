@@ -44,7 +44,7 @@ export class TokenAssets {
   @ApiProperty({ type: String, isArray: true })
   extraTokens: string[] | undefined = undefined;
 
-  @Field(() => String, { description: 'Preferred ranking algorithm for NFT collections. Supported values are "trait", "statistic", "jaccardDistance", "openRarity" and "custom".', nullable: true })
+  @Field(() => String, { description: 'Preferred ranking algorithm for NFT collections. Supported values are "trait", "statistical", "jaccardDistances", "openRarity" and "custom".', nullable: true })
   @ApiProperty({ type: String, nullable: true })
   preferredRankAlgorithm: NftRankAlgorithm | undefined = undefined;
 }
