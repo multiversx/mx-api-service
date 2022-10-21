@@ -674,7 +674,7 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -698,7 +698,7 @@ export class AccountController {
 
     return await this.transferService.getTransfers(new TransactionFilter({
       address,
-      sender,
+      senders: sender,
       receivers: receiver,
       token,
       function: scFunction,
