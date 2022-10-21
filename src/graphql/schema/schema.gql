@@ -128,7 +128,7 @@ type AccountDetailed {
   txCount: Float!
 
   """Username for the given detailed account."""
-  username: String!
+  username: String
 }
 
 """Block object type."""

@@ -56,25 +56,6 @@ describe('Account Service', () => {
     });
   });
 
-  describe("getAccountUsername", () => {
-    it("should return account username", async () => {
-      jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
-
-      jest
-        .spyOn(AccountService.prototype, 'getAccountUsernameRaw')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_address: string) => "alice.elrond"));
-
-      const address: string = "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz";
-      const results = await accountService.getAccountUsername(address);
-
-      expect(results).toStrictEqual('alice.elrond');
-    });
-  });
-
   describe("getAccount", () => {
     it("should return null because test simulates that address is not valid ", async () => {
       const mock_isAddressValid = jest.spyOn(AddressUtils, 'isAddressValid');

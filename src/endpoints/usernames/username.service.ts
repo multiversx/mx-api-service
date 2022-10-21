@@ -1,6 +1,7 @@
 import { Constants, CachingService, ApiService, OriginLogger, BinaryUtils, AddressUtils } from "@elrondnetwork/erdnest";
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { CacheInfo } from "src/utils/cache.info";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { UsernameUtils } from "./username.utils";
 
@@ -28,6 +29,14 @@ export class UsernameService {
       this.logger.error(`Error when getting username for address '${address}'`);
       return null;
     }
+  }
+
+  async getUsernameForAddress(address: string): Promise<string | null> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.Username(address).key,
+      async () => await this.getUsernameForAddressRaw(address),
+      CacheInfo.Username(address).ttl,
+    );
   }
 
   private async getAddressForUsernameRaw(username: string): Promise<string | null> {

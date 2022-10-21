@@ -122,16 +122,15 @@ export class TransactionService {
   private async getUsernameAssetsForAddresses(addresses: string[]): Promise<Record<string, AccountAssets>> {
     const resultDict = await this.cachingService.batchGetAll(
       addresses,
-      address => `username:${address}`,
+      address => CacheInfo.Username(address).key,
       async address => await this.usernameService.getUsernameForAddressRaw(address),
-      Constants.oneHour(),
-      100
+      CacheInfo.Username('').ttl
     );
 
     const result: Record<string, AccountAssets> = {};
 
     for (const address of addresses) {
-      const username = resultDict[`username:${address}`];
+      const username = resultDict[CacheInfo.Username(address).key];
       if (username) {
         const assets = this.getAssetsFromUsername(username);
         if (assets) {
