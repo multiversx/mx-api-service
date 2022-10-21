@@ -113,8 +113,6 @@ export class AccountService {
         account.username = await this.usernameService.getUsernameForAddress(address) ?? undefined;
       }
 
-      console.log({ account });
-
       await this.pluginService.processAccount(account);
       return account;
     } catch (error) {
