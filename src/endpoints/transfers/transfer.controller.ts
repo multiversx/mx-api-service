@@ -20,7 +20,7 @@ export class TransferController {
   @ApiOkResponse({ type: [Transaction] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  @ApiQuery({ name: 'senders', description: 'Search by multiple sender addresses, comma-separated', required: false })
+  @ApiQuery({ name: 'sender', description: 'Search by multiple sender addresses, comma-separated', required: false })
   @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
@@ -36,7 +36,7 @@ export class TransferController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
-    @Query('senders', ParseAddressArrayPipe) senders?: string[],
+    @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
@@ -49,7 +49,7 @@ export class TransferController {
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<Transaction[]> {
     return await this.transferService.getTransfers(new TransactionFilter({
-      senders,
+      senders: sender,
       receivers: receiver,
       token,
       senderShard,
@@ -67,7 +67,7 @@ export class TransferController {
   @Get("/transfers/count")
   @ApiOperation({ summary: 'Account transfer count', description: 'Return total count of tranfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult)' })
   @ApiOkResponse({ type: Number })
-  @ApiQuery({ name: 'senders', description: 'Search by multiple sender addresses, comma-separated', required: false })
+  @ApiQuery({ name: 'sender', description: 'Search by multiple sender addresses, comma-separated', required: false })
   @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
@@ -80,7 +80,7 @@ export class TransferController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getAccountTransfersCount(
-    @Query('senders', ParseAddressArrayPipe) senders?: string[],
+    @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -94,7 +94,7 @@ export class TransferController {
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
-      senders,
+      senders: sender,
       receivers: receiver,
       token,
       function: scFunction,
@@ -112,7 +112,7 @@ export class TransferController {
   @Get("/transfers/c")
   @ApiExcludeEndpoint()
   async getAccountTransfersCountAlternative(
-    @Query('senders', ParseAddressArrayPipe) senders?: string[],
+    @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -126,7 +126,7 @@ export class TransferController {
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
-      senders,
+      senders: sender,
       receivers: receiver,
       token,
       function: scFunction,
