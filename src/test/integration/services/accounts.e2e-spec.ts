@@ -317,30 +317,4 @@ describe('Account Service', () => {
       expect(results).toStrictEqual([]);
     });
   });
-
-  describe("getAccountUsernameRaw", () => {
-    it("should return undefined because test simulates that account is undefined", async () => {
-      jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
-
-      jest
-        .spyOn(AccountService.prototype, 'getAccount')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async () => null));
-
-      const address: string = "erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97";
-      const results = await accountService.getAccountUsernameRaw(address);
-
-      expect(results).toBeNull();
-    });
-
-    it('should return account username details', async () => {
-      const address: string = "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz";
-      const results = await accountService.getAccountUsernameRaw(address);
-
-      expect(results).toStrictEqual('alice.elrond');
-    });
-  });
 });
