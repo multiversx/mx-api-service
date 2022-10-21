@@ -1,4 +1,4 @@
-import { ParseBlockHashPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseAddressArrayPipe } from "@elrondnetwork/erdnest";
+import { ParseBlockHashPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseAddressArrayPipe, ParseBoolPipe } from "@elrondnetwork/erdnest";
 import { Controller, DefaultValuePipe, Get, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -6,6 +6,7 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { Transaction } from "../transactions/entities/transaction";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionStatus } from "../transactions/entities/transaction.status";
+import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
 import { TransferService } from "./transfer.service";
 
 @Controller()
@@ -32,6 +33,8 @@ export class TransferController {
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
+  @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   async getAccountTransfers(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -47,7 +50,11 @@ export class TransferController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
   ): Promise<Transaction[]> {
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScamInfo, withUsername });
+
     return await this.transferService.getTransfers(new TransactionFilter({
       senders: sender,
       receivers: receiver,
@@ -61,7 +68,10 @@ export class TransferController {
       before,
       after,
       order,
-    }), new QueryPagination({ from, size }));
+    }),
+      new QueryPagination({ from, size }),
+      options,
+    );
   }
 
   @Get("/transfers/count")
