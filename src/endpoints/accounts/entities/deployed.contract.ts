@@ -15,6 +15,6 @@ export class DeployedContract {
   @ApiProperty({ type: Number })
   timestamp: number = 0;
 
-  @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })
+  @ApiProperty({ type: AccountAssets, nullable: true, description: 'Contract assets' })
   assets: AccountAssets | undefined = undefined;
 }
