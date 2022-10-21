@@ -237,13 +237,7 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.senders) {
-      const queries: AbstractQuery[] = [];
-      for (const receiver of filter.senders) {
-        queries.push(QueryType.Match('sender', receiver));
-        queries.push(QueryType.Match('senders', receiver));
-      }
-
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(queries));
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.senders, sender => QueryType.Match('sender', sender));
     }
 
     if (filter.receivers) {
