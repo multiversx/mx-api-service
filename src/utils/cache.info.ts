@@ -443,4 +443,11 @@ export class CacheInfo {
       ttl: Constants.oneHour() * 12,
     };
   }
+
+  static Username(address: string): CacheInfo {
+    return {
+      key: `username:${address}`,
+      ttl: Constants.oneHour(),
+    };
+  }
 }

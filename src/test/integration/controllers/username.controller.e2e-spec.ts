@@ -17,21 +17,21 @@ describe("Username Controller", () => {
   });
 
   describe('/usernames/{username}', () => {
-    it('should return return account details for a given herotag', async () => {
-      const herotag: string = 'alice';
+    it('should return return account details for a given username', async () => {
+      const username: string = 'alice';
 
       await request(app.getHttpServer())
-        .get(`${path}/${herotag}`)
+        .get(`${path}/${username}`)
         .expect(302);
     });
   });
 
   describe('Validations', () => {
     it('should return code 404 Not Found and response message', async () => {
-      const herotag: string = 'InvalidHeroTag';
+      const username: string = 'InvalidUsername';
 
       await request(app.getHttpServer())
-        .get(`${path}/${herotag}`)
+        .get(`${path}/${username}`)
         .expect(404)
         .then(res => {
           expect(res.body.message).toStrictEqual('Account not found');

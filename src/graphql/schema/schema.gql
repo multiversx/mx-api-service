@@ -128,7 +128,7 @@ type AccountDetailed {
   txCount: Float!
 
   """Username for the given detailed account."""
-  username: String!
+  username: String
 }
 
 """Block object type."""
@@ -1157,6 +1157,14 @@ input GetTransactionsInput {
 
   """Token identfier for the given result set."""
   token: String
+
+  """Request scam info for the given result set."""
+  withScamInfo: Boolean
+
+  """
+  Integrates username in assets for all addresses present in the result set.
+  """
+  withUsername: Boolean
 }
 
 """Input to retrieve the given transfers count for."""
@@ -1245,11 +1253,19 @@ input GetTransfersInput {
 
   """Token identfier for the given result set."""
   token: String
+
+  """Request scam info for the given result set."""
+  withScamInfo: Boolean
+
+  """
+  Integrates username in assets for all addresses present in the result set.
+  """
+  withUsername: Boolean
 }
 
 """Input to retrieve the given account details for."""
 input GetUsernameInput {
-  """Herotag"""
+  """Username"""
   username: String = ""
 }
 
@@ -2533,7 +2549,7 @@ type Query {
     input: GetTransfersCountInput!
   ): Float!
 
-  """Retrive account detailed for a given herotag"""
+  """Retrieve account detailed for a given username"""
   username(
     """Input to retrieve the given detailed account for."""
     input: GetUsernameInput!
@@ -2951,7 +2967,7 @@ type Transaction {
   receiverAddress: String!
 
   """Receiver assets for the given transaction."""
-  receiverAssets: AccountAssets!
+  receiverAssets: AccountAssets
 
   """Receiver account shard for the given transaction."""
   receiverShard: String!
@@ -2969,7 +2985,7 @@ type Transaction {
   senderAddress: String!
 
   """Sender assets for the given transaction."""
-  senderAssets: AccountAssets!
+  senderAssets: AccountAssets
 
   """Sender account shard for the given transaction."""
   senderShard: Float!
@@ -3062,7 +3078,7 @@ type TransactionDetailed {
   receiverAddress: String!
 
   """Receiver assets for the given transaction."""
-  receiverAssets: AccountAssets!
+  receiverAssets: AccountAssets
 
   """Receiver account shard for the given transaction."""
   receiverShard: String!
@@ -3083,7 +3099,7 @@ type TransactionDetailed {
   senderAddress: String!
 
   """Sender assets for the given transaction."""
-  senderAssets: AccountAssets!
+  senderAssets: AccountAssets
 
   """Sender account shard for the given transaction."""
   senderShard: Float!
