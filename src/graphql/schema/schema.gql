@@ -118,6 +118,15 @@ type AccountDetailed {
   """Code hash for the given detailed account."""
   codeHash: String
 
+  """Contracts for the given detailed account."""
+  contractAccount(
+    """Input to retrieve the given contracts for."""
+    input: GetFromAndSizeInput!
+  ): [DeployedContract!]
+
+  """Contracts count for the given detailed account."""
+  contractAccountCount: Float!
+
   """
   Summarizes all delegation positions with staking providers, together with unDelegation positions for the givven detailed account.
   """
@@ -131,6 +140,18 @@ type AccountDetailed {
 
   """Developer reward for the given detailed account."""
   developerReward: String!
+
+  """Return account EGLD balance history."""
+  historyAccount(
+    """Input to retrieve the given EGLD balance history for."""
+    input: GetFromAndSizeInput!
+  ): [AccountHistory!]!
+
+  """Return account balance history for a specifc token."""
+  historyTokenAccount(
+    """Input to retrieve the given token history for."""
+    input: GetHistoryTokenAccountInput!
+  ): [AccountEsdtHistory!]!
 
   """If the given detailed account is payable."""
   isPayable: Boolean
@@ -164,6 +185,19 @@ type AccountDetailed {
 
   """Owner address for the given detailed account."""
   ownerAddress: String!
+
+  """
+  Returns smart contract results where the account is sender or receiver.
+  """
+  resultsAccount(
+    """Input to retrieve the given sc results for."""
+    input: GetFromAndSizeInput!
+  ): [SmartContractResult!]!
+
+  """
+  Returns smart contract results count where the account is sender or receiver.
+  """
+  resultsAccountCount: Float!
 
   """Root hash for the given detailed account."""
   rootHash: String
@@ -200,11 +234,52 @@ type AccountDetailed {
     input: GetTransactionsAccountCountInput!
   ): Float
 
+  """
+  Returns both transfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult), thus providing a full picture of all in/out value transfers for a given account.
+  """
+  transfersAccount(
+    """Input to retrieve the given transfers for."""
+    input: GetTransfersAccountInput!
+  ): [Transaction!]
+
   """Transactions count for the given detailed account."""
   txCount: Float!
 
   """Username for the given detailed account."""
   username: String
+}
+
+"""Account Esdt History object type."""
+type AccountEsdtHistory {
+  """Address for the given account."""
+  address: String!
+
+  """Balance for the given account."""
+  balance: String!
+
+  """IsSender for the given account."""
+  isSender: Boolean
+
+  """Timestamp for the given account."""
+  timestamp: Float!
+
+  """Token for the given history account details."""
+  token: String!
+}
+
+"""Detailed history object type that."""
+type AccountHistory {
+  """Address for the given account."""
+  address: String!
+
+  """Balance for the given account."""
+  balance: String!
+
+  """IsSender for the given account."""
+  isSender: Boolean
+
+  """Timestamp for the given account."""
+  timestamp: Float!
 }
 
 """Account key object type."""
@@ -495,6 +570,21 @@ type DelegationLegacy {
   totalWithdrawOnlyStake: String!
 }
 
+"""Deployed contract object type."""
+type DeployedContract {
+  """Address for the given account."""
+  address: String!
+
+  """Assets for the given account."""
+  assets: AccountAssets
+
+  """DeployTxHash for the given account."""
+  deployTxHash: String!
+
+  """Timestamp for the given account."""
+  timestamp: Float!
+}
+
 """Economics object type."""
 type Economics {
   """Total Supply general information."""
@@ -613,6 +703,27 @@ input GetBlocksInput {
 
   """Provide identity information for proposer node."""
   withProposerIdentity: Boolean
+}
+
+"""Input to retrieve the given from and size for."""
+input GetFromAndSizeInput {
+  """Number of collections to skip for the given result set."""
+  from: Float = 0
+
+  """Number of collections to retrieve for the given result set."""
+  size: Float = 25
+}
+
+"""Input to retrieve the given history token for."""
+input GetHistoryTokenAccountInput {
+  """Number of collections to skip for the given result set."""
+  from: Float = 0
+
+  """Identifier token to retrieve for the given result set."""
+  identifier: ID = ""
+
+  """Number of collections to retrieve for the given result set."""
+  size: Float = 25
 }
 
 """Input to retrieve the given identity for."""
@@ -1246,7 +1357,7 @@ input GetTransactionsAccountInput {
   """Before timestamp for the given result set."""
   before: Float
 
-  """Number of tokens to skip for the given result set."""
+  """Number of transactions to skip for the given result set."""
   from: Float = 0
 
   """Filter transactions by function name for the given result set."""
@@ -1278,7 +1389,7 @@ input GetTransactionsAccountInput {
   """Sender shard for the given result set."""
   senderShard: Float
 
-  """Number of tokens to retrieve for the given result set."""
+  """Number of transactions to retrieve for the given result set."""
   size: Float = 25
 
   """Status of the transaction for the given result set."""
@@ -1402,6 +1513,62 @@ input GetTransactionsInput {
   """
   Integrates username in assets for all addresses present in the result set.
   """
+  withUsername: Boolean
+}
+
+"""Input to retrieve the given transfers for."""
+input GetTransfersAccountInput {
+  """After timestamp for the given result set."""
+  after: Float
+
+  """Before timestamp for the given result set."""
+  before: Float
+
+  """Number of transactions to skip for the given result set."""
+  from: Float = 0
+
+  """Filter transactions by function name for the given result set."""
+  function: String
+
+  """
+  Filter by a comma-separated list of transaction hashes for the given result set.
+  """
+  hashes: [String!]
+
+  """Mini block hash for the given result set."""
+  miniBlockHash: String
+
+  """Order transactions for the given result set."""
+  order: SortOrder
+
+  """Receiver for the given result set."""
+  receiver: [String!]
+
+  """Receiver shard for the given result set."""
+  receiverShard: Float
+
+  """Search in data object for the given result set."""
+  search: String
+
+  """Sender for the given result set."""
+  sender: String
+
+  """Sender shard for the given result set."""
+  senderShard: Float
+
+  """Number of transactions to retrieve for the given result set."""
+  size: Float = 25
+
+  """Status of the transaction for the given result set."""
+  status: TransactionStatus
+
+  """Token identfier for the given result set."""
+  token: String
+
+  """After timestamp for the given result set."""
+  withScamInfo: Boolean
+
+  """After timestamp for the given result set."""
   withUsername: Boolean
 }
 

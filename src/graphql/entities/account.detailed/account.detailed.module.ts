@@ -9,6 +9,8 @@ import { DelegationModule } from "src/endpoints/delegation/delegation.module";
 import { StakeModule } from "src/endpoints/stake/stake.module";
 import { DelegationLegacyModule } from "src/endpoints/delegation.legacy/delegation.legacy.module";
 import { TransactionModule } from "src/endpoints/transactions/transaction.module";
+import { TransferModule } from "src/endpoints/transfers/transfer.module";
+import { SmartContractResultModule } from "src/endpoints/sc-results/scresult.module";
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { TransactionModule } from "src/endpoints/transactions/transaction.module
     StakeModule,
     DelegationLegacyModule,
     TransactionModule,
+    TransferModule,
+    SmartContractResultModule,
   ],
   providers: [AccountDetailedResolver],
 })
