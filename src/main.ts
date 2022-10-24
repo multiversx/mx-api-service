@@ -110,7 +110,7 @@ async function bootstrap() {
         retryAttempts: 100,
         retryDelay: 1000,
         retryStrategy: () => 1000,
-      }
+      },
     },
   );
   pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
