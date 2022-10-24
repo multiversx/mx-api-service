@@ -160,11 +160,15 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   httpServer.headersTimeout = apiConfigService.getHeadersTimeout(); //`keepAliveTimeout + server's expected response time`
 
   const globalInterceptors: NestInterceptor[] = [];
+  // @ts-ignore
   globalInterceptors.push(new OriginInterceptor());
+  // @ts-ignore
   globalInterceptors.push(new ComplexityInterceptor());
   globalInterceptors.push(new GraphqlComplexityInterceptor());
   globalInterceptors.push(new GraphQLMetricsInterceptor(apiMetricsService));
+  // @ts-ignore
   globalInterceptors.push(new RequestCpuTimeInterceptor(metricsService));
+  // @ts-ignore
   globalInterceptors.push(new LoggingInterceptor(metricsService));
 
   if (apiConfigService.getUseRequestCachingFlag()) {
@@ -177,6 +181,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
       metricsService,
     );
 
+    // @ts-ignore
     globalInterceptors.push(cachingInterceptor);
   }
 
@@ -185,9 +190,13 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
     globalInterceptors.push(new LogRequestsInterceptor(httpAdapterHostService));
   }
 
+  // @ts-ignore
   globalInterceptors.push(new FieldsInterceptor());
+  // @ts-ignore
   globalInterceptors.push(new ExtractInterceptor());
+  // @ts-ignore
   globalInterceptors.push(new CleanupInterceptor());
+  // @ts-ignore
   globalInterceptors.push(new PaginationInterceptor(apiConfigService.getIndexerMaxPagination()));
   // @ts-ignore
   globalInterceptors.push(new QueryCheckInterceptor(httpAdapterHostService));
