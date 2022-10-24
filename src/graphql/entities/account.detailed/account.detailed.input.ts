@@ -1,7 +1,9 @@
 import { Field, Float, ID, InputType } from "@nestjs/graphql";
+import { SortOrder } from "src/common/entities/sort.order";
 
 import { EsdtDataSource } from "src/endpoints/esdt/entities/esdt.data.source";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
+import { TransactionStatus } from "src/endpoints/transactions/entities/transaction.status";
 
 @InputType({ description: "Input to retrieve the given detailed account for." })
 export class GetAccountDetailedInput {
@@ -106,4 +108,115 @@ export class GetTokensAccountInput {
   @Field(() => String, { name: "name", description: "Name to retrieve for the given result set.", nullable: true })
   name: string | undefined = undefined;
 }
+
+@InputType({ description: "Input to retrieve the given transactions for." })
+export class GetTransactionsAccountInput {
+  constructor(partial?: Partial<GetTokensAccountInput>) {
+    Object.assign(this, partial);
+  }
+
+  @Field(() => Float, { name: "from", description: "Number of tokens to skip for the given result set.", nullable: true, defaultValue: 0 })
+  from: number = 0;
+
+  @Field(() => Float, { name: "size", description: "Number of tokens to retrieve for the given result set.", nullable: true, defaultValue: 25 })
+  size: number = 25;
+
+  @Field(() => String, { name: "sender", description: "Sender for the given result set.", nullable: true })
+  sender: string | undefined = undefined;
+
+  @Field(() => [String], { name: "receiver", description: "Receiver for the given result set.", nullable: true })
+  receiver: string[] | undefined = undefined;
+
+  @Field(() => String, { name: "token", description: "Token identfier for the given result set.", nullable: true })
+  token: string | undefined = undefined;
+
+  @Field(() => Float, { name: "senderShard", description: "Sender shard for the given result set.", nullable: true })
+  senderShard: number | undefined = undefined;
+
+  @Field(() => Float, { name: "receiverShard", description: "Receiver shard for the given result set.", nullable: true })
+  receiverShard: number | undefined = undefined;
+
+  @Field(() => String, { name: "miniBlockHash", description: "Mini block hash for the given result set.", nullable: true })
+  miniBlockHash: string | undefined = undefined;
+
+  @Field(() => [String], { name: "hashes", description: "Filter by a comma-separated list of transaction hashes for the given result set.", nullable: true })
+  hashes: Array<string> | undefined = undefined;
+
+  @Field(() => TransactionStatus, { name: "status", description: "Status of the transaction for the given result set.", nullable: true })
+  status: TransactionStatus | undefined = undefined;
+
+  @Field(() => String, { name: "search", description: "Search in data object for the given result set.", nullable: true })
+  search: string | undefined = undefined;
+
+  @Field(() => String, { name: "function", description: "Filter transactions by function name for the given result set.", nullable: true })
+  function: string | undefined = undefined;
+
+  @Field(() => Float, { name: "before", description: "Before timestamp for the given result set.", nullable: true })
+  before: number | undefined = undefined;
+
+  @Field(() => Float, { name: "after", description: "After timestamp for the given result set.", nullable: true })
+  after: number | undefined = undefined;
+
+  @Field(() => SortOrder, { name: "order", description: "Order transactions for the given result set.", nullable: true })
+  order: SortOrder | undefined = undefined;
+
+  @Field(() => Boolean, { name: "withScResults", description: "After timestamp for the given result set.", nullable: true })
+  withScResults: boolean | undefined = undefined;
+
+  @Field(() => Boolean, { name: "withOperations", description: "After timestamp for the given result set.", nullable: true })
+  withOperations: boolean | undefined = undefined;
+
+  @Field(() => Boolean, { name: "withLogs", description: "After timestamp for the given result set.", nullable: true })
+  withLogs: boolean | undefined = undefined;
+
+  @Field(() => Boolean, { name: "withScamInfo", description: "After timestamp for the given result set.", nullable: true })
+  withScamInfo: boolean | undefined = undefined;
+
+  @Field(() => Boolean, { name: "withUsername", description: "After timestamp for the given result set.", nullable: true })
+  withUsername: boolean | undefined = undefined;
+}
+
+@InputType({ description: "Input to retrieve the given transactions count for." })
+export class GetTransactionsAccountCountInput {
+  constructor(partial?: Partial<GetTransactionsAccountCountInput>) {
+    Object.assign(this, partial);
+  }
+
+  @Field(() => String, { name: "sender", description: "Sender for the given result set.", nullable: true })
+  sender: string | undefined = undefined;
+
+  @Field(() => [String], { name: "receiver", description: "Receiver for the given result set.", nullable: true })
+  receiver: string[] | undefined = undefined;
+
+  @Field(() => String, { name: "token", description: "Token identfier for the given result set.", nullable: true })
+  token: string | undefined = undefined;
+
+  @Field(() => Float, { name: "senderShard", description: "Sender shard for the given result set.", nullable: true })
+  senderShard: number | undefined = undefined;
+
+  @Field(() => Float, { name: "receiverShard", description: "Receiver shard for the given result set.", nullable: true })
+  receiverShard: number | undefined = undefined;
+
+  @Field(() => String, { name: "miniBlockHash", description: "Mini block hash for the given result set.", nullable: true })
+  miniBlockHash: string | undefined = undefined;
+
+  @Field(() => [String], { name: "hashes", description: "Filter by a comma-separated list of transaction hashes for the given result set.", nullable: true })
+  hashes: Array<string> | undefined = undefined;
+
+  @Field(() => TransactionStatus, { name: "status", description: "Status of the transaction for the given result set.", nullable: true })
+  status: TransactionStatus | undefined = undefined;
+
+  @Field(() => String, { name: "search", description: "Search in data object for the given result set.", nullable: true })
+  search: string | undefined = undefined;
+
+  @Field(() => String, { name: "function", description: "Filter transactions by function name for the given result set.", nullable: true })
+  function: string | undefined = undefined;
+
+  @Field(() => Float, { name: "before", description: "Before timestamp for the given result set.", nullable: true })
+  before: number | undefined = undefined;
+
+  @Field(() => Float, { name: "after", description: "After timestamp for the given result set.", nullable: true })
+  after: number | undefined = undefined;
+}
+
 

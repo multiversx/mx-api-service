@@ -6,9 +6,21 @@ import { CollectionModule } from "src/endpoints/collections/collection.module";
 import { NftModule } from "src/endpoints/nfts/nft.module";
 import { TokenModule } from "src/endpoints/tokens/token.module";
 import { DelegationModule } from "src/endpoints/delegation/delegation.module";
+import { StakeModule } from "src/endpoints/stake/stake.module";
+import { DelegationLegacyModule } from "src/endpoints/delegation.legacy/delegation.legacy.module";
+import { TransactionModule } from "src/endpoints/transactions/transaction.module";
 
 @Module({
-  imports: [AccountModule, CollectionModule, NftModule, TokenModule, DelegationModule],
+  imports: [
+    AccountModule,
+    CollectionModule,
+    NftModule,
+    TokenModule,
+    DelegationModule,
+    StakeModule,
+    DelegationLegacyModule,
+    TransactionModule,
+  ],
   providers: [AccountDetailedResolver],
 })
 export class AccountDetailedModule { }

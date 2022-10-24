@@ -80,6 +80,27 @@ type AccountDelegation {
   userUndelegatedList: AccountUndelegation!
 }
 
+"""Account delegation legacy."""
+type AccountDelegationLegacy {
+  """Claimable rewards for the given detailed account."""
+  claimableRewards: String!
+
+  """User active stake for the given detailed account."""
+  userActiveStake: String!
+
+  """User deferred payment stake for the given detailed account."""
+  userDeferredPaymentStake: String!
+
+  """User unstaked stake for the given detailed account."""
+  userUnstakedStake: String!
+
+  """User waiting stake for the given detailed account."""
+  userWaitingStake: String!
+
+  """User withdraw only stake for the given detailed account."""
+  userWithdrawOnlyStake: String!
+}
+
 """Detailed Account object type that extends Account."""
 type AccountDetailed {
   """Address for the given account."""
@@ -102,6 +123,9 @@ type AccountDetailed {
   """
   delegation: [AccountDelegation!]!
 
+  """Returns staking information related to the legacy delegation pool."""
+  delegationLegacy: AccountDelegationLegacy!
+
   """Deployment timestamp for the given detailed account."""
   deployedAt: Float
 
@@ -119,6 +143,9 @@ type AccountDetailed {
 
   """If the given detailed account is upgradeable."""
   isUpgradeable: Boolean
+
+  """Returns all nodes in the node queue where the account is owner."""
+  keys: [AccountKey!]!
 
   """NFT collections for the given detailed account."""
   nftCollections(
@@ -150,17 +177,58 @@ type AccountDetailed {
   """Shard for the given account."""
   shard: Float!
 
+  """
+  Summarizes total staked amount for the given provider, as well as when and how much unbond will be performed.
+  """
+  stake: ProviderStake!
+
   """Tokens for the given detailed account."""
   tokensAccount(
     """Input to retrieve the given tokens for."""
     input: GetTokensAccountInput!
   ): [TokenWithBalanceAccountFlat!]
 
+  """Transactions for the given detailed account."""
+  transactionsAccount(
+    """Input to retrieve the given transactions for."""
+    input: GetTransactionsAccountInput!
+  ): [Transaction!]
+
+  """Transactions count for the given detailed account."""
+  transactionsAccountCount(
+    """Input to retrieve the given transctions count for."""
+    input: GetTransactionsAccountCountInput!
+  ): Float
+
   """Transactions count for the given detailed account."""
   txCount: Float!
 
   """Username for the given detailed account."""
   username: String
+}
+
+"""Account key object type."""
+type AccountKey {
+  """Bls key for the given provider account."""
+  blsKey: String!
+
+  """Queue index for the given provider account ."""
+  queueIndex: String
+
+  """Queue size for the given provider account."""
+  queueSize: String
+
+  """Reward address for the given provider account ."""
+  rewardAddress: String!
+
+  """Stake for the given provider account."""
+  stake: String!
+
+  """Status for the given provider account."""
+  status: String!
+
+  """Top Up for the given  provideraccount."""
+  topUp: String!
 }
 
 """Account undelegation object type that extends Account."""
@@ -1127,6 +1195,112 @@ input GetTokensInput {
 input GetTransactionDetailedInput {
   """Hash to retrieve the corresponding detailed transaction for."""
   hash: String = ""
+}
+
+"""Input to retrieve the given transactions count for."""
+input GetTransactionsAccountCountInput {
+  """After timestamp for the given result set."""
+  after: Float
+
+  """Before timestamp for the given result set."""
+  before: Float
+
+  """Filter transactions by function name for the given result set."""
+  function: String
+
+  """
+  Filter by a comma-separated list of transaction hashes for the given result set.
+  """
+  hashes: [String!]
+
+  """Mini block hash for the given result set."""
+  miniBlockHash: String
+
+  """Receiver for the given result set."""
+  receiver: [String!]
+
+  """Receiver shard for the given result set."""
+  receiverShard: Float
+
+  """Search in data object for the given result set."""
+  search: String
+
+  """Sender for the given result set."""
+  sender: String
+
+  """Sender shard for the given result set."""
+  senderShard: Float
+
+  """Status of the transaction for the given result set."""
+  status: TransactionStatus
+
+  """Token identfier for the given result set."""
+  token: String
+}
+
+"""Input to retrieve the given transactions for."""
+input GetTransactionsAccountInput {
+  """After timestamp for the given result set."""
+  after: Float
+
+  """Before timestamp for the given result set."""
+  before: Float
+
+  """Number of tokens to skip for the given result set."""
+  from: Float = 0
+
+  """Filter transactions by function name for the given result set."""
+  function: String
+
+  """
+  Filter by a comma-separated list of transaction hashes for the given result set.
+  """
+  hashes: [String!]
+
+  """Mini block hash for the given result set."""
+  miniBlockHash: String
+
+  """Order transactions for the given result set."""
+  order: SortOrder
+
+  """Receiver for the given result set."""
+  receiver: [String!]
+
+  """Receiver shard for the given result set."""
+  receiverShard: Float
+
+  """Search in data object for the given result set."""
+  search: String
+
+  """Sender for the given result set."""
+  sender: String
+
+  """Sender shard for the given result set."""
+  senderShard: Float
+
+  """Number of tokens to retrieve for the given result set."""
+  size: Float = 25
+
+  """Status of the transaction for the given result set."""
+  status: TransactionStatus
+
+  """Token identfier for the given result set."""
+  token: String
+
+  """After timestamp for the given result set."""
+  withLogs: Boolean
+
+  """After timestamp for the given result set."""
+  withOperations: Boolean
+
+  """After timestamp for the given result set."""
+  withScResults: Boolean
+
+  """After timestamp for the given result set."""
+  withScamInfo: Boolean
+
+  """After timestamp for the given result set."""
+  withUsername: Boolean
 }
 
 """Input to retrieve the given transactions count for."""
@@ -2294,6 +2468,27 @@ type Provider {
 
   """Top up details."""
   topUp: String!
+}
+
+"""Provider stake object type."""
+type ProviderStake {
+  """Total stake for the given account."""
+  totalStaked: String!
+
+  """Unstaked tokens details for the given account."""
+  unstakedTokens: [ProviderUnstakedTokens!]
+}
+
+"""Provider unstaked tokens object type."""
+type ProviderUnstakedTokens {
+  """Amount for the given token."""
+  amount: String!
+
+  """Epoch number for the given token."""
+  epochs: String
+
+  """Expires details for the given token."""
+  expires: String
 }
 
 type Query {
