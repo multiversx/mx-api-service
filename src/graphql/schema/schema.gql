@@ -59,25 +59,25 @@ type AccountAssets {
   tags: [String!]!
 }
 
-"""Account delegation legacy."""
-type AccountDelegationLegacy {
-  """Claimable rewards for the given detailed account."""
+"""Account delegation object type that extends Account."""
+type AccountDelegation {
+  """Address for the given detailed account."""
+  address: String!
+
+  """Claimable Rewards for the given detailed account."""
   claimableRewards: String!
 
-  """User active stake for the given detailed account."""
+  """Contract for the given detailed account."""
+  contract: String!
+
+  """UserActiveStake for the given detailed account."""
   userActiveStake: String!
 
-  """User deferred payment stake for the given detailed account."""
-  userDeferredPaymentStake: String!
+  """UserUnBondable for the given detailed account."""
+  userUnBondable: String!
 
-  """User unstaked stake for the given detailed account."""
-  userUnstakedStake: String!
-
-  """User waiting stake for the given detailed account."""
-  userWaitingStake: String!
-
-  """User withdraw only stake for the given detailed account."""
-  userWithdrawOnlyStake: String!
+  """UserUndelegatedList for the given detailed account."""
+  userUndelegatedList: AccountUndelegation!
 }
 
 """Detailed Account object type that extends Account."""
@@ -100,7 +100,7 @@ type AccountDetailed {
   """
   Summarizes all delegation positions with staking providers, together with unDelegation positions for the givven detailed account.
   """
-  delegation: AccountDelegationLegacy!
+  delegation: [AccountDelegation!]!
 
   """Deployment timestamp for the given detailed account."""
   deployedAt: Float
@@ -161,6 +161,15 @@ type AccountDetailed {
 
   """Username for the given detailed account."""
   username: String
+}
+
+"""Account undelegation object type that extends Account."""
+type AccountUndelegation {
+  """Amount for the given detailed account."""
+  amount: String!
+
+  """Seconds for the given detailed account."""
+  seconds: Float!
 }
 
 """Block object type."""

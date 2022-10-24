@@ -15,8 +15,8 @@ import { NftQueryOptions } from "src/endpoints/nfts/entities/nft.query.options";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { TokenService } from "src/endpoints/tokens/token.service";
-import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
-import { AccountDelegationLegacy } from "src/endpoints/delegation.legacy/entities/account.delegation.legacy";
+import { AccountDelegation } from "src/endpoints/stake/entities/account.delegation";
+import { DelegationService } from "src/endpoints/delegation/delegation.service";
 
 @Resolver(() => AccountDetailed)
 export class AccountDetailedResolver extends AccountDetailedQuery {
@@ -24,7 +24,7 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
     protected readonly nftService: NftService,
     protected readonly collectionService: CollectionService,
     protected readonly tokenService: TokenService,
-    protected readonly delegationLegacyService: DelegationLegacyService,
+    protected readonly delegationService: DelegationService,
     accountService: AccountService
   ) {
     super(accountService);
@@ -40,11 +40,10 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
     return await this.accountService.getAccountScResults(account.address);
   }
 
-  @ResolveField("delegation", () => AccountDelegationLegacy, { name: "delegation", description: "Summarizes all delegation positions with staking providers, together with unDelegation positions for the givven detailed account." })
+  @ResolveField("delegation", () => [AccountDelegation], { name: "delegation", description: "Summarizes all delegation positions with staking providers, together with unDelegation positions for the givven detailed account." })
   public async getDelegationForAddress(@Parent() account: AccountDetailed) {
-    return await this.delegationLegacyService.getDelegationForAddress(account.address);
+    return await this.delegationService.getDelegationForAddress(account.address);
   }
-
 
   @ResolveField("nftCollections", () => [NftCollectionAccountFlat], { name: "nftCollections", description: "NFT collections for the given detailed account.", nullable: true })
   public async getAccountDetailedNftCollections(@Args("input", { description: "Input to retrieve the given NFT collections for." }) input: GetNftCollectionsAccountInput, @Parent() account: AccountDetailed) {
