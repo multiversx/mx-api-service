@@ -105,13 +105,12 @@ async function bootstrap() {
     {
       transport: Transport.REDIS,
       options: {
-        url: `redis://${apiConfigService.getRedisUrl()}:6379`,
+        host: apiConfigService.getRedisUrl(),
+        port: 6379,
         retryAttempts: 100,
         retryDelay: 1000,
-        retry_strategy: function (_: any) {
-          return 1000;
-        },
-      },
+        retryStrategy: () => 1000,
+      }
     },
   );
   pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
