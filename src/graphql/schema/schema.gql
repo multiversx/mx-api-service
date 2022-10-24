@@ -59,6 +59,27 @@ type AccountAssets {
   tags: [String!]!
 }
 
+"""Account delegation legacy."""
+type AccountDelegationLegacy {
+  """Claimable rewards for the given detailed account."""
+  claimableRewards: String!
+
+  """User active stake for the given detailed account."""
+  userActiveStake: String!
+
+  """User deferred payment stake for the given detailed account."""
+  userDeferredPaymentStake: String!
+
+  """User unstaked stake for the given detailed account."""
+  userUnstakedStake: String!
+
+  """User waiting stake for the given detailed account."""
+  userWaitingStake: String!
+
+  """User withdraw only stake for the given detailed account."""
+  userWithdrawOnlyStake: String!
+}
+
 """Detailed Account object type that extends Account."""
 type AccountDetailed {
   """Address for the given account."""
@@ -75,6 +96,11 @@ type AccountDetailed {
 
   """Code hash for the given detailed account."""
   codeHash: String
+
+  """
+  Summarizes all delegation positions with staking providers, together with unDelegation positions for the givven detailed account.
+  """
+  delegation: AccountDelegationLegacy!
 
   """Deployment timestamp for the given detailed account."""
   deployedAt: Float
@@ -123,6 +149,12 @@ type AccountDetailed {
 
   """Shard for the given account."""
   shard: Float!
+
+  """Tokens for the given detailed account."""
+  tokensAccount(
+    """Input to retrieve the given tokens for."""
+    input: GetTokensAccountInput!
+  ): [TokenWithBalanceAccountFlat!]
 
   """Transactions count for the given detailed account."""
   txCount: Float!
@@ -1015,6 +1047,29 @@ input GetTokenRolesForIdentifierAndAddressInput {
 
   """Identifier to retrieve the corresponding token for."""
   identifier: ID = ""
+}
+
+"""Input to retrieve the given tokens for."""
+input GetTokensAccountInput {
+  """Number of tokens to skip for the given result set."""
+  from: Float = 0
+
+  """Search by token identifier for the given result set."""
+  identifier: ID
+
+  """
+  Token comma-separated identifiers list to retrieve for the given result set.
+  """
+  identifiers: [String!]
+
+  """Name to retrieve for the given result set."""
+  name: String
+
+  """Token identifier to retrieve for the given result set."""
+  search: String
+
+  """Number of tokens to retrieve for the given result set."""
+  size: Float = 25
 }
 
 """Input to retreive the given tokens count for."""
@@ -2923,6 +2978,80 @@ enum TokenType {
 
   """Semi-fungible ESDT token type."""
   SemiFungibleESDT
+}
+
+type TokenWithBalanceAccountFlat {
+  """Token accounts list."""
+  accounts: Float!
+
+  """Token assests details."""
+  assets: TokenAssets
+
+  """Balance for the given token account."""
+  balance: String!
+
+  """Token burnt details."""
+  burnt: String!
+
+  """Token canBurn property."""
+  canBurn: Boolean!
+
+  """Token canChangeOwner property."""
+  canChangeOwner: Boolean!
+
+  """Token canFreeze property."""
+  canFreeze: Boolean!
+
+  """Token canMint property."""
+  canMint: Boolean!
+
+  """Token canPause property."""
+  canPause: Boolean!
+
+  """Token canUpgrade property."""
+  canUpgrade: Boolean!
+
+  """Token canWipe property."""
+  canWipe: Boolean
+
+  """Token circulating supply amount details."""
+  circulatingSupply: String
+
+  """Token decimals."""
+  decimals: Float!
+
+  """Token Identifier."""
+  identifier: String!
+
+  """Token initial minting details."""
+  initialMinted: String!
+
+  """Token isPause property."""
+  isPaused: Boolean!
+
+  """Current market cap details."""
+  marketCap: Float
+
+  """Token minted details."""
+  minted: String!
+
+  """Token name."""
+  name: String!
+
+  """Current token price."""
+  price: Float
+
+  """Token supply amount details."""
+  supply: String
+
+  """Token ticker."""
+  ticker: String!
+
+  """Tokens transactions."""
+  transactions: Float
+
+  """ValueUsd token for the given token account."""
+  valueUsd: Float
 }
 
 """Transaction object type."""

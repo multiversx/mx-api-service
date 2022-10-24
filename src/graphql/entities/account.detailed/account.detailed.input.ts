@@ -41,7 +41,7 @@ export class GetNftsAccountInput {
   constructor(partial?: Partial<GetNftsAccountInput>) {
     Object.assign(this, partial);
   }
-  
+
   @Field(() => Float, { name: "from", description: "Number of collections to skip for the given result set.", nullable: true, defaultValue: 0 })
   from: number = 0;
 
@@ -81,3 +81,29 @@ export class GetNftsAccountInput {
   @Field(() => EsdtDataSource, { name: "source", description: "Source to retrieve for the given result set.", nullable: true })
   source: EsdtDataSource | undefined = undefined;
 }
+
+@InputType({ description: "Input to retrieve the given tokens for." })
+export class GetTokensAccountInput {
+  constructor(partial?: Partial<GetTokensAccountInput>) {
+    Object.assign(this, partial);
+  }
+
+  @Field(() => Float, { name: "from", description: "Number of tokens to skip for the given result set.", nullable: true, defaultValue: 0 })
+  from: number = 0;
+
+  @Field(() => Float, { name: "size", description: "Number of tokens to retrieve for the given result set.", nullable: true, defaultValue: 25 })
+  size: number = 25;
+
+  @Field(() => String, { name: "search", description: "Token identifier to retrieve for the given result set.", nullable: true })
+  search: string | undefined = undefined;
+
+  @Field(() => ID, { name: "identifier", description: "Search by token identifier for the given result set.", nullable: true })
+  identifier: string | undefined = undefined;
+
+  @Field(() => [String], { name: "identifiers", description: "Token comma-separated identifiers list to retrieve for the given result set.", nullable: true })
+  identifiers: Array<string> | undefined = undefined;
+
+  @Field(() => String, { name: "name", description: "Name to retrieve for the given result set.", nullable: true })
+  name: string | undefined = undefined;
+}
+
