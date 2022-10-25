@@ -172,7 +172,7 @@ export class CollectionController {
   ): Promise<NftRank[]> {
     const ranks = await this.collectionService.getNftCollectionRanks(collection);
     if (ranks === undefined) {
-      throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('Ranks for collection not found', HttpStatus.NOT_FOUND);
     }
 
     return ranks;
