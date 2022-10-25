@@ -24,6 +24,14 @@ export class StatusMetricsService {
   private static totalMexTokensHistogram: Histogram<string>;
   private static mexEconomicsHistogram: Histogram<string>;
   private static economicsHistogram: Histogram<string>;
+  private static checkTokensCountHistogram: Histogram<string>;
+  private static checkNodesCountHistogram: Histogram<string>;
+  private static checkProvidersCountHistogram: Histogram<string>;
+  private static checkTokensSupplyHistogram: Histogram<string>;
+  private static checkTokensAssetsHistogram: Histogram<string>;
+  private static checkTokensAccountsHistogram: Histogram<string>;
+  private static checkTokensTransactionsHistogram: Histogram<string>;
+  private static checkNodesValidatorsHistogram: Histogram<string>;
 
   constructor() {
     if (!StatusMetricsService.totalAccountsHistogram) {
@@ -206,6 +214,78 @@ export class StatusMetricsService {
         buckets: [],
       });
     }
+
+    if (!StatusMetricsService.checkTokensCountHistogram) {
+      StatusMetricsService.checkTokensCountHistogram = new Histogram({
+        name: 'check_tokens_count',
+        help: 'check_tokens_count',
+        labelNames: ['tokensCount'],
+        buckets: [],
+      });
+    }
+
+    if (!StatusMetricsService.checkNodesCountHistogram) {
+      StatusMetricsService.checkNodesCountHistogram = new Histogram({
+        name: 'check_nodes_count',
+        help: 'check_nodes_count',
+        labelNames: ['nodesCount'],
+        buckets: [],
+      });
+    }
+
+    if (!StatusMetricsService.checkProvidersCountHistogram) {
+      StatusMetricsService.checkProvidersCountHistogram = new Histogram({
+        name: 'check_providers_count',
+        help: 'check_providers_count',
+        labelNames: ['providersCount'],
+        buckets: [],
+      });
+    }
+
+    if (!StatusMetricsService.checkTokensSupplyHistogram) {
+      StatusMetricsService.checkTokensSupplyHistogram = new Histogram({
+        name: 'check_tokens_supply',
+        help: 'check_tokens_supply',
+        labelNames: ['tokens_supply'],
+        buckets: [],
+      });
+    }
+
+    if (!StatusMetricsService.checkTokensAssetsHistogram) {
+      StatusMetricsService.checkTokensAssetsHistogram = new Histogram({
+        name: 'check_tokens_assets',
+        help: 'check_tokens_assets',
+        labelNames: ['tokens_assets'],
+        buckets: [],
+      });
+    }
+
+    if (!StatusMetricsService.checkTokensAccountsHistogram) {
+      StatusMetricsService.checkTokensAccountsHistogram = new Histogram({
+        name: 'check_tokens_accounts',
+        help: 'check_tokens_accounts',
+        labelNames: ['tokens_accounts'],
+        buckets: [],
+      });
+    }
+
+    if (!StatusMetricsService.checkTokensTransactionsHistogram) {
+      StatusMetricsService.checkTokensTransactionsHistogram = new Histogram({
+        name: 'check_tokens_transactions',
+        help: 'check_tokens_transactions',
+        labelNames: ['tokens_transactions'],
+        buckets: [],
+      });
+    }
+
+    if (!StatusMetricsService.checkNodesValidatorsHistogram) {
+      StatusMetricsService.checkNodesValidatorsHistogram = new Histogram({
+        name: 'check_nodes_validators',
+        help: 'check_nodes_validators',
+        labelNames: ['nodes_validators'],
+        buckets: [],
+      });
+    }
   }
 
   setTotalAccounts(total: number) {
@@ -290,5 +370,33 @@ export class StatusMetricsService {
 
   setEconomicsValue(name: string, value: number) {
     StatusMetricsService.economicsHistogram.labels(name.toString()).observe(value);
+  }
+
+  checkTokensCountValue(counter: number) {
+    StatusMetricsService.checkTokensCountHistogram.labels().observe(counter);
+  }
+
+  checkProvidersCountValue(counter: number) {
+    StatusMetricsService.checkProvidersCountHistogram.labels().observe(counter);
+  }
+
+  checkTokensSupply(counter: number) {
+    StatusMetricsService.checkTokensSupplyHistogram.labels().observe(counter);
+  }
+
+  checkTokensAssets(counter: number) {
+    StatusMetricsService.checkTokensAssetsHistogram.labels().observe(counter);
+  }
+
+  checkTokensAccounts(counter: number) {
+    StatusMetricsService.checkTokensAccountsHistogram.labels().observe(counter);
+  }
+
+  checkTokensTransactions(counter: number) {
+    StatusMetricsService.checkTokensTransactionsHistogram.labels().observe(counter);
+  }
+
+  checkNodesValidators(counter: number) {
+    StatusMetricsService.checkNodesValidatorsHistogram.labels().observe(counter);
   }
 }

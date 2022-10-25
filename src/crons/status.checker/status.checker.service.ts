@@ -18,6 +18,8 @@ import { ShardService } from "src/endpoints/shards/shard.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
 import { MexEconomicsService } from "src/endpoints/mex/mex.economics.service";
 import { NetworkService } from "src/endpoints/network/network.service";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 
 @Injectable()
 export class StatusCheckerService {
@@ -37,7 +39,7 @@ export class StatusCheckerService {
     private readonly mexFarmService: MexFarmService,
     private readonly mexTokenService: MexTokenService,
     private readonly mexEconomicService: MexEconomicsService,
-    private readonly economicService: NetworkService
+    private readonly economicService: NetworkService,
   ) {
     this.lock = new AsyncLock();
   }
@@ -162,7 +164,7 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_SECOND)
   async handleProvidersCount() {
     await Locker.lock('Providers Count', async () => {
       await this.lock.acquire('providers', async () => {
@@ -250,6 +252,128 @@ export class StatusCheckerService {
     }, true);
   }
 
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async handleTokensCounterValues() {
+    await Locker.lock('Tokens Counter Metrics', async () => {
+      await this.lock.acquire('tokens counter', async () => {
+        const tokens = await this.tokenService.getTokenCount({});
+        let tokensCounter = 0;
+
+        if (tokens < 1619) {
+          tokensCounter++;
+        }
+        this.apiStatusMetricsService.checkTokensCountValue(tokensCounter);
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleProvidersValues() {
+    await Locker.lock('Providers Counter Metrics', async () => {
+      await this.lock.acquire('providers counter', async () => {
+        const providers = await this.providerService.getAllProviders();
+        let providersCounter = 0;
+
+        if (providers.length < 133) {
+          providersCounter++;
+        }
+
+        this.apiStatusMetricsService.checkProvidersCountValue(providersCounter);
+      });
+    }, true);
+  }
+
+
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleTokensSupplyValues() {
+    await Locker.lock('Tokens Supply', async () => {
+      await this.lock.acquire('supply', async () => {
+        const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
+        let counter = 0;
+        const supply = tokens.filter((obj) => obj.supply).length;
+
+        if (supply < 59) {
+          counter++;
+        }
+
+        this.apiStatusMetricsService.checkTokensSupply(counter);
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleTokensAssetsValues() {
+    await Locker.lock('Tokens assets', async () => {
+      await this.lock.acquire('assets', async () => {
+        const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
+        let counter = 0;
+
+        const accounts = tokens.filter((obj) => obj.assets).length;
+
+        if (accounts === 144) {
+          counter++;
+        }
+
+        this.apiStatusMetricsService.checkTokensAssets(counter);
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleTokensAccountsValues() {
+    await Locker.lock('Tokens accounts ', async () => {
+      await this.lock.acquire('accounts', async () => {
+        const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
+        let counter = 0;
+
+        const accounts = tokens.filter((obj) => obj.accounts).length;
+
+        if (accounts <= 100) {
+          counter++;
+        }
+
+        this.apiStatusMetricsService.checkTokensAccounts(counter);
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleTokensTransactionsValues() {
+    await Locker.lock('Tokens transactions ', async () => {
+      await this.lock.acquire('transactions', async () => {
+        const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
+        let counter = 0;
+
+        const transactions = tokens.filter((obj) => obj.transactions).length;
+
+        if (transactions <= 100) {
+          counter++;
+        }
+
+        this.apiStatusMetricsService.checkTokensAccounts(counter);
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleNodesValidatorsValues() {
+    await Locker.lock('Nodes identities ', async () => {
+      await this.lock.acquire('identities', async () => {
+        const nodes = await this.nodeService.getAllNodes();
+        const type = 'validator';
+        let counter = 0;
+
+        const count = nodes.reduce((acc, cur) => cur.type === type ? ++acc : acc, 0);
+
+        if (count < count - 1) {
+          counter++;
+        }
+
+        this.apiStatusMetricsService.checkNodesValidators(counter);
+      });
+    }, true);
+  }
 
   async getCurrentRoundAndNonce(shardId: number): Promise<{ round: number, nonce: number }> {
     const result = await this.gatewayService.get(`network/status/${shardId}`, GatewayComponentRequest.networkStatus);
