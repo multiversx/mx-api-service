@@ -236,8 +236,8 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('type', filter.type === TransactionType.Transaction ? 'normal' : 'unsigned'));
     }
 
-    if (filter.sender) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('sender', filter.sender));
+    if (filter.senders) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.senders, sender => QueryType.Match('sender', sender));
     }
 
     if (filter.receivers) {

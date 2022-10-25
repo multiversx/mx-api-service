@@ -49,7 +49,6 @@ describe('Nfts', () => {
               }
               supply
               ticker
-              isTransferAffected
           }
           }`,
         })

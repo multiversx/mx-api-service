@@ -55,7 +55,7 @@ describe('Process Nft Service', () => {
     score: undefined,
     isNsfw: undefined,
     rank: undefined,
-    isTransferAffected: true,
+    rarities: undefined,
   };
 
   beforeAll(async () => {

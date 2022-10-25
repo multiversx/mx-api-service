@@ -19,6 +19,7 @@ import { TransactionQueryOptions } from "../transactions/entities/transactions.q
 import { TransactionService } from "../transactions/transaction.service";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { NftRank } from "src/common/assets/entities/nft.rank";
+import { SortCollectionNfts } from "./entities/sort.collection.nfts";
 
 @Controller()
 @ApiTags('collections')
@@ -171,7 +172,7 @@ export class CollectionController {
   ): Promise<NftRank[]> {
     const ranks = await this.collectionService.getNftCollectionRanks(collection);
     if (ranks === undefined) {
-      throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('Ranks for collection not found', HttpStatus.NOT_FOUND);
     }
 
     return ranks;
@@ -199,6 +200,8 @@ export class CollectionController {
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false, type: Boolean })
   @ApiQuery({ name: 'withScamInfo', required: false, type: Boolean })
   @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
+  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortCollectionNfts })
+  @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   async getNfts(
     @Param('collection', ParseCollectionPipe) collection: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -218,6 +221,8 @@ export class CollectionController {
     @Query('withSupply', new ParseBoolPipe) withSupply?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('computeScamInfo', new ParseBoolPipe) computeScamInfo?: boolean,
+    @Query('sort', new ParseEnumPipe(SortCollectionNfts)) sort?: SortCollectionNfts,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<Nft[]> {
     const isCollection = await this.collectionService.isCollection(collection);
     if (!isCollection) {
@@ -228,7 +233,7 @@ export class CollectionController {
 
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
-      new NftFilter({ search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, nonceBefore, nonceAfter }),
+      new NftFilter({ search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, nonceBefore, nonceAfter, sort, order }),
       options
     );
   }
@@ -309,7 +314,8 @@ export class CollectionController {
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
-  @ApiQuery({ name: 'withScamInfo', required: false, type: Boolean })
+  @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
+  @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   async getCollectionTransactions(
     @Param('collection', ParseCollectionPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -330,8 +336,10 @@ export class CollectionController {
     @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
   ) {
-    const options = TransactionQueryOptions.enforceScamInfoFlag(size, { withScResults, withOperations, withLogs, withScamInfo });
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername });
+
     const isCollection = await this.collectionService.isCollection(identifier);
     if (!isCollection) {
       throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);

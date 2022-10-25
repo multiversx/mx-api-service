@@ -31,6 +31,7 @@ urls:
   delegation: 'https://delegation-api.elrond.com'
   media: 'https://media.elrond.com'
   nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
+  maiarId: 'https://id.maiar.com'
 database:
   enabled: false
   url: 'mongodb://127.0.0.1:27017/api?authSource=admin'

@@ -345,7 +345,7 @@ export class TokenService {
     }
 
     if (!token.roles) {
-      return undefined;
+      return [];
     }
 
     const roles: TokenRoles[] = [];

@@ -476,13 +476,19 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getNfts(pagination: QueryPagination, filter: NftFilter, identifier?: string): Promise<any[]> {
-    const elasticQuery = this.indexerHelper.buildElasticNftFilter(filter, identifier);
-    elasticQuery
-      .withPagination(pagination)
-      .withSort([
+    let elasticQuery = this.indexerHelper.buildElasticNftFilter(filter, identifier)
+      .withPagination(pagination);
+
+    if (filter.sort) {
+      elasticQuery = elasticQuery.withSort([
+        { name: filter.sort, order: filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending },
+      ]);
+    } else {
+      elasticQuery = elasticQuery.withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'nonce', order: ElasticSortOrder.descending },
       ]);
+    }
 
     let elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
     if (elasticNfts.length === 0 && identifier !== undefined) {

@@ -74,4 +74,10 @@ export class GetTransfersInput extends GetTransfersCountInput {
 
   @Field(() => Float, { name: "size", description: "Number of transfers to retrieve for the given result set.", nullable: true, defaultValue: 25 })
   size: number = 25;
+
+  @Field(() => Boolean, { name: "withScamInfo", description: "Request scam info for the given result set.", nullable: true })
+  withScamInfo: boolean | undefined = undefined;
+
+  @Field(() => Boolean, { name: "withUsername", description: "Integrates username in assets for all addresses present in the result set.", nullable: true })
+  withUsername: boolean | undefined = undefined;
 }

@@ -4,6 +4,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { Transaction } from "src/endpoints/transactions/entities/transaction";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
+import { TransactionQueryOptions } from "src/endpoints/transactions/entities/transactions.query.options";
 import { TransferService } from "src/endpoints/transfers/transfer.service";
 import { GetTransfersCountInput, GetTransfersInput } from "./transfers.input";
 
@@ -18,6 +19,9 @@ export class TransferQuery {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
+
+    const options = TransactionQueryOptions.applyDefaultOptions(input.size, { withScamInfo: input.withScamInfo, withUsername: input.withUsername });
+
     return await this.transferService.getTransfers(
       new TransactionFilter({
         sender: input.sender,
@@ -30,7 +34,9 @@ export class TransferQuery {
         search: input.search,
         before: input.before,
         after: input.after,
-      }), new QueryPagination({ from: input.from, size: input.size })
+      }),
+      new QueryPagination({ from: input.from, size: input.size }),
+      options,
     );
   }
 

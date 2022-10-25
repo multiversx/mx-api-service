@@ -68,6 +68,10 @@ export class ApiConfigService {
     return url;
   }
 
+  getMaiarIdUrl(): string | undefined {
+    return this.configService.get<string>('urls.maiarId');
+  }
+
   getEsdtContractAddress(): string {
     const address = this.configService.get<string>('contracts.esdt');
     if (!address) {

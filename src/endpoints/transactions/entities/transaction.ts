@@ -43,7 +43,7 @@ export class Transaction {
   @Field(() => Account, { description: "Receiver account for the given transaction." })
   receiverAccount: Account | undefined = undefined;
 
-  @Field(() => AccountAssets, { name: "receiverAssets", description: "Receiver assets for the given transaction." })
+  @Field(() => AccountAssets, { name: "receiverAssets", description: "Receiver assets for the given transaction.", nullable: true })
   @ApiProperty({ type: AccountAssets, nullable: true })
   receiverAssets: AccountAssets | undefined = undefined;
 
@@ -62,7 +62,7 @@ export class Transaction {
   @Field(() => Account, { description: "Sender account for the given transaction." })
   senderAccount: Account | undefined = undefined;
 
-  @Field(() => AccountAssets, { name: "senderAssets", description: "Sender assets for the given transaction." })
+  @Field(() => AccountAssets, { name: "senderAssets", description: "Sender assets for the given transaction.", nullable: true })
   @ApiProperty({ type: AccountAssets, nullable: true })
   senderAssets: AccountAssets | undefined = undefined;
 

@@ -52,7 +52,7 @@ describe('Nft Service', () => {
     score: undefined,
     isNsfw: undefined,
     rank: undefined,
-    isTransferAffected: true,
+    rarities: undefined,
   };
 
   beforeAll(async () => {
@@ -537,17 +537,6 @@ describe('Nft Service', () => {
       expect(result.creator).toBeDefined();
     });
 
-    it("should returns NFT details for a specific NonFungibleESDT identifier and isTransferAffected property should be defined", async () => {
-      const identifier: string = "CATSFAM-46c28f-0211";
-      const result = await nftService.getSingleNft(identifier);
-
-      if (!result) {
-        throw new Error("Properties are not defined");
-      }
-
-      expect(result.isTransferAffected).toBeDefined();
-    });
-
     it('should return undefined', async () => {
       jest.spyOn(NftService.prototype, 'getNftsInternal')
         // eslint-disable-next-line require-await
@@ -712,17 +701,6 @@ describe('Nft Service', () => {
 
       for (const nft of nfts) {
         expect(nft.scamInfo).toBeDefined();
-      }
-    });
-
-    it("should return a list of NonFungibleESDT based on a specific identifier for a specific address and isTransferAffected should not be defined", async () => {
-      const address: string = "erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k";
-      const filter = new NftFilter({ identifiers: ['CATSFAM-46c28f-0944'] });
-
-      const nfts = await nftService.getNftsForAddress(address, { from: 0, size: 1 }, filter);
-
-      for (const nft of nfts) {
-        expect(nft.isTransferAffected).not.toBeDefined();
       }
     });
 

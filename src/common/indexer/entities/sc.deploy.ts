@@ -4,7 +4,7 @@ export interface ScDeploy {
   deployTxHash: string;
   deployer: string;
   timestamp: number;
-  upgrades: ScDeployUpgrade[]
+  upgrades: ScDeployUpgrade[];
 }
 
 export interface ScDeployUpgrade {
