@@ -1,11 +1,11 @@
 import { OriginLogger } from "@elrondnetwork/erdnest";
 import { PerformanceProfiler, CachingService } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { ApiMetricsService } from "src/common/metrics/api.metrics.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
+import { SettingsService } from "src/common/settings/settings.service";
 
 @Injectable()
 export class VmQueryService {
@@ -16,7 +16,7 @@ export class VmQueryService {
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
     private readonly protocolService: ProtocolService,
-    private readonly apiConfigService: ApiConfigService,
+    private readonly settingsService: SettingsService,
     private readonly metricsService: ApiMetricsService,
   ) { }
 
@@ -109,7 +109,8 @@ export class VmQueryService {
     } finally {
       profiler.stop();
 
-      if (this.apiConfigService.getUseVmQueryTracingFlag()) {
+      const useVmQueryTracingFlag = await this.settingsService.getUseVmQueryTracingFlag();
+      if (useVmQueryTracingFlag) {
         this.metricsService.setVmQuery(contract, func, profiler.duration);
       }
     }

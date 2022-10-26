@@ -24,6 +24,7 @@ import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import AsyncLock from "async-lock";
 import { CachingService, Constants, Locker, OriginLogger } from "@elrondnetwork/erdnest";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
+import { SettingsService } from "src/common/settings/settings.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -40,6 +41,7 @@ export class CacheWarmerService {
     private readonly cachingService: CachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly apiConfigService: ApiConfigService,
+    private readonly settingsService: SettingsService,
     private readonly networkService: NetworkService,
     private readonly accountService: AccountService,
     private readonly gatewayService: GatewayService,
@@ -75,11 +77,22 @@ export class CacheWarmerService {
       async () => await this.handleIdentityInvalidations()
     );
 
-    if (this.apiConfigService.isStakingV4Enabled()) {
-      const handleNodeAuctionInvalidationsCronJob = new CronJob(this.apiConfigService.getStakingV4CronExpression(), async () => await this.handleNodeAuctionInvalidations());
-      this.schedulerRegistry.addCronJob(this.handleNodeAuctionInvalidations.name, handleNodeAuctionInvalidationsCronJob);
-      handleNodeAuctionInvalidationsCronJob.start();
+    this.addNodeAuctionInvalidationsCronJob()
+      .catch((error) => {
+        this.logger.error(`Could not add Node Auction Invalidations cron job`);
+        this.logger.error(error);
+      });
+  }
+
+  private async addNodeAuctionInvalidationsCronJob(): Promise<void> {
+    const isStakingV4Enabled = await this.settingsService.isStakingV4Enabled();
+    if (!isStakingV4Enabled) {
+      return;
     }
+
+    const handleNodeAuctionInvalidationsCronJob = new CronJob(this.apiConfigService.getStakingV4CronExpression(), async () => await this.handleNodeAuctionInvalidations());
+    this.schedulerRegistry.addCronJob(this.handleNodeAuctionInvalidations.name, handleNodeAuctionInvalidationsCronJob);
+    handleNodeAuctionInvalidationsCronJob.start();
   }
 
   private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {

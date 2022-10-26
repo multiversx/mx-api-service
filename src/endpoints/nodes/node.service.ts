@@ -20,6 +20,7 @@ import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.com
 import { Auction } from "src/common/gateway/entities/auction";
 import { AddressUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
 import { NodeSort } from "./entities/node.sort";
+import { SettingsService } from "src/common/settings/settings.service";
 
 @Injectable()
 export class NodeService {
@@ -27,6 +28,7 @@ export class NodeService {
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
+    private readonly settingsService: SettingsService,
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => KeybaseService))
     private readonly keybaseService: KeybaseService,
@@ -322,7 +324,8 @@ export class NodeService {
 
     await this.getNodesStakeDetails(nodes);
 
-    if (this.apiConfigService.isStakingV4Enabled()) {
+    const isStakingV4Enabled = await this.settingsService.isStakingV4Enabled();
+    if (isStakingV4Enabled) {
       const auctions = await this.gatewayService.getAuctions();
       this.processAuctions(nodes, auctions);
     }

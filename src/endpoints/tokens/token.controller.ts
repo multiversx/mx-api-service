@@ -12,7 +12,6 @@ import { Transaction } from "../transactions/entities/transaction";
 import { TokenSupplyResult } from "./entities/token.supply.result";
 import { TokenSort } from "./entities/token.sort";
 import { SortTokens } from "src/common/entities/sort.tokens";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { TransferService } from "../transfers/transfer.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenFilter } from "./entities/token.filter";
@@ -21,6 +20,7 @@ import { TransactionQueryOptions } from "../transactions/entities/transactions.q
 import { ParseAddressPipe, ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseTokenPipe, ParseAddressArrayPipe, ApplyComplexity } from "@elrondnetwork/erdnest";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
 import { Response } from "express";
+import { SettingsService } from "src/common/settings/settings.service";
 
 @Controller()
 @ApiTags('tokens')
@@ -28,7 +28,7 @@ export class TokenController {
   constructor(
     private readonly tokenService: TokenService,
     private readonly transactionService: TransactionService,
-    private readonly apiConfigService: ApiConfigService,
+    private readonly settingsService: SettingsService,
     private readonly transferService: TransferService,
   ) { }
 
@@ -361,7 +361,8 @@ export class TokenController {
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
   ): Promise<Transaction[]> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
+    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
+    if (!isIndexerV3FlagActive) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
@@ -419,7 +420,8 @@ export class TokenController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
+    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
+    if (!isIndexerV3FlagActive) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
@@ -460,7 +462,8 @@ export class TokenController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
+    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
+    if (!isIndexerV3FlagActive) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 

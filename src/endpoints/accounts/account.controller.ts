@@ -27,7 +27,6 @@ import { AccountHistory } from "./entities/account.history";
 import { AccountEsdtHistory } from "./entities/account.esdt.history";
 import { EsdtDataSource } from '../esdt/entities/esdt.data.source';
 import { TransferService } from '../transfers/transfer.service';
-import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { Transaction } from '../transactions/entities/transaction';
 import { ProviderStake } from '../stake/entities/provider.stake';
 import { TokenDetailedWithBalance } from '../tokens/entities/token.detailed.with.balance';
@@ -47,6 +46,7 @@ import { TransactionDetailed } from '../transactions/entities/transaction.detail
 import { OriginLogger } from '@elrondnetwork/erdnest';
 import { AccountDelegation } from '../stake/entities/account.delegation';
 import { DelegationService } from '../delegation/delegation.service';
+import { SettingsService } from 'src/common/settings/settings.service';
 
 @Controller()
 @ApiTags('accounts')
@@ -64,7 +64,7 @@ export class AccountController {
     private readonly scResultService: SmartContractResultService,
     private readonly collectionService: CollectionService,
     private readonly transferService: TransferService,
-    private readonly apiConfigService: ApiConfigService,
+    private readonly settingsService: SettingsService,
     private readonly delegationService: DelegationService,
   ) { }
 
@@ -690,7 +690,8 @@ export class AccountController {
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
   ): Promise<Transaction[]> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
+    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
+    if (!isIndexerV3FlagActive) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
@@ -747,7 +748,8 @@ export class AccountController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
+    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
+    if (!isIndexerV3FlagActive) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
@@ -785,7 +787,8 @@ export class AccountController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
+    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
+    if (!isIndexerV3FlagActive) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 

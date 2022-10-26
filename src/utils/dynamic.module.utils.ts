@@ -4,6 +4,8 @@ import { ClientOptions, ClientProxyFactory, Transport } from "@nestjs/microservi
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { ErdnestConfigServiceImpl } from "src/common/api-config/erdnest.config.service.impl";
+import { SettingsModule } from "src/common/settings/settings.module";
+import { SettingsService } from "src/common/settings/settings.service";
 
 export class DynamicModuleUtils {
   static getElasticModule(): DynamicModule {
@@ -31,14 +33,14 @@ export class DynamicModuleUtils {
 
   static getApiModule(): DynamicModule {
     return ApiModule.forRootAsync({
-      imports: [ApiConfigModule],
-      useFactory: (apiConfigService: ApiConfigService) => new ApiModuleOptions({
+      imports: [ApiConfigModule, SettingsModule],
+      useFactory: async (apiConfigService: ApiConfigService, settingsService: SettingsService) => new ApiModuleOptions({
         axiosTimeout: apiConfigService.getAxiosTimeout(),
         rateLimiterSecret: apiConfigService.getRateLimiterSecret(),
         serverTimeout: apiConfigService.getServerTimeout(),
-        useKeepAliveAgent: apiConfigService.getUseKeepAliveAgentFlag(),
+        useKeepAliveAgent: await settingsService.getUseKeepAliveAgentFlag(),
       }),
-      inject: [ApiConfigService],
+      inject: [ApiConfigService, SettingsService],
     });
   }
 

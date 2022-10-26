@@ -19,11 +19,13 @@ import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.com
 import { NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest';
 import { About } from './entities/about';
 import { EsdtService } from '../esdt/esdt.service';
+import { SettingsService } from 'src/common/settings/settings.service';
 
 @Injectable()
 export class NetworkService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
+    private readonly settingsService: SettingsService,
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
@@ -188,7 +190,8 @@ export class NetworkService {
       tokenMarketCap: tokenMarketCap ? Math.round(tokenMarketCap) : undefined,
     });
 
-    if (this.apiConfigService.isStakingV4Enabled()) {
+    const isStakingV4Enabled = await this.settingsService.isStakingV4Enabled();
+    if (isStakingV4Enabled) {
       economics.minimumAuctionTopUp = await this.getMinimumAuctionTopUp();
     }
 

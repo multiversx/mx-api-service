@@ -28,12 +28,18 @@ import { TransactionLoggingInterceptor } from './interceptors/transaction.loggin
 import { GraphqlComplexityInterceptor } from './graphql/interceptors/graphql.complexity.interceptor';
 import { GraphQLMetricsInterceptor } from './graphql/interceptors/graphql.metrics.interceptor';
 import { ApiMetricsService } from './common/metrics/api.metrics.service';
+import { SettingsService } from './common/settings/settings.service';
+import { SettingsModule } from './common/settings/settings.module';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
   const apiConfigService = apiConfigApp.get<ApiConfigService>(ApiConfigService);
 
-  if (apiConfigService.getUseTracingFlag() === true) {
+  const settingsApp = await NestFactory.create(SettingsModule);
+  const settingsService = settingsApp.get<SettingsService>(SettingsService);
+
+  const getUseTracingFlag = await settingsService.getUseTracingFlag();
+  if (getUseTracingFlag === true) {
     require('dd-trace').init();
   }
 
@@ -128,13 +134,13 @@ async function bootstrap() {
   logger.log(`Elastic updater active: ${apiConfigService.getIsElasticUpdaterCronActive()}`);
   logger.log(`Events notifier active: ${apiConfigService.isEventsNotifierFeatureActive()}`);
 
-  logger.log(`Use request caching: ${apiConfigService.getUseRequestCachingFlag()}`);
-  logger.log(`Use request logging: ${apiConfigService.getUseRequestLoggingFlag()}`);
-  logger.log(`Use tracing: ${apiConfigService.getUseTracingFlag()}`);
-  logger.log(`Use vm query tracing: ${apiConfigService.getUseVmQueryTracingFlag()}`);
-  logger.log(`Process NFTs flag: ${apiConfigService.getIsProcessNftsFlagActive()}`);
-  logger.log(`Indexer v3 flag: ${apiConfigService.getIsIndexerV3FlagActive()}`);
-  logger.log(`Staking v4 enabled: ${apiConfigService.isStakingV4Enabled()}`);
+  logger.log(`Use request caching: ${await settingsService.getUseRequestCachingFlag()}`);
+  logger.log(`Use request logging: ${await settingsService.getUseRequestLoggingFlag()}`);
+  logger.log(`Use tracing: ${await settingsService.getUseTracingFlag()}`);
+  logger.log(`Use vm query tracing: ${await settingsService.getUseVmQueryTracingFlag()}`);
+  logger.log(`Process NFTs flag: ${await settingsService.getIsProcessNftsFlagActive()}`);
+  logger.log(`Indexer v3 flag: ${await settingsService.getIsIndexerV3FlagActive()}`);
+  logger.log(`Staking v4 enabled: ${await settingsService.isStakingV4Enabled()}`);
   logger.log(`Events notifier enabled: ${apiConfigService.isEventsNotifierFeatureActive()}`);
 }
 
@@ -151,6 +157,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const apiMetricsService = publicApp.get<ApiMetricsService>(ApiMetricsService);
   const pluginService = publicApp.get<PluginService>(PluginService);
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
+  const settingsService = publicApp.get<SettingsService>(SettingsService);
 
   if (apiConfigService.getIsAuthActive()) {
     publicApp.useGlobalGuards(new JwtAuthenticateGlobalGuard(new ErdnestConfigServiceImpl(apiConfigService)));
@@ -168,7 +175,8 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   globalInterceptors.push(new RequestCpuTimeInterceptor(metricsService));
   globalInterceptors.push(new LoggingInterceptor(metricsService));
 
-  if (apiConfigService.getUseRequestCachingFlag()) {
+  const getUseRequestCachingFlag = await settingsService.getUseRequestCachingFlag();
+  if (getUseRequestCachingFlag) {
     const cachingService = publicApp.get<CachingService>(CachingService);
 
     const cachingInterceptor = new CachingInterceptor(
@@ -181,7 +189,8 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
     globalInterceptors.push(cachingInterceptor);
   }
 
-  if (apiConfigService.getUseRequestLoggingFlag()) {
+  const getUseRequestLoggingFlag = await settingsService.getUseRequestLoggingFlag();
+  if (getUseRequestLoggingFlag) {
     // @ts-ignore
     globalInterceptors.push(new LogRequestsInterceptor(httpAdapterHostService));
   }
