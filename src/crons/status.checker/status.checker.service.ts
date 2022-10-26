@@ -1,4 +1,4 @@
-import { Locker } from "@elrondnetwork/erdnest";
+import { Locker, PerformanceProfiler } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import AsyncLock from "async-lock";
@@ -252,17 +252,19 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async handleTokensCounterValues() {
     await Locker.lock('Tokens Counter Metrics', async () => {
       await this.lock.acquire('tokens counter', async () => {
         const tokens = await this.tokenService.getTokenCount({});
-        let tokensCounter = 0;
+        const performanceProfiler = new PerformanceProfiler();
 
         if (tokens < 1619) {
-          tokensCounter++;
+          performanceProfiler.stop();
+          this.apiStatusMetricsService.checkTokensCountValue('success', performanceProfiler.stopped);
+        } else {
+          this.apiStatusMetricsService.checkTokensCountValue('error', performanceProfiler.stopped);
         }
-        this.apiStatusMetricsService.checkTokensCountValue(tokensCounter);
       });
     }, true);
   }
@@ -272,105 +274,114 @@ export class StatusCheckerService {
     await Locker.lock('Providers Counter Metrics', async () => {
       await this.lock.acquire('providers counter', async () => {
         const providers = await this.providerService.getAllProviders();
-        let providersCounter = 0;
+        const performanceProfiler = new PerformanceProfiler();
 
         if (providers.length < 133) {
-          providersCounter++;
+          this.apiStatusMetricsService.setProvidersCountValue('success', performanceProfiler.stopped);
+        } else {
+          this.apiStatusMetricsService.setProvidersCountValue('error', performanceProfiler.stopped);
         }
-
-        this.apiStatusMetricsService.checkProvidersCountValue(providersCounter);
       });
     }, true);
   }
 
-
-
-  @Cron(CronExpression.EVERY_10_MINUTES)
-  async handleTokensSupplyValues() {
-    await Locker.lock('Tokens Supply', async () => {
-      await this.lock.acquire('supply', async () => {
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async handleTokensSupplyInvalidations() {
+    await Locker.lock('Tokens supply invalidations', async () => {
+      await this.lock.acquire('tokens supply', async () => {
+        const performanceProfiler = new PerformanceProfiler();
         const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
-        let counter = 0;
         const supply = tokens.filter((obj) => obj.supply).length;
 
-        if (supply < 59) {
-          counter++;
+        if (supply > 50) {
+          performanceProfiler.stop();
+          this.apiStatusMetricsService.setTokensSupplyInvalidation('success', performanceProfiler.stopped);
+        }
+        else {
+          performanceProfiler.stop();
+          this.apiStatusMetricsService.setTokensSupplyInvalidation('error', performanceProfiler.stopped);
         }
 
-        this.apiStatusMetricsService.checkTokensSupply(counter);
       });
     }, true);
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
-  async handleTokensAssetsValues() {
+  async handleTokensAssetsInvalidations() {
     await Locker.lock('Tokens assets', async () => {
       await this.lock.acquire('assets', async () => {
+        const performanceProfiler = new PerformanceProfiler();
         const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
-        let counter = 0;
+        const assets = tokens.filter((obj) => obj.assets).length;
 
-        const accounts = tokens.filter((obj) => obj.assets).length;
-
-        if (accounts === 144) {
-          counter++;
+        if (assets > 100) {
+          performanceProfiler.stop();
+          this.apiStatusMetricsService.setTokensAssetsInvalidation('success', performanceProfiler.stopped);
         }
-
-        this.apiStatusMetricsService.checkTokensAssets(counter);
+        else {
+          performanceProfiler.stop();
+          this.apiStatusMetricsService.setTokensAssetsInvalidation('error', performanceProfiler.stopped);
+        }
       });
     }, true);
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
-  async handleTokensAccountsValues() {
+  async handleTokensAccountsInvalidations() {
     await Locker.lock('Tokens accounts ', async () => {
       await this.lock.acquire('accounts', async () => {
+        const performanceProfiler = new PerformanceProfiler();
         const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
-        let counter = 0;
-
         const accounts = tokens.filter((obj) => obj.accounts).length;
 
-        if (accounts <= 100) {
-          counter++;
+        if (accounts > 990) {
+          performanceProfiler.stop();
+          this.apiStatusMetricsService.setTokensAccountInvalidation('success', performanceProfiler.stopped);
         }
-
-        this.apiStatusMetricsService.checkTokensAccounts(counter);
+        else {
+          performanceProfiler.stop();
+          this.apiStatusMetricsService.setTokensAccountInvalidation('error', performanceProfiler.stopped);
+        }
       });
     }, true);
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
-  async handleTokensTransactionsValues() {
+  async handleTokensTransactionsInvalidations() {
     await Locker.lock('Tokens transactions ', async () => {
       await this.lock.acquire('transactions', async () => {
+        const performanceProfiler = new PerformanceProfiler();
         const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
-        let counter = 0;
-
         const transactions = tokens.filter((obj) => obj.transactions).length;
 
-        if (transactions <= 100) {
-          counter++;
+        if (transactions >= 900) {
+          performanceProfiler.stop();
+          this.apiStatusMetricsService.setTokensTransactionsInvalidation('success', performanceProfiler.stopped);
         }
-
-        this.apiStatusMetricsService.checkTokensAccounts(counter);
+        else {
+          performanceProfiler.stop();
+          this.apiStatusMetricsService.setTokensTransactionsInvalidation('error', performanceProfiler.stopped);
+        }
       });
     }, true);
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
-  async handleNodesValidatorsValues() {
-    await Locker.lock('Nodes identities ', async () => {
-      await this.lock.acquire('identities', async () => {
+  async handleNodesValidatorsInvalidations() {
+    await Locker.lock('Nodes validators ', async () => {
+      await this.lock.acquire('validators', async () => {
+        const performanceProfiler = new PerformanceProfiler();
         const nodes = await this.nodeService.getAllNodes();
         const type = 'validator';
-        let counter = 0;
+        const validators = nodes.reduce((acc, cur) => cur.type === type ? ++acc : acc, 0);
 
-        const count = nodes.reduce((acc, cur) => cur.type === type ? ++acc : acc, 0);
-
-        if (count < count - 1) {
-          counter++;
+        if (validators >= 3280) {
+          performanceProfiler.stop();
+          this.apiStatusMetricsService.setNodesValidatorsInvalidation('success', performanceProfiler.stopped);
+        } else {
+          performanceProfiler.stop();
+          this.apiStatusMetricsService.setNodesValidatorsInvalidation('error', performanceProfiler.stopped);
         }
-
-        this.apiStatusMetricsService.checkNodesValidators(counter);
       });
     }, true);
   }

@@ -22,16 +22,16 @@ export class StatusMetricsService {
   private static totalMexPairsHistogram: Histogram<string>;
   private static totalMexFarmsHistogram: Histogram<string>;
   private static totalMexTokensHistogram: Histogram<string>;
-  private static mexEconomicsHistogram: Histogram<string>;
-  private static economicsHistogram: Histogram<string>;
+  private static checkMexEconomicsHistogram: Histogram<string>;
+  private static checkEconomicsHistogram: Histogram<string>;
   private static checkTokensCountHistogram: Histogram<string>;
   private static checkNodesCountHistogram: Histogram<string>;
   private static checkProvidersCountHistogram: Histogram<string>;
-  private static checkTokensSupplyHistogram: Histogram<string>;
-  private static checkTokensAssetsHistogram: Histogram<string>;
-  private static checkTokensAccountsHistogram: Histogram<string>;
-  private static checkTokensTransactionsHistogram: Histogram<string>;
-  private static checkNodesValidatorsHistogram: Histogram<string>;
+  private static checkTokensSupplyInvalidationHistogram: Histogram<string>;
+  private static checkTokensAssetsInvalidationHistogram: Histogram<string>;
+  private static checkTokensAccountsInvalidationHistogram: Histogram<string>;
+  private static checkTokensTransactionsInvalidationHistogram: Histogram<string>;
+  private static checkNodesValidatorsInvalidationHistogram: Histogram<string>;
 
   constructor() {
     if (!StatusMetricsService.totalAccountsHistogram) {
@@ -197,8 +197,8 @@ export class StatusMetricsService {
       });
     }
 
-    if (!StatusMetricsService.mexEconomicsHistogram) {
-      StatusMetricsService.mexEconomicsHistogram = new Histogram({
+    if (!StatusMetricsService.checkMexEconomicsHistogram) {
+      StatusMetricsService.checkMexEconomicsHistogram = new Histogram({
         name: 'mexEconomics_value',
         help: 'mexEconomics_value',
         labelNames: ["mexEconomics"],
@@ -206,8 +206,8 @@ export class StatusMetricsService {
       });
     }
 
-    if (!StatusMetricsService.economicsHistogram) {
-      StatusMetricsService.economicsHistogram = new Histogram({
+    if (!StatusMetricsService.checkEconomicsHistogram) {
+      StatusMetricsService.checkEconomicsHistogram = new Histogram({
         name: 'economics_value',
         help: 'economics_value',
         labelNames: ["economics"],
@@ -242,46 +242,46 @@ export class StatusMetricsService {
       });
     }
 
-    if (!StatusMetricsService.checkTokensSupplyHistogram) {
-      StatusMetricsService.checkTokensSupplyHistogram = new Histogram({
-        name: 'check_tokens_supply',
-        help: 'check_tokens_supply',
-        labelNames: ['tokens_supply'],
+    if (!StatusMetricsService.checkTokensSupplyInvalidationHistogram) {
+      StatusMetricsService.checkTokensSupplyInvalidationHistogram = new Histogram({
+        name: 'token_supply_invalidations',
+        help: 'token_supply_invalidations',
+        labelNames: ['token_supply'],
         buckets: [],
       });
     }
 
-    if (!StatusMetricsService.checkTokensAssetsHistogram) {
-      StatusMetricsService.checkTokensAssetsHistogram = new Histogram({
-        name: 'check_tokens_assets',
-        help: 'check_tokens_assets',
-        labelNames: ['tokens_assets'],
+    if (!StatusMetricsService.checkTokensAssetsInvalidationHistogram) {
+      StatusMetricsService.checkTokensAssetsInvalidationHistogram = new Histogram({
+        name: 'token_assets_invalidations',
+        help: 'token_assets_invalidations',
+        labelNames: ['token_assets'],
         buckets: [],
       });
     }
 
-    if (!StatusMetricsService.checkTokensAccountsHistogram) {
-      StatusMetricsService.checkTokensAccountsHistogram = new Histogram({
-        name: 'check_tokens_accounts',
-        help: 'check_tokens_accounts',
-        labelNames: ['tokens_accounts'],
+    if (!StatusMetricsService.checkTokensAccountsInvalidationHistogram) {
+      StatusMetricsService.checkTokensAccountsInvalidationHistogram = new Histogram({
+        name: 'token_accounts_invalidations',
+        help: 'token_accounts_invalidations',
+        labelNames: ['token_accounts'],
         buckets: [],
       });
     }
 
-    if (!StatusMetricsService.checkTokensTransactionsHistogram) {
-      StatusMetricsService.checkTokensTransactionsHistogram = new Histogram({
-        name: 'check_tokens_transactions',
-        help: 'check_tokens_transactions',
-        labelNames: ['tokens_transactions'],
+    if (!StatusMetricsService.checkTokensTransactionsInvalidationHistogram) {
+      StatusMetricsService.checkTokensTransactionsInvalidationHistogram = new Histogram({
+        name: 'token_transactions_invalidations',
+        help: 'token_transactions_invalidations',
+        labelNames: ['token_transactions'],
         buckets: [],
       });
     }
 
-    if (!StatusMetricsService.checkNodesValidatorsHistogram) {
-      StatusMetricsService.checkNodesValidatorsHistogram = new Histogram({
-        name: 'check_nodes_validators',
-        help: 'check_nodes_validators',
+    if (!StatusMetricsService.checkNodesValidatorsInvalidationHistogram) {
+      StatusMetricsService.checkNodesValidatorsInvalidationHistogram = new Histogram({
+        name: 'nodes_validators_invalidation',
+        help: 'nodes_validators_invalidation',
         labelNames: ['nodes_validators'],
         buckets: [],
       });
@@ -365,38 +365,38 @@ export class StatusMetricsService {
   }
 
   setMexEconomicsValue(name: string, value: number) {
-    StatusMetricsService.mexEconomicsHistogram.labels(name.toString()).observe(value);
+    StatusMetricsService.checkMexEconomicsHistogram.labels(name.toString()).observe(value);
   }
 
   setEconomicsValue(name: string, value: number) {
-    StatusMetricsService.economicsHistogram.labels(name.toString()).observe(value);
+    StatusMetricsService.checkEconomicsHistogram.labels(name.toString()).observe(value);
   }
 
-  checkTokensCountValue(counter: number) {
-    StatusMetricsService.checkTokensCountHistogram.labels().observe(counter);
+  checkTokensCountValue(result: 'success' | 'error', duration: number) {
+    StatusMetricsService.checkTokensCountHistogram.labels(result).observe(duration);
   }
 
-  checkProvidersCountValue(counter: number) {
-    StatusMetricsService.checkProvidersCountHistogram.labels().observe(counter);
+  setProvidersCountValue(result: 'success' | 'error', duration: number) {
+    StatusMetricsService.checkProvidersCountHistogram.labels(result).observe(duration);
   }
 
-  checkTokensSupply(counter: number) {
-    StatusMetricsService.checkTokensSupplyHistogram.labels().observe(counter);
+  setTokensSupplyInvalidation(result: 'success' | 'error', duration: number) {
+    StatusMetricsService.checkTokensSupplyInvalidationHistogram.labels(result).observe(duration);
   }
 
-  checkTokensAssets(counter: number) {
-    StatusMetricsService.checkTokensAssetsHistogram.labels().observe(counter);
+  setTokensAssetsInvalidation(result: 'success' | 'error', duration: number) {
+    StatusMetricsService.checkTokensAssetsInvalidationHistogram.labels(result).observe(duration);
   }
 
-  checkTokensAccounts(counter: number) {
-    StatusMetricsService.checkTokensAccountsHistogram.labels().observe(counter);
+  setTokensAccountInvalidation(result: 'success' | 'error', duration: number) {
+    StatusMetricsService.checkTokensAccountsInvalidationHistogram.labels(result).observe(duration);
   }
 
-  checkTokensTransactions(counter: number) {
-    StatusMetricsService.checkTokensTransactionsHistogram.labels().observe(counter);
+  setTokensTransactionsInvalidation(result: 'success' | 'error', duration: number) {
+    StatusMetricsService.checkTokensTransactionsInvalidationHistogram.labels(result).observe(duration);
   }
 
-  checkNodesValidators(counter: number) {
-    StatusMetricsService.checkNodesValidatorsHistogram.labels().observe(counter);
+  setNodesValidatorsInvalidation(result: 'success' | 'error', duration: number) {
+    StatusMetricsService.checkNodesValidatorsInvalidationHistogram.labels(result).observe(duration);
   }
 }
