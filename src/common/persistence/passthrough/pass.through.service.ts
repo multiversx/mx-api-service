@@ -34,4 +34,12 @@ export class PassThroughService implements PersistenceInterface {
   async setMedia(_: string, __: NftMedia[]): Promise<void> {
 
   }
+
+  async getKeybaseConfirmationForIdentity(_identity: string): Promise<string[] | undefined> {
+    return undefined;
+  }
+
+  async setKeybaseConfirmationForIdentity(_identity: string, _keys: string[]): Promise<void> {
+
+  }
 }

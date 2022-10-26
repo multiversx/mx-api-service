@@ -14,4 +14,8 @@ export interface PersistenceInterface {
   batchGetMetadata(identifiers: string[]): Promise<{ [key: string]: any }>
 
   setMetadata(identifier: string, value: any): Promise<void>
+
+  getKeybaseConfirmationForIdentity(identity: string): Promise<string[] | undefined>
+
+  setKeybaseConfirmationForIdentity(identity: string, keys: string[]): Promise<void>
 }

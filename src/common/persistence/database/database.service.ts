@@ -6,6 +6,7 @@ import { NftMetadataDb } from "src/common/persistence/database/entities/nft.meta
 import { Repository } from "typeorm";
 import { PersistenceInterface } from "../persistence.interface";
 import { OriginLogger } from "@elrondnetwork/erdnest";
+import { KeybaseConfirmationDb } from "./entities/keybase.confirmation.db";
 
 @Injectable()
 export class DatabaseService implements PersistenceInterface {
@@ -16,6 +17,8 @@ export class DatabaseService implements PersistenceInterface {
     private readonly nftMetadataRepository: Repository<NftMetadataDb>,
     @InjectRepository(NftMediaDb)
     private readonly nftMediaRepository: Repository<NftMediaDb>,
+    @InjectRepository(KeybaseConfirmationDb)
+    private readonly keybaseConfirmationRepository: Repository<KeybaseConfirmationDb>
   ) { }
 
   async getMetadata(identifier: string): Promise<any | null> {
@@ -97,5 +100,34 @@ export class DatabaseService implements PersistenceInterface {
     value.content = media;
 
     await this.nftMediaRepository.save(value);
+  }
+
+  async getKeybaseConfirmationForIdentity(identity: string): Promise<string[] | undefined> {
+    try {
+      const keybaseConfirmation: KeybaseConfirmationDb | null = await this.keybaseConfirmationRepository.findOne({ where: { id: identity } });
+      if (!keybaseConfirmation) {
+        return undefined;
+      }
+
+      const keys = JSON.parse(keybaseConfirmation.keys);
+      return keys;
+    } catch (error) {
+      this.logger.error(`An unexpected error occurred when fetching keybase confirmation from DB for identity '${identity}'`);
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
+  async setKeybaseConfirmationForIdentity(identity: string, keys: string[]): Promise<void> {
+    try {
+      const keybaseConfirmation = new KeybaseConfirmationDb();
+      keybaseConfirmation.id = identity;
+      keybaseConfirmation.keys = JSON.stringify(keys);
+
+      await this.keybaseConfirmationRepository.save(keybaseConfirmation);
+    } catch (error) {
+      this.logger.error(`An unexpected error occurred when setting keybase confirmation from DB for identity '${identity}'`);
+      this.logger.error(error);
+    }
   }
 }
