@@ -142,6 +142,17 @@ describe('API Config', () => {
     });
   });
 
+  describe("getMaiarIdUrl", () => {
+    it("should return maiarId url", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'https://testnet-id.maiar.com'));
+
+      const results = apiConfigService.getSocketUrl();
+      expect(results).toEqual('https://testnet-id.maiar.com');
+    });
+  });
+
   describe("getEsdtContractAddress", () => {
     it("should return esdt contract address", () => {
       jest

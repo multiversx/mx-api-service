@@ -55,6 +55,7 @@ urls:
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'testnet-socket-fra.elrond.com'
+  maiarId: 'https://testnet-id.maiar.com'
 database:
   enabled: false
   url: 'mongodb://127.0.0.1:27017/api?authSource=admin'

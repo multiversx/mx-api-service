@@ -33,9 +33,9 @@ export class AccountDetailed extends Account {
   @ApiProperty({ description: 'The number of smart contract results of this account' })
   scrCount: number = 0;
 
-  @Field(() => String, { description: 'Username for the given detailed account.' })
-  @ApiProperty({ description: 'The username specific for this account' })
-  username: string = '';
+  @Field(() => String, { description: 'Username for the given detailed account.', nullable: true })
+  @ApiProperty({ description: 'The username specific for this account', nullable: true })
+  username: string | undefined = undefined;
 
   @Field(() => String, { description: 'Developer reward for the given detailed account.' })
   @ApiProperty({ description: 'The developer reward' })

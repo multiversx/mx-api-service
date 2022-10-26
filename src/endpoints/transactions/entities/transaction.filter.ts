@@ -10,6 +10,7 @@ export class TransactionFilter {
 
   address?: string;
   sender?: string;
+  senders?: string[] = [];
   receivers?: string[] = [];
   token?: string;
   function?: string;
