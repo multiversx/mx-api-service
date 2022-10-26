@@ -203,7 +203,9 @@ export class NftService {
       return undefined;
     }
 
-    await this.applySupply(nft);
+    if (nft.type.in(NftType.SemiFungibleESDT, NftType.MetaESDT)) {
+      await this.applySupply(nft);
+    }
 
     await this.applyNftOwner(nft);
 
