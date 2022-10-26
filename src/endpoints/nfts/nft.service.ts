@@ -24,8 +24,11 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
 import { CollectionAccount } from "../collections/entities/collection.account";
 import { OriginLogger } from "@elrondnetwork/erdnest";
-import { GatewayService } from "src/common/gateway/gateway.service";
-import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
+import { NftRarity } from "./entities/nft.rarity";
+import { NftRarities } from "./entities/nft.rarities";
+import { SortCollectionNfts } from "../collections/entities/sort.collection.nfts";
+import { TokenAssets } from "src/common/assets/entities/token.assets";
 
 @Injectable()
 export class NftService {
@@ -48,14 +51,13 @@ export class NftService {
     private readonly esdtAddressService: EsdtAddressService,
     private readonly mexTokenService: MexTokenService,
     private readonly lockedAssetService: LockedAssetService,
-    private readonly gatewayService: GatewayService,
   ) {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
     this.DEFAULT_MEDIA = [
       {
-        url: 'https://media.elrond.com/nfts/thumbnail/default.png',
-        originalUrl: 'https://media.elrond.com/nfts/thumbnail/default.png',
-        thumbnailUrl: 'https://media.elrond.com/nfts/thumbnail/default.png',
+        url: NftMediaService.NFT_THUMBNAIL_DEFAULT,
+        originalUrl: NftMediaService.NFT_THUMBNAIL_DEFAULT,
+        thumbnailUrl: NftMediaService.NFT_THUMBNAIL_DEFAULT,
         fileType: 'image/png',
         fileSize: 29512,
       },
@@ -201,7 +203,9 @@ export class NftService {
       return undefined;
     }
 
-    await this.applySupply(nft);
+    if (nft.type.in(NftType.SemiFungibleESDT, NftType.MetaESDT)) {
+      await this.applySupply(nft);
+    }
 
     await this.applyNftOwner(nft);
 
@@ -211,22 +215,9 @@ export class NftService {
 
     await this.applyUnlockSchedule(nft);
 
-    await this.applyTransferAffected(nft);
-
     await this.processNft(nft);
 
     return nft;
-  }
-
-  private async applyTransferAffected(nft: Nft): Promise<void> {
-    try {
-      const result = await this.gatewayService.get(`node/old-storage-token/${nft.collection}/nonce/${nft.nonce}`, GatewayComponentRequest.oldStorageToken);
-      if (result?.isOldStorage) {
-        nft.isTransferAffected = true;
-      }
-    } catch (error) {
-      // probably old version of the gateway
-    }
   }
 
   private async applyUnlockSchedule(nft: Nft): Promise<void> {
@@ -300,6 +291,12 @@ export class NftService {
   }
 
   async getNftsInternal(pagination: QueryPagination, filter: NftFilter, identifier?: string): Promise<Nft[]> {
+    if (filter.sort && filter.sort === SortCollectionNfts.rank && filter.collection) {
+      const assets = await this.assetsService.getTokenAssets(filter.collection);
+
+      filter.sort = this.getNftRankElasticKey(this.getNftRankAlgorithmFromAssets(assets));
+    }
+
     const elasticNfts = await this.indexerService.getNfts(pagination, filter, identifier);
 
     const nfts: Nft[] = [];
@@ -311,7 +308,7 @@ export class NftService {
       nft.nonce = parseInt('0x' + nft.identifier.split('-')[2]);
       nft.timestamp = elasticNft.timestamp;
 
-      this.applyExtendedAttributes(nft, elasticNft);
+      await this.applyExtendedAttributes(nft, elasticNft);
 
       const elasticNftData = elasticNft.data;
       if (elasticNftData) {
@@ -503,8 +500,6 @@ export class NftService {
 
     await this.applyUnlockSchedule(nft);
 
-    await this.applyTransferAffected(nft);
-
     return nft;
   }
 
@@ -541,12 +536,46 @@ export class NftService {
     return await this.indexerService.getAccountsEsdtByCollection([identifier], pagination);
   }
 
-  applyExtendedAttributes(nft: Nft, elasticNft: any) {
-    nft.score = elasticNft.nft_rarity_score;
-    nft.rank = elasticNft.nft_rarity_rank;
+  private getNftRarity(elasticNft: any, algorithm: NftRankAlgorithm): NftRarity | undefined {
+    const score = elasticNft[this.getNftScoreElasticKey(algorithm)];
+    const rank = elasticNft[this.getNftRankElasticKey(algorithm)];
+
+    if (!score && !rank) {
+      return undefined;
+    }
+
+    return new NftRarity({ score, rank });
+  }
+
+  private async applyExtendedAttributes(nft: Nft, elasticNft: any) {
+    const collectionAssets = await this.assetsService.getTokenAssets(nft.collection);
+    const algorithm = this.getNftRankAlgorithmFromAssets(collectionAssets);
+
+    nft.score = elasticNft[this.getNftScoreElasticKey(algorithm)];
+    nft.rank = elasticNft[this.getNftRankElasticKey(algorithm)];
+
+    nft.rarities = new NftRarities({
+      trait: this.getNftRarity(elasticNft, NftRankAlgorithm.trait),
+      statistical: this.getNftRarity(elasticNft, NftRankAlgorithm.statistical),
+      jaccardDistances: this.getNftRarity(elasticNft, NftRankAlgorithm.jaccardDistances),
+      openRarity: this.getNftRarity(elasticNft, NftRankAlgorithm.openRarity),
+      custom: this.getNftRarity(elasticNft, NftRankAlgorithm.custom),
+    });
 
     if (elasticNft.nft_nsfw_mark !== undefined) {
       nft.isNsfw = elasticNft.nft_nsfw_mark >= this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
     }
+  }
+
+  private getNftRankAlgorithmFromAssets(assets?: TokenAssets): NftRankAlgorithm {
+    return assets?.preferredRankAlgorithm ?? NftRankAlgorithm.jaccardDistances;
+  }
+
+  private getNftRankElasticKey(algorithm: NftRankAlgorithm) {
+    return `nft_rank_${algorithm}`;
+  }
+
+  private getNftScoreElasticKey(algorithm: NftRankAlgorithm) {
+    return `nft_score_${algorithm}`;
   }
 }

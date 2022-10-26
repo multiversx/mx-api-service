@@ -11,6 +11,8 @@ import { Identity } from "src/endpoints/identities/entities/identity";
 import { MexFarm } from "src/endpoints/mex/entities/mex.farm";
 import { MexSettings } from "src/endpoints/mex/entities/mex.settings";
 import { DnsContracts } from "src/utils/dns.contracts";
+import { NftRankAlgorithm } from "./entities/nft.rank.algorithm";
+import { NftRank } from "./entities/nft.rank";
 const rimraf = require("rimraf");
 const path = require('path');
 const fs = require('fs');
@@ -61,15 +63,23 @@ export class AssetsService {
   }
 
   private readTokenAssetDetails(tokenIdentifier: string, assetPath: string): TokenAssets {
-    const jsonPath = path.join(assetPath, 'info.json');
-    const jsonContents = fs.readFileSync(jsonPath);
-    const json = JSON.parse(jsonContents);
+    const infoPath = path.join(assetPath, 'info.json');
+    const info = JSON.parse(fs.readFileSync(infoPath));
 
-    return {
-      ...json,
+    return new TokenAssets({
+      ...info,
       pngUrl: this.getImageUrl(tokenIdentifier, 'logo.png'),
       svgUrl: this.getImageUrl(tokenIdentifier, 'logo.svg'),
-    };
+    });
+  }
+
+  private readTokenRanks(assetPath: string): NftRank[] | undefined {
+    const ranksPath = path.join(assetPath, 'ranks.json');
+    if (fs.existsSync(ranksPath)) {
+      return JSON.parse(fs.readFileSync(ranksPath));
+    }
+
+    return undefined;
   }
 
   private readAccountAssets(path: string): AccountAssets {
@@ -129,6 +139,40 @@ export class AssetsService {
     }
 
     return assets;
+  }
+
+  async getCollectionRanks(identifier: string): Promise<NftRank[] | undefined> {
+    const allCollectionRanks = await this.getAllCollectionRanks();
+
+    return allCollectionRanks[identifier];
+  }
+
+  async getAllCollectionRanks(): Promise<{ [key: string]: NftRank[] }> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.CollectionRanks.key,
+      async () => await this.getAllCollectionRanksRaw(),
+      CacheInfo.CollectionRanks.ttl
+    );
+  }
+
+  async getAllCollectionRanksRaw(): Promise<{ [key: string]: NftRank[] }> {
+    const allTokenAssets = await this.getAllTokenAssets();
+
+    const result: { [key: string]: NftRank[] } = {};
+    const assetsPath = this.getTokenAssetsPath();
+
+    for (const identifier of Object.keys(allTokenAssets)) {
+      const assets = allTokenAssets[identifier];
+      if (assets.preferredRankAlgorithm === NftRankAlgorithm.custom) {
+        const tokenAssetsPath = path.join(assetsPath, identifier);
+        const ranks = this.readTokenRanks(tokenAssetsPath);
+        if (ranks) {
+          result[identifier] = ranks;
+        }
+      }
+    }
+
+    return result;
   }
 
   async getAllAccountAssets(): Promise<{ [key: string]: AccountAssets }> {

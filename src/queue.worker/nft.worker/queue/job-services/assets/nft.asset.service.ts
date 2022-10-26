@@ -1,8 +1,10 @@
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { CachingService, OriginLogger } from "@elrondnetwork/erdnest";
 import { ApiService, Constants } from "@elrondnetwork/erdnest";
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
+import { CacheInfo } from "src/utils/cache.info";
+import { CachingUtils } from "src/utils/caching.utils";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { AWSService } from "../thumbnails/aws.service";
 
@@ -16,15 +18,23 @@ export class NftAssetService {
     private readonly apiService: ApiService,
     private readonly awsService: AWSService,
     private readonly apiConfigService: ApiConfigService,
+    private readonly cachingService: CachingService,
   ) { }
 
   async uploadAsset(identifier: string, fileUrl: string, fileType: string) {
-    this.logger.log(`Started uploading assets to S3 for NFT with identifier '${identifier}', file url '${fileUrl}'`);
+    const cacheIdentifier = `${identifier}-${TokenHelpers.getUrlHash(fileUrl)}`;
 
     try {
       const mediaUrl = TokenHelpers.computeNftUri(fileUrl, this.apiConfigService.getMediaUrl() + '/nfts/asset');
 
-      const fileResult: any = await this.apiService.get(mediaUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS });
+      const fileResult: any = await CachingUtils.executeOptimistic({
+        cachingService: this.cachingService,
+        description: `Uploading assets to S3 for NFT with identifier '${identifier}', file url '${fileUrl}'`,
+        key: CacheInfo.PendingUploadAsset(cacheIdentifier).key,
+        ttl: CacheInfo.PendingUploadAsset(cacheIdentifier).ttl,
+        action: async () => await this.apiService.get(mediaUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS }),
+      });
+
       const file = fileResult.data;
 
       const fileName = TokenHelpers.computeNftUri(fileUrl, '');
@@ -32,8 +42,6 @@ export class NftAssetService {
       const filePath = `${this.STANDARD_PATH}${fileName}`;
 
       await this.awsService.uploadToS3(filePath, file, fileType);
-
-      this.logger.log(`Asset uploaded to S3 for NFT '${identifier}', file url '${fileUrl}'`);
     } catch (error) {
       this.logger.error(error);
       this.logger.error(`An unhandled error occurred while uploading assets for NFT with identifier '${identifier}', file url '${fileUrl}'`);

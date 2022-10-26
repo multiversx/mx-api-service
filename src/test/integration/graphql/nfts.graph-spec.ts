@@ -49,7 +49,6 @@ describe('Nfts', () => {
               }
               supply
               ticker
-              isTransferAffected
           }
           }`,
         })
@@ -184,6 +183,11 @@ describe('Nfts', () => {
         filter: 'after',
         value: '1660134204',
         count: 2,
+      },
+      {
+        filter: 'nonce',
+        value: '200',
+        count: 200,
       },
 
     ].forEach(({ filter, value, count }) => {

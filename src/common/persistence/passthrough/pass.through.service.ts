@@ -1,5 +1,6 @@
 /* eslint-disable require-await */
 import { Injectable } from "@nestjs/common";
+import { CollectionTrait } from "src/endpoints/collections/entities/collection.trait";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { PersistenceInterface } from "../persistence.interface";
 
@@ -41,5 +42,9 @@ export class PassThroughService implements PersistenceInterface {
 
   async setKeybaseConfirmationForIdentity(_identity: string, _keys: string[]): Promise<void> {
 
+  }
+
+  async getCollectionTraits(_collection: string): Promise<CollectionTrait[] | null> {
+    return null;
   }
 }

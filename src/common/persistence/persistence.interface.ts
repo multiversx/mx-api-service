@@ -1,3 +1,4 @@
+import { CollectionTrait } from "src/endpoints/collections/entities/collection.trait";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 
 export interface PersistenceInterface {
@@ -14,6 +15,8 @@ export interface PersistenceInterface {
   batchGetMetadata(identifiers: string[]): Promise<{ [key: string]: any }>
 
   setMetadata(identifier: string, value: any): Promise<void>
+
+  getCollectionTraits(collection: string): Promise<CollectionTrait[] | null>
 
   getKeybaseConfirmationForIdentity(identity: string): Promise<string[] | undefined>
 

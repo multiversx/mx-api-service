@@ -5,6 +5,7 @@ import { ApiConfigService } from "../../api-config/api.config.service";
 import { KeybaseConfirmationDb } from "./entities/keybase.confirmation.db";
 import { NftMediaDb } from "./entities/nft.media.db";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
+import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
 import { MongoDbService } from "./mongo.db.service";
 
 @Module({
@@ -14,7 +15,7 @@ import { MongoDbService } from "./mongo.db.service";
       useFactory: (apiConfigService: ApiConfigService) => {
         const options: TypeOrmModuleOptions = {
           type: 'mongodb',
-          entities: [NftMetadataDb, NftMediaDb, KeybaseConfirmationDb],
+          entities: [NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb],
           url: apiConfigService.getDatabaseUrl(),
           keepAlive: 120000,
           sslValidate: false,
@@ -27,9 +28,9 @@ import { MongoDbService } from "./mongo.db.service";
       },
       inject: [ApiConfigService],
     }),
-    TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, KeybaseConfirmationDb]),
+    TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb]),
   ],
   providers: [MongoDbService],
-  exports: [MongoDbService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, KeybaseConfirmationDb])],
+  exports: [MongoDbService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb])],
 })
 export class MongoDbModule { }

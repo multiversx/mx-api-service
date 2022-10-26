@@ -4,6 +4,8 @@ export enum MediaMimeTypeEnum {
   webp = 'image/webp',
   jpg = 'image/jpg',
   gif = 'image/gif',
+  svg = 'image/svg',
+  svgXml = 'image/svg+xml',
 
   aac = 'audio/aac',
   flac = 'audio/flac',

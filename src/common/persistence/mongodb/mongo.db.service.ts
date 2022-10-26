@@ -1,12 +1,14 @@
 import { OriginLogger } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { CollectionTrait } from "src/endpoints/collections/entities/collection.trait";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
-import { Repository } from "typeorm";
+import { ObjectLiteral, Repository } from "typeorm";
 import { PersistenceInterface } from "../persistence.interface";
 import { KeybaseConfirmationDb } from "./entities/keybase.confirmation.db";
 import { NftMediaDb } from "./entities/nft.media.db";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
+import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
 
 @Injectable()
 export class MongoDbService implements PersistenceInterface {
@@ -18,7 +20,9 @@ export class MongoDbService implements PersistenceInterface {
     @InjectRepository(NftMediaDb)
     private readonly nftMediaRepository: Repository<NftMediaDb>,
     @InjectRepository(KeybaseConfirmationDb)
-    private readonly keybaseConfirmationRepository: Repository<KeybaseConfirmationDb>
+    private readonly keybaseConfirmationRepository: Repository<KeybaseConfirmationDb>,
+    @InjectRepository(NftTraitSummaryDb)
+    private readonly nftTraitSummaryRepository: Repository<NftTraitSummaryDb>,
   ) { }
 
   async getMetadata(identifier: string): Promise<any | null> {
@@ -68,7 +72,7 @@ export class MongoDbService implements PersistenceInterface {
     await this.save(this.nftMetadataRepository, metadata);
   }
 
-  private async save<T>(repository: Repository<T>, entity: T) {
+  private async save<T extends ObjectLiteral>(repository: Repository<T>, entity: T) {
     try {
       // @ts-ignore
       await repository.save(entity);
@@ -166,6 +170,21 @@ export class MongoDbService implements PersistenceInterface {
     catch (error) {
       this.logger.error(`An unexpected error occurred when setting keybase confirmation from DB for identity '${identity}'`);
       this.logger.error(error);
+    }
+  }
+
+  async getCollectionTraits(collection: string): Promise<CollectionTrait[] | null> {
+    try {
+      const summary: NftTraitSummaryDb | null = await this.nftTraitSummaryRepository.findOne({ where: { identifier: collection } });
+      if (!summary) {
+        return null;
+      }
+
+      return summary.traitTypes;
+    } catch (error) {
+      this.logger.error(`An unexpected error occurred when fetching NFT trait summary from DB for collection identifier '${collection}'`);
+      this.logger.error(error);
+      return null;
     }
   }
 }

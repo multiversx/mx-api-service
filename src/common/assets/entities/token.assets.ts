@@ -4,9 +4,14 @@ import { ApiProperty } from "@nestjs/swagger";
 import GraphQLJSON from "graphql-type-json";
 
 import { TokenAssetStatus } from "../../../endpoints/tokens/entities/token.asset.status";
+import { NftRankAlgorithm } from "./nft.rank.algorithm";
 
 @ObjectType("TokenAssets", { description: "Token assets object type." })
 export class TokenAssets {
+  constructor(init?: Partial<TokenAssets>) {
+    Object.assign(this, init);
+  }
+
   @Field(() => String, { description: 'Website for the given token assets.' })
   @ApiProperty({ type: String })
   website: string = '';
@@ -38,4 +43,8 @@ export class TokenAssets {
   @Field(() => [String], { description: 'Extra tokens for the given token assets.', nullable: true })
   @ApiProperty({ type: String, isArray: true })
   extraTokens: string[] | undefined = undefined;
+
+  @Field(() => String, { description: 'Preferred ranking algorithm for NFT collections. Supported values are "trait", "statistical", "jaccardDistances", "openRarity" and "custom".', nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  preferredRankAlgorithm: NftRankAlgorithm | undefined = undefined;
 }

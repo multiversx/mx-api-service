@@ -7,6 +7,7 @@ import { Repository } from "typeorm";
 import { PersistenceInterface } from "../persistence.interface";
 import { OriginLogger } from "@elrondnetwork/erdnest";
 import { KeybaseConfirmationDb } from "./entities/keybase.confirmation.db";
+import { CollectionTraitSummary } from "src/common/indexer/entities/collection.trait.summary";
 
 @Injectable()
 export class DatabaseService implements PersistenceInterface {
@@ -129,5 +130,10 @@ export class DatabaseService implements PersistenceInterface {
       this.logger.error(`An unexpected error occurred when setting keybase confirmation from DB for identity '${identity}'`);
       this.logger.error(error);
     }
+  }
+
+  // eslint-disable-next-line require-await
+  async getCollectionTraits(_collection: string): Promise<CollectionTraitSummary[] | null> {
+    return null;
   }
 }

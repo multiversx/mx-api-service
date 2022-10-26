@@ -1,5 +1,6 @@
 import { PerformanceProfiler } from "@elrondnetwork/erdnest";
 import { Inject, Injectable } from "@nestjs/common";
+import { CollectionTrait } from "src/endpoints/collections/entities/collection.trait";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { ApiMetricsService } from "../metrics/api.metrics.service";
 import { PersistenceInterface } from "./persistence.interface";
@@ -58,5 +59,9 @@ export class PersistenceService implements PersistenceInterface {
 
   async setKeybaseConfirmationForIdentity(identity: string, keys: string[]): Promise<void> {
     await this.execute('setKeybaseConfirmationForIdentity', this.persistenceInterface.setKeybaseConfirmationForIdentity(identity, keys));
+  }
+
+  async getCollectionTraits(identifier: string): Promise<CollectionTrait[] | null> {
+    return await this.execute(this.getCollectionTraits.name, this.persistenceInterface.getCollectionTraits(identifier));
   }
 }

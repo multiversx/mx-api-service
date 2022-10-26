@@ -239,6 +239,9 @@ export class CacheWarmerService {
 
       const accountLabels = await this.assetsService.getAllAccountAssetsRaw(providers, identities, pairs, farms, settings ?? undefined);
       await this.invalidateKey(CacheInfo.AccountAssets.key, accountLabels, CacheInfo.AccountAssets.ttl);
+
+      const collectionRanks = await this.assetsService.getAllCollectionRanksRaw();
+      await this.invalidateKey(CacheInfo.CollectionRanks.key, collectionRanks, CacheInfo.CollectionRanks.ttl);
     }, true);
   }
 

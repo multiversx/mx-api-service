@@ -1,4 +1,4 @@
-import { AbstractQuery, AddressUtils, ElasticQuery, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThanOrEqual, RangeLowerThan } from "@elrondnetwork/erdnest";
+import { AbstractQuery, AddressUtils, BinaryUtils, ElasticQuery, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThanOrEqual, RangeLowerThan, RangeLowerThanOrEqual } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -174,7 +174,7 @@ export class ElasticIndexerHelper {
 
     if (filter.traits !== undefined) {
       for (const [key, value] of Object.entries(filter.traits)) {
-        elasticQuery = elasticQuery.withMustMatchCondition('nft_traitValues', `${key}_${value}`);
+        elasticQuery = elasticQuery.withMustMatchCondition('nft_traitValues', BinaryUtils.base64Encode(`${key}_${value}`));
       }
     }
 
@@ -190,6 +190,14 @@ export class ElasticIndexerHelper {
 
     if (filter.before || filter.after) {
       elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
+    }
+
+    if (filter.nonceBefore) {
+      elasticQuery = elasticQuery.withRangeFilter('nonce', new RangeLowerThanOrEqual(filter.nonceBefore));
+    }
+
+    if (filter.nonceAfter) {
+      elasticQuery = elasticQuery.withRangeFilter('nonce', new RangeGreaterThanOrEqual(filter.nonceAfter));
     }
 
     return elasticQuery;
@@ -228,8 +236,8 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('type', filter.type === TransactionType.Transaction ? 'normal' : 'unsigned'));
     }
 
-    if (filter.sender) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('sender', filter.sender));
+    if (filter.senders) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.senders, sender => QueryType.Match('sender', sender));
     }
 
     if (filter.receivers) {

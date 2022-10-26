@@ -17,7 +17,7 @@ describe('Username', () => {
   });
 
   describe('Query - Get Account details', () => {
-    it('should herotag account details', async () => {
+    it('should username account details', async () => {
       await request(app.getHttpServer())
         .post(gql)
         .send({

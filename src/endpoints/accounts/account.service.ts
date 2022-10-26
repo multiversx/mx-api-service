@@ -25,6 +25,7 @@ import { AccountOptionalFieldOption } from './entities/account.optional.field.op
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
 import { OriginLogger } from '@elrondnetwork/erdnest';
 import { CacheInfo } from 'src/utils/cache.info';
+import { UsernameService } from '../usernames/username.service';
 
 @Injectable()
 export class AccountService {
@@ -47,6 +48,7 @@ export class AccountService {
     @Inject(forwardRef(() => SmartContractResultService))
     private readonly smartContractResultService: SmartContractResultService,
     private readonly assetsService: AssetsService,
+    private readonly usernameService: UsernameService,
   ) { }
 
   async getAccountsCount(): Promise<number> {
@@ -55,23 +57,6 @@ export class AccountService {
       async () => await this.indexerService.getAccountsCount(),
       CacheInfo.AccountsCount.ttl
     );
-  }
-
-  async getAccountUsername(address: string): Promise<string | null> {
-    return await this.cachingService.getOrSetCache(
-      CacheInfo.AccountUsername(address).key,
-      async () => await this.getAccountUsernameRaw(address),
-      CacheInfo.AccountUsername(address).ttl,
-    );
-  }
-
-  async getAccountUsernameRaw(address: string): Promise<string | null> {
-    const account = await this.getAccount(address);
-    if (!account) {
-      return null;
-    }
-
-    return account.username;
   }
 
   async getAccount(address: string, fields?: string[]): Promise<AccountDetailed | null> {
@@ -106,11 +91,11 @@ export class AccountService {
 
     try {
       const {
-        account: { nonce, balance, code, codeHash, rootHash, username, developerReward, ownerAddress, codeMetadata },
+        account: { nonce, balance, code, codeHash, rootHash, developerReward, ownerAddress, codeMetadata },
       } = await this.gatewayService.get(`address/${address}`, GatewayComponentRequest.addressDetails);
 
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
-      let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, username, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], nftCollections: undefined, nfts: undefined });
+      let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], nftCollections: undefined, nfts: undefined });
 
       const codeAttributes = AddressUtils.decodeCodeMetadata(codeMetadata);
       if (codeAttributes) {
@@ -122,6 +107,10 @@ export class AccountService {
         if (deployedAt) {
           account.deployedAt = deployedAt;
         }
+      }
+
+      if (!AddressUtils.isSmartContractAddress(address)) {
+        account.username = await this.usernameService.getUsernameForAddress(address) ?? undefined;
       }
 
       await this.pluginService.processAccount(account);
@@ -350,11 +339,13 @@ export class AccountService {
 
   async getAccountContracts(pagination: QueryPagination, address: string): Promise<DeployedContract[]> {
     const accountDeployedContracts = await this.indexerService.getAccountContracts(pagination, address);
+    const assets = await this.assetsService.getAllAccountAssets();
 
     const accounts: DeployedContract[] = accountDeployedContracts.map(contract => ({
       address: contract.contract,
       deployTxHash: contract.deployTxHash,
       timestamp: contract.timestamp,
+      assets: assets[contract.contract],
     }));
 
     return accounts;

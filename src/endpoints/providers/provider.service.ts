@@ -154,36 +154,42 @@ export class ProviderService {
   }
 
   async getAllProvidersRaw(): Promise<Provider[]> {
-    const providers = await this.getProviderAddresses();
+    const providerAddresses = await this.getProviderAddresses();
 
-    const [configs, numUsers, cumulatedRewards] = await Promise.all([
+    const [configs, metadatas, numUsers, cumulatedRewards] = await Promise.all([
       this.cachingService.batchProcess(
-        providers,
+        providerAddresses,
         address => `providerConfig:${address}`,
         async address => await this.getProviderConfig(address),
         Constants.oneMinute() * 15,
       ),
       this.cachingService.batchProcess(
-        providers,
+        providerAddresses,
+        address => `providerMetadata:${address}`,
+        async address => await this.getProviderMetadata(address),
+        Constants.oneMinute() * 15,
+      ),
+      this.cachingService.batchProcess(
+        providerAddresses,
         address => `providerNumUsers:${address}`,
         async address => await this.getNumUsers(address),
         Constants.oneHour(),
       ),
       this.cachingService.batchProcess(
-        providers,
+        providerAddresses,
         address => `providerCumulatedRewards:${address}`,
         async address => await this.getCumulatedRewards(address),
         Constants.oneHour()
       ),
     ]);
 
-    const providersRaw: Provider[] = providers.map((provider, index) => {
+    const providersRaw: Provider[] = providerAddresses.map((provider, index) => {
       return {
         provider,
         ...configs[index],
         numUsers: numUsers[index] ?? 0,
         cumulatedRewards: cumulatedRewards[index] ?? '0',
-        identity: undefined,
+        identity: metadatas[index]?.identity ?? undefined,
         numNodes: 0,
         stake: '0',
         topUp: '0',
@@ -195,13 +201,13 @@ export class ProviderService {
     const providerKeybases = await this.keybaseService.getCachedNodesAndProvidersKeybases();
 
     if (providerKeybases) {
-      for (const providerAddress of providers) {
+      for (const providerAddress of providerAddresses) {
         const providerInfo = providerKeybases[providerAddress];
 
-        if (providerInfo && providerInfo.confirmed) {
+        if (!providerInfo || !providerInfo.confirmed) {
           const found = providersRaw.find(x => x.provider === providerAddress);
           if (found) {
-            found.identity = providerInfo.identity;
+            found.identity = undefined;
           }
         }
       }

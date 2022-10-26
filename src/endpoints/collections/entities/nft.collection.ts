@@ -4,6 +4,7 @@ import { NftType } from "../../nfts/entities/nft.type";
 import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles";
 import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { Account } from "src/endpoints/accounts/entities/account";
+import { CollectionTrait } from "./collection.trait";
 
 @ObjectType("NftCollection", { description: "NFT collection object type." })
 export class NftCollection {
@@ -60,6 +61,10 @@ export class NftCollection {
   assets: TokenAssets | undefined = undefined;
 
   @Field(() => [CollectionRoles], { description: 'Roles list for the given NFT collection.', nullable: true })
-  @ApiProperty({ type: CollectionRoles })
+  @ApiProperty({ type: CollectionRoles, isArray: true })
   roles: CollectionRoles[] = [];
+
+  @Field(() => [CollectionTrait], { description: 'Trait list for the given NFT collection.', nullable: true })
+  @ApiProperty({ type: CollectionTrait, isArray: true })
+  traits: CollectionTrait[] = [];
 }
