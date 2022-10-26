@@ -104,4 +104,11 @@ export class DatabaseService implements PersistenceInterface {
   async getCollectionTraits(_collection: string): Promise<CollectionTraitSummary[] | null> {
     return null;
   }
+
+  // eslint-disable-next-line require-await
+  async getSetting<T>(name: string): Promise<T | undefined> {
+    // TODO
+    console.log(name);
+    return undefined;
+  }
 }

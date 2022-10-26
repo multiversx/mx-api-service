@@ -17,4 +17,6 @@ export interface PersistenceInterface {
   setMetadata(identifier: string, value: any): Promise<void>
 
   getCollectionTraits(collection: string): Promise<CollectionTrait[] | null>
+
+  getSetting<T>(name: string): Promise<T | undefined>
 }

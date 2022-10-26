@@ -151,4 +151,11 @@ export class MongoDbService implements PersistenceInterface {
       return null;
     }
   }
+
+  // eslint-disable-next-line require-await
+  async getSetting<T>(name: string): Promise<T | undefined> {
+    // TODO
+    console.log(name);
+    return undefined;
+  }
 }

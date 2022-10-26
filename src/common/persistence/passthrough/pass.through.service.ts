@@ -39,4 +39,8 @@ export class PassThroughService implements PersistenceInterface {
   async getCollectionTraits(_collection: string): Promise<CollectionTrait[] | null> {
     return null;
   }
+
+  async getSetting<T>(_name: string): Promise<T | undefined> {
+    return undefined;
+  }
 }

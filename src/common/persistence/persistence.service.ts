@@ -56,4 +56,8 @@ export class PersistenceService implements PersistenceInterface {
   async getCollectionTraits(identifier: string): Promise<CollectionTrait[] | null> {
     return await this.execute(this.getCollectionTraits.name, this.persistenceInterface.getCollectionTraits(identifier));
   }
+
+  async getSetting<T>(name: string): Promise<T | undefined> {
+    return await this.execute(this.getSetting.name, this.persistenceInterface.getSetting(name));
+  }
 }
