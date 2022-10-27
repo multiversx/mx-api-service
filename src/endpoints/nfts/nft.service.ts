@@ -420,7 +420,8 @@ export class NftService {
     }
 
     if (queryOptions && queryOptions.withSupply) {
-      await this.batchApplySupply(nfts);
+      const nftType = nfts.filter((obj) => obj.type.in(NftType.SemiFungibleESDT, NftType.MetaESDT));
+      await this.batchApplySupply(nftType);
     }
 
     await this.batchProcessNfts(nfts);
