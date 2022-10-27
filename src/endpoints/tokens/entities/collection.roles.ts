@@ -35,6 +35,10 @@ export class CollectionRoles {
   @ApiProperty({ type: Boolean, default: false })
   canTransferRole: boolean = false;
 
+  @Field(() => Boolean, { description: 'If tokens from the given collections are allowed to be transferred by the given account.' })
+  @ApiProperty({ type: Boolean, default: false })
+  canTransfer: boolean = false;
+
   @Field(() => [String], { description: 'Roles list for the given collection roles.' })
   @ApiProperty({ type: [String] })
   roles: string[] = [];

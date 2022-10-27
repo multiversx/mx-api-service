@@ -271,6 +271,11 @@ type CollectionRoles {
   """If the given collection role can create."""
   canCreate: Boolean!
 
+  """
+  If tokens from the given collections are allowed to be transferred by the given account.
+  """
+  canTransfer: Boolean!
+
   """If the given collection role can transfer role."""
   canTransferRole: Boolean!
 
