@@ -79,9 +79,6 @@ export class TokenHelpers {
       case 'ESDTRoleNFTAddURI':
         tokenRoles.canAddUri = true;
         break;
-      case 'ESDTTransferRole':
-        tokenRoles.canTransferRole = true;
-        break;
       case 'ESDTRoleNFTUpdateAttributes':
         tokenRoles.canUpdateAttributes = true;
         break;

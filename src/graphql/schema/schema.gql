@@ -276,9 +276,6 @@ type CollectionRoles {
   """
   canTransfer: Boolean!
 
-  """If the given collection role can transfer role."""
-  canTransferRole: Boolean!
-
   """If the given collection role can update attributes."""
   canUpdateAttributes: Boolean!
 
