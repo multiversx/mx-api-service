@@ -167,4 +167,16 @@ export class MongoDbService implements PersistenceInterface {
       return undefined;
     }
   }
+
+  async getAllSettings(): Promise<{ name: string, value: any }[]> {
+    try {
+      const settings = await this.settingsRepository.find();
+      return settings.map(setting => ({
+        name: setting.name,
+        value: setting.value,
+      }));
+    } catch {
+      return [];
+    }
+  }
 }

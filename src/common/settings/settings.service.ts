@@ -59,4 +59,8 @@ export class SettingsService {
 
     return fallbackValue;
   }
+
+  public async getAllSettings(): Promise<{ name: string, value: any }[]> {
+    return await this.persistenceService.getAllSettings();
+  }
 }

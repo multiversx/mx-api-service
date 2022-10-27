@@ -19,4 +19,6 @@ export interface PersistenceInterface {
   getCollectionTraits(collection: string): Promise<CollectionTrait[] | null>
 
   getSetting<T>(name: string): Promise<T | undefined>
+
+  getAllSettings(): Promise<{ name: string, value: any }[]>
 }

@@ -315,6 +315,16 @@ export class CacheWarmerService {
     });
   }
 
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleApiSettings() {
+    await Locker.lock('Api settings invalidations', async () => {
+      const settings = await this.settingsService.getAllSettings();
+      await Promise.all(settings.map(async (setting) => {
+        await this.invalidateKey(CacheInfo.Setting(setting.name).key, setting.value, CacheInfo.Setting(setting.name).ttl);
+      }));
+    });
+  }
+
   private async invalidateKey(key: string, data: any, ttl: number) {
     await this.cachingService.setCache(key, data, ttl);
     await this.refreshCacheKey(key, ttl);
