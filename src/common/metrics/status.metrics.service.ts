@@ -32,6 +32,7 @@ export class StatusMetricsService {
   private static checkTokensAccountsInvalidationHistogram: Histogram<string>;
   private static checkTokensTransactionsInvalidationHistogram: Histogram<string>;
   private static checkNodesValidatorsInvalidationHistogram: Histogram<string>;
+  private static checkProvidersNameHistogram: Histogram<string>;
   private static checkProvidersIdentitiesHistogram: Histogram<string>;
 
   constructor() {
@@ -288,11 +289,20 @@ export class StatusMetricsService {
       });
     }
 
+    if (!StatusMetricsService.checkProvidersNameHistogram) {
+      StatusMetricsService.checkProvidersNameHistogram = new Histogram({
+        name: 'providers_name',
+        help: 'providers_name',
+        labelNames: ['providers_name'],
+        buckets: [],
+      });
+    }
+
     if (!StatusMetricsService.checkProvidersIdentitiesHistogram) {
       StatusMetricsService.checkProvidersIdentitiesHistogram = new Histogram({
-        name: 'providers_identitites',
-        help: 'providers_identitites',
-        labelNames: ['providers_identitites'],
+        name: 'providers_identities',
+        help: 'providers_identities',
+        labelNames: ['providers_identities'],
         buckets: [],
       });
     }
@@ -410,7 +420,11 @@ export class StatusMetricsService {
     StatusMetricsService.checkNodesValidatorsInvalidationHistogram.labels(result).observe(duration);
   }
 
-  setProvidersIdentititesInvalidation(result: 'success' | 'error', duration: number) {
+  setProvidersNameInvalidation(result: 'success' | 'error', duration: number) {
+    StatusMetricsService.checkProvidersNameHistogram.labels(result).observe(duration);
+  }
+
+  setProvidersIdentitiesInvalidation(result: 'success' | 'error', duration: number) {
     StatusMetricsService.checkProvidersIdentitiesHistogram.labels(result).observe(duration);
   }
 }

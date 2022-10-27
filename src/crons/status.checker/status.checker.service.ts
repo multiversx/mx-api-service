@@ -390,9 +390,9 @@ export class StatusCheckerService {
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
-  async handleProvidersIdentitiesValues() {
-    await Locker.lock('Providers identities ', async () => {
-      await this.lock.acquire('identities', async () => {
+  async handleProvidersNameValues() {
+    await Locker.lock('Providers name ', async () => {
+      await this.lock.acquire('name', async () => {
         const performanceProfiler = new PerformanceProfiler();
         const identities = await this.identitiesService.getAllIdentities();
         const topIdentities = identities.slice(0, 50);
@@ -407,9 +407,28 @@ export class StatusCheckerService {
         }
         performanceProfiler.stop();
         if (success) {
-          this.apiStatusMetricsService.setProvidersIdentititesInvalidation('success', performanceProfiler.duration);
+          this.apiStatusMetricsService.setProvidersNameInvalidation('success', performanceProfiler.duration);
         } else {
-          this.apiStatusMetricsService.setProvidersIdentititesInvalidation('error', performanceProfiler.duration);
+          this.apiStatusMetricsService.setProvidersNameInvalidation('error', performanceProfiler.duration);
+        }
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async handleProvidersIdentitiesValues() {
+    await Locker.lock('Providers identities ', async () => {
+      await this.lock.acquire('identities', async () => {
+        const performanceProfiler = new PerformanceProfiler();
+        const identities = await this.identitiesService.getAllIdentities();
+        const topIdentities = identities.slice(0, 50);
+        const providersIdentitityCount = topIdentities.filter((obj) => obj.identity).length;
+        performanceProfiler.stop();
+
+        if (providersIdentitityCount === 50) {
+          this.apiStatusMetricsService.setProvidersIdentitiesInvalidation('success', performanceProfiler.duration);
+        } else {
+          this.apiStatusMetricsService.setProvidersIdentitiesInvalidation('error', performanceProfiler.duration);
         }
       });
     }, true);
