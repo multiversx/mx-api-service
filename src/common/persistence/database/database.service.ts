@@ -7,6 +7,7 @@ import { Repository } from "typeorm";
 import { PersistenceInterface } from "../persistence.interface";
 import { OriginLogger } from "@elrondnetwork/erdnest";
 import { CollectionTraitSummary } from "src/common/indexer/entities/collection.trait.summary";
+import { SettingDb } from "./entities/setting.db";
 
 @Injectable()
 export class DatabaseService implements PersistenceInterface {
@@ -17,6 +18,8 @@ export class DatabaseService implements PersistenceInterface {
     private readonly nftMetadataRepository: Repository<NftMetadataDb>,
     @InjectRepository(NftMediaDb)
     private readonly nftMediaRepository: Repository<NftMediaDb>,
+    @InjectRepository(SettingDb)
+    private readonly settingsRepository: Repository<SettingDb>,
   ) { }
 
   async getMetadata(identifier: string): Promise<any | null> {
@@ -105,10 +108,16 @@ export class DatabaseService implements PersistenceInterface {
     return null;
   }
 
-  // eslint-disable-next-line require-await
   async getSetting<T>(name: string): Promise<T | undefined> {
-    // TODO
-    console.log(name);
-    return undefined;
+    try {
+      const setting = await this.settingsRepository.findOne({ where: { id: name } });
+      if (!setting) {
+        return undefined;
+      }
+
+      return JSON.parse(setting.value) as T;
+    } catch {
+      return undefined;
+    }
   }
 }

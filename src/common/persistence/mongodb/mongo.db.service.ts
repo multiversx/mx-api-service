@@ -8,6 +8,7 @@ import { PersistenceInterface } from "../persistence.interface";
 import { NftMediaDb } from "./entities/nft.media.db";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
 import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
+import { SettingDb } from "./entities/setting.db";
 
 @Injectable()
 export class MongoDbService implements PersistenceInterface {
@@ -20,6 +21,8 @@ export class MongoDbService implements PersistenceInterface {
     private readonly nftMediaRepository: Repository<NftMediaDb>,
     @InjectRepository(NftTraitSummaryDb)
     private readonly nftTraitSummaryRepository: Repository<NftTraitSummaryDb>,
+    @InjectRepository(SettingDb)
+    private readonly settingsRepository: Repository<SettingDb>,
   ) { }
 
   async getMetadata(identifier: string): Promise<any | null> {
@@ -152,10 +155,16 @@ export class MongoDbService implements PersistenceInterface {
     }
   }
 
-  // eslint-disable-next-line require-await
   async getSetting<T>(name: string): Promise<T | undefined> {
-    // TODO
-    console.log(name);
-    return undefined;
+    try {
+      const setting = await this.settingsRepository.findOne({ where: { name } });
+      if (!setting) {
+        return undefined;
+      }
+
+      return JSON.parse(setting.value) as T;
+    } catch {
+      return undefined;
+    }
   }
 }
