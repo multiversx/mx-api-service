@@ -1847,6 +1847,11 @@ type NftCollection {
   """If the given NFT collection can pause."""
   canPause: Boolean
 
+  """
+  If the given NFT collection can transfer the underlying tokens by default.
+  """
+  canTransfer: Boolean
+
   """If the given NFT collection can transfer NFT create role."""
   canTransferNftCreateRole: Boolean
 
@@ -1891,6 +1896,11 @@ type NftCollectionAccount {
 
   """If the given NFT collection can pause."""
   canPause: Boolean
+
+  """
+  If the given NFT collection can transfer the underlying tokens by default.
+  """
+  canTransfer: Boolean
 
   """If the given NFT collection can transfer NFT create role."""
   canTransferNftCreateRole: Boolean
@@ -1938,6 +1948,11 @@ type NftCollectionAccountFlat {
 
   """If the given NFT collection can pause."""
   canPause: Boolean
+
+  """
+  If the given NFT collection can transfer the underlying tokens by default.
+  """
+  canTransfer: Boolean
 
   """If the given NFT collection can transfer NFT create role."""
   canTransferNftCreateRole: Boolean
