@@ -450,4 +450,11 @@ export class CacheInfo {
       ttl: Constants.oneHour(),
     };
   }
+
+  static Setting(name: string): CacheInfo {
+    return {
+      key: `api:settings:${name}`,
+      ttl: Constants.oneHour(),
+    };
+  }
 }

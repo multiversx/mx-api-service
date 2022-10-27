@@ -1,4 +1,6 @@
+import { CachingService } from '@elrondnetwork/erdnest';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { CacheInfo } from 'src/utils/cache.info';
 import { ApiConfigService } from '../api-config/api.config.service';
 import { PersistenceService } from '../persistence/persistence.service';
 
@@ -6,6 +8,7 @@ import { PersistenceService } from '../persistence/persistence.service';
 export class SettingsService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
+    private readonly cachingService: CachingService,
     @Inject(forwardRef(() => PersistenceService))
     private readonly persistenceService: PersistenceService
   ) { }
@@ -43,10 +46,17 @@ export class SettingsService {
   }
 
   private async getSetting<T>(name: string, fallbackValue: T): Promise<T> {
-    const setting = await this.persistenceService.getSetting<T>(name);
-    if (!setting) {
-      return fallbackValue;
+    const settingCache = await this.cachingService.getCache<T>(CacheInfo.Setting(name).key);
+    if (settingCache) {
+      return settingCache;
     }
-    return setting;
+
+    const settingDb = await this.persistenceService.getSetting<T>(name);
+    if (settingDb) {
+      await this.cachingService.setCache(CacheInfo.Setting(name).key, settingDb, CacheInfo.Setting(name).ttl);
+      return settingDb;
+    }
+
+    return fallbackValue;
   }
 }
