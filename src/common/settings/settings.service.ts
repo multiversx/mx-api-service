@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { ApiConfigService } from '../api-config/api.config.service';
 import { PersistenceService } from '../persistence/persistence.service';
 
@@ -6,6 +6,7 @@ import { PersistenceService } from '../persistence/persistence.service';
 export class SettingsService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
+    @Inject(forwardRef(() => PersistenceService))
     private readonly persistenceService: PersistenceService
   ) { }
 

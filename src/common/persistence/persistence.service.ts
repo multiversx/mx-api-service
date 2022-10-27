@@ -1,5 +1,5 @@
 import { PerformanceProfiler } from "@elrondnetwork/erdnest";
-import { Inject, Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CollectionTrait } from "src/endpoints/collections/entities/collection.trait";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { ApiMetricsService } from "../metrics/api.metrics.service";
@@ -10,6 +10,7 @@ export class PersistenceService implements PersistenceInterface {
   constructor(
     @Inject('PersistenceInterface')
     private readonly persistenceInterface: PersistenceInterface,
+    @Inject(forwardRef(() => ApiMetricsService))
     private readonly metricsService: ApiMetricsService,
   ) { }
 

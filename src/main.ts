@@ -29,19 +29,19 @@ import { GraphqlComplexityInterceptor } from './graphql/interceptors/graphql.com
 import { GraphQLMetricsInterceptor } from './graphql/interceptors/graphql.metrics.interceptor';
 import { ApiMetricsService } from './common/metrics/api.metrics.service';
 import { SettingsService } from './common/settings/settings.service';
-import { SettingsModule } from './common/settings/settings.module';
+// import { SettingsModule } from './common/settings/settings.module';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
   const apiConfigService = apiConfigApp.get<ApiConfigService>(ApiConfigService);
 
-  const settingsApp = await NestFactory.create(SettingsModule);
-  const settingsService = settingsApp.get<SettingsService>(SettingsService);
+  // const settingsApp = await NestFactory.create(SettingsModule);
+  // const settingsService = settingsApp.get<SettingsService>(SettingsService);
 
-  const getUseTracingFlag = await settingsService.getUseTracingFlag();
-  if (getUseTracingFlag === true) {
-    require('dd-trace').init();
-  }
+  // const getUseTracingFlag = await settingsService.getUseTracingFlag();
+  // if (getUseTracingFlag === true) {
+  //   require('dd-trace').init();
+  // }
 
   if (apiConfigService.getIsPublicApiActive()) {
     const publicApp = await NestFactory.create<NestExpressApplication>(PublicAppModule);
@@ -134,13 +134,13 @@ async function bootstrap() {
   logger.log(`Elastic updater active: ${apiConfigService.getIsElasticUpdaterCronActive()}`);
   logger.log(`Events notifier active: ${apiConfigService.isEventsNotifierFeatureActive()}`);
 
-  logger.log(`Use request caching: ${await settingsService.getUseRequestCachingFlag()}`);
-  logger.log(`Use request logging: ${await settingsService.getUseRequestLoggingFlag()}`);
-  logger.log(`Use tracing: ${await settingsService.getUseTracingFlag()}`);
-  logger.log(`Use vm query tracing: ${await settingsService.getUseVmQueryTracingFlag()}`);
-  logger.log(`Process NFTs flag: ${await settingsService.getIsProcessNftsFlagActive()}`);
-  logger.log(`Indexer v3 flag: ${await settingsService.getIsIndexerV3FlagActive()}`);
-  logger.log(`Staking v4 enabled: ${await settingsService.isStakingV4Enabled()}`);
+  // logger.log(`Use request caching: ${await settingsService.getUseRequestCachingFlag()}`);
+  // logger.log(`Use request logging: ${await settingsService.getUseRequestLoggingFlag()}`);
+  // logger.log(`Use tracing: ${await settingsService.getUseTracingFlag()}`);
+  // logger.log(`Use vm query tracing: ${await settingsService.getUseVmQueryTracingFlag()}`);
+  // logger.log(`Process NFTs flag: ${await settingsService.getIsProcessNftsFlagActive()}`);
+  // logger.log(`Indexer v3 flag: ${await settingsService.getIsIndexerV3FlagActive()}`);
+  // logger.log(`Staking v4 enabled: ${await settingsService.isStakingV4Enabled()}`);
   logger.log(`Events notifier enabled: ${apiConfigService.isEventsNotifierFeatureActive()}`);
 }
 

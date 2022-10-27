@@ -34,11 +34,12 @@ export class DynamicModuleUtils {
   static getApiModule(): DynamicModule {
     return ApiModule.forRootAsync({
       imports: [ApiConfigModule, SettingsModule],
-      useFactory: async (apiConfigService: ApiConfigService, settingsService: SettingsService) => new ApiModuleOptions({
+      useFactory: (apiConfigService: ApiConfigService) => new ApiModuleOptions({
         axiosTimeout: apiConfigService.getAxiosTimeout(),
         rateLimiterSecret: apiConfigService.getRateLimiterSecret(),
         serverTimeout: apiConfigService.getServerTimeout(),
-        useKeepAliveAgent: await settingsService.getUseKeepAliveAgentFlag(),
+        // useKeepAliveAgent: await settingsService.getUseKeepAliveAgentFlag(), // TODO hot settings
+        useKeepAliveAgent: apiConfigService.getUseKeepAliveAgentFlag(),
       }),
       inject: [ApiConfigService, SettingsService],
     });
