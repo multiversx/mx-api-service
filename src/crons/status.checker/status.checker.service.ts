@@ -415,7 +415,7 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async handleProvidersIdentitiesValues() {
     await Locker.lock('Providers identities ', async () => {
       await this.lock.acquire('identities', async () => {
