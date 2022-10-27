@@ -32,6 +32,7 @@ export class StatusMetricsService {
   private static checkTokensAccountsInvalidationHistogram: Histogram<string>;
   private static checkTokensTransactionsInvalidationHistogram: Histogram<string>;
   private static checkNodesValidatorsInvalidationHistogram: Histogram<string>;
+  private static checkProvidersIdentitiesHistogram: Histogram<string>;
 
   constructor() {
     if (!StatusMetricsService.totalAccountsHistogram) {
@@ -286,6 +287,15 @@ export class StatusMetricsService {
         buckets: [],
       });
     }
+
+    if (!StatusMetricsService.checkProvidersIdentitiesHistogram) {
+      StatusMetricsService.checkProvidersIdentitiesHistogram = new Histogram({
+        name: 'providers_identitites',
+        help: 'providers_identitites',
+        labelNames: ['providers_identitites'],
+        buckets: [],
+      });
+    }
   }
 
   setTotalAccounts(total: number) {
@@ -398,5 +408,9 @@ export class StatusMetricsService {
 
   setNodesValidatorsInvalidation(result: 'success' | 'error', duration: number) {
     StatusMetricsService.checkNodesValidatorsInvalidationHistogram.labels(result).observe(duration);
+  }
+
+  setProvidersIdentititesInvalidation(result: 'success' | 'error', duration: number) {
+    StatusMetricsService.checkProvidersIdentitiesHistogram.labels(result).observe(duration);
   }
 }

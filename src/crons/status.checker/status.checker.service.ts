@@ -259,11 +259,12 @@ export class StatusCheckerService {
         const tokens = await this.tokenService.getTokenCount({});
         const performanceProfiler = new PerformanceProfiler();
 
+        performanceProfiler.stop();
+
         if (tokens < 1619) {
-          performanceProfiler.stop();
-          this.apiStatusMetricsService.checkTokensCountValue('success', performanceProfiler.stopped);
+          this.apiStatusMetricsService.checkTokensCountValue('success', performanceProfiler.duration);
         } else {
-          this.apiStatusMetricsService.checkTokensCountValue('error', performanceProfiler.stopped);
+          this.apiStatusMetricsService.checkTokensCountValue('error', performanceProfiler.duration);
         }
       });
     }, true);
@@ -276,10 +277,12 @@ export class StatusCheckerService {
         const providers = await this.providerService.getAllProviders();
         const performanceProfiler = new PerformanceProfiler();
 
+        performanceProfiler.stop();
+
         if (providers.length < 133) {
-          this.apiStatusMetricsService.setProvidersCountValue('success', performanceProfiler.stopped);
+          this.apiStatusMetricsService.setProvidersCountValue('success', performanceProfiler.duration);
         } else {
-          this.apiStatusMetricsService.setProvidersCountValue('error', performanceProfiler.stopped);
+          this.apiStatusMetricsService.setProvidersCountValue('error', performanceProfiler.duration);
         }
       });
     }, true);
@@ -293,13 +296,13 @@ export class StatusCheckerService {
         const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
         const supply = tokens.filter((obj) => obj.supply).length;
 
+        performanceProfiler.stop();
+
         if (supply > 50) {
-          performanceProfiler.stop();
-          this.apiStatusMetricsService.setTokensSupplyInvalidation('success', performanceProfiler.stopped);
+          this.apiStatusMetricsService.setTokensSupplyInvalidation('success', performanceProfiler.duration);
         }
         else {
-          performanceProfiler.stop();
-          this.apiStatusMetricsService.setTokensSupplyInvalidation('error', performanceProfiler.stopped);
+          this.apiStatusMetricsService.setTokensSupplyInvalidation('error', performanceProfiler.duration);
         }
 
       });
@@ -314,13 +317,13 @@ export class StatusCheckerService {
         const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
         const assets = tokens.filter((obj) => obj.assets).length;
 
+        performanceProfiler.stop();
+
         if (assets > 100) {
-          performanceProfiler.stop();
-          this.apiStatusMetricsService.setTokensAssetsInvalidation('success', performanceProfiler.stopped);
+          this.apiStatusMetricsService.setTokensAssetsInvalidation('success', performanceProfiler.duration);
         }
         else {
-          performanceProfiler.stop();
-          this.apiStatusMetricsService.setTokensAssetsInvalidation('error', performanceProfiler.stopped);
+          this.apiStatusMetricsService.setTokensAssetsInvalidation('error', performanceProfiler.duration);
         }
       });
     }, true);
@@ -334,13 +337,13 @@ export class StatusCheckerService {
         const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
         const accounts = tokens.filter((obj) => obj.accounts).length;
 
+        performanceProfiler.stop();
+
         if (accounts > 990) {
-          performanceProfiler.stop();
-          this.apiStatusMetricsService.setTokensAccountInvalidation('success', performanceProfiler.stopped);
+          this.apiStatusMetricsService.setTokensAccountInvalidation('success', performanceProfiler.duration);
         }
         else {
-          performanceProfiler.stop();
-          this.apiStatusMetricsService.setTokensAccountInvalidation('error', performanceProfiler.stopped);
+          this.apiStatusMetricsService.setTokensAccountInvalidation('error', performanceProfiler.duration);
         }
       });
     }, true);
@@ -354,13 +357,13 @@ export class StatusCheckerService {
         const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
         const transactions = tokens.filter((obj) => obj.transactions).length;
 
+        performanceProfiler.stop();
+
         if (transactions >= 900) {
-          performanceProfiler.stop();
-          this.apiStatusMetricsService.setTokensTransactionsInvalidation('success', performanceProfiler.stopped);
+          this.apiStatusMetricsService.setTokensTransactionsInvalidation('success', performanceProfiler.duration);
         }
         else {
-          performanceProfiler.stop();
-          this.apiStatusMetricsService.setTokensTransactionsInvalidation('error', performanceProfiler.stopped);
+          this.apiStatusMetricsService.setTokensTransactionsInvalidation('error', performanceProfiler.duration);
         }
       });
     }, true);
@@ -375,12 +378,38 @@ export class StatusCheckerService {
         const type = 'validator';
         const validators = nodes.reduce((acc, cur) => cur.type === type ? ++acc : acc, 0);
 
+        performanceProfiler.stop();
+
         if (validators >= 3280) {
-          performanceProfiler.stop();
-          this.apiStatusMetricsService.setNodesValidatorsInvalidation('success', performanceProfiler.stopped);
+          this.apiStatusMetricsService.setNodesValidatorsInvalidation('success', performanceProfiler.duration);
         } else {
-          performanceProfiler.stop();
-          this.apiStatusMetricsService.setNodesValidatorsInvalidation('error', performanceProfiler.stopped);
+          this.apiStatusMetricsService.setNodesValidatorsInvalidation('error', performanceProfiler.duration);
+        }
+      });
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleProvidersIdentitiesValues() {
+    await Locker.lock('Providers identities ', async () => {
+      await this.lock.acquire('identities', async () => {
+        const performanceProfiler = new PerformanceProfiler();
+        const identities = await this.identitiesService.getAllIdentities();
+        const topIdentities = identities.slice(0, 50);
+        const blsKeyLength = 192;
+        let success = true;
+
+        for (let i = 0; i < topIdentities.length; i++) {
+          if (topIdentities[i].hasOwnProperty('identity') && topIdentities[i].identity?.length === blsKeyLength) {
+            success = false;
+            break;
+          }
+        }
+        performanceProfiler.stop();
+        if (success) {
+          this.apiStatusMetricsService.setProvidersIdentititesInvalidation('success', performanceProfiler.duration);
+        } else {
+          this.apiStatusMetricsService.setProvidersIdentititesInvalidation('error', performanceProfiler.duration);
         }
       });
     }, true);
