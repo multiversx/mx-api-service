@@ -2,19 +2,25 @@ import { CollectionTrait } from "src/endpoints/collections/entities/collection.t
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 
 export interface PersistenceInterface {
-  getMedia(identifier: string): Promise<NftMedia[] | null>
+  getMedia(identifier: string): Promise<NftMedia[] | null>;
 
-  batchGetMedia(identifiers: string[]): Promise<{ [key: string]: NftMedia[] }>
+  batchGetMedia(identifiers: string[]): Promise<{ [key: string]: NftMedia[]; }>;
 
-  setMedia(identifier: string, value: NftMedia[]): Promise<void>
+  setMedia(identifier: string, value: NftMedia[]): Promise<void>;
 
-  getMetadata(identifier: string): Promise<any | null>
+  getMetadata(identifier: string): Promise<any | null>;
 
-  deleteMetadata(identifier: string): Promise<void>
+  deleteMetadata(identifier: string): Promise<void>;
 
-  batchGetMetadata(identifiers: string[]): Promise<{ [key: string]: any }>
+  batchGetMetadata(identifiers: string[]): Promise<{ [key: string]: any; }>;
 
-  setMetadata(identifier: string, value: any): Promise<void>
+  setMetadata(identifier: string, value: any): Promise<void>;
 
-  getCollectionTraits(collection: string): Promise<CollectionTrait[] | null>
+  getCollectionTraits(collection: string): Promise<CollectionTrait[] | null>;
+
+  getSettingValue(identifier: string): Promise<unknown>;
+
+  setSettingValue(identifier: string, value: boolean): Promise<unknown>;
+
+  deleteSettingKey(identifier: string): Promise<unknown>;
 }

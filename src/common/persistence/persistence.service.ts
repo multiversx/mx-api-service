@@ -56,4 +56,16 @@ export class PersistenceService implements PersistenceInterface {
   async getCollectionTraits(identifier: string): Promise<CollectionTrait[] | null> {
     return await this.execute(this.getCollectionTraits.name, this.persistenceInterface.getCollectionTraits(identifier));
   }
+
+  async getSettingValue(key: string): Promise<unknown> {
+    return await this.execute('getSettingValue', this.persistenceInterface.getSettingValue(key));
+  }
+
+  async setSettingValue(identifier: string, value: boolean): Promise<unknown> {
+    return await this.execute('setSettingValue', this.persistenceInterface.setSettingValue(identifier, value));
+  }
+
+  async deleteSettingKey(identifier: string): Promise<unknown> {
+    return await this.execute('deleteSettingKey', this.persistenceInterface.deleteSettingKey(identifier));
+  }
 }

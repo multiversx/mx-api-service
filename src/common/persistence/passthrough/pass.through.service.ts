@@ -12,7 +12,7 @@ export class PassThroughService implements PersistenceInterface {
     return null;
   }
 
-  async batchGetMedia(_: string[]): Promise<{ [key: string]: NftMedia[] }> {
+  async batchGetMedia(_: string[]): Promise<{ [key: string]: NftMedia[]; }> {
     return {};
   }
 
@@ -28,7 +28,7 @@ export class PassThroughService implements PersistenceInterface {
     return null;
   }
 
-  async batchGetMetadata(_: string[]): Promise<{ [key: string]: any }> {
+  async batchGetMetadata(_: string[]): Promise<{ [key: string]: any; }> {
     return {};
   }
 
@@ -38,5 +38,17 @@ export class PassThroughService implements PersistenceInterface {
 
   async getCollectionTraits(_collection: string): Promise<CollectionTrait[] | null> {
     return null;
+  }
+
+  async getSettingValue(_: string): Promise<unknown> {
+    return null;
+  }
+
+  async setSettingValue(_: string, _value: boolean): Promise<void | null> {
+
+  }
+
+  async deleteSettingKey(_: string): Promise<void | null> {
+
   }
 }

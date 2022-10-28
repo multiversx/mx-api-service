@@ -21,13 +21,14 @@ import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './common/websockets/socket-adapter';
 import { ApiConfigModule } from './common/api-config/api.config.module';
-import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor, RequestCpuTimeInterceptor } from '@elrondnetwork/erdnest';
+import { CachingInterceptor, CachingService, CleanupInterceptor, ComplexityInterceptor, ExtractInterceptor, FieldsInterceptor, JwtAuthenticateGlobalGuard, LogRequestsInterceptor, LoggerInitializer, LoggingInterceptor, MetricsService, OriginInterceptor, PaginationInterceptor, QueryCheckInterceptor, RequestCpuTimeInterceptor } from '@elrondnetwork/erdnest';
 import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.service.impl';
 import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
 import { TransactionLoggingInterceptor } from './interceptors/transaction.logging.interceptor';
 import { GraphqlComplexityInterceptor } from './graphql/interceptors/graphql.complexity.interceptor';
 import { GraphQLMetricsInterceptor } from './graphql/interceptors/graphql.metrics.interceptor';
 import { ApiMetricsService } from './common/metrics/api.metrics.service';
+import { RedisUtils } from './utils/redis.utils';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
@@ -102,16 +103,7 @@ async function bootstrap() {
 
   const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
     PubSubListenerModule,
-    {
-      transport: Transport.REDIS,
-      options: {
-        host: apiConfigService.getRedisUrl(),
-        port: 6379,
-        retryAttempts: 100,
-        retryDelay: 1000,
-        retryStrategy: () => 1000,
-      },
-    },
+    RedisUtils.getMicroserviceConnectionOptions(apiConfigService),
   );
   pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
   pubSubApp.useWebSocketAdapter(new SocketAdapter(pubSubApp));

@@ -1,7 +1,6 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
-import { NftMediaDb } from "src/common/persistence/database/entities/nft.media.db";
-import { NftMetadataDb } from "src/common/persistence/database/entities/nft.metadata.db";
+import { NftMediaDb, NftMetadataDb, SwappableSettingsDb } from "src/common/persistence/database/entities";
 import { ApiConfigModule } from "../../api-config/api.config.module";
 import { ApiConfigService } from "../../api-config/api.config.service";
 import { DatabaseService } from "./database.service";
@@ -24,7 +23,7 @@ import { DatabaseService } from "./database.service";
 
         const options: TypeOrmModuleOptions = {
           type: 'mysql',
-          entities: [NftMetadataDb, NftMediaDb],
+          entities: [NftMetadataDb, NftMediaDb, SwappableSettingsDb],
           ...apiConfigService.getDatabaseConnection(),
           keepConnectionAlive: true,
           synchronize: true,
@@ -39,9 +38,9 @@ import { DatabaseService } from "./database.service";
       },
       inject: [ApiConfigService],
     }),
-    TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb]),
+    TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, SwappableSettingsDb]),
   ],
   providers: [DatabaseService],
-  exports: [DatabaseService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb])],
+  exports: [DatabaseService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, SwappableSettingsDb])],
 })
 export class DatabaseModule { }

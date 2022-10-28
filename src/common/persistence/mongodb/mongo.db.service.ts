@@ -5,9 +5,7 @@ import { CollectionTrait } from "src/endpoints/collections/entities/collection.t
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { ObjectLiteral, Repository } from "typeorm";
 import { PersistenceInterface } from "../persistence.interface";
-import { NftMediaDb } from "./entities/nft.media.db";
-import { NftMetadataDb } from "./entities/nft.metadata.db";
-import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
+import { SwappableSettingsDb, NftMediaDb, NftMetadataDb, NftTraitSummaryDb } from "./entities";
 
 @Injectable()
 export class MongoDbService implements PersistenceInterface {
@@ -20,6 +18,8 @@ export class MongoDbService implements PersistenceInterface {
     private readonly nftMediaRepository: Repository<NftMediaDb>,
     @InjectRepository(NftTraitSummaryDb)
     private readonly nftTraitSummaryRepository: Repository<NftTraitSummaryDb>,
+    @InjectRepository(SwappableSettingsDb)
+    private readonly swappableSettingsRepository: Repository<SwappableSettingsDb>,
   ) { }
 
   async getMetadata(identifier: string): Promise<any | null> {
@@ -147,6 +147,52 @@ export class MongoDbService implements PersistenceInterface {
       return summary.traitTypes;
     } catch (error) {
       this.logger.error(`An unexpected error occurred when fetching NFT trait summary from DB for collection identifier '${collection}'`);
+      this.logger.error(error);
+      return null;
+    }
+  }
+
+  async getSettingValue(identifier: string): Promise<unknown | null> {
+    try {
+      const value: SwappableSettingsDb | null = await this.swappableSettingsRepository.findOne({ where: { key: identifier } });
+      if (!value) {
+        return null;
+      }
+
+      return value;
+    } catch (error) {
+      this.logger.error(`An unexpected error occurred when fetching media from DB for identifier '${identifier}'`);
+      this.logger.error(error);
+      return null;
+    }
+  }
+
+  async setSettingValue(identifier: string, value: boolean): Promise<unknown> {
+    let setting = await this.swappableSettingsRepository.findOne({ where: { key: identifier } });
+
+    if (!setting) {
+      setting = new SwappableSettingsDb();
+    }
+
+    setting.key = identifier;
+    setting.value = value;
+
+    await this.save(this.swappableSettingsRepository, setting);
+
+    return setting;
+  }
+
+  async deleteSettingKey(identifier: string): Promise<unknown> {
+    try {
+      const setting = await this.swappableSettingsRepository.delete({ key: identifier });
+
+      if (!setting) {
+        return null;
+      }
+
+      return setting.affected;
+    } catch (error) {
+      this.logger.error(`An unexpected error occurred when trying to delete metadata from DB for identifier '${identifier}'`);
       this.logger.error(error);
       return null;
     }

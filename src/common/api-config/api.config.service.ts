@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/database/entities/connection.options';
+// import { ReadKeyFromDbIfExists } from '../../utils/decorators';
 
 @Injectable()
 export class ApiConfigService {
+
   constructor(private readonly configService: ConfigService) { }
 
   getConfig<T>(configKey: string): T | undefined {
@@ -189,6 +191,7 @@ export class ApiConfigService {
     return this.getServerTimeout() + 1000;
   }
 
+  //@ReadKeyFromDbIfExists('flags.useRequestCaching')
   getUseRequestCachingFlag(): boolean {
     return this.configService.get<boolean>('flags.useRequestCaching') ?? true;
   }
@@ -350,6 +353,7 @@ export class ApiConfigService {
     return this.configService.get<boolean>('api.graphql') ?? false;
   }
 
+  //@ReadKeyFromDbIfExists('api.public')
   getIsPublicApiActive(): boolean {
     const isApiActive = this.configService.get<boolean>('api.public');
     if (isApiActive === undefined) {

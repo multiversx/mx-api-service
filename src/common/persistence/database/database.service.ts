@@ -1,12 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
-import { NftMediaDb } from "src/common/persistence/database/entities/nft.media.db";
-import { NftMetadataDb } from "src/common/persistence/database/entities/nft.metadata.db";
 import { Repository } from "typeorm";
 import { PersistenceInterface } from "../persistence.interface";
 import { OriginLogger } from "@elrondnetwork/erdnest";
 import { CollectionTraitSummary } from "src/common/indexer/entities/collection.trait.summary";
+import { SwappableSettingsDb, NftMediaDb, NftMetadataDb } from "./entities";
 
 @Injectable()
 export class DatabaseService implements PersistenceInterface {
@@ -17,6 +16,8 @@ export class DatabaseService implements PersistenceInterface {
     private readonly nftMetadataRepository: Repository<NftMetadataDb>,
     @InjectRepository(NftMediaDb)
     private readonly nftMediaRepository: Repository<NftMediaDb>,
+    @InjectRepository(SwappableSettingsDb)
+    private readonly swappableSettingsRepository: Repository<SwappableSettingsDb>,
   ) { }
 
   async getMetadata(identifier: string): Promise<any | null> {
@@ -103,5 +104,37 @@ export class DatabaseService implements PersistenceInterface {
   // eslint-disable-next-line require-await
   async getCollectionTraits(_collection: string): Promise<CollectionTraitSummary[] | null> {
     return null;
+  }
+
+  async getSettingValue(identifier: string): Promise<unknown> {
+    try {
+      const value = await this.swappableSettingsRepository.findOne({ where: { key: identifier } });
+      if (!value) {
+        return null;
+      }
+
+      return value;
+    } catch (error) {
+      this.logger.error(`An unexpected error occurred when fetching config from DB for identifier '${identifier}'`);
+      this.logger.error(error);
+      return [];
+    }
+  }
+
+  async setSettingValue(identifier: string, value: boolean): Promise<void | null> {
+    const setting = new SwappableSettingsDb();
+    setting.id = identifier;
+    setting.value = value;
+
+    await this.swappableSettingsRepository.save(setting);
+  }
+
+  async deleteSettingKey(identifier: string): Promise<void | null> {
+    try {
+      await this.swappableSettingsRepository.delete(identifier);
+    } catch (error) {
+      this.logger.error(`An unexpected error occurred when trying to delete config from DB for identifier '${identifier}'`);
+      this.logger.error(error);
+    }
   }
 }
