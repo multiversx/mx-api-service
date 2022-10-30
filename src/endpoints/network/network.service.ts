@@ -137,10 +137,7 @@ export class NetworkService {
       priceValue,
       tokenMarketCap,
     ] = await Promise.all([
-      this.gatewayService.get(
-        `address/${this.apiConfigService.getAuctionContractAddress()}`,
-        GatewayComponentRequest.addressDetails
-      ),
+      this.gatewayService.getAccountAddress(`${this.apiConfigService.getAuctionContractAddress()}`),
       this.gatewayService.getNetworkEconomics(),
       this.vmQueryService.vmQuery(
         this.apiConfigService.getDelegationContractAddress(),
