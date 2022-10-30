@@ -2,6 +2,7 @@ import { ApiService, ApiSettings, PerformanceProfiler } from "@elrondnetwork/erd
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { ApiMetricsService } from "../metrics/api.metrics.service";
+import { Account } from "./entities/account";
 import { Auction } from "./entities/auction";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
 import { HeartBeatsStatus } from "./entities/heartbeats.status";
@@ -25,7 +26,7 @@ export class GatewayService {
     return result.auction;
   }
 
-  async getNetworkStatus(metaChainShardId: number): Promise<NetworkStatus> {
+  async getNetworkStatus(metaChainShardId: number | string): Promise<NetworkStatus> {
     const result = await this.get(`network/status/${metaChainShardId}`, GatewayComponentRequest.networkStatus);
     return result.status;
   }
@@ -43,6 +44,11 @@ export class GatewayService {
   async getHeartbeatsStatus(): Promise<HeartBeatsStatus[]> {
     const result = await this.get('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat);
     return result.heartbeats;
+  }
+
+  async getAccountAddress(address: string): Promise<Account> {
+    const result = await this.get(`address/${address}`, GatewayComponentRequest.addressDetails);
+    return result;
   }
 
   async get(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {

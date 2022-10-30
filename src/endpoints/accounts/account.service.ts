@@ -8,7 +8,6 @@ import { QueryPagination } from 'src/common/entities/query.pagination';
 import { AccountKey } from './entities/account.key';
 import { DeployedContract } from './entities/deployed.contract';
 import { TransactionService } from '../transactions/transaction.service';
-import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { PluginService } from 'src/common/plugins/plugin.service';
 import { AccountEsdtHistory } from "./entities/account.esdt.history";
 import { AccountHistory } from "./entities/account.history";
@@ -92,7 +91,7 @@ export class AccountService {
     try {
       const {
         account: { nonce, balance, code, codeHash, rootHash, developerReward, ownerAddress, codeMetadata },
-      } = await this.gatewayService.get(`address/${address}`, GatewayComponentRequest.addressDetails);
+      } = await this.gatewayService.getAccountAddress(address);
 
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
       let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], nftCollections: undefined, nfts: undefined });
@@ -208,7 +207,7 @@ export class AccountService {
       encodedUserDeferredPaymentList,
       [encodedNumBlocksBeforeUnBond],
       {
-        status: { erd_nonce: erdNonceString },
+        erd_nonce,
       },
     ] = await Promise.all([
       this.vmQueryService.vmQuery(
@@ -221,11 +220,11 @@ export class AccountService {
         this.apiConfigService.getDelegationContractAddress(),
         'getNumBlocksBeforeUnBond',
       ),
-      this.gatewayService.get(`network/status/${this.apiConfigService.getDelegationContractShardId()}`, GatewayComponentRequest.networkStatus),
+      this.gatewayService.getNetworkStatus(`${this.apiConfigService.getDelegationContractShardId()}`),
     ]);
 
     const numBlocksBeforeUnBond = parseInt(BinaryUtils.base64ToBigInt(encodedNumBlocksBeforeUnBond).toString());
-    const erdNonce = parseInt(erdNonceString);
+    const erdNonce = erd_nonce;
 
     const data: AccountDeferred[] = encodedUserDeferredPaymentList.reduce((result: AccountDeferred[], _, index, array) => {
       if (index % 2 === 0) {
