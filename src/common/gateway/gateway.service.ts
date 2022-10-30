@@ -4,6 +4,7 @@ import { ApiConfigService } from "../api-config/api.config.service";
 import { ApiMetricsService } from "../metrics/api.metrics.service";
 import { Auction } from "./entities/auction";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
+import { HeartBeatsStatus } from "./entities/heartbeats.status";
 import { NetworkConfig } from "./entities/network.config";
 import { NetworkEconomics } from "./entities/network.economics";
 import { NetworkStatus } from "./entities/network.status";
@@ -37,6 +38,11 @@ export class GatewayService {
   async getNetworkEconomics(): Promise<NetworkEconomics> {
     const result = await this.get('network/economics', GatewayComponentRequest.networkEconomics);
     return result.metrics;
+  }
+
+  async getHeartbeatsStatus(): Promise<HeartBeatsStatus[]> {
+    const result = await this.get('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat);
+    return result.heartbeats;
   }
 
   async get(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {

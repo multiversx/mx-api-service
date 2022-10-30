@@ -463,13 +463,13 @@ export class NodeService {
 
   async getHeartbeat(): Promise<Node[]> {
     const [
-      { heartbeats },
+      heartbeats,
       { statistics },
-      { config },
+      config,
     ] = await Promise.all([
-      this.gatewayService.get('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat),
+      this.gatewayService.getHeartbeatsStatus(),
       this.gatewayService.get('validator/statistics', GatewayComponentRequest.validatorStatistics),
-      this.gatewayService.get('network/config', GatewayComponentRequest.networkConfig),
+      this.gatewayService.getNetworkConfig(),
     ]);
 
     const nodes: Node[] = [];
