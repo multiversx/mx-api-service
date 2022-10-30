@@ -80,14 +80,14 @@ export class NetworkService {
   async getNetworkConfig(): Promise<NetworkConfig> {
     const [
       {
-        config: { erd_round_duration, erd_rounds_per_epoch },
+        erd_round_duration, erd_rounds_per_epoch,
       },
       {
-        status: { erd_rounds_passed_in_current_epoch },
+        erd_rounds_passed_in_current_epoch,
       },
     ] = await Promise.all([
-      this.gatewayService.get('network/config', GatewayComponentRequest.networkConfig),
-      this.gatewayService.get('network/status/4294967295', GatewayComponentRequest.networkStatus),
+      this.gatewayService.getNetworkConfig(),
+      this.gatewayService.getNetworkStatus(4294967295),
     ]);
 
     const roundsPassed = erd_rounds_passed_in_current_epoch;
