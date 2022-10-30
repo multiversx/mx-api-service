@@ -131,7 +131,7 @@ export class NetworkService {
         account: { balance },
       },
       {
-        metrics: { erd_total_supply },
+        erd_total_supply,
       },
       [, totalWaitingStakeBase64],
       priceValue,
@@ -141,7 +141,7 @@ export class NetworkService {
         `address/${this.apiConfigService.getAuctionContractAddress()}`,
         GatewayComponentRequest.addressDetails
       ),
-      this.gatewayService.get('network/economics', GatewayComponentRequest.networkEconomics),
+      this.gatewayService.getNetworkEconomics(),
       this.vmQueryService.vmQuery(
         this.apiConfigService.getDelegationContractAddress(),
         'getTotalStakeByType',
@@ -200,24 +200,20 @@ export class NetworkService {
 
     const [
       {
-        config: {
-          erd_num_shards_without_meta: shards,
-          erd_round_duration: refreshRate,
-        },
+        erd_num_shards_without_meta: shards,
+        erd_round_duration: refreshRate,
       },
       {
-        status: {
-          erd_epoch_number: epoch,
-          erd_rounds_passed_in_current_epoch: roundsPassed,
-          erd_rounds_per_epoch: roundsPerEpoch,
-        },
+        erd_epoch_number: epoch,
+        erd_rounds_passed_in_current_epoch: roundsPassed,
+        erd_rounds_per_epoch: roundsPerEpoch,
       },
       blocks,
       accounts,
       transactions,
     ] = await Promise.all([
-      this.gatewayService.get('network/config', GatewayComponentRequest.networkConfig),
-      this.gatewayService.get(`network/status/${metaChainShard}`, GatewayComponentRequest.networkStatus),
+      this.gatewayService.getNetworkConfig(),
+      this.gatewayService.getNetworkStatus(metaChainShard),
       this.blockService.getBlocksCount(new BlockFilter()),
       this.accountService.getAccountsCount(),
       this.transactionService.getTransactionCount(new TransactionFilter()),

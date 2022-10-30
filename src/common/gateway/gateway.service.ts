@@ -5,6 +5,7 @@ import { ApiMetricsService } from "../metrics/api.metrics.service";
 import { Auction } from "./entities/auction";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
 import { NetworkConfig } from "./entities/network.config";
+import { NetworkEconomics } from "./entities/network.economics";
 import { NetworkStatus } from "./entities/network.status";
 
 @Injectable()
@@ -31,6 +32,11 @@ export class GatewayService {
   async getNetworkConfig(): Promise<NetworkConfig> {
     const result = await this.get('network/config', GatewayComponentRequest.networkConfig);
     return result.config;
+  }
+
+  async getNetworkEconomics(): Promise<NetworkEconomics> {
+    const result = await this.get('network/economics', GatewayComponentRequest.networkEconomics);
+    return result.metrics;
   }
 
   async get(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {

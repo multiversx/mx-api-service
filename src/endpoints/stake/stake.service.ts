@@ -40,13 +40,10 @@ export class StakeService {
     const [
       validators,
       {
-        metrics:
-        {
-          erd_total_base_staked_value: totalBaseStaked,
-          erd_total_top_up_value: totalTopUp,
-        },
+        erd_total_base_staked_value: totalBaseStaked,
+        erd_total_top_up_value: totalTopUp,
       },
-    ] = await Promise.all([this.getValidators(), this.gatewayService.get('network/economics', GatewayComponentRequest.networkEconomics)]);
+    ] = await Promise.all([this.getValidators(), this.gatewayService.getNetworkEconomics()]);
 
     const totalStaked = BigInt(BigInt(totalBaseStaked) + BigInt(totalTopUp)).toString();
 
