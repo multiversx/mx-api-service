@@ -2,7 +2,6 @@ import { OriginLogger } from "@elrondnetwork/erdnest";
 import { CachingService } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "../../utils/cache.info";
-import { GatewayComponentRequest } from "../gateway/entities/gateway.component.request";
 import { GatewayService } from "../gateway/gateway.service";
 import { IndexerService } from "../indexer/indexer.service";
 
@@ -28,8 +27,8 @@ export class ProtocolService {
   }
 
   private async getShardIdsRaw(): Promise<number[]> {
-    const networkConfig = await this.gatewayService.get('network/config', GatewayComponentRequest.networkConfig);
-    const shardCount = networkConfig.config.erd_num_shards_without_meta;
+    const networkConfig = await this.gatewayService.getNetworkConfig();
+    const shardCount = networkConfig.erd_num_shards_without_meta;
 
     const result = [];
     for (let i = 0; i < shardCount; i++) {

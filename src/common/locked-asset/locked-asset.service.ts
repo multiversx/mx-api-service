@@ -6,7 +6,6 @@ import { CacheInfo } from '../../utils/cache.info';
 import { CachingService, Constants } from '@elrondnetwork/erdnest';
 import { UnlockMileStoneModel } from '../entities/unlock-schedule';
 import { TokenHelpers } from '../../utils/token.helpers';
-import { GatewayComponentRequest } from '../gateway/entities/gateway.component.request';
 import { GatewayService } from '../gateway/gateway.service';
 import { MexSettingsService } from 'src/endpoints/mex/mex.settings.service';
 
@@ -192,7 +191,7 @@ export class LockedAssetService {
 
   private async getCurrentEpoch(): Promise<number> {
     const metaChainShard = this.apiConfigService.getMetaChainShardId();
-    const res = await this.gatewayService.get(`network/status/${metaChainShard}`, GatewayComponentRequest.networkStatus);
-    return res.status.erd_epoch_number;
+    const res = await this.gatewayService.getNetworkStatus(metaChainShard);
+    return res.erd_epoch_number;
   }
 }

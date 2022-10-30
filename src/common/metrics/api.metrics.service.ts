@@ -2,7 +2,6 @@ import { MetricsService } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { register, Histogram, Gauge } from 'prom-client';
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { GatewayComponentRequest } from "../gateway/entities/gateway.component.request";
 import { GatewayService } from "../gateway/gateway.service";
 import { ProtocolService } from "../protocol/protocol.service";
 
@@ -136,7 +135,7 @@ export class ApiMetricsService {
   }
 
   async getCurrentNonce(shardId: number): Promise<number> {
-    const shardInfo = await this.gatewayService.get(`network/status/${shardId}`, GatewayComponentRequest.networkStatus);
-    return shardInfo.status.erd_nonce;
+    const shardInfo = await this.gatewayService.getNetworkStatus(shardId);
+    return shardInfo.erd_nonce;
   }
 }

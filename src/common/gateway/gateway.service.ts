@@ -4,6 +4,8 @@ import { ApiConfigService } from "../api-config/api.config.service";
 import { ApiMetricsService } from "../metrics/api.metrics.service";
 import { Auction } from "./entities/auction";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
+import { NetworkConfig } from "./entities/network.config";
+import { NetworkStatus } from "./entities/network.status";
 
 @Injectable()
 export class GatewayService {
@@ -19,6 +21,16 @@ export class GatewayService {
     const result = await this.get('validator/auction', GatewayComponentRequest.validatorAuction);
 
     return result.auction;
+  }
+
+  async getNetworkStatus(metaChainShardId: number): Promise<NetworkStatus> {
+    const result = await this.get(`network/status/${metaChainShardId}`, GatewayComponentRequest.networkStatus);
+    return result.status;
+  }
+
+  async getNetworkConfig(): Promise<NetworkConfig> {
+    const result = await this.get('network/config', GatewayComponentRequest.networkConfig);
+    return result.config;
   }
 
   async get(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
