@@ -15,7 +15,6 @@ import { DataApiService } from 'src/common/external/data.api.service';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { DataQuoteType } from 'src/common/external/entities/data.quote.type';
 import { CacheInfo } from 'src/utils/cache.info';
-import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest';
 import { About } from './entities/about';
 import { EsdtService } from '../esdt/esdt.service';
@@ -234,10 +233,7 @@ export class NetworkService {
     const stake = await this.stakeService.getGlobalStake();
     const {
       account: { balance: stakedBalance },
-    } = await this.gatewayService.get(
-      `address/${this.apiConfigService.getAuctionContractAddress()}`,
-      GatewayComponentRequest.addressDetails
-    );
+    } = await this.gatewayService.getAccountAddress(`${this.apiConfigService.getAuctionContractAddress()}`);
     let [activeStake] = await this.vmQueryService.vmQuery(
       this.apiConfigService.getDelegationContractAddress(),
       'getTotalActiveStake',
