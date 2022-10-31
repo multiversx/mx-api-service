@@ -162,14 +162,14 @@ export class EsdtAddressService {
   }
 
   private async applyRolesToAccountCollections(address: string, collections: NftCollection[]): Promise<NftCollectionRole[]> {
-    const rolesResult = await this.gatewayService.get(`address/${address}/esdts/roles`, GatewayComponentRequest.addressEsdtAllRoles);
+    const rolesResult = await this.gatewayService.getAddressEsdtRoles(address);
     const roles = rolesResult.roles;
 
     const nftCollections: NftCollectionRole[] = [];
     for (const collection of collections) {
       const accountCollection: NftCollectionRole = ApiUtils.mergeObjects(new NftCollectionRole(), collection);
 
-      const role = roles[collection.collection];
+      const role = roles.collection;
       accountCollection.canCreate = role ? role.includes('ESDTRoleNFTCreate') : false;
       accountCollection.canBurn = role ? role.includes('ESDTRoleNFTBurn') : false;
       accountCollection.canUpdateAttributes = role ? role.includes('ESDTRoleNFTUpdateAttributes') : false;

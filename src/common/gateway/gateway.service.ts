@@ -4,6 +4,7 @@ import { ApiConfigService } from "../api-config/api.config.service";
 import { ApiMetricsService } from "../metrics/api.metrics.service";
 import { Account } from "./entities/account";
 import { Auction } from "./entities/auction";
+import { EsdtAddressRoles } from "./entities/esdt.roles";
 import { EsdtSupply } from "./entities/esdt.supply";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
 import { HeartBeatsStatus } from "./entities/heartbeats.status";
@@ -62,6 +63,11 @@ export class GatewayService {
   async getFungibleEsdtTokens(): Promise<string[]> {
     const result = await this.get('network/esdt/fungible-tokens', GatewayComponentRequest.allFungibleTokens);
     return result.tokens;
+  }
+
+  async getAddressEsdtRoles(address: string): Promise<EsdtAddressRoles> {
+    const result = await this.get(`address/${address}/esdts/roles`, GatewayComponentRequest.addressEsdtAllRoles);
+    return result;
   }
 
   async getTokenAddress(address: string, identifier: string): Promise<TokenData> {
