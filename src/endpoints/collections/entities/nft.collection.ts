@@ -2,6 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { NftType } from "../../nfts/entities/nft.type";
 import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles";
+import { ScamInfo } from "src/common/entities/scam-info.dto";
 
 export class NftCollection {
   constructor(init?: Partial<NftCollection>) {
@@ -46,4 +47,7 @@ export class NftCollection {
 
   @ApiProperty({ type: CollectionRoles })
   roles: CollectionRoles[] = [];
+
+  @ApiProperty({ type: ScamInfo, nullable: true })
+  scamInfo: ScamInfo | undefined = undefined;
 }

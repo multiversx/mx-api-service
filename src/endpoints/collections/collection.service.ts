@@ -16,6 +16,7 @@ import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { TokenUtils } from "src/utils/token.utils";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
 import { ApiUtils, BinaryUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryType, QueryOperator, QueryConditionOptions, ElasticSortOrder } from "@elrondnetwork/erdnest";
+import { PluginService } from "src/common/plugins/plugin.service";
 
 @Injectable()
 export class CollectionService {
@@ -28,6 +29,7 @@ export class CollectionService {
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => EsdtAddressService))
     private readonly esdtAddressService: EsdtAddressService,
+    private readonly pluginService: PluginService
   ) { }
 
   buildCollectionRolesFilter(filter: CollectionFilter, address?: string) {
@@ -122,6 +124,8 @@ export class CollectionService {
       nftCollection.type = indexedCollection.type;
       nftCollection.timestamp = indexedCollection.timestamp;
     }
+
+    await Promise.all(nftColections.map((collection) => this.pluginService.processCollection(collection)));
 
     return nftColections;
   }
@@ -233,6 +237,8 @@ export class CollectionService {
     collection.timestamp = elasticCollection.timestamp;
     collection.roles = await this.getNftCollectionRoles(elasticCollection);
 
+    await this.pluginService.processCollection(collection);
+
     return collection;
   }
 
@@ -326,7 +332,14 @@ export class CollectionService {
   async getCollectionForAddress(address: string, identifier: string): Promise<NftCollectionAccount | undefined> {
     const collections = await this.getCollectionsForAddress(address, new CollectionFilter({ collection: identifier }), new QueryPagination({ from: 0, size: 1 }));
 
-    return collections.find(x => x.collection === identifier);
+    const collection = collections.find(x => x.collection === identifier);
+    if (!collection) {
+      return undefined;
+    }
+
+    await this.pluginService.processCollection(collection);
+
+    return collection;
   }
 
   async getCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
@@ -386,6 +399,8 @@ export class CollectionService {
         collection.count = item.count;
       }
     }
+
+    await Promise.all(accountCollections.map((accountCollection) => this.pluginService.processCollection(accountCollection)));
 
     return accountCollections;
   }
