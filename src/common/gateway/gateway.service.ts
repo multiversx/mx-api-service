@@ -11,6 +11,7 @@ import { NetworkConfig } from "./entities/network.config";
 import { NetworkEconomics } from "./entities/network.economics";
 import { NetworkStatus } from "./entities/network.status";
 import { TokenData } from "./entities/token.data";
+import { Transaction } from "./entities/transaction";
 
 @Injectable()
 export class GatewayService {
@@ -69,6 +70,19 @@ export class GatewayService {
       return false;
     });
     return result.tokenData;
+  }
+
+  async getGatewayTransaction(txHash: string): Promise<Transaction> {
+    // eslint-disable-next-line require-await
+    const result = await this.get(`transaction/${txHash}?withResults=true`, GatewayComponentRequest.transactionDetails, async (error) => {
+      if (error.response.data.error === 'transaction not found') {
+        return true;
+      }
+
+      return false;
+    });
+
+    return result.transaction;
   }
 
   async get(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {

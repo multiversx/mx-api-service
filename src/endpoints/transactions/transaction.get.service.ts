@@ -1,5 +1,4 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
 import { Transaction } from "./entities/transaction";
@@ -132,19 +131,13 @@ export class TransactionGetService {
   async tryGetTransactionFromGateway(txHash: string, queryInElastic: boolean = true): Promise<TransactionDetailed | null> {
     try {
       // eslint-disable-next-line require-await
-      const transactionResult = await this.gatewayService.get(`transaction/${txHash}?withResults=true`, GatewayComponentRequest.transactionDetails, async (error) => {
-        if (error.response.data.error === 'transaction not found') {
-          return true;
-        }
-
-        return false;
-      });
+      const transactionResult = await this.gatewayService.getGatewayTransaction(txHash);
 
       if (!transactionResult) {
         return null;
       }
 
-      const transaction = transactionResult.transaction;
+      const transaction = transactionResult;
 
       if (!transaction) {
         return null;
