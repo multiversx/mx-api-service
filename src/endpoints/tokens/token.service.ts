@@ -10,7 +10,6 @@ import { TokenAccount } from "./entities/token.account";
 import { TokenType } from "./entities/token.type";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { TokenProperties } from "./entities/token.properties";
 import { TokenRoles } from "./entities/token.roles";
@@ -233,7 +232,6 @@ export class TokenService {
 
   async getTokenForAddress(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {
     const tokens = await this.getFilteredTokens({ identifier });
-
     if (!TokenUtils.isToken(identifier)) {
       return undefined;
     }
@@ -245,20 +243,13 @@ export class TokenService {
 
     const token = tokens[0];
     // eslint-disable-next-line require-await
-    const esdt = await this.gatewayService.get(`address/${address}/esdt/${identifier}`, GatewayComponentRequest.addressEsdtBalance, async (error) => {
-      const errorMessage = error?.response?.data?.error;
-      if (errorMessage && errorMessage.includes('account was not found')) {
-        return true;
-      }
+    const esdt = await this.gatewayService.getTokenAddress(address, identifier);
 
-      return false;
-    });
-
-    if (!esdt || !esdt.tokenData || esdt.tokenData.balance === '0') {
+    if (!esdt || esdt.balance === '0') {
       return undefined;
     }
 
-    const balance = esdt.tokenData.balance;
+    const balance = esdt.balance;
     let tokenWithBalance: TokenDetailedWithBalance = {
       ...token,
       balance,

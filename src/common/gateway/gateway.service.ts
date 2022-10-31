@@ -10,6 +10,7 @@ import { HeartBeatsStatus } from "./entities/heartbeats.status";
 import { NetworkConfig } from "./entities/network.config";
 import { NetworkEconomics } from "./entities/network.economics";
 import { NetworkStatus } from "./entities/network.status";
+import { TokenData } from "./entities/token.data";
 
 @Injectable()
 export class GatewayService {
@@ -55,6 +56,19 @@ export class GatewayService {
   async getEsdtSupply(identifier: string): Promise<EsdtSupply> {
     const result = await this.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
     return result;
+  }
+
+  async getTokenAddress(address: string, identifier: string): Promise<TokenData> {
+    // eslint-disable-next-line require-await
+    const result = await this.get(`address/${address}/esdt/${identifier}`, GatewayComponentRequest.addressEsdtBalance, async (error) => {
+      const errorMessage = error?.response?.data?.error;
+      if (errorMessage && errorMessage.includes('account was not found')) {
+        return true;
+      }
+
+      return false;
+    });
+    return result.tokenData;
   }
 
   async get(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
