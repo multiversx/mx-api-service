@@ -4,6 +4,7 @@ import { ApiConfigService } from "../api-config/api.config.service";
 import { ApiMetricsService } from "../metrics/api.metrics.service";
 import { Account } from "./entities/account";
 import { Auction } from "./entities/auction";
+import { EsdtSupply } from "./entities/esdt.supply";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
 import { HeartBeatsStatus } from "./entities/heartbeats.status";
 import { NetworkConfig } from "./entities/network.config";
@@ -48,6 +49,11 @@ export class GatewayService {
 
   async getAccountAddress(address: string): Promise<Account> {
     const result = await this.get(`address/${address}`, GatewayComponentRequest.addressDetails);
+    return result;
+  }
+
+  async getEsdtSupply(identifier: string): Promise<EsdtSupply> {
+    const result = await this.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
     return result;
   }
 

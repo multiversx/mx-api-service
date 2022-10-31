@@ -355,7 +355,7 @@ export class EsdtService {
   }
 
   async getTokenSupply(identifier: string): Promise<EsdtSupply> {
-    const { supply, minted, burned, initialMinted } = await this.gatewayService.get(`network/esdt/supply/${identifier}`, GatewayComponentRequest.esdtSupply);
+    const { supply, minted, burned, initialMinted } = await this.gatewayService.getEsdtSupply(identifier);
 
     const isCollectionOrToken = identifier.split('-').length === 2;
     if (isCollectionOrToken) {
