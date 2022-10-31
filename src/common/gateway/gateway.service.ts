@@ -59,6 +59,11 @@ export class GatewayService {
     return result;
   }
 
+  async getFungibleEsdtTokens(): Promise<string[]> {
+    const result = await this.get('network/esdt/fungible-tokens', GatewayComponentRequest.allFungibleTokens);
+    return result.tokens;
+  }
+
   async getTokenAddress(address: string, identifier: string): Promise<TokenData> {
     // eslint-disable-next-line require-await
     const result = await this.get(`address/${address}/esdt/${identifier}`, GatewayComponentRequest.addressEsdtBalance, async (error) => {

@@ -1,6 +1,5 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "src/utils/cache.info";
-import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { TokenHelpers } from "src/utils/token.helpers";
@@ -47,9 +46,9 @@ export class EsdtService {
   async getAllEsdtTokensRaw(): Promise<TokenDetailed[]> {
     let tokensIdentifiers: string[];
     try {
-      const getFungibleTokensResult = await this.gatewayService.get('network/esdt/fungible-tokens', GatewayComponentRequest.allFungibleTokens);
+      const getFungibleTokensResult = await this.gatewayService.getFungibleEsdtTokens();
 
-      tokensIdentifiers = getFungibleTokensResult.tokens;
+      tokensIdentifiers = getFungibleTokensResult;
     } catch (error) {
       this.logger.error('Error when getting fungible tokens from gateway');
       this.logger.error(error);
