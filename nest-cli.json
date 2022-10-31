@@ -14,6 +14,10 @@
       {
         "include": "/assets/img",
         "outDir": "./dist/src/public"
+      },
+      {
+        "include": "/assets/templates",
+        "outDir": "./dist/src/"
       }
     ]
   }

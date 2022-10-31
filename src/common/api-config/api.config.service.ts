@@ -28,6 +28,15 @@ export class ApiConfigService {
     return gatewayUrls[Math.floor(Math.random() * gatewayUrls.length)];
   }
 
+  getLightGatewayUrl(): string | undefined {
+    const gatewayUrls = this.configService.get<string[]>('urls.lightGateway');
+    if (!gatewayUrls) {
+      return undefined;
+    }
+
+    return gatewayUrls[Math.floor(Math.random() * gatewayUrls.length)];
+  }
+
   getElasticUrl(): string {
     const elasticUrls = this.configService.get<string[]>('urls.elastic');
     if (!elasticUrls) {
@@ -57,6 +66,10 @@ export class ApiConfigService {
     }
 
     return url;
+  }
+
+  getMaiarIdUrl(): string | undefined {
+    return this.configService.get<string>('urls.maiarId');
   }
 
   getEsdtContractAddress(): string {
@@ -202,11 +215,25 @@ export class ApiConfigService {
 
   getProvidersUrl(): string {
     const providerUrl = this.configService.get<string>('urls.providers');
-    if (!providerUrl) {
-      throw new Error('No providers url present');
+    if (providerUrl) {
+      return providerUrl;
     }
 
-    return providerUrl;
+    const delegationUrl = this.configService.get<string>('urls.delegation');
+    if (delegationUrl) {
+      return delegationUrl + '/providers';
+    }
+
+    throw new Error('No providers url present');
+  }
+
+  getDelegationUrl(): string {
+    const delegationUrl = this.configService.get<string>('urls.delegation');
+    if (!delegationUrl) {
+      throw new Error('No delegation url present');
+    }
+
+    return delegationUrl;
   }
 
   getDataUrl(): string | undefined {
@@ -321,6 +348,10 @@ export class ApiConfigService {
 
   getIsIndexerV3FlagActive(): boolean {
     return this.configService.get<boolean>('flags.indexer-v3') ?? false;
+  }
+
+  isGraphQlActive(): boolean {
+    return this.configService.get<boolean>('api.graphql') ?? false;
   }
 
   getIsPublicApiActive(): boolean {
@@ -494,15 +525,6 @@ export class ApiConfigService {
     return metaChainShardId;
   }
 
-  getUseLegacyElastic(): boolean {
-    const useLegacyElastic = this.configService.get<boolean>('useLegacyElastic');
-    if (useLegacyElastic === undefined) {
-      return false;
-    }
-
-    return useLegacyElastic;
-  }
-
   getRateLimiterSecret(): string | undefined {
     return this.configService.get<string>('rateLimiterSecret');
   }
@@ -563,10 +585,6 @@ export class ApiConfigService {
     }
 
     return jwtSecret;
-  }
-
-  getAccessAddress(): string {
-    return this.configService.get<string>('security.accessAddress') ?? '';
   }
 
   getMockKeybases(): boolean | undefined {
@@ -634,5 +652,61 @@ export class ApiConfigService {
 
   getNftExtendedAttributesNsfwThreshold(): number {
     return this.configService.get<number>('features.nftExtendedAttributes.nsfwThreshold') ?? 0.85;
+  }
+
+  getIndexerSlaveConnections(): DatabaseConnectionOptions[] {
+    const slaves = this.configService.get<DatabaseConnectionOptions[]>('indexer.slaves');
+    if (!slaves) {
+      return [];
+    }
+    return slaves;
+  }
+
+  private getIndexerHost(): string {
+    const indexerHost = this.configService.get<string>('indexer.host');
+    if (!indexerHost) {
+      throw new Error('No indexer.host present');
+    }
+    return indexerHost;
+  }
+
+  private getIndexerPort(): number {
+    const indexerPort = this.configService.get<number>('indexer.port');
+    if (!indexerPort) {
+      throw new Error('No indexer.port present');
+    }
+    return indexerPort;
+  }
+
+  private getIndexerUsername(): string | undefined {
+    const indexerUsername = this.configService.get<string>('indexer.username');
+    return indexerUsername;
+  }
+
+  private getIndexerPassword(): string | undefined {
+    const indexerPassword = this.configService.get<string>('indexer.password');
+    return indexerPassword;
+  }
+
+  private getIndexerName(): string {
+    const indexerName = this.configService.get<string>('indexer.database');
+    if (!indexerName) {
+      throw new Error('No indexer.database present');
+    }
+    return indexerName;
+  }
+
+  getIndexerConnection(): any {
+    return {
+      host: this.getIndexerHost(),
+      port: this.getIndexerPort(),
+      username: this.getIndexerUsername(),
+      password: this.getIndexerPassword(),
+      database: this.getIndexerName(),
+    };
+  }
+
+  getIndexerMaxPagination(): number {
+    return this.configService.get<number>('indexer.maxPagination') ?? 10000;
   }
 }

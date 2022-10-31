@@ -1,6 +1,6 @@
-import { ParseArrayPipe, QueryConditionOptions } from '@elrondnetwork/erdnest';
-import { ParseAddressPipe, ParseBlockHashPipe, ParseOptionalBoolPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, ParseTransactionHashPipe } from '@elrondnetwork/erdnest';
-import { BadRequestException, Body, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import { ParseAddressAndMetachainPipe, ApplyComplexity, ParseAddressArrayPipe, ParseArrayPipe, QueryConditionOptions } from '@elrondnetwork/erdnest';
+import { ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseTransactionHashPipe } from '@elrondnetwork/erdnest';
+import { BadRequestException, Body, Controller, DefaultValuePipe, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { SortOrder } from 'src/common/entities/sort.order';
@@ -20,10 +20,11 @@ export class TransactionController {
   constructor(private readonly transactionService: TransactionService) { }
 
   @Get("/transactions")
-  @ApiOperation({ summary: 'Transaction list', description: 'Returns a list of transactions available on the blockchain. Maximum size of 50 is allowed when activating flags withScResults, withOperation or withLogs' })
+  @ApiOperation({ summary: 'Transaction list', description: 'Returns a list of transactions available on the blockchain.' })
+  @ApplyComplexity({ target: TransactionDetailed })
   @ApiOkResponse({ type: [Transaction] })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
-  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
@@ -38,37 +39,39 @@ export class TransactionController {
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false, deprecated: true })
-  @ApiQuery({ name: 'withScResults', description: 'Return results for transactions', required: false, type: Boolean })
-  @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false, type: Boolean })
-  @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withScResults', description: 'Return results for transactions. When "withScResults" parameter is applied, complexity estimation is 200', required: false, type: Boolean })
+  @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions. When "withOperations" parameter is applied, complexity estimation is 200', required: false, type: Boolean })
+  @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions. When "withLogs" parameter is applied, complexity estimation is 200', required: false, type: Boolean })
+  @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
+  @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   getTransactions(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('sender', ParseAddressPipe) sender?: string,
-    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('sender', ParseAddressAndMetachainPipe) sender?: string,
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
-    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
     @Query('function') scFunction?: string,
     @Query('condition') condition?: QueryConditionOptions,
-    @Query('before', ParseOptionalIntPipe) before?: number,
-    @Query('after', ParseOptionalIntPipe) after?: number,
-    @Query('order', new ParseOptionalEnumPipe(SortOrder)) order?: SortOrder,
-    @Query('withScResults', new ParseOptionalBoolPipe) withScResults?: boolean,
-    @Query('withOperations', new ParseOptionalBoolPipe) withOperations?: boolean,
-    @Query('withLogs', new ParseOptionalBoolPipe) withLogs?: boolean,
-  ): Promise<Transaction[]> {
-    if ((withScResults === true || withOperations === true || withLogs) && size > 50) {
-      throw new BadRequestException(`Maximum size of 50 is allowed when activating flags 'withScResults', 'withOperations' or 'withLogs'`);
-    }
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
+    @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
+    @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
+    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
+  ) {
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername });
 
     return this.transactionService.getTransactions(new TransactionFilter({
       sender,
-      receiver,
+      receivers: receiver,
       token,
       function: scFunction,
       senderShard,
@@ -81,14 +84,17 @@ export class TransactionController {
       after,
       condition,
       order,
-    }), new QueryPagination({ from, size }), new TransactionQueryOptions({ withScResults, withOperations, withLogs }));
+    }),
+      new QueryPagination({ from, size }),
+      options,
+    );
   }
 
   @Get("/transactions/count")
   @ApiOperation({ summary: "Transactions count", description: 'Returns the total number of transactions' })
   @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
-  @ApiQuery({ name: 'receiver', description: 'Address of the transaction receiver', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
   @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
   @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
@@ -101,23 +107,23 @@ export class TransactionController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   getTransactionCount(
-    @Query('sender', ParseAddressPipe) sender?: string,
-    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('sender', ParseAddressAndMetachainPipe) sender?: string,
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
-    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
     @Query('function') scFunction?: string,
     @Query('condition') condition?: QueryConditionOptions,
-    @Query('before', ParseOptionalIntPipe) before?: number,
-    @Query('after', ParseOptionalIntPipe) after?: number,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
-      receiver,
+      receivers: receiver,
       token,
       senderShard,
       receiverShard,
@@ -135,23 +141,23 @@ export class TransactionController {
   @Get("/transactions/c")
   @ApiExcludeEndpoint()
   getTransactionCountAlternative(
-    @Query('sender', ParseAddressPipe) sender?: string,
-    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('sender', ParseAddressAndMetachainPipe) sender?: string,
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
-    @Query('senderShard', ParseOptionalIntPipe) senderShard?: number,
-    @Query('receiverShard', ParseOptionalIntPipe) receiverShard?: number,
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
-    @Query('status', new ParseOptionalEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
     @Query('function') scFunction?: string,
     @Query('condition') condition?: QueryConditionOptions,
-    @Query('before', ParseOptionalIntPipe) before?: number,
-    @Query('after', ParseOptionalIntPipe) after?: number,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
-      receiver,
+      receivers: receiver,
       token,
       senderShard,
       receiverShard,
@@ -177,7 +183,7 @@ export class TransactionController {
   ): Promise<TransactionDetailed> {
     const transaction = await this.transactionService.getTransaction(txHash, fields);
     if (transaction === null) {
-      throw new HttpException('Transaction not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Transaction not found');
     }
 
     return transaction;
@@ -202,7 +208,7 @@ export class TransactionController {
     const result = await this.transactionService.createTransaction(transaction);
 
     if (typeof result === 'string' || result instanceof String) {
-      throw new HttpException(result, HttpStatus.BAD_REQUEST);
+      throw new BadRequestException(result);
     }
 
     return result;
@@ -223,3 +229,4 @@ export class TransactionController {
     return await this.transactionService.decodeTransaction(transaction);
   }
 }
+

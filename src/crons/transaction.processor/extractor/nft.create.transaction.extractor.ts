@@ -1,11 +1,11 @@
-import { AddressUtils, BinaryUtils } from "@elrondnetwork/erdnest";
+import { AddressUtils, BinaryUtils, OriginLogger } from "@elrondnetwork/erdnest";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Logger } from "@nestjs/common";
 import { TransactionDetailed } from "src/endpoints/transactions/entities/transaction.detailed";
 import { TransactionExtractorInterface } from "./transaction.extractor.interface";
 
 export class NftCreateTransactionExtractor implements TransactionExtractorInterface<{ collection: string }> {
-  private readonly logger: Logger = new Logger(NftCreateTransactionExtractor.name);
+  private readonly logger = new OriginLogger(NftCreateTransactionExtractor.name);
 
   canDetectNftCreateTransactionFromLogs(transaction: ShardTransaction): Boolean {
     if (!transaction.sender || !transaction.receiver) {

@@ -1,5 +1,5 @@
-import { ParseBlsHashPipe, ParseOptionalEnumPipe, ParseOptionalIntPipe, QueryConditionOptions } from "@elrondnetwork/erdnest";
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { ParseBlsHashPipe, ParseEnumPipe, ParseIntPipe, QueryConditionOptions } from "@elrondnetwork/erdnest";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { Round } from "./entities/round";
 import { RoundDetailed } from "./entities/round.detailed";
@@ -24,9 +24,9 @@ export class RoundController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query("validator", ParseBlsHashPipe) validator?: string,
-    @Query('condition', new ParseOptionalEnumPipe(QueryConditionOptions)) condition?: QueryConditionOptions,
-    @Query("shard", new ParseOptionalIntPipe) shard?: number,
-    @Query("epoch", new ParseOptionalIntPipe) epoch?: number,
+    @Query('condition', new ParseEnumPipe(QueryConditionOptions)) condition?: QueryConditionOptions,
+    @Query("shard", new ParseIntPipe) shard?: number,
+    @Query("epoch", new ParseIntPipe) epoch?: number,
   ): Promise<Round[]> {
     return this.roundService.getRounds(new RoundFilter({ from, size, condition, validator, shard, epoch }));
   }
@@ -34,34 +34,28 @@ export class RoundController {
   @Get("/rounds/count")
   @ApiOperation({ summary: 'Rounds count', description: 'Returns total number of rounds' })
   @ApiOkResponse({ type: Number })
-  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'validator', description: 'Filter by validator', required: false })
   @ApiQuery({ name: 'condition', description: 'Filter by condition', required: false })
   @ApiQuery({ name: 'shard', description: 'Filter by shard identifier', required: false })
   @ApiQuery({ name: 'epoch', description: 'Filter by epoch number', required: false })
   getRoundCount(
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query("validator", ParseBlsHashPipe) validator?: string,
-    @Query('condition', new ParseOptionalEnumPipe(QueryConditionOptions)) condition?: QueryConditionOptions,
-    @Query("shard", new ParseOptionalIntPipe) shard?: number,
-    @Query("epoch", new ParseOptionalIntPipe) epoch?: number,
+    @Query('condition', new ParseEnumPipe(QueryConditionOptions)) condition?: QueryConditionOptions,
+    @Query("shard", new ParseIntPipe) shard?: number,
+    @Query("epoch", new ParseIntPipe) epoch?: number,
   ): Promise<number> {
-    return this.roundService.getRoundCount(new RoundFilter({ from, size, condition, validator, shard, epoch }));
+    return this.roundService.getRoundCount(new RoundFilter({ condition, validator, shard, epoch }));
   }
 
   @Get("/rounds/c")
   @ApiExcludeEndpoint()
   getRoundCountAlternative(
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query("validator", ParseBlsHashPipe) validator?: string,
-    @Query('condition', new ParseOptionalEnumPipe(QueryConditionOptions)) condition?: QueryConditionOptions,
-    @Query("shard", new ParseOptionalIntPipe) shard?: number,
-    @Query("epoch", new ParseOptionalIntPipe) epoch?: number,
+    @Query('condition', new ParseEnumPipe(QueryConditionOptions)) condition?: QueryConditionOptions,
+    @Query("shard", new ParseIntPipe) shard?: number,
+    @Query("epoch", new ParseIntPipe) epoch?: number,
   ): Promise<number> {
-    return this.roundService.getRoundCount(new RoundFilter({ from, size, condition, validator, shard, epoch }));
+    return this.roundService.getRoundCount(new RoundFilter({ condition, validator, shard, epoch }));
   }
 
   @Get("/rounds/:shard/:round")
@@ -69,8 +63,8 @@ export class RoundController {
   @ApiOkResponse({ type: RoundDetailed })
   @ApiNotFoundResponse({ description: 'Round not found' })
   async getRound(
-    @Param('shard', ParseOptionalIntPipe) shard: number,
-    @Param('round', ParseOptionalIntPipe) round: number
+    @Param('shard', ParseIntPipe) shard: number,
+    @Param('round', ParseIntPipe) round: number
   ): Promise<RoundDetailed> {
     try {
       return await this.roundService.getRound(shard, round);

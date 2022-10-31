@@ -1,5 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
@@ -9,36 +8,25 @@ import { TransactionLog } from "./entities/transaction.log";
 import { TransactionOptionalFieldOption } from "./entities/transaction.optional.field.options";
 import { TransactionReceipt } from "./entities/transaction.receipt";
 import { TokenTransferService } from "../tokens/token.transfer.service";
-import { ApiUtils, BinaryUtils, ElasticQuery, ElasticService, ElasticSortOrder, ElasticSortProperty, QueryConditionOptions, QueryType } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils } from "@elrondnetwork/erdnest";
 import { TransactionUtils } from "./transaction.utils";
+import { IndexerService } from "src/common/indexer/indexer.service";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class TransactionGetService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(TransactionGetService.name);
 
   constructor(
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
-    private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
-  ) {
-    this.logger = new Logger(TransactionGetService.name);
-  }
+  ) { }
 
   private async tryGetTransactionFromElasticBySenderAndNonce(sender: string, nonce: number): Promise<TransactionDetailed | undefined> {
-    const queries = [
-      QueryType.Match('sender', sender),
-      QueryType.Match('nonce', nonce),
-    ];
-
-    const elasticQuery = ElasticQuery.create()
-      .withPagination({ from: 0, size: 1 })
-      .withCondition(QueryConditionOptions.must, queries);
-
-    const transactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
-
-    return transactions.firstOrUndefined();
+    const transactions = await this.indexerService.getTransactionBySenderAndNonce(sender, nonce);
+    return transactions.firstOrUndefined() as TransactionDetailed | undefined;
   }
 
   async getTransactionLogsFromElastic(hashes: string[]): Promise<TransactionLog[]> {
@@ -56,86 +44,71 @@ export class TransactionGetService {
   }
 
   private async getTransactionLogsFromElasticInternal(hashes: string[]): Promise<any[]> {
-    const queries = [];
-    for (const hash of hashes) {
-      queries.push(QueryType.Match('_id', hash));
-    }
-
-    const elasticQueryLogs = ElasticQuery.create()
-      .withPagination({ from: 0, size: 10000 })
-      .withCondition(QueryConditionOptions.should, queries);
-
-    return await this.elasticService.getList('logs', 'id', elasticQueryLogs);
+    return await this.indexerService.getTransactionLogs(hashes);
   }
 
   async getTransactionScResultsFromElastic(txHash: string): Promise<SmartContractResult[]> {
-    const originalTxHashQuery = QueryType.Match('originalTxHash', txHash);
-    const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
-
-    const elasticQuerySc = ElasticQuery.create()
-      .withPagination({ from: 0, size: 100 })
-      .withSort([timestamp])
-      .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
-
-    const scResults = await this.elasticService.getList('scresults', 'hash', elasticQuerySc);
-
+    const scResults = await this.indexerService.getTransactionScResults(txHash);
     return scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
   }
 
   async tryGetTransactionFromElastic(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
+    let transaction: any;
     try {
-      const result = await this.elasticService.getItem('transactions', 'txHash', txHash);
-      if (!result) {
+      transaction = await this.indexerService.getTransaction(txHash);
+      if (!transaction) {
         return null;
       }
+    } catch (error: any) {
+      this.logger.error(`Unexpected error when getting transaction from elastic, hash '${txHash}'`);
+      this.logger.error(error);
 
-      if (result.scResults) {
-        result.results = result.scResults;
+      throw error;
+    }
+
+    try {
+      if (transaction.scResults) {
+        transaction.results = transaction.scResults;
       }
 
-      const transactionDetailed: TransactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), result);
+      const transactionDetailed: TransactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), transaction);
 
       const hashes: string[] = [];
       hashes.push(txHash);
       const previousHashes: Record<string, string> = {};
 
-      if (!this.apiConfigService.getUseLegacyElastic()) {
-        if (result.hasScResults === true && (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.results))) {
-          transactionDetailed.results = await this.getTransactionScResultsFromElastic(transactionDetailed.txHash);
+      if (transaction.hasScResults === true && (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.results))) {
+        transactionDetailed.results = await this.getTransactionScResultsFromElastic(transactionDetailed.txHash);
 
-          for (const scResult of transactionDetailed.results) {
-            hashes.push(scResult.hash);
-            previousHashes[scResult.hash] = scResult.prevTxHash;
-          }
+        for (const scResult of transactionDetailed.results) {
+          hashes.push(scResult.hash);
+          previousHashes[scResult.hash] = scResult.prevTxHash;
         }
+      }
 
-        if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.receipt)) {
-          const receiptHashQuery = QueryType.Match('txHash', txHash);
-          const elasticQueryReceipts = ElasticQuery.create()
-            .withPagination({ from: 0, size: 1 })
-            .withCondition(QueryConditionOptions.must, [receiptHashQuery]);
-
-          const receipts = await this.elasticService.getList('receipts', 'receiptHash', elasticQueryReceipts);
-          if (receipts.length > 0) {
-            const receipt = receipts[0];
-            transactionDetailed.receipt = ApiUtils.mergeObjects(new TransactionReceipt(), receipt);
-          }
+      if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.receipt)) {
+        const receipts = await this.indexerService.getTransactionReceipts(txHash);
+        if (receipts.length > 0) {
+          const receipt = receipts[0];
+          transactionDetailed.receipt = ApiUtils.mergeObjects(new TransactionReceipt(), receipt);
         }
+      }
 
-        if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs)) {
-          const logs = await this.getTransactionLogsFromElastic(hashes);
+      if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs)) {
+        const logs = await this.getTransactionLogsFromElastic(hashes);
 
+        if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.operations)) {
           transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, logs);
           transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
+        }
 
-          for (const log of logs) {
-            if (log.id === txHash) {
-              transactionDetailed.logs = log;
-            } else {
-              const foundScResult = transactionDetailed.results.find(({ hash }) => log.id === hash);
-              if (foundScResult) {
-                foundScResult.logs = log;
-              }
+        for (const log of logs) {
+          if (log.id === txHash) {
+            transactionDetailed.logs = log;
+          } else if (transactionDetailed.results) {
+            const foundScResult = transactionDetailed.results.find(({ hash }) => log.id === hash);
+            if (foundScResult) {
+              foundScResult.logs = log;
             }
           }
         }

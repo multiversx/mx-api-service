@@ -5,10 +5,10 @@ import request = require('supertest');
 
 describe("Delegations Controller", () => {
   let app: INestApplication;
-  const delegation: string = "/delegation";
-  const delegationLegacy: string = "/delegation-legacy";
+  const delegationPath: string = "/delegation";
+  const delegationLegacyPath: string = "/delegation-legacy";
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -17,15 +17,37 @@ describe("Delegations Controller", () => {
     await app.init();
   });
 
-  it("/delegation - should return 200 status code and delegation details", async () => {
-    await request(app.getHttpServer())
-      .get(delegation)
-      .expect(200);
+  describe('/delegation', () => {
+    it('should return delegation staking contract information', async () => {
+      await request(app.getHttpServer())
+        .get(`${delegationPath}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body.stake).toBeDefined();
+          expect(res.body.topUp).toBeDefined();
+          expect(res.body.locked).toBeDefined();
+          expect(res.body.minDelegation).toBeDefined();
+        });
+    });
   });
 
-  it("/delegation-legacy - should return 200 status code and delegation-legacy details", async () => {
-    await request(app.getHttpServer())
-      .get(delegationLegacy)
-      .expect(200);
+  describe('/delegation-legacy', () => {
+    it('should return legacy delegation contract global information', async () => {
+      await request(app.getHttpServer())
+        .get(`${delegationLegacyPath}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body.totalWithdrawOnlyStake).toBeDefined();
+          expect(res.body.totalWaitingStake).toBeDefined();
+          expect(res.body.totalActiveStake).toBeDefined();
+          expect(res.body.totalUnstakedStake).toBeDefined();
+          expect(res.body.totalDeferredPaymentStake).toBeDefined();
+          expect(res.body.numUsers).toBeDefined();
+        });
+    });
+  });
+
+  afterEach(async () => {
+    await app.close();
   });
 });

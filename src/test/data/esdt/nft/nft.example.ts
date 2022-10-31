@@ -39,6 +39,7 @@ const nftCollection = [{
   score: undefined,
   isNsfw: undefined,
   rank: undefined,
+  rarities: undefined,
 },
 ];
 export default nftCollection;

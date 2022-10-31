@@ -1,23 +1,23 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { NftMediaDb } from "src/common/persistence/database/entities/nft.media.db";
 import { NftMetadataDb } from "src/common/persistence/database/entities/nft.metadata.db";
 import { Repository } from "typeorm";
 import { PersistenceInterface } from "../persistence.interface";
+import { OriginLogger } from "@elrondnetwork/erdnest";
+import { CollectionTraitSummary } from "src/common/indexer/entities/collection.trait.summary";
 
 @Injectable()
 export class DatabaseService implements PersistenceInterface {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(DatabaseService.name);
 
   constructor(
     @InjectRepository(NftMetadataDb)
     private readonly nftMetadataRepository: Repository<NftMetadataDb>,
     @InjectRepository(NftMediaDb)
     private readonly nftMediaRepository: Repository<NftMediaDb>,
-  ) {
-    this.logger = new Logger(DatabaseService.name);
-  }
+  ) { }
 
   async getMetadata(identifier: string): Promise<any | null> {
     try {
@@ -98,5 +98,10 @@ export class DatabaseService implements PersistenceInterface {
     value.content = media;
 
     await this.nftMediaRepository.save(value);
+  }
+
+  // eslint-disable-next-line require-await
+  async getCollectionTraits(_collection: string): Promise<CollectionTraitSummary[] | null> {
+    return null;
   }
 }

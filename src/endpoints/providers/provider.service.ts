@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Provider } from "src/endpoints/providers/entities/provider";
@@ -10,10 +10,11 @@ import { DelegationData } from "./entities/delegation.data";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { AddressUtils, Constants, CachingService, ApiService } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class ProviderService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(ProviderService.name);
 
   constructor(
     private readonly cachingService: CachingService,
@@ -24,9 +25,7 @@ export class ProviderService {
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => KeybaseService))
     private readonly keybaseService: KeybaseService,
-  ) {
-    this.logger = new Logger(ProviderService.name);
-  }
+  ) { }
 
   async getProvider(address: string): Promise<Provider | undefined> {
     const query = new ProviderFilter();
@@ -123,21 +122,15 @@ export class ProviderService {
     return /^[\w]*$/g.test(identity ?? '');
   }
 
-  async getProviders(query: ProviderFilter): Promise<Provider[]> {
-    let providers = await this.getProvidersWithStakeInformation();
-
-    if (query.identity) {
-      providers = providers.filter((provider) => provider.identity === query.identity);
-    }
-
-    return providers;
+  async getProviders(filter: ProviderFilter): Promise<Provider[]> {
+    return await this.getFilteredProviders(filter);
   }
 
   async getDelegationProviders(): Promise<DelegationData[]> {
     return await this.cachingService.getOrSetCache(
-      'delegationProviders',
+      CacheInfo.DelegationProviders.key,
       async () => await this.getDelegationProvidersRaw(),
-      Constants.oneMinute()
+      CacheInfo.DelegationProviders.ttl
     );
   }
 
@@ -161,36 +154,42 @@ export class ProviderService {
   }
 
   async getAllProvidersRaw(): Promise<Provider[]> {
-    const providers = await this.getProviderAddresses();
+    const providerAddresses = await this.getProviderAddresses();
 
-    const [configs, numUsers, cumulatedRewards] = await Promise.all([
+    const [configs, metadatas, numUsers, cumulatedRewards] = await Promise.all([
       this.cachingService.batchProcess(
-        providers,
+        providerAddresses,
         address => `providerConfig:${address}`,
         async address => await this.getProviderConfig(address),
         Constants.oneMinute() * 15,
       ),
       this.cachingService.batchProcess(
-        providers,
+        providerAddresses,
+        address => `providerMetadata:${address}`,
+        async address => await this.getProviderMetadata(address),
+        Constants.oneMinute() * 15,
+      ),
+      this.cachingService.batchProcess(
+        providerAddresses,
         address => `providerNumUsers:${address}`,
         async address => await this.getNumUsers(address),
         Constants.oneHour(),
       ),
       this.cachingService.batchProcess(
-        providers,
+        providerAddresses,
         address => `providerCumulatedRewards:${address}`,
         async address => await this.getCumulatedRewards(address),
         Constants.oneHour()
       ),
     ]);
 
-    const providersRaw: Provider[] = providers.map((provider, index) => {
+    const providersRaw: Provider[] = providerAddresses.map((provider, index) => {
       return {
         provider,
         ...configs[index],
         numUsers: numUsers[index] ?? 0,
         cumulatedRewards: cumulatedRewards[index] ?? '0',
-        identity: undefined,
+        identity: metadatas[index]?.identity ?? undefined,
         numNodes: 0,
         stake: '0',
         topUp: '0',
@@ -202,13 +201,13 @@ export class ProviderService {
     const providerKeybases = await this.keybaseService.getCachedNodesAndProvidersKeybases();
 
     if (providerKeybases) {
-      for (const providerAddress of providers) {
+      for (const providerAddress of providerAddresses) {
         const providerInfo = providerKeybases[providerAddress];
 
-        if (providerInfo && providerInfo.confirmed) {
+        if (!providerInfo || !providerInfo.confirmed) {
           const found = providersRaw.find(x => x.provider === providerAddress);
           if (found) {
-            found.identity = providerInfo.identity;
+            found.identity = undefined;
           }
         }
       }
@@ -343,5 +342,19 @@ export class ProviderService {
     }
 
     return null;
+  }
+
+  async getFilteredProviders(filter: ProviderFilter): Promise<Provider[]> {
+    let providers = await this.getProvidersWithStakeInformation();
+
+    if (filter.identity) {
+      providers = providers.filter((provider) => provider.identity === filter.identity);
+    }
+
+    if (filter.providers) {
+      providers = providers.filter(x => x.provider && filter.providers?.includes(x.provider));
+    }
+
+    return providers;
   }
 }

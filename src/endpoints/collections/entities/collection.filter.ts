@@ -10,6 +10,8 @@ export class CollectionFilter {
   search?: string;
   type?: NftType[];
   owner?: string;
+  before?: number;
+  after?: number;
   canCreate?: boolean | string;
   canBurn?: boolean | string;
   canAddQuantity?: boolean | string;

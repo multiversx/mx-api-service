@@ -16,8 +16,9 @@ import { GatewayService } from 'src/common/gateway/gateway.service';
 import { DataQuoteType } from 'src/common/external/entities/data.quote.type';
 import { CacheInfo } from 'src/utils/cache.info';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
-import { Constants, NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest';
+import { NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest';
 import { About } from './entities/about';
+import { EsdtService } from '../esdt/esdt.service';
 
 @Injectable()
 export class NetworkService {
@@ -26,6 +27,7 @@ export class NetworkService {
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
+    @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
     @Inject(forwardRef(() => AccountService))
     private readonly accountService: AccountService,
@@ -35,13 +37,15 @@ export class NetworkService {
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
+    @Inject(forwardRef(() => EsdtService))
+    private readonly esdtService: EsdtService,
   ) { }
 
   async getConstants(): Promise<NetworkConstants> {
     return await this.cachingService.getOrSetCache(
-      'constants',
+      CacheInfo.Constants.key,
       async () => await this.getConstantsRaw(),
-      Constants.oneDay()
+      CacheInfo.Constants.ttl
     );
   }
 
@@ -122,7 +126,6 @@ export class NetworkService {
   }
 
   async getEconomicsRaw(): Promise<Economics> {
-    const locked = 1330000;
     const [
       {
         account: { balance },
@@ -132,6 +135,7 @@ export class NetworkService {
       },
       [, totalWaitingStakeBase64],
       priceValue,
+      tokenMarketCap,
     ] = await Promise.all([
       this.gatewayService.get(
         `address/${this.apiConfigService.getAuctionContractAddress()}`,
@@ -143,6 +147,7 @@ export class NetworkService {
         'getTotalStakeByType',
       ),
       this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price),
+      this.esdtService.getTokenMarketCapRaw(),
     ]);
 
 
@@ -156,6 +161,14 @@ export class NetworkService {
 
     const staked = parseInt((BigInt(balance) + totalWaitingStake).toString().slice(0, -18));
     const totalSupply = parseInt(erd_total_supply.slice(0, -18));
+
+    let locked: number = 0;
+    if (this.apiConfigService.getNetwork() === 'mainnet') {
+      const account = await this.accountService.getAccountRaw('erd195fe57d7fm5h33585sc7wl8trqhrmy85z3dg6f6mqd0724ymljxq3zjemc');
+      if (account) {
+        locked = Math.round(NumberUtils.denominate(BigInt(account.balance), 18));
+      }
+    }
 
     const circulatingSupply = totalSupply - locked;
     const price = priceValue ? parseFloat(priceValue.toFixed(2)) : undefined;
@@ -172,6 +185,7 @@ export class NetworkService {
       apr: aprInfo.apr ? aprInfo.apr.toRounded(6) : 0,
       topUpApr: aprInfo.topUpApr ? aprInfo.topUpApr.toRounded(6) : 0,
       baseApr: aprInfo.baseApr ? aprInfo.baseApr.toRounded(6) : 0,
+      tokenMarketCap: tokenMarketCap ? Math.round(tokenMarketCap) : undefined,
     });
 
     if (this.apiConfigService.isStakingV4Enabled()) {
@@ -286,15 +300,29 @@ export class NetworkService {
 
   getAboutRaw(): About {
     const appVersion = require('child_process')
-      .execSync('git rev-parse --short HEAD')
+      .execSync('git rev-parse HEAD')
       .toString().trim();
 
     let pluginsVersion = require('child_process')
-      .execSync('git rev-parse --short HEAD', { cwd: 'src/plugins' })
+      .execSync('git rev-parse HEAD', { cwd: 'src/plugins' })
+      .toString().trim();
+
+    let apiVersion = require('child_process')
+      .execSync('git tag --points-at HEAD')
       .toString().trim();
 
     if (pluginsVersion === appVersion) {
       pluginsVersion = undefined;
+    }
+
+    if (!apiVersion) {
+      apiVersion = require('child_process')
+        .execSync('git describe --tags --abbrev=0')
+        .toString().trim();
+
+      if (apiVersion) {
+        apiVersion = apiVersion + '-next';
+      }
     }
 
     return new About({
@@ -302,6 +330,7 @@ export class NetworkService {
       pluginsVersion,
       network: this.apiConfigService.getNetwork(),
       cluster: this.apiConfigService.getCluster(),
+      version: apiVersion,
     });
   }
 

@@ -1,6 +1,6 @@
-import { ParseArrayPipe } from "@elrondnetwork/erdnest";
+import { ParseArrayPipe, ParseIntPipe } from "@elrondnetwork/erdnest";
 import { ParseBlockHashPipe, ParseTransactionHashPipe } from "@elrondnetwork/erdnest";
-import { Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, NotFoundException, Param, Query } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { SmartContractResult } from "./entities/smart.contract.result";
 import { SmartContractResultService } from "./scresult.service";
@@ -8,7 +8,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { SmartContractResultFilter } from "./entities/smart.contract.result.filter";
 
 @Controller()
-@ApiTags('sc-results')
+@ApiTags('results')
 export class SmartContractResultController {
   constructor(private readonly scResultService: SmartContractResultService) { }
 

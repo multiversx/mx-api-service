@@ -1,22 +1,23 @@
-import { CachingService, ElasticService } from "@elrondnetwork/erdnest";
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { OriginLogger } from "@elrondnetwork/erdnest";
+import { CachingService } from "@elrondnetwork/erdnest";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "../../utils/cache.info";
 import { GatewayComponentRequest } from "../gateway/entities/gateway.component.request";
 import { GatewayService } from "../gateway/gateway.service";
+import { IndexerService } from "../indexer/indexer.service";
 
 @Injectable()
 export class ProtocolService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(ProtocolService.name);
+
   constructor(
     @Inject(forwardRef(() => GatewayService))
     private readonly gatewayService: GatewayService,
     @Inject(forwardRef(() => CachingService))
     private readonly cachingService: CachingService,
-    @Inject(forwardRef(() => ElasticService))
-    private readonly elasticService: ElasticService
-  ) {
-    this.logger = new Logger(ProtocolService.name);
-  }
+    @Inject(forwardRef(() => IndexerService))
+    private readonly indexerService: IndexerService
+  ) { }
 
   async getShardIds(): Promise<number[]> {
     return await this.cachingService.getOrSetCache(
@@ -62,7 +63,7 @@ export class ProtocolService {
 
   private async getGenesisTimestampRaw(): Promise<number> {
     try {
-      const round = await this.elasticService.getItem('rounds', 'round', `${0}_${1}`);
+      const round = await this.indexerService.getRound(0, 1);
       return round.timestamp;
     } catch (error) {
       this.logger.error(error);

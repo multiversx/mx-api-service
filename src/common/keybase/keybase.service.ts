@@ -1,4 +1,4 @@
-import { forwardRef, HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { Keybase } from "./entities/keybase";
@@ -7,11 +7,12 @@ import { KeybaseState } from "./entities/keybase.state";
 import { CacheInfo } from "../../utils/cache.info";
 import asyncPool from "tiny-async-pool";
 import { GithubService } from "../github/github.service";
-import { ApiService, ApiUtils, CachingService, Constants } from "@elrondnetwork/erdnest";
+import { ApiService, ApiUtils, CachingService, Constants, OriginLogger } from "@elrondnetwork/erdnest";
+import { ApiConfigService } from "../api-config/api.config.service";
 
 @Injectable()
 export class KeybaseService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(KeybaseService.name);
 
   constructor(
     private readonly cachingService: CachingService,
@@ -21,9 +22,8 @@ export class KeybaseService {
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
     private readonly githubService: GithubService,
-  ) {
-    this.logger = new Logger(KeybaseService.name);
-  }
+    private readonly apiConfigService: ApiConfigService
+  ) { }
 
   private async getProvidersKeybasesRaw(): Promise<Keybase[]> {
     const providers = await this.providerService.getProviderAddresses();
@@ -97,7 +97,7 @@ export class KeybaseService {
 
     const allKeybases: Keybase[] = [...providerKeybases, ...nodeKeybases];
 
-    const distinctIdentities = allKeybases.map(x => x.identity ?? '').filter(x => x !== '').distinct();
+    const distinctIdentities = allKeybases.map(x => x.identity ?? '').filter(x => x !== '').distinct().shuffle();
 
     await asyncPool(
       1,
@@ -109,7 +109,7 @@ export class KeybaseService {
   async confirmKeybasesForIdentity(identity: string): Promise<void> {
     const githubSuccess = await this.confirmKeybasesAgainstGithubForIdentity(identity);
     if (!githubSuccess) {
-      await this.confirmKeybasesAgainstKeybasePubForIdentity(identity);
+      await this.confirmKeybasesAgainstKeybasePubForIdentityResilient(identity);
     }
   }
 
@@ -125,7 +125,7 @@ export class KeybaseService {
       this.logger.log(`github.com validation: for identity '${identity}', found ${keys.length} keys`);
 
       await this.cachingService.batchProcess(
-        [keys],
+        keys,
         key => `keybase:${key}`,
         async () => await true,
         Constants.oneMonth() * 6,
@@ -140,9 +140,30 @@ export class KeybaseService {
     }
   }
 
+  async confirmKeybasesAgainstKeybasePubForIdentityResilient(identity: string): Promise<void> {
+    let retries = 0;
+
+    while (retries < 3) {
+      try {
+        await this.confirmKeybasesAgainstKeybasePubForIdentity(identity);
+        return;
+      } catch (error) {
+        retries++;
+
+        // wait with backoff
+        await new Promise(resolve => setTimeout(resolve, 5000 * retries));
+
+        this.logger.log(`Retry #${retries} for confirming keybases against keybase.pub for identity '${identity}'`);
+      }
+    }
+  }
+
   async confirmKeybasesAgainstKeybasePubForIdentity(identity: string): Promise<void> {
+    const network = this.apiConfigService.getNetwork();
+    const networkSuffix = network !== "mainnet" ? `/${network}` : '';
+
     // eslint-disable-next-line require-await
-    const result = await this.apiService.get(`https://keybase.pub/${identity}/elrond`, { timeout: 100000 }, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
+    const result = await this.apiService.get(`https://keybase.pub/${identity}/elrond${networkSuffix}`, { timeout: 100000 }, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
 
     if (!result) {
       this.logger.log(`For identity '${identity}', no keybase.pub entry was found`);
@@ -151,17 +172,19 @@ export class KeybaseService {
 
     const html = result.data;
 
-    const nodesRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/[0-9a-f]{192}", 'g');
+    const networkRegex = network !== "mainnet" ? `${network}\/` : '';
+
+    const nodesRegex = new RegExp(`https:\/\/keybase.pub\/${identity}\/elrond\/${networkRegex}[0-9a-f]{192}`, 'g');
     const blses: string[] = [];
     for (const keybaseUrl of html.match(nodesRegex) || []) {
       const bls = keybaseUrl.match(/[0-9a-f]{192}/)[0];
       blses.push(bls);
     }
 
-    const providersRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{13}", 'g');
+    const providersRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/" + networkRegex + "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{14}", 'g');
     const addresses: string[] = [];
     for (const keybaseUrl of html.match(providersRegex) || []) {
-      const bls = keybaseUrl.match(/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{13}/)[0];
+      const bls = keybaseUrl.match(/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{14}/)[0];
       addresses.push(bls);
     }
 

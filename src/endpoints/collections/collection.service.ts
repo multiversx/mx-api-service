@@ -13,99 +13,47 @@ import { CacheInfo } from "src/utils/cache.info";
 import { TokenAssets } from "../../common/assets/entities/token.assets";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
-import { TokenUtils } from "src/utils/token.utils";
+import { TokenHelpers } from "src/utils/token.helpers";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
-import { ApiUtils, BinaryUtils, RecordUtils, CachingService, ElasticService, ElasticQuery, QueryType, QueryOperator, QueryConditionOptions, ElasticSortOrder } from "@elrondnetwork/erdnest";
 import { PluginService } from "src/common/plugins/plugin.service";
+import { ApiUtils, BinaryUtils, CachingService, TokenUtils } from "@elrondnetwork/erdnest";
+import { IndexerService } from "src/common/indexer/indexer.service";
+import { Collection } from "src/common/indexer/entities";
+import { PersistenceService } from "src/common/persistence/persistence.service";
+import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
+import { NftRank } from "src/common/assets/entities/nft.rank";
 
 @Injectable()
 export class CollectionService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: IndexerService,
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
     private readonly vmQueryService: VmQueryService,
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => EsdtAddressService))
     private readonly esdtAddressService: EsdtAddressService,
-    private readonly pluginService: PluginService
+    private readonly pluginService: PluginService,
+    private readonly persistenceService: PersistenceService,
   ) { }
 
-  buildCollectionRolesFilter(filter: CollectionFilter, address?: string) {
-    let elasticQuery = ElasticQuery.create();
-    elasticQuery = elasticQuery.withMustNotExistCondition('identifier')
-      .withMustMultiShouldCondition([NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT], type => QueryType.Match('type', type));
-
-    if (address) {
-      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-        elasticQuery = elasticQuery.withMustCondition(QueryType.Should(
-          [
-            QueryType.Match('currentOwner', address),
-            QueryType.Nested('roles', { 'roles.ESDTRoleNFTCreate': address }),
-            QueryType.Nested('roles', { 'roles.ESDTRoleNFTBurn': address }),
-            QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddQuantity': address }),
-            QueryType.Nested('roles', { 'roles.ESDTRoleNFTUpdateAttributes': address }),
-            QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddURI': address }),
-            QueryType.Nested('roles', { 'roles.ESDTTransferRole': address }),
-          ]
-        ));
-      } else {
-        elasticQuery = elasticQuery.withMustCondition(QueryType.Match('currentOwner', address));
-      }
-    }
-
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      if (filter.canCreate !== undefined) {
-        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTCreate', address, filter.canCreate);
-      }
-
-      if (filter.canBurn !== undefined) {
-        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTBurn', address, filter.canBurn);
-      }
-
-      if (filter.canAddQuantity !== undefined) {
-        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTAddQuantity', address, filter.canAddQuantity);
-      }
-
-      if (filter.canUpdateAttributes !== undefined) {
-        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTUpdateAttributes', address, filter.canUpdateAttributes);
-      }
-
-      if (filter.canAddUri !== undefined) {
-        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTAddURI', address, filter.canAddUri);
-      }
-
-      if (filter.canTransferRole !== undefined) {
-        elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTTransferRole', address, filter.canTransferRole);
-      }
-    }
-
-    return elasticQuery.withMustMatchCondition('token', filter.collection, QueryOperator.AND)
-      .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
-      .withSearchWildcardCondition(filter.search, ['token', 'name'])
-      .withMustMultiShouldCondition(filter.type, type => QueryType.Match('type', type))
-      .withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT, NftType.MetaESDT], type => QueryType.Match('type', type));
-  }
-
-  private getRoleCondition(query: ElasticQuery, name: string, address: string | undefined, value: string | boolean) {
-    const condition = value === false ? QueryConditionOptions.mustNot : QueryConditionOptions.must;
-    const targetAddress = typeof value === 'string' ? value : address;
-
-    return query.withCondition(condition, QueryType.Nested('roles', { [`roles.${name}`]: targetAddress }));
-  }
-
   async isCollection(identifier: string): Promise<boolean> {
-    const collection = await this.elasticService.getItem('tokens', '_id', identifier);
+    const collection = await this.indexerService.getCollection(identifier);
     return collection !== undefined;
   }
 
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
-    const elasticQuery = this.buildCollectionRolesFilter(filter)
-      .withPagination(pagination)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+    const tokenCollections = await this.indexerService.getNftCollections(pagination, filter);
+    return await this.processNftCollections(tokenCollections);
+  }
 
-    const tokenCollections = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+  async getNftCollectionsByIds(identifiers: Array<string>): Promise<NftCollection[]> {
+    const tokenCollections = await this.indexerService.getNftCollectionsByIds(identifiers);
+    return await this.processNftCollections(tokenCollections);
+  }
+
+  private async processNftCollections(tokenCollections: Collection[]): Promise<NftCollection[]> {
     const collectionsIdentifiers = tokenCollections.map((collection) => collection.token);
 
     const indexedCollections: Record<string, any> = {};
@@ -167,63 +115,66 @@ export class CollectionService {
     return nftCollections;
   }
 
-  async batchGetCollectionsProperties(collectionsIdentifiers: string[]): Promise<{ [key: string]: TokenProperties | undefined }> {
+  async batchGetCollectionsProperties(identifiers: string[]): Promise<{ [key: string]: TokenProperties | undefined }> {
     const collectionsProperties: { [key: string]: TokenProperties | undefined } = {};
-    await this.cachingService.batchApply(
-      collectionsIdentifiers,
-      collectionIdentifier => CacheInfo.EsdtProperties(collectionIdentifier).key,
-      async collectionsIdentifiers => {
-        const result: { [key: string]: TokenProperties | undefined } = {};
-
-        for (const collectionIdentifier of collectionsIdentifiers) {
-          result[collectionIdentifier] = await this.esdtService.getEsdtTokenProperties(collectionIdentifier);
-        }
-
-        return RecordUtils.mapKeys(result, identifier => CacheInfo.EsdtProperties(identifier).key);
-      },
-      (collectionIdentifier, properties) => collectionsProperties[collectionIdentifier] = properties,
+    await this.cachingService.batchApplyAll(
+      identifiers,
+      identifier => CacheInfo.EsdtProperties(identifier).key,
+      identifier => this.esdtService.getEsdtTokenProperties(identifier),
+      (identifier, properties) => collectionsProperties[identifier] = properties,
       CacheInfo.EsdtProperties('').ttl
     );
 
     return collectionsProperties;
   }
 
-  async batchGetCollectionsAssets(collectionsIdentifiers: string[]): Promise<{ [key: string]: TokenAssets | undefined }> {
+  async batchGetCollectionsAssets(identifiers: string[]): Promise<{ [key: string]: TokenAssets | undefined }> {
     const collectionsAssets: { [key: string]: TokenAssets | undefined } = {};
 
-    await this.cachingService.batchApply(
-      collectionsIdentifiers,
-      collectionIdentifier => CacheInfo.EsdtAssets(collectionIdentifier).key,
-      async collectionsIdentifiers => {
-        const result: { [key: string]: TokenAssets | undefined } = {};
-
-        for (const collectionIdentifier of collectionsIdentifiers) {
-          result[collectionIdentifier] = await this.assetsService.getAssets(collectionIdentifier);
-        }
-
-        return RecordUtils.mapKeys(result, identifier => CacheInfo.EsdtAssets(identifier).key);
-      },
-      (collectionIdentifier, properties) => collectionsAssets[collectionIdentifier] = properties,
+    await this.cachingService.batchApplyAll(
+      identifiers,
+      identifier => CacheInfo.EsdtAssets(identifier).key,
+      identifier => this.assetsService.getTokenAssets(identifier),
+      (identifier, properties) => collectionsAssets[identifier] = properties,
       CacheInfo.EsdtAssets('').ttl
     );
 
     return collectionsAssets;
   }
 
-
   async getNftCollectionCount(filter: CollectionFilter): Promise<number> {
-    const elasticQuery = this.buildCollectionRolesFilter(filter);
-
-    return await this.elasticService.getCount('tokens', elasticQuery);
+    return await this.indexerService.getNftCollectionCount(filter);
   }
 
-  async getNftCollection(identifier: string): Promise<NftCollection | undefined> {
-    const elasticCollection = await this.elasticService.getItem('tokens', '_id', identifier);
+  async getNftCollectionRanks(identifier: string): Promise<NftRank[] | undefined> {
+    const elasticCollection = await this.indexerService.getCollection(identifier);
     if (!elasticCollection) {
       return undefined;
     }
 
-    if (![NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT].includes(elasticCollection.type)) {
+    const assets = await this.assetsService.getTokenAssets(identifier);
+    if (!assets) {
+      return undefined;
+    }
+
+    if (assets.preferredRankAlgorithm !== NftRankAlgorithm.custom) {
+      return undefined;
+    }
+
+    return await this.assetsService.getCollectionRanks(identifier);
+  }
+
+  async getNftCollection(identifier: string): Promise<NftCollection | undefined> {
+    const elasticCollection = await this.indexerService.getCollection(identifier);
+    if (!elasticCollection) {
+      return undefined;
+    }
+
+    if (!TokenUtils.isCollection(identifier)) {
+      return undefined;
+    }
+
+    if (![NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT].includes(elasticCollection.type as NftType)) {
       return undefined;
     }
 
@@ -233,9 +184,10 @@ export class CollectionService {
       return undefined;
     }
 
-    collection.type = elasticCollection.type;
+    collection.type = elasticCollection.type as NftType;
     collection.timestamp = elasticCollection.timestamp;
     collection.roles = await this.getNftCollectionRoles(elasticCollection);
+    collection.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
 
     await this.pluginService.processCollection(collection);
 
@@ -262,13 +214,13 @@ export class CollectionService {
       for (const address of addresses) {
         const foundAddressRoles = allRoles.find((addressRole) => addressRole.address === address);
         if (foundAddressRoles) {
-          TokenUtils.setCollectionRole(foundAddressRoles, role);
+          TokenHelpers.setCollectionRole(foundAddressRoles, role);
           continue;
         }
 
         const addressRole = new CollectionRoles();
         addressRole.address = address;
-        TokenUtils.setCollectionRole(addressRole, role);
+        TokenHelpers.setCollectionRole(addressRole, role);
 
         allRoles.push(addressRole);
       }
@@ -299,7 +251,7 @@ export class CollectionService {
       roleForAddress.address = components[0];
       const roles = components[1].split(',');
       for (const role of roles) {
-        TokenUtils.setCollectionRole(roleForAddress, role);
+        TokenHelpers.setCollectionRole(roleForAddress, role);
       }
 
       allRoles.push(roleForAddress);
@@ -333,7 +285,7 @@ export class CollectionService {
     const collections = await this.getCollectionsForAddress(address, new CollectionFilter({ collection: identifier }), new QueryPagination({ from: 0, size: 1 }));
 
     const collection = collections.find(x => x.collection === identifier);
-    if (!collection) {
+    if (!collection || !TokenUtils.isCollection(identifier)) {
       return undefined;
     }
 
@@ -343,58 +295,16 @@ export class CollectionService {
   }
 
   async getCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
-    const elasticQuery = ElasticQuery.create()
-      .withMustExistCondition('identifier')
-      .withMustMatchCondition('address', address)
-      .withPagination({ from: 0, size: 0 })
-      .withMustMatchCondition('token', filter.collection, QueryOperator.AND)
-      .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
-      .withSearchWildcardCondition(filter.search, ['token', 'name'])
-      .withMustMultiShouldCondition(filter.type, type => QueryType.Match('type', type))
-      .withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT, NftType.MetaESDT], type => QueryType.Match('type', type))
-      .withExtra({
-        aggs: {
-          collections: {
-            composite: {
-              size: 10000,
-              sources: [
-                {
-                  collection: {
-                    terms: {
-                      field: 'token.keyword',
-                    },
-                  },
-                },
-              ],
-            },
-            aggs: {
-              balance: {
-                sum: {
-                  field: 'balanceNum',
-                },
-              },
-            },
-          },
-        },
-      });
+    const collectionsRaw = await this.indexerService.getCollectionsForAddress(address, filter, pagination);
 
-    const result = await this.elasticService.post(`${this.apiConfigService.getElasticUrl()}/accountsesdt/_search`, elasticQuery.toJson());
-
-    const buckets = result?.data?.aggregations?.collections?.buckets;
-
-    let data: { collection: string, count: number, balance: number }[] = buckets.map((bucket: any) => ({
-      collection: bucket.key.collection,
-      count: bucket.doc_count,
-      balance: bucket.balance.value,
-    }));
-
-    data = data.slice(pagination.from, pagination.from + pagination.size);
-
-    const collections = await this.getNftCollections(new QueryPagination({ from: 0, size: data.length }), new CollectionFilter({ identifiers: data.map((x: any) => x.collection) }));
+    const collections = await this.getNftCollections(
+      new QueryPagination({ from: 0, size: collectionsRaw.length }),
+      new CollectionFilter({ identifiers: collectionsRaw.map((x: any) => x.collection) })
+    );
     const accountCollections = collections.map(collection => ApiUtils.mergeObjects(new NftCollectionAccount(), collection));
 
     for (const collection of accountCollections) {
-      const item = data.find(x => x.collection === collection.collection);
+      const item = collectionsRaw.find(x => x.collection === collection.collection);
       if (item) {
         collection.count = item.count;
       }

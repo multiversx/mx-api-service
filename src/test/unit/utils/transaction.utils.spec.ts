@@ -12,7 +12,7 @@ import { TransactionOperationAction } from "src/endpoints/transactions/entities/
 import { TransactionOperationType } from "src/endpoints/transactions/entities/transaction.operation.type";
 import { TokenType } from "src/endpoints/tokens/entities/token.type";
 import { TransactionUtils } from "src/endpoints/transactions/transaction.utils";
-import '@elrondnetwork/erdnest/lib/utils/extensions/array.extensions';
+import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
 
 describe('Transaction Utils', () => {
   it('tryExtractCollectionIdentifierFromChangeSftToMetaEsdTransaction', () => {
@@ -177,7 +177,7 @@ describe('Transaction Utils', () => {
 
   it('trimOperations', () => {
     const operations: TransactionOperation[] = [
-      {
+      new TransactionOperation({
         id: "f592405c4d6556a5a680c3225ae7bd254b73c7c47cf032ec66936dbbb494ca4c",
         action: TransactionOperationAction.transfer,
         type: TransactionOperationType.esdt,
@@ -188,8 +188,8 @@ describe('Transaction Utils', () => {
         receiver: "erd1f04mhj7mjedkd4snav6zpyjtlgqpnp8hv5ex4sw38wck9ep09s8qhh5k5v",
         value: "25000000",
         decimals: 6,
-      },
-      {
+      }),
+      new TransactionOperation({
         id: "2199b2f2ebf591e1d05ee3c871546cffdc1eb4970a54eee707614aa9374935c0",
         action: TransactionOperationAction.transfer,
         type: TransactionOperationType.esdt,
@@ -200,7 +200,7 @@ describe('Transaction Utils', () => {
         receiver: "erd1f04mhj7mjedkd4snav6zpyjtlgqpnp8hv5ex4sw38wck9ep09s8qhh5k5v",
         value: "25000000",
         decimals: 6,
-      },
+      }),
     ];
 
     const previousHashes = {
@@ -221,6 +221,8 @@ describe('Transaction Utils', () => {
       receiver: "erd1f04mhj7mjedkd4snav6zpyjtlgqpnp8hv5ex4sw38wck9ep09s8qhh5k5v",
       value: "25000000",
       decimals: 6,
+      receiverAssets: undefined,
+      senderAssets: undefined,
     });
   });
 });

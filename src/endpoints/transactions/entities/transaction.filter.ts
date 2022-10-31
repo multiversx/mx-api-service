@@ -10,7 +10,8 @@ export class TransactionFilter {
 
   address?: string;
   sender?: string;
-  receiver?: string;
+  senders?: string[] = [];
+  receivers?: string[] = [];
   token?: string;
   function?: string;
   senderShard?: number;

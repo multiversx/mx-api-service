@@ -1,16 +1,15 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { GraphQLClient } from 'graphql-request';
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class GraphQlService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(GraphQlService.name);
 
   constructor(
     private readonly apiConfigService: ApiConfigService
-  ) {
-    this.logger = new Logger(GraphQlService.name);
-  }
+  ) { }
 
   async getData(query: string, variables: any): Promise<any> {
     const MAIAR_EXCHANGE_URL = this.apiConfigService.getMaiarExchangeUrlMandatory();

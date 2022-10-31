@@ -1,6 +1,5 @@
 network: 'mainnet'
 metaChainShardId: 4294967295
-useLegacyElastic: false
 api:
   public: true
   private: true
@@ -51,12 +50,17 @@ urls:
     - 'https://gateway.elrond.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
-  providers: 'https://internal-delegation-api.elrond.com/providers'
+  providers: 'https://delegation-api.elrond.com/providers'
+  delegation: 'https://delegation-api.elrond.com'
   media: 'https://media.elrond.com'
   nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'socket-fra.elrond.com'
+  maiarId: 'https://id.maiar.com'
+indexer:
+  type: 'elastic'
+  maxPagination: 10000
 database:
   enabled: false
   url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
@@ -92,7 +96,6 @@ inflation:
 security:
   admins:
   jwtSecret:
-  accessAddress:
 nftProcess:
   parallelism: 1
   maxRetries: 3

@@ -1,7 +1,7 @@
 import { MexEconomics } from './entities/mex.economics';
 import { MexToken } from './entities/mex.token';
-import { Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Controller, DefaultValuePipe, Get, NotFoundException, Param, Query } from "@nestjs/common";
+import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { MexPair } from "./entities/mex.pair";
 import { MexSettings } from "./entities/mex.settings";
 import { MexEconomicsService } from "./mex.economics.service";
@@ -11,6 +11,7 @@ import { MexTokenService } from "./mex.token.service";
 import { MexFarmService } from './mex.farm.service';
 import { MexFarm } from './entities/mex.farm';
 import { QueryPagination } from 'src/common/entities/query.pagination';
+import { ParseIntPipe, ParseTokenPipe } from '@elrondnetwork/erdnest';
 
 @Controller()
 @ApiTags('maiar.exchange')
@@ -63,9 +64,24 @@ export class MexController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   async getMexTokens(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
-  ): Promise<any> {
-    return await this.mexTokensService.getMexTokens(from, size);
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<MexToken[]> {
+    return await this.mexTokensService.getMexTokens(new QueryPagination({ from, size }));
+  }
+
+  @Get("/mex/tokens/:identifier")
+  @ApiOperation({ summary: 'Maiar Exchange token details', description: 'Returns a specific token listed on Maiar Exchange' })
+  @ApiOkResponse({ type: MexToken })
+  @ApiNotFoundResponse({ description: 'Token not found' })
+  async getMexTokenIdentifier(
+    @Param('identifier', ParseTokenPipe) identifier: string
+  ): Promise<MexToken> {
+    const mexToken = await this.mexTokensService.getMexTokenByIdentifier(identifier);
+    if (!mexToken) {
+      throw new NotFoundException('Token not found');
+    }
+
+    return mexToken;
   }
 
   @Get("/mex/farms")
@@ -153,9 +169,9 @@ export class MexController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   async getMexTokensLegacy(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<any> {
-    return await this.mexTokensService.getMexTokens(from, size);
+    return await this.mexTokensService.getMexTokens(new QueryPagination({ from, size }));
   }
 
   @Get("/mex-pairs/:baseId/:quoteId")

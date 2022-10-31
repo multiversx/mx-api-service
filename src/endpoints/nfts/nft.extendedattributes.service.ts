@@ -1,20 +1,19 @@
+import { OriginLogger } from "@elrondnetwork/erdnest";
 import { Constants, MatchUtils, CachingService, ApiService } from "@elrondnetwork/erdnest";
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { NftMetadata } from "src/endpoints/nfts/entities/nft.metadata";
-import { TokenUtils } from "src/utils/token.utils";
+import { TokenHelpers } from "src/utils/token.helpers";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 
 @Injectable()
 export class NftExtendedAttributesService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(NftExtendedAttributesService.name);
 
   constructor(
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
     private readonly apiService: ApiService,
-  ) {
-    this.logger = new Logger(NftExtendedAttributesService.name);
-  }
+  ) { }
 
   async tryGetExtendedAttributesFromBase64EncodedAttributes(attributes: string): Promise<any> {
     try {
@@ -62,7 +61,7 @@ export class NftExtendedAttributesService {
     }
 
     if (result.fileUri) {
-      result.fileUri = TokenUtils.computeNftUri(result.fileUri, this.apiConfigService.getExternalMediaUrl() + '/nfts/asset');
+      result.fileUri = TokenHelpers.computeNftUri(result.fileUri, this.apiConfigService.getExternalMediaUrl() + '/nfts/asset');
     }
 
     return result;
@@ -70,7 +69,7 @@ export class NftExtendedAttributesService {
 
   private async getExtendedAttributesFromIpfs(metadata: string): Promise<any> {
     const ipfsUri = `https://ipfs.io/ipfs/${metadata}`;
-    const processedIpfsUri = TokenUtils.computeNftUri(ipfsUri, this.apiConfigService.getMediaUrl() + '/nfts/asset');
+    const processedIpfsUri = TokenHelpers.computeNftUri(ipfsUri, this.apiConfigService.getMediaUrl() + '/nfts/asset');
 
     const result = await this.apiService.get(processedIpfsUri, { timeout: 5000 });
 
@@ -92,7 +91,7 @@ export class NftExtendedAttributesService {
     return match.groups['tags'].split(',');
   }
 
-  private getMetadataFromBase64EncodedAttributes(attributes: string): string | undefined {
+  getMetadataFromBase64EncodedAttributes(attributes: string): string | undefined {
     const match = MatchUtils.getMetadataFromBase64Attributes(attributes);
     if (!match || !match.groups) {
       return undefined;

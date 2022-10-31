@@ -1,13 +1,15 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { Tag } from "./entities/tag";
-import { ApiUtils, BinaryUtils, Constants, CachingService, ElasticService, ElasticQuery, ElasticSortOrder } from "@elrondnetwork/erdnest";
+import { ApiUtils, CachingService } from "@elrondnetwork/erdnest";
+import { IndexerService } from "src/common/indexer/indexer.service";
+import { CacheInfo } from "src/utils/cache.info";
 
 @Injectable()
 export class TagService {
 
   constructor(
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: IndexerService,
     @Inject(forwardRef(() => CachingService))
     private readonly cachingService: CachingService,
   ) { }
@@ -18,9 +20,9 @@ export class TagService {
     }
 
     return await this.cachingService.getOrSetCache(
-      `nftTags:${pagination.from}:${pagination.size}`,
+      CacheInfo.NftTags(pagination).key,
       async () => await this.getNftTagsRaw(pagination),
-      Constants.oneHour(),
+      CacheInfo.NftTags(pagination).ttl
     );
   }
 
@@ -30,36 +32,24 @@ export class TagService {
     }
 
     return await this.cachingService.getOrSetCache(
-      'nftTagsCount',
+      CacheInfo.NftTagCount.key,
       async () => await this.getNftTagCountRaw(),
-      Constants.oneHour()
+      CacheInfo.NftTagCount.ttl
     );
   }
 
   private async getNftTagCountRaw(search?: string): Promise<number> {
-    const query = this.buildNftTagQuery(search);
-
-    return await this.elasticService.getCount('tags', query);
-  }
-
-  private buildNftTagQuery(search?: string): ElasticQuery {
-    return ElasticQuery.create()
-      .withSearchWildcardCondition(search, ['tag']);
+    return await this.indexerService.getNftTagCount(search);
   }
 
   async getNftTagsRaw(pagination: QueryPagination, search?: string): Promise<Tag[]> {
-    const elasticQuery = ElasticQuery.create()
-      .withPagination(pagination)
-      .withSearchWildcardCondition(search, ['tag'])
-      .withSort([{ name: 'count', order: ElasticSortOrder.descending }]);
-
-    const result = await this.elasticService.getList('tags', 'tag', elasticQuery);
+    const result = await this.indexerService.getNftTags(pagination, search);
 
     return result.map(item => ApiUtils.mergeObjects(new Tag(), item));
   }
 
   async getNftTag(tag: string): Promise<Tag> {
-    const result = await this.elasticService.getItem('tags', 'tag', BinaryUtils.base64Encode(tag));
+    const result = await this.indexerService.getTag(tag);
 
     return ApiUtils.mergeObjects(new Tag(), result);
   }

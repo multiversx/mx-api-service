@@ -48,12 +48,14 @@ urls:
     - 'https://testnet-gateway.elrond.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
-  providers: 'https://delegation.maiarbrowser.com/providers'
+  providers: 'https://testnet-delegation-api.elrond.com/providers'
+  delegation: 'https://testnet-delegation-api.elrond.com'
   media: 'https://testnet-media.elrond.com'
   nftThumbnails: 'https://testnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'testnet-socket-fra.elrond.com'
+  maiarId: 'https://testnet-id.maiar.com'
 database:
   enabled: false
   url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
@@ -63,6 +65,9 @@ database:
   username: 'root'
   password: 'root'
   database: 'api'
+indexer:
+  type: 'elastic'
+  maxPagination: 10000
 caching:
   cacheTtl: 6
   processTtl: 600
@@ -89,7 +94,6 @@ inflation:
 security:
   admins:
   jwtSecret:
-  accessAddress:
 nftProcess:
   parallelism: 1
   maxRetries: 3

@@ -1,62 +1,57 @@
-import { MiniBlockController } from '../../../endpoints/miniblocks/mini.block.controller';
-import { HttpException, INestApplication } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
 describe("Miniblocks Controller", () => {
   let app: INestApplication;
-  let miniBlockController: MiniBlockController;
-  const route: string = "/miniblocks";
+  const path: string = "/miniblocks";
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     app = moduleRef.createNestApplication();
-    miniBlockController = moduleRef.get<MiniBlockController>(MiniBlockController);
-
     await app.init();
   });
 
-  it("/miniblocks/:miniBlockHash - should return 200 status code and miniblock details", async () => {
-    const miniblock: string = "e336ba1b720bb153b4e0d2049d722b0e39bf275f9d35e79b0f757271a963ad4c";
+  describe('/miniblocks', () => {
+    it('should return miniBlock details for a given identifier', async () => {
+      const miniblock: string = 'e336ba1b720bb153b4e0d2049d722b0e39bf275f9d35e79b0f757271a963ad4c';
+      const expected = {
+        miniBlockHash: "e336ba1b720bb153b4e0d2049d722b0e39bf275f9d35e79b0f757271a963ad4c",
+        receiverBlockHash: "ee60ef38ab592d4a32a3ba5783996ae72afda9d2bf40295fcf7c43915120227f",
+        receiverShard: 2,
+        senderBlockHash: "ee60ef38ab592d4a32a3ba5783996ae72afda9d2bf40295fcf7c43915120227f",
+        senderShard: 2,
+        timestamp: 1644529902,
+        type: "TxBlock",
+      };
 
-    await request(app.getHttpServer())
-      .get(route + "/" + miniblock)
-      .expect(200);
+      await request(app.getHttpServer())
+        .get(`${path}/${miniblock}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toStrictEqual(expected);
+        });
+    });
   });
 
-  it("/miniblocks/:miniBlockHash - should return 404 status code Error: Bad Request", async () => {
-    const miniblock: string = "e336ba1b720bb153b4e0d2049d722b0e39bf275f9d35e79b0f757271a963ad4cT";
+  describe('Validations', () => {
+    it('should return 400 Bad Request if an invalid block hash is given', async () => {
+      const miniBlockHash: string = 'invalidMiniBlockHash';
 
-    await request(app.getHttpServer())
-      .get(route + "/" + miniblock)
-      .expect(404)
-      .then(res => {
-        expect(res.body.message).toEqual("Miniblock not found");
-      });
+      await request(app.getHttpServer())
+        .get(`${path}/${miniBlockHash}`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toContain("Validation failed");
+        });
+    });
   });
 
-  it("should return block details based on miniBlockHash", async () => {
-    const hash: string = "4ab87e21dcf63f3d88f64e8228f001232ff29585ad475e20211ead04f1f700cc";
-    const results = await miniBlockController.getBlock(hash);
-
-    expect(results.hasOwnProperty("miniBlockHash")).toBeTruthy();
-    expect(results.hasOwnProperty("receiverBlockHash")).toBeTruthy();
-    expect(results.hasOwnProperty("receiverShard")).toBeTruthy();
-    expect(results.hasOwnProperty("senderBlockHash")).toBeTruthy();
-    expect(results.hasOwnProperty("senderShard")).toBeTruthy();
-    expect(results.hasOwnProperty("timestamp")).toBeTruthy();
-    expect(results.hasOwnProperty("type")).toBeTruthy();
-  });
-
-  it("should throw HttpException with HttpStatus: Not Found", async () => {
-    const hash: string = "4ab87e21dcf63f3d88f64e8228f001232ff29585ad475e20211ead04f1f700ccT";
-
-    await expect(miniBlockController.getBlock(hash)).rejects.toThrow(
-      HttpException,
-    );
+  afterEach(async () => {
+    await app.close();
   });
 });

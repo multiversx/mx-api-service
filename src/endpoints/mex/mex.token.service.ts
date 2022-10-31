@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "src/utils/cache.info";
 import { MexToken } from "./entities/mex.token";
 import { MexPairService } from "./mex.pair.service";
@@ -8,10 +8,13 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { MexFarmService } from "./mex.farm.service";
 import { MexSettingsService } from "./mex.settings.service";
 import { Constants, CachingService } from "@elrondnetwork/erdnest";
+import { MexPairType } from "./entities/mex.pair.type";
+import { OriginLogger } from "@elrondnetwork/erdnest";
+import { QueryPagination } from "src/common/entities/query.pagination";
 
 @Injectable()
 export class MexTokenService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(MexTokenService.name);
 
   constructor(
     private readonly cachingService: CachingService,
@@ -20,9 +23,7 @@ export class MexTokenService {
     @Inject(forwardRef(() => MexFarmService))
     private readonly mexFarmService: MexFarmService,
     private readonly mexSettingsService: MexSettingsService,
-  ) {
-    this.logger = new Logger(MexTokenService.name);
-  }
+  ) { }
 
   async refreshMexTokens(): Promise<void> {
     const tokens = await this.getAllMexTokensRaw();
@@ -38,13 +39,20 @@ export class MexTokenService {
     await this.cachingService.setCacheLocal(CacheInfo.MexPrices.key, indexedPrices, Constants.oneSecond() * 30);
   }
 
-  async getMexTokens(from: number, size: number): Promise<MexToken[]> {
-    const allMexTokens = await this.getAllMexTokens();
+  async getMexTokens(queryPagination: QueryPagination): Promise<MexToken[]> {
+    const { from, size } = queryPagination;
+    let allMexTokens = await this.getAllMexTokens();
+    allMexTokens = JSON.parse(JSON.stringify(allMexTokens));
 
     return allMexTokens.slice(from, from + size);
   }
 
-  async getMexPrices(): Promise<Record<string, number>> {
+  async getMexTokenByIdentifier(identifier: string): Promise<MexToken | undefined> {
+    const mexTokens = await this.getAllMexTokens();
+    return mexTokens.find(x => x.id === identifier);
+  }
+
+  async getMexPrices(): Promise<Record<string, { price: number, isToken: boolean }>> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.MexPrices.key,
       async () => await this.getMexPricesRaw(),
@@ -53,23 +61,32 @@ export class MexTokenService {
     );
   }
 
-  async getMexPricesRaw(): Promise<Record<string, number>> {
+  async getMexPricesRaw(): Promise<Record<string, { price: number, isToken: boolean }>> {
     try {
-      const result: Record<string, number> = {};
+      const result: Record<string, { price: number, isToken: boolean }> = {};
 
       const tokens = await this.getAllMexTokens();
       for (const token of tokens) {
-        result[token.id] = token.price;
+        result[token.id] = {
+          price: token.price,
+          isToken: true,
+        };
       }
 
       const pairs = await this.mexPairService.getAllMexPairs();
       for (const pair of pairs) {
-        result[pair.id] = pair.price;
+        result[pair.id] = {
+          price: pair.price,
+          isToken: false,
+        };
       }
 
       const farms = await this.mexFarmService.getAllMexFarms();
       for (const farm of farms) {
-        result[farm.id] = farm.price;
+        result[farm.id] = {
+          price: farm.price,
+          isToken: false,
+        };
       }
 
       const settings = await this.mexSettingsService.getSettings();
@@ -78,7 +95,10 @@ export class MexTokenService {
         if (lkmexIdentifier) {
           const mexToken = tokens.find(x => x.symbol === 'MEX');
           if (mexToken) {
-            result[lkmexIdentifier] = mexToken.price;
+            result[lkmexIdentifier] = {
+              price: mexToken.price,
+              isToken: false,
+            };
           }
         }
       }
@@ -165,7 +185,8 @@ export class MexTokenService {
   }
 
   private getMexToken(pair: MexPair): MexToken | null {
-    if (pair.quoteSymbol === 'WEGLD') {
+    if ((pair.type !== MexPairType.jungle && pair.quoteSymbol === 'WEGLD') ||
+      (pair.type === MexPairType.jungle && pair.quoteSymbol === 'USDC')) {
       return {
         id: pair.baseId,
         symbol: pair.baseSymbol,
@@ -174,7 +195,8 @@ export class MexTokenService {
       };
     }
 
-    if (pair.baseSymbol === 'WEGLD') {
+    if ((pair.type !== MexPairType.jungle && pair.baseSymbol === 'WEGLD') ||
+      (pair.type === MexPairType.jungle && pair.baseSymbol === 'USDC')) {
       return {
         id: pair.quoteId,
         symbol: pair.quoteSymbol,

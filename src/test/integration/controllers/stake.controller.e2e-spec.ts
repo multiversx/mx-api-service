@@ -5,21 +5,30 @@ import request = require('supertest');
 
 describe("Stake Controller", () => {
   let app: INestApplication;
-  const route: string = "/stake";
+  const path: string = "/stake";
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     app = moduleRef.createNestApplication();
-
     await app.init();
   });
 
-  it("/stake - should return 200 status code stake details ( totalValidators, activeValidators, queueSize, totalStaked", async () => {
+  it("should return general staking details", async () => {
     await request(app.getHttpServer())
-      .get(route)
-      .expect(200);
+      .get(`${path}`)
+      .expect(200)
+      .then(res => {
+        expect(res.body.totalValidators).toBeDefined();
+        expect(res.body.activeValidators).toBeDefined();
+        expect(res.body.queueSize).toBeDefined();
+        expect(res.body.totalStaked).toBeDefined();
+      });
+  });
+
+  afterEach(async () => {
+    await app.close();
   });
 });

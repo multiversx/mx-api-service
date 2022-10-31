@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Logger, Param, Post, Query, Res } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Param, Post, Query, Res } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { VmQueryRequest } from "../vm.query/entities/vm.query.request";
 import { VmQueryService } from "../vm.query/vm.query.service";
@@ -7,20 +7,19 @@ import { Response } from "express";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseTransactionHashPipe, CachingService, NoCache } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Controller()
 @ApiTags('proxy')
 export class ProxyController {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(ProxyController.name);
 
   constructor(
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
     private readonly cachingService: CachingService,
     private readonly pluginService: PluginService,
-  ) {
-    this.logger = new Logger(ProxyController.name);
-  }
+  ) { }
 
   @Get('/address/:address')
   @ApiExcludeEndpoint()

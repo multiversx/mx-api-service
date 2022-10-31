@@ -4,7 +4,7 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
-describe("Accounts Controller", () => {
+describe.skip("Accounts Controller", () => {
   let app: INestApplication;
 
   const route: string = "/accounts";

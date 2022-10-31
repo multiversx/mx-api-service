@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { NftType } from 'src/endpoints/nfts/entities/nft.type';
 import { NftService } from 'src/endpoints/nfts/nft.service';
 import { ProcessNftSettings } from 'src/endpoints/process-nfts/entities/process.nft.settings';
@@ -6,20 +6,20 @@ import { NftWorkerService } from 'src/queue.worker/nft.worker/nft.worker.service
 import { CacheInfo } from '../../utils/cache.info';
 import { NotifierEventIdentifier } from './entities/notifier.event.identifier';
 import { NotifierEvent } from './entities/notifier.event';
-import { BinaryUtils, CachingService, ElasticService } from '@elrondnetwork/erdnest';
+import { BinaryUtils, CachingService } from '@elrondnetwork/erdnest';
+import { IndexerService } from '../indexer/indexer.service';
+import { OriginLogger } from '@elrondnetwork/erdnest';
 
 @Injectable()
 export class RabbitMqNftHandlerService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(RabbitMqNftHandlerService.name);
 
   constructor(
     private readonly nftWorkerService: NftWorkerService,
     private readonly nftService: NftService,
-    private readonly elasticService: ElasticService,
+    private readonly indexerService: IndexerService,
     private readonly cachingService: CachingService,
-  ) {
-    this.logger = new Logger(RabbitMqNftHandlerService.name);
-  }
+  ) { }
 
   private async getCollectionType(collectionIdentifier: string): Promise<NftType | null> {
     const type = await this.cachingService.getCacheLocal<NftType>(CacheInfo.CollectionType(collectionIdentifier).key) ??
@@ -39,12 +39,12 @@ export class RabbitMqNftHandlerService {
   }
 
   private async getCollectionTypeRaw(collectionIdentifier: string): Promise<NftType | undefined> {
-    const collection = await this.elasticService.getItem('tokens', '_id', collectionIdentifier);
+    const collection = await this.indexerService.getCollection(collectionIdentifier);
     if (!collection) {
       return undefined;
     }
 
-    return collection.type;
+    return collection.type as NftType;
   }
 
   public async handleNftUpdateAttributesEvent(event: NotifierEvent): Promise<boolean | null> {
@@ -103,7 +103,7 @@ export class RabbitMqNftHandlerService {
     try {
       const needsProcessing = await this.nftWorkerService.needsProcessing(nft, new ProcessNftSettings());
       if (needsProcessing) {
-        await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
+        await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ uploadAsset: true }));
       }
 
       return true;

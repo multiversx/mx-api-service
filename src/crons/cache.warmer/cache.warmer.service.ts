@@ -22,12 +22,13 @@ import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexTokenService } from "src/endpoints/mex/mex.token.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import AsyncLock from "async-lock";
-import { CachingService, Constants, Locker } from "@elrondnetwork/erdnest";
+import { CachingService, Constants, Locker, OriginLogger } from "@elrondnetwork/erdnest";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 
 @Injectable()
 export class CacheWarmerService {
   private readonly lock: AsyncLock;
+  private readonly logger = new OriginLogger(CacheWarmerService.name);
 
   constructor(
     private readonly nodeService: NodeService,
@@ -101,6 +102,8 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleNodeInvalidations() {
     await Locker.lock('Node invalidations', async () => {
+      this.logger.log('Invalidating nodes');
+
       await this.lock.acquire('nodes', async () => {
         const nodes = await this.nodeService.getAllNodesRaw();
         await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
@@ -131,7 +134,7 @@ export class CacheWarmerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleEsdtTokenInvalidations() {
-    await Locker.lock('Esdt tokens invalidations', async () => {
+    await Locker.lock('All Tokens invalidations', async () => {
       const tokens = await this.esdtService.getAllEsdtTokensRaw();
       await this.invalidateKey(CacheInfo.AllEsdtTokens.key, tokens, CacheInfo.AllEsdtTokens.ttl);
     }, true);
@@ -221,15 +224,24 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleTokenAssetsInvalidations() {
     await Locker.lock('Token assets invalidations', async () => {
       await this.assetsService.checkout();
       const assets = this.assetsService.getAllTokenAssetsRaw();
       await this.invalidateKey(CacheInfo.TokenAssets.key, assets, CacheInfo.TokenAssets.ttl);
 
-      const accountLabels = await this.assetsService.getAllAccountAssetsRaw();
+      const providers = await this.providerService.getAllProviders();
+      const identities = await this.identitiesService.getAllIdentities();
+      const pairs = await this.mexPairsService.getAllMexPairs();
+      const farms = await this.mexFarmsService.getAllMexFarms();
+      const settings = await this.mexSettingsService.getSettings();
+
+      const accountLabels = await this.assetsService.getAllAccountAssetsRaw(providers, identities, pairs, farms, settings ?? undefined);
       await this.invalidateKey(CacheInfo.AccountAssets.key, accountLabels, CacheInfo.AccountAssets.ttl);
+
+      const collectionRanks = await this.assetsService.getAllCollectionRanksRaw();
+      await this.invalidateKey(CacheInfo.CollectionRanks.key, collectionRanks, CacheInfo.CollectionRanks.ttl);
     }, true);
   }
 
