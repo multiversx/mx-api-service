@@ -81,68 +81,36 @@ export class NftExtendedAttributesService {
       const status = error?.response?.status;
       if (status === 400) {
         if (error.response.data) {
-          return {
-            error: {
-              code: 'ipfs_error',
-              message: `IPFS error when fetching metadata: ${error.response.data}`,
-            },
-          };
+          return this.createError('ipfs_error', `IPFS error when fetching metadata: ${error.response.data}`);
         }
       } else if (status === 404) {
-        return {
-          error: {
-            code: 'not_found',
-            message: 'Metadata file not found on IPFS',
-          },
-        };
+        return this.createError('not_found', 'Metadata file not found on IPFS');
       } else if (error.message === 'timeout of 5000ms exceeded') {
-        return {
-          error: {
-            code: 'timeout',
-            message: `Timeout exceeeded when fetching metadata`,
-          },
-        };
+        return this.createError('timeout', 'Timeout exceeded when fetching metadata');
       }
 
-      return {
-        error: {
-          code: 'unknown_error',
-        },
-      };
+      this.logger.error(`Unknown error when fetching metadata '${metadata}'`);
+      this.logger.error(error);
+      return this.createError('unknown_error', `Unknown error when fetching metadata '${metadata}'`);
     }
 
     const contentType = result.headers['content-type'];
     if (contentType !== 'application/json') {
-      return {
-        error: {
-          code: 'invalid_content_type',
-          message: `Invalid content type '${contentType}`,
-        },
-      };
+      return this.createError('invalid_content_type', `Invalid content type '${contentType}`);
     }
 
     if (typeof data === 'string') {
       try {
         data = JSON.parse(data);
       } catch (error) {
-        return {
-          error: {
-            code: 'json_parse_error',
-            message: `Error when parsing as JSON`,
-          },
-        };
+        return this.createError('json_parse_error', 'Error when parsing as JSON');
       }
     }
 
     ApiUtils.cleanupApiValueRecursively(data);
 
     if (Object.keys(data).length === 0) {
-      return {
-        error: {
-          code: 'empty_metadata',
-          message: `Metadata value is empty`,
-        },
-      };
+      return this.createError('empty_metadata', 'Metadata value is empty');
     }
 
     if (typeof data !== 'object' && !Array.isArray(data)) {
@@ -150,6 +118,16 @@ export class NftExtendedAttributesService {
     }
 
     return data;
+  }
+
+  private createError(code: string, message: string) {
+    return {
+      error: {
+        code,
+        message,
+        timestamp: Math.round(Date.now() / 1000),
+      },
+    };
   }
 
   getTags(attributes: string): string[] {
