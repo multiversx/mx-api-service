@@ -77,13 +77,13 @@ export class TokenHelpers {
         tokenRoles.canAddQuantity = true;
         break;
       case 'ESDTRoleNFTAddURI':
-        tokenRoles.canAddQuantity = true;
-        break;
-      case 'ESDTTransferRole':
-        tokenRoles.canAddQuantity = true;
+        tokenRoles.canAddUri = true;
         break;
       case 'ESDTRoleNFTUpdateAttributes':
-        tokenRoles.canAddQuantity = true;
+        tokenRoles.canUpdateAttributes = true;
+        break;
+      case 'ESDTTransferRole':
+        tokenRoles.canTransfer = true;
         break;
     }
   }
