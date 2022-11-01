@@ -1,5 +1,5 @@
 import { ApiUtils, OriginLogger } from "@elrondnetwork/erdnest";
-import { Constants, MatchUtils, CachingService, ApiService } from "@elrondnetwork/erdnest";
+import { MatchUtils, ApiService } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { NftMetadata } from "src/endpoints/nfts/entities/nft.metadata";
 import { TokenHelpers } from "src/utils/token.helpers";
@@ -10,7 +10,6 @@ export class NftExtendedAttributesService {
   private readonly logger = new OriginLogger(NftExtendedAttributesService.name);
 
   constructor(
-    private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
     private readonly apiService: ApiService,
   ) { }
@@ -34,23 +33,8 @@ export class NftExtendedAttributesService {
     return await this.getExtendedAttributesFromMetadata(metadata);
   }
 
-  async tryGetExtendedAttributesFromMetadata(metadata: string): Promise<NftMetadata | undefined> {
-    try {
-      return await this.getExtendedAttributesFromMetadata(metadata);
-    } catch (error) {
-      this.logger.error(`Error when getting extended attributes from metadata '${metadata}'`);
-      this.logger.error(error);
-      return undefined;
-    }
-  }
-
   async getExtendedAttributesFromMetadata(metadata: string): Promise<any> {
-    const result = await this.cachingService.getOrSetCache<NftMetadata>(
-      `nftExtendedAttributes:${metadata}`,
-      async () => await this.getExtendedAttributesFromIpfs(metadata ?? ''),
-      Constants.oneWeek(),
-      Constants.oneDay()
-    );
+    const result = await this.getExtendedAttributesFromIpfs(metadata ?? '');
 
     if (!result) {
       return undefined;
@@ -78,11 +62,9 @@ export class NftExtendedAttributesService {
       result = await this.apiService.get(processedIpfsUri, { timeout: 5000 });
       data = result.data;
     } catch (error: any) {
-      const status = error?.response?.status;
-      if (status === 400) {
-        if (error.response.data) {
-          return this.createError('ipfs_error', `IPFS error when fetching metadata: ${error.response.data}`);
-        }
+      const status = error?.status;
+      if (status === 400 && error.response) {
+        return this.createError('ipfs_error', `IPFS error when fetching metadata: ${error.response}`);
       } else if (status === 404) {
         return this.createError('not_found', 'Metadata file not found on IPFS');
       } else if (error.message === 'timeout of 5000ms exceeded') {
