@@ -1,4 +1,4 @@
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { ApiUtils, OriginLogger } from "@elrondnetwork/erdnest";
 import { Constants, MatchUtils, CachingService, ApiService } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { NftMetadata } from "src/endpoints/nfts/entities/nft.metadata";
@@ -71,9 +71,79 @@ export class NftExtendedAttributesService {
     const ipfsUri = `https://ipfs.io/ipfs/${metadata}`;
     const processedIpfsUri = TokenHelpers.computeNftUri(ipfsUri, this.apiConfigService.getMediaUrl() + '/nfts/asset');
 
-    const result = await this.apiService.get(processedIpfsUri, { timeout: 5000 });
+    let result: any;
+    let data: any;
 
-    const data = result.data;
+    try {
+      result = await this.apiService.get(processedIpfsUri, { timeout: 5000 });
+      data = result.data;
+    } catch (error: any) {
+      const status = error?.response?.status;
+      if (status === 400) {
+        if (error.response.data) {
+          return {
+            error: {
+              code: 'ipfs_error',
+              message: `IPFS error when fetching metadata: ${error.response.data}`,
+            },
+          };
+        }
+      } else if (status === 404) {
+        return {
+          error: {
+            code: 'not_found',
+            message: 'Metadata file not found on IPFS',
+          },
+        };
+      } else if (error.message === 'timeout of 5000ms exceeded') {
+        return {
+          error: {
+            code: 'timeout',
+            message: `Timeout exceeeded when fetching metadata`,
+          },
+        };
+      }
+
+      return {
+        error: {
+          code: 'unknown_error',
+        },
+      };
+    }
+
+    const contentType = result.headers['content-type'];
+    if (contentType !== 'application/json') {
+      return {
+        error: {
+          code: 'invalid_content_type',
+          message: `Invalid content type '${contentType}`,
+        },
+      };
+    }
+
+    if (typeof data === 'string') {
+      try {
+        data = JSON.parse(data);
+      } catch (error) {
+        return {
+          error: {
+            code: 'json_parse_error',
+            message: `Error when parsing as JSON`,
+          },
+        };
+      }
+    }
+
+    ApiUtils.cleanupApiValueRecursively(data);
+
+    if (Object.keys(data).length === 0) {
+      return {
+        error: {
+          code: 'empty_metadata',
+          message: `Metadata value is empty`,
+        },
+      };
+    }
 
     if (typeof data !== 'object' && !Array.isArray(data)) {
       return null;
