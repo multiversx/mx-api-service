@@ -293,10 +293,14 @@ export class CollectionService {
   }
 
   async getCollectionForAddress(address: string, identifier: string): Promise<NftCollectionAccount | undefined> {
+    if (!TokenUtils.isCollection(identifier)) {
+      return undefined;
+    }
+
     const collections = await this.getCollectionsForAddress(address, new CollectionFilter({ collection: identifier }), new QueryPagination({ from: 0, size: 1 }));
 
     const collection = collections.find(x => x.collection === identifier);
-    if (!collection || !TokenUtils.isCollection(identifier)) {
+    if (!collection) {
       return undefined;
     }
 
