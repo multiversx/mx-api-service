@@ -325,7 +325,9 @@ export class CollectionService {
       }
     }
 
-    await Promise.all(accountCollections.map((accountCollection) => this.pluginService.processCollection(accountCollection)));
+    for (const collection of accountCollections) {
+      await this.pluginService.processCollection(collection);
+    }
 
     return accountCollections;
   }
