@@ -13,7 +13,7 @@ export class PluginService {
 
   async processNfts(_nft: Nft[], _withScamInfo?: boolean): Promise<void> { }
 
-  async processCollection(_: NftCollection): Promise<void> { }
+  async processCollections(_collections: NftCollection[]): Promise<void> { }
 
   async processAccount(_account: AccountDetailed): Promise<void> { }
 

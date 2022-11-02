@@ -73,7 +73,7 @@ export class CollectionService {
       nftCollection.timestamp = indexedCollection.timestamp;
     }
 
-    await Promise.all(nftColections.map((collection) => this.pluginService.processCollection(collection)));
+    await this.pluginService.processCollections(nftColections);
 
     return nftColections;
   }
@@ -188,7 +188,7 @@ export class CollectionService {
     collection.timestamp = elasticCollection.timestamp;
     collection.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
 
-    await this.pluginService.processCollection(collection);
+    await this.pluginService.processCollections([collection]);
     await this.applyCollectionRoles(collection, elasticCollection);
 
     return collection;
@@ -304,7 +304,7 @@ export class CollectionService {
       return undefined;
     }
 
-    await this.pluginService.processCollection(collection);
+    await this.pluginService.processCollections([collection]);
 
     return collection;
   }
@@ -325,9 +325,7 @@ export class CollectionService {
       }
     }
 
-    for (const collection of accountCollections) {
-      await this.pluginService.processCollection(collection);
-    }
+    await this.pluginService.processCollections(accountCollections);
 
     return accountCollections;
   }
