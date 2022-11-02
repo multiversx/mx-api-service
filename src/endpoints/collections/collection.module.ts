@@ -12,7 +12,7 @@ import { CollectionService } from "./collection.service";
     forwardRef(() => VmQueryModule),
     forwardRef(() => TokenModule),
     forwardRef(() => AssetsModule),
-    PluginModule,
+    forwardRef(() => PluginModule),
   ],
   providers: [
     CollectionService,
