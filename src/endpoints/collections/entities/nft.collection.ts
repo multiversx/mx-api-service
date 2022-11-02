@@ -2,6 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { NftType } from "../../nfts/entities/nft.type";
 import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles";
+import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { Account } from "src/endpoints/accounts/entities/account";
 import { CollectionTrait } from "./collection.trait";
@@ -64,7 +65,10 @@ export class NftCollection {
   @ApiProperty({ type: CollectionRoles, isArray: true })
   roles: CollectionRoles[] = [];
 
+  @ApiProperty({ type: ScamInfo, nullable: true })
+  scamInfo: ScamInfo | undefined = undefined;
   @Field(() => Boolean, { description: 'If the given NFT collection can transfer the underlying tokens by default.', nullable: true })
+
   @ApiProperty({ type: Boolean, default: false })
   canTransfer: boolean = false;
 
