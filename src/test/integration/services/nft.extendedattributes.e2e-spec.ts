@@ -70,31 +70,6 @@ describe('Nft Extended Attributes Service', () => {
     //ToDo catch(error)
   });
 
-  describe("tryGetExtendedAttributesFromMetadata", () => {
-    it("should return extended attributes from metadata", async () => {
-      jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_metadata: string) => {
-          return Object.assign({}, attributes);
-        }));
-
-      const results = await nftExtendedAttributesService.tryGetExtendedAttributesFromMetadata('QmTB97vHLbGAfy1T2PdU2XNPuyWB7ufwwhSh5MpLCVn12m/395.json');
-      expect(results).toHaveProperties(['description', 'dna', 'edition', 'createdAt']);
-    });
-
-    it("should return undefined because test simulates that metadata is not defined", async () => {
-      jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_metadata: string) => undefined));
-
-      const results = await nftExtendedAttributesService.tryGetExtendedAttributesFromMetadata('');
-      expect(results).toBeUndefined();
-    });
-    //ToDo catch(error)
-  });
-
   describe("getTags", () => {
     it("should return tags based on attributes", () => {
       const attributes: string = "dGFnczpFbHJvbmQsUm9ib3RzLFJvYm90LGVSb2JvdHM=";
