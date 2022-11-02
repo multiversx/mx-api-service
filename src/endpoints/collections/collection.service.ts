@@ -186,12 +186,23 @@ export class CollectionService {
 
     collection.type = elasticCollection.type as NftType;
     collection.timestamp = elasticCollection.timestamp;
-    collection.roles = await this.getNftCollectionRoles(elasticCollection);
     collection.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
 
     await this.pluginService.processCollection(collection);
+    await this.applyCollectionRoles(collection, elasticCollection);
 
     return collection;
+  }
+
+  async applyCollectionRoles(collection: NftCollection, elasticCollection: any) {
+    collection.roles = await this.getNftCollectionRoles(elasticCollection);
+    const isTransferProhibitedByDefault = collection.roles?.some(x => x.canTransfer === true) === true;
+    collection.canTransfer = !isTransferProhibitedByDefault;
+    if (collection.canTransfer) {
+      for (const role of collection.roles) {
+        role.canTransfer = undefined;
+      }
+    }
   }
 
   async getNftCollectionRoles(elasticCollection: any): Promise<CollectionRoles[]> {

@@ -67,6 +67,10 @@ export class NftCollection {
 
   @ApiProperty({ type: ScamInfo, nullable: true })
   scamInfo: ScamInfo | undefined = undefined;
+  @Field(() => Boolean, { description: 'If the given NFT collection can transfer the underlying tokens by default.', nullable: true })
+
+  @ApiProperty({ type: Boolean, default: false })
+  canTransfer: boolean = false;
 
   @Field(() => [CollectionTrait], { description: 'Trait list for the given NFT collection.', nullable: true })
   @ApiProperty({ type: CollectionTrait, isArray: true })
