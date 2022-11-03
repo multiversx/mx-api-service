@@ -14,7 +14,8 @@ import { StatusCheckerService } from "./status.checker.service";
   ],
   providers: [
     DynamicModuleUtils.getPubSubService(),
-    StatusCheckerService, ElasticIndexerService,
+    StatusCheckerService,
+    ElasticIndexerService,
   ],
 })
 export class StatusCheckerModule { }
