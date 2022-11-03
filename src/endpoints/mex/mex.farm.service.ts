@@ -7,6 +7,7 @@ import { GraphQlService } from "src/common/graphql/graphql.service";
 import { MexFarm } from "./entities/mex.farm";
 import { MexFarmType } from "./entities/mex.farm.type";
 import { MexTokenService } from "./mex.token.service";
+import { MexStakingProxy } from "./entities/mex.staking.proxy";
 
 @Injectable()
 export class MexFarmService {
@@ -147,5 +148,43 @@ export class MexFarmService {
     });
 
     return [...farms, ...stakingFarms];
+  }
+
+  async getAllStakingProxies(): Promise<MexStakingProxy[]> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.StakingProxies.key,
+      async () => await this.getAllStakingProxiesRaw(),
+      CacheInfo.StakingProxies.ttl,
+      Constants.oneSecond() * 30,
+    );
+  }
+
+  private async getAllStakingProxiesRaw(): Promise<MexStakingProxy[]> {
+    const query = gql`
+      query StakingProxy {
+        stakingProxies {
+          address
+          dualYieldToken {
+            name
+            collection
+          }
+        }
+      }`;
+
+    const result: any = await this.graphQlService.getData(query, {});
+    if (!result) {
+      return [];
+    }
+
+    const stakingProxies = result.stakingProxies.map((stakingProxyRaw: any) => {
+      const stakingProxy = new MexStakingProxy();
+      stakingProxy.address = stakingProxyRaw.address;
+      stakingProxy.dualYieldTokenName = stakingProxyRaw.dualYieldToken.name;
+      stakingProxy.dualYieldTokenCollection = stakingProxyRaw.dualYieldToken.collection;
+
+      return stakingProxy;
+    });
+
+    return stakingProxies;
   }
 }
