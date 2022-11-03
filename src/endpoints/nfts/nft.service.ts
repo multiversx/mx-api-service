@@ -89,8 +89,8 @@ export class NftService {
     }
 
     if (queryOptions && queryOptions.withSupply) {
-      const nftType = nfts.filter((obj) => obj.type.in(NftType.SemiFungibleESDT, NftType.MetaESDT));
-      await this.batchApplySupply(nftType);
+      const supplyNfts = nfts.filter(nft => nft.type.in(NftType.SemiFungibleESDT, NftType.MetaESDT));
+      await this.batchApplySupply(supplyNfts);
     }
 
     await this.batchProcessNfts(nfts);
@@ -421,8 +421,8 @@ export class NftService {
     }
 
     if (queryOptions && queryOptions.withSupply) {
-      const nftType = nfts.filter((obj) => obj.type.in(NftType.SemiFungibleESDT, NftType.MetaESDT));
-      await this.batchApplySupply(nftType);
+      const supplyNfts = nfts.filter(nft => nft.type.in(NftType.SemiFungibleESDT, NftType.MetaESDT));
+      await this.batchApplySupply(supplyNfts);
     }
 
     await this.batchProcessNfts(nfts);
