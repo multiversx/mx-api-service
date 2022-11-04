@@ -46,7 +46,7 @@ export class EsdtService {
   async getAllEsdtTokensRaw(): Promise<TokenDetailed[]> {
     let tokensIdentifiers: string[];
     try {
-      const getFungibleTokensResult = await this.gatewayService.getFungibleEsdtTokens();
+      const getFungibleTokensResult = await this.gatewayService.getEsdtFungibleTokens();
 
       tokensIdentifiers = getFungibleTokensResult;
     } catch (error) {

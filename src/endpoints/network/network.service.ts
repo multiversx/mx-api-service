@@ -105,7 +105,7 @@ export class NetworkService {
   }
 
   async getMinimumAuctionTopUp(): Promise<string | undefined> {
-    const auctions = await this.gatewayService.getAuctions();
+    const auctions = await this.gatewayService.getValidatorAuctions();
 
     if (auctions.length === 0) {
       return undefined;
@@ -136,7 +136,7 @@ export class NetworkService {
       priceValue,
       tokenMarketCap,
     ] = await Promise.all([
-      this.gatewayService.getAccountAddress(`${this.apiConfigService.getAuctionContractAddress()}`),
+      this.gatewayService.getAddressDetails(`${this.apiConfigService.getAuctionContractAddress()}`),
       this.gatewayService.getNetworkEconomics(),
       this.vmQueryService.vmQuery(
         this.apiConfigService.getDelegationContractAddress(),
@@ -233,7 +233,7 @@ export class NetworkService {
     const stake = await this.stakeService.getGlobalStake();
     const {
       account: { balance: stakedBalance },
-    } = await this.gatewayService.getAccountAddress(`${this.apiConfigService.getAuctionContractAddress()}`);
+    } = await this.gatewayService.getAddressDetails(`${this.apiConfigService.getAuctionContractAddress()}`);
     let [activeStake] = await this.vmQueryService.vmQuery(
       this.apiConfigService.getDelegationContractAddress(),
       'getTotalActiveStake',

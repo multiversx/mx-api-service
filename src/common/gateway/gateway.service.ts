@@ -24,7 +24,7 @@ export class GatewayService {
     private readonly metricsService: ApiMetricsService,
   ) { }
 
-  async getAuctions(): Promise<Auction[]> {
+  async getValidatorAuctions(): Promise<Auction[]> {
     const result = await this.get('validator/auction', GatewayComponentRequest.validatorAuction);
 
     return result.auction;
@@ -45,12 +45,12 @@ export class GatewayService {
     return result.metrics;
   }
 
-  async getHeartbeatsStatus(): Promise<HeartBeatsStatus[]> {
+  async getNodeHeartbeatStatus(): Promise<HeartBeatsStatus[]> {
     const result = await this.get('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat);
     return result.heartbeats;
   }
 
-  async getAccountAddress(address: string): Promise<Account> {
+  async getAddressDetails(address: string): Promise<Account> {
     const result = await this.get(`address/${address}`, GatewayComponentRequest.addressDetails);
     return result;
   }
@@ -60,7 +60,7 @@ export class GatewayService {
     return result;
   }
 
-  async getFungibleEsdtTokens(): Promise<string[]> {
+  async getEsdtFungibleTokens(): Promise<string[]> {
     const result = await this.get('network/esdt/fungible-tokens', GatewayComponentRequest.allFungibleTokens);
     return result.tokens;
   }
@@ -70,7 +70,7 @@ export class GatewayService {
     return result;
   }
 
-  async getTokenAddress(address: string, identifier: string): Promise<TokenData> {
+  async getAddressEsdtToken(address: string, identifier: string): Promise<TokenData> {
     // eslint-disable-next-line require-await
     const result = await this.get(`address/${address}/esdt/${identifier}`, GatewayComponentRequest.addressEsdtBalance, async (error) => {
       const errorMessage = error?.response?.data?.error;
@@ -83,7 +83,7 @@ export class GatewayService {
     return result.tokenData;
   }
 
-  async getGatewayTransaction(txHash: string): Promise<Transaction> {
+  async getTransaction(txHash: string): Promise<Transaction> {
     // eslint-disable-next-line require-await
     const result = await this.get(`transaction/${txHash}?withResults=true`, GatewayComponentRequest.transactionDetails, async (error) => {
       if (error.response.data.error === 'transaction not found') {

@@ -323,7 +323,7 @@ export class NodeService {
     await this.getNodesStakeDetails(nodes);
 
     if (this.apiConfigService.isStakingV4Enabled()) {
-      const auctions = await this.gatewayService.getAuctions();
+      const auctions = await this.gatewayService.getValidatorAuctions();
       this.processAuctions(nodes, auctions);
     }
 
@@ -467,7 +467,7 @@ export class NodeService {
       { statistics },
       config,
     ] = await Promise.all([
-      this.gatewayService.getHeartbeatsStatus(),
+      this.gatewayService.getNodeHeartbeatStatus(),
       this.gatewayService.get('validator/statistics', GatewayComponentRequest.validatorStatistics),
       this.gatewayService.getNetworkConfig(),
     ]);

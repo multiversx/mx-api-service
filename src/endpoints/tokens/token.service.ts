@@ -243,7 +243,7 @@ export class TokenService {
 
     const token = tokens[0];
     // eslint-disable-next-line require-await
-    const esdt = await this.gatewayService.getTokenAddress(address, identifier);
+    const esdt = await this.gatewayService.getAddressEsdtToken(address, identifier);
 
     if (!esdt || esdt.balance === '0') {
       return undefined;

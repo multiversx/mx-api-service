@@ -123,7 +123,7 @@ export class CacheWarmerService {
     await Locker.lock('Node auction invalidations', async () => {
       await this.lock.acquire('nodes', async () => {
         const nodes = await this.nodeService.getAllNodes();
-        const auctions = await this.gatewayService.getAuctions();
+        const auctions = await this.gatewayService.getValidatorAuctions();
 
         this.nodeService.processAuctions(nodes, auctions);
 

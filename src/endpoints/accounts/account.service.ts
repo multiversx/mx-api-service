@@ -91,7 +91,7 @@ export class AccountService {
     try {
       const {
         account: { nonce, balance, code, codeHash, rootHash, developerReward, ownerAddress, codeMetadata },
-      } = await this.gatewayService.getAccountAddress(address);
+      } = await this.gatewayService.getAddressDetails(address);
 
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
       let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], nftCollections: undefined, nfts: undefined });

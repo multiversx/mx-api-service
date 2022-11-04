@@ -131,7 +131,7 @@ export class TransactionGetService {
   async tryGetTransactionFromGateway(txHash: string, queryInElastic: boolean = true): Promise<TransactionDetailed | null> {
     try {
       // eslint-disable-next-line require-await
-      const transactionResult = await this.gatewayService.getGatewayTransaction(txHash);
+      const transactionResult = await this.gatewayService.getTransaction(txHash);
 
       if (!transactionResult) {
         return null;
