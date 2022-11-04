@@ -433,8 +433,8 @@ describe('Nft Service', () => {
       }
     });
 
-    it("should return a list of NonFungible tokens for a specific address and applied filter withSupply = true", async () => {
-      const address: string = "erd1fs7dp439gw2at58a2pqn3hdnxqh5vskq5uzjdf9kajkxy3p0vy7qeh7k00";
+    it("should return a list of NonFungibleESDT for a specific address without supply even if withSupply property is true", async () => {
+      const address: string = "erd1yl6f7cq9gpuprwthxf0c2gsvmnuezwqkqmzf8e40u87t7592af7qpl05cv";
       const options = new NftQueryOptions();
       options.withSupply = true;
 
@@ -442,6 +442,54 @@ describe('Nft Service', () => {
 
       for (const result of results) {
         expect(result.type).toStrictEqual(NftType.NonFungibleESDT);
+        expect(result.supply).not.toBeDefined();
+      }
+    });
+
+    it("when withSupply property is false should return a list of tokens (NonFungible, SemiFungibleESDT, MetaESDT) without supply attribute applied", async () => {
+      const address: string = "erd1yl6f7cq9gpuprwthxf0c2gsvmnuezwqkqmzf8e40u87t7592af7qpl05cv";
+      const options = new NftQueryOptions();
+      options.withSupply = false;
+
+      const nftResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.NonFungibleESDT }, options);
+      for (const result of nftResults) {
+        expect(result.type).toStrictEqual(NftType.NonFungibleESDT);
+        expect(result.supply).not.toBeDefined();
+      }
+
+      const sftResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.SemiFungibleESDT }, options);
+      for (const result of sftResults) {
+        expect(result.type).toStrictEqual(NftType.SemiFungibleESDT);
+        expect(result.supply).not.toBeDefined();
+      }
+
+      const metaEsdtResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.MetaESDT }, options);
+      for (const result of metaEsdtResults) {
+        expect(result.type).toStrictEqual(NftType.MetaESDT);
+        expect(result.supply).not.toBeDefined();
+      }
+    });
+
+    it("should return a list of nfts for a specific address with supply attribute applied only for SemiFungibleESDT and MetaESDT", async () => {
+      const address: string = "erd1yl6f7cq9gpuprwthxf0c2gsvmnuezwqkqmzf8e40u87t7592af7qpl05cv";
+      const options = new NftQueryOptions();
+      options.withSupply = true;
+
+      const nftResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.NonFungibleESDT }, options);
+      for (const result of nftResults) {
+        expect(result.type).toStrictEqual(NftType.NonFungibleESDT);
+        expect(result.supply).not.toBeDefined();
+      }
+
+      const sftResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.SemiFungibleESDT }, options);
+      for (const result of sftResults) {
+        expect(result.type).toStrictEqual(NftType.SemiFungibleESDT);
+        expect(result.supply).toBeDefined();
+      }
+
+      const metaEsdtResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.MetaESDT }, options);
+      for (const result of metaEsdtResults) {
+        expect(result.type).toStrictEqual(NftType.MetaESDT);
         expect(result.supply).toBeDefined();
       }
     });

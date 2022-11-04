@@ -13,6 +13,7 @@ import { MexSettings } from "src/endpoints/mex/entities/mex.settings";
 import { DnsContracts } from "src/utils/dns.contracts";
 import { NftRankAlgorithm } from "./entities/nft.rank.algorithm";
 import { NftRank } from "./entities/nft.rank";
+import { MexStakingProxy } from "src/endpoints/mex/entities/mex.staking.proxy";
 const rimraf = require("rimraf");
 const path = require('path');
 const fs = require('fs');
@@ -183,7 +184,7 @@ export class AssetsService {
     );
   }
 
-  getAllAccountAssetsRaw(providers?: Provider[], identities?: Identity[], pairs?: MexPair[], farms?: MexFarm[], mexSettings?: MexSettings): { [key: string]: AccountAssets } {
+  getAllAccountAssetsRaw(providers?: Provider[], identities?: Identity[], pairs?: MexPair[], farms?: MexFarm[], mexSettings?: MexSettings, stakingProxies?: MexStakingProxy[]): { [key: string]: AccountAssets } {
     const accountAssetsPath = this.getAccountAssetsPath();
     if (!fs.existsSync(accountAssetsPath)) {
       return {};
@@ -263,6 +264,15 @@ export class AssetsService {
         name: `Maiar Exchange: Distribution Contract`,
         tags: ['mex', 'lockedasset'],
       });
+    }
+
+    if (stakingProxies) {
+      for (const stakingProxy of stakingProxies) {
+        allAssets[stakingProxy.address] = new AccountAssets({
+          name: `Maiar Exchange: ${stakingProxy.dualYieldTokenName} Contract`,
+          tags: ['mex', 'metastaking'],
+        });
+      }
     }
 
     for (const [index, address] of DnsContracts.addresses.entries()) {

@@ -285,6 +285,11 @@ export class CacheInfo {
     ttl: Constants.oneMinute() * 10,
   };
 
+  static StakingProxies: CacheInfo = {
+    key: "mexStakingProxies",
+    ttl: Constants.oneMinute() * 10,
+  };
+
   static MexTokensIndexed: CacheInfo = {
     key: "mexTokensIndexed",
     ttl: Constants.oneMinute() * 10,

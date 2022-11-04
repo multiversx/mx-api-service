@@ -14,6 +14,7 @@ describe("API Testing", () => {
 
     app = moduleRef.createNestApplication();
     app.useGlobalInterceptors(
+      // @ts-ignore
       new FieldsInterceptor(),
       new CleanupInterceptor(),
     );
