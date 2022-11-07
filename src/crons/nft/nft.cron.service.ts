@@ -4,6 +4,7 @@ import { Injectable } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { Nft } from "src/endpoints/nfts/entities/nft";
+import { NftMetadataErrorCode } from "src/endpoints/nfts/entities/nft.metadata.error.code";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
@@ -20,6 +21,27 @@ export class NftCronService {
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
   ) { }
 
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async triggerProcessFailedMetadata() {
+    if (!this.apiConfigService.getIsProcessNftsFlagActive()) {
+      return;
+    }
+
+    await Locker.lock('Process failed metadata for NFTs minted in the last 10 minutes', async () => {
+      const thirtyMinutesAgo = Math.floor(Date.now() / 1000) - (Constants.oneMinute() * 30);
+      const tenMinutesAgo = Math.floor(Date.now() / 1000) - (Constants.oneMinute() * 10);
+      await this.processNfts(thirtyMinutesAgo, tenMinutesAgo, async nft => {
+        const needsRefreshMetadata = this.needsMetadataRefresh(nft);
+        if (needsRefreshMetadata) {
+          await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ forceRefreshMetadata: true }));
+        }
+
+        return needsRefreshMetadata;
+      });
+    }, true);
+  }
+
   @Cron(CronExpression.EVERY_HOUR)
   async triggerProcessNftsForLast24Hours() {
     if (!this.apiConfigService.getIsProcessNftsFlagActive()) {
@@ -28,7 +50,8 @@ export class NftCronService {
 
     await Locker.lock('Process NFTs minted in the last 24 hours', async () => {
       const dayBefore = Math.floor(Date.now() / 1000) - Constants.oneDay();
-      await this.processNfts(dayBefore, async nft => {
+      const tenMinutesAgo = Math.floor(Date.now() / 1000) - (Constants.oneMinute() * 10);
+      await this.processNfts(dayBefore, tenMinutesAgo, async nft => {
         const needsUploadAsset = await this.nftWorkerService.needsProcessing(nft, new ProcessNftSettings({ uploadAsset: true }));
         if (needsUploadAsset) {
           await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ uploadAsset: true }));
@@ -44,7 +67,7 @@ export class NftCronService {
           await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ forceRefreshMedia: true }));
         }
 
-        return needsUploadAsset;
+        return needsUploadAsset || needsRefreshMetadata || needsRefreshMedia;
       });
     }, true);
   }
@@ -55,8 +78,9 @@ export class NftCronService {
       return;
     }
 
+    const tenMinutesAgo = Math.floor(Date.now() / 1000) - (Constants.oneMinute() * 10);
     await Locker.lock('Process NFTs without media / metadata', async () => {
-      await this.processNfts(undefined, async nft => {
+      await this.processNfts(undefined, tenMinutesAgo, async nft => {
         const needsProcessing = this.needsMediaFetch(nft) || this.needsMetadataFetch(nft);
         if (needsProcessing) {
           await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings());
@@ -78,8 +102,12 @@ export class NftCronService {
       return false;
     }
 
-    // metadata has keys => should be all good
-    if (nft.metadata && Object.keys(nft.metadata).length > 0) {
+    // metadata has keys and error is not 'not_found' or 'timeout' => should be all good
+    if (
+      nft.metadata &&
+      Object.keys(nft.metadata).length > 0 &&
+      (!nft.metadata.error || !nft.metadata.error.code.in(NftMetadataErrorCode.notFound, NftMetadataErrorCode.timeout))
+    ) {
       return false;
     }
 
@@ -121,9 +149,7 @@ export class NftCronService {
     return nft.uris && nft.uris.length > 0 && !nft.media;
   }
 
-  private async processNfts(after: number | undefined, handler: (nft: Nft) => Promise<boolean>): Promise<void> {
-    let before = Math.floor(Date.now() / 1000) - (Constants.oneMinute() * 10);
-
+  private async processNfts(after: number | undefined, before: number, handler: (nft: Nft) => Promise<boolean>): Promise<void> {
     const nftIdentifiers = new Set<string>();
     let totalProcessedNfts = 0;
     let totalNfts = 0;
