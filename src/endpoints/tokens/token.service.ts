@@ -517,13 +517,11 @@ export class TokenService {
           }
         }
 
-        result.push(resultItem, Object.assign(resultItem, {
-          roles:
-          {
-            canLocalMint: resultItem.canLocalMint,
-            canLocalBurn: resultItem.canLocalBurn,
-          },
-        }));
+        resultItem.roles = {
+          canLocalMint: resultItem.canLocalMint,
+          canLocalBurn: resultItem.canLocalBurn,
+        },
+          result.push(resultItem);
       }
     }
 
