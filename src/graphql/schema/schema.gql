@@ -448,6 +448,33 @@ input GetAccountDetailedInput {
   address: ID = ""
 }
 
+"""Input to retrieve the given account details with roles for."""
+input GetAccountTokenRolesInput {
+  """Address to retrieve the corresponding detailed account for."""
+  address: ID = ""
+
+  """Filter by property canBurn to retrieve the given result set."""
+  canBurn: Boolean
+
+  """Filter by property canMint to retrieve the given result set."""
+  canMint: Boolean
+
+  """Owner to retrieve for the given result set."""
+  creator: String
+
+  """Number of tokens to skip for the given result set."""
+  from: Float = 0
+
+  """Tokens identifier to retrieve for the given result set."""
+  identifier: ID
+
+  """Tokens search to retrieve for the given result set."""
+  search: String
+
+  """Number of tokens to retrieve for the given result set."""
+  size: Float = 25
+}
+
 """Input to retrieve the given accounts for."""
 input GetAccountsInput {
   """Number of accounts to skip for the given result set."""
@@ -2524,6 +2551,12 @@ type Query {
     input: GetTokenInput!
   ): TokenSupplyResult
 
+  """Retrieve the detailed account token roles for the given input."""
+  tokenWithRolesForAddress(
+    """Input to retrieve the given detailed account for."""
+    input: GetAccountTokenRolesInput!
+  ): [TokenWithRoles!]
+
   """Retrieve all tokens for the given input."""
   tokens(
     """Input to retrieve the given tokens for."""
@@ -2940,6 +2973,96 @@ enum TokenType {
 
   """Semi-fungible ESDT token type."""
   SemiFungibleESDT
+}
+
+"""TokenWithLocalRoles object type."""
+type TokenWithLocalRoles {
+  """canLocalBurn role for the given token."""
+  canLocalBurn: Boolean!
+
+  """canLocalMint role for the given token."""
+  canLocalMint: Boolean!
+}
+
+"""TokenWithRoles object type."""
+type TokenWithRoles {
+  """Token accounts list."""
+  accounts: Float!
+
+  """Token assests details."""
+  assets: TokenAssets
+
+  """Token burnt details."""
+  burnt: String!
+
+  """Token canBurn property."""
+  canBurn: Boolean!
+
+  """Token canChangeOwner property."""
+  canChangeOwner: Boolean!
+
+  """Token canFreeze property."""
+  canFreeze: Boolean!
+
+  """canLocalBurn role for the given token."""
+  canLocalBurn: Boolean!
+
+  """canLocalMint role for the given token."""
+  canLocalMint: Boolean!
+
+  """Token canMint property."""
+  canMint: Boolean!
+
+  """Token canPause property."""
+  canPause: Boolean!
+
+  """Token canUpgrade property."""
+  canUpgrade: Boolean!
+
+  """Token canWipe property."""
+  canWipe: Boolean
+
+  """Token circulating supply amount details."""
+  circulatingSupply: String
+
+  """Token decimals."""
+  decimals: Float!
+
+  """Token Identifier."""
+  identifier: String!
+
+  """Token initial minting details."""
+  initialMinted: String!
+
+  """Token isPause property."""
+  isPaused: Boolean!
+
+  """Current market cap details."""
+  marketCap: Float
+
+  """Token minted details."""
+  minted: String!
+
+  """Token name."""
+  name: String!
+
+  """Token owner address."""
+  owner: String!
+
+  """Current token price."""
+  price: Float
+
+  """Account token roles details."""
+  roles: TokenWithLocalRoles!
+
+  """Token supply amount details."""
+  supply: String
+
+  """Token ticker."""
+  ticker: String!
+
+  """Tokens transactions."""
+  transactions: Float
 }
 
 """Transaction object type."""
