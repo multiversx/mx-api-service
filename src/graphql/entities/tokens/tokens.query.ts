@@ -1,6 +1,6 @@
 import { Args, Float, Query, Resolver } from "@nestjs/graphql";
 import { TokenService } from "src/endpoints/tokens/token.service";
-import { GetTokenAccountsInput, GetTokenInput, GetTokenRolesForIdentifierAndAddressInput, GetTokensCountInput, GetTokensInput } from "./tokens.input";
+import { GetAccountTokenRolesInput, GetTokenAccountsInput, GetTokenInput, GetTokenRolesForIdentifierAndAddressInput, GetTokensCountInput, GetTokensInput } from "./tokens.input";
 import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
@@ -8,6 +8,8 @@ import { NotFoundException } from "@nestjs/common";
 import { TokenSupplyResult } from "src/endpoints/tokens/entities/token.supply.result";
 import { TokenAccount } from "src/endpoints/tokens/entities/token.account";
 import { TokenRoles } from "src/endpoints/tokens/entities/token.roles";
+import { TokenWithRoles } from "src/endpoints/tokens/entities/token.with.roles";
+import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.roles.filter";
 
 @Resolver()
 export class TokenQuery {
@@ -99,5 +101,23 @@ export class TokenQuery {
       throw new NotFoundException('Token not found');
     }
     return token;
+  }
+
+  @Query(() => [TokenWithRoles], { name: "tokenWithRolesForAddress", description: "Retrieve the detailed account token roles for the given input.", nullable: true })
+  public async getTokensWithRolesForAddress(@Args("input", { description: "Input to retrieve the given detailed account for." }) input: GetAccountTokenRolesInput): Promise<TokenWithRoles[]> {
+    const tokenWithRoles = await this.tokenService.getTokensWithRolesForAddress(
+      input.address,
+      new TokenWithRolesFilter({
+        identifier: input.identifier,
+        search: input.search,
+        owner: input.owner,
+        canMint: input.canMint,
+        canBurn: input.canBurn,
+      }), new QueryPagination({
+        from: input.from,
+        size: input.size,
+      }));
+
+    return tokenWithRoles;
   }
 }

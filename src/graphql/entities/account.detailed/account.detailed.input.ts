@@ -16,36 +16,6 @@ export class GetAccountDetailedInput {
     return input.address;
   }
 }
-
-@InputType({ description: "Input to retrieve the given account details with roles for." })
-export class GetAccountTokenRolesInput extends GetAccountDetailedInput {
-  constructor(partial?: Partial<GetAccountTokenRolesInput>) {
-    super();
-    Object.assign(this, partial);
-  }
-
-  @Field(() => Float, { name: "from", description: "Number of tokens to skip for the given result set.", nullable: true, defaultValue: 0 })
-  from: number = 0;
-
-  @Field(() => Float, { name: "size", description: "Number of tokens to retrieve for the given result set.", nullable: true, defaultValue: 25 })
-  size: number = 25;
-
-  @Field(() => ID, { name: "identifier", description: "Tokens identifier to retrieve for the given result set.", nullable: true })
-  identifier?: string;
-
-  @Field(() => String, { name: "search", description: "Tokens search to retrieve for the given result set.", nullable: true })
-  search?: string;
-
-  @Field(() => String, { name: "creator", description: "Owner to retrieve for the given result set.", nullable: true })
-  owner?: string;
-
-  @Field(() => Boolean, { name: "canMint", description: "Filter by property canMint to retrieve the given result set.", nullable: true })
-  canMint?: boolean;
-
-  @Field(() => Boolean, { name: "canBurn", description: "Filter by property canBurn to retrieve the given result set.", nullable: true })
-  canBurn?: boolean;
-}
-
 @InputType({ description: "Input to retrieve the given NFT collections for." })
 export class GetNftCollectionsAccountInput {
   constructor(partial?: Partial<GetNftCollectionsAccountInput>) {

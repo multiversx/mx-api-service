@@ -13,7 +13,6 @@ import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { NftQueryOptions } from "src/endpoints/nfts/entities/nft.query.options";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { TokenService } from "src/endpoints/tokens/token.service";
 
 @Resolver(() => AccountDetailed)
 export class AccountDetailedResolver extends AccountDetailedQuery {
@@ -21,9 +20,8 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
     protected readonly nftService: NftService,
     protected readonly collectionService: CollectionService,
     accountService: AccountService,
-    tokenService: TokenService,
   ) {
-    super(accountService, tokenService);
+    super(accountService);
   }
 
   @ResolveField("txCount", () => Float, { name: "txCount", description: "Transactions count for the given detailed account." })
