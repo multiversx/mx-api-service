@@ -116,13 +116,12 @@ describe('Collection Service', () => {
       const result = await collectionService.getCollectionForAddressWithRole(address, collection);
 
       expect(result).toEqual(expect.objectContaining({
-        collection: collection,
-        owner: address,
-        canCreate: true,
-        canBurn: false,
-        canAddQuantity: undefined,
-        canUpdateAttributes: false,
-        canAddUri: false,
+        roles: expect.objectContaining({
+          canCreate: true,
+          canBurn: false,
+          canAddUri: false,
+          canUpdateAttributes: false,
+        }),
       }));
     });
 
@@ -141,17 +140,20 @@ describe('Collection Service', () => {
 
   describe('getCollectionsWithRolesForAddress', () => {
     it('should return one collection where address has roles', async () => {
-      const address: string = "erd1qqqqqqqqqqqqqpgq09vq93grfqy7x5fhgmh44ncqfp3xaw57ys5s7j9fed";
-      const result = await collectionService.getCollectionsWithRolesForAddress(address, new CollectionFilter(), new QueryPagination({ size: 1 }));
+      const address: string = "erd1qqqqqqqqqqqqqpgq6xtqy9lda5cj5ts8kfvd8r89wy7n2dn58sts6dguut";
+      const collectionFilter: CollectionFilter = new CollectionFilter();
+      collectionFilter.collection = "MMAF-63c85a";
+
+      const result = await collectionService.getCollectionsWithRolesForAddress(address, collectionFilter, new QueryPagination({ size: 1 }));
 
       expect(result).toEqual(expect.arrayContaining([
         expect.objectContaining({
-          owner: address,
-          canCreate: true,
-          canBurn: false,
-          canAddQuantity: undefined,
-          canUpdateAttributes: false,
-          canAddUri: false,
+          roles: expect.objectContaining({
+            canCreate: true,
+            canBurn: true,
+            canAddUri: false,
+            canUpdateAttributes: false,
+          }),
         }),
       ]));
     });

@@ -150,7 +150,26 @@ export class EsdtAddressService {
         // @ts-ignore
         delete accountCollection.roles;
 
-        nftAccountCollections.push(accountCollection);
+        nftAccountCollections.push(accountCollection, Object.assign(accountCollection, {
+          roles: {
+            canCreate: accountCollection.canCreate,
+            canBurn: accountCollection.canBurn,
+            canAddUri: accountCollection.canAddUri,
+            canUpdateAttributes: accountCollection.canUpdateAttributes,
+          },
+        }));
+
+        // @ts-ignore
+        delete accountCollection.canCreate;
+
+        // @ts-ignore
+        delete accountCollection.canBurn;
+
+        // @ts-ignore
+        delete accountCollection.canAddUri;
+
+        // @ts-ignore
+        delete accountCollection.canUpdateAttributes;
       }
 
       return nftAccountCollections;
