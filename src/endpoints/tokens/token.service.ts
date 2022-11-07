@@ -517,13 +517,24 @@ export class TokenService {
           }
         }
 
-        result.push(resultItem);
+        result.push(resultItem, Object.assign(resultItem, {
+          roles:
+          {
+            canLocalMint: resultItem.canLocalMint,
+            canLocalBurn: resultItem.canLocalBurn,
+          },
+        }));
+
+        //@ts-ignore
+        delete resultItem.canLocalMint;
+
+        //@ts-ignore
+        delete resultItem.canLocalBurn;
       }
     }
 
     return result;
   }
-
 
 
   private async getLogo(identifier: string): Promise<TokenLogo | undefined> {
