@@ -524,12 +524,6 @@ export class TokenService {
             canLocalBurn: resultItem.canLocalBurn,
           },
         }));
-
-        //@ts-ignore
-        delete resultItem.canLocalMint;
-
-        //@ts-ignore
-        delete resultItem.canLocalBurn;
       }
     }
 

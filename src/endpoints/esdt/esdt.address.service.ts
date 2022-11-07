@@ -159,17 +159,6 @@ export class EsdtAddressService {
           },
         }));
 
-        // @ts-ignore
-        delete accountCollection.canCreate;
-
-        // @ts-ignore
-        delete accountCollection.canBurn;
-
-        // @ts-ignore
-        delete accountCollection.canAddUri;
-
-        // @ts-ignore
-        delete accountCollection.canUpdateAttributes;
       }
 
       return nftAccountCollections;
