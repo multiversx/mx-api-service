@@ -98,18 +98,32 @@ describe('EsdtAddressService', () => {
 
       const collections: NftCollection[] | NftCollectionRole[] = await esdtAddressService.getCollectionsForAddress(address, collectionFilter, { from: 0, size: 1 });
 
-      expect(collections).toHaveLength(1);
-      expect(collections).toBeInstanceOf(Object);
-
       for (const collection of collections) {
         expect(collection.hasOwnProperty('collection')).toBe(true);
         expect(collection.hasOwnProperty('type')).toBe(true);
         expect(collection.hasOwnProperty('name')).toBe(true);
         expect(collection.hasOwnProperty('ticker')).toBe(true);
+        expect(collection.hasOwnProperty('owner')).toBe(true);
+        expect(collection.hasOwnProperty('timestamp')).toBe(true);
         expect(collection.hasOwnProperty('canFreeze')).toBe(true);
         expect(collection.hasOwnProperty('canWipe')).toBe(true);
         expect(collection.hasOwnProperty('canPause')).toBe(true);
+        expect(collection.hasOwnProperty('canTransferNftCreateRole')).toBe(true);
+        expect(collection.hasOwnProperty('decimals')).toBe(true);
         expect(collection.hasOwnProperty('assets')).toBe(true);
+        expect(collection.hasOwnProperty('scamInfo')).toBe(true);
+        expect(collection.hasOwnProperty('canTransfer')).toBe(true);
+        expect(collection.hasOwnProperty('canAddQuantity')).toBe(true);
+        expect(collection.hasOwnProperty('canTransferRole')).toBe(true);
+
+        expect(collection).toEqual(expect.objectContaining({
+          roles: expect.objectContaining({
+            canCreate: true,
+            canBurn: false,
+            canAddUri: false,
+            canUpdateAttributes: false,
+          }),
+        }));
       }
     });
 
