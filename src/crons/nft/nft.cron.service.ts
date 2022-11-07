@@ -193,6 +193,6 @@ export class NftCronService {
       before = nfts[nfts.length - 1].timestamp ?? 0;
     }
 
-    this.logger.log(`Total processed NFTs from the last 24h: ${totalProcessedNfts}`);
+    this.logger.log(`Total processed NFTs: ${totalProcessedNfts}`);
   }
 }
