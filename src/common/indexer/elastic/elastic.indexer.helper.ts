@@ -2,7 +2,6 @@ import { AbstractQuery, AddressUtils, BinaryUtils, ElasticQuery, QueryConditionO
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { SettingsService } from "src/common/settings/settings.service";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { BlsService } from "src/endpoints/bls/bls.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
@@ -18,7 +17,6 @@ import { TransactionType } from "src/endpoints/transactions/entities/transaction
 export class ElasticIndexerHelper {
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly settingsService: SettingsService,
     private readonly blsService: BlsService,
   ) { }
 
@@ -55,15 +53,13 @@ export class ElasticIndexerHelper {
     return queries;
   }
 
-  public async buildCollectionRolesFilter(filter: CollectionFilter, address?: string): Promise<ElasticQuery> {
-    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
-
+  public buildCollectionRolesFilter(filter: CollectionFilter, address?: string): ElasticQuery {
     let elasticQuery = ElasticQuery.create();
     elasticQuery = elasticQuery.withMustNotExistCondition('identifier')
       .withMustMultiShouldCondition([NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT], type => QueryType.Match('type', type));
 
     if (address) {
-      if (isIndexerV3FlagActive) {
+      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
         elasticQuery = elasticQuery.withMustCondition(QueryType.Should(
           [
             QueryType.Match('currentOwner', address),
@@ -84,7 +80,7 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
     }
 
-    if (isIndexerV3FlagActive) {
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       if (filter.canCreate !== undefined) {
         elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTRoleNFTCreate', address, filter.canCreate);
       }
@@ -124,7 +120,7 @@ export class ElasticIndexerHelper {
     return query.withCondition(condition, QueryType.Nested('roles', { [`roles.${name}`]: targetAddress }));
   }
 
-  public async buildElasticNftFilter(filter: NftFilter, identifier?: string, address?: string): Promise<ElasticQuery> {
+  public buildElasticNftFilter(filter: NftFilter, identifier?: string, address?: string): ElasticQuery {
     let elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, QueryType.Exists('identifier'));
 
@@ -172,8 +168,7 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
     }
 
-    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
-    if (filter.isWhitelistedStorage !== undefined && isIndexerV3FlagActive) {
+    if (filter.isWhitelistedStorage !== undefined && this.apiConfigService.getIsIndexerV3FlagActive()) {
       elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", { "data.whiteListedStorage": filter.isWhitelistedStorage }));
     }
 
@@ -208,7 +203,7 @@ export class ElasticIndexerHelper {
     return elasticQuery;
   }
 
-  public async buildTransferFilterQuery(filter: TransactionFilter): Promise<ElasticQuery> {
+  public buildTransferFilterQuery(filter: TransactionFilter): ElasticQuery {
     let elasticQuery = ElasticQuery.create();
 
     if (filter.address) {
@@ -259,8 +254,7 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('tokens', filter.token, QueryOperator.AND));
     }
 
-    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
-    if (filter.function && isIndexerV3FlagActive) {
+    if (filter.function && this.apiConfigService.getIsIndexerV3FlagActive()) {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('function', filter.function));
     }
 
@@ -357,7 +351,7 @@ export class ElasticIndexerHelper {
     return queries;
   }
 
-  public async buildSmartContractResultFilterQuery(address?: string): Promise<ElasticQuery> {
+  public buildSmartContractResultFilterQuery(address?: string): ElasticQuery {
     const shouldQueries: AbstractQuery[] = [];
     const mustQueries: AbstractQuery[] = [];
 
@@ -365,8 +359,7 @@ export class ElasticIndexerHelper {
       shouldQueries.push(QueryType.Match('sender', address));
       shouldQueries.push(QueryType.Match('receiver', address));
 
-      const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
-      if (isIndexerV3FlagActive) {
+      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
         shouldQueries.push(QueryType.Match('receivers', address));
       }
     }
@@ -378,11 +371,10 @@ export class ElasticIndexerHelper {
     return elasticQuery;
   }
 
-  public async buildTransactionFilterQuery(filter: TransactionFilter, address?: string): Promise<ElasticQuery> {
-    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
+  public buildTransactionFilterQuery(filter: TransactionFilter, address?: string): ElasticQuery {
     let elasticQuery = ElasticQuery.create()
       .withMustMatchCondition('tokens', filter.token, QueryOperator.AND)
-      .withMustMatchCondition('function', isIndexerV3FlagActive ? filter.function : undefined)
+      .withMustMatchCondition('function', this.apiConfigService.getIsIndexerV3FlagActive() ? filter.function : undefined)
       .withMustMatchCondition('senderShard', filter.senderShard)
       .withMustMatchCondition('receiverShard', filter.receiverShard)
       .withMustMatchCondition('miniBlockHash', filter.miniBlockHash)
@@ -399,7 +391,7 @@ export class ElasticIndexerHelper {
 
       if (filter.receivers) {
         const keys = ['receiver'];
-        if (isIndexerV3FlagActive) {
+        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
           keys.push('receivers');
         }
 
@@ -415,7 +407,7 @@ export class ElasticIndexerHelper {
       if (filter.receivers) {
         const keys = ['receiver'];
 
-        if (isIndexerV3FlagActive) {
+        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
           keys.push('receivers');
         }
 
@@ -434,7 +426,7 @@ export class ElasticIndexerHelper {
     if (address) {
       const keys: string[] = ['sender', 'receiver'];
 
-      if (isIndexerV3FlagActive) {
+      if (this.apiConfigService.getIsIndexerV3FlagActive()) {
         keys.push('receivers');
       }
 

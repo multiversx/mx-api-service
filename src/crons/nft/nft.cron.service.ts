@@ -2,7 +2,7 @@ import { OriginLogger } from "@elrondnetwork/erdnest";
 import { Constants, Locker } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
-import { SettingsService } from "src/common/settings/settings.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
@@ -16,14 +16,13 @@ export class NftCronService {
   constructor(
     private readonly nftWorkerService: NftWorkerService,
     private readonly nftService: NftService,
-    private readonly settingsService: SettingsService,
+    private readonly apiConfigService: ApiConfigService,
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
   ) { }
 
   @Cron(CronExpression.EVERY_HOUR)
   async triggerProcessNftsForLast24Hours() {
-    const isProcessNftsFlagActive = await this.settingsService.getIsProcessNftsFlagActive();
-    if (!isProcessNftsFlagActive) {
+    if (!this.apiConfigService.getIsProcessNftsFlagActive()) {
       return;
     }
 
@@ -52,8 +51,7 @@ export class NftCronService {
 
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async triggerProcessNftsForLastYear() {
-    const isProcessNftsFlagActive = await this.settingsService.getIsProcessNftsFlagActive();
-    if (!isProcessNftsFlagActive) {
+    if (!this.apiConfigService.getIsProcessNftsFlagActive()) {
       return;
     }
 

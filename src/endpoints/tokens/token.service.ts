@@ -24,7 +24,7 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@elrondnetwork/erdnest";
 import { TokenLogo } from "./entities/token.logo";
 import { AssetsService } from "src/common/assets/assets.service";
-import { SettingsService } from "src/common/settings/settings.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Injectable()
 export class TokenService {
@@ -34,7 +34,7 @@ export class TokenService {
     private readonly indexerService: IndexerService,
     private readonly esdtAddressService: EsdtAddressService,
     private readonly gatewayService: GatewayService,
-    private readonly settingsService: SettingsService,
+    private readonly apiConfigService: ApiConfigService,
     private readonly assetsService: AssetsService,
   ) { }
 
@@ -368,8 +368,7 @@ export class TokenService {
   }
 
   async getTokenRoles(identifier: string): Promise<TokenRoles[] | undefined> {
-    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
-    if (isIndexerV3FlagActive) {
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       return await this.getTokenRolesFromElastic(identifier);
     }
 
@@ -377,8 +376,7 @@ export class TokenService {
   }
 
   async getTokenRolesForIdentifierAndAddress(identifier: string, address: string): Promise<TokenRoles | undefined> {
-    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
-    if (isIndexerV3FlagActive) {
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       const token = await this.indexerService.getToken(identifier);
 
       if (!token) {

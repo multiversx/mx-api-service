@@ -77,16 +77,11 @@ export class CacheWarmerService {
       async () => await this.handleIdentityInvalidations()
     );
 
-    this.addNodeAuctionInvalidationsCronJob()
-      .catch((error) => {
-        this.logger.error(`Could not add Node Auction Invalidations cron job`);
-        this.logger.error(error);
-      });
+    this.addNodeAuctionInvalidationsCronJob();
   }
 
-  private async addNodeAuctionInvalidationsCronJob(): Promise<void> {
-    const isStakingV4Enabled = await this.settingsService.isStakingV4Enabled();
-    if (!isStakingV4Enabled) {
+  private addNodeAuctionInvalidationsCronJob() {
+    if (!this.apiConfigService.isStakingV4Enabled()) {
       return;
     }
 

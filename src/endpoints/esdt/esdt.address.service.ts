@@ -20,7 +20,6 @@ import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { AddressUtils, ApiUtils, BinaryUtils, CachingService, MetricsService } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@elrondnetwork/erdnest";
-import { SettingsService } from "src/common/settings/settings.service";
 
 @Injectable()
 export class EsdtAddressService {
@@ -29,7 +28,6 @@ export class EsdtAddressService {
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly settingsService: SettingsService,
     private readonly esdtService: EsdtService,
     private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
@@ -97,8 +95,7 @@ export class EsdtAddressService {
   }
 
   async getCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionRole[]> {
-    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
-    if (!isIndexerV3FlagActive && (filter.canCreate !== undefined || filter.canBurn !== undefined || filter.canAddQuantity !== undefined || filter.canUpdateAttributes !== undefined || filter.canAddUri !== undefined || filter.canTransferRole !== undefined)) {
+    if (!this.apiConfigService.getIsIndexerV3FlagActive() && (filter.canCreate !== undefined || filter.canBurn !== undefined || filter.canAddQuantity !== undefined || filter.canUpdateAttributes !== undefined || filter.canAddUri !== undefined || filter.canTransferRole !== undefined)) {
       throw new BadRequestException('canCreate / canBurn / canAddQuantity / canUpdateAttributes / canAddUri / canTransferRole filter not supported when fetching account collections from elastic');
     }
 
@@ -133,7 +130,7 @@ export class EsdtAddressService {
       }
     }
 
-    if (isIndexerV3FlagActive) {
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       const nftAccountCollections: NftCollectionRole[] = [];
       for (const collection of accountCollections) {
         const role = collection.roles.find(x => x.address === address) ?? new CollectionRoles();

@@ -17,13 +17,11 @@ import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { Block } from "../entities/block";
 import { Tag } from "../entities/tag";
 import { ElasticIndexerHelper } from "./elastic.indexer.helper";
-import { SettingsService } from "src/common/settings/settings.service";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly settingsService: SettingsService,
     private readonly elasticService: ElasticService,
     private readonly indexerHelper: ElasticIndexerHelper,
   ) { }
@@ -468,8 +466,7 @@ export class ElasticIndexerService implements IndexerInterface {
     let elasticQuery = await this.indexerHelper.buildElasticNftFilter(filter, undefined, address);
     elasticQuery = elasticQuery.withPagination(pagination);
 
-    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
-    if (isIndexerV3FlagActive) {
+    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       elasticQuery = elasticQuery.withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'tokenNonce', order: ElasticSortOrder.descending },

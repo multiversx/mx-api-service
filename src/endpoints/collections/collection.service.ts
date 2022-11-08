@@ -22,13 +22,11 @@ import { Collection } from "src/common/indexer/entities";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
 import { NftRank } from "src/common/assets/entities/nft.rank";
-import { SettingsService } from "src/common/settings/settings.service";
 
 @Injectable()
 export class CollectionService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly settingsService: SettingsService,
     private readonly indexerService: IndexerService,
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
@@ -208,8 +206,7 @@ export class CollectionService {
   }
 
   async getNftCollectionRoles(elasticCollection: any): Promise<CollectionRoles[]> {
-    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
-    if (!isIndexerV3FlagActive) {
+    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       return await this.getNftCollectionRolesFromEsdtContract(elasticCollection.token);
     }
 

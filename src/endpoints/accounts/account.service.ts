@@ -26,7 +26,6 @@ import { AccountAssets } from 'src/common/assets/entities/account.assets';
 import { OriginLogger } from '@elrondnetwork/erdnest';
 import { CacheInfo } from 'src/utils/cache.info';
 import { UsernameService } from '../usernames/username.service';
-import { SettingsService } from 'src/common/settings/settings.service';
 
 @Injectable()
 export class AccountService {
@@ -38,7 +37,6 @@ export class AccountService {
     private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly settingsService: SettingsService,
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
     @Inject(forwardRef(() => PluginService))
@@ -125,8 +123,7 @@ export class AccountService {
   }
 
   async getAccountTxCount(address: string): Promise<number> {
-    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
-    if (!isIndexerV3FlagActive) {
+    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       return this.transactionService.getTransactionCountForAddress(address);
     }
 
@@ -134,8 +131,7 @@ export class AccountService {
   }
 
   async getAccountScResults(address: string): Promise<number> {
-    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
-    if (!isIndexerV3FlagActive) {
+    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       return await this.smartContractResultService.getAccountScResultsCount(address);
     }
 

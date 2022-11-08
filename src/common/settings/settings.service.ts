@@ -26,18 +26,14 @@ export class SettingsService {
   }
 
   private async getSetting<T>(name: string, fallbackValue: T): Promise<T> {
-    const settingCache = await this.cachingService.getCache<T>(CacheInfo.Setting(name).key);
-    if (settingCache) {
-      return settingCache;
-    }
-
-    const settingDb = await this.persistenceService.getSetting<T>(name);
-    if (settingDb) {
-      await this.cachingService.setCache(CacheInfo.Setting(name).key, settingDb, CacheInfo.Setting(name).ttl);
-      return settingDb;
-    }
-
-    return fallbackValue;
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.Setting(name).key,
+      async () => {
+        const value = await this.persistenceService.getSetting<T>(name);
+        return value ?? fallbackValue;
+      },
+      CacheInfo.Setting(name).ttl,
+    );
   }
 
   public async getAllSettings(): Promise<{ name: string, value: any }[]> {

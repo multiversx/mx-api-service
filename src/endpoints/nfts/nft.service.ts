@@ -29,7 +29,6 @@ import { NftRarity } from "./entities/nft.rarity";
 import { NftRarities } from "./entities/nft.rarities";
 import { SortCollectionNfts } from "../collections/entities/sort.collection.nfts";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
-import { SettingsService } from "src/common/settings/settings.service";
 
 @Injectable()
 export class NftService {
@@ -39,7 +38,6 @@ export class NftService {
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly settingsService: SettingsService,
     private readonly indexerService: IndexerService,
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
@@ -335,8 +333,7 @@ export class NftService {
           }
         }
 
-        const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
-        if (isIndexerV3FlagActive) {
+        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
           nft.isWhitelistedStorage = elasticNft.data.whiteListedStorage;
         } else {
           nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);

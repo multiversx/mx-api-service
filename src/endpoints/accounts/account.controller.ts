@@ -46,7 +46,7 @@ import { TransactionDetailed } from '../transactions/entities/transaction.detail
 import { OriginLogger } from '@elrondnetwork/erdnest';
 import { AccountDelegation } from '../stake/entities/account.delegation';
 import { DelegationService } from '../delegation/delegation.service';
-import { SettingsService } from 'src/common/settings/settings.service';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
 
 @Controller()
 @ApiTags('accounts')
@@ -64,7 +64,7 @@ export class AccountController {
     private readonly scResultService: SmartContractResultService,
     private readonly collectionService: CollectionService,
     private readonly transferService: TransferService,
-    private readonly settingsService: SettingsService,
+    private readonly apiConfigService: ApiConfigService,
     private readonly delegationService: DelegationService,
   ) { }
 
@@ -690,8 +690,7 @@ export class AccountController {
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
   ): Promise<Transaction[]> {
-    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
-    if (!isIndexerV3FlagActive) {
+    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
@@ -748,8 +747,7 @@ export class AccountController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
-    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
-    if (!isIndexerV3FlagActive) {
+    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
@@ -787,8 +785,7 @@ export class AccountController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
-    const isIndexerV3FlagActive = await this.settingsService.getIsIndexerV3FlagActive();
-    if (!isIndexerV3FlagActive) {
+    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 

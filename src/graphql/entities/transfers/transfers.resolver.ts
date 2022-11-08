@@ -1,5 +1,5 @@
 import { Resolver } from "@nestjs/graphql";
-import { SettingsService } from "src/common/settings/settings.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { Transaction } from "src/endpoints/transactions/entities/transaction";
 import { TransferService } from "src/endpoints/transfers/transfer.service";
 import { TransferQuery } from "./transfers.query";
@@ -7,9 +7,9 @@ import { TransferQuery } from "./transfers.query";
 @Resolver(() => Transaction)
 export class TransferResolver extends TransferQuery {
   constructor(
-    transferService: TransferService,
-    settingsService: SettingsService,
+    apiConfigService: ApiConfigService,
+    transferService: TransferService
   ) {
-    super(transferService, settingsService);
+    super(apiConfigService, transferService);
   }
 }
