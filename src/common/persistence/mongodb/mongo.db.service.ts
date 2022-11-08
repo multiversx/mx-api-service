@@ -1,4 +1,4 @@
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { ErrorLoggerAsync } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { CollectionTrait } from "src/endpoints/collections/entities/collection.trait";
@@ -11,7 +11,6 @@ import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
 
 @Injectable()
 export class MongoDbService implements PersistenceInterface {
-  private readonly logger = new OriginLogger(MongoDbService.name);
 
   constructor(
     @InjectRepository(NftMetadataDb)
@@ -22,41 +21,31 @@ export class MongoDbService implements PersistenceInterface {
     private readonly nftTraitSummaryRepository: Repository<NftTraitSummaryDb>,
   ) { }
 
+  @ErrorLoggerAsync({ logArgs: true })
   async getMetadata(identifier: string): Promise<any | null> {
-    try {
-      const metadataDb: NftMetadataDb | null = await this.nftMetadataRepository.findOne({ where: { id: identifier } });
-      if (!metadataDb) {
-        return null;
-      }
-
-      return metadataDb.content;
-    } catch (error) {
-      this.logger.error(`An unexpected error occurred when fetching metadata from DB for identifier '${identifier}'`);
-      this.logger.error(error);
-      return {};
+    const metadataDb: NftMetadataDb | null = await this.nftMetadataRepository.findOne({ where: { id: identifier } });
+    if (!metadataDb) {
+      return null;
     }
+
+    return metadataDb.content;
   }
 
+  @ErrorLoggerAsync({ logArgs: true })
   async batchGetMetadata(identifiers: string[]): Promise<Record<string, any>> {
-    try {
-      const metadatasDb = await this.nftMetadataRepository.find({
-        where: {
-          id: {
-            // @ts-ignore
-            $in: identifiers,
-          },
+    const metadatasDb = await this.nftMetadataRepository.find({
+      where: {
+        id: {
+          // @ts-ignore
+          $in: identifiers,
         },
-      });
+      },
+    });
 
-      return metadatasDb.toRecord(metadata => metadata.id, metadata => metadata.content);
-    } catch (error) {
-      this.logger.log(`Error when getting metadata from DB for batch '${identifiers}'`);
-      this.logger.error(error);
-
-      return {};
-    }
+    return metadatasDb.toRecord(metadata => metadata.id, metadata => metadata.content);
   }
 
+  @ErrorLoggerAsync()
   async setMetadata(identifier: string, content: any): Promise<void> {
     let metadata = await this.nftMetadataRepository.findOne({ where: { id: identifier } });
     if (!metadata) {
@@ -81,50 +70,36 @@ export class MongoDbService implements PersistenceInterface {
     }
   }
 
-  async deleteMetadata(identifier: string): Promise<void> {
-    try {
-      await this.nftMetadataRepository.delete({ id: identifier });
-    } catch (error) {
-      this.logger.error(`An unexpected error occurred when trying to delete metadata from DB for identifier '${identifier}'`);
-      this.logger.error(error);
-    }
+  @ErrorLoggerAsync()
+  async deleteMetadata(identifier: string): Promise<any> {
+    return await this.nftMetadataRepository.delete({ id: identifier });
   }
 
+  @ErrorLoggerAsync({ logArgs: true })
   async getMedia(identifier: string): Promise<NftMedia[] | null> {
-    try {
-      const media: NftMediaDb | null = await this.nftMediaRepository.findOne({ where: { id: identifier } });
-      if (!media) {
-        return null;
-      }
-
-      return media.content;
-    } catch (error) {
-      this.logger.error(`An unexpected error occurred when fetching media from DB for identifier '${identifier}'`);
-      this.logger.error(error);
-      return [];
+    const media: NftMediaDb | null = await this.nftMediaRepository.findOne({ where: { id: identifier } });
+    if (!media) {
+      return null;
     }
+
+    return media.content;
   }
 
+  @ErrorLoggerAsync({ logArgs: true })
   async batchGetMedia(identifiers: string[]): Promise<Record<string, NftMedia[]>> {
-    try {
-      const mediasDb = await this.nftMediaRepository.find({
-        where: {
-          id: {
-            // @ts-ignore
-            $in: identifiers,
-          },
+    const mediasDb = await this.nftMediaRepository.find({
+      where: {
+        id: {
+          // @ts-ignore
+          $in: identifiers,
         },
-      });
+      },
+    });
 
-      return mediasDb.toRecord(media => media.id ?? '', media => media.content);
-    } catch (error) {
-      this.logger.log(`Error when getting media from DB for batch '${identifiers}'`);
-      this.logger.error(error);
-
-      return {};
-    }
+    return mediasDb.toRecord(media => media.id ?? '', media => media.content);
   }
 
+  @ErrorLoggerAsync()
   async setMedia(identifier: string, media: NftMedia[]): Promise<void> {
     let value = await this.nftMediaRepository.findOne({ where: { id: identifier } });
     if (!value) {
@@ -137,18 +112,13 @@ export class MongoDbService implements PersistenceInterface {
     await this.save(this.nftMediaRepository, value);
   }
 
+  @ErrorLoggerAsync({ logArgs: true })
   async getCollectionTraits(collection: string): Promise<CollectionTrait[] | null> {
-    try {
-      const summary: NftTraitSummaryDb | null = await this.nftTraitSummaryRepository.findOne({ where: { identifier: collection } });
-      if (!summary) {
-        return null;
-      }
-
-      return summary.traitTypes;
-    } catch (error) {
-      this.logger.error(`An unexpected error occurred when fetching NFT trait summary from DB for collection identifier '${collection}'`);
-      this.logger.error(error);
+    const summary: NftTraitSummaryDb | null = await this.nftTraitSummaryRepository.findOne({ where: { identifier: collection } });
+    if (!summary) {
       return null;
     }
+
+    return summary.traitTypes;
   }
 }

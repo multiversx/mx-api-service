@@ -5,6 +5,7 @@ import { ApiMetricsService } from "../metrics/api.metrics.service";
 import { Auction } from "./entities/auction";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
 
+
 @Injectable()
 export class GatewayService {
   constructor(

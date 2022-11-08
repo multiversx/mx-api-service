@@ -260,7 +260,7 @@ export class IndexerService implements IndexerInterface {
     return await this.execute('getPublicKeys', this.indexerInterface.getPublicKeys(shard, epoch));
   }
 
-  async getCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<{ collection: string, count: number, balance: number }[]> {
+  async getCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<{ collection: string, count: number, balance: number; }[]> {
     return await this.execute('getCollectionsForAddress', this.indexerInterface.getCollectionsForAddress(address, filter, pagination));
   }
 

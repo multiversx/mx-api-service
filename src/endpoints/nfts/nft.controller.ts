@@ -178,7 +178,7 @@ export class NftController {
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getNftSupply(
     @Param('identifier', ParseNftPipe) identifier: string
-  ): Promise<{ supply: string }> {
+  ): Promise<{ supply: string; }> {
     const totalSupply = await this.nftService.getNftSupply(identifier);
     if (!totalSupply) {
       throw new NotFoundException();
