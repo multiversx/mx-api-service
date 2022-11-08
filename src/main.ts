@@ -129,13 +129,10 @@ async function bootstrap() {
   logger.log(`Elastic updater active: ${apiConfigService.getIsElasticUpdaterCronActive()}`);
   logger.log(`Events notifier active: ${apiConfigService.isEventsNotifierFeatureActive()}`);
 
-  // logger.log(`Use request caching: ${await settingsService.getUseRequestCachingFlag()}`);
-  // logger.log(`Use request logging: ${await settingsService.getUseRequestLoggingFlag()}`);
-  // logger.log(`Use tracing: ${await settingsService.getUseTracingFlag()}`);
-  // logger.log(`Use vm query tracing: ${await settingsService.getUseVmQueryTracingFlag()}`);
-  // logger.log(`Process NFTs flag: ${await settingsService.getIsProcessNftsFlagActive()}`);
-  // logger.log(`Indexer v3 flag: ${await settingsService.getIsIndexerV3FlagActive()}`);
-  // logger.log(`Staking v4 enabled: ${await settingsService.isStakingV4Enabled()}`);
+  logger.log(`Use tracing: ${apiConfigService.getUseTracingFlag()}`);
+  logger.log(`Process NFTs flag: ${apiConfigService.getIsProcessNftsFlagActive()}`);
+  logger.log(`Indexer v3 flag: ${apiConfigService.getIsIndexerV3FlagActive()}`);
+  logger.log(`Staking v4 enabled: ${apiConfigService.isStakingV4Enabled()}`);
   logger.log(`Events notifier enabled: ${apiConfigService.isEventsNotifierFeatureActive()}`);
 }
 
