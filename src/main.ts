@@ -29,19 +29,14 @@ import { GraphqlComplexityInterceptor } from './graphql/interceptors/graphql.com
 import { GraphQLMetricsInterceptor } from './graphql/interceptors/graphql.metrics.interceptor';
 import { ApiMetricsService } from './common/metrics/api.metrics.service';
 import { SettingsService } from './common/settings/settings.service';
-// import { SettingsModule } from './common/settings/settings.module';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
   const apiConfigService = apiConfigApp.get<ApiConfigService>(ApiConfigService);
 
-  // const settingsApp = await NestFactory.create(SettingsModule);
-  // const settingsService = settingsApp.get<SettingsService>(SettingsService);
-
-  // const getUseTracingFlag = await settingsService.getUseTracingFlag();
-  // if (getUseTracingFlag === true) {
-  //   require('dd-trace').init();
-  // }
+  if (apiConfigService.getUseTracingFlag() === true) {
+    require('dd-trace').init();
+  }
 
   if (apiConfigService.getIsPublicApiActive()) {
     const publicApp = await NestFactory.create<NestExpressApplication>(PublicAppModule);

@@ -11,6 +11,7 @@ import { EsdtSupply } from "../esdt/entities/esdt.supply";
 import { Transaction } from "../transactions/entities/transaction";
 import { TokenSupplyResult } from "./entities/token.supply.result";
 import { TokenSort } from "./entities/token.sort";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { SortTokens } from "src/common/entities/sort.tokens";
 import { TransferService } from "../transfers/transfer.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -20,7 +21,6 @@ import { TransactionQueryOptions } from "../transactions/entities/transactions.q
 import { ParseAddressPipe, ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseTokenPipe, ParseAddressArrayPipe, ApplyComplexity } from "@elrondnetwork/erdnest";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
 import { Response } from "express";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Controller()
 @ApiTags('tokens')

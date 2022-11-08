@@ -27,6 +27,7 @@ import { AccountHistory } from "./entities/account.history";
 import { AccountEsdtHistory } from "./entities/account.esdt.history";
 import { EsdtDataSource } from '../esdt/entities/esdt.data.source';
 import { TransferService } from '../transfers/transfer.service';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { Transaction } from '../transactions/entities/transaction';
 import { ProviderStake } from '../stake/entities/provider.stake';
 import { TokenDetailedWithBalance } from '../tokens/entities/token.detailed.with.balance';
@@ -46,7 +47,6 @@ import { TransactionDetailed } from '../transactions/entities/transaction.detail
 import { OriginLogger } from '@elrondnetwork/erdnest';
 import { AccountDelegation } from '../stake/entities/account.delegation';
 import { DelegationService } from '../delegation/delegation.service';
-import { ApiConfigService } from 'src/common/api-config/api.config.service';
 
 @Controller()
 @ApiTags('accounts')

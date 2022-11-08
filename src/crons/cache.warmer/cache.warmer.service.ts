@@ -77,17 +77,11 @@ export class CacheWarmerService {
       async () => await this.handleIdentityInvalidations()
     );
 
-    this.addNodeAuctionInvalidationsCronJob();
-  }
-
-  private addNodeAuctionInvalidationsCronJob() {
-    if (!this.apiConfigService.isStakingV4Enabled()) {
-      return;
+    if (this.apiConfigService.isStakingV4Enabled()) {
+      const handleNodeAuctionInvalidationsCronJob = new CronJob(this.apiConfigService.getStakingV4CronExpression(), async () => await this.handleNodeAuctionInvalidations());
+      this.schedulerRegistry.addCronJob(this.handleNodeAuctionInvalidations.name, handleNodeAuctionInvalidationsCronJob);
+      handleNodeAuctionInvalidationsCronJob.start();
     }
-
-    const handleNodeAuctionInvalidationsCronJob = new CronJob(this.apiConfigService.getStakingV4CronExpression(), async () => await this.handleNodeAuctionInvalidations());
-    this.schedulerRegistry.addCronJob(this.handleNodeAuctionInvalidations.name, handleNodeAuctionInvalidationsCronJob);
-    handleNodeAuctionInvalidationsCronJob.start();
   }
 
   private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {

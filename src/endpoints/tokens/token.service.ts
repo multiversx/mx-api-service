@@ -11,6 +11,7 @@ import { TokenType } from "./entities/token.type";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { TokenProperties } from "./entities/token.properties";
 import { TokenRoles } from "./entities/token.roles";
 import { TokenSupplyResult } from "./entities/token.supply.result";
@@ -24,7 +25,6 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@elrondnetwork/erdnest";
 import { TokenLogo } from "./entities/token.logo";
 import { AssetsService } from "src/common/assets/assets.service";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Injectable()
 export class TokenService {
