@@ -62,22 +62,22 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getNftCollectionCount(filter: CollectionFilter): Promise<number> {
-    const elasticQuery = await this.indexerHelper.buildCollectionRolesFilter(filter);
+    const elasticQuery = this.indexerHelper.buildCollectionRolesFilter(filter);
     return await this.elasticService.getCount('tokens', elasticQuery);
   }
 
   async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {
-    const elasticQuery = await this.indexerHelper.buildElasticNftFilter(filter, undefined, address);
+    const elasticQuery = this.indexerHelper.buildElasticNftFilter(filter, undefined, address);
     return await this.elasticService.getCount('accountsesdt', elasticQuery);
   }
 
   async getCollectionCountForAddress(address: string, filter: CollectionFilter): Promise<number> {
-    const elasticQuery = await this.indexerHelper.buildCollectionRolesFilter(filter, address);
+    const elasticQuery = this.indexerHelper.buildCollectionRolesFilter(filter, address);
     return await this.elasticService.getCount('tokens', elasticQuery);
   }
 
   async getNftCount(filter: NftFilter): Promise<number> {
-    const elasticQuery = await this.indexerHelper.buildElasticNftFilter(filter);
+    const elasticQuery = this.indexerHelper.buildElasticNftFilter(filter);
     return await this.elasticService.getCount('tokens', elasticQuery);
   }
 
@@ -90,7 +90,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getTransfersCount(filter: TransactionFilter): Promise<number> {
-    const elasticQuery = await this.indexerHelper.buildTransferFilterQuery(filter);
+    const elasticQuery = this.indexerHelper.buildTransferFilterQuery(filter);
     return await this.elasticService.getCount('operations', elasticQuery);
   }
 
@@ -140,7 +140,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getAccountScResultsCount(address: string): Promise<number> {
-    const elasticQuery: ElasticQuery = await this.indexerHelper.buildSmartContractResultFilterQuery(address);
+    const elasticQuery: ElasticQuery = this.indexerHelper.buildSmartContractResultFilterQuery(address);
     return await this.elasticService.getCount('scresults', elasticQuery);
   }
 
@@ -156,7 +156,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getTransactionCount(filter: TransactionFilter, address?: string): Promise<number> {
-    const elasticQuery = await this.indexerHelper.buildTransactionFilterQuery(filter, address);
+    const elasticQuery = this.indexerHelper.buildTransactionFilterQuery(filter, address);
     return await this.elasticService.getCount('transactions', elasticQuery);
   }
 
@@ -202,8 +202,7 @@ export class ElasticIndexerService implements IndexerInterface {
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: sortOrder };
     const nonce: ElasticSortProperty = { name: 'nonce', order: sortOrder };
 
-    let elasticQuery = await this.indexerHelper.buildTransferFilterQuery(filter);
-    elasticQuery = elasticQuery
+    const elasticQuery = this.indexerHelper.buildTransferFilterQuery(filter)
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
@@ -229,8 +228,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter, address?: string): Promise<any[]> {
-    let elasticQuery = await this.indexerHelper.buildCollectionRolesFilter(filter, address);
-    elasticQuery = elasticQuery
+    const elasticQuery = this.indexerHelper.buildCollectionRolesFilter(filter, address)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
@@ -304,8 +302,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getAccountScResults(address: string, pagination: QueryPagination): Promise<any[]> {
-    const elasticQuery: ElasticQuery = await this.indexerHelper.buildSmartContractResultFilterQuery(address);
-    elasticQuery
+    const elasticQuery: ElasticQuery = this.indexerHelper.buildSmartContractResultFilterQuery(address)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
@@ -351,8 +348,7 @@ export class ElasticIndexerService implements IndexerInterface {
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: sortOrder };
     const nonce: ElasticSortProperty = { name: 'nonce', order: sortOrder };
 
-    let elasticQuery = await this.indexerHelper.buildTransactionFilterQuery(filter, address);
-    elasticQuery = elasticQuery
+    const elasticQuery = this.indexerHelper.buildTransactionFilterQuery(filter, address)
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
@@ -463,8 +459,8 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getNftsForAddress(address: string, filter: NftFilter, pagination: QueryPagination): Promise<any[]> {
-    let elasticQuery = await this.indexerHelper.buildElasticNftFilter(filter, undefined, address);
-    elasticQuery = elasticQuery.withPagination(pagination);
+    let elasticQuery = this.indexerHelper.buildElasticNftFilter(filter, undefined, address)
+      .withPagination(pagination);
 
     if (this.apiConfigService.getIsIndexerV3FlagActive()) {
       elasticQuery = elasticQuery.withSort([
@@ -479,8 +475,8 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getNfts(pagination: QueryPagination, filter: NftFilter, identifier?: string): Promise<any[]> {
-    let elasticQuery = await this.indexerHelper.buildElasticNftFilter(filter, identifier);
-    elasticQuery = elasticQuery.withPagination(pagination);
+    let elasticQuery = this.indexerHelper.buildElasticNftFilter(filter, identifier)
+      .withPagination(pagination);
 
     if (filter.sort) {
       elasticQuery = elasticQuery.withSort([
