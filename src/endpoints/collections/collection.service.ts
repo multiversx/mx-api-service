@@ -304,7 +304,14 @@ export class CollectionService {
       return undefined;
     }
 
+    const elasticCollection = await this.indexerService.getCollection(collection.collection);
+    await this.applyCollectionRoles(collection, elasticCollection);
     await this.pluginService.processCollections([collection]);
+
+    for (const item of collection.roles) {
+      //ts-ignore
+      delete item.address;
+    }
 
     return collection;
   }

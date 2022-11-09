@@ -169,15 +169,31 @@ describe('Collection Service', () => {
   });
 
   describe('getCollectionForAddress', () => {
-    it('should return address collection details', async () => {
-      const address: string = 'erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj';
-      const collectionIdentifier: string = "MEDAL-ae074f";
+    it('should return address collection + account roles details ', async () => {
+      const address: string = 'erd1k4u77ve67r0ve8ywyjaq05pp8y59x683gudfffrwd64q56843kgsyld36e';
+      const collectionIdentifier: string = "XMAXIM1-63599d";
 
       const result = await collectionService.getCollectionForAddress(address, collectionIdentifier);
 
       expect(result).toEqual(expect.objectContaining({
         collection: collectionIdentifier,
         owner: address,
+      }));
+
+      expect(result).toEqual(expect.objectContaining({
+        roles: expect.arrayContaining([
+          expect.objectContaining({
+            canCreate: true,
+            canBurn: true,
+            canAddQuantity: false,
+            canUpdateAttributes: false,
+            canAddUri: false,
+            roles: expect.arrayContaining([
+              "ESDTRoleNFTCreate",
+              "ESDTRoleNFTBurn",
+            ]),
+          }),
+        ]),
       }));
     });
 
