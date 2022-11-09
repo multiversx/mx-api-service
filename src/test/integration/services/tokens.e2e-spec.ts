@@ -1205,8 +1205,6 @@ describe('Token Service', () => {
           canLocalBurn: true,
         }),
       }));
-
-      console.log(result);
     });
 
     it('should return undefined because test simulates that identifier is not defined', async () => {

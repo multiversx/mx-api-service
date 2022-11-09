@@ -520,8 +520,9 @@ export class TokenService {
         resultItem.roles = {
           canLocalMint: resultItem.canLocalMint,
           canLocalBurn: resultItem.canLocalBurn,
-        },
-          result.push(resultItem);
+        };
+
+        result.push(resultItem);
       }
     }
 
