@@ -7,7 +7,7 @@ import { Transaction } from "src/endpoints/transactions/entities/transaction";
 
 @Injectable()
 export class PluginService {
-  async processTransactions(_transactions: Transaction[], _withScamInfo?: boolean): Promise<void> { }
+  async processTransactions(_transactions: Transaction[], _withScamInfo?: boolean, _withEsdtPrices?: boolean): Promise<void> { }
 
   async processTransactionSend(_transaction: any): Promise<any> { }
 

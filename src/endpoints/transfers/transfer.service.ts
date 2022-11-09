@@ -63,7 +63,11 @@ export class TransferService {
       transactions.push(transaction);
     }
 
-    await this.transactionService.processTransactions(transactions, { withScamInfo: queryOptions.withScamInfo ?? false, withUsername: queryOptions.withUsername ?? false });
+    await this.transactionService.processTransactions(transactions, {
+      withScamInfo: queryOptions.withScamInfo ?? false,
+      withUsername: queryOptions.withUsername ?? false,
+      withEsdtPrices: queryOptions.withEsdtPrices ?? false,
+    });
 
     return transactions;
   }

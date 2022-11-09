@@ -57,6 +57,9 @@ urls:
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'devnet-socket-fra.elrond.com'
   maiarId: 'https://devnet-id.maiar.com'
+  apiUrl: 'https://devnet-api.elrond.com'
+  dataApiUrl: 'https://devnet-tools.elrond.com/data-api/graphql'
+signerPrivateKeyPath: ''
 indexer:
   type: 'elastic'
   maxPagination: 10000

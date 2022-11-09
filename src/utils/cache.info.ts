@@ -1,4 +1,5 @@
 import { Constants } from "@elrondnetwork/erdnest";
+import moment from "moment";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 
@@ -185,6 +186,14 @@ export class CacheInfo {
     return {
       key: `esdt:assets:${identifier}`,
       ttl: Constants.oneDay(),
+    };
+  }
+
+  static EsdtPrice(identifier: string, date: string): CacheInfo {
+    const isCurrentDate = moment().format('YYYY-MM-DD') === date;
+    return {
+      key: `esdt:price:${identifier}:${date}`,
+      ttl: isCurrentDate ? Constants.oneSecond() * 12 : Constants.oneDay(),
     };
   }
 

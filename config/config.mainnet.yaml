@@ -58,6 +58,9 @@ urls:
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'socket-fra.elrond.com'
   maiarId: 'https://id.maiar.com'
+  apiUrl: 'https://api.elrond.com'
+  dataApiUrl: 'https://tools.elrond.com/data-api/graphql'
+signerPrivateKeyPath: ''
 indexer:
   type: 'elastic'
   maxPagination: 10000

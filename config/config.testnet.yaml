@@ -56,6 +56,9 @@ urls:
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'testnet-socket-fra.elrond.com'
   maiarId: 'https://testnet-id.maiar.com'
+  apiUrl: 'https://testnet-api.elrond.com'
+  dataApiUrl: 'https://testnet-tools.elrond.com/data-api/graphql'
+signerPrivateKeyPath: ''
 database:
   enabled: false
   url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
