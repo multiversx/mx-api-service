@@ -151,9 +151,12 @@ describe('Tokens', () => {
         })
         .expect(200)
         .then(res => {
+          const results = res.body.data.tokens;
+          const tokensResults = results.map((tokens: { identifier: any; }) => tokens.identifier);
+
           expect(res.body.data.tokens).toHaveLength(2);
-          expect(res.body.data.tokens[0].identifier).toStrictEqual('MEX-455c57');
-          expect(res.body.data.tokens[1].identifier).toStrictEqual('RIDE-7d18e9');
+          expect(tokensResults.includes('MEX-455c57')).toBeTruthy();
+          expect(tokensResults.includes('RIDE-7d18e9')).toBeTruthy();
         });
     });
   });
@@ -245,6 +248,26 @@ describe('Tokens', () => {
           }));
         });
     });
+
+    it('should throw error with status code 404 if given identifier is not token', async () => {
+      await request(app.getHttpServer())
+        .post(gql)
+        .send({
+          query: `{
+            tokenAccounts(input:{
+              identifier: "MEX"
+            }){
+              address
+              balance
+            }
+          }`,
+        })
+        .expect(200)
+        .then(res => {
+          expect(res.body.errors[0].message).toStrictEqual('Token not found');
+          expect(res.body.errors[0].extensions.response.statusCode).toStrictEqual(404);
+        });
+    });
   });
 
   describe('GET - Address Token Roles', () => {
@@ -274,6 +297,28 @@ describe('Tokens', () => {
           }));
         });
     });
+
+    it('should throw error with status code 404 if given identifier is not token', async () => {
+      await request(app.getHttpServer())
+        .post(gql)
+        .send({
+          query: `{
+            tokenRolesAddress(input:{
+              address: "erd1qqqqqqqqqqqqqpgq7qhsw8kffad85jtt79t9ym0a4ycvan9a2jps0zkpen",
+              identifier: "MEX"
+            }){
+              canLocalBurn
+              canLocalMint
+              roles
+            }
+          }`,
+        })
+        .expect(200)
+        .then(res => {
+          expect(res.body.errors[0].message).toStrictEqual('Token not found');
+          expect(res.body.errors[0].extensions.response.statusCode).toStrictEqual(404);
+        });
+    });
   });
 
   describe('GET - Tokens Count', () => {
@@ -281,7 +326,7 @@ describe('Tokens', () => {
       {
         tokenFilter: 'name',
         value: '"MEX"',
-        count: 3,
+        count: 1,
       },
       {
         tokenFilter: 'identifier',
