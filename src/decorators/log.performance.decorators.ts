@@ -35,8 +35,6 @@ export function LogPerformanceAsync(method: string, methodArg: string | ILogPerf
       } finally {
         profiler.stop();
         //@ts-ignore
-        console.log('typeof apiMetricsService[method]', typeof apiMetricsService[method]);
-        //@ts-ignore
         if (typeof apiMetricsService[method] === 'function')
           //@ts-ignore
           apiMetricsService[method](getMethodFromArgs(methodArg, args), profiler.duration);
@@ -45,3 +43,4 @@ export function LogPerformanceAsync(method: string, methodArg: string | ILogPerf
     return descriptor;
   };
 }
+

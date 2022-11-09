@@ -5,7 +5,7 @@ import { NftMediaService } from './nft.media.service';
 
 @Module({
   imports: [
-    PersistenceModule.register(),
+    PersistenceModule,
   ],
   controllers: [],
   providers: [
