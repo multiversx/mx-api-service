@@ -18,6 +18,4 @@ export enum MediaMimeTypeEnum {
   mp4 = 'video/mp4',
   webm = 'video/webm',
   mpeg = 'video/mpeg',
-
-  octetstream = 'application/octet-stream'
 }
