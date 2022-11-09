@@ -20,7 +20,7 @@ export class VmQueryService {
     private readonly metricsService: ApiMetricsService,
   ) { }
 
-  private async computeTtls(): Promise<{ localTtl: number, remoteTtl: number }> {
+  private async computeTtls(): Promise<{ localTtl: number, remoteTtl: number; }> {
     const secondsRemainingUntilNextRound = await this.protocolService.getSecondsRemainingUntilNextRound();
 
     // no need to store value remotely just to evict it one second later
