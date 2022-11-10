@@ -1,10 +1,9 @@
 import { Constants, CachingService } from "@elrondnetwork/erdnest";
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { DataApiService } from "src/common/external/data.api.service";
-import { DataQuoteType } from "src/common/external/entities/data.quote.type";
 import { TransactionDetailed } from "./entities/transaction.detailed";
+import { PluginService } from "src/common/plugins/plugin.service";
 
 @Injectable()
 export class TransactionPriceService {
@@ -12,12 +11,11 @@ export class TransactionPriceService {
   constructor(
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
-    @Inject(forwardRef(() => DataApiService))
-    private readonly dataApiService: DataApiService,
+    private readonly pluginsService: PluginService,
   ) { }
 
   async getTransactionPrice(transaction: TransactionDetailed): Promise<number | undefined> {
-    const dataUrl = this.apiConfigService.getDataUrl();
+    const dataUrl = this.apiConfigService.getDataApiUrl();
     if (!dataUrl) {
       return undefined;
     }
@@ -50,7 +48,7 @@ export class TransactionPriceService {
   private async getTransactionPriceToday(): Promise<number | undefined> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.CurrentPrice.key,
-      async () => await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price),
+      async () => await this.pluginsService.getEgldPrice(),
       CacheInfo.CurrentPrice.ttl
     );
   }
@@ -58,7 +56,7 @@ export class TransactionPriceService {
   private async getTransactionPriceHistorical(date: Date): Promise<number | undefined> {
     return await this.cachingService.getOrSetCache(
       `price:${date.toISODateString()}`,
-      async () => await this.dataApiService.getQuotesHistoricalTimestamp(DataQuoteType.price, date.getTime() / 1000),
+      async () => await this.pluginsService.getEgldPrice(date.getTime() / 1000),
       Constants.oneDay() * 7
     );
   }

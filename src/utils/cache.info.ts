@@ -189,11 +189,11 @@ export class CacheInfo {
     };
   }
 
-  static EsdtPrice(identifier: string, date: string): CacheInfo {
+  static HistoricalQuoteMetric(metric: 'price' | 'market_cap', identifier: string, date: string): CacheInfo {
     const isCurrentDate = moment().format('YYYY-MM-DD') === date;
     return {
-      key: `esdt:price:${identifier}:${date}`,
-      ttl: isCurrentDate ? Constants.oneSecond() * 12 : Constants.oneDay(),
+      key: `esdt:${metric}:${identifier}:${date}`,
+      ttl: isCurrentDate ? Constants.oneSecond() * 12 : Constants.oneWeek(),
     };
   }
 

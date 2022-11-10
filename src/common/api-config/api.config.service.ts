@@ -236,10 +236,6 @@ export class ApiConfigService {
     return delegationUrl;
   }
 
-  getDataUrl(): string | undefined {
-    return this.configService.get<string>('urls.dataUrl');
-  }
-
   getTempUrl(): string {
     const tmpUrl = this.configService.get<string>('urls.tmp');
     if (!tmpUrl) {
@@ -718,12 +714,8 @@ export class ApiConfigService {
     return apiUrl;
   }
 
-  getDataApiUrl(): string {
-    const dataApiUrl = this.configService.get<string>('urls.dataApiUrl');
-    if (!dataApiUrl) {
-      throw new Error('No Data API url present');
-    }
-    return dataApiUrl;
+  getDataApiUrl(): string | undefined {
+    return this.configService.get<string>('urls.dataApiUrl');
   }
 
   getSignerPrivateKeyPath(): string {

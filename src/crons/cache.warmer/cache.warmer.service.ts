@@ -9,9 +9,7 @@ import { NetworkService } from "src/endpoints/network/network.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { CronJob } from "cron";
 import { KeybaseService } from "src/common/keybase/keybase.service";
-import { DataApiService } from "src/common/external/data.api.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { DataQuoteType } from "src/common/external/entities/data.quote.type";
 import { EsdtService } from "src/endpoints/esdt/esdt.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { AssetsService } from "src/common/assets/assets.service";
@@ -24,6 +22,7 @@ import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import AsyncLock from "async-lock";
 import { CachingService, Constants, Locker, OriginLogger } from "@elrondnetwork/erdnest";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
+import { PluginService } from "src/common/plugins/plugin.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -36,7 +35,7 @@ export class CacheWarmerService {
     private readonly identitiesService: IdentitiesService,
     private readonly providerService: ProviderService,
     private readonly keybaseService: KeybaseService,
-    private readonly dataApiService: DataApiService,
+    private readonly pluginsService: PluginService,
     private readonly cachingService: CachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly apiConfigService: ApiConfigService,
@@ -184,9 +183,9 @@ export class CacheWarmerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleCurrentPriceInvalidations() {
-    if (this.apiConfigService.getDataUrl()) {
+    if (this.apiConfigService.getDataApiUrl()) {
       await Locker.lock('Current price invalidations', async () => {
-        const currentPrice = await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price);
+        const currentPrice = await this.pluginsService.getEgldPrice();
         await this.invalidateKey(CacheInfo.CurrentPrice.key, currentPrice, CacheInfo.CurrentPrice.ttl);
       }, true);
     }
