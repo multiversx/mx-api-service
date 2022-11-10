@@ -5,6 +5,8 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GatewayComponentRequest } from "../gateway/entities/gateway.component.request";
 import { GatewayService } from "../gateway/gateway.service";
 import { ProtocolService } from "../protocol/protocol.service";
+import { OnEvent } from "@nestjs/event-emitter";
+import { LogMetricsEvent } from "./events/log-metrics.event";
 
 @Injectable()
 export class ApiMetricsService {
@@ -24,6 +26,7 @@ export class ApiMetricsService {
     private readonly protocolService: ProtocolService,
     private readonly metricsService: MetricsService,
   ) {
+
     if (!ApiMetricsService.vmQueriesHistogram) {
       ApiMetricsService.vmQueriesHistogram = new Histogram({
         name: 'vm_query',
@@ -86,30 +89,42 @@ export class ApiMetricsService {
     }
   }
 
-  setVmQuery(address: string, func: string, duration: number) {
+  @OnEvent('setVmQuery')
+  setVmQuery(payload: LogMetricsEvent) {
+    const [address, func, duration] = payload.args;
     ApiMetricsService.vmQueriesHistogram.labels(address, func).observe(duration);
   }
 
-  setGatewayDuration(name: string, duration: number) {
+  @OnEvent('setGatewayDuration')
+  setGatewayDuration(payload: LogMetricsEvent) {
+    const [name, duration] = payload.args;
     ApiMetricsService.gatewayDurationHistogram.labels(name).observe(duration);
   }
 
-  setPersistenceDuration(action: string, duration: number) {
+  @OnEvent('setPersistenceDuration')
+  setPersistenceDuration(payload: LogMetricsEvent) {
+    const [action, duration] = payload.args;
     this.metricsService.setExternalCall('persistence', duration);
     ApiMetricsService.persistenceDurationHistogram.labels(action).observe(duration);
   }
 
-  setIndexerDuration(action: string, duration: number) {
+  @OnEvent('setIndexerDuration')
+  setIndexerDuration(payload: LogMetricsEvent) {
+    const [action, duration] = payload.args;
     this.metricsService.setExternalCall('indexer', duration);
     ApiMetricsService.indexerDurationHistogram.labels(action).observe(duration);
   }
 
-  setGraphqlDuration(action: string, duration: number) {
+  @OnEvent('setGraphqlDuration')
+  setGraphqlDuration(payload: LogMetricsEvent) {
+    const [action, duration] = payload.args;
     this.metricsService.setExternalCall('graphql', duration);
     ApiMetricsService.graphqlDurationHistogram.labels(action).observe(duration);
   }
 
-  setLastProcessedNonce(shardId: number, nonce: number) {
+  @OnEvent('setLastProcessedNonce')
+  setLastProcessedNonce(payload: LogMetricsEvent) {
+    const [shardId, nonce] = payload.args;
     ApiMetricsService.lastProcessedNonceGauge.set({ shardId }, nonce);
   }
 

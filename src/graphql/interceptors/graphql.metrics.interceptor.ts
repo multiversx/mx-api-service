@@ -8,13 +8,15 @@ import {
 import { GqlContextType, GqlExecutionContext } from '@nestjs/graphql';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { ApiMetricsService } from 'src/common/metrics/api.metrics.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { LogMetricsEvent } from 'src/common/metrics/events/log-metrics.event';
+
 
 @Injectable()
 export class GraphQLMetricsInterceptor implements NestInterceptor {
-  private readonly apiMetricsService: ApiMetricsService;
-  constructor(apiMetricsService: ApiMetricsService) {
-    this.apiMetricsService = apiMetricsService;
+  private readonly eventEmitter: EventEmitter2;
+  constructor(eventEmitterService: EventEmitter2) {
+    this.eventEmitter = eventEmitterService;
   }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
@@ -28,10 +30,14 @@ export class GraphQLMetricsInterceptor implements NestInterceptor {
       return next.handle().pipe(
         tap(() => {
           profiler.stop();
+
           if (parentType === 'Query') {
-            this.apiMetricsService.setGraphqlDuration(
-              fieldName,
-              profiler.duration,
+            const metricsEvent = new LogMetricsEvent();
+            metricsEvent.args = [fieldName, profiler.duration];
+
+            this.eventEmitter.emit(
+              'setGraphqlDuration',
+              metricsEvent
             );
           }
         }),
