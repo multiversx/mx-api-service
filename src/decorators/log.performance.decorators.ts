@@ -1,20 +1,24 @@
-import { forwardRef, Inject } from "@nestjs/common";
+import { Inject } from "@nestjs/common";
 import { PerformanceProfiler } from "@elrondnetwork/erdnest";
-import { ApiMetricsService } from "src/common/metrics/api.metrics.service";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { LogMetricsEvent } from "../common/metrics/events/log-metrics.event";
 
 interface ILogPerformanceOptions {
   argIndex: number;
 }
 
-// You can use either a static string as methodName
-// or an argument passed to decorated method
-const getMethodFromArgs = (methodArg: string | ILogPerformanceOptions, args: any[]): string => {
-  if (typeof methodArg === 'string') return methodArg;
-  return args[methodArg.argIndex];
+// First argument of decorator is event name
+// everything after that are values (static or extracted
+// from decorated method)
+const extractDecoratorArgs = (decoratorArgs: Array<string | ILogPerformanceOptions>, decoratedMethodArgs: any[]): any[] => {
+  return decoratorArgs.map(arg => {
+    if (typeof arg === 'string') return arg;
+    return decoratedMethodArgs[arg.argIndex];
+  });
 };
 
-export function LogPerformanceAsync(method: string, methodArg: string | ILogPerformanceOptions) {
-  const apiMetricsService = Inject(forwardRef(() => ApiMetricsService));
+export function LogPerformanceAsync(method: string, ...decoratorArgs: Array<string | ILogPerformanceOptions>) {
+  const eventEmitter = Inject(EventEmitter2);
 
   return (
     target: Object,
@@ -22,22 +26,23 @@ export function LogPerformanceAsync(method: string, methodArg: string | ILogPerf
     descriptor: PropertyDescriptor
   ) => {
 
-    apiMetricsService(target, 'apiMetricsService');
+    eventEmitter(target, 'eventEmitter');
 
     const childMethod = descriptor.value;
     descriptor.value = async function (...args: any[]) {
       //@ts-ignore
-      const apiMetricsService: ApiMetricsService = this.apiMetricsService;
+      const eventEmitter: EventEmitter2 = this.eventEmitter;
 
       const profiler = new PerformanceProfiler();
       try {
         return await childMethod.apply(this, args);
       } finally {
         profiler.stop();
-        //@ts-ignore
-        if (typeof apiMetricsService[method] === 'function')
-          //@ts-ignore
-          apiMetricsService[method](getMethodFromArgs(methodArg, args), profiler.duration);
+
+        const metricsEvent = new LogMetricsEvent();
+        metricsEvent.args = extractDecoratorArgs(decoratorArgs, args);
+        metricsEvent.args.push(profiler.duration);
+        eventEmitter.emit(method, metricsEvent);
       }
     };
     return descriptor;

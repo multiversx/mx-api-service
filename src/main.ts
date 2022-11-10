@@ -12,6 +12,7 @@ import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { RedisClient } from 'redis';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TransactionProcessorModule } from './crons/transaction.processor/transaction.processor.module';
 import { PubSubListenerModule } from './common/pubsub/pub.sub.listener.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -27,7 +28,7 @@ import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
 import { TransactionLoggingInterceptor } from './interceptors/transaction.logging.interceptor';
 import { GraphqlComplexityInterceptor } from './graphql/interceptors/graphql.complexity.interceptor';
 import { GraphQLMetricsInterceptor } from './graphql/interceptors/graphql.metrics.interceptor';
-import { ApiMetricsService } from './common/metrics/api.metrics.service';
+
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
@@ -147,7 +148,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   publicApp.useStaticAssets(join(__dirname, 'public/assets'));
 
   const metricsService = publicApp.get<MetricsService>(MetricsService);
-  const apiMetricsService = publicApp.get<ApiMetricsService>(ApiMetricsService);
+  const eventEmitterService = publicApp.get<EventEmitter2>(EventEmitter2);
   const pluginService = publicApp.get<PluginService>(PluginService);
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
 
@@ -165,7 +166,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   // @ts-ignore
   globalInterceptors.push(new ComplexityInterceptor());
   globalInterceptors.push(new GraphqlComplexityInterceptor());
-  globalInterceptors.push(new GraphQLMetricsInterceptor(apiMetricsService));
+  globalInterceptors.push(new GraphQLMetricsInterceptor(eventEmitterService));
   // @ts-ignore
   globalInterceptors.push(new RequestCpuTimeInterceptor(metricsService));
   // @ts-ignore

@@ -1,7 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
-import { ApiMetricsService } from "src/common/metrics/api.metrics.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
@@ -11,6 +10,8 @@ import { TransactionExtractorInterface } from "./extractor/transaction.extractor
 import { TransferOwnershipExtractor } from "./extractor/transfer.ownership.extractor";
 import { PerformanceProfiler, CachingService, BinaryUtils } from "@elrondnetwork/erdnest";
 import { OriginLogger } from "@elrondnetwork/erdnest";
+import { LogMetricsEvent } from "src/common/metrics/events/log-metrics.event";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -20,9 +21,9 @@ export class TransactionProcessorService {
   constructor(
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly metricsService: ApiMetricsService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly nodeService: NodeService,
+    private readonly eventEmitter: EventEmitter2
   ) { }
 
   @Cron('*/1 * * * * *')
@@ -64,7 +65,13 @@ export class TransactionProcessorService {
         return await this.cachingService.getCache<number>(CacheInfo.TransactionProcessorShardNonce(shardId).key);
       },
       setLastProcessedNonce: async (shardId, nonce) => {
-        this.metricsService.setLastProcessedNonce(shardId, nonce);
+        const event = new LogMetricsEvent();
+        event.args = [shardId, nonce];
+        this.eventEmitter.emit(
+          'setLastProcessedNonce',
+          event
+        );
+
         await this.cachingService.setCache<number>(CacheInfo.TransactionProcessorShardNonce(shardId).key, nonce, CacheInfo.TransactionProcessorShardNonce(shardId).ttl);
       },
     });
@@ -109,7 +116,7 @@ export class TransactionProcessorService {
       return [];
     }
 
-    const tryExtractTransferOwnership: TransactionExtractorInterface<{ identifier: string }> = new TransferOwnershipExtractor();
+    const tryExtractTransferOwnership: TransactionExtractorInterface<{ identifier: string; }> = new TransferOwnershipExtractor();
     const metadataTransferOwnership = tryExtractTransferOwnership.extract(transaction);
     if (metadataTransferOwnership) {
       this.logger.log(`Detected NFT Transfer ownership for collection with identifier '${metadataTransferOwnership.identifier}'`);

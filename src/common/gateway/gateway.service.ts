@@ -1,19 +1,16 @@
-import { ApiService, ApiSettings, PerformanceProfiler } from "@elrondnetwork/erdnest";
+import { ApiService, ApiSettings } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
-import { ApiMetricsService } from "../metrics/api.metrics.service";
 import { Auction } from "./entities/auction";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
-
+import { LogPerformanceAsync } from "../../decorators/log.performance.decorators";
 
 @Injectable()
 export class GatewayService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => ApiService))
-    private readonly apiService: ApiService,
-    @Inject(forwardRef(() => ApiMetricsService))
-    private readonly metricsService: ApiMetricsService,
+    private readonly apiService: ApiService
   ) { }
 
   async getAuctions(): Promise<Auction[]> {
@@ -22,29 +19,15 @@ export class GatewayService {
     return result.auction;
   }
 
+  @LogPerformanceAsync('setGatewayDuration', { argIndex: 1 })
   async get(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
-    const profiler = new PerformanceProfiler();
-
-    try {
-      const result = await this.getRaw(url, component, errorHandler);
-      return result?.data?.data;
-    } finally {
-      profiler.stop();
-
-      this.metricsService.setGatewayDuration(component, profiler.duration);
-    }
+    const result = await this.getRaw(url, component, errorHandler);
+    return result?.data?.data;
   }
 
+  @LogPerformanceAsync('setGatewayDuration', { argIndex: 1 })
   async getRaw(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
-    const profiler = new PerformanceProfiler();
-
-    try {
-      return await this.apiService.get(`${this.getUrl(component)}/${url}`, new ApiSettings(), errorHandler);
-    } finally {
-      profiler.stop();
-
-      this.metricsService.setGatewayDuration(component, profiler.duration);
-    }
+    return await this.apiService.get(`${this.getUrl(component)}/${url}`, new ApiSettings(), errorHandler);
   }
 
   private getUrl(component: GatewayComponentRequest): string {
@@ -62,29 +45,14 @@ export class GatewayService {
     return this.apiConfigService.getGatewayUrl();
   }
 
+  @LogPerformanceAsync('setGatewayDuration', { argIndex: 1 })
   async create(url: string, component: GatewayComponentRequest, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
-    const profiler = new PerformanceProfiler();
-
-    try {
-      const result = await this.createRaw(url, component, data, errorHandler);
-      return result?.data?.data;
-
-    } finally {
-      profiler.stop();
-
-      this.metricsService.setGatewayDuration(component, profiler.duration);
-    }
+    const result = await this.createRaw(url, component, data, errorHandler);
+    return result?.data?.data;
   }
 
-  async createRaw(url: string, component: GatewayComponentRequest, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
-    const profiler = new PerformanceProfiler();
-
-    try {
-      return await this.apiService.post(`${this.apiConfigService.getGatewayUrl()}/${url}`, data, new ApiSettings(), errorHandler);
-    } finally {
-      profiler.stop();
-
-      this.metricsService.setGatewayDuration(component, profiler.duration);
-    }
+  @LogPerformanceAsync('setGatewayDuration', { argIndex: 1 })
+  async createRaw(url: string, _component: GatewayComponentRequest, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
+    return await this.apiService.post(`${this.apiConfigService.getGatewayUrl()}/${url}`, data, new ApiSettings(), errorHandler);
   }
 }
