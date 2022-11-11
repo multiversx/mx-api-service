@@ -1,8 +1,8 @@
 import { Test } from "@nestjs/testing";
 import { ConfigService } from "@nestjs/config";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
-import { DatabaseConnectionOptions } from "src/common/persistence/database/entities/connection.options";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { DatabaseConnectionOptions } from "src/common/persistence/entities/connection.options";
 
 describe('API Config', () => {
   let apiConfigService: ApiConfigService;
@@ -610,13 +610,13 @@ describe('API Config', () => {
     });
   });
 
-  describe("getDataUrl", () => {
-    it("should return data url", () => {
+  describe("getDataApiUrl", () => {
+    it("should return data api url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
         .mockImplementation(jest.fn(() => undefined));
 
-      const results = apiConfigService.getDataUrl();
+      const results = apiConfigService.getDataApiUrl();
       expect(results).toEqual(undefined);
     });
   });
