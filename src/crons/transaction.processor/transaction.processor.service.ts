@@ -12,6 +12,7 @@ import { PerformanceProfiler, CachingService, BinaryUtils } from "@elrondnetwork
 import { OriginLogger } from "@elrondnetwork/erdnest";
 import { LogMetricsEvent } from "src/common/metrics/events/log-metrics.event";
 import { EventEmitter2 } from "@nestjs/event-emitter";
+import { MetricsEvents } from "src/utils/metrics-events.constants";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -68,7 +69,7 @@ export class TransactionProcessorService {
         const event = new LogMetricsEvent();
         event.args = [shardId, nonce];
         this.eventEmitter.emit(
-          'setLastProcessedNonce',
+          MetricsEvents.SetLastProcessedNonce,
           event
         );
 

@@ -7,6 +7,7 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { LogMetricsEvent } from "src/common/metrics/events/log-metrics.event";
+import { MetricsEvents } from "src/utils/metrics-events.constants";
 
 @Injectable()
 export class VmQueryService {
@@ -114,7 +115,7 @@ export class VmQueryService {
         const metricsEvent = new LogMetricsEvent();
         metricsEvent.args = [contract, func, profiler.duration];
         this.eventEmitter.emit(
-          'setVmQuery',
+          MetricsEvents.SetVmQuery,
           metricsEvent
         );
       }
