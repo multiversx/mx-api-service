@@ -8,6 +8,7 @@ import { TransactionDetailed } from "src/endpoints/transactions/entities/transac
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { TransactionQueryOptions } from "src/endpoints/transactions/entities/transactions.query.options";
 
 @Resolver()
 export class TransactionDetailedQuery {
@@ -16,6 +17,8 @@ export class TransactionDetailedQuery {
   @Query(() => [TransactionDetailed], { name: "transactions", description: "Retrieve all transactions available for the given input." })
   @ApplyComplexity({ target: TransactionDetailed })
   public async getTransactions(@Args("input", { description: "Input to retrieve the given transactions for." }) input: GetTransactionsInput): Promise<Transaction[]> {
+    const options = TransactionQueryOptions.applyDefaultOptions(input.size, { withScamInfo: input.withScamInfo, withUsername: input.withUsername });
+
     return await this.transactionService.getTransactions(
       new TransactionFilter({
         sender: input.sender,
@@ -33,12 +36,13 @@ export class TransactionDetailedQuery {
         condition: input.condition,
         order: input.order,
       }),
-      new QueryPagination({ from: input.from, size: input.size })
+      new QueryPagination({ from: input.from, size: input.size }),
+      options,
     );
   }
 
   @Query(() => TransactionDetailed, { name: "transaction", description: "Retrieve the detailed transaction for the given input.", nullable: true })
-  public async getTransaction(@Args("input", { description: "Input to retrieve the given detailed transaction for." }) input: GetTransactionDetailedInput): Promise<TransactionDetailed | null> {
+  public async getTransactionDetailed(@Args("input", { description: "Input to retrieve the given detailed transaction for." }) input: GetTransactionDetailedInput): Promise<TransactionDetailed | null> {
     return await this.transactionService.getTransaction(GetTransactionDetailedInput.resolve(input));
   }
 }

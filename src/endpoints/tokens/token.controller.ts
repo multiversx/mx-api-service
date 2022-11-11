@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query, Res } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { SortOrder } from "src/common/entities/sort.order";
 import { TransactionStatus } from "../transactions/entities/transaction.status";
@@ -20,6 +20,7 @@ import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
 import { ParseAddressPipe, ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseTokenPipe, ParseAddressArrayPipe, ApplyComplexity } from "@elrondnetwork/erdnest";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
+import { Response } from "express";
 
 @Controller()
 @ApiTags('tokens')
@@ -188,6 +189,8 @@ export class TokenController {
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
+  @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   async getTokenTransactions(
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -208,8 +211,9 @@ export class TokenController {
     @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
   ) {
-    const options = TransactionQueryOptions.enforceScamInfoFlag(size, { withScResults, withOperations, withLogs, withScamInfo });
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername });
 
     const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
@@ -281,7 +285,7 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/roles")
-  @ApiOperation({ summary: 'Token roles', description: 'Returns a list of accounts that can perform various actions on a specific token' })
+  @ApiOperation({ summary: 'Token roles', description: 'Returns a list of accounts that can perform various actions on a specific token', deprecated: true })
   @ApiOkResponse({ type: [TokenRoles] })
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getTokenRoles(
@@ -301,7 +305,7 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/roles/:address")
-  @ApiOperation({ summary: 'Token address roles', description: 'Returns roles detalils for a specific address of a given token' })
+  @ApiOperation({ summary: 'Token address roles', description: 'Returns roles detalils for a specific address of a given token', deprecated: true })
   @ApiOkResponse({ type: TokenRoles })
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getTokenRolesForAddress(
@@ -337,6 +341,8 @@ export class TokenController {
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
+  @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   async getTokenTransfers(
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -352,6 +358,8 @@ export class TokenController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
   ): Promise<Transaction[]> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
@@ -361,6 +369,8 @@ export class TokenController {
     if (!isToken) {
       throw new NotFoundException('Token not found');
     }
+
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScamInfo, withUsername });
 
     return await this.transferService.getTransfers(new TransactionFilter({
       sender,
@@ -375,7 +385,10 @@ export class TokenController {
       before,
       after,
       order,
-    }), new QueryPagination({ from, size }));
+    }),
+      new QueryPagination({ from, size }),
+      options,
+    );
   }
 
   @Get("/tokens/:identifier/transfers/count")
@@ -470,5 +483,41 @@ export class TokenController {
       before,
       after,
     }));
+  }
+
+  @Get('/tokens/:identifier/logo/png')
+  async getTokenLogoPng(
+    @Param('identifier', ParseTokenPipe) identifier: string,
+    @Res() response: Response
+  ): Promise<void> {
+    const isToken = await this.tokenService.isToken(identifier);
+    if (!isToken) {
+      throw new NotFoundException('Token not found');
+    }
+
+    const url = await this.tokenService.getLogoPng(identifier);
+    if (url === undefined) {
+      throw new NotFoundException('Assets not found');
+    }
+
+    response.redirect(url);
+  }
+
+  @Get('/tokens/:identifier/logo/svg')
+  async getTokenLogoSvg(
+    @Param('identifier', ParseTokenPipe) identifier: string,
+    @Res() response: Response
+  ): Promise<void> {
+    const isToken = await this.tokenService.isToken(identifier);
+    if (!isToken) {
+      throw new NotFoundException('Token not found');
+    }
+
+    const url = await this.tokenService.getLogoSvg(identifier);
+    if (url === undefined) {
+      throw new NotFoundException('Assets not found');
+    }
+
+    response.redirect(url);
   }
 }

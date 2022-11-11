@@ -1,30 +1,31 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import simpleGit, { SimpleGit, SimpleGitOptions } from 'simple-git';
 import { CacheInfo } from "src/utils/cache.info";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { AccountAssets } from "./entities/account.assets";
-import { ApiUtils, CachingService, FileUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils, CachingService, FileUtils, OriginLogger } from "@elrondnetwork/erdnest";
 import { Provider } from "src/endpoints/providers/entities/provider";
 import { MexPair } from "src/endpoints/mex/entities/mex.pair";
 import { Identity } from "src/endpoints/identities/entities/identity";
 import { MexFarm } from "src/endpoints/mex/entities/mex.farm";
 import { MexSettings } from "src/endpoints/mex/entities/mex.settings";
 import { DnsContracts } from "src/utils/dns.contracts";
+import { NftRankAlgorithm } from "./entities/nft.rank.algorithm";
+import { NftRank } from "./entities/nft.rank";
+import { MexStakingProxy } from "src/endpoints/mex/entities/mex.staking.proxy";
 const rimraf = require("rimraf");
 const path = require('path');
 const fs = require('fs');
 
 @Injectable()
 export class AssetsService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(AssetsService.name);
 
   constructor(
     private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService
-  ) {
-    this.logger = new Logger(AssetsService.name);
-  }
+  ) { }
 
   checkout(): Promise<void> {
     const localGitPath = 'dist/repos/assets';
@@ -63,15 +64,23 @@ export class AssetsService {
   }
 
   private readTokenAssetDetails(tokenIdentifier: string, assetPath: string): TokenAssets {
-    const jsonPath = path.join(assetPath, 'info.json');
-    const jsonContents = fs.readFileSync(jsonPath);
-    const json = JSON.parse(jsonContents);
+    const infoPath = path.join(assetPath, 'info.json');
+    const info = JSON.parse(fs.readFileSync(infoPath));
 
-    return {
-      ...json,
+    return new TokenAssets({
+      ...info,
       pngUrl: this.getImageUrl(tokenIdentifier, 'logo.png'),
       svgUrl: this.getImageUrl(tokenIdentifier, 'logo.svg'),
-    };
+    });
+  }
+
+  private readTokenRanks(assetPath: string): NftRank[] | undefined {
+    const ranksPath = path.join(assetPath, 'ranks.json');
+    if (fs.existsSync(ranksPath)) {
+      return JSON.parse(fs.readFileSync(ranksPath));
+    }
+
+    return undefined;
   }
 
   private readAccountAssets(path: string): AccountAssets {
@@ -133,6 +142,40 @@ export class AssetsService {
     return assets;
   }
 
+  async getCollectionRanks(identifier: string): Promise<NftRank[] | undefined> {
+    const allCollectionRanks = await this.getAllCollectionRanks();
+
+    return allCollectionRanks[identifier];
+  }
+
+  async getAllCollectionRanks(): Promise<{ [key: string]: NftRank[] }> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.CollectionRanks.key,
+      async () => await this.getAllCollectionRanksRaw(),
+      CacheInfo.CollectionRanks.ttl
+    );
+  }
+
+  async getAllCollectionRanksRaw(): Promise<{ [key: string]: NftRank[] }> {
+    const allTokenAssets = await this.getAllTokenAssets();
+
+    const result: { [key: string]: NftRank[] } = {};
+    const assetsPath = this.getTokenAssetsPath();
+
+    for (const identifier of Object.keys(allTokenAssets)) {
+      const assets = allTokenAssets[identifier];
+      if (assets.preferredRankAlgorithm === NftRankAlgorithm.custom) {
+        const tokenAssetsPath = path.join(assetsPath, identifier);
+        const ranks = this.readTokenRanks(tokenAssetsPath);
+        if (ranks) {
+          result[identifier] = ranks;
+        }
+      }
+    }
+
+    return result;
+  }
+
   async getAllAccountAssets(): Promise<{ [key: string]: AccountAssets }> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.AccountAssets.key,
@@ -141,7 +184,7 @@ export class AssetsService {
     );
   }
 
-  getAllAccountAssetsRaw(providers?: Provider[], identities?: Identity[], pairs?: MexPair[], farms?: MexFarm[], mexSettings?: MexSettings): { [key: string]: AccountAssets } {
+  getAllAccountAssetsRaw(providers?: Provider[], identities?: Identity[], pairs?: MexPair[], farms?: MexFarm[], mexSettings?: MexSettings, stakingProxies?: MexStakingProxy[]): { [key: string]: AccountAssets } {
     const accountAssetsPath = this.getAccountAssetsPath();
     if (!fs.existsSync(accountAssetsPath)) {
       return {};
@@ -223,6 +266,15 @@ export class AssetsService {
       });
     }
 
+    if (stakingProxies) {
+      for (const stakingProxy of stakingProxies) {
+        allAssets[stakingProxy.address] = new AccountAssets({
+          name: `Maiar Exchange: ${stakingProxy.dualYieldTokenName} Contract`,
+          tags: ['mex', 'metastaking'],
+        });
+      }
+    }
+
     for (const [index, address] of DnsContracts.addresses.entries()) {
       allAssets[address] = new AccountAssets({
         name: `Elrond DNS: Contract ${index}`,
@@ -234,7 +286,7 @@ export class AssetsService {
     return allAssets;
   }
 
-  async getAssets(tokenIdentifier: string): Promise<TokenAssets | undefined> {
+  async getTokenAssets(tokenIdentifier: string): Promise<TokenAssets | undefined> {
     // get the dictionary from the local cache
     const assets = await this.getAllTokenAssets();
 

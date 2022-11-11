@@ -22,12 +22,13 @@ import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexTokenService } from "src/endpoints/mex/mex.token.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import AsyncLock from "async-lock";
-import { CachingService, Constants, Locker } from "@elrondnetwork/erdnest";
+import { CachingService, Constants, Locker, OriginLogger } from "@elrondnetwork/erdnest";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 
 @Injectable()
 export class CacheWarmerService {
   private readonly lock: AsyncLock;
+  private readonly logger = new OriginLogger(CacheWarmerService.name);
 
   constructor(
     private readonly nodeService: NodeService,
@@ -101,6 +102,8 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleNodeInvalidations() {
     await Locker.lock('Node invalidations', async () => {
+      this.logger.log('Invalidating nodes');
+
       await this.lock.acquire('nodes', async () => {
         const nodes = await this.nodeService.getAllNodesRaw();
         await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
@@ -233,9 +236,13 @@ export class CacheWarmerService {
       const pairs = await this.mexPairsService.getAllMexPairs();
       const farms = await this.mexFarmsService.getAllMexFarms();
       const settings = await this.mexSettingsService.getSettings();
+      const stakingProxies = await this.mexFarmsService.getAllStakingProxies();
 
-      const accountLabels = await this.assetsService.getAllAccountAssetsRaw(providers, identities, pairs, farms, settings ?? undefined);
+      const accountLabels = await this.assetsService.getAllAccountAssetsRaw(providers, identities, pairs, farms, settings ?? undefined, stakingProxies);
       await this.invalidateKey(CacheInfo.AccountAssets.key, accountLabels, CacheInfo.AccountAssets.ttl);
+
+      const collectionRanks = await this.assetsService.getAllCollectionRanksRaw();
+      await this.invalidateKey(CacheInfo.CollectionRanks.key, collectionRanks, CacheInfo.CollectionRanks.ttl);
     }, true);
   }
 

@@ -9,7 +9,14 @@ import { NftType } from "./entities/nft.type";
 import { NftService } from "./nft.service";
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { NftQueryOptions } from './entities/nft.query.options';
-import { ParseAddressPipe, ParseBoolPipe, ParseArrayPipe, ParseIntPipe, ParseNftPipe, ParseCollectionPipe, ApplyComplexity } from '@elrondnetwork/erdnest';
+import { ParseAddressPipe, ParseBoolPipe, ParseArrayPipe, ParseIntPipe, ParseNftPipe, ParseCollectionPipe, ApplyComplexity, ParseAddressArrayPipe, ParseBlockHashPipe, ParseEnumPipe, ParseRecordPipe } from '@elrondnetwork/erdnest';
+import { TransactionDetailed } from '../transactions/entities/transaction.detailed';
+import { TransactionStatus } from '../transactions/entities/transaction.status';
+import { SortOrder } from 'src/common/entities/sort.order';
+import { TransactionQueryOptions } from '../transactions/entities/transactions.query.options';
+import { TransactionService } from '../transactions/transaction.service';
+import { TransactionFilter } from '../transactions/entities/transaction.filter';
+import { Transaction } from '../transactions/entities/transaction';
 
 @Controller()
 @ApiTags('nfts')
@@ -17,6 +24,7 @@ export class NftController {
   constructor(
     private readonly nftService: NftService,
     private readonly nftMediaService: NftMediaService,
+    private readonly transactionService: TransactionService,
   ) { }
 
   @Get("/nfts")
@@ -35,10 +43,13 @@ export class NftController {
   @ApiQuery({ name: 'isWhitelistedStorage', description: 'Return all NFTs that are whitelisted in storage', required: false, type: Boolean })
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false, type: Boolean })
   @ApiQuery({ name: 'isNsfw', description: 'Filter by NSFW status', required: false, type: Boolean })
+  @ApiQuery({ name: 'traits', description: 'Filter NFTs by traits. Key-value format (<key1>:<value1>;<key2>:<value2>)', required: false, type: Boolean })
   @ApiQuery({ name: 'before', description: 'Return all NFTs before given timestamp', required: false, type: Number })
   @ApiQuery({ name: 'after', description: 'Return all NFTs after given timestamp', required: false, type: Number })
   @ApiQuery({ name: 'withOwner', description: 'Return owner where type = NonFungibleESDT', required: false, type: Boolean })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false, type: Boolean })
+  @ApiQuery({ name: 'withScamInfo', required: false, type: Boolean })
+  @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
   async getNfts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -52,6 +63,7 @@ export class NftController {
     @Query('isWhitelistedStorage', new ParseBoolPipe) isWhitelistedStorage?: boolean,
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
     @Query('isNsfw', new ParseBoolPipe) isNsfw?: boolean,
+    @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
     @Query('withOwner', new ParseBoolPipe) withOwner?: boolean,
@@ -63,7 +75,7 @@ export class NftController {
 
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
-      new NftFilter({ search, identifiers, type, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, before, after }),
+      new NftFilter({ search, identifiers, type, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, before, after }),
       options
     );
   }
@@ -81,6 +93,7 @@ export class NftController {
   @ApiQuery({ name: 'isWhitelistedStorage', description: 'Return all NFTs that are whitelisted in storage', required: false, type: Boolean })
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false, type: Boolean })
   @ApiQuery({ name: 'isNsfw', description: 'Filter by NSFW status', required: false, type: Boolean })
+  @ApiQuery({ name: 'traits', description: 'Filter NFTs by traits. Key-value format (<key1>:<value1>;<key2>:<value2>)', required: false, type: Boolean })
   @ApiQuery({ name: 'before', description: 'Return all NFTs before given timestamp', required: false, type: Number })
   @ApiQuery({ name: 'after', description: 'Return all NFTs after given timestamp', required: false, type: Number })
   async getNftCount(
@@ -94,10 +107,11 @@ export class NftController {
     @Query('isWhitelistedStorage', new ParseBoolPipe) isWhitelistedStorage?: boolean,
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
     @Query('isNsfw', new ParseBoolPipe) isNsfw?: boolean,
+    @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
   ): Promise<number> {
-    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, before, after }));
+    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after }));
   }
 
   @Get("/nfts/c")
@@ -111,12 +125,13 @@ export class NftController {
     @Query('tags', ParseArrayPipe) tags?: string[],
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('isWhitelistedStorage', new ParseBoolPipe) isWhitelistedStorage?: boolean,
-    @Query('isNsfw', new ParseBoolPipe) isNsfw?: boolean,
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
+    @Query('isNsfw', new ParseBoolPipe) isNsfw?: boolean,
+    @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
   ): Promise<number> {
-    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, before, after }));
+    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after }));
   }
 
   @Get('/nfts/:identifier')
@@ -235,5 +250,113 @@ export class NftController {
       throw new HttpException('NFT not found', HttpStatus.NOT_FOUND);
     }
     return ownersCount;
+  }
+
+  @Get("/nfts/:identifier/transactions")
+  @ApiOperation({ summary: 'NFT transactions', description: `Returns a list of transactions for a NonFungibleESDT or SemiFungibleESDT.` })
+  @ApplyComplexity({ target: TransactionDetailed })
+  @ApiOkResponse({ type: [Transaction] })
+  @ApiNotFoundResponse({ description: 'Token not found' })
+  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
+  @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
+  @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
+  @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
+  async getNftTransactions(
+    @Param('identifier', ParseNftPipe) identifier: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('search') search?: string,
+    @Query('function') scFunction?: string,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
+    @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
+    @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
+    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
+  ) {
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername });
+
+    return await this.transactionService.getTransactions(new TransactionFilter({
+      sender,
+      receivers: receiver,
+      token: identifier,
+      function: scFunction,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      search,
+      before,
+      after,
+      order,
+    }), new QueryPagination({ from, size }), options);
+  }
+
+  @Get("/nfts/:identifier/transactions/count")
+  @ApiOperation({ summary: 'NFT transactions count', description: 'Returns the total number of transactions for a specific NonFungibleESDT or SemiFungibleESDT' })
+  @ApiOkResponse({ type: Number })
+  @ApiNotFoundResponse({ description: 'Token not found' })
+  @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
+  @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  async getNftTransactionsCount(
+    @Param('identifier', ParseNftPipe) identifier: string,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('search') search?: string,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+  ) {
+
+    return await this.transactionService.getTransactionCount(new TransactionFilter({
+      sender,
+      receivers: receiver,
+      token: identifier,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      search,
+      before,
+      after,
+    }));
   }
 }

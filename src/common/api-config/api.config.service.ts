@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { DatabaseConnectionOptions } from '../persistence/database/entities/connection.options';
+import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
 
 @Injectable()
 export class ApiConfigService {
@@ -66,6 +66,10 @@ export class ApiConfigService {
     }
 
     return url;
+  }
+
+  getMaiarIdUrl(): string | undefined {
+    return this.configService.get<string>('urls.maiarId');
   }
 
   getEsdtContractAddress(): string {
@@ -211,11 +215,25 @@ export class ApiConfigService {
 
   getProvidersUrl(): string {
     const providerUrl = this.configService.get<string>('urls.providers');
-    if (!providerUrl) {
-      throw new Error('No providers url present');
+    if (providerUrl) {
+      return providerUrl;
     }
 
-    return providerUrl;
+    const delegationUrl = this.configService.get<string>('urls.delegation');
+    if (delegationUrl) {
+      return delegationUrl + '/providers';
+    }
+
+    throw new Error('No providers url present');
+  }
+
+  getDelegationUrl(): string {
+    const delegationUrl = this.configService.get<string>('urls.delegation');
+    if (!delegationUrl) {
+      throw new Error('No delegation url present');
+    }
+
+    return delegationUrl;
   }
 
   getDataUrl(): string | undefined {
@@ -694,5 +712,9 @@ export class ApiConfigService {
       password: this.getIndexerPassword(),
       database: this.getIndexerName(),
     };
+  }
+
+  getIndexerMaxPagination(): number {
+    return this.configService.get<number>('indexer.maxPagination') ?? 10000;
   }
 }

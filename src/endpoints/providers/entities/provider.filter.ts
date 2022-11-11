@@ -4,4 +4,6 @@ export class ProviderFilter {
   }
 
   identity: string | undefined = undefined;
+
+  providers: string[] | undefined = undefined;
 } 

@@ -64,9 +64,9 @@ export class NodeService {
 
   async getNodeVersions(): Promise<NodeVersions> {
     return await this.cachingService.getOrSetCache(
-      'nodeVersions',
+      CacheInfo.NodeVersions.key,
       async () => await this.getNodeVersionsRaw(),
-      Constants.oneMinute()
+      CacheInfo.NodeVersions.ttl
     );
   }
 
@@ -171,10 +171,6 @@ export class NodeService {
         if (query.fullHistory === false && node.fullHistory === true) {
           return false;
         }
-      }
-
-      if (query.sort && (node[query.sort] === undefined || node[query.sort] === '')) {
-        return false;
       }
 
       return true;
@@ -576,6 +572,10 @@ export class NodeService {
 
       if (['queued', 'jailed'].includes(peerType)) {
         node.shard = undefined;
+      }
+
+      if (node.online === undefined) {
+        node.online = false;
       }
 
       node.issues = this.getIssues(node, config.erd_latest_tag_software_version);

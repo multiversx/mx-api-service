@@ -81,25 +81,10 @@ describe("NFT Controller", () => {
         });
     });
 
-    it('should return LKMEX MetaESDT details based on a given identifier', async () => {
-      const identifier: string = 'LKMEX-aab910-395582';
-
-      await request(app.getHttpServer())
-        .get(`${path}/${identifier}`)
-        .expect(200)
-        .then(res => {
-          expect(res.body.identifier).toStrictEqual('LKMEX-aab910-395582');
-          expect(res.body.unlockSchedule).toBeDefined();
-          expect(res.body).toBeDefined();
-        });
-    });
-
     test.each`
     types
     ${'NonFungibleESDT'}
-    ${'SemiFungibleESDT'}
-    ${'MetaESDT'}
-    `
+    ${'SemiFungibleESDT'}`
       (
         `for the given type $types, should return 25 tokens`,
         async ({ types }) => {
@@ -120,7 +105,7 @@ describe("NFT Controller", () => {
             });
         });
 
-    it('should return all NFTs that are whitelisted in storage', async () => {
+    it.skip('should return all NFTs that are whitelisted in storage', async () => {
       const params = new URLSearchParams({
         'isWhitelistedStorage': 'true',
       });
@@ -154,11 +139,10 @@ describe("NFT Controller", () => {
         });
     });
 
-    it('should return a list of 25 NFTs that have owner', async () => {
+    it('should return a list of 25 SFTs that have supply when withSupply is true', async () => {
       const params = new URLSearchParams({
-        'after': '1661276190',
-        'withOwner': 'true',
-        'type': 'NonFungibleESDT',
+        'withSupply': 'true',
+        'type': 'SemiFungibleESDT',
       });
 
       await request(app.getHttpServer())
@@ -168,13 +152,13 @@ describe("NFT Controller", () => {
           expect(res.body).toHaveLength(25);
 
           for (const response of res.body) {
-            expect(response.owner).toBeDefined();
-            expect(response.type).toStrictEqual('NonFungibleESDT');
+            expect(response.type).toStrictEqual('SemiFungibleESDT');
+            expect(response.supply).toBeDefined();
           }
         });
     });
 
-    it('should return a list of 25 NFTs that have supply = 1', async () => {
+    it('should return a list of 25 NFTs and supply attribute should not be defined even with withSupply true', async () => {
       const params = new URLSearchParams({
         'withSupply': 'true',
         'type': 'NonFungibleESDT',
@@ -188,7 +172,24 @@ describe("NFT Controller", () => {
 
           for (const response of res.body) {
             expect(response.type).toStrictEqual('NonFungibleESDT');
-            expect(response.supply).toStrictEqual('1');
+            expect(response.supply).not.toBeDefined();
+          }
+        });
+    });
+
+    it('should return a list of 25 tokens without supply even if withSupply option is false', async () => {
+      const params = new URLSearchParams({
+        'withSupply': 'false',
+      });
+
+      await request(app.getHttpServer())
+        .get(`${path}?${params}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toHaveLength(25);
+
+          for (const response of res.body) {
+            expect(response.supply).not.toBeDefined();
           }
         });
     });
@@ -219,7 +220,7 @@ describe("NFT Controller", () => {
         .get(`${path}/count`)
         .expect(200)
         .then(res => {
-          expect(+res.text).toBeGreaterThanOrEqual(6788352);
+          expect(+res.text).toBeGreaterThanOrEqual(1001167);
         });
     });
 
@@ -233,11 +234,6 @@ describe("NFT Controller", () => {
         filter: 'type',
         value: 'SemiFungibleESDT',
         count: 23101,
-      },
-      {
-        filter: 'type',
-        value: 'MetaESDT',
-        count: 5748786,
       },
       {
         filter: 'collection',
@@ -272,7 +268,7 @@ describe("NFT Controller", () => {
       {
         filter: 'before',
         value: '1660114204',
-        count: 6781315,
+        count: 1010002,
       },
       {
         filter: 'after',

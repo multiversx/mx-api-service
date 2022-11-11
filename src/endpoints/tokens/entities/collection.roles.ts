@@ -31,9 +31,9 @@ export class CollectionRoles {
   @ApiProperty({ type: Boolean, default: false })
   canAddUri: boolean = false;
 
-  @Field(() => Boolean, { description: 'If the given collection role can transfer role.' })
+  @Field(() => Boolean, { description: 'If tokens from the given collections are allowed to be transferred by the given account.' })
   @ApiProperty({ type: Boolean, default: false })
-  canTransferRole: boolean = false;
+  canTransfer: boolean | undefined = undefined;
 
   @Field(() => [String], { description: 'Roles list for the given collection roles.' })
   @ApiProperty({ type: [String] })

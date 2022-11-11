@@ -1,5 +1,6 @@
 import { PerformanceProfiler } from "@elrondnetwork/erdnest";
 import { Inject, Injectable } from "@nestjs/common";
+import { CollectionTrait } from "src/endpoints/collections/entities/collection.trait";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { ApiMetricsService } from "../metrics/api.metrics.service";
 import { PersistenceInterface } from "./persistence.interface";
@@ -50,5 +51,9 @@ export class PersistenceService implements PersistenceInterface {
 
   async setMetadata(identifier: string, value: any): Promise<void> {
     await this.execute('setMetadata', this.persistenceInterface.setMetadata(identifier, value));
+  }
+
+  async getCollectionTraits(identifier: string): Promise<CollectionTrait[] | null> {
+    return await this.execute(this.getCollectionTraits.name, this.persistenceInterface.getCollectionTraits(identifier));
   }
 }

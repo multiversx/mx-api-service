@@ -1,6 +1,8 @@
-import { AddressUtils, Constants, NumberUtils, CachingService } from "@elrondnetwork/erdnest";
+import { AddressUtils, NumberUtils, CachingService } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { CacheInfo } from "src/utils/cache.info";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { WaitingList } from "./entities/waiting.list";
 
@@ -12,8 +14,14 @@ export class WaitingListService {
     private readonly cachingService: CachingService,
   ) { }
 
-  async getWaitingList(): Promise<WaitingList[]> {
-    return await this.getFullWaitingList();
+  async getWaitingList(queryPagination: QueryPagination): Promise<WaitingList[]> {
+    const { from, size } = queryPagination;
+
+    let waitingList = await this.getFullWaitingList();
+
+    waitingList = waitingList.slice(from, from + size);
+
+    return waitingList;
   }
 
   async getWaitingListForAddress(address: string): Promise<WaitingList[]> {
@@ -30,9 +38,9 @@ export class WaitingListService {
 
   private async getFullWaitingList(): Promise<WaitingList[]> {
     return await this.cachingService.getOrSetCache(
-      'waiting-list',
+      CacheInfo.FullWaitingList.key,
       async () => await this.getFullWaitingListRaw(),
-      Constants.oneMinute() * 5
+      CacheInfo.FullWaitingList.ttl
     );
   }
 

@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable } from "@nestjs/common";
 import sharp, { fit } from 'sharp';
 import ffmpeg from 'fluent-ffmpeg';
 import path from "path";
@@ -7,12 +7,15 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GenerateThumbnailResult } from "./entities/generate.thumbnail.result";
 import { ThumbnailType } from "./entities/thumbnail.type";
 import { AWSService } from "./aws.service";
-import { ApiService, Constants, FileUtils } from "@elrondnetwork/erdnest";
+import { ApiService, CachingService, Constants, FileUtils } from "@elrondnetwork/erdnest";
 import { TokenHelpers } from "src/utils/token.helpers";
+import { OriginLogger } from "@elrondnetwork/erdnest";
+import { CacheInfo } from "src/utils/cache.info";
+import { CachingUtils } from "src/utils/caching.utils";
 
 @Injectable()
 export class NftThumbnailService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(NftThumbnailService.name);
   private readonly STANDARD_PATH: string = 'nfts/thumbnail';
   private readonly API_TIMEOUT_MILLISECONDS = Constants.oneSecond() * 30 * 1000;
 
@@ -20,9 +23,8 @@ export class NftThumbnailService {
     private readonly apiConfigService: ApiConfigService,
     private readonly awsService: AWSService,
     private readonly apiService: ApiService,
-  ) {
-    this.logger = new Logger(NftThumbnailService.name);
-  }
+    private readonly cachingService: CachingService,
+  ) { }
 
   private async extractThumbnailFromImage(buffer: Buffer): Promise<Buffer | undefined> {
     try {
@@ -34,6 +36,7 @@ export class NftThumbnailService {
             fit: fit.cover,
           }
         )
+        .withMetadata()
         .jpeg({ progressive: true })
         .toBuffer();
     } catch (error: any) {
@@ -171,16 +174,22 @@ export class NftThumbnailService {
 
   async generateThumbnail(nft: Nft, fileUrl: string, fileType: string, forceRefresh: boolean = false): Promise<GenerateThumbnailResult> {
     const nftIdentifier = nft.identifier;
-    const urlHash = TokenHelpers.getUrlHash(fileUrl);
-
-    this.logger.log(`Generating thumbnail for NFT with identifier '${nftIdentifier}', url '${fileUrl}' and url hash '${urlHash}'`);
 
     if (!fileUrl || !fileUrl.startsWith('https://')) {
-      this.logger.log(`NFT with identifier '${nftIdentifier}' and url hash '${urlHash}' has no urls`);
+      this.logger.log(`NFT with identifier '${nftIdentifier}' and url '${fileUrl}' doesn't exist or is invalid`);
       return GenerateThumbnailResult.noUrl;
     }
 
-    const fileResult: any = await this.apiService.get(fileUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS });
+    const urlHash = TokenHelpers.getUrlHash(fileUrl);
+    const cacheIdentifier = `${nft.identifier}-${urlHash}`;
+    const fileResult: any = await CachingUtils.executeOptimistic({
+      cachingService: this.cachingService,
+      description: `Generating thumbnail for NFT with identifier '${nftIdentifier}', url '${fileUrl}' and url hash '${urlHash}'`,
+      key: CacheInfo.PendingGenerateThumbnail(cacheIdentifier).key,
+      ttl: CacheInfo.PendingGenerateThumbnail(cacheIdentifier).ttl,
+      action: async () => await this.apiService.get(fileUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS }),
+    });
+
     const file = fileResult.data;
 
     const urlIdentifier = TokenHelpers.getThumbnailUrlIdentifier(nftIdentifier, fileUrl);

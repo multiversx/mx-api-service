@@ -21,13 +21,13 @@ import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './common/websockets/socket-adapter';
 import { ApiConfigModule } from './common/api-config/api.config.module';
-import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor } from '@elrondnetwork/erdnest';
+import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor, RequestCpuTimeInterceptor } from '@elrondnetwork/erdnest';
 import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.service.impl';
 import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
 import { TransactionLoggingInterceptor } from './interceptors/transaction.logging.interceptor';
 import { BatchTransactionProcessorModule } from './crons/transaction.processor/batch.transaction.processor.module';
 import { GraphqlComplexityInterceptor } from './graphql/interceptors/graphql.complexity.interceptor';
-import { RequestCpuTimeInterceptor } from './interceptors/request.cpu.time.interceptor';
+import { GraphQLMetricsInterceptor } from './graphql/interceptors/graphql.metrics.interceptor';
 import { ApiMetricsService } from './common/metrics/api.metrics.service';
 
 async function bootstrap() {
@@ -111,12 +111,11 @@ async function bootstrap() {
     {
       transport: Transport.REDIS,
       options: {
-        url: `redis://${apiConfigService.getRedisUrl()}:6379`,
+        host: apiConfigService.getRedisUrl(),
+        port: 6379,
         retryAttempts: 100,
         retryDelay: 1000,
-        retry_strategy: function (_: any) {
-          return 1000;
-        },
+        retryStrategy: () => 1000,
       },
     },
   );
@@ -134,6 +133,15 @@ async function bootstrap() {
   logger.log(`Queue worker active: ${apiConfigService.getIsQueueWorkerCronActive()}`);
   logger.log(`Elastic updater active: ${apiConfigService.getIsElasticUpdaterCronActive()}`);
   logger.log(`Events notifier active: ${apiConfigService.isEventsNotifierFeatureActive()}`);
+
+  logger.log(`Use request caching: ${apiConfigService.getUseRequestCachingFlag()}`);
+  logger.log(`Use request logging: ${apiConfigService.getUseRequestLoggingFlag()}`);
+  logger.log(`Use tracing: ${apiConfigService.getUseTracingFlag()}`);
+  logger.log(`Use vm query tracing: ${apiConfigService.getUseVmQueryTracingFlag()}`);
+  logger.log(`Process NFTs flag: ${apiConfigService.getIsProcessNftsFlagActive()}`);
+  logger.log(`Indexer v3 flag: ${apiConfigService.getIsIndexerV3FlagActive()}`);
+  logger.log(`Staking v4 enabled: ${apiConfigService.isStakingV4Enabled()}`);
+  logger.log(`Events notifier enabled: ${apiConfigService.isEventsNotifierFeatureActive()}`);
 }
 
 async function configurePublicApp(publicApp: NestExpressApplication, apiConfigService: ApiConfigService) {
@@ -159,9 +167,15 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   httpServer.headersTimeout = apiConfigService.getHeadersTimeout(); //`keepAliveTimeout + server's expected response time`
 
   const globalInterceptors: NestInterceptor[] = [];
+  // @ts-ignore
+  globalInterceptors.push(new OriginInterceptor());
+  // @ts-ignore
   globalInterceptors.push(new ComplexityInterceptor());
   globalInterceptors.push(new GraphqlComplexityInterceptor());
-  globalInterceptors.push(new RequestCpuTimeInterceptor(apiMetricsService));
+  globalInterceptors.push(new GraphQLMetricsInterceptor(apiMetricsService));
+  // @ts-ignore
+  globalInterceptors.push(new RequestCpuTimeInterceptor(metricsService));
+  // @ts-ignore
   globalInterceptors.push(new LoggingInterceptor(metricsService));
 
   if (apiConfigService.getUseRequestCachingFlag()) {
@@ -174,6 +188,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
       metricsService,
     );
 
+    // @ts-ignore
     globalInterceptors.push(cachingInterceptor);
   }
 
@@ -182,10 +197,14 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
     globalInterceptors.push(new LogRequestsInterceptor(httpAdapterHostService));
   }
 
+  // @ts-ignore
   globalInterceptors.push(new FieldsInterceptor());
+  // @ts-ignore
   globalInterceptors.push(new ExtractInterceptor());
+  // @ts-ignore
   globalInterceptors.push(new CleanupInterceptor());
-  globalInterceptors.push(new PaginationInterceptor());
+  // @ts-ignore
+  globalInterceptors.push(new PaginationInterceptor(apiConfigService.getIndexerMaxPagination()));
   // @ts-ignore
   globalInterceptors.push(new QueryCheckInterceptor(httpAdapterHostService));
   globalInterceptors.push(new TransactionLoggingInterceptor());

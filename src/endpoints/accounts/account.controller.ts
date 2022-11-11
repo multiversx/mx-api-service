@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Logger, NotFoundException, Param, Query } from '@nestjs/common';
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AccountService } from './account.service';
 import { AccountDetailed } from './entities/account.detailed';
@@ -44,11 +44,14 @@ import { NftQueryOptions } from '../nfts/entities/nft.query.options';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
 import { ParseTokenPipe } from '@elrondnetwork/erdnest';
 import { TransactionDetailed } from '../transactions/entities/transaction.detailed';
+import { OriginLogger } from '@elrondnetwork/erdnest';
+import { AccountDelegation } from '../stake/entities/account.delegation';
+import { DelegationService } from '../delegation/delegation.service';
 
 @Controller()
 @ApiTags('accounts')
 export class AccountController {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(AccountController.name);
 
   constructor(
     private readonly accountService: AccountService,
@@ -61,10 +64,9 @@ export class AccountController {
     private readonly scResultService: SmartContractResultService,
     private readonly collectionService: CollectionService,
     private readonly transferService: TransferService,
-    private readonly apiConfigService: ApiConfigService
-  ) {
-    this.logger = new Logger(AccountController.name);
-  }
+    private readonly apiConfigService: ApiConfigService,
+    private readonly delegationService: DelegationService,
+  ) { }
 
   @Get("/accounts")
   @ApiOperation({ summary: 'Accounts details', description: 'Returns all accounts available on blockchain. By default it returns 25 accounts' })
@@ -389,6 +391,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/nfts")
+  @ApiOkResponse({ type: [NftAccount] })
   @ApiOperation({ summary: 'Account NFTs', description: 'Returns a list of all available NFTs/SFTs/MetaESDTs owned by the provided address' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -404,7 +407,8 @@ export class AccountController {
   @ApiQuery({ name: 'includeFlagged', description: 'Include NFTs that are flagged or not', required: false })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false })
   @ApiQuery({ name: 'source', description: 'Data source of request', required: false })
-  @ApiOkResponse({ type: [NftAccount] })
+  @ApiQuery({ name: 'withScamInfo', required: false, type: Boolean })
+  @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
   async getAccountNfts(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -504,6 +508,13 @@ export class AccountController {
     return await this.stakeService.getStakeForAddress(address);
   }
 
+  @Get("/accounts/:address/delegation")
+  @ApiOperation({ summary: 'Account delegations with staking providers', description: 'Summarizes all delegation positions with staking providers, together with unDelegation positions' })
+  @ApiOkResponse({ type: AccountDelegation, isArray: true })
+  async getDelegationForAddress(@Param('address', ParseAddressPipe) address: string): Promise<AccountDelegation[]> {
+    return await this.delegationService.getDelegationForAddress(address);
+  }
+
   @Get("/accounts/:address/delegation-legacy")
   @ApiOperation({ summary: 'Account legacy delegation details', description: 'Returns staking information related to the legacy delegation pool' })
   @ApiOkResponse({ type: AccountDelegationLegacy })
@@ -540,12 +551,16 @@ export class AccountController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
+  @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions. When "withScresults" parameter is applied, complexity estimation is 200', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions. When "withOperations" parameter is applied, complexity estimation is 200', required: false })
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions. When "withLogs" parameter is applied, complexity estimation is 200', required: false })
+  @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
+  @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
   async getAccountTransactions(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -559,6 +574,7 @@ export class AccountController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
+    @Query('function') scFunction?: string,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
@@ -566,13 +582,15 @@ export class AccountController {
     @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
   ) {
-    const options = TransactionQueryOptions.enforceScamInfoFlag(size, { withScResults, withOperations, withLogs, withScamInfo });
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername });
 
     return await this.transactionService.getTransactions(new TransactionFilter({
       sender,
       receivers: receiver,
       token,
+      function: scFunction,
       senderShard,
       receiverShard,
       miniBlockHash,
@@ -646,14 +664,17 @@ export class AccountController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transfer hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
+  @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
+  @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   async getAccountTransfers(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -662,19 +683,25 @@ export class AccountController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('search') search?: string,
+    @Query('function') scFunction?: string,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
   ): Promise<Transaction[]> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScamInfo, withUsername });
+
     return await this.transferService.getTransfers(new TransactionFilter({
       address,
-      sender,
+      senders: sender,
       receivers: receiver,
       token,
+      function: scFunction,
       senderShard,
       receiverShard,
       miniBlockHash,
@@ -684,7 +711,10 @@ export class AccountController {
       before,
       after,
       order,
-    }), new QueryPagination({ from, size }));
+    }),
+      new QueryPagination({ from, size }),
+      options,
+    );
   }
 
   @Get("/accounts/:address/transfers/count")

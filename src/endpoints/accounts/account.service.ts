@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
@@ -18,15 +18,18 @@ import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
-import { AddressUtils, ApiUtils, BinaryUtils, Constants, CachingService } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiUtils, BinaryUtils, CachingService } from '@elrondnetwork/erdnest';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { AccountOptionalFieldOption } from './entities/account.optional.field.options';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
+import { OriginLogger } from '@elrondnetwork/erdnest';
+import { CacheInfo } from 'src/utils/cache.info';
+import { UsernameService } from '../usernames/username.service';
 
 @Injectable()
 export class AccountService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(AccountService.name);
 
   constructor(
     private readonly indexerService: IndexerService,
@@ -45,33 +48,15 @@ export class AccountService {
     @Inject(forwardRef(() => SmartContractResultService))
     private readonly smartContractResultService: SmartContractResultService,
     private readonly assetsService: AssetsService,
-  ) {
-    this.logger = new Logger(AccountService.name);
-  }
+    private readonly usernameService: UsernameService,
+  ) { }
 
   async getAccountsCount(): Promise<number> {
     return await this.cachingService.getOrSetCache(
-      'account:count',
+      CacheInfo.AccountsCount.key,
       async () => await this.indexerService.getAccountsCount(),
-      Constants.oneMinute()
+      CacheInfo.AccountsCount.ttl
     );
-  }
-
-  async getAccountUsername(address: string): Promise<string | null> {
-    return await this.cachingService.getOrSetCache(
-      `account:${address}:username`,
-      async () => await this.getAccountUsernameRaw(address),
-      Constants.oneWeek()
-    );
-  }
-
-  async getAccountUsernameRaw(address: string): Promise<string | null> {
-    const account = await this.getAccount(address);
-    if (!account) {
-      return null;
-    }
-
-    return account.username;
   }
 
   async getAccount(address: string, fields?: string[]): Promise<AccountDetailed | null> {
@@ -101,16 +86,16 @@ export class AccountService {
     return await this.getAccountRaw(address);
   }
 
-  private async getAccountRaw(address: string, txCount: number = 0, scrCount: number = 0): Promise<AccountDetailed | null> {
+  async getAccountRaw(address: string, txCount: number = 0, scrCount: number = 0): Promise<AccountDetailed | null> {
     const assets = await this.assetsService.getAllAccountAssets();
 
     try {
       const {
-        account: { nonce, balance, code, codeHash, rootHash, username, developerReward, ownerAddress, codeMetadata },
+        account: { nonce, balance, code, codeHash, rootHash, developerReward, ownerAddress, codeMetadata },
       } = await this.gatewayService.get(`address/${address}`, GatewayComponentRequest.addressDetails);
 
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
-      let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, username, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], nftCollections: undefined, nfts: undefined });
+      let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], nftCollections: undefined, nfts: undefined });
 
       const codeAttributes = AddressUtils.decodeCodeMetadata(codeMetadata);
       if (codeAttributes) {
@@ -122,6 +107,10 @@ export class AccountService {
         if (deployedAt) {
           account.deployedAt = deployedAt;
         }
+      }
+
+      if (!AddressUtils.isSmartContractAddress(address)) {
+        account.username = await this.usernameService.getUsernameForAddress(address) ?? undefined;
       }
 
       await this.pluginService.processAccount(account);
@@ -151,9 +140,9 @@ export class AccountService {
 
   async getAccountDeployedAt(address: string): Promise<number | null> {
     return await this.cachingService.getOrSetCache(
-      `accountDeployedAt:${address}`,
+      CacheInfo.AccountDeployedAt(address).key,
       async () => await this.getAccountDeployedAtRaw(address),
-      Constants.oneWeek()
+      CacheInfo.AccountDeployedAt(address).ttl
     );
   }
 
@@ -178,9 +167,9 @@ export class AccountService {
 
   async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
     return await this.cachingService.getOrSetCache(
-      `accounts:${queryPagination.from}:${queryPagination.size}`,
+      CacheInfo.Accounts(queryPagination).key,
       async () => await this.getAccountsRaw(queryPagination),
-      Constants.oneMinute(),
+      CacheInfo.Accounts(queryPagination).ttl
     );
   }
 
@@ -350,11 +339,13 @@ export class AccountService {
 
   async getAccountContracts(pagination: QueryPagination, address: string): Promise<DeployedContract[]> {
     const accountDeployedContracts = await this.indexerService.getAccountContracts(pagination, address);
+    const assets = await this.assetsService.getAllAccountAssets();
 
     const accounts: DeployedContract[] = accountDeployedContracts.map(contract => ({
       address: contract.contract,
       deployTxHash: contract.deployTxHash,
       timestamp: contract.timestamp,
+      assets: assets[contract.contract],
     }));
 
     return accounts;

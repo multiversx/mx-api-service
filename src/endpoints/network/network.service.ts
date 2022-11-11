@@ -16,9 +16,10 @@ import { GatewayService } from 'src/common/gateway/gateway.service';
 import { DataQuoteType } from 'src/common/external/entities/data.quote.type';
 import { CacheInfo } from 'src/utils/cache.info';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
-import { Constants, NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest';
+import { NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest';
 import { About } from './entities/about';
 import { EsdtService } from '../esdt/esdt.service';
+import { PluginService } from 'src/common/plugins/plugin.service';
 
 @Injectable()
 export class NetworkService {
@@ -39,13 +40,14 @@ export class NetworkService {
     private readonly stakeService: StakeService,
     @Inject(forwardRef(() => EsdtService))
     private readonly esdtService: EsdtService,
+    private readonly pluginService: PluginService,
   ) { }
 
   async getConstants(): Promise<NetworkConstants> {
     return await this.cachingService.getOrSetCache(
-      'constants',
+      CacheInfo.Constants.key,
       async () => await this.getConstantsRaw(),
-      Constants.oneDay()
+      CacheInfo.Constants.ttl
     );
   }
 
@@ -126,7 +128,6 @@ export class NetworkService {
   }
 
   async getEconomicsRaw(): Promise<Economics> {
-    const locked = 1330000;
     const [
       {
         account: { balance },
@@ -162,6 +163,14 @@ export class NetworkService {
 
     const staked = parseInt((BigInt(balance) + totalWaitingStake).toString().slice(0, -18));
     const totalSupply = parseInt(erd_total_supply.slice(0, -18));
+
+    let locked: number = 0;
+    if (this.apiConfigService.getNetwork() === 'mainnet') {
+      const account = await this.accountService.getAccountRaw('erd195fe57d7fm5h33585sc7wl8trqhrmy85z3dg6f6mqd0724ymljxq3zjemc');
+      if (account) {
+        locked = Math.round(NumberUtils.denominate(BigInt(account.balance), 18));
+      }
+    }
 
     const circulatingSupply = totalSupply - locked;
     const price = priceValue ? parseFloat(priceValue.toFixed(2)) : undefined;
@@ -291,13 +300,13 @@ export class NetworkService {
     );
   }
 
-  getAboutRaw(): About {
+  async getAboutRaw(): Promise<About> {
     const appVersion = require('child_process')
-      .execSync('git rev-parse --short HEAD')
+      .execSync('git rev-parse HEAD')
       .toString().trim();
 
     let pluginsVersion = require('child_process')
-      .execSync('git rev-parse --short HEAD', { cwd: 'src/plugins' })
+      .execSync('git rev-parse HEAD', { cwd: 'src/plugins' })
       .toString().trim();
 
     let apiVersion = require('child_process')
@@ -318,13 +327,17 @@ export class NetworkService {
       }
     }
 
-    return new About({
+    const about = new About({
       appVersion,
       pluginsVersion,
       network: this.apiConfigService.getNetwork(),
       cluster: this.apiConfigService.getCluster(),
       version: apiVersion,
     });
+
+    await this.pluginService.processAbout(about);
+
+    return about;
   }
 
   numberDecode(encoded: string): string {

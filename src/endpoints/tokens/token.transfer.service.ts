@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "src/utils/cache.info";
 import { EsdtService } from "../esdt/esdt.service";
 import { AssetsService } from "../../common/assets/assets.service";
@@ -12,19 +12,18 @@ import { TransactionOperationType } from "../transactions/entities/transaction.o
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
 import { BinaryUtils, CachingService } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class TokenTransferService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(TokenTransferService.name);
 
   constructor(
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => EsdtService))
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService
-  ) {
-    this.logger = new Logger(TokenTransferService.name);
-  }
+  ) { }
 
   getTokenTransfer(elasticTransaction: any): { tokenIdentifier: string, tokenAmount: string } | undefined {
     if (!elasticTransaction.data) {
@@ -163,7 +162,7 @@ export class TokenTransferService {
       operation.data = BinaryUtils.base64Decode(event.data);
     }
 
-    if (event.topics.length > 1) {
+    if (event.topics.length > 1 && event.topics[1]) {
       operation.message = BinaryUtils.base64Decode(event.topics[1]);
     }
 
@@ -272,7 +271,7 @@ export class TokenTransferService {
       return null;
     }
 
-    const assets = await this.assetsService.getAssets(identifier);
+    const assets = await this.assetsService.getTokenAssets(identifier);
 
     const result: TokenTransferProperties = {
       type: properties.type,

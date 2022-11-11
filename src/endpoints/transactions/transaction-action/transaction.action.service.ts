@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { Transaction } from "src/endpoints/transactions/entities/transaction";
 import { TransactionMetadata } from "./entities/transaction.metadata";
 import { TransactionAction } from "./entities/transaction.action";
@@ -11,11 +11,12 @@ import { TokenTransferService } from "src/endpoints/tokens/token.transfer.servic
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import { MetabondingActionRecognizerService } from "./recognizers/mex/mex.metabonding.action.recognizer.service";
 import { AddressUtils, BinaryUtils, StringUtils } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class TransactionActionService {
   private recognizers: TransactionActionRecognizerInterface[] = [];
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(TransactionActionService.name);
 
   constructor(
     private readonly mexRecognizer: TransactionActionMexRecognizerService,
@@ -25,9 +26,7 @@ export class TransactionActionService {
     @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
     private readonly metabondingRecognizer: MetabondingActionRecognizerService,
-  ) {
-    this.logger = new Logger(TransactionActionService.name);
-  }
+  ) { }
 
   private async getRecognizers() {
     if (this.recognizers.length === 0) {
@@ -199,7 +198,7 @@ export class TransactionActionService {
     for (let i = 0; i < transferCount; i++) {
       const identifier = BinaryUtils.hexToString(args[index++]);
       const nonce = args[index++];
-      const value = BinaryUtils.hexToBigInt(args[index++]);
+      const value = this.parseValueFromMultiTransferValueArg(args[index++]);
 
       if (nonce) {
         const properties = await this.tokenTransferService.getTokenTransferProperties(identifier, nonce);
@@ -229,6 +228,21 @@ export class TransactionActionService {
     }
 
     return result;
+  }
+
+  private parseValueFromMultiTransferValueArg(rawData: string): BigInt {
+    // if the data contains a lot of bytes, then it most likely doesn't express a BigInt value, but
+    // a protobuf-marshalized string, out of which we only extract the value
+    if (rawData.length > 64) {
+      const valueLength = BinaryUtils.hexToNumber(rawData.slice(6, 8));
+
+      const valueStartPosition = 8;
+      const valueEndPosition = 8 + (valueLength * 2);
+
+      return BinaryUtils.hexToBigInt(rawData.slice(valueStartPosition, valueEndPosition));
+    }
+
+    return BinaryUtils.hexToBigInt(rawData);
   }
 
   private async getNftTransferMetadata(metadata: TransactionMetadata): Promise<TransactionMetadata | undefined> {

@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
@@ -11,19 +11,18 @@ import { TokenTransferService } from "../tokens/token.transfer.service";
 import { ApiUtils, BinaryUtils } from "@elrondnetwork/erdnest";
 import { TransactionUtils } from "./transaction.utils";
 import { IndexerService } from "src/common/indexer/indexer.service";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class TransactionGetService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(TransactionGetService.name);
 
   constructor(
     private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
     @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
-  ) {
-    this.logger = new Logger(TransactionGetService.name);
-  }
+  ) { }
 
   private async tryGetTransactionFromElasticBySenderAndNonce(sender: string, nonce: number): Promise<TransactionDetailed | undefined> {
     const transactions = await this.indexerService.getTransactionBySenderAndNonce(sender, nonce);

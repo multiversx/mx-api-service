@@ -1,20 +1,18 @@
-import { Constants, MatchUtils, CachingService, ApiService } from "@elrondnetwork/erdnest";
-import { Injectable, Logger } from "@nestjs/common";
+import { ApiUtils, OriginLogger } from "@elrondnetwork/erdnest";
+import { MatchUtils, ApiService } from "@elrondnetwork/erdnest";
+import { Injectable } from "@nestjs/common";
 import { NftMetadata } from "src/endpoints/nfts/entities/nft.metadata";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 
 @Injectable()
 export class NftExtendedAttributesService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(NftExtendedAttributesService.name);
 
   constructor(
-    private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
     private readonly apiService: ApiService,
-  ) {
-    this.logger = new Logger(NftExtendedAttributesService.name);
-  }
+  ) { }
 
   async tryGetExtendedAttributesFromBase64EncodedAttributes(attributes: string): Promise<any> {
     try {
@@ -35,23 +33,8 @@ export class NftExtendedAttributesService {
     return await this.getExtendedAttributesFromMetadata(metadata);
   }
 
-  async tryGetExtendedAttributesFromMetadata(metadata: string): Promise<NftMetadata | undefined> {
-    try {
-      return await this.getExtendedAttributesFromMetadata(metadata);
-    } catch (error) {
-      this.logger.error(`Error when getting extended attributes from metadata '${metadata}'`);
-      this.logger.error(error);
-      return undefined;
-    }
-  }
-
   async getExtendedAttributesFromMetadata(metadata: string): Promise<any> {
-    const result = await this.cachingService.getOrSetCache<NftMetadata>(
-      `nftExtendedAttributes:${metadata}`,
-      async () => await this.getExtendedAttributesFromIpfs(metadata ?? ''),
-      Constants.oneWeek(),
-      Constants.oneDay()
-    );
+    const result = await this.getExtendedAttributesFromIpfs(metadata ?? '');
 
     if (!result) {
       return undefined;
@@ -72,15 +55,61 @@ export class NftExtendedAttributesService {
     const ipfsUri = `https://ipfs.io/ipfs/${metadata}`;
     const processedIpfsUri = TokenHelpers.computeNftUri(ipfsUri, this.apiConfigService.getMediaUrl() + '/nfts/asset');
 
-    const result = await this.apiService.get(processedIpfsUri, { timeout: 5000 });
+    let result: any;
+    let data: any;
 
-    const data = result.data;
+    try {
+      result = await this.apiService.get(processedIpfsUri, { timeout: 5000 });
+      data = result.data;
+    } catch (error: any) {
+      const status = error?.status;
+      if (status === 400 && error.response) {
+        return this.createError('ipfs_error', `IPFS error when fetching metadata: ${error.response}`);
+      } else if (status === 404) {
+        return this.createError('not_found', 'Metadata file not found on IPFS');
+      } else if (error.message === 'timeout of 5000ms exceeded') {
+        return this.createError('timeout', 'Timeout exceeded when fetching metadata');
+      }
+
+      this.logger.error(`Unknown error when fetching metadata '${metadata}'`);
+      this.logger.error(error);
+      return this.createError('unknown_error', `Unknown error when fetching metadata '${metadata}'`);
+    }
+
+    const contentType = result.headers['content-type'];
+    if (contentType !== 'application/json') {
+      return this.createError('invalid_content_type', `Invalid content type '${contentType}`);
+    }
+
+    if (typeof data === 'string') {
+      try {
+        data = JSON.parse(data);
+      } catch (error) {
+        return this.createError('json_parse_error', 'Error when parsing as JSON');
+      }
+    }
+
+    ApiUtils.cleanupApiValueRecursively(data);
+
+    if (Object.keys(data).length === 0) {
+      return this.createError('empty_metadata', 'Metadata value is empty');
+    }
 
     if (typeof data !== 'object' && !Array.isArray(data)) {
       return null;
     }
 
     return data;
+  }
+
+  private createError(code: string, message: string) {
+    return {
+      error: {
+        code,
+        message,
+        timestamp: Math.round(Date.now() / 1000),
+      },
+    };
   }
 
   getTags(attributes: string): string[] {
@@ -92,7 +121,7 @@ export class NftExtendedAttributesService {
     return match.groups['tags'].split(',');
   }
 
-  private getMetadataFromBase64EncodedAttributes(attributes: string): string | undefined {
+  getMetadataFromBase64EncodedAttributes(attributes: string): string | undefined {
     const match = MatchUtils.getMetadataFromBase64Attributes(attributes);
     if (!match || !match.groups) {
       return undefined;

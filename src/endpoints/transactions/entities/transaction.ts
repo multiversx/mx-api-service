@@ -36,16 +36,18 @@ export class Transaction {
   @ApiProperty({ type: Number, nullable: true })
   nonce: number | undefined = undefined;
 
-  @Field(() => Account, { name: "receiverAddress", description: "Receiver account for the given transaction." })
+  @Field(() => String, { name: "receiverAddress", description: "Receiver account for the given transaction." })
   @ApiProperty({ type: String })
   receiver: string = '';
 
   @Field(() => Account, { description: "Receiver account for the given transaction." })
   receiverAccount: Account | undefined = undefined;
-  
+
+  @Field(() => AccountAssets, { name: "receiverAssets", description: "Receiver assets for the given transaction.", nullable: true })
   @ApiProperty({ type: AccountAssets, nullable: true })
   receiverAssets: AccountAssets | undefined = undefined;
 
+  @Field(() => String, { name: "receiverShard", description: "Receiver account shard for the given transaction." })
   @ApiProperty({ type: Number })
   receiverShard: number = 0;
 
@@ -59,10 +61,12 @@ export class Transaction {
 
   @Field(() => Account, { description: "Sender account for the given transaction." })
   senderAccount: Account | undefined = undefined;
-  
+
+  @Field(() => AccountAssets, { name: "senderAssets", description: "Sender assets for the given transaction.", nullable: true })
   @ApiProperty({ type: AccountAssets, nullable: true })
   senderAssets: AccountAssets | undefined = undefined;
 
+  @Field(() => Float, { name: "senderShard", description: "Sender account shard for the given transaction." })
   @ApiProperty({ type: Number })
   senderShard: number = 0;
 
@@ -102,9 +106,11 @@ export class Transaction {
   @ApiProperty({ type: ScamInfo, nullable: true })
   scamInfo: ScamInfo | undefined = undefined;
 
+  @Field(() => TransactionType, { description: "Transaction type.", nullable: true })
   @ApiProperty({ enum: TransactionType, nullable: true })
   type: TransactionType | undefined = undefined;
 
+  @Field(() => String, { description: "Original tx hash for the given transaction.", nullable: true })
   @ApiProperty({ type: String, nullable: true })
   originalTxHash: string | undefined = undefined;
 

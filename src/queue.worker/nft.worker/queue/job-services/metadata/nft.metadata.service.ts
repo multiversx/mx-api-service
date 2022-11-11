@@ -1,25 +1,25 @@
 import { CachingService } from "@elrondnetwork/erdnest";
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "src/utils/cache.info";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
 import { ClientProxy } from "@nestjs/microservices";
+import { OriginLogger } from "@elrondnetwork/erdnest";
+import { CachingUtils } from "src/utils/caching.utils";
 
 
 @Injectable()
 export class NftMetadataService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(NftMetadataService.name);
 
   constructor(
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     private readonly persistenceService: PersistenceService,
     private readonly cachingService: CachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
-  ) {
-    this.logger = new Logger(NftMetadataService.name);
-  }
+  ) { }
 
   async getOrRefreshMetadata(nft: Nft): Promise<any> {
     if (!nft.attributes || nft.type === NftType.MetaESDT) {
@@ -70,9 +70,14 @@ export class NftMetadataService {
     }
 
     try {
-      this.logger.log(`Started fetching metadata for nft with identifier '${nft.identifier}' and attributes '${nft.attributes}'`);
-      const nftMetadata = await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(nft.attributes);
-      this.logger.log(`Completed fetching metadata for nft with identifier '${nft.identifier}'`);
+      const nftMetadata = await CachingUtils.executeOptimistic({
+        cachingService: this.cachingService,
+        description: `Fetching metadata for nft with identifier '${nft.identifier}' and attributes '${nft.attributes}'`,
+        key: CacheInfo.PendingMetadataGet(nft.identifier).key,
+        ttl: CacheInfo.PendingMetadataGet(nft.identifier).ttl,
+        action: async () => await this.nftExtendedAttributesService.tryGetExtendedAttributesFromBase64EncodedAttributes(nft.attributes),
+      });
+
       return nftMetadata ?? null;
     } catch (error) {
       this.logger.error(error);

@@ -1,4 +1,5 @@
-import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from "@nestjs/common";
+import { OriginLogger } from "@elrondnetwork/erdnest";
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { ProxyController } from "src/endpoints/proxy/proxy.controller";
 import { TransactionController } from "src/endpoints/transactions/transaction.controller";
@@ -8,7 +9,7 @@ import DailyRotateFile from "winston-daily-rotate-file";
 @Injectable()
 export class TransactionLoggingInterceptor implements NestInterceptor {
   private readonly transactionLogger: winston.Logger;
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(TransactionLoggingInterceptor.name);
 
   constructor() {
     this.transactionLogger = winston.createLogger({
@@ -37,8 +38,6 @@ export class TransactionLoggingInterceptor implements NestInterceptor {
         }),
       ],
     });
-
-    this.logger = new Logger(TransactionLoggingInterceptor.name);
   }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {

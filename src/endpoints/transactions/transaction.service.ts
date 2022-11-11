@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Transaction } from './entities/transaction';
 import { TransactionCreate } from './entities/transaction.create';
 import { TransactionDetailed } from './entities/transaction.detailed';
@@ -25,10 +25,13 @@ import { TransactionOperation } from './entities/transaction.operation';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
 import crypto from 'crypto-js';
+import { OriginLogger } from '@elrondnetwork/erdnest';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { UsernameService } from '../usernames/username.service';
 
 @Injectable()
 export class TransactionService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(TransactionService.name);
 
   constructor(
     private readonly indexerService: IndexerService,
@@ -43,9 +46,9 @@ export class TransactionService {
     @Inject(forwardRef(() => TransactionActionService))
     private readonly transactionActionService: TransactionActionService,
     private readonly assetsService: AssetsService,
-  ) {
-    this.logger = new Logger(TransactionService.name);
-  }
+    private readonly apiConfigService: ApiConfigService,
+    private readonly usernameService: UsernameService,
+  ) { }
 
   async getTransactionCountForAddress(address: string): Promise<number> {
     return await this.cachingService.getOrSetCache(
@@ -72,16 +75,77 @@ export class TransactionService {
     return await this.indexerService.getTransactionCount(filter, address);
   }
 
+  private getDistinctUserAddressesFromTransactions(transactions: Transaction[]): string[] {
+    const allAddresses = [];
+    for (const transaction of transactions) {
+      allAddresses.push(transaction.sender);
+      allAddresses.push(transaction.receiver);
+
+      const actionReceiver = transaction.action?.arguments?.receiver;
+      if (actionReceiver) {
+        allAddresses.push(actionReceiver);
+      }
+
+      if (transaction instanceof TransactionDetailed) {
+        if (transaction.results) {
+          for (const result of transaction.results) {
+            allAddresses.push(result.sender);
+            allAddresses.push(result.receiver);
+          }
+        }
+
+        if (transaction.operations) {
+          for (const operation of transaction.operations) {
+            if (operation.sender) {
+              allAddresses.push(operation.sender);
+            }
+
+            if (operation.receiver) {
+              allAddresses.push(operation.receiver);
+            }
+          }
+        }
+
+        if (transaction.logs) {
+          allAddresses.push(transaction.logs.address);
+
+          for (const event of transaction.logs.events) {
+            allAddresses.push(event.address);
+          }
+        }
+      }
+    }
+
+    return allAddresses.distinct().filter(x => !AddressUtils.isSmartContractAddress(x));
+  }
+
+  private async getUsernameAssetsForAddresses(addresses: string[]): Promise<Record<string, AccountAssets>> {
+    const resultDict = await this.cachingService.batchGetAll(
+      addresses,
+      address => CacheInfo.Username(address).key,
+      async address => await this.usernameService.getUsernameForAddressRaw(address),
+      CacheInfo.Username('').ttl
+    );
+
+    const result: Record<string, AccountAssets> = {};
+
+    for (const address of addresses) {
+      const username = resultDict[CacheInfo.Username(address).key];
+      if (username) {
+        const assets = this.getAssetsFromUsername(username);
+        if (assets) {
+          result[address] = assets;
+        }
+      }
+    }
+
+    return result;
+  }
+
   async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string): Promise<Transaction[]> {
     const elasticTransactions = await this.indexerService.getTransactions(filter, pagination, address);
 
-    let transactions: Transaction[] = [];
-
-    for (const elasticTransaction of elasticTransactions) {
-      const transaction = ApiUtils.mergeObjects(new Transaction(), elasticTransaction);
-
-      transactions.push(transaction);
-    }
+    let transactions = elasticTransactions.map(x => ApiUtils.mergeObjects(new Transaction(), x));
 
     if (filter.hashes) {
       const txHashes: string[] = filter.hashes;
@@ -102,10 +166,20 @@ export class TransactionService {
       transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
     }
 
-    const assets = await this.assetsService.getAllAccountAssets();
-    await this.processTransactions(transactions, queryOptions?.withScamInfo ?? false, assets);
+    await this.processTransactions(transactions, { withScamInfo: queryOptions?.withScamInfo ?? false, withUsername: queryOptions?.withUsername ?? false });
 
     return transactions;
+  }
+
+  private getAssetsFromUsername(username: string | null | undefined): AccountAssets | undefined {
+    if (!username) {
+      return undefined;
+    }
+
+    return new AccountAssets({
+      name: username,
+      tags: ['dns', 'username'],
+    });
   }
 
   async getTransaction(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
@@ -118,7 +192,7 @@ export class TransactionService {
     if (transaction !== null) {
       transaction.price = await this.getTransactionPrice(transaction);
 
-      await this.processTransactions([transaction], true);
+      await this.processTransactions([transaction], { withScamInfo: true, withUsername: true });
 
       if (transaction.pendingResults === true && transaction.results) {
         for (const result of transaction.results) {
@@ -133,52 +207,61 @@ export class TransactionService {
           }
         }
       }
-
-      await this.applyAssets(transaction);
-      await this.applyAssetsDetailed(transaction);
     }
 
     return transaction;
   }
 
-  async applyAssets(transaction: Transaction, assets?: Record<string, AccountAssets>): Promise<void> {
-    const accountAssets = assets ?? await this.assetsService.getAllAccountAssets();
-
-    transaction.senderAssets = accountAssets[transaction.sender];
-    transaction.receiverAssets = accountAssets[transaction.receiver];
-
-    if (transaction.action?.arguments?.receiver) {
-      transaction.action.arguments.receiverAssets = accountAssets[transaction.action.arguments.receiver];
+  async applyAssets(transactions: Transaction[], options: { withUsernameAssets: boolean }): Promise<void> {
+    function getAssets(address: string) {
+      return accountAssets[address] ?? usernameAssets[address];
     }
-  }
 
-  async applyAssetsDetailed(transaction: TransactionDetailed): Promise<void> {
     const accountAssets = await this.assetsService.getAllAccountAssets();
 
-    if (transaction.results) {
-      for (const result of transaction.results) {
-        result.senderAssets = accountAssets[result.sender];
-        result.receiverAssets = accountAssets[result.receiver];
-      }
+    let usernameAssets: Record<string, AccountAssets> = {};
+    if (options.withUsernameAssets && this.apiConfigService.getMaiarIdUrl()) {
+      const addresses = this.getDistinctUserAddressesFromTransactions(transactions);
+
+      usernameAssets = await this.getUsernameAssetsForAddresses(addresses);
     }
 
-    if (transaction.operations) {
-      for (const operation of transaction.operations) {
-        if (operation.sender) {
-          operation.senderAssets = accountAssets[operation.sender];
-        }
+    for (const transaction of transactions) {
 
-        if (operation.receiver) {
-          operation.receiverAssets = accountAssets[operation.receiver];
-        }
+      transaction.senderAssets = getAssets(transaction.sender);
+      transaction.receiverAssets = getAssets(transaction.receiver);
+
+      if (transaction.action?.arguments?.receiver) {
+        transaction.action.arguments.receiverAssets = getAssets(transaction.action.arguments.receiver);
       }
-    }
 
-    if (transaction.logs) {
-      transaction.logs.addressAssets = accountAssets[transaction.logs.address];
+      if (transaction instanceof TransactionDetailed) {
+        if (transaction.results) {
+          for (const result of transaction.results) {
+            result.senderAssets = getAssets(result.sender);
+            result.receiverAssets = getAssets(result.receiver);
+          }
+        }
 
-      for (const event of transaction.logs.events) {
-        event.addressAssets = accountAssets[event.address];
+        if (transaction.operations) {
+          for (const operation of transaction.operations) {
+            if (operation.sender) {
+              operation.senderAssets = getAssets(operation.sender);
+            }
+
+            if (operation.receiver) {
+              operation.receiverAssets = getAssets(operation.receiver);
+            }
+          }
+        }
+
+        if (transaction.logs) {
+          transaction.logs.addressAssets = getAssets(transaction.logs.address);
+
+          for (const event of transaction.logs.events) {
+            event.addressAssets = getAssets(event.address);
+          }
+        }
       }
     }
   }
@@ -228,9 +311,9 @@ export class TransactionService {
     }
   }
 
-  async processTransactions(transactions: Transaction[], withScamInfo: boolean, assets?: Record<string, AccountAssets>): Promise<void> {
+  async processTransactions(transactions: Transaction[], options: { withScamInfo: boolean, withUsername: boolean }): Promise<void> {
     try {
-      await this.pluginsService.processTransactions(transactions, withScamInfo);
+      await this.pluginsService.processTransactions(transactions, options.withScamInfo);
     } catch (error) {
       this.logger.error(`Unhandled error when processing plugin transaction for transactions with hashes '${transactions.map(x => x.txHash).join(',')}'`);
       this.logger.error(error);
@@ -244,13 +327,13 @@ export class TransactionService {
         if (transaction.pendingResults === true) {
           transaction.status = TransactionStatus.pending;
         }
-
-        await this.applyAssets(transaction, assets);
       } catch (error) {
         this.logger.error(`Unhandled error when processing transaction for transaction with hash '${transaction.txHash}'`);
         this.logger.error(error);
       }
     }
+
+    await this.applyAssets(transactions, { withUsernameAssets: options.withUsername });
   }
 
   private async getPendingResults(transaction: Transaction): Promise<boolean | undefined> {
@@ -297,7 +380,6 @@ export class TransactionService {
         }
 
         const transactionLogs: TransactionLog[] = logs.filter((log) => transactionHashes.includes(log.id ?? ''));
-
         transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, transactionLogs);
         transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
       }
@@ -329,11 +411,11 @@ export class TransactionService {
 
   private smartContractResultsExecutor = new PendingExecuter();
 
-  public async getSmartContractResults(hashes: Array<string>): Promise<Array<SmartContractResult[] | null>> {
+  public async getSmartContractResults(hashes: Array<string>): Promise<Array<SmartContractResult[] | undefined>> {
     return await this.smartContractResultsExecutor.execute(crypto.MD5(hashes.join(',')).toString(), async () => await this.getSmartContractResultsRaw(hashes));
   }
 
-  private async getSmartContractResultsRaw(transactionHashes: Array<string>): Promise<Array<SmartContractResult[] | null>> {
+  private async getSmartContractResultsRaw(transactionHashes: Array<string>): Promise<Array<SmartContractResult[] | undefined>> {
     const resultsRaw = await this.indexerService.getSmartContractResults(transactionHashes) as any[];
     for (const result of resultsRaw) {
       result.hash = result.scHash;
@@ -341,7 +423,7 @@ export class TransactionService {
       delete result.scHash;
     }
 
-    const results: Array<SmartContractResult[] | null> = [];
+    const results: Array<SmartContractResult[] | undefined> = [];
 
     for (const transactionHash of transactionHashes) {
       const resultRaw = resultsRaw.filter(({ originalTxHash }) => originalTxHash == transactionHash);
@@ -349,14 +431,14 @@ export class TransactionService {
       if (resultRaw.length > 0) {
         results.push(resultRaw.map((result: any) => ApiUtils.mergeObjects(new SmartContractResult(), result)));
       } else {
-        results.push(null);
+        results.push(undefined);
       }
     }
 
     return results;
   }
 
-  public async getOperations(transactions: Array<TransactionDetailed>): Promise<Array<TransactionOperation[] | null>> {
+  public async getOperations(transactions: Array<TransactionDetailed>): Promise<Array<TransactionOperation[] | undefined>> {
     const smartContractResults = await this.getSmartContractResults(transactions.map((transaction: TransactionDetailed) => transaction.txHash));
 
     const logs = await this.transactionGetService.getTransactionLogsFromElastic([
@@ -364,7 +446,7 @@ export class TransactionService {
       ...smartContractResults.filter((item) => item != null).flat().map((result) => result?.hash ?? ''),
     ]);
 
-    const operations: Array<TransactionOperation[] | null> = [];
+    const operations: Array<TransactionOperation[] | undefined> = [];
 
     for (const transaction of transactions) {
       transaction.results = smartContractResults.at(transactions.indexOf(transaction)) ?? undefined;
@@ -385,16 +467,16 @@ export class TransactionService {
       if (operationsRaw.length > 0) {
         operations.push(operationsRaw.map((operation: any) => ApiUtils.mergeObjects(new TransactionOperation(), operation)));
       } else {
-        operations.push(null);
+        operations.push(undefined);
       }
     }
 
     return operations;
   }
 
-  public async getLogs(hashes: Array<string>): Promise<Array<TransactionLog | null>> {
+  public async getLogs(hashes: Array<string>): Promise<Array<TransactionLog | undefined>> {
     const logsRaw = await this.transactionGetService.getTransactionLogsFromElastic(hashes);
-    const logs: Array<TransactionLog | null> = [];
+    const logs: Array<TransactionLog | undefined> = [];
 
     for (const hash of hashes) {
       const log: TransactionLog = logsRaw.filter((log: TransactionLog) => hash === log.id)[0];
@@ -402,7 +484,7 @@ export class TransactionService {
       if (log !== undefined) {
         logs.push(log);
       } else {
-        logs.push(null);
+        logs.push(undefined);
       }
     }
 

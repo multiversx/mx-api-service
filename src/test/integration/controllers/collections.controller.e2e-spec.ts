@@ -57,8 +57,10 @@ describe("collections Controller", () => {
             canFreeze: false,
             canWipe: false,
             canPause: false,
+            canTransfer: false,
             canTransferNftCreateRole: false,
             roles: [],
+            traits: [],
           }];
 
       await request(app.getHttpServer())
@@ -86,8 +88,10 @@ describe("collections Controller", () => {
             canFreeze: false,
             canWipe: false,
             canPause: false,
+            canTransfer: false,
             canTransferNftCreateRole: false,
             roles: [],
+            traits: [],
           },
           {
             collection: "EROBOT-527a29",
@@ -99,8 +103,10 @@ describe("collections Controller", () => {
             canFreeze: false,
             canWipe: false,
             canPause: false,
+            canTransfer: false,
             canTransferNftCreateRole: false,
             roles: [],
+            traits: [],
           },
         ];
 
@@ -252,6 +258,7 @@ describe("collections Controller", () => {
         canFreeze: false,
         canWipe: false,
         canPause: false,
+        canTransfer: true,
         canTransferNftCreateRole: false,
         roles: [
           {
@@ -261,12 +268,12 @@ describe("collections Controller", () => {
             canAddQuantity: false,
             canUpdateAttributes: false,
             canAddUri: false,
-            canTransferRole: false,
             roles: [
               "ESDTRoleNFTCreate",
             ],
           },
         ],
+        traits: [],
       };
 
       await request(app.getHttpServer())

@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "src/utils/cache.info";
 import { MexToken } from "./entities/mex.token";
 import { MexPairService } from "./mex.pair.service";
@@ -9,10 +9,12 @@ import { MexFarmService } from "./mex.farm.service";
 import { MexSettingsService } from "./mex.settings.service";
 import { Constants, CachingService } from "@elrondnetwork/erdnest";
 import { MexPairType } from "./entities/mex.pair.type";
+import { OriginLogger } from "@elrondnetwork/erdnest";
+import { QueryPagination } from "src/common/entities/query.pagination";
 
 @Injectable()
 export class MexTokenService {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(MexTokenService.name);
 
   constructor(
     private readonly cachingService: CachingService,
@@ -21,9 +23,7 @@ export class MexTokenService {
     @Inject(forwardRef(() => MexFarmService))
     private readonly mexFarmService: MexFarmService,
     private readonly mexSettingsService: MexSettingsService,
-  ) {
-    this.logger = new Logger(MexTokenService.name);
-  }
+  ) { }
 
   async refreshMexTokens(): Promise<void> {
     const tokens = await this.getAllMexTokensRaw();
@@ -39,10 +39,17 @@ export class MexTokenService {
     await this.cachingService.setCacheLocal(CacheInfo.MexPrices.key, indexedPrices, Constants.oneSecond() * 30);
   }
 
-  async getMexTokens(from: number, size: number): Promise<MexToken[]> {
-    const allMexTokens = await this.getAllMexTokens();
+  async getMexTokens(queryPagination: QueryPagination): Promise<MexToken[]> {
+    const { from, size } = queryPagination;
+    let allMexTokens = await this.getAllMexTokens();
+    allMexTokens = JSON.parse(JSON.stringify(allMexTokens));
 
     return allMexTokens.slice(from, from + size);
+  }
+
+  async getMexTokenByIdentifier(identifier: string): Promise<MexToken | undefined> {
+    const mexTokens = await this.getAllMexTokens();
+    return mexTokens.find(x => x.id === identifier);
   }
 
   async getMexPrices(): Promise<Record<string, { price: number, isToken: boolean }>> {

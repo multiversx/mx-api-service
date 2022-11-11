@@ -13,6 +13,7 @@ import { QueryPagination } from 'src/common/entities/query.pagination';
 import { CachingService, ElasticQuery, ElasticService, FileUtils } from '@elrondnetwork/erdnest';
 import { GatewayModule } from 'src/common/gateway/gateway.module';
 import { TokenFilter } from 'src/endpoints/tokens/entities/token.filter';
+import { EsdtLockedAccount } from 'src/endpoints/esdt/entities/esdt.locked.account';
 
 describe('Token Service', () => {
   let tokenService: TokenService;
@@ -732,6 +733,23 @@ describe('Token Service', () => {
       expect(result).toHaveProperties(['supply', 'circulatingSupply']);
     });
 
+    it('should return totalSupply details for token in descending order', async () => {
+      const identifier: string = "RIDE-7d18e9";
+      const results = await tokenService.getTokenSupply(identifier);
+
+      function sorted(array: EsdtLockedAccount[]) {
+        return array.every(function (num: any, idx: any, arr: any) {
+          return (num <= arr[idx + 1]) || (idx === arr.length - 1) ? 1 : 0;
+        });
+      }
+
+      if (!results?.lockedAccounts) {
+        throw new Error('Property is not defined');
+      }
+
+      expect(sorted(results.lockedAccounts)).toBeTruthy();
+    });
+
     it("should return undefined because test simulates that token properties are not defined", async () => {
       const identifier: string = token.identifier;
 
@@ -919,7 +937,7 @@ describe('Token Service', () => {
 
       const results = await tokenService.getTokenRoles('');
 
-      expect(results).toBeUndefined();
+      expect(results).toStrictEqual([]);
     });
 
     it("should return undefined because test simulates that roles are not defined for token", async () => {

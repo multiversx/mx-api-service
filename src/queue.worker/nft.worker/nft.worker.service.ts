@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 import { NftThumbnailService } from "./queue/job-services/thumbnails/nft.thumbnail.service";
@@ -12,8 +12,6 @@ import { PersistenceService } from "src/common/persistence/persistence.service";
 
 @Injectable()
 export class NftWorkerService {
-  private readonly logger: Logger;
-
   constructor(
     private readonly nftThumbnailService: NftThumbnailService,
     private readonly nftMetadataService: NftMetadataService,
@@ -21,9 +19,7 @@ export class NftWorkerService {
     private readonly nftAssetService: NftAssetService,
     @Inject('QUEUE_SERVICE') private readonly client: ClientProxy,
     private readonly persistenceService: PersistenceService,
-  ) {
-    this.logger = new Logger(NftWorkerService.name);
-  }
+  ) { }
 
   async addProcessNftQueueJob(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
     nft.metadata = await this.nftMetadataService.getMetadata(nft) ?? undefined;
@@ -31,7 +27,6 @@ export class NftWorkerService {
 
     const needsProcessing = await this.needsProcessing(nft, settings);
     if (!needsProcessing) {
-      this.logger.log(`No processing is needed for nft with identifier '${nft.identifier}'`);
       return false;
     }
 

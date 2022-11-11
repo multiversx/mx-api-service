@@ -23,7 +23,7 @@ describe('Nfts', () => {
         .send({
           query: `{
             nft(input:{
-              identifier:"MEDAL-ae074f-78"
+              identifier:"CATSFAM-46c28f-0211"
             }){
              identifier
               attributes
@@ -55,16 +55,14 @@ describe('Nfts', () => {
         .expect(200)
         .then(res => {
           expect(res.body.data.nft).toBeDefined();
-          expect(res.body.data.nft.identifier).toStrictEqual('MEDAL-ae074f-78');
+          expect(res.body.data.nft.identifier).toStrictEqual('CATSFAM-46c28f-0211');
         });
     });
 
     test.each`
     types
     ${'NonFungibleESDT'}
-    ${'SemiFungibleESDT'}
-    ${'MetaESDT'}
-    `
+    ${'SemiFungibleESDT'}`
       (
         `for the given type $types, should return 10 esdt tokens`, async ({ types }) => {
           await request(app.getHttpServer())
@@ -162,11 +160,6 @@ describe('Nfts', () => {
         count: 23101,
       },
       {
-        filter: 'type',
-        value: 'MetaESDT',
-        count: 5748786,
-      },
-      {
         filter: 'isWhitelistedStorage',
         value: 'true',
         count: 733653,
@@ -184,12 +177,17 @@ describe('Nfts', () => {
       {
         filter: 'before',
         value: '1660114204',
-        count: 6781315,
+        count: 1011221,
       },
       {
         filter: 'after',
         value: '1660134204',
         count: 2,
+      },
+      {
+        filter: 'nonce',
+        value: '200',
+        count: 200,
       },
 
     ].forEach(({ filter, value, count }) => {

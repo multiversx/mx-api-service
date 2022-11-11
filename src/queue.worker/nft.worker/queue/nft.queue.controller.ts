@@ -1,4 +1,4 @@
-import { Controller, Inject, Logger } from "@nestjs/common";
+import { Controller, Inject } from "@nestjs/common";
 import { ClientProxy, Ctx, MessagePattern, Payload, RmqContext } from "@nestjs/microservices";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -11,10 +11,12 @@ import { NftMetadataService } from "./job-services/metadata/nft.metadata.service
 import { GenerateThumbnailResult } from "./job-services/thumbnails/entities/generate.thumbnail.result";
 import { NftThumbnailService } from "./job-services/thumbnails/nft.thumbnail.service";
 import { NftAssetService } from "./job-services/assets/nft.asset.service";
+import { OriginLogger } from "@elrondnetwork/erdnest";
+import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 
 @Controller()
 export class NftQueueController {
-  private readonly logger: Logger;
+  private readonly logger = new OriginLogger(NftQueueController.name);
   private readonly RETRY_LIMIT: Number;
 
   constructor(
@@ -26,7 +28,6 @@ export class NftQueueController {
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     apiConfigService: ApiConfigService,
   ) {
-    this.logger = new Logger(NftQueueController.name);
     this.RETRY_LIMIT = apiConfigService.getNftProcessMaxRetries();
   }
 
@@ -44,6 +45,32 @@ export class NftQueueController {
     return attempt;
   }
 
+  private getProcessNftActivatedSettings(settings: ProcessNftSettings) {
+    const result = [];
+
+    if (settings.forceRefreshMedia) {
+      result.push('forceRefreshMedia');
+    }
+
+    if (settings.forceRefreshMetadata) {
+      result.push('forceRefreshMetadata');
+    }
+
+    if (settings.forceRefreshThumbnail) {
+      result.push('forceRefreshThumbnail');
+    }
+
+    if (settings.skipRefreshThumbnail) {
+      result.push('skipRefreshThumbnail');
+    }
+
+    if (settings.uploadAsset) {
+      result.push('uploadAsset');
+    }
+
+    return result;
+  }
+
   @MessagePattern({ cmd: 'api-process-nfts' })
   async onNftCreated(@Payload() data: NftMessage, @Ctx() context: RmqContext) {
     const channel = context.getChannelRef();
@@ -56,7 +83,7 @@ export class NftQueueController {
       return;
     }
 
-    this.logger.log({ type: 'consumer start', identifier: data.identifier, attempt });
+    this.logger.log(`Started Processing NFT with identifier '${data.identifier}' and flags ${this.getProcessNftActivatedSettings(data.settings).join(', ')}`);
 
     try {
       const nft = await this.nftService.getSingleNft(data.identifier);
@@ -70,12 +97,13 @@ export class NftQueueController {
 
       if (nft.metadata && settings.forceRefreshMetadata) {
         const oldMetadata = nft.metadata;
+        this.logger.log(`Started Refreshing metadata for NFT with identifier '${nft.identifier}'`);
         nft.metadata = await this.nftMetadataService.refreshMetadata(nft);
         const newMetadata = nft.metadata;
         if (newMetadata) {
-          this.logger.log(`Refreshed NFT metadata. Old: '${JSON.stringify(oldMetadata)}', New: '${JSON.stringify(newMetadata)}'`);
+          this.logger.log(`Completed Refreshing metadata for NFT with identifier. Old: '${JSON.stringify(oldMetadata)}', New: '${JSON.stringify(newMetadata)}'`);
         } else {
-          this.logger.log(`Refreshed NFT metadata. Old: '${JSON.stringify(oldMetadata)}', New is empty`);
+          this.logger.log(`Completed Refreshing metadata for NFT with identifier. Old: '${JSON.stringify(oldMetadata)}', New is empty`);
         }
 
         this.clientProxy.emit('deleteCacheKeys', [CacheInfo.NftMetadata(nft.identifier).key]);
@@ -86,14 +114,18 @@ export class NftQueueController {
       nft.media = await this.nftMediaService.getMedia(nft.identifier) ?? undefined;
 
       if (settings.forceRefreshMedia || !nft.media) {
+        this.logger.log(`Started Refreshing media for NFT with identifier '${nft.identifier}'`);
         nft.media = await this.nftMediaService.refreshMedia(nft);
+        this.logger.log(`Completed Refreshing media for NFT with identifier '${nft.identifier}'`);
       }
 
       if (nft.media && settings.uploadAsset) {
         for (const media of nft.media) {
           const isAssetUploaded = await this.nftAssetService.isAssetUploaded(media);
           if (!isAssetUploaded) {
+            this.logger.log(`Started Uploading asset for NFT with identifier '${nft.identifier}', original url '${media.originalUrl}' and file type '${media.fileType}'`);
             await this.nftAssetService.uploadAsset(nft.identifier, media.originalUrl, media.fileType);
+            this.logger.log(`Completed Uploading asset for NFT with identifier '${nft.identifier}', original url '${media.originalUrl}' and file type '${media.fileType}'`);
           } else {
             this.logger.log(`Asset already uploaded for NFT with identifier '${nft.identifier}' and media url '${media.url}'`);
           }
@@ -101,10 +133,12 @@ export class NftQueueController {
       }
 
       if (nft.media && !settings.skipRefreshThumbnail) {
-        await Promise.all(nft.media.map((media: any) => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
+        const mediaItems = nft.media.filter(x => x.thumbnailUrl !== NftMediaService.NFT_THUMBNAIL_DEFAULT);
+
+        await Promise.all(mediaItems.map(media => this.generateThumbnail(nft, media, settings.forceRefreshThumbnail)));
       }
 
-      this.logger.log({ type: 'consumer end', identifier: data.identifier });
+      this.logger.log(`Completed Processing NFT with identifier '${data.identifier}' and flags ${this.getProcessNftActivatedSettings(data.settings).join(', ')}`);
 
       channel.ack(message);
     } catch (error: any) {
