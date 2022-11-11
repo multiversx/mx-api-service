@@ -7,6 +7,7 @@ import { GatewayService } from "../gateway/gateway.service";
 import { ProtocolService } from "../protocol/protocol.service";
 import { OnEvent } from "@nestjs/event-emitter";
 import { LogMetricsEvent } from "./events/log-metrics.event";
+import { MetricsEvents } from '../../utils/metrics-events.constants';
 
 @Injectable()
 export class ApiMetricsService {
@@ -89,40 +90,40 @@ export class ApiMetricsService {
     }
   }
 
-  @OnEvent('setVmQuery')
+  @OnEvent(MetricsEvents.SetVmQuery)
   setVmQuery(payload: LogMetricsEvent) {
     const [address, func, duration] = payload.args;
     ApiMetricsService.vmQueriesHistogram.labels(address, func).observe(duration);
   }
 
-  @OnEvent('setGatewayDuration')
+  @OnEvent(MetricsEvents.SetGatewayDuration)
   setGatewayDuration(payload: LogMetricsEvent) {
     const [name, duration] = payload.args;
     ApiMetricsService.gatewayDurationHistogram.labels(name).observe(duration);
   }
 
-  @OnEvent('setPersistenceDuration')
+  @OnEvent(MetricsEvents.SetPersistenceDuration)
   setPersistenceDuration(payload: LogMetricsEvent) {
     const [action, duration] = payload.args;
     this.metricsService.setExternalCall('persistence', duration);
     ApiMetricsService.persistenceDurationHistogram.labels(action).observe(duration);
   }
 
-  @OnEvent('setIndexerDuration')
+  @OnEvent(MetricsEvents.SetIndexerDuration)
   setIndexerDuration(payload: LogMetricsEvent) {
     const [action, duration] = payload.args;
     this.metricsService.setExternalCall('indexer', duration);
     ApiMetricsService.indexerDurationHistogram.labels(action).observe(duration);
   }
 
-  @OnEvent('setGraphqlDuration')
+  @OnEvent(MetricsEvents.SetGraphqlDuration)
   setGraphqlDuration(payload: LogMetricsEvent) {
     const [action, duration] = payload.args;
     this.metricsService.setExternalCall('graphql', duration);
     ApiMetricsService.graphqlDurationHistogram.labels(action).observe(duration);
   }
 
-  @OnEvent('setLastProcessedNonce')
+  @OnEvent(MetricsEvents.SetLastProcessedNonce)
   setLastProcessedNonce(payload: LogMetricsEvent) {
     const [shardId, nonce] = payload.args;
     ApiMetricsService.lastProcessedNonceGauge.set({ shardId }, nonce);

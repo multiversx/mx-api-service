@@ -10,6 +10,7 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { LogMetricsEvent } from 'src/common/metrics/events/log-metrics.event';
+import { MetricsEvents } from 'src/utils/metrics-events.constants';
 
 
 @Injectable()
@@ -36,7 +37,7 @@ export class GraphQLMetricsInterceptor implements NestInterceptor {
             metricsEvent.args = [fieldName, profiler.duration];
 
             this.eventEmitter.emit(
-              'setGraphqlDuration',
+              MetricsEvents.SetGraphqlDuration,
               metricsEvent
             );
           }
