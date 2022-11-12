@@ -1,4 +1,5 @@
 import { forwardRef, Module } from "@nestjs/common";
+import { PluginModule } from "src/plugins/plugin.module";
 import { AccountModule } from "../accounts/account.module";
 import { BlockModule } from "../blocks/block.module";
 import { EsdtModule } from "../esdt/esdt.module";
@@ -15,6 +16,7 @@ import { NetworkService } from "./network.service";
     forwardRef(() => TransactionModule),
     forwardRef(() => StakeModule),
     forwardRef(() => EsdtModule),
+    forwardRef(() => PluginModule),
   ],
   providers: [
     NetworkService,
