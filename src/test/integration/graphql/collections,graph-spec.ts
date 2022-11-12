@@ -44,7 +44,6 @@ describe('Collection', () => {
                 canAddQuantity
                 canUpdateAttributes
                 canAddUri
-                canTransferRole
                 roles
               }
             }

@@ -123,7 +123,6 @@ describe('Collection Service', () => {
         canAddQuantity: undefined,
         canUpdateAttributes: false,
         canAddUri: false,
-        canTransferRole: false,
       }));
     });
 
@@ -153,7 +152,6 @@ describe('Collection Service', () => {
           canAddQuantity: undefined,
           canUpdateAttributes: false,
           canAddUri: false,
-          canTransferRole: false,
         }),
       ]));
     });
