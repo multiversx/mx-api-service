@@ -1,4 +1,3 @@
-
 export class AccountDetailed {
   constructor(init?: Partial<AccountDetailed>) {
     Object.assign(this, init);
@@ -15,7 +14,3 @@ export class AccountDetailed {
   developerReward: string = '';
   ownerAddress: string = '';
 }
-
-
-
-

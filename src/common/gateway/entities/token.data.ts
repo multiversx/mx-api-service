@@ -1,4 +1,3 @@
-
 export class TokenData {
   constructor(init?: Partial<TokenData>) {
     Object.assign(this, init);

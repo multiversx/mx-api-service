@@ -1,4 +1,3 @@
-
 export class NetworkEconomics {
   constructor(init?: Partial<NetworkEconomics>) {
     Object.assign(this, init);

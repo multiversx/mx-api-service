@@ -1,4 +1,3 @@
-
 export class HeartBeatsStatus {
   constructor(init?: Partial<HeartBeatsStatus>) {
     Object.assign(this, init);

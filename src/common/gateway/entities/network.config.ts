@@ -1,4 +1,3 @@
-
 export class NetworkConfig {
   constructor(init?: Partial<NetworkConfig>) {
     Object.assign(this, init);

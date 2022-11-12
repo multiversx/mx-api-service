@@ -7,7 +7,3 @@ export class Account {
 
   account!: AccountDetailed;
 }
-
-
-
-
