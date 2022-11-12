@@ -19,6 +19,7 @@ export class About {
   @ApiProperty({ type: String })
   network: string = '';
 
+  @Field(() => String, { description: "Deployment cluster." })
   @ApiProperty({ type: String })
   cluster: string = '';
 
@@ -26,6 +27,7 @@ export class About {
   @ApiProperty({ type: String })
   version: string = '';
 
-  @ApiProperty({ type: String })
-  scamEngineVersion: string = '';
+  @Field(() => String, { description: "Scam engine version.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  scamEngineVersion: string | undefined = undefined;
 }

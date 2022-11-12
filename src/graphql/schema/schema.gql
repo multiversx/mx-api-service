@@ -7,11 +7,17 @@ type About {
   """Application Version details."""
   appVersion: String!
 
+  """Deployment cluster."""
+  cluster: String!
+
   """Current network details."""
   network: String!
 
   """Plugins Version details."""
   pluginsVersion: String!
+
+  """Scam engine version."""
+  scamEngineVersion: String
 
   """API deployment version."""
   version: String!
