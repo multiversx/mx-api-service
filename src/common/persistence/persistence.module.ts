@@ -6,13 +6,13 @@ import { NftMediaDb } from "./entities/nft.media.db";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
 import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
 import { PersistenceService } from "./persistence.service";
-import { EventEmitterModule } from "@nestjs/event-emitter";
+import { ErdnestEventEmitter } from "@elrondnetwork/erdnest";
 
 @Global()
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
-      imports: [ApiConfigModule, EventEmitterModule.forRoot()],
+      imports: [ApiConfigModule, ErdnestEventEmitter.EventEmitterModule.forRoot()],
       useFactory: (apiConfigService: ApiConfigService) => {
         const options: TypeOrmModuleOptions = {
           type: 'mongodb',

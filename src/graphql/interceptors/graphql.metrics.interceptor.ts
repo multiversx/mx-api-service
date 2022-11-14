@@ -1,4 +1,4 @@
-import { PerformanceProfiler } from '@elrondnetwork/erdnest';
+import { LogMetricsEvent, PerformanceProfiler, ErdnestEventEmitter } from '@elrondnetwork/erdnest';
 import {
   Injectable,
   NestInterceptor,
@@ -8,15 +8,13 @@ import {
 import { GqlContextType, GqlExecutionContext } from '@nestjs/graphql';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { LogMetricsEvent } from 'src/common/metrics/events/log-metrics.event';
 import { MetricsEvents } from 'src/utils/metrics-events.constants';
 
 
 @Injectable()
 export class GraphQLMetricsInterceptor implements NestInterceptor {
-  private readonly eventEmitter: EventEmitter2;
-  constructor(eventEmitterService: EventEmitter2) {
+  private readonly eventEmitter: ErdnestEventEmitter.EventEmitter2;
+  constructor(eventEmitterService: ErdnestEventEmitter.EventEmitter2) {
     this.eventEmitter = eventEmitterService;
   }
 

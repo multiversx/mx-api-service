@@ -1,4 +1,4 @@
-import { ErrorLoggerAsync, PassthroughAsync } from "@elrondnetwork/erdnest";
+import { ErrorLoggerAsync, LogPerformanceAsync, PassthroughAsync } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import configuration from "config/configuration";
@@ -9,7 +9,6 @@ import { NftMediaDb } from "./entities/nft.media.db";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
 import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
 import { PersistenceInterface } from "./persistence.interface";
-import { LogPerformanceAsync } from "../../decorators/log.performance.decorators";
 import { MetricsEvents } from "src/utils/metrics-events.constants";
 
 const isPassThrough = process.env.PERSISTENCE === 'passthrough' || configuration().database?.enabled === false;
