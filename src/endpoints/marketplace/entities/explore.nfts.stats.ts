@@ -5,9 +5,9 @@ export class ExploreNftsStats {
     Object.assign(this, init);
   }
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: Number })
   buyNowCount: number = 0;
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: Number })
   liveAuctionsCount: number = 0;
 }
