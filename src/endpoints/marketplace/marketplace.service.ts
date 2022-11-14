@@ -5,6 +5,7 @@ import { AccountStats } from "./entities/account.stats";
 import { AccountStatsFilters } from "./entities/account.stats.filter";
 import { CollectionStats } from "./entities/collection.stats";
 import { CollectionStatsFilters } from "./entities/collection.stats.filter";
+import { ExploreCollectionsStats } from "./entities/explore.collections.stats";
 import { ExploreNftsStats } from "./entities/explore.nfts.stats";
 
 @Injectable()
@@ -69,7 +70,7 @@ export class NftMarketplaceService {
     const result: any = await this.graphQlService.getDataFromMarketPlace(query, variables);
 
     if (!result) {
-      throw new BadRequestException('Count not fetch accountsStats data from Nft Marketplace');
+      throw new BadRequestException('Count not fetch collectionStats data from Nft Marketplace');
     }
 
     return {
@@ -96,12 +97,33 @@ export class NftMarketplaceService {
     const result: any = await this.graphQlService.getDataFromMarketPlace(query, {});
 
     if (!result) {
-      throw new BadRequestException('Count not fetch accountsStats data from Nft Marketplace');
+      throw new BadRequestException('Count not fetch exploreNftsStats data from Nft Marketplace');
     }
 
     return {
       buyNowCount: result.exploreNftsStats.buyNowCount,
       liveAuctionsCount: result.exploreNftsStats.liveAuctionsCount,
+    };
+  }
+
+  async getExploreCollectionsStats(): Promise<ExploreCollectionsStats> {
+    const query = gql`
+    query{
+      exploreCollectionsStats{
+        activeLast30DaysCount
+        verifiedCount
+      }
+    }`;
+
+    const result: any = await this.graphQlService.getDataFromMarketPlace(query, {});
+
+    if (!result) {
+      throw new BadRequestException('Count not fetch exploreCollectionsStats data from Nft Marketplace');
+    }
+
+    return {
+      verifiedCount: result.exploreCollectionsStats.verifiedCount,
+      activeLast30DaysCount: result.exploreCollectionsStats.activeLast30DaysCount,
     };
   }
 }
