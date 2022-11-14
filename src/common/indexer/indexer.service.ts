@@ -1,5 +1,5 @@
+import { LogPerformanceAsync } from "@elrondnetwork/erdnest";
 import { Inject, Injectable } from "@nestjs/common";
-import { LogPerformanceAsync } from "src/decorators/log.performance.decorators";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";

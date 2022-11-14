@@ -1,12 +1,10 @@
-import { MetricsService } from "@elrondnetwork/erdnest";
+import { LogMetricsEvent, MetricsService, ErdnestEventEmitter } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { register, Histogram, Gauge } from 'prom-client';
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GatewayComponentRequest } from "../gateway/entities/gateway.component.request";
 import { GatewayService } from "../gateway/gateway.service";
 import { ProtocolService } from "../protocol/protocol.service";
-import { OnEvent } from "@nestjs/event-emitter";
-import { LogMetricsEvent } from "./events/log-metrics.event";
 import { MetricsEvents } from '../../utils/metrics-events.constants';
 
 @Injectable()
@@ -90,40 +88,40 @@ export class ApiMetricsService {
     }
   }
 
-  @OnEvent(MetricsEvents.SetVmQuery)
+  @ErdnestEventEmitter.OnEvent(MetricsEvents.SetVmQuery)
   setVmQuery(payload: LogMetricsEvent) {
     const [address, func, duration] = payload.args;
     ApiMetricsService.vmQueriesHistogram.labels(address, func).observe(duration);
   }
 
-  @OnEvent(MetricsEvents.SetGatewayDuration)
+  @ErdnestEventEmitter.OnEvent(MetricsEvents.SetGatewayDuration)
   setGatewayDuration(payload: LogMetricsEvent) {
     const [name, duration] = payload.args;
     ApiMetricsService.gatewayDurationHistogram.labels(name).observe(duration);
   }
 
-  @OnEvent(MetricsEvents.SetPersistenceDuration)
+  @ErdnestEventEmitter.OnEvent(MetricsEvents.SetPersistenceDuration)
   setPersistenceDuration(payload: LogMetricsEvent) {
     const [action, duration] = payload.args;
     this.metricsService.setExternalCall('persistence', duration);
     ApiMetricsService.persistenceDurationHistogram.labels(action).observe(duration);
   }
 
-  @OnEvent(MetricsEvents.SetIndexerDuration)
+  @ErdnestEventEmitter.OnEvent(MetricsEvents.SetIndexerDuration)
   setIndexerDuration(payload: LogMetricsEvent) {
     const [action, duration] = payload.args;
     this.metricsService.setExternalCall('indexer', duration);
     ApiMetricsService.indexerDurationHistogram.labels(action).observe(duration);
   }
 
-  @OnEvent(MetricsEvents.SetGraphqlDuration)
+  @ErdnestEventEmitter.OnEvent(MetricsEvents.SetGraphqlDuration)
   setGraphqlDuration(payload: LogMetricsEvent) {
     const [action, duration] = payload.args;
     this.metricsService.setExternalCall('graphql', duration);
     ApiMetricsService.graphqlDurationHistogram.labels(action).observe(duration);
   }
 
-  @OnEvent(MetricsEvents.SetLastProcessedNonce)
+  @ErdnestEventEmitter.OnEvent(MetricsEvents.SetLastProcessedNonce)
   setLastProcessedNonce(payload: LogMetricsEvent) {
     const [shardId, nonce] = payload.args;
     ApiMetricsService.lastProcessedNonceGauge.set({ shardId }, nonce);
