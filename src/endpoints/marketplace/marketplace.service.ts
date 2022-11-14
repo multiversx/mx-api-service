@@ -3,6 +3,8 @@ import { gql } from "graphql-request";
 import { GraphQlService } from "src/common/graphql/graphql.service";
 import { AccountStats } from "./entities/account.stats";
 import { AccountStatsFilters } from "./entities/account.stats.filter";
+import { CollectionStats } from "./entities/collection.stats";
+import { CollectionStatsFilters } from "./entities/collection.stats.filter";
 
 @Injectable()
 export class NftMarketplaceService {
@@ -29,6 +31,7 @@ export class NftMarketplaceService {
 
     const variables = { filters };
     const result: any = await this.graphQlService.getDataFromMarketPlace(query, variables);
+
     if (!result) {
       throw new BadRequestException('Count not fetch accountsStats data from Nft Marketplace');
     }
@@ -42,6 +45,41 @@ export class NftMarketplaceService {
       likes: result.accountStats.likes,
       marketplaceKey: result.accountStats.marketplaceKey,
       orders: result.accountStats.orders,
+    };
+  }
+
+  async getCollectionStats(filters: CollectionStatsFilters): Promise<CollectionStats> {
+    const query = gql`
+    query($filters: CollectionStatsFilter!){
+      collectionStats(filters: $filters){
+        identifier
+        activeAuctions
+        auctionsEnded
+        items
+        maxPrice
+        maxPrice
+        minPrice
+        saleAverage
+        volumeTraded
+      }
+    }`;
+
+    const variables = { filters };
+    const result: any = await this.graphQlService.getDataFromMarketPlace(query, variables);
+
+    if (!result) {
+      throw new BadRequestException('Count not fetch accountsStats data from Nft Marketplace');
+    }
+
+    return {
+      identifier: result.collectionStats.identifier,
+      activeAuctions: result.collectionStats.activeAuctions,
+      auctionsEnded: result.collectionStats.auctionsEnded,
+      maxPrice: result.collectionStats.maxPrice,
+      minPrice: result.collectionStats.minPrice,
+      saleAverage: result.collectionStats.saleAverage,
+      volumeTraded: result.collectionStats.volumeTraded,
+      items: result.collectionStats.items,
     };
   }
 }

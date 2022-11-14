@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
@@ -20,6 +20,9 @@ import { TransactionService } from "../transactions/transaction.service";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { NftRank } from "src/common/assets/entities/nft.rank";
 import { SortCollectionNfts } from "./entities/sort.collection.nfts";
+import { CollectionStats } from "../marketplace/entities/collection.stats";
+import { NftMarketplaceService } from "../marketplace/marketplace.service";
+import { CollectionStatsFilters } from "../marketplace/entities/collection.stats.filter";
 
 @Controller()
 @ApiTags('collections')
@@ -28,6 +31,7 @@ export class CollectionController {
     private readonly collectionService: CollectionService,
     private readonly nftService: NftService,
     private readonly transactionService: TransactionService,
+    private readonly nftMarketplaceService: NftMarketplaceService
   ) { }
 
   @Get("/collections")
@@ -407,5 +411,27 @@ export class CollectionController {
       before,
       after,
     }));
+  }
+
+  @Get("/collections/:identifier/collection/stats")
+  @ApiOperation({ summary: 'Collection stats', description: 'Returns collections status details from nft marketplace for a given collection' })
+  @ApiOkResponse({ type: CollectionStats })
+  async getAccountStats(
+    @Param('identifier') identifier: string,
+    @Query('paymentToken') paymentToken?: string,
+    @Query('marketplaceKey') marketplaceKey?: string,
+  ): Promise<CollectionStats> {
+    const filter = new CollectionStatsFilters({
+      identifier,
+      marketplaceKey,
+      paymentToken,
+    });
+
+    const collection = await this.nftMarketplaceService.getCollectionStats(filter);
+    if (!collection) {
+      throw new NotFoundException('Collection not found');
+    }
+
+    return collection;
   }
 }
