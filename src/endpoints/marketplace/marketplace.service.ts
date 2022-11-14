@@ -3,6 +3,8 @@ import { gql } from "graphql-request";
 import { GraphQlService } from "src/common/graphql/graphql.service";
 import { AccountStats } from "./entities/account.stats";
 import { AccountStatsFilters } from "./entities/account.stats.filter";
+import { Auction } from "./entities/auction";
+import { StatusAuction } from "./entities/auction.state.enum";
 import { CollectionStats } from "./entities/collection.stats";
 import { CollectionStatsFilters } from "./entities/collection.stats.filter";
 import { ExploreCollectionsStats } from "./entities/explore.collections.stats";
@@ -149,5 +151,70 @@ export class NftMarketplaceService {
       collections: result.exploreStats.collections,
       nfts: result.exploreStats.nfts,
     };
+  }
+
+  async getAccountAuctions(address: string, state: StatusAuction): Promise<Auction[]> {
+    const query = gql`
+    query{
+      auctions(filters:{
+        operator: AND,
+        filters:[
+          {
+            field: "ownerAddress",
+            op: EQ
+            values: ["${address}"]
+          },
+          {
+            field: "status",
+            op: EQ
+            values: ["${state}"]
+          }
+        ]
+      }){
+        edges{
+          node{
+            id
+            identifier
+            collection
+            status
+            creationDate
+            endDate
+            marketplace{
+              key
+            }
+            owner{
+              address
+            }
+            tags
+            marketplaceAuctionId
+            startDate
+            __typename
+          }
+        }
+      }
+    }`;
+
+    const result: any = await this.graphQlService.getDataFromMarketPlace(query, {});
+    if (!result) {
+      return [];
+    }
+
+    const auctions = result.auctions.edges.map((auction: any) => {
+      const accountAuction = new Auction();
+
+      accountAuction.identifier = auction.node.identifier;
+      accountAuction.collection = auction.node.collection;
+      accountAuction.status = auction.node.status;
+      accountAuction.creationDate = auction.node.creationDate;
+      accountAuction.endDate = auction.node.endDate;
+      accountAuction.marketplace = auction.node.marketplace.key;
+      accountAuction.marketplaceAuctionId = auction.node.marketplaceAuctionId;
+      accountAuction.owner = auction.node.owner.address;
+      accountAuction.tags = auction.node.tags;
+
+      return accountAuction;
+    });
+
+    return auctions;
   }
 }

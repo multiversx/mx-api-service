@@ -50,6 +50,8 @@ import { DelegationService } from '../delegation/delegation.service';
 import { AccountStats } from '../marketplace/entities/account.stats';
 import { AccountStatsFilters } from '../marketplace/entities/account.stats.filter';
 import { NftMarketplaceService } from '../marketplace/marketplace.service';
+import { StatusAuction } from '../marketplace/entities/auction.state.enum';
+import { Auction } from '../marketplace/entities/auction';
 
 @Controller()
 @ApiTags('accounts')
@@ -959,6 +961,21 @@ export class AccountController {
     });
 
     const account = await this.nftMarketplaceService.getAccountStats(filter);
+    if (!account) {
+      throw new NotFoundException('Account not found');
+    }
+
+    return account;
+  }
+
+  @Get("/accounts/:address/auctions/state/:state")
+  @ApiOperation({ summary: 'Account auctions', description: 'Returns account auctions for a given address' })
+  @ApiOkResponse({ type: Auction })
+  async getAccountAuctions(
+    @Param('address') address: string,
+    @Param('state') status: StatusAuction
+  ): Promise<Auction[]> {
+    const account = await this.nftMarketplaceService.getAccountAuctions(address, status);
     if (!account) {
       throw new NotFoundException('Account not found');
     }
