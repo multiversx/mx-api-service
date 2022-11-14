@@ -10,6 +10,7 @@ import { NftMetadataDb } from "./entities/nft.metadata.db";
 import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
 import { PersistenceInterface } from "./persistence.interface";
 import { LogPerformanceAsync } from "../../decorators/log.performance.decorators";
+import { MetricsEvents } from "src/utils/metrics-events.constants";
 
 const isPassThrough = process.env.PERSISTENCE === 'passthrough' || configuration().database?.enabled === false;
 
@@ -27,7 +28,7 @@ export class PersistenceService implements PersistenceInterface {
   ) { }
 
   @PassthroughAsync(isPassThrough, null)
-  @LogPerformanceAsync('setPersistenceDuration', 'getMetadata')
+  @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'getMetadata')
   @ErrorLoggerAsync({ logArgs: true })
   async getMetadata(identifier: string): Promise<any | null> {
     const metadataDb: NftMetadataDb | null = await this.nftMetadataRepository.findOne({ where: { id: identifier } });
@@ -39,7 +40,7 @@ export class PersistenceService implements PersistenceInterface {
   }
 
   @PassthroughAsync(isPassThrough, {})
-  @LogPerformanceAsync('setPersistenceDuration', 'batchGetMetadata')
+  @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'batchGetMetadata')
   @ErrorLoggerAsync({ logArgs: true })
   async batchGetMetadata(identifiers: string[]): Promise<Record<string, any>> {
     const metadatasDb = await this.nftMetadataRepository.find({
@@ -55,7 +56,7 @@ export class PersistenceService implements PersistenceInterface {
   }
 
   @PassthroughAsync(isPassThrough)
-  @LogPerformanceAsync('setPersistenceDuration', 'setMetadata')
+  @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'setMetadata')
   @ErrorLoggerAsync()
   async setMetadata(identifier: string, content: any): Promise<void> {
     let metadata = await this.nftMetadataRepository.findOne({ where: { id: identifier } });
@@ -82,14 +83,14 @@ export class PersistenceService implements PersistenceInterface {
   }
 
   @PassthroughAsync(isPassThrough, {})
-  @LogPerformanceAsync('setPersistenceDuration', 'deleteMetadata')
+  @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'deleteMetadata')
   @ErrorLoggerAsync()
   async deleteMetadata(identifier: string): Promise<any> {
     return await this.nftMetadataRepository.delete({ id: identifier });
   }
 
   @PassthroughAsync(isPassThrough, {})
-  @LogPerformanceAsync('setPersistenceDuration', 'getMedia')
+  @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'getMedia')
   @ErrorLoggerAsync({ logArgs: true })
   async getMedia(identifier: string): Promise<NftMedia[] | null> {
     const media: NftMediaDb | null = await this.nftMediaRepository.findOne({ where: { id: identifier } });
@@ -101,7 +102,7 @@ export class PersistenceService implements PersistenceInterface {
   }
 
   @PassthroughAsync(isPassThrough, {})
-  @LogPerformanceAsync('setPersistenceDuration', 'batchGetMedia')
+  @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'batchGetMedia')
   @ErrorLoggerAsync({ logArgs: true })
   async batchGetMedia(identifiers: string[]): Promise<Record<string, NftMedia[]>> {
     const mediasDb = await this.nftMediaRepository.find({
@@ -117,7 +118,7 @@ export class PersistenceService implements PersistenceInterface {
   }
 
   @PassthroughAsync(isPassThrough)
-  @LogPerformanceAsync('setPersistenceDuration', 'setMedia')
+  @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'setMedia')
   @ErrorLoggerAsync()
   async setMedia(identifier: string, media: NftMedia[]): Promise<void> {
     let value = await this.nftMediaRepository.findOne({ where: { id: identifier } });
@@ -132,7 +133,7 @@ export class PersistenceService implements PersistenceInterface {
   }
 
   @PassthroughAsync(isPassThrough, null)
-  @LogPerformanceAsync('setPersistenceDuration', 'getCollectionTraits')
+  @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'getCollectionTraits')
   @ErrorLoggerAsync({ logArgs: true })
   async getCollectionTraits(collection: string): Promise<CollectionTrait[] | null> {
     const summary: NftTraitSummaryDb | null = await this.nftTraitSummaryRepository.findOne({ where: { identifier: collection } });
