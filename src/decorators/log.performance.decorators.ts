@@ -10,9 +10,16 @@ interface ILogPerformanceOptions {
 // First argument of decorator is event name
 // everything after that are values (static or extracted
 // from decorated method)
-const extractDecoratorArgs = (decoratorArgs: Array<string | ILogPerformanceOptions>, decoratedMethodArgs: any[]): any[] => {
+const extractDecoratorArgs = (descriptorValue: any, decoratorArgs: Array<string | ILogPerformanceOptions>, decoratedMethodArgs: any[]): any[] => {
+  if (!decoratorArgs || decoratorArgs.length === 0) {
+    return [descriptorValue.name];
+  }
+
   return decoratorArgs.map(arg => {
-    if (typeof arg === 'string') return arg;
+    if (typeof arg === 'string') {
+      return arg;
+    }
+
     return decoratedMethodArgs[arg.argIndex];
   });
 };
@@ -40,8 +47,9 @@ export function LogPerformanceAsync(method: string, ...decoratorArgs: Array<stri
         profiler.stop();
 
         const metricsEvent = new LogMetricsEvent();
-        metricsEvent.args = extractDecoratorArgs(decoratorArgs, args);
+        metricsEvent.args = extractDecoratorArgs(childMethod, decoratorArgs, args);
         metricsEvent.args.push(profiler.duration);
+
         eventEmitter.emit(method, metricsEvent);
       }
     };
