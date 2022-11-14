@@ -47,6 +47,9 @@ import { TransactionDetailed } from '../transactions/entities/transaction.detail
 import { OriginLogger } from '@elrondnetwork/erdnest';
 import { AccountDelegation } from '../stake/entities/account.delegation';
 import { DelegationService } from '../delegation/delegation.service';
+import { AccountStats } from '../marketplace/entities/account.stats';
+import { AccountStatsFilters } from '../marketplace/entities/account.stats.filter';
+import { NftMarketplaceService } from '../marketplace/marketplace.service';
 
 @Controller()
 @ApiTags('accounts')
@@ -66,6 +69,7 @@ export class AccountController {
     private readonly transferService: TransferService,
     private readonly apiConfigService: ApiConfigService,
     private readonly delegationService: DelegationService,
+    private readonly nftMarketplaceService: NftMarketplaceService
   ) { }
 
   @Get("/accounts")
@@ -937,5 +941,28 @@ export class AccountController {
 
     return await this.accountService.getAccountTokenHistory(address, tokenIdentifier, new QueryPagination({ from, size }));
   }
-}
 
+  @Get("/accounts/:address/account/stats")
+  @ApiOperation({ summary: 'Account stats', description: 'Returns account status details from nft marketplace for a given address' })
+  @ApiQuery({ name: 'isOwner', description: 'Returns account stats details where given address is owner', required: false })
+  @ApiQuery({ name: 'marketplaceKey', description: 'Return marketplace key details', required: false })
+  @ApiOkResponse({ type: AccountStats })
+  async getAccountStats(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('isOwner') isOwner?: string,
+    @Query('marketplaceKey') marketplaceKey?: string,
+  ): Promise<AccountStats> {
+    const filter = new AccountStatsFilters({
+      address,
+      isOwner: isOwner == "true",
+      marketplaceKey,
+    });
+
+    const account = await this.nftMarketplaceService.getAccountStats(filter);
+    if (!account) {
+      throw new NotFoundException('Account not found');
+    }
+
+    return account;
+  }
+}

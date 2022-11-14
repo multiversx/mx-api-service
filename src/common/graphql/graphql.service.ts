@@ -31,4 +31,25 @@ export class GraphQlService {
       return null;
     }
   }
+
+  async getDataFromMarketPlace(query: string, variables: any): Promise<any> {
+    const NFT_MARKETPLACE_URL = this.apiConfigService.getNftMarketplaceMandatory();
+
+    const graphqlClient = new GraphQLClient(NFT_MARKETPLACE_URL);
+
+    try {
+      const data = await graphqlClient.request(query, variables);
+
+      if (!data) {
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      this.logger.log(`Unexpected error when running graphql query`);
+      this.logger.error(error);
+
+      return null;
+    }
+  }
 }

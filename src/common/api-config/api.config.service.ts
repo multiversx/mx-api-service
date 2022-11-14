@@ -629,6 +629,19 @@ export class ApiConfigService {
     return microServiceUrl;
   }
 
+  getNftMarketPlaceUrl(): string | undefined {
+    return this.configService.get<string>('marketplace.url');
+  }
+
+  getNftMarketplaceMandatory(): string {
+    const microServiceUrl = this.getNftMarketPlaceUrl();
+    if (!microServiceUrl) {
+      throw new Error('No marketplace.url present');
+    }
+
+    return microServiceUrl;
+  }
+
   getGithubToken(): string | undefined {
     return this.configService.get<string>('github.token');
   }

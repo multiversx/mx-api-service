@@ -100,3 +100,5 @@ nftProcess:
 transaction-action:
   mex:
     microServiceUrl: 'https://testnet-exchange-graph.elrond.com/graphql'
+marketplace:
+  url: 'https://testnet-nfts-graph.elrond.com/graphql'
