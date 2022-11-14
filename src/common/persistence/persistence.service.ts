@@ -42,7 +42,6 @@ export class PersistenceService implements PersistenceInterface {
   @LogPerformanceAsync('setPersistenceDuration', 'batchGetMetadata')
   @ErrorLoggerAsync({ logArgs: true })
   async batchGetMetadata(identifiers: string[]): Promise<Record<string, any>> {
-    console.log('execute batchGetMetadata');
     const metadatasDb = await this.nftMetadataRepository.find({
       where: {
         id: {
