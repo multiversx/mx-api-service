@@ -5,6 +5,7 @@ import { AccountStats } from "./entities/account.stats";
 import { AccountStatsFilters } from "./entities/account.stats.filter";
 import { CollectionStats } from "./entities/collection.stats";
 import { CollectionStatsFilters } from "./entities/collection.stats.filter";
+import { ExploreNftsStats } from "./entities/explore.nfts.stats";
 
 @Injectable()
 export class NftMarketplaceService {
@@ -80,6 +81,27 @@ export class NftMarketplaceService {
       saleAverage: result.collectionStats.saleAverage,
       volumeTraded: result.collectionStats.volumeTraded,
       items: result.collectionStats.items,
+    };
+  }
+
+  async getExploreNftsStats(): Promise<ExploreNftsStats> {
+    const query = gql`
+    query{
+      exploreNftsStats{
+        buyNowCount
+        liveAuctionsCount
+      }
+    }`;
+
+    const result: any = await this.graphQlService.getDataFromMarketPlace(query, {});
+
+    if (!result) {
+      throw new BadRequestException('Count not fetch accountsStats data from Nft Marketplace');
+    }
+
+    return {
+      buyNowCount: result.exploreNftsStats.buyNowCount,
+      liveAuctionsCount: result.exploreNftsStats.liveAuctionsCount,
     };
   }
 }
