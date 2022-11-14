@@ -7,6 +7,7 @@ import { CollectionStats } from "./entities/collection.stats";
 import { CollectionStatsFilters } from "./entities/collection.stats.filter";
 import { ExploreCollectionsStats } from "./entities/explore.collections.stats";
 import { ExploreNftsStats } from "./entities/explore.nfts.stats";
+import { ExploreStats } from "./entities/explore.stats";
 
 @Injectable()
 export class NftMarketplaceService {
@@ -124,6 +125,29 @@ export class NftMarketplaceService {
     return {
       verifiedCount: result.exploreCollectionsStats.verifiedCount,
       activeLast30DaysCount: result.exploreCollectionsStats.activeLast30DaysCount,
+    };
+  }
+
+  async getExploreStats(): Promise<ExploreStats> {
+    const query = gql`
+    query{
+      exploreStats{
+        artists
+        collections
+        nfts
+      }
+    }`;
+
+    const result: any = await this.graphQlService.getDataFromMarketPlace(query, {});
+
+    if (!result) {
+      throw new BadRequestException('Count not fetch exploreStats data from Nft Marketplace');
+    }
+
+    return {
+      artists: result.exploreStats.artists,
+      collections: result.exploreStats.collections,
+      nfts: result.exploreStats.nfts,
     };
   }
 }

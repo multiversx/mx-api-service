@@ -3,6 +3,7 @@ import { ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { NftMarketplaceService } from "../marketplace.service";
 import { ExploreCollectionsStats } from "./explore.collections.stats";
 import { ExploreNftsStats } from "./explore.nfts.stats";
+import { ExploreStats } from "./explore.stats";
 
 @Controller()
 @ApiTags('marketplace')
@@ -10,6 +11,14 @@ export class NftMarketplaceController {
   constructor(
     private readonly nftMarketplaceService: NftMarketplaceService
   ) { }
+
+  @Get("/explore/stats")
+  @ApiOperation({ summary: 'Explore stats', description: 'Returns general information count about artist, collections, nfts ' })
+  @ApiOkResponse({ type: ExploreStats })
+  getExploreStats(
+  ): Promise<ExploreStats> {
+    return this.nftMarketplaceService.getExploreStats();
+  }
 
   @Get("/explore/nfts/stats")
   @ApiOperation({ summary: 'Explore Nfts stats', description: 'Returns general nfts stats details' })
