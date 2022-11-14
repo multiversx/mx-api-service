@@ -202,6 +202,7 @@ export class NftMarketplaceService {
     const auctions = result.auctions.edges.map((auction: any) => {
       const accountAuction = new Auction();
 
+      accountAuction.auctionId = auction.node.id;
       accountAuction.identifier = auction.node.identifier;
       accountAuction.collection = auction.node.collection;
       accountAuction.status = auction.node.status;
