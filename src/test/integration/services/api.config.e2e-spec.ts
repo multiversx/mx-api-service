@@ -1,7 +1,7 @@
 import { Test } from "@nestjs/testing";
 import { ConfigService } from "@nestjs/config";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
-import { DatabaseConnectionOptions } from "src/common/persistence/database/entities/connection.options";
+import { DatabaseConnectionOptions } from "src/common/persistence/entities/connection.options";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 describe('API Config', () => {
