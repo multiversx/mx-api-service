@@ -19,6 +19,7 @@ import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.com
 import { NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest';
 import { About } from './entities/about';
 import { EsdtService } from '../esdt/esdt.service';
+import { PluginService } from 'src/common/plugins/plugin.service';
 
 @Injectable()
 export class NetworkService {
@@ -39,6 +40,7 @@ export class NetworkService {
     private readonly stakeService: StakeService,
     @Inject(forwardRef(() => EsdtService))
     private readonly esdtService: EsdtService,
+    private readonly pluginService: PluginService,
   ) { }
 
   async getConstants(): Promise<NetworkConstants> {
@@ -298,7 +300,7 @@ export class NetworkService {
     );
   }
 
-  getAboutRaw(): About {
+  async getAboutRaw(): Promise<About> {
     const appVersion = require('child_process')
       .execSync('git rev-parse HEAD')
       .toString().trim();
@@ -325,13 +327,17 @@ export class NetworkService {
       }
     }
 
-    return new About({
+    const about = new About({
       appVersion,
       pluginsVersion,
       network: this.apiConfigService.getNetwork(),
       cluster: this.apiConfigService.getCluster(),
       version: apiVersion,
     });
+
+    await this.pluginService.processAbout(about);
+
+    return about;
   }
 
   numberDecode(encoded: string): string {

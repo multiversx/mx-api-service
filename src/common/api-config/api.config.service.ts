@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { DatabaseConnectionOptions } from '../persistence/database/entities/connection.options';
+import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
 
 @Injectable()
 export class ApiConfigService {
