@@ -278,7 +278,7 @@ export class AssetsService {
 
     if (feesCollector) {
       allAssets[feesCollector.address] = new AccountAssets({
-        name: `Maiar Exchange: Fees Collector Address`,
+        name: `Maiar Exchange: Fees Collector Contract`,
         tags: ['mex', 'fee', 'collector'],
       });
     }
