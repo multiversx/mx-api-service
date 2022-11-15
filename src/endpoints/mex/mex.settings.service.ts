@@ -169,7 +169,7 @@ export class MexSettingsService {
       CacheInfo.FeesCollector.key,
       async () => await this.getMexFeesCollectorRaw(),
       CacheInfo.FeesCollector.ttl,
-      Constants.oneSecond() * 30,
+      Constants.oneMinute() * 10,
     );
   }
 
