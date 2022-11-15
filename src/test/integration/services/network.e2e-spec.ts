@@ -222,7 +222,7 @@ describe('Network Service', () => {
       jest
         .spyOn(NetworkService.prototype, 'getAboutRaw')
         // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(() => {
+        .mockImplementation(jest.fn(async () => {
           return new About({
             appVersion: '8f2b49d',
             pluginsVersion: 'e0a77bc',
