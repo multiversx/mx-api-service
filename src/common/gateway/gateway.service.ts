@@ -4,6 +4,8 @@ import { ApiConfigService } from "../api-config/api.config.service";
 import { ApiMetricsService } from "../metrics/api.metrics.service";
 import { Auction } from "./entities/auction";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
+import { HeartBeatsStatus } from "./entities/heartbeats.status";
+import { TrieStatistics } from "./entities/trie.statistics";
 
 @Injectable()
 export class GatewayService {
@@ -19,6 +21,17 @@ export class GatewayService {
     const result = await this.get('validator/auction', GatewayComponentRequest.validatorAuction);
 
     return result.auction;
+  }
+
+  async getNodeHeartbeatStatus(): Promise<HeartBeatsStatus[]> {
+    const result = await this.get('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat);
+    return result.heartbeats;
+  }
+
+  async getTrieStatistics(shardId: number): Promise<TrieStatistics> {
+    const result = await this.get(`network/trie-statistics/${shardId}`, GatewayComponentRequest.trieStatistics);
+
+    return result;
   }
 
   async get(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {

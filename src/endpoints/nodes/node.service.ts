@@ -599,4 +599,30 @@ export class NodeService {
 
     return keys;
   }
+
+  async getSyncProgress(shardId: number): Promise<number | undefined> {
+    const heartbeats = await this.gatewayService.getNodeHeartbeatStatus();
+    const trieStatistics = await this.gatewayService.getTrieStatistics(shardId);
+
+    if (heartbeats.length === 0) {
+      return undefined;
+    }
+
+    let syncProgress: number = 0;
+    let numOfNodeSync: number = 0;
+
+    for (const heartbeat of heartbeats) {
+      if (heartbeat.receivedShardID === shardId) {
+        if (heartbeat.numTrieNodesReceived > 0) {
+          numOfNodeSync++;
+
+          if (numOfNodeSync > 0 && trieStatistics.accounts_snapshot_num_nodes > 0) {
+            syncProgress = numOfNodeSync / trieStatistics.accounts_snapshot_num_nodes * 100;
+          }
+        }
+      }
+    }
+
+    return syncProgress;
+  }
 }
