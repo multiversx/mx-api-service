@@ -11,7 +11,7 @@ import { NftMetadataService } from "./job-services/metadata/nft.metadata.service
 import { GenerateThumbnailResult } from "./job-services/thumbnails/entities/generate.thumbnail.result";
 import { NftThumbnailService } from "./job-services/thumbnails/nft.thumbnail.service";
 import { NftAssetService } from "./job-services/assets/nft.asset.service";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { ContextTracker, OriginLogger } from "@elrondnetwork/erdnest";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 
 @Controller()
@@ -84,6 +84,7 @@ export class NftQueueController {
     }
 
     this.logger.log(`Started Processing NFT with identifier '${data.identifier}' and flags ${this.getProcessNftActivatedSettings(data.settings).join(', ')}`);
+    ContextTracker.assign({ origin: `Process NFT '${data.identifier}'` });
 
     try {
       const nft = await this.nftService.getSingleNft(data.identifier);
