@@ -228,6 +228,7 @@ describe('Network Service', () => {
             pluginsVersion: 'e0a77bc',
             network: 'mainnet',
             cluster: undefined,
+            scamEngineVersion: '1.0.0',
           });
         }));
 
