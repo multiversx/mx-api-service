@@ -290,6 +290,11 @@ export class CacheInfo {
     ttl: Constants.oneMinute() * 10,
   };
 
+  static FeesCollector: CacheInfo = {
+    key: "mexFeesCollector",
+    ttl: Constants.oneSecond() * 1,
+  };
+
   static MexTokensIndexed: CacheInfo = {
     key: "mexTokensIndexed",
     ttl: Constants.oneMinute() * 10,

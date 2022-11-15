@@ -237,8 +237,9 @@ export class CacheWarmerService {
       const farms = await this.mexFarmsService.getAllMexFarms();
       const settings = await this.mexSettingsService.getSettings();
       const stakingProxies = await this.mexFarmsService.getAllStakingProxies();
+      const feesCollector = await this.mexSettingsService.getMexFeesCollector();
 
-      const accountLabels = await this.assetsService.getAllAccountAssetsRaw(providers, identities, pairs, farms, settings ?? undefined, stakingProxies);
+      const accountLabels = await this.assetsService.getAllAccountAssetsRaw(providers, identities, pairs, farms, settings ?? undefined, stakingProxies, feesCollector);
       await this.invalidateKey(CacheInfo.AccountAssets.key, accountLabels, CacheInfo.AccountAssets.ttl);
 
       const collectionRanks = await this.assetsService.getAllCollectionRanksRaw();

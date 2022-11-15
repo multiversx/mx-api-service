@@ -14,6 +14,7 @@ import { DnsContracts } from "src/utils/dns.contracts";
 import { NftRankAlgorithm } from "./entities/nft.rank.algorithm";
 import { NftRank } from "./entities/nft.rank";
 import { MexStakingProxy } from "src/endpoints/mex/entities/mex.staking.proxy";
+import { MexFeesCollector } from "src/endpoints/mex/entities/mex.fee.collector";
 const rimraf = require("rimraf");
 const path = require('path');
 const fs = require('fs');
@@ -184,7 +185,7 @@ export class AssetsService {
     );
   }
 
-  getAllAccountAssetsRaw(providers?: Provider[], identities?: Identity[], pairs?: MexPair[], farms?: MexFarm[], mexSettings?: MexSettings, stakingProxies?: MexStakingProxy[]): { [key: string]: AccountAssets } {
+  getAllAccountAssetsRaw(providers?: Provider[], identities?: Identity[], pairs?: MexPair[], farms?: MexFarm[], mexSettings?: MexSettings, stakingProxies?: MexStakingProxy[], feesCollector?: MexFeesCollector): { [key: string]: AccountAssets } {
     const accountAssetsPath = this.getAccountAssetsPath();
     if (!fs.existsSync(accountAssetsPath)) {
       return {};
@@ -273,6 +274,13 @@ export class AssetsService {
           tags: ['mex', 'metastaking'],
         });
       }
+    }
+
+    if (feesCollector) {
+      allAssets[feesCollector.address] = new AccountAssets({
+        name: `Maiar Exchange: Fees Collector Address`,
+        tags: ['mex', 'fee', 'collector'],
+      });
     }
 
     for (const [index, address] of DnsContracts.addresses.entries()) {

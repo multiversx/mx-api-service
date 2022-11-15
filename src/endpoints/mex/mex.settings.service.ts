@@ -6,6 +6,7 @@ import { GraphQlService } from "src/common/graphql/graphql.service";
 import { TransactionMetadata } from "../transactions/transaction-action/entities/transaction.metadata";
 import { TransactionMetadataTransfer } from "../transactions/transaction-action/entities/transaction.metadata.transfer";
 import { MexSettings } from "./entities/mex.settings";
+import { MexFeesCollector } from "./entities/mex.fee.collector";
 
 @Injectable()
 export class MexSettingsService {
@@ -161,6 +162,34 @@ export class MexSettingsService {
     }
 
     return settings;
+  }
+
+  async getMexFeesCollector(): Promise<MexFeesCollector | undefined> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.FeesCollector.key,
+      async () => await this.getMexFeesCollectorRaw(),
+      CacheInfo.FeesCollector.ttl,
+      Constants.oneSecond() * 30,
+    );
+  }
+
+  private async getMexFeesCollectorRaw(): Promise<MexFeesCollector | undefined> {
+    const query = gql`
+    query FeesCollector{
+      feesCollector{
+        address
+      }
+    }`;
+
+    const result: any = await this.graphQlService.getData(query, {});
+    if (!result) {
+      return undefined;
+    }
+
+    const feeCollectorAddress = new MexFeesCollector();
+    feeCollectorAddress.address = result.feesCollector.address;
+
+    return feeCollectorAddress;
   }
 
   getWegldId(): string | undefined {
