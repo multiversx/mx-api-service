@@ -164,7 +164,7 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_SECOND)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleProvidersCount() {
     await Locker.lock('Providers Count', async () => {
       await this.lock.acquire('providers', async () => {
