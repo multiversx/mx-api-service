@@ -3,6 +3,9 @@
 
 name: Unit tests
 
+env:
+  CODECOV_VERSION: 'v0.1.15'
+
 on:
   push:
     branches: [main, development]
@@ -33,6 +36,7 @@ jobs:
       - uses: codecov/codecov-action@v2
         with:
           files: ./coverage/unit/clover.xml
+          version: ${{ env.CODECOV_VERSION }}
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: true
