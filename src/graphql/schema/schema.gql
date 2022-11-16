@@ -2017,6 +2017,9 @@ type NftMetadata {
   """Description for the given NFT metadata."""
   description: String!
 
+  """NFT Metadata fetch error."""
+  error: NftMetadataError
+
   """File name for the given NFT metadata."""
   fileName: String!
 
@@ -2025,6 +2028,40 @@ type NftMetadata {
 
   """File URI for the given NFT metadata."""
   fileUri: String!
+}
+
+"""NFT Metadata error."""
+type NftMetadataError {
+  """Error code"""
+  code: NftMetadataErrorCode!
+
+  """Error message"""
+  message: String!
+
+  """Timestamp when the error was generated"""
+  timestamp: Float!
+}
+
+"""NFT Metadata error code"""
+enum NftMetadataErrorCode {
+  """Metadata is empty"""
+  emptyMetadata
+
+  """Invalid contentm type (should be application/json)"""
+  invalidContentType
+
+  """IPFS error"""
+  ipfsError
+  jsonParseError
+
+  """IPFS link does not have any underlying resource"""
+  notFound
+
+  """IPFS request timeout"""
+  timeout
+
+  """Unknown error"""
+  unknownError
 }
 
 """NFT rank object type"""
