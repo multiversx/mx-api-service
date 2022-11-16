@@ -619,6 +619,11 @@ input GetNftCollectionsCountInput {
 
   """NFT types list to retrieve for the given result set."""
   type: [NftType!]
+
+  """
+  Do not include collections of type "MetaESDT" in the responsee for the given result set.
+  """
+  withoutMetaESDT: Boolean
 }
 
 """Input to retrieve the given NFT collections for."""
@@ -660,6 +665,11 @@ input GetNftCollectionsInput {
 
   """NFT types list to retrieve for the given result set."""
   type: [NftType!]
+
+  """
+  Do not include collections of type "MetaESDT" in the responsee for the given result set.
+  """
+  withoutMetaESDT: Boolean
 }
 
 """Input to retrieve the given NFT for."""
