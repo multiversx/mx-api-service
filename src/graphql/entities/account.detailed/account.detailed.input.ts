@@ -41,7 +41,7 @@ export class GetNftsAccountInput {
   constructor(partial?: Partial<GetNftsAccountInput>) {
     Object.assign(this, partial);
   }
-  
+
   @Field(() => Float, { name: "from", description: "Number of collections to skip for the given result set.", nullable: true, defaultValue: 0 })
   from: number = 0;
 
@@ -80,4 +80,7 @@ export class GetNftsAccountInput {
 
   @Field(() => EsdtDataSource, { name: "source", description: "Source to retrieve for the given result set.", nullable: true })
   source: EsdtDataSource | undefined = undefined;
+
+  @Field(() => Boolean, { name: "withoutMetaESDT", description: `Do not include collections of type "MetaESDT" in the responsee for the given result set.`, nullable: true })
+  withoutMetaESDT: boolean | undefined = undefined;
 }

@@ -8,7 +8,7 @@ import { AccountService } from "src/endpoints/accounts/account.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { CollectionService } from "src/endpoints/collections/collection.service";
 import { GetNftCollectionsAccountInput, GetNftsAccountInput } from "src/graphql/entities/account.detailed/account.detailed.input";
-import { NftAccountFlat, NftCollectionAccountFlat } from "src/graphql/entities/account.detailed/account.detailed.object"; 
+import { NftAccountFlat, NftCollectionAccountFlat } from "src/graphql/entities/account.detailed/account.detailed.object";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { NftQueryOptions } from "src/endpoints/nfts/entities/nft.query.options";
@@ -68,6 +68,7 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
         creator: input.creator,
         hasUris: input.hasUris,
         includeFlagged: input.includeFlagged,
+        withoutMetaESDT: input.withoutMetaESDT,
       }),
       new NftQueryOptions({
         withSupply: input.withSupply,

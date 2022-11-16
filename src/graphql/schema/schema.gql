@@ -710,6 +710,11 @@ input GetNftsAccountInput {
 
   """With supply to retrieve for the given result set."""
   withSupply: Boolean
+
+  """
+  Do not include collections of type "MetaESDT" in the responsee for the given result set.
+  """
+  withoutMetaESDT: Boolean
 }
 
 """Input to retrieve the given NFTs count for."""
