@@ -8,6 +8,7 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { NftCollection } from 'src/endpoints/collections/entities/nft.collection';
 import { ElasticService, TokenUtils } from '@elrondnetwork/erdnest';
 import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
+import { NftType } from 'src/endpoints/nfts/entities/nft.type';
 
 describe('Collection Service', () => {
   let collectionService: CollectionService;
@@ -46,6 +47,24 @@ describe('Collection Service', () => {
       const results = await collectionService.getNftCollections(new QueryPagination({ size: 1 }), filter);
       const collection = results.map((result) => result.collection);
       expect(collection.includes("SURACING-8f6ed4")).toBeTruthy();
+    });
+
+    it('should return a list of collections without collections of type MetaESDT when "withoutMetaESDT" filter is applied', async () => {
+      const filter = new CollectionFilter();
+      filter.withoutMetaESDT = true;
+      const results = await collectionService.getNftCollections(new QueryPagination(), filter);
+
+      for (const result of results) {
+        expect(result.type).not.toEqual("MetaESDT");
+      }
+    });
+
+    it('should return an empty list of collections if withoutMetaESDT and type filters are applied ', async () => {
+      const filter = new CollectionFilter();
+      filter.withoutMetaESDT = true;
+      filter.type = [NftType.MetaESDT];
+      const results = await collectionService.getNftCollections(new QueryPagination(), filter);
+      expect(results).toStrictEqual([]);
     });
   });
 
