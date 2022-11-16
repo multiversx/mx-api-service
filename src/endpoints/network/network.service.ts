@@ -79,6 +79,7 @@ export class NetworkService {
   }
 
   async getNetworkConfig(): Promise<NetworkConfig> {
+    const metaChainShard = this.apiConfigService.getMetaChainShardId();
     const [
       {
         erd_round_duration, erd_rounds_per_epoch,
@@ -88,7 +89,7 @@ export class NetworkService {
       },
     ] = await Promise.all([
       this.gatewayService.getNetworkConfig(),
-      this.gatewayService.getNetworkStatus(4294967295),
+      this.gatewayService.getNetworkStatus(metaChainShard),
     ]);
 
     const roundsPassed = erd_rounds_passed_in_current_epoch;
