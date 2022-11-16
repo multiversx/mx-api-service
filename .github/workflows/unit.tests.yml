@@ -4,7 +4,7 @@
 name: Unit tests
 
 env:
-  CODECOV_VERSION: 'v0.1.15'
+  CODECOV_VERSION: 'v0.3.1'
 
 on:
   push:
