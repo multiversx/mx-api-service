@@ -33,7 +33,7 @@ jobs:
       - run: npm test
       - name: Collect code coverage
         run: npm run test:cov
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         with:
           files: ./coverage/unit/clover.xml
           version: ${{ env.CODECOV_VERSION }}

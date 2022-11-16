@@ -74,7 +74,7 @@ jobs:
         shell: bash
       - name: Run integration tests
         run: npm run test:e2e:cov
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         with:
           files: ./coverage/e2e/clover.xml
           version: ${{ env.CODECOV_VERSION }}
