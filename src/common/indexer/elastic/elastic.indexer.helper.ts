@@ -204,6 +204,10 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withRangeFilter('nonce', new RangeGreaterThanOrEqual(filter.nonceAfter));
     }
 
+    if (filter.withoutMetaESDT === true) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT], type => QueryType.Match('type', type));
+    }
+
     return elasticQuery;
   }
 

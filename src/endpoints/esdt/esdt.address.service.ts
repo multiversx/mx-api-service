@@ -393,6 +393,10 @@ export class EsdtAddressService {
       nfts = nfts.filter(x => !x.scamInfo);
     }
 
+    if (filter.withoutMetaESDT === true) {
+      nfts = nfts.filter(x => x.type.in(NftType.NonFungibleESDT, NftType.SemiFungibleESDT));
+    }
+
     const { from, size } = pagination;
 
     nfts = nfts.slice(from, from + size);

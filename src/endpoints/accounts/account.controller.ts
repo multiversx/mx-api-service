@@ -407,8 +407,9 @@ export class AccountController {
   @ApiQuery({ name: 'includeFlagged', description: 'Include NFTs that are flagged or not', required: false })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false })
   @ApiQuery({ name: 'source', description: 'Data source of request', required: false })
-  @ApiQuery({ name: 'withScamInfo', required: false, type: Boolean })
-  @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
+  @ApiQuery({ name: 'withScamInfo', description: 'Include scam info in the response', required: false, type: Boolean })
+  @ApiQuery({ name: 'computeScamInfo', description: 'Compute scam info in the response', required: false, type: Boolean })
+  @ApiQuery({ name: 'withoutMetaESDT', description: 'Exclude NFTs of type "MetaESDT" in the response', required: false, type: Boolean })
   async getAccountNfts(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -427,13 +428,14 @@ export class AccountController {
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('computeScamInfo', new ParseBoolPipe) computeScamInfo?: boolean,
     @Query('source', new ParseEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
+    @Query('withoutMetaESDT', new ParseBoolPipe) withoutMetaESDT?: boolean,
   ): Promise<NftAccount[]> {
     const options = NftQueryOptions.enforceScamInfoFlag(size, new NftQueryOptions({ withSupply, withScamInfo, computeScamInfo }));
 
     return await this.nftService.getNftsForAddress(
       address,
       new QueryPagination({ from, size }),
-      new NftFilter({ search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged }),
+      new NftFilter({ search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged, withoutMetaESDT }),
       options,
       source
     );
@@ -451,6 +453,7 @@ export class AccountController {
   @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
   @ApiQuery({ name: 'includeFlagged', description: 'Include NFTs that are flagged or not', required: false })
+  @ApiQuery({ name: 'withoutMetaESDT', description: 'Exclude NFTs of type "MetaESDT" in the response', required: false, type: Boolean })
   @ApiOkResponse({ type: Number })
   async getNftCount(
     @Param('address', ParseAddressPipe) address: string,
@@ -464,8 +467,9 @@ export class AccountController {
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseBoolPipe) includeFlagged?: boolean,
+    @Query('withoutMetaESDT', new ParseBoolPipe) withoutMetaESDT?: boolean,
   ): Promise<number> {
-    return await this.nftService.getNftCountForAddress(address, new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged }));
+    return await this.nftService.getNftCountForAddress(address, new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged, withoutMetaESDT }));
   }
 
   @Get("/accounts/:address/nfts/c")
@@ -482,8 +486,9 @@ export class AccountController {
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseBoolPipe) includeFlagged?: boolean,
+    @Query('withoutMetaESDT', new ParseBoolPipe) withoutMetaESDT?: boolean,
   ): Promise<number> {
-    return await this.nftService.getNftCountForAddress(address, new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged }));
+    return await this.nftService.getNftCountForAddress(address, new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged, withoutMetaESDT }));
   }
 
   @Get("/accounts/:address/nfts/:nft")
