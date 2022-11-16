@@ -89,6 +89,16 @@ describe('Collection Service', () => {
       const results = await collectionService.getNftCollectionCount(new CollectionFilter());
       expect(results).toStrictEqual(5100);
     });
+
+    it('should verifiy if collections count are different when withoutMetaESDT filter is applied', async () => {
+      const filter = new CollectionFilter();
+      filter.withoutMetaESDT = true;
+
+      const results = await collectionService.getNftCollectionCount(new CollectionFilter());
+      const resultsWithoutMetaESDT = await collectionService.getNftCollectionCount(filter);
+
+      expect(resultsWithoutMetaESDT).toBeLessThan(results);
+    });
   });
 
   describe('getNftCollection', () => {
