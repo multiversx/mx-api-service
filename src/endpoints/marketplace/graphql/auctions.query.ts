@@ -18,6 +18,10 @@ query($first: Int){
       }
     ]
   }
+  sorting: {
+    direction: DESC,
+    field: "creationDate"
+  }
   ){
     edges{
       node{
