@@ -51,7 +51,7 @@ import { AccountStats } from '../marketplace/entities/account.stats';
 import { AccountStatsFilters } from '../marketplace/entities/account.stats.filter';
 import { NftMarketplaceService } from '../marketplace/marketplace.service';
 import { StatusAuction } from '../marketplace/entities/auction.state.enum';
-import { Auction } from '../marketplace/entities/auction';
+import { Auction } from '../marketplace/entities/account.auctions';
 
 @Controller()
 @ApiTags('accounts')

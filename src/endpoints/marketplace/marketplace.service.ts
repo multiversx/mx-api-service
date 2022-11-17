@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { GraphQlService } from "src/common/graphql/graphql.service";
 import { AccountStats } from "./entities/account.stats";
 import { AccountStatsFilters } from "./entities/account.stats.filter";
-import { Auction } from "./entities/auction";
+import { Auction } from "./entities/account.auctions";
 import { StatusAuction } from "./entities/auction.state.enum";
 import { CollectionStats } from "./entities/collection.stats";
 import { CollectionStatsFilters } from "./entities/collection.stats.filter";
