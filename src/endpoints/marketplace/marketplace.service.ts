@@ -130,6 +130,12 @@ export class NftMarketplaceService {
     return auction;
   }
 
+  async getAuctionsCount(filter: AuctionsFilter): Promise<number> {
+    const auctions = await this.getFilteredAuctions(filter);
+
+    return auctions.length;
+  }
+
   async getAuctionsRaw(pagination: QueryPagination): Promise<Auctions[]> {
     const variables = {
       "first": pagination.size,
