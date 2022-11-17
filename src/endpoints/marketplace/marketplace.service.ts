@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { gql } from "graphql-request";
 import { GraphQlService } from "src/common/graphql/graphql.service";
 import { AccountStats } from "./entities/account.stats";
 import { AccountStatsFilters } from "./entities/account.stats.filter";
@@ -10,6 +9,10 @@ import { CollectionStatsFilters } from "./entities/collection.stats.filter";
 import { ExploreCollectionsStats } from "./entities/explore.collections.stats";
 import { ExploreNftsStats } from "./entities/explore.nfts.stats";
 import { ExploreStats } from "./entities/explore.stats";
+import { accountAuctionsQuery } from "./graphql/account.auctions.query";
+import { accountStatsQuery } from "./graphql/account.stats.query";
+import { collectionStatsQuery } from "./graphql/collection.stats.query";
+import { collectionsStatsQuery, nftsStatsQuery, statsQuery } from "./graphql/explore.query";
 
 @Injectable()
 export class NftMarketplaceService {
@@ -18,24 +21,8 @@ export class NftMarketplaceService {
   ) { }
 
   async getAccountStats(filters: AccountStatsFilters): Promise<AccountStats> {
-    const query = gql`
-    query($filters: AccountStatsFilter!){
-      accountStats(filters: $filters){
-        address
-        auctions
-        biddingBalance
-        claimable
-        collected
-        collections
-        creations
-        likes
-        marketplaceKey
-        orders
-      }
-    }`;
-
     const variables = { filters };
-    const result: any = await this.graphQlService.getDataFromMarketPlace(query, variables);
+    const result: any = await this.graphQlService.getDataFromMarketPlace(accountStatsQuery, variables);
 
     if (!result) {
       throw new BadRequestException('Count not fetch accountsStats data from Nft Marketplace');
@@ -54,23 +41,8 @@ export class NftMarketplaceService {
   }
 
   async getCollectionStats(filters: CollectionStatsFilters): Promise<CollectionStats> {
-    const query = gql`
-    query($filters: CollectionStatsFilter!){
-      collectionStats(filters: $filters){
-        identifier
-        activeAuctions
-        auctionsEnded
-        items
-        maxPrice
-        maxPrice
-        minPrice
-        saleAverage
-        volumeTraded
-      }
-    }`;
-
     const variables = { filters };
-    const result: any = await this.graphQlService.getDataFromMarketPlace(query, variables);
+    const result: any = await this.graphQlService.getDataFromMarketPlace(collectionStatsQuery, variables);
 
     if (!result) {
       throw new BadRequestException('Count not fetch collectionStats data from Nft Marketplace');
@@ -89,15 +61,7 @@ export class NftMarketplaceService {
   }
 
   async getExploreNftsStats(): Promise<ExploreNftsStats> {
-    const query = gql`
-    query{
-      exploreNftsStats{
-        buyNowCount
-        liveAuctionsCount
-      }
-    }`;
-
-    const result: any = await this.graphQlService.getDataFromMarketPlace(query, {});
+    const result: any = await this.graphQlService.getDataFromMarketPlace(nftsStatsQuery, {});
 
     if (!result) {
       throw new BadRequestException('Count not fetch exploreNftsStats data from Nft Marketplace');
@@ -110,15 +74,7 @@ export class NftMarketplaceService {
   }
 
   async getExploreCollectionsStats(): Promise<ExploreCollectionsStats> {
-    const query = gql`
-    query{
-      exploreCollectionsStats{
-        activeLast30DaysCount
-        verifiedCount
-      }
-    }`;
-
-    const result: any = await this.graphQlService.getDataFromMarketPlace(query, {});
+    const result: any = await this.graphQlService.getDataFromMarketPlace(collectionsStatsQuery, {});
 
     if (!result) {
       throw new BadRequestException('Count not fetch exploreCollectionsStats data from Nft Marketplace');
@@ -131,16 +87,7 @@ export class NftMarketplaceService {
   }
 
   async getExploreStats(): Promise<ExploreStats> {
-    const query = gql`
-    query{
-      exploreStats{
-        artists
-        collections
-        nfts
-      }
-    }`;
-
-    const result: any = await this.graphQlService.getDataFromMarketPlace(query, {});
+    const result: any = await this.graphQlService.getDataFromMarketPlace(statsQuery, {});
 
     if (!result) {
       throw new BadRequestException('Count not fetch exploreStats data from Nft Marketplace');
@@ -154,47 +101,7 @@ export class NftMarketplaceService {
   }
 
   async getAccountAuctions(address: string, state: StatusAuction): Promise<Auction[]> {
-    const query = gql`
-    query{
-      auctions(filters:{
-        operator: AND,
-        filters:[
-          {
-            field: "ownerAddress",
-            op: EQ
-            values: ["${address}"]
-          },
-          {
-            field: "status",
-            op: EQ
-            values: ["${state}"]
-          }
-        ]
-      }){
-        edges{
-          node{
-            id
-            identifier
-            collection
-            status
-            creationDate
-            endDate
-            marketplace{
-              key
-            }
-            owner{
-              address
-            }
-            tags
-            marketplaceAuctionId
-            startDate
-            __typename
-          }
-        }
-      }
-    }`;
-
-    const result: any = await this.graphQlService.getDataFromMarketPlace(query, {});
+    const result: any = await this.graphQlService.getDataFromMarketPlace(accountAuctionsQuery(address, state), {});
     if (!result) {
       return [];
     }
