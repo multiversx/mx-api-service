@@ -1,9 +1,11 @@
-import { Controller, Get } from "@nestjs/common";
-import { ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
-import { NftMarketplaceService } from "../marketplace.service";
-import { ExploreCollectionsStats } from "./explore.collections.stats";
-import { ExploreNftsStats } from "./explore.nfts.stats";
-import { ExploreStats } from "./explore.stats";
+import { Controller, DefaultValuePipe, Get, ParseIntPipe, Query } from "@nestjs/common";
+import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { Auctions } from "./entities/auctions";
+import { ExploreCollectionsStats } from "./entities/explore.collections.stats";
+import { ExploreNftsStats } from "./entities/explore.nfts.stats";
+import { ExploreStats } from "./entities/explore.stats";
+import { NftMarketplaceService } from "./marketplace.service";
 
 @Controller()
 @ApiTags('marketplace')
@@ -11,6 +13,17 @@ export class NftMarketplaceController {
   constructor(
     private readonly nftMarketplaceService: NftMarketplaceService
   ) { }
+
+  @Get("/explore/auctions")
+  @ApiOperation({ summary: 'Explore auctions', description: 'Returns auctions available in marketplaces ' })
+  @ApiOkResponse({ type: [Auctions] })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  getAuctions(
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<Auctions[]> {
+    return this.nftMarketplaceService.getAuctions(new QueryPagination({ size: size }));
+  }
+
 
   @Get("/explore/stats")
   @ApiOperation({ summary: 'Explore stats', description: 'Returns general information count about artist, collections, nfts ' })

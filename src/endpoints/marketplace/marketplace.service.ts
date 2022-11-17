@@ -13,6 +13,9 @@ import { accountAuctionsQuery } from "./graphql/account.auctions.query";
 import { accountStatsQuery } from "./graphql/account.stats.query";
 import { collectionStatsQuery } from "./graphql/collection.stats.query";
 import { collectionsStatsQuery, nftsStatsQuery, statsQuery } from "./graphql/explore.query";
+import { Auctions } from "./entities/auctions";
+import { auctionsQuery } from "./graphql/auctions.query";
+import { QueryPagination } from "src/common/entities/query.pagination";
 
 @Injectable()
 export class NftMarketplaceService {
@@ -121,6 +124,38 @@ export class NftMarketplaceService {
       accountAuction.tags = auction.node.tags;
 
       return accountAuction;
+    });
+
+    return auctions;
+  }
+
+  async getAuctions(pagination: QueryPagination): Promise<Auctions[]> {
+    const variables = {
+      "first": pagination.size,
+    };
+
+    const result: any = await this.graphQlService.getDataFromMarketPlace(auctionsQuery, variables);
+    if (!result) {
+      return [];
+    }
+
+    const auctions = result.auctions.edges.map((auction: any) => {
+      const auctions = new Auctions();
+
+      auctions.identifier = auction.node.identifier;
+      auctions.collection = auction.node.collection;
+      auctions.nonce = auction.node.auction;
+      auctions.id = auction.node.id;
+      auctions.marketPlaceId = auction.node.marketplaceAuctionId;
+      auctions.marketplace = auction.node.marketplaceKey;
+      auctions.minBid.amount = auction.node.minBid.amount;
+      auctions.minBid.token = auction.node.minBid.token;
+      auctions.maxBid.amount = auction.node.maxBid.amount;
+      auctions.maxBid.token = auction.node.maxBid.token;
+      auctions.timestamp = auction.node.creationDate;
+      auctions.ownerAddress = auction.node.ownerAddress;
+
+      return auctions;
     });
 
     return auctions;
