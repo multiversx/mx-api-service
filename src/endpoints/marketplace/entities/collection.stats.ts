@@ -12,7 +12,7 @@ export class CollectionStats {
   activeAuctions: string = '';
 
   @ApiProperty({ type: String })
-  auctionsEnded: string = '';
+  endedAuctions: string = '';
 
   @ApiProperty({ type: String })
   maxPrice: string = '';
@@ -25,7 +25,4 @@ export class CollectionStats {
 
   @ApiProperty({ type: String })
   volumeTraded: string = '';
-
-  @ApiProperty({ type: Number })
-  items: number = 0;
 }

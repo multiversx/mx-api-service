@@ -22,6 +22,10 @@ import { Collection } from "src/common/indexer/entities";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
 import { NftRank } from "src/common/assets/entities/nft.rank";
+import { NftMarketplaceService } from "../marketplace/marketplace.service";
+import { CollectionStatsFilters } from "../marketplace/entities/collection.stats.filter";
+import { CollectionQueryOptions } from "./entities/collection.query.options";
+
 
 @Injectable()
 export class CollectionService {
@@ -36,6 +40,7 @@ export class CollectionService {
     private readonly esdtAddressService: EsdtAddressService,
     private readonly pluginService: PluginService,
     private readonly persistenceService: PersistenceService,
+    private readonly nftMarketplaceService: NftMarketplaceService
   ) { }
 
   async isCollection(identifier: string): Promise<boolean> {
@@ -164,7 +169,7 @@ export class CollectionService {
     return await this.assetsService.getCollectionRanks(identifier);
   }
 
-  async getNftCollection(identifier: string): Promise<NftCollection | undefined> {
+  async getNftCollection(identifier: string, queryOptions?: CollectionQueryOptions): Promise<NftCollection | undefined> {
     const elasticCollection = await this.indexerService.getCollection(identifier);
     if (!elasticCollection) {
       return undefined;
@@ -184,15 +189,20 @@ export class CollectionService {
       return undefined;
     }
 
+    if (queryOptions && queryOptions.withAuctions) {
+      await this.applyAuctionsStats(collection);
+    }
+
     collection.type = elasticCollection.type as NftType;
     collection.timestamp = elasticCollection.timestamp;
     collection.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
 
     await this.pluginService.processCollections([collection]);
     await this.applyCollectionRoles(collection, elasticCollection);
-
     return collection;
   }
+
+
 
   async applyCollectionRoles(collection: NftCollection, elasticCollection: any) {
     collection.roles = await this.getNftCollectionRoles(elasticCollection);
@@ -332,5 +342,12 @@ export class CollectionService {
 
   async getCollectionCountForAddressWithRoles(address: string, filter: CollectionFilter): Promise<number> {
     return await this.esdtAddressService.getCollectionCountForAddressFromElastic(address, filter);
+  }
+
+  private async applyAuctionsStats(collection: NftCollection): Promise<void> {
+    const auctionsStats = await this.nftMarketplaceService.getCollectionStats(new CollectionStatsFilters({ identifier: collection.collection }));
+    collection.auctionsStats = auctionsStats;
+    //@ts-ignore
+    delete auctionsStats.identifier;
   }
 }

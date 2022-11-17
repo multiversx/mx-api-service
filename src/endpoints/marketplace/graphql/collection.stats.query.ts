@@ -6,7 +6,6 @@ query($filters: CollectionStatsFilter!){
     identifier
     activeAuctions
     auctionsEnded
-    items
     maxPrice
     maxPrice
     minPrice

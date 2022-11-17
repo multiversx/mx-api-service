@@ -54,12 +54,11 @@ export class NftMarketplaceService {
     return {
       identifier: result.collectionStats.identifier,
       activeAuctions: result.collectionStats.activeAuctions,
-      auctionsEnded: result.collectionStats.auctionsEnded,
+      endedAuctions: result.collectionStats.auctionsEnded,
       maxPrice: result.collectionStats.maxPrice,
       minPrice: result.collectionStats.minPrice,
       saleAverage: result.collectionStats.saleAverage,
       volumeTraded: result.collectionStats.volumeTraded,
-      items: result.collectionStats.items,
     };
   }
 

@@ -6,6 +6,7 @@ import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { Account } from "src/endpoints/accounts/entities/account";
 import { CollectionTrait } from "./collection.trait";
+import { CollectionStats } from "src/endpoints/marketplace/entities/collection.stats";
 
 @ObjectType("NftCollection", { description: "NFT collection object type." })
 export class NftCollection {
@@ -75,4 +76,7 @@ export class NftCollection {
   @Field(() => [CollectionTrait], { description: 'Trait list for the given NFT collection.', nullable: true })
   @ApiProperty({ type: CollectionTrait, isArray: true })
   traits: CollectionTrait[] = [];
+
+  @ApiProperty({ type: Boolean })
+  auctionsStats?: CollectionStats;
 }
