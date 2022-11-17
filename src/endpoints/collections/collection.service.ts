@@ -345,8 +345,11 @@ export class CollectionService {
   }
 
   private async applyAuctionsStats(collection: NftCollection): Promise<void> {
-    const auctionsStats = await this.nftMarketplaceService.getCollectionStats(new CollectionStatsFilters({ identifier: collection.collection }));
+    const auctionsStats = await this.nftMarketplaceService.getCollectionStats(
+      new CollectionStatsFilters({ identifier: collection.collection }));
+
     collection.auctionsStats = auctionsStats;
+
     //@ts-ignore
     delete auctionsStats.identifier;
   }
