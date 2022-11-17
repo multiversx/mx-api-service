@@ -7,15 +7,14 @@ import { StatusAuction } from "./entities/auction.state.enum";
 import { CollectionStats } from "./entities/collection.stats";
 import { CollectionStatsFilters } from "./entities/collection.stats.filter";
 import { ExploreCollectionsStats } from "./entities/explore.collections.stats";
-import { ExploreNftsStats } from "./entities/explore.nfts.stats";
-import { ExploreStats } from "./entities/explore.stats";
 import { accountAuctionsQuery } from "./graphql/account.auctions.query";
 import { accountStatsQuery } from "./graphql/account.stats.query";
 import { collectionStatsQuery } from "./graphql/collection.stats.query";
-import { collectionsStatsQuery, nftsStatsQuery, statsQuery } from "./graphql/explore.query";
+import { collectionsStatsQuery } from "./graphql/explore.query";
 import { Auctions } from "./entities/auctions";
 import { auctionsQuery } from "./graphql/auctions.query";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { AuctionsFilter } from "./entities/auctions.filter";
 
 @Injectable()
 export class NftMarketplaceService {
@@ -62,19 +61,6 @@ export class NftMarketplaceService {
     };
   }
 
-  async getExploreNftsStats(): Promise<ExploreNftsStats> {
-    const result: any = await this.graphQlService.getDataFromMarketPlace(nftsStatsQuery, {});
-
-    if (!result) {
-      throw new BadRequestException('Count not fetch exploreNftsStats data from Nft Marketplace');
-    }
-
-    return {
-      buyNowCount: result.exploreNftsStats.buyNowCount,
-      liveAuctionsCount: result.exploreNftsStats.liveAuctionsCount,
-    };
-  }
-
   async getExploreCollectionsStats(): Promise<ExploreCollectionsStats> {
     const result: any = await this.graphQlService.getDataFromMarketPlace(collectionsStatsQuery, {});
 
@@ -88,19 +74,25 @@ export class NftMarketplaceService {
     };
   }
 
-  async getExploreStats(): Promise<ExploreStats> {
-    const result: any = await this.graphQlService.getDataFromMarketPlace(statsQuery, {});
+  async getAuctions(queryPagination: QueryPagination, filter: AuctionsFilter): Promise<Auctions[]> {
+    const { size } = queryPagination;
 
-    if (!result) {
-      throw new BadRequestException('Count not fetch exploreStats data from Nft Marketplace');
-    }
+    let auctions = await this.getFilteredAuctions(filter);
 
-    return {
-      artists: result.exploreStats.artists,
-      collections: result.exploreStats.collections,
-      nfts: result.exploreStats.nfts,
-    };
+    auctions = auctions.slice(0, 0 + size);
+
+    return auctions;
   }
+
+  async getFilteredAuctions(filter: AuctionsFilter): Promise<Auctions[]> {
+    let auctions = await this.getAuctionsRaw(new QueryPagination({ size: 10000 }));
+
+    if (filter.marketplace) {
+      auctions = auctions.filter(auction => auction.marketplace.includes(filter.marketplace));
+    }
+    return auctions;
+  }
+
 
   async getAccountAuctions(address: string, state: StatusAuction): Promise<Auction[]> {
     const result: any = await this.graphQlService.getDataFromMarketPlace(accountAuctionsQuery(address, state), {});
@@ -128,7 +120,17 @@ export class NftMarketplaceService {
     return auctions;
   }
 
-  async getAuctions(pagination: QueryPagination): Promise<Auctions[]> {
+  async getAuctionById(auctionId: string): Promise<Auctions | undefined> {
+    const auctions = await this.getAuctionsRaw(new QueryPagination({ size: 10000 }));
+    const auction = auctions.find(x => x.id === auctionId);
+    if (!auction) {
+      return undefined;
+    }
+
+    return auction;
+  }
+
+  async getAuctionsRaw(pagination: QueryPagination): Promise<Auctions[]> {
     const variables = {
       "first": pagination.size,
     };
@@ -158,15 +160,5 @@ export class NftMarketplaceService {
     });
 
     return auctions;
-  }
-
-  async getAuctionById(auctionId: string): Promise<Auctions | undefined> {
-    const auctions = await this.getAuctions(new QueryPagination({ size: 10000 }));
-    const auction = auctions.find(x => x.id === auctionId);
-    if (!auction) {
-      return undefined;
-    }
-
-    return auction;
   }
 }
