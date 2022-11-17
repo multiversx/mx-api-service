@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, ParseIntPipe, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { Auctions } from "./entities/auctions";
@@ -22,6 +22,19 @@ export class NftMarketplaceController {
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<Auctions[]> {
     return this.nftMarketplaceService.getAuctions(new QueryPagination({ size: size }));
+  }
+
+  @Get("/explore/auctions/:id")
+  @ApiOperation({ summary: 'Explore auction details', description: 'Returns a specific auction ' })
+  @ApiOkResponse({ type: Auctions })
+  async getAuctionById(
+    @Param("id") id: string,
+  ): Promise<Auctions> {
+    const auction = await this.nftMarketplaceService.getAuctionById(id);
+    if (auction === undefined) {
+      throw new NotFoundException('Auction not found');
+    }
+    return auction;
   }
 
 

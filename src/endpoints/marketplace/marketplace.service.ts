@@ -144,7 +144,7 @@ export class NftMarketplaceService {
 
       auctions.identifier = auction.node.identifier;
       auctions.collection = auction.node.collection;
-      auctions.nonce = auction.node.auction;
+      auctions.nonce = auction.node.nonce;
       auctions.id = auction.node.id;
       auctions.marketPlaceId = auction.node.marketplaceAuctionId;
       auctions.marketplace = auction.node.marketplaceKey;
@@ -159,5 +159,15 @@ export class NftMarketplaceService {
     });
 
     return auctions;
+  }
+
+  async getAuctionById(auctionId: string): Promise<Auctions | undefined> {
+    const auctions = await this.getAuctions(new QueryPagination({ size: 10000 }));
+    const auction = auctions.find(x => x.id === auctionId);
+    if (!auction) {
+      return undefined;
+    }
+
+    return auction;
   }
 }
