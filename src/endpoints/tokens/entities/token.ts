@@ -61,29 +61,33 @@ export class Token {
   @ApiProperty({ type: Boolean, default: false })
   canUpgrade: boolean = false;
 
-  @Field(() => Boolean, { description: "Token canMint property." })
-  @ApiProperty({ type: Boolean, default: false })
-  canMint: boolean = false;
+  @Field(() => Boolean, { description: "Token canMint property.", nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true })
+  canMint: boolean | undefined = undefined;
 
-  @Field(() => Boolean, { description: "Token canBurn property." })
-  @ApiProperty({ type: Boolean, default: false })
-  canBurn: boolean = false;
+  @Field(() => Boolean, { description: "Token canBurn property.", nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true })
+  canBurn: boolean | undefined = undefined;
 
-  @Field(() => Boolean, { description: "Token canChangeOwner property." })
-  @ApiProperty({ type: Boolean, default: false })
-  canChangeOwner: boolean = false;
+  @Field(() => Boolean, { description: "Token canChangeOwner property.", nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true })
+  canChangeOwner: boolean | undefined = undefined;
 
   @Field(() => Boolean, { description: "Token canPause property." })
   @ApiProperty({ type: Boolean, default: false })
   canPause: boolean = false;
 
-  @Field(() => Boolean, { description: "Token canFreeze property." })
-  @ApiProperty({ type: Boolean, default: false })
-  canFreeze: boolean = false;
+  @Field(() => Boolean, { description: "Token canFreeze property.", nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true })
+  canFreeze: boolean | undefined = undefined;
 
   @Field(() => Boolean, { description: "Token canWipe property.", nullable: true })
   @ApiProperty({ type: Boolean, default: false })
   canWipe: boolean = false;
+
+  @Field(() => Boolean, { description: "Token canFreeze property.", nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true })
+  canTransferNftCreateRole: boolean | undefined = undefined;
 
   @Field(() => Float, { description: "Current token price.", nullable: true })
   @ApiProperty({ type: Number, nullable: true })
@@ -100,4 +104,8 @@ export class Token {
   @Field(() => String, { description: "Token circulating supply amount details.", nullable: true })
   @ApiProperty(SwaggerUtils.amountPropertyOptions({ description: 'Circulating supply amount' }))
   circulatingSupply: string | undefined = undefined;
+
+  @Field(() => Number, { description: "Creation timestamp." })
+  @ApiProperty({ type: Number, description: 'Creation timestamp' })
+  timestamp: number | undefined = undefined;
 }

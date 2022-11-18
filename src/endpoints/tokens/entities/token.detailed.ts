@@ -3,6 +3,7 @@ import { Field, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { Token } from "./token";
 import { TokenRoles } from "./token.roles";
+import { TokenType } from "./token.type";
 
 @ObjectType("TokenDetailed", { description: "TokenDetailed object type." })
 export class TokenDetailed extends Token {
@@ -11,29 +12,17 @@ export class TokenDetailed extends Token {
     Object.assign(this, init);
   }
 
+  @Field(() => TokenType, { description: "Token type." })
+  @ApiProperty({ enum: TokenType })
+  type: TokenType = TokenType.FungibleESDT;
+
   @Field(() => Boolean, { description: "Token canUpgrade property." })
   @ApiProperty({ type: Boolean, default: false })
   canUpgrade: boolean = false;
 
-  @Field(() => Boolean, { description: "Token canMint property." })
-  @ApiProperty({ type: Boolean, default: false })
-  canMint: boolean = false;
-
-  @Field(() => Boolean, { description: "Token canBurn property." })
-  @ApiProperty({ type: Boolean, default: false })
-  canBurn: boolean = false;
-
-  @Field(() => Boolean, { description: "Token canChangeOwner property." })
-  @ApiProperty({ type: Boolean, default: false })
-  canChangeOwner: boolean = false;
-
   @Field(() => Boolean, { description: "Token canPause property." })
   @ApiProperty({ type: Boolean, default: false })
   canPause: boolean = false;
-
-  @Field(() => Boolean, { description: "Token canFreeze property." })
-  @ApiProperty({ type: Boolean, default: false })
-  canFreeze: boolean = false;
 
   @Field(() => Boolean, { description: "Token canUpgrade property." })
   @ApiProperty({ type: Boolean, default: false })
@@ -62,4 +51,8 @@ export class TokenDetailed extends Token {
   @Field(() => String, { description: "Token initial minted amount details." })
   @ApiProperty(SwaggerUtils.amountPropertyOptions({ description: 'Initial minted amount' }))
   initialMinted: string = '';
+
+  @Field(() => Boolean, { description: 'If the given NFT collection can transfer the underlying tokens by default.', nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true })
+  canTransfer: boolean | undefined = undefined;
 }

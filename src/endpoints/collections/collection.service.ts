@@ -22,6 +22,7 @@ import { Collection } from "src/common/indexer/entities";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
 import { NftRank } from "src/common/assets/entities/nft.rank";
+import { TokenDetailed } from "../tokens/entities/token.detailed";
 
 @Injectable()
 export class CollectionService {
@@ -194,7 +195,7 @@ export class CollectionService {
     return collection;
   }
 
-  async applyCollectionRoles(collection: NftCollection, elasticCollection: any) {
+  async applyCollectionRoles(collection: NftCollection | TokenDetailed, elasticCollection: any) {
     collection.roles = await this.getNftCollectionRoles(elasticCollection);
     const isTransferProhibitedByDefault = collection.roles?.some(x => x.canTransfer === true) === true;
     collection.canTransfer = !isTransferProhibitedByDefault;

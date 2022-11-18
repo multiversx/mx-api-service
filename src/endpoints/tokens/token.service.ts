@@ -30,6 +30,8 @@ import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionService } from "../transactions/transaction.service";
 import { MexTokenService } from "../mex/mex.token.service";
+import { CollectionService } from "../collections/collection.service";
+import { NftType } from "../nfts/entities/nft.type";
 
 @Injectable()
 export class TokenService {
@@ -46,6 +48,7 @@ export class TokenService {
     private readonly transactionService: TransactionService,
     @Inject(forwardRef(() => MexTokenService))
     private readonly mexTokenService: MexTokenService,
+    private readonly collectionService: CollectionService,
   ) { }
 
   async isToken(identifier: string): Promise<boolean> {
@@ -71,7 +74,14 @@ export class TokenService {
 
     await this.applySupply(token);
 
-    token.roles = await this.getTokenRoles(identifier);
+    if (token.type === TokenType.FungibleESDT) {
+      token.roles = await this.getTokenRoles(identifier);
+    } else if (token.type === TokenType.MetaESDT) {
+      const elasticCollection = await this.indexerService.getCollection(identifier);
+      if (elasticCollection) {
+        await this.collectionService.applyCollectionRoles(token, elasticCollection);
+      }
+    }
 
     return token;
   }
@@ -123,6 +133,10 @@ export class TokenService {
       const identifierArray = filter.identifiers.map(identifier => identifier.toLowerCase());
 
       tokens = tokens.filter(token => identifierArray.includes(token.identifier.toLowerCase()));
+    }
+
+    if (filter.withMetaESDT !== true) {
+      tokens = tokens.filter(token => token.type === TokenType.FungibleESDT);
     }
 
     if (filter.sort) {
@@ -426,6 +440,10 @@ export class TokenService {
   }
 
   async applySupply(token: TokenDetailed): Promise<void> {
+    if (token.type !== TokenType.FungibleESDT) {
+      return;
+    }
+
     const supply = await this.esdtService.getTokenSupply(token.identifier);
 
     token.supply = NumberUtils.denominate(BigInt(supply.totalSupply), token.decimals).toFixed();
@@ -612,19 +630,40 @@ export class TokenService {
       true
     );
 
-    const tokensAssets = await this.cachingService.batchProcess(
-      tokensIdentifiers,
-      token => CacheInfo.EsdtAssets(token).key,
-      async (identifier: string) => await this.getTokenAssetsRaw(identifier),
-      Constants.oneDay(),
-      true
-    );
+    let tokens = tokensProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
 
-    let tokens = tokensProperties.zip(tokensAssets, (first, second) => ApiUtils.mergeObjects(new TokenDetailed, { ...first, assets: second }));
+    for (const token of tokens) {
+      token.type = TokenType.FungibleESDT;
+    }
+
+    const collections = await this.collectionService.getNftCollections(new QueryPagination({ from: 0, size: 10000 }), { type: [NftType.MetaESDT] });
+
+    for (const collection of collections) {
+      tokens.push(new TokenDetailed({
+        type: TokenType.MetaESDT,
+        identifier: collection.collection,
+        name: collection.name,
+        timestamp: collection.timestamp,
+        owner: collection.owner,
+        decimals: collection.decimals,
+        canFreeze: collection.canFreeze,
+        canPause: collection.canPause,
+        canTransferNftCreateRole: collection.canTransferNftCreateRole,
+        canWipe: collection.canWipe,
+      }));
+    }
 
     await this.batchProcessTokens(tokens);
 
     await this.applyMexPrices(tokens);
+
+    await this.cachingService.batchApplyAll(
+      tokens,
+      token => CacheInfo.EsdtAssets(token.identifier).key,
+      async token => await this.getTokenAssetsRaw(token.identifier),
+      (token, assets) => token.assets = assets,
+      CacheInfo.EsdtAssets('').ttl,
+    );
 
     tokens = tokens.sortedDescending(token => token.assets ? 1 : 0, token => token.marketCap ?? 0, token => token.transactions ?? 0);
 

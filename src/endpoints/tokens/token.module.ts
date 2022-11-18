@@ -6,6 +6,7 @@ import { TokenService } from "./token.service";
 import { TokenTransferService } from "./token.transfer.service";
 import { AssetsModule } from "src/common/assets/assets.module";
 import { MexModule } from "../mex/mex.module";
+import { CollectionModule } from "../collections/collection.module";
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { MexModule } from "../mex/mex.module";
     forwardRef(() => TransactionModule),
     forwardRef(() => AssetsModule),
     forwardRef(() => MexModule),
+    forwardRef(() => CollectionModule),
   ],
   providers: [
     TokenService, TokenTransferService,
