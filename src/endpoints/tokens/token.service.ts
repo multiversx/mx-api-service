@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { Token } from "./entities/token";
 import { TokenWithBalance } from "./entities/token.with.balance";
 import { TokenDetailed } from "./entities/token.detailed";
@@ -20,11 +20,16 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
-import { AddressUtils, ApiUtils, NumberUtils, TokenUtils } from "@elrondnetwork/erdnest";
+import { AddressUtils, ApiUtils, CachingService, Constants, NumberUtils, TokenUtils } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@elrondnetwork/erdnest";
 import { TokenLogo } from "./entities/token.logo";
 import { AssetsService } from "src/common/assets/assets.service";
+import { CacheInfo } from "src/utils/cache.info";
+import { TokenAssets } from "src/common/assets/entities/token.assets";
+import { TransactionFilter } from "../transactions/entities/transaction.filter";
+import { TransactionService } from "../transactions/transaction.service";
+import { MexTokenService } from "../mex/mex.token.service";
 
 @Injectable()
 export class TokenService {
@@ -36,15 +41,20 @@ export class TokenService {
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
     private readonly assetsService: AssetsService,
+    private readonly cachingService: CachingService,
+    @Inject(forwardRef(() => TransactionService))
+    private readonly transactionService: TransactionService,
+    @Inject(forwardRef(() => MexTokenService))
+    private readonly mexTokenService: MexTokenService,
   ) { }
 
   async isToken(identifier: string): Promise<boolean> {
-    const tokens = await this.esdtService.getAllEsdtTokens();
+    const tokens = await this.getAllTokens();
     return tokens.find(x => x.identifier === identifier) !== undefined;
   }
 
   async getToken(identifier: string): Promise<TokenDetailed | undefined> {
-    const tokens = await this.esdtService.getAllEsdtTokens();
+    const tokens = await this.getAllTokens();
     let token = tokens.find(x => x.identifier === identifier);
 
     if (!TokenUtils.isToken(identifier)) {
@@ -89,7 +99,7 @@ export class TokenService {
   }
 
   async getFilteredTokens(filter: TokenFilter): Promise<TokenDetailed[]> {
-    let tokens = await this.esdtService.getAllEsdtTokens();
+    let tokens = await this.getAllTokens();
 
     if (filter.search) {
       const searchLower = filter.search.toLowerCase();
@@ -190,7 +200,7 @@ export class TokenService {
 
     const elasticTokensWithBalance = elasticTokens.toRecord(token => token.token, token => token.balance);
 
-    const allTokens = await this.esdtService.getAllEsdtTokens();
+    const allTokens = await this.getAllTokens();
 
     const result: TokenWithBalance[] = [];
     for (const token of allTokens) {
@@ -499,7 +509,7 @@ export class TokenService {
   async getTokensWithRolesForAddress(address: string, filter: TokenWithRolesFilter, pagination: QueryPagination): Promise<TokenWithRoles[]> {
     const tokenList = await this.indexerService.getTokensWithRolesForAddress(address, filter, pagination);
 
-    const allTokens = await this.esdtService.getAllEsdtTokens();
+    const allTokens = await this.getAllTokens();
 
     const result: TokenWithRoles[] = [];
 
@@ -551,5 +561,139 @@ export class TokenService {
     }
 
     return logo.svgUrl;
+  }
+
+  async getTokenMarketCap(): Promise<number> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.TokenMarketCap.key,
+      async () => await this.getTokenMarketCapRaw(),
+      CacheInfo.TokenMarketCap.ttl,
+    );
+  }
+
+  async getTokenMarketCapRaw(): Promise<number> {
+    let totalMarketCap = 0;
+
+    const tokens = await this.getAllTokens();
+    for (const token of tokens) {
+      if (token.price && token.marketCap) {
+        totalMarketCap += token.marketCap;
+      }
+    }
+
+    return totalMarketCap;
+  }
+
+  async getAllTokens(): Promise<TokenDetailed[]> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.AllEsdtTokens.key,
+      async () => await this.getAllTokensRaw(),
+      CacheInfo.AllEsdtTokens.ttl
+    );
+  }
+
+  async getAllTokensRaw(): Promise<TokenDetailed[]> {
+    let tokensIdentifiers: string[];
+    try {
+      const getFungibleTokensResult = await this.gatewayService.get('network/esdt/fungible-tokens', GatewayComponentRequest.allFungibleTokens);
+
+      tokensIdentifiers = getFungibleTokensResult.tokens;
+    } catch (error) {
+      this.logger.error('Error when getting fungible tokens from gateway');
+      this.logger.error(error);
+      return [];
+    }
+
+    const tokensProperties = await this.cachingService.batchProcess(
+      tokensIdentifiers,
+      token => CacheInfo.EsdtProperties(token).key,
+      async (identifier: string) => await this.esdtService.getEsdtTokenPropertiesRaw(identifier),
+      Constants.oneDay(),
+      true
+    );
+
+    const tokensAssets = await this.cachingService.batchProcess(
+      tokensIdentifiers,
+      token => CacheInfo.EsdtAssets(token).key,
+      async (identifier: string) => await this.getTokenAssetsRaw(identifier),
+      Constants.oneDay(),
+      true
+    );
+
+    let tokens = tokensProperties.zip(tokensAssets, (first, second) => ApiUtils.mergeObjects(new TokenDetailed, { ...first, assets: second }));
+
+    await this.batchProcessTokens(tokens);
+
+    await this.applyMexPrices(tokens);
+
+    tokens = tokens.sortedDescending(token => token.assets ? 1 : 0, token => token.marketCap ?? 0, token => token.transactions ?? 0);
+
+    return tokens;
+  }
+
+  private async getTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
+    return await this.assetsService.getTokenAssets(identifier);
+  }
+
+  private async batchProcessTokens(tokens: TokenDetailed[]) {
+    await this.cachingService.batchApplyAll(
+      tokens,
+      token => CacheInfo.TokenTransactions(token.identifier).key,
+      token => this.getTransactionCount(token),
+      (token, transactions) => token.transactions = transactions,
+      CacheInfo.TokenTransactions('').ttl,
+    );
+
+    await this.cachingService.batchApplyAll(
+      tokens,
+      token => CacheInfo.TokenAccounts(token.identifier).key,
+      token => this.getAccountsCount(token),
+      (token, accounts) => token.accounts = accounts,
+      CacheInfo.TokenAccounts('').ttl,
+    );
+  }
+
+  private async getTransactionCount(token: TokenDetailed): Promise<number> {
+    return await this.transactionService.getTransactionCount(new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }));
+  }
+
+  private async getAccountsCount(token: TokenDetailed): Promise<number> {
+    let accounts = await this.cachingService.getCacheRemote<number>(CacheInfo.TokenAccountsExtra(token.identifier).key);
+    if (!accounts) {
+      accounts = await this.getEsdtAccountsCount(token.identifier);
+    }
+
+    return accounts;
+  }
+
+  private async getEsdtAccountsCount(identifier: string): Promise<number> {
+    return await this.indexerService.getEsdtAccountsCount(identifier);
+  }
+
+  private async applyMexPrices(tokens: TokenDetailed[]): Promise<void> {
+    try {
+      const indexedTokens = await this.mexTokenService.getMexPricesRaw();
+      for (const token of tokens) {
+        const price = indexedTokens[token.identifier];
+        if (price) {
+          const supply = await this.esdtService.getTokenSupply(token.identifier);
+
+          if (token.assets && token.identifier.split('-')[0] === 'EGLDUSDC') {
+            price.price = price.price / (10 ** 12) * 2;
+          }
+
+          if (price.isToken) {
+            token.price = price.price;
+            token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+          }
+
+          token.supply = supply.totalSupply;
+          token.circulatingSupply = supply.circulatingSupply;
+        }
+      }
+    } catch (error) {
+      this.logger.error('Could not apply mex tokens prices');
+      this.logger.error(error);
+    }
   }
 }
