@@ -3,6 +3,7 @@ import { PluginModule } from "src/plugins/plugin.module";
 import { AccountModule } from "../accounts/account.module";
 import { BlockModule } from "../blocks/block.module";
 import { EsdtModule } from "../esdt/esdt.module";
+import { SmartContractResultModule } from "../sc-results/scresult.module";
 import { StakeModule } from "../stake/stake.module";
 import { TransactionModule } from "../transactions/transaction.module";
 import { VmQueryModule } from "../vm.query/vm.query.module";
@@ -17,6 +18,7 @@ import { NetworkService } from "./network.service";
     forwardRef(() => StakeModule),
     forwardRef(() => EsdtModule),
     forwardRef(() => PluginModule),
+    forwardRef(() => SmartContractResultModule),
   ],
   providers: [
     NetworkService,
