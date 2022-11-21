@@ -126,7 +126,7 @@ export class AccountController {
   @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'A comma-separated list of identifiers to filter by', required: false, type: String })
-  @ApiQuery({ name: 'withMetaESDT', description: 'Include MetaESDTs in response', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'withMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
   @ApiOkResponse({ type: [TokenWithBalance] })
   async getAccountTokens(
     @Param('address', ParseAddressPipe) address: string,
