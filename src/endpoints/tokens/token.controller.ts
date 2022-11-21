@@ -43,7 +43,7 @@ export class TokenController {
   @ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortTokens })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
-  @ApiQuery({ name: 'withMetaESDT', description: 'Include MetaESDTs in response', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'withMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
   async getTokens(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -68,7 +68,7 @@ export class TokenController {
   @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
-  @ApiQuery({ name: 'withMetaESDT', description: 'Include MetaESDTs in response', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'withMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
   async getTokenCount(
     @Query('search') search?: string,
     @Query('name') name?: string,
