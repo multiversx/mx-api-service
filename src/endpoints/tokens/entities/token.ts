@@ -2,12 +2,17 @@ import { SwaggerUtils } from "@elrondnetwork/erdnest";
 import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { TokenAssets } from "../../../common/assets/entities/token.assets";
+import { TokenType } from "./token.type";
 
 @ObjectType("Token", { description: "Token object type." })
 export class Token {
   constructor(init?: Partial<Token>) {
     Object.assign(this, init);
   }
+
+  @Field(() => TokenType, { description: "Token type." })
+  @ApiProperty({ enum: TokenType })
+  type: TokenType = TokenType.FungibleESDT;
 
   @Field(() => String, { description: "Token Identifier." })
   @ApiProperty({ type: String })

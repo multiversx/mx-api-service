@@ -3,7 +3,6 @@ import { Field, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { Token } from "./token";
 import { TokenRoles } from "./token.roles";
-import { TokenType } from "./token.type";
 
 @ObjectType("TokenDetailed", { description: "TokenDetailed object type." })
 export class TokenDetailed extends Token {
@@ -11,10 +10,6 @@ export class TokenDetailed extends Token {
     super();
     Object.assign(this, init);
   }
-
-  @Field(() => TokenType, { description: "Token type." })
-  @ApiProperty({ enum: TokenType })
-  type: TokenType = TokenType.FungibleESDT;
 
   @Field(() => Boolean, { description: "Token canUpgrade property." })
   @ApiProperty({ type: Boolean, default: false })

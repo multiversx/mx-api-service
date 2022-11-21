@@ -358,9 +358,14 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<any[]> {
     let query = ElasticQuery.create()
-      .withMustNotCondition(QueryType.Exists('identifier'))
       .withMustCondition(QueryType.Match('address', address))
       .withPagination({ from: queryPagination.from, size: queryPagination.size });
+
+    if (filter.withMetaESDT === true) {
+      query = query.withMustMultiShouldCondition([TokenType.FungibleESDT, TokenType.MetaESDT], type => QueryType.Match('type', type));
+    } else {
+      query = query.withMustNotCondition(QueryType.Exists('identifier'));
+    }
 
     if (filter.identifier) {
       query = query.withMustCondition(QueryType.Match('token', filter.identifier));

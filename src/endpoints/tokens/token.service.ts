@@ -212,16 +212,18 @@ export class TokenService {
   async getTokensForAddressFromElastic(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
     const elasticTokens = await this.indexerService.getTokensForAddress(address, queryPagination, filter);
 
-    const elasticTokensWithBalance = elasticTokens.toRecord(token => token.token, token => token.balance);
-
     const allTokens = await this.getAllTokens();
 
+    const allTokensIndexed = allTokens.toRecord<TokenDetailed>(token => token.identifier);
+
     const result: TokenWithBalance[] = [];
-    for (const token of allTokens) {
-      if (elasticTokensWithBalance[token.identifier]) {
+    for (const elasticToken of elasticTokens) {
+      if (allTokensIndexed[elasticToken.token]) {
+        const token = allTokensIndexed[elasticToken.token];
+
         const tokenWithBalance: TokenWithBalance = {
           ...token,
-          balance: elasticTokensWithBalance[token.identifier],
+          balance: elasticToken.balance,
           valueUsd: undefined,
         };
 
@@ -314,12 +316,10 @@ export class TokenService {
     const tokensWithBalance: TokenWithBalance[] = [];
 
     for (const tokenIdentifier of Object.keys(esdts)) {
-      if (!TokenUtils.isToken(tokenIdentifier)) {
-        continue;
-      }
+      const identifier = tokenIdentifier.split('-').slice(0, 2).join('-');
 
       const esdt = esdts[tokenIdentifier];
-      const token = tokensIndexed[tokenIdentifier];
+      const token = tokensIndexed[identifier];
       if (!token) {
         continue;
       }
@@ -655,7 +655,7 @@ export class TokenService {
 
     await this.batchProcessTokens(tokens);
 
-    await this.applyMexPrices(tokens);
+    await this.applyMexPrices(tokens.filter(x => x.type !== TokenType.MetaESDT));
 
     await this.cachingService.batchApplyAll(
       tokens,
