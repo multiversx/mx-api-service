@@ -366,7 +366,19 @@ export class TokenService {
     }
 
     const tokenAccounts = await this.indexerService.getTokenAccounts(pagination, identifier);
-    return tokenAccounts.map((tokenAccount) => ApiUtils.mergeObjects(new TokenAccount(), tokenAccount));
+
+    const result: TokenAccount[] = [];
+
+    for (const tokenAccount of tokenAccounts) {
+      result.push(new TokenAccount({
+        address: tokenAccount.address,
+        balance: tokenAccount.balance,
+        attributes: tokenAccount.data?.attributes,
+        identifier: tokenAccount.type === TokenType.MetaESDT ? tokenAccount.identifier : undefined,
+      }));
+    }
+
+    return result;
   }
 
   async getTokenAccountsCount(identifier: string): Promise<number | undefined> {
