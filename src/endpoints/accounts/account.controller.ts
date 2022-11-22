@@ -47,6 +47,7 @@ import { TransactionDetailed } from '../transactions/entities/transaction.detail
 import { OriginLogger } from '@elrondnetwork/erdnest';
 import { AccountDelegation } from '../stake/entities/account.delegation';
 import { DelegationService } from '../delegation/delegation.service';
+import { TokenType } from '../tokens/entities/token.type';
 
 @Controller()
 @ApiTags('accounts')
@@ -122,6 +123,7 @@ export class AccountController {
   @ApiOperation({ summary: 'Account tokens', description: 'Returns a list of all available fungible tokens for a given address, together with their balance' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'type', description: 'Token type', required: false, enum: TokenType })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
@@ -132,6 +134,7 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('type', new ParseEnumPipe(TokenType)) type?: TokenType,
     @Query('search') search?: string,
     @Query('name') name?: string,
     @Query('identifier') identifier?: string,
@@ -139,7 +142,7 @@ export class AccountController {
     @Query('withMetaESDT', new ParseBoolPipe) withMetaESDT?: boolean,
   ): Promise<TokenWithBalance[]> {
     try {
-      return await this.tokenService.getTokensForAddress(address, new QueryPagination({ from, size }), new TokenFilter({ search, name, identifier, identifiers, withMetaESDT }));
+      return await this.tokenService.getTokensForAddress(address, new QueryPagination({ from, size }), new TokenFilter({ type, search, name, identifier, identifiers, withMetaESDT }));
     } catch (error) {
       this.logger.error(`Error in getAccountTokens for address ${address}`);
       this.logger.error(error);

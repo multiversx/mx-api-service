@@ -17,6 +17,7 @@ import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { Block } from "../entities/block";
 import { Tag } from "../entities/tag";
 import { ElasticIndexerHelper } from "./elastic.indexer.helper";
+import { TokenType } from "../entities";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -362,9 +363,13 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: queryPagination.from, size: queryPagination.size });
 
     if (filter.withMetaESDT === true) {
-      query = query.withMustMultiShouldCondition([EsdtType.FungibleESDT, EsdtType.MetaESDT], type => QueryType.Match('type', type));
+      query = query.withMustMultiShouldCondition([TokenType.FungibleESDT, TokenType.MetaESDT], type => QueryType.Match('type', type));
     } else {
       query = query.withMustNotCondition(QueryType.Exists('identifier'));
+    }
+
+    if (filter.type) {
+      query = query.withMustMatchCondition('type', filter.type);
     }
 
     if (filter.identifier) {

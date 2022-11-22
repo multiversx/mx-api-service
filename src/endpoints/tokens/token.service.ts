@@ -112,6 +112,10 @@ export class TokenService {
   async getFilteredTokens(filter: TokenFilter): Promise<TokenDetailed[]> {
     let tokens = await this.getAllTokens();
 
+    if (filter.type) {
+      tokens = tokens.filter(token => token.type === filter.type);
+    }
+
     if (filter.search) {
       const searchLower = filter.search.toLowerCase();
 
