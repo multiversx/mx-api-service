@@ -448,6 +448,21 @@ type EsdtLockedAccount {
   name: String
 }
 
+"""Esdt type enum."""
+enum EsdtType {
+  """Fungible ESDT token type."""
+  FungibleESDT
+
+  """Meta ESDT token type."""
+  MetaESDT
+
+  """Non-fungible ESDT token type."""
+  NonFungibleESDT
+
+  """Semi-fungible ESDT token type."""
+  SemiFungibleESDT
+}
+
 """Input to retrieve the given detailed account for."""
 input GetAccountDetailedInput {
   """Address to retrieve the corresponding detailed account for."""
@@ -1894,6 +1909,9 @@ type NftCollection {
   """Roles list for the given NFT collection."""
   roles: [CollectionRoles!]
 
+  """Scam information for the underlying collection."""
+  scamInfo: ScamInformation
+
   """Ticker for the given NFT collection."""
   ticker: ID!
 
@@ -1947,6 +1965,9 @@ type NftCollectionAccount {
   """Roles list for the given NFT collection."""
   roles: [CollectionRoles!]
 
+  """Scam information for the underlying collection."""
+  scamInfo: ScamInformation
+
   """Ticker for the given NFT collection."""
   ticker: ID!
 
@@ -1995,6 +2016,9 @@ type NftCollectionAccountFlat {
 
   """Roles list for the given NFT collection."""
   roles: [CollectionRoles!]
+
+  """Scam information for the underlying collection."""
+  scamInfo: ScamInformation
 
   """Ticker for the given NFT collection."""
   ticker: ID!
@@ -2823,8 +2847,14 @@ type TokenAccount {
   """Token account address."""
   address: String!
 
+  """Token attributes if MetaESDT."""
+  attributes: String
+
   """Token balance account amount."""
   balance: String!
+
+  """Token identifier if MetaESDT."""
+  identifier: String
 }
 
 """Token assets object type."""
@@ -2871,19 +2901,27 @@ type TokenDetailed {
   burnt: String!
 
   """Token canBurn property."""
-  canBurn: Boolean!
+  canBurn: Boolean
 
   """Token canChangeOwner property."""
-  canChangeOwner: Boolean!
+  canChangeOwner: Boolean
 
   """Token canFreeze property."""
-  canFreeze: Boolean!
+  canFreeze: Boolean
 
   """Token canMint property."""
-  canMint: Boolean!
+  canMint: Boolean
 
   """Token canPause property."""
   canPause: Boolean!
+
+  """
+  If the given NFT collection can transfer the underlying tokens by default.
+  """
+  canTransfer: Boolean
+
+  """Token canFreeze property."""
+  canTransferNftCreateRole: Boolean
 
   """Token canUpgrade property."""
   canUpgrade: Boolean!
@@ -2930,8 +2968,14 @@ type TokenDetailed {
   """Token ticker."""
   ticker: String!
 
+  """Creation timestamp."""
+  timestamp: Float!
+
   """Tokens transactions."""
   transactions: Float
+
+  """Token type."""
+  type: TokenType!
 }
 
 """TokenRoles object type."""
@@ -2985,18 +3029,18 @@ type TokenSupplyResult {
   supply: String!
 }
 
-"""Token type object type."""
+"""Token Type object."""
 enum TokenType {
-  """Fungible ESDT token type."""
+  """FungibleESDT."""
   FungibleESDT
 
-  """Meta ESDT token type."""
+  """MetaESDT."""
   MetaESDT
 
-  """Non-fungible ESDT token type."""
+  """NonFungibleESDT."""
   NonFungibleESDT
 
-  """Semi-fungible ESDT token type."""
+  """SemiFungibleESDT."""
   SemiFungibleESDT
 }
 
@@ -3246,7 +3290,7 @@ type TransactionOperation {
   decimals: Float
 
   """ESDT type for the transaction operation."""
-  esdtType: TokenType
+  esdtType: EsdtType
 
   """Identifier for the transaction operation."""
   id: ID!
