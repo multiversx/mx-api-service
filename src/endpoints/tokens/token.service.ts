@@ -7,7 +7,7 @@ import { TokenFilter } from "./entities/token.filter";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { EsdtService } from "../esdt/esdt.service";
 import { TokenAccount } from "./entities/token.account";
-import { TokenType } from "./entities/token.type";
+import { EsdtType } from "../esdt/entities/esdt.type";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
@@ -32,6 +32,7 @@ import { TransactionService } from "../transactions/transaction.service";
 import { MexTokenService } from "../mex/mex.token.service";
 import { CollectionService } from "../collections/collection.service";
 import { NftType } from "../nfts/entities/nft.type";
+import { TokenType } from "src/common/indexer/entities";
 
 @Injectable()
 export class TokenService {
@@ -504,7 +505,7 @@ export class TokenService {
       return undefined;
     }
 
-    if (![TokenType.FungibleESDT, TokenType.MetaESDT].includes(properties.type)) {
+    if (![EsdtType.FungibleESDT, EsdtType.MetaESDT].includes(properties.type)) {
       return undefined;
     }
 

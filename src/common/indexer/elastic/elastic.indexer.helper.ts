@@ -8,7 +8,7 @@ import { CollectionFilter } from "src/endpoints/collections/entities/collection.
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
-import { TokenType } from "src/endpoints/tokens/entities/token.type";
+import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.roles.filter";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
@@ -307,7 +307,7 @@ export class ElasticIndexerHelper {
           QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }),
         ]
       ))
-      .withMustMatchCondition('type', TokenType.FungibleESDT)
+      .withMustMatchCondition('type', EsdtType.FungibleESDT)
       .withMustMatchCondition('token', filter.identifier)
       .withMustMatchCondition('currentOwner', filter.owner);
 

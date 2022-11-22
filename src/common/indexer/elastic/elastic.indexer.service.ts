@@ -5,7 +5,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { TokenType } from "src/endpoints/tokens/entities/token.type";
+import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
@@ -362,7 +362,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: queryPagination.from, size: queryPagination.size });
 
     if (filter.withMetaESDT === true) {
-      query = query.withMustMultiShouldCondition([TokenType.FungibleESDT, TokenType.MetaESDT], type => QueryType.Match('type', type));
+      query = query.withMustMultiShouldCondition([EsdtType.FungibleESDT, EsdtType.MetaESDT], type => QueryType.Match('type', type));
     } else {
       query = query.withMustNotCondition(QueryType.Exists('identifier'));
     }
@@ -533,7 +533,7 @@ export class ElasticIndexerService implements IndexerInterface {
         'data.uris',
       ])
       .withMustExistCondition('identifier')
-      .withMustMultiShouldCondition([TokenType.NonFungibleESDT, TokenType.SemiFungibleESDT], type => QueryType.Match('type', type))
+      .withMustMultiShouldCondition([EsdtType.NonFungibleESDT, EsdtType.SemiFungibleESDT], type => QueryType.Match('type', type))
       .withPagination({ from: 0, size: 10000 });
 
     return await this.elasticService.getScrollableList('tokens', 'identifier', query, action);

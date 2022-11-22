@@ -1,8 +1,8 @@
 import { SwaggerUtils } from "@elrondnetwork/erdnest";
 import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
+import { TokenType } from "src/common/indexer/entities";
 import { TokenAssets } from "../../../common/assets/entities/token.assets";
-import { TokenType } from "./token.type";
 
 @ObjectType("Token", { description: "Token object type." })
 export class Token {
