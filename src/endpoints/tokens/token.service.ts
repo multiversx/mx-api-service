@@ -504,7 +504,7 @@ export class TokenService {
       return undefined;
     }
 
-    if (properties.type !== TokenType.FungibleESDT) {
+    if (![TokenType.FungibleESDT, TokenType.MetaESDT].includes(properties.type)) {
       return undefined;
     }
 
