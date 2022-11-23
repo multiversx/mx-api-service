@@ -189,20 +189,20 @@ export class TokenService {
     return tokens.length;
   }
 
-  async getTokenCountForAddress(address: string): Promise<number> {
+  async getTokenCountForAddress(address: string, filter: TokenFilter): Promise<number> {
     if (AddressUtils.isSmartContractAddress(address)) {
-      return await this.getTokenCountForAddressFromElastic(address);
+      return await this.getTokenCountForAddressFromElastic(address, filter);
     }
 
-    return await this.getTokenCountForAddressFromGateway(address);
+    return await this.getTokenCountForAddressFromGateway(address, filter);
   }
 
-  async getTokenCountForAddressFromElastic(address: string): Promise<number> {
-    return await this.indexerService.getTokenCountForAddress(address);
+  async getTokenCountForAddressFromElastic(address: string, filter: TokenFilter): Promise<number> {
+    return await this.indexerService.getTokenCountForAddress(address, filter);
   }
 
-  async getTokenCountForAddressFromGateway(address: string): Promise<number> {
-    const tokens = await this.getAllTokensForAddress(address, new TokenFilter());
+  async getTokenCountForAddressFromGateway(address: string, filter: TokenFilter): Promise<number> {
+    const tokens = await this.getAllTokensForAddress(address, filter);
     return tokens.length;
   }
 

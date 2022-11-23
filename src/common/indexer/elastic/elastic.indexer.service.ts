@@ -95,12 +95,23 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getCount('operations', elasticQuery);
   }
 
-  async getTokenCountForAddress(address: string): Promise<number> {
-    const query = ElasticQuery.create()
-      .withMustNotCondition(QueryType.Exists('identifier'))
+  async getTokenCountForAddress(address: string, filter: TokenFilter): Promise<number> {
+    let query = ElasticQuery.create()
       .withMustCondition(QueryType.Match('address', address));
 
+    query = this.buildTokenFilter(query, filter);
+
     return await this.elasticService.getCount('accountsesdt', query);
+  }
+
+  async getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<any[]> {
+    let query = ElasticQuery.create()
+      .withMustCondition(QueryType.Match('address', address))
+      .withPagination({ from: queryPagination.from, size: queryPagination.size });
+
+    query = this.buildTokenFilter(query, filter);
+
+    return await this.elasticService.getList('accountsesdt', 'token', query);
   }
 
   async getTokenAccountsCount(identifier: string): Promise<number | undefined> {
@@ -357,11 +368,7 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList('transactions', 'txHash', elasticQuery);
   }
 
-  async getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<any[]> {
-    let query = ElasticQuery.create()
-      .withMustCondition(QueryType.Match('address', address))
-      .withPagination({ from: queryPagination.from, size: queryPagination.size });
-
+  private buildTokenFilter(query: ElasticQuery, filter: TokenFilter): ElasticQuery {
     if (filter.withMetaESDT === true) {
       query = query.withMustMultiShouldCondition([TokenType.FungibleESDT, TokenType.MetaESDT], type => QueryType.Match('type', type));
     } else {
@@ -388,7 +395,7 @@ export class ElasticIndexerService implements IndexerInterface {
       query = query.withMustCondition(QueryType.Nested('data.name', filter.search));
     }
 
-    return await this.elasticService.getList('accountsesdt', 'token', query);
+    return query;
   }
 
   async getTransactionLogs(hashes: string[]): Promise<any[]> {

@@ -153,10 +153,24 @@ export class AccountController {
 
   @Get("/accounts/:address/tokens/count")
   @ApiOperation({ summary: 'Account token count', description: 'Returns the total number of tokens for a given address' })
+  @ApiQuery({ name: 'type', description: 'Token type', required: false, enum: TokenType })
+  @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
+  @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
+  @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
+  @ApiQuery({ name: 'identifiers', description: 'A comma-separated list of identifiers to filter by', required: false, type: String })
+  @ApiQuery({ name: 'withMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
   @ApiOkResponse({ type: Number })
-  async getTokenCount(@Param('address', ParseAddressPipe) address: string): Promise<number> {
+  async getTokenCount(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('type', new ParseEnumPipe(TokenType)) type?: TokenType,
+    @Query('search') search?: string,
+    @Query('name') name?: string,
+    @Query('identifier') identifier?: string,
+    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('withMetaESDT', new ParseBoolPipe) withMetaESDT?: boolean,
+  ): Promise<number> {
     try {
-      return await this.tokenService.getTokenCountForAddress(address);
+      return await this.tokenService.getTokenCountForAddress(address, new TokenFilter({ type, search, name, identifier, identifiers, withMetaESDT }));
     } catch (error) {
       this.logger.error(`Error in getTokenCount for address ${address}`);
       this.logger.error(error);
@@ -167,9 +181,17 @@ export class AccountController {
 
   @Get("/accounts/:address/tokens/c")
   @ApiExcludeEndpoint()
-  async getTokenCountAlternative(@Param('address', ParseAddressPipe) address: string): Promise<number> {
+  async getTokenCountAlternative(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('type', new ParseEnumPipe(TokenType)) type?: TokenType,
+    @Query('search') search?: string,
+    @Query('name') name?: string,
+    @Query('identifier') identifier?: string,
+    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('withMetaESDT', new ParseBoolPipe) withMetaESDT?: boolean,
+  ): Promise<number> {
     try {
-      return await this.tokenService.getTokenCountForAddress(address);
+      return await this.tokenService.getTokenCountForAddress(address, new TokenFilter({ type, search, name, identifier, identifiers, withMetaESDT }));
     } catch (error) {
       this.logger.error(`Error in getTokenCount for address ${address}`);
       this.logger.error(error);
