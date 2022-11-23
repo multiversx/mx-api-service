@@ -551,7 +551,7 @@ describe('Token Service', () => {
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => 1));
 
-      const result = await tokenService.getTokenCountForAddress(address);
+      const result = await tokenService.getTokenCountForAddress(address, new TokenFilter());
       expect(result).toStrictEqual(1);
     });
 
@@ -563,7 +563,7 @@ describe('Token Service', () => {
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => 1));
 
-      const result = await tokenService.getTokenCountForAddress(address);
+      const result = await tokenService.getTokenCountForAddress(address, new TokenFilter());
       expect(result).toStrictEqual(1);
     });
   });
@@ -1063,7 +1063,7 @@ describe('Token Service', () => {
   describe('getTokenCountForAddressFromElastic', () => {
     it('should return total number of tokens for a specific address from Elastic source', async () => {
       const address: string = 'erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2';
-      const result = await tokenService.getTokenCountForAddressFromElastic(address);
+      const result = await tokenService.getTokenCountForAddressFromElastic(address, new TokenFilter());
 
       jest.spyOn(ElasticService.prototype, 'getCount')
         // eslint-disable-next-line require-await
@@ -1076,7 +1076,7 @@ describe('Token Service', () => {
   describe('getTokenCountForAddressFromGateway', () => {
     it('should return total number of tokens for a specific address from Gateway source', async () => {
       const address: string = 'erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2';
-      const result = await tokenService.getTokenCountForAddressFromGateway(address);
+      const result = await tokenService.getTokenCountForAddressFromGateway(address, new TokenFilter());
 
       expect(result).toStrictEqual(3);
     });
@@ -1085,8 +1085,8 @@ describe('Token Service', () => {
   describe('getTokenCountForAddressFromGateway & getTokenCountForAddressFromElastic', () => {
     it('should return total number of tokens for a specific address from Gateway source', async () => {
       const address: string = 'erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2';
-      const elasticResult = await tokenService.getTokenCountForAddressFromElastic(address);
-      const gatewayResult = await tokenService.getTokenCountForAddressFromGateway(address);
+      const elasticResult = await tokenService.getTokenCountForAddressFromElastic(address, new TokenFilter());
+      const gatewayResult = await tokenService.getTokenCountForAddressFromGateway(address, new TokenFilter());
 
       expect(elasticResult).toStrictEqual(gatewayResult);
     });
