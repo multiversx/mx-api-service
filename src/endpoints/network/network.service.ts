@@ -24,6 +24,8 @@ import { TokenService } from '../tokens/token.service';
 @Injectable()
 export class NetworkService {
   constructor(
+    @Inject(forwardRef(() => TokenService))
+    private readonly tokenService: TokenService,
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
@@ -39,7 +41,6 @@ export class NetworkService {
     @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
     private readonly pluginService: PluginService,
-    private readonly tokenService: TokenService,
   ) { }
 
   async getConstants(): Promise<NetworkConstants> {
