@@ -37,6 +37,9 @@ describe('Collection', () => {
               canWipe
               canPause
               canTransferNftCreateRole
+              canChangeOwner
+              canUpgrade
+              canAddSpecialRoles
               roles{
                 address
                 canCreate
@@ -78,6 +81,9 @@ describe('Collection', () => {
             canWipe
             canPause
             canTransferNftCreateRole
+            canChangeOwner
+            canUpgrade
+            canAddSpecialRoles
           }
         }`,
         })
@@ -114,6 +120,9 @@ describe('Collection', () => {
               canWipe
               canPause
               canTransferNftCreateRole
+              canChangeOwner
+              canUpgrade
+              canAddSpecialRoles
             }
           }`,
             })
@@ -147,6 +156,9 @@ describe('Collection', () => {
                 canWipe
                 canPause
                 canTransferNftCreateRole
+                canChangeOwner
+                canUpgrade
+                canAddSpecialRoles
             }
           }`,
         })
