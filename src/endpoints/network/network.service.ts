@@ -37,6 +37,7 @@ export class NetworkService {
     private readonly dataApiService: DataApiService,
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => StakeService))
+    @Inject(forwardRef(() => TokenService))
     private readonly stakeService: StakeService,
     private readonly pluginService: PluginService,
     private readonly tokenService: TokenService,
