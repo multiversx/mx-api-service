@@ -36,6 +36,12 @@ export class ApiChecker {
     const idAttribute = [item];
     const details = await this.requestItem(idAttribute[0].identifier, { fields: Object.keys(item).join(',') });
 
+    // @ts-ignore
+    delete details.circulatingSupply;
+    delete details.supply;
+    delete item.circulatingSupply;
+    delete item.supply;
+
     expect(details).toEqual(item);
   }
 
