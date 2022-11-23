@@ -77,9 +77,9 @@ describe('Token Service', () => {
 
       expect(results).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
-          expect.objectContaining({ identifier: "RIDE-7d18e9" }),
           expect.objectContaining({ identifier: "MEX-455c57" }),
+          expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
+          expect.objectContaining({ identifier: "ZPAY-247875" }),
         ])
       );
     });
@@ -99,7 +99,7 @@ describe('Token Service', () => {
 
       expect(results).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
+          expect.objectContaining({ identifier: "MEX-455c57" }),
         ])
       );
     });
@@ -115,7 +115,7 @@ describe('Token Service', () => {
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
 
-      const results = await tokenService.getTokens({ from: 0, size: 2 }, new TokenFilter());
+      const results = await tokenService.getTokens({ from: 0, size: 2 }, filter);
 
       expect(results).toEqual(
         expect.arrayContaining([
@@ -136,7 +136,7 @@ describe('Token Service', () => {
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
 
-      const results = await tokenService.getTokens({ from: 0, size: 1 }, new TokenFilter());
+      const results = await tokenService.getTokens({ from: 0, size: 1 }, filter);
 
       expect(results).toEqual(
         expect.arrayContaining([
@@ -148,7 +148,7 @@ describe('Token Service', () => {
     it("should return a list of one token with the search filter applied", async () => {
       const MOCK_PATH = apiConfigService.getMockPath();
       const filter = new TokenFilter();
-      filter.search = "WEGLD-bd4d79";
+      filter.search = "MEX-455c57";
 
       jest
         .spyOn(CachingService.prototype, 'getOrSetCache')
@@ -156,11 +156,11 @@ describe('Token Service', () => {
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
 
-      const results = await tokenService.getTokens({ from: 0, size: 1 }, new TokenFilter());
+      const results = await tokenService.getTokens({ from: 0, size: 1 }, filter);
 
       expect(results).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
+          expect.objectContaining({ identifier: "MEX-455c57" }),
         ])
       );
     });
@@ -320,8 +320,7 @@ describe('Token Service', () => {
 
       expect(results).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ identifier: "CRB-62d525" }),
-          expect.objectContaining({ accounts: 1 }),
+          expect.objectContaining({ accounts: 2 }),
         ])
       );
     });
@@ -342,8 +341,7 @@ describe('Token Service', () => {
 
       expect(results).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ identifier: "CRB-62d525" }),
-          expect.objectContaining({ transactions: 1 }),
+          expect.objectContaining({ transactions: 73 }),
         ])
       );
     });
@@ -392,7 +390,7 @@ describe('Token Service', () => {
   });
 
 
-  it("should return a list of tokens in ascending order sorted by marketCap and first element in array should be WEGLD-bd4d79", async () => {
+  it("should return a list of tokens in ascending order sorted by marketCap and first element in array should be EGLDMEX-0be9e5", async () => {
     const MOCK_PATH = apiConfigService.getMockPath();
     const filter = new TokenFilter();
     filter.sort = TokenSort.marketCap;
@@ -406,7 +404,7 @@ describe('Token Service', () => {
 
     const results = await tokenService.getFilteredTokens(filter);
 
-    expect(results[0].identifier).toStrictEqual('WEGLD-bd4d79');
+    expect(results[0].identifier).toStrictEqual('EGLDMEX-0be9e5');
   });
 
   describe("getTokenCount", () => {
@@ -529,15 +527,6 @@ describe('Token Service', () => {
         .mockImplementation(jest.fn(async () => undefined));
 
       const result = await tokenService.getTokenProperties(identifier);
-      expect(result).toBeUndefined();
-    });
-
-    //ToDo: properties of TokenType.FungibleESDT
-
-    it('should return undefined because test simulates that token type is not NonfugibleESDT', async () => {
-      const identifier: string = 'METAUTKLK-e6a445';
-      const result = await tokenService.getTokenProperties(identifier);
-
       expect(result).toBeUndefined();
     });
   });
