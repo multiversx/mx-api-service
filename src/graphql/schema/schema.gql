@@ -1877,6 +1877,12 @@ type NftCollection {
   """Assets for the given NFT collection."""
   assets: TokenAssets
 
+  """If the given NFT collection can add special role."""
+  canAddSpecialRoles: Boolean
+
+  """If the given NFT collection can change owner."""
+  canChangeOwner: Boolean
+
   """If the given NFT collection can freeze."""
   canFreeze: Boolean
 
@@ -1890,6 +1896,9 @@ type NftCollection {
 
   """If the given NFT collection can transfer NFT create role."""
   canTransferNftCreateRole: Boolean
+
+  """If the given NFT collection can upgrade."""
+  canUpgrade: Boolean
 
   """If the given NFT collection can wipe."""
   canWipe: Boolean
@@ -1930,6 +1939,12 @@ type NftCollectionAccount {
   """Assets for the given NFT collection."""
   assets: TokenAssets
 
+  """If the given NFT collection can add special role."""
+  canAddSpecialRoles: Boolean
+
+  """If the given NFT collection can change owner."""
+  canChangeOwner: Boolean
+
   """If the given NFT collection can freeze."""
   canFreeze: Boolean
 
@@ -1943,6 +1958,9 @@ type NftCollectionAccount {
 
   """If the given NFT collection can transfer NFT create role."""
   canTransferNftCreateRole: Boolean
+
+  """If the given NFT collection can upgrade."""
+  canUpgrade: Boolean
 
   """If the given NFT collection can wipe."""
   canWipe: Boolean
@@ -1985,6 +2003,12 @@ type NftCollectionAccountFlat {
   """Assets for the given NFT collection."""
   assets: TokenAssets
 
+  """If the given NFT collection can add special role."""
+  canAddSpecialRoles: Boolean
+
+  """If the given NFT collection can change owner."""
+  canChangeOwner: Boolean
+
   """If the given NFT collection can freeze."""
   canFreeze: Boolean
 
@@ -1998,6 +2022,9 @@ type NftCollectionAccountFlat {
 
   """If the given NFT collection can transfer NFT create role."""
   canTransferNftCreateRole: Boolean
+
+  """If the given NFT collection can upgrade."""
+  canUpgrade: Boolean
 
   """If the given NFT collection can wipe."""
   canWipe: Boolean

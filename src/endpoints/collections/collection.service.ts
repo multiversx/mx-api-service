@@ -101,6 +101,9 @@ export class CollectionService {
       nftCollection.canWipe = collectionProperties.canWipe;
       nftCollection.canPause = collectionProperties.canPause;
       nftCollection.canTransferNftCreateRole = collectionProperties.canTransferNFTCreateRole;
+      nftCollection.canChangeOwner = collectionProperties.canChangeOwner;
+      nftCollection.canUpgrade = collectionProperties.canUpgrade;
+      nftCollection.canAddSpecialRoles = collectionProperties.canAddSpecialRoles;
       nftCollection.owner = collectionProperties.owner;
 
       if (nftCollection.type === NftType.MetaESDT) {
