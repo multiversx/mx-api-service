@@ -17,7 +17,7 @@ export class TokenFilter {
 
   identifiers?: string[];
 
-  withMetaESDT?: boolean;
+  includeMetaESDT?: boolean;
 
   sort?: TokenSort;
 

@@ -214,14 +214,14 @@ describe('Collection', () => {
       value: '7440',
     },
   ].forEach(({ value, boolean }) => {
-    describe(`Query - Get Collections Count (with/without withoutMetaESDT filter applied)`, () => {
+    describe(`Query - Get Collections Count (with/without excludeMetaESDT filter applied)`, () => {
       it(`should return collection count`, async () => {
         await request(app.getHttpServer())
           .post(gql)
           .send({
             query: `{
               collectionsCount(input:{
-                withoutMetaESDT: ${boolean}
+                excludeMetaESDT: ${boolean}
               })
             }`,
           })

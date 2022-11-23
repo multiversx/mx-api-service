@@ -128,7 +128,7 @@ export class AccountController {
   @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'A comma-separated list of identifiers to filter by', required: false, type: String })
-  @ApiQuery({ name: 'withMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
+  @ApiQuery({ name: 'includeMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
   @ApiOkResponse({ type: [TokenWithBalance] })
   async getAccountTokens(
     @Param('address', ParseAddressPipe) address: string,
@@ -139,10 +139,10 @@ export class AccountController {
     @Query('name') name?: string,
     @Query('identifier') identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
-    @Query('withMetaESDT', new ParseBoolPipe) withMetaESDT?: boolean,
+    @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
   ): Promise<TokenWithBalance[]> {
     try {
-      return await this.tokenService.getTokensForAddress(address, new QueryPagination({ from, size }), new TokenFilter({ type, search, name, identifier, identifiers, withMetaESDT }));
+      return await this.tokenService.getTokensForAddress(address, new QueryPagination({ from, size }), new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT }));
     } catch (error) {
       this.logger.error(`Error in getAccountTokens for address ${address}`);
       this.logger.error(error);
@@ -158,7 +158,7 @@ export class AccountController {
   @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'A comma-separated list of identifiers to filter by', required: false, type: String })
-  @ApiQuery({ name: 'withMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
+  @ApiQuery({ name: 'includeMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
   @ApiOkResponse({ type: Number })
   async getTokenCount(
     @Param('address', ParseAddressPipe) address: string,
@@ -167,10 +167,10 @@ export class AccountController {
     @Query('name') name?: string,
     @Query('identifier') identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
-    @Query('withMetaESDT', new ParseBoolPipe) withMetaESDT?: boolean,
+    @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
   ): Promise<number> {
     try {
-      return await this.tokenService.getTokenCountForAddress(address, new TokenFilter({ type, search, name, identifier, identifiers, withMetaESDT }));
+      return await this.tokenService.getTokenCountForAddress(address, new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT }));
     } catch (error) {
       this.logger.error(`Error in getTokenCount for address ${address}`);
       this.logger.error(error);
@@ -188,10 +188,10 @@ export class AccountController {
     @Query('name') name?: string,
     @Query('identifier') identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
-    @Query('withMetaESDT', new ParseBoolPipe) withMetaESDT?: boolean,
+    @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
   ): Promise<number> {
     try {
-      return await this.tokenService.getTokenCountForAddress(address, new TokenFilter({ type, search, name, identifier, identifiers, withMetaESDT }));
+      return await this.tokenService.getTokenCountForAddress(address, new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT }));
     } catch (error) {
       this.logger.error(`Error in getTokenCount for address ${address}`);
       this.logger.error(error);
@@ -228,7 +228,7 @@ export class AccountController {
   @ApiQuery({ name: 'canUpdateAttributes', description: 'Filter by property canUpdateAttributes (boolean)', required: false })
   @ApiQuery({ name: 'canAddUri', description: 'Filter by property canAddUri (boolean)', required: false })
   @ApiQuery({ name: 'canTransferRole', description: 'Filter by property canTransferRole (boolean)', required: false })
-  @ApiQuery({ name: 'withoutMetaESDT', description: 'Exclude collections of type "MetaESDT" in the response', required: false, type: Boolean })
+  @ApiQuery({ name: 'excludeMetaESDT', description: 'Exclude collections of type "MetaESDT" in the response', required: false, type: Boolean })
   @ApiOkResponse({ type: [NftCollectionRole] })
   async getAccountCollectionsWithRoles(
     @Param('address', ParseAddressPipe) address: string,
@@ -243,9 +243,9 @@ export class AccountController {
     @Query('canUpdateAttributes', new ParseBoolPipe) canUpdateAttributes?: boolean,
     @Query('canAddUri', new ParseBoolPipe) canAddUri?: boolean,
     @Query('canTransferRole', new ParseBoolPipe) canTransferRole?: boolean,
-    @Query('withoutMetaESDT', new ParseBoolPipe) withoutMetaESDT?: boolean,
+    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<NftCollectionRole[]> {
-    return await this.collectionService.getCollectionsWithRolesForAddress(address, new CollectionFilter({ search, type, owner, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole, withoutMetaESDT }), new QueryPagination({ from, size }));
+    return await this.collectionService.getCollectionsWithRolesForAddress(address, new CollectionFilter({ search, type, owner, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole, excludeMetaESDT }), new QueryPagination({ from, size }));
   }
 
   @Get("/accounts/:address/roles/collections/count")
@@ -256,7 +256,7 @@ export class AccountController {
   @ApiQuery({ name: 'canCreate', description: 'Filter by property canCreate (boolean)', required: false })
   @ApiQuery({ name: 'canBurn', description: 'Filter by property canCreate (boolean)', required: false })
   @ApiQuery({ name: 'canAddQuantity', description: 'Filter by property canAddQuantity (boolean)', required: false })
-  @ApiQuery({ name: 'withoutMetaESDT', description: 'Exclude collections of type "MetaESDT" in the response', required: false, type: Boolean })
+  @ApiQuery({ name: 'excludeMetaESDT', description: 'Exclude collections of type "MetaESDT" in the response', required: false, type: Boolean })
   @ApiOkResponse({ type: Number })
   async getCollectionWithRolesCount(
     @Param('address', ParseAddressPipe) address: string,
@@ -266,9 +266,9 @@ export class AccountController {
     @Query('canCreate', new ParseBoolPipe) canCreate?: boolean,
     @Query('canBurn', new ParseBoolPipe) canBurn?: boolean,
     @Query('canAddQuantity', new ParseBoolPipe) canAddQuantity?: boolean,
-    @Query('withoutMetaESDT', new ParseBoolPipe) withoutMetaESDT?: boolean,
+    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<number> {
-    return await this.collectionService.getCollectionCountForAddressWithRoles(address, new CollectionFilter({ search, type, owner, canCreate, canBurn, canAddQuantity, withoutMetaESDT }));
+    return await this.collectionService.getCollectionCountForAddressWithRoles(address, new CollectionFilter({ search, type, owner, canCreate, canBurn, canAddQuantity, excludeMetaESDT }));
   }
 
   @Get("/accounts/:address/roles/collections/c")
@@ -281,10 +281,10 @@ export class AccountController {
     @Query('canCreate', new ParseBoolPipe) canCreate?: boolean,
     @Query('canBurn', new ParseBoolPipe) canBurn?: boolean,
     @Query('canAddQuantity', new ParseBoolPipe) canAddQuantity?: boolean,
-    @Query('withoutMetaESDT', new ParseBoolPipe) withoutMetaESDT?: boolean,
+    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<number> {
     return await this.collectionService.getCollectionCountForAddressWithRoles(address, new CollectionFilter({
-      search, type, owner, canCreate, canBurn, canAddQuantity, withoutMetaESDT,
+      search, type, owner, canCreate, canBurn, canAddQuantity, excludeMetaESDT,
     }));
   }
 
@@ -375,7 +375,7 @@ export class AccountController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
-  @ApiQuery({ name: 'withoutMetaESDT', description: 'Exclude collections of type "MetaESDT" in the response', required: false, type: Boolean })
+  @ApiQuery({ name: 'excludeMetaESDT', description: 'Exclude collections of type "MetaESDT" in the response', required: false, type: Boolean })
   @ApiOkResponse({ type: [NftCollectionAccount] })
   async getAccountNftCollections(
     @Param('address', ParseAddressPipe) address: string,
@@ -383,24 +383,24 @@ export class AccountController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
-    @Query('withoutMetaESDT', new ParseBoolPipe) withoutMetaESDT?: boolean,
+    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<NftCollectionAccount[]> {
-    return await this.collectionService.getCollectionsForAddress(address, new CollectionFilter({ search, type, withoutMetaESDT }), new QueryPagination({ from, size }));
+    return await this.collectionService.getCollectionsForAddress(address, new CollectionFilter({ search, type, excludeMetaESDT }), new QueryPagination({ from, size }));
   }
 
   @Get("/accounts/:address/collections/count")
   @ApiOperation({ summary: 'Account collection count', description: 'Returns the total number of NFT/SFT/MetaESDT collections where the account is owner or has some special roles assigned to it' })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
-  @ApiQuery({ name: 'withoutMetaESDT', description: 'Exclude collections of type "MetaESDT" in the response', required: false, type: Boolean })
+  @ApiQuery({ name: 'excludeMetaESDT', description: 'Exclude collections of type "MetaESDT" in the response', required: false, type: Boolean })
   @ApiOkResponse({ type: Number })
   async getNftCollectionCount(
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
-    @Query('withoutMetaESDT', new ParseBoolPipe) withoutMetaESDT?: boolean,
+    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<number> {
-    return await this.collectionService.getCollectionCountForAddress(address, new CollectionFilter({ search, type, withoutMetaESDT }));
+    return await this.collectionService.getCollectionCountForAddress(address, new CollectionFilter({ search, type, excludeMetaESDT }));
   }
 
   @Get("/accounts/:address/collections/c")
@@ -409,9 +409,9 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
-    @Query('withoutMetaESDT', new ParseBoolPipe) withoutMetaESDT?: boolean,
+    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<number> {
-    return await this.collectionService.getCollectionCountForAddress(address, new CollectionFilter({ search, type, withoutMetaESDT }));
+    return await this.collectionService.getCollectionCountForAddress(address, new CollectionFilter({ search, type, excludeMetaESDT }));
   }
 
   @Get("/accounts/:address/collections/:collection")
@@ -448,7 +448,7 @@ export class AccountController {
   @ApiQuery({ name: 'source', description: 'Data source of request', required: false })
   @ApiQuery({ name: 'withScamInfo', description: 'Include scam info in the response', required: false, type: Boolean })
   @ApiQuery({ name: 'computeScamInfo', description: 'Compute scam info in the response', required: false, type: Boolean })
-  @ApiQuery({ name: 'withoutMetaESDT', description: 'Exclude NFTs of type "MetaESDT" in the response', required: false, type: Boolean })
+  @ApiQuery({ name: 'excludeMetaESDT', description: 'Exclude NFTs of type "MetaESDT" in the response', required: false, type: Boolean })
   async getAccountNfts(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -467,14 +467,14 @@ export class AccountController {
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('computeScamInfo', new ParseBoolPipe) computeScamInfo?: boolean,
     @Query('source', new ParseEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
-    @Query('withoutMetaESDT', new ParseBoolPipe) withoutMetaESDT?: boolean,
+    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<NftAccount[]> {
     const options = NftQueryOptions.enforceScamInfoFlag(size, new NftQueryOptions({ withSupply, withScamInfo, computeScamInfo }));
 
     return await this.nftService.getNftsForAddress(
       address,
       new QueryPagination({ from, size }),
-      new NftFilter({ search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged, withoutMetaESDT }),
+      new NftFilter({ search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged, excludeMetaESDT }),
       options,
       source
     );
@@ -492,7 +492,7 @@ export class AccountController {
   @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
   @ApiQuery({ name: 'includeFlagged', description: 'Include NFTs that are flagged or not', required: false })
-  @ApiQuery({ name: 'withoutMetaESDT', description: 'Exclude NFTs of type "MetaESDT" in the response', required: false, type: Boolean })
+  @ApiQuery({ name: 'excludeMetaESDT', description: 'Exclude NFTs of type "MetaESDT" in the response', required: false, type: Boolean })
   @ApiOkResponse({ type: Number })
   async getNftCount(
     @Param('address', ParseAddressPipe) address: string,
@@ -506,9 +506,9 @@ export class AccountController {
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseBoolPipe) includeFlagged?: boolean,
-    @Query('withoutMetaESDT', new ParseBoolPipe) withoutMetaESDT?: boolean,
+    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<number> {
-    return await this.nftService.getNftCountForAddress(address, new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged, withoutMetaESDT }));
+    return await this.nftService.getNftCountForAddress(address, new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged, excludeMetaESDT }));
   }
 
   @Get("/accounts/:address/nfts/c")
@@ -525,9 +525,9 @@ export class AccountController {
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseBoolPipe) includeFlagged?: boolean,
-    @Query('withoutMetaESDT', new ParseBoolPipe) withoutMetaESDT?: boolean,
+    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<number> {
-    return await this.nftService.getNftCountForAddress(address, new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged, withoutMetaESDT }));
+    return await this.nftService.getNftCountForAddress(address, new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged, excludeMetaESDT }));
   }
 
   @Get("/accounts/:address/nfts/:nft")

@@ -140,7 +140,7 @@ export class TokenService {
       tokens = tokens.filter(token => identifierArray.includes(token.identifier.toLowerCase()));
     }
 
-    if (filter.withMetaESDT !== true) {
+    if (filter.includeMetaESDT !== true) {
       tokens = tokens.filter(token => token.type === TokenType.FungibleESDT);
     }
 
@@ -266,7 +266,7 @@ export class TokenService {
   async getTokenForAddress(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {
     const esdtIdentifier = identifier.split('-').slice(0, 2).join('-');
 
-    const tokens = await this.getFilteredTokens({ identifier: esdtIdentifier, withMetaESDT: true });
+    const tokens = await this.getFilteredTokens({ identifier: esdtIdentifier, includeMetaESDT: true });
 
     if (!TokenUtils.isToken(identifier) && !TokenUtils.isNft(identifier)) {
       return undefined;

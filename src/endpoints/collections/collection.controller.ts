@@ -47,7 +47,7 @@ export class CollectionController {
   @ApiQuery({ name: 'canUpdateAttributes', description: 'Filter by address with canUpdateAttributes role', required: false })
   @ApiQuery({ name: 'canAddUri', description: 'Filter by address with canAddUri role', required: false })
   @ApiQuery({ name: 'canTransferRole', description: 'Filter by address with canTransferRole role', required: false })
-  @ApiQuery({ name: 'withoutMetaESDT', description: 'Do not include collections of type "MetaESDT" in the response', required: false })
+  @ApiQuery({ name: 'excludeMetaESDT', description: 'Do not include collections of type "MetaESDT" in the response', required: false })
   async getNftCollections(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -63,7 +63,7 @@ export class CollectionController {
     @Query('canUpdateAttributes', new ParseAddressPipe) canUpdateAttributes?: string,
     @Query('canAddUri', new ParseAddressPipe) canAddUri?: string,
     @Query('canTransferRole', new ParseAddressPipe) canTransferRole?: string,
-    @Query('withoutMetaESDT', new ParseBoolPipe) withoutMetaESDT?: boolean,
+    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<NftCollection[]> {
     return await this.collectionService.getNftCollections(new QueryPagination({ from, size }), new CollectionFilter({
       search,
@@ -77,7 +77,7 @@ export class CollectionController {
       canUpdateAttributes,
       canAddUri,
       canTransferRole,
-      withoutMetaESDT,
+      excludeMetaESDT,
     }));
   }
 
@@ -94,7 +94,7 @@ export class CollectionController {
   @ApiQuery({ name: 'canUpdateAttributes', description: 'Filter by address with canUpdateAttributes role', required: false })
   @ApiQuery({ name: 'canAddUri', description: 'Filter by address with canAddUri role', required: false })
   @ApiQuery({ name: 'canTransferRole', description: 'Filter by address with canTransferRole role', required: false })
-  @ApiQuery({ name: 'withoutMetaESDT', description: 'Do not include collections of type "MetaESDT" in the response', required: false })
+  @ApiQuery({ name: 'excludeMetaESDT', description: 'Do not include collections of type "MetaESDT" in the response', required: false })
   @ApiOkResponse({ type: Number })
   async getCollectionCount(
     @Query('search') search?: string,
@@ -108,7 +108,7 @@ export class CollectionController {
     @Query('canUpdateAttributes', new ParseAddressPipe) canUpdateAttributes?: string,
     @Query('canAddUri', new ParseAddressPipe) canAddUri?: string,
     @Query('canTransferRole', new ParseAddressPipe) canTransferRole?: string,
-    @Query('withoutMetaESDT', new ParseBoolPipe) withoutMetaESDT?: boolean,
+    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<number> {
     return await this.collectionService.getNftCollectionCount(new CollectionFilter({
       search,
@@ -121,7 +121,7 @@ export class CollectionController {
       canUpdateAttributes,
       canAddUri,
       canTransferRole,
-      withoutMetaESDT,
+      excludeMetaESDT,
     }));
   }
 
@@ -139,7 +139,7 @@ export class CollectionController {
     @Query('canUpdateAttributes', new ParseAddressPipe) canUpdateAttributes?: string,
     @Query('canAddUri', new ParseAddressPipe) canAddUri?: string,
     @Query('canTransferRole', new ParseAddressPipe) canTransferRole?: string,
-    @Query('withoutMetaESDT', new ParseBoolPipe) withoutMetaESDT?: boolean,
+    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<number> {
     return await this.collectionService.getNftCollectionCount(new CollectionFilter({
       search,
@@ -152,7 +152,7 @@ export class CollectionController {
       canUpdateAttributes,
       canAddUri,
       canTransferRole,
-      withoutMetaESDT,
+      excludeMetaESDT,
     }));
   }
 

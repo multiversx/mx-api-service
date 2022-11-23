@@ -369,7 +369,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   private buildTokenFilter(query: ElasticQuery, filter: TokenFilter): ElasticQuery {
-    if (filter.withMetaESDT === true) {
+    if (filter.includeMetaESDT === true) {
       query = query.withMustMultiShouldCondition([TokenType.FungibleESDT, TokenType.MetaESDT], type => QueryType.Match('type', type));
     } else {
       query = query.withMustNotCondition(QueryType.Exists('identifier'));
@@ -589,7 +589,7 @@ export class ElasticIndexerService implements IndexerInterface {
     pagination: QueryPagination
   ): Promise<{ collection: string, count: number, balance: number }[]> {
     const types = [NftType.SemiFungibleESDT, NftType.NonFungibleESDT];
-    if (!filter.withoutMetaESDT) {
+    if (!filter.excludeMetaESDT) {
       types.push(NftType.MetaESDT);
     }
 

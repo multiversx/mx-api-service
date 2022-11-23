@@ -401,11 +401,11 @@ describe('Nft Service', () => {
     it(`should verify collections count for a given address because test simulates collections count with/without MetaESDT`, async () => {
       const address: string = "erd1qqqqqqqqqqqqqpgqr8z5hkwek0pmytcvla86qjusn4hkufjlrp8s7hhkjk";
       const filter = new NftFilter();
-      filter.withoutMetaESDT = true;
+      filter.excludeMetaESDT = true;
       const results = await nftService.getNftCountForAddress(address, new NftFilter());
-      const resultsWithoutMetaESDT = await nftService.getNftCountForAddress(address, filter);
+      const resultsexcludeMetaESDT = await nftService.getNftCountForAddress(address, filter);
 
-      expect(resultsWithoutMetaESDT).toBeLessThan(results);
+      expect(resultsexcludeMetaESDT).toBeLessThan(results);
     });
 
     it(`should return esdt count for address with type SemiFungibleESDT`, async () => {
@@ -443,10 +443,10 @@ describe('Nft Service', () => {
       }
     });
 
-    it('should return a list of only with NonFungible/SemiFungibleESDT if withoutMetaESDT filter is applied', async () => {
+    it('should return a list of only with NonFungible/SemiFungibleESDT if excludeMetaESDT filter is applied', async () => {
       const address: string = "erd1tq4q846crg8ptwpg4zr985q0s9gj57ugr9da87nqmpg5fu6vjy8qkqd0k6";
       const filter = new NftFilter();
-      filter.withoutMetaESDT = true;
+      filter.excludeMetaESDT = true;
       const results = await nftService.getNftsForAddress(address, new QueryPagination({ size: 1000 }), filter);
 
       for (const result of results) {

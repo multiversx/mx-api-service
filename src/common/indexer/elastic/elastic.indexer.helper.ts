@@ -106,7 +106,7 @@ export class ElasticIndexerHelper {
       }
     }
 
-    if (filter.withoutMetaESDT === true) {
+    if (filter.excludeMetaESDT === true) {
       elasticQuery = elasticQuery.withMustMultiShouldCondition([NftType.NonFungibleESDT, NftType.SemiFungibleESDT], type => QueryType.Match('type', type));
     }
 
@@ -204,7 +204,7 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withRangeFilter('nonce', new RangeGreaterThanOrEqual(filter.nonceAfter));
     }
 
-    if (filter.withoutMetaESDT === true) {
+    if (filter.excludeMetaESDT === true) {
       elasticQuery = elasticQuery.withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT], type => QueryType.Match('type', type));
     }
 

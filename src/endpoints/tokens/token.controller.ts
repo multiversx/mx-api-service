@@ -45,7 +45,7 @@ export class TokenController {
   @ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortTokens })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
-  @ApiQuery({ name: 'withMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
+  @ApiQuery({ name: 'includeMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
   async getTokens(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -56,11 +56,11 @@ export class TokenController {
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('sort', new ParseEnumPipe(TokenSort)) sort?: TokenSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
-    @Query('withMetaESDT', new ParseBoolPipe) withMetaESDT?: boolean,
+    @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
   ): Promise<TokenDetailed[]> {
     return await this.tokenService.getTokens(
       new QueryPagination({ from, size }),
-      new TokenFilter({ type, search, name, identifier, identifiers, withMetaESDT, sort, order })
+      new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, sort, order })
     );
   }
 
@@ -72,16 +72,16 @@ export class TokenController {
   @ApiQuery({ name: 'type', description: 'Token type', required: false, enum: TokenType })
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
-  @ApiQuery({ name: 'withMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
+  @ApiQuery({ name: 'includeMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
   async getTokenCount(
     @Query('search') search?: string,
     @Query('name') name?: string,
     @Query('type', new ParseEnumPipe(TokenType)) type?: TokenType,
     @Query('identifier', ParseTokenPipe) identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
-    @Query('withMetaESDT', new ParseBoolPipe) withMetaESDT?: boolean,
+    @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
   ): Promise<number> {
-    return await this.tokenService.getTokenCount(new TokenFilter({ type, search, name, identifier, identifiers, withMetaESDT }));
+    return await this.tokenService.getTokenCount(new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT }));
   }
 
   @Get("/tokens/c")
@@ -92,9 +92,9 @@ export class TokenController {
     @Query('type', new ParseEnumPipe(TokenType)) type?: TokenType,
     @Query('identifier', ParseTokenPipe) identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
-    @Query('withMetaESDT', new ParseBoolPipe) withMetaESDT?: boolean,
+    @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
   ): Promise<number> {
-    return await this.tokenService.getTokenCount(new TokenFilter({ type, search, name, identifier, identifiers, withMetaESDT }));
+    return await this.tokenService.getTokenCount(new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT }));
   }
 
   @Get('/tokens/:identifier')

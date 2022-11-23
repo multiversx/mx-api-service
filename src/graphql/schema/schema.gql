@@ -638,7 +638,7 @@ input GetNftCollectionsCountInput {
   """
   Do not include collections of type "MetaESDT" in the responsee for the given result set.
   """
-  withoutMetaESDT: Boolean
+  excludeMetaESDT: Boolean
 }
 
 """Input to retrieve the given NFT collections for."""
@@ -684,7 +684,7 @@ input GetNftCollectionsInput {
   """
   Do not include collections of type "MetaESDT" in the responsee for the given result set.
   """
-  withoutMetaESDT: Boolean
+  excludeMetaESDT: Boolean
 }
 
 """Input to retrieve the given NFT for."""
@@ -739,7 +739,7 @@ input GetNftsAccountInput {
   """
   Do not include collections of type "MetaESDT" in the responsee for the given result set.
   """
-  withoutMetaESDT: Boolean
+  excludeMetaESDT: Boolean
 }
 
 """Input to retrieve the given NFTs count for."""

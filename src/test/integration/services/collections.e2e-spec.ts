@@ -49,9 +49,9 @@ describe('Collection Service', () => {
       expect(collection.includes("SURACING-8f6ed4")).toBeTruthy();
     });
 
-    it('should return a list of collections without collections of type MetaESDT when "withoutMetaESDT" filter is applied', async () => {
+    it('should return a list of collections without collections of type MetaESDT when "excludeMetaESDT" filter is applied', async () => {
       const filter = new CollectionFilter();
-      filter.withoutMetaESDT = true;
+      filter.excludeMetaESDT = true;
       const results = await collectionService.getNftCollections(new QueryPagination(), filter);
 
       for (const result of results) {
@@ -59,9 +59,9 @@ describe('Collection Service', () => {
       }
     });
 
-    it('should return an empty list of collections if withoutMetaESDT and type filters are applied ', async () => {
+    it('should return an empty list of collections if excludeMetaESDT and type filters are applied ', async () => {
       const filter = new CollectionFilter();
-      filter.withoutMetaESDT = true;
+      filter.excludeMetaESDT = true;
       filter.type = [NftType.MetaESDT];
       const results = await collectionService.getNftCollections(new QueryPagination(), filter);
       expect(results).toStrictEqual([]);
@@ -90,14 +90,14 @@ describe('Collection Service', () => {
       expect(results).toStrictEqual(5100);
     });
 
-    it('should verifiy if collections count are different when withoutMetaESDT filter is applied', async () => {
+    it('should verifiy if collections count are different when excludeMetaESDT filter is applied', async () => {
       const filter = new CollectionFilter();
-      filter.withoutMetaESDT = true;
+      filter.excludeMetaESDT = true;
 
       const results = await collectionService.getNftCollectionCount(new CollectionFilter());
-      const resultsWithoutMetaESDT = await collectionService.getNftCollectionCount(filter);
+      const resultsexcludeMetaESDT = await collectionService.getNftCollectionCount(filter);
 
-      expect(resultsWithoutMetaESDT).toBeLessThan(results);
+      expect(resultsexcludeMetaESDT).toBeLessThan(results);
     });
   });
 

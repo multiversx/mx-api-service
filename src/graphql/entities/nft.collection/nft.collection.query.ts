@@ -32,7 +32,7 @@ export class NftCollectionQuery {
         canUpdateAttributes: input.canUpdateAttributes,
         canAddUri: input.canAddUri,
         canTransferRole: input.canTransferRole,
-        withoutMetaESDT: input.withoutMetaESDT,
+        excludeMetaESDT: input.excludeMetaESDT,
       }),
     );
   }
