@@ -23,21 +23,21 @@ describe("Tokens Controller", () => {
       {
         filter: undefined,
         value: undefined,
-        lenght: 25,
+        length: 25,
       },
       {
         filter: 'size',
         value: '5',
-        lenght: 5,
+        length: 5,
       },
-    ].forEach(({ filter, value, lenght }) => {
+    ].forEach(({ filter, value, length }) => {
       describe(`when filter ${filter} is applied`, () => {
-        it(`should return ${lenght} tokens based on value ${value}`, async () => {
+        it(`should return ${length} tokens based on value ${value}`, async () => {
           await request(app.getHttpServer())
             .get(`${path}?${filter}=${value}`)
             .expect(200)
             .then(res => {
-              expect(res.body).toHaveLength(parseInt(`${lenght}`));
+              expect(res.body).toHaveLength(parseInt(`${length}`));
             });
         });
       });
