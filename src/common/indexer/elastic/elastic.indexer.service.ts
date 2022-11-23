@@ -588,6 +588,11 @@ export class ElasticIndexerService implements IndexerInterface {
     filter: CollectionFilter,
     pagination: QueryPagination
   ): Promise<{ collection: string, count: number, balance: number }[]> {
+    const types = [NftType.SemiFungibleESDT, NftType.NonFungibleESDT];
+    if (!filter.withoutMetaESDT) {
+      types.push(NftType.MetaESDT);
+    }
+
     const elasticQuery = ElasticQuery.create()
       .withMustExistCondition('identifier')
       .withMustMatchCondition('address', address)
@@ -596,7 +601,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
       .withSearchWildcardCondition(filter.search, ['token', 'name'])
       .withMustMultiShouldCondition(filter.type, type => QueryType.Match('type', type))
-      .withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT, NftType.MetaESDT], type => QueryType.Match('type', type))
+      .withMustMultiShouldCondition(types, type => QueryType.Match('type', type))
       .withExtra({
         aggs: {
           collections: {
