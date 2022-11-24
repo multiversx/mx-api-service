@@ -1,5 +1,5 @@
 import { CachingService } from "@elrondnetwork/erdnest";
-import { LogTopic, ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
+import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
@@ -129,18 +129,9 @@ export class BatchTransactionProcessorService {
         gatewayUrl: this.apiConfigService.getGatewayUrl(),
         maxLookBehind: this.apiConfigService.getTransactionBatchMaxLookBehind(),
         waitForFinalizedCrossShardSmartContractResults: true,
-        onMessageLogged: (topic, message) => {
-          if (topic === LogTopic.CrossShardSmartContractResult) {
-            this.logger.log(`${LogTopic.CrossShardSmartContractResult}: ${message}`);
-          }
-        },
         // eslint-disable-next-line require-await
         onTransactionsReceived: async (shardId, nonce, transactions, statistics) => {
           this.logger.log(`Received ${transactions.length} transactions on shard ${shardId} and nonce ${nonce}. Time left: ${statistics.secondsLeft}`);
-
-          for (const transaction of transactions) {
-            this.logger.log(`Transaction with hash ${transaction.hash} completed`);
-          }
 
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           this.handleTransactionBatches(transactions);
