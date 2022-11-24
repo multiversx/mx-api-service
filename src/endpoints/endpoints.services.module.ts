@@ -23,6 +23,7 @@ import { SmartContractResultModule } from "./sc-results/scresult.module";
 import { ShardModule } from "./shards/shard.module";
 import { StakeModule } from "./stake/stake.module";
 import { TokenModule } from "./tokens/token.module";
+import { TransactionsBatchModule } from "./transactions.batch/transactions.batch.module";
 import { TransactionActionModule } from "./transactions/transaction-action/transaction.action.module";
 import { TransactionModule } from "./transactions/transaction.module";
 import { TransferModule } from "./transfers/transfer.module";
@@ -65,13 +66,14 @@ import { WebsocketModule } from "./websocket/websocket.module";
     WebsocketModule,
     MexModule,
     ProcessNftsModule,
+    TransactionsBatchModule,
   ],
   exports: [
     AccountModule, CollectionModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
     MiniBlockModule, NetworkModule, NftModule, NftMediaModule, TagModule, NodeModule, ProviderModule,
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
     WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, TransactionActionModule, WebsocketModule, MexModule,
-    ProcessNftsModule,
+    ProcessNftsModule, TransactionsBatchModule,
   ],
 })
 export class EndpointsServicesModule { }
