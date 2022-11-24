@@ -118,8 +118,8 @@ export class EsdtAddressService {
         const collectionWithRoles = ApiUtils.mergeObjects(new NftCollectionWithRoles(), accountCollection);
 
         if (indexedCollection.roles) {
-          if (indexedCollection.roles['ESDTTransferRole']) {
-            collectionWithRoles.canTransfer = false;
+          if (!indexedCollection.roles['ESDTTransferRole']) {
+            collectionWithRoles.canTransfer = true;
           }
 
           const addressRoles: CollectionRoles = new CollectionRoles();
