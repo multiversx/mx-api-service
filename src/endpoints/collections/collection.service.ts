@@ -169,7 +169,7 @@ export class CollectionService {
     return await this.assetsService.getCollectionRanks(identifier);
   }
 
-  async getNftCollection(identifier: string): Promise<NftCollection | undefined> {
+  async getNftCollection(identifier: string): Promise<NftCollectionDetailed | undefined> {
     const elasticCollection = await this.indexerService.getCollection(identifier);
     if (!elasticCollection) {
       return undefined;

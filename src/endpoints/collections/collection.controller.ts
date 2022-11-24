@@ -20,6 +20,7 @@ import { TransactionService } from "../transactions/transaction.service";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { NftRank } from "src/common/assets/entities/nft.rank";
 import { SortCollectionNfts } from "./entities/sort.collection.nfts";
+import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
 
 @Controller()
 @ApiTags('collections')
@@ -158,17 +159,17 @@ export class CollectionController {
 
   @Get('/collections/:collection')
   @ApiOperation({ summary: 'Collection details', description: 'Returns non-fungible/semi-fungible/meta-esdt collection details' })
-  @ApiOkResponse({ type: NftCollection })
+  @ApiOkResponse({ type: NftCollectionDetailed })
   @ApiNotFoundResponse({ description: 'Token collection not found' })
   async getNftCollection(
     @Param('collection', ParseCollectionPipe) collection: string
-  ): Promise<NftCollection> {
-    const token = await this.collectionService.getNftCollection(collection);
-    if (token === undefined) {
+  ): Promise<NftCollectionDetailed> {
+    const nftCollection = await this.collectionService.getNftCollection(collection);
+    if (nftCollection === undefined) {
       throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
     }
 
-    return token;
+    return nftCollection;
   }
 
   @Get('/collections/:collection/ranks')
