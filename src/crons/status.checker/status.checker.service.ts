@@ -210,7 +210,7 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async checkTokenCount() {
     await Locker.lock('Check token count', async () => {
       const tokenCount = await this.tokenService.getTokenCount({});
@@ -223,7 +223,7 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async checkProviderCount() {
     await Locker.lock('Check provider count', async () => {
       const providers = await this.providerService.getAllProviders();
@@ -236,7 +236,7 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async checkTokenSupply() {
     await Locker.lock('Check token supply', async () => {
       const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
@@ -251,7 +251,7 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async checkTokenAssets() {
     await Locker.lock('Check token assets', async () => {
       const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
@@ -266,7 +266,7 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async checkTokenAccounts() {
     await Locker.lock('Check token accounts', async () => {
       const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
@@ -281,7 +281,7 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async checkTokenTransactions() {
     await Locker.lock('Check token transactions', async () => {
       const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
@@ -296,7 +296,7 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async checkValidatorNodeCount() {
     await Locker.lock('Check validator node count ', async () => {
       const nodes = await this.nodeService.getAllNodes();
@@ -311,7 +311,7 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async checkIdentityNames() {
     await Locker.lock('Check identity names', async () => {
       const identities = await this.identitiesService.getAllIdentities();
@@ -325,7 +325,7 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async checkIdentities() {
     await Locker.lock('Check identities', async () => {
       const identities = await this.identitiesService.getAllIdentities();
