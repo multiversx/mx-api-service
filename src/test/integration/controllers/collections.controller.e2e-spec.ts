@@ -61,7 +61,6 @@ describe("collections Controller", () => {
             canChangeOwner: false,
             canUpgrade: true,
             canAddSpecialRoles: true,
-            roles: [],
             traits: [],
           }];
 
@@ -94,7 +93,6 @@ describe("collections Controller", () => {
             canChangeOwner: false,
             canUpgrade: true,
             canAddSpecialRoles: true,
-            roles: [],
             traits: [],
           },
           {
@@ -111,7 +109,6 @@ describe("collections Controller", () => {
             canChangeOwner: true,
             canUpgrade: true,
             canAddSpecialRoles: true,
-            roles: [],
             traits: [],
           },
         ];
