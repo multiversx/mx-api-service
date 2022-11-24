@@ -1847,6 +1847,12 @@ type NftCollection {
   """Assets for the given NFT collection."""
   assets: TokenAssets
 
+  """If the given NFT collection can add special role."""
+  canAddSpecialRoles: Boolean
+
+  """If the given NFT collection can change owner."""
+  canChangeOwner: Boolean
+
   """If the given NFT collection can freeze."""
   canFreeze: Boolean
 
@@ -1860,6 +1866,9 @@ type NftCollection {
 
   """If the given NFT collection can transfer NFT create role."""
   canTransferNftCreateRole: Boolean
+
+  """If the given NFT collection can upgrade."""
+  canUpgrade: Boolean
 
   """If the given NFT collection can wipe."""
   canWipe: Boolean
@@ -1897,6 +1906,12 @@ type NftCollectionAccount {
   """Assets for the given NFT collection."""
   assets: TokenAssets
 
+  """If the given NFT collection can add special role."""
+  canAddSpecialRoles: Boolean
+
+  """If the given NFT collection can change owner."""
+  canChangeOwner: Boolean
+
   """If the given NFT collection can freeze."""
   canFreeze: Boolean
 
@@ -1910,6 +1925,9 @@ type NftCollectionAccount {
 
   """If the given NFT collection can transfer NFT create role."""
   canTransferNftCreateRole: Boolean
+
+  """If the given NFT collection can upgrade."""
+  canUpgrade: Boolean
 
   """If the given NFT collection can wipe."""
   canWipe: Boolean
@@ -1949,6 +1967,12 @@ type NftCollectionAccountFlat {
   """Assets for the given NFT collection."""
   assets: TokenAssets
 
+  """If the given NFT collection can add special role."""
+  canAddSpecialRoles: Boolean
+
+  """If the given NFT collection can change owner."""
+  canChangeOwner: Boolean
+
   """If the given NFT collection can freeze."""
   canFreeze: Boolean
 
@@ -1962,6 +1986,9 @@ type NftCollectionAccountFlat {
 
   """If the given NFT collection can transfer NFT create role."""
   canTransferNftCreateRole: Boolean
+
+  """If the given NFT collection can upgrade."""
+  canUpgrade: Boolean
 
   """If the given NFT collection can wipe."""
   canWipe: Boolean
@@ -2017,6 +2044,9 @@ type NftMetadata {
   """Description for the given NFT metadata."""
   description: String!
 
+  """NFT Metadata fetch error."""
+  error: NftMetadataError
+
   """File name for the given NFT metadata."""
   fileName: String!
 
@@ -2025,6 +2055,40 @@ type NftMetadata {
 
   """File URI for the given NFT metadata."""
   fileUri: String!
+}
+
+"""NFT Metadata error."""
+type NftMetadataError {
+  """Error code"""
+  code: NftMetadataErrorCode!
+
+  """Error message"""
+  message: String!
+
+  """Timestamp when the error was generated"""
+  timestamp: Float!
+}
+
+"""NFT Metadata error code"""
+enum NftMetadataErrorCode {
+  """Metadata is empty"""
+  emptyMetadata
+
+  """Invalid contentm type (should be application/json)"""
+  invalidContentType
+
+  """IPFS error"""
+  ipfsError
+  jsonParseError
+
+  """IPFS link does not have any underlying resource"""
+  notFound
+
+  """IPFS request timeout"""
+  timeout
+
+  """Unknown error"""
+  unknownError
 }
 
 """NFT rank object type"""
