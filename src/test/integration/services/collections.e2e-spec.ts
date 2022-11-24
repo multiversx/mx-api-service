@@ -5,10 +5,11 @@ import { CollectionService } from "src/endpoints/collections/collection.service"
 import { CollectionFilter } from 'src/endpoints/collections/entities/collection.filter';
 import { PublicAppModule } from "src/public.app.module";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { NftCollection } from 'src/endpoints/collections/entities/nft.collection';
 import { ElasticService, TokenUtils } from '@elrondnetwork/erdnest';
 import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 import { NftType } from 'src/endpoints/nfts/entities/nft.type';
+import { NftCollectionDetailed } from 'src/endpoints/collections/entities/nft.collection.detailed';
+import { NftCollectionWithRoles } from 'src/endpoints/collections/entities/nft.collection.with.roles';
 
 describe('Collection Service', () => {
   let collectionService: CollectionService;
@@ -105,8 +106,8 @@ describe('Collection Service', () => {
     it('should return collection details', async () => {
       const collectionIdentifier: string = "EBULB-36c762";
       const result = await collectionService.getNftCollection(collectionIdentifier);
-
-      expect(result).toHaveStructure(Object.keys(new NftCollection()));
+      
+      expect(result).toHaveStructure(Object.keys(new NftCollectionDetailed()));
     });
 
     it('should return undefined if collection does not exist', async () => {
@@ -144,15 +145,7 @@ describe('Collection Service', () => {
       const collection: string = "EBULB-36c762";
       const result = await collectionService.getCollectionForAddressWithRole(address, collection);
 
-      expect(result).toEqual(expect.objectContaining({
-        collection: collection,
-        owner: address,
-        canCreate: true,
-        canBurn: false,
-        canAddQuantity: undefined,
-        canUpdateAttributes: false,
-        canAddUri: false,
-      }));
+      expect(result).toHaveStructure(Object.keys(new NftCollectionWithRoles()));
     });
 
     it('should return undefined because test simulate that collection received from method getCollectionsForAddress is empty array', async () => {
@@ -171,18 +164,11 @@ describe('Collection Service', () => {
   describe('getCollectionsWithRolesForAddress', () => {
     it('should return one collection where address has roles', async () => {
       const address: string = "erd1qqqqqqqqqqqqqpgq09vq93grfqy7x5fhgmh44ncqfp3xaw57ys5s7j9fed";
-      const result = await collectionService.getCollectionsWithRolesForAddress(address, new CollectionFilter(), new QueryPagination({ size: 1 }));
+      const results= await collectionService.getCollectionsWithRolesForAddress(address, new CollectionFilter(), new QueryPagination({ size: 1 }));
 
-      expect(result).toEqual(expect.arrayContaining([
-        expect.objectContaining({
-          owner: address,
-          canCreate: true,
-          canBurn: false,
-          canAddQuantity: undefined,
-          canUpdateAttributes: false,
-          canAddUri: false,
-        }),
-      ]));
+      for(const result of results){
+        expect(result).toHaveStructure(Object.keys(new NftCollectionWithRoles()));
+      }
     });
   });
 
