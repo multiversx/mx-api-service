@@ -1,430 +1,408 @@
 import { Injectable } from "@nestjs/common";
-import { Histogram } from "prom-client";
+import { Gauge } from "prom-client";
 
 @Injectable()
 export class StatusMetricsService {
-  private static totalAccountsHistogram: Histogram<string>;
-  private static totalBlocksHistogram: Histogram<string>;
-  private static totalCollectionsHistogram: Histogram<string>;
-  private static totalNftsHistogram: Histogram<string>;
-  private static totalTagsHistogram: Histogram<string>;
-  private static totalRoundsHistogram: Histogram<string>;
-  private static totalResultsHistogram: Histogram<string>;
-  private static totalTokensHistogram: Histogram<string>;
-  private static totalTransactionsHistogram: Histogram<string>;
-  private static totalTransfersHistogram: Histogram<string>;
-  private static totalShardRoundsHistogram: Histogram<string>;
-  private static totalShardNoncesHistogram: Histogram<string>;
-  private static totalIdentitiesHistogram: Histogram<string>;
-  private static totalNodesHistogram: Histogram<string>;
-  private static totalProvidersHistogram: Histogram<string>;
-  private static totalShardsHistogram: Histogram<string>;
-  private static totalMexPairsHistogram: Histogram<string>;
-  private static totalMexFarmsHistogram: Histogram<string>;
-  private static totalMexTokensHistogram: Histogram<string>;
-  private static checkMexEconomicsHistogram: Histogram<string>;
-  private static checkEconomicsHistogram: Histogram<string>;
-  private static checkTokensCountHistogram: Histogram<string>;
-  private static checkNodesCountHistogram: Histogram<string>;
-  private static checkProvidersCountHistogram: Histogram<string>;
-  private static checkTokensSupplyInvalidationHistogram: Histogram<string>;
-  private static checkTokensAssetsInvalidationHistogram: Histogram<string>;
-  private static checkTokensAccountsInvalidationHistogram: Histogram<string>;
-  private static checkTokensTransactionsInvalidationHistogram: Histogram<string>;
-  private static checkNodesValidatorsInvalidationHistogram: Histogram<string>;
-  private static checkProvidersNameHistogram: Histogram<string>;
-  private static checkProvidersIdentitiesHistogram: Histogram<string>;
+  private static totalAccountsMetric: Gauge<string>;
+  private static totalBlocksMetric: Gauge<string>;
+  private static totalCollectionsMetric: Gauge<string>;
+  private static totalNftsMetric: Gauge<string>;
+  private static totalTagsMetric: Gauge<string>;
+  private static totalRoundsMetric: Gauge<string>;
+  private static totalResultsMetric: Gauge<string>;
+  private static totalTokensMetric: Gauge<string>;
+  private static totalTransactionsMetric: Gauge<string>;
+  private static totalTransfersMetric: Gauge<string>;
+  private static totalShardRoundsMetric: Gauge<string>;
+  private static totalShardNoncesMetric: Gauge<string>;
+  private static totalIdentitiesMetric: Gauge<string>;
+  private static totalNodesMetric: Gauge<string>;
+  private static totalProvidersMetric: Gauge<string>;
+  private static totalShardsMetric: Gauge<string>;
+  private static totalMexPairsMetric: Gauge<string>;
+  private static totalMexFarmsMetric: Gauge<string>;
+  private static totalMexTokensMetric: Gauge<string>;
+  private static checkMexEconomicsMetric: Gauge<string>;
+  private static checkEconomicsMetric: Gauge<string>;
+  private static checkTokenCountMetric: Gauge<string>;
+  private static checkNodeCountMetric: Gauge<string>;
+  private static checkProviderCountMetric: Gauge<string>;
+  private static checkTokenSupplyMetric: Gauge<string>;
+  private static checkTokenAssetsMetric: Gauge<string>;
+  private static checkTokenAccountsMetric: Gauge<string>;
+  private static checkTokenTransactionsMetric: Gauge<string>;
+  private static checkValidatorNodeCountMetric: Gauge<string>;
+  private static checkIdentityNamesMetric: Gauge<string>;
+  private static checkIdentitiesMetric: Gauge<string>;
 
   constructor() {
-    if (!StatusMetricsService.totalAccountsHistogram) {
-      StatusMetricsService.totalAccountsHistogram = new Histogram({
+    if (!StatusMetricsService.totalAccountsMetric) {
+      StatusMetricsService.totalAccountsMetric = new Gauge({
         name: 'total_accounts',
         help: 'total_accounts',
         labelNames: [],
-        buckets: [],
       });
     }
 
-    if (!StatusMetricsService.totalBlocksHistogram) {
-      StatusMetricsService.totalBlocksHistogram = new Histogram({
+    if (!StatusMetricsService.totalBlocksMetric) {
+      StatusMetricsService.totalBlocksMetric = new Gauge({
         name: 'total_blocks',
         help: 'total_blocks',
         labelNames: [],
-        buckets: [],
       });
     }
 
-    if (!StatusMetricsService.totalCollectionsHistogram) {
-      StatusMetricsService.totalCollectionsHistogram = new Histogram({
+    if (!StatusMetricsService.totalCollectionsMetric) {
+      StatusMetricsService.totalCollectionsMetric = new Gauge({
         name: 'total_collections',
         help: 'total_collections',
         labelNames: [],
-        buckets: [],
       });
     }
 
-    if (!StatusMetricsService.totalNftsHistogram) {
-      StatusMetricsService.totalNftsHistogram = new Histogram({
+    if (!StatusMetricsService.totalNftsMetric) {
+      StatusMetricsService.totalNftsMetric = new Gauge({
         name: 'total_nfts',
         help: 'total_nfts',
         labelNames: [],
-        buckets: [],
       });
     }
 
-    if (!StatusMetricsService.totalTagsHistogram) {
-      StatusMetricsService.totalTagsHistogram = new Histogram({
+    if (!StatusMetricsService.totalTagsMetric) {
+      StatusMetricsService.totalTagsMetric = new Gauge({
         name: 'total_tags',
         help: 'total_tags',
         labelNames: [],
-        buckets: [],
       });
     }
 
-    if (!StatusMetricsService.totalRoundsHistogram) {
-      StatusMetricsService.totalRoundsHistogram = new Histogram({
+    if (!StatusMetricsService.totalRoundsMetric) {
+      StatusMetricsService.totalRoundsMetric = new Gauge({
         name: 'total_rounds',
         help: 'total_rounds',
         labelNames: [],
-        buckets: [],
       });
     }
 
-    if (!StatusMetricsService.totalResultsHistogram) {
-      StatusMetricsService.totalResultsHistogram = new Histogram({
+    if (!StatusMetricsService.totalResultsMetric) {
+      StatusMetricsService.totalResultsMetric = new Gauge({
         name: 'total_scResults',
         help: 'total_scResults',
         labelNames: [],
-        buckets: [],
       });
     }
 
-    if (!StatusMetricsService.totalTokensHistogram) {
-      StatusMetricsService.totalTokensHistogram = new Histogram({
+    if (!StatusMetricsService.totalTokensMetric) {
+      StatusMetricsService.totalTokensMetric = new Gauge({
         name: 'total_tokens',
         help: 'total_tokens',
         labelNames: [],
-        buckets: [],
       });
     }
 
-    if (!StatusMetricsService.totalTransfersHistogram) {
-      StatusMetricsService.totalTransfersHistogram = new Histogram({
+    if (!StatusMetricsService.totalTransactionsMetric) {
+      StatusMetricsService.totalTransactionsMetric = new Gauge({
+        name: 'total_transactions',
+        help: 'total_transactions',
+        labelNames: [],
+      });
+    }
+
+    if (!StatusMetricsService.totalTransfersMetric) {
+      StatusMetricsService.totalTransfersMetric = new Gauge({
         name: 'total_transfers',
         help: 'total_transfers',
         labelNames: [],
-        buckets: [],
       });
     }
 
-    if (!StatusMetricsService.totalShardRoundsHistogram) {
-      StatusMetricsService.totalShardRoundsHistogram = new Histogram({
+    if (!StatusMetricsService.totalShardRoundsMetric) {
+      StatusMetricsService.totalShardRoundsMetric = new Gauge({
         name: 'total_shard_rounds',
         help: 'total shard rounds',
         labelNames: ['shard'],
-        buckets: [],
       });
     }
 
-    if (!StatusMetricsService.totalShardNoncesHistogram) {
-      StatusMetricsService.totalShardNoncesHistogram = new Histogram({
+    if (!StatusMetricsService.totalShardNoncesMetric) {
+      StatusMetricsService.totalShardNoncesMetric = new Gauge({
         name: 'total_shard_nonces',
         help: 'total_shard_nonces',
         labelNames: ['shard'],
-        buckets: [],
       });
     }
 
-    if (!StatusMetricsService.totalIdentitiesHistogram) {
-      StatusMetricsService.totalIdentitiesHistogram = new Histogram({
+    if (!StatusMetricsService.totalIdentitiesMetric) {
+      StatusMetricsService.totalIdentitiesMetric = new Gauge({
         name: 'total_identities',
         help: 'total_identities',
         labelNames: [],
-        buckets: [],
       });
     }
 
-    if (!StatusMetricsService.totalNodesHistogram) {
-      StatusMetricsService.totalNodesHistogram = new Histogram({
+    if (!StatusMetricsService.totalNodesMetric) {
+      StatusMetricsService.totalNodesMetric = new Gauge({
         name: 'total_nodes',
         help: 'total_nodes',
         labelNames: [],
-        buckets: [],
       });
     }
 
 
-    if (!StatusMetricsService.totalProvidersHistogram) {
-      StatusMetricsService.totalProvidersHistogram = new Histogram({
+    if (!StatusMetricsService.totalProvidersMetric) {
+      StatusMetricsService.totalProvidersMetric = new Gauge({
         name: 'total_providers',
         help: 'total_providers',
         labelNames: [],
-        buckets: [],
       });
     }
 
-    if (!StatusMetricsService.totalShardsHistogram) {
-      StatusMetricsService.totalShardsHistogram = new Histogram({
+    if (!StatusMetricsService.totalShardsMetric) {
+      StatusMetricsService.totalShardsMetric = new Gauge({
         name: 'total_shards',
         help: 'total_shards',
         labelNames: [],
-        buckets: [],
       });
     }
 
-    if (!StatusMetricsService.totalMexPairsHistogram) {
-      StatusMetricsService.totalMexPairsHistogram = new Histogram({
+    if (!StatusMetricsService.totalMexPairsMetric) {
+      StatusMetricsService.totalMexPairsMetric = new Gauge({
         name: 'total_mexPairs',
         help: 'total_mexPairs',
         labelNames: [],
-        buckets: [],
       });
     }
 
-    if (!StatusMetricsService.totalMexFarmsHistogram) {
-      StatusMetricsService.totalMexFarmsHistogram = new Histogram({
+    if (!StatusMetricsService.totalMexFarmsMetric) {
+      StatusMetricsService.totalMexFarmsMetric = new Gauge({
         name: 'total_mexFarms',
         help: 'total_mexFarms',
         labelNames: [],
-        buckets: [],
       });
     }
 
-    if (!StatusMetricsService.totalMexTokensHistogram) {
-      StatusMetricsService.totalMexTokensHistogram = new Histogram({
+    if (!StatusMetricsService.totalMexTokensMetric) {
+      StatusMetricsService.totalMexTokensMetric = new Gauge({
         name: 'total_mexTokens',
         help: 'total_mexTokens',
         labelNames: [],
-        buckets: [],
       });
     }
 
-    if (!StatusMetricsService.checkMexEconomicsHistogram) {
-      StatusMetricsService.checkMexEconomicsHistogram = new Histogram({
-        name: 'mexEconomics_value',
-        help: 'mexEconomics_value',
-        labelNames: ["mexEconomics"],
-        buckets: [],
+    if (!StatusMetricsService.checkMexEconomicsMetric) {
+      StatusMetricsService.checkMexEconomicsMetric = new Gauge({
+        name: 'check_mex_economics',
+        help: 'check_mex_economics',
+        labelNames: ['result'],
       });
     }
 
-    if (!StatusMetricsService.checkEconomicsHistogram) {
-      StatusMetricsService.checkEconomicsHistogram = new Histogram({
-        name: 'economics_value',
-        help: 'economics_value',
-        labelNames: ["economics"],
-        buckets: [],
+    if (!StatusMetricsService.checkEconomicsMetric) {
+      StatusMetricsService.checkEconomicsMetric = new Gauge({
+        name: 'check_economics',
+        help: 'check_economics',
+        labelNames: ['result'],
       });
     }
 
-    if (!StatusMetricsService.checkTokensCountHistogram) {
-      StatusMetricsService.checkTokensCountHistogram = new Histogram({
-        name: 'check_tokens_count',
-        help: 'check_tokens_count',
-        labelNames: ['tokensCount'],
-        buckets: [],
+    if (!StatusMetricsService.checkTokenCountMetric) {
+      StatusMetricsService.checkTokenCountMetric = new Gauge({
+        name: 'check_token_count',
+        help: 'check_token_count',
+        labelNames: ['result'],
       });
     }
 
-    if (!StatusMetricsService.checkNodesCountHistogram) {
-      StatusMetricsService.checkNodesCountHistogram = new Histogram({
-        name: 'check_nodes_count',
-        help: 'check_nodes_count',
-        labelNames: ['nodesCount'],
-        buckets: [],
+    if (!StatusMetricsService.checkNodeCountMetric) {
+      StatusMetricsService.checkNodeCountMetric = new Gauge({
+        name: 'check_node_count',
+        help: 'check_node_count',
+        labelNames: ['result'],
       });
     }
 
-    if (!StatusMetricsService.checkProvidersCountHistogram) {
-      StatusMetricsService.checkProvidersCountHistogram = new Histogram({
-        name: 'check_providers_count',
-        help: 'check_providers_count',
-        labelNames: ['providersCount'],
-        buckets: [],
+    if (!StatusMetricsService.checkProviderCountMetric) {
+      StatusMetricsService.checkProviderCountMetric = new Gauge({
+        name: 'check_provider_count',
+        help: 'check_provider_count',
+        labelNames: ['result'],
       });
     }
 
-    if (!StatusMetricsService.checkTokensSupplyInvalidationHistogram) {
-      StatusMetricsService.checkTokensSupplyInvalidationHistogram = new Histogram({
-        name: 'token_supply_invalidations',
-        help: 'token_supply_invalidations',
-        labelNames: ['token_supply'],
-        buckets: [],
+    if (!StatusMetricsService.checkTokenSupplyMetric) {
+      StatusMetricsService.checkTokenSupplyMetric = new Gauge({
+        name: 'check_token_supply',
+        help: 'check_token_supply',
+        labelNames: ['result'],
       });
     }
 
-    if (!StatusMetricsService.checkTokensAssetsInvalidationHistogram) {
-      StatusMetricsService.checkTokensAssetsInvalidationHistogram = new Histogram({
-        name: 'token_assets_invalidations',
-        help: 'token_assets_invalidations',
-        labelNames: ['token_assets'],
-        buckets: [],
+    if (!StatusMetricsService.checkTokenAssetsMetric) {
+      StatusMetricsService.checkTokenAssetsMetric = new Gauge({
+        name: 'check_token_assets',
+        help: 'check_token_assets',
+        labelNames: ['result'],
       });
     }
 
-    if (!StatusMetricsService.checkTokensAccountsInvalidationHistogram) {
-      StatusMetricsService.checkTokensAccountsInvalidationHistogram = new Histogram({
-        name: 'token_accounts_invalidations',
-        help: 'token_accounts_invalidations',
-        labelNames: ['token_accounts'],
-        buckets: [],
+    if (!StatusMetricsService.checkTokenAccountsMetric) {
+      StatusMetricsService.checkTokenAccountsMetric = new Gauge({
+        name: 'check_token_accounts',
+        help: 'check_token_accounts',
+        labelNames: ['result'],
       });
     }
 
-    if (!StatusMetricsService.checkTokensTransactionsInvalidationHistogram) {
-      StatusMetricsService.checkTokensTransactionsInvalidationHistogram = new Histogram({
-        name: 'token_transactions_invalidations',
-        help: 'token_transactions_invalidations',
-        labelNames: ['token_transactions'],
-        buckets: [],
+    if (!StatusMetricsService.checkTokenTransactionsMetric) {
+      StatusMetricsService.checkTokenTransactionsMetric = new Gauge({
+        name: 'check_token_transactions',
+        help: 'check_token_transactions',
+        labelNames: ['result'],
       });
     }
 
-    if (!StatusMetricsService.checkNodesValidatorsInvalidationHistogram) {
-      StatusMetricsService.checkNodesValidatorsInvalidationHistogram = new Histogram({
-        name: 'nodes_validators_invalidation',
-        help: 'nodes_validators_invalidation',
-        labelNames: ['nodes_validators'],
-        buckets: [],
+    if (!StatusMetricsService.checkValidatorNodeCountMetric) {
+      StatusMetricsService.checkValidatorNodeCountMetric = new Gauge({
+        name: 'check_validator_node_count',
+        help: 'check_validator_node_count',
+        labelNames: ['result'],
       });
     }
 
-    if (!StatusMetricsService.checkProvidersNameHistogram) {
-      StatusMetricsService.checkProvidersNameHistogram = new Histogram({
-        name: 'providers_name',
-        help: 'providers_name',
-        labelNames: ['providers_name'],
-        buckets: [],
+    if (!StatusMetricsService.checkIdentityNamesMetric) {
+      StatusMetricsService.checkIdentityNamesMetric = new Gauge({
+        name: 'check_identity_names',
+        help: 'check_identity_names',
+        labelNames: ['result'],
       });
     }
 
-    if (!StatusMetricsService.checkProvidersIdentitiesHistogram) {
-      StatusMetricsService.checkProvidersIdentitiesHistogram = new Histogram({
-        name: 'providers_identities',
-        help: 'providers_identities',
-        labelNames: ['providers_identities'],
-        buckets: [],
+    if (!StatusMetricsService.checkIdentitiesMetric) {
+      StatusMetricsService.checkIdentitiesMetric = new Gauge({
+        name: 'check_identities',
+        help: 'check_identities',
+        labelNames: ['result'],
       });
     }
   }
 
   setTotalAccounts(total: number) {
-    StatusMetricsService.totalAccountsHistogram.labels().observe(total);
+    StatusMetricsService.totalAccountsMetric.set(total);
   }
 
   setTotalBlocks(total: number) {
-    StatusMetricsService.totalBlocksHistogram.labels().observe(total);
+    StatusMetricsService.totalBlocksMetric.set(total);
   }
 
   setTotalCollections(total: number) {
-    StatusMetricsService.totalCollectionsHistogram.labels().observe(total);
+    StatusMetricsService.totalCollectionsMetric.set(total);
   }
 
   setTotalNfts(total: number) {
-    StatusMetricsService.totalNftsHistogram.labels().observe(total);
+    StatusMetricsService.totalNftsMetric.set(total);
   }
 
   setTotalTags(total: number) {
-    StatusMetricsService.totalTagsHistogram.labels().observe(total);
+    StatusMetricsService.totalTagsMetric.set(total);
   }
 
   setTotalRounds(total: number) {
-    StatusMetricsService.totalRoundsHistogram.labels().observe(total);
+    StatusMetricsService.totalRoundsMetric.set(total);
   }
 
   setTotalResults(total: number) {
-    StatusMetricsService.totalResultsHistogram.labels().observe(total);
+    StatusMetricsService.totalResultsMetric.set(total);
   }
 
   setTotalTokens(total: number) {
-    StatusMetricsService.totalTokensHistogram.labels().observe(total);
+    StatusMetricsService.totalTokensMetric.set(total);
   }
 
   setTotalTransactions(total: number) {
-    StatusMetricsService.totalTransactionsHistogram.labels().observe(total);
+    StatusMetricsService.totalTransactionsMetric.set(total);
   }
 
   setTotalTransfers(total: number) {
-    StatusMetricsService.totalTransfersHistogram.labels().observe(total);
+    StatusMetricsService.totalTransfersMetric.set(total);
   }
 
   setTotalShardRounds(shard: number, round: number) {
-    StatusMetricsService.totalShardRoundsHistogram.labels(shard.toString()).observe(round);
+    StatusMetricsService.totalShardRoundsMetric.labels(shard.toString()).set(round);
   }
 
   setTotalShardNonces(shard: number, nonce: number) {
-    StatusMetricsService.totalShardNoncesHistogram.labels(shard.toString()).observe(nonce);
+    StatusMetricsService.totalShardNoncesMetric.labels(shard.toString()).set(nonce);
   }
 
-  setTotalIdentitiesResults(total: number) {
-    StatusMetricsService.totalIdentitiesHistogram.labels().observe(total);
+  setTotalIdentities(total: number) {
+    StatusMetricsService.totalIdentitiesMetric.set(total);
   }
 
-  setTotalNodesResults(total: number) {
-    StatusMetricsService.totalNodesHistogram.labels().observe(total);
+  setTotalNodes(total: number) {
+    StatusMetricsService.totalNodesMetric.set(total);
   }
 
-  setTotalProvidersResults(total: number) {
-    StatusMetricsService.totalProvidersHistogram.labels().observe(total);
+  setTotalProviders(total: number) {
+    StatusMetricsService.totalProvidersMetric.set(total);
   }
 
-  setTotalShardsResults(total: number) {
-    StatusMetricsService.totalShardsHistogram.labels().observe(total);
+  setTotalShards(total: number) {
+    StatusMetricsService.totalShardsMetric.set(total);
   }
 
-  setTotalMexPairsResults(total: number) {
-    StatusMetricsService.totalMexPairsHistogram.labels().observe(total);
+  setTotalMexPairs(total: number) {
+    StatusMetricsService.totalMexPairsMetric.set(total);
   }
 
-  setTotalMexFarmsResults(total: number) {
-    StatusMetricsService.totalMexFarmsHistogram.labels().observe(total);
+  setTotalMexFarms(total: number) {
+    StatusMetricsService.totalMexFarmsMetric.set(total);
   }
 
-  setTotalMexTokensResults(total: number) {
-    StatusMetricsService.totalMexTokensHistogram.labels().observe(total);
+  setTotalMexTokens(total: number) {
+    StatusMetricsService.totalMexTokensMetric.set(total);
   }
 
   setMexEconomicsValue(name: string, value: number) {
-    StatusMetricsService.checkMexEconomicsHistogram.labels(name.toString()).observe(value);
+    StatusMetricsService.checkMexEconomicsMetric.labels(name.toString()).set(value);
   }
 
   setEconomicsValue(name: string, value: number) {
-    StatusMetricsService.checkEconomicsHistogram.labels(name.toString()).observe(value);
+    StatusMetricsService.checkEconomicsMetric.labels(name.toString()).set(value);
   }
 
-  checkTokensCountValue(result: 'success' | 'error', duration: number) {
-    StatusMetricsService.checkTokensCountHistogram.labels(result).observe(duration);
+  setCheckTokenCountResult(result: 'success' | 'error') {
+    StatusMetricsService.checkTokenCountMetric.labels(result).inc();
   }
 
-  setProvidersCountValue(result: 'success' | 'error', duration: number) {
-    StatusMetricsService.checkProvidersCountHistogram.labels(result).observe(duration);
+  setCheckProviderCountResult(result: 'success' | 'error') {
+    StatusMetricsService.checkProviderCountMetric.labels(result).inc();
   }
 
-  setTokensSupplyInvalidation(result: 'success' | 'error', duration: number) {
-    StatusMetricsService.checkTokensSupplyInvalidationHistogram.labels(result).observe(duration);
+  setCheckTokenSupplyResult(result: 'success' | 'error') {
+    StatusMetricsService.checkTokenSupplyMetric.labels(result).inc();
   }
 
-  setTokensAssetsInvalidation(result: 'success' | 'error', duration: number) {
-    StatusMetricsService.checkTokensAssetsInvalidationHistogram.labels(result).observe(duration);
+  setCheckTokenAssetsResult(result: 'success' | 'error') {
+    StatusMetricsService.checkTokenAssetsMetric.labels(result).inc();
   }
 
-  setTokensAccountInvalidation(result: 'success' | 'error', duration: number) {
-    StatusMetricsService.checkTokensAccountsInvalidationHistogram.labels(result).observe(duration);
+  setCheckTokenAccountsResult(result: 'success' | 'error') {
+    StatusMetricsService.checkTokenAccountsMetric.labels(result).inc();
   }
 
-  setTokensTransactionsInvalidation(result: 'success' | 'error', duration: number) {
-    StatusMetricsService.checkTokensTransactionsInvalidationHistogram.labels(result).observe(duration);
+  setCheckTokenTransactionsResult(result: 'success' | 'error') {
+    StatusMetricsService.checkTokenTransactionsMetric.labels(result).inc();
   }
 
-  setNodesValidatorsInvalidation(result: 'success' | 'error', duration: number) {
-    StatusMetricsService.checkNodesValidatorsInvalidationHistogram.labels(result).observe(duration);
+  setCheckValidatorNodeCountResult(result: 'success' | 'error') {
+    StatusMetricsService.checkValidatorNodeCountMetric.labels(result).inc();
   }
 
-  setProvidersNameInvalidation(result: 'success' | 'error', duration: number) {
-    StatusMetricsService.checkProvidersNameHistogram.labels(result).observe(duration);
+  setCheckIdentityNamesResult(result: 'success' | 'error') {
+    StatusMetricsService.checkIdentityNamesMetric.labels(result).inc();
   }
 
-  setProvidersIdentitiesInvalidation(result: 'success' | 'error', duration: number) {
-    StatusMetricsService.checkProvidersIdentitiesHistogram.labels(result).observe(duration);
+  setCheckIdentitiesResult(result: 'success' | 'error') {
+    StatusMetricsService.checkIdentitiesMetric.labels(result).inc();
   }
 }
