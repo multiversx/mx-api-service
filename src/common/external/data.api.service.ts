@@ -46,12 +46,4 @@ export class DataApiService {
       return undefined;
     }
   }
-
-  async getEgldMarketQuotes(type: DataQuoteType): Promise<any[]> {
-    if (!this.dataUrl) {
-      return [];
-    }
-
-    return await this.apiService.get(`${this.dataUrl}/market/quotes/egld/${type}`);
-  }
 }
