@@ -61,8 +61,10 @@ describe("Results Controller", () => {
         .expect(200)
         .then(res => {
           expect(res.body).toHaveLength(2);
-          expect(res.body[0].hash).toStrictEqual('bc68da1de1926031f03211dc1610b4513043ccd497fdc09817aa721e20555057');
-          expect(res.body[1].hash).toStrictEqual('6410188f7c240e795e1a0fc9c4656e406bae57721b4a685a49cfa73ae855d7d4');
+          const resultsHash = res.body.map((result: any) => result.hash);
+
+          expect(resultsHash.includes("bc68da1de1926031f03211dc1610b4513043ccd497fdc09817aa721e20555057")).toBeTruthy();
+          expect(resultsHash.includes("6410188f7c240e795e1a0fc9c4656e406bae57721b4a685a49cfa73ae855d7d4")).toBeTruthy();
         });
     });
   });
