@@ -40,15 +40,6 @@ describe('Collection', () => {
               canChangeOwner
               canUpgrade
               canAddSpecialRoles
-              roles{
-                address
-                canCreate
-                canBurn
-                canAddQuantity
-                canUpdateAttributes
-                canAddUri
-                roles
-              }
             }
           }`,
         })
