@@ -53,6 +53,18 @@ export class NftCollection {
   @ApiProperty({ type: Boolean, default: false })
   canTransferNftCreateRole: boolean = false;
 
+  @Field(() => Boolean, { description: 'If the given NFT collection can change owner.', nullable: true })
+  @ApiProperty({ type: Boolean, default: false })
+  canChangeOwner: boolean = false;
+
+  @Field(() => Boolean, { description: 'If the given NFT collection can upgrade.', nullable: true })
+  @ApiProperty({ type: Boolean, default: false })
+  canUpgrade: boolean = false;
+
+  @Field(() => Boolean, { description: 'If the given NFT collection can add special role.', nullable: true })
+  @ApiProperty({ type: Boolean, default: false })
+  canAddSpecialRoles: boolean = false;
+
   @Field(() => Float, { description: 'Decimals for the given NFT collection.', nullable: true })
   @ApiProperty({ type: Number, nullable: true })
   decimals: number | undefined = undefined;
