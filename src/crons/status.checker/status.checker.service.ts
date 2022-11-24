@@ -20,6 +20,7 @@ import { MexEconomicsService } from "src/endpoints/mex/mex.economics.service";
 import { NetworkService } from "src/endpoints/network/network.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
+import { NodeType } from "src/endpoints/nodes/entities/node.type";
 
 @Injectable()
 export class StatusCheckerService {
@@ -300,8 +301,7 @@ export class StatusCheckerService {
 
         if (supply > 50) {
           this.apiStatusMetricsService.setTokensSupplyInvalidation('success', performanceProfiler.duration);
-        }
-        else {
+        } else {
           this.apiStatusMetricsService.setTokensSupplyInvalidation('error', performanceProfiler.duration);
         }
 
@@ -321,8 +321,7 @@ export class StatusCheckerService {
 
         if (assets > 100) {
           this.apiStatusMetricsService.setTokensAssetsInvalidation('success', performanceProfiler.duration);
-        }
-        else {
+        } else {
           this.apiStatusMetricsService.setTokensAssetsInvalidation('error', performanceProfiler.duration);
         }
       });
@@ -331,7 +330,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_10_MINUTES)
   async handleTokensAccountsInvalidations() {
-    await Locker.lock('Tokens accounts ', async () => {
+    await Locker.lock('Tokens accounts', async () => {
       await this.lock.acquire('accounts', async () => {
         const performanceProfiler = new PerformanceProfiler();
         const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
@@ -341,8 +340,7 @@ export class StatusCheckerService {
 
         if (accounts > 990) {
           this.apiStatusMetricsService.setTokensAccountInvalidation('success', performanceProfiler.duration);
-        }
-        else {
+        } else {
           this.apiStatusMetricsService.setTokensAccountInvalidation('error', performanceProfiler.duration);
         }
       });
@@ -351,7 +349,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_10_MINUTES)
   async handleTokensTransactionsInvalidations() {
-    await Locker.lock('Tokens transactions ', async () => {
+    await Locker.lock('Tokens transactions', async () => {
       await this.lock.acquire('transactions', async () => {
         const performanceProfiler = new PerformanceProfiler();
         const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
@@ -361,8 +359,7 @@ export class StatusCheckerService {
 
         if (transactions >= 900) {
           this.apiStatusMetricsService.setTokensTransactionsInvalidation('success', performanceProfiler.duration);
-        }
-        else {
+        } else {
           this.apiStatusMetricsService.setTokensTransactionsInvalidation('error', performanceProfiler.duration);
         }
       });
@@ -375,8 +372,7 @@ export class StatusCheckerService {
       await this.lock.acquire('validators', async () => {
         const performanceProfiler = new PerformanceProfiler();
         const nodes = await this.nodeService.getAllNodes();
-        const type = 'validator';
-        const validators = nodes.reduce((acc, cur) => cur.type === type ? ++acc : acc, 0);
+        const validators = nodes.filter(node => node.type === NodeType.validator).length;
 
         performanceProfiler.stop();
 
@@ -405,7 +401,9 @@ export class StatusCheckerService {
             break;
           }
         }
+
         performanceProfiler.stop();
+
         if (success) {
           this.apiStatusMetricsService.setProvidersNameInvalidation('success', performanceProfiler.duration);
         } else {
@@ -417,7 +415,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_10_MINUTES)
   async handleProvidersIdentitiesValues() {
-    await Locker.lock('Providers identities ', async () => {
+    await Locker.lock('Providers identities', async () => {
       await this.lock.acquire('identities', async () => {
         const performanceProfiler = new PerformanceProfiler();
         const identities = await this.identitiesService.getAllIdentities();
