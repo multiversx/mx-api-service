@@ -298,18 +298,36 @@ export class ElasticIndexerHelper {
   }
 
   public buildTokensWithRolesForAddressQuery(address: string, filter: TokenWithRolesFilter, pagination?: QueryPagination): ElasticQuery {
+    const rolesConditions = [
+      QueryType.Nested('roles', { 'roles.ESDTRoleLocalMint': address }),
+      QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }),
+      QueryType.Nested('roles', { 'roles.ESDTTransferRole': address }),
+    ];
+
+    if (filter.includeMetaESDT === true) {
+      rolesConditions.push(QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddQuantity': address }));
+      rolesConditions.push(QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddURI': address }));
+      rolesConditions.push(QueryType.Nested('roles', { 'roles.ESDTRoleNFTCreate': address }));
+      rolesConditions.push(QueryType.Nested('roles', { 'roles.ESDTRoleNFTBurn': address }));
+      rolesConditions.push(QueryType.Nested('roles', { 'roles.ESDTRoleNFTUpdateAttributes': address }));
+    }
+
     let elasticQuery = ElasticQuery.create()
       .withMustNotExistCondition('identifier')
       .withMustCondition(QueryType.Should(
         [
           QueryType.Match('currentOwner', address),
-          QueryType.Nested('roles', { 'roles.ESDTRoleLocalMint': address }),
-          QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }),
+          ...rolesConditions,
         ]
       ))
-      .withMustMatchCondition('type', EsdtType.FungibleESDT)
       .withMustMatchCondition('token', filter.identifier)
       .withMustMatchCondition('currentOwner', filter.owner);
+
+    if (filter.includeMetaESDT === true) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition([EsdtType.FungibleESDT, EsdtType.MetaESDT], type => QueryType.Match('type', type));
+    } else {
+      elasticQuery = elasticQuery.withMustMatchCondition('type', EsdtType.FungibleESDT);
+    }
 
     if (filter.search) {
       elasticQuery = elasticQuery

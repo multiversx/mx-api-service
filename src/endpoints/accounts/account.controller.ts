@@ -21,7 +21,7 @@ import { DeployedContract } from './entities/deployed.contract';
 import { SmartContractResult } from '../sc-results/entities/smart.contract.result';
 import { SmartContractResultService } from '../sc-results/scresult.service';
 import { CollectionService } from '../collections/collection.service';
-import { NftCollectionRole } from '../collections/entities/nft.collection.role';
+import { NftCollectionWithRoles } from '../collections/entities/nft.collection.with.roles';
 import { SortOrder } from 'src/common/entities/sort.order';
 import { AccountHistory } from "./entities/account.history";
 import { AccountEsdtHistory } from "./entities/account.esdt.history";
@@ -229,7 +229,7 @@ export class AccountController {
   @ApiQuery({ name: 'canAddUri', description: 'Filter by property canAddUri (boolean)', required: false })
   @ApiQuery({ name: 'canTransferRole', description: 'Filter by property canTransferRole (boolean)', required: false })
   @ApiQuery({ name: 'excludeMetaESDT', description: 'Exclude collections of type "MetaESDT" in the response', required: false, type: Boolean })
-  @ApiOkResponse({ type: [NftCollectionRole] })
+  @ApiOkResponse({ type: [NftCollectionWithRoles] })
   async getAccountCollectionsWithRoles(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -244,7 +244,7 @@ export class AccountController {
     @Query('canAddUri', new ParseBoolPipe) canAddUri?: boolean,
     @Query('canTransferRole', new ParseBoolPipe) canTransferRole?: boolean,
     @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
-  ): Promise<NftCollectionRole[]> {
+  ): Promise<NftCollectionWithRoles[]> {
     return await this.collectionService.getCollectionsWithRolesForAddress(address, new CollectionFilter({ search, type, owner, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole, excludeMetaESDT }), new QueryPagination({ from, size }));
   }
 
@@ -290,11 +290,11 @@ export class AccountController {
 
   @Get("/accounts/:address/roles/collections/:collection")
   @ApiOperation({ summary: 'Account collection details', description: 'Returns details about a specific NFT/SFT/MetaESDT collection from a given address' })
-  @ApiOkResponse({ type: NftCollectionRole })
+  @ApiOkResponse({ type: NftCollectionWithRoles })
   async getAccountCollection(
     @Param('address', ParseAddressPipe) address: string,
     @Param('collection', ParseCollectionPipe) collection: string,
-  ): Promise<NftCollectionRole> {
+  ): Promise<NftCollectionWithRoles> {
     const result = await this.collectionService.getCollectionForAddressWithRole(address, collection);
     if (!result) {
       throw new NotFoundException('Collection for given account not found');
@@ -311,6 +311,7 @@ export class AccountController {
   @ApiQuery({ name: 'owner', description: 'Filter by token owner', required: false })
   @ApiQuery({ name: 'canMint', description: 'Filter by property canMint (boolean)', required: false })
   @ApiQuery({ name: 'canBurn', description: 'Filter by property canBurn (boolean)', required: false })
+  @ApiQuery({ name: 'includeMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
   @ApiOkResponse({ type: [TokenWithRoles] })
   async getAccountTokensWithRoles(
     @Param('address', ParseAddressPipe) address: string,
@@ -320,8 +321,9 @@ export class AccountController {
     @Query('owner', ParseAddressPipe) owner?: string,
     @Query('canMint', new ParseBoolPipe) canMint?: boolean,
     @Query('canBurn', new ParseBoolPipe) canBurn?: boolean,
+    @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
   ): Promise<TokenWithRoles[]> {
-    return await this.tokenService.getTokensWithRolesForAddress(address, new TokenWithRolesFilter({ search, owner, canMint, canBurn }), new QueryPagination({ from, size }));
+    return await this.tokenService.getTokensWithRolesForAddress(address, new TokenWithRolesFilter({ search, owner, canMint, canBurn, includeMetaESDT }), new QueryPagination({ from, size }));
   }
 
   @Get("/accounts/:address/roles/tokens/count")
@@ -330,7 +332,7 @@ export class AccountController {
   @ApiQuery({ name: 'owner', description: 'Filter by token owner', required: false })
   @ApiQuery({ name: 'canMint', description: 'Filter by property canMint (boolean)', required: false })
   @ApiQuery({ name: 'canBurn', description: 'Filter by property canCreate (boolean)', required: false })
-  @ApiQuery({ name: 'canAddQuantity', description: 'Filter by property canAddQuantity (boolean)', required: false })
+  @ApiQuery({ name: 'includeMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
   @ApiOkResponse({ type: Number })
   async getTokensWithRolesCount(
     @Param('address', ParseAddressPipe) address: string,
@@ -338,8 +340,9 @@ export class AccountController {
     @Query('owner', ParseAddressPipe) owner?: string,
     @Query('canMint', new ParseBoolPipe) canMint?: boolean,
     @Query('canBurn', new ParseBoolPipe) canBurn?: boolean,
+    @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
   ): Promise<number> {
-    return await this.tokenService.getTokensWithRolesForAddressCount(address, new TokenWithRolesFilter({ search, owner, canMint, canBurn }));
+    return await this.tokenService.getTokensWithRolesForAddressCount(address, new TokenWithRolesFilter({ search, owner, canMint, canBurn, includeMetaESDT }));
   }
 
   @Get("/accounts/:address/roles/tokens/c")
@@ -350,8 +353,9 @@ export class AccountController {
     @Query('owner', ParseAddressPipe) owner?: string,
     @Query('canMint', new ParseBoolPipe) canMint?: boolean,
     @Query('canBurn', new ParseBoolPipe) canBurn?: boolean,
+    @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
   ): Promise<number> {
-    return await this.tokenService.getTokensWithRolesForAddressCount(address, new TokenWithRolesFilter({ search, owner, canMint, canBurn }));
+    return await this.tokenService.getTokensWithRolesForAddressCount(address, new TokenWithRolesFilter({ search, owner, canMint, canBurn, includeMetaESDT }));
   }
 
   @Get("/accounts/:address/roles/tokens/:identifier")

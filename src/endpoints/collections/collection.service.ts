@@ -7,7 +7,7 @@ import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
 import { AssetsService } from "../../common/assets/assets.service";
 import { VmQueryService } from "../vm.query/vm.query.service";
-import { NftCollectionRole } from "./entities/nft.collection.role";
+import { NftCollectionWithRoles } from "./entities/nft.collection.with.roles";
 import { TokenProperties } from "../tokens/entities/token.properties";
 import { CacheInfo } from "src/utils/cache.info";
 import { TokenAssets } from "../../common/assets/entities/token.assets";
@@ -23,6 +23,7 @@ import { PersistenceService } from "src/common/persistence/persistence.service";
 import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
 import { NftRank } from "src/common/assets/entities/nft.rank";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
+import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
 
 @Injectable()
 export class CollectionService {
@@ -188,17 +189,19 @@ export class CollectionService {
       return undefined;
     }
 
-    collection.type = elasticCollection.type as NftType;
-    collection.timestamp = elasticCollection.timestamp;
-    collection.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
+    const collectionDetailed = ApiUtils.mergeObjects(new NftCollectionDetailed(), collection);
 
-    await this.pluginService.processCollections([collection]);
-    await this.applyCollectionRoles(collection, elasticCollection);
+    collectionDetailed.type = elasticCollection.type as NftType;
+    collectionDetailed.timestamp = elasticCollection.timestamp;
+    collectionDetailed.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
 
-    return collection;
+    await this.pluginService.processCollections([collectionDetailed]);
+    await this.applyCollectionRoles(collectionDetailed, elasticCollection);
+
+    return collectionDetailed;
   }
 
-  async applyCollectionRoles(collection: NftCollection | TokenDetailed, elasticCollection: any) {
+  async applyCollectionRoles(collection: NftCollectionDetailed | TokenDetailed, elasticCollection: any) {
     collection.roles = await this.getNftCollectionRoles(elasticCollection);
     const isTransferProhibitedByDefault = collection.roles?.some(x => x.canTransfer === true) === true;
     collection.canTransfer = !isTransferProhibitedByDefault;
@@ -275,7 +278,7 @@ export class CollectionService {
     return allRoles;
   }
 
-  async getCollectionForAddressWithRole(address: string, collection: string): Promise<NftCollectionRole | undefined> {
+  async getCollectionForAddressWithRole(address: string, collection: string): Promise<NftCollectionWithRoles | undefined> {
     const filter: CollectionFilter = { collection };
 
     const collections = await this.esdtAddressService.getCollectionsForAddress(address, filter, new QueryPagination({ from: 0, size: 1 }));
@@ -286,7 +289,7 @@ export class CollectionService {
     return collections[0];
   }
 
-  async getCollectionsWithRolesForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionRole[]> {
+  async getCollectionsWithRolesForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionWithRoles[]> {
     return await this.esdtAddressService.getCollectionsForAddress(address, filter, pagination);
   }
 

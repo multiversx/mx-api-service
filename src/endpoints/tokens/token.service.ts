@@ -565,13 +565,23 @@ export class TokenService {
       if (token) {
         const resultItem = ApiUtils.mergeObjects(new TokenWithRoles(), token);
         if (item.roles) {
-          if (item.roles.ESDTRoleLocalMint && item.roles.ESDTRoleLocalMint.includes(address)) {
-            resultItem.canLocalMint = true;
+          const addressRoles = Object.keys(item.roles).filter(key => item.roles[key].includes(address));
+
+          if (!item.roles['ESDTTransferRole']) {
+            resultItem.canTransfer = true;
           }
 
-          if (item.roles.ESDTRoleLocalBurn && item.roles.ESDTRoleLocalBurn.includes(address)) {
-            resultItem.canLocalBurn = true;
-          }
+          resultItem.roles = new TokenRoles({
+            canLocalMint: token.type === TokenType.FungibleESDT ? addressRoles.includes('ESDTRoleLocalMint') : undefined,
+            canLocalBurn: token.type === TokenType.FungibleESDT ? addressRoles.includes('ESDTRoleLocalBurn') : undefined,
+            canAddQuantity: token.type === TokenType.MetaESDT ? addressRoles.includes('ESDTRoleNFTAddQuantity') : undefined,
+            canAddUri: token.type === TokenType.MetaESDT ? addressRoles.includes('ESDTRoleNFTAddURI') : undefined,
+            canCreate: token.type === TokenType.MetaESDT ? addressRoles.includes('ESDTRoleNFTCreate') : undefined,
+            canBurn: token.type === TokenType.MetaESDT ? addressRoles.includes('ESDTRoleNFTBurn') : undefined,
+            canUpdateAttributes: token.type === TokenType.MetaESDT ? addressRoles.includes('ESDTRoleNFTUpdateAttributes') : undefined,
+            canTransfer: resultItem.canTransfer === false ? addressRoles.includes('ESDTTransferRole') : undefined,
+            roles: addressRoles,
+          });
         }
 
         result.push(resultItem);
