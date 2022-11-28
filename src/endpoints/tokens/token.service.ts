@@ -573,7 +573,7 @@ export class TokenService {
             resultItem.canTransfer = true;
           }
 
-          resultItem.roles = new TokenRoles({
+          resultItem.role = new TokenRoles({
             canLocalMint: token.type === TokenType.FungibleESDT ? addressRoles.includes('ESDTRoleLocalMint') : undefined,
             canLocalBurn: token.type === TokenType.FungibleESDT ? addressRoles.includes('ESDTRoleLocalBurn') : undefined,
             canAddQuantity: token.type === TokenType.MetaESDT ? addressRoles.includes('ESDTRoleNFTAddQuantity') : undefined,
@@ -586,7 +586,7 @@ export class TokenService {
           });
 
           // temporary, until we enforce deprecation for roles on the root element
-          const clonedRoles = new TokenRoles(resultItem.roles);
+          const clonedRoles = new TokenRoles(resultItem.role);
           // @ts-ignore
           delete clonedRoles.roles;
           delete clonedRoles.canTransfer;

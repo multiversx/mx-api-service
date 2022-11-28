@@ -11,7 +11,7 @@ export class TokenWithRoles extends Token {
 
   @Field(() => TokenRoles, { description: "The roles of the token." })
   @ApiProperty({ type: TokenRoles })
-  roles: TokenRoles = new TokenRoles();
+  role: TokenRoles = new TokenRoles();
 
   @Field(() => String, { description: "Token address with role.", nullable: true, deprecationReason: 'Already included in underlying roles structure' })
   @ApiProperty({ type: String, nullable: true })

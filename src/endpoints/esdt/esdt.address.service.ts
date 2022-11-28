@@ -134,10 +134,10 @@ export class EsdtAddressService {
             }
           }
 
-          collectionWithRoles.roles = addressRoles;
+          collectionWithRoles.role = addressRoles;
 
           // temporary, until we enforce deprecation for roles on the root element
-          const clonedRoles = new CollectionRoles(collectionWithRoles.roles);
+          const clonedRoles = new CollectionRoles(collectionWithRoles.role);
           // @ts-ignore
           delete clonedRoles.roles;
           delete clonedRoles.canTransfer;
@@ -176,14 +176,14 @@ export class EsdtAddressService {
 
     for (const collection of collections) {
       const role = roles[collection.collection];
-      collection.roles.canCreate = role ? role.includes('ESDTRoleNFTCreate') : false;
-      collection.roles.canBurn = role ? role.includes('ESDTRoleNFTBurn') : false;
-      collection.roles.canUpdateAttributes = role ? role.includes('ESDTRoleNFTUpdateAttributes') : false;
-      collection.roles.canAddUri = role ? role.includes('ESDTRoleNFTAddURI') : false;
-      collection.roles.canTransfer = role ? role.includes('ESDTTransferRole') : false;
+      collection.role.canCreate = role ? role.includes('ESDTRoleNFTCreate') : false;
+      collection.role.canBurn = role ? role.includes('ESDTRoleNFTBurn') : false;
+      collection.role.canUpdateAttributes = role ? role.includes('ESDTRoleNFTUpdateAttributes') : false;
+      collection.role.canAddUri = role ? role.includes('ESDTRoleNFTAddURI') : false;
+      collection.role.canTransfer = role ? role.includes('ESDTTransferRole') : false;
 
       if (collection.type === NftType.SemiFungibleESDT) {
-        collection.roles.canAddQuantity = role ? role.includes('ESDTRoleNFTAddQuantity') : false;
+        collection.role.canAddQuantity = role ? role.includes('ESDTRoleNFTAddQuantity') : false;
       }
 
       if (collection.timestamp === 0) {

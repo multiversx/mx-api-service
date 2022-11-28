@@ -1199,7 +1199,7 @@ describe('Token Service', () => {
       expect(result.canBurn).toStrictEqual(true);
       expect(result.canMint).toStrictEqual(true);
       expect(result.canUpgrade).toStrictEqual(true);
-      expect(result.roles).toEqual(expect.objectContaining({
+      expect(result.role).toEqual(expect.objectContaining({
         canLocalMint: true,
         canLocalBurn: true,
       }));
