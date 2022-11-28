@@ -545,7 +545,7 @@ export class TokenService {
   }
 
   async getTokenWithRolesForAddress(address: string, identifier: string): Promise<TokenWithRoles | undefined> {
-    const tokens = await this.getTokensWithRolesForAddress(address, { identifier }, { from: 0, size: 1 });
+    const tokens = await this.getTokensWithRolesForAddress(address, { identifier, includeMetaESDT: true }, { from: 0, size: 1 });
     if (tokens.length === 0) {
       return undefined;
     }
@@ -582,6 +582,14 @@ export class TokenService {
             canTransfer: resultItem.canTransfer === false ? addressRoles.includes('ESDTTransferRole') : undefined,
             roles: addressRoles,
           });
+
+          // temporary, until we enforce deprecation for roles on the root element
+          const clonedRoles = new TokenRoles(resultItem.roles);
+          // @ts-ignore
+          delete clonedRoles.roles;
+          delete clonedRoles.canTransfer;
+
+          Object.assign(resultItem, clonedRoles);
         }
 
         result.push(resultItem);

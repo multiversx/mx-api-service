@@ -629,16 +629,16 @@ input GetNftCollectionsCountInput {
   """Can update attributes to retrieve for the given result set."""
   canUpdateAttributes: String
 
+  """
+  Do not include collections of type "MetaESDT" in the responsee for the given result set.
+  """
+  excludeMetaESDT: Boolean
+
   """Collection identifier to retrieve for the given result set."""
   search: ID
 
   """NFT types list to retrieve for the given result set."""
   type: [NftType!]
-
-  """
-  Do not include collections of type "MetaESDT" in the responsee for the given result set.
-  """
-  excludeMetaESDT: Boolean
 }
 
 """Input to retrieve the given NFT collections for."""
@@ -664,6 +664,11 @@ input GetNftCollectionsInput {
   """Can update attributes to retrieve for the given result set."""
   canUpdateAttributes: String
 
+  """
+  Do not include collections of type "MetaESDT" in the responsee for the given result set.
+  """
+  excludeMetaESDT: Boolean
+
   """Number of NFT collections to skip for the given result set."""
   from: Float = 0
 
@@ -680,11 +685,6 @@ input GetNftCollectionsInput {
 
   """NFT types list to retrieve for the given result set."""
   type: [NftType!]
-
-  """
-  Do not include collections of type "MetaESDT" in the responsee for the given result set.
-  """
-  excludeMetaESDT: Boolean
 }
 
 """Input to retrieve the given NFT for."""
@@ -700,6 +700,11 @@ input GetNftsAccountInput {
 
   """Creator to retrieve for the given result set."""
   creator: String
+
+  """
+  Do not include collections of type "MetaESDT" in the responsee for the given result set.
+  """
+  excludeMetaESDT: Boolean
 
   """Number of collections to skip for the given result set."""
   from: Float = 0
@@ -735,11 +740,6 @@ input GetNftsAccountInput {
 
   """With supply to retrieve for the given result set."""
   withSupply: Boolean
-
-  """
-  Do not include collections of type "MetaESDT" in the responsee for the given result set.
-  """
-  excludeMetaESDT: Boolean
 }
 
 """Input to retrieve the given NFTs count for."""
@@ -1889,11 +1889,6 @@ type NftCollection {
   """If the given NFT collection can pause."""
   canPause: Boolean
 
-  """
-  If the given NFT collection can transfer the underlying tokens by default.
-  """
-  canTransfer: Boolean
-
   """If the given NFT collection can transfer NFT create role."""
   canTransferNftCreateRole: Boolean
 
@@ -1914,9 +1909,6 @@ type NftCollection {
 
   """Owner account for the given NFT collection."""
   owner: Account
-
-  """Roles list for the given NFT collection."""
-  roles: [CollectionRoles!]
 
   """Scam information for the underlying collection."""
   scamInfo: ScamInformation
@@ -1951,11 +1943,6 @@ type NftCollectionAccount {
   """If the given NFT collection can pause."""
   canPause: Boolean
 
-  """
-  If the given NFT collection can transfer the underlying tokens by default.
-  """
-  canTransfer: Boolean
-
   """If the given NFT collection can transfer NFT create role."""
   canTransferNftCreateRole: Boolean
 
@@ -1979,9 +1966,6 @@ type NftCollectionAccount {
 
   """Owner account for the given NFT collection."""
   owner: Account
-
-  """Roles list for the given NFT collection."""
-  roles: [CollectionRoles!]
 
   """Scam information for the underlying collection."""
   scamInfo: ScamInformation
@@ -2015,11 +1999,6 @@ type NftCollectionAccountFlat {
   """If the given NFT collection can pause."""
   canPause: Boolean
 
-  """
-  If the given NFT collection can transfer the underlying tokens by default.
-  """
-  canTransfer: Boolean
-
   """If the given NFT collection can transfer NFT create role."""
   canTransferNftCreateRole: Boolean
 
@@ -2040,9 +2019,6 @@ type NftCollectionAccountFlat {
 
   """Name for the given NFT collection."""
   name: String!
-
-  """Roles list for the given NFT collection."""
-  roles: [CollectionRoles!]
 
   """Scam information for the underlying collection."""
   scamInfo: ScamInformation
@@ -3010,11 +2986,29 @@ type TokenRoles {
   """Token address with role."""
   address: String
 
+  """Token canAddQuantity property."""
+  canAddQuantity: Boolean
+
+  """Token canAddUri property."""
+  canAddUri: Boolean
+
+  """Token canBurn property."""
+  canBurn: Boolean
+
+  """Token canCreate property."""
+  canCreate: Boolean
+
   """Token canLocalBurn property."""
-  canLocalBurn: Boolean!
+  canLocalBurn: Boolean
 
   """Token canLocalMint property."""
-  canLocalMint: Boolean!
+  canLocalMint: Boolean
+
+  """Token canTransfer property."""
+  canTransfer: Boolean
+
+  """Token canUpdateAttributes property."""
+  canUpdateAttributes: Boolean
 
   """Token roles details."""
   roles: [String!]!

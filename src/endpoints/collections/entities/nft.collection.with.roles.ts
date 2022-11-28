@@ -17,4 +17,24 @@ export class NftCollectionWithRoles extends NftCollection {
   @Field(() => Boolean, { description: 'Determines whether the collection is globally transferrable.' })
   @ApiProperty({ type: Boolean })
   canTransfer: Boolean = false;
+
+  @Field(() => Boolean, { description: 'If the given collection role can create.', deprecationReason: 'Already included in underlying roles structure' })
+  @ApiProperty({ type: Boolean, default: false })
+  canCreate: boolean = false;
+
+  @Field(() => Boolean, { description: 'If the given collection role can burn.', deprecationReason: 'Already included in underlying roles structure' })
+  @ApiProperty({ type: Boolean, default: false })
+  canBurn: boolean = false;
+
+  @Field(() => Boolean, { description: 'If the given collection role can add quantity.', deprecationReason: 'Already included in underlying roles structure' })
+  @ApiProperty({ type: Boolean, default: false })
+  canAddQuantity: boolean = false;
+
+  @Field(() => Boolean, { description: 'If the given collection role can update attributes.', deprecationReason: 'Already included in underlying roles structure' })
+  @ApiProperty({ type: Boolean, default: false })
+  canUpdateAttributes: boolean = false;
+
+  @Field(() => Boolean, { description: 'If the given collection role can add URI.', deprecationReason: 'Already included in underlying roles structure' })
+  @ApiProperty({ type: Boolean, default: false })
+  canAddUri: boolean = false;
 }

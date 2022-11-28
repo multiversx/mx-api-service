@@ -136,6 +136,14 @@ export class EsdtAddressService {
 
           collectionWithRoles.roles = addressRoles;
 
+          // temporary, until we enforce deprecation for roles on the root element
+          const clonedRoles = new CollectionRoles(collectionWithRoles.roles);
+          // @ts-ignore
+          delete clonedRoles.roles;
+          delete clonedRoles.canTransfer;
+
+          Object.assign(collectionWithRoles, clonedRoles);
+
           collectionsWithRoles.push(collectionWithRoles);
         }
       }
