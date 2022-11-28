@@ -563,6 +563,8 @@ export class TokenService {
     for (const item of tokenList) {
       const token = allTokens.find(x => x.identifier === item.identifier);
       if (token) {
+        this.applyTickerFromAssets(token);
+
         const resultItem = ApiUtils.mergeObjects(new TokenWithRoles(), token);
         if (item.roles) {
           const addressRoles = Object.keys(item.roles).filter(key => item.roles[key].includes(address));
@@ -697,6 +699,9 @@ export class TokenService {
         canPause: collection.canPause,
         canTransferNftCreateRole: collection.canTransferNftCreateRole,
         canWipe: collection.canWipe,
+        canAddSpecialRoles: collection.canAddSpecialRoles,
+        canChangeOwner: collection.canChangeOwner,
+        canUpgrade: collection.canUpgrade,
       }));
     }
 

@@ -78,6 +78,10 @@ export class Token {
   @ApiProperty({ type: Boolean, nullable: true })
   canChangeOwner: boolean | undefined = undefined;
 
+  @Field(() => Boolean, { description: "Token canAddSpecialRoles property in case of type MetaESDT.", nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true })
+  canAddSpecialRoles: boolean | undefined = undefined;
+
   @Field(() => Boolean, { description: "Token canPause property." })
   @ApiProperty({ type: Boolean, default: false })
   canPause: boolean = false;

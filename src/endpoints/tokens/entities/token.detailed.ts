@@ -11,18 +11,6 @@ export class TokenDetailed extends Token {
     Object.assign(this, init);
   }
 
-  @Field(() => Boolean, { description: "Token canUpgrade property." })
-  @ApiProperty({ type: Boolean, default: false })
-  canUpgrade: boolean = false;
-
-  @Field(() => Boolean, { description: "Token canPause property." })
-  @ApiProperty({ type: Boolean, default: false })
-  canPause: boolean = false;
-
-  @Field(() => Boolean, { description: "Token canUpgrade property." })
-  @ApiProperty({ type: Boolean, default: false })
-  canWipe: boolean = false;
-
   @Field(() => String, { description: "Token supply amount details.", nullable: true })
   @ApiProperty(SwaggerUtils.amountPropertyOptions({ description: 'Supply amount' }))
   supply: string | undefined = undefined;

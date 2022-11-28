@@ -2903,6 +2903,9 @@ type TokenDetailed {
   """Token burn amount details."""
   burnt: String!
 
+  """Token canAddSpecialRoles property in case of type MetaESDT."""
+  canAddSpecialRoles: Boolean
+
   """Token canBurn property."""
   canBurn: Boolean
 
@@ -2929,8 +2932,8 @@ type TokenDetailed {
   """Token canUpgrade property."""
   canUpgrade: Boolean!
 
-  """Token canUpgrade property."""
-  canWipe: Boolean!
+  """Token canWipe property."""
+  canWipe: Boolean
 
   """Token circulating supply amount details."""
   circulatingSupply: String
