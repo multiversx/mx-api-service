@@ -1199,10 +1199,6 @@ describe('Token Service', () => {
       expect(result.canBurn).toStrictEqual(true);
       expect(result.canMint).toStrictEqual(true);
       expect(result.canUpgrade).toStrictEqual(true);
-      expect(result.role).toEqual(expect.objectContaining({
-        canLocalMint: true,
-        canLocalBurn: true,
-      }));
     });
 
     it('should return undefined because test simulates that identifier is not defined', async () => {
