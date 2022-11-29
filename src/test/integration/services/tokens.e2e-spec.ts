@@ -1182,7 +1182,7 @@ describe('Token Service', () => {
   });
 
   describe('getTokenWithRolesForAddress', () => {
-    it.only('should return tokens details with roles for a specific address', async () => {
+    it('should return tokens details with roles for a specific address', async () => {
       const address: string = 'erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy';
       const identifier: string = 'WEGLD-bd4d79';
 
