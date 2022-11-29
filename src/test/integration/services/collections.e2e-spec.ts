@@ -9,7 +9,6 @@ import { ElasticService, TokenUtils } from '@elrondnetwork/erdnest';
 import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 import { NftType } from 'src/endpoints/nfts/entities/nft.type';
 import { NftCollectionDetailed } from 'src/endpoints/collections/entities/nft.collection.detailed';
-import { NftCollectionWithRoles } from 'src/endpoints/collections/entities/nft.collection.with.roles';
 
 describe('Collection Service', () => {
   let collectionService: CollectionService;
@@ -106,7 +105,7 @@ describe('Collection Service', () => {
     it('should return collection details', async () => {
       const collectionIdentifier: string = "EBULB-36c762";
       const result = await collectionService.getNftCollection(collectionIdentifier);
-      
+
       expect(result).toHaveStructure(Object.keys(new NftCollectionDetailed()));
     });
 
@@ -145,7 +144,22 @@ describe('Collection Service', () => {
       const collection: string = "EBULB-36c762";
       const result = await collectionService.getCollectionForAddressWithRole(address, collection);
 
-      expect(result).toHaveStructure(Object.keys(new NftCollectionWithRoles()));
+      expect(result).toEqual(expect.objectContaining({
+        role: expect.objectContaining({
+          canCreate: true,
+          canBurn: false,
+          canAddQuantity: false,
+          canUpdateAttributes: false,
+          canAddUri: false,
+          canTransfer: undefined,
+          roles: ['ESDTRoleNFTCreate'],
+        }),
+        canTransfer: true,
+        canCreate: true,
+        canBurn: false,
+        canUpdateAttributes: false,
+        canAddUri: false,
+      }));
     });
 
     it('should return undefined because test simulate that collection received from method getCollectionsForAddress is empty array', async () => {
@@ -164,11 +178,25 @@ describe('Collection Service', () => {
   describe('getCollectionsWithRolesForAddress', () => {
     it('should return one collection where address has roles', async () => {
       const address: string = "erd1qqqqqqqqqqqqqpgq09vq93grfqy7x5fhgmh44ncqfp3xaw57ys5s7j9fed";
-      const results= await collectionService.getCollectionsWithRolesForAddress(address, new CollectionFilter(), new QueryPagination({ size: 1 }));
+      const results = await collectionService.getCollectionsWithRolesForAddress(address, new CollectionFilter(), new QueryPagination({ size: 1 }));
 
-      for(const result of results){
-        expect(result).toHaveStructure(Object.keys(new NftCollectionWithRoles()));
-      }
+      expect(results).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          role: expect.objectContaining({
+            canCreate: true,
+            canBurn: false,
+            canAddQuantity: false,
+            canUpdateAttributes: false,
+            canAddUri: false,
+            canTransfer: undefined,
+          }),
+          canTransfer: true,
+          canCreate: true,
+          canBurn: false,
+          canUpdateAttributes: false,
+          canAddUri: false,
+        }),
+      ]));
     });
   });
 

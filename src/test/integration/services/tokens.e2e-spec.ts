@@ -1191,14 +1191,16 @@ describe('Token Service', () => {
         throw new Error('Properties are not defined');
       }
 
-      expect(result.identifier).toStrictEqual('WEGLD-bd4d79');
-      expect(result.canWipe).toStrictEqual(true);
-      expect(result.canFreeze).toStrictEqual(true);
-      expect(result.canPause).toStrictEqual(true);
-      expect(result.canChangeOwner).toStrictEqual(true);
-      expect(result.canBurn).toStrictEqual(true);
-      expect(result.canMint).toStrictEqual(true);
-      expect(result.canUpgrade).toStrictEqual(true);
+      expect(result).toEqual(expect.objectContaining({
+        role: expect.objectContaining({
+          canLocalMint: true,
+          canLocalBurn: true,
+          role: expect.arrayContaining([
+            "ESDTRoleLocalMint",
+            "ESDTRoleLocalBurn",
+          ]),
+        }),
+      }));
     });
 
     it('should return undefined because test simulates that identifier is not defined', async () => {
