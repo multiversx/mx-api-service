@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { Cron, CronExpression, SchedulerRegistry } from "@nestjs/schedule";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
@@ -24,6 +24,7 @@ import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import AsyncLock from "async-lock";
 import { CachingService, Constants, Locker, OriginLogger } from "@elrondnetwork/erdnest";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
+import { TokenService } from "src/endpoints/tokens/token.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -40,6 +41,7 @@ export class CacheWarmerService {
     private readonly cachingService: CachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly apiConfigService: ApiConfigService,
+    @Inject(forwardRef(() => NetworkService))
     private readonly networkService: NetworkService,
     private readonly accountService: AccountService,
     private readonly gatewayService: GatewayService,
@@ -51,6 +53,7 @@ export class CacheWarmerService {
     private readonly mexSettingsService: MexSettingsService,
     private readonly mexFarmsService: MexFarmService,
     private readonly delegationLegacyService: DelegationLegacyService,
+    private readonly tokenService: TokenService,
   ) {
     this.lock = new AsyncLock();
 
@@ -135,7 +138,7 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleEsdtTokenInvalidations() {
     await Locker.lock('All Tokens invalidations', async () => {
-      const tokens = await this.esdtService.getAllEsdtTokensRaw();
+      const tokens = await this.tokenService.getAllTokensRaw();
       await this.invalidateKey(CacheInfo.AllEsdtTokens.key, tokens, CacheInfo.AllEsdtTokens.ttl);
     }, true);
   }
@@ -246,7 +249,7 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleTokenAssetsExtraInfoInvalidations() {
     await Locker.lock('Token assets extra info invalidations', async () => {
       const assets = await this.assetsService.getAllTokenAssets();

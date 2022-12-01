@@ -17,7 +17,6 @@ import { AccountService } from "./account.service";
 @Module({
   imports: [
     VmQueryModule,
-    forwardRef(() => TokenModule),
     forwardRef(() => NftModule),
     DelegationLegacyModule,
     WaitingListModule,

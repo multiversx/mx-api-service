@@ -1,3 +1,5 @@
+import { registerEnumType } from "@nestjs/graphql";
+
 export interface TokenAccount {
   identifier: string;
   address: string;
@@ -15,3 +17,22 @@ export enum TokenType {
   SemiFungibleESDT = 'SemiFungibleESDT',
   MetaESDT = 'MetaESDT',
 }
+
+registerEnumType(TokenType, {
+  name: 'TokenType',
+  description: 'Token Type object.',
+  valuesMap: {
+    FungibleESDT: {
+      description: 'FungibleESDT.',
+    },
+    NonFungibleESDT: {
+      description: 'NonFungibleESDT.',
+    },
+    SemiFungibleESDT: {
+      description: 'SemiFungibleESDT.',
+    },
+    MetaESDT: {
+      description: 'MetaESDT.',
+    },
+  },
+});

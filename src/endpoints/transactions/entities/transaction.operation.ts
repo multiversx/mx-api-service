@@ -1,7 +1,7 @@
 import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
-import { TokenType } from "src/endpoints/tokens/entities/token.type";
+import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import { TransactionOperationAction } from "./transaction.operation.action";
 import { TransactionOperationType } from "./transaction.operation.type";
 
@@ -23,9 +23,9 @@ export class TransactionOperation {
   @ApiProperty({ enum: TransactionOperationType, default: TransactionOperationType.none })
   type: TransactionOperationType = TransactionOperationType.none;
 
-  @Field(() => TokenType, { description: 'ESDT type for the transaction operation.', nullable: true })
-  @ApiProperty({ enum: TokenType })
-  esdtType?: TokenType;
+  @Field(() => EsdtType, { description: 'ESDT type for the transaction operation.', nullable: true })
+  @ApiProperty({ enum: EsdtType })
+  esdtType?: EsdtType;
 
   @Field(() => String, { description: 'Identifier for the transaction operation.' })
   @ApiProperty({ type: String })
