@@ -57,12 +57,10 @@ describe("collections Controller", () => {
             canFreeze: false,
             canWipe: false,
             canPause: false,
-            canTransfer: false,
             canTransferNftCreateRole: false,
             canChangeOwner: false,
             canUpgrade: true,
             canAddSpecialRoles: true,
-            roles: [],
             traits: [],
           }];
 
@@ -91,12 +89,10 @@ describe("collections Controller", () => {
             canFreeze: false,
             canWipe: false,
             canPause: false,
-            canTransfer: false,
             canTransferNftCreateRole: false,
             canChangeOwner: false,
             canUpgrade: true,
             canAddSpecialRoles: true,
-            roles: [],
             traits: [],
           },
           {
@@ -109,12 +105,10 @@ describe("collections Controller", () => {
             canFreeze: false,
             canWipe: false,
             canPause: false,
-            canTransfer: false,
             canTransferNftCreateRole: false,
             canChangeOwner: true,
             canUpgrade: true,
             canAddSpecialRoles: true,
-            roles: [],
             traits: [],
           },
         ];

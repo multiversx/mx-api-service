@@ -40,15 +40,6 @@ describe('Collection', () => {
               canChangeOwner
               canUpgrade
               canAddSpecialRoles
-              roles{
-                address
-                canCreate
-                canBurn
-                canAddQuantity
-                canUpdateAttributes
-                canAddUri
-                roles
-              }
             }
           }`,
         })
@@ -203,6 +194,36 @@ describe('Collection', () => {
       });
     });
   });
+
+  [
+    {
+      boolean: true,
+      value: '7376',
+    },
+    {
+      boolean: false,
+      value: '7440',
+    },
+  ].forEach(({ value, boolean }) => {
+    describe(`Query - Get Collections Count (with/without excludeMetaESDT filter applied)`, () => {
+      it(`should return collection count`, async () => {
+        await request(app.getHttpServer())
+          .post(gql)
+          .send({
+            query: `{
+              collectionsCount(input:{
+                excludeMetaESDT: ${boolean}
+              })
+            }`,
+          })
+          .expect(200)
+          .then(res => {
+            expect(res.body.data.collectionsCount).toBeGreaterThanOrEqual(parseInt(value));
+          });
+      });
+    });
+  });
+
 
   afterEach(async () => {
     await app.close();

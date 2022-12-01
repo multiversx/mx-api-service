@@ -30,6 +30,21 @@ export class ApiChecker {
     expect(details).toEqual(item);
   }
 
+  async checkTokensDetails() {
+    const [item] = await this.requestList({ size: 1 });
+
+    const idAttribute = [item];
+    const details = await this.requestItem(idAttribute[0].identifier, { fields: Object.keys(item).join(',') });
+
+    // @ts-ignore
+    delete details.circulatingSupply;
+    delete details.supply;
+    delete item.circulatingSupply;
+    delete item.supply;
+
+    expect(details).toEqual(item);
+  }
+
   async checkAlternativeCount(fields: Record<string, any>) {
     const count = await this.requestCount(fields);
     const alternativeCount = await this.requestAlternativeCount(fields);
