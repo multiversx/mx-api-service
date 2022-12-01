@@ -44,7 +44,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleAccountsCount() {
-    await Locker.lock('Accounts Count', async () => {
+    await Locker.lock('Status Checker Accounts Count', async () => {
       const count = await this.elasticIndexerService.getAccountsCount();
       this.apiStatusMetricsService.setTotalAccounts(count);
     }, true);
@@ -52,7 +52,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleBlocksCount() {
-    await Locker.lock('Blocks Count', async () => {
+    await Locker.lock('Status Checker Blocks Count', async () => {
       const count = await this.elasticIndexerService.getBlocksCount({});
       this.apiStatusMetricsService.setTotalBlocks(count);
     }, true);
@@ -60,7 +60,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleCollectionsCount() {
-    await Locker.lock('Collections Count', async () => {
+    await Locker.lock('Status Checker Collections Count', async () => {
       const count = await this.elasticIndexerService.getNftCollectionCount({});
       this.apiStatusMetricsService.setTotalCollections(count);
     }, true);
@@ -68,7 +68,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleNftsCount() {
-    await Locker.lock('Nfts Count', async () => {
+    await Locker.lock('Status Checker Nfts Count', async () => {
       const count = await this.elasticIndexerService.getNftCount({});
       this.apiStatusMetricsService.setTotalNfts(count);
     }, true);
@@ -76,7 +76,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleTagsCount() {
-    await Locker.lock('Tags Count', async () => {
+    await Locker.lock('Status Checker Tags Count', async () => {
       const count = await this.elasticIndexerService.getNftTagCount();
       this.apiStatusMetricsService.setTotalTags(count);
     }, true);
@@ -84,7 +84,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleRoundsCount() {
-    await Locker.lock('Rounds Count', async () => {
+    await Locker.lock('Status Checker Rounds Count', async () => {
       const count = await this.elasticIndexerService.getRoundCount(new RoundFilter());
       this.apiStatusMetricsService.setTotalRounds(count);
     }, true);
@@ -92,7 +92,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleResultsCount() {
-    await Locker.lock('Results Count', async () => {
+    await Locker.lock('Status Checker Results Count', async () => {
       const count = await this.elasticIndexerService.getScResultsCount();
       this.apiStatusMetricsService.setTotalResults(count);
     }, true);
@@ -100,7 +100,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleTokensCount() {
-    await Locker.lock('Tokens Count', async () => {
+    await Locker.lock('Status Checker Tokens Count', async () => {
       const count = await this.tokenService.getTokenCount({});
       this.apiStatusMetricsService.setTotalTokens(count);
     }, true);
@@ -108,7 +108,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleTransactionsCount() {
-    await Locker.lock('Transactions Count', async () => {
+    await Locker.lock('Status Checker Transactions Count', async () => {
       const count = await this.elasticIndexerService.getTransactionCount({});
       this.apiStatusMetricsService.setTotalTransactions(count);
     }, true);
@@ -116,7 +116,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleTransfersCount() {
-    await Locker.lock('Transfers Count', async () => {
+    await Locker.lock('Status Checker Transfers Count', async () => {
       const count = await this.elasticIndexerService.getTransfersCount({});
       this.apiStatusMetricsService.setTotalTransfers(count);
     }, true);
@@ -124,7 +124,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleIdentitiesCount() {
-    await Locker.lock('Identities Count', async () => {
+    await Locker.lock('Status Checker Identities Count', async () => {
       const count = await this.identitiesService.getAllIdentities();
       this.apiStatusMetricsService.setTotalIdentities(count.length);
     }, true);
@@ -132,7 +132,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleNodesCount() {
-    await Locker.lock('Nodes Count', async () => {
+    await Locker.lock('Status Checker Nodes Count', async () => {
       const count = await this.nodeService.getAllNodes();
       this.apiStatusMetricsService.setTotalNodes(count.length);
     }, true);
@@ -140,7 +140,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleProvidersCount() {
-    await Locker.lock('Providers Count', async () => {
+    await Locker.lock('Status Checker Providers Count', async () => {
       const count = await this.providerService.getAllProviders();
       this.apiStatusMetricsService.setTotalProviders(count.length);
     }, true);
@@ -148,7 +148,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleShardsCount() {
-    await Locker.lock('Shards Count', async () => {
+    await Locker.lock('Status Checker Shards Count', async () => {
       const count = await this.shardService.getAllShards();
       this.apiStatusMetricsService.setTotalShards(count.length);
     }, true);
@@ -156,7 +156,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleMexPairsCount() {
-    await Locker.lock('Mex Pairs Count', async () => {
+    await Locker.lock('Status Checker Mex Pairs Count', async () => {
       const count = await this.mexPairService.getMexPairsCount();
       this.apiStatusMetricsService.setTotalMexPairs(count);
     }, true);
@@ -164,7 +164,7 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleMexFarmsCount() {
-    await Locker.lock('Mex Farms Count', async () => {
+    await Locker.lock('Status Checker Mex Farms Count', async () => {
       const count = await this.mexFarmService.getMexFarmsCount();
       this.apiStatusMetricsService.setTotalMexFarms(count);
     }, true);
@@ -172,15 +172,15 @@ export class StatusCheckerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleMexTokensCount() {
-    await Locker.lock('Mex Tokens Count', async () => {
+    await Locker.lock('Status Checker Mex Tokens Count', async () => {
       const count = await this.mexTokenService.getMexTokensCount();
       this.apiStatusMetricsService.setTotalMexTokens(count);
     }, true);
   }
 
-  @Cron('*/6 * * * * *')
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleShardRoundsAndNonces() {
-    await Locker.lock('Shard rounds and nonces', async () => {
+    await Locker.lock('Status Checker Shard rounds and nonces', async () => {
       const shardIds = await this.protocolService.getShardIds();
       const roundsAndNonces = await Promise.all(shardIds.map(shardId => this.getCurrentRoundAndNonce(shardId)));
       for (const [shardId, round, nonce] of shardIds.zip(roundsAndNonces, (shardId, roundAndNonce) => [shardId, roundAndNonce.round, roundAndNonce.nonce])) {
@@ -190,9 +190,9 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron('*/6 * * * * *')
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleMexEconomicValues() {
-    await Locker.lock('MexEconomics values', async () => {
+    await Locker.lock('Status Checker Store Mex economics metrics', async () => {
       const economics = await this.mexEconomicService.getMexEconomics();
       for (const [key, value] of Object.entries(economics)) {
         this.apiStatusMetricsService.setMexEconomicsValue(key, value);
@@ -200,9 +200,9 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron('*/6 * * * * *')
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleEconomicValues() {
-    await Locker.lock('Economics values', async () => {
+    await Locker.lock('Status Checker Store Economics metrics', async () => {
       const economics = await this.economicService.getEconomics();
       for (const [key, value] of Object.entries(economics)) {
         this.apiStatusMetricsService.setEconomicsValue(key, value);
@@ -210,9 +210,9 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async checkTokenCount() {
-    await Locker.lock('Check token count', async () => {
+    await Locker.lock('Status Checker Check token count', async () => {
       const tokenCount = await this.tokenService.getTokenCount({});
       if (tokenCount > 1500) {
         this.apiStatusMetricsService.setCheckTokenCountResult('success');
@@ -223,9 +223,9 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async checkProviderCount() {
-    await Locker.lock('Check provider count', async () => {
+    await Locker.lock('Status Checker Check provider count', async () => {
       const providers = await this.providerService.getAllProviders();
       if (providers.length > 130) {
         this.apiStatusMetricsService.setCheckProviderCountResult('success');
@@ -236,9 +236,9 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async checkTokenSupply() {
-    await Locker.lock('Check token supply', async () => {
+    await Locker.lock('Status Checker Check token supply', async () => {
       const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
 
       const tokensWithSupply = tokens.filter(token => token.supply);
@@ -251,9 +251,9 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async checkTokenAssets() {
-    await Locker.lock('Check token assets', async () => {
+    await Locker.lock('Status Checker Check token assets', async () => {
       const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
 
       const tokensWithAssets = tokens.filter(token => token.assets);
@@ -266,9 +266,9 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async checkTokenAccounts() {
-    await Locker.lock('Check token accounts', async () => {
+    await Locker.lock('Status Checker Check token accounts', async () => {
       const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
 
       const tokensWithAccounts = tokens.filter(token => token.accounts);
@@ -281,9 +281,9 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async checkTokenTransactions() {
-    await Locker.lock('Check token transactions', async () => {
+    await Locker.lock('Status Checker Check token transactions', async () => {
       const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
 
       const tokensWithTransactions = tokens.filter(token => token.transactions);
@@ -296,9 +296,9 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async checkValidatorNodeCount() {
-    await Locker.lock('Check validator node count ', async () => {
+    await Locker.lock('Status Checker Check validator node count ', async () => {
       const nodes = await this.nodeService.getAllNodes();
 
       const validators = nodes.filter(node => node.type === NodeType.validator);
@@ -311,9 +311,9 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async checkIdentityNames() {
-    await Locker.lock('Check identity names', async () => {
+    await Locker.lock('Status Checker Check identity names', async () => {
       const identities = await this.identitiesService.getAllIdentities();
 
       const success = identities.slice(0, 50).every(x => x.name);
@@ -325,9 +325,9 @@ export class StatusCheckerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async checkIdentities() {
-    await Locker.lock('Check identities', async () => {
+    await Locker.lock('Status Checker Check identities', async () => {
       const identities = await this.identitiesService.getAllIdentities();
 
       const success = identities.slice(0, 50).every(identity => identity.identity);
