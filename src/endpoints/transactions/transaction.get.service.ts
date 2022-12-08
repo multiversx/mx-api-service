@@ -77,6 +77,13 @@ export class TransactionGetService {
       hashes.push(txHash);
       const previousHashes: Record<string, string> = {};
 
+      if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.operations)) {
+        const logs = await this.getTransactionLogsFromElastic(hashes);
+
+        transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, logs);
+        transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
+      }
+
       if (transaction.hasScResults === true && (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.results))) {
         transactionDetailed.results = await this.getTransactionScResultsFromElastic(transactionDetailed.txHash);
 
