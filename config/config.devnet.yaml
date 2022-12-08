@@ -102,4 +102,4 @@ nftProcess:
   maxRetries: 3
 transaction-action:
   mex:
-    microServiceUrl: 'https://devnet-graphql-next.maiar.exchange/graphql'
+    microServiceUrl: ''
