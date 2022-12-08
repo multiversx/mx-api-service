@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { TokenType } from "./token.type";
+import { EsdtType } from "../../esdt/entities/esdt.type";
 
 export class TokenProperties {
   constructor(init?: Partial<TokenProperties>) {
@@ -13,7 +13,7 @@ export class TokenProperties {
   name: string = '';
 
   @ApiProperty()
-  type: TokenType = TokenType.NonFungibleESDT;
+  type: EsdtType = EsdtType.NonFungibleESDT;
 
   @ApiProperty()
   owner: string = '';

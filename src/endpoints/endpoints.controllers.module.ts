@@ -26,6 +26,7 @@ import { SmartContractResultController } from "./sc-results/scresult.controller"
 import { ShardController } from "./shards/shard.controller";
 import { StakeController } from "./stake/stake.controller";
 import { TokenController } from "./tokens/token.controller";
+import { TransactionsBatchController } from "./transactions.batch/transactions.batch.controller";
 import { TransactionController } from "./transactions/transaction.controller";
 import { TransferController } from "./transfers/transfer.controller";
 import { UsernameController } from "./usernames/username.controller";
@@ -48,7 +49,7 @@ import { WebsocketController } from "./websocket/websocket.controller";
     ProviderController, ProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
     TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
     HealthCheckController, DappConfigController, WebsocketController, MexController, TransferController,
-    ProcessNftsPublicController,
+    ProcessNftsPublicController, TransactionsBatchController,
   ],
 })
 export class EndpointsControllersModule { }

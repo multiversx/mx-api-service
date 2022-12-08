@@ -18,4 +18,5 @@ export class CollectionFilter {
   canUpdateAttributes?: boolean | string;
   canAddUri?: boolean | string;
   canTransferRole?: boolean | string;
+  excludeMetaESDT?: boolean;
 }

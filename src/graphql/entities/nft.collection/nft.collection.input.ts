@@ -36,6 +36,9 @@ export class GetNftCollectionsCountInput {
   @Field(() => Float, { name: "after", description: "After timestamp to retrieve for the given result set.", nullable: true })
   after: number | undefined = undefined;
 
+  @Field(() => Boolean, { name: "excludeMetaESDT", description: `Do not include collections of type "MetaESDT" in the responsee for the given result set.`, nullable: true })
+  excludeMetaESDT: boolean | undefined = undefined;
+
   public static resolve(input: GetNftCollectionsCountInput): CollectionFilter {
     return new CollectionFilter({
       search: input.search,
@@ -47,6 +50,7 @@ export class GetNftCollectionsCountInput {
       canUpdateAttributes: input.canUpdateAttributes,
       canAddUri: input.canAddUri,
       canTransferRole: input.canTransferRole,
+      excludeMetaESDT: input.excludeMetaESDT,
     });
   }
 }

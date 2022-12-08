@@ -1,7 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { NftType } from "../../nfts/entities/nft.type";
-import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { Account } from "src/endpoints/accounts/entities/account";
@@ -53,6 +52,18 @@ export class NftCollection {
   @ApiProperty({ type: Boolean, default: false })
   canTransferNftCreateRole: boolean = false;
 
+  @Field(() => Boolean, { description: 'If the given NFT collection can change owner.', nullable: true })
+  @ApiProperty({ type: Boolean, default: false })
+  canChangeOwner: boolean = false;
+
+  @Field(() => Boolean, { description: 'If the given NFT collection can upgrade.', nullable: true })
+  @ApiProperty({ type: Boolean, default: false })
+  canUpgrade: boolean = false;
+
+  @Field(() => Boolean, { description: 'If the given NFT collection can add special role.', nullable: true })
+  @ApiProperty({ type: Boolean, default: false })
+  canAddSpecialRoles: boolean = false;
+
   @Field(() => Float, { description: 'Decimals for the given NFT collection.', nullable: true })
   @ApiProperty({ type: Number, nullable: true })
   decimals: number | undefined = undefined;
@@ -61,16 +72,9 @@ export class NftCollection {
   @ApiProperty({ type: TokenAssets, nullable: true })
   assets: TokenAssets | undefined = undefined;
 
-  @Field(() => [CollectionRoles], { description: 'Roles list for the given NFT collection.', nullable: true })
-  @ApiProperty({ type: CollectionRoles, isArray: true })
-  roles: CollectionRoles[] = [];
-
+  @Field(() => ScamInfo, { description: 'Scam information for the underlying collection.', nullable: true })
   @ApiProperty({ type: ScamInfo, nullable: true })
   scamInfo: ScamInfo | undefined = undefined;
-  @Field(() => Boolean, { description: 'If the given NFT collection can transfer the underlying tokens by default.', nullable: true })
-
-  @ApiProperty({ type: Boolean, default: false })
-  canTransfer: boolean = false;
 
   @Field(() => [CollectionTrait], { description: 'Trait list for the given NFT collection.', nullable: true })
   @ApiProperty({ type: CollectionTrait, isArray: true })

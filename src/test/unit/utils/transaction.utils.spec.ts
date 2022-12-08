@@ -10,7 +10,7 @@ import { TransactionLogEvent } from "src/endpoints/transactions/entities/transac
 import { TransactionOperation } from "src/endpoints/transactions/entities/transaction.operation";
 import { TransactionOperationAction } from "src/endpoints/transactions/entities/transaction.operation.action";
 import { TransactionOperationType } from "src/endpoints/transactions/entities/transaction.operation.type";
-import { TokenType } from "src/endpoints/tokens/entities/token.type";
+import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import { TransactionUtils } from "src/endpoints/transactions/transaction.utils";
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
 
@@ -181,7 +181,7 @@ describe('Transaction Utils', () => {
         id: "f592405c4d6556a5a680c3225ae7bd254b73c7c47cf032ec66936dbbb494ca4c",
         action: TransactionOperationAction.transfer,
         type: TransactionOperationType.esdt,
-        esdtType: TokenType.FungibleESDT,
+        esdtType: EsdtType.FungibleESDT,
         identifier: "WUSDC-91dfa4",
         name: "WrappedUSDC",
         sender: "erd1qqqqqqqqqqqqqpgqxe80hegndzmp25c2qnsutze45h8q7nlud8ssplfp8u",
@@ -193,7 +193,7 @@ describe('Transaction Utils', () => {
         id: "2199b2f2ebf591e1d05ee3c871546cffdc1eb4970a54eee707614aa9374935c0",
         action: TransactionOperationAction.transfer,
         type: TransactionOperationType.esdt,
-        esdtType: TokenType.FungibleESDT,
+        esdtType: EsdtType.FungibleESDT,
         identifier: "WUSDC-91dfa4",
         name: "WrappedUSDC",
         sender: "erd1qqqqqqqqqqqqqpgqxe80hegndzmp25c2qnsutze45h8q7nlud8ssplfp8u",
@@ -214,7 +214,7 @@ describe('Transaction Utils', () => {
       id: "f592405c4d6556a5a680c3225ae7bd254b73c7c47cf032ec66936dbbb494ca4c",
       action: TransactionOperationAction.transfer,
       type: TransactionOperationType.esdt,
-      esdtType: TokenType.FungibleESDT,
+      esdtType: EsdtType.FungibleESDT,
       identifier: "WUSDC-91dfa4",
       name: "WrappedUSDC",
       sender: "erd1qqqqqqqqqqqqqpgqxe80hegndzmp25c2qnsutze45h8q7nlud8ssplfp8u",
