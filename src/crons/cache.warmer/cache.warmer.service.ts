@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { Cron, CronExpression, SchedulerRegistry } from "@nestjs/schedule";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
@@ -24,6 +24,7 @@ import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import AsyncLock from "async-lock";
 import { CachingService, Constants, OriginLogger, Lock, Locker } from "@elrondnetwork/erdnest";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
+import { TokenService } from "src/endpoints/tokens/token.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -40,6 +41,7 @@ export class CacheWarmerService {
     private readonly cachingService: CachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly apiConfigService: ApiConfigService,
+    @Inject(forwardRef(() => NetworkService))
     private readonly networkService: NetworkService,
     private readonly accountService: AccountService,
     private readonly gatewayService: GatewayService,
@@ -51,6 +53,7 @@ export class CacheWarmerService {
     private readonly mexSettingsService: MexSettingsService,
     private readonly mexFarmsService: MexFarmService,
     private readonly delegationLegacyService: DelegationLegacyService,
+    private readonly tokenService: TokenService,
   ) {
     this.lock = new AsyncLock();
 
@@ -131,7 +134,7 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'All Tokens invalidations', verbose: true })
   async handleEsdtTokenInvalidations() {
-    const tokens = await this.esdtService.getAllEsdtTokensRaw();
+    const tokens = await this.esdtService.getAllTokensRaw();
     await this.invalidateKey(CacheInfo.AllEsdtTokens.key, tokens, CacheInfo.AllEsdtTokens.ttl);
   }
 

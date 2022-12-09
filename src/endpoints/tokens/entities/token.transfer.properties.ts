@@ -1,11 +1,11 @@
-import { TokenType } from "./token.type";
+import { EsdtType } from "../../esdt/entities/esdt.type";
 
 export class TokenTransferProperties {
   constructor(init?: Partial<TokenTransferProperties>) {
     Object.assign(this, init);
   }
 
-  type: TokenType = TokenType.FungibleESDT;
+  type: EsdtType = EsdtType.FungibleESDT;
   token?: string;
   collection?: string;
   identifier?: string;

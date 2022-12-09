@@ -5,11 +5,11 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
 import { KeybaseService } from "src/common/keybase/keybase.service";
-import { EsdtService } from "src/endpoints/esdt/esdt.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { PublicAppModule } from "src/public.app.module";
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
+import { TokenService } from "src/endpoints/tokens/token.service";
 
 export default class Initializer {
   private static cachingService: CachingService;
@@ -27,7 +27,7 @@ export default class Initializer {
     const keybaseService = moduleRef.get<KeybaseService>(KeybaseService);
     const nodeService = moduleRef.get<NodeService>(NodeService);
     const providerService = moduleRef.get<ProviderService>(ProviderService);
-    const esdtService = moduleRef.get<EsdtService>(EsdtService);
+    const tokenService = moduleRef.get<TokenService>(TokenService);
 
     if (Initializer.apiConfigService.getMockKeybases()) {
       jest
@@ -40,7 +40,7 @@ export default class Initializer {
       const MOCK_PATH = Initializer.apiConfigService.getMockPath();
       const tokens = FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`);
       jest
-        .spyOn(EsdtService.prototype, 'getAllEsdtTokensRaw')
+        .spyOn(TokenService.prototype, 'getAllTokensRaw')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => tokens));
     }
@@ -97,7 +97,7 @@ export default class Initializer {
     await this.fetch(CacheInfo.Keybases.key, async () => await keybaseService.confirmKeybasesAgainstCache());
     await this.fetch(CacheInfo.Nodes.key, async () => await nodeService.getAllNodesRaw());
     await this.fetch(CacheInfo.Providers.key, async () => await providerService.getAllProvidersRaw());
-    await this.fetch(CacheInfo.AllEsdtTokens.key, async () => await esdtService.getAllEsdtTokensRaw());
+    await this.fetch(CacheInfo.AllEsdtTokens.key, async () => await tokenService.getAllTokensRaw());
 
     await Initializer.cachingService.setCacheRemote<boolean>(
       'isInitialized',

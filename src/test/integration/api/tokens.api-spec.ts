@@ -24,7 +24,7 @@ describe("API Testing", () => {
     const checker = new ApiChecker('tokens', app.getHttpServer());
     await checker.checkStatus();
     await checker.checkPagination();
-    await checker.checkDetails();
+    await checker.checkTokensDetails();
     await checker.checkAlternativeCount(['identifier']);
   });
 });

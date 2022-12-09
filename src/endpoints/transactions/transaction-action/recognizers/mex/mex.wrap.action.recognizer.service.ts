@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { TokenType } from "src/endpoints/tokens/entities/token.type";
+import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import { TransactionAction } from "../../entities/transaction.action";
 import { TransactionActionCategory } from "../../entities/transaction.action.category";
 import { TransactionMetadata } from "../../entities/transaction.metadata";
@@ -46,7 +46,7 @@ export class MexWrapActionRecognizerService {
     result.description = `Wrap ${valueDenominated} eGLD`;
     result.arguments = {
       token: {
-        type: TokenType.FungibleESDT,
+        type: EsdtType.FungibleESDT,
         name: 'WrappedEGLD',
         token: wegldId,
         ticker: wegldId.split('-')[0],

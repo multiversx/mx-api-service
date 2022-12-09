@@ -8,7 +8,7 @@ import { CollectionFilter } from "src/endpoints/collections/entities/collection.
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
-import { TokenType } from "src/endpoints/tokens/entities/token.type";
+import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.roles.filter";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
@@ -106,6 +106,10 @@ export class ElasticIndexerHelper {
       }
     }
 
+    if (filter.excludeMetaESDT === true) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition([NftType.NonFungibleESDT, NftType.SemiFungibleESDT], type => QueryType.Match('type', type));
+    }
+
     return elasticQuery.withMustMatchCondition('token', filter.collection, QueryOperator.AND)
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
       .withSearchWildcardCondition(filter.search, ['token', 'name'])
@@ -200,6 +204,10 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withRangeFilter('nonce', new RangeGreaterThanOrEqual(filter.nonceAfter));
     }
 
+    if (filter.excludeMetaESDT === true) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT], type => QueryType.Match('type', type));
+    }
+
     return elasticQuery;
   }
 
@@ -290,18 +298,36 @@ export class ElasticIndexerHelper {
   }
 
   public buildTokensWithRolesForAddressQuery(address: string, filter: TokenWithRolesFilter, pagination?: QueryPagination): ElasticQuery {
+    const rolesConditions = [
+      QueryType.Nested('roles', { 'roles.ESDTRoleLocalMint': address }),
+      QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }),
+      QueryType.Nested('roles', { 'roles.ESDTTransferRole': address }),
+    ];
+
+    if (filter.includeMetaESDT === true) {
+      rolesConditions.push(QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddQuantity': address }));
+      rolesConditions.push(QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddURI': address }));
+      rolesConditions.push(QueryType.Nested('roles', { 'roles.ESDTRoleNFTCreate': address }));
+      rolesConditions.push(QueryType.Nested('roles', { 'roles.ESDTRoleNFTBurn': address }));
+      rolesConditions.push(QueryType.Nested('roles', { 'roles.ESDTRoleNFTUpdateAttributes': address }));
+    }
+
     let elasticQuery = ElasticQuery.create()
       .withMustNotExistCondition('identifier')
       .withMustCondition(QueryType.Should(
         [
           QueryType.Match('currentOwner', address),
-          QueryType.Nested('roles', { 'roles.ESDTRoleLocalMint': address }),
-          QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }),
+          ...rolesConditions,
         ]
       ))
-      .withMustMatchCondition('type', TokenType.FungibleESDT)
       .withMustMatchCondition('token', filter.identifier)
       .withMustMatchCondition('currentOwner', filter.owner);
+
+    if (filter.includeMetaESDT === true) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition([EsdtType.FungibleESDT, EsdtType.MetaESDT], type => QueryType.Match('type', type));
+    } else {
+      elasticQuery = elasticQuery.withMustMatchCondition('type', EsdtType.FungibleESDT);
+    }
 
     if (filter.search) {
       elasticQuery = elasticQuery

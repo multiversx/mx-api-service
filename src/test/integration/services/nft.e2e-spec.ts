@@ -398,6 +398,16 @@ describe('Nft Service', () => {
       expect(count > 0).toBeTruthy();
     });
 
+    it(`should verify collections count for a given address because test simulates collections count with/without MetaESDT`, async () => {
+      const address: string = "erd1qqqqqqqqqqqqqpgqr8z5hkwek0pmytcvla86qjusn4hkufjlrp8s7hhkjk";
+      const filter = new NftFilter();
+      filter.excludeMetaESDT = true;
+      const results = await nftService.getNftCountForAddress(address, new NftFilter());
+      const resultsexcludeMetaESDT = await nftService.getNftCountForAddress(address, filter);
+
+      expect(resultsexcludeMetaESDT).toBeLessThan(results);
+    });
+
     it(`should return esdt count for address with type SemiFungibleESDT`, async () => {
       const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
       const count = await nftService.getNftCountForAddress(address, { type: NftType.SemiFungibleESDT });
@@ -430,6 +440,17 @@ describe('Nft Service', () => {
         expect(result.hasOwnProperty("name")).toBeTruthy();
         expect(result.hasOwnProperty("creator")).toBeTruthy();
         expect(result.hasOwnProperty("royalties")).toBeTruthy();
+      }
+    });
+
+    it('should return a list of only with NonFungible/SemiFungibleESDT if excludeMetaESDT filter is applied', async () => {
+      const address: string = "erd1tq4q846crg8ptwpg4zr985q0s9gj57ugr9da87nqmpg5fu6vjy8qkqd0k6";
+      const filter = new NftFilter();
+      filter.excludeMetaESDT = true;
+      const results = await nftService.getNftsForAddress(address, new QueryPagination({ size: 1000 }), filter);
+
+      for (const result of results) {
+        expect(result.type).not.toEqual("MetaESDT");
       }
     });
 
