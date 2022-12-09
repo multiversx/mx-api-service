@@ -70,6 +70,7 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
         includeFlagged: input.includeFlagged,
         excludeMetaESDT: input.excludeMetaESDT,
       }),
+      undefined,
       new NftQueryOptions({
         withSupply: input.withSupply,
       }),
