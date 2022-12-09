@@ -80,7 +80,7 @@ export class GatewayService {
     const profiler = new PerformanceProfiler();
 
     try {
-      return await this.apiService.post(`${this.apiConfigService.getGatewayUrl()}/${url}`, data, new ApiSettings(), errorHandler);
+      return await this.apiService.post(`${this.getUrl(component)}/${url}`, data, new ApiSettings(), errorHandler);
     } finally {
       profiler.stop();
 
