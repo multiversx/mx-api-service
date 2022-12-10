@@ -38,12 +38,18 @@ export class LockedAssetService {
   }
 
   private async hasUnlockSchedule(collection: string): Promise<boolean> {
-    const lockedTokenId = await this.getLockedTokenId();
-    if (!lockedTokenId) {
+    const lockedTokenIds = await this.getLockedTokenIds();
+    if (!lockedTokenIds) {
       return false;
     }
 
-    return collection.startsWith(lockedTokenId);
+    for (const lockedTokenId of lockedTokenIds) {
+      if (collection.startsWith(lockedTokenId)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private async getExtendedAttributesActivationNonce(): Promise<number> {
@@ -106,31 +112,31 @@ export class LockedAssetService {
     return parseInt(epoch, 16);
   }
 
-  private lockedTokenId: string | undefined;
+  private lockedTokenIds: string[] | undefined;
 
-  private async getLockedTokenId(): Promise<string | undefined> {
-    if (this.lockedTokenId) {
-      return this.lockedTokenId;
+  private async getLockedTokenIds(): Promise<string[] | undefined> {
+    if (this.lockedTokenIds) {
+      return this.lockedTokenIds;
     }
 
-    const lockedTokenId = await this.cachingService.getOrSetCache(
+    const lockedTokenIds = await this.cachingService.getOrSetCache(
       CacheInfo.LockedTokenID.key,
-      async () => await this.getLockedTokenIdRaw(),
+      async () => await this.getLockedTokenIdsRaw(),
       CacheInfo.LockedTokenID.ttl,
     );
 
-    this.lockedTokenId = lockedTokenId;
+    this.lockedTokenIds = lockedTokenIds;
 
-    return lockedTokenId;
+    return lockedTokenIds;
   }
 
-  private async getLockedTokenIdRaw(): Promise<string> {
+  private async getLockedTokenIdsRaw(): Promise<string[]> {
     const settings = await this.mexSettingsService.getSettings();
     if (!settings) {
-      return '';
+      return [];
     }
 
-    return settings.lockedAssetIdentifier;
+    return settings.lockedAssetIdentifiers;
   }
 
   private async getUnlockMilestones(unlockSchedule: UnlockMilestone[], withActivationNonce: boolean): Promise<UnlockMileStoneModel[]> {

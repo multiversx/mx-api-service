@@ -8,7 +8,7 @@ export class MexSettings {
   wrapContracts: string[] = [];
   distributionContract: string = '';
   lockedAssetContract: string = '';
-  lockedAssetIdentifier: string = '';
+  lockedAssetIdentifiers: string[] = [];
   mexId: string = '';
   wegldId: string = '';
 }

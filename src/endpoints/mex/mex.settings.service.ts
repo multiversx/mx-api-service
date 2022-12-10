@@ -104,15 +104,25 @@ export class MexSettingsService {
       }
       proxy {
         address
-        lockedAssetToken {
+        lockedAssetTokens {
           collection
           __typename
         }
       }
       farms {
+        ... on FarmModelV1_2 {
+          state
+          address
+        }
+        ... on FarmModelV1_3 {
+          state
+          address
+        }
+        ... on FarmModelV2 {
         state
         address
-      }
+        }
+     }
       wrappingInfo {
         address
         shard
@@ -152,7 +162,12 @@ export class MexSettingsService {
     settings.wrapContracts = result.wrappingInfo.map((x: any) => x.address);
     settings.distributionContract = result.distribution.address;
     settings.lockedAssetContract = result.lockedAssetFactory.address;
-    settings.lockedAssetIdentifier = result.proxy.lockedAssetToken.collection;
+    settings.lockedAssetIdentifiers = [];
+    for (const proxy of result.proxy) {
+      const identifiers = proxy.lockedAssetTokens.map((token: any) => token.collection);
+      settings.lockedAssetIdentifiers.push(...identifiers);
+    }
+    settings.lockedAssetIdentifiers = settings.lockedAssetIdentifiers.distinct();
 
     const mexEgldPairs = result.pairs.filter((x: any) => x.firstToken.name === 'WrappedEGLD' && x.secondToken.name === 'MEX');
     if (mexEgldPairs.length > 0) {

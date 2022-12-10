@@ -91,8 +91,8 @@ export class MexTokenService {
 
       const settings = await this.mexSettingsService.getSettings();
       if (settings) {
-        const lkmexIdentifier = settings.lockedAssetIdentifier;
-        if (lkmexIdentifier) {
+        const lkmexIdentifiers = settings.lockedAssetIdentifiers;
+        for (const lkmexIdentifier of lkmexIdentifiers) {
           const mexToken = tokens.find(x => x.symbol === 'MEX');
           if (mexToken) {
             result[lkmexIdentifier] = {
