@@ -44,28 +44,78 @@ export class MexFarmService {
     const query = gql`
       query {
         farms {
-          address
-          farmToken {
-            collection
-            name
-            ticker
-            __typename
+          ... on FarmModelV1_2 {
+            address
+            farmToken {
+              collection
+              name
+              ticker
+              __typename
+            }
+            farmingToken {
+              name
+              identifier
+              decimals
+              __typename
+            }
+            farmedToken {
+              name
+              identifier
+              decimals
+              __typename
+            }
+            farmTokenPriceUSD
+            farmingTokenPriceUSD
+            farmedTokenPriceUSD
           }
-          farmingToken {
-            name
-            identifier
-            decimals
-            __typename
+          ... on FarmModelV1_3 {
+            address
+            farmToken {
+              collection
+              name
+              ticker
+              __typename
+            }
+            farmingToken {
+              name
+              identifier
+              decimals
+              __typename
+            }
+            farmedToken {
+              name
+              identifier
+              decimals
+              __typename
+            }
+            farmTokenPriceUSD
+            farmingTokenPriceUSD
+            farmedTokenPriceUSD
           }
-          farmedToken {
-            name
-            identifier
-            decimals
-            __typename
+          ... on FarmModelV2 {
+            address
+            farmToken {
+              collection
+              name
+              ticker
+              __typename
+            }
+            farmingToken {
+              name
+              identifier
+              decimals
+              __typename
+            }
+            farmedToken {
+              name
+              identifier
+              decimals
+              __typename
+            }
+            farmTokenPriceUSD
+            farmingTokenPriceUSD
+            farmedTokenPriceUSD
           }
-          farmTokenPriceUSD
-          farmingTokenPriceUSD
-          farmedTokenPriceUSD
         }
         stakingFarms {
           address
