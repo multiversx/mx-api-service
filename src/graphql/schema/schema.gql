@@ -3343,6 +3343,9 @@ type TransactionOperation {
   """SVG URL for the transaction operation."""
   svgUrl: String
 
+  """Token ticker for the transaction operation."""
+  ticker: String!
+
   """Transaction operation type for the transaction operation."""
   type: TransactionOperationType!
 
