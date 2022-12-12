@@ -227,7 +227,7 @@ describe("Tokens Controller", () => {
         .get(`${path}/${identifier}/roles`)
         .expect(200)
         .then(res => {
-          expect(res.body).toHaveLength(17);
+          expect(res.body).toHaveLength(20);
 
           for (const item of res.body) {
             expect(item.address).toBeDefined();

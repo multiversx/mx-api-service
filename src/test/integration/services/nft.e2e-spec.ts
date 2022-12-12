@@ -459,7 +459,7 @@ describe('Nft Service', () => {
       const options = new NftQueryOptions();
       options.withSupply = true;
 
-      const results = await nftService.getNftsForAddress(address, { from: 0, size: 100 }, { type: NftType.NonFungibleESDT }, options);
+      const results = await nftService.getNftsForAddress(address, { from: 0, size: 100 }, { type: NftType.NonFungibleESDT }, undefined, options);
 
       for (const result of results) {
         expect(result.type).toStrictEqual(NftType.NonFungibleESDT);
@@ -472,19 +472,19 @@ describe('Nft Service', () => {
       const options = new NftQueryOptions();
       options.withSupply = false;
 
-      const nftResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.NonFungibleESDT }, options);
+      const nftResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.NonFungibleESDT }, undefined, options);
       for (const result of nftResults) {
         expect(result.type).toStrictEqual(NftType.NonFungibleESDT);
         expect(result.supply).not.toBeDefined();
       }
 
-      const sftResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.SemiFungibleESDT }, options);
+      const sftResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.SemiFungibleESDT }, undefined, options);
       for (const result of sftResults) {
         expect(result.type).toStrictEqual(NftType.SemiFungibleESDT);
         expect(result.supply).not.toBeDefined();
       }
 
-      const metaEsdtResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.MetaESDT }, options);
+      const metaEsdtResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.MetaESDT }, undefined, options);
       for (const result of metaEsdtResults) {
         expect(result.type).toStrictEqual(NftType.MetaESDT);
         expect(result.supply).not.toBeDefined();
@@ -496,19 +496,19 @@ describe('Nft Service', () => {
       const options = new NftQueryOptions();
       options.withSupply = true;
 
-      const nftResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.NonFungibleESDT }, options);
+      const nftResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.NonFungibleESDT }, undefined, options);
       for (const result of nftResults) {
         expect(result.type).toStrictEqual(NftType.NonFungibleESDT);
         expect(result.supply).not.toBeDefined();
       }
 
-      const sftResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.SemiFungibleESDT }, options);
+      const sftResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.SemiFungibleESDT }, undefined, options);
       for (const result of sftResults) {
         expect(result.type).toStrictEqual(NftType.SemiFungibleESDT);
         expect(result.supply).toBeDefined();
       }
 
-      const metaEsdtResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.MetaESDT }, options);
+      const metaEsdtResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.MetaESDT }, undefined, options);
       for (const result of metaEsdtResults) {
         expect(result.type).toStrictEqual(NftType.MetaESDT);
         expect(result.supply).toBeDefined();
@@ -520,7 +520,7 @@ describe('Nft Service', () => {
       const options = new NftQueryOptions();
       options.withSupply = true;
 
-      const results = await nftService.getNftsForAddress(address, { from: 0, size: 100 }, { type: NftType.NonFungibleESDT }, options);
+      const results = await nftService.getNftsForAddress(address, { from: 0, size: 100 }, { type: NftType.NonFungibleESDT }, undefined, options);
 
       for (const result of results) {
         expect(result.owner).not.toBeDefined();
@@ -741,7 +741,7 @@ describe('Nft Service', () => {
 
       const options = new NftQueryOptions({ withScamInfo: true });
 
-      const nfts = await nftService.getNftsForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', { from: 0, size: 10 }, filter, options);
+      const nfts = await nftService.getNftsForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', { from: 0, size: 10 }, filter, undefined, options);
 
       for (const nft of nfts) {
         expect(nft.scamInfo).toBeDefined();
@@ -766,7 +766,7 @@ describe('Nft Service', () => {
 
       const options = new NftQueryOptions({ withScamInfo: false });
 
-      const nfts = await nftService.getNftsForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', { from: 0, size: 10 }, filter, options);
+      const nfts = await nftService.getNftsForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', { from: 0, size: 10 }, filter, undefined, options);
 
       for (const nft of nfts) {
         expect(nft.scamInfo).toBeDefined();
@@ -826,7 +826,7 @@ describe('Nft Service', () => {
 
       const options = new NftQueryOptions({ withScamInfo: false });
 
-      const nfts = await nftService.getNftsForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', { from: 0, size: 10 }, filter, options);
+      const nfts = await nftService.getNftsForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', { from: 0, size: 10 }, filter, undefined, options);
 
       for (const nft of nfts) {
         expect(nft.scamInfo).toBeUndefined();

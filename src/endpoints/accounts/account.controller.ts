@@ -453,6 +453,7 @@ export class AccountController {
   @ApiQuery({ name: 'withScamInfo', description: 'Include scam info in the response', required: false, type: Boolean })
   @ApiQuery({ name: 'computeScamInfo', description: 'Compute scam info in the response', required: false, type: Boolean })
   @ApiQuery({ name: 'excludeMetaESDT', description: 'Exclude NFTs of type "MetaESDT" in the response', required: false, type: Boolean })
+  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
   async getAccountNfts(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -472,6 +473,7 @@ export class AccountController {
     @Query('computeScamInfo', new ParseBoolPipe) computeScamInfo?: boolean,
     @Query('source', new ParseEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
     @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
+    @Query('fields', ParseArrayPipe) fields?: string[],
   ): Promise<NftAccount[]> {
     const options = NftQueryOptions.enforceScamInfoFlag(size, new NftQueryOptions({ withSupply, withScamInfo, computeScamInfo }));
 
@@ -479,6 +481,7 @@ export class AccountController {
       address,
       new QueryPagination({ from, size }),
       new NftFilter({ search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged, excludeMetaESDT }),
+      fields,
       options,
       source
     );
@@ -536,12 +539,18 @@ export class AccountController {
 
   @Get("/accounts/:address/nfts/:nft")
   @ApiOperation({ summary: 'Account NFT/SFT token details', description: 'Returns details about a specific fungible token for a given address' })
+  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
+  @ApiQuery({ name: 'extract', description: 'Extract a specific field', required: false })
   @ApiOkResponse({ type: NftAccount })
   async getAccountNft(
     @Param('address', ParseAddressPipe) address: string,
     @Param('nft', ParseNftPipe) nft: string,
+    @Query('fields', ParseArrayPipe) fields?: string[],
+    @Query('extract') extract?: string,
   ): Promise<NftAccount> {
-    const result = await this.nftService.getNftForAddress(address, nft);
+    const actualFields = extract ? [extract] : fields;
+
+    const result = await this.nftService.getNftForAddress(address, nft, actualFields);
     if (!result) {
       throw new HttpException('Token for given account not found', HttpStatus.NOT_FOUND);
     }
