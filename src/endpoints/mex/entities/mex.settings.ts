@@ -18,7 +18,7 @@ export class MexSettings {
       ...response.farms.filter((x: any) => ['Active', 'Migrate'].includes(x.state)).map((x: any) => x.address),
       ...response.stakingFarms.filter((x: any) => x.state === 'Active').map((x: any) => x.address),
       ...response.stakingProxies.map((x: any) => x.address),
-      response.proxy.address,
+      ...response.proxy.map((x: any) => x.address),
     ];
     settings.pairContracts = [
       ...response.pairs.filter((x: any) => x.state === 'Active').map((x: any) => x.address),

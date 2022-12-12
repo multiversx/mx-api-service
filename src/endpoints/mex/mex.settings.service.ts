@@ -119,8 +119,8 @@ export class MexSettingsService {
           address
         }
         ... on FarmModelV2 {
-        state
-        address
+          state
+          address
         }
      }
       wrappingInfo {
