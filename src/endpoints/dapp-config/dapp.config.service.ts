@@ -1,22 +1,20 @@
-import { CachingService, Constants, FileUtils } from "@elrondnetwork/erdnest";
+import { FileUtils } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { DappConfig } from "./entities/dapp-config";
 
 @Injectable()
 export class DappConfigService {
+  private readonly dappConfig: DappConfig | undefined;
+
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: CachingService,
-  ) { }
+  ) {
+    this.dappConfig = this.getDappConfigurationRaw();
+  }
 
-  async getDappConfiguration(): Promise<DappConfig | undefined> {
-    return await this.cachingService.getOrSetCache(
-      'dappConfig',
-      async () => await this.getDappConfigurationRaw(),
-      Constants.oneHour(),
-      Constants.oneMinute()
-    );
+  getDappConfiguration(): DappConfig | undefined {
+    return this.dappConfig;
   }
 
   getDappConfigurationRaw(): DappConfig | undefined {
