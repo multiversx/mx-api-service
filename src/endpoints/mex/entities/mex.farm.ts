@@ -13,6 +13,10 @@ export class MexFarm {
   @ApiProperty({ enum: MexFarmType })
   type: MexFarmType = MexFarmType.standard;
 
+  @Field(() => String, { description: "Mex farm version.", nullable: true })
+  @ApiProperty({ nullable: true })
+  version?: string;
+
   @Field(() => String, { description: "Address details." })
   @ApiProperty({ type: String, example: 'erd1qqqqqqqqqqqqqpgqzps75vsk97w9nsx2cenv2r2tyxl4fl402jpsx78m9j' })
   address: string = '';
@@ -75,6 +79,7 @@ export class MexFarm {
 
     const mexFarm = new MexFarm();
     mexFarm.type = MexFarmType.standard;
+    mexFarm.version = response.version;
     mexFarm.address = response.address;
     mexFarm.id = response.farmToken.collection;
     mexFarm.symbol = symbol;

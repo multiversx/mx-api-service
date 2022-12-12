@@ -44,6 +44,7 @@ export class MexFarmService {
       query {
         farms {
           ... on FarmModelV1_2 {
+            version
             address
             farmToken {
               collection
@@ -68,6 +69,7 @@ export class MexFarmService {
             farmedTokenPriceUSD
           }
           ... on FarmModelV1_3 {
+            version
             address
             farmToken {
               collection
@@ -92,6 +94,7 @@ export class MexFarmService {
             farmedTokenPriceUSD
           }
           ... on FarmModelV2 {
+            version
             address
             farmToken {
               collection
