@@ -162,12 +162,10 @@ export class MexSettingsService {
     settings.wrapContracts = result.wrappingInfo.map((x: any) => x.address);
     settings.distributionContract = result.distribution.address;
     settings.lockedAssetContract = result.lockedAssetFactory.address;
-    settings.lockedAssetIdentifiers = [];
-    for (const proxy of result.proxy) {
-      const identifiers = proxy.lockedAssetTokens.map((token: any) => token.collection);
-      settings.lockedAssetIdentifiers.push(...identifiers);
-    }
-    settings.lockedAssetIdentifiers = settings.lockedAssetIdentifiers.distinct();
+    settings.lockedAssetIdentifiers = result.proxy
+      .map((proxy: any) => proxy.lockedAssetTokens.map((token: any) => token.collection))
+      .flat()
+      .distinct();
 
     const mexEgldPairs = result.pairs.filter((x: any) => x.firstToken.name === 'WrappedEGLD' && x.secondToken.name === 'MEX');
     if (mexEgldPairs.length > 0) {

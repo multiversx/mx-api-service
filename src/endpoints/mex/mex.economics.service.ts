@@ -34,67 +34,14 @@ export class MexEconomicsService {
 
     const variables = {
       "mexID": settings.mexId,
-      "wegldID": settings.wegldId,
       "days": 7,
-      "offset": 0,
-      "pairsLimit": 3,
     };
 
     const query = gql`
-      # query ($days: Int!, $mexID: String!, $wegldID: String!, $offset: Int, $pairsLimit: Int) {
-      query ($days: Int!, $mexID: String!, $wegldID: String!) {
+      query ($days: Int!, $mexID: String!) {
         totalAggregatedRewards(days: $days)
-        wegldPriceUSD: getTokenPriceUSD(tokenID: $wegldID)
         mexPriceUSD: getTokenPriceUSD(tokenID: $mexID)
         mexSupply: totalTokenSupply(tokenID: $mexID)
-        totalLockedValueUSDFarms
-        totalValueLockedUSD
-        totalValueLockedUSD
-        # farms {
-        #   address
-        #   farmingToken {
-        #     name
-        #     identifier
-        #     decimals
-        #     __typename
-        #   }
-        #   farmTokenPriceUSD
-        #   farmedTokenPriceUSD
-        #   farmingTokenPriceUSD
-        #   farmingTokenReserve
-        #   perBlockRewards
-        #   penaltyPercent
-        #   totalValueLockedUSD
-        #   __typename
-        # }
-        # pairs(offset: $offset, limit: $pairsLimit) {
-        #   address
-        #   firstToken {
-        #     name
-        #     identifier
-        #     decimals
-        #     __typename
-        #   }
-        #   secondToken {
-        #     name
-        #     identifier
-        #     decimals
-        #     __typename
-        #   }
-        #   firstTokenPrice
-        #   firstTokenPriceUSD
-        #   secondTokenPrice
-        #   secondTokenPriceUSD
-        #   info {
-        #     reserves0
-        #     reserves1
-        #     totalSupply
-        #     __typename
-        #   }
-        #   state
-        #   lockedValueUSD
-        #   __typename
-        # }
         factory {
           totalVolumeUSD24h
           __typename
