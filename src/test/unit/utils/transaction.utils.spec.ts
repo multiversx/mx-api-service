@@ -223,6 +223,7 @@ describe('Transaction Utils', () => {
       decimals: 6,
       receiverAssets: undefined,
       senderAssets: undefined,
+      ticker: "",
     });
   });
 });
