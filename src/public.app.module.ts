@@ -1,11 +1,11 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/date.extensions';
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/number.extensions';
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/string.extensions';
 import { EndpointsServicesModule } from './endpoints/endpoints.services.module';
 import { EndpointsControllersModule } from './endpoints/endpoints.controllers.module';
-import { LoggingModule } from '@elrondnetwork/erdnest';
+import { LoggingModule, GuestCachingMiddleware } from '@elrondnetwork/erdnest';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import { LocalCacheController } from './endpoints/caching/local.cache.controller';
 import { GraphQlModule } from './graphql/graphql.module';
@@ -27,4 +27,10 @@ import { GraphQlModule } from './graphql/graphql.module';
     EndpointsServicesModule,
   ],
 })
-export class PublicAppModule { }
+export class PublicAppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(GuestCachingMiddleware)
+      .forRoutes('*');
+  }
+}

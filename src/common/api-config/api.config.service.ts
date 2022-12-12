@@ -19,6 +19,15 @@ export class ApiConfigService {
     return apiUrls;
   }
 
+  getGuestCacheTargetUrl(): string {
+    const guestCacheUrl = this.configService.get<string>('urls.guestCache');
+    if (!guestCacheUrl) {
+      throw new Error('No guest cache url present');
+    }
+
+    return guestCacheUrl;
+  }
+
   getGatewayUrl(): string {
     const gatewayUrls = this.configService.get<string[]>('urls.gateway');
     if (!gatewayUrls) {

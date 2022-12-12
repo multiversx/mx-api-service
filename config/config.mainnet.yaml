@@ -44,6 +44,7 @@ urls:
     - 'https://api.elrond.com'
     - 'https://devnet-api.elrond.com'
     - 'https://testnet-api.elrond.com'
+  guestCache: 'https://api.elrond.com'
   elastic:
     - 'https://index.elrond.com'
   mex:
