@@ -1454,6 +1454,9 @@ type MexFarm {
 
   """Mex farm type."""
   type: MexFarmType!
+
+  """Mex farm version."""
+  version: String
 }
 
 """MexFarmType object type."""
