@@ -22,7 +22,7 @@ export class MexSettings {
     ];
     settings.pairContracts = [
       ...response.pairs.filter((x: any) => x.state === 'Active').map((x: any) => x.address),
-      response.proxy.address,
+      ...response.proxy.map((x: any) => x.address),
     ];
     settings.wrapContracts = response.wrappingInfo.map((x: any) => x.address);
     settings.distributionContract = response.distribution.address;
