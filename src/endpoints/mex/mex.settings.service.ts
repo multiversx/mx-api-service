@@ -143,36 +143,12 @@ export class MexSettingsService {
     }
     `;
 
-    const result = await this.graphQlService.getData(query, variables);
-    if (!result) {
+    const response = await this.graphQlService.getData(query, variables);
+    if (!response) {
       return null;
     }
 
-    const settings = new MexSettings();
-    settings.farmContracts = [
-      ...result.farms.filter((x: any) => ['Active', 'Migrate'].includes(x.state)).map((x: any) => x.address),
-      ...result.stakingFarms.filter((x: any) => x.state === 'Active').map((x: any) => x.address),
-      ...result.stakingProxies.map((x: any) => x.address),
-      result.proxy.address,
-    ];
-    settings.pairContracts = [
-      ...result.pairs.filter((x: any) => x.state === 'Active').map((x: any) => x.address),
-      result.proxy.address,
-    ];
-    settings.wrapContracts = result.wrappingInfo.map((x: any) => x.address);
-    settings.distributionContract = result.distribution.address;
-    settings.lockedAssetContract = result.lockedAssetFactory.address;
-    settings.lockedAssetIdentifiers = result.proxy
-      .map((proxy: any) => proxy.lockedAssetTokens.map((token: any) => token.collection))
-      .flat()
-      .distinct();
-
-    const mexEgldPairs = result.pairs.filter((x: any) => x.firstToken.name === 'WrappedEGLD' && x.secondToken.name === 'MEX');
-    if (mexEgldPairs.length > 0) {
-      settings.wegldId = mexEgldPairs[0].firstToken.identifier;
-      settings.mexId = mexEgldPairs[0].secondToken.identifier;
-    }
-
+    const settings = MexSettings.fromQueryResponse(response);
     return settings;
   }
 
