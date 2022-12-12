@@ -41,7 +41,7 @@ export class MexController {
   @Get("/mex/economics")
   @ApiOperation({ summary: 'Maiar Exchange economics', description: 'Returns economics details of Maiar Exchange' })
   @ApiOkResponse({ type: MexEconomics })
-  async getMexEconomics(): Promise<any> {
+  async getMexEconomics(): Promise<MexEconomics> {
     return await this.mexEconomicsService.getMexEconomics();
   }
 
