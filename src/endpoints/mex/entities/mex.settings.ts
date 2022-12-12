@@ -9,6 +9,7 @@ export class MexSettings {
   distributionContract: string = '';
   lockedAssetContract: string = '';
   lockedAssetIdentifier: string = '';
+  lockedAssetIdentifierV2: string = '';
   mexId: string = '';
   wegldId: string = '';
 
@@ -22,15 +23,19 @@ export class MexSettings {
     ];
     settings.pairContracts = [
       ...response.pairs.filter((x: any) => x.state === 'Active').map((x: any) => x.address),
-      response.proxy.address,
+      ...response.proxy.map((x: any) => x.address),
     ];
     settings.wrapContracts = response.wrappingInfo.map((x: any) => x.address);
     settings.distributionContract = response.distribution.address;
     settings.lockedAssetContract = response.lockedAssetFactory.address;
-    settings.lockedAssetIdentifier = response.proxy
+
+    const lockedAssetIdentifiers = response.proxy
       .map((proxy: any) => proxy.lockedAssetTokens.map((token: any) => token.collection))
       .flat()
-      .find((identifier: string) => identifier.startsWith('LKMEX'));
+      .distinct();
+
+    settings.lockedAssetIdentifier = lockedAssetIdentifiers.find((identifier: string) => identifier.startsWith('LKMEX'));
+    settings.lockedAssetIdentifierV2 = lockedAssetIdentifiers.find((identifier: string) => identifier.startsWith('XMEX'));
 
     const mexEgldPairs = response.pairs.filter((x: any) => x.firstToken.name === 'WrappedEGLD' && x.secondToken.name === 'MEX');
     if (mexEgldPairs.length > 0) {
