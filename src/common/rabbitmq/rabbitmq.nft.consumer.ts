@@ -4,6 +4,7 @@ import { RabbitMqNftHandlerService } from './rabbitmq.nft.handler.service';
 import configuration from 'config/configuration';
 import { NotifierEvent as NotifierEvent } from './entities/notifier.event';
 import { OriginLogger } from '@elrondnetwork/erdnest';
+import { NotifierEventIdentifier } from './entities/notifier.event.identifier';
 
 @Injectable()
 export class RabbitMqNftConsumer {
@@ -30,8 +31,14 @@ export class RabbitMqNftConsumer {
     }
   }
 
-  private async handleEvent(event: NotifierEvent) {
-    await this.nftHandlerService.handleNftCreateEvent(event) ??
-      await this.nftHandlerService.handleNftUpdateAttributesEvent(event);
+  private async handleEvent(event: NotifierEvent): Promise<void> {
+    switch (event.identifier) {
+      case NotifierEventIdentifier.ESDTNFTCreate:
+        await this.nftHandlerService.handleNftCreateEvent(event);
+        break;
+      case NotifierEventIdentifier.ESDTNFTUpdateAttributes:
+        await this.nftHandlerService.handleNftUpdateAttributesEvent(event);
+        break;
+    }
   }
 }
