@@ -5,12 +5,14 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { CacheInfo } from "src/utils/cache.info";
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SftChangeTransactionExtractor } from "./extractor/sft.change.transaction.extractor";
 import { TransactionExtractorInterface } from "./extractor/transaction.extractor.interface";
 import { TransferOwnershipExtractor } from "./extractor/transfer.ownership.extractor";
-import { PerformanceProfiler, CachingService, BinaryUtils, LogMetricsEvent } from "@elrondnetwork/erdnest";
-import { OriginLogger, ErdnestEventEmitter } from "@elrondnetwork/erdnest";
+import { PerformanceProfiler, CachingService, BinaryUtils } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@elrondnetwork/erdnest";
 import { MetricsEvents } from "src/utils/metrics-events.constants";
+import { LogMetricsEvent } from "src/common/entities/log.metrics.event";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -22,7 +24,7 @@ export class TransactionProcessorService {
     private readonly apiConfigService: ApiConfigService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly nodeService: NodeService,
-    private readonly eventEmitter: ErdnestEventEmitter.EventEmitter2,
+    private readonly eventEmitter: EventEmitter2,
   ) { }
 
   @Cron('*/1 * * * * *')

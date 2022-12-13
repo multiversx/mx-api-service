@@ -1,4 +1,5 @@
 import { Global, Module } from "@nestjs/common";
+import { EventEmitterModule } from "@nestjs/event-emitter";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { ApiConfigModule } from "../api-config/api.config.module";
 import { ApiConfigService } from "../api-config/api.config.service";
@@ -6,13 +7,12 @@ import { NftMediaDb } from "./entities/nft.media.db";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
 import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
 import { PersistenceService } from "./persistence.service";
-import { ErdnestEventEmitter } from "@elrondnetwork/erdnest";
 
 @Global()
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
-      imports: [ApiConfigModule, ErdnestEventEmitter.EventEmitterModule.forRoot()],
+      imports: [ApiConfigModule, EventEmitterModule.forRoot()],
       useFactory: (apiConfigService: ApiConfigService) => {
         const options: TypeOrmModuleOptions = {
           type: 'mongodb',
