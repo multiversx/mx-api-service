@@ -39,6 +39,9 @@ export class RabbitMqNftConsumer {
       case NotifierEventIdentifier.ESDTNFTUpdateAttributes:
         await this.nftHandlerService.handleNftUpdateAttributesEvent(event);
         break;
+      case NotifierEventIdentifier.transferOwnership:
+        await this.nftHandlerService.handleTransferOwnershipEvent(event);
+        break;
     }
   }
 }

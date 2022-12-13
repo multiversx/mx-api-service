@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { NftType } from 'src/endpoints/nfts/entities/nft.type';
 import { NftService } from 'src/endpoints/nfts/nft.service';
 import { ProcessNftSettings } from 'src/endpoints/process-nfts/entities/process.nft.settings';
@@ -8,6 +8,8 @@ import { NotifierEvent } from './entities/notifier.event';
 import { BinaryUtils, CachingService } from '@elrondnetwork/erdnest';
 import { IndexerService } from '../indexer/indexer.service';
 import { OriginLogger } from '@elrondnetwork/erdnest';
+import { EsdtService } from 'src/endpoints/esdt/esdt.service';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class RabbitMqNftHandlerService {
@@ -18,6 +20,8 @@ export class RabbitMqNftHandlerService {
     private readonly nftService: NftService,
     private readonly indexerService: IndexerService,
     private readonly cachingService: CachingService,
+    private readonly esdtService: EsdtService,
+    @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) { }
 
   private async getCollectionType(collectionIdentifier: string): Promise<NftType | null> {
@@ -110,5 +114,38 @@ export class RabbitMqNftHandlerService {
     const nonce = BinaryUtils.base64ToHex(topics[1]);
 
     return `${collection}-${nonce}`;
+  }
+
+  public async handleTransferOwnershipEvent(event: NotifierEvent): Promise<boolean> {
+    const tokenIdentifier = BinaryUtils.base64Decode(event.topics[0]);
+
+    try {
+      const esdtProperties = await this.esdtService.getEsdtTokenPropertiesRaw(tokenIdentifier);
+      if (!esdtProperties) {
+        return false;
+      }
+
+      await this.invalidateKey(
+        CacheInfo.EsdtProperties(tokenIdentifier).key,
+        esdtProperties,
+        CacheInfo.EsdtProperties(tokenIdentifier).ttl
+      );
+
+      return true;
+    } catch (error) {
+      this.logger.error(`An unhandled error occurred when processing transferOwnership event for token with identifier '${tokenIdentifier}'`);
+      this.logger.error(error);
+
+      return false;
+    }
+  }
+
+  private async invalidateKey(key: string, data: any, ttl: number) {
+    await this.cachingService.setCache(key, data, ttl);
+    this.refreshCacheKey(key, ttl);
+  }
+
+  private refreshCacheKey(key: string, ttl: number) {
+    this.clientProxy.emit('refreshCacheKey', { key, ttl });
   }
 }
